@@ -49,8 +49,12 @@ import java.util.Iterator;
 import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.websvc.axis2.WSDLUtils;
 import org.netbeans.modules.xml.wsdl.model.Service;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
@@ -58,6 +62,7 @@ import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -85,19 +90,11 @@ public class WsFromWsdlPanel1 implements  WizardDescriptor.FinishablePanel<Wizar
         return component;
     }
     
-    WizardDescriptor getWizardDescriptor() {
-        return wizardDescriptor;
-    }
-    
-    Project getProject() {
-        return project;
-    }
-
     public HelpCtx getHelp() {
-        return new HelpCtx(WsFromJavaPanel0.class);
+        return new HelpCtx(WsFromWsdlPanel1.class);
     }
 
-    public void readSettings(WizardDescriptor settings) {
+    public void readSettings(final WizardDescriptor settings) {
         File newWsdlFile = (File)settings.getProperty(WizardProperties.PROP_WSDL_URL);
         if (newWsdlFile != null && !newWsdlFile.equals(wsdlFile)) {
             wsdlFile = newWsdlFile;
@@ -107,6 +104,7 @@ public class WsFromWsdlPanel1 implements  WizardDescriptor.FinishablePanel<Wizar
                     FileObject wsdlFo = FileUtil.toFileObject(wsdlFile);
                     WSDLModel wsdlModel = WSDLUtils.getWSDLModel(wsdlFo, true);
                     if (wsdlModel != null) {
+                        settings.putProperty(WizardProperties.PROP_WSDL_NS, WSDLUtils.getTargetNamespace(wsdlModel));
                         Collection<Service> services = WSDLUtils.getServices(wsdlModel);
                         component.setServices(services);
                         if (services != null && services.size()>0) {
@@ -114,10 +112,10 @@ public class WsFromWsdlPanel1 implements  WizardDescriptor.FinishablePanel<Wizar
                         }
                         String packageName = WSDLUtils.getPackageNameFromNamespace(wsdlModel.getDefinitions().getTargetNamespace());
                         component.setPackageName(packageName);
-                        component.setW2JOptions("-ss -sd -sn "+component.getServiceName()+
-                                    " -pn "+component.getPortName()+
-                                    " -d " +component.getDatabindingName()+"\n"+
-                                    " -p "+packageName+(component.isSEI() ? " -ssi" : "")
+                        component.setW2JOptions("-ss -sd -sn "+component.getServiceName()+ // NOI18N
+                                    " -pn "+component.getPortName()+ // NOI18N
+                                    " -d " +component.getDatabindingName()+"\n"+ // NOI18N
+                                    " -p "+packageName+(component.isSEI() ? " -ssi" : "") // NOI18N
                         );
                     }
                 }
@@ -136,7 +134,25 @@ public class WsFromWsdlPanel1 implements  WizardDescriptor.FinishablePanel<Wizar
     }
 
     public boolean isValid() {
+        if ("jibx".equals(component.getDatabindingName()) && !isJiBXRuntime()) { //NOI18N
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,  // NOI18N
+                    NbBundle.getMessage(WsFromWsdlPanel1.class, "MSG_missingJiBX"));
+            return false;
+        }
+        wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, ""); // NOI18N
         return component.dataIsValid();
+    }
+    
+    boolean isJiBXRuntime() {
+        SourceGroup[] sourceGroups = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        if (sourceGroups.length > 0) {
+            ClassPath cp = ClassPath.getClassPath(sourceGroups[0].getRootFolder(), ClassPath.COMPILE);
+            if ( cp.findResource("org/jibx/runtime/IBindingFactory.class") != null &&  //NOI18N
+                 cp.findResource("org/jibx/binding/ant/CompileTask.class") != null ) { //NOI18N
+                return true;
+            }
+        }
+        return false;
     }
 
     private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);

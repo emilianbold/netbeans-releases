@@ -75,7 +75,8 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
     private JSFConfigurationPanel panel;
     private boolean customizer;
     
-    private ArrayList <LibraryItem> jsfLibraries;
+    private final List<LibraryItem> jsfLibraries = new ArrayList<LibraryItem>();
+    private boolean libsInitialized;
     private boolean webModule25Version;
     private String serverInstanceID;
     
@@ -86,27 +87,42 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
         this.customizer = customizer;
         
         initComponents();
-        initLibraries();
-
+        
         tURLPattern.getDocument().addDocumentListener(this);
         cbPackageJars.setVisible(false);
-        if (customizer){
+
+    }
+
+    @Override
+    public void addNotify() {
+        super.addNotify();
+        initLibraries();
+
+        if (customizer) {
             enableComponents(false);
         } else {
             updateLibrary();
         }
     }
-    
-    private void initLibraries(){
+
+    private void initLibraries() {
+        if (libsInitialized) {
+            return;
+        }
+
         Vector <String> items = new Vector <String>();
-        jsfLibraries = new ArrayList <LibraryItem>();
+        jsfLibraries.clear();
         List<URL> content;
-        for (Library library : LibraryManager.getDefault().getLibraries()){
-            content = library.getContent("classpath");
+        for (Library library : LibraryManager.getDefault().getLibraries()) {
+            if (!"j2se".equals(library.getType())) { // NOI18N
+                continue;
+            }
+
+            content = library.getContent("classpath"); //NOI18N
             try {
-                if (Util.containsClass(content, JSFUtils.FACES_EXCEPTION)) {    //NOI18N
+                if (Util.containsClass(content, JSFUtils.FACES_EXCEPTION)) {
                     items.add(library.getDisplayName());
-                    boolean isJSF12 = Util.containsClass(content, JSFUtils.JSF_1_2__API_SPECIFIC_CLASS);  //NOI18N
+                    boolean isJSF12 = Util.containsClass(content, JSFUtils.JSF_1_2__API_SPECIFIC_CLASS);
                     if (isJSF12) {
                         jsfLibraries.add(new LibraryItem(library, JSFVersion.JSF_1_2));
                     } else {
@@ -117,9 +133,9 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
                 Exceptions.printStackTrace(exception);
             }
         }
-        
+
         cbLibraries.setModel(new DefaultComboBoxModel(items));
-        if (items.size() == 0){
+        if (items.size() == 0) {
             rbRegisteredLibrary.setEnabled(false);
             cbLibraries.setEnabled(false);
             rbNewLibrary.setSelected(true);
@@ -129,6 +145,8 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
             rbRegisteredLibrary.setSelected(true);
             cbLibraries.setEnabled(true);
         }
+
+        libsInitialized = true;
         repaint();
     }
 
@@ -352,7 +370,7 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
                 .add(libPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(rbRegisteredLibrary)
                     .add(cbLibraries, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(1, 1, 1)
                 .add(rbNewLibrary)
                 .add(libPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jbBrowse)
@@ -361,7 +379,7 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
                 .add(libPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jtNewLibraryName, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(lVersion))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(1, 1, 1)
                 .add(rbNoneLibrary)
                 .addContainerGap())
         );
@@ -492,6 +510,9 @@ private void jtFolderKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_
                 return false;
             }
             if (!webModule25Version) {
+                if (jsfLibraries.size() == 0) {
+                    return false;
+                }
                 int index = cbLibraries.getSelectedIndex();
                 JSFVersion libraryVersion = jsfLibraries.get(index).getVersion();
                 if (libraryVersion.compareTo(JSFVersion.JSF_1_1) > 0) {
@@ -539,7 +560,15 @@ private void jtFolderKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_
         return true;
     }
     
-    private boolean isPatternValid(String pattern){
+    private static final char[] INVALID_PATTERN_CHARS = {'%', '+'}; // NOI18N
+
+    private boolean isPatternValid(String pattern) {
+        for (char c : INVALID_PATTERN_CHARS) {
+            if (pattern.indexOf(c) != -1) {
+                return false;
+            }
+        }
+        
         if (pattern.startsWith("*.")){
             String p = pattern.substring(2);
             if (p.indexOf('.') == -1 && p.indexOf('*') == -1

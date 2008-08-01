@@ -98,6 +98,7 @@ public class ResolveConflictsExecutor extends SvnProgressSupport {
         
         try {
             FileObject fo = FileUtil.toFileObject(file);
+            assert fo != null : "no fileobject for file " + file;
             handleMergeFor(file, fo, fo.lock(), merge);
         } catch (FileAlreadyLockedException e) {
             Set components = TopComponent.getRegistry().getOpened();

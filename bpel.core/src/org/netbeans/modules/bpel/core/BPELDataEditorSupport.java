@@ -1,36 +1,68 @@
 /*
- * The contents of this file are subject to the terms of the Common Development
- * and Distribution License (the License). You may not use this file except in
- * compliance with the License.
- * 
- * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
- * or http://www.netbeans.org/cddl.txt.
- * 
- * When distributing Covered Code, include this CDDL Header Notice in each file
- * and include the License file at http://www.netbeans.org/cddl.txt.
- * If applicable, add the following below the CDDL Header, with the fields
- * enclosed by brackets [] replaced by your own identifying information:
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License. When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Sun in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
+ * Contributor(s):
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
  */
 package org.netbeans.modules.bpel.core;
 
 import java.awt.EventQueue;
+import java.io.ByteArrayOutputStream;
+import java.io.CharConversionException;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Reader;
 import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
+import java.io.Writer;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
-import javax.swing.JComponent;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 import javax.swing.text.AbstractDocument;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.EditorKit;
 import javax.swing.text.StyledDocument;
 
 import org.netbeans.api.xml.cookies.CookieObserver;
@@ -42,15 +74,13 @@ import org.netbeans.core.spi.multiview.CloseOperationHandler;
 import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.modules.bpel.core.multiview.BPELSourceMultiViewElementDesc;
 import org.netbeans.modules.bpel.core.multiview.BpelMultiViewSupport;
-import org.netbeans.modules.bpel.core.util.BPELValidationController;
-import org.netbeans.modules.bpel.core.util.SelectBpelElement;
+import org.netbeans.modules.soa.validation.core.Controller;
+import org.netbeans.modules.soa.validation.util.LineUtil;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.bpel.model.spi.BpelModelFactory;
 import org.netbeans.modules.xml.retriever.catalog.Utilities;
 import org.netbeans.modules.xml.validation.ShowCookie;
-import org.netbeans.modules.xml.validation.ValidationOutputWindowController;
-import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.Model.State;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
@@ -77,14 +107,21 @@ import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 import org.netbeans.modules.soa.ui.UndoRedoManagerProvider;
-import org.netbeans.modules.bpel.core.util.ValidationUtil;
+import org.netbeans.modules.xml.api.EncodingUtil;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.cookies.SaveCookie;
+import org.openide.util.NbBundle;
+import org.openide.util.UserCancelException;
 
 /**
  * @author ads
  */
 public class BPELDataEditorSupport extends DataEditorSupport implements
-        OpenCookie, EditCookie, EditorCookie.Observable, ShowCookie, ValidateXMLCookie, UndoRedoManagerProvider
-{
+    OpenCookie, EditCookie, EditorCookie.Observable, ShowCookie, ValidateXMLCookie, UndoRedoManagerProvider {
+
+    private static final Logger LOGGER = Logger.getLogger(BPELDataEditorSupport.class.getName());
+    
     public BPELDataEditorSupport( BPELDataObject obj ) {
         super(obj, new BPELEnv(obj));
         setMIMEType(BPELDataLoader.MIME_TYPE);
@@ -108,13 +145,6 @@ public class BPELDataEditorSupport extends DataEditorSupport implements
         return getModelFactory().getModel(modelSource);
     }
 
-    /** {@inheritDoc} */
-    public void saveDocument() throws IOException {
-        super.saveDocument();
-        syncModel();
-        getDataObject().setModified(false);
-    }
-
     /**
      * Sync Bpel model with source.
      */
@@ -125,43 +155,211 @@ public class BPELDataEditorSupport extends DataEditorSupport implements
                 model.sync();
             }
         }
-        catch (IOException e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-            // assert false;
-        }
+        catch (IOException e) {}
     }
 
-    /**
-     * Public accessor for the <code>initializeCloneableEditor()</code>
-     * method.
-     * {@inheritDoc} 
-     */
+    // following 5 methods are copied from schemaeditorsupport.
     @Override
-    public void initializeCloneableEditor( CloneableEditor editor )
-    {
-        super.initializeCloneableEditor(editor);
-        // Force the title to update so the * left over from when the
-        // modified data object was discarded is removed from the title.
-        if (!getEnv().getBpelDataObject().isModified()) {
-            // Update later to avoid an infinite loop.
-            EventQueue.invokeLater(new Runnable() {
-
-                public void run() {
-                    updateTitles();
-                }
-            });
+    protected void loadFromStreamToKit(StyledDocument doc, InputStream in,
+            EditorKit kit) throws IOException, BadLocationException {
+        // Detect the encoding to get optimized reader if UTF-8.
+        String enc = EncodingUtil.detectEncoding(in);
+        if (enc == null) {
+            enc = "UTF8"; // NOI18N
         }
+        Reader reader = null;
+        try {
+            reader = EncodingUtil.getUnicodeReader(in, enc);
+            kit.read(reader, doc, 0);
+        } catch (CharConversionException cce) {
+            LOGGER.log(Level.WARNING, cce.getMessage());
+        } catch (UnsupportedEncodingException uee) {
+            LOGGER.log(Level.WARNING, uee.getMessage());
+        } finally {
+            if(reader != null) {
+                reader.close();
+            }
+        }
+    }
+    
+    @Override
+    protected void saveFromKitToStream(StyledDocument doc, EditorKit kit,
+            OutputStream out) throws IOException, BadLocationException {
+        // Detect the encoding, using UTF8 if the encoding is not set.
+        String enc = EncodingUtil.detectEncoding(doc);
+        if (enc == null) {
+            enc = "UTF8"; // NOI18N
+        }
+        try {
+            // Test the encoding on a dummy stream.
+            new OutputStreamWriter(new ByteArrayOutputStream(1), enc);
+            // If that worked, we can go ahead with the encoding.
+            Writer writer = new OutputStreamWriter(out, enc);
+            kit.write(writer, doc, 0, doc.getLength());
+        } catch (UnsupportedEncodingException uee) {
+            // Safest option is to write nothing, preserving the original file.
+            IOException ioex = new IOException("Unsupported encoding " + enc); // NOI18N
+            ErrorManager.getDefault().annotate(ioex,
+                    NbBundle.getMessage(BPELDataEditorSupport.class,
+                    "MSG_BPELDataEditorSupport_Unsupported_Encoding", enc));
+            throw ioex;
+        }
+    }
+      
+    public void saveDocument() throws IOException {
+        final StyledDocument doc = getDocument();
+        // Save document using encoding declared in XML prolog if possible,
+        // otherwise use UTF-8 (in such case it updates the prolog).
+        String enc = EncodingUtil.detectEncoding(doc);
+        if (enc == null) {
+            enc = "UTF8"; // NOI18N
+        }
+        try {
+            // Test the encoding on a dummy stream.
+            new OutputStreamWriter(new ByteArrayOutputStream(1), enc);
+            if (!checkCharsetConversion(EncodingUtil.getJava2IANAMapping(enc))){
+                return;
+            }
+            super.saveDocument();
+            getDataObject().setModified(false);
+            
+        } catch (UnsupportedEncodingException uee) {
+            NotifyDescriptor descriptor = new NotifyDescriptor.Confirmation(
+                    java.text.MessageFormat.format(
+                    NbBundle.getMessage(BPELDataEditorSupport.class,
+                    "MSG_BPELDataEditorSupport_Use_UTF8"),
+                    new Object[] {enc}));
+            Object res = DialogDisplayer.getDefault().notify(descriptor);
+            
+            if (res.equals(NotifyDescriptor.YES_OPTION)) {
+                updateDocumentWithNewEncoding(doc);
+            } else {
+                throw new UserCancelException();                
+            }
+        }
+    }
+    
+    /**
+     * update prolog to new valid encoding
+     */
+    private void updateDocumentWithNewEncoding(final StyledDocument doc) throws IOException {
+        try {
+            final int MAX_PROLOG = 1000;
+            int maxPrologLen = Math.min(MAX_PROLOG, doc.getLength());
+            final char prolog[] = doc.getText(0, maxPrologLen).toCharArray();
+            int prologLen = 0;
+            if (prolog[0] == '<' && prolog[1] == '?' && prolog[2] == 'x') {
+                for (int i = 3; i < maxPrologLen; i++) {
+                    if (prolog[i] == '?' && prolog[i + 1] == '>') {
+                        prologLen = i + 1;
+                        break;
+                    }
+                }
+            }
 
-        /*
-         *  I put this code here because it is called each time when
-         *  editor is opened. This can happened omn first open,
-         *  on reopen, on deserialization.
-         *  CTOR of BPELDataEditorSupport is called only once due lifecycle 
-         *  data object, so it cannot be used on attach after reopening.
-         *  Method "open" doesn't called after deser-ion.
-         *  But this method is called always on editor opening. 
-         */ 
+            final int passPrologLen = prologLen;
+            Runnable edit = new Runnable() {
+                public void run() {
+                    try {
+                        doc.remove(0, passPrologLen + 1);
+                        doc.insertString(0, "<?xml version='1.0' encoding='UTF-8' ?>\n<!-- was: " +
+                                new String(prolog, 0, passPrologLen + 1) + " -->", null); // NOI18N
+                    } catch (BadLocationException ble) {
+                        if (System.getProperty("netbeans.debug.exceptions") != null) {// NOI18N                           
+                            ble.printStackTrace();
+                        }
+                    }
+                }
+            };
+            NbDocument.runAtomic(doc, edit);
+
+            super.saveDocument();
+            getDataObject().setModified(false);
+
+        } catch (BadLocationException lex) {
+            ErrorManager.getDefault().notify(lex);
+        }
+    }    
+    
+    /**
+     * Validate the selected encoding to determine if it is usuable or not.
+     * If there is a problem, prompt the user to confirm the encoding.
+     *
+     * @param  encoding  the character set encoding to validate.
+     * @return  true if encoding can be used, false otherwise.
+     */
+    private boolean checkCharsetConversion(String encoding) {
+        boolean value = true;
+        try {
+            java.nio.charset.CharsetEncoder coder =
+                    java.nio.charset.Charset.forName(encoding).newEncoder();
+            if (!coder.canEncode(getDocument().getText(0,
+                    getDocument().getLength()))){
+                Object[] margs = new Object[] {
+                    getDataObject().getPrimaryFile().getNameExt(),
+                    encoding
+                };
+                String msg = NbBundle.getMessage(BPELDataEditorSupport.class,
+                        "MSG_BPELDataEditorSupport_BadCharConversion", margs);
+                NotifyDescriptor nd = new NotifyDescriptor.Confirmation(msg,
+                        NotifyDescriptor.YES_NO_OPTION,
+                        NotifyDescriptor.WARNING_MESSAGE);
+                nd.setValue(NotifyDescriptor.NO_OPTION);
+                DialogDisplayer.getDefault().notify(nd);
+                if (nd.getValue() != NotifyDescriptor.YES_OPTION) {
+                    value = false;
+                }
+            }
+        } catch (BadLocationException ble) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ble);
+        }
+        return value;
+    }
+    
+    @Override
+    public void initializeCloneableEditor(CloneableEditor editor) {
+        super.initializeCloneableEditor(editor);
+
+        EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                updateTitles();
+            }
+        });
         getValidationController().attach();
+    }
+
+    @Override
+    protected void notifyClosed() {
+        QuietUndoManager undo = getUndoManager();
+        StyledDocument doc = getDocument();
+        synchronized (undo) {
+            // May be null when closing the editor.
+            if (doc != null) {
+                doc.removeUndoableEditListener(undo);
+                undo.endCompound();
+                undo.setDocument(null);
+            }
+            BpelModel model = getBpelModel();
+
+            if (model != null) {
+                model.removeUndoableEditListener(undo);
+            }
+            // Must unset the model when no longer listening to it.
+            undo.setModel(null);
+        }
+        super.notifyClosed();
+        getUndoManager().discardAllEdits();
+        prepareTask = null;
+        getValidationController().detach();
+    }
+
+    public boolean validateXML(CookieObserver cookieObserver) {
+      getValidationController().runValidation();
+      return true;
+    }
+
+    private Controller getValidationController() {
+      return (Controller) getEnv().getBpelDataObject().getLookup().lookup(Controller.class);
     }
 
     @Override
@@ -196,8 +394,7 @@ public class BPELDataEditorSupport extends DataEditorSupport implements
     }
 
     @Override
-    public Task prepareDocument()
-    {
+    public Task prepareDocument() {
         QuietUndoManager undo = (QuietUndoManager) getUndoRedo();
         Task task = super.prepareDocument();
         // Avoid listening to the same task more than once.
@@ -235,8 +432,7 @@ public class BPELDataEditorSupport extends DataEditorSupport implements
     }
 
     @Override
-    public Task reloadDocument()
-    {
+    public Task reloadDocument() {
         Task task = super.reloadDocument();
         task.addTaskListener(new TaskListener() {
 
@@ -362,7 +558,7 @@ public class BPELDataEditorSupport extends DataEditorSupport implements
     /**
      * Implement ShowCookie.
      */
-    public void show( final ResultItem resultItem ) {
+    public void show(final ResultItem resultItem) {
         if (!(resultItem.getModel() instanceof BpelModel))
             return;
 
@@ -396,12 +592,8 @@ public class BPELDataEditorSupport extends DataEditorSupport implements
                  * means the resultItem was generated when the model was broken.
                  *  In the above cases switch to the source multiview.
                  */ 
-                if (resultItem.getModel().getState().equals(
-                        State.NOT_WELL_FORMED)
-                        || resultItem.getComponents() == null)
-                {
-                    for (int index1 = 0; index1 < mvh.getPerspectives().length; index1++)
-                    {
+                if (resultItem.getModel().getState().equals(State.NOT_WELL_FORMED) || resultItem.getComponents() == null) {
+                    for (int index1 = 0; index1 < mvh.getPerspectives().length; index1++) {
                         if (mvh.getPerspectives()[index1].preferredID().equals(
                                 BPELSourceMultiViewElementDesc.PREFERED_ID))
                             mvh.requestActive(mvh.getPerspectives()[index1]);
@@ -429,10 +621,8 @@ public class BPELDataEditorSupport extends DataEditorSupport implements
                         }
                     }
                 }
-                else if (mvp.preferredID().equals(
-                        BPELSourceMultiViewElementDesc.PREFERED_ID))
-                {
-                    Line line = ValidationUtil.getLine(resultItem);
+                else if (mvp.preferredID().equals(BPELSourceMultiViewElementDesc.PREFERED_ID)) {
+                    Line line = LineUtil.getLine(resultItem);
 
                     if (line != null) {
                       line.show(Line.SHOW_GOTO);
@@ -440,31 +630,6 @@ public class BPELDataEditorSupport extends DataEditorSupport implements
                 }
             }
         });
-
-    }
-
-    // Implement Validate XML action.
-    public boolean validateXML( CookieObserver cookieObserver ) {
-        List<ResultItem> validationResults;
-
-        ValidationOutputWindowController validationController = 
-            new ValidationOutputWindowController();
-        validationResults = validationController
-                .validate((Model) ((BPELDataObject) this.getDataObject())
-                        .getLookup().lookup(Model.class));
-
-        /* Send the complete/slow validation results to the validation
-         * controller
-         * so that clients can be notified.
-         */ 
-        BPELValidationController controller = 
-            (BPELValidationController) ((BPELDataObject) getDataObject()).
-                    getLookup().lookup(BPELValidationController.class);
-        if (controller != null) {
-            controller.notifyCompleteValidationResults(validationResults);
-        }
-
-        return true;
     }
 
     protected CloneableEditorSupport.Pane createPane() {
@@ -480,33 +645,25 @@ public class BPELDataEditorSupport extends DataEditorSupport implements
     }
 
     @Override
-    protected void notifyClosed()
-    {
-        QuietUndoManager undo = getUndoManager();
-        StyledDocument doc = getDocument();
-        synchronized (undo) {
-            // May be null when closing the editor.
-            if (doc != null) {
-                doc.removeUndoableEditListener(undo);
-                undo.endCompound();
-                undo.setDocument(null);
-            }
-
-            BpelModel model = getBpelModel();
-            if (model != null) {
-                model.removeUndoableEditListener(undo);
-            }
-            // Must unset the model when no longer listening to it.
-            undo.setModel(null);
-
+    protected boolean notifyModified() {
+        boolean notify = super.notifyModified();
+        if (!notify) {
+            return false;
         }
-        super.notifyClosed();
-        getUndoManager().discardAllEdits();
-
-        // all editors are closed so we don't need to keep this task.
-        prepareTask = null;
-
-        getValidationController().detach();
+        
+        BPELDataObject dObj = getEnv().getBpelDataObject();
+        if (dObj.getCookie(SaveCookie.class) == null) {
+            dObj.addSaveCookie(new SaveCookie() {
+                public void save() throws java.io.IOException {
+                    try {
+                        saveDocument();
+                    } catch(UserCancelException e) {
+                        //just ignore
+                    }
+                }
+            });
+        }
+        return true;
     }
 
     /*
@@ -519,8 +676,7 @@ public class BPELDataEditorSupport extends DataEditorSupport implements
      * @see org.openide.text.CloneableEditorSupport#updateTitles()
      */
     @Override
-    protected void updateTitles()
-    {
+    protected void updateTitles() {
         /* This method is invoked by DataEditorSupport.DataNodeListener
          * whenever the DataNode displayName property is changed. It is
          * also called when the CloneableEditorSupport is (un)modified.
@@ -551,27 +707,17 @@ public class BPELDataEditorSupport extends DataEditorSupport implements
         });
     }
 
-    protected BPELEnv getEnv() {
+    BPELEnv getEnv() {
         return (BPELEnv) env;
     }
 
     @Override
-    protected UndoRedo.Manager createUndoRedoManager()
-    {
+    protected UndoRedo.Manager createUndoRedoManager() {
         // Override so the superclass will use our proxy undo manager
         // instead of the default, then we can intercept edits.
         return new QuietUndoManager(super.createUndoRedoManager());
         // Note we cannot set the document on the undo manager right
         // now, as CES is probably trying to open the document.
-    }
-
-    
-
-    public BPELValidationController getValidationController() {
-        BPELValidationController controller = (BPELValidationController) getEnv()
-                .getBpelDataObject().getLookup().lookup(
-                        BPELValidationController.class);
-        return controller;
     }
 
     /**
@@ -598,18 +744,13 @@ public class BPELDataEditorSupport extends DataEditorSupport implements
         List<TopComponent> associatedTCs = new ArrayList<TopComponent>();
         DataObject targetDO = getDataObject();
         TopComponent activeTC = TopComponent.getRegistry().getActivated();
-        if (activeTC != null
-                && targetDO == (DataObject) activeTC.getLookup().lookup(
-                        DataObject.class))
-        {
+        if (activeTC != null && targetDO == (DataObject) activeTC.getLookup().lookup(DataObject.class)) {
             associatedTCs.add(activeTC);
         }
         Set openTCs = TopComponent.getRegistry().getOpened();
         for (Object tc : openTCs) {
             TopComponent tcc = (TopComponent) tc;
-            if (targetDO == (DataObject) tcc.getLookup().lookup(
-                    DataObject.class))
-            {
+            if (targetDO == (DataObject) tcc.getLookup().lookup(DataObject.class)) {
                 associatedTCs.add(tcc);
             }
         }
@@ -642,9 +783,7 @@ public class BPELDataEditorSupport extends DataEditorSupport implements
     // /////////////////////// CloseOperationHandler ///////////////////////////
     // /////////////////////////////////////////////////////////////////////////
 
-    public static class CloseHandler implements CloseOperationHandler,
-            Serializable
-    {
+    public static class CloseHandler implements CloseOperationHandler, Serializable {
 
         private static final long serialVersionUID = -4621077799099893176L;
 

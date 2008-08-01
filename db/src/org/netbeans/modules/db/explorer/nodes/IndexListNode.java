@@ -41,14 +41,10 @@
 
 package org.netbeans.modules.db.explorer.nodes;
 
-import org.openide.util.NbBundle;
+import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
 
 public class IndexListNode extends DatabaseNode {
-    public IndexListNode() {
-        setDisplayName(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("NDN_Indexes")); //NOI18N
-    }
-
-    public String getShortDescription() {
-        return NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ND_IndexList"); //NOI18N
+    public IndexListNode(DatabaseNodeInfo info) {
+        super(info);
     }
 }

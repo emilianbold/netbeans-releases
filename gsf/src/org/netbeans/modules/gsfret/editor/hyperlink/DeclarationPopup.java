@@ -177,7 +177,14 @@ public class DeclarationPopup extends JPanel implements FocusListener {
                 StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(DeclarationPopup.class, "InvalidLoc"));
                 Toolkit.getDefaultToolkit().beep();
             } else {
-                UiUtils.open(location.getFileObject(), location.getOffset());
+                String invalid = location.getInvalidMessage();
+                if (invalid != null) {
+                    // TODO - show in the editor as an error instead?
+                    StatusDisplayer.getDefault().setStatusText(invalid);
+                    Toolkit.getDefaultToolkit().beep();
+                } else {
+                    UiUtils.open(location.getFileObject(), location.getOffset());
+                }
             }
         }
         

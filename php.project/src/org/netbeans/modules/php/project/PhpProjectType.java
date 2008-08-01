@@ -49,32 +49,21 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 
 /**
  * @author ads
- *
  */
 public final class PhpProjectType implements AntBasedProjectType {
-    
-    public static final String TYPE = PhpProjectType.class.getPackage().getName();
-    
-    private static final String PROJECT_CONFIGURATION_NAME      = "data"; // NOI18N
-    
-    public static final String PROJECT_CONFIGURATION_NAMESPACE  = 
-            "http://www.netbeans.org/ns/php-project/1";                   // NOI18N
-    
-    private static final String PRIVATE_CONFIGURATION_NAME      = "data"; // NOI18N
-    
-    private static final String PRIVATE_CONFIGURATION_NAMESPACE = 
-             "http://www.netbeans.org/ns/php-project-private/1";          // NOI18N
 
-    /* (non-Javadoc)
-     * @see org.netbeans.spi.project.support.ant.AntBasedProjectType#createProject(org.netbeans.spi.project.support.ant.AntProjectHelper)
-     */
-    public Project createProject( AntProjectHelper helper ) throws IOException {
-        return new PhpProject( helper );
+    public static final String TYPE = PhpProjectType.class.getPackage().getName();
+    public static final String PROJECT_CONFIGURATION_NAMESPACE = "http://www.netbeans.org/ns/php-project/1"; // NOI18N
+    private static final String PROJECT_CONFIGURATION_NAME = "data"; // NOI18N
+
+    private static final String PRIVATE_CONFIGURATION_NAMESPACE = "http://www.netbeans.org/ns/php-project-private/1"; // NOI18N
+    private static final String PRIVATE_CONFIGURATION_NAME = "data"; // NOI18N
+
+    public Project createProject(AntProjectHelper helper) throws IOException {
+        assert helper != null;
+        return new PhpProject(helper);
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.spi.project.support.ant.AntBasedProjectType#getPrimaryConfigurationDataElementName(boolean)
-     */
     public String getPrimaryConfigurationDataElementName( boolean shared ) {
         /*
          * Copied from MakeProjectType.
@@ -82,22 +71,14 @@ public final class PhpProjectType implements AntBasedProjectType {
         return shared ? PROJECT_CONFIGURATION_NAME : PRIVATE_CONFIGURATION_NAME;
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.spi.project.support.ant.AntBasedProjectType#getPrimaryConfigurationDataElementNamespace(boolean)
-     */
     public String getPrimaryConfigurationDataElementNamespace( boolean shared ) {
         /*
          * Copied from MakeProjectType.
          */
-        return shared ? PROJECT_CONFIGURATION_NAMESPACE : 
-                                PRIVATE_CONFIGURATION_NAMESPACE;
+        return shared ? PROJECT_CONFIGURATION_NAMESPACE : PRIVATE_CONFIGURATION_NAMESPACE;
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.spi.project.support.ant.AntBasedProjectType#getType()
-     */
     public String getType() {
         return TYPE;
     }
-
 }

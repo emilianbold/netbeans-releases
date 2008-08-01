@@ -559,7 +559,7 @@ public class ResultSetTablePanel extends JPanel {
             int rowCnt = 0;
 
             boolean lastRowPicked = rs.next();
-            while (lastRowPicked && rs.getRow() < (startFrom - 1)) {
+            while (lastRowPicked && rs.getRow() < (startFrom + 1)) {
                 lastRowPicked = rs.next();
             }
 

@@ -70,6 +70,13 @@ import org.netbeans.modules.cnd.api.model.util.CsmSortUtilities;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import org.netbeans.modules.cnd.api.model.CsmEnumerator;
+import org.netbeans.modules.cnd.api.model.CsmMember;
+import org.netbeans.modules.cnd.api.model.CsmVariable;
+import org.netbeans.modules.cnd.api.model.CsmVariableDefinition;
+import org.netbeans.modules.cnd.api.model.services.CsmSelect;
+import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
+import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilterBuilder;
 
 /**
  *
@@ -143,16 +150,15 @@ public class CsmContextUtilities {
 
     private static List<CsmMacro> findMacros(CsmContext context, String strPrefix, 
             boolean match, boolean caseSensitive, int kind) {
-        List res = new ArrayList();
+        List<CsmMacro> res = new ArrayList<CsmMacro>();
         for (Iterator itContext = context.iterator(); itContext.hasNext();) {
             CsmContext.CsmContextEntry entry = (CsmContext.CsmContextEntry) itContext.next();
             CsmScope scope = entry.getScope();
-            int offsetInScope = entry.getOffset();
             if (CsmKindUtilities.isFile(scope)){
                 CsmFile file = (CsmFile)scope;
                 switch (kind) {
                     case FILE_LOCAL_MACROS:
-                        getFileLocalMacros(file, res, new HashSet(), strPrefix, match, caseSensitive);
+                        getFileLocalMacros(file, res, new HashSet<String>(), strPrefix, match, caseSensitive);
                         break;
                     case FILE_PROJECT_LOCAL_MACROS:
                         gatherProjectIncludedMacros(file, res, false, strPrefix, match, caseSensitive);
@@ -172,8 +178,10 @@ public class CsmContextUtilities {
         return res;
     }
     
-    private static void getFileLocalMacros(CsmFile file, List res, Set alredyInList, String strPrefix, boolean match, boolean caseSensitive){
-        for (Iterator itFile = file.getMacros().iterator(); itFile.hasNext();) {
+    private static void getFileLocalMacros(CsmFile file, List<CsmMacro> res, Set<String> alredyInList,
+            String strPrefix, boolean match, boolean caseSensitive){
+        CsmFilter filter = CsmSelect.getDefault().getFilterBuilder().createNameFilter(strPrefix, match, caseSensitive, false);
+        for (Iterator itFile = CsmSelect.getDefault().getMacros(file, filter); itFile.hasNext();) {
             CsmMacro macro = (CsmMacro) itFile.next();
             //if (macro.getStartOffset() > offsetInScope) {
             //    break;
@@ -186,24 +194,26 @@ public class CsmContextUtilities {
         }
     }
 
-    private static void gatherProjectIncludedMacros(CsmFile file, List res, boolean all, String strPrefix,  boolean match, boolean caseSensitive) {
+    private static void gatherProjectIncludedMacros(CsmFile file, List<CsmMacro> res,
+            boolean all, String strPrefix,  boolean match, boolean caseSensitive) {
         CsmProject prj = file.getProject();
         if (!all) {
-            gatherIncludeMacros(file, prj, true, new HashSet(), new HashSet(), res, strPrefix, match, caseSensitive);
+            gatherIncludeMacros(file, prj, true, new HashSet<CsmFile>(), new HashSet<String>(), res, strPrefix, match, caseSensitive);
         } else {
-            Set alredyInList = new HashSet();
+            Set<String> alredyInList = new HashSet<String>();
             for(Iterator i = prj.getHeaderFiles().iterator(); i.hasNext();){
                 getFileLocalMacros((CsmFile)i.next(), res, alredyInList, strPrefix, match, caseSensitive);
             }
         }
     }
 
-    private static void gatherLibIncludedMacros(CsmFile file, List res, boolean all, String strPrefix, boolean match, boolean caseSensitive) {
+    private static void gatherLibIncludedMacros(CsmFile file, List<CsmMacro> res, boolean all,
+            String strPrefix, boolean match, boolean caseSensitive) {
         CsmProject prj = file.getProject();
         if (!all) {
-            gatherIncludeMacros(file, prj, false, new HashSet(), new HashSet(), res, strPrefix, match, caseSensitive);
+            gatherIncludeMacros(file, prj, false, new HashSet<CsmFile>(), new HashSet<String>(), res, strPrefix, match, caseSensitive);
         } else {
-            Set alredyInList = new HashSet();
+            Set<String> alredyInList = new HashSet<String>();
             for(Iterator p = prj.getLibraries().iterator(); p.hasNext();){
                 CsmProject lib = (CsmProject)p.next();
                 for(Iterator i = lib.getHeaderFiles().iterator(); i.hasNext();){
@@ -214,8 +224,9 @@ public class CsmContextUtilities {
         }
     }
     
-    private static void gatherIncludeMacros(CsmFile file, CsmProject prj, boolean own, Set visitedFiles, Set alredyInList, 
-            List res, String strPrefix, boolean match, boolean caseSensitive) {
+    private static void gatherIncludeMacros(CsmFile file, CsmProject prj, boolean own,
+            Set<CsmFile> visitedFiles, Set<String> alredyInList, 
+            List<CsmMacro> res, String strPrefix, boolean match, boolean caseSensitive) {
         if( visitedFiles.contains(file) ) {
             return;
         }
@@ -275,6 +286,7 @@ public class CsmContextUtilities {
         return res;
     }
 
+    @SuppressWarnings("unchecked")
     private static List<CsmDeclaration> addEntryDeclarations(CsmContext.CsmContextEntry entry, List<CsmDeclaration> decls, CsmContext fullContext,
                                                                 String strPrefix, boolean match, boolean caseSensitive) {
         List<CsmDeclaration> newList = findEntryDeclarations(entry, fullContext, strPrefix, match, caseSensitive);
@@ -286,7 +298,7 @@ public class CsmContextUtilities {
         assert (entry != null) : "can't work on null entries";
         CsmScope scope = entry.getScope();
         int offsetInScope = entry.getOffset();
-        List resList = new ArrayList();
+        List<CsmDeclaration> resList = new ArrayList<CsmDeclaration>();
         for (Iterator it = scope.getScopeElements().iterator(); it.hasNext();) {
             CsmScopeElement scpElem = (CsmScopeElement) it.next();
             if (canBreak(offsetInScope, scpElem, fullContext)) {
@@ -297,9 +309,25 @@ public class CsmContextUtilities {
         }
         return resList;
     }
+  
+    public static CsmFilter createFilter(final CsmDeclaration.Kind[] kinds, final String strPrefix,
+            final boolean match, boolean caseSensitive, final boolean returnUnnamedMembers){
+        CsmFilter filter = null;
+        CsmFilterBuilder builder = CsmSelect.getDefault().getFilterBuilder();
+        if (kinds != null && strPrefix != null){
+            filter = builder.createCompoundFilter(
+                     builder.createKindFilter(kinds),
+                     builder.createNameFilter(strPrefix, match, caseSensitive, returnUnnamedMembers));
+        } else if (kinds != null){
+            filter = builder.createKindFilter(kinds);
+        } else if (strPrefix != null){
+            filter = builder.createNameFilter(strPrefix, match, caseSensitive, returnUnnamedMembers);
+        }
+        return filter;
+    }
 
-    public static List<CsmDeclaration> findFileLocalEnumerators(CsmContext context, String strPrefix, boolean match, boolean caseSensitive) {
-        List<CsmDeclaration> res = new ArrayList<CsmDeclaration>();
+    public static List<CsmEnumerator> findFileLocalEnumerators(CsmContext context, String strPrefix, boolean match, boolean caseSensitive) {
+        List<CsmEnumerator> res = new ArrayList<CsmEnumerator>();
         for (Iterator itContext = context.iterator(); itContext.hasNext();) {
             CsmContext.CsmContextEntry entry = (CsmContext.CsmContextEntry) itContext.next();
             CsmScope scope = entry.getScope();
@@ -318,7 +346,9 @@ public class CsmContextUtilities {
                         }
                     } else if (CsmKindUtilities.isNamespaceDefinition(decl) && decl.getName().length()==0){
                         CsmNamespaceDefinition ns = (CsmNamespaceDefinition)decl;
-                        for(Iterator i = ns.getDeclarations().iterator(); i.hasNext();){
+                        CsmFilter filter = createFilter(new CsmDeclaration.Kind[] {CsmDeclaration.Kind.ENUM},
+                                strPrefix, match, caseSensitive, true);
+                        for(Iterator i = CsmSelect.getDefault().getDeclarations(ns, filter); i.hasNext();){
                             CsmDeclaration nsDecl = (CsmDeclaration) i.next();
                             if (canBreak(offsetInScope, nsDecl, context)) {
                                 break;
@@ -337,6 +367,7 @@ public class CsmContextUtilities {
         return res;
     }
 
+    @SuppressWarnings("unchecked")
     private static void addEnumerators(List resList, CsmEnum en, String strPrefix, boolean match, boolean caseSensitive){
         for(Iterator i = en.getEnumerators().iterator(); i.hasNext();){
             CsmNamedElement scpElem = (CsmNamedElement) i.next();
@@ -357,12 +388,17 @@ public class CsmContextUtilities {
         return isInContext(fullContext, elem);
     }
     
-    private static List/*<CsmDeclaration>*/ mergeDeclarations(List/*<CsmDeclaration>*/ decls, List/*<CsmDeclaration>*/ newList) {
-        // XXX: now just add all
-        if (newList != null && newList.size() > 0) {
-            decls.addAll(newList);
+    @SuppressWarnings("unchecked")
+    private static List/*<CsmDeclaration>*/ mergeDeclarations(List/*<CsmDeclaration>*/ prevScopeDecls, List/*<CsmDeclaration>*/ newScopeDecls) {
+        // new scope elements have priority 
+        List res = new ArrayList();
+        if (newScopeDecls != null && newScopeDecls.size() > 0) {
+            res.addAll(newScopeDecls);
         }
-        return decls;
+        if (prevScopeDecls != null && prevScopeDecls.size() > 0) {
+            res.addAll(prevScopeDecls);
+        }
+        return res;
     }
 
 //    public static void updateContextObject(CsmObject obj, CsmContext context) {
@@ -406,7 +442,8 @@ public class CsmContextUtilities {
         return false;
     }
 
-    private static List/*<CsmDeclaration>*/ extractDeclarations(CsmScopeElement scpElem,
+    @SuppressWarnings("unchecked")
+    private static List<CsmDeclaration> extractDeclarations(CsmScopeElement scpElem,
                                                         String strPrefix, boolean match, boolean caseSensitive) {
         List list = new ArrayList();
         if (CsmKindUtilities.isDeclaration(scpElem)) {
@@ -430,6 +467,9 @@ public class CsmContextUtilities {
                     if (CsmKindUtilities.isEnum(elem)) {
                         listByName = CsmSortUtilities.filterList(((CsmEnum)elem).getEnumerators(), strPrefix, match, caseSensitive);
                         list.addAll(listByName);
+                    } else if (CsmKindUtilities.isUnion(elem) && ((CsmClass)elem).getName().length() == 0) {
+                        listByName = CsmSortUtilities.filterList(((CsmClass)elem).getMembers(), strPrefix, match, caseSensitive);
+                        list.addAll(listByName);
                     }
                 }
             }
@@ -443,13 +483,24 @@ public class CsmContextUtilities {
             CsmContext.CsmContextEntry elem = (CsmContext.CsmContextEntry) it.next();
             if (CsmKindUtilities.isClass(elem.getScope())) {
                 clazz = (CsmClass)elem.getScope();
-                break;
+                // remember found class, but continue to possibly nested class
             }
         }        
         if (clazz == null && checkFunDefition) {
             // check if we in one of class's method
             CsmFunction fun = getFunction(context);
             clazz = fun == null ? null : CsmBaseUtilities.getFunctionClass(fun);
+        }
+        if (clazz == null) {
+            // IZ #141107 References to parent class field in static field initializers are unresolved
+            // for static field definition, take into account (static) class context
+            CsmObject last = context.getLastObject();
+            if(CsmKindUtilities.isVariableDefinition(last)) {
+                CsmVariable decl = ((CsmVariableDefinition) last).getDeclaration();
+                if (CsmKindUtilities.isClassMember(decl)) {
+                    clazz = ((CsmMember) decl).getContainingClass();
+                }
+            }
         }
         return clazz;
     }    
@@ -526,6 +577,7 @@ public class CsmContextUtilities {
     
     public static boolean isInType(CsmContext context, int offset) {
         CsmObject last = context.getLastObject();
-        return CsmKindUtilities.isType(last) && CsmOffsetUtilities.isInObject(last, offset);
+        return (CsmKindUtilities.isType(last) || CsmKindUtilities.isTypedef(last))
+                && CsmOffsetUtilities.isInObject(last, offset);
     }    
 }

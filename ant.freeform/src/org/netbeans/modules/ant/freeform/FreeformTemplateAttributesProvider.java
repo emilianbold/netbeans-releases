@@ -41,7 +41,9 @@
 
 package org.netbeans.modules.ant.freeform;
 
+import java.nio.charset.Charset;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.modules.ant.freeform.spi.support.Util;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -65,19 +67,29 @@ public class FreeformTemplateAttributesProvider implements CreateFromTemplateAtt
     
     private final AntProjectHelper helper;
     private final PropertyEvaluator evaluator;
+    private final FreeformFileEncodingQueryImpl encodingQuery;
     
-    public FreeformTemplateAttributesProvider(AntProjectHelper helper, PropertyEvaluator eval) {
+    public FreeformTemplateAttributesProvider(AntProjectHelper helper, PropertyEvaluator eval, FreeformFileEncodingQueryImpl encodingQuery) {
         this.helper = helper;
         this.evaluator = eval;
+        this.encodingQuery = encodingQuery;
     }
     
     public Map<String, ?> attributesFor(DataObject template, DataFolder target, String name) {
         Element primData = Util.getPrimaryConfigurationData(helper);
         Element licenseEl = Util.findElement(primData, "project-license", Util.NAMESPACE); // NOI18N
-        if (licenseEl != null) {
-            return Collections.singletonMap("project", Collections.singletonMap("license", evaluator.evaluate(Util.findText(licenseEl)))); // NOI18N
-        } else {
+        Charset charset = encodingQuery.getEncoding(target.getPrimaryFile());
+        if (licenseEl == null && charset == null) {
             return null;
+        } else {
+            Map<String, String> values = new HashMap<String, String>();
+            if (licenseEl != null) {
+                values.put("license", evaluator.evaluate(Util.findText(licenseEl))); // NOI18N
+            }
+            if (charset != null) {
+                values.put("encoding", charset.name()); // NOI18N
+            }
+            return Collections.singletonMap("project", values); // NOI18N
         }
     }
     

@@ -43,7 +43,7 @@ package org.netbeans.test.cvsmodule;
 
 import java.io.File;
 import java.io.InputStream;
-import junit.textui.TestRunner;
+import junit.framework.Test;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.OutputOperator;
@@ -58,16 +58,14 @@ import org.netbeans.jellytools.modules.javacvs.ModuleToCheckoutStepOperator;
 import org.netbeans.jellytools.modules.javacvs.SwitchToBranchOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
-import org.netbeans.jemmy.QueueTool;
 import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
-import org.netbeans.jemmy.operators.JProgressBarOperator;
 import org.netbeans.jemmy.operators.JRadioButtonOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jemmy.operators.Operator;
 import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
-import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.ide.ProjectSupport;
 /**
  *
@@ -89,45 +87,43 @@ public class BranchTest extends JellyTestCase {
         super(name);
     }
     
+    @Override
     protected void setUp() throws Exception {
-        
         os_name = System.getProperty("os.name");
         //System.out.println(os_name);
         System.out.println("### "+getName()+" ###");
-        
+        //extract CVS protocol dump file
+        try {
+            TestKit.extractProtocol(getDataDir());
+        } catch (Exception e ) {
+            e.printStackTrace();
+        }
     }
     
     protected boolean isUnix() {
-        boolean unix = false;
+        boolean _unix = false;
         if (os_name.indexOf("Windows") == -1) {
-            unix = true;
+            _unix = true;
         }
-        return unix;
+        return _unix;
     }
     
-    public static void main(String[] args) {
-        // TODO code application logic here
-        TestRunner.run(suite());
-    }
-    
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new BranchTest("testCheckOutProject"));
-        suite.addTest(new BranchTest("testBranchDialogUI"));
-        suite.addTest(new BranchTest("testSwitchToBranchDialogUI"));    
-        suite.addTest(new BranchTest("testMergeChangesFromBranchDialogUI"));
-        suite.addTest(new BranchTest("testOnNonVersioned"));
-        suite.addTest(new BranchTest("removeAllData"));
-        //debug
-        //suite.addTest(new BranchTest("testOnNonVersioned"));
-        return suite;
-    }
+    public static Test suite() {
+        return NbModuleSuite.create(
+            NbModuleSuite.createConfiguration(BranchTest.class).addTest(
+                 "testCheckOutProject", "testBranchDialogUI", "testSwitchToBranchDialogUI",
+                 "testMergeChangesFromBranchDialogUI", "testOnNonVersioned", "removeAllData"
+            )
+            .enableModules(".*")
+            .clusters(".*")
+        );
+     }
     
     public void testCheckOutProject() throws Exception {
-
         //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 18000);
         //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 18000);
         TestKit.closeProject(projectName);
+        OutputOperator.invoke();
         new ProjectsTabOperator().tree().clearSelection();
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
@@ -180,10 +176,11 @@ public class BranchTest extends JellyTestCase {
         cwo.finish();
         Thread.sleep(3000);
         
-        OutputOperator oo = OutputOperator.invoke();
+        //OutputOperator oo = OutputOperator.invoke();
         //System.out.println(CVSroot);
         
-        OutputTabOperator oto = oo.getOutputTab(sessionCVSroot);
+        OutputTabOperator oto = new OutputTabOperator(sessionCVSroot); 
+        oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
         oto.waitText("Checking out finished");
         cvss.stop();
         in.close();
@@ -192,8 +189,8 @@ public class BranchTest extends JellyTestCase {
         open.push();
         
         ProjectSupport.waitScanFinished();
-        TestKit.waitForQueueEmpty();
-        ProjectSupport.waitScanFinished();
+//        TestKit.waitForQueueEmpty();
+//        ProjectSupport.waitScanFinished();
         
         //create new elements for testing
         TestKit.createNewElementsCommitCvs11(projectName);

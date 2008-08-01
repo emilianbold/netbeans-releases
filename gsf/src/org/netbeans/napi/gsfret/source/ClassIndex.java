@@ -45,14 +45,15 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.gsf.api.Index;
+import org.netbeans.modules.gsf.api.Indexer;
 import org.netbeans.modules.gsf.api.NameKind;
 import org.netbeans.modules.gsfpath.api.classpath.ClassPath;
 import org.netbeans.modules.gsf.Language;
+import org.netbeans.modules.gsf.LanguageRegistry;
 import org.netbeans.modules.gsfret.source.GlobalSourcePath;
 import org.netbeans.modules.gsfret.source.usages.ClassIndexFactory;
 import org.netbeans.modules.gsfret.source.usages.ClassIndexImpl;
@@ -119,7 +120,12 @@ public final class ClassIndex extends Index {
             LOGGER.fine(String.format("ClassIndex.search returned %d elements\n", result.size()));
         }
     }
-
+    
+    /** For test infrastructure only */
+    public void initForTest(Set<ClassIndexImpl> sources) {
+        this.sourceIndeces = sources;
+    }
+    
     private static class ClassIndexFactoryImpl implements ClassIndexFactory {
         
 	public ClassIndex create(final Language language, final ClassPath bootPath, final ClassPath classPath, final ClassPath sourcePath) {            
@@ -145,21 +151,33 @@ public final class ClassIndex extends Index {
                 Set<ClassIndexImpl> indeces = new HashSet<ClassIndexImpl>();
                 // BEGIN TOR MODIFICATIONS
                 List<ClassPath.Entry> entries = this.classPath.entries();
-                if (entries.size() == 0) {
-                    // For files outside of my projects (such as the libraries in the ruby
-                    // installation) I don't get a classpath, so I end up with a fallback
-                    // boot ClassPath containing Java .jar files. I don't want that - I want
-                    // the boot indices from the Ruby libraries instead. I need to look
-                    // into the ClassPath platform to support to fix it there, but that's
-                    // too late/risky for now; so work around this instead. When we have an
-                    // empty classpath, use the boot indices instead.
-                    Set<ClassIndexImpl> bootIndices = ClassIndexManager.get(language).getBootIndices();
-                    indeces.addAll(bootIndices);
-                } else {
-                    createQueriesForRoots (language, this.bootPath, false, indeces);     
+                if (entries.size() > 0) {
+                    createQueriesForRoots(language, this.bootPath, false, indeces);
                 }
+                
+                // Add in core libraries unconditionally such that they are supported
+                // even outside of projects
+                LanguageRegistry.getInstance().getLibraryUrls(); // Lazy init
+
+                // For files outside of my projects (such as the libraries in the ruby
+                // installation) I don't get a classpath, so I end up with a fallback
+                // boot ClassPath containing Java .jar files. I don't want that - I want
+                // the boot indices from the Ruby libraries instead. I need to look
+                // into the ClassPath platform to support to fix it there, but that's
+                // too late/risky for now; so work around this instead. When we have an
+                // empty classpath, use the boot indices instead.
+                Set<ClassIndexImpl> bootIndices = ClassIndexManager.get(language).getBootIndices();
+                Indexer indexer = language.getIndexer();
+                if (indexer != null) {
+                    for (ClassIndexImpl ci : bootIndices) {
+                        if (indexer.acceptQueryPath(ci.getRoot().toExternalForm())) {
+                            indeces.add(ci);
+                        }
+                    }
+                }
+                
                 // END TOR MODIFICATIONS
-                createQueriesForRoots (language, this.classPath, false, indeces);	    
+                createQueriesForRoots(language, this.classPath, false, indeces);	    
                 this.depsIndeces = indeces;
             }
             result.addAll(this.depsIndeces);
@@ -176,8 +194,16 @@ public final class ClassIndex extends Index {
     /*private*/ void createQueriesForRoots (final Language language, final ClassPath cp, final boolean sources, final Set<? super ClassIndexImpl> queries) {
         final GlobalSourcePath gsp = GlobalSourcePath.getDefault();
         List<ClassPath.Entry> entries = cp.entries();
+        Indexer indexer = language.getIndexer();
+        if (indexer == null) {
+            return;
+        }
+        
 	for (ClassPath.Entry entry : entries) {
 	    try {
+                if (!indexer.acceptQueryPath(entry.getURL().toExternalForm())) {
+                    continue;
+                }
                 URL[] srcRoots;
                 if (!sources) {
                     URL srcRoot = org.netbeans.modules.gsfret.source.usages.Index.getSourceRootForClassFolder (language, entry.getURL());

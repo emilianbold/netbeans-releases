@@ -75,9 +75,6 @@ public final class DefaultSplitContainer extends AbstractModeContainer {
         panel = new ModePanel(this);
         
         panel.add(this.tabbedHandler.getComponent(), BorderLayout.CENTER);
-        
-        // To be able to move split dividers.
-        panel.setMinimumSize(new Dimension(1, 1));
     }
     
     public void requestAttention (TopComponent tc) {

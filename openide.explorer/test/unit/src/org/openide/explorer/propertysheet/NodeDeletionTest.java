@@ -94,10 +94,10 @@ public class NodeDeletionTest extends NbTestCase {
         jf.getContentPane().add(ps, BorderLayout.CENTER);
         jf.setLocation(30,30);
         jf.setSize(500,500);
-        
+        final Node[] nodes = new Node[]{tn};
         SwingUtilities.invokeAndWait(new Runnable() {
             public void run() {
-                ps.setNodes(new Node[] {tn});
+                ps.setNodes(nodes);
                 //ps.setCurrentNode(tn);
                 jf.show();
             }

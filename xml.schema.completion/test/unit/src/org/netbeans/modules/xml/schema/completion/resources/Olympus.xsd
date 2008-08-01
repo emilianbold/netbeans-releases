@@ -68,5 +68,15 @@ made subject to such option by the copyright holder.
              <xsd:element name="olympusAdapter" type="xsd:string"/>
          </xsd:sequence>
      </xsd:complexType>
+     
+    <xsd:element name="camera">
+        <xsd:complexType>
+             <xsd:sequence>
+                 <xsd:element name="body" type="olympus:body"/>
+                 <xsd:element name="lens" type="olympus:lens"/>
+                 <xsd:element name="manualAdapter" type="olympus:manualAdapter"/>
+             </xsd:sequence>
+         </xsd:complexType>
+     </xsd:element>     
 
 </xsd:schema>

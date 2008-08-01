@@ -31,7 +31,7 @@
       <xsd:element name="name"   type="xsd:string"/>
       <xsd:element name="street" type="xsd:string"/>
       <xsd:element name="city"   type="xsd:string"/>
-      <xsd:element name="state"  type="xsd:string"/>
+      <xsd:element name="state"  type="tns:States"/>
       <xsd:element name="zip"    type="xsd:decimal"/>
     </xsd:sequence>
     <xsd:attribute name="country" type="xsd:NMTOKEN"
@@ -56,6 +56,7 @@
             <xsd:element name="shipDate" type="xsd:date" minOccurs="0"/>
           </xsd:sequence>
           <xsd:attribute name="partNum" type="tns:SKU" use="required"/>
+          <xsd:attribute name="brand" type="tns:Brand" use="required"/>
         </xsd:complexType>
       </xsd:element>
     </xsd:sequence>
@@ -65,6 +66,72 @@
   <xsd:simpleType name="SKU">
     <xsd:restriction base="xsd:string">
       <xsd:pattern value="\d{3}-[A-Z]{2}"/>
+    </xsd:restriction>
+  </xsd:simpleType>
+  
+  <xsd:simpleType name="Brand">
+    <xsd:restriction base="xsd:string">
+        <xsd:enumeration value="ACER"/>
+        <xsd:enumeration value="HP"/>
+        <xsd:enumeration value="NOKIA"/>
+        <xsd:enumeration value="SAMSUNG"/>
+        <xsd:enumeration value="SONY"/>
+        <xsd:enumeration value="SUN"/>
+    </xsd:restriction>
+  </xsd:simpleType>  
+  
+  <xsd:simpleType name="States">
+    <xsd:restriction base="xsd:string">
+        <xsd:enumeration value="AL"/>
+        <xsd:enumeration value="AK"/>
+        <xsd:enumeration value="AZ"/>
+        <xsd:enumeration value="AR"/>
+        <xsd:enumeration value="CA"/>
+        <xsd:enumeration value="CO"/>
+        <xsd:enumeration value="CT"/>
+        <xsd:enumeration value="DE"/>
+        <xsd:enumeration value="FL"/>
+        <xsd:enumeration value="GA"/>
+        <xsd:enumeration value="HI"/>
+        <xsd:enumeration value="ID"/>
+        <xsd:enumeration value="IL"/>
+        <xsd:enumeration value="IN"/>
+        <xsd:enumeration value="IA"/>
+        <xsd:enumeration value="KS"/>
+        <xsd:enumeration value="KY"/>
+        <xsd:enumeration value="LA"/>
+        <xsd:enumeration value="ME"/>
+        <xsd:enumeration value="MD"/>
+        <xsd:enumeration value="MA"/>
+        <xsd:enumeration value="MI"/>
+        <xsd:enumeration value="MN"/>
+        <xsd:enumeration value="MS"/>
+        <xsd:enumeration value="MO"/>
+        <xsd:enumeration value="MT"/>
+        <xsd:enumeration value="NE"/>
+        <xsd:enumeration value="NV"/>
+        <xsd:enumeration value="NH"/>
+        <xsd:enumeration value="NJ"/>
+        <xsd:enumeration value="NM"/>
+        <xsd:enumeration value="NY"/>
+        <xsd:enumeration value="NC"/>
+        <xsd:enumeration value="ND"/>
+        <xsd:enumeration value="OH"/>
+        <xsd:enumeration value="OK"/>
+        <xsd:enumeration value="OR"/>
+        <xsd:enumeration value="PA"/>
+        <xsd:enumeration value="RI"/>
+        <xsd:enumeration value="SC"/>
+        <xsd:enumeration value="SD"/>
+        <xsd:enumeration value="TN"/>
+        <xsd:enumeration value="TX"/>
+        <xsd:enumeration value="UT"/>
+        <xsd:enumeration value="VT"/>
+        <xsd:enumeration value="VA"/>
+        <xsd:enumeration value="WA"/>
+        <xsd:enumeration value="WV"/>
+        <xsd:enumeration value="WI"/>
+        <xsd:enumeration value="WY"/>
     </xsd:restriction>
   </xsd:simpleType>
 

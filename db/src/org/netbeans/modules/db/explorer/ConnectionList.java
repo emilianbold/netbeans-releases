@@ -44,14 +44,16 @@ package org.netbeans.modules.db.explorer;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import org.netbeans.api.db.explorer.ConnectionListener;
 import org.netbeans.api.db.explorer.DatabaseException;
-import org.netbeans.modules.db.explorer.nodes.RootNode;
+import org.netbeans.modules.db.explorer.infos.RootNodeInfo;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
+import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
 
 
@@ -72,12 +74,20 @@ public class ConnectionList {
     
     private Lookup.Result result = getLookupResult();
     
-    private List/*<ConnectionListener>*/ listeners = new ArrayList(1);    
+    // A write-through cache of connections, initialized when the ConnectionList
+    // singleton is constructed.  This eliminates having to always reconstruct
+    // the connection from the file each time we get it, and also eliminates
+    // false duplicates where the name is the same but the instances are different
+    // (see issue 142036 and issue 137811)
+    private HashMap<String,DatabaseConnection> connectionCache =
+            new HashMap<String,DatabaseConnection>();
+    
+    private final List/*<ConnectionListener>*/ listeners = new ArrayList(1);    
     
     public static synchronized ConnectionList getDefault() {
         if (DEFAULT == null) {
             DatabaseConnectionConvertor.importOldConnections();
-            RootNode.getOption().save();
+            RootNodeInfo.getOption().save();
             DEFAULT = new ConnectionList();
         }
         return DEFAULT;
@@ -94,50 +104,64 @@ public class ConnectionList {
                 fireListeners();
             }
         });
+
+        initializeCache();
+    }
+
+    private void initializeCache() {
+        for ( Iterator it = result.allInstances().iterator() ; it.hasNext() ; ) {
+            DatabaseConnection dbconn = (DatabaseConnection)it.next();
+            connectionCache.put(dbconn.getName(), dbconn);
+        }
     }
     
     public DatabaseConnection[] getConnections() {
-        Collection dbconns = result.allInstances();
-        return (DatabaseConnection[])dbconns.toArray(new DatabaseConnection[dbconns.size()]);
+       return connectionCache.values().toArray(new DatabaseConnection[connectionCache.size()]);
     }
     
     public DatabaseConnection getConnection(DatabaseConnection impl) {
         if (impl == null) {
             throw new NullPointerException();
         }
-        DatabaseConnection[] dbconns = getConnections();
-        for (int i = 0; i < dbconns.length; i++) {
-            if (impl.equals(dbconns[i])) {
-                return dbconns[i];
-            }
-        }
-        return null;
+
+        return connectionCache.get(impl.getName());
     }
     
     public void add(DatabaseConnection dbconn) throws DatabaseException {
         if (dbconn == null) {
             throw new NullPointerException();
         }
+        if (connectionCache.containsKey(dbconn.getName())) {
+            throw new DatabaseException(NbBundle.getMessage(ConnectionList.class, "ERR_CONN_ALREADY_EXISTS", dbconn.getName()));
+        }
         try {
             DatabaseConnectionConvertor.create(dbconn);
         } catch (IOException e) {
             throw new DatabaseException(e);
         }
+
+        connectionCache.put(dbconn.getName(), dbconn);
     }
     
     public boolean contains(DatabaseConnection dbconn) {
-        return getConnection(dbconn) != null;
+        return connectionCache.containsKey(dbconn.getName());
     }
     
     public void remove(DatabaseConnection dbconn) throws DatabaseException {
         if (dbconn == null) {
             throw new NullPointerException();
         }
+        
+        assert(connectionCache.containsKey(dbconn.getName()));
+
+        connectionCache.remove(dbconn.getName());
+
         try {
             DatabaseConnectionConvertor.remove(dbconn);
         } catch (IOException e) {
             throw new DatabaseException(e);
         }
+        
     }
     
     public void addConnectionListener(ConnectionListener listener) {

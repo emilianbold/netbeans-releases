@@ -42,7 +42,10 @@
 package org.netbeans.modules.project.ui.actions;
 
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.project.ui.ProjectsRootNode;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.ProjectFactory;
 import org.netbeans.spi.project.ProjectState;
@@ -115,6 +118,11 @@ public final class TestSupport {
     }
     
     public static final class TestProject implements Project {
+
+        static {
+            // Suppress warning about missing LogicalViewProvider.
+            Logger.getLogger(ProjectsRootNode.class.getName()).setLevel(Level.SEVERE);
+        }
         
         private Lookup lookup;
         private final FileObject dir;
@@ -144,6 +152,7 @@ public final class TestSupport {
             return dir;
         }
         
+        @Override
         public String toString() {
             return "testproject:" + getProjectDirectory().getNameExt();
         }

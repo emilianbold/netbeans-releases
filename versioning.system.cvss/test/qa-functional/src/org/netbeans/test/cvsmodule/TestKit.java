@@ -43,12 +43,17 @@ package org.netbeans.test.cvsmodule;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Arrays;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 import javax.swing.JCheckBoxMenuItem;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.MainWindowOperator;
@@ -66,6 +71,7 @@ import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JMenuBarOperator;
 import org.netbeans.jemmy.operators.JMenuItemOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
+import sun.applet.Main;
 
 /**
  * Set of utility methods.
@@ -93,13 +99,15 @@ public class TestKit {
     }
     
     public static void deleteRecursively(File dir) {
-        if (dir.isDirectory()) {
-            String[] files = dir.list();
-            for (int i = 0; i < files.length; i++) {
-                deleteRecursively(new File(dir, files[i]));  // RECURSION
+        if (dir != null) {
+            if (dir.isDirectory()) {
+                String[] files = dir.list();
+                for (int i = 0; i < files.length; i++) {
+                    deleteRecursively(new File(dir, files[i]));  // RECURSION
+                }
             }
-        }
-        dir.delete();
+            dir.delete();
+        }    
     }
     
     public static void pseudoVersion(File file) throws Exception {
@@ -431,6 +439,48 @@ public class TestKit {
         if (!cbmio.getState())
             cbmio.push();
     }
+    
+    public static void extractProtocol(File path) {
+        ZipInputStream zis = null;
+        OutputStream os = null;
+        String parent = null;
+        
+        try {
+            zis = new ZipInputStream(new FileInputStream(new File(path, "protocols.zip")));
+            ZipEntry ze;
+            File dir;
+            
+            while ((ze = zis.getNextEntry()) != null) {
+                if (ze.isDirectory()) {
+                   dir = new File(path, ze.getName());
+                   dir.mkdirs();
+                   continue;
+                } else {
+                    os = new FileOutputStream(new File(path, ze.getName()));
+                }    
+                byte[] buffer = new byte[1024];
+                int len;
+                while ((len = zis.read(buffer)) > 0 ) {
+                    os.write(buffer, 0, len);
+                }
+            }    
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (Exception ex) {
+            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            try {
+                zis.close();              
+            } catch (IOException ex) {
+                Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            try {
+                os.close();
+            } catch (IOException ex) {
+                Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+    } 
     
     public static void waitForQueueEmpty() {
         new QueueTool().waitEmpty(1000);

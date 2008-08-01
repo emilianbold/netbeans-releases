@@ -62,6 +62,8 @@ public final class UpdaterDispatcher implements Runnable {
     
     public static final String DEACTIVATE_LATER = "deactivate_later.txt"; // NOI18N
     
+    public static final String LAST_MODIFIED = ".lastModified"; // NOI18N
+    
     /** Explore <cluster>/update directory and schedules actions handler for
      * Install/Update, Uninstall or Disable modules
      * 
@@ -150,9 +152,13 @@ public final class UpdaterDispatcher implements Runnable {
     
     public static void touchLastModified (File cluster) {
         try {
-            File stamp = new File (cluster, ".lastModified"); // NOI18N
+            File stamp = new File (cluster, LAST_MODIFIED);
             if (! stamp.createNewFile ()) {
                 stamp.setLastModified (System.currentTimeMillis ());
+                if (! stamp.setLastModified (System.currentTimeMillis ())) {
+                    stamp.delete ();
+                    stamp = new File (cluster, LAST_MODIFIED);
+                }
             }
         } catch (IOException ex) {
             ex.printStackTrace ();

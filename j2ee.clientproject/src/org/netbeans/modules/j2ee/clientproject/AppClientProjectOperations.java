@@ -49,6 +49,7 @@ import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.tools.ant.module.api.support.ActionUtils;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.j2ee.clientproject.ui.customizer.AppClientProjectProperties;
@@ -77,6 +78,15 @@ import org.openide.util.lookup.Lookups;
 public class AppClientProjectOperations implements DeleteOperationImplementation, CopyOperationImplementation, MoveOperationImplementation {
     
     private final AppClientProject project;
+    
+    //RELY: Valid only on original project after the notifyMoving or notifyCopying was called
+    private String libraryPath;
+    //RELY: Valid only on original project after the notifyMoving or notifyCopying was called
+    private File libraryFile;
+    //RELY: Valid only on original project after the notifyMoving or notifyCopying was called
+    private boolean libraryWithinProject;
+    //RELY: Valid only on original project after the notifyMoving or notifyCopying was called
+    private String absolutesRelPath;
     
     public AppClientProjectOperations(AppClientProject project) {
         this.project = project;
@@ -141,6 +151,18 @@ public class AppClientProjectOperations implements DeleteOperationImplementation
             }
         }
         
+        // add libraries folder if it is within project:
+        AntProjectHelper helper = project.getAntProjectHelper();
+        if (helper.getLibrariesLocation() != null) {
+            File f = helper.resolveFile(helper.getLibrariesLocation());
+            if (f != null && f.exists()) {
+                FileObject libFolder = FileUtil.toFileObject(f).getParent();
+                if (FileUtil.isParentOf(project.getProjectDirectory(), libFolder)) {
+                    files.add(libFolder);
+                }
+            }
+        }
+        
         return files;
     }
     
@@ -165,7 +187,7 @@ public class AppClientProjectOperations implements DeleteOperationImplementation
     }
     
     public void notifyCopying() {
-        //nothing.
+        rememberLibraryLocation();
     }
     
     public void notifyCopied(Project original, File originalPath, String nueName) {
@@ -174,6 +196,8 @@ public class AppClientProjectOperations implements DeleteOperationImplementation
             return ;
         }
         
+        AppClientProjectOperations origOperations = original.getLookup().lookup(AppClientProjectOperations.class);
+        fixLibraryLocation(origOperations);
         project.getReferenceHelper().fixReferences(originalPath);
         fixOtherReferences(originalPath);
         
@@ -185,6 +209,7 @@ public class AppClientProjectOperations implements DeleteOperationImplementation
             throw new IOException(NbBundle.getMessage(AppClientProjectOperations.class,
                     "MSG_OldProjectMetadata")); // NOI18N
         }
+        rememberLibraryLocation();
         notifyDeleting();
     }
     
@@ -194,8 +219,9 @@ public class AppClientProjectOperations implements DeleteOperationImplementation
             return ;
         }
         
+        AppClientProjectOperations origOperations = original.getLookup().lookup(AppClientProjectOperations.class);
+        fixLibraryLocation(origOperations);
         final String oldProjectName = project.getName();
-        
         project.setName(newName);
         project.getReferenceHelper().fixReferences(originalPath);
         fixOtherReferences(originalPath);
@@ -247,4 +273,60 @@ public class AppClientProjectOperations implements DeleteOperationImplementation
             }
         });
     }
+    
+    private void fixLibraryLocation(AppClientProjectOperations original) throws IllegalArgumentException {
+        String libPath = original.libraryPath;
+        if (libPath != null) {
+            if (!new File(libPath).isAbsolute()) {
+                //relative path to libraries
+                if (!original.libraryWithinProject) {
+                    File file = original.libraryFile;
+                    if (file == null) {
+                        // could happen in some rare cases, but in that case the original project was already broken, don't fix.
+                        return;
+                    }
+                    String relativized = PropertyUtils.relativizeFile(FileUtil.toFile(project.getProjectDirectory()), file);
+                    if (relativized != null) {
+                        project.getAntProjectHelper().setLibrariesLocation(relativized);
+                    } else {
+                        //cannot relativize, use absolute path
+                        project.getAntProjectHelper().setLibrariesLocation(file.getAbsolutePath());
+                    }
+                } else {
+                    //got copied over to new location.. the relative path is the same..
+                }
+            } else {
+
+                //absolute path to libraries..
+                if (original.libraryWithinProject) {
+                    if (original.absolutesRelPath != null) {
+                        project.getAntProjectHelper().setLibrariesLocation(PropertyUtils.resolveFile(FileUtil.toFile(project.getProjectDirectory()), original.absolutesRelPath).getAbsolutePath());
+                    }
+                } else {
+                    // absolute path to an external folder stays the same.
+                }
+            }
+        }
+    }
+    
+    private void rememberLibraryLocation() {
+        libraryWithinProject = false;
+        absolutesRelPath = null;
+        libraryPath = project.getAntProjectHelper().getLibrariesLocation();
+        if (libraryPath != null) {
+            File prjRoot = FileUtil.toFile(project.getProjectDirectory());
+            libraryFile = PropertyUtils.resolveFile(prjRoot, libraryPath);
+            if (FileOwnerQuery.getOwner(libraryFile.toURI()) == project && 
+                    libraryFile.getAbsolutePath().startsWith(prjRoot.getAbsolutePath())) {
+                //do not update the relative path if within the project..
+                libraryWithinProject = true;
+                FileObject fo = FileUtil.toFileObject(libraryFile);
+                if (new File(libraryPath).isAbsolute() && fo != null) {
+                    // if absolte path within project, it will get moved/copied..
+                    absolutesRelPath = FileUtil.getRelativePath(project.getProjectDirectory(), fo);
+                }
+            }
+        }
+    }
+    
 }

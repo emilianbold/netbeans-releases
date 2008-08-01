@@ -573,6 +573,10 @@ public class JBPluginUtils {
         assert serverPath != null : "Can't determine version with null server path"; // NOI18N
 
         File systemJarFile = new File(serverPath, "lib/jboss-system.jar"); // NOI18N
+        return getVersion(systemJarFile);
+    }
+
+    private static Version getVersion(File systemJarFile) {
         if (!systemJarFile.exists()) {
             return null;
         }
@@ -594,7 +598,7 @@ public class JBPluginUtils {
             return null;
         }
     }
-
+    
     /**
      * Class representing the JBoss version.
      * <p>

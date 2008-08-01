@@ -207,7 +207,7 @@ public class DataSourceResolver implements DataSourceInfoListener, Runnable {
         return null;
     }
 
-    private boolean updateProject(Project project, DataSourceInfo dsInfo) {
+    private boolean updateProject(Project project, DataSourceInfo dsInfo) throws NamingException {
         boolean needAdd = false;
         ProjectDataSourceManager projectDataSourceManager = new ProjectDataSourceManager(project);
 

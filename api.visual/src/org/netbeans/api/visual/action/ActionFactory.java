@@ -604,6 +604,17 @@ public final class ActionFactory {
         return new ResizeAction (strategy != null ? strategy : createFreeResizeStategy (), resolver != null ? resolver : createDefaultResizeControlPointResolver (), provider != null ? provider : createDefaultResizeProvider ());
     }
 
+     /**
+     * Creates a select action. Usually the ObjectScene.createSelectAction method is used instead of this method.
+     * @param provider the select logic provider
+     * @param selectOnRightClick whether or not to first select the underlying widget with a right-click.
+     * @return the select action
+     */
+    public static WidgetAction createSelectAction (SelectProvider provider, boolean selectOnRightClick) {
+        assert provider != null;
+        return new SelectAction (provider, selectOnRightClick);
+    }
+    
     /**
      * Creates a select action. Usually the ObjectScene.createSelectAction method is used instead of this method.
      * @param provider the select logic provider

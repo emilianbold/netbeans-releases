@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -43,7 +43,6 @@ package org.netbeans.modules.ruby.rubyproject;
 
 import java.io.IOException;
 import javax.swing.JButton;
-import org.netbeans.modules.ruby.rubyproject.ui.customizer.RubyProjectProperties;
 import org.w3c.dom.Comment;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -63,7 +62,6 @@ import org.netbeans.modules.ruby.spi.project.support.rake.RakeProjectHelper;
 import org.netbeans.modules.ruby.spi.project.support.rake.EditableProperties;
 import org.netbeans.modules.ruby.spi.project.support.rake.GeneratedFilesHelper;
 
-
 /**
  * (I probably don't need this yet)
  *
@@ -74,10 +72,9 @@ import org.netbeans.modules.ruby.spi.project.support.rake.GeneratedFilesHelper;
  */
 public class UpdateHelper {
 
-    private static final boolean TRANSPARENT_UPDATE = Boolean.getBoolean("j2seproject.transparentUpdate");
+    private static final boolean TRANSPARENT_UPDATE = Boolean.getBoolean("j2seproject.transparentUpdate"); // NOI18N
     private static final String BUILD_NUMBER = System.getProperty("netbeans.buildnumber"); // NOI18N
-    private static final String MINIMUM_ANT_VERSION_ELEMENT = "minimum-ant-version";
-
+    //private static final String MINIMUM_ANT_VERSION_ELEMENT = "minimum-ant-version";
     private final Project project;
     private final RakeProjectHelper helper;
     private final AuxiliaryConfiguration cfg;
@@ -86,6 +83,8 @@ public class UpdateHelper {
     private boolean alreadyAskedInWriteAccess;
     private Boolean isCurrent;
     private Element cachedElement;
+    
+    private final String projectConfigurationNamespace;
 
     /**
      * Creates new UpdateHelper
@@ -95,13 +94,15 @@ public class UpdateHelper {
      * @param genFileHelper GeneratedFilesHelper
      * @param notifier used to ask user about project update
      */
-    UpdateHelper (Project project, RakeProjectHelper helper, AuxiliaryConfiguration cfg, GeneratedFilesHelper genFileHelper, Notifier notifier) {
+    UpdateHelper(Project project, RakeProjectHelper helper, AuxiliaryConfiguration cfg,
+            GeneratedFilesHelper genFileHelper, Notifier notifier, String projectConfigurationNamespace) {
         assert project != null && helper != null && cfg != null && genFileHelper != null && notifier != null;
         this.project = project;
         this.helper = helper;
         this.cfg = cfg;
         this.genFileHelper = genFileHelper;
         this.notifier = notifier;
+        this.projectConfigurationNamespace = projectConfigurationNamespace;
     }
 
     /**
@@ -307,7 +308,7 @@ public class UpdateHelper {
         return cachedProperties;
     }
 
-    private static void copyDocument (Document doc, Element from, Element to) {
+    private static void copyDocument(Document doc, Element from, Element to, String projectConfigurationNamespace) {
         NodeList nl = from.getChildNodes();
         int length = nl.getLength();
         for (int i=0; i< length; i++) {
@@ -316,14 +317,14 @@ public class UpdateHelper {
             switch (node.getNodeType()) {
                 case Node.ELEMENT_NODE:
                     Element oldElement = (Element) node;
-                    newNode = doc.createElementNS(RubyProjectType.PROJECT_CONFIGURATION_NAMESPACE,oldElement.getTagName());
+                    newNode = doc.createElementNS(projectConfigurationNamespace, oldElement.getTagName());
                     NamedNodeMap m = oldElement.getAttributes();
                     Element newElement = (Element) newNode;
                     for (int index = 0; index < m.getLength(); index++) {
                         Node attr = m.item(index);
                           newElement.setAttribute(attr.getNodeName(), attr.getNodeValue());
                     }
-                    copyDocument(doc,oldElement,newElement);
+                    copyDocument(doc, oldElement, newElement, projectConfigurationNamespace);
                     break;
                 case Node.TEXT_NODE:
                     Text oldText = (Text) node;

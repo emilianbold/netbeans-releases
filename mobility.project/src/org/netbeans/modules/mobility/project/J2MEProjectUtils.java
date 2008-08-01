@@ -57,9 +57,10 @@ import javax.swing.text.Document;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.ProjectConfigurationProvider;
-import org.netbeans.modules.editor.NbEditorUtilities;
+//import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.mobility.project.ui.customizer.J2MEProjectProperties;
 import org.netbeans.modules.mobility.project.ProjectConfigurationsHelper;
+import org.netbeans.modules.mobility.project.bridge.J2MEProjectUtilitiesProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.ErrorManager;
@@ -67,6 +68,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
+import org.openide.util.Lookup;
 import org.openide.windows.TopComponent;
 
 /**
@@ -107,8 +109,11 @@ public class J2MEProjectUtils {
     }
     
     public static Project getProjectForDocument(final Document doc) {
-        
-        final FileObject fo=NbEditorUtilities.getFileObject(doc);
+        J2MEProjectUtilitiesProvider utils = Lookup.getDefault().lookup(J2MEProjectUtilitiesProvider.class);
+        if (utils == null){
+            return null;
+        }
+        final FileObject fo = utils.getFileObjectForDocument(doc);
         if (fo != null)
             return FileOwnerQuery.getOwner(fo);
         return null;

@@ -87,6 +87,7 @@
                 <friend>org.netbeans.modules.profiler.j2ee</friend>
                 <friend>org.netbeans.modules.profiler.j2se</friend>
                 <friend>org.netbeans.modules.profiler.selector.ui</friend>
+                <friend>org.netbeans.modules.javafx.profiler</friend>
                 <package>org.netbeans.modules.profiler.selector.spi</package>
                 <package>org.netbeans.modules.profiler.selector.spi.nodes</package>
             </friend-packages>

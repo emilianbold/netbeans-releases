@@ -5,56 +5,184 @@
  * All rights reserved. 
  * Use is subject to license terms.
 -->
-<head>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-<title>Options: Visual Web Tab</title>
-<link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
-</head>
-<body>
-<h2>Options: Visual Web Tab </h2>
-<p><small><a href="#seealso">See Also</a></small></p>
-<p>Use this tab to configure and modify general Visual Designer default settings.  You can access this tab by choosing Tools &gt; Options on Microsoft Windows or UNIX systems, or choosing NetBeans &gt; Preferences on Macintosh systems, clicking Miscellaneous, and then the Visual Web tab.</p>
-<p> You can change the following:</p>
-<ul>
-  <li><b>Target Browser Window.</b> Sets the size of the target browser used in the Visual Designer. The default is set to Any Browser. For more information, see the description of the Target Browser pop-up menu in <a href="../editors/about_visual_editor.html">About the Visual Designer</a>. </li>
-  <li><b>Default Font Size.</b> Sets the default font size for pages opened in Java EE projects in the Visual  Designer. The default value is 16, a common size used in web browsers. For design experience that more closely matches the runtime rendering of your applications, you can set this value to match what you see in web browsers that your applications are likely to run in. <ul class="note">
-    <li>This setting affects only Java EE projects, because the components used by those projects have relative font sizes. Projects that use J2SE 1.4 or earlier have components that use absolute font sizes, and those are not affected by this setting.</li>
-  </ul></li>
-  <li><b>Grid Height.</b> Sets the grid height. The default grid height is set to 24 </li>
-  <li><b>Grid Width.</b> Sets the grid width. The default grid width is set to 24. </li>
-  <li><b>Show Grid.</b> If selected, a grid is displayed in the Visual Designer. </li>
-  <li><b>Snap to Grid</b>. If selected, components you add or move in the Visual Designer are positioned on the nearest grid lines. For more information, see <a href="../../components/howtocomponents/snap2grid.html">Setting the Grid</a>. </li>
-</ul>
-You can also change the way data providers and RowSets appear in the IDE by changing the following:
-<ul>
-  <li><b>Suffix for Data Providers.</b> The IDE names a newly created data provider by adding the value of this option to the database table name. You can change the default suffix, <code>DataProvider</code>.</li>
-  <li><b>Suffix for RowSets. </b>The IDE names a newly created rowset by adding the value of this option to the database table name. You can change the default suffix, <code>RowSet</code>. </li>
-</ul>
-<p>When you drag and drop a database element onto a Visual Web JSF page, the IDE creates a cached rowset data provider. The following properties control the rowset to which the IDE binds the data provider:</p>
-<ul>
-  <li><b>Create RowSets in Session.</b> This option is selected by default. If selected, when you drag and drop a database table on a page or a request bean, the IDE creates a rowset in the project's <code>SessionBean</code>, making the table available for an entire user session, which is usually the desired behavior. If this setting is not selected, the IDE creates the rowset where you drop the table, such as the page bean for the page on which you drop the table.</li>
-  <li><b>Check for Duplicate RowSets</b>. This option is selected by default. If selected, when you drag and drop a database table onto a Visual Web JSF page or a request bean, the IDE checks for other rowsets that are based on the same table. If a matching rowset exists, the IDE displays a message asking if the new cached rowset data provider should reuse the existing rowset or create a new rowset. If this setting is not selected, the IDE automatically creates a new rowset.</li>
-<li><b>Prompt for Data Source Name.</b> This option is unchecked by default. Check this option if you want to be able to name a data source when you drag and drop the data source onto a Visual Web JSF page. This is useful if your project has more than one data source. </li>
-</ul>
-<dl>
-  <dt><a name="seealso">See Also</a></dt>
-  <dd><a href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/configure/configure_options.html">Using the Options Window</a></dd>
-  <dd><a href="../server_nav/add_new_data_provider.html">Add New Data Provider with Rowset Dialog Box</a></dd>
-</dl>
-<hr>
-<!-- Start Customer Feedback Link -->
-<!-- <p><b>Comments or questions?</b><br>
-  Use the link below to connect to the Visual Web Development contact page. </p>
-<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-  <param name="viewerActivator" value="javax.help.LinkButton">
-  <param name="content" value="http://www.netbeans.org/about/contact_form.html?to=4&subject=Feedback:%20Web%20Application%20Help:%20Options: Visual Web Tab">
-  <param name="text" value="<html><u>Click here to send feedback</u></html>"></object><br> --> 
-<!-- End Customer Feedback Link -->
-<small><a href="../../credits.html">Legal Notices</a></small>
-<table cellpadding="50" border="0">
-  <tr>
-    <td>&nbsp;</td>
-  </tr>
-</table>
-</body>
-</html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <link rel="stylesheet" type="text/css" href=
+    "nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css">
+    <meta name="generator" content="Helen">
+    <title>About the Visual Designer</title>
+  </head>
+  <body>
+    <h2>
+       About the Visual Designer
+    </h2>
+    <p>
+       <small><a href="#seealso">See Also</a></small>
+    </p>
+    <p>
+       The <object classid="java:com.sun.java.help.impl.JHSecondaryViewer">
+        <param name="content" value="../../ui_elements/editors/visual_designer_popup.html">
+        <param name="viewerActivator" value="javax.help.LinkLabel">
+        <param name="viewerStyle" value="javax.help.Popup">
+        <param name="viewerSize" value="500,500">
+        <param name="text" value="Visual Designer">
+      </object> opens automatically in the editing area, the central area of the IDE, when you
+      create a new project. In this editor you edit your application's pages. You can drag and drop
+      components from the Palette and the <object classid=
+      "java:com.sun.java.help.impl.JHSecondaryViewer">
+        <param name="content" value="../../ui_elements/server_nav/services_win_popup.html">
+        <param name="viewerActivator" value="javax.help.LinkLabel">
+        <param name="viewerStyle" value="javax.help.Popup">
+        <param name="viewerSize" value="325,175">
+        <param name="text" value="Services window">
+      </object> to the Visual Designer to create pages for your web application. The Visual
+      Designer has three buttonw at the top, Design, JSP, and Java:
+    </p>
+    <ul>
+      <li> <b>Design.</b> Switches the view from the JSP Editor to the Visual Designer, where you can
+      see and work with your components. </li>
+      <li><b>JSP.</b> Switches the view to the JSP Editor for the
+        current page.      </li>
+      <li>
+        <b>Java.</b> Opens the current page bean in the <a href=
+        "nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/editing/csh/about_source_editor.html
+">
+        Java Editor</a>. The page bean is a Java class that declares all the JavaBeans objects that
+        correspond to the JSP page and the components in it. In this class you work with Java code,
+        like the code for the event handlers for your JSP page's components.      </li>
+    </ul>
+    <p>
+       <b>Here are some ways to work with the Visual Designer.</b>
+    </p>
+    <ul>
+      <li>
+        When you drag components to the page, by default, the Visual Designer arranges each
+        component by specifying the component's absolute CSS position. Where you place a component
+        in the Visual Designer is where it appears on the HTML page. You can use the <a href=
+        "../palette/jsfstd/grid_panel.html">Grid Panel</a> and <a href=
+        "../palette/jsfstd/group_panel.html">Group Panel</a> components to arrange components in a
+        group or you can <a href="../../components/howtocomponents/layout_comp.html">set the
+        layout</a> of the entire page to use flow layout and position components from left to right
+        on the first line.
+      </li>
+      <li>
+        If you select a component that you have added to the page, you can view and edit its
+        properties in the <a href=
+        "nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/files/files_properties.html">
+        Properties window</a>. For a description of some common component properties, see <a href=
+        "../../components/common_comp_props.html">Common Component Properties</a>.
+      </li>
+      <li>
+        You can drag database tables, web services, and Enterprise JavaBeans components to the page
+        and bind components to them, as described in <a href=
+        "../../connect_data/about_data_binding.html">About Binding Components to Data</a>.
+      </li>
+      <li>
+        You can select individual components and move them, and you can drag a selection rectangle
+        around a group of components and move them as a group.
+      </li>
+      <li>
+        You can select multiple components and then right-click one of the selected components and
+        choose Align to align them to one another or to the underlying grid. For descriptions of
+        these actions, see <a href=
+        "../../components/howtocomponents/align_components.html">Aligning Components</a> and <a
+        href="../../components/howtocomponents/snap2grid.html">Setting the Grid</a>.
+      </li>
+      <li>
+        You can stack components on each other (for example, dropping an Input Text component on
+        top of an image). You can also nest components inside other components. For more
+        information, see <a href="../../components/howtocomponents/layer_comp.html">Stacking
+        Components</a> and <a href="../../components/howtocomponents/nest_comp.html">Nesting
+        Components</a>.
+      </li>
+      <li>
+        If you right-click the page itself, not a component in the page, you see the following set
+        of menu items: 
+        <ul>
+          <li>
+            <b>Edit Java Source.</b> Opens the Java Editor to display the page bean for this page,
+            a Java class that declares all the JavaBeans objects that correspond to the JSP page
+            and the components in it. In this class you work with Java code like the code for the
+            event handlers for your JSP page's components.
+          </li>
+          <li>
+            <b>Edit JSP Source.</b> Opens the JSP Editor to display the Java Server Pages (JSP)
+            code for this page.
+          </li>
+          <li>
+            <b>Virtual Forms.</b> Opens a dialog box in which you can define the <a href=
+            "../../components/aboutvirtualforms.html">virtual forms</a> for the page.
+          </li>
+          <li>
+            <b>Align.</b> Aligns the components. Choose from the following options: Snap to Grid,
+            Top, Middle, Bottom, Left, Center, and Right.
+          </li>
+          <li>
+            <b>Cut.</b> Deletes the current selection and places it on the clipboard.
+          </li>
+          <li>
+            <b>Copy.</b> Copies the current selction to the clipboard.
+          </li>
+          <li>
+            <b>Paste.</b> If there is anything in the system paste buffer, such as an image file
+            you have selected and copied to the buffer, this item is enabled. Clicking Paste copies
+            the contents of the buffer to the page.
+          </li>
+          <li>
+            <b>Delete.</b> Deletes the current selection.
+          </li>
+          <li>
+            <b>Preview in Browser.</b> Opens the page as a static web page so you can quickly see
+            how the JSP code renders in the default web browser.
+          </li>
+          <li>
+            <b>Refresh.</b> Redraws the page. Especially useful if components are not displaying
+            properly.
+          </li>
+          <li>
+            <b>Target Browser Window.</b> Enables you to set the size of the web browser window
+            that you expect your users to be using, so that your design fits that size window.
+          </li>
+          <li>
+            <b>Page Navigation.</b> Opens the <a href="../editors/about_navigation_editor.html">Page Flow
+            editor</a> so you can link your pages together and create new pages to link to.
+          </li>
+          <!--<li><b>Properties.</b> Displays the <a href="../propsheets/page_props.html">property
+          sheet</a> for the page, where you can set properties like
+          the page title, the language, the language encoding, the
+          background color, the background image, the page layout,
+          and the cascading style sheet.</li> Not in the UI anymore. Saving in case it comes back. -bc-->
+        </ul>
+      </li>
+    </ul>
+    <dl>
+      <dt>
+         <a name="seealso">See Also</a>
+      </dt>
+      <dd>
+        <a href="../../components/howtocomponents/components_quickref.html">Component Tasks: Quick
+        Reference</a>
+      </dd>
+      <dd>
+        <a href="../../components/webform.html">About Pages</a>
+      </dd>
+    </dl>
+    <hr>
+    <p>
+       <!--Start Customer Feedback Link--><!--<p><b>Comments or questions?</b><br>
+      Use the link below to connect to the Visual Web Development contact page. </p>
+      <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+      <param name="viewerActivator" value="javax.help.LinkButton">
+      <param name="content" value="http://www.netbeans.org/about/contact_form.html?to=4&subject=Feedback:%20Web%20Application%20Help:%20About the Visual Designer">
+      <param name="text" value="<html><u>Click here to send feedback</u></html>"></object><br>--> 
+      <!--End Customer Feedback Link--> <a href="../../credits.html"><small>Legal
+      Notices</small></a>
+    </p>
+    <table border="0" cellpadding="50">
+      <tr>
+        <td>&nbsp;
+          
+        </td>
+      </tr>
+    </table>
+  </body>

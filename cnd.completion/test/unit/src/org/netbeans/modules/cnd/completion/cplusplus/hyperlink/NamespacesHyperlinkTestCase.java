@@ -202,6 +202,11 @@ public class NamespacesHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("main.cc", 65, 6, "file.cc", 23, 9); //boo();
     }        
 
+    public void testNestedTypesOfTemplatedClass() throws Exception {
+        // IZ#135999: string:: code completion doesn't work
+        performTest("main.cc", 75, 20, "file.h", 26, 9);
+        performTest("main.cc", 77, 15, "file.h", 26, 9);
+    }
     
     public static class Failed extends HyperlinkBaseTestCase {
         

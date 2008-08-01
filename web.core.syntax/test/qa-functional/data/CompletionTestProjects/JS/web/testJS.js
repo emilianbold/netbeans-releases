@@ -27,7 +27,7 @@ String
 
 /**CC #99811
 my|
-testJS.js myfunction ()
+testJS.js myfunction () : void
 myfunction()
 */
 
@@ -38,7 +38,7 @@ myvariable
 */
 
 /**CC
-|
+R|
 Core JS RangeError
 RangeError
 */

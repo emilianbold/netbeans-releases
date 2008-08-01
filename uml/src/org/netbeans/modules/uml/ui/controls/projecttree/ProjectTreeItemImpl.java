@@ -48,7 +48,6 @@
 package org.netbeans.modules.uml.ui.controls.projecttree;
 
 import javax.swing.Action;
-import javax.swing.tree.MutableTreeNode;
 
 import org.netbeans.modules.uml.core.metamodel.diagrams.IProxyDiagram;
 import org.netbeans.modules.uml.core.support.umlsupport.FileExtensions;
@@ -64,7 +63,6 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.IPackageImport;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IProxyElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.ProxyElement;
 import org.netbeans.modules.uml.core.metamodel.structure.IProject;
-import org.netbeans.modules.uml.core.support.Debug;
 
 /**
  * 
@@ -87,6 +85,7 @@ public class ProjectTreeItemImpl implements IProjectTreeItem, FileExtensions
    
    //improve performance
    private IElement cachedElement = null;
+   private static String DIAGRAM_EXT = "diagram"; // NOI18N
    
    public ProjectTreeItemImpl()
    {     
@@ -320,10 +319,6 @@ public class ProjectTreeItemImpl implements IProjectTreeItem, FileExtensions
     */
    public void setDescription(String value)
    {
-      if(value == null)
-      {
-         Debug.out.println("I am here");
-      }
       m_Description = value;
    }
 
@@ -402,7 +397,11 @@ public class ProjectTreeItemImpl implements IProjectTreeItem, FileExtensions
       
       if(getDescription().length() > 0)
       {
-         retVal = StringUtilities.hasExtension(getDescription(), DIAGRAM_LAYOUT_EXT);
+         retVal = 
+             StringUtilities.hasExtension(
+                getDescription(), DIAGRAM_EXT) || 
+             StringUtilities.hasExtension(
+                getDescription(), DIAGRAM_TS_LAYOUT_EXT_NODOT);
       }
       
       return retVal;

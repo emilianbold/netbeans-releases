@@ -107,7 +107,7 @@ public class Link extends JGoLink implements GuiConstants, CanvasWidget {
         setPen(mPen);
         
         JGoPen pen = new JGoPen(JGoPen.SOLID, 1, Color.BLUE);
-    	setPen(pen);
+        setPen(pen);
     }
     
     public PdModel getDoc() { 
@@ -144,7 +144,7 @@ public class Link extends JGoLink implements GuiConstants, CanvasWidget {
     }
 
     public Component getModelComponent() {
-    	return this.mComp;
+        return this.mComp;
     }
     
     //========================================
@@ -179,50 +179,50 @@ public class Link extends JGoLink implements GuiConstants, CanvasWidget {
   * Used to paste from Clipboard to PdCanvas
   */
  public LinkComponent copyObjectAndResetContextProperties(Map<String, OperatorComponent> oldOperatorIdToNewOperatorMap, 
-		 												  IEPModel targetModel) {
-	 LinkComponent link = (LinkComponent) getModelComponent();
-	 String linkName = link.getName();
-	 
-	 LinkComponent newLink = targetModel.getFactory().createLink(targetModel);
-	 LinkComponentContainer linkContainer = targetModel.getPlanComponent().getLinkComponentContainer();
-	 
-	 LinkComponent existingLink = linkContainer.findLink(linkName);
-	 if(existingLink != null) {
-		 linkName = NameGenerator.generateLinkName(linkContainer);
-	 }
-	 newLink.setName(linkName);
-	 newLink.setTitle(link.getTitle());
-	 newLink.setType(link.getType());
-	 
-	 OperatorComponent fromOperator = link.getFrom();
-	 OperatorComponent toOperator = link.getTo();
-	 
-	 if(fromOperator != null) {
-		 OperatorComponent newFromOperator = oldOperatorIdToNewOperatorMap.get(fromOperator.getId());
-		 if(newFromOperator != null) {
-			 newLink.setFrom(newFromOperator);
-		 }
-	 }
-	 
-	 if(toOperator != null) {
-		 OperatorComponent newToOperator = oldOperatorIdToNewOperatorMap.get(toOperator.getId());
-		 if(newToOperator != null) {
-			 newLink.setTo(newToOperator);
-		 }
-	 }
-	 
-	 return newLink;
+                                                           IEPModel targetModel) {
+     LinkComponent link = (LinkComponent) getModelComponent();
+     String linkName = link.getName();
+     
+     LinkComponent newLink = targetModel.getFactory().createLink(targetModel);
+     LinkComponentContainer linkContainer = targetModel.getPlanComponent().getLinkComponentContainer();
+     
+     LinkComponent existingLink = linkContainer.findLink(linkName);
+     if(existingLink != null) {
+         linkName = NameGenerator.generateLinkName(linkContainer);
+     }
+     newLink.setName(linkName);
+     newLink.setTitle(link.getTitle());
+     newLink.setType(link.getType());
+     
+     OperatorComponent fromOperator = link.getFrom();
+     OperatorComponent toOperator = link.getTo();
+     
+     if(fromOperator != null) {
+         OperatorComponent newFromOperator = oldOperatorIdToNewOperatorMap.get(fromOperator.getId());
+         if(newFromOperator != null) {
+             newLink.setFrom(newFromOperator);
+         }
+     }
+     
+     if(toOperator != null) {
+         OperatorComponent newToOperator = oldOperatorIdToNewOperatorMap.get(toOperator.getId());
+         if(newToOperator != null) {
+             newLink.setTo(newToOperator);
+         }
+     }
+     
+     return newLink;
      
  }
  
     
     public void showInvalidLink(boolean show) {
-    	if(show) {
-    		JGoPen pen = new JGoPen(JGoPen.DASHED, 1, Color.RED);
-        	setPen(pen);
-    	} else {
-    		JGoPen pen = new JGoPen(JGoPen.DASHED, 1, Color.BLUE);
-        	setPen(pen);
-    	}
+        if(show) {
+            JGoPen pen = new JGoPen(JGoPen.DASHED, 1, Color.RED);
+            setPen(pen);
+        } else {
+            JGoPen pen = new JGoPen(JGoPen.DASHED, 1, Color.BLUE);
+            setPen(pen);
+        }
     }
 }

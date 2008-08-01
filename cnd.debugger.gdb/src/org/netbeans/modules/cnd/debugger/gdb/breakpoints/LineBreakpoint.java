@@ -83,6 +83,13 @@ public class LineBreakpoint extends GdbBreakpoint {
         b.setLineNumber(lineNumber);
         return b;
     }
+
+    /*
+     * create an empty LineBreakpoint
+     */
+    public static LineBreakpoint create() {
+        return new LineBreakpointComparable();
+    }
     
     /**
      * Returns a string representation of this object.
@@ -99,8 +106,11 @@ public class LineBreakpoint extends GdbBreakpoint {
         
        // We need to hold our FileObject so that it's not GC'ed, because we'd loose our listener.
        private FileObject fo;
-       
-       public LineBreakpointComparable(String url) {
+
+       private LineBreakpointComparable() {
+       }
+
+       private LineBreakpointComparable(String url) {
            setURL(url);
             try {
                 fo = URLMapper.findFileObject(new URL(getURL()));

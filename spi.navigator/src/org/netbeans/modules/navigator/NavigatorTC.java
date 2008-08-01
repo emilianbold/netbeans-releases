@@ -175,14 +175,16 @@ public final class NavigatorTC extends TopComponent {
         return panels;
     }
     
-    /** Sets content of navigator to given panels, selecting the first one
+    /** Sets content of navigator to given panels, selecting given one
+     * @param panels List of panels
+     * @param select Panel to be selected, shown
      */ 
-    public void setPanels (List<NavigatorPanel> panels) {
+    public void setPanels (List<NavigatorPanel> panels, NavigatorPanel select) {
         this.panels = panels;
         int panelsCount = panels == null ? -1 : panels.size();
+        selectedPanel = null;
         // no panel, so make UI look empty
         if (panelsCount <= 0) {
-            selectedPanel = null;
             setToEmpty();
         } else {
             // clear regular content 
@@ -193,6 +195,7 @@ public final class NavigatorTC extends TopComponent {
             // fill with new content
             JComponent curComp = null;
             int i = 0;
+            boolean selectFound = false;
             for (NavigatorPanel curPanel : panels) {
                 panelSelector.addItem(curPanel.getDisplayName());
                 curComp = curPanel.getComponent();
@@ -206,10 +209,15 @@ public final class NavigatorTC extends TopComponent {
                 } else {
                     contentArea.add(curComp, String.valueOf(i));
                 }
-                if (i == 0) {
-                    selectedPanel = curPanel;
+                if (curPanel == select) {
+                    selectFound = true;
                 }
                 i++;
+            }
+            if (selectFound) {
+                setSelectedPanel(select);
+            } else {
+                selectedPanel = panels.get(0);
             }
             // show if was hidden
             resetFromEmpty();

@@ -5,33 +5,29 @@ package antlr.collections.impl;
  * Software rights: http://www.antlr.org/license.html
  */
 
-import antlr.collections.List;
 import antlr.collections.Stack;
 
-import java.util.Enumeration;
 import java.util.NoSuchElementException;
-
-import antlr.collections.impl.LLCell;
 
 /**A Linked List Implementation (not thread-safe for simplicity)
  * (adds to the tail) (has an enumeration)
  */
-public class LList implements List, Stack {
-    protected LLCell head = null, tail = null;
+public class LList implements Stack {
+    LLCell head = null, tail = null;
     protected int length = 0;
 
 
     /** Add an object to the end of the list.
      * @param o the object to add
      */
-    public void add(Object o) {
+    /*public void add(Object o) {
         append(o);
     }
 
     /** Append an object to the end of the list.
      * @param o the object to append
      */
-    public void append(Object o) {
+    /*public void append(Object o) {
         LLCell n = new LLCell(o);
         if (length == 0) {
             head = tail = n;
@@ -61,19 +57,19 @@ public class LList implements List, Stack {
      * @return the object at index i
      * NoSuchElementException is thrown if i out of range
      */
-    public Object elementAt(int i) throws NoSuchElementException {
+    /*public Object elementAt(int i) throws NoSuchElementException {
         int j = 0;
         for (LLCell p = head; p != null; p = p.next) {
             if (i == j) return p.data;
             j++;
         }
         throw new NoSuchElementException();
-    }
+    }*/
 
     /**Return an enumeration of the list elements */
-    public Enumeration elements() {
+    /*public Enumeration elements() {
         return new LLEnumeration(this);
-    }
+    }*/
 
     /** How high is the stack? */
     public int height() {
@@ -84,12 +80,12 @@ public class LList implements List, Stack {
      * @param o the object to test for inclusion.
      * @return true if object is contained else false.
      */
-    public boolean includes(Object o) {
+    /*public boolean includes(Object o) {
         for (LLCell p = head; p != null; p = p.next) {
             if (p.data.equals(o)) return true;
         }
         return false;
-    }
+    }*/
     // The next two methods make LLQueues and LLStacks easier.
 
     /** Insert an object at the head of the list.

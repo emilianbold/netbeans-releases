@@ -44,7 +44,7 @@ package org.netbeans.modules.gsf;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
-import org.netbeans.modules.gsf.api.BracketCompletion;
+import org.netbeans.modules.gsf.api.KeystrokeHandler;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.openide.ErrorManager;
@@ -67,7 +67,7 @@ import org.openide.ErrorManager;
             return -1;
         }
 
-        BracketCompletion bc = GsfEditorKitFactory.getBracketCompletion(doc, offset);
+        KeystrokeHandler bc = GsfEditorKitFactory.getBracketCompletion(doc, offset);
         if (bc != null) {
             int nextOffset = bc.getNextWordOffset(doc, offset, false);
             if (nextOffset != -1) {
@@ -94,7 +94,7 @@ import org.openide.ErrorManager;
 
         final Document doc = textComponent.getDocument();
         
-        BracketCompletion bc = GsfEditorKitFactory.getBracketCompletion(doc, offset);
+        KeystrokeHandler bc = GsfEditorKitFactory.getBracketCompletion(doc, offset);
         if (bc != null) {
             int nextOffset = bc.getNextWordOffset(
                     doc, offset, true);

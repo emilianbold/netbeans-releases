@@ -11,9 +11,9 @@
  * http://www.netbeans.org/cddl-gplv2.html
  * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
  * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
+ * License. When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
  * particular file as subject to the "Classpath" exception as provided
  * by Sun in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
@@ -69,13 +69,12 @@ import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.Referenceable;
 import org.netbeans.modules.xml.refactoring.XMLRefactoringPlugin;
 
-import org.netbeans.modules.bpel.core.BPELDataLoader;
-import org.netbeans.modules.bpel.core.BPELDataObject;
 import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.bpel.model.spi.BpelModelFactory;
 import org.netbeans.modules.bpel.model.api.Import;
 import org.netbeans.modules.bpel.model.api.Process;
-import static org.netbeans.modules.soa.ui.util.UI.*;
+import org.netbeans.modules.bpel.editors.api.EditorUtil;
+import static org.netbeans.modules.xml.ui.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -132,29 +131,23 @@ abstract class Plugin implements RefactoringPlugin, XMLRefactoringPlugin {
     if (root != null) {
       return root;
     }
-    if ( !BPELDataLoader.MIME_TYPE.equals(FileUtil.getMIMEType(file))) {
+    if ( !"text/x-bpel+xml".equals(FileUtil.getMIMEType(file))) { // NOI18N
       return null;
     }
 //out();
 //out("Find usages");
 //out("   FileObject: " + file);
-    DataObject dataObject = null;
+    DataObject data = null;
 
     try {
-      dataObject = DataObject.find(file);
+      data = DataObject.find(file);
     }
     catch (DataObjectNotFoundException e) {
 //out("   DataObject is NULL");
       return null;
     }
-//out("   DataObject: " + dataObject);
-
-    if ( !(dataObject instanceof BPELDataObject)) {
-//out("   DataObject is not BPELDataObject");
-      return null;
-    }
-    BpelModel model =
-      (BpelModel) ((BPELDataObject)dataObject).getLookup().lookup(BpelModel.class);
+//out("   DataObject: " + data);
+    BpelModel model = EditorUtil.getBpelModel(data);
 
     if (model == null) {
 //out("   Bpel model is null");
@@ -233,8 +226,7 @@ abstract class Plugin implements RefactoringPlugin, XMLRefactoringPlugin {
     FileObject file = source.getLookup().lookup(FileObject.class);
     
     if (BPEL_MIME_TYPE.equals(FileUtil.getMIMEType(file))) {
-      BpelModelFactory factory = (BpelModelFactory) Lookup.getDefault().
-        lookup(BpelModelFactory.class);
+      BpelModelFactory factory = (BpelModelFactory) Lookup.getDefault().lookup(BpelModelFactory.class);
       return factory.getModel(source);
      }
      return null;

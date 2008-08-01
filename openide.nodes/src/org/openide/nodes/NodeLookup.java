@@ -190,6 +190,9 @@ final class NodeLookup extends AbstractLookup {
                 Class<?> c1 = m.get(p1);
                 Class<?> c2 = m.get(p2);
                 
+                assert c1 != null : p1 + " not in " + m; // NOI18N
+                assert c2 != null : p2 + " not in " + m; // NOI18N
+                
                 if (c1 == c2) {
                     return 0;
                 }

@@ -47,14 +47,19 @@ import java.util.List;
 import java.util.Stack;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import javax.swing.text.EditorKit;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.lexer.Token;
-import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.Settings;
+import org.netbeans.editor.SettingsNames;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.OffsetRange;
+import org.netbeans.modules.javascript.editing.JsPretty.Diff;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
 import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
 import org.openide.util.Exceptions;
@@ -98,7 +103,8 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
     private Stack<StackItem> stack = new Stack<StackItem>();
 
     public JsFormatter() {
-        this.codeStyle = CodeStyle.getDefault(null);
+        //this.codeStyle = CodeStyle.getDefault(null);
+        this.codeStyle = new DocSyncedCodeStyle();
     }
     
     public JsFormatter(CodeStyle codeStyle, int rightMarginOverride) {
@@ -112,18 +118,50 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
     }
 
     public void reformat(Document document, int startOffset, int endOffset, CompilationInfo info) {
-        reindent(document, startOffset, endOffset, info, false);
+        
+        JsParseResult jsParseResult = null;
+        if (info != null) {
+            jsParseResult = AstUtilities.getParseResult(info);
+        }
+        
+        if (jsParseResult == null || jsParseResult.getRootNode() == null || !(JsUtils.isJsOrJsonDocument(document))) {
+            reindent(document, startOffset, endOffset, null, false);
+            return;
+        }
+        
+        BaseDocument doc = (BaseDocument) document;
+        syncOptions(doc, codeStyle);
+        
+        JsPretty jsPretty = new JsPretty(info, doc, startOffset, endOffset, codeStyle);
+        jsPretty.format();
+        
+        try {
+            doc.atomicLock();
+
+            for (Diff diff : jsPretty.getDiffs()) {
+                doc.remove(diff.start, diff.end - diff.start);
+                doc.insertString(diff.start, diff.text, null);
+            }
+
+        } catch (BadLocationException ex) {
+            Exceptions.printStackTrace(ex);
+        } finally {
+            doc.atomicUnlock();
+        }
     }
+    
     public void reindent(Document document, int startOffset, int endOffset) {
         reindent(document, startOffset, endOffset, null, true);
     }
     
     public int indentSize() {
-        return codeStyle.getIndentSize();
+        //return codeStyle.getIndentSize();
+        return -1; // Use IDE defaults
     }
     
     public int hangingIndentSize() {
-        return codeStyle.getContinuationIndentSize();
+        //return codeStyle.getContinuationIndentSize();
+        return -1; // Use IDE defaults
     }
 
     /** Compute the initial balance of brackets at the given offset. */
@@ -234,7 +272,8 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
                  */
                 int delta = -1;
                 StackItem lastPop = stack.empty() ? null : stack.pop();
-                if (lastPop != null && Utilities.getLineOffset(doc, lastPop.range.getStart()) != Utilities.getLineOffset(doc, ts.offset())) {
+                if (lastPop != null && lastPop.range.getStart() <= (doc.getLength() + 1) &&
+                        Utilities.getLineOffset(doc, lastPop.range.getStart()) != Utilities.getLineOffset(doc, ts.offset())) {
                     int blocks = 0;
                     while (!stack.empty() && stack.pop().braceless) {
                         blocks++;
@@ -320,22 +359,9 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
     }
     
     @SuppressWarnings("unchecked")
-    private int getTokenBalance(BaseDocument doc, int begin, int end, boolean includeKeywords, boolean indentOnly) {
+    private int getTokenBalance(TokenSequence<? extends JsTokenId> ts, BaseDocument doc, int begin, int end, boolean includeKeywords, boolean indentOnly) {
         int balance = 0;
 
-        TokenSequence<? extends JsTokenId> ts = null;
-
-        if (embeddedJavaScript) {
-            TokenHierarchy<Document> th = TokenHierarchy.get((Document)doc);
-            for (TokenSequence<?> embeddedTS : th.embeddedTokenSequences(begin, false)) {
-                if (JsMimeResolver.JAVASCRIPT_MIME_TYPE.equals(embeddedTS.language().mimeType())) {
-                    ts = (TokenSequence<? extends JsTokenId>) embeddedTS;
-                }
-            }
-        } else {
-            ts = LexUtilities.getJsTokenSequence(doc, begin);
-        }
-        
         if (ts == null) {
             try {
                 // remember indent of previous html tag
@@ -431,7 +457,7 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
                 // scenario in JavaScript where we have }) in object literals
                 int lineEnd = Utilities.getRowEnd(doc, offset);
                 int newOffset = offset;
-                while (newOffset < lineEnd) {
+                while (newOffset < lineEnd && token != null) {
                     newOffset = newOffset+token.length();
                     if (newOffset < doc.getLength()) {
                         token = LexUtilities.getToken(doc, newOffset);
@@ -544,7 +570,7 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
     }
 
     private void reindent(Document document, int startOffset, int endOffset, CompilationInfo info, boolean indentOnly) {
-        embeddedJavaScript = !JsUtils.isJsDocument(document);
+        embeddedJavaScript = !JsUtils.isJsOrJsonDocument(document);
         
         try {
             BaseDocument doc = (BaseDocument)document; // document.getText(0, document.getLength())
@@ -623,9 +649,12 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
                         int prevOffset = offsets.get(i-1);
                         int prevIndent = indents.get(i-1);
                         int actualPrevIndent = LexUtilities.getLineIndent(doc, prevOffset);
+                        // NOTE: in embedding this is usually true as we have some nonzero initial indent,
+                        // I am just not sure if it is better to add indentOnly check (as I did) or
+                        // remove blank lines condition completely?
                         if (actualPrevIndent != prevIndent) {
                             // For blank lines, indentation may be 0, so don't adjust in that case
-                            if (!(Utilities.isRowEmpty(doc, prevOffset) || Utilities.isRowWhite(doc, prevOffset))) {
+                            if (indentOnly || !(Utilities.isRowEmpty(doc, prevOffset) || Utilities.isRowWhite(doc, prevOffset))) {
                                 indent = actualPrevIndent + (indent-prevIndent);
                             }
                         }
@@ -814,8 +843,8 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
                 int endOfLine = Utilities.getRowEnd(doc, offset) + 1;
 
                 if (lineBegin != -1) {
-                    balance += getTokenBalance(doc, lineBegin, endOfLine, true, indentOnly);
-                    int bracketDelta = getTokenBalance(doc, lineBegin, endOfLine, false, indentOnly);
+                    balance += getTokenBalance(ts, doc, lineBegin, endOfLine, true, indentOnly);
+                    int bracketDelta = getTokenBalance(ts, doc, lineBegin, endOfLine, false, indentOnly);
                     bracketBalance += bracketDelta;
                     continued = isLineContinued(doc, offset, bracketBalance);
                 }
@@ -849,9 +878,70 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
      * those settings
      */
     private static void syncOptions(BaseDocument doc, CodeStyle style) {
-        org.netbeans.editor.Formatter formatter = doc.getFormatter();
-        if (formatter.getSpacesPerTab() != style.getIndentSize()) {
-            formatter.setSpacesPerTab(style.getIndentSize());
+        if (style instanceof DocSyncedCodeStyle) {
+            ((DocSyncedCodeStyle)style).syncToDocument(doc);
+        }
+    }
+    
+    private static final class DocSyncedCodeStyle extends CodeStyle {
+        private DocSyncedCodeStyle() {
+            super(null);
+        }
+        
+        private int indentSize = 4;
+        private int continuationIndentSize = 4;
+        private int rightMargin = 80;
+        private EditorKit kit;
+        
+        // Copied from option.editor's org.netbeans.modules.options.indentation.IndentationModel
+        private EditorKit getEditorKit() {
+            if(kit == null) {
+                kit = MimeLookup.getLookup(MimePath.parse("text/xml")).lookup(EditorKit.class); // NOI18N
+            } // NOI18N
+            return kit;
+        }
+
+        // Copied from option.editor's org.netbeans.modules.options.indentation.IndentationModel
+        private Integer getSpacesPerTab() {
+            Integer sp =
+                    (Integer) Settings.getValue(getEditorKit().getClass(), SettingsNames.SPACES_PER_TAB);
+            return sp;
+        }
+        
+        public void syncToDocument(BaseDocument doc) {
+            Integer sp = getSpacesPerTab();
+            int indent = sp.intValue();
+            if (indent <= 0) {
+                indent = 4;
+            }
+            indentSize = continuationIndentSize = indent;
+        }
+        
+        @Override
+        public int getIndentSize() {
+            return indentSize;
+        }
+
+        @Override
+        public int getContinuationIndentSize() {
+            return continuationIndentSize;
+        }
+
+        @Override
+        public boolean reformatComments() {
+            // This isn't used in JavaScript yet
+            return false;
+        }
+
+        @Override
+        public boolean indentHtml() {
+            // This isn't used in JavaScript yet
+            return false;
+        }
+
+        @Override
+        public int getRightMargin() {
+            return rightMargin;
         }
     }
 
@@ -878,6 +968,7 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
          */
         private final OffsetRange range;
         
+        @Override
         public String toString() {
             return "StackItem[" + braceless + "," + range + "]";
         }

@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.websvc.saas.ui.actions;
 
 import java.net.URL;
@@ -60,49 +59,49 @@ import org.openide.util.actions.NodeAction;
  * @author  nam
  */
 public class ViewWadlAction extends NodeAction {
-    
+
     /** Creates a new instance of ViewWSDLAction */
     public ViewWadlAction() {
         super();
     }
-    
+
     protected boolean enable(Node[] nodes) {
-        WadlSaas saas = getWsdlSaas(nodes);
-        if (saas != null) {
-            return saas.getState() == Saas.State.RETRIEVED ||
-                   saas.getState() == Saas.State.READY;
-        }
-        return false;
+        return true;
     }
-    
-    private WadlSaas getWsdlSaas(Node[] nodes) {
+
+    private WadlSaas getWadlSaas(Node[] nodes) {
         if (nodes == null || nodes.length != 1) {
             return null;
         }
         return nodes[0].getLookup().lookup(WadlSaas.class);
     }
-    
+
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
-    
+
     public String getName() {
         return NbBundle.getMessage(ViewWSDLAction.class, "VIEW_WADL");
     }
-    
+
     protected void performAction(Node[] activatedNodes) {
-        WadlSaas saas = getWsdlSaas(activatedNodes);
-        if (saas != null && saas.getLocalWadlFile() != null) {
-            try {
-                DataObject wadlDataObject = DataObject.find(saas.getLocalWadlFile());
-                EditorCookie editorCookie = wadlDataObject.getCookie(EditorCookie.class);
-                editorCookie.open();
-            } catch (Exception e) {
-                Exceptions.printStackTrace(e);
+        WadlSaas saas = getWadlSaas(activatedNodes);
+
+        if (saas != null) {
+            saas.toStateReady(true);
+
+            if (saas.getLocalWadlFile() != null) {
+                try {
+                    DataObject wadlDataObject = DataObject.find(saas.getLocalWadlFile());
+                    EditorCookie editorCookie = wadlDataObject.getCookie(EditorCookie.class);
+                    editorCookie.open();
+                } catch (Exception e) {
+                    Exceptions.printStackTrace(e);
+                }
             }
         }
     }
-    
+
     public boolean asynchronous() {
         return true;
     }

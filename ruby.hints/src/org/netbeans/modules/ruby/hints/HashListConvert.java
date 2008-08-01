@@ -53,15 +53,15 @@ import org.jruby.ast.NodeType;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.ruby.hints.spi.AstRule;
-import org.netbeans.modules.ruby.hints.spi.Description;
-import org.netbeans.modules.ruby.hints.spi.EditList;
-import org.netbeans.modules.ruby.hints.spi.Fix;
-import org.netbeans.modules.ruby.hints.spi.HintSeverity;
-import org.netbeans.modules.ruby.hints.spi.PreviewableFix;
-import org.netbeans.modules.ruby.hints.spi.RuleContext;
+import org.netbeans.modules.gsf.api.Hint;
+import org.netbeans.modules.gsf.api.EditList;
+import org.netbeans.modules.gsf.api.HintFix;
+import org.netbeans.modules.gsf.api.HintSeverity;
+import org.netbeans.modules.gsf.api.PreviewableFix;
+import org.netbeans.modules.gsf.api.RuleContext;
+import org.netbeans.modules.ruby.hints.infrastructure.RubyAstRule;
+import org.netbeans.modules.ruby.hints.infrastructure.RubyRuleContext;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -69,13 +69,13 @@ import org.openide.util.NbBundle;
  * 
  * @author Tor Norbye
  */
-public class HashListConvert implements AstRule {
+public class HashListConvert extends RubyAstRule {
 
     public Set<NodeType> getKinds() {
         return Collections.singleton(NodeType.HASHNODE);
     }
 
-    public void run(RuleContext context, List<Description> result) {
+    public void run(RubyRuleContext context, List<Hint> result) {
         Node node = context.node;
         CompilationInfo info = context.compilationInfo;
 
@@ -96,13 +96,13 @@ public class HashListConvert implements AstRule {
 
         OffsetRange range = new OffsetRange(commaOffset, commaOffset+1);
         String displayName = NbBundle.getMessage(HashListConvert.class, "HashListConvertGutter");
-        List<Fix> fixes = Collections.<Fix>singletonList(new HashFix(context, listNode));
-        Description desc = new Description(this, displayName, info.getFileObject(), range, 
+        List<HintFix> fixes = Collections.<HintFix>singletonList(new HashFix(context, listNode));
+        Hint desc = new Hint(this, displayName, info.getFileObject(), range, 
                 fixes, 140);
         result.add(desc);
     }
     
-    private static int getCommaOffset(RuleContext context, ListNode listNode, int pair) {
+    private static int getCommaOffset(RubyRuleContext context, ListNode listNode, int pair) {
         int prevEnd = listNode.get(2*pair).getPosition().getEndOffset();
         int nextStart = listNode.get(2*pair+1).getPosition().getStartOffset();
         OffsetRange lexRange = LexUtilities.getLexerOffsets(context.compilationInfo, 
@@ -143,7 +143,7 @@ public class HashListConvert implements AstRule {
         return null;
     }
 
-    public boolean appliesTo(CompilationInfo info) {
+    public boolean appliesTo(RuleContext context) {
         return true;
     }
 
@@ -160,10 +160,10 @@ public class HashListConvert implements AstRule {
     }
     
     private static class HashFix implements PreviewableFix {
-        private RuleContext context;
+        private RubyRuleContext context;
         private ListNode listNode;
 
-        public HashFix(RuleContext context, ListNode listNode) {
+        public HashFix(RubyRuleContext context, ListNode listNode) {
             this.context = context;
             this.listNode = listNode;
         }

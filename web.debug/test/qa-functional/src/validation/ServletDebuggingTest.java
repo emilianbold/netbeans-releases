@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -41,10 +41,9 @@
 package validation;
 
 import java.io.File;
-import junit.textui.TestRunner;
+import junit.framework.Test;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.actions.ActionNoBlock;
@@ -55,18 +54,19 @@ import org.netbeans.jellytools.modules.debugger.actions.StepIntoAction;
 import org.netbeans.jellytools.modules.debugger.actions.StepOutAction;
 import org.netbeans.jellytools.modules.debugger.actions.DebugAction;
 import org.netbeans.jellytools.modules.debugger.actions.StepOverAction;
+import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
 import org.netbeans.jellytools.modules.j2ee.nodes.J2eeServerNode;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.JemmyProperties;
-import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 
 /** Test of web application debugging. Manual test specification is here:
  * http://qa.netbeans.org/modules/webapps/promo-f/jspdebug/jspdebug-testspec.html
  *
  * @author Jiri.Skrivanek@sun.com
  */
-public class ServletDebuggingTest extends JellyTestCase {
+public class ServletDebuggingTest extends J2eeTestCase {
     // status bar tracer used to wait for state
     private MainWindowOperator.StatusTextTracer stt;
     
@@ -74,21 +74,17 @@ public class ServletDebuggingTest extends JellyTestCase {
         super(testName);
     }
     
-    public static void main(String[] args) {
-        TestRunner.run(suite());
+    public static Test suite() {
+        return NbModuleSuite.create(addServerTests(NbModuleSuite.createConfiguration(ServletDebuggingTest.class),
+                "testSetBreakpoint",
+                "testStepInto",
+                "testStepOut",
+                "testStepOver",
+                "testApplyCodeChanges",
+                "testStopServer"
+                ).enableModules(".*").clusters(".*"));
     }
-    
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new ServletDebuggingTest("testSetBreakpoint"));
-        suite.addTest(new ServletDebuggingTest("testStepInto"));
-        suite.addTest(new ServletDebuggingTest("testStepOut"));
-        suite.addTest(new ServletDebuggingTest("testStepOver"));
-        suite.addTest(new ServletDebuggingTest("testApplyCodeChanges"));
-        suite.addTest(new ServletDebuggingTest("testStopServer"));
-        return suite;
-    }
-    
+        
     /** Print test name and initialize status bar tracer. */
     @Override
     public void setUp() {
@@ -129,7 +125,7 @@ public class ServletDebuggingTest extends JellyTestCase {
     }
 
     /** Step into in Servlet.
-     * - call Debug File popup on servlets node
+     * - call Debug "DivideServlet.java" popup on servlets node
      * - wait until debugger stops at previously set breakpoint
      * - set sources from TestFreeformLibrary to be used for debugging
      * - call Run|Step Into from main menu
@@ -140,7 +136,12 @@ public class ServletDebuggingTest extends JellyTestCase {
      * - finish debugger
      */
     public void testStepInto() {
-        new ActionNoBlock(null, new DebugAction().getPopupPath()).perform(servletNode);
+        // "Debug "DivideServlet.java""
+        String debugFileItem = 
+                Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle",
+                                        "LBL_DebugSingleAction_Name",
+                                        new Object[] {new Integer(1), servletNode.getText()});
+        new ActionNoBlock(null, debugFileItem).perform(servletNode);
         String setURITitle = Bundle.getString("org.netbeans.modules.web.project.ui.Bundle", "TTL_setServletExecutionUri");
         new NbDialogOperator(setURITitle).ok();
         Utils.waitFinished(this, SAMPLE_WEB_PROJECT_NAME, "debug");

@@ -75,35 +75,35 @@ public abstract class SingleTcgComponentNodePropertyEditor implements PropertyEd
     
     // Must be called right after instance creation
     public void setOperatorComponent(OperatorComponent component) {
-    	this.mComponent = component;
-    	if(component != null) {
-    		this.mModel = component.getModel();
-    	}
+        this.mComponent = component;
+        if(component != null) {
+            this.mModel = component.getModel();
+        }
     }
     
     public OperatorComponent getOperatorComponent() {
-    	return this.mComponent;
+        return this.mComponent;
     }
     
     public void setPropertyType(TcgPropertyType type) {
-    	this.mPropertyType = type;
+        this.mPropertyType = type;
     }
     
     public TcgPropertyType getPropertyType() {
-    	return this.mPropertyType;
+        return this.mPropertyType;
     }
     
     public void setProperty(Property property) {
-    	this.mProperty = property;
+        this.mProperty = property;
     }
     
     public Property getProperty() {
-    	return this.mProperty;
+        return this.mProperty;
     }
     
     
     public IEPModel getModel() {
-    	return this.mModel;
+        return this.mModel;
     }
     
   
@@ -117,7 +117,7 @@ public abstract class SingleTcgComponentNodePropertyEditor implements PropertyEd
      */
     public void setValue(Object value) {
         mValue = value;
-	firePropertyChange();
+    firePropertyChange();
     }
 
     /**
@@ -126,7 +126,7 @@ public abstract class SingleTcgComponentNodePropertyEditor implements PropertyEd
      * @return The value of the property.
      */
     public Object getValue() {
-	return mValue;
+    return mValue;
     }
 
     //----------------------------------------------------------------------
@@ -138,7 +138,7 @@ public abstract class SingleTcgComponentNodePropertyEditor implements PropertyEd
      */
 
     public boolean isPaintable() {
-	return false;
+    return false;
     }
 
     /**
@@ -166,10 +166,10 @@ public abstract class SingleTcgComponentNodePropertyEditor implements PropertyEd
      * Example results are "2", "new Color(127,127,34)", "Color.orange", etc.
      *
      * @return A fragment of Java code representing an initializer for the
-     *   	current value.
+     *       current value.
      */
     public String getJavaInitializationString() {
-	return "???";
+    return "???";
     }
 
     //----------------------------------------------------------------------
@@ -184,7 +184,7 @@ public abstract class SingleTcgComponentNodePropertyEditor implements PropertyEd
      *       to a human to edit.
      * <p>   Returns "null" is the value can't be expressed as a string.
      * <p>   If a non-null value is returned, then the PropertyEditor should
-     *	     be prepared to parse that string back in setAsText().
+     *         be prepared to parse that string back in setAsText().
      */
     public String getAsText() {
         // See TcgComponentNodeProperty.getValue() for all possible return-types
@@ -195,7 +195,7 @@ public abstract class SingleTcgComponentNodePropertyEditor implements PropertyEd
         TcgType type = getPropertyType().getType();
         Property prop = getProperty();
         if(prop == null) {
-        	return "";
+            return "";
         }
         
         if (type == TcgType.STRING_LIST) {
@@ -259,10 +259,10 @@ public abstract class SingleTcgComponentNodePropertyEditor implements PropertyEd
      *
      * @return The tag values for this property.  May be null if this 
      *   property cannot be represented as a tagged value.
-     *	
+     *    
      */
     public String[] getTags() {
-	return null;
+    return null;
     }
 
     //----------------------------------------------------------------------
@@ -279,11 +279,11 @@ public abstract class SingleTcgComponentNodePropertyEditor implements PropertyEd
      *
      * @return A java.awt.Component that will allow a human to directly
      *      edit the current property value.  May be null if this is
-     *	    not supported.
+     *        not supported.
      */
 
     public java.awt.Component getCustomEditor() {
-	return null;
+    return null;
     }
 
     /**
@@ -292,7 +292,7 @@ public abstract class SingleTcgComponentNodePropertyEditor implements PropertyEd
      * @return  True if the propertyEditor can provide a custom editor.
      */
     public boolean supportsCustomEditor() {
-	return false;
+    return false;
     }
   
     //----------------------------------------------------------------------
@@ -302,14 +302,14 @@ public abstract class SingleTcgComponentNodePropertyEditor implements PropertyEd
      * fire a PropertyChange value whenever the value is updated.
      *
      * @param listener  An object to be invoked when a PropertyChange
-     *		event is fired.
+     *        event is fired.
      */
     public synchronized void addPropertyChangeListener(
-				PropertyChangeListener listener) {
-	if (mListeners == null) {
-	    mListeners = new java.util.Vector();
-	}
-	mListeners.addElement(listener);
+                PropertyChangeListener listener) {
+    if (mListeners == null) {
+        mListeners = new java.util.Vector();
+    }
+    mListeners.addElement(listener);
     }
 
     /**
@@ -318,31 +318,31 @@ public abstract class SingleTcgComponentNodePropertyEditor implements PropertyEd
      * @param listener  The PropertyChange listener to be removed.
      */
     public synchronized void removePropertyChangeListener(
-				PropertyChangeListener listener) {
-	if (mListeners == null) {
-	    return;
-	}
-	mListeners.removeElement(listener);
+                PropertyChangeListener listener) {
+    if (mListeners == null) {
+        return;
+    }
+    mListeners.removeElement(listener);
     }
 
     /**
      * Report that we have been modified to any interested listeners.
      */
     public void firePropertyChange() {
-	java.util.Vector targets;
-	synchronized (this) {
-	    if (mListeners == null) {
-	    	return;
-	    }
-	    targets = (java.util.Vector) mListeners.clone();
-	}
-	// Tell our listeners that "everything" has changed.
+    java.util.Vector targets;
+    synchronized (this) {
+        if (mListeners == null) {
+            return;
+        }
+        targets = (java.util.Vector) mListeners.clone();
+    }
+    // Tell our listeners that "everything" has changed.
         PropertyChangeEvent evt = new PropertyChangeEvent(mProperty, null, null, null);
 
-	for (int i = 0; i < targets.size(); i++) {
-	    PropertyChangeListener target = (PropertyChangeListener)targets.elementAt(i);
-	    target.propertyChange(evt);
-	}
+    for (int i = 0; i < targets.size(); i++) {
+        PropertyChangeListener target = (PropertyChangeListener)targets.elementAt(i);
+        target.propertyChange(evt);
+    }
     }
     
     //============ ExPropertyEditor interface ==============================//

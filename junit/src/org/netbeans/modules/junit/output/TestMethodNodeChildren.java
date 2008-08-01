@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -63,31 +63,53 @@ final class TestMethodNodeChildren extends Children.Array {
     }
 
     /**
+     * Count the number of created children if the constructor would be passed
+     * the given {@code Testcase}. The return value of {@code 0} means that
+     * there is no reason for creating an instance of
+     * {@code TestMethodNodeChildren}.
+     * @param  testcase  test for which the number of children should be counted
+     * @return  number of children if the constructor would be passed the given
+     *          {@code Testcase} as an argument
+     */
+    static int getChildrenCount(Report.Testcase testcase) {
+        Report.Trouble trouble = testcase.trouble;
+        if (trouble == null) {
+            return 0;
+        }
+
+        int count = 0;
+        if (trouble.message != null) {
+            count++;
+        }
+        if (trouble.exceptionClsName != null) {
+            count++;
+        }
+        if (trouble.stackTrace != null) {
+            count += trouble.stackTrace.length;
+        }
+        return count;
+    }
+
+    /**
      */
     protected void addNotify() {
         Report.Trouble trouble = testcase.trouble;
-
-        int nodesCount = 1;                     //exception class name
-        if (trouble.message != null) {
-            nodesCount++;
-        }
-        if (trouble.stackTrace != null) {
-            nodesCount += trouble.stackTrace.length;
-        }
-        
         String topFrameInfo = (trouble.stackTrace != null)
                                     && (trouble.stackTrace.length != 0)
                                             ? trouble.stackTrace[0]
                                             : null;
 
+        int nodesCount = getChildrenCount(testcase);
         Node[] children = new Node[nodesCount];
         int index = 0;
         if (trouble.message != null) {
             children[index++] = new CallstackFrameNode(topFrameInfo,
                                                        trouble.message);
         }
-        children[index++] = new CallstackFrameNode(topFrameInfo,
-                                                   trouble.exceptionClsName);
+        if (trouble.exceptionClsName != null) {
+            children[index++] = new CallstackFrameNode(topFrameInfo,
+                                                       trouble.exceptionClsName);
+        }
         for (int i = 0; index < nodesCount; i++) {
             children[index++] = new CallstackFrameNode(trouble.stackTrace[i]);
         }
@@ -123,11 +145,4 @@ final class TestMethodNodeChildren extends Children.Array {
         
         add(children);
     }
-    
-    /**
-     */
-    protected void removeNotify() {
-        remove(getNodes());
-    }
-    
 }

@@ -44,8 +44,8 @@ import java.util.List;
 import javax.swing.Action;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaEndpointRef;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaPort;
+import org.netbeans.modules.compapp.casaeditor.model.casa.CasaServiceEngineServiceUnit;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel;
-import org.netbeans.modules.compapp.casaeditor.model.casa.impl.CasaAttribute;
 import org.netbeans.modules.compapp.casaeditor.model.jbi.impl.JBIAttributes;
 import org.netbeans.modules.compapp.casaeditor.nodes.actions.AddConnectionAction;
 import org.netbeans.modules.compapp.casaeditor.nodes.actions.GoToSourceAction;
@@ -143,11 +143,10 @@ public class EndpointNode extends CasaNode {
 
         // Add JBI extensions
         CasaWrapperModel model = (CasaWrapperModel) endpointRef.getModel();
-        CasaPort casaPort = model.getCasaPort(endpointRef);
-        if (casaPort != null) {
-            String bcName = model.getBindingComponentName(casaPort);
+        String compName = model.getComponentName(endpointRef);
+        if (compName != null) {
             ExtensionPropertyHelper.setupExtensionPropertySheet(this,
-                    endpointRef, sheet, "endpoint", bcName); // NOI18N
+                    endpointRef, sheet, "endpoint", compName); // NOI18N
         }
     }
 

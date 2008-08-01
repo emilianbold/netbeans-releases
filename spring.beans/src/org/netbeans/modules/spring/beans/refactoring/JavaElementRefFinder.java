@@ -43,7 +43,6 @@ package org.netbeans.modules.spring.beans.refactoring;
 
 import java.io.CharConversionException;
 import java.util.List;
-import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Position.Bias;
 import org.netbeans.editor.BaseDocument;
@@ -73,7 +72,7 @@ public class JavaElementRefFinder {
     }
 
     public void addOccurrences(Matcher matcher, List<Occurrence> result) throws BadLocationException {
-        List<SpringBean> beans = docAccess.getSpringBeans().getBeans(docAccess.getFile());
+        List<SpringBean> beans = docAccess.getSpringBeans().getFileBeans(docAccess.getFileObject()).getBeans();
         for (SpringBean bean : beans) {
             String className = bean.getClassName();
             if (className != null) {

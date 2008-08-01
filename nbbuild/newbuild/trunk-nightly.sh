@@ -56,7 +56,7 @@ fi
 if [ -n $BUILD_ID ]; then
     mkdir -p $DIST_SERVER2/${BUILD_ID}
     cp -rp $DIST/*  $DIST_SERVER2/${BUILD_ID}
-    if [ -n $TESTING_SCRIPT ]; then
+    if [ -n "${TESTING_SCRIPT}" ]; then
         cd $NB_ALL
         TIP_REV=`hg tip --template "{node}"`
         ssh $TESTING_SCRIPT $TIP_REV

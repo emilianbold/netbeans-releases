@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.java.editor.codegen;
 
+import org.netbeans.spi.editor.codegen.CodeGenerator;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
@@ -71,6 +72,7 @@ import org.netbeans.modules.java.editor.codegen.ui.GetterSetterPanel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /**
@@ -82,16 +84,20 @@ public class GetterSetterGenerator implements CodeGenerator {
     public static class Factory implements CodeGenerator.Factory {
         
         private static final String ERROR = "<error>"; //NOI18N
-        
-        public Factory() {
-        }
 
-        public Iterable<? extends CodeGenerator> create(CompilationController controller, TreePath path) throws IOException {
-            List<CodeGenerator> ret = new ArrayList<CodeGenerator>();
-            path = Utilities.getPathElementOfKind(Tree.Kind.CLASS, path);
-            if (path == null)
+        public List<? extends CodeGenerator> create(Lookup context) {
+            ArrayList<CodeGenerator> ret = new ArrayList<CodeGenerator>();
+            JTextComponent component = context.lookup(JTextComponent.class);
+            CompilationController controller = context.lookup(CompilationController.class);
+            TreePath path = context.lookup(TreePath.class);
+            path = path != null ? Utilities.getPathElementOfKind(Tree.Kind.CLASS, path) : null;
+            if (component == null || controller == null || path == null)
                 return ret;
-            controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+            try {
+                controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+            } catch (IOException ioe) {
+                return ret;
+            }
             Elements elements = controller.getElements();
             TypeElement typeElement = (TypeElement)controller.getTrees().getElement(path);
             if (typeElement == null || !typeElement.getKind().isClass())
@@ -144,31 +150,33 @@ public class GetterSetterGenerator implements CodeGenerator {
                 for (Map.Entry<Element, List<ElementNode.Description>> entry : gDescriptions.entrySet())
                     descriptions.add(ElementNode.Description.create(entry.getKey(), entry.getValue(), false, false));
                 Collections.reverse(descriptions);
-                ret.add(new GetterSetterGenerator(ElementNode.Description.create(typeElement, descriptions, false, false), GeneratorUtils.GETTERS_ONLY));
+                ret.add(new GetterSetterGenerator(component, ElementNode.Description.create(typeElement, descriptions, false, false), GeneratorUtils.GETTERS_ONLY));
             }
             if (!sDescriptions.isEmpty()) {
                 List<ElementNode.Description> descriptions = new ArrayList<ElementNode.Description>();
                 for (Map.Entry<Element, List<ElementNode.Description>> entry : sDescriptions.entrySet())
                     descriptions.add(ElementNode.Description.create(entry.getKey(), entry.getValue(), false, false));
                 Collections.reverse(descriptions);
-                ret.add(new GetterSetterGenerator(ElementNode.Description.create(typeElement, descriptions, false, false), GeneratorUtils.SETTERS_ONLY));
+                ret.add(new GetterSetterGenerator(component, ElementNode.Description.create(typeElement, descriptions, false, false), GeneratorUtils.SETTERS_ONLY));
             }
             if (!gsDescriptions.isEmpty()) {
                 List<ElementNode.Description> descriptions = new ArrayList<ElementNode.Description>();
                 for (Map.Entry<Element, List<ElementNode.Description>> entry : gsDescriptions.entrySet())
                     descriptions.add(ElementNode.Description.create(entry.getKey(), entry.getValue(), false, false));
                 Collections.reverse(descriptions);
-                ret.add(new GetterSetterGenerator(ElementNode.Description.create(typeElement, descriptions, false, false), 0));
+                ret.add(new GetterSetterGenerator(component, ElementNode.Description.create(typeElement, descriptions, false, false), 0));
             }
             return ret;
         }
     }
 
+    private JTextComponent component;
     private ElementNode.Description description;
     private int type;
 
     /** Creates a new instance of GetterSetterGenerator */
-    private GetterSetterGenerator(ElementNode.Description description, int type) {
+    private GetterSetterGenerator(JTextComponent component, ElementNode.Description description, int type) {
+        this.component = component;
         this.description = description;
         this.type = type;
     }
@@ -181,7 +189,7 @@ public class GetterSetterGenerator implements CodeGenerator {
         return org.openide.util.NbBundle.getMessage(GetterSetterGenerator.class, "LBL_getter_and_setter"); //NOI18N
     }
 
-    public void invoke(JTextComponent component) {
+    public void invoke() {
         final GetterSetterPanel panel = new GetterSetterPanel(description, type);
         String title;
         if (type == GeneratorUtils.GETTERS_ONLY)

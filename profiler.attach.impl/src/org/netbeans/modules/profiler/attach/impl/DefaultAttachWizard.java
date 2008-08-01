@@ -65,13 +65,15 @@ public class DefaultAttachWizard extends AttachWizard {
         d.pack();
         d.setVisible(true);
 
-        if (wd.getValue() != WizardDescriptor.FINISH_OPTION) {
-            return null; // cancelled by the user
+        try {
+            if (wd.getValue() != WizardDescriptor.FINISH_OPTION) {
+                return null; // cancelled by the user
+            }
+            impl.finish(); // wizard correctly finished
+            return impl.getAttachSettings();
+        } finally {
+            impl.invalidate();
         }
-
-        impl.finish(); // wizard correctly finished
-
-        return impl.getAttachSettings();
     }
     
     private static Dialog createDialog(final DialogDescriptor descriptor) {

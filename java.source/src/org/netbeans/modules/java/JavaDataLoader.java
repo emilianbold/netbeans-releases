@@ -278,27 +278,6 @@ public final class JavaDataLoader extends MultiFileLoader {
         }
         
         @Override
-        public FileObject copy(FileObject f, String suffix) throws IOException {
-            final FileObject origFile = getFile();
-            String origName = origFile.getName();
-            FileObject fo = super.copy(f, suffix);
-            final ClassPath cpOrig = ClassPath.getClassPath(origFile,ClassPath.SOURCE);
-            final ClassPath cpNew = ClassPath.getClassPath(fo, ClassPath.SOURCE);
-            if (cpOrig != null && cpNew != null) {                
-                final String pkgNameOrig = cpOrig.getResourceName(origFile.getParent(), '.', false);
-                final String pkgNameNew = cpNew.getResourceName(f,'.',false); 
-                final String newName = fo.getName();
-                if (!pkgNameNew.equals(pkgNameOrig) || !newName.equals(origName)) {
-                    JavaDataObject.renameFO(fo, pkgNameNew, newName, origName);
-                    // unfortunately JavaDataObject.renameFO creates JavaDataObject but it is too soon
-                    // in this stage. Loaders reusing this FileEntry will create further files.
-                    destroyDataObject(fo);
-                }                    
-            }
-            return fo;
-        }
-        
-        @Override
         public FileObject createFromTemplate(FileObject f, String name) throws IOException {
             Logger.getLogger(JavaDataLoader.class.getName()).warning(
                     "Please replace template " + this.getFile().toString() + //NOI18N
@@ -332,7 +311,6 @@ public final class JavaDataLoader extends MultiFileLoader {
         
         private void destroyDataObject(FileObject fo) throws IOException {
             DataObject dobj = DataObject.find(fo);
-            DataObject orig = this.getDataObject();
             try {
                 dobj.setValid(false);
             } catch (PropertyVetoException ex) {

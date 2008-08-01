@@ -68,8 +68,11 @@ import com.sun.etl.engine.ETLEngineLogEvent;
 import com.sun.sql.framework.exception.BaseException;
 import net.java.hulp.i18n.Logger;
 import com.sun.sql.framework.utils.StringUtil;
+import java.util.HashMap;
+import org.netbeans.modules.etl.codegen.ETLCodegenUtil;
 import org.netbeans.modules.etl.logger.Localizer;
-
+import org.netbeans.modules.etl.utils.ETLDeploymentConstants;
+import org.netbeans.modules.sql.framework.model.SQLDefinition;
 
 /**
  * Encapsulates access control and execution of test eTL process on a selected
@@ -243,12 +246,22 @@ public class ExecuteTestCookie implements Node.Cookie {
             if (execModel != null) {
                 ClassLoader origLoader = Thread.currentThread().getContextClassLoader();
                 try {
+                    SQLDefinition sqlDefn = execModel.getSQLDefinition();
                     ETLProcessFlowGenerator flowGen = ETLProcessFlowGeneratorFactory.getCollabFlowGenerator(execModel.getSQLDefinition(), false);
-                    flowGen.applyConnectionDefinitions();
+                    flowGen.setWorkingFolder(sqlDefn.getAxiondbWorkingDirectory());
+                    flowGen.setInstanceDBName("instancedb");
+                    flowGen.setInstanceDBFolder(ETLCodegenUtil.getEngineInstanceWorkingFolder(sqlDefn.getAxiondbWorkingDirectory()));
+                    flowGen.setMonitorDBName(sqlDefn.getDisplayName());
+                    flowGen.setMonitorDBFolder(ETLCodegenUtil.getMonitorDBDir(sqlDefn.getDisplayName(), sqlDefn.getAxiondbWorkingDirectory()));
+                    mLogger.infoNoloc("setting montior folder" + flowGen.getMonitorDBFolder());
+                    flowGen.applyConnectionDefinitions(true, false);
                     engine = flowGen.getScript();
+                    engine.getContext().putValue("AXIONDB_DATA_DIR", sqlDefn.getAxiondbDataDirectory());
+                    engine.getContext().putValue("DESIGN_TIME_ATTRS", engine.getInputAttrMap());
+
 
                     //RIT print out the content of etl engine file
-                    //System.out.println("printing etl engine file content: \n" + engine.toXMLString());
+                    mLogger.infoNoloc("printing etl engine file content: \n" + engine.toXMLString());
 
                     UIEngineListener listener = new UIEngineListener();
 

@@ -123,19 +123,20 @@ public interface IProjectTreeModel
    public ITreeItem getRootItem();
    
    /**
-    * Retrieve Diagrams root node
-    * 
-    * @return The Diagrams item.
+    * Returns an ITreeItem representing Diagrams root node in the given project  
+    * tree if the node exists; otherwise, null is returned.
+    * @return ITreeItem representing the Diagrams root node or null if not found
     */
-   public ITreeItem getDiagramsRootNode(IProject project);
+   public ITreeItem getDiagramsRootNode (IProject project);
    
-    /**
-    * Check if the node is an instance of Diagrams root node
-    * 
-    * @return true if the  node is an instance of UMLDiagramRootNode; false otherwise.
+   /**
+    * Determins if a given node is under the Model root node; if yes, the 
+    * parent Mode root node of the given node is returned; else, null is returned.
+    * @param node
+    * @return the Model root node of the gvien node or null if the Model root node
+    * is not found
     */
-   public boolean isDiagramsRootNode(ITreeItem node);
-   
+   public ITreeItem getModelRootNode(ITreeItem node);
    
    public IProjectTreeItem addItem(IProjectTreeItem parent,
                                    String           name,

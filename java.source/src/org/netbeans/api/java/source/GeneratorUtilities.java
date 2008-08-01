@@ -51,6 +51,7 @@ import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.PrimitiveTypeTree;
+import com.sun.source.tree.ReturnTree;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeParameterTree;
@@ -68,6 +69,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
@@ -82,6 +84,7 @@ import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
+import javax.lang.model.util.Types;
 import javax.swing.text.Document;
 
 import org.netbeans.api.java.lexer.JavaTokenId;
@@ -99,28 +102,28 @@ import org.openide.util.Exceptions;
  * @since 0.20
  */
 public final class GeneratorUtilities {
-    
+
     private WorkingCopy copy;
-    
+
     private  GeneratorUtilities(WorkingCopy copy) {
         this.copy = copy;
     }
-    
+
     /**
      * Returns the instance of this class
-     * 
-     * @param copy 
+     *
+     * @param copy
      * @return the {@link GeneratorUtilities} instance
      * @since 0.20
      */
     public static GeneratorUtilities get(WorkingCopy copy) {
         return new GeneratorUtilities(copy);
     }
-    
+
     /**
      * Inserts a member to a class. Using the rules specified in the {@link CodeStyle}
      * it finds the proper place for the member and calls {@link TreeMaker.insertClassMember}
-     * 
+     *
      * @param clazz the class to insert the member to
      * @param member the member to add
      * @return the modified class
@@ -154,13 +157,13 @@ public final class GeneratorUtilities {
             idx++;
             lastMember = tree;
         }
-        return copy.getTreeMaker().insertClassMember(clazz, idx, member);        
+        return copy.getTreeMaker().insertClassMember(clazz, idx, member);
     }
-    
+
     /**
      * Inserts members to a class. Using the rules specified in the {@link CodeStyle}
      * it finds the proper place for each of the members and calls {@link TreeMaker.insertClassMember}
-     * 
+     *
      * @param clazz the class to insert the members to
      * @param members the members to insert
      * @return the modified class
@@ -175,7 +178,7 @@ public final class GeneratorUtilities {
 
     /**
      * Creates implementations of the all abstract methods within a class.
-     * 
+     *
      * @param clazz the class to create the implementations within
      * @return the abstract method implementations
      * @since 0.20
@@ -183,10 +186,10 @@ public final class GeneratorUtilities {
     public List<? extends MethodTree> createAllAbstractMethodImplementations(TypeElement clazz) {
         return createAbstractMethodImplementations(clazz, copy.getElementUtilities().findUnimplementedMethods(clazz));
     }
-    
+
     /**
      * Creates implementations of abstract methods within a class.
-     * 
+     *
      * @param clazz the class to create the implementations within
      * @param methods the abstract methods to implement
      * @return the abstract method implementations
@@ -197,12 +200,14 @@ public final class GeneratorUtilities {
         List<MethodTree> ret = new ArrayList<MethodTree>();
         for(ExecutableElement method : methods)
             ret.add(createAbstractMethodImplementation(clazz, method));
+        
+        tagFirst(ret);
         return ret;
     }
-    
+
     /**
      * Creates an implementation of an abstract method within a class.
-     * 
+     *
      * @param clazz the class to create the implementation within
      * @param method the abstract method to implement
      * @return the abstract method implementation
@@ -212,10 +217,10 @@ public final class GeneratorUtilities {
         assert clazz != null && method != null;
         return createMethod(method, (DeclaredType)clazz.asType());
     }
-    
+
     /**
      * Creates overriding methods within a class.
-     * 
+     *
      * @param clazz the class to create the methods within
      * @param methods the methods to override
      * @return the overriding methods
@@ -226,12 +231,14 @@ public final class GeneratorUtilities {
         List<MethodTree> ret = new ArrayList<MethodTree>();
         for(ExecutableElement method : methods)
             ret.add(createOverridingMethod(clazz, method));
+
+        tagFirst(ret);
         return ret;
     }
-    
+
     /**
      * Creates an overriding method within a class.
-     * 
+     *
      * @param clazz the class to create the method within
      * @param method the method to override
      * @return the overriding method
@@ -242,9 +249,82 @@ public final class GeneratorUtilities {
         return createMethod(method, (DeclaredType)clazz.asType());
     }
 
+    /**Create a new method tree for the given method element. The method will be created as if it were member of {@link asMemberOf} type
+     * (see also {@link Types#asMemberOf(javax.lang.model.type.DeclaredType,javax.lang.model.element.Element)}).
+     * The new method will have an empty body.
+     *
+     * @param asMemberOf create the method as if it were member of this type
+     * @param method method to create
+     * @return a newly created method
+     * @see Types#asMemberOf(javax.lang.model.type.DeclaredType,javax.lang.model.element.Element)
+     * @since 0.34
+     */
+    public MethodTree createMethod(DeclaredType asMemberOf, ExecutableElement method) {
+        TreeMaker make = copy.getTreeMaker();
+        Set<Modifier> mods = method.getModifiers();
+        Set<Modifier> flags = mods.isEmpty() ? EnumSet.noneOf(Modifier.class) : EnumSet.copyOf(mods);
+        flags.remove(Modifier.ABSTRACT);
+        flags.remove(Modifier.NATIVE);
+
+        ExecutableType et = (ExecutableType) method.asType();
+        try {
+            et = (ExecutableType) copy.getTypes().asMemberOf(asMemberOf, method);
+        } catch (IllegalArgumentException iae) {
+        }
+        List<TypeParameterTree> typeParams = new ArrayList<TypeParameterTree>();
+        for (TypeVariable typeVariable : et.getTypeVariables()) {
+            List<ExpressionTree> bounds = new ArrayList<ExpressionTree>();
+            TypeMirror bound = typeVariable.getUpperBound();
+            if (bound.getKind() != TypeKind.NULL) {
+                if (bound.getKind() == TypeKind.DECLARED) {
+                    ClassSymbol boundSymbol = (ClassSymbol) ((DeclaredType) bound).asElement();
+                    if (boundSymbol.getSimpleName().length() == 0 && (boundSymbol.flags() & Flags.COMPOUND) != 0) {
+                        bounds.add((ExpressionTree) make.Type(boundSymbol.getSuperclass()));
+                        for (Type iface : boundSymbol.getInterfaces()) {
+                            bounds.add((ExpressionTree) make.Type(iface));
+                        }
+                    } else if (!boundSymbol.getQualifiedName().contentEquals("java.lang.Object")) { //NOI18N
+                        //if the bound is java.lang.Object, do not generate the extends clause:
+
+                        bounds.add((ExpressionTree) make.Type(bound));
+                    }
+                } else {
+                    bounds.add((ExpressionTree) make.Type(bound));
+                }
+            }
+            typeParams.add(make.TypeParameter(typeVariable.asElement().getSimpleName(), bounds));
+        }
+
+        Tree returnType = make.Type(et.getReturnType());
+
+        List<VariableTree> params = new ArrayList<VariableTree>();
+        boolean isVarArgs = method.isVarArgs();
+        Iterator<? extends VariableElement> formArgNames = method.getParameters().iterator();
+        Iterator<? extends TypeMirror> formArgTypes = et.getParameterTypes().iterator();
+        ModifiersTree parameterModifiers = make.Modifiers(EnumSet.noneOf(Modifier.class));
+        while (formArgNames.hasNext() && formArgTypes.hasNext()) {
+            VariableElement formArgName = formArgNames.next();
+            TypeMirror formArgType = formArgTypes.next();
+            if (isVarArgs && !formArgNames.hasNext()) {
+                parameterModifiers = make.Modifiers(1L << 34,
+                        Collections.<AnnotationTree>emptyList());
+            }
+            params.add(make.Variable(parameterModifiers, formArgName.getSimpleName(), make.Type(formArgType), null));
+        }
+
+        List<ExpressionTree> throwsList = new ArrayList<ExpressionTree>();
+        for (TypeMirror tm : et.getThrownTypes()) {
+            throwsList.add((ExpressionTree) make.Type(tm));
+        }
+
+        ModifiersTree mt = make.Modifiers(flags, Collections.<AnnotationTree>emptyList());
+
+        return make.Method(mt, method.getSimpleName(), returnType, typeParams, params, throwsList, "{}", null);
+    }
+
     /**
      * Creates a class constructor.
-     * 
+     *
      * @param clazz the class to create the constructor for
      * @param fields fields to be initialized by the constructor
      * @param constructor inherited constructor to be called
@@ -257,21 +337,28 @@ public final class GeneratorUtilities {
         Set<Modifier> mods = EnumSet.of(clazz.getKind() == ElementKind.ENUM ? Modifier.PRIVATE : Modifier.PUBLIC);
         List<VariableTree> parameters = new ArrayList<VariableTree>();
         List<StatementTree> statements = new ArrayList<StatementTree>();
-        ModifiersTree parameterModifiers = make.Modifiers(EnumSet.noneOf(Modifier.class));        
-        if (constructor != null && !constructor.getParameters().isEmpty()) {
+        ModifiersTree parameterModifiers = make.Modifiers(EnumSet.noneOf(Modifier.class));
+        List<ExpressionTree> throwsList = new LinkedList<ExpressionTree>();
+        if (constructor != null) {
             ExecutableType constructorType = clazz.getSuperclass().getKind() == TypeKind.DECLARED ? (ExecutableType) copy.getTypes().asMemberOf((DeclaredType) clazz.getSuperclass(), constructor) : null;
-            List<ExpressionTree> arguments = new ArrayList<ExpressionTree>();
-            Iterator<? extends VariableElement> parameterElements = constructor.getParameters().iterator();
-            Iterator<? extends TypeMirror> parameterTypes = constructorType != null ? constructorType.getParameterTypes().iterator() : null;
-            while (parameterElements.hasNext()) {
-                VariableElement ve = parameterElements.next();
-                Name simpleName = ve.getSimpleName();
-                TypeMirror type = parameterTypes != null ? parameterTypes.next() : ve.asType();
-                
-                parameters.add(make.Variable(parameterModifiers, simpleName, make.Type(type), null));
-                arguments.add(make.Identifier(simpleName));
+            if (!constructor.getParameters().isEmpty()) {
+                List<ExpressionTree> arguments = new ArrayList<ExpressionTree>();
+                Iterator<? extends VariableElement> parameterElements = constructor.getParameters().iterator();
+                Iterator<? extends TypeMirror> parameterTypes = constructorType != null ? constructorType.getParameterTypes().iterator() : null;
+                while (parameterElements.hasNext()) {
+                    VariableElement ve = parameterElements.next();
+                    Name simpleName = ve.getSimpleName();
+                    TypeMirror type = parameterTypes != null ? parameterTypes.next() : ve.asType();
+
+                    parameters.add(make.Variable(parameterModifiers, simpleName, make.Type(type), null));
+                    arguments.add(make.Identifier(simpleName));
+                }
+                statements.add(make.ExpressionStatement(make.MethodInvocation(Collections.<ExpressionTree>emptyList(), make.Identifier("super"), arguments))); //NOI18N
             }
-            statements.add(make.ExpressionStatement(make.MethodInvocation(Collections.<ExpressionTree>emptyList(), make.Identifier("super"), arguments))); //NOI18N
+            constructorType = constructorType != null ? constructorType : (ExecutableType) constructor.asType();
+            for (TypeMirror th : constructorType.getThrownTypes()) {
+                throwsList.add((ExpressionTree) make.Type(th));
+            }
         }
         for (VariableElement ve : fields) {
             TypeMirror type = copy.getTypes().asMemberOf((DeclaredType)clazz.asType(), ve);
@@ -279,12 +366,12 @@ public final class GeneratorUtilities {
             statements.add(make.ExpressionStatement(make.Assignment(make.MemberSelect(make.Identifier("this"), ve.getSimpleName()), make.Identifier(ve.getSimpleName())))); //NOI18N
         }
         BlockTree body = make.Block(statements, false);
-        return make.Method(make.Modifiers(mods), "<init>", null, Collections.<TypeParameterTree> emptyList(), parameters, Collections.<ExpressionTree>emptyList(), body, null); //NOI18N
+        return make.Method(make.Modifiers(mods), "<init>", null, Collections.<TypeParameterTree> emptyList(), parameters, throwsList, body, null); //NOI18N
     }
-    
+
     /**
      * Creates a class constructor.
-     * 
+     *
      * @param clazz the class to create the constructor for
      * @param fields fields to be initialized by the constructor
      * @return the constructor
@@ -296,7 +383,7 @@ public final class GeneratorUtilities {
         Set<Modifier> mods = EnumSet.of(copy.getTreeUtilities().isEnum(clazz) ? Modifier.PRIVATE : Modifier.PUBLIC);
         List<VariableTree> parameters = new ArrayList<VariableTree>();
         List<StatementTree> statements = new ArrayList<StatementTree>();
-        ModifiersTree parameterModifiers = make.Modifiers(EnumSet.noneOf(Modifier.class));        
+        ModifiersTree parameterModifiers = make.Modifiers(EnumSet.noneOf(Modifier.class));
         for (VariableTree vt : fields) {
             parameters.add(make.Variable(parameterModifiers, vt.getName(), vt.getType(), null));
             statements.add(make.ExpressionStatement(make.Assignment(make.MemberSelect(make.Identifier("this"), vt.getName()), make.Identifier(vt.getName())))); //NOI18N
@@ -304,10 +391,10 @@ public final class GeneratorUtilities {
         BlockTree body = make.Block(statements, false);
         return make.Method(make.Modifiers(mods), "<init>", null, Collections.<TypeParameterTree> emptyList(), parameters, Collections.<ExpressionTree>emptyList(), body, null); //NOI18N
     }
-    
+
     /**
      * Creates a getter method for a field.
-     * 
+     *
      * @param clazz the class to create the getter within
      * @param field field to create getter for
      * @return the getter method
@@ -327,10 +414,10 @@ public final class GeneratorUtilities {
         BlockTree body = make.Block(Collections.singletonList(make.Return(make.Identifier(name))), false);
         return make.Method(make.Modifiers(mods), sb, make.Type(type), Collections.<TypeParameterTree>emptyList(), Collections.<VariableTree>emptyList(), Collections.<ExpressionTree>emptyList(), body, null);
     }
-    
+
     /**
      * Creates a getter method for a field.
-     * 
+     *
      * @param field field to create getter for
      * @return the getter method
      * @since 0.20
@@ -349,10 +436,10 @@ public final class GeneratorUtilities {
         BlockTree body = make.Block(Collections.singletonList(make.Return(make.Identifier(name))), false);
         return make.Method(make.Modifiers(mods), sb, type, Collections.<TypeParameterTree>emptyList(), Collections.<VariableTree>emptyList(), Collections.<ExpressionTree>emptyList(), body, null);
     }
-    
+
     /**
      * Creates a setter method for a field.
-     * 
+     *
      * @param clazz the class to create the setter within
      * @param field field to create setter for
      * @return the setter method
@@ -377,7 +464,7 @@ public final class GeneratorUtilities {
 
     /**
      * Creates a setter method for a field.
-     * 
+     *
      * @param clazz the class to create the setter within
      * @param field field to create setter for
      * @return the setter method
@@ -398,11 +485,11 @@ public final class GeneratorUtilities {
         BlockTree body = make.Block(Collections.singletonList(make.ExpressionStatement(make.Assignment(make.MemberSelect(isStatic? make.Identifier(clazz.getSimpleName()) : make.Identifier("this"), name), make.Identifier(name)))), false); //NOI18N
         return make.Method(make.Modifiers(mods), sb, make.Type(copy.getTypes().getNoType(TypeKind.VOID)), Collections.<TypeParameterTree>emptyList(), params, Collections.<ExpressionTree>emptyList(), body, null);
     }
-    
+
     /**
      * Take a tree as a parameter, replace resolved fully qualified names with
      * simple names and add imports to compilation unit during task commit.
-     * 
+     *
      * @param  original  resolved FQNs in the tree will be imported
      * @return the new tree containing simple names (QualIdents). Imports for
      *         them will be added during task commit.
@@ -411,7 +498,7 @@ public final class GeneratorUtilities {
         TranslateIdentifier translator = new TranslateIdentifier(copy, false, true, null);
         return (T) translator.translate(original);
     }
-    
+
     public <T extends Tree> T importComments(T original, CompilationUnitTree cut) {
         try {
             JCTree.JCCompilationUnit unit = (JCCompilationUnit) cut;
@@ -423,65 +510,14 @@ public final class GeneratorUtilities {
         }
         return original;
     }
-    
+
     // private implementation --------------------------------------------------
-    
+
     private MethodTree createMethod(ExecutableElement element, DeclaredType type) {
         TreeMaker make = copy.getTreeMaker();
-        Set<Modifier> mods = element.getModifiers();
-        Set<Modifier> flags = mods.isEmpty() ? EnumSet.noneOf(Modifier.class) : EnumSet.copyOf(mods);
-        boolean isAbstract = flags.remove(Modifier.ABSTRACT);
-        flags.remove(Modifier.NATIVE);
-        
-        ExecutableType et = (ExecutableType)element.asType();
-        try {
-            et = (ExecutableType)copy.getTypes().asMemberOf(type, element);
-        } catch (IllegalArgumentException iae) {}
-        List<TypeParameterTree> typeParams = new ArrayList<TypeParameterTree>();
-        for (TypeVariable typeVariable : et.getTypeVariables()) {
-            List<ExpressionTree> bounds = new ArrayList<ExpressionTree>();
-            TypeMirror bound = typeVariable.getUpperBound();
-            if (bound.getKind() != TypeKind.NULL) {
-                if (bound.getKind() == TypeKind.DECLARED) {
-                    ClassSymbol boundSymbol = (ClassSymbol)((DeclaredType)bound).asElement();
-                    if (boundSymbol.getSimpleName().length() == 0 && (boundSymbol.flags() & Flags.COMPOUND) != 0) {
-                        bounds.add((ExpressionTree)make.Type(boundSymbol.getSuperclass()));
-                        for (Type iface : boundSymbol.getInterfaces()) {
-                            bounds.add((ExpressionTree)make.Type(iface));
-                        }
-                    } else if (!boundSymbol.getQualifiedName().contentEquals("java.lang.Object")) { //NOI18N
-                        //if the bound is java.lang.Object, do not generate the extends clause:
-                        bounds.add((ExpressionTree)make.Type(bound));
-                    }
-                } else {
-                    bounds.add((ExpressionTree)make.Type(bound));
-                }
-            }
-            typeParams.add(make.TypeParameter(typeVariable.asElement().getSimpleName(), bounds));
-        }
+        boolean isAbstract = element.getModifiers().contains(Modifier.ABSTRACT);
 
-        Tree returnType = make.Type(et.getReturnType());
-
-        List<VariableTree> params = new ArrayList<VariableTree>();        
-        boolean isVarArgs = element.isVarArgs();
-        Iterator<? extends VariableElement> formArgNames = element.getParameters().iterator();
-        Iterator<? extends TypeMirror> formArgTypes = et.getParameterTypes().iterator();
-        ModifiersTree parameterModifiers = make.Modifiers(EnumSet.noneOf(Modifier.class));
-        while (formArgNames.hasNext() && formArgTypes.hasNext()) {
-            VariableElement formArgName = formArgNames.next();
-            TypeMirror formArgType = formArgTypes.next();
-            if (isVarArgs && !formArgNames.hasNext())
-                parameterModifiers = make.Modifiers(1L<<34, Collections.<AnnotationTree>emptyList());
-            params.add(make.Variable(parameterModifiers, formArgName.getSimpleName(), make.Type(formArgType), null));
-        }
-
-        List<ExpressionTree> throwsList = new ArrayList<ExpressionTree>();
-        for (TypeMirror tm : et.getThrownTypes()) {
-            throwsList.add((ExpressionTree)make.Type(tm));
-        }
-        
         BlockTree body;
-        List<AnnotationTree> annotations = new ArrayList<AnnotationTree>();
         if (isAbstract) {
             List<StatementTree> blockStatements = new ArrayList<StatementTree>();
             TypeElement uoe = copy.getElements().getTypeElement("java.lang.UnsupportedOperationException"); //NOI18N
@@ -495,12 +531,15 @@ public final class GeneratorUtilities {
             List<ExpressionTree> arguments = new ArrayList<ExpressionTree>();
             for (VariableElement ve : element.getParameters()) {
                 arguments.add(make.Identifier(ve.getSimpleName()));
-            }            
+            }
             MethodInvocationTree inv = make.MethodInvocation(Collections.<ExpressionTree>emptyList(), make.MemberSelect(make.Identifier("super"), element.getSimpleName()), arguments); //NOI18N
             StatementTree statement = copy.getTypes().getNoType(TypeKind.VOID) == element.getReturnType() ?
                 make.ExpressionStatement(inv) : make.Return(inv);
             body = make.Block(Collections.singletonList(statement), false);
         }
+
+        MethodTree prototype = createMethod(type, element);
+        ModifiersTree mt = prototype.getModifiers();
 
         //add @Override annotation:
         SpecificationVersion thisFOVersion = new SpecificationVersion(SourceLevelQuery.getSourceLevel(copy.getFileObject()));
@@ -508,27 +547,27 @@ public final class GeneratorUtilities {
 
         if (thisFOVersion.compareTo(version15) >= 0) {
             boolean generate = true;
-            
+
             if (thisFOVersion.compareTo(version15) == 0) {
                 generate = !element.getEnclosingElement().getKind().isInterface();
             }
-            
+
             if (generate) {
-                annotations.add(make.Annotation(make.Identifier("Override"), Collections.<ExpressionTree>emptyList())); //NOI18N
+               mt = make.addModifiersAnnotation(prototype.getModifiers(), make.Annotation(make.Identifier("Override"), Collections.<ExpressionTree>emptyList()));
             }
         }
-        
-        return make.Method(make.Modifiers(flags, annotations), element.getSimpleName(), returnType, typeParams, params, throwsList, body, null);
+
+        return make.Method(mt, prototype.getName(), prototype.getReturnType(), prototype.getTypeParameters(), prototype.getParameters(), prototype.getThrows(), body, null);
     }
-    
+
     private static class ClassMemberComparator {
-        
+
         public static int compare(Tree tree1, Tree tree2) {
             if (tree1 == tree2)
                 return 0;
             return getSortPriority(tree1) - getSortPriority(tree2);
         }
-        
+
         private static int getSortPriority(Tree tree) {
             int ret = 0;
             ModifiersTree modifiers = null;
@@ -557,5 +596,18 @@ public final class GeneratorUtilities {
             return ret;
         }
     }
-    
+
+    /**
+     * Tags first method in the list, in order to select it later inside editor
+     * @param methods list of methods to be implemented/overriden
+     */
+    private void tagFirst(List<MethodTree> methods) {
+        //tag first method body, if any
+        if (methods.size() > 0) {
+            BlockTree body = methods.get(0).getBody();
+            if (body != null && !body.getStatements().isEmpty()) {
+                copy.tag(body.getStatements().get(0), "methodBodyTag"); // NOI18N
+            }
+        }
+    }
 }

@@ -406,7 +406,7 @@ abstract class ContentModel {
                 if (current == max) return true;
                 
                 int store = food.mark();                
-                boolean accepted = peer.eat(food);                
+                boolean accepted = (peer == null)?false:peer.eat(food);
                 
                 if (accepted == false) {
                     food.reset(store);

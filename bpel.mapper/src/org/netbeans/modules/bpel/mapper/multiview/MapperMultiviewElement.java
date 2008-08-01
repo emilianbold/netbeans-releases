@@ -31,6 +31,7 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.io.Serializable;
 import java.util.Enumeration;
+import javax.swing.ActionMap;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
@@ -48,16 +49,25 @@ import org.netbeans.core.spi.multiview.MultiViewFactory;
 import org.netbeans.modules.bpel.core.BPELDataEditorSupport;
 import org.netbeans.modules.bpel.core.BPELDataObject;
 import org.netbeans.modules.bpel.mapper.model.BpelMapperFactory;
+import org.netbeans.modules.bpel.mapper.model.MapperTcContext;
 import org.netbeans.modules.bpel.mapper.palette.Palette;
-import org.netbeans.modules.bpel.mapper.tree.spi.MapperTcContext;
+import org.netbeans.modules.bpel.mapper.tree.actions.BpelCopyAction;
+import org.netbeans.modules.bpel.mapper.tree.actions.BpelCutAction;
+import org.netbeans.modules.bpel.mapper.tree.actions.BpelDeleteSelectionGraphAction;
+import org.netbeans.modules.bpel.mapper.tree.actions.BpelPasteAction;
 import org.netbeans.modules.soa.mappercore.Mapper;
 import org.netbeans.modules.soa.mappercore.model.MapperModel;
+import org.openide.actions.CopyAction;
+import org.openide.actions.CutAction;
+import org.openide.actions.DeleteAction;
+import org.openide.actions.PasteAction;
 import org.openide.awt.UndoRedo;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 import org.openide.windows.CloneableTopComponent;
 import org.openide.windows.TopComponent;
@@ -246,6 +256,25 @@ public abstract class MapperMultiviewElement extends TopComponent
 //        System.out.println("mapperTC showing "+getClass());
         super.componentShowing();
         myContextController.showMapper();
+        if (myMapper != null) {
+            ActionMap aMap = getActionMap();
+
+            BpelPasteAction paste = SystemAction.get(BpelPasteAction.class);
+            paste.initialize(myMapper);
+            aMap.put(SystemAction.get(PasteAction.class).getActionMapKey(), paste);
+
+            BpelCopyAction copy = SystemAction.get(BpelCopyAction.class);
+            copy.initialize(myMapper);
+            aMap.put(SystemAction.get(CopyAction.class).getActionMapKey(), copy);
+
+            BpelCutAction cut = SystemAction.get(BpelCutAction.class);
+            cut.initialize(myMapper);
+            aMap.put(SystemAction.get(CutAction.class).getActionMapKey(), cut);
+
+            BpelDeleteSelectionGraphAction del = SystemAction.get(BpelDeleteSelectionGraphAction.class);
+            del.initialize(myMapper);
+            aMap.put(SystemAction.get(DeleteAction.class).getActionMapKey(), del);
+        }
     }
 
     @Override
@@ -405,7 +434,7 @@ public abstract class MapperMultiviewElement extends TopComponent
                 myCookieProxyLookup);
         myContextController = createDesignContextController();
 //        initListeneres();
-    }
+   }
 
     protected void initializeUI() {
         // activate cur node
@@ -415,7 +444,7 @@ public abstract class MapperMultiviewElement extends TopComponent
         myMapperPanel.setLayout(new BorderLayout());
         myMapper = BpelMapperFactory.createMapper(null);
         myMapperPanel.add(myMapper, BorderLayout.CENTER);
-        myMapperPanel.add(new Palette(myMapper).getPanel(), BorderLayout.NORTH);
+        myMapperPanel.add(new Palette(myMapper).createMenuBar(), BorderLayout.NORTH);
 
         myErrorPanel = new MessagePanel(myMapper);
         myErrorPanel.setText("<b>It is Error Panel !!!</b>"); // NOI18N
@@ -424,7 +453,6 @@ public abstract class MapperMultiviewElement extends TopComponent
         setLayout(myCardLayout);
         add(myMapperPanel, MAPPER_PANEL_ID);
         add(myErrorPanel, MessagePanel.MESSAGE_PANEL_ID);
-
     }
 
     private void activateContextNode() {
@@ -634,6 +662,4 @@ public abstract class MapperMultiviewElement extends TopComponent
         //
         initializeUI();
     }
-
-
 }

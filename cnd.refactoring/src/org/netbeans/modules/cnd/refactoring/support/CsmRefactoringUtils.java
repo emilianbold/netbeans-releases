@@ -27,23 +27,11 @@
  */
 package org.netbeans.modules.cnd.refactoring.support;
 
-import java.awt.Color;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
-import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.StyleConstants;
-import org.netbeans.api.editor.mimelookup.MimeLookup;
-import org.netbeans.api.editor.settings.FontColorSettings;
-import org.netbeans.api.lexer.Language;
-import org.netbeans.api.lexer.LanguagePath;
-import org.netbeans.api.lexer.Token;
-import org.netbeans.api.lexer.TokenHierarchy;
-import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.project.Project;
-import org.netbeans.cnd.api.lexer.CndLexerUtilities;
-import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
@@ -66,6 +54,7 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
 import org.netbeans.modules.cnd.api.project.NativeProject;
+import org.netbeans.modules.cnd.modelutil.CsmDisplayUtilities;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
@@ -173,7 +162,7 @@ public class CsmRefactoringUtils {
         CsmUID<T> uid = null;
         if (CsmKindUtilities.isIdentifiable(element)) {
             uid = ((CsmIdentifiable<T>)element).getUID();
-            boolean checkAssert = false;
+            boolean checkAssert = true;
             assert checkAssert = true;
             if (checkAssert && (uid.getObject() == null)) {
                 System.err.println("UID " + uid + "can't return object " + element);
@@ -208,7 +197,7 @@ public class CsmRefactoringUtils {
         if (CsmKindUtilities.isOffsetable(obj)) {
             return getHtml((CsmOffsetable)obj);
         } else if (CsmKindUtilities.isFile(obj)) {
-            return htmlize(((CsmFile)obj).getName().toString());
+            return CsmDisplayUtilities.htmlize(((CsmFile)obj).getName().toString());
         } else {
             return obj.toString();
         }
@@ -272,123 +261,16 @@ public class CsmRefactoringUtils {
                 }
                 int startLine = org.netbeans.editor.Utilities.getRowFirstNonWhite(doc, stOffset);
                 int endLine = org.netbeans.editor.Utilities.getRowLastNonWhite(doc, endOffset) + endLineOffset;
-                displayText = CsmRefactoringUtils.getHtml(startLine, endLine, -1, -1, doc);
+                displayText = CsmDisplayUtilities.getLineHtml(startLine, endLine, -1, -1, doc);
             } catch (BadLocationException ex) {
             }            
         }
         if (displayText == null) {
-            displayText = htmlize(obj.getText().toString());
+            displayText = CsmDisplayUtilities.htmlize(obj.getText().toString());
         }
         return displayText;
     }
 
-    public static String getHtml(int startLine, int endLine, final int stToken, final int endToken, BaseDocument doc) throws BadLocationException {
-        int startBold = stToken - startLine;
-        int endBold = endToken - startLine;
-        String content = doc.getText(startLine, endLine - startLine);
-
-        String mime = (String) doc.getProperty("mimeType"); // NOI18N
-        if (startBold >= 0 && endBold >= 0) {
-            StringBuilder buf = new StringBuilder();
-            buf.append(getHtml(mime, trimStart(content.substring(0, startBold))));
-            buf.append("<b>"); //NOI18N
-            buf.append(getHtml(mime, content.substring(startBold,endBold)));
-            buf.append("</b>");//NOI18N
-            buf.append(getHtml(mime, trimEnd(content.substring(endBold))));
-            return buf.toString();
-        } else {
-            return getHtml(mime, content);
-        }
-    }
-    
-    public static String getHtml(String mime, String content) {
-        final StringBuilder buf = new StringBuilder();
-        Language<CppTokenId> lang = CndLexerUtilities.getLanguage(mime);
-        if (lang == null) {
-            return content;
-        }
-        TokenHierarchy tokenH = TokenHierarchy.create(content, lang);
-        TokenSequence<?> tok = tokenH.tokenSequence();
-        appendHtml(buf, tok);
-        return buf.toString();        
-    }
-
-    private static void appendHtml(StringBuilder buf, TokenSequence<?> ts) {
-        FontColorSettings settings = null;
-        LanguagePath languagePath = ts.languagePath();
-        while (languagePath != null && settings == null) {
-            String mime = languagePath.mimePath();
-            Lookup lookup = MimeLookup.getLookup(mime);
-            settings = lookup.lookup(FontColorSettings.class);       
-        }
-        while (ts.moveNext()) {
-            Token<?> token = ts.token();
-            TokenSequence<?> es = ts.embedded();
-            if (es != null && es.language() == CppTokenId.languagePreproc()) {
-                appendHtml(buf, es);
-            } else {
-                String category = token.id().primaryCategory();
-                if (category == null) {
-                    category = CppTokenId.WHITESPACE_CATEGORY; //NOI18N
-                }
-                String text;
-                if (CppTokenId.WHITESPACE_CATEGORY.equals(category)) {
-                    // whitespace
-                    text = " "; // NOI18N
-                } else {
-                    text = token.text().toString();
-                }
-                if (settings != null) {
-                    AttributeSet set = settings.getTokenFontColors(category);
-                    buf.append(color(htmlize(text), set));
-                } else {
-                    buf.append(text);
-                }
-            }
-        }            
-    }
-    
-    public static String htmlize(String input) {
-        String temp = org.openide.util.Utilities.replaceString(input, "<", "&lt;"); // NOI18N
-        temp = org.openide.util.Utilities.replaceString(temp, ">", "&gt;"); // NOI18N
-        return temp;
-    }
-    
-    private static String color(String string, AttributeSet set) {
-        if (set==null)
-            return string;
-        if (string.trim().length() == 0) {
-            return org.openide.util.Utilities.replaceString(org.openide.util.Utilities.replaceString(string, " ", "&nbsp;"), "\n", "<br>"); //NOI18N
-        } 
-        StringBuilder buf = new StringBuilder(string);
-        if (StyleConstants.isBold(set)) {
-            buf.insert(0,"<b>"); //NOI18N
-            buf.append("</b>"); //NOI18N
-        }
-        if (StyleConstants.isItalic(set)) {
-            buf.insert(0,"<i>"); //NOI18N
-            buf.append("</i>"); //NOI18N
-        }
-        if (StyleConstants.isStrikeThrough(set)) {
-            buf.insert(0,"<s>"); // NOI18N
-            buf.append("</s>"); // NOI18N
-        }
-        buf.insert(0,"<font color=" + getHTMLColor(StyleConstants.getForeground(set)) + ">"); //NOI18N
-        buf.append("</font>"); //NOI18N
-        return buf.toString();
-    }
-    
-    private static String getHTMLColor(Color c) {
-        String colorR = "0" + Integer.toHexString(c.getRed()); //NOI18N
-        colorR = colorR.substring(colorR.length() - 2); 
-        String colorG = "0" + Integer.toHexString(c.getGreen()); //NOI18N
-        colorG = colorG.substring(colorG.length() - 2);
-        String colorB = "0" + Integer.toHexString(c.getBlue()); //NOI18N
-        colorB = colorB.substring(colorB.length() - 2);
-        String html_color = "#" + colorR + colorG + colorB; //NOI18N
-        return html_color;
-    }  
-    
     ////////////////////////////////////////////////////////////////////////////
     // by-offset methods
     
@@ -474,27 +356,5 @@ public class CsmRefactoringUtils {
             obj = csmOffsetable.getContainingFile();
         }
         return obj;
-    }
-    
-    private static String trimStart(String s) {
-        for (int x = 0; x < s.length(); x++) {
-            if (Character.isWhitespace(s.charAt(x))) {
-                continue;
-            } else {
-                return s.substring(x, s.length());
-            }
-        }
-        return "";
-    }
-    
-    private static String trimEnd(String s) {
-        for (int x = s.length()-1; x >=0; x--) {
-            if (Character.isWhitespace(s.charAt(x))) {
-                continue;
-            } else {
-                return s.substring(0, x + 1);
-            }
-        }
-        return "";
-    }    
+    } 
 }

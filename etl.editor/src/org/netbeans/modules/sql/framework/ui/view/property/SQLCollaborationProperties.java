@@ -38,20 +38,38 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.sql.framework.ui.view.property;
 
 import com.sun.sql.framework.exception.BaseException;
+import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.Font;
+import net.java.hulp.i18n.Logger;
+import org.netbeans.modules.etl.ui.ETLDataObject;
+import org.netbeans.modules.sql.framework.model.SQLDBModel;
 import org.netbeans.modules.sql.framework.model.SQLDefinition;
+import org.netbeans.modules.etl.logger.Localizer;
 import org.netbeans.modules.sql.framework.ui.view.BasicTopView;
-import org.openide.util.Exceptions;
-
+import java.beans.PropertyEditor;
+import java.beans.PropertyEditorSupport;
+import javax.swing.BorderFactory;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.SwingConstants;
+import org.openide.nodes.Node;
+import org.netbeans.modules.etl.ui.model.impl.ETLCollaborationModel;
+import org.netbeans.modules.etl.ui.DataObjectProvider;
+import org.netbeans.modules.etl.ui.view.ETLCollaborationTopPanel;
+import org.netbeans.modules.etl.ui.view.EditDBModelPanel;
+import org.netbeans.modules.sql.framework.model.SQLConstants;
 
 /**
  * @author Ahimanikya Satapathy
  */
 public class SQLCollaborationProperties {
 
+    private static transient final Logger mLogger = Logger.getLogger(SQLCollaborationProperties.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
     SQLDefinition sqlDef;
     BasicTopView editor;
 
@@ -60,6 +78,15 @@ public class SQLCollaborationProperties {
         this.editor = editor;
     }
 
+    public PropertyEditor getCustomEditor(Node.Property property) {
+        if (property.getName().equals("targetConnections")) {
+            return new DBModelEditor(SQLConstants.TARGET_DBMODEL);
+        } else if (property.getName().equals("sourceConnections")) {
+            return new DBModelEditor(SQLConstants.SOURCE_DBMODEL);
+        }
+        return null;
+    }
+    
     /**
      * Gets display name of this table.
      * 
@@ -76,7 +103,7 @@ public class SQLCollaborationProperties {
     public Integer getExecutionStrategyCode() {
         return this.sqlDef.getExecutionStrategyCode();
     }
-    
+
     /**
      * Sets display name to given value.
      *
@@ -85,7 +112,7 @@ public class SQLCollaborationProperties {
     public void setDisplayName(String newName) {
         this.sqlDef.setDisplayName(newName);
     }
-    
+
     /**
      * Sets execution stratergy codefor this collaboration.
      * @param code execution stratergy code
@@ -94,46 +121,114 @@ public class SQLCollaborationProperties {
         this.sqlDef.setExecutionStrategyCode(code);
         setDirty(true);
     }
-    
-    
-    public void setWorkingFolder(String appDataRoot) {
-        this.sqlDef.setWorkingFolder(appDataRoot);
+
+    public void setAxiondbWorkingDirectory(String appDataRoot) {
+        this.sqlDef.setAxiondbWorkingDirectory(appDataRoot);
         setDirty(true);
     }
-    
-    public void setDbInstanceName(String dbInstanceName) {
-        this.sqlDef.setDbInstanceName(dbInstanceName);
+
+    public void setAxiondbDataDirectory(String dbInstanceName) {
+        this.sqlDef.setAxiondbDataDirectory(dbInstanceName);
         setDirty(true);
     }
-    
-    public String getWorkingFolder() {
-        return this.sqlDef.getDBWorkingFolder();
+
+    public String getAxiondbWorkingDirectory() {
+        return this.sqlDef.getAxiondbWorkingDirectory();
+    }
+
+    public String getAxiondbDataDirectory() {
+        return this.sqlDef.getAxiondbDataDirectory();
     }
     
-    public String getDbInstanceName() {
-        return this.sqlDef.getDbInstanceName();
+    public boolean isDynamicFlatFile() {
+        return this.sqlDef.isDynamicFlatFile();
     }
     
-    public String getSourceModelName(){
-        try {
-            return this.sqlDef.getSourceDatabaseModels().get(0).getETLDBConnectionDefinition().getConnectionURL();
-        } catch (BaseException ex) {
-            Exceptions.printStackTrace(ex);
-            return "";
+    public boolean getDynamicFlatFile() {
+        return isDynamicFlatFile();
+    }
+    
+    public void setDynamicFlatFile(boolean flag) {
+        this.sqlDef.setDynamicFlatFile(flag);
+    }
+    
+
+    public String getSourceConnections() throws BaseException {
+        String conNames = "";
+        //Check if the list is zero
+        int i = 0;
+        for (SQLDBModel dbmodel : sqlDef.getSourceDatabaseModels()) {
+            if (i++ > 0) {
+                conNames += "," + dbmodel.getModelName();
+            } else {
+                conNames += dbmodel.getModelName();
+            }
         }
+        return conNames;
     }
-    
-    public String getTargetModelName(){
-        try {
-            return this.sqlDef.getTargetDatabaseModels().get(0).getETLDBConnectionDefinition().getConnectionURL();
-        } catch (BaseException ex) {
-            Exceptions.printStackTrace(ex);
-            return "";
+
+    public String getTargetConnections() {
+        String conNames = "";
+        //Check if the list is zero
+        int i = 0;
+        for (SQLDBModel dbmodel : sqlDef.getTargetDatabaseModels()) {
+            if (i++ > 0) {
+                conNames += "," + dbmodel.getModelName();
+            } else {
+                conNames += dbmodel.getModelName();
+            }
         }
+        return conNames;
     }
-    
+
     protected void setDirty(boolean dirty) {
         editor.setDirty(dirty);
+    }
+
+    public static class DBModelEditor extends PropertyEditorSupport {
+
+        int modelType;
+
+        public DBModelEditor(int type) {
+            super();
+            modelType = type;
+        }
+
+        @Override
+        public Component getCustomEditor() {
+            ETLCollaborationTopPanel etlEditor = null;
+            try {
+                etlEditor = DataObjectProvider.getProvider().getActiveDataObject().getETLEditorTopPanel();
+            } catch (Exception ex) {
+                // ignore
+            }
+            ETLCollaborationModel collabModel = DataObjectProvider.getProvider().getActiveDataObject().getModel();
+            if (etlEditor != null && collabModel != null) {
+                String nbBundle7 = mLoc.t("BUND163: Modify design-time database properties for this session.");
+                JLabel panelTitle = new JLabel(nbBundle7.substring(15));
+                panelTitle.getAccessibleContext().setAccessibleName(nbBundle7.substring(15));
+                panelTitle.setDisplayedMnemonic(nbBundle7.substring(15).charAt(0));
+                panelTitle.setFont(panelTitle.getFont().deriveFont(Font.BOLD));
+                panelTitle.setFocusable(false);
+                panelTitle.setHorizontalAlignment(SwingConstants.LEADING);
+                ETLDataObject dObj = DataObjectProvider.getProvider().getActiveDataObject();
+
+                EditDBModelPanel editPanel = new EditDBModelPanel(dObj, modelType);
+
+                JPanel contentPane = new JPanel();
+                contentPane.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
+                contentPane.setLayout(new BorderLayout());
+                contentPane.add(panelTitle, BorderLayout.NORTH);
+                contentPane.add(editPanel, BorderLayout.CENTER);
+                return contentPane;
+            }
+            return null;
+        }
+
+        @Override
+        public boolean supportsCustomEditor() {
+            return true;
+        }
     }
 }
 

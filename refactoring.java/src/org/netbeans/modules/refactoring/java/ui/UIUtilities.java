@@ -118,6 +118,8 @@ public final class UIUtilities {
             if (value instanceof MemberInfo) {
                 Icon i = ((MemberInfo) value).getIcon();
                 setIcon(i); 
+            } else {
+                setIcon(null);
             }
             return this;
         }

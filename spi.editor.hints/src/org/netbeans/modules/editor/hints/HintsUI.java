@@ -94,6 +94,7 @@ public class HintsUI implements MouseListener, KeyListener, PropertyChangeListen
     
     private static HintsUI INSTANCE;
     private static final String POPUP_NAME = "hintsPopup"; // NOI18N
+    private static final int POPUP_VERTICAL_OFFSET = 5;
     
     public static synchronized HintsUI getDefault() {
         if (INSTANCE == null)
@@ -270,20 +271,42 @@ public class HintsUI implements MouseListener, KeyListener, PropertyChangeListen
                     comp, errorTooltip, p.x, p.y);
         } else {
             assert hintListComponent == null;
+
+            int rowHeight = 14; //default
             
+            hintListComponent =
+                    new ScrollCompletionPane(comp, fixes, null, null, getMaxSizeAt( p ));
+
+            Dimension popup = hintListComponent.getPreferredSize();
+            Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
+            boolean exceedsHeight = p.y + popup.height > screen.height;
+
             try {
                 int pos = javax.swing.text.Utilities.getRowStart(comp, comp.getCaret().getDot());
                 Rectangle r = comp.modelToView (pos);
+                rowHeight = r.height;
+
+                int y;
+                if (exceedsHeight)
+                    y = p.y + POPUP_VERTICAL_OFFSET;
+                else
+                    y = p.y-rowHeight-errorTooltip.getPreferredSize().height-POPUP_VERTICAL_OFFSET;
 
                 tooltipPopup = getPopupFactory().getPopup(
-                        comp, errorTooltip, p.x, p.y-r.height-errorTooltip.getPreferredSize().height-5);
+                        comp, errorTooltip, p.x, y);
             } catch( BadLocationException blE ) {
                 ErrorManager.getDefault().notify (blE);
                 errorTooltip = null;
             }
-            hintListComponent =
-                    new ScrollCompletionPane(comp, fixes, null, null, getMaxSizeAt( p ));
-            
+
+            if(exceedsHeight) {
+                p.y -= popup.height + rowHeight + POPUP_VERTICAL_OFFSET;
+            }
+
+            if(p.x + popup.width > screen.width) { //shift popup left necessary
+                p.x -= p.x + popup.width - screen.width;
+            }
+
             hintListComponent.getView().addMouseListener (this);
             hintListComponent.setName(POPUP_NAME);
             assert listPopup == null;
@@ -376,7 +399,7 @@ public class HintsUI implements MouseListener, KeyListener, PropertyChangeListen
                 if (a instanceof ParseErrorAnnotation) {
                     ParseErrorAnnotation pa = (ParseErrorAnnotation) a;
 
-                    if (lineNum == pa.getLineNumber()
+                    if (lineNum == pa.getLineNumber() && desc != null
                             && org.openide.util.Utilities.compareObjects(desc.getShortDescription(), a.getShortDescription())) {
                         return pa;
                     }

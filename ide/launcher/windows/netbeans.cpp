@@ -584,7 +584,7 @@ void ErrorExit(LPTSTR lpszMessage, LPTSTR lpszFunction)
 }
     
 // Seaches if -Xmx is specified in existing arguments
-// If it isn't it adds it - 20% of available RAM-200MB but min is 96M and max 512M
+// If it isn't it adds it - 20% of available RAM but min is 96M and max 512M
 void adjustHeapSize() {
 
     MEMORYSTATUS ms;
@@ -593,17 +593,14 @@ void adjustHeapSize() {
     if (strstr(options, "-J-Xmx") == NULL) {
         // find how much memory we have and add -Xmx
         GlobalMemoryStatus(&ms);
-        DWORDLONG memory = ((ms.dwTotalPhys / 1024 / 1024) - 200) / 5;
+        DWORDLONG memory = (ms.dwTotalPhys / 1024 / 1024) / 5;
         if (memory < 96) {
             memory = 96;
-         }
+        }
         else if (memory > 512) {
             memory = 512;
         }
         sprintf(buf, " -J-Xmx%ldm", memory);
         strcat(options, buf);
-        if (memory >= 256) {
-            strcat(options, " -J-XX:+UseConcMarkSweepGC -J-XX:+CMSClassUnloadingEnabled -J-XX:+CMSPermGenSweepingEnabled");
-        }
     }
 }

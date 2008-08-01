@@ -225,6 +225,12 @@ public class CompLibManagerPanel extends javax.swing.JPanel {
         JScrollBar hBar = complibListScroll.getHorizontalScrollBar();
         hBar.setValue(hBar.getMinimum());
     }
+    
+    @Override
+    public void addNotify() {
+        super.addNotify();
+        compLibSplit.setDividerLocation(0.5);
+    }
 
     /**
      * Initialize the tree model and also set a selected node if possible.

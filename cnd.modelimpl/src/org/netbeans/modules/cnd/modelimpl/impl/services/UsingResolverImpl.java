@@ -43,14 +43,25 @@ package org.netbeans.modules.cnd.modelimpl.impl.services;
 
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Queue;
+import java.util.Set;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmListeners;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceAlias;
+import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmProgressListener;
 import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.model.CsmUsingDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmUsingDirective;
+import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmUsingResolver;
 
 /**
@@ -69,10 +80,70 @@ public class UsingResolverImpl extends CsmUsingResolver implements CsmProgressLi
         return getCollector(file, offset, onlyInProject).getUsedDeclarations();
     }
     
-    public Collection<CsmNamespace> findVisibleNamespaces(CsmFile file, int offset, CsmProject onlyInProject) {
-        return getCollector(file, offset, onlyInProject).getVisibleNamespaces();
+    public Collection<CsmDeclaration> findUsedDeclarations(CsmNamespace namespace) {
+        CsmDeclaration.Kind[] kinds = { CsmDeclaration.Kind.USING_DECLARATION };
+        CsmSelect select = CsmSelect.getDefault();
+        List<CsmUsingDeclaration> res = new ArrayList<CsmUsingDeclaration>();
+        Iterator<CsmOffsetableDeclaration> udecls = select.getDeclarations(
+                    namespace, select.getFilterBuilder().createKindFilter(kinds));
+        while (udecls.hasNext()) {
+            res.add((CsmUsingDeclaration) udecls.next());
+        }
+        // Let's also look for similarly named namespace in libraries,
+        // like it's done in CsmProjectContentResolver.getNamespaceMembers()
+        if (!namespace.getProject().isArtificial() && !namespace.isGlobal()) {
+            for(CsmProject lib : namespace.getProject().getLibraries()){
+                CsmNamespace ns = lib.findNamespace(namespace.getQualifiedName());
+                if (ns != null) {
+                    Iterator<CsmOffsetableDeclaration> it = select.getDeclarations(
+                            ns, select.getFilterBuilder().createKindFilter(kinds));
+                    while (it.hasNext()) {
+                        res.add((CsmUsingDeclaration) it.next());
+                    }
+                }
+            }
+        }
+        return extractDeclarations(res);
     }
     
+    public Collection<CsmNamespace> findVisibleNamespaces(CsmFile file, int offset, CsmProject onlyInProject) {
+        Set<CsmNamespace> seen = new LinkedHashSet<CsmNamespace>();
+        Queue<CsmNamespace> queue = new LinkedList<CsmNamespace>(
+                getCollector(file, offset, onlyInProject).getVisibleNamespaces());
+        findVisibleNamespacesBfs(seen, queue, onlyInProject);
+        return seen;
+    }
+
+    private void findVisibleNamespacesBfs(Set<CsmNamespace> seen, Queue<CsmNamespace> queue, CsmProject onlyInProject) {
+        // breadth-first search in namespace inclusion graph
+        while (!queue.isEmpty()) {
+            CsmNamespace namespace = queue.poll();
+            for (CsmNamespace used : findVisibleNamespaces(namespace)) {
+                if (!seen.contains(used) && !queue.contains(used) &&
+                        (onlyInProject == null || onlyInProject == used.getProject())) {
+                    queue.add(used);
+                }
+            }
+            seen.add(namespace);
+        }
+    }
+
+//    public Collection<CsmNamespaceDefinition> findDirectVisibleNamespaceDefinitions(CsmFile file, int offset, CsmProject onlyInProject) {
+//        return getCollector(file, offset, onlyInProject).getDirectVisibleNamespaceDefinitions();
+//    }
+    
+    public Collection<CsmUsingDirective> findUsingDirectives(CsmNamespace namespace) {
+        CsmDeclaration.Kind[] kinds = { CsmDeclaration.Kind.USING_DIRECTIVE };
+        CsmSelect select = CsmSelect.getDefault();
+        List<CsmUsingDirective> res = new ArrayList<CsmUsingDirective>();
+        Iterator<CsmOffsetableDeclaration> udirs = select.getDeclarations(
+                    namespace, select.getFilterBuilder().createKindFilter(kinds));
+        while (udirs.hasNext()) {
+            res.add((CsmUsingDirective)udirs.next());
+        }
+        return res;
+    }
+
     public Collection<CsmNamespaceAlias> findNamespaceAliases(CsmFile file, int offset, CsmProject onlyInProject) {
         return getCollector(file, offset, onlyInProject).getNamespaceAliases();
     }
@@ -93,7 +164,10 @@ public class UsingResolverImpl extends CsmUsingResolver implements CsmProgressLi
                 if (search == null || !search.valid(file, offset, onlyInProject)) {
                     FileElementsCollector collector = new FileElementsCollector(file, offset, onlyInProject);
                     search = new SearchInfo(file, offset, onlyInProject, collector);
-                    lastSearch = new SoftReference(search);
+                    lastSearch = new SoftReference<SearchInfo>(search);
+                } else {
+                    search.offset = offset;
+                    search.collector.incrementOffset(offset);
                 }
                 assert search != null;
                 assert search.collector != null;
@@ -104,7 +178,7 @@ public class UsingResolverImpl extends CsmUsingResolver implements CsmProgressLi
     
     private static final class SearchInfo {
         public final CsmFile file;
-        public final int offset;
+        public int offset;
         public final FileElementsCollector collector;
         public final CsmProject onlyInProject;
         public SearchInfo(CsmFile file, int offset, CsmProject onlyInProject, FileElementsCollector collector) {
@@ -115,7 +189,7 @@ public class UsingResolverImpl extends CsmUsingResolver implements CsmProgressLi
         }
         
         private boolean valid(CsmFile file, int offset, CsmProject onlyInProject) {
-            return this.file.equals(file) && this.offset == offset && this.onlyInProject == onlyInProject;
+            return this.file.equals(file) && this.offset <= offset && this.onlyInProject == onlyInProject;
         }
     }
     

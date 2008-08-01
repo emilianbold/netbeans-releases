@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='ISO-8859-1'  ?>
 <!--
-*     Copyright © 2007 Sun Microsystems, Inc. All rights reserved.
+*     Copyright © 2008 Sun Microsystems, Inc. All rights reserved.
 *     Use is subject to license terms.
 -->
 <!DOCTYPE toc PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp TOC Version 2.0//EN" "http://java.sun.com/products/javahelp/toc_2_0.dtd">
@@ -199,7 +199,7 @@
     <tocitem text="Configuring Internationalization Settings" target="internation.settings" />
     </tocitem>     
     
-    <tocitem text="Using the Spring Framework">
+    <tocitem text="Working with the Spring Framework">
         <tocitem text="About Spring Framework Support" target="spring.framework.about"/>
 	<tocitem text="Adding Spring Support to a Project" target="spring.framework.add"/>
 	<tocitem text="Creating a Spring Configuration File" target="spring.framework.create"/>
@@ -216,6 +216,12 @@
     <tocitem text="Switching Ant Versions" target="ant_version" />
     <tocitem text="Ant Classpath and Custom Tasks" target="ant_tasks-classpath" />     
     <tocitem text="Installing Ant Documentation" target="ant_docs" />
+    </tocitem>
+    
+    <tocitem text="Working with Groovy">
+        <tocitem text="About Working with Groovy" target="groovy_intro"/>
+	<tocitem text="Enabling a Java Application to Support Groovy" target="groovy_enable"/>
+	<tocitem text="Editing Groovy Source Files" target="groovy_edit"/>
     </tocitem>
     
     <tocitem text="Working With Javadoc Documentation">

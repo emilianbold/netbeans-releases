@@ -48,6 +48,7 @@ public class AstClassElement extends AstElement implements ClassElement {
         return name;
     }
 
+    @Override
     public String getFqn() {
         if (fqn == null) {
             return getName();

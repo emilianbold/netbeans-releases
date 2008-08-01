@@ -1,5 +1,5 @@
 #API master signature file
-#Version 1.8.1
+#Version 1.9
 CLSS public static abstract org.openide.util.Lookup$Item
 cons public Item()
 meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException

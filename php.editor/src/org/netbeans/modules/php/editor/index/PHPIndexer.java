@@ -43,28 +43,48 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
-import java.util.EnumSet;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import javax.swing.text.BadLocationException;
-import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.modules.gsf.api.Indexer;
-import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.gsf.api.ParserFile;
 import org.netbeans.modules.gsf.api.ParserResult;
-import org.netbeans.modules.gsf.api.TranslatedSource;
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Utilities;
 import org.netbeans.modules.gsf.api.IndexDocument;
 import org.netbeans.modules.gsf.api.IndexDocumentFactory;
+import org.netbeans.modules.php.editor.CodeUtils;
+import org.netbeans.modules.php.editor.PHPLanguage;
+import org.netbeans.modules.php.editor.PredefinedSymbols;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
+import org.netbeans.modules.php.editor.parser.api.Utils;
+import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
+import org.netbeans.modules.php.editor.parser.astnodes.ClassConstantDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.Comment;
+import org.netbeans.modules.php.editor.parser.astnodes.Expression;
+import org.netbeans.modules.php.editor.parser.astnodes.ExpressionStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.FieldsDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
+import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
+import org.netbeans.modules.php.editor.parser.astnodes.Include;
+import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocBlock;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTag;
+import org.netbeans.modules.php.editor.parser.astnodes.ParenthesisExpression;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
+import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
+import org.netbeans.modules.php.editor.parser.astnodes.SingleFieldDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Statement;
+import org.netbeans.modules.php.editor.parser.astnodes.Variable;
+import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
 
 /**
@@ -81,10 +101,15 @@ import org.openide.util.Exceptions;
  *     as function attributes.
  * @todo There are duplicate elements -- why???
  * 
- * @author Tor Norbye
+ * @author Tomasz.Slota@Sun.COM
  */
 public class PHPIndexer implements Indexer {
     static final boolean PREINDEXING = Boolean.getBoolean("gsf.preindexing");
+    private static final FileSystem MEM_FS = FileUtil.createMemoryFileSystem();
+    private static final Map<String,FileObject> EXT2FO = new HashMap<String,FileObject>();
+    // a workaround for issue #132388
+    private static final Collection<String>INDEXABLE_EXTENSIONS = Arrays.asList(
+            "php", "php3", "php4", "php5", "phtml", "inc"); //NOI18N
     
     // I need to be able to search several things:
     // (1) by function root name, e.g. quickly all functions that start
@@ -104,34 +129,53 @@ public class PHPIndexer implements Indexer {
     // ;flags;;args;offset;docoffset;browsercompat;types;
     // (between flags and args you have the case sensitive name for flags)
 
-    static final String FIELD_FQN = "fqn"; //NOI18N
     static final String FIELD_BASE = "base"; //NOI18N
     static final String FIELD_EXTEND = "extend"; //NOI18N
     static final String FIELD_CLASS = "clz"; //NOI18N
-    
-    
-    public PHPIndexer(){
-        System.err.println("PHP Indexer");
-    }
-    public boolean isIndexable(ParserFile file) {
-        if (file.getExtension().equals("php")) { // NOI18N
+    static final String FIELD_CONST = "const"; //NOI18N
+    static final String FIELD_CLASS_CONST = "clz.const"; //NOI18N
+    static final String FIELD_FIELD = "field"; //NOI18N
+    static final String FIELD_METHOD = "method"; //NOI18N
+    static final String FIELD_INCLUDE = "include"; //NOI18N
+    static final String FIELD_IDENTIFIER = "identifier"; //NOI18N
+    static final String FIELD_VAR = "var"; //NOI18N
 
-            // Skip Gem versions; Rails copies these files into the project anyway! Don't want
-            // duplicate entries.
-            if (PREINDEXING) {
-                try {
-                    //if (file.getRelativePath().startsWith("action_view")) {
-                    if (file.getFileObject().getURL().toExternalForm().indexOf("/gems/") != -1) {
-                        return false;
-                    }
-                } catch (FileStateInvalidException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            }
+    public boolean isIndexable(ParserFile file) {
+        // Cannot call file.getFileObject().getMIMEType() here for several reasons:
+        // (1) when cleaning up the index for deleted files, file.getFileObject().getMIMEType()
+        //   may return "content/unknown", and in some cases, file.getFileObject() returns null
+        // (2) file.getFileObject() can be expensive during startup indexing when we're
+        //   rapidly scanning through lots of directories to determine which files are
+        //   indexable. This is done using the java.io.File API rather than the more heavyweight
+        //   FileObject, and each file.getFileObject() will perform a FileUtil.toFileObject() call.
+        // Since the mime resolver for PHP is simple -- it's just based on the file extension,
+        // we perform the same check here:
+        //if (PHPLanguage.PHP_MIME_TYPE.equals(file.getFileObject().getMIMEType())) { // NOI18N
+        if (INDEXABLE_EXTENSIONS.contains(file.getExtension().toLowerCase())) {
             return true;
         }
         
-        return false;
+        return isPhpFile(file);
+    }
+
+    private boolean isPhpFile(ParserFile file) {
+        FileObject fo = null;
+        String ext = file.getExtension();
+        synchronized (EXT2FO) {
+            fo = (ext != null) ? EXT2FO.get(ext) : null;
+            if (fo == null) {
+                try {
+                    fo = FileUtil.createData(MEM_FS.getRoot(), file.getNameExt());
+                    if (ext != null && fo != null) {
+                        EXT2FO.put(ext, fo);
+                    }
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
+        assert fo != null;
+        return PHPLanguage.PHP_MIME_TYPE.equals(fo.getMIMEType());
     }
 
     public String getPersistentUrl(File file) {
@@ -150,6 +194,10 @@ public class PHPIndexer implements Indexer {
     public List<IndexDocument> index(ParserResult result, IndexDocumentFactory factory) throws IOException {
         PHPParseResult r = (PHPParseResult)result;
         
+        if (r.getProgram() == null){
+            return Collections.<IndexDocument>emptyList();
+        }
+        
         TreeAnalyzer analyzer = new TreeAnalyzer(r, factory);
         analyzer.analyze();
         
@@ -157,18 +205,23 @@ public class PHPIndexer implements Indexer {
     }
     
     public String getIndexVersion() {
-        return "6.111"; // NOI18N
+        // If you chane the index number, you have to regenerate preindexed
+        // php runtime files. Go to the php.project/tools, modify and run
+        // preindex.sh script. Also change the number of license in
+        // php.project/external/preindexed-php-license.txt
+        return "0.4.7"; // NOI18N
     }
 
     public String getIndexerName() {
-        return "javascript"; // NOI18N
+        return "php"; // NOI18N
     }
     
     private static class TreeAnalyzer {
         private final ParserFile file;
         private String url;
         private final PHPParseResult result;
-        private final BaseDocument doc;
+        private Program root;
+        //private final BaseDocument doc;
         private IndexDocumentFactory factory;
         private List<IndexDocument> documents = new ArrayList<IndexDocument>();
         
@@ -177,16 +230,16 @@ public class PHPIndexer implements Indexer {
             this.file = result.getFile();
             this.factory = factory;
 
-            FileObject fo = file.getFileObject();
+            /*FileObject fo = file.getFileObject();
 
             if (fo != null) {
                 this.doc = NbUtilities.getBaseDocument(fo, true);
             } else {
                 this.doc = null;
             }
-
+            */
             try {
-                url = file.getFileObject().getURL().toExternalForm();
+                url = file.getFile().toURI().toURL().toExternalForm();
 
                 // Make relative URLs for urls in the libraries
                 url = PHPIndex.getPreindexUrl(url);
@@ -203,203 +256,261 @@ public class PHPIndexer implements Indexer {
             
             IndexDocument document = factory.createDocument(40); // TODO - measure!
             documents.add(document);
+
+            root = result.getProgram();
+            String processedFileURL = null;
+
+            try {
+                processedFileURL = result.getFile().getFileObject().getURL().toExternalForm();
+
+            } catch (FileStateInvalidException ex) {
+                Exceptions.printStackTrace(ex);
+            }
             
-            Program program = result.getProgram();
+            assert processedFileURL.startsWith("file:");
+            String processedFileAbsPath = processedFileURL.substring("file:".length());
+            StringBuilder includes = new StringBuilder();
             
-            for (Statement statement : program.getStatements()){
+            for (Statement statement : root.getStatements()){
                 if (statement instanceof FunctionDeclaration){
-                    FunctionDeclaration functionDeclaration = (FunctionDeclaration)statement;
+                    indexFunction((FunctionDeclaration)statement, document);
+                } else if (statement instanceof ExpressionStatement){
+                    ExpressionStatement expressionStatement = (ExpressionStatement) statement;
                     
-                    String name = functionDeclaration.getFunctionName().getName();
+                    if (expressionStatement.getExpression() instanceof Assignment) {
+                        Assignment assignment = (Assignment) expressionStatement.getExpression();
+                        indexVarsInAssignment(assignment, document);
+                    }
                     
-                    document.addPair(FIELD_FQN, name, true);
-                    System.err.println("PHP Indexer: indexed function " + name);
+                    if (expressionStatement.getExpression() instanceof Include) {
+                        Include include = (Include) expressionStatement.getExpression();
+                        
+                        Expression argExpression = include.getExpression();
+                        
+                        if (argExpression instanceof ParenthesisExpression) {
+                            ParenthesisExpression parenthesisExpression = (ParenthesisExpression) include.getExpression();
+                            argExpression = parenthesisExpression.getExpression();
+                        }
+
+                        if (argExpression instanceof Scalar) {
+                            Scalar scalar = (Scalar) argExpression;
+                            String rawInclude = scalar.getStringValue();
+                            String incl = PHPIndex.resolveRelativeURL(processedFileAbsPath , PHPIndex.dequote(rawInclude));
+                            includes.append(incl + ";"); //NOI18N
+                        }
+                    }
+                    
+                    indexConstant(statement, document);
+                } else if (statement instanceof ClassDeclaration){
+                    // create a new document for each class
+                    IndexDocument classDocument = factory.createDocument(10);
+                    documents.add(classDocument);
+                    indexClass((ClassDeclaration)statement, classDocument);
                 }
             }
             
+            document.addPair(FIELD_INCLUDE, includes.toString(), false);
+            final IndexDocument idDocument = factory.createDocument(10);
+            documents.add(idDocument);            
+            DefaultVisitor visitor = new DefaultVisitor() {
+                @Override
+                public void visit(Identifier identifier) {
+                    StringBuilder idSignature = new StringBuilder();
+                    idSignature.append(identifier.getName().toLowerCase() + ";"); //NOI18N
+                    idSignature.append(identifier.getName() + ";"); //NOI18N
+                    idSignature.append(identifier.getStartOffset() + ";"); //NOI18N
+                    idDocument.addPair(FIELD_IDENTIFIER, idSignature.toString(), true);                    
+                    super.visit(identifier);                    
+                }                
+            };
+            visitor.scan(root);
+        }
+
+        private void indexClass(ClassDeclaration classDeclaration, IndexDocument document) {
+            StringBuilder classSignature = new StringBuilder();
+            classSignature.append(classDeclaration.getName().getName().toLowerCase() + ";"); //NOI18N
+            classSignature.append(classDeclaration.getName().getName() + ";"); //NOI18N
+            classSignature.append(classDeclaration.getStartOffset() + ";"); //NOI18N
             
-//            AnalysisResult ar = result.getStructure();
-//            List<?extends AstElement> children = ar.getElements();
-//
-//            if ((children == null) || (children.size() == 0)) {
-//                return;
-//            }
-//
-//            IndexDocument document = factory.createDocument(40); // TODO - measure!
-//            documents.add(document);
-//
-//            // Add the fields, etc.. Recursively add the children classes or modules if any
-//            for (AstElement child : children) {
-//                ElementKind childKind = child.getKind();
-//                if (childKind == ElementKind.CONSTRUCTOR || childKind == ElementKind.METHOD) {
-//                    String signature = computeSignature(child);
-//                    indexFuncOrProperty(child, document, signature);
-//                    String name = child.getName();
-//                    if (Character.isUpperCase(name.charAt(0))) {
-//                        indexClass(child, document, signature);
-//                    }
-//                } else if (childKind == ElementKind.GLOBAL || childKind == ElementKind.PROPERTY) {
-//                    indexFuncOrProperty(child, document, computeSignature(child));
-//                } else if (childKind == ElementKind.CLASS) {
-//                    // Nothing to be stored; inferred from methods or properties  
-//                } else {
-//                    assert false : childKind;
-//                }
-//                // XXX what about fields, constants, attributes?
-//                
-//                assert child.getChildren().size() == 0;
-//            }
-//
-//            Map<String,String> classExtends = ar.getExtendsMap();
-//            if (classExtends != null) {
-//                for (Map.Entry<String,String> entry : classExtends.entrySet()) {
-//                    String clz = entry.getKey();
-//                    String superClz = entry.getValue();
-//                    document.addPair(FIELD_EXTEND, clz.toLowerCase() + ";" + clz + ";" + superClz, true); // NOI18N
-//                }
-//            }
-        }
-
-        private void indexClass(AstElement element, IndexDocument document, String signature) {
-            final String name = element.getName();
-            document.addPair(FIELD_CLASS, name+ ";" + signature, true);
-        }
-
-        private String computeSignature(AstElement element) {
-            // Look up compatibility
-//            int index = IndexedElement.FLAG_INDEX;
-//            
-//            int docOffset = getDocumentationOffset(element);
-//            
-//            String compatibility = "";
-//            if (file.getNameExt().startsWith("stub_")) {
-//                int astOffset = element.getNode().getSourceStart();
-//                int lexOffset = astOffset;
-//                TranslatedSource source = result.getTranslatedSource();
-//                if (source != null) {
-//                    lexOffset = source.getLexicalOffset(astOffset);
-//                }
-//            }
-//
-//            assert index == IndexedElement.FLAG_INDEX;
-//            StringBuilder sb = new StringBuilder();
-//            int flags = IndexedElement.getFlags(element);
-//            if (docOffset != -1) {
-//                flags = flags | IndexedElement.DOCUMENTED;
-//            }
-//            sb.append(IndexedElement.encode(flags));
-//            
-//            // Parameters
-//            sb.append(";");
-//            index++;
-//            assert index == IndexedElement.ARG_INDEX;
-//            if (element instanceof FunctionAstElement) {
-//                FunctionAstElement func = (FunctionAstElement)element;            
-//
-//                int argIndex = 0;
-//                for (String param : func.getParameters()) {
-//                    if (argIndex == 0 && "$super".equals(param)) { // NOI18N
-//                        // Prototype inserts these as the first param to handle inheritance/super
-//                        argIndex++;
-//                        continue;
-//                    } 
-//                    if (argIndex > 0) {
-//                        sb.append(",");
-//                    }
-//                    sb.append(param);
-//                    argIndex++;
-//                }
-//            }
-//
-//            // Node offset
-//            sb.append(';');
-//            index++;
-//            assert index == IndexedElement.NODE_INDEX;
-//            sb.append("0");
-//            //sb.append(IndexedElement.encode(element.getNode().getSourceStart()));
-//            
-//            // Documentation offset
-//            sb.append(';');
-//            index++;
-//            assert index == IndexedElement.DOC_INDEX;
-//            if (docOffset != -1) {
-//                sb.append(IndexedElement.encode(docOffset));
-//            }
-//
-//            // Browser compatibility
-//            sb.append(";");
-//            index++;
-//            assert index == IndexedElement.BROWSER_INDEX;
-//            sb.append(compatibility);
-//            
-//            // Types
-//            sb.append(";");
-//            index++;
-//            assert index == IndexedElement.TYPE_INDEX;
-//            if (element.getKind() == ElementKind.GLOBAL) {
-//                String type = ((GlobalAstElement)element).getType();
-//                if (type != null) {
-//                    sb.append(type);
-//                }
-//            }
-//            // TBD
-//
-//            sb.append(';');
-//            String signature = sb.toString();
-//            return signature;
-            return null;
-        }
-
-        private void indexFuncOrProperty(AstElement element, IndexDocument document, String signature) {
-            String in = element.getIn();
-            String name = element.getName();
-            StringBuilder base = new StringBuilder();
-            base.append(name.toLowerCase());
-            base.append(';');                
-            if (in != null) {
-                base.append(in);
-            }
-            base.append(';');
-            base.append(name);
-            base.append(';');
-            base.append(signature);
-            document.addPair(FIELD_BASE, base.toString(), true);
+            String superClass = ""; //NOI18N
             
-            StringBuilder fqn = new StringBuilder();
-            if (in != null && in.length() > 0) {
-                fqn.append(in.toLowerCase());
-                fqn.append('.');
+            if (classDeclaration.getSuperClass() instanceof Identifier) {
+                Identifier identifier = (Identifier) classDeclaration.getSuperClass();
+                superClass = identifier.getName();
             }
-            fqn.append(name.toLowerCase());
-            fqn.append(';');
-            fqn.append(';');
-            if (in != null && in.length() > 0) {
-                fqn.append(in);
-                fqn.append('.');
+            
+            classSignature.append(superClass + ";"); //NOI18N
+            document.addPair(FIELD_CLASS, classSignature.toString(), true);
+            
+            for (Statement statement : classDeclaration.getBody().getStatements()){
+                if (statement instanceof MethodDeclaration) {
+                    MethodDeclaration methodDeclaration = (MethodDeclaration) statement;
+                    indexMethod(methodDeclaration.getFunction(), methodDeclaration.getModifier(), document);
+                } else if (statement instanceof FieldsDeclaration) {
+                    FieldsDeclaration fieldsDeclaration = (FieldsDeclaration) statement;
+                    
+                    for (SingleFieldDeclaration field : fieldsDeclaration.getFields()){
+                        if (field.getName().getName() instanceof Identifier) {
+                            Identifier identifier = (Identifier) field.getName().getName();
+                            StringBuilder fieldSignature = new StringBuilder();
+                            fieldSignature.append(identifier.getName() + ";"); //NOI18N
+                            fieldSignature.append(field.getStartOffset() + ";"); //NOI18N
+                            fieldSignature.append(fieldsDeclaration.getModifier() + ";"); //NOI18N
+                                     
+                            document.addPair(FIELD_FIELD, fieldSignature.toString(), false);
+                        }
+                    }
+                } else if (statement instanceof ClassConstantDeclaration) {
+                    ClassConstantDeclaration constDeclaration = (ClassConstantDeclaration) statement;
+                    
+                    for (Identifier id : constDeclaration.getNames()){
+                        StringBuilder signature = new StringBuilder();
+                        signature.append(id.getName() + ";");
+                        signature.append(constDeclaration.getStartOffset() + ";");
+                        document.addPair(FIELD_CLASS_CONST, signature.toString(), false);
+                    }
+                }
+
             }
-            fqn.append(name);
-            fqn.append(';');
-            fqn.append(signature);
-            document.addPair(FIELD_FQN, fqn.toString(), true);
         }
         
-        private int getDocumentationOffset(AstElement element) {
-//            int offset = element.getNode().getSourceStart();
-//            try {
-//                if (offset > doc.getLength()) {
-//                    return -1;
-//                }
-//                offset = Utilities.getRowStart(doc, offset);
-//            } catch (BadLocationException ex) {
-//                Exceptions.printStackTrace(ex);
-//            }
-//            OffsetRange range = LexUtilities.getCommentBlock(doc, offset, true);
-//            if (range != OffsetRange.NONE) {
-//                return range.getStart();
-//            } else {
-//                return -1;
-//            }
-            return -1;
+        private void indexVarsInAssignment(Assignment assignment, IndexDocument document) {
+            if (assignment.getLeftHandSide() instanceof Variable) {
+                Variable var = (Variable) assignment.getLeftHandSide();
+                String varType = CodeUtils.extractVariableTypeFromAssignment(assignment);
+                String varName = CodeUtils.extractVariableName(var);
+                StringBuilder signature = new StringBuilder();
+                signature.append(varName.toLowerCase() + ";" + varName + ";");
+                
+                if (varType != null){
+                    signature.append(varType);
+                }
+                
+                signature.append(";"); //NOI18N
+                signature.append(var.getStartOffset() + ";");
+                document.addPair(FIELD_VAR, signature.toString(), true);
+            }
+            
+            if (assignment.getRightHandSide() instanceof Assignment) {
+                Assignment embeddedAssignment = (Assignment) assignment.getRightHandSide();
+                indexVarsInAssignment(embeddedAssignment, document);
+            }
+        }
+
+        private void indexConstant(Statement statement, IndexDocument document) {
+            ExpressionStatement exprStmt = (ExpressionStatement) statement;
+            Expression expr = exprStmt.getExpression();
+
+            if (expr instanceof FunctionInvocation) {
+                FunctionInvocation invocation = (FunctionInvocation) expr;
+
+                if (invocation.getFunctionName().getName() instanceof Identifier) {
+                    Identifier id = (Identifier) invocation.getFunctionName().getName();
+
+                    if ("define".equals(id.getName())) {
+                        if (invocation.getParameters().size() >= 2) {
+                            Expression paramExpr = invocation.getParameters().get(0);
+
+                            if (paramExpr instanceof Scalar) {
+                                String constName = ((Scalar) paramExpr).getStringValue();
+                                char firstChar = constName.charAt(0);
+                                
+                                // check if const name is really quoted
+                                if (firstChar == constName.charAt(constName.length() - 1) 
+                                        && firstChar == '\'' || firstChar == '\"') {
+                                    String defineVal = PHPIndex.dequote(constName);
+                                    StringBuilder signature = new StringBuilder();
+                                    signature.append(defineVal.toLowerCase());
+                                    signature.append(';');
+                                    signature.append(defineVal);
+                                    signature.append(';');
+                                    signature.append(invocation.getStartOffset());
+                                    signature.append(';');
+                                    document.addPair(FIELD_CONST,  signature.toString(), true);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        private void indexFunction(FunctionDeclaration functionDeclaration, IndexDocument document) {
+            StringBuilder signature = new StringBuilder(functionDeclaration.getFunctionName().getName().toLowerCase() + ";");
+            signature.append(getBaseSignatureForFunctionDeclaration(functionDeclaration));
+
+            document.addPair(FIELD_BASE, signature.toString(), true);
+        }
+        
+        private void indexMethod(FunctionDeclaration functionDeclaration, int modifiers, IndexDocument document) {
+            StringBuilder signature = new StringBuilder();
+            signature.append(getBaseSignatureForFunctionDeclaration(functionDeclaration));
+            signature.append(modifiers + ";"); //NOI18N
+
+            document.addPair(FIELD_METHOD, signature.toString(), false);
+        }
+        
+        private String getBaseSignatureForFunctionDeclaration(FunctionDeclaration functionDeclaration){
+            StringBuilder signature = new StringBuilder();
+            signature.append(functionDeclaration.getFunctionName().getName() + ";");
+            StringBuilder defaultArgs = new StringBuilder();
+            int paramCount = functionDeclaration.getFormalParameters().size();
+
+            for (int i = 0; i < paramCount; i++) {
+                FormalParameter param = functionDeclaration.getFormalParameters().get(i);
+                
+                String paramName = CodeUtils.getParamDisplayName(param);
+                signature.append(paramName);
+
+                if (i < paramCount - 1) {
+                    signature.append(",");
+                }
+                
+                if (param.getDefaultValue() != null){
+                    if (defaultArgs.length() > 0){
+                        defaultArgs.append(',');
+                    }
+                    
+                    defaultArgs.append(Integer.toString(i));
+                }
+            }
+            
+            signature.append(';');
+            signature.append(functionDeclaration.getStartOffset() + ";"); //NOI18N
+            signature.append(defaultArgs + ";");
+
+            String type = getTypeFromComment(functionDeclaration);
+            
+            if (type != null && !PredefinedSymbols.MIXED_TYPE.equalsIgnoreCase(type)){
+                signature.append(type);
+            }
+            
+            signature.append(";"); //NOI18N
+           
+            return signature.toString();
+        }
+
+        private String getTypeFromComment(FunctionDeclaration functionDeclaration) {
+            Comment comment = Utils.getCommentForNode(root, functionDeclaration);
+
+            if (comment instanceof PHPDocBlock) {
+                PHPDocBlock phpDoc = (PHPDocBlock) comment;
+
+                for (PHPDocTag tag : phpDoc.getTags()) {
+                    if (tag.getKind() == PHPDocTag.Type.RETURN) {
+                        String parts[] = tag.getValue().split("\\s+", 2); //NOI18N
+
+                        if (parts.length > 0) {
+                            String type = parts[0];
+                            return type;
+                        }
+
+                        break;
+                    }
+                }
+            }
+
+            return null;
         }
     }
     
@@ -415,14 +526,21 @@ public class PHPIndexer implements Indexer {
     }
     
     public FileObject getPreindexedDb() {
-        if (preindexedDb == null) {
-            File preindexed = InstalledFileLocator.getDefault().locate(
-                    "preindexed-javascript", "org.netbeans.modules.javascript.editing", false); // NOI18N
-            if (preindexed == null || !preindexed.isDirectory()) {
-                throw new RuntimeException("Can't locate preindexed directory. Installation might be damaged"); // NOI18N
-            }
-            preindexedDb = FileUtil.toFileObject(preindexed);
-        }
-        return preindexedDb;
+        return null;
     }
+    
+    /**
+     * {@inheritDoc}
+     * 
+     * As the above documentation states, this is a temporary solution / hack
+     * for 6.1 only.
+     */
+     public boolean acceptQueryPath(String url) {
+        // Filter out JavaScript stuff
+        return url.indexOf("jsstubs") == -1 && // NOI18N
+                // Filter out Ruby stuff
+                url.indexOf("/ruby2/") == -1 &&  // NOI18N
+                url.indexOf("/gems/") == -1 &&  // NOI18N
+                url.indexOf("lib/ruby/") == -1; // NOI18N
+     }
 }

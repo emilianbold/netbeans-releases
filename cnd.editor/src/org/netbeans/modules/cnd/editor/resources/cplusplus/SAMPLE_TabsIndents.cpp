@@ -24,14 +24,7 @@ if ( text == NULL ) {
 #else
 #define C2
 #endif
-}
-else if (text[0] == 0) {
-    text = "empty";
-}
-else {
-    number++;
-}
-//label:
+label:
 switch(number) {
 case 1:
     return method("text", 22);
@@ -39,6 +32,13 @@ case 2:
     return 20;
 default:
     return -1;
+}
+}
+else if (text[0] == 0) {
+    text = "empty";
+}
+else {
+    number++;
 }
 }
 };

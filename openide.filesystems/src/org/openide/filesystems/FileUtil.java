@@ -84,7 +84,9 @@ import org.openide.util.WeakListeners;
  * This is a dummy class; all methods are static.
  */
 public final class FileUtil extends Object {
-    
+
+    private static final Logger LOG = Logger.getLogger(FileUtil.class.getName());
+
     /** Normal header for ZIP files. */
     private static byte[] ZIP_HEADER_1 = {0x50, 0x4b, 0x03, 0x04};
     /** Also seems to be used at least in apisupport/project/test/unit/data/example-external-projects/suite3/nbplatform/random/modules/ext/stuff.jar; not known why */
@@ -193,7 +195,7 @@ public final class FileUtil extends Object {
         FileSystem fs = getDiskFileSystem();
         if (fs == null) {fs = getDiskFileSystemFor(File.listRoots());}
         if (fs != null) {
-            fs.addFileChangeListener(fcl);
+            fs.removeFileChangeListener(fcl);
         }
     }
     
@@ -639,12 +641,16 @@ public final class FileUtil extends Object {
      * @since 4.29
      */
     public static FileObject toFileObject(File file) {
+        // return null for UNC root
+        if(file.getPath().equals("\\\\")) {
+            return null;
+        }
         boolean asserts = false;
         assert asserts = true;
         if (asserts) {
             File normFile = normalizeFile(file);
             if (!file.equals(normFile)) {
-                Logger.getLogger(FileUtil.class.getName()).log(Level.WARNING, null, new IllegalArgumentException(
+                LOG.log(Level.WARNING, null, new IllegalArgumentException(
                 "Parameter file was not " + // NOI18N   
                 "normalized. Was " + file + " instead of " + normFile
                 ));
@@ -687,7 +693,8 @@ public final class FileUtil extends Object {
     static URL fileToURL(File file) throws MalformedURLException {
         URL retVal = null;
 
-        if (!Utilities.isWindows() || canBeCanonicalizedOnWindows(file)) {
+        if (!Utilities.isWindows() || canBeCanonicalizedOnWindows(file) || file.getPath().startsWith("\\\\")) {  //NOI18N
+            // all non-Windows files, canonicalizable files on windows, UNC files
             retVal = file.toURI().toURL();
         } else {
             if (Utilities.isWindows() && file.getParentFile() == null) {
@@ -765,7 +772,11 @@ public final class FileUtil extends Object {
 
             Object value = source.getAttribute(key);
 
-            if (value != null) {
+            // #132801 and #16761 - don't set attributes where value is 
+            // instance of VoidValue because these attributes were previously written 
+            // by mistake in code. So it should happen only if you import some
+            // settings from old version.
+            if (value != null && !(value instanceof MultiFileObject.VoidValue)) {
                 dest.setAttribute(key, value);
             }
         }
@@ -989,7 +1000,7 @@ public final class FileUtil extends Object {
 
         String result = fo.getPath().substring(folder.getPath().length());
 
-        if (result.startsWith("/")) {
+        if (result.startsWith("/") && !result.startsWith("//")) {
             result = result.substring(1);
         }
 
@@ -1342,15 +1353,12 @@ public final class FileUtil extends Object {
 
     private static File normalizeFileOnUnixAlike(File file) {
         // On Unix, do not want to traverse symlinks.
+        // URI.normalize removes ../ and ./ sequences nicely.
+        file = new File(file.toURI().normalize()).getAbsoluteFile();
         if (file.getAbsolutePath().equals("/..")) { // NOI18N
-
             // Special treatment.
             file = new File("/"); // NOI18N
-        } else {
-            // URI.normalize removes ../ and ./ sequences nicely.
-            file = new File(file.toURI().normalize()).getAbsoluteFile();
         }
-
         return file;
     }
 
@@ -1369,7 +1377,8 @@ public final class FileUtil extends Object {
                 retVal = canonicalFile;
             }
         } catch (IOException ioe) {
-            Logger.getAnonymousLogger().severe("Normalization failed on file " + file + ": " + ioe);
+            LOG.warning("Normalization failed on file " + file + ": " + ioe);
+            LOG.log(Level.FINE, file.toString(), ioe);
 
             // OK, so at least try to absolutize the path
             retVal = file.getAbsoluteFile();
@@ -1429,9 +1438,8 @@ public final class FileUtil extends Object {
             try {
                 retVal = file.getCanonicalFile();
             } catch (IOException e) {
-                Logger.getAnonymousLogger().severe(
-                    "getCanonicalFile() on file " + file + " failed. " + e.toString()
-                ); // NOI18N
+                LOG.warning("getCanonicalFile() on file " + file + " failed: " + e);
+                LOG.log(Level.FINE, file.toString(), e);
             }
         }
 
@@ -1442,13 +1450,13 @@ public final class FileUtil extends Object {
     private static float javaSpecVersion;
     private static boolean canBeCanonicalizedOnWindows(final File file) {
         /*#4089199, #95031 - Flopy and empty CD-drives can't be canonicalized*/
-        boolean canBeCanonizalized = true;
-        if (file.getParent() == null && Utilities.isWindows()) {//NOI18N
+        // UNC path \\computerName can't be canonicalized - parent is "\\\\" and exists() returns false
+        String parent = file.getParent();
+        if ((parent == null || parent.equals("\\\\")) && Utilities.isWindows()) {//NOI18N
             FileSystemView fsv = getFileSystemView();
-            canBeCanonizalized = (fsv != null) ? !fsv.isFloppyDrive(file) && file.exists() : false;
+            return (fsv != null) ? !fsv.isFloppyDrive(file) && file.exists() : false;
         }
-        
-        return canBeCanonizalized;
+        return true;
     }
     
     private static boolean is4089199() {
@@ -1573,7 +1581,13 @@ public final class FileUtil extends Object {
 
             if (index >= 0) {
                 try {
-                    return new URL(path.substring(0, index));
+                    String jarPath = path.substring(0, index);
+                    if (jarPath.indexOf("file://") > -1 && jarPath.indexOf("file:////") == -1) {  //NOI18N
+                        /* Replace because JDK application classloader wrongly recognizes UNC paths. */
+                        jarPath = jarPath.replaceFirst("file://", "file:////");  //NOI18N
+                    }
+                    return new URL(jarPath);
+
                 } catch (MalformedURLException mue) {
                     Exceptions.printStackTrace(mue);
                 }
@@ -1636,7 +1650,7 @@ public final class FileUtil extends Object {
                     in.close();
                 }
             } catch (IOException ioe) {
-                Logger.getLogger(FileUtil.class.getName()).log(Level.INFO, null, ioe);
+                LOG.log(Level.INFO, null, ioe);
             }
 
             if (b == null) {
@@ -1699,8 +1713,10 @@ public final class FileUtil extends Object {
             } else if (entry.isDirectory()) {
                 return u;
             } else if (!entry.exists()) {
-                assert !u.toString().endsWith("/") : u;
-                return new URL(u + "/"); // NOI18N
+                if (!u.toString().endsWith("/")) {
+                    u = new URL(u + "/"); // NOI18N
+                }
+                return u;
             } else {
                 return null;
             }

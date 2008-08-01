@@ -1,4 +1,6 @@
-Results for alert('foo1 with queryType=COMPLETION and nameKind=PREFIX
+Code completion result for source line:
+|alert('foo1 ' + foo1);
+(QueryType=COMPLETION, NameKind=PREFIX)
 CONSTRUCTO Array(arrayLength)                         Core JS
 CONSTRUCTO Array(element0, element1, elem             Core JS
 CONSTRUCTO Boolean(val)                               Core JS
@@ -23,10 +25,12 @@ CONSTRUCTO RegExp(pattern, flags)                     Core JS
 CONSTRUCTO String(string)                             Core JS
 CONSTRUCTO String(val)                                Core JS
 CONSTRUCTO XMLHttpRequest()                           DOM
+PACKAGE    Autocompleter                              null
 CLASS      AbstractView                               DOM
 CLASS      Arguments                                  Core JS
 CLASS      Array                                      Core JS
 CLASS      Attr                                       DOM
+CLASS      Autocompleter                              null
 CLASS      Boolean                                    Core JS
 CLASS      CSS2Properties                             DOM
 CLASS      CSSCharsetRule                             DOM
@@ -42,6 +46,8 @@ CLASS      CSSStyleRule                               DOM
 CLASS      CSSStyleSheet                              DOM
 CLASS      CSSValue                                   DOM
 CLASS      CSSValueList                               DOM
+CLASS      CanvasGradient                             DOM
+CLASS      CanvasRenderingContext2D                   DOM
 CLASS      CharacterData                              DOM
 CLASS      Counter                                    DOM
 CLASS      DOMConfiguration                           DOM
@@ -83,6 +89,7 @@ CLASS      HTMLBaseFontElement                        DOM
 CLASS      HTMLBlockquoteElement                      DOM
 CLASS      HTMLBodyElement                            DOM
 CLASS      HTMLButtonElement                          DOM
+CLASS      HTMLCanvasElement                          DOM
 CLASS      HTMLCollection                             DOM
 CLASS      HTMLDListElement                           DOM
 CLASS      HTMLDirectoryElement                       DOM
@@ -131,6 +138,7 @@ CLASS      HTMLTableSectionElement                    DOM
 CLASS      HTMLTextAreaElement                        DOM
 CLASS      HTMLTitleElement                           DOM
 CLASS      HTMLUListElement                           DOM
+CLASS      ImageData                                  DOM
 CLASS      JavaArray                                  Core JS
 CLASS      LinkStyle                                  DOM
 CLASS      Math                                       Core JS
@@ -175,16 +183,18 @@ CLASS      URIError                                   Core JS
 CLASS      ViewCSS                                    DOM
 CLASS      Window                                     DOM
 CLASS      XMLHttpRequest                             DOM
-METHOD     decodeURI(encodedURI)                      Core JS
+METHOD     baseInitialize(element1, updat             Autocompleter.Base
+METHOD     decodeURI(encodedURI) : void               Core JS
 METHOD     decodeURIComponent(encodedURI)             Core JS
-METHOD     encodeURI(URI)                             Core JS
-METHOD     encodeURIComponent(String)                 Core JS
-METHOD     eval(string, object)                       Core JS
-METHOD     isFinite(number)                           Core JS
-METHOD     isNaN(testValue)                           Core JS
-METHOD     parseFloat(string)                         Core JS
-METHOD     parseInt(string, radix)                    Core JS
-METHOD     undefined()                                Core JS
+METHOD     encodeURI(URI) : void                      Core JS
+METHOD     encodeURIComponent(String) : v             Core JS
+METHOD     eval(string, object) : void                Core JS
+METHOD     isFinite(number) : void                    Core JS
+METHOD     isNaN(testValue) : void                    Core JS
+METHOD     other(element2, update2, optio             Autocompleter.Base
+METHOD     parseFloat(string) : void                  Core JS
+METHOD     parseInt(string, radix) : void             Core JS
+METHOD     undefined() : void                         Core JS
 VARIABLE   arguments                                  null
 VARIABLE   bar1                                       
 VARIABLE   element1                                   
@@ -192,7 +202,9 @@ VARIABLE   foo1
 VARIABLE   options1                                   
 VARIABLE   update1                                    
 GLOBAL     cssRule : CSSRule                          DOM
+GLOBAL     declaredglobal                             test2.js
 GLOBAL     form : Form                                DOM
+GLOBAL     global                                     test2.js
 GLOBAL     navigator : Navigator                      DOM
 GLOBAL     screen : Screen                            DOM
 GLOBAL     selection : Selection                      DOM
@@ -223,6 +235,9 @@ PROPERTY   CSSStyleSheet                              DOM
 PROPERTY   CSSUnknownRule                             DOM
 PROPERTY   CSSValue                                   DOM
 PROPERTY   CSSValueList                               DOM
+PROPERTY   CanvasGradient                             DOM
+PROPERTY   CanvasPattern                              DOM
+PROPERTY   CanvasRenderingContext2D                   DOM
 PROPERTY   CharacterData                              DOM
 PROPERTY   Comment                                    DOM
 PROPERTY   Counter                                    DOM
@@ -275,6 +290,7 @@ PROPERTY   HTMLBaseFontElement                        DOM
 PROPERTY   HTMLBlockquoteElement                      DOM
 PROPERTY   HTMLBodyElement                            DOM
 PROPERTY   HTMLButtonElement                          DOM
+PROPERTY   HTMLCanvasElement                          DOM
 PROPERTY   HTMLCollection                             DOM
 PROPERTY   HTMLDListElement                           DOM
 PROPERTY   HTMLDirectoryElement                       DOM
@@ -323,6 +339,7 @@ PROPERTY   HTMLTableSectionElement                    DOM
 PROPERTY   HTMLTextAreaElement                        DOM
 PROPERTY   HTMLTitleElement                           DOM
 PROPERTY   HTMLUListElement                           DOM
+PROPERTY   ImageData                                  DOM
 PROPERTY   Infinity                                   Core JS
 PROPERTY   IsFinite                                   Core JS
 PROPERTY   IsNaN                                      Core JS
@@ -383,16 +400,16 @@ PROPERTY   ViewCSS                                    DOM
 PROPERTY   Window                                     DOM
 PROPERTY   XMLHttpRequest                             DOM
 ------------------------------------
-METHOD     eval(string)                               Object
+METHOD     eval(string) : void                        Object
 METHOD     hasOwnProperty(prop) : Boolean             Object
 METHOD     isPrototypeOf(object) : Boolea             Object
 METHOD     propertyIsEnumerable(prop) : B             Object
 METHOD     toLocaleString() : String                  Object
 METHOD     toSource() : void                          Object
 METHOD     toString() : String                        Object
-METHOD     unwatch(prop)                              Object
+METHOD     unwatch(prop) : void                       Object
 METHOD     valueOf() : void                           Object
-METHOD     watch(prop, handler)                       Object
+METHOD     watch(prop, handler) : void                Object
 KEYWORD    abstract                                   null
 KEYWORD    boolean                                    null
 KEYWORD    break                                      null

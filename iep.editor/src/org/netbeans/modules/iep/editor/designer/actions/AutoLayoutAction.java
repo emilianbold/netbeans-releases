@@ -19,32 +19,32 @@ import com.nwoods.jgo.layout.JGoLayeredDigraphAutoLayout;
 
 public class AutoLayoutAction extends AbstractAction {
 
-	public final static String AUTO_LAYOUT_NAME = "AutoLayout";
+    public final static String AUTO_LAYOUT_NAME = "AutoLayout";
 
-	public final static ImageIcon AUTO_LAYOUT_ICON = ImageUtil.getImageIcon("autoLayout.gif");
+    public final static ImageIcon AUTO_LAYOUT_ICON = ImageUtil.getImageIcon("autoLayout.gif");
 
     private static final java.util.logging.Logger mLog = java.util.logging.Logger.getLogger(AutoLayoutAction.class.getName());
 
     private PlanCanvas mView;
-	private IEPModel mModel;
-	
+    private IEPModel mModel;
+    
     public AutoLayoutAction(PlanCanvas view, IEPModel model) {
-    	this.mView = view;
-    	this.mModel = model;
-    	
-    	this.putValue(NAME, AUTO_LAYOUT_NAME);
-    	this.putValue(SMALL_ICON, AUTO_LAYOUT_ICON);
-    	
-    	String shortDesc = NbBundle.getMessage(AutoLayoutAction.class,"PlanDesigner.Autolayout");
-    	this.putValue(SHORT_DESCRIPTION , shortDesc);
+        this.mView = view;
+        this.mModel = model;
+        
+        this.putValue(NAME, AUTO_LAYOUT_NAME);
+        this.putValue(SMALL_ICON, AUTO_LAYOUT_ICON);
+        
+        String shortDesc = NbBundle.getMessage(AutoLayoutAction.class,"PlanDesigner.Autolayout");
+        this.putValue(SHORT_DESCRIPTION , shortDesc);
     }
     
-	public void actionPerformed(ActionEvent e) {
-		layout();
-		
-	}
+    public void actionPerformed(ActionEvent e) {
+        layout();
+        
+    }
     
-	private void layout() {
+    private void layout() {
         PdModel doc = mView.getDoc();
         doc.startTransaction();
         JGoLayeredDigraphAutoLayout l = new JGoLayeredDigraphAutoLayout(doc,

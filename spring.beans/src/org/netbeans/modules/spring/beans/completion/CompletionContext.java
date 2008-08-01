@@ -43,18 +43,22 @@ package org.netbeans.modules.spring.beans.completion;
 
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.TokenItem;
+import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.spring.beans.editor.DocumentContext;
-import org.netbeans.modules.spring.beans.editor.EditorContextFactory;
 import org.netbeans.modules.xml.text.api.XMLDefaultTokenContext;
 import org.netbeans.modules.xml.text.syntax.SyntaxElement;
+import org.netbeans.modules.xml.text.syntax.XMLKit;
 import org.netbeans.modules.xml.text.syntax.XMLSyntaxSupport;
 import org.netbeans.modules.xml.text.syntax.dom.EmptyTag;
 import org.netbeans.modules.xml.text.syntax.dom.EndTag;
 import org.netbeans.modules.xml.text.syntax.dom.StartTag;
 import org.netbeans.modules.xml.text.syntax.dom.Tag;
+import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 import org.w3c.dom.Node;
 
 /**
@@ -74,24 +78,45 @@ public class CompletionContext {
     };
     
     private CompletionType completionType = CompletionType.NONE;
-    private Document doc;
     private int caretOffset;
     private DocumentContext documentContext;
-    private String typedChars = "";
+    private String typedChars = ""; 
     private char lastTypedChar;
     private XMLSyntaxSupport support;
+    private FileObject fileObject;
+    private BaseDocument internalDoc = new BaseDocument(XMLKit.class, false);
+    private int queryType;
 
-    public CompletionContext(Document doc, int caretOffset) {
-        this.doc = doc;
+    public CompletionContext(Document doc, int caretOffset, int queryType) {
         this.caretOffset = caretOffset;
-        this.support = (XMLSyntaxSupport) ((BaseDocument)doc).getSyntaxSupport();
-        this.documentContext = EditorContextFactory.getDocumentContext(doc, caretOffset);
-        this.lastTypedChar = support.lastTypedChar();
-        initContext();
+        this.fileObject = NbEditorUtilities.getFileObject(doc);
+        this.queryType = queryType;
+        initContext((BaseDocument) doc);
     }
-    
-    private void initContext() {
+
+    private void initContext(BaseDocument bDoc) {
+        boolean copyResult = copyDocument(bDoc, internalDoc);
+        if(!copyResult) {
+            return;
+        }
+        
+        Object sdp = bDoc.getProperty(Document.StreamDescriptionProperty);
+        internalDoc.putProperty(Document.StreamDescriptionProperty, sdp);
+        this.support = (XMLSyntaxSupport) internalDoc.getSyntaxSupport();
+        this.documentContext = DocumentContext.create(internalDoc, caretOffset);
+        
+        // get last inserted character from the actual document
+        this.lastTypedChar = ((XMLSyntaxSupport) bDoc.getSyntaxSupport()).lastTypedChar(); 
+        
+        if(documentContext == null) {
+            return;
+        }
+        
         TokenItem token = documentContext.getCurrentToken();
+        if(token == null) {
+            return;
+        }
+        
         boolean tokenBoundary = (token.getOffset() == caretOffset) 
                 || ((token.getOffset() + token.getImage().length()) == caretOffset);
         
@@ -205,21 +230,19 @@ public class CompletionContext {
             case XMLDefaultTokenContext.WS_ID:
                 completionType = CompletionType.NONE;
                 
-                if(token.getOffset() == caretOffset) {
-                    break;
-                }
-                
                 TokenItem prev = token.getPrevious();
                 while (prev != null &&
                         (prev.getTokenID().getNumericID() == XMLDefaultTokenContext.WS_ID)) {
                     prev = prev.getPrevious();
                 }
                 
-                if(prev.getTokenID().getNumericID() == XMLDefaultTokenContext.ARGUMENT_ID) {
+                if(prev.getTokenID().getNumericID() == XMLDefaultTokenContext.ARGUMENT_ID
+                        && prev.getOffset() + prev.getImage().length() == caretOffset) {
                     typedChars = prev.getImage();
                     completionType = CompletionType.ATTRIBUTE;
-                } else if ((prev.getTokenID().getNumericID() == XMLDefaultTokenContext.VALUE_ID) ||
-                        (prev.getTokenID().getNumericID() == XMLDefaultTokenContext.TAG_ID)) {
+                } else if (((prev.getTokenID().getNumericID() == XMLDefaultTokenContext.VALUE_ID) ||
+                        (prev.getTokenID().getNumericID() == XMLDefaultTokenContext.TAG_ID))
+                        && !tokenBoundary) {
                     completionType = CompletionType.ATTRIBUTE;
                 }
                 break;
@@ -228,6 +251,25 @@ public class CompletionContext {
                 completionType = CompletionType.NONE;
                 break;
         }
+    }
+    
+    private boolean copyDocument(BaseDocument src, BaseDocument dest) {
+        boolean retVal = true;
+        
+        src.readLock();
+        dest.atomicLock();
+        try {
+            String docText = src.getText(0, src.getLength());
+            dest.insertString(0, docText, null);
+        } catch(BadLocationException ble) {
+            Exceptions.printStackTrace(ble);
+            retVal = false;
+        } finally {
+            dest.atomicUnlock();
+            src.readUnlock();
+        }
+        
+        return retVal;
     }
 
     public CompletionType getCompletionType() {
@@ -238,8 +280,8 @@ public class CompletionContext {
         return typedChars;
     }
     
-    public Document getDocument() {
-        return this.doc;
+    public FileObject getFileObject() {
+        return this.fileObject;
     }
     
     public DocumentContext getDocumentContext() {
@@ -260,20 +302,37 @@ public class CompletionContext {
     }
     
     public List<String> getExistingAttributes() {
-        if(existingAttributes != null)
-            return existingAttributes;
-        existingAttributes = new ArrayList<String>();
-        TokenItem item = documentContext.getCurrentToken().getPrevious();
-        while(item != null) {
-            if(item.getTokenID().getNumericID() ==
-                    XMLDefaultTokenContext.TAG_ID)
-                break;
-            if(item.getTokenID().getNumericID() ==
-                    XMLDefaultTokenContext.ARGUMENT_ID) {
-                existingAttributes.add(item.getImage());
+        if (existingAttributes == null) {
+            existingAttributes = new ArrayList<String>();
+            TokenItem item = documentContext.getCurrentToken().getPrevious();
+            while (item != null) {
+                int tokenId = item.getTokenID().getNumericID();
+                if (tokenId == XMLDefaultTokenContext.TAG_ID) {
+                    break;
+                }
+                if (tokenId == XMLDefaultTokenContext.ARGUMENT_ID) {
+                    existingAttributes.add(item.getImage());
+                }
+                item = item.getPrevious();
             }
-            item = item.getPrevious();
         }
+        
         return existingAttributes;
+    }
+
+    /**
+     * Returns the type of completion query. The returned value is one of 
+     * the query types defined in <code>CompletionProvider</code>
+     * 
+     * @see CompletionProvider
+     * 
+     * @return completion query type
+     */
+    public int getQueryType() {
+        return queryType;
+    }
+    
+    public Document getDocument() {
+        return internalDoc;
     }
 }

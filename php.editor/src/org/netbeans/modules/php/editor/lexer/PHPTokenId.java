@@ -69,7 +69,7 @@ public enum PHPTokenId implements TokenId {
     PHP_DIE(null, "keyword"), //NOI18N
     //	PHP_FILE(null, "php"),
     //	PHP_REFERENCE(null, "php"),
-    PHP_SEMICOLON(null, "php"), //NOI18N
+    PHP_SEMICOLON(null, "separator"), //NOI18N
     PHP_CASE(null, "keyword"), //NOI18N
     PHP_NUMBER(null, "number"), //NOI18N
     //	PHP_DNUMBER(null, "php"),
@@ -78,7 +78,7 @@ public enum PHPTokenId implements TokenId {
     //	PHP_TILDA(null, "php"),
     PHP_FINAL(null, "keyword"), //NOI18N
     //	PHP_CLASS_C(null, "php"),
-    PHP_PAAMAYIM_NEKUDOTAYIM(null, "php"), //NOI18N
+    PHP_PAAMAYIM_NEKUDOTAYIM(null, "operator"), //NOI18N
     PHP_EXTENDS(null, "keyword"), //NOI18N
     PHP_VAR_COMMENT(null, "comment"), //NOI18N
     PHP_USE(null, "php"), //NOI18N
@@ -212,63 +212,31 @@ public enum PHPTokenId implements TokenId {
     //	PHP_LGREATER(null, "php"),
     PHP_IF("if", "keyword"), //NOI18N
     PHP_DECLARE(null, "keyword"), //NOI18N
-    PHP_OBJECT_OPERATOR(null, "php"), //NOI18N
+    PHP_OBJECT_OPERATOR(null, "operator"), //NOI18N
     PHP_SELF(null, "keyword"), //NOI18N
-    PHPDOC_VAR(null, "phpdockeyword"), //NOI18N
-    PHPDOC_SEE(null, "phpdockeyword"), //NOI18N
     PHP_COMMENT(null, "comment"), //NOI18N
     PHP_COMMENT_START(null, "comment"), //NOI18N
     PHP_COMMENT_END(null, "comment"), //NOI18N
     PHP_LINE_COMMENT(null, "comment"), //NOI18N
-    PHPDOC_COMMENT(null, "comment"), //NOI18N
     PHPDOC_COMMENT_START(null, "comment"), //NOI18N
     PHPDOC_COMMENT_END(null, "comment"), //NOI18N
-    PHPDOC_NAME(null, "phpdockeyword"), //NOI18N
-    PHPDOC_DESC(null, "phpdockeyword"), //NOI18N
-    PHPDOC_TODO(null, "phpdockeyword"), //NOI18N
-    PHPDOC_LINK(null, "phpdockeyword"), //NOI18N
-    PHPDOC_EXAMPLE(null, "phpdockeyword"), //NOI18N
-    PHPDOC_LICENSE(null, "phpdockeyword"), //NOI18N
-    PHPDOC_PACKAGE(null, "phpdockeyword"), //NOI18N
-    PHPDOC_VERSION(null, "phpdockeyword"), //NOI18N
-    PHPDOC_ABSTRACT(null, "phpdockeyword"), //NOI18N
-    PHPDOC_INTERNAL(null, "phpdockeyword"), //NOI18N
-    PHPDOC_TUTORIAL(null, "phpdockeyword"), //NOI18N
-    PHPDOC_METHOD(null, "phpdockeyword"), //NOI18N
-    PHPDOC_PROPERTY(null, "phpdockeyword"), //NOI18N
-    PHPDOC_USES(null, "phpdockeyword"), //NOI18N
-    PHPDOC_CATEGORY(null, "phpdockeyword"), //NOI18N
+    PHPDOC_COMMENT(null, "comment"), //NOI18N
     UNKNOWN_TOKEN(null, "error"), //NOI18N
-    PHPDOC_FINAL(null, "phpdockeyword"), //NOI18N
-    PHPDOC_SINCE(null, "phpdockeyword"), //NOI18N
-    PHPDOC_PARAM(null, "phpdockeyword"), //NOI18N
-    PHPDOC_MAGIC(null, "phpdockeyword"), //NOI18N
-    PHPDOC_RETURN(null, "phpdockeyword"), //NOI18N
-    PHPDOC_AUTHOR(null, "phpdockeyword"), //NOI18N
-    PHPDOC_ACCESS(null, "phpdockeyword"), //NOI18N
-    PHPDOC_IGNORE(null, "phpdockeyword"), //NOI18N
-    PHPDOC_THROWS(null, "phpdockeyword"), //NOI18N
-    PHPDOC_STATIC(null, "phpdockeyword"), //NOI18N
-    PHPDOC_GLOBAL(null, "phpdockeyword"), //NOI18N
-    PHPDOC_SUBPACKAGE(null, "phpdockeyword"), //NOI18N
-    PHPDOC_FILESOURCE(null, "phpdockeyword"), //NOI18N
-    PHPDOC_EXCEPTION(null, "phpdockeyword"), //NOI18N
-    PHPDOC_COPYRIGHT(null, "phpdockeyword"), //NOI18N
-    PHPDOC_STATICVAR(null, "phpdockeyword"), //NOI18N
-    PHPDOC_DEPRECATED(null, "phpdockeyword"), //NOI18N
     PHP_HEREDOC_TAG(null, "php"), //NOI18N
+    PHP_NOWDOC_TAG(null, "php"), //NOI18N
     PHP_TOKEN(null, "php"), //NOI18N
-    PHP__FUNCTION__(null, "php"), //NOI18N
-    PHP_CASTING(null, "php"), //NOI18N
-    PHP__FILE__(null, "php"), //NOI18N
-    PHP__LINE__(null, "php"), //NOI18N
-    PHP_OPERATOR(null, "php"), //NOI18N
-    PHP_PARENT(null, "php"), //NOI18N
-    PHP__CLASS__(null, "php"), //NOI18N
-    PHP__METHOD__(null, "php"), //NOI18N
-    PHP_FROM(null, "php"), //NOI18N
-    PHP_TRUE(null, "php"), //NOI18N
-    PHP_FALSE(null, "php"), //NOI18N
+    PHP__FUNCTION__(null, "constant"), //NOI18N
+    PHP_CASTING(null, "keyword"), //NOI18N
+    PHP__FILE__(null, "constant"), //NOI18N
+    PHP__LINE__(null, "constant"), //NOI18N
+    PHP_OPERATOR(null, "operator"), //NOI18N
+    PHP_PARENT(null, "keyword"), //NOI18N
+    PHP__CLASS__(null, "constant"), //NOI18N
+    PHP__METHOD__(null, "constant"), //NOI18N
+    PHP_FROM(null, "keyword"), //NOI18N
+    PHP_TRUE(null, "keyword"), //NOI18N
+    PHP_FALSE(null, "keyword"), //NOI18N
+    PHP_NULL(null, "keyword"), //NOI18N
     TASK(null, "php"); //NOI18N
     
     private final String fixedText;
@@ -310,18 +278,19 @@ public enum PHPTokenId implements TokenId {
                     return PHPLanguage.PHP_MIME_TYPE;
                 }
                 
-                // unfortunately this doesn't work correctly
-                /*@Override
+                @Override
                 protected LanguageEmbedding<?> embedding(Token<PHPTokenId> token,
                     LanguagePath languagePath, InputAttributes inputAttributes) {
                     PHPTokenId id = token.id();
-
                     if (id == T_INLINE_HTML) {
-                        return LanguageEmbedding.create(HTMLTokenId.language(), 0, 0);
+                        return LanguageEmbedding.create(HTMLTokenId.language(), 0, 0, true);
                     } 
+                    else if (id == PHPDOC_COMMENT) {
+                        return LanguageEmbedding.create(PHPDocCommentTokenId.language(), 0, 0);
+                    }
 
                     return null; // No embedding
-                }*/
+                }
                 
             }.language();
 

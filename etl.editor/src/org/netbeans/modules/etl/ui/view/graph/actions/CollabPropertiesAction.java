@@ -69,18 +69,18 @@ public class CollabPropertiesAction extends GraphAction {
     
     public CollabPropertiesAction() {
         //action name
-        String nbBundle1 = mLoc.t("BUND015: Properties...");
+        String nbBundle1 = mLoc.t("BUND443: Properties");
         this.putValue(Action.NAME, nbBundle1.substring(15));
 
         //action icon
         this.putValue(Action.SMALL_ICON, new ImageIcon(propertiesUrl));
 
         //action tooltip
-        String nbBundle2 = mLoc.t("BUND016: Collaboration Properties (Shift-Z)");
+        String nbBundle2 = mLoc.t("BUND016: Collaboration Properties (Ctrl+Shift+7)");
         this.putValue(Action.SHORT_DESCRIPTION,nbBundle2.substring(15));
 
         // Acceleratot Shift-Z
-        this.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke('Z', InputEvent.SHIFT_DOWN_MASK));
+        this.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke('7', InputEvent.CTRL_DOWN_MASK+InputEvent.SHIFT_MASK));
 
     }
 

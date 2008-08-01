@@ -39,35 +39,152 @@
 
 package org.netbeans.modules.php.editor;
 
+import java.io.File;
 import java.util.Collection;
 import java.util.Collections;
 import org.netbeans.api.lexer.Language;
-import org.netbeans.modules.gsf.api.GsfLanguage;
+import org.netbeans.modules.gsf.api.CodeCompletionHandler;
+import org.netbeans.modules.gsf.api.DeclarationFinder;
+import org.netbeans.modules.gsf.api.Formatter;
+import org.netbeans.modules.gsf.api.HintsProvider;
+import org.netbeans.modules.gsf.api.Indexer;
+import org.netbeans.modules.gsf.api.InstantRenamer;
+import org.netbeans.modules.gsf.api.KeystrokeHandler;
+import org.netbeans.modules.gsf.api.OccurrencesFinder;
+import org.netbeans.modules.gsf.api.Parser;
+import org.netbeans.modules.gsf.api.SemanticAnalyzer;
+import org.netbeans.modules.gsf.api.StructureScanner;
+import org.netbeans.modules.gsf.spi.DefaultLanguageConfig;
+import org.netbeans.modules.php.editor.indent.PHPBracketCompleter;
+import org.netbeans.modules.php.editor.indent.PHPFormatter;
+import org.netbeans.modules.php.editor.index.PHPIndexer;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
+import org.netbeans.modules.php.editor.nav.DeclarationFinderImpl;
+import org.netbeans.modules.php.editor.nav.InstantRenamerImpl;
+import org.netbeans.modules.php.editor.nav.OccurrencesFinderImpl;
+import org.netbeans.modules.php.editor.parser.GSFPHPParser;
+import org.netbeans.modules.php.editor.parser.PhpStructureScanner;
+import org.netbeans.modules.php.editor.parser.SemanticAnalysis;
+import org.netbeans.modules.php.editor.verification.PHPHintsProvider;
+import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.modules.InstalledFileLocator;
 
 /**
  *
  * @author Petr Pisl
  */
-public class PHPLanguage implements GsfLanguage {
+public class PHPLanguage extends DefaultLanguageConfig {
 
-    public static final String PHP_MIME_TYPE = "text/x-php5";
+    public static final String PHP_MIME_TYPE = "text/x-php5"; // NOI18N
     
+    @Override
     public String getLineCommentPrefix() {
         return "//";    //NOI18N
     }
 
+    @Override
     public boolean isIdentifierChar(char c) {
         return Character.isJavaIdentifierPart(c) || (c == '$') ;
     }
 
+    @Override
     public Language getLexerLanguage() {
         return PHPTokenId.language();
     }
 
-    public Collection<FileObject> getCoreLibraries() {
-        return Collections.EMPTY_LIST;
+    @Override
+    public String getDisplayName() {
+        return "PHP";
     }
+
+    @Override
+    public String getPreferredExtension() {
+        return "php"; // NOI18N
+    }
+    
+    // Service Registrations
+
+    @Override
+    public Parser getParser() {
+        return new GSFPHPParser();
+    }
+
+    @Override
+    public CodeCompletionHandler getCompletionHandler() {
+        return new PHPCodeCompletion();
+    }
+
+    @Override
+    public Indexer getIndexer() {
+        return new PHPIndexer();
+    }
+
+    @Override
+    public SemanticAnalyzer getSemanticAnalyzer() {
+        return new SemanticAnalysis();
+    }
+
+    @Override
+    public boolean hasStructureScanner() {
+        return true;
+    }
+
+    @Override
+    public StructureScanner getStructureScanner() {
+        return new PhpStructureScanner();
+    }
+
+    @Override
+    public DeclarationFinder getDeclarationFinder() {
+        return new DeclarationFinderImpl();
+    }
+
+    @Override
+    public boolean hasOccurrencesFinder() {
+        return true;
+    }
+
+    @Override
+    public OccurrencesFinder getOccurrencesFinder() {
+        return new OccurrencesFinderImpl();
+    }
+
+    @Override
+    public boolean hasFormatter() {
+        return true;
+    }
+
+    @Override
+    public Formatter getFormatter() {
+        return new PHPFormatter();
+    }
+
+    @Override
+    public KeystrokeHandler getKeystrokeHandler() {
+        return new PHPBracketCompleter();
+    }
+
+    @Override
+    public InstantRenamer getInstantRenamer() {
+        return new InstantRenamerImpl();
+    }
+
+    @Override
+    public boolean hasHintsProvider() {
+        return true;
+    }
+
+    @Override
+    public HintsProvider getHintsProvider() {
+        return new PHPHintsProvider();
+    }
+
+    @Override
+    public Collection<FileObject> getCoreLibraries() {
+        return PhpSourcePath.getPreindexedFolders();
+    }
+
 
 }

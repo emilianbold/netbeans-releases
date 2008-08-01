@@ -58,10 +58,6 @@ public class AddressingFactories {
         public Set<QName> getElementQNames() {
             return Collections.singleton(AddressingQName.ENDPOINTREFERENCE.getQName());
         }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new EndpointReferenceImpl(context.getModel()));
-        }
-
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {
             return new EndpointReferenceImpl(context.getModel(), element);
@@ -73,10 +69,6 @@ public class AddressingFactories {
         public Set<QName> getElementQNames() {
             return Collections.singleton(AddressingQName.ADDRESS.getQName());
         }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new AddressImpl(context.getModel()));
-        }
-
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {
             return new AddressImpl(context.getModel(), element);
@@ -88,10 +80,6 @@ public class AddressingFactories {
         public Set<QName> getElementQNames() {
             return Collections.singleton(AddressingQName.SERVICENAME.getQName());
         }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new AddressingServiceNameImpl(context.getModel()));
-        }
-
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {
             return new AddressingServiceNameImpl(context.getModel(), element);
@@ -103,10 +91,6 @@ public class AddressingFactories {
         public Set<QName> getElementQNames() {
             return Collections.singleton(AddressingQName.PORTTYPE.getQName());
         }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new AddressingPortTypeImpl(context.getModel()));
-        }
-
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {
             return new AddressingPortTypeImpl(context.getModel(), element);
@@ -118,10 +102,6 @@ public class AddressingFactories {
         public Set<QName> getElementQNames() {
             return Collections.singleton(AddressingQName.REFERENCEPARAMETERS.getQName());
         }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new ReferenceParametersImpl(context.getModel()));
-        }
-
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {
             return new ReferenceParametersImpl(context.getModel(), element);
@@ -133,10 +113,6 @@ public class AddressingFactories {
         public Set<QName> getElementQNames() {
             return Collections.singleton(AddressingQName.REFERENCEPROPERTIES.getQName());
         }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new ReferencePropertiesImpl(context.getModel()));
-        }
-
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {
             return new ReferencePropertiesImpl(context.getModel(), element);

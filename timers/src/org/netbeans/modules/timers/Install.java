@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -61,6 +61,17 @@ import org.openide.modules.ModuleInstall;
  * @author nenik
  */
 public class Install extends  ModuleInstall {
+
+    static final boolean ENABLED;
+
+    static {
+        boolean assertionsEnabled = false;
+
+        assert assertionsEnabled = true;
+
+        ENABLED = assertionsEnabled || Boolean.getBoolean("org.netbeans.modules.timers.enable");
+    }
+    
     static Logger logger;
     private static Handler timers = new TimerHandler();
     private static PropertyChangeListener docTracker = new ActivatedDocumentListener();
@@ -68,6 +79,10 @@ public class Install extends  ModuleInstall {
     private static String INSTANCES = "Important instances";
     
     public @Override void restored() {
+        if (!ENABLED) {
+            return ;
+        }
+        
         Logger log = Logger.getLogger("TIMER"); // NOI18N
         log.setUseParentHandlers(false);
         log.setLevel(Level.FINE);

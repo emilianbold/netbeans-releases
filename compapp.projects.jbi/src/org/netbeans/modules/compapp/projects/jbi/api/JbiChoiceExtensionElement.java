@@ -64,11 +64,12 @@ public class JbiChoiceExtensionElement extends JbiExtensionElement {
     private String defaultChoice;
     
     public JbiChoiceExtensionElement(String name, 
+            String displayName,
             List<JbiExtensionElement> subElements,
             List<JbiExtensionAttribute> attributes,
             String description,
             String defaultChoice) {
-        super(name, subElements, attributes, description);
+        super(name, displayName, subElements, attributes, description);
         
         this.defaultChoice = defaultChoice;
     }

@@ -129,7 +129,7 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
         initHistory();
         initInteraction();
 
-        if (searchAndReplace) {
+        if (searchAndReplace && (searchCriteria.getReplaceExpr() == null)) {
             /* We must set the initial replace string, otherwise it might not
              * be initialized at all if the user keeps the field "Replace With:"
              * empty. One of the side-effects would be that method
@@ -618,6 +618,25 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
     public void keyPressed(KeyEvent e) {
         if ((e.getKeyCode() == KeyEvent.VK_ENTER) && (e.getModifiersEx() == 0)){
             
+            if ("GTK look and feel".equals(UIManager.getLookAndFeel().getName())//NOI18N
+                && !Boolean.getBoolean(
+                        "org.netbeans.modules.search.disable_patch_140174")) {  //NOI18N
+                JComboBox comboBox;
+                Object source = e.getSource();
+                if (source == textToFindEditor) {
+                    comboBox = cboxTextToFind;
+                } else if (source == fileNamePatternEditor) {
+                    comboBox = cboxFileNamePattern;
+                } else if (source == replacementPatternEditor) {
+                    comboBox = cboxReplacement;
+                } else {
+                    comboBox = null;
+                }
+                if ((comboBox != null) && comboBox.isPopupVisible()) {
+                    return;
+                }
+            }
+
             JRootPane rootPane = SwingUtilities.getRootPane(this);
             if (rootPane != null) {
                 JButton button = rootPane.getDefaultButton();

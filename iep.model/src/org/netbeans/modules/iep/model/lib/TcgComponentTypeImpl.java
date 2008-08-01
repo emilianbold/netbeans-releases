@@ -154,7 +154,7 @@ class TcgComponentTypeImpl
         mTreeNode = new CTTreeNode();
         
         if(mIcon == null) {
-        	mIcon = TcgModelConstants.UNKNOWN_ICON;
+            mIcon = TcgModelConstants.UNKNOWN_ICON;
         }
         /*
         if (mIconName != null && !mIconName.equals("")) {
@@ -438,7 +438,7 @@ class TcgComponentTypeImpl
         }
         
         TcgComponentType dup = new TcgComponentTypeImpl(name, path, title, description, 
-        		icon, allowsChildren,
+                icon, allowsChildren,
                 visible, codeTypes, propTypes, childTypes,
                 validator);
         

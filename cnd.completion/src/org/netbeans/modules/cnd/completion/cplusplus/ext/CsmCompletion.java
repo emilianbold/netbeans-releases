@@ -49,11 +49,7 @@ import java.lang.reflect.Modifier;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.HashMap;
-import org.netbeans.editor.ext.Completion;
-import org.netbeans.editor.ext.CompletionQuery;
-import org.netbeans.editor.ext.CompletionView;
-import org.netbeans.editor.ext.ExtEditorUI;
-import org.netbeans.editor.ext.ListCompletionView;
+import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
@@ -69,7 +65,6 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
-import org.netbeans.modules.cnd.editor.cplusplus.CCTokenContext;
 
 /**
 * Java completion query specifications
@@ -78,7 +73,7 @@ import org.netbeans.modules.cnd.editor.cplusplus.CCTokenContext;
 * @version 1.00
 */
 
-abstract public class CsmCompletion extends Completion {
+abstract public class CsmCompletion {
 
     public static final int PUBLIC_LEVEL = 3;
     public static final int PROTECTED_LEVEL = 2;
@@ -130,12 +125,6 @@ abstract public class CsmCompletion extends Completion {
     = new SimpleClass("const char", 0, true); // NOI18N
     public static final BaseType CONST_STRING_TYPE = new BaseType(CONST_STRING_CLASS, 1, false, 0);
 
-    /** @deprecated flag that is used for backward compatibility only. 
-     *  Modifier.INTERFACE has been used instead. 
-     */
-    static final int INTERFACE_BIT = (1 << 30); // no neg nums in modifiers, 
-    //static final int INTERFACE_BIT_FILTER = (~INTERFACE_BIT);
-    
     // the bit for local member. the modificator is not saved within this bit.
     public static final int LOCAL_MEMBER_BIT = (1 << 29);
 
@@ -180,8 +169,6 @@ abstract public class CsmCompletion extends Completion {
     public static final CsmMethod[] EMPTY_METHODS = new CsmMethod[0];
     public static final String SCOPE = "::";  //NOI18N
 
-    private static CsmFinder finder;
-
     private static int debugMode;
 
     /** Map holding the simple class instances */
@@ -195,43 +182,8 @@ abstract public class CsmCompletion extends Completion {
     /** Debug finding packages/classes/fields/methods */
     public static final int DEBUG_FIND = 2;
 
-    /** Callback for initing completion.  See EditorModule.restored(). */
-    private static CsmFinderInitializer initializer;
-    
-    
-    /** Gets the current default finder. */
-    public static synchronized CsmFinder getFinder() {
-        if(finder == null) {
-            if(initializer == null) {
-                throw new IllegalStateException("Editor: Java completion can't be initialized."); // NOI18N
-            }
-
-            initializer.initCsmFinder();
-        }
-        
-        return finder;
+    private CsmCompletion() {
     }
-    
-    /** Set the current default finder */
-    public static synchronized void setFinder(CsmFinder f) {
-        finder = f;
-    }
-
-    /** Sets initializer to init finder for case it's needed and was not done yet. */
-//    public static void setFinderInitializer(CsmFinderInitializer initializer) {
-//        JavaCompletion.initializer = initializer;
-//    }
-    
-
-    public CsmCompletion(ExtEditorUI extEditorUI) {
-        super(extEditorUI);
-    }
-
-    protected CompletionView createView() {
-        return new ListCompletionView(new CsmCellRenderer());
-    }
-
-    abstract protected CompletionQuery createQuery();
 
     /** Get level from modifiers. */
     public static int getLevel(int modifiers) {
@@ -247,7 +199,7 @@ abstract public class CsmCompletion extends Completion {
     }
 
     public static boolean isPrimitiveClassName(String s) {
-        return CCTokenContext.isTypeOrVoid(s);
+        return CndLexerUtilities.isType(s);
     }
 
     public static boolean isPrimitiveClass(CsmClassifier c) {
@@ -323,11 +275,14 @@ abstract public class CsmCompletion extends Completion {
         CsmType type = null;
         if (CsmKindUtilities.isClassifier(obj)) {
             type = CsmCompletion.getType((CsmClassifier)obj, 0);
-        } else if (CsmKindUtilities.isConstructor((CsmFunction)obj)) {
-            CsmClassifier cls = ((CsmConstructor)obj).getContainingClass();
-            type = CsmCompletion.getType(cls, 0);                  
         } else if (CsmKindUtilities.isFunction(obj)) {
-            type = ((CsmFunction)obj).getReturnType();
+            CsmFunction fun = (CsmFunction) obj;
+            if (CsmKindUtilities.isConstructor(fun)) {
+                CsmClassifier cls = ((CsmConstructor)obj).getContainingClass();
+                type = CsmCompletion.getType(cls, 0);                  
+            } else {
+                type = fun.getReturnType();
+            }
         } else if (CsmKindUtilities.isVariable(obj)) {
             type = ((CsmVariable)obj).getType();
         } else if (CsmKindUtilities.isEnumerator(obj)) {
@@ -591,10 +546,12 @@ abstract public class CsmCompletion extends Completion {
             return order;
         }
 
+        @Override
         public int hashCode() {
             return name.hashCode() ^ packageName.hashCode();
         }
 
+        @Override
         public boolean equals(Object o) {
             if (this == o) {
                 return true;
@@ -608,6 +565,7 @@ abstract public class CsmCompletion extends Completion {
             return false;
         }
 
+        @Override
         public String toString() {
             if (stringValue == null) {
                 stringValue = (getPackageName().length() > 0)
@@ -639,116 +597,6 @@ abstract public class CsmCompletion extends Completion {
         }
 
     }
-
-//    /** Abstract class that assumes lazy initialization */
-//    public static abstract class AbstractClass extends SimpleClass {
-//
-//        protected int modifiers;
-//
-//        protected Body body;
-//
-//        public AbstractClass(String name, String packageName,
-//                             boolean iface, int modifiers) {
-//            super(name, packageName);
-//            this.modifiers = modifiers;
-//            if (iface) {
-//                this.modifiers |= Modifier.INTERFACE;
-//            }
-//        }
-//
-//        public AbstractClass(String name, String packageName,
-//                             boolean iface, boolean deprecated, int modifiers) {
-//            super(name, packageName);
-//            this.modifiers = modifiers;
-//            if (iface) {
-//                this.modifiers |= Modifier.INTERFACE;
-//            }
-//            if (deprecated){
-//                this.modifiers |= DEPRECATED_BIT;
-//            }
-//        }
-//        
-//        AbstractClass() {
-//            super();
-//        }
-//
-//        /** Init internal representation */
-//        protected abstract void init();
-//
-//        /** Is this class an interface? */
-//        public boolean isInterface() {
-//            return (((modifiers & Modifier.INTERFACE) != 0) || ((modifiers & INTERFACE_BIT) != 0)) ;
-//        }
-//
-//        /** Get modifiers for this class */
-//        public int getModifiers() {
-//            return modifiers; // & INTERFACE_BIT_FILTER;
-//        }
-//
-//        public synchronized int getTagOffset() {
-//            if (body == null) {
-//                init();
-//            }
-//            return body.tagOffset;
-//        }
-//
-//        /** Get superclass of this class */
-//        public synchronized CsmClassifier getSuperclass() {
-//            if (body == null) {
-//                init();
-//            }
-//            return body.superClass;
-//        }
-//
-//        /** Get interfaces this class implements */
-//        public synchronized CsmClassifier[] getInterfaces() {
-//            if (body == null) {
-//                init();
-//            }
-//            return body.interfaces;
-//        }
-//
-//        /** Get fields that this class contains */
-//        public synchronized CsmField[] getFields() {
-//            if (body == null) {
-//                init();
-//            }
-//            return body.fields;
-//        }
-//
-//        /** Get constructors that this class contains */
-//        public synchronized CsmConstructor[] getConstructors() {
-//            if (body == null) {
-//                init();
-//            }
-//            return body.constructors;
-//        }
-//
-//        /** Get methods that this class contains */
-//        public synchronized CsmMethod[] getMethods() {
-//            if (body == null) {
-//                init();
-//            }
-//            return body.methods;
-//        }
-//
-//        public static class Body {
-//
-//            public int tagOffset;
-//
-//            public CsmClassifier superClass;
-//
-//            public CsmClassifier[] interfaces;
-//
-//            public CsmField[] fields;
-//
-//            public CsmConstructor[] constructors;
-//
-//            public CsmMethod[] methods;
-//
-//        }
-//
-//    }
 
     /** Description of the type */
     public static class BaseType implements CsmType {
@@ -816,10 +664,12 @@ abstract public class CsmCompletion extends Completion {
             return order;
         }
 
+        @Override
         public int hashCode() {
             return clazz.hashCode() + arrayDepth;
         }
 
+        @Override
         public boolean equals(Object o) {
             if (this == o) {
                 return true;
@@ -831,6 +681,7 @@ abstract public class CsmCompletion extends Completion {
             return false;
         }
 
+        @Override
         public String toString() {
             return format(true);
         }
@@ -848,6 +699,10 @@ abstract public class CsmCompletion extends Completion {
         }
 
         public boolean isInstantiation() {
+            return false;
+        }
+
+        public boolean isTemplateBased() {
             return false;
         }
 
@@ -905,432 +760,11 @@ abstract public class CsmCompletion extends Completion {
 
     }
 
-//    /** Description of the method parameter */
-//    public static class BaseParameter implements CsmParameter {
-//
-//        protected String name;
-//
-//        protected CsmType type;
-//
-//        public BaseParameter(String name, CsmType type) {
-//            this.name = name;
-//            this.type = type;
-//        }
-//
-//        BaseParameter() {
-//        }
-//
-//        /** Name of the parameter */
-//        public String getName() {
-//            return name;
-//        }
-//
-//        /** Type of the parameter */
-//        public CsmType getType() {
-//            return type;
-//        }
-//
-//        public int compareTo(Object o) {
-//            if (this == o) {
-//                return 0;
-//            }
-//            CsmParameter p = (CsmParameter)o;
-//            return type.compareTo(p.getType()); // only by type
-//        }
-//
-//        public int hashCode() {
-//            return type.hashCode() ^ name.hashCode();
-//        }
-//
-//        public boolean equals(Object o) {
-//            if (this == o) {
-//                return true;
-//            }
-//            if (o instanceof CsmParameter) {
-//                CsmParameter p = (CsmParameter)o;
-//                return type.equals(p.getType()); // only by type
-//            }
-//            return false;
-//        }
-//
-//        public String toString() {
-//            return type.toString() + ' ' + name;
-//        }
-//
-//    }
-
-//    public static class BaseField extends BaseParameter
-//        implements CsmField {
-//
-//        protected CsmClassifier clazz;
-//
-//        protected int modifiers;
-//
-//        protected int tagOffset;
-//
-//        public BaseField(CsmClassifier clazz, String name, CsmType type, int modifiers) {
-//            super(name, type);
-//            this.clazz = clazz;
-//            this.modifiers = modifiers;
-//        }
-//
-//        BaseField() {
-//        }
-//
-//        public int getModifiers() {
-//            return modifiers;
-//        }
-//
-//        public CsmClassifier getClassifier() {
-//            return clazz;
-//        }
-//
-//        public int getTagOffset() {
-//            return tagOffset;
-//        }
-//
-//        public int compareTo(Object o) {
-//            if (this == o) {
-//                return 0;
-//            }
-//            CsmField f = (CsmField)o;
-//            int order = super.compareTo(o);
-//            if (order == 0) {
-//                order = name.compareTo(f.getName());
-//            }
-//            return order;
-//        }
-//
-//        public int hashCode() {
-//            return type.hashCode() ^ name.hashCode() ^ modifiers;
-//        }
-//
-//        public boolean equals(Object o) {
-//            if (this == o) {
-//                return true;
-//            }
-//            if (o instanceof CsmField) {
-//                CsmField p = (CsmField)o;
-//                return name.equals(p.getName()) && type.equals(p.getType());
-//            }
-//            return false;
-//        }
-//
-//        public String toString() {
-//            return Modifier.toString(modifiers) + ' ' + super.toString();
-//        }
-//
-//    }
-
-//    public static class BaseConstructor implements CsmConstructor {
-//
-//        protected CsmClassifier clazz;
-//
-//        protected int tagOffset;
-//
-//        protected int modifiers;
-//
-//        protected CsmParameter[] parameters;
-//
-//        protected CsmClassifier[] exceptions;
-//
-//        public BaseConstructor(CsmClassifier clazz, int modifiers,
-//                               CsmParameter[] parameters, CsmClassifier[] exceptions) {
-//            this.clazz = clazz;
-//            this.modifiers = modifiers;
-//            this.parameters = parameters;
-//            this.exceptions = exceptions;
-//        }
-//
-//        BaseConstructor() {
-//        }
-//
-//        public CsmClassifier getClassifier() {
-//            return clazz;
-//        }
-//
-//        public int getTagOffset() {
-//            return tagOffset;
-//        }
-//
-//        public int getModifiers() {
-//            return modifiers;
-//        }
-//
-//        public CsmParameter[] getParameters() {
-//            return parameters;
-//        }
-//
-//        public CsmClassifier[] getExceptions() {
-//            return exceptions;
-//        }
-//
-//        /** This implementation expects
-//        * that only the constructors inside one class will
-//        * be compared.
-//        */
-//        public int compareTo(Object o) {
-//            if (this == o) {
-//                return 0;
-//            }
-//            CsmConstructor c = (CsmConstructor)o;
-//            int order = 0;
-//            CsmParameter[] mp = c.getParameters();
-//            int commonCnt = Math.min(parameters.length, mp.length);
-//            for (int i = 0; i < commonCnt; i++) {
-//                order = parameters[i].compareTo(mp[i]);
-//                if (order != 0) {
-//                    return order;
-//                }
-//            }
-//            order = parameters.length - mp.length;
-//            return order;
-//        }
-//
-//        public boolean equals(Object o) {
-//            if (this == o) {
-//                return true;
-//            }
-//            if (o instanceof CsmConstructor) {
-//                return (compareTo(o) == 0);
-//            }
-//            return false;
-//        }
-//
-//        public int hashCode() {
-//            int h = 0;
-//            for (int i = 0; i < parameters.length; i++) {
-//                h ^= parameters[i].hashCode();
-//            }
-//            return h;
-//        }
-//
-//        String toString(String returnTypeName, String methodName) {
-//            StringBuilder sb = new StringBuilder(Modifier.toString(modifiers));
-//            sb.append(' '); //NOI18N
-//            sb.append(returnTypeName);
-//            sb.append(methodName);
-//            // Add parameters
-//            sb.append('('); //NOI18N
-//            int cntM1 = parameters.length - 1;
-//            for (int i = 0; i <= cntM1; i++) {
-//                sb.append(parameters[i].toString());
-//                if (i < cntM1) {
-//                    sb.append(", "); // NOI18N
-//                }
-//            }
-//            sb.append(')');
-//            // Add exceptions
-//            cntM1 = exceptions.length - 1;
-//            if (cntM1 >= 0) {
-//                sb.append(" throws "); // NOI18N
-//                for (int i = 0; i <= cntM1; i++) {
-//                    sb.append(exceptions[i].toString());
-//                    if (i < cntM1) {
-//                        sb.append(", "); // NOI18N
-//                    }
-//                }
-//            }
-//            return sb.toString();
-//        }
-//
-//        public String toString() {
-//            return toString("", getClassifier().getName()); // NOI18N
-//        }
-//
-//    }
-
-//    public static class BaseMethod extends BaseConstructor
-//            implements CsmMethod {
-//        
-//        protected String name;
-//        
-//        protected CsmType returnType;
-//        
-//        public BaseMethod(CsmClassifier clazz, String name, int modifiers, CsmType returnType,
-//                CsmParameter[] parameters, CsmClassifier[] exceptions) {
-//            super(clazz, modifiers, parameters, exceptions);
-//            this.name = name;
-//            this.returnType = returnType;
-//        }
-//        
-//        BaseMethod() {
-//        }
-//        
-//        public String getName() {
-//            return name;
-//        }
-//        
-//        public CsmType getReturnType() {
-//            return returnType;
-//        }
-//        
-//        public int compareTo(Object o) {
-//            if (this == o) {
-//                return 0;
-//            }
-//            CsmMethod m = (CsmMethod)o;
-//            int order = name.compareTo(m.getName());
-//            if (order == 0) {
-//                order = super.compareTo(o);
-//            }
-//            return order;
-//        }
-//        
-//        public int hashCode() {
-//            return name.hashCode() ^ super.hashCode();
-//        }
-//        
-//        public boolean equals(Object o) {
-//            if (this == o) {
-//                return true;
-//            }
-//            if (o instanceof CsmMethod) {
-//                return (compareTo(o) == 0);
-//            }
-//            return false;
-//        }
-//        
-//        public String toString() {
-//            String rtn = getReturnType().toString();
-//            return toString((rtn.length() > 0) ? rtn + ' ' : "", name); // NOI18N
-//        }
-//        
-//    }
-
-//    public abstract static class AbstractProvider {
-//        implements JCClassProvider2 {
-//
-//        public abstract Iterator getClasses();
-//        
-//        public boolean remove(JCClassProvider cp) {
-//            Iterator i = cp.getClasses();
-//            while (i.hasNext()) {
-//                CsmClassifier c = (CsmClassifier)i.next();
-//                if (!cp.notifyAppend(c, false)) {
-//                    return false;
-//                }
-//                if (!removeClass(c)) {
-//                    return false;
-//                }
-//                if (!cp.notifyAppend(c, true)) {
-//                    return false;
-//                }
-//            }
-//            return true;
-//        }
-//
-//        public boolean append(JCClassProvider cp) {
-//            Iterator i = cp.getClasses();
-//            while (i.hasNext()) {
-//                CsmClassifier c = (CsmClassifier)i.next();
-//                if (!cp.notifyAppend(c, false)) {
-//                    return false;
-//                }
-//                if (!appendClass(c)) {
-//                    return false;
-//                }
-//                if (!cp.notifyAppend(c, true)) {
-//                    return false;
-//                }
-//            }
-//            return true;
-//        }
-//
-//        protected boolean appendClass(CsmClassifier c) {
-//            return true;
-//        }
-//
-//        protected boolean removeClass(CsmClassifier c) {
-//            return true;
-//        }
-//
-//        public void reset() {
-//        }
-//
-//        /** This method is executed by the target Class Provider
-//        * to notify this provider about the class appending.
-//        * @param c JC class that was appended
-//        * @return true to continue building, false to stop build
-//        */
-//        public boolean notifyAppend(CsmClassifier c, boolean appendFinished) {
-//            return true;
-//        }
-//
-//    }
-//
-//    public static class ListProvider extends AbstractProvider {
-//
-//        private List classList;
-//
-//        public ListProvider() {
-//            classList = new ArrayList();
-//        }
-//
-//        public ListProvider(List classList) {
-//            this.classList = classList;
-//        }
-//
-//        protected boolean appendClass(CsmClassifier c) {
-//            classList.add(c);
-//            return true;
-//        }
-//
-//        public Iterator getClasses() {
-//            return classList.iterator();
-//        }
-//
-//        public int getClassCount() {
-//            return classList.size();
-//        }
-//
-//    }
-//
-//    public static class SingleProvider extends AbstractProvider
-//        implements Iterator {
-//
-//        CsmClassifier c;
-//
-//        boolean next = true;
-//
-//        public SingleProvider(CsmClassifier c) {
-//            this.c = c;
-//        }
-//
-//        public Iterator getClasses() {
-//            if (next) {
-//                return this;
-//            } else {
-//                throw new IllegalStateException();
-//            }
-//        }
-//
-//        public boolean hasNext() {
-//            return next;
-//        }
-//
-//        public Object next() {
-//            next = false;
-//            return c;
-//        }
-//
-//        public void remove() {
-//            throw new UnsupportedOperationException();
-//        }
-//
-//    }
-
     public static int getDebugMode() {
         return debugMode;
     }
 
     public static void setDebugMode(int newDebugMode) {
         debugMode = newDebugMode;
-    }
-
-
-    /** Interface for providing callback initialization of JavaCompletion. */
-    public static interface CsmFinderInitializer {
-        public void initCsmFinder();
     }
 }

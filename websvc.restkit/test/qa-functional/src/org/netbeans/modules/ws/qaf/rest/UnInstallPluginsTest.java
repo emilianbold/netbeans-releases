@@ -41,12 +41,14 @@ package org.netbeans.modules.ws.qaf.rest;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import junit.framework.Test;
 import junit.framework.TestSuite;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.PluginsOperator;
 import org.netbeans.jemmy.operators.JButtonOperator;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestSuite;
 
 /**
@@ -112,18 +114,12 @@ public class UnInstallPluginsTest extends JellyTestCase {
         new JButtonOperator(po.installer(), uninstallInDialogLabel).push();
         po.installer().finish();
     }
-
-    public static TestSuite suite() {
-        TestSuite suite = new NbTestSuite();
+    
+    public static Test suite() {
         if (!Boolean.getBoolean("plugins.jmaki.skip")) { //NOI18N
-            suite.addTest(new UnInstallPluginsTest("testUnInstallPlugins")); //NOI18N
+            return NbModuleSuite.create(NbModuleSuite.createConfiguration(UnInstallPluginsTest.class).addTest("testUnInstallPlugins").enableModules(".*").clusters(".*"));
         } else {
-            suite.addTest(new JMakiTest("testJMakiTestsSkipped")); //NOI18N
+            return NbModuleSuite.create(NbModuleSuite.createConfiguration(JMakiTest.class).addTest("testJMakiTestsSkipped").enableModules(".*").clusters(".*"));
         }
-        return suite;
-    }
-
-    public static void main(String... args) {
-        TestRunner.run(suite());
     }
 }

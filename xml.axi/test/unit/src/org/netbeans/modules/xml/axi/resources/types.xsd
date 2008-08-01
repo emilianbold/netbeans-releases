@@ -127,6 +127,7 @@
                         <xsd:element name="shipDate" type="xsd:date" minOccurs="0"/>
                     </xsd:sequence>
                     <xsd:attribute name="partNum" type="SKU" use="required"/>
+                    <xsd:attribute name="cost" type="Cost"/>
                 </xsd:complexType>
             </xsd:element>
         </xsd:sequence>
@@ -162,6 +163,11 @@
     <xsd:simpleType name="Cost">
         <xsd:restriction base='xsd:decimal'>
             <xsd:enumeration value='100.00'/>
+            <xsd:enumeration value='110.00'/>
+            <xsd:enumeration value='120.00'/>
+            <xsd:enumeration value='130.00'/>
+            <xsd:enumeration value='140.00'/>
+            <xsd:enumeration value='150.00'/>
         </xsd:restriction>
     </xsd:simpleType>    
     

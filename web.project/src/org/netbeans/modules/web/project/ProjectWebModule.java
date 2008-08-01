@@ -300,6 +300,11 @@ public final class ProjectWebModule extends J2eeModuleProvider
         return this;
     }
 
+    @Override
+    public DeployOnSaveSupport getDeployOnSaveSupport() {
+        return project.getDeployOnSaveSupport();
+    }
+    
     public File getDeploymentConfigurationFile(String name) {
         assert name != null : "File name of the deployement configuration file can't be null"; //NOI18N
         
@@ -330,10 +335,6 @@ public final class ProjectWebModule extends J2eeModuleProvider
     public FileObject getModuleFolder () {
         return getDocumentBase ();
     }
-
-    public boolean useDefaultServer () {
-        return false;
-    }
     
     public String getServerID () {
         String inst = getServerInstanceID ();
@@ -357,7 +358,9 @@ public final class ProjectWebModule extends J2eeModuleProvider
     }
     
     public Iterator getArchiveContents () throws java.io.IOException {
-        return new IT (getContentDirectory ());
+        FileObject content = getContentDirectory();
+        content.refresh();
+        return new IT(content);
     }
 
     public FileObject getContentDirectory() {

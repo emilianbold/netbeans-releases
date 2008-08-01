@@ -72,6 +72,11 @@ import org.openide.loaders.DataObject;
  */
 public abstract class RestTestBase extends WebServicesTestBase {
 
+    //don't try to (un)deploy REST apps on windows!!!
+    //see: https://jersey.dev.java.net/issues/show_bug.cgi?id=45
+    private static final boolean isWindows = System.getProperty("os.name").toLowerCase().contains("windows"); //NOI18N
+
+
     private static final String HOSTNAME = "localhost"; //NOI18N
     private static final int PORT = resolveServerPort();
     private static final String JDBC_DRIVER = "org.apache.derby.jdbc.ClientDriver"; //NOI18N
@@ -80,7 +85,7 @@ public abstract class RestTestBase extends WebServicesTestBase {
     private static final String DB_PASSWORD = "app"; //NOI18N
     private Connection connection;
 
-    private static boolean CREATE_GOLDEN_FILES;
+    private static boolean CREATE_GOLDEN_FILES = Boolean.getBoolean("golden");
     private static final Logger LOGGER = Logger.getLogger(RestTestBase.class.getName());
 
     /**
@@ -169,7 +174,7 @@ public abstract class RestTestBase extends WebServicesTestBase {
 
     /**
      * Helper method to get RESTful Web Services node
-     * 
+     *
      * @return RESTful Web Services node
      */
     protected Node getRestNode() {
@@ -338,6 +343,20 @@ public abstract class RestTestBase extends WebServicesTestBase {
             Utils.copyFile(src, new File(destDir, src.getName() + ".pass")); //NOI18N
         }
         assertTrue("Golden files generated.", false); //NOI18N
+    }
+
+    @Override
+    protected void deployProject(String projectName) throws IOException {
+        if (!isWindows) {
+           super.deployProject(projectName);
+        }
+    }
+
+    @Override
+    protected void undeployProject(String projectName) throws IOException {
+        if (!isWindows) {
+            super.undeployProject(projectName);
+        }
     }
 
     private static int resolveServerPort() {

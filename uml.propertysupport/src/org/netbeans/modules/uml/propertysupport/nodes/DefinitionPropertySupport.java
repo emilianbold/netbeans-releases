@@ -55,7 +55,6 @@ import org.netbeans.modules.uml.core.support.umlutils.IPropertyElement;
 import org.netbeans.modules.uml.ui.controls.newdialog.AddPackageVisualPanel1;
 import org.netbeans.modules.uml.ui.support.applicationmanager.NameCollisionListener;
 import org.netbeans.modules.uml.ui.swing.propertyeditor.PropertyEditorCollisionHandler;
-import org.netbeans.modules.uml.ui.swing.propertyeditor.PropertyEditorEventsSink;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
@@ -73,8 +72,8 @@ public abstract class DefinitionPropertySupport extends PropertySupport
     private boolean mAutoCommit = true;
     private DefinitionPropertyBuilder.ValidValues mValidValues = null;
     
-    /// The event handler for the various controls and the core UML metamodel
-    private PropertyEditorEventsSink m_EventsSink = null;
+    // The event handler for the various controls and the core UML metamodel
+    //private PropertyEditorEventsSink m_EventsSink = null;
     private NameCollisionListener m_NameCollisionListener = null;
     private PropertyEditorCollisionHandler m_CollisionHandler = null;
     

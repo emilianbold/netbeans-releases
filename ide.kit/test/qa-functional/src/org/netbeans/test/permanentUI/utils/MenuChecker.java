@@ -52,8 +52,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.HashMap;
 
-import java.io.PrintStream;
-
 import javax.swing.JComponent;
 import org.netbeans.jemmy.operators.JMenuBarOperator;
 
@@ -162,7 +160,7 @@ public class MenuChecker {
 
         for (MenuElement menuElement : elements) {
             //System.out.print("getPopupMenuArrayList: ");
-            ((JComponent) menuElement).list();
+//            ((JComponent) menuElement).list();
             if (menuElement instanceof JSeparator) {
                 //System.out.println("adding separator");//DEBUG
                 NbMenuItem separator = new NbMenuItem();
@@ -198,7 +196,7 @@ public class MenuChecker {
         
         for (Component menuItem : items) {
             if (menuItem instanceof JSeparator) {
-                System.out.println("adding separator");//DEBUG
+//                System.out.println("adding separator");//DEBUG
                 NbMenuItem separator = new NbMenuItem();
                 separator.setSeparator(true);
                 list.add(separator);

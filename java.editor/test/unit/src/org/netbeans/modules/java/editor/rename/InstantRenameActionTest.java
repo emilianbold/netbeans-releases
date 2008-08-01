@@ -81,14 +81,14 @@ public class InstantRenameActionTest extends NbTestCase {
     
     public void testSimpleRename() throws Exception {
         boolean[] wasResolved = new boolean[1];
-        Collection<Token<JavaTokenId>> changePoints = performTest("package test; public class Test{private int xx; public void run() {xx = 1;}}", 68, wasResolved);
+        Collection<Token> changePoints = performTest("package test; public class Test{private int xx; public void run() {xx = 1;}}", 68, wasResolved);
         
         validateChangePoints(changePoints, 103 - 59, 105 - 59, 126 - 59, 128 - 59);
     }
     
     private void checkInnerclasses1(int caret) throws Exception {
         boolean[] wasResolved = new boolean[1];
-        Collection<Token<JavaTokenId>> changePoints = performTest("package test; public class Test{public void run() {Test1 t = new Test1();} private static class Test1{public Test1(){}}", caret, wasResolved);
+        Collection<Token> changePoints = performTest("package test; public class Test{public void run() {Test1 t = new Test1();} private static class Test1{public Test1(){}}", caret, wasResolved);
         
         validateChangePoints(changePoints, 110 - 59, 115 - 59, 124 - 59, 129 - 59, 155 - 59, 160 - 59, 168 - 59, 173 - 59);
     }
@@ -111,7 +111,7 @@ public class InstantRenameActionTest extends NbTestCase {
     
     public void testNonPrivateClassWithPrivateConstructor() throws Exception {
         boolean[] wasResolved = new boolean[1];
-        Collection<Token<JavaTokenId>> changePoints = performTest("package test; public class Test{public void run() {Test1 t = new Test1();} static class Test1{private Test1(){}}", 112 - 59, wasResolved);
+        Collection<Token> changePoints = performTest("package test; public class Test{public void run() {Test1 t = new Test1();} static class Test1{private Test1(){}}", 112 - 59, wasResolved);
         
         assertNull(changePoints);
         assertTrue(wasResolved[0]);
@@ -119,7 +119,7 @@ public class InstantRenameActionTest extends NbTestCase {
     
     public void testBrokenSource89736() throws Exception {
         boolean[] wasResolved = new boolean[1];
-        Collection<Token<JavaTokenId>> changePoints = performTest("package test; public class Test{private void run(int hj test) {} }", 116 - 59, wasResolved);
+        Collection<Token> changePoints = performTest("package test; public class Test{private void run(int hj test) {} }", 116 - 59, wasResolved);
         
         assertNull(changePoints);
         assertFalse(wasResolved[0]);
@@ -127,7 +127,7 @@ public class InstantRenameActionTest extends NbTestCase {
     
     public void testLocalClassAreRenamable1() throws Exception {
         boolean[] wasResolved = new boolean[1];
-        Collection<Token<JavaTokenId>> changePoints = performTest("package test; public class Test{public void run() {class PPP {PPP() {} PPP p = new PPP();}}}", 117 - 59, wasResolved);
+        Collection<Token> changePoints = performTest("package test; public class Test{public void run() {class PPP {PPP() {} PPP p = new PPP();}}}", 117 - 59, wasResolved);
         
         assertNotNull(changePoints);
         assertTrue(wasResolved[0]);
@@ -136,7 +136,7 @@ public class InstantRenameActionTest extends NbTestCase {
     
     public void testLocalClassAreRenamable2() throws Exception {
         boolean[] wasResolved = new boolean[1];
-        Collection<Token<JavaTokenId>> changePoints = performTest("package test; public class Test{public     Test() {class PPP {PPP() {} PPP p = new PPP();}}}", 117 - 59, wasResolved);
+        Collection<Token> changePoints = performTest("package test; public class Test{public     Test() {class PPP {PPP() {} PPP p = new PPP();}}}", 117 - 59, wasResolved);
         
         assertNotNull(changePoints);
         assertTrue(wasResolved[0]);
@@ -145,7 +145,7 @@ public class InstantRenameActionTest extends NbTestCase {
     
     public void testLocalClassAreRenamable3() throws Exception {
         boolean[] wasResolved = new boolean[1];
-        Collection<Token<JavaTokenId>> changePoints = performTest("package test; public class Test{                  {class PPP {PPP() {} PPP p = new PPP();}}}", 117 - 59, wasResolved);
+        Collection<Token> changePoints = performTest("package test; public class Test{                  {class PPP {PPP() {} PPP p = new PPP();}}}", 117 - 59, wasResolved);
         
         assertNotNull(changePoints);
         assertTrue(wasResolved[0]);
@@ -154,14 +154,14 @@ public class InstantRenameActionTest extends NbTestCase {
     
     public void testLocalClassAreRenamable4() throws Exception {
         boolean[] wasResolved = new boolean[1];
-        Collection<Token<JavaTokenId>> changePoints = performTest("package test; public class Test{           static {class PPP {PPP() {} PPP p = new PPP();}}}", 117 - 59, wasResolved);
+        Collection<Token> changePoints = performTest("package test; public class Test{           static {class PPP {PPP() {} PPP p = new PPP();}}}", 117 - 59, wasResolved);
         
         assertNotNull(changePoints);
         assertTrue(wasResolved[0]);
         validateChangePoints(changePoints, 116 - 59, 119 - 59, 121 - 59, 124 - 59, 130 - 59, 133 - 59, 142 - 59, 145 - 59);
     }
     
-    private void validateChangePoints(Collection<Token<JavaTokenId>> changePoints, int... origs) {
+    private void validateChangePoints(Collection<Token> changePoints, int... origs) {
         Set<Pair> awaited = new HashSet<Pair>();
         
         for (int cntr = 0; cntr < origs.length; cntr += 2) {
@@ -210,7 +210,7 @@ public class InstantRenameActionTest extends NbTestCase {
     
     private FileObject source;
     
-    private Collection<Token<JavaTokenId>> performTest(String sourceCode, final int offset, boolean[] wasResolved) throws Exception {
+    private Collection<Token> performTest(String sourceCode, final int offset, boolean[] wasResolved) throws Exception {
         FileObject root = makeScratchDir(this);
         
         FileObject sourceDir = root.createFolder("src");

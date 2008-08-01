@@ -59,6 +59,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.editor.settings.storage.fontscolors.ColoringStorage;
 import org.netbeans.modules.editor.settings.storage.keybindings.KeyMapsStorage;
+import org.netbeans.modules.editor.settings.storage.preferences.PreferencesStorage;
 import org.netbeans.modules.editor.settings.storage.spi.StorageDescription;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -91,8 +92,8 @@ public final class SettingsType {
 
         if (ColoringStorage.ID.equals(sd.getId())) {
             locator = new FontsColorsLocator(sd.getId(), sd.isUsingProfiles(), sd.getMimeType(), sd.getLegacyFileName());
-        } else if (KeyMapsStorage.ID.equals(sd.getId())) {
-            locator = new KeybindingsLocator(sd.getId(), sd.isUsingProfiles(), sd.getMimeType(), sd.getLegacyFileName());
+        } else if (KeyMapsStorage.ID.equals(sd.getId()) || PreferencesStorage.ID.equals(sd.getId())) {
+            locator = new LegacyTextBaseLocator(sd.getId(), sd.isUsingProfiles(), sd.getMimeType(), sd.getLegacyFileName());
         } else {
             locator = new DefaultLocator(sd.getId(), sd.isUsingProfiles(), sd.getMimeType(), sd.getLegacyFileName());
         }
@@ -692,9 +693,9 @@ public final class SettingsType {
         }
     } // End of FontsColorsLocator class
 
-    private static final class KeybindingsLocator extends DefaultLocator {
+    private static final class LegacyTextBaseLocator extends DefaultLocator {
         
-        public KeybindingsLocator(String settingTypeId, boolean hasProfiles, String mimeType, String legacyFileName) {
+        public LegacyTextBaseLocator(String settingTypeId, boolean hasProfiles, String mimeType, String legacyFileName) {
             super(settingTypeId, hasProfiles, mimeType, legacyFileName);
         }
         

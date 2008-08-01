@@ -145,7 +145,8 @@ public abstract class TMapComponentAbstract
     }
 
     protected static Element createNewElement(TMapComponents type, TMapModelImpl model) {
-        return model.getDocument().createElement(type.getTagName());
+        return model.getDocument().createElementNS(
+                TMapComponent.TRANSFORM_MAP_NS_URI, type.getTagName());
     }
 
     protected final AttributeAccess getAttributeAccess() {

@@ -51,6 +51,7 @@ import javax.lang.model.element.Element;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import org.netbeans.modules.java.source.builder.ASTService;
 import org.netbeans.modules.java.source.builder.CommentHandlerService;
 import org.netbeans.modules.java.source.builder.QualIdentTree;
@@ -86,17 +87,19 @@ public class ImmutableTreeTranslator implements TreeVisitor<Tree,Object> {
     protected ASTService model;
     private CompilationUnitTree topLevel;
     private ImportAnalysis2 importAnalysis;
+    private Map<Tree, Object> tree2Tag;
 
-    public void attach(Context context, ImportAnalysis2 importAnalysis, CompilationUnitTree topLevel) {
+    public void attach(Context context, ImportAnalysis2 importAnalysis, CompilationUnitTree topLevel, Map<Tree, Object> tree2Tag) {
         make = TreeFactory.instance(context);
         comments = CommentHandlerService.instance(context);
         model = ASTService.instance(context);
         this.importAnalysis = importAnalysis;
         this.topLevel = topLevel;
+        this.tree2Tag = tree2Tag;
     }
     
     public void attach(Context context) {
-        attach(context, new ImportAnalysis2(context), null);
+        attach(context, new ImportAnalysis2(context), null, null);
     }
     
     public void release() {
@@ -112,8 +115,15 @@ public class ImmutableTreeTranslator implements TreeVisitor<Tree,Object> {
     public Tree translate(Tree tree) {
 	if (tree == null)
 	    return null;
-	else
-	    return tree.accept(this, null);
+	else {
+	    Tree t = tree.accept(this, null);
+            
+            if (tree2Tag != null && tree != t) {
+                tree2Tag.put(t, tree2Tag.get(tree));
+            }
+            
+            return t;
+        }
     }
 
     public <T extends Tree> T translateClassRef(T tree) {

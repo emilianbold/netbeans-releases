@@ -1,12 +1,7 @@
 
 
 Document 0
-Delete:  source : <TESTURL>/events.js
-
-
-
-Document 1
-Indexed:
+Searchable Keys:
   base : bar;Foo;bar;|FUNCTION|;;0;;;void;
   base : foo;;Foo;|DOCUMENTED|CONSTRUCTOR|;;0;18b;;Foo;
   base : foo;Foo;foo;|PROPERTY|;;0;;;Number;
@@ -34,4 +29,4 @@ Indexed:
   fqn : spry.effect.move;;Spry.Effect.Move;|DOCUMENTED|CONSTRUCTOR|STATIC|;element,fromPos,toPos,options;0;203;;Spry.Effect.Move;
   fqn : window.onwhatever;;Window.onwhatever;|FUNCTION|STATIC|;;0;;;void;
 
-Not Indexed:
+Not Searchable Keys:

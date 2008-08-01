@@ -46,6 +46,41 @@ made subject to such option by the copyright holder.
 <apidef name="nodes">Nodes API</apidef>
 </apidefs>
 <changes>
+    <change id="Children.Keys.lazy">
+        <api name="nodes"/>
+        <summary>Adding public int Children.getNodesCount(boolean optimalResult), protected Children.Keys(boolean lazy)</summary>
+        <version major="7" minor="6"/>
+        <date day="12" month="7" year="2008"/>
+        <author login="t_h"/>
+        <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible"/>
+        <description>
+            <a href="@TOP@/org/openide/nodes/Children.Keys.html">Children.Keys</a> 
+            with lazy behavior can be created by using <code>Children.Keys(boolean lazy)</code>.
+            <code> Children.getNodesCount(boolean optimalResult)</code> can be 
+            used instead of <code>Children.getNodes(boolean optimalResult)</code>
+            for children "initialization". While keeping same behavior as 
+            <code>Children.getNodes(boolean optimalResult)</code> for "default"
+            (non-lazy) implementation it allows full initialization without need to
+            create all nodes.
+        </description>
+        <class package="org.openide.nodes" name="Children"/>
+        <class package="org.openide.nodes" name="NodeEvent"/>
+        <issue number="121913"/>
+    </change>
+    <change id="Children.getNodeAt">
+        <api name="nodes"/>
+        <summary>Children.getNodeAt is changing to public</summary>
+        <version major="7" minor="5"/>
+        <date day="2" month="6" year="2008"/>
+        <author login="t_h"/>
+        <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+        <description>
+            Adding possibility to get node at specific position rather than
+            whole array of nodes.
+        </description>
+        <class package="org.openide.nodes" name="Children"/>
+        <issue number="121913"/>
+    </change>
     <change id="ChildFactory">
         <api name="nodes"/>
         <summary>API for Children objects that asynchronously compute keys/child

@@ -306,5 +306,4 @@ public class ExpressionWriter extends XPathVisitorAdapter  {
         }
         return null;
     }
-    
 }

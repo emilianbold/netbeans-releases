@@ -225,14 +225,15 @@ public abstract class BaseAction extends TextAction {
         return obj;
     }
 
-    /** This method is called once after the action is constructed
-    * and then each time the settings are changed.
-    * @param evt event describing the changed setting name. It's null
-    *   if it's called after the action construction.
-    * @param kitClass class of the kit that created the actions
-    */
-    protected void settingsChange(SettingsChangeEvent evt, Class kitClass) {
-    }
+// XXX: remove
+//    /** This method is called once after the action is constructed
+//    * and then each time the settings are changed.
+//    * @param evt event describing the changed setting name. It's null
+//    *   if it's called after the action construction.
+//    * @param kitClass class of the kit that created the actions
+//    */
+//    protected void settingsChange(SettingsChangeEvent evt, Class kitClass) {
+//    }
 
     /** This method is made final here as there's an important
     * processing that must be done before the real action

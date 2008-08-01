@@ -53,8 +53,7 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.NameCollisionHand
 import org.netbeans.modules.uml.core.support.umlsupport.IResultCell;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
 import org.netbeans.modules.uml.core.support.umlutils.IPropertyElement;
-import org.netbeans.modules.uml.ui.support.applicationmanager.IProductGraphPresentation;
-import org.netbeans.modules.uml.ui.swing.drawingarea.DiagramEngine;
+import org.netbeans.modules.uml.ui.controls.newdialog.NewElementUI;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
@@ -188,12 +187,13 @@ public class PropertyEditorCollisionHandler extends NameCollisionHandler impleme
 					if (bIsSubject)
 					{	
 						// This presentation element should be reattached.
-						if ( pPE instanceof IProductGraphPresentation)
-						{
-							IProductGraphPresentation pGraphPresentation = (IProductGraphPresentation)pPE;
-							// Reconnect the presentation element
-							pGraphPresentation.reconnectPresentationElement(pFirstCollidingElement);
-						}
+                                            // TODO: meteora
+//						if ( pPE instanceof IProductGraphPresentation)
+//						{
+//							IProductGraphPresentation pGraphPresentation = (IProductGraphPresentation)pPE;
+//							// Reconnect the presentation element
+//							pGraphPresentation.reconnectPresentationElement(pFirstCollidingElement);
+//						}
 					}
 				}
 			}
@@ -281,7 +281,7 @@ public class PropertyEditorCollisionHandler extends NameCollisionHandler impleme
 			
 			DialogDisplayer.getDefault().notify(
 						new NotifyDescriptor.Message(NbBundle.getMessage(
-								DiagramEngine.class, "IDS_NAMESPACECOLLISION")));
+								NewElementUI.class, "IDS_NAMESPACECOLLISION")));
 			// Cancel the editing to abort the name collision
 			pCell.setContinue(false);
 			// refresh the property to revert back to the original value

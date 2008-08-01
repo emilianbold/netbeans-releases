@@ -48,6 +48,7 @@ import java.net.URI;
 import java.net.URLConnection;
 import java.util.Properties;
 import javax.swing.JTextField;
+import junit.framework.Test;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.NewFileWizardOperator;
@@ -60,7 +61,6 @@ import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
 import org.netbeans.jemmy.operators.JButtonOperator;
-import org.netbeans.junit.NbTestSuite;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.NewFileNameLocationStepOperator;
@@ -79,6 +79,7 @@ import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.ide.ProjectSupport;
 
 /** End-to-end scenario test based on
@@ -96,27 +97,22 @@ public class EndToEndTest extends JellyTestCase {
     }
     
     /** Creates suite from particular test cases. You can define order of testcases here. */
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new EndToEndTest("testSetupStrutsProject"));
-        suite.addTest(new EndToEndTest("testCreateLoginPage"));
-        suite.addTest(new EndToEndTest("testCreateLoginBean"));
-        suite.addTest(new EndToEndTest("testCreateLoginAction"));
-        suite.addTest(new EndToEndTest("testCreateSecurityManager"));
-        suite.addTest(new EndToEndTest("testCreateForward"));
-        suite.addTest(new EndToEndTest("testCreateShopPage"));
-        suite.addTest(new EndToEndTest("testCreateLogoutPage"));
-        suite.addTest(new EndToEndTest("testCreateForwardInclude"));
-        suite.addTest(new EndToEndTest("testRunApplication"));
-        return suite;
-    }
-    
-    /* Method allowing test execution directly from the IDE. */
-    public static void main(java.lang.String[] args) {
-        // run whole suite
-        junit.textui.TestRunner.run(suite());
-        // run only selected test case
-        //junit.textui.TestRunner.run(new EndToEndTest("test1"));
+    public static Test suite() {
+        return NbModuleSuite.create(
+            NbModuleSuite.createConfiguration(EndToEndTest.class)
+            .addTest("testSetupStrutsProject")
+            .addTest("testCreateLoginPage")
+            .addTest("testCreateLoginBean")
+            .addTest("testCreateLoginAction")
+            .addTest("testCreateSecurityManager")
+            .addTest("testCreateForward")
+            .addTest("testCreateShopPage")
+            .addTest("testCreateLogoutPage")
+            .addTest("testCreateForwardInclude")
+            .addTest("testRunApplication")
+            .enableModules(".*")
+            .clusters(".*")
+        );
     }
     
     /** Called before every test case. */

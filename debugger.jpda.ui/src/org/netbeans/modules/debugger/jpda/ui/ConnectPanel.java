@@ -66,7 +66,11 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.MissingResourceException;
+import java.util.Set;
 import java.util.TreeSet;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -104,6 +108,8 @@ import org.openide.util.RequestProcessor;
  */
 public class ConnectPanel extends JPanel implements 
 Controller, ActionListener {
+
+    private static final Logger USG_LOGGER = Logger.getLogger("org.netbeans.ui.metrics.debugger"); // NOI18N
 
     /** List of all AttachingConnectors.*/
     private List                    connectors;
@@ -314,6 +320,7 @@ Controller, ActionListener {
         final Map args = getEditedArgs (tfParams, connector);
         if (args == null) return true; // CANCEL
         saveArgs (args, connector);
+        log(connector, args);
         
         // Take the start off the AWT EQ:
         final RequestProcessor.Task[] startTaskPtr = new RequestProcessor.Task[1];
@@ -388,6 +395,28 @@ Controller, ActionListener {
         ScanDialog.runWhenScanFinished(action, NbBundle.getMessage (ConnectPanel.class, "CTL_Connect"));   //NOI18N
         //System.out.println("Before return from ConnectPanel.ok()");
         return true;
+    }
+
+    private static void log(Connector c, Map<Object, Object> args) {
+        LogRecord record = new LogRecord(Level.INFO, "USG_DEBUG_ATTACH_JPDA");
+        record.setResourceBundle(NbBundle.getBundle(ConnectPanel.class));
+        record.setResourceBundleName(ConnectPanel.class.getPackage().getName() + ".Bundle"); // NOI18N
+        record.setLoggerName(USG_LOGGER.getName());
+        List params = new ArrayList();
+        params.add(c.name());
+        StringBuilder arguments = new StringBuilder();
+        for (Map.Entry argEntry : args.entrySet()) {
+            //arguments.append(argEntry.getKey());
+            //arguments.append("=");
+            arguments.append(argEntry.getValue());
+            arguments.append(", ");
+        }
+        if (arguments.length() > 2) {
+            arguments.delete(arguments.length() - 2, arguments.length());
+        }
+        params.add(arguments);
+        record.setParameters(params.toArray(new Object[params.size()]));
+        USG_LOGGER.log(record);
     }
     
     /**

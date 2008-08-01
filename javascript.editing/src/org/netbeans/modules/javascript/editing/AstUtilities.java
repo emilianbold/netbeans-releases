@@ -40,11 +40,10 @@
 package org.netbeans.modules.javascript.editing;
 
 import java.io.IOException;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
 import org.mozilla.javascript.Node;
 import org.mozilla.javascript.FunctionNode;
 import org.mozilla.javascript.Node.LabelledNode;
@@ -52,29 +51,39 @@ import org.mozilla.javascript.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.OffsetRange;
-import org.netbeans.modules.gsf.api.Parser;
 import org.netbeans.modules.gsf.api.ParserFile;
 import org.netbeans.modules.gsf.api.ParserResult;
-import org.netbeans.modules.gsf.api.SourceFileReader;
+import org.netbeans.modules.gsf.api.SourceModel;
 import org.netbeans.modules.gsf.api.TranslatedSource;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
+import org.netbeans.modules.gsf.api.CancellableTask;
 import org.netbeans.modules.gsf.api.ElementKind;
+import org.netbeans.modules.gsf.api.SourceModelFactory;
 import org.netbeans.modules.gsf.api.annotations.NonNull;
 import org.netbeans.modules.javascript.editing.lexer.JsCommentTokenId;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
-import org.netbeans.modules.gsf.spi.DefaultParseListener;
+import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
 /**
  *
  * @author Tor Norbye
  */
-public class AstUtilities {
+public final class AstUtilities {
+
+    private AstUtilities() {
+        // This is a utility class
+    }
+
     public static final String DOT_PROTOTYPE = ".prototype"; // NOI18N
 
     public static int getAstOffset(CompilationInfo info, int lexOffset) {
-        ParserResult result = info.getEmbeddedResult(JsMimeResolver.JAVASCRIPT_MIME_TYPE, 0);
+        ParserResult result = info.getEmbeddedResult(JsTokenId.JAVASCRIPT_MIME_TYPE, 0);
+        if (result == null) {
+            result = info.getEmbeddedResult(JsTokenId.JSON_MIME_TYPE, 0);
+        }
         if (result != null) {
             TranslatedSource ts = result.getTranslatedSource();
             if (ts != null) {
@@ -86,7 +95,10 @@ public class AstUtilities {
     }
 
     public static OffsetRange getAstOffsets(CompilationInfo info, OffsetRange lexicalRange) {
-        ParserResult result = info.getEmbeddedResult(JsMimeResolver.JAVASCRIPT_MIME_TYPE, 0);
+        ParserResult result = info.getEmbeddedResult(JsTokenId.JAVASCRIPT_MIME_TYPE, 0);
+        if (result == null) {
+            result = info.getEmbeddedResult(JsTokenId.JSON_MIME_TYPE, 0);
+        }
         if (result != null) {
             TranslatedSource ts = result.getTranslatedSource();
             if (ts != null) {
@@ -105,13 +117,34 @@ public class AstUtilities {
         return lexicalRange;
     }
 
+    /** SLOW - used from tests only right now */
+    public static boolean isGlobalVar(CompilationInfo info, Node node) {
+        if (!isNameNode(node)) {
+            return false;
+        }
+        String name = node.getString();
+        JsParseResult rpr = AstUtilities.getParseResult(info);
+        if (rpr == null) {
+            return false;
+        }
+        VariableVisitor v = rpr.getVariableVisitor();
+        Map<String,List<Node>> localVars = v.getLocalVars(node);
+
+        List<Node> nodes = localVars.get(name);
+        if (nodes == null) {
+            return true;
+        } else {
+            return nodes.contains(node);
+        }
+    }
+    
     /** 
      * Return the comment sequence (if any) for the comment prior to the given offset.
      */
     public static TokenSequence<? extends JsCommentTokenId> getCommentFor(CompilationInfo info, BaseDocument doc, Node node) {
         int astOffset = node.getSourceStart();
         int lexOffset = LexUtilities.getLexerOffset(info, astOffset);
-        if (lexOffset == -1) {
+        if (lexOffset == -1 || lexOffset > doc.getLength()) {
             return null;
         }
         
@@ -154,11 +187,19 @@ public class AstUtilities {
 //        }
 //
 //        return getRoot(result);
-        return getRoot(info, JsMimeResolver.JAVASCRIPT_MIME_TYPE);
+        Node root = getRoot(info, JsTokenId.JAVASCRIPT_MIME_TYPE);
+        if (root == null && JsUtils.isJsonFile(info.getFileObject())) {
+            root = getRoot(info, JsTokenId.JSON_MIME_TYPE);
+        }
+
+        return root;
     }
 
     public static JsParseResult getParseResult(CompilationInfo info) {
-        ParserResult result = info.getEmbeddedResult(JsMimeResolver.JAVASCRIPT_MIME_TYPE, 0);
+        ParserResult result = info.getEmbeddedResult(JsTokenId.JAVASCRIPT_MIME_TYPE, 0);
+        if (result == null && JsUtils.isJsonFile(info.getFileObject())) {
+            result = info.getEmbeddedResult(JsTokenId.JSON_MIME_TYPE, 0);
+        }
 
         if (result == null) {
             return null;
@@ -185,46 +226,42 @@ public class AstUtilities {
         return result.getRootNode();
     }
 
-    public static Node getForeignNode(final IndexedElement o, Node[] foreignRootRet) {
+    public static Node getForeignNode(final IndexedElement o, CompilationInfo[] compilationInfoRet) {
         ParserFile file = o.getFile();
 
         if (file == null) {
             return null;
         }
+        
+        FileObject fo = file.getFileObject();
+        if (fo == null) {
+            return null;
+        }
 
-        List<ParserFile> files = Collections.singletonList(file);
-        SourceFileReader reader =
-            new SourceFileReader() {
-                public CharSequence read(ParserFile file)
-                    throws IOException {
-                    Document doc = o.getDocument();
-
-                    if (doc == null) {
-                        return "";
-                    }
-
-                    try {
-                        return doc.getText(0, doc.getLength());
-                    } catch (BadLocationException ble) {
-                        IOException ioe = new IOException();
-                        ioe.initCause(ble);
-                        throw ioe;
-                    }
+        SourceModel model = SourceModelFactory.getInstance().getModel(fo);
+        if (model == null) {
+            return null;
+        }
+        final CompilationInfo[] infoHolder = new CompilationInfo[1];
+        try {
+            model.runUserActionTask(new CancellableTask<CompilationInfo>() {
+                public void cancel() {
                 }
 
-                public int getCaretOffset(ParserFile fileObject) {
-                    return -1;
+                public void run(CompilationInfo info) throws Exception {
+                    infoHolder[0] = info;
                 }
-            };
+            }, true);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+            return null;
+        }
 
-        DefaultParseListener listener = new DefaultParseListener();
-
-        // TODO - embedding model?
-TranslatedSource translatedSource = null; // TODO - determine this here?                
-        Parser.Job job = new Parser.Job(files, listener, reader, translatedSource);
-        new JsParser().parseFiles(job);
-
-        ParserResult result = listener.getParserResult();
+        CompilationInfo info = infoHolder[0];
+        if (compilationInfoRet != null) {
+            compilationInfoRet[0] = info;
+        }
+        ParserResult result = AstUtilities.getParseResult(info);
 
         if (result == null) {
             return null;
@@ -234,8 +271,6 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
 
         if (root == null) {
             return null;
-        } else if (foreignRootRet != null) {
-            foreignRootRet[0] = root;
         }
 
         String signature = o.getSignature();
@@ -271,33 +306,6 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
      */
     @SuppressWarnings("unchecked")
     public static OffsetRange getRange(CompilationInfo info, Node node) {
-        if (node.getType() == Token.STRING) {
-            // Work around difficulties with the offset
-            try {
-                BaseDocument doc = (BaseDocument) info.getDocument();
-                int astOffset = node.getSourceStart();
-                int lexOffset = LexUtilities.getLexerOffset(info, astOffset);
-                if (lexOffset != -1) {
-                    int rowStart = Utilities.getRowStart(doc, lexOffset);
-                    int rowEnd = Utilities.getRowEnd(doc, rowStart);
-                    String line = doc.getText(rowStart, rowEnd-rowStart);
-                    String s = node.getString();
-                    int lineOffset = line.indexOf(s);
-                    if (lineOffset != -1) {
-                        int start = rowStart+lineOffset;
-                        int astStart = getAstOffset(info, start);
-                        if (astStart != -1) {
-                            return new OffsetRange(astStart, astStart+s.length());
-                        }
-                    }
-                }
-            } catch (BadLocationException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
-
         return new OffsetRange(node.getSourceStart(), node.getSourceEnd());
     }
 
@@ -308,6 +316,17 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
     public static OffsetRange getNameRange(Node node) {
         final int type = node.getType();
         switch (type) {
+        case Token.FUNCTION: {
+            if (node.hasChildren()) {
+                for (Node child = node.getFirstChild(); child != null; child = child.getNext()) {
+                    if (child.getType() == Token.FUNCNAME) {
+                        return getNameRange(child);
+                    }
+                }
+            }
+            
+            return getRange(node);
+        }
         case Token.NAME:
         case Token.BINDNAME:
         case Token.FUNCNAME:
@@ -331,7 +350,7 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
      * index of the parameter that contains it.
      */
     public static int findArgumentIndex(Node call, int astOffset, AstPath path) {
-        assert call.getType() == Token.CALL;
+        assert call.getType() == Token.CALL || call.getType() == Token.NEW;
 
         // The first child is the call expression -- the name, or property lookup etc.
         Node child = call.getFirstChild();
@@ -339,6 +358,10 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
             return 0;
         }
         child = child.getNext();
+        
+        if (child == null || astOffset < child.getSourceStart()) {
+            return -1;
+        }
 
         int index = 0;
         while (child != null) {
@@ -385,8 +408,9 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
      *      bar()   --- here we're really calling the method named foo but getCallName will
      *                   return bar
      */
+    @NonNull
     public static String getCallName(Node callNode, boolean fqn) {
-        assert callNode.getType() == Token.CALL;
+        assert callNode.getType() == Token.CALL || callNode.getType() == Token.NEW;
         
         if (!fqn) {
             Node nameNode = findCallNameNode(callNode);
@@ -399,6 +423,10 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
             if (child != null) {
                 if (child.getType() == Token.GETELEM) {
                     child = child.getNext();
+                    if (child == null) {
+                        // Unexpected - but see http://statistics.netbeans.org/analytics/detail.do?id=43998
+                        return "";
+                    }
                 }
                 if (child.getType() == Token.NAME) {
                     return child.getString();
@@ -406,20 +434,19 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
                     Node grandChild = child.getFirstChild();
                     if (fqn) {
                         StringBuilder sb = new StringBuilder();
-                        
-                        if (grandChild instanceof Node.StringNode) {
-                            sb.append(grandChild.getString());
-                            sb.append(".");
-                        }
-                        sb.append(grandChild.getNext().getString());
-                        assert grandChild.getNext().getNext() == null : grandChild.getNext().getNext();
+                        addName(sb, child);
                         return sb.toString();
                     } else {
-                        assert grandChild.getNext().getNext() == null : grandChild.getNext().getNext();
+                        //assert grandChild.getNext().getNext() == null : grandChild.getNext().getNext();
                         return grandChild.getNext().getString();
                     }
                 } else {
-                    assert false : "Unexpected call firstchild - " + child;
+                    // WARNING: I can have something unexpected here, like a HOOK node in the following
+                    // for the conditional -
+                    //  (this.creator ? this.creator : this.defaultCreator)(item, hint);
+                    // not sure how to handle this.
+                    
+                    //assert false : "Unexpected call firstchild - " + child;
                 }
             }
         }
@@ -611,7 +638,8 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
                 //name = parent.getString();
             } else if (parentType == Token.SETPROP || parentType == Token.SETNAME) {
                 // this.foo = function() { }
-                if (parent.getFirstChild().getType() == Token.THIS) {
+                Node firstChild = parent.getFirstChild();
+                if (firstChild.getType() == Token.THIS) {
                     wasThis = true;
                     Node method = parent.getFirstChild().getNext();
                     if (method.getType() == Token.STRING) {
@@ -621,15 +649,43 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
                             if (clzNode.getType() == Token.FUNCTION) {
                                 // Determine function name
                                 String ancestorName = getFunctionFqn(clzNode, null);
-                                if (ancestorName != null && Character.isUpperCase(ancestorName.charAt(0))) {
-                                    return ancestorName + "." + methodName;
+                                if (ancestorName != null) {
+                                    int lastDot = ancestorName.lastIndexOf('.');
+                                    if (lastDot != -1 && Character.isUpperCase(ancestorName.charAt(lastDot+1))) {
+                                            return ancestorName + '.' + methodName;
+                                    } else if (Character.isUpperCase(ancestorName.charAt(0))) {
+                                        return ancestorName + '.' + methodName;
+                                    }
+                                }
+                            }
+                            clzNode = clzNode.getParentNode();
+                        }
+                    }
+                } else if (firstChild.getType() == Token.GETPROP &&
+                        firstChild.hasChildren() && firstChild.getFirstChild().getType() == Token.THIS) {
+                    // this.foo.bar = function() { }
+                    wasThis = true;
+                    Node method = parent.getFirstChild().getNext();
+                    if (method.getType() == Token.STRING) {
+                        String methodName = AstUtilities.getJoinedName(parent);
+                        Node clzNode = parent;
+                        while (clzNode != null) {
+                            if (clzNode.getType() == Token.FUNCTION) {
+                                // Determine function name
+                                String ancestorName = getFunctionFqn(clzNode, null);
+                                if (ancestorName != null) {
+                                    int lastDot = ancestorName.lastIndexOf('.');
+                                    if (lastDot != -1 && Character.isUpperCase(ancestorName.charAt(lastDot+1))) {
+                                            return ancestorName + '.' + methodName;
+                                    } else if (Character.isUpperCase(ancestorName.charAt(0))) {
+                                        return ancestorName + '.' + methodName;
+                                    }
                                 }
                             }
                             clzNode = clzNode.getParentNode();
                         }
                     }
                 }
-
                 // Foo.Bar.baz = function() { }
                 StringBuilder sb = new StringBuilder();
                 if (addName(sb, parent)) {
@@ -736,6 +792,9 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
                                 StringBuilder extend = new StringBuilder();
                                 if (AstUtilities.addName(extend, prev.getFirstChild())) {
                                     extendsName = extend.toString();
+                                    if (extendsName.length() == 0) {
+                                        extendsName = null;
+                                    }
                                 }
                             }
                         }
@@ -753,6 +812,9 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
                                 StringBuilder extend = new StringBuilder();
                                 if (AstUtilities.addName(extend, firstArg)) {
                                     extendsName = extend.toString();
+                                    if (extendsName.length() == 0) {
+                                        extendsName = null;
+                                    }
                                 }
                             }
                         }
@@ -768,11 +830,23 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
                                 StringBuilder extend = new StringBuilder();
                                 if (AstUtilities.addName(extend, firstArg)) {
                                     extendsName = extend.toString();
+                                    if (extendsName.length() == 0) {
+                                        extendsName = null;
+                                    }
                                 }
                             }
                         }
+                    } else if (parentType == Token.CALL && parent.getParentNode() != null &&
+                            (parent.getFirstChild().getType() == Token.GETPROP &&
+                            parent.getFirstChild().getNext() != null &&
+                            parent.getFirstChild().getNext().getType() == Token.GETPROP &&
+                            parent.getFirstChild().getNext().getNext() == node)) {
+                        Node first = parent.getFirstChild();
+                        String joined = AstUtilities.getJoinedName(first);
+                        if (joined.endsWith(".extend") && joined.indexOf("dojo") != -1) {
+                            className = AstUtilities.getJoinedName(first.getNext());
+                        }
                     }
-
                 }
             }
         } else if (parentType == Token.CALL) {
@@ -796,10 +870,36 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
                                     StringBuilder superName = new StringBuilder();
                                     if (AstUtilities.addName(superName, second)) {
                                         extendsName = superName.toString();
+                                        if (extendsName.length() == 0) {
+                                            extendsName = null;
+                                        }
                                     }
                                 }
-
                             }
+                        }
+                    } else if (mtd.getType() == Token.STRING && "declare".equals(mtd.getString()) && // NOI18N
+                            (clz.getType() == Token.NAME && "dojo".equals(clz.getString()) || // NOI18N
+                            clz.getType() == Token.GETPROP && AstUtilities.getJoinedName(clz).endsWith("dojo"))) { // NOI18N
+                        Node first = callTarget.getNext();
+                        if (first != null) {
+                            className = AstUtilities.getJoinedName(first);
+                            Node second = first.getNext();
+                            if (second != null) {
+                                extendsName = AstUtilities.getJoinedName(second);
+                                if (extendsName.length() == 0) {
+                                    extendsName = null;
+                                }
+                            }
+                        }
+                    } else if (parent.getParentNode() != null &&
+                            (parent.getFirstChild().getType() == Token.GETPROP &&
+                            parent.getFirstChild().getNext() != null &&
+                            parent.getFirstChild().getNext().getType() == Token.GETPROP &&
+                            parent.getFirstChild().getNext().getNext() == node)) {
+                        Node first = parent.getFirstChild();
+                        String joined = AstUtilities.getJoinedName(first);
+                        if (joined.endsWith(".extend") && joined.indexOf("dojo") != -1) { // NOI18N
+                            className = AstUtilities.getJoinedName(first.getNext());
                         }
                     }
                 }

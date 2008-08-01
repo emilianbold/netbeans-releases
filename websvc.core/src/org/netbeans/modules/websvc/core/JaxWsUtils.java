@@ -63,6 +63,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
@@ -80,7 +82,6 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
-import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
@@ -88,8 +89,6 @@ import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModel;
-import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlOperation;
-import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlParameter;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlService;
 import org.netbeans.modules.websvc.api.support.java.GenerationUtils;
@@ -98,6 +97,7 @@ import org.netbeans.modules.websvc.core.jaxws.bindings.model.BindingsModel;
 import org.netbeans.modules.websvc.core.jaxws.bindings.model.BindingsModelFactory;
 import org.netbeans.modules.websvc.core.jaxws.bindings.model.GlobalBindings;
 import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
+import org.netbeans.modules.websvc.serverapi.api.WSStack;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
 import org.openide.ErrorManager;
@@ -118,6 +118,10 @@ import javax.swing.SwingUtilities;
 import javax.xml.namespace.QName;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
+import org.netbeans.modules.websvc.jaxwsmodelapi.WSOperation;
+import org.netbeans.modules.websvc.jaxwsmodelapi.WSParameter;
+import org.netbeans.modules.websvc.serverapi.api.WSStackFeature;
 import org.netbeans.modules.xml.schema.model.GlobalElement;
 import org.netbeans.modules.xml.schema.model.GlobalType;
 import org.netbeans.modules.xml.wsdl.model.Binding;
@@ -151,9 +155,7 @@ public class JaxWsUtils {
     protected static final int JSE_PROJECT_TYPE = 0;
     protected static final int WEB_PROJECT_TYPE = 1;
     protected static final int EJB_PROJECT_TYPE = 2;
-    private static boolean jwsdpSupported = false;
     private static boolean jsr109Supported = false;
-    private static boolean jaxWsInJ2ee14Supported = false;
 
     /** Creates a new instance of JaxWsUtils */
     public JaxWsUtils() {
@@ -195,7 +197,7 @@ public class JaxWsUtils {
         String artifactsPckg = "service." + targetName.toLowerCase(); //NOI18N
         ClassPath classPath = ClassPath.getClassPath(targetFolder, ClassPath.SOURCE);
         String serviceImplPath = classPath.getResourceName(targetFolder, '.', false);
-        jaxWsSupport.addService(targetName, serviceImplPath + "." + targetName, wsdlURL.toExternalForm(), service, port, artifactsPckg, jaxWsInJ2ee14Supported || (jsr109Supported && Util.isJavaEE5orHigher(project)), false);
+        jaxWsSupport.addService(targetName, serviceImplPath + "." + targetName, wsdlURL.toExternalForm(), service, port, artifactsPckg, jsr109Supported, false);
     }
 
     public static void generateProviderImplClass(Project project, FileObject targetFolder, FileObject implClass,
@@ -294,10 +296,10 @@ public class JaxWsUtils {
         //open in editor
 
         DataObject dobj = DataObject.find(implClassFo);
-        List<Service> services = jaxWsSupport.getServices();
+        List services = jaxWsSupport.getServices();
         if (serviceID != null) {
-            for (Service serv : services) {
-                if (serviceID.equals(serv.getName())) {
+            for (Object serv : services) {
+                if (serviceID.equals(((Service)serv).getName())) {
 
                     final EditCookie editCookie = dobj.getCookie(EditCookie.class);
                     if (editCookie != null) {
@@ -326,7 +328,7 @@ public class JaxWsUtils {
         ClassPath classPath = ClassPath.getClassPath(implClassFo, ClassPath.SOURCE);
         String serviceImplPath = classPath.getResourceName(implClassFo, '.', false);
         String serviceID = jaxWsSupport.addService(targetName, serviceImplPath, wsdlURL.toString(), service.getName(),
-                port.getName(), artifactsPckg, jaxWsInJ2ee14Supported || (jsr109Supported && Util.isJavaEE5orHigher(project)), true);
+                port.getName(), artifactsPckg, jsr109Supported, true);
 
         generateProviderImplClass(project, targetFolder, implClassFo, targetName, service, port, serviceID);
 
@@ -349,7 +351,7 @@ public class JaxWsUtils {
         String portJavaName = port.getJavaName();
         String artifactsPckg = portJavaName.substring(0, portJavaName.lastIndexOf("."));
         if (addService) {
-            serviceID = jaxWsSupport.addService(targetName, serviceImplPath, wsdlURL.toString(), service.getName(), port.getName(), artifactsPckg, jaxWsInJ2ee14Supported || (jsr109Supported && Util.isJavaEE5orHigher(project)), false);
+            serviceID = jaxWsSupport.addService(targetName, serviceImplPath, wsdlURL.toString(), service.getName(), port.getName(), artifactsPckg, jsr109Supported, false);
         }
 
         final String wsdlLocation = jaxWsSupport.getWsdlLocation(serviceID);
@@ -384,6 +386,18 @@ public class JaxWsUtils {
                             make.QualIdent(WSAn),
                             attrs);
                     modifiedClass = genUtils.addAnnotation(modifiedClass, WSAnnotation);
+                    
+                    if (WsdlPort.SOAP_VERSION_12.equals(port.getSOAPVersion())) {                       
+                        TypeElement BindingAn = workingCopy.getElements().getTypeElement("javax.xml.ws.BindingType"); //NOI18N
+
+                        List<ExpressionTree> bindingAttrs = new ArrayList<ExpressionTree>();
+                        bindingAttrs.add(make.Assignment(make.Identifier("value"), //NOI18N
+                                make.Identifier("javax.xml.ws.soap.SOAPBinding.SOAP12HTTP_BINDING"))); //NOI18N
+                        AnnotationTree bindingAnnotation = make.Annotation(
+                                make.QualIdent(BindingAn),
+                                bindingAttrs);
+                        modifiedClass = genUtils.addAnnotation(modifiedClass, bindingAnnotation);
+                    }
 
                     // add @Stateless annotation
                     if (projectType == EJB_PROJECT_TYPE) {//EJB project
@@ -394,16 +408,16 @@ public class JaxWsUtils {
                         modifiedClass = genUtils.addAnnotation(modifiedClass, StatelessAnnotation);
                     }
 
-                    List<WsdlOperation> operations = port.getOperations();
-                    for (WsdlOperation operation : operations) {
+                    List<WSOperation> operations = port.getOperations();
+                    for (WSOperation operation : operations) {
 
                         // return type
                         String returnType = operation.getReturnTypeName();
 
                         // create parameters
-                        List<WsdlParameter> parameters = operation.getParameters();
+                        List<WSParameter> parameters = operation.getParameters();
                         List<VariableTree> params = new ArrayList<VariableTree>();
-                        for (WsdlParameter parameter : parameters) {
+                        for (WSParameter parameter : parameters) {
                             // create parameter:
                             // final ObjectOutput arg0
                             params.add(make.Variable(
@@ -467,17 +481,10 @@ public class JaxWsUtils {
         //open in editor
 
         DataObject dobj = DataObject.find(implClassFo);
-        List<Service> services = jaxWsSupport.getServices();
-        if (serviceID != null) {
-            for (Service serv : services) {
-                if (serviceID.equals(serv.getName())) {
-                    openFileInEditor(dobj, serv);
-                }
-            }
-        }
+        openFileInEditor(dobj);
     }
 
-    public static void openFileInEditor(DataObject dobj, Service service) {
+    public static void openFileInEditor(DataObject dobj) {
 
         final OpenCookie openCookie = dobj.getCookie(OpenCookie.class);
         if (openCookie != null) {
@@ -498,28 +505,6 @@ public class JaxWsUtils {
         }
     }
 
-    // Retouche
-    //    private static String createBody(Type type) {
-    //        String initVal;
-    //
-    //        if (type instanceof PrimitiveType) {
-    //            PrimitiveTypeKind primitiveType = ((PrimitiveType) type).getKind();
-    //            if (PrimitiveTypeKindEnum.BOOLEAN.equals(primitiveType)) {
-    //                initVal = "false"; // NOI18N
-    //            } else if (PrimitiveTypeKindEnum.CHAR.equals(primitiveType)) {
-    //                initVal = "'\\0'"; // NOI18N
-    //            } else if (PrimitiveTypeKindEnum.VOID.equals(primitiveType)) {
-    //                return "throw new UnsupportedOperationException(\"Not yet implemented\");"; // NOI18N
-    //            } else {
-    //                initVal = "0"; // NOI18N
-    //            }
-    //        } else if (type instanceof ClassDefinition) {
-    //            initVal = "null"; // NOI18N
-    //        } else {
-    //            throw new IllegalArgumentException("Type "+type.getClass()); // NOI18N
-    //        }
-    //        return "return ".concat(initVal).concat(";"); // NOI18N
-    //    }
     public static String getPackageName(String fullyQualifiedName) {
         String packageName = "";
         int index = fullyQualifiedName.lastIndexOf(".");
@@ -530,16 +515,19 @@ public class JaxWsUtils {
     }
 
     private static void initProjectInfo(Project project) {
-        JAXWSSupport wss = JAXWSSupport.getJAXWSSupport(project.getProjectDirectory());
-        if (wss != null) {
-            Map properties = wss.getAntProjectHelper().getStandardPropertyEvaluator().getProperties();
-            String serverInstance = (String) properties.get("j2ee.server.instance"); //NOI18N
+        J2eeModuleProvider provider = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
+        if (provider != null) {
+            String serverInstance = provider.getServerInstanceID();
             if (serverInstance != null) {
-                J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(serverInstance);
-                if (j2eePlatform != null) {
-                    jwsdpSupported = j2eePlatform.isToolSupported(J2eePlatform.TOOL_JWSDP); //NOI18N
-                    jsr109Supported = j2eePlatform.isToolSupported(J2eePlatform.TOOL_JSR109);
-                    jaxWsInJ2ee14Supported = j2eePlatform.isToolSupported("JaxWs-in-j2ee14-supported");
+                try {
+                    J2eePlatform j2eePlatform = Deployment.getDefault().getServerInstance(serverInstance).getJ2eePlatform();
+                    WSStack wsStack = JaxWsStackProvider.getJaxWsStack(j2eePlatform);
+                    if (wsStack != null) {
+                        jsr109Supported =  isJsr109Supported(wsStack, project);
+                        
+                    }
+                } catch (InstanceRemovedException ex) {
+                    Logger.getLogger(JaxWsUtils.class.getName()).log(Level.INFO, "Failed to find J2eePlatform", ex);
                 }
             }
         }
@@ -892,16 +880,8 @@ public class JaxWsUtils {
 
     public static void setSOAP12Binding(final FileObject implClassFo, final boolean isSOAP12) {
         final JavaSource javaSource = JavaSource.forFileObject(implClassFo);
-        final CancellableTask<WorkingCopy> modificationTask = new CancellableTask<WorkingCopy 
-
-                  
-                
-                   
-                   
-                   
-                   
-                  > () {
-
+        final CancellableTask<WorkingCopy> modificationTask = new CancellableTask<WorkingCopy > () { 
+                 
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
                 TreeMaker make = workingCopy.getTreeMaker();
@@ -1337,14 +1317,20 @@ public class JaxWsUtils {
             if (serverInstanceId == null) {
                 return false;
             }
-            J2eePlatform platform = Deployment.getDefault().getJ2eePlatform(serverInstanceId);
-            if (platform == null) {
-                return false;
-            }
-            if (platform.getSupportedModuleTypes().contains(J2eeModule.EJB)) {
-                return true;
+            try {
+                J2eePlatform platform = Deployment.getDefault().getServerInstance(serverInstanceId).getJ2eePlatform();
+                if (platform.getSupportedModuleTypes().contains(J2eeModule.EJB)) {
+                    return true;
+                }
+            } catch (InstanceRemovedException ex) {
+                Logger.getLogger(JaxWsUtils.class.getName()).log(Level.INFO, "Failed to find J2eePlatform", ex);
             }
         }
         return false;
     }
+    
+    private static boolean isJsr109Supported(WSStack wsStack, Project project) {
+        return wsStack.getServiceFeatures().contains(WSStackFeature.JSR_109);
+    }
+    
 }

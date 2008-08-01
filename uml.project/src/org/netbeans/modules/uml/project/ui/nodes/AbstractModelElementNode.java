@@ -46,17 +46,11 @@ import org.netbeans.modules.uml.core.support.umlsupport.Log;
 import java.awt.dnd.DnDConstants;
 
 import java.util.List;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.Repository;
-import org.openide.loaders.DataObject;
-import org.openide.cookies.InstanceCookie;
-import org.openide.filesystems.FileObject;
 import java.awt.datatransfer.Transferable;
 import java.awt.EventQueue;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import javax.swing.Action;
-import javax.swing.JSeparator;
 import java.io.IOException;
 
 import org.openide.nodes.AbstractNode;
@@ -85,8 +79,8 @@ import org.netbeans.modules.uml.project.ui.nodes.actions.NewAttributeType;
 
 import org.netbeans.modules.uml.propertysupport.DefinitionPropertyBuilder;
 import org.openide.actions.*;
-import org.openide.loaders.DataFolder;
 import org.openide.nodes.Node.PropertySet;
+import org.openide.util.Utilities;
 import org.openide.util.datatransfer.ExTransferable;
 import org.openide.util.datatransfer.NewType;
 import org.openide.util.datatransfer.PasteType;
@@ -711,45 +705,7 @@ public abstract class AbstractModelElementNode extends AbstractNode
      */
     protected Action[] getActionsFromRegistry(String path)
     {
-        ArrayList<Action> actions = new ArrayList<Action>();
-        FileSystem system = Repository.getDefault().getDefaultFileSystem();
-        
-        if (system != null)
-        {
-            FileObject fo = system.findResource(path);
-            DataFolder df = fo != null ? DataFolder.findFolder(fo) : null;
-            if (df != null)
-            {
-                DataObject actionObjects[] = df.getChildren();
-                for (int i = 0; i < actionObjects.length; i++)
-                {
-                    InstanceCookie ic = actionObjects[i].getCookie(InstanceCookie.class);
-                    if (ic == null) continue;
-                    Object instance;
-                    try
-                    {
-                        instance = ic.instanceCreate();
-                    }
-                    catch (IOException e)
-                    {
-                        // ignore
-                        e.printStackTrace();
-                        continue;
-                    }
-                    catch (ClassNotFoundException e)
-                    {
-                        // ignore
-                        e.printStackTrace();
-                        continue;
-                    }
-                    if (instance instanceof Action)
-                        actions.add((Action)instance);
-                    else if (instance instanceof JSeparator)
-                        actions.add(null);
-                }
-            }
-        }
-        
+        List<? extends Action> actions = Utilities.actionsForPath(path);
         Action[] retVal = new Action[actions.size()];
         actions.toArray(retVal);
         return retVal;

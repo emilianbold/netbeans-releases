@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.ruby.hints;
 
-import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -55,16 +54,16 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
-import org.netbeans.modules.ruby.AstPath;
+import org.netbeans.modules.gsf.api.Hint;
+import org.netbeans.modules.gsf.api.EditList;
+import org.netbeans.modules.gsf.api.HintFix;
+import org.netbeans.modules.gsf.api.HintSeverity;
+import org.netbeans.modules.gsf.api.PreviewableFix;
+import org.netbeans.modules.gsf.api.RuleContext;
 import org.netbeans.modules.ruby.AstUtilities;
 import org.netbeans.modules.ruby.RubyUtils;
-import org.netbeans.modules.ruby.hints.spi.AstRule;
-import org.netbeans.modules.ruby.hints.spi.Description;
-import org.netbeans.modules.ruby.hints.spi.EditList;
-import org.netbeans.modules.ruby.hints.spi.Fix;
-import org.netbeans.modules.ruby.hints.spi.HintSeverity;
-import org.netbeans.modules.ruby.hints.spi.PreviewableFix;
-import org.netbeans.modules.ruby.hints.spi.RuleContext;
+import org.netbeans.modules.ruby.hints.infrastructure.RubyAstRule;
+import org.netbeans.modules.ruby.hints.infrastructure.RubyRuleContext;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -80,13 +79,13 @@ import org.openide.util.NbBundle;
  * 
  * @author Tor Norbye
  */
-public class ConvertIfToUnless implements AstRule {
+public class ConvertIfToUnless extends RubyAstRule {
 
     public Set<NodeType> getKinds() {
         return Collections.singleton(NodeType.IFNODE);
     }
 
-    public void run(RuleContext context, List<Description> result) {
+    public void run(RubyRuleContext context, List<Hint> result) {
         Node node = context.node;
         CompilationInfo info = context.compilationInfo;
 
@@ -112,15 +111,15 @@ public class ConvertIfToUnless implements AstRule {
                 condition.childNodes().size() == 1 &&
                 ((Node)condition.childNodes().get(0)).nodeId == NodeType.NOTNODE)) {
             try {
-                BaseDocument doc = (BaseDocument) info.getDocument();
-                int keywordOffset = findKeywordOffset(info, ifNode);
+                BaseDocument doc = context.doc;
+                int keywordOffset = findKeywordOffset(context, ifNode);
                 if (keywordOffset == -1 || keywordOffset > doc.getLength() - 1) {
                     return;
                 }
 
                 OffsetRange range = AstUtilities.getRange(node);
 
-                if (RubyUtils.isRhtmlFile(info.getFileObject())) {
+                if (RubyUtils.isRhtmlDocument(doc) || RubyUtils.isYamlDocument(doc)) {
                     // Make sure that we're in a single contiguous Ruby section; if not, this won't work
                     range = LexUtilities.getLexerOffsets(info, range);
                     if (range == OffsetRange.NONE) {
@@ -146,23 +145,21 @@ public class ConvertIfToUnless implements AstRule {
                     }
                 }
 
-                ConvertToUnlessFix fix = new ConvertToUnlessFix(info, ifNode);
+                ConvertToUnlessFix fix = new ConvertToUnlessFix(context, ifNode);
                 
                 // Make sure we can actually perform the edit
                 if (fix.getEditList() == null) {
                     return;
                 }
                 
-                List<Fix> fixes = Collections.<Fix>singletonList(fix);
+                List<HintFix> fixes = Collections.<HintFix>singletonList(fix);
 
                 String displayName = NbBundle.getMessage(ConvertIfToUnless.class,
                         "ConvertIfToUnless");
-                Description desc = new Description(this, displayName, info.getFileObject(), range,
+                Hint desc = new Hint(this, displayName, info.getFileObject(), range,
                         fixes, 500);
                 result.add(desc);
             } catch (BadLocationException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
         }
@@ -184,7 +181,7 @@ public class ConvertIfToUnless implements AstRule {
         return null;
     }
 
-    public boolean appliesTo(CompilationInfo info) {
+    public boolean appliesTo(RuleContext context) {
         return true;
     }
 
@@ -200,8 +197,9 @@ public class ConvertIfToUnless implements AstRule {
         return HintSeverity.CURRENT_LINE_WARNING;
     }
     
-    static int findKeywordOffset(CompilationInfo info, IfNode ifNode) throws IOException, BadLocationException {
-        BaseDocument doc = (BaseDocument) info.getDocument();
+    static int findKeywordOffset(RubyRuleContext context, IfNode ifNode) throws BadLocationException {
+        BaseDocument doc = context.doc;
+        CompilationInfo info = context.compilationInfo;
 
         int astIfOffset = ifNode.getPosition().getStartOffset();
         int lexIfOffset = LexUtilities.getLexerOffset(info, astIfOffset);
@@ -243,11 +241,11 @@ public class ConvertIfToUnless implements AstRule {
     }
     
     private class ConvertToUnlessFix implements PreviewableFix {
-        private CompilationInfo info;
-        private IfNode ifNode;
+        private final RubyRuleContext context;
+        private final IfNode ifNode;
 
-        public ConvertToUnlessFix(CompilationInfo info, IfNode ifNode) {
-            this.info = info;
+        public ConvertToUnlessFix(RubyRuleContext context, IfNode ifNode) {
+            this.context = context;
             this.ifNode = ifNode;
         }
 
@@ -274,9 +272,9 @@ public class ConvertIfToUnless implements AstRule {
         }
 
         public EditList getEditList() {
-            try {
-                BaseDocument doc = (BaseDocument) info.getDocument();
+            BaseDocument doc = context.doc;
 
+            try {
                 Node notNode = ifNode.getCondition();
                 if (notNode.nodeId != NodeType.NOTNODE) {
                     assert notNode.nodeId == NodeType.NEWLINENODE;
@@ -292,6 +290,9 @@ public class ConvertIfToUnless implements AstRule {
 
                 }
 
+                int deleteSize = 1;
+
+                CompilationInfo info = context.compilationInfo;
                 int astNotOffset = AstUtilities.getRange(notNode).getStart();
                 int lexNotOffset = LexUtilities.getLexerOffset(info, astNotOffset);
                 if (lexNotOffset == -1 || lexNotOffset > doc.getLength()-1) {
@@ -313,15 +314,36 @@ public class ConvertIfToUnless implements AstRule {
                     String line = doc.getText(lexNotOffset, lineEnd-lexNotOffset);
                     int lineOffset = line.indexOf("!=");
                     if (lineOffset == -1) {
-                        assert false : line;
-                        return null;
+                        lineOffset = line.indexOf("!~");
+                        if (lineOffset != -1) {
+                            lexNotOffset += lineOffset;
+                        } else {
+                            boolean ok = false;
+                            if (lexNotOffset < doc.getLength()-3) {
+                                String not = doc.getText(lexNotOffset, 3);
+                                if ("not".equals(not)) { // NOI18N
+                                    deleteSize = 3;
+                                    if (lexNotOffset < doc.getLength()-4) {
+                                        not = doc.getText(lexNotOffset, 4);
+                                        if ("not ".equals(not)) {
+                                            deleteSize = 4;
+                                        }
+                                    }
+                                    ok = true;
+                                }
+                            }
+                            if (!ok) {
+                                assert false : line;
+                                return null;
+                            }
+                        }
                     } else {
                         lexNotOffset += lineOffset;
                         isEqualComparison = true;
                     }
                 }
 
-                int keywordOffset = findKeywordOffset(info, ifNode);
+                int keywordOffset = findKeywordOffset(context, ifNode);
                 if (keywordOffset == -1 || keywordOffset > doc.getLength()-1) {
                     return null;
                 }
@@ -337,18 +359,18 @@ public class ConvertIfToUnless implements AstRule {
                     // Convert != into ==
                     edits.replace(lexNotOffset, 1, "=", false, 0);
                 } else {
-                    // Just remove ! from the expression
-                    edits.replace(lexNotOffset, 1, null, false, 0);
+                    // Just remove ! from the expression (or "not ")
+                    edits.replace(lexNotOffset, deleteSize, null, false, 0);
                 }
                 if (isIf) {
                     edits.replace(keywordOffset, 2, "unless", false, 1);
                 } else {
                     edits.replace(keywordOffset, 6, "if", false, 1);
                 }
-                
+
                 return edits;
-            } catch (Exception ex) {
-                Exceptions.printStackTrace(ex);
+            } catch (BadLocationException ble) {
+                Exceptions.printStackTrace(ble);
                 return null;
             }
         }

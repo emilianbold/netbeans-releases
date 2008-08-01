@@ -41,14 +41,10 @@
 
 package org.netbeans.modules.db.explorer.nodes;
 
-import org.openide.util.NbBundle;
+import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
 
 public class TableListNode extends DatabaseNode {
-    public TableListNode() {
-        setDisplayName(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("NDN_Tables")); //NOI18N
-    }
-
-    public String getShortDescription() {
-        return NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ND_TableList"); //NOI18N
+    public TableListNode(DatabaseNodeInfo info) {
+        super(info);
     }
 }

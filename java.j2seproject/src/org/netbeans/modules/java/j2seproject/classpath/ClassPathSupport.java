@@ -54,14 +54,13 @@ import java.util.regex.Pattern;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
-import org.netbeans.api.queries.CollocationQuery;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
+import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
-import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -154,33 +153,20 @@ public class ClassPathSupport {
                     f = antProjectHelper.resolveFile( eval );
                 }
                 
+                String propertyName = CommonProjectUtils.getAntPropertyName(pe[i]);
+                String variableBaseProperty = antProjectHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH).getProperty(propertyName);
+                if (!isVariableBasedReference(variableBaseProperty)) {
+                    variableBaseProperty = null;
+                }
+                
                 if ( f == null || !f.exists() ) {
                     item = Item.createBroken( eval, pe[i] );
                 }
                 else {
-                    item = Item.create( eval, pe[i] );
+                    item = Item.create( eval, pe[i], variableBaseProperty);
                 }
-
-                //TODO these should be encapsulated in the Item class 
-                // but that means we need to pass evaluator and antProjectHelper there.
-                f = null;
-                String ref = item.getSourceReference();                
-                if (ref != null) {
-                    eval = evaluator.evaluate( ref );                    
-                    if (eval != null && !eval.contains(Item.SOURCE_START)) {
-                        f = new File(eval); //antProjectHelper.resolveFile( eval );
-                    }
-                }
-                File f2 = null;
-                ref = item.getJavadocReference();
-                if (ref != null) {
-                    eval = evaluator.evaluate( ref );
-                    f2 = null;
-                    if (eval != null && !eval.contains(Item.JAVADOC_START)) {
-                        f2 = new File(eval); //antProjectHelper.resolveFile( eval );
-                    }
-                }
-                item.setInitialSourceAndJavadoc(f, f2);
+                
+                item.initSourceAndJavadoc(antProjectHelper);
             }
             
             items.add( item );
@@ -214,28 +200,15 @@ public class ClassPathSupport {
                         String file = item.getFilePath();
                         // pass null as expected artifact type to always get file reference
                         reference = referenceHelper.createForeignFileReferenceAsIs(file, null);
+                        if (item.getVariableBasedProperty() != null) {
+                            // replace file reference with variable based reference:
+                            EditableProperties ep = antProjectHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                            ep.setProperty(CommonProjectUtils.getAntPropertyName(reference), item.getVariableBasedProperty());
+                            antProjectHelper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
+                        }
                         item.property = reference;
                     }
-                    if (item.hasChangedSource()) {
-                        if (item.getSourceFilePath() != null) {
-                            referenceHelper.createExtraForeignFileReferenceAsIs(item.getSourceFilePath(), item.getSourceProperty());
-                        } else {
-                            //oh well, how do I do this otherwise??
-                            EditableProperties ep = updateHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                            ep.remove(item.getSourceProperty());
-                            updateHelper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
-                        }
-                    }
-                    if (item.hasChangedJavadoc()) {
-                        if (item.getJavadocFilePath() != null) {
-                            referenceHelper.createExtraForeignFileReferenceAsIs(item.getJavadocFilePath(), item.getJavadocProperty());
-                        } else {
-                            //oh well, how do I do this otherwise??
-                            EditableProperties ep = updateHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                            ep.remove(item.getJavadocProperty());
-                            updateHelper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
-                        }
-                    }
+                    item.saveSourceAndJavadoc(referenceHelper, updateHelper);
                     break;
                 case Item.TYPE_LIBRARY:
                     reference = item.getReference();
@@ -287,27 +260,6 @@ public class ClassPathSupport {
         return items;
     }
     
-    public void updateJarReference(Item item) {
-        String eval = evaluator.evaluate( item.getReference() );
-
-        item.object = eval;
-
-        //TODO these should be encapsulated in the Item class 
-        // but that means we need to pass evaluator and antProjectHelper there.
-        String ref = item.getSourceReference();
-        eval = evaluator.evaluate( ref );
-        if (eval != null && !eval.contains(Item.SOURCE_START)) {
-            item.setSourceFilePath(eval);
-        }
-        ref = item.getJavadocReference();
-        eval = evaluator.evaluate( ref );
-        File f2 = null;
-        if (eval != null && !eval.contains(Item.JAVADOC_START)) {
-            item.setJavadocFilePath(eval);
-        }
-        
-    }
-    
     public String getLibraryReference( Item item ) {
         if ( item.getType() != Item.TYPE_LIBRARY ) {
             throw new IllegalArgumentException( "Item must be of type LIBRARY" );
@@ -329,6 +281,9 @@ public class ClassPathSupport {
         return property.startsWith(LIBRARY_PREFIX) && property.endsWith(LIBRARY_SUFFIX);
     }
         
+    public static boolean isVariableBasedReference(String ref) {
+        return ref != null && ref.startsWith("${var."); // NOI18N
+    }
     // Innerclasses ------------------------------------------------------------
     
     /** Item of the classpath.
@@ -354,9 +309,10 @@ public class ClassPathSupport {
         private String sourceFile;
         private String javadocFile;
         
-        private File initialSourceFile;
-        private File initialJavadocFile;
+        private String initialSourceFile;
+        private String initialJavadocFile;
         private String libraryName;
+        private String variableBasedProperty;
         
         private Item( int type, Object object, String property, boolean broken ) {
             this.type = type;
@@ -398,11 +354,13 @@ public class ClassPathSupport {
             return new Item( TYPE_ARTIFACT, artifact, artifactURI, property );
         }
         
-        public static Item create( String path, String property ) {
+        public static Item create( String path, String property, String variableBasedProperty) {
             if ( path == null ) {
                 throw new IllegalArgumentException( "path must not be null" ); // NOI18N
             }
-            return new Item( TYPE_JAR, path, property );
+            Item i = new Item( TYPE_JAR, path, property );
+            i.variableBasedProperty = variableBasedProperty;
+            return  i;
         }
         
         public static Item create( String property ) {
@@ -458,6 +416,13 @@ public class ClassPathSupport {
             return (String)object;
         }
         
+        public String getVariableBasedProperty() {
+            if ( getType() != TYPE_JAR ) {
+                throw new IllegalArgumentException( "Item is not of required type - JAR" ); // NOI18N
+            }
+            return variableBasedProperty;
+        }
+        
         public AntArtifact getArtifact() {
             if ( getType() != TYPE_ARTIFACT ) {
                 throw new IllegalArgumentException( "Item is not of required type - ARTIFACT" ); // NOI18N
@@ -498,22 +463,11 @@ public class ClassPathSupport {
          * 
          * @return
          */
-        public String getSourceReference() {
+        private String getSourceProperty() {
             if (property == null || !property.startsWith(REF_START)) {
                 return null;
             }            
-            return SOURCE_START + property.substring(REF_START_INDEX);
-        }
-        
-        public String getSourceProperty() {
-            if (property == null || !property.startsWith(REF_START)) {
-                return null;
-            }
-            final String sourceRef = getSourceReference();
-            if (sourceRef == null) {
-                return null;
-            }
-            return sourceRef.substring(2, sourceRef.length() - 1);
+            return CommonProjectUtils.getAntPropertyName(SOURCE_START + property.substring(REF_START_INDEX));
         }
         
         /**
@@ -521,22 +475,11 @@ public class ClassPathSupport {
          * 
          * @return
          */
-        public String getJavadocReference() {
+        private String getJavadocProperty() {
             if (property == null || !property.startsWith(REF_START)) {
                 return null;
             }            
-            return JAVADOC_START + property.substring(REF_START_INDEX);
-        }
-        
-        public String getJavadocProperty() {
-            if (property == null || !property.startsWith(REF_START)) {
-                return null;
-            }
-            final String javadocRef = getJavadocReference();
-            if (javadocRef == null) {
-                return null;
-            }
-            return javadocRef.substring(2, javadocRef.length() - 1);
+            return CommonProjectUtils.getAntPropertyName(JAVADOC_START + property.substring(REF_START_INDEX));
         }
         
         public boolean canEdit () {            
@@ -549,8 +492,8 @@ public class ClassPathSupport {
                 if (property == null) {
                     //Just added item, allow editing
                     return true;
-                }                
-                return getSourceReference() != null && getJavadocReference() != null;
+                }
+                return getSourceProperty() != null && getJavadocProperty() != null;
             }
             else if (getType() == TYPE_LIBRARY) {
                 //Library can be edited
@@ -596,38 +539,30 @@ public class ClassPathSupport {
             sourceFile = source;
         }
         
-        public void setInitialSourceAndJavadoc(File source, File javadoc) {
+        private void setInitialSourceAndJavadoc(String source, String javadoc) {
             initialSourceFile = source;
             initialJavadocFile = javadoc;
-            if (source == null) {
-                sourceFile = null;
-            } else {
-                sourceFile = source.getPath();
-            }
-            if (javadoc == null) {
-                javadocFile = null;
-            } else {
-                javadocFile = javadoc.getPath();
-            }
+            sourceFile = source;
+            javadocFile = javadoc;
         }
         
-        public boolean hasChangedSource() {
+        private boolean hasChangedSource() {
             if ((initialSourceFile == null) != (sourceFile == null)) {
                 return true;
             }
             if (initialSourceFile != null && sourceFile != null) {
                 
-                return ! initialSourceFile.getPath().equals(sourceFile);
+                return ! initialSourceFile.equals(sourceFile);
             }
             return true;
         }
         
-        public boolean hasChangedJavadoc() {
+        private boolean hasChangedJavadoc() {
             if ((initialJavadocFile == null) != (javadocFile == null)) {
                 return true;
             }
             if (initialJavadocFile != null && javadocFile != null) {
-                return ! initialJavadocFile.getPath().equals(javadocFile);
+                return ! initialJavadocFile.equals(javadocFile);
             }
             return true;
         }
@@ -636,7 +571,98 @@ public class ClassPathSupport {
         public boolean isBroken() {
             return this.broken;
         }
-                        
+
+        // TODO ideally this should be called from constructor but becaue of missing 'evaluator'
+        // I'm making it private method which needs to be called after construction of JAR Item
+        public void initSourceAndJavadoc(AntProjectHelper helper) {
+            assert getType() == Item.TYPE_JAR : getType();
+            EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+            String value;
+            String f = null;
+            String ref = getSourceProperty();                
+            if (ref != null) {
+                value = ep.getProperty(ref);
+                if (value != null) {
+                    f = value;
+                }
+            }
+            String f2 = null;
+            ref = getJavadocProperty();
+            if (ref != null) {
+                value = ep.getProperty(ref);
+                f2 = null;
+                if (value != null) {
+                    f2 = value;
+                }
+            }
+            setInitialSourceAndJavadoc(f, f2);
+        }
+        
+
+        public void saveSourceAndJavadoc(ReferenceHelper referenceHelper, UpdateHelper updateHelper) {
+            assert getType() == Item.TYPE_JAR : getType();
+            if (hasChangedSource()) {
+                if (getSourceFilePath() != null) {
+                    referenceHelper.createExtraForeignFileReferenceAsIs(getSourceFilePath(), getSourceProperty());
+                } else {
+                    removeSource(updateHelper);
+                }
+            }
+            if (hasChangedJavadoc()) {
+                if (getJavadocFilePath() != null) {
+                    referenceHelper.createExtraForeignFileReferenceAsIs(getJavadocFilePath(), getJavadocProperty());
+                } else {
+                    removeJavadoc(updateHelper);
+                }
+            }
+        }
+        
+        public void removeSourceAndJavadoc(UpdateHelper updateHelper) {
+            assert getType() == Item.TYPE_JAR : getType();
+            removeSource(updateHelper);
+            removeJavadoc(updateHelper);
+        }
+    
+        private void removeSource(UpdateHelper updateHelper) {
+            //oh well, how do I do this otherwise??
+            EditableProperties ep = updateHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+            if (getSourceProperty() != null) {
+                ep.remove(getSourceProperty());
+            }
+            updateHelper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
+        }
+    
+        private void removeJavadoc(UpdateHelper updateHelper) {
+            //oh well, how do I do this otherwise??
+            EditableProperties ep = updateHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+            if (getJavadocProperty() != null) {
+                ep.remove(getJavadocProperty());
+            }
+            updateHelper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
+        }
+    
+        public void updateJarReference(AntProjectHelper helper) {
+            assert getType() == Item.TYPE_JAR : getType();
+            EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+            String value = ep.getProperty(CommonProjectUtils.getAntPropertyName(getReference()));
+            object = value;
+
+            String ref = getSourceProperty();
+            if (ref != null) {
+                value = ep.getProperty(ref);
+                if (value != null) {
+                    setSourceFilePath(value);
+                }
+            }
+            ref = getJavadocProperty();
+            if (ref != null) {
+                value = ep.getProperty(ref);
+                if (value != null) {
+                    setJavadocFilePath(value);
+                }
+            }        
+        }
+        
         @Override
         public int hashCode() {
         

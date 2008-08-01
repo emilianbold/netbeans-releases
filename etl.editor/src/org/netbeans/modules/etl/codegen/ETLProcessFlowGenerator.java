@@ -30,6 +30,8 @@ public interface ETLProcessFlowGenerator {
     public void applyConnectionDefinitions() throws BaseException;
 
     public void applyConnectionDefinitions(boolean isMemoryDb) throws BaseException;
+    
+    public void applyConnectionDefinitions(boolean useInstancedb, boolean isMemoryDb) throws BaseException;
 
     public void applyConnectionDefinitions(Map name2connectionDefMap, Map connDefMap, Map intDbConfigParams) throws BaseException;
 

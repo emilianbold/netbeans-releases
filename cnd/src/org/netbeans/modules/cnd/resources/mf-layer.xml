@@ -323,6 +323,76 @@ made subject to such option by the copyright holder.
                 <attr name="hidden" boolvalue="true"/>
             </file>
         </folder> <!-- IndentEngine -->
+
+        <folder name="CndToolChain">
+            <file name="SunStudio_8.xml" url="toolchain/SunStudio_8.xml">
+                <attr name="position" intvalue="1100"/>
+                <attr name="extends" stringvalue="SunStudio"/>
+            </file>
+            <file name="SunStudio_9.xml" url="toolchain/SunStudio_9.xml">
+                <attr name="position" intvalue="1200"/>
+                <attr name="extends" stringvalue="SunStudio"/>
+            </file>
+            <file name="SunStudio_10.xml" url="toolchain/SunStudio_10.xml">
+                <attr name="position" intvalue="1300"/>
+                <attr name="extends" stringvalue="SunStudio"/>
+            </file>
+            <file name="SunStudio_11.xml" url="toolchain/SunStudio_11.xml">
+                <attr name="position" intvalue="1400"/>
+                <attr name="extends" stringvalue="SunStudio"/>
+            </file>
+            <file name="SunStudio_12.xml" url="toolchain/SunStudio_12.xml">
+                <attr name="position" intvalue="1500"/>
+                <attr name="extends" stringvalue="SunStudio"/>
+            </file>
+            <file name="SunStudio_13.xml" url="toolchain/SunStudio_13.xml">
+                <attr name="position" intvalue="1600"/>
+                <attr name="extends" stringvalue="SunStudio_12"/>
+            </file>
+            <file name="SunStudio.xml" url="toolchain/SunStudio.xml">
+                <attr name="position" intvalue="2000"/>
+            </file>
+
+            <file name="Cygwin.xml" url="toolchain/Cygwin.xml">
+                <attr name="position" intvalue="2100"/>
+                <attr name="extends" stringvalue="GNU"/>
+            </file>
+            <file name="MinGW.xml" url="toolchain/MinGW.xml">
+                <attr name="position" intvalue="2200"/>
+                <attr name="extends" stringvalue="GNU"/>
+            </file>
+            <file name="Interix.xml" url="toolchain/Interix.xml">
+                <attr name="position" intvalue="2300"/>
+                <attr name="extends" stringvalue="GNU"/>
+            </file>
+            <!-- Ready  but commented -->
+            <!--file name="Intel.xml" url="toolchain/Intel.xml">
+                <attr name="position" intvalue="2400"/>
+                <attr name="extends" stringvalue="GNU"/>
+            </file-->
+            <!-- Not ready yet -->
+            <!--file name="Intel_windows.xml" url="toolchain/Intel_windows.xml">
+                <attr name="position" intvalue="2500"/>
+                <attr name="extends" stringvalue="GNU"/>
+            </file-->
+            <!-- Ready  but commented -->
+            <!--file name="Icecream.xml" url="toolchain/Icecream.xml">
+                <attr name="position" intvalue="2600"/>
+                <attr name="extends" stringvalue="GNU"/>
+            </file-->
+            <file name="GNU_solaris.xml" url="toolchain/GNU_solaris.xml">
+                <attr name="position" intvalue="2700"/>
+                <attr name="extends" stringvalue="GNU"/>
+            </file>
+            <file name="GNU_mac.xml" url="toolchain/GNU_mac.xml">
+                <attr name="position" intvalue="2800"/>
+                <attr name="extends" stringvalue="GNU"/>
+            </file>
+            <file name="GNU.xml" url="toolchain/GNU.xml">
+                <attr name="position" intvalue="3000"/>
+            </file>
+        </folder>
+
     </folder>	<!-- Services -->
 
     <folder name="Templates">
@@ -366,6 +436,21 @@ made subject to such option by the copyright holder.
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
             <attr name="position" intvalue="550"/>
             <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/cppFiles.html"/>
+            
+            <file name="class.cc" url="templates/cpp/class-cc.template">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/loaders/CCSrcIcon.gif"/>
+                <attr name="position" intvalue="400"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/class.html"/>
+                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.editor.filecreation.CndClassWizardIterator"/>
+                <attr name="templateCategory" stringvalue="cpp-types"/>
+            </file>
+            <file name="class.h" url="templates/cpp/class-h.template">
+                <attr name="position" intvalue="10"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="templateCategory" stringvalue="hidden"/>
+            </file>
             
             <file name="file.cc" url="templates/cpp/empty-cc.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
@@ -522,7 +607,61 @@ made subject to such option by the copyright holder.
     
     <folder name="Loaders">
         <folder name="application">
+            <folder name="x-exe">
+                <folder name="Factories">
+                    <file name="org-netbeans-modules-cnd-loaders-ExeLoader.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.Bundle"/>
+                        <attr name="position" intvalue="99999"/>
+                    </file>
+                </folder>
+            </folder>
+            <folder name="x-exec+dll">
+                <folder name="Factories">
+                    <file name="org-netbeans-modules-cnd-loaders-ExeLoader.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.Bundle"/>
+                        <attr name="position" intvalue="99999"/>
+                    </file>
+                </folder>
+            </folder> 
+            <folder name="x-core+elf">
+                <folder name="Factories">
+                    <file name="org-netbeans-modules-cnd-loaders-ExeLoader.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.Bundle"/>
+                        <attr name="position" intvalue="99999"/>
+                    </file>
+                </folder>
+            </folder>
+            <folder name="x-shobj+elf">
+                <folder name="Factories">
+                    <file name="org-netbeans-modules-cnd-loaders-ExeLoader.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.Bundle"/>
+                        <attr name="position" intvalue="99999"/>
+                    </file>
+                </folder>
+            </folder>  
+            <folder name="x-object+elf">
+                <folder name="Factories">
+                    <file name="org-netbeans-modules-cnd-loaders-ExeLoader.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.Bundle"/>
+                        <attr name="position" intvalue="99999"/>
+                    </file>
+                </folder>
+            </folder>
+            <folder name="x-elf">
+                <folder name="Factories">
+                    <file name="org-netbeans-modules-cnd-loaders-ExeLoader.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.Bundle"/>
+                        <attr name="position" intvalue="99999"/>
+                    </file>
+                </folder>
+            </folder>           
             <folder name="x-executable+elf">
+                <folder name="Factories">
+                    <file name="org-netbeans-modules-cnd-loaders-ExeLoader.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.Bundle"/>
+                        <attr name="position" intvalue="99999"/>
+                    </file>
+                </folder>                
                 <folder name="Actions">
                     <file name="FileSystemAction.instance">
                         <attr name="instanceClass" stringvalue="org.openide.actions.FileSystemAction"/>
@@ -635,6 +774,12 @@ made subject to such option by the copyright holder.
             </folder> <!-- x-cnd-sourcefile -->
             
             <folder name="x-make">
+                <folder name="Factories">
+                    <file name="org-netbeans-modules-cnd-loaders-MakefileDataLoader.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.Bundle"/>
+                        <attr name="position" intvalue="99999"/>
+                    </file>
+                </folder>
                 <folder name="Actions">
                     <file name="OpenAction.instance">
                         <attr name="instanceClass" stringvalue="org.openide.actions.OpenAction"/>
@@ -712,6 +857,12 @@ made subject to such option by the copyright holder.
             </folder> <!-- x-make -->
             
             <folder name="sh">
+                <folder name="Factories">
+                    <file name="org-netbeans-modules-cnd-loaders-ShellDataLoader.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.Bundle"/>
+                        <attr name="position" intvalue="99999"/>
+                    </file>
+                </folder>
                 <folder name="Actions">
                     <file name="OpenAction.instance">
                         <attr name="instanceClass" stringvalue="org.openide.actions.OpenAction"/>
@@ -779,6 +930,34 @@ made subject to such option by the copyright holder.
                     </file>
                 </folder> <!-- Actions -->
             </folder> <!-- x-shell -->
+            <folder name="x-fortran">
+                <folder name="Factories">
+                    <file name="org-netbeans-modules-cnd-loaders-FortranDataLoader.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.Bundle"/>
+                        <attr name="position" intvalue="99999"/>
+                    </file>
+                </folder>
+            </folder>
+            <folder name="x-c">
+                <folder name="Factories">
+                    <file name="org-netbeans-modules-cnd-loaders-CDataLoader.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.Bundle"/>
+                        <attr name="position" intvalue="99999"/>
+                    </file>
+                </folder>
+            </folder>        
+            <folder name="x-c++">
+                <folder name="Factories">
+                    <file name="org-netbeans-modules-cnd-loaders-CCDataLoader.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.Bundle"/>
+                        <attr name="position" intvalue="90000"/>
+                    </file>
+                    <file name="org-netbeans-modules-cnd-loaders-HDataLoader.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.Bundle"/>
+                        <attr name="position" intvalue="99999"/>
+                    </file>
+                </folder>
+            </folder>
         </folder> <!-- text -->
     </folder> <!-- Loaders -->
     

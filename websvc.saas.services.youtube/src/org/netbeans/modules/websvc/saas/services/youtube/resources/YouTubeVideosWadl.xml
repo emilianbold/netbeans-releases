@@ -44,7 +44,7 @@
 <application xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	     xmlns:xsd="http://www.w3.org/2001/XMLSchema"
 	     xsi:schemaLocation="http://research.sun.com/wadl/2006/10 
-                    ../../../../../../../../../../websvc.saas.api/src/org/netbeans/modules/websvc/saas/model/wadl20061109.xsd"
+                    https://wadl.dev.java.net/wadl20061109.xsd"
 	     xmlns="http://research.sun.com/wadl/2006/10">
     <grammars/> 
     <resources base="http://www.youtube.com/">

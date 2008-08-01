@@ -131,7 +131,7 @@ public class AssignmentToItself extends AbstractHint {
         return NbBundle.getMessage(AssignmentToItself.class, "DSC_ATI"); // NOI18N
     }
     
-   private boolean ignore(TreePath tp, AssignmentTree at, Trees trees ) {
+    private boolean ignore(TreePath tp, AssignmentTree at, Trees trees ) {
         
         ExpressionTree var = at.getVariable();
         ExpressionTree exp = at.getExpression();

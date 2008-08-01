@@ -51,7 +51,7 @@ import org.netbeans.jellytools.Bundle;
 public class CompileAction extends Action {
 
     // Build|Compile
-    private static final String compileMenu = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/Build")+"|"
+    private static final String compileMenu = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.Bundle", "Menu/BuildProject")+"|"
                                             +Bundle.getStringTrimmed("org.netbeans.modules.project.ui.actions.Bundle", "LBL_CompileSingleAction_Name");
     private static final KeyStroke keystroke = KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0);
     // Compile File

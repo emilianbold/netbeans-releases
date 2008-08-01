@@ -227,29 +227,29 @@ public class ProjectTreeEventDispatcherImpl extends EventDispatcher
    /* (non-Javadoc)
     * @see org.netbeans.modules.uml.ui.controls.projecttree.IProjectTreeEventDispatcher#fireItemExpanding(org.netbeans.modules.uml.ui.controls.projecttree.IProjectTreeControl, org.netbeans.modules.uml.ui.controls.projecttree.IProjectTreeItem, org.netbeans.modules.uml.core.eventframework.IEventPayload)
     */
-   public void fireItemExpanding(IProjectTreeControl          pParentControl,
-	                              IProjectTreeExpandingContext context,
-                                 IEventPayload                payload)
-   {
-		ArrayList < Object > collection = new ArrayList < Object >();
-		collection.add(pParentControl);
-		collection.add(context);
-		
-      if (validateEvent("ItemExpanding", collection))
-      {
-         IResultCell cell = prepareResultCell(payload);
-         EventFunctor itemExpandingFunc = new EventFunctor("org.netbeans.modules.uml.ui.controls.projecttree.IProjectTreeEventsSink",
-                                                   "onItemExpanding");
-         
-         Object[] parms = new Object[3];
-			parms[0] = pParentControl;
-			parms[1] = context;
-			parms[2] = cell;
-         itemExpandingFunc.setParameters(parms);
-			m_ProjectTreeEventManager.notifyListeners(itemExpandingFunc);
-      }
+    public void fireItemExpanding(IProjectTreeControl pParentControl, 
+            IProjectTreeExpandingContext context, 
+            IEventPayload payload)
+    {
+        ArrayList<Object> collection = new ArrayList<Object>();
+        collection.add(pParentControl);
+        collection.add(context);
 
-   }
+        if (validateEvent("ItemExpanding", collection)) 
+        {
+            IResultCell cell = prepareResultCell(payload);
+            EventFunctor itemExpandingFunc = 
+                    new EventFunctor("org.netbeans.modules.uml.ui.controls.projecttree.IProjectTreeEventsSink", 
+                    "onItemExpanding");
+
+            Object[] parms = new Object[3];
+            parms[0] = pParentControl;
+            parms[1] = context;
+            parms[2] = cell;
+            itemExpandingFunc.setParameters(parms);
+            m_ProjectTreeEventManager.notifyListeners(itemExpandingFunc);
+        }
+    }
    
    /* (non-Javadoc)
     * @see org.netbeans.modules.uml.ui.controls.projecttree.IProjectTreeEventDispatcher#fireItemExpanding(org.netbeans.modules.uml.ui.controls.projecttree.IProjectTreeControl, org.netbeans.modules.uml.ui.controls.projecttree.IProjectTreeItem, org.netbeans.modules.uml.core.eventframework.IEventPayload)

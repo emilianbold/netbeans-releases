@@ -67,8 +67,9 @@ public class Util {
     
     public static String dumpProjectView(String project) {
         // TODO replace sleep()
-        try { Thread.currentThread().sleep(3000); }
-        catch (InterruptedException e) {}
+        try { 
+            Thread.sleep(3000);
+        }catch (InterruptedException e) {}
         StringBuffer buff = new StringBuffer();
         Node node = new ProjectsTabOperator().getProjectRootNode(project);
         dumpNode(node, buff, 0);
@@ -77,26 +78,30 @@ public class Util {
     
     
     private static void dumpNode(Node node, StringBuffer buff, int level) {
-        for (int i=0; i<level; i++)
+        for (int i=0; i<level; i++){
             buff.append(".");
+        }
         buff.append("+ ");
-//        if (!node.isLeaf()) buff.append("+ ");
-//        else buff.append("- ");
-        buff.append(node.getText());
+        buff.append(node.getText().trim());
         if (!node.isLeaf() && node.getText().indexOf('.') < 0) {
             buff.append(" ");
             boolean wasCollapsed = node.isCollapsed();
             buff.append("\n");
             String nodes[] = node.getChildren();
             for (int i=0; i<nodes.length; i++) {
-                //XXX System.out.println("Parent:: " + node.getText() + " - subPath:: " + nodes[i]);
-                Node child = new Node(node, nodes[i]);
+//                System.out.println("Parent:: " + node.getText() + " - subPath:: " + nodes[i]);
+                Node child  = new Node(node, nodes[i]);
                 // prevents infinite loop in case the nodes[i].equals("");
                 if (child.getPath().equals(node.getPath())) {
-                    //XXX System.out.println("===Continue===");
+//                    System.out.println("===Continue===");
                     continue;
                 }
-                dumpNode(child, buff,  level+1);
+                if(!(child.getText().equals(nodes[i])))
+                {
+                    child = new Node(node, i);
+
+                }
+                dumpNode(child, buff, level+1);
             }
             if (wasCollapsed) node.collapse();
         } else {

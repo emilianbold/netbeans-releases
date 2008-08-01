@@ -53,6 +53,7 @@ public class JoinedTokenSequence {
         if (!moreTokens) {
             if (currentTokenSequence + 1 < tokenSequences.length) {
                 currentTokenSequence++;
+                currentTokenSequence().moveStart();
                 moveNext();
             } else {
                 return false;
@@ -68,6 +69,7 @@ public class JoinedTokenSequence {
         if (!moreTokens) {
             if (currentTokenSequence > 0) {
                 currentTokenSequence--;
+                currentTokenSequence().moveEnd();
                 movePrevious();
             } else {
                 return false;

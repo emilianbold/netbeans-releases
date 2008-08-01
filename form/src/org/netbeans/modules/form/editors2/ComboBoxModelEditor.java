@@ -41,15 +41,20 @@
 
 package org.netbeans.modules.form.editors2;
 
+import java.awt.Component;
 import javax.swing.*;
+import org.netbeans.modules.form.NamedPropertyEditor;
+import org.netbeans.modules.form.editors.StringArrayCustomEditor;
 import org.netbeans.modules.form.editors.StringArrayEditor;
+import org.openide.util.NbBundle;
 
 /** A simple property editor for ComboBoxModel.
  *
  * @author Tomas Pavek
  */
 
-public class ComboBoxModelEditor extends StringArrayEditor {
+public class ComboBoxModelEditor extends StringArrayEditor 
+       implements NamedPropertyEditor {
 
     private ComboBoxModel comboModel = null;
 
@@ -103,5 +108,25 @@ public class ComboBoxModelEditor extends StringArrayEditor {
 
     static ComboBoxModel getModelForData(String[] data) {
         return new DefaultComboBoxModel(data);
+    }
+    
+    /**
+     * Returns human-readable name of this property editor.
+     * 
+     * @return human-readable name of this property editor.
+     */
+    @Override
+    public String getDisplayName() {
+        return NbBundle.getBundle(ComboBoxModelEditor.class).getString("CTL_ComboBoxModelEditor_DisplayName"); // NOI18N
+    }
+
+    @Override
+    public Component getCustomEditor() {
+        return new StringArrayCustomEditor(
+                this,
+                NbBundle.getMessage(
+                    ComboBoxModelEditor.class, 
+                    "ComboBoxModelEditor.label.text")
+                ); // NOI18N
     }
 }

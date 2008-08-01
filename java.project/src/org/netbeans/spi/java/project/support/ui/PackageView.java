@@ -185,7 +185,7 @@ public class PackageView {
         List<FileObject> folders = new ArrayList<FileObject>();
         for (FileObject kid : fo.getChildren()) {
             // XXX could use PackageDisplayUtils.isSignificant here
-            if (VisibilityQuery.getDefault().isVisible(kid) && group.contains(kid)) {
+            if (kid.isValid() && VisibilityQuery.getDefault().isVisible(kid) && group.contains(kid)) {
                 if (kid.isFolder()) {
                     folders.add(kid);
                     hasSubfolders = true;

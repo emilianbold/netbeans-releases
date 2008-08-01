@@ -49,6 +49,7 @@ import org.netbeans.modules.websvc.spi.client.WebServicesClientSupportImpl;
 import org.netbeans.modules.websvc.spi.jaxws.client.JAXWSClientSupportFactory;
 import org.netbeans.modules.websvc.spi.jaxws.client.JAXWSClientSupportImpl;
 import org.netbeans.spi.project.LookupProvider;
+import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 
@@ -68,8 +69,19 @@ public class J2SEWSSupportLookupProvider implements LookupProvider {
         JAXWSClientSupport jaxWsClientSupportApi = JAXWSClientSupportFactory.createJAXWSClientSupport(j2seJAXWSClientSupport);
         
         WebServicesClientSupportImpl jaxrpcClientSupport = new J2SEProjectJaxRpcClientSupport(project);
-        WebServicesClientSupport jaxRpcClientSupportApi = WebServicesClientSupportFactory.createWebServicesClientSupport(jaxrpcClientSupport);
+        final WebServicesClientSupport jaxRpcClientSupportApi = WebServicesClientSupportFactory.createWebServicesClientSupport(jaxrpcClientSupport);
         
-        return Lookups.fixed(new Object[] {jaxWsClientSupportApi,jaxRpcClientSupportApi,new J2SEProjectWSClientSupportProvider(), new JaxWsArtifactsClassPathProvider(project)});
+        ProjectOpenedHook openHook = new ProjectOpenedHook() {
+            @Override
+            protected void projectOpened() {
+                if(jaxRpcClientSupportApi.isBroken(project)) {
+                    jaxRpcClientSupportApi.showBrokenAlert(project);
+                }
+            }
+            @Override
+            protected void projectClosed() {
+            }
+        };
+        return Lookups.fixed(new Object[] {jaxWsClientSupportApi,jaxRpcClientSupportApi,new J2SEProjectWSClientSupportProvider(), new JaxWsArtifactsClassPathProvider(project), new JaxWsSourceForBinaryQueryImpl(), openHook});
     }
 }

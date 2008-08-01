@@ -41,7 +41,7 @@ import org.netbeans.modules.soa.ui.form.CustomNodeEditor.EditingMode;
 import org.netbeans.modules.soa.ui.form.valid.DefaultValidStateManager;
 import org.netbeans.modules.soa.ui.form.valid.ValidStateManager;
 import org.netbeans.modules.bpel.nodes.BpelNode;
-import org.netbeans.modules.soa.ui.SoaUiUtil;
+import org.netbeans.modules.soa.ui.SoaUtil;
 import org.netbeans.modules.soa.ui.UserNotification;
 import org.netbeans.modules.soa.ui.form.valid.Validator.Reason;
 import org.openide.ErrorManager;
@@ -489,6 +489,6 @@ public class AbstractCustomNodeEditor<T> extends JPanel
     }
     
     protected void fireHelpContextChange() {
-        SoaUiUtil.fireHelpContextChange(this, this.getHelpCtx());
+        SoaUtil.fireHelpContextChange(this, this.getHelpCtx());
     }
 }

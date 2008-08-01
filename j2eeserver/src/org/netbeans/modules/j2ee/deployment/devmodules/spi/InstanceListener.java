@@ -53,14 +53,6 @@ import java.util.EventListener;
 public interface InstanceListener extends EventListener {
 
         /**
-         * Default server instance has been changed.
-         *
-         * @param oldServerInstanceID id of the old default server instance.
-         * @param newServerInstanceID id of the new default server instance.
-         */
-        public void changeDefaultInstance(String oldServerInstanceID, String newServerInstanceID);
-        
-        /**
          * Server instance has been added.
          *
          * @param serverInstanceID id of the server instance that has been added.

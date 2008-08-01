@@ -97,7 +97,9 @@ final class StopAction extends AbstractAction {
 
     public void actionPerformed(ActionEvent e) {
         setEnabled(false); // discourage repeated clicking
-        finishAction.run();
+        if (finishAction != null) {
+            finishAction.run();
+        }
 
         for (RequestProcessor.Task task : processorTasks) {
             task.cancel();

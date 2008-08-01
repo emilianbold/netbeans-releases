@@ -48,18 +48,19 @@ package org.netbeans.modules.uml.core.support.umlsupport;
 public interface FileExtensions
 {
 	//	Diagram extensions - broke into the TomSawyer file and the presentation data file
-	public final static String DIAGRAM_LAYOUT_EXT = ".etld";
-	public final static String DIAGRAM_LAYOUT_EXT_NODOT = "etld";
-	public final static String DIAGRAM_PRESENTATION_EXT = ".etlp";
-	public final static String DIAGRAM_PRESENTATION_EXT_NODOT = "etlp";
-	public final static String DIAGRAM_PRECOMMIT_LAYOUT_EXT = ".etld~";
-	public final static String DIAGRAM_PRECOMMIT_LAYOUT_EXT_NODOT = "etld~";
-	public final static String DIAGRAM_PRECOMMIT_PRESENTATION_EXT = ".etlp~";
-	public final static String DIAGRAM_PRECOMMIT_PRESENTATION_EXT_NODOT = "etlp~";
-	
+	public final static String DIAGRAM_LAYOUT_EXT = ".diagram";
+	public final static String DIAGRAM_LAYOUT_EXT_NODOT = "diagram";
+	public final static String DIAGRAM_PRESENTATION_EXT = DIAGRAM_LAYOUT_EXT;
+	public final static String DIAGRAM_PRESENTATION_EXT_NODOT = DIAGRAM_LAYOUT_EXT_NODOT;
+
+	public final static String DIAGRAM_TS_LAYOUT_EXT = ".etld";
+	public final static String DIAGRAM_TS_LAYOUT_EXT_NODOT = "etld";
+	public final static String DIAGRAM_TS_PRESENTATION_EXT = ".etlp";
+	public final static String DIAGRAM_TS_PRESENTATION_EXT_NODOT = "etlp";
+
 	//	Used to search for diagram files
 	//public final static String DIAGRAM_SEARCH_STRING = "*.etlp";
-   public final static String DIAGRAM_SEARCH_STRING = DIAGRAM_PRESENTATION_EXT_NODOT;
+    //   public final static String DIAGRAM_SEARCH_STRING = DIAGRAM_PRESENTATION_EXT_NODOT;
 	
 	//	Workspace File
 	public final static String WS_EXT = ".etw";

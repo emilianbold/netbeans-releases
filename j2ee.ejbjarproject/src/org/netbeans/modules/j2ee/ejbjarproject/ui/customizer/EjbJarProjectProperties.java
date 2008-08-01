@@ -49,10 +49,11 @@ import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Properties;
+import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 import java.util.logging.Level;
@@ -74,6 +75,7 @@ import org.openide.util.MutexException;
 import org.openide.util.Mutex;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.j2ee.common.SharabilityUtility;
 import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
 import org.netbeans.modules.j2ee.common.project.ui.ClassPathUiSupport;
 import org.netbeans.modules.j2ee.common.project.ui.J2eePlatformUiSupport;
@@ -96,6 +98,7 @@ import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.ui.PlatformUiSupport;
 import org.netbeans.modules.websvc.spi.webservices.WebServicesConstants;
+import org.netbeans.spi.java.project.support.ui.IncludeExcludeVisualizer;
 import org.openide.filesystems.FileObject;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.Exceptions;
@@ -114,6 +117,7 @@ public class EjbJarProjectProperties {
     public static final String EJB_PROJECT_NAME = "j2ee.ejbjarproject.name"; // NOI18N
     public static final String JAVA_PLATFORM = "platform.active"; // NOI18N
     public static final String J2EE_PLATFORM = "j2ee.platform"; // NOI18N
+    public static final String DEPLOY_ON_SAVE = "deploy.on.save"; // NOI18N
     
     // Properties stored in the PROJECT.PROPERTIES    
     /** root of external web module sources (full path), ".." if the sources are within project folder */
@@ -164,6 +168,8 @@ public class EjbJarProjectProperties {
     public static final String JAVADOC_ENCODING="javadoc.encoding"; // NOI18N
     public static final String JAVADOC_ADDITIONALPARAM="javadoc.additionalparam"; // NOI18N
     
+    public static final String RUNMAIN_JVM_ARGS = "runmain.jvmargs"; // NOI18N
+    
     public static final String META_INF_EXCLUDES="meta.inf.excludes"; // NOI18N
     
     // Properties stored in the PRIVATE.PROPERTIES
@@ -175,6 +181,7 @@ public class EjbJarProjectProperties {
     
     public static final String JAVA_SOURCE_BASED = "java.source.based";
     
+    private static final Logger LOGGER = Logger.getLogger(EjbJarProjectProperties.class.getName());
     
     ClassPathSupport cs;    
     
@@ -233,6 +240,8 @@ public class EjbJarProjectProperties {
     // CustomizerRun
     ComboBoxModel J2EE_SERVER_INSTANCE_MODEL;
     ComboBoxModel J2EE_PLATFORM_MODEL;
+    ButtonModel DEPLOY_ON_SAVE_MODEL;
+    Document RUNMAIN_JVM_MODEL;
 
     // CustomizerRunTest
     
@@ -245,7 +254,9 @@ public class EjbJarProjectProperties {
     private StoreGroup privateGroup; 
     private StoreGroup projectGroup;
     
-    private Properties additionalProperties;
+    private Map<String,String> additionalProperties;
+    
+    private String includes, excludes;
     
     EjbJarProject getProject() {
         return project;
@@ -264,7 +275,7 @@ public class EjbJarProjectProperties {
         privateGroup = new StoreGroup();
         projectGroup = new StoreGroup();
         
-        additionalProperties = new Properties();
+        additionalProperties = new HashMap<String,String>();
         
         init(); // Load known properties
     }
@@ -279,6 +290,14 @@ public class EjbJarProjectProperties {
         // CustomizerSources
         SOURCE_ROOTS_MODEL = EjbJarSourceRootsUi.createModel( project.getSourceRoots() );
         TEST_ROOTS_MODEL = EjbJarSourceRootsUi.createModel( project.getTestSourceRoots() );
+        includes = evaluator.getProperty(ProjectProperties.INCLUDES);
+        if (includes == null) {
+            includes = "**"; // NOI18N
+        }
+        excludes = evaluator.getProperty(ProjectProperties.EXCLUDES);
+        if (excludes == null) {
+            excludes = ""; // NOI18N
+        }
         META_INF_MODEL = projectGroup.createStringDocument( evaluator, META_INF );
                 
         // CustomizerLibraries
@@ -291,7 +310,7 @@ public class EjbJarProjectProperties {
         PLATFORM_MODEL = PlatformUiSupport.createPlatformComboBoxModel (evaluator.getProperty(JAVA_PLATFORM));
         PLATFORM_LIST_RENDERER = PlatformUiSupport.createPlatformListCellRenderer();
         SpecificationVersion minimalSourceLevel = null;
-        if (evaluator.getProperty(J2EE_PLATFORM).equals(ProjectProperties.JAVA_EE_5)) {
+        if (ProjectProperties.JAVA_EE_5.equals(evaluator.getProperty(J2EE_PLATFORM))) {
             minimalSourceLevel = new SpecificationVersion(ProjectProperties.JAVA_EE_5);
         }
         JAVAC_SOURCE_MODEL = PlatformUiSupport.createSourceLevelComboBoxModel (PLATFORM_MODEL, evaluator.getProperty(JAVAC_SOURCE), evaluator.getProperty(JAVAC_TARGET), minimalSourceLevel);
@@ -326,12 +345,16 @@ public class EjbJarProjectProperties {
         JAVADOC_WINDOW_TITLE_MODEL = projectGroup.createStringDocument( evaluator, JAVADOC_WINDOW_TITLE );
         JAVADOC_PREVIEW_MODEL = privateGroup.createToggleButtonModel( evaluator, JAVADOC_PREVIEW );
         JAVADOC_ADDITIONALPARAM_MODEL = projectGroup.createStringDocument( evaluator, JAVADOC_ADDITIONALPARAM );
-        
+
         // CustomizerRun
         J2EE_SERVER_INSTANCE_MODEL = J2eePlatformUiSupport.createPlatformComboBoxModel( 
-            privateProperties.getProperty(J2EE_SERVER_INSTANCE), projectProperties.getProperty(J2EE_PLATFORM));
+            privateProperties.getProperty(J2EE_SERVER_INSTANCE),
+            projectProperties.getProperty(J2EE_PLATFORM),
+            J2eeModule.EJB);
         J2EE_PLATFORM_MODEL = J2eePlatformUiSupport.createSpecVersionComboBoxModel(
             projectProperties.getProperty(J2EE_PLATFORM));
+        DEPLOY_ON_SAVE_MODEL = projectGroup.createToggleButtonModel(evaluator, DEPLOY_ON_SAVE);
+        RUNMAIN_JVM_MODEL = projectGroup.createStringDocument(evaluator, RUNMAIN_JVM_ARGS);
     }
     
     public void save() {
@@ -380,7 +403,17 @@ public class EjbJarProjectProperties {
         resolveProjectDependenciesNew();
         
         // Encode all paths (this may change the project properties)
-        String[] javac_cp = cs.encodeToStrings( ClassPathUiSupport.getList( JAVAC_CLASSPATH_MODEL.getDefaultListModel() ), ClassPathSupportCallbackImpl.ELEMENT_INCLUDED_LIBRARIES  );
+        List<ClassPathSupport.Item> javaClasspathList = ClassPathUiSupport.getList(JAVAC_CLASSPATH_MODEL.getDefaultListModel());
+        if (J2EE_SERVER_INSTANCE_MODEL.getSelectedItem() != null) {
+            final String instanceId = J2eePlatformUiSupport.getServerInstanceID(
+                    J2EE_SERVER_INSTANCE_MODEL.getSelectedItem());
+            final String oldServInstID = project.getAntProjectHelper().getProperties(
+                    AntProjectHelper.PRIVATE_PROPERTIES_PATH).getProperty(J2EE_SERVER_INSTANCE);
+
+            SharabilityUtility.switchServerLibrary(instanceId, oldServInstID, javaClasspathList, updateHelper);
+        }
+        
+        String[] javac_cp = cs.encodeToStrings( javaClasspathList, ClassPathSupportCallbackImpl.ELEMENT_INCLUDED_LIBRARIES  );
         String[] javac_test_cp = cs.encodeToStrings( ClassPathUiSupport.getList( JAVAC_TEST_CLASSPATH_MODEL ), null );
         String[] run_test_cp = cs.encodeToStrings( ClassPathUiSupport.getList( RUN_TEST_CLASSPATH_MODEL ), null );
                 
@@ -418,13 +451,14 @@ public class EjbJarProjectProperties {
         boolean serverLibUsed = ProjectProperties.isUsingServerLibrary(projectProperties,
                 EjbJarProjectProperties.J2EE_PLATFORM_CLASSPATH);
         if (J2EE_SERVER_INSTANCE_MODEL.getSelectedItem() != null) {
-            setNewServerInstanceValue(J2eePlatformUiSupport.getServerInstanceID(J2EE_SERVER_INSTANCE_MODEL.getSelectedItem()),
-                    project, projectProperties, privateProperties, !serverLibUsed);
+            final String instanceId = J2eePlatformUiSupport.getServerInstanceID(
+                    J2EE_SERVER_INSTANCE_MODEL.getSelectedItem());
+            setNewServerInstanceValue(instanceId, project, projectProperties, privateProperties, !serverLibUsed);
         }
-        
+
         // Configure server libraries (if any)
         boolean configured = setServerClasspathProperties(projectProperties, privateProperties,
-                cs, ClassPathUiSupport.getList(JAVAC_CLASSPATH_MODEL.getDefaultListModel()));
+                cs, javaClasspathList);
 
         // Configure classpath from server (no server libraries)
         if (!configured && J2EE_SERVER_INSTANCE_MODEL.getSelectedItem() != null) {
@@ -454,13 +488,23 @@ public class EjbJarProjectProperties {
             projectProperties.setProperty(J2EE_PLATFORM, newJ2eeVersion);
         }
         
-        storeAdditionalProperties(projectProperties);
+        projectProperties.putAll(additionalProperties);
 
-        ProjectProperties.storeLibrariesLocations (ClassPathUiSupport.getList(JAVAC_CLASSPATH_MODEL.getDefaultListModel()).iterator(), projectProperties, getProject().getProjectDirectory());
-        
+        projectProperties.put(ProjectProperties.INCLUDES, includes);
+        projectProperties.put(ProjectProperties.EXCLUDES, excludes);
+
         // Store the property changes into the project
         updateHelper.putProperties( AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties );
         updateHelper.putProperties( AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProperties );        
+        
+        // compile on save listeners
+        if (DEPLOY_ON_SAVE_MODEL.isEnabled() && DEPLOY_ON_SAVE_MODEL.isSelected()) {
+            LOGGER.log(Level.FINE, "Starting listening on cos for {0}", project.getEjbModule());
+            Deployment.getDefault().enableCompileOnSaveSupport(project.getEjbModule());
+        } else {
+            LOGGER.log(Level.FINE, "Stopping listening on cos for {0}", project.getEjbModule());
+            Deployment.getDefault().disableCompileOnSaveSupport(project.getEjbModule());
+        }
         
         String value = (String)additionalProperties.get(SOURCE_ENCODING);
         if (value != null) {
@@ -469,13 +513,6 @@ public class EjbJarProjectProperties {
             } catch (UnsupportedCharsetException e) {
                 //When the encoding is not supported by JVM do not set it as default
             }
-        }
-    }
-    
-    private void storeAdditionalProperties(EditableProperties projectProperties) {
-        for (Iterator i = additionalProperties.keySet().iterator(); i.hasNext();) {
-            String key = i.next().toString();
-            projectProperties.put(key, additionalProperties.getProperty(key));
         }
     }
     
@@ -510,15 +547,7 @@ public class EjbJarProjectProperties {
                     item.getType() == ClassPathSupport.Item.TYPE_JAR ) {
                 refHelper.destroyReference(item.getReference());
                 if (item.getType() == ClassPathSupport.Item.TYPE_JAR) {
-                    //oh well, how do I do this otherwise??
-                    EditableProperties ep = updateHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                    if (item.getJavadocProperty() != null) {
-                        ep.remove(item.getJavadocProperty());
-                    }
-                    if (item.getSourceProperty() != null) {
-                        ep.remove(item.getSourceProperty());
-                    }
-                    updateHelper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
+                    item.removeSourceAndJavadoc(updateHelper);
                 }
             }
         }
@@ -577,7 +606,7 @@ public class EjbJarProjectProperties {
     
     /* This is used by CustomizerWSServiceHost */
     void putAdditionalProperty(String propertyName, String propertyValue) {
-        additionalProperties.setProperty(propertyName, propertyValue);
+        additionalProperties.put(propertyName, propertyValue);
     }
     
     private static void setNewServerInstanceValue(String newServInstID, Project project,
@@ -690,7 +719,9 @@ public class EjbJarProjectProperties {
 
         List<ClassPathSupport.Item> serverItems = new ArrayList<ClassPathSupport.Item>();
         for (ClassPathSupport.Item item : items) {
-            if (item.getType() == ClassPathSupport.Item.TYPE_LIBRARY && item.getLibrary().getType().equals(J2eePlatform.LIBRARY_TYPE)) {
+            if (item.getType() == ClassPathSupport.Item.TYPE_LIBRARY
+                    && !item.isBroken()
+                    && item.getLibrary().getType().equals(J2eePlatform.LIBRARY_TYPE)) {
                 serverItems.add(ClassPathSupport.Item.create(item.getLibrary(), null));
             }
         }
@@ -731,4 +762,22 @@ public class EjbJarProjectProperties {
         return props.getProperty(property);
     }
 
+    void loadIncludesExcludes(IncludeExcludeVisualizer v) {
+        Set<File> roots = new HashSet<File>();
+        for (DefaultTableModel model : new DefaultTableModel[] {SOURCE_ROOTS_MODEL, TEST_ROOTS_MODEL}) {
+            for (Object row : model.getDataVector()) {
+                roots.add((File) ((Vector) row).elementAt(0));
+            }
+        }
+        v.setRoots(roots.toArray(new File[roots.size()]));
+        v.setIncludePattern(includes);
+        v.setExcludePattern(excludes);
+    }
+
+    void storeIncludesExcludes(IncludeExcludeVisualizer v) {
+        includes = v.getIncludePattern();
+        excludes = v.getExcludePattern();
+    }
+    
+    
 }

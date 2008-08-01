@@ -49,7 +49,7 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
-import org.netbeans.modules.gsf.api.BracketCompletion;
+import org.netbeans.modules.gsf.api.KeystrokeHandler;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.css.editor.LexerUtils;
@@ -61,7 +61,7 @@ import org.openide.util.Exceptions;
  *
  * @author marek
  */
-public class CssBracketCompleter implements BracketCompletion {
+public class CssBracketCompleter implements KeystrokeHandler {
 
     private static final char[][] PAIRS = new char[][]{{'{', '}'}, {'"', '"'}, {'\'', '\''}};
     private char justAddedPair;

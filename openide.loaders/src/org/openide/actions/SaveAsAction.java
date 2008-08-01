@@ -143,8 +143,11 @@ final class SaveAsAction extends AbstractAction implements ContextAwareAction {
                 try {
                     saveAs.saveAs( newFolder, newFile.getName() );
                 } catch( IOException ioE ) {
-                    Exceptions.attachLocalizedMessage( ioE, NbBundle.getMessage( DataObject.class, "MSG_SaveAsFailed" ) );  //NOI18N
-                    Logger.getLogger( getClass().getName() ).log( Level.WARNING, null, ioE );
+                    Exceptions.attachLocalizedMessage( ioE,
+                            NbBundle.getMessage( DataObject.class, "MSG_SaveAsFailed", // NOI18N
+                            newFile.getName (),
+                            ioE.getLocalizedMessage () ) );
+                    Logger.getLogger( getClass().getName() ).log( Level.SEVERE, null, ioE );
                 }
             }
         }

@@ -44,6 +44,8 @@ package org.netbeans.modules.cnd.api.compilers;
 import java.io.File;
 import java.util.ResourceBundle;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
+import org.netbeans.modules.cnd.api.compilers.ToolchainManager.CompilerDescriptor;
+import org.netbeans.modules.cnd.api.compilers.ToolchainManager.ToolDescriptor;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.Path;
 import org.openide.util.NbBundle;
@@ -52,13 +54,13 @@ import org.openide.util.Utilities;
 public class Tool {
     
     // Compiler types
-    public static int CCompiler = 0;
-    public static int CCCompiler = 1;
-    public static int FortranCompiler = 2;
-    public static int CustomTool = 3;
-    public static int Assembler = 4;
-    public static int MakeTool = 5;
-    public static int DebuggerTool = 6;
+    public static final int CCompiler = 0;
+    public static final int CCCompiler = 1;
+    public static final int FortranCompiler = 2;
+    public static final int CustomTool = 3;
+    public static final int Assembler = 4;
+    public static final int MakeTool = 5;
+    public static final int DebuggerTool = 6;
 
     private static final String[] TOOL_NAMES = {
         getString("CCompiler"), // NOI18N
@@ -78,27 +80,39 @@ public class Tool {
         getString("CustomBuildTool"), // NOI18N
     };
     
+    private String hkey;
     private CompilerFlavor flavor;
     private int kind;
     private String name;
     private String displayName;
     private String path;
+    private CompilerSet compilerSet = null;
     private String includeFilePrefix = null;
     
     /** Creates a new instance of GenericCompiler */
-    public Tool(CompilerFlavor flavor, int kind, String name, String displayName, String path) {
+    public Tool(String hkey, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
+        this.hkey = hkey;
         this.flavor = flavor;
         this.kind = kind;
         this.name = name;
         this.displayName = displayName;
-        this.path = name.length() > 0 ? path + File.separator + name : path;
+        this.path = path;
+        compilerSet = null;
         includeFilePrefix = null;
     }
-    
+
+    public ToolDescriptor getDescriptor() {
+        return null;
+    }
+
     public Tool createCopy() {
-        Tool copy = new Tool(flavor, kind, "", displayName, path);
+        Tool copy = new Tool(hkey, flavor, kind, "", displayName, path);
         copy.setName(getName());
         return copy;
+    }
+    
+    public String getHostKey() {
+        return hkey;
     }
     
     public CompilerFlavor getFlavor() {
@@ -170,29 +184,27 @@ public class Tool {
         return TOOL_NAMES[kind];
     }
     
+    @Override
     public String toString() {
-        String name = getName();
-        if (Utilities.isWindows() && name.endsWith(".exe")) { // NOI18N
-            return name.substring(0, name.length() - 4);
+        String n = getName();
+        if (Utilities.isWindows() && n.endsWith(".exe")) { // NOI18N
+            return n.substring(0, n.length() - 4);
         } else {
-            return name;
+            return n;
         }
     }
     
     public String getIncludeFilePathPrefix() {
         if (includeFilePrefix == null) {
             includeFilePrefix = ""; // NOI18N
-            if (getFlavor() == CompilerFlavor.Cygwin ||
-                    getFlavor() == CompilerFlavor.MinGW ||
-                    getFlavor() == CompilerFlavor.DJGPP ||
-                    getFlavor() == CompilerFlavor.Interix) {
-                int i = getPath().toLowerCase().indexOf("\\bin"); // NOI18N
-                if (i < 0)
-                    i = getPath().toLowerCase().indexOf("/bin"); // NOI18N
-                if (i > 0) {
-                    includeFilePrefix = getPath().substring(0, i);
-                    includeFilePrefix = includeFilePrefix.replaceAll("\\\\", "/"); // NOI18N
-                    //includeFilePrefix = FilePathAdaptor.normalize(includeFilePrefix);
+            CompilerDescriptor c = getFlavor().getToolchainDescriptor().getC();
+            if (c != null) {
+                String path = getPath().replaceAll("\\\\", "/"); // NOI18N
+                if (c.getRemoveIncludePathPrefix() != null) {
+                    int i = path.toLowerCase().indexOf("/bin"); // NOI18N
+                    if (i > 0) {
+                        includeFilePrefix = path.substring(0, i);
+                    }
                 }
             }
         }
@@ -202,7 +214,8 @@ public class Tool {
     public void setIncludeFilePathPrefix(String includeFilePrefix) {
         this.includeFilePrefix = includeFilePrefix;
     }
-    
+
+    @Deprecated
     public boolean exists() {
         if (getPath() == null || getPath().length() == 0)
             return false;
@@ -215,5 +228,13 @@ public class Tool {
             bundle = NbBundle.getBundle(Tool.class);
         }
         return bundle.getString(s);
+    }
+
+    public CompilerSet getCompilerSet() {
+        return compilerSet;
+    }
+
+    public void setCompilerSet(CompilerSet compilerSet) {
+        this.compilerSet = compilerSet;
     }
 }

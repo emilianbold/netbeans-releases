@@ -1,0 +1,73 @@
+<g id="%%COMPONENT_ID%%" transform="translate(%%COORDINATE_X%%,%%COORDINATE_Y%%)">
+	<!-- Metadata information. Please don't edit. -->
+	<text display="none">type=combobox</text>
+
+        <rect x="0" y="-5" rx="5" ry="5" width="90" height="30" fill="none" stroke="rgb(255,165,0)" 
+               stroke-width="2" visibility="hidden">
+            <set attributeName="visibility" attributeType="XML" begin="%%COMPONENT_ID%%.focusin" 
+                fill="freeze" to="visible"/>
+            <set attributeName="visibility" attributeType="XML" begin="%%COMPONENT_ID%%.focusout" 
+                fill="freeze" to="hidden"/>
+        </rect>
+        <rect  x="5.0" y="0.0" width="80" height="20" fill="none" stroke="black" stroke-width="2"/>
+	<g>
+		<!-- Metadata information. Please don't edit. -->
+		<text display="none">type=button</text>
+
+		<rect id="%%COMPONENT_ID%%_button" x="66.0" y="1.0" width="18" height="18" fill="rgb(220,220,220)" 
+			    stroke="black" stroke-width="1.5">
+			<animate id="%%COMPONENT_ID%%_button_pressed" attributeName="fill" attributeType="XML" begin="indefinite" dur="0.25s" 
+				fill="freeze" to="rgb(170,170,170)"/>
+			<animate id="%%COMPONENT_ID%%_button_released" attributeName="fill" attributeType="XML" begin="indefinite" dur="0.25s" 
+				fill="freeze" to="rgb(220,220,220)"/>
+	</rect>
+	</g>
+	<polygon transform="translate(73,8)"  points="0,0 4,0 2,4" fill="blue" 
+                  stroke="black" stroke-width="2"/>
+	<g id="%%COMPONENT_ID%%_editor">
+		<!-- this editor is SVGTextField component -->
+
+		<!-- Metadata information. Please don't edit. -->
+		<text display="none">type=editor</text>
+		<text display="none">editable=false</text>
+		<text display="none">enabled=true</text>
+
+                <g>
+		    <text id="%%COMPONENT_ID%%_editor_text" x="10" y="15" stroke="black" font-size="15" font-family="SunSansSemiBold">Item 1
+		    </text>
+                    <!-- Metadata information. Please don't edit. -->
+	            <text display="none">type=text</text>
+                </g>
+		<rect visibility="hidden" x="5.0" y="0" width="60" height="20" />
+	</g>
+</g>
+<g id="%%COMPONENT_ID%%_list" visibility="hidden" transform="translate(%%COORDINATE_X%%,%%COORDINATE_Y%%)">
+		<!-- Metadata information. Please don't edit. -->
+		<text display="none">ref=%%COMPONENT_ID%%</text>
+		<text display="none">type=list</text>
+
+                <g>
+		        <text id="%%COMPONENT_ID%%_list_hidden_text" visibility="hidden" x="10" y="13" stroke="black" font-size="15" 
+                         font-family="SunSansSemiBold">
+			HIDDEN TEXT
+		        </text>
+                       <!-- Metadata information. Please don't edit. -->
+			<text display="none">type=hidden_text</text>
+                </g>
+		<g>
+			<!-- Metadata information. Please don't edit. -->
+			<text display="none">type=bound</text>
+			<rect id="%%COMPONENT_ID%%_list_bound" x="5.0" y="0.0" width="80" height="60" 
+                               fill="white" stroke="black" stroke-width="2" visibility="inherit"/>
+		</g>
+		<g>
+			<!-- Metadata information. Please don't edit. -->
+			<text display="none">type=selection</text>
+			<rect id="%%COMPONENT_ID%%_list_selection" x="5" y="0" stroke="black" 
+                                 stroke-width="1" fill="rgb(200,200,255)" visibility="inherit" width="80" height="0"/>
+		</g>
+		<g  id="%%COMPONENT_ID%%_list_content" visibility="inherit">
+			<!-- Metadata information. Please don't edit. -->
+			<text display="none">type=content</text>
+	       	</g>
+</g>

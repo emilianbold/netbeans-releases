@@ -82,8 +82,13 @@ public abstract class OffsetGapList<E> extends GapList<E> {
     private int offsetGapLength = Integer.MAX_VALUE / 2; // 32 bytes
 
     public OffsetGapList() {
+        this(10);
     }
-    
+
+    public OffsetGapList(int initialCapacity) {
+        super(initialCapacity);
+    }
+
     /**
      * Get the raw offset of the given element currently stored in the list.
      *

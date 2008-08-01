@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.cnd.utils.cache;
 
+import java.util.Arrays;
 import java.util.Comparator;
 
 /**
@@ -106,16 +107,15 @@ public final class CharSequenceKey implements CharSequence, Comparable<CharSeque
 	}
 	if (object instanceof CharSequenceKey) {
 	    CharSequenceKey otherString = (CharSequenceKey)object;
-	    int n = length();
-	    if (n == otherString.length()) {
-		int i = 0;
-		while (n-- != 0) {
-		    if (charAt(i) != otherString.charAt(i)) {
-			return false;
-                    }
-                    i++;
-		}
-		return true;
+            if (hash != 0 && otherString.hash != 0) {
+                if (hash != otherString.hash) {
+                    return false;
+                }
+            }
+            if ((value instanceof byte[]) && (otherString.value instanceof byte[])) {
+                return Arrays.equals( (byte[])value, (byte[])otherString.value );
+            } else if ((value instanceof char[]) && (otherString.value instanceof char[])) {
+                return Arrays.equals( (char[])value, (char[])otherString.value );
 	    }
 	}
 	return false;

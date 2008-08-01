@@ -95,6 +95,8 @@ public final class OffsetsBag extends AbstractHighlightsContainer {
     private boolean mergeHighlights;
     private long version = 0;
     private DocL docListener;
+    private int lastAddIndex; // Index where last add to marks list was done
+    private int lastMoveNextIndex; // Index where last moveNext() with idx=-1 was done
     
     /**
      * Creates a new instance of <code>OffsetsBag</code>, which trims highlights
@@ -330,7 +332,9 @@ public final class OffsetsBag extends AbstractHighlightsContainer {
             }
             
             int startIdx = indexBeforeOffset(startOffset);
-            int endIdx = indexBeforeOffset(endOffset, startIdx < 0 ? 0 : startIdx, marks.size() - 1);
+            int endIdx = (startOffset == endOffset) // true for MarkOccurrencesHighlighter
+                    ? startIdx
+                    : indexBeforeOffset(endOffset, startIdx < 0 ? 0 : startIdx, marks.size() - 1);
             
 //            System.out.println("removeHighlights(" + startOffset + ", " + endOffset + ", " + clip + ") : startIdx = " + startIdx + ", endIdx = " + endIdx);
             
@@ -497,12 +501,137 @@ public final class OffsetsBag extends AbstractHighlightsContainer {
         return new int [] { startOffset, endOffset };
     }
     
+    // [CACHE] Uncomment the following to debug the cache
+//    private static int lastAddIndexUsed;
+//    private static int lastAddIndexMissed;
+//    private static int lastAddIndexFwd1;
+//    private static int lastMoveNextIndexUsed;
+//    private static int lastMoveNextIndexMissed;
+//    private static int lastMoveNextIndexFwd1;
+//    private static int binSearchCount;
+
+    private int findAddIndex(int offset) {
+        int lastIdx = lastAddIndex;
+        boolean hit = false;
+        int marksSize = marks.size();
+        if (lastIdx < marksSize) { // Otherwise the index would be obsolete
+            if (lastIdx == -1) {
+                hit = (marksSize == 0 || marks.get(0).getOffset() > offset);
+            } else { // idx != -1
+                int markOffset = marks.get(lastIdx).getOffset();
+                if (offset == markOffset) { // Verify that idx is first with this offset
+                    hit = (lastIdx == 0 || marks.get(lastIdx - 1).getOffset() < offset);
+                } else if (offset > markOffset) {
+                    if (lastIdx >= marksSize - 1 || offset < marks.get(lastIdx + 1).getOffset()) {
+                        hit = true;
+                    } else { // offset >= markOffset
+                        // Statistically it appears that rather often lastIdx == real-index - 1.
+                        // so check for this case proactively
+                        if (lastIdx >= marksSize - 2 || offset < marks.get(lastIdx + 2).getOffset()) {
+                            lastIdx++; // Use the one index higher
+                            hit = true;
+                        }
+                    }
+                }
+            }
+        }
+        int idx = hit ? lastIdx : indexBeforeOffset(offset);
+
+        // [CACHE] Uncomment the following to debug the cache
+//        if (hit) {
+//            lastAddIndexUsed++;
+//            if (lastIdx == lastAddIndex + 1)
+//                lastAddIndexFwd1++;
+//            // Verify that the hit result is correct
+//            idx = indexBeforeOffset(offset);
+//            if (lastIdx != idx) {
+//                throw new IllegalStateException("lastIdx=" + lastIdx + " != idx=" + idx);
+//            }
+//        } else { // not hit
+//            lastAddIndexMissed++;
+//            // Info about cache miss
+//            StringBuilder sb = new StringBuilder("AAA o=" + offset + ", idx=" + idx +
+//                    ", last=" + lastIdx + ", marksSize=" + marksSize);
+//            if (lastIdx > 0 && lastIdx <= marksSize) {
+//                    sb.append(", bLast.o=" + marks.get(lastIdx - 1).getOffset());
+//            }
+//            if (lastIdx >= 0 && lastIdx < marksSize) {
+//                    sb.append(", atLast.o=" + marks.get(lastIdx).getOffset());
+//            }
+//            System.err.println(sb.toString());
+//        }
+//        if ((lastAddIndexUsed + lastAddIndexMissed) % 1000 == 0) {
+//            System.err.println("CACHE: hit=" + lastAddIndexUsed + ", miss=" + lastAddIndexMissed +
+//                    ", Fwd1=" + lastAddIndexFwd1 +
+//                    ", mvNxtHit=" + lastMoveNextIndexUsed + ", mvNxtMiss=" + lastMoveNextIndexMissed +
+//                    ", binSearches=" + binSearchCount);
+//        }
+
+        lastAddIndex = idx;
+        return idx;
+    }
+    
+    private int findMoveNextIndex(int offset) {
+        int lastIdx = lastMoveNextIndex;
+        boolean hit = false;
+        int marksSize = marks.size();
+        if (lastIdx < marksSize) { // Otherwise the index would be obsolete
+            if (lastIdx == -1) {
+                hit = (marksSize == 0 || marks.get(0).getOffset() > offset);
+            } else { // idx != -1
+                int markOffset = marks.get(lastIdx).getOffset();
+                if (offset == markOffset) { // Verify that idx is first with this offset
+                    hit = (lastIdx == 0 || marks.get(lastIdx - 1).getOffset() < offset);
+                } else if (offset > markOffset) {
+                    if (lastIdx >= marksSize - 1 || offset < marks.get(lastIdx + 1).getOffset()) {
+                        hit = true;
+                    } else { // offset >= markOffset
+                        // Statistically it appears that rather often lastIdx == real-index - 1.
+                        // so check for this case proactively
+                        if (lastIdx >= marksSize - 2 || offset < marks.get(lastIdx + 2).getOffset()) {
+                            lastIdx++; // Use the one index higher
+                            hit = true;
+                        }
+                    }
+                }
+            }
+        }
+        int idx = hit ? lastIdx : indexBeforeOffset(offset);
+
+        // [CACHE] Uncomment the following to debug the cache
+//        if (hit) {
+//            lastMoveNextIndexUsed++;
+//            if (lastIdx == lastMoveNextIndex + 1)
+//                lastMoveNextIndexFwd1++;
+//            // Verify that the hit result is correct
+//            idx = indexBeforeOffset(offset);
+//            if (lastIdx != idx) {
+//                throw new IllegalStateException("lastIdx=" + lastIdx + " != idx=" + idx);
+//            }
+//        } else { // not hit
+//            lastMoveNextIndexMissed++;
+//            StringBuilder sb = new StringBuilder("III o=" + offset + ", idx=" + idx +
+//                    ", last=" + lastIdx + ", marksSize=" + marksSize);
+//            if (lastIdx > 0 && lastIdx <= marksSize) {
+//                    sb.append(", bLast.o=" + marks.get(lastIdx - 1).getOffset());
+//            }
+//            if (lastIdx >= 0 && lastIdx < marksSize) {
+//                    sb.append(", atLast.o=" + marks.get(lastIdx).getOffset());
+//            }
+//            System.err.println(sb.toString());
+//        }
+
+        lastMoveNextIndex = idx;
+        return idx;
+    }
+    
     private void merge(int startOffset, int endOffset, AttributeSet attributes) {
         AttributeSet lastKnownAttributes = null;
-        int startIdx = indexBeforeOffset(startOffset);
+        int startIdx = findAddIndex(startOffset);
         if (startIdx < 0) {
             startIdx = 0;
             marks.add(startIdx, new Mark(startOffset, attributes));
+            lastAddIndex++; // Increase the index after addition
         } else {
             Mark mark = marks.get(startIdx);
             AttributeSet markAttribs = mark.getAttributes();
@@ -514,6 +643,7 @@ public final class OffsetsBag extends AbstractHighlightsContainer {
             } else {
                 startIdx++;
                 marks.add(startIdx, new Mark(startOffset, newAttribs));
+                lastAddIndex++; // Increase the index after addition
             }
         }
 
@@ -529,18 +659,20 @@ public final class OffsetsBag extends AbstractHighlightsContainer {
                 } else {
                     if (mark.getOffset() > endOffset) {
                         marks.add(idx, new Mark(endOffset, lastKnownAttributes));
+                        lastAddIndex++; // Increase the index after addition
                     }
                     break;
                 }
             } else {
                 marks.add(idx, new Mark(endOffset, lastKnownAttributes));
+                lastAddIndex++; // Increase the index after addition
                 break;
             }
         }
     }
 
     private void trim(int startOffset, int endOffset, AttributeSet attributes) {
-        int startIdx = indexBeforeOffset(startOffset);
+        int startIdx = findAddIndex(startOffset);
         int endIdx = indexBeforeOffset(endOffset, startIdx < 0 ? 0 : startIdx, marks.size() - 1);
         
 //        System.out.println("trim(" + startOffset + ", " + endOffset + ") : startIdx = " + startIdx + ", endIdx = " + endIdx);
@@ -556,10 +688,12 @@ public final class OffsetsBag extends AbstractHighlightsContainer {
             } else {
                 startIdx++;
                 marks.add(startIdx, new Mark(startOffset, attributes));
+                lastAddIndex++; // Increase the index after addition
             }
             
             startIdx++;
             marks.add(startIdx, new Mark(endOffset, original));
+            lastAddIndex++; // Increase the index after addition
         } else {
             assert endIdx != -1 : "Invalid range: startIdx = " + startIdx + " endIdx = " + endIdx; //NOI81N
 
@@ -571,11 +705,13 @@ public final class OffsetsBag extends AbstractHighlightsContainer {
                 marks.set(startIdx, new Mark(startOffset, attributes));
             } else {
                 marks.add(startIdx, new Mark(startOffset, attributes));
+                lastAddIndex++; // Increase the index after addition
             }
             startIdx++;
 
             if (startIdx <= endIdx) {
                 marks.remove(startIdx, endIdx - startIdx + 1);
+                lastAddIndex--; // Decrease the index after removal
             }
         }
     }
@@ -614,13 +750,14 @@ public final class OffsetsBag extends AbstractHighlightsContainer {
     }
 
     private int indexBeforeOffset(int offset, int low, int high) {
+        // [CACHE] Uncomment the following to debug the cache
+//        binSearchCount++;
+
         int idx = marks.findElementIndex(offset, low, high);
         if (idx < 0) {
-            idx = -idx - 1; // the insertion point: <0, size()>
-            return idx - 1;
-        } else {
-            return idx;
+            idx = -idx - 2; // the insertion point: <0, size()>
         }
+        return idx;
     }
     
     private int indexBeforeOffset(int offset) {
@@ -672,7 +809,7 @@ public final class OffsetsBag extends AbstractHighlightsContainer {
             synchronized (OffsetsBag.this.marks) {
                 if (checkVersion()) {
                     if (idx == -1) {
-                        idx = indexBeforeOffset(startOffset);
+                        idx = findMoveNextIndex(startOffset);
                         if (idx == -1 && marks.size() > 0) {
                             idx = 0;
                         }

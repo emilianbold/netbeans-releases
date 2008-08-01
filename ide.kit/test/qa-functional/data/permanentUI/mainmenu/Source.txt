@@ -1,0 +1,23 @@
+| Source |                        S (mnemonics)
+==========
+Format                            F
+Remove Trailing Spaces            T
+Shift Left                        L
+Shift Right                       R
+Move Up                           v
+Move Down                         w
+Duplicate Up                      l
+Duplicate Down                    a
+Toggle Comment                    m
+===============================
+Complete Code...                  C
+Insert Code...                    I
+Fix Code...                       x
+Fix Imports...                    o
+Show Method Parameters            S
+Show Documentation                D
+===============================
+Insert Next Matching Word         N
+Insert Previous Matching Word     P
+===============================
+Preprocessor Blocks           >   B

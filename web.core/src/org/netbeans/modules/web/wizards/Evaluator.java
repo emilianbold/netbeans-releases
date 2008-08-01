@@ -43,9 +43,8 @@ package org.netbeans.modules.web.wizards;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Iterator;
-
+import java.util.logging.Logger;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataFolder;
 import org.openide.util.NbBundle;
@@ -56,11 +55,11 @@ import org.netbeans.api.project.Project;
 *
 * @author Ana von Klopp
 */
-
 abstract class Evaluator {
 
+    private static final Logger LOG = Logger.getLogger(Evaluator.class.getName());
+    
     private FileType fileType = null;
-    private static final boolean debug=false;
 
     Evaluator(FileType fileType) { 
 	this.fileType = fileType; 
@@ -80,9 +79,7 @@ abstract class Evaluator {
      * Returns the absolute path to the target class. Used by the
      * wizards to display the result of the selections. 
      */
-
     String getTargetPath(Iterator pathItems) { 
-        
         StringBuffer buffer = new StringBuffer();
 	while(pathItems.hasNext()) { 
 	    buffer.append((String)(pathItems.next())); 
@@ -95,67 +92,46 @@ abstract class Evaluator {
     } 
 
     void checkFile(Iterator pathItems, FileObject root) throws IOException { 
-	if(debug) log("::checkFile() "+root); //NOI18N
+	LOG.finer("checkFile() "+root); //NOI18N
         
 	String pathItem; 
         FileObject fo = root;
         
 	while(pathItems.hasNext()) { 
-
-	    // We're good! 
-
 	    pathItem = (String)(pathItems.next()); 
-	    if(debug) log("\tpath item is " + pathItem); //NOI18N
+	    LOG.finer("path item is " + pathItem); //NOI18N
 
 	    // Path item is a directory, check that we can get it
 	    if(pathItems.hasNext()) {
-		if(debug) log("\tNot the last one"); //NOI18N
+		LOG.finer("Not the last one"); //NOI18N
 		try { 
 		    fo = fo.getFileObject(pathItem, null);
 		}
 		catch(IllegalArgumentException iaex) {
-		    throw new IOException(NbBundle.getMessage(Evaluator.class, 
-							      "MSG_clash_path", 
-							      pathItem)); 
+		    throw new IOException(NbBundle.getMessage(Evaluator.class, "MSG_clash_path", pathItem)); 
 		} 
-                if(debug) log("\tfo="+fo); //NOI18N
-		// We're good! 
 		if(fo == null) return; 
-
-		if(debug)  
-		    log("\tgot next file object " + fo.getPath()); //NOI18N
 			     
 		if(!fo.isFolder()) { 
-		    if(debug) log("\tNot a folder"); //NOI18N
-		    throw new IOException(NbBundle.getMessage(Evaluator.class, 
-							      "MSG_clash_path", 
-							      pathItem)); 
-					 
+		    LOG.finer("Not a folder"); //NOI18N
+		    throw new IOException(NbBundle.getMessage(Evaluator.class, "MSG_clash_path", pathItem)); 
 		}
 	    }
 	    else { 
-		if(debug) log("\tThis is the last one"); //NOI18N
+		LOG.finer("This is the last one"); //NOI18N
 		try { 
 		    fo = fo.getFileObject(pathItem, fileType.getSuffix()); 
 		}
 		catch(IllegalArgumentException iaex) { 
-		    throw new IOException(NbBundle.getMessage(Evaluator.class, 
-							      "MSG_clash_path", 
-							      pathItem)); 
+		    throw new IOException(NbBundle.getMessage(Evaluator.class, "MSG_clash_path", pathItem)); 
 		} 
 		if(fo == null) return; 
 		if(fo.isData())  
-		    throw new IOException(NbBundle.getMessage(Evaluator.class, 
-							      "MSG_file_exists", 
-							      pathItem)); 
+		    throw new IOException(NbBundle.getMessage(Evaluator.class, "MSG_file_exists", pathItem)); 
 	    } 
 	}
-	if(debug) log("\tAt end of checkFile()"); //NOI18N
+	LOG.finer("checkFile() passed"); //NOI18N
     }
-    
-    private static void log(String s) { 
-	System.out.println("Evaluator" + s); 
-    } 
 
 }
 

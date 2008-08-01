@@ -103,9 +103,12 @@ public class DeploymentOptionPanel extends javax.swing.JPanel {
 
         jCheckBox1 = new javax.swing.JCheckBox();
         jlblConfigEffect = new javax.swing.JLabel();
+        jLabel1 = new javax.swing.JLabel();
+        jLabel2 = new javax.swing.JLabel();
 
         setLayout(new java.awt.GridBagLayout());
 
+        org.openide.awt.Mnemonics.setLocalizedText(jCheckBox1, org.openide.util.NbBundle.getMessage(DeploymentOptionPanel.class, "LBL_depThruCA")); // NOI18N
         jCheckBox1.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         jCheckBox1.setMargin(new java.awt.Insets(0, 0, 0, 0));
         jCheckBox1.addActionListener(new java.awt.event.ActionListener() {
@@ -115,19 +118,41 @@ public class DeploymentOptionPanel extends javax.swing.JPanel {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        gridBagConstraints.insets = new java.awt.Insets(5, 10, 5, 5);
         add(jCheckBox1, gridBagConstraints);
+        jCheckBox1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(DeploymentOptionPanel.class, "ASN_Deploy_ChkBx")); // NOI18N
+        jCheckBox1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DeploymentOptionPanel.class, "ASD_Deploy_ChkBx")); // NOI18N
 
         jlblConfigEffect.setText(org.openide.util.NbBundle.getMessage(DeploymentOptionPanel.class, "LBL_ConfigEffect")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        gridBagConstraints.insets = new java.awt.Insets(5, 10, 5, 5);
         add(jlblConfigEffect, gridBagConstraints);
         jlblConfigEffect.getAccessibleContext().setAccessibleName("configEffect");
+
+        jLabel1.setText(org.openide.util.NbBundle.getMessage(DeploymentOptionPanel.class, "LBL_Endpoints")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(5, 10, 5, 5);
+        add(jLabel1, gridBagConstraints);
+        jLabel1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(DeploymentOptionPanel.class, "ASN_Endpoints")); // NOI18N
+        jLabel1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DeploymentOptionPanel.class, "ASD_Endpoints")); // NOI18N
+
+        jLabel2.setText(org.openide.util.NbBundle.getMessage(DeploymentOptionPanel.class, "LBL_Deployment")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(5, 10, 5, 5);
+        add(jLabel2, gridBagConstraints);
+        jLabel2.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(DeploymentOptionPanel.class, "ASN_Deployment")); // NOI18N
+        jLabel2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DeploymentOptionPanel.class, "ASD_Deployment")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void jCheckBox1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCheckBox1ActionPerformed
@@ -140,7 +165,7 @@ public class DeploymentOptionPanel extends javax.swing.JPanel {
             cfgPnl = new EndpointConfigPanel(this.epCfgs);
             java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
             gridBagConstraints.gridx = 0;
-            gridBagConstraints.gridy = 0;
+            gridBagConstraints.gridy = 1;
             gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
             gridBagConstraints.weightx = 0.5;
             gridBagConstraints.weighty = 0.5;
@@ -151,17 +176,19 @@ public class DeploymentOptionPanel extends javax.swing.JPanel {
             msgLbl.setText(NbBundle.getMessage(DeploymentOptionPanel.class, "MSG_NoEndpoints"));//NOI18N
             java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
             gridBagConstraints.gridx = 0;
-            gridBagConstraints.gridy = 0;
+            gridBagConstraints.gridy = 1;
             gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
             gridBagConstraints.weightx = 0.5;
             gridBagConstraints.weighty = 0.5;
-            gridBagConstraints.insets = new java.awt.Insets(25, 5, 25, 5);
+            gridBagConstraints.insets = new java.awt.Insets(5, 10, 10, 5);
             add(msgLbl, gridBagConstraints);
         }
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox jCheckBox1;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jlblConfigEffect;
     // End of variables declaration//GEN-END:variables
 

@@ -205,7 +205,9 @@ public class RepositoryTranslatorImpl implements RepositoryTranslation{
     }    
     
     public static void closeUnit(String unitName, Set<String> requiredUnits) {
-        UnitsCache.updateReqUnitInfo(unitName, requiredUnits);
+        if( requiredUnits != null ) {
+            UnitsCache.updateReqUnitInfo(unitName, requiredUnits);
+        }
         storeUnitIndex(unitName);
         unitNamesCache.removeFileNames(unitName);
     }    

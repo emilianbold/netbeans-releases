@@ -41,22 +41,23 @@
 
 package org.netbeans.tests.j2eeserver.plugin.jsr88;
 
+import java.util.HashMap;
+import java.util.Map;
 import javax.enterprise.deploy.spi.factories.DeploymentFactory;
-import javax.enterprise.deploy.spi.*;
-import javax.enterprise.deploy.spi.exceptions.*;
 
 /**
  *
  * @author  gfink
  */
 public class DepFactory implements DeploymentFactory {
-    java.util.Map managers = new java.util.HashMap();
+    
+    private Map managers = new HashMap();
 
     /** Creates a new instance of DepFactory */
     public DepFactory() {
     }
 
-    public javax.enterprise.deploy.spi.DeploymentManager getDeploymentManager(String str, String str1, String str2) throws javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException {
+    public synchronized javax.enterprise.deploy.spi.DeploymentManager getDeploymentManager(String str, String str1, String str2) throws javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException {
         DepManager manager = (DepManager) managers.get(str + str1 + str2);
         if (manager == null){
             manager = new DepManager(str, str1, str2);
@@ -65,7 +66,7 @@ public class DepFactory implements DeploymentFactory {
         return manager;
     }
     
-    public javax.enterprise.deploy.spi.DeploymentManager getDisconnectedDeploymentManager(String str) throws javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException {
+    public synchronized javax.enterprise.deploy.spi.DeploymentManager getDisconnectedDeploymentManager(String str) throws javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException {
         DepManager manager = (DepManager) managers.get(str);
         if (manager == null) {
             manager = new DepManager(str,"","");

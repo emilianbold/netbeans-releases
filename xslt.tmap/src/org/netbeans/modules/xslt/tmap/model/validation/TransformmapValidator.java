@@ -25,14 +25,12 @@ import org.netbeans.modules.xslt.tmap.model.api.TMapModel;
 import org.openide.filesystems.FileObject;
 
 /**
- *
  * @author Vitaly Bychkov
  * @version 1.0
  */
 public interface TransformmapValidator {
 
-    public String validate(AXIComponent axiComp, String typeParam);
-
+    String validate(AXIComponent axiComp, String typeParam);
     String validate(File transformDescriptor);
     String validate(Project project);
     String validate(TMapModel model, FileObject xsltFo);

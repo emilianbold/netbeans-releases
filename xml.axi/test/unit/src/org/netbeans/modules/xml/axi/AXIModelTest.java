@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.xml.axi;
 
+import java.util.List;
 import junit.framework.*;
 import org.netbeans.modules.xml.axi.util.FileUtil;
 import org.netbeans.modules.xml.axi.util.ModelValidator;
@@ -77,8 +78,12 @@ public class AXIModelTest extends AbstractTestCase {
     }
     
     public static Test suite() {
-        TestSuite suite = new TestSuite(AXIModelTest.class);
-        
+        TestSuite suite = new TestSuite();
+        suite.addTest(new AXIModelTest("testAXIModel"));
+        suite.addTest(new AXIModelTest("testAXIModelForMetaSchema"));
+        suite.addTest(new AXIModelTest("testRecursiveResolve1"));
+        suite.addTest(new AXIModelTest("testRecursiveResolve2"));
+        suite.addTest(new AXIModelTest("testSubstitutionGroup"));
         return suite;
     }        
     
@@ -98,10 +103,43 @@ public class AXIModelTest extends AbstractTestCase {
         assert(schema.getAttributes().size() == 8);
         assert(schema.getChildElements().size() == 12);
         assert(schema.getCompositor() != null);
-//        for(AXIComponent child: schema.getChildElements()) {
-//            System.out.println(child);
-//        }
     }    
+    
+    /**
+     * See http://www.netbeans.org/issues/show_bug.cgi?id=134861.
+     */
+    public void testRecursiveResolve1() throws Exception {
+        loadModel("resources/A.xsd");
+        AXIDocument document = axiModel.getRoot();
+        Element e = findAXIGlobalElement("A");
+        assert(e.getChildElements().size() == 2);
+        assert(e.getChildElements().get(0).getName().equals("C11"));
+        assert(e.getChildElements().get(1).getName().equals("C12"));
+    }
+    
+    /**
+     * Handle substitutionGroup.
+     */
+    public void testSubstitutionGroup() throws Exception {
+        loadModel("resources/misc.xsd");
+        Element e = findAXIGlobalElement("umbrella");
+        List<AbstractElement> children = e.getChildElements();        
+        assert(children.size() == 2);
+        assert("number".equals(children.get(0).getName()));
+        assert("name".equals(children.get(1).getName()));
+    }
+    
+    /**
+     * See http://www.netbeans.org/issues/show_bug.cgi?id=134861.
+     */
+    public void testRecursiveResolve2() throws Exception {
+        loadModel("resources/A_1.xsd");
+        AXIDocument document = axiModel.getRoot();
+        Element e = findAXIGlobalElement("A");
+        assert(e.getChildElements().size() == 2);
+        assert(e.getChildElements().get(0).getName().equals("C11"));
+        assert(e.getChildElements().get(1).getName().equals("C12"));
+    }
     
     /**
      * Tests forward engineering of AXI model.

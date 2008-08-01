@@ -11,9 +11,9 @@
  * http://www.netbeans.org/cddl-gplv2.html
  * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
  * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
+ * License. When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
  * particular file as subject to the "Classpath" exception as provided
  * by Sun in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
@@ -40,39 +40,58 @@
  */
 package org.netbeans.modules.bpel.validation.core;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
+import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.spi.Validation;
 import org.netbeans.modules.xml.xam.spi.Validation.ValidationType;
 import org.netbeans.modules.xml.xam.spi.ValidationResult;
-import org.netbeans.modules.xml.xam.spi.Validator.ResultType;
+
+import org.netbeans.modules.xml.schema.model.ComplexType;
+import org.netbeans.modules.xml.schema.model.GlobalElement;
+import org.netbeans.modules.xml.schema.model.GlobalType;
+import org.netbeans.modules.xml.schema.model.GlobalSimpleType;
+import org.netbeans.modules.xml.schema.model.Sequence;
+import org.netbeans.modules.xml.schema.model.SequenceDefinition;
+
+import org.netbeans.modules.xml.wsdl.model.Message;
+import org.netbeans.modules.xml.wsdl.model.Part;
+import org.netbeans.modules.xml.wsdl.model.extensions.bpel.validation.ValidationUtil;
+import org.netbeans.modules.soa.validation.core.Validator;
 
 import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.bpel.model.api.CreateInstanceActivity;
 import org.netbeans.modules.bpel.model.api.Process;
-import org.netbeans.modules.bpel.model.api.support.Initiate;
+import org.netbeans.modules.bpel.model.api.Variable;
+import org.netbeans.modules.bpel.model.api.VariableDeclaration;
+import org.netbeans.modules.bpel.model.api.references.SchemaReference;
+import org.netbeans.modules.bpel.model.api.references.WSDLReference;
+import org.netbeans.modules.bpel.model.api.support.SimpleBpelModelVisitor;
 import org.netbeans.modules.bpel.model.api.support.TBoolean;
-import static org.netbeans.modules.soa.ui.util.UI.*;
+import static org.netbeans.modules.xml.ui.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
  * @version 2008.02.15
  */
-public abstract class BpelValidator extends CoreValidator {
+public abstract class BpelValidator extends Validator {
 
-  public synchronized ValidationResult validate(Model model, Validation validation, ValidationType type) {
-    if ( !(model instanceof BpelModel)) {
+  protected abstract SimpleBpelModelVisitor getVisitor();
+
+  public synchronized ValidationResult validate(Model m, Validation validation, ValidationType type) {
+    if ( !(m instanceof BpelModel)) {
       return null;
     }
-    final BpelModel bpelModel = (BpelModel) model;
+    BpelModel model = (BpelModel) m;
     
-    if (bpelModel.getState() == Model.State.NOT_WELL_FORMED) {
+    if (model.getState() == Model.State.NOT_WELL_FORMED) {
+      return null;
+    }
+    final Process process = model.getProcess();
+    
+    if (process == null) {
       return null;
     }
     init(validation, type);
@@ -80,23 +99,13 @@ public abstract class BpelValidator extends CoreValidator {
     Runnable run = new Runnable() {
       public void run() {
         startTime();
-        Process process = bpelModel.getProcess();
-
-        if (process != null) {
-          process.accept(BpelValidator.this);
-        }
+        process.accept(getVisitor());
         endTime(getDisplayName());
       }
     };
-    bpelModel.invoke(run);
-//if (getName().contains("custom")) {
-//out();
-//out();
-//out("!!! ERRORS: " + getResultItems().size());
-//out();
-//out();
-//}
-    return new ValidationResult(getResultItems(), Collections.singleton(model));
+    model.invoke(run);
+
+    return createValidationResult(model);
   }
 
   protected final boolean isCreateInstanceYes(CreateInstanceActivity activity) {
@@ -109,6 +118,136 @@ public abstract class BpelValidator extends CoreValidator {
     }
     if (component.getParent() instanceof CreateInstanceActivity) {
       return (CreateInstanceActivity) component.getParent();
+    }
+    return null;
+  }
+
+  protected final Component getVariableType(Variable variable) {
+    Component type = getVariableDeclarationType(variable);
+
+    if (type instanceof Message) {
+      Collection<Part> parts = ((Message) type).getParts();
+
+      if (parts != null && parts.size() == 1) {
+        type = getType(parts.iterator().next());
+      }
+    }
+    return ValidationUtil.getBasedSimpleType(checkComplexType(getTypeOfElement(checkElement(type))));
+  }
+
+  private Component checkElement(Component component) {
+//out("CHECK E: " + component);
+    if (component == null) {
+      return null;
+    }
+    List children = component.getChildren();
+
+    if (children == null || children.size() != 1) {
+      return component;
+    }
+//out("  children: " + children);
+    Object object = children.get(0);
+//out("  object: " + object);
+
+    if ( !(object instanceof Component)) {
+      return component;
+    }
+    Component type = getComplexType((Component) object);
+
+    if (type == null) {
+      return component;
+    }
+    return type;
+  }
+
+  private Component checkComplexType(Component component) {
+    Component type = getComplexType(component);
+
+    if (type == null) {
+      return component;
+    }
+    return type;
+  }
+
+  private Component getComplexType(Component component) {
+//out("CHECK T: " + component);
+
+    if ( !(component instanceof ComplexType)) {
+      return null;
+    }
+    List children = component.getChildren();
+//out("  children: " + children);
+
+    if (children == null || children.size() != 1) {
+      return null;
+    }
+    Object object = children.get(0);
+//out("  object: " + object);
+
+    if ( !(object instanceof Sequence)) {
+      return null;
+    }
+    Component sequenceType = getSequenceType((Sequence) object);
+//out("  sequenceType: " + sequenceType);
+
+    if (sequenceType == null) {
+      return null;
+    }
+    return sequenceType;
+  }
+
+  private Component getSequenceType(Sequence sequence) {
+    List<SequenceDefinition> content = sequence.getContent();
+
+    if (content == null || content.size() == 0) {
+      return null;
+    }
+    Component type = null;
+
+    for (SequenceDefinition component : content) {
+      type = getTypeOfElement(component);
+
+      if ( !(type instanceof GlobalSimpleType)) {
+        return null;
+      }
+    }
+    return type;
+  }
+
+  protected final Component getVariableDeclarationType(VariableDeclaration declaration) {
+    if (declaration == null) {
+      return null;
+    }
+    // message type
+    WSDLReference<Message> wsdlRef = declaration.getMessageType();
+
+    if (wsdlRef != null) {
+      Message message = wsdlRef.get();
+
+      // # 130764
+      if (message != null) {
+        return message;
+      }
+    }
+    // element
+    SchemaReference<GlobalElement> elementRef = declaration.getElement();
+
+    if (elementRef != null) {
+      GlobalElement element = elementRef.get();
+
+      if (element != null) {
+        return element;
+      }
+    }
+    // type
+    SchemaReference<GlobalType> typeRef = declaration.getType();
+
+    if (typeRef != null) {
+      GlobalType type = typeRef.get();
+
+      if (type != null) {
+        return type;
+      }
     }
     return null;
   }

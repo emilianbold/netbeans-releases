@@ -60,7 +60,7 @@ public class APTGnuCFilter extends APTStdCFilter {
         filter("__asm", APTTokenTypes.LITERAL___asm); // NOI18N
         filter("__asm__", APTTokenTypes.LITERAL___asm__); // NOI18N
         filter("__attribute__", APTTokenTypes.LITERAL___attribute__); // NOI18N
-        filter("__complex__", APTTokenTypes.LITERAL___complex); // NOI18N
+        filter("__complex__", APTTokenTypes.LITERAL___complex__); // NOI18N
         filter("__const", APTTokenTypes.LITERAL___const); // NOI18N
         filter("__const__", APTTokenTypes.LITERAL___const__); // NOI18N
         filter("__imag__", APTTokenTypes.LITERAL___imag); // NOI18N

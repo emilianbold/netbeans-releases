@@ -196,8 +196,8 @@ public class DevelopingApplication extends UMLTestCase {
         assertTrue( new AssertTrueOperations(getDepositOperation, setDepositOperation));
         
         
-        DiagramElementOperator checkingClass = bankClassDiagram.putElementOnDiagram(CLASS_NAME_CHECKING, ElementTypes.CLASS);
-        DiagramElementOperator accountTestClass = bankClassDiagram.putElementOnDiagram(CLASS_NAME_ACCOUNT_TEST, ElementTypes.CLASS);
+        DiagramElementOperator checkingClass = bankClassDiagram.putElementOnDiagram(CLASS_NAME_CHECKING, ElementTypes.CLASS, 350, 100);
+        DiagramElementOperator accountTestClass = bankClassDiagram.putElementOnDiagram(CLASS_NAME_ACCOUNT_TEST, ElementTypes.CLASS, 350, 300);
         
         try{ Thread.sleep(2000); } catch (Exception e){}
         

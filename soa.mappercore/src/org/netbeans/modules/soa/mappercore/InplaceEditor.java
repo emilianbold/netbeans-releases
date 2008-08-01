@@ -44,6 +44,8 @@ public class InplaceEditor extends MapperPropertyAccess implements
     
     private Map<Class, VertexItemEditor> editors = new HashMap<Class, 
             VertexItemEditor>();
+    private Map<Class, CustomVertexItemEditor> customEditors 
+            = new HashMap<Class, CustomVertexItemEditor>();
     
     private VertexItemEditor currentEditor = null;
     private TreePath currentTreePath = null;
@@ -68,12 +70,27 @@ public class InplaceEditor extends MapperPropertyAccess implements
             editors.put(valueType, editor);
         }
     }
+    
+    
+    public void setCustomVertexItemEditor(Class valueType, 
+            CustomVertexItemEditor customEditor)
+    {
+        if (customEditor == null) {
+            customEditors.remove(valueType);
+        } else {
+            customEditors.put(valueType, customEditor);
+        }
+    }
 
     
     public VertexItemEditor getVertexItemEditor(Class valueType) {
         return editors.get(valueType);
     }
     
+    
+    public CustomVertexItemEditor getCustomVertexItemEditor(Class valueType) {
+        return customEditors.get(valueType);
+    }
     
     public void startEdit(TreePath treePath, VertexItem vertexItem) {
         cancelEdit();
@@ -88,17 +105,25 @@ public class InplaceEditor extends MapperPropertyAccess implements
         if (valueType == null) return;
         
         currentEditor = editors.get(valueType);
-        currentEditorComponent = currentEditor.getVertexItemEditorComponent(
-                getMapper(), treePath, vertexItem);
-        currentTreePath = treePath;
-        currentVertexItem = vertexItem;
         
-        canvas.add(currentEditorComponent);
-        
-        currentEditor.addEditorListener(this);
-        currentEditorComponent.requestFocusInWindow();
-        
-        layoutEditor();
+        if (currentEditor == null) {
+            CustomVertexItemEditor customEditor = customEditors.get(valueType);
+            if (customEditor != null) {
+                customEditor.edit(canvas.getMapper(), treePath, vertexItem);
+            }
+        } else {
+            currentEditorComponent = currentEditor.getVertexItemEditorComponent(
+                    getMapper(), treePath, vertexItem);
+            currentTreePath = treePath;
+            currentVertexItem = vertexItem;
+
+            canvas.add(currentEditorComponent);
+
+            currentEditor.addEditorListener(this);
+            currentEditorComponent.requestFocusInWindow();
+
+            layoutEditor();
+        }
     }
     
     

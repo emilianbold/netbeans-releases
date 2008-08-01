@@ -40,15 +40,20 @@
  */
 package org.netbeans.modules.spring.beans.hyperlink;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import javax.swing.text.Document;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.TokenItem;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.spring.beans.editor.ContextUtilities;
 import org.netbeans.modules.spring.beans.editor.DocumentContext;
-import org.netbeans.modules.spring.beans.editor.EditorContextFactory;
-import org.netbeans.modules.xml.text.syntax.SyntaxElement;
+import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils;
 import org.netbeans.modules.xml.text.syntax.dom.Tag;
 import org.openide.filesystems.FileObject;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
 
 /**
  *
@@ -56,13 +61,18 @@ import org.openide.filesystems.FileObject;
  */
 public final class HyperlinkEnv {
 
-    private Document document;
-    private SyntaxElement currentTag;
+    private BaseDocument baseDocument;
     private String attribName;
     private String valueString;
     private int offset;
-    private TokenItem token;
-    private DocumentContext documentContext;
+    private FileObject fileObject;
+    private Map<String, String> declaredNamespaces;
+    private int tokenStartOffset;
+    private int tokenEndOffset;
+    private String tokenImage;
+    private int beanTagOffset;
+    private String tagName;
+    private Map<String, String> beanAttribs;
 
     public static enum Type {
 
@@ -83,44 +93,75 @@ public final class HyperlinkEnv {
     private Type type = Type.NONE;
                   
     public HyperlinkEnv(Document document, int offset) {
-        this.document = document;
+        this.baseDocument = (BaseDocument) document;
+        this.fileObject = NbEditorUtilities.getFileObject(baseDocument);
         this.offset = offset;
-        this.documentContext = EditorContextFactory.getDocumentContext(document, offset);
-        if(documentContext.isValid()) {
-            currentTag = documentContext.getCurrentElement();
-            attribName = ContextUtilities.getAttributeTokenImage(documentContext);
-            token = documentContext.getCurrentToken();
-            
-            if (ContextUtilities.isValueToken(documentContext.getCurrentToken())) {
-                type = Type.ATTRIB_VALUE;
-                currentTag = (Tag) documentContext.getCurrentElement();
-                attribName = ContextUtilities.getAttributeTokenImage(documentContext);
-                token = documentContext.getCurrentToken();
-                valueString = token.getImage();
-                valueString = valueString.substring(1, valueString.length() - 1); // Strip quotes
-            } else if (ContextUtilities.isAttributeToken(documentContext.getCurrentToken())) {
-                type = Type.ATTRIB;
-                currentTag = (Tag) documentContext.getCurrentElement();
-                token = documentContext.getCurrentToken();
-                attribName = token.getImage();
-            }
+        
+        baseDocument.readLock();
+        try {
+            initialize();
+        } finally {
+            baseDocument.readUnlock();
         }
     }
 
+    private void initialize() {
+        Tag currentTag = null;
+        DocumentContext documentContext = DocumentContext.create(baseDocument, offset);
+        if (documentContext == null) {
+            return;
+        }
+        
+        declaredNamespaces = documentContext.getDeclaredNamespacesMap();
+
+        TokenItem token = documentContext.getCurrentToken();
+        if (token == null) {
+            return;
+        }
+        
+        tokenStartOffset = token.getOffset();
+        tokenEndOffset = tokenStartOffset + token.getImage().length();
+        tokenImage = token.getImage();
+        
+        if (ContextUtilities.isValueToken(token)
+                || ContextUtilities.isAttributeToken(documentContext.getCurrentToken())) {
+            currentTag = (Tag) documentContext.getCurrentElement();
+            Tag beanTag = (Tag) SpringXMLConfigEditorUtils.getBean(currentTag);
+            if (beanTag != null) {
+                beanTagOffset = beanTag.getElementOffset();
+                beanAttribs = collectAttributes(beanTag);
+            }
+            tagName = currentTag.getNodeName();
+        }
+        
+        if (ContextUtilities.isValueToken(token)) {
+            type = Type.ATTRIB_VALUE;
+            attribName = ContextUtilities.getAttributeTokenImage(documentContext);
+            valueString = token.getImage();
+            valueString = valueString.substring(1, valueString.length() - 1); // Strip quotes
+        } else if (ContextUtilities.isAttributeToken(documentContext.getCurrentToken())) {
+            type = Type.ATTRIB;
+            attribName = token.getImage();
+        }
+    }
+    
+    private Map<String, String> collectAttributes(Tag currentTag) {
+        Map<String, String> attribsMap = new HashMap<String, String>();
+        NamedNodeMap attribsNodeMap = currentTag.getAttributes();
+        for(int i = 0; i < attribsNodeMap.getLength(); i++) {
+            Node n = attribsNodeMap.item(i);
+            attribsMap.put(n.getNodeName(), n.getNodeValue());
+        }
+        
+        return Collections.unmodifiableMap(attribsMap);
+     }
+    
     public String getAttribName() {
         return attribName;
     }
 
-    public Tag getCurrentTag() {
-        return currentTag instanceof Tag ? (Tag) currentTag : null;
-    }
-
-    public Document getDocument() {
-        return document;
-    }
-
     public String getTagName() {
-        return getCurrentTag() != null ? getCurrentTag().getTagName() : null;
+        return tagName;
     }
 
     public String getValueString() {
@@ -131,19 +172,35 @@ public final class HyperlinkEnv {
         return type;
     }
 
-    public TokenItem getToken() {
-        return token;
-    }
-
     public int getOffset() {
         return offset;
     }
     
-    public DocumentContext getDocumentContext() {
-        return this.documentContext;
+    public FileObject getFileObject() {
+        return fileObject;
+    }
+
+    public int getTokenStartOffset() {
+        return tokenStartOffset;
+    }
+
+    public int getTokenEndOffset() {
+        return tokenEndOffset;
+    }
+
+    public String getTokenImage() {
+        return tokenImage;
+    }
+
+    public Map<String, String> getBeanAttributes() {
+        return beanAttribs;
+    }
+
+    public int getBeanTagOffset() {
+        return beanTagOffset;
     }
     
-    public FileObject getFile() {
-        return NbEditorUtilities.getFileObject(document);
+    public String lookupNamespacePrefix(String prefix) {
+        return declaredNamespaces.get(prefix);
     }
 }

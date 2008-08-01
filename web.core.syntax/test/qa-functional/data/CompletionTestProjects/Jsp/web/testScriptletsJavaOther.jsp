@@ -9,12 +9,14 @@
     <body>
 
     <h1>JSP Scriptlets Code Completion Page</h1>
-
+<%
+    application.getClass();
+%>
 <%-- Java completion for HttpSession object methods --%>
 <%--CC
 <% request.getSession().|
 void setAttribute (String arg0 , Object arg1 )
-<% request.getSession().setAttribute(arg0, arg1)
+<% request.getSession().setAttribute(arg0, arg1);
 --%>
 
 <%-- Java completion for session object --%>

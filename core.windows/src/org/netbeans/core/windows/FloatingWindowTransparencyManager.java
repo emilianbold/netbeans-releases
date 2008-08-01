@@ -56,7 +56,7 @@ import org.openide.windows.TopComponent;
  * 
  * @author S. Aubrecht
  */
-class FloatingWindowTransparencyManager {
+public class FloatingWindowTransparencyManager {
 
     private static FloatingWindowTransparencyManager theInstance;
     
@@ -79,7 +79,11 @@ class FloatingWindowTransparencyManager {
         if( null == topComponentRegistryListener ) {
             topComponentRegistryListener = new PropertyChangeListener() {
                 public void propertyChange(PropertyChangeEvent evt) {
-                    toggleFloatingWindowTransparency();
+                    SwingUtilities.invokeLater( new Runnable() {
+                        public void run() {
+                            toggleFloatingWindowTransparency();
+                        }
+                    });
                 }
             };
             TopComponent.getRegistry().addPropertyChangeListener(topComponentRegistryListener);
@@ -108,7 +112,8 @@ class FloatingWindowTransparencyManager {
                 //turn off transparency for active floating window
                 ModeImpl currentActiveMode = (ModeImpl)wm.findMode( currentActive );
                 if( null != currentActiveMode 
-                        && currentActiveMode.getState() == Constants.MODE_STATE_SEPARATED ) {
+                        && currentActiveMode.getState() == Constants.MODE_STATE_SEPARATED
+                        && currentActiveMode.getKind() != Constants.MODE_KIND_EDITOR) {
 
                     Window w = SwingUtilities.windowForComponent(currentActive);
                     if( null != w ) {
@@ -142,7 +147,8 @@ class FloatingWindowTransparencyManager {
     private void turnTransparencyOff() {
         NativeWindowSystem nws = NativeWindowSystem.getDefault();
         for( ModeImpl m : WindowManagerImpl.getInstance().getModes() ) {
-            if( m.getState() != Constants.MODE_STATE_SEPARATED )
+            if( m.getState() != Constants.MODE_STATE_SEPARATED
+                    || m.getKind() == Constants.MODE_KIND_EDITOR )
                 continue;
             TopComponent tc = m.getSelectedTopComponent();
             if( null != tc ) {
@@ -158,7 +164,9 @@ class FloatingWindowTransparencyManager {
         float alpha = WinSysPrefs.HANDLER.getFloat(WinSysPrefs.TRANSPARENCY_FLOATING_ALPHA, 0.5f);
         NativeWindowSystem nws = NativeWindowSystem.getDefault();
         for( ModeImpl m : WindowManagerImpl.getInstance().getModes() ) {
-            if( m.getState() != Constants.MODE_STATE_SEPARATED || m.equals( activeMode ) )
+            if( m.getState() != Constants.MODE_STATE_SEPARATED 
+                    || m.equals( activeMode )
+                    || m.getKind() == Constants.MODE_KIND_EDITOR )
                 continue;
             TopComponent tc = m.getSelectedTopComponent();
             if( null != tc ) {

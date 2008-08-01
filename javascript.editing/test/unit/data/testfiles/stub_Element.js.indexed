@@ -1,12 +1,7 @@
 
 
 Document 0
-Delete:  source : <TESTURL>/stub_Element.js
-
-
-
-Document 1
-Indexed:
+Searchable Keys:
   base : addeventlistener;Element;addEventListener;|DOCUMENTED|FUNCTION|;type,listener,useCapture;0;be9c;;void;
   base : appendchild;Element;appendChild;|DOCUMENTED|FUNCTION|;child;0;e0bd;;void;
   base : attributes;Element;attributes;|DOCUMENTED|PROPERTY|;;0;edff;;;
@@ -191,4 +186,4 @@ Indexed:
   fqn : element.textcontent;;Element.textContent;|DOCUMENTED|PROPERTY|;;0;552de;;;
   fqn : element;;Element;|DOCUMENTED|PROPERTY|;;0;0;;;
 
-Not Indexed:
+Not Searchable Keys:

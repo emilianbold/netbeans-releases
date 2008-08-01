@@ -68,7 +68,6 @@ public class UnifiedDiffTest extends TestCase {
         //data.root.dir defined in project.properties
         dataRootDir = new File(System.getProperty("data.root.dir"));
         diffProvider = new BuiltInDiffProvider();
-        diffProvider.setTrimLines(false);
         initPermutations();
     }
 

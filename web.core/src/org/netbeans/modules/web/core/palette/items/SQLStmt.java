@@ -40,13 +40,13 @@
  */
 
 package org.netbeans.modules.web.core.palette.items;
-import javax.swing.text.JTextComponent;
 
+import javax.swing.text.JTextComponent;
 
 
 /**
  *
- * @author Libor Kotouc
+ * @author Libor Kotouc, Petr Slechta
  */
 public class SQLStmt {
 
@@ -60,53 +60,68 @@ public class SQLStmt {
     private String stmt;
 
     private String helpID;
+    private boolean mayVariableNameBeEmpty;
 
-    public SQLStmt(String variable, int scopeIndex, String dataSource, String stmt, String helpID) {
-                   
+    /**************************************************************************/
+    public SQLStmt(String variable, int scopeIndex, String dataSource, String stmt,
+            String helpID, boolean mayVariableNameBeEmpty)
+    {
         this.variable = variable;
         this.scopeIndex = scopeIndex;
         this.dataSource = dataSource;
         this.stmt = stmt;
-        
         this.helpID = helpID;
+        this.mayVariableNameBeEmpty = mayVariableNameBeEmpty;
     }
 
+    /**************************************************************************/
+    public SQLStmt(String variable, int scopeIndex, String dataSource, String stmt, String helpID) {
+        this(variable, scopeIndex, dataSource, stmt, helpID, true);
+    }
+
+    /**************************************************************************/
     public boolean customize(JTextComponent target, String displayName, String stmtLabel, String stmtACSN, String stmtACSD) {
-
-        SQLStmtCustomizer c = new SQLStmtCustomizer(this, target, displayName, stmtLabel, stmtACSN, stmtACSD, helpID);
-        boolean accept = c.showDialog();
-        
-        return accept;
+        SQLStmtCustomizer c =
+                new SQLStmtCustomizer(this, target, displayName, stmtLabel, stmtACSN, stmtACSD, helpID, mayVariableNameBeEmpty);
+        return c.showDialog();
     }
 
+    /**************************************************************************/
     public String getVariable() {
         return variable;
     }
 
+    /**************************************************************************/
     public void setVariable(String variable) {
         this.variable = variable;
     }
 
+    /**************************************************************************/
     public int getScopeIndex() {
         return scopeIndex;
     }
 
+    /**************************************************************************/
     public void setScopeIndex(int scopeIndex) {
         this.scopeIndex = scopeIndex;
     }
 
+    /**************************************************************************/
     public String getStmt() {
         return stmt;
     }
 
+    /**************************************************************************/
     public void setStmt(String query) {
         this.stmt = query;
     }
 
+    /**************************************************************************/
     public String getDataSource() {
         return dataSource;
     }
 
+    /**************************************************************************/
     public void setDataSource(String dataSource) {
         this.dataSource = dataSource;
     }

@@ -58,9 +58,6 @@ public class TxFactories {
         public Set<QName> getElementQNames() {
             return Collections.singleton(TxQName.ATASSERTION.getQName());
         }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new ATAssertionImpl(context.getModel()));
-        }
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {
             return new ATAssertionImpl(context.getModel(), element);
@@ -71,9 +68,6 @@ public class TxFactories {
         @Override
         public Set<QName> getElementQNames() {
             return Collections.singleton(TxQName.ATALWAYSCAPABILITY.getQName());
-        }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new ATAlwaysCapabilityImpl(context.getModel()));
         }
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {

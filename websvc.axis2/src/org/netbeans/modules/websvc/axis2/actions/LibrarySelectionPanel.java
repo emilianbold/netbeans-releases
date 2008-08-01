@@ -105,7 +105,7 @@ public class LibrarySelectionPanel extends javax.swing.JPanel {
                     }
                     if (!found) {
                         try {
-                            selectedLibraries.add(new URL("file:"+ref.getNameAttr()));
+                            selectedLibraries.add(new URL("file:"+ref.getNameAttr())); // NOI18N
                         } catch (MalformedURLException ex) {
                             
                         }
@@ -153,16 +153,14 @@ public class LibrarySelectionPanel extends javax.swing.JPanel {
 
         listAvailable.setCellRenderer(ENTITY_LIST_RENDERER);
         jScrollPane1.setViewportView(listAvailable);
-        listAvailable.getAccessibleContext().setAccessibleName("null");
-        listAvailable.getAccessibleContext().setAccessibleDescription("null");
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/websvc/axis2/actions/Bundle"); // NOI18N
+        listAvailable.getAccessibleContext().setAccessibleDescription(bundle.getString("DESC_AvailableEntityClasses")); // NOI18N
 
         listSelected.setCellRenderer(ENTITY_LIST_RENDERER);
         jScrollPane2.setViewportView(listSelected);
-        listSelected.getAccessibleContext().setAccessibleName("null");
-        listSelected.getAccessibleContext().setAccessibleDescription("null");
+        listSelected.getAccessibleContext().setAccessibleDescription(bundle.getString("DESC_SelectedEntityClasses")); // NOI18N
 
         labelAvailableLibraries.setLabelFor(listAvailable);
-        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/websvc/axis2/actions/Bundle"); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(labelAvailableLibraries, bundle.getString("LBL_AvailableLibraries")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(buttonAdd, org.openide.util.NbBundle.getMessage(LibrarySelectionPanel.class, "LBL_Add")); // NOI18N
@@ -190,7 +188,6 @@ public class LibrarySelectionPanel extends javax.swing.JPanel {
         });
 
         org.openide.awt.Mnemonics.setLocalizedText(buttonRemoveAll, org.openide.util.NbBundle.getMessage(LibrarySelectionPanel.class, "LBL_RemoveAll")); // NOI18N
-        buttonRemoveAll.setActionCommand("null");
         buttonRemoveAll.setEnabled(false);
         buttonRemoveAll.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -225,14 +222,10 @@ public class LibrarySelectionPanel extends javax.swing.JPanel {
                 .addContainerGap(108, Short.MAX_VALUE))
         );
 
-        buttonAdd.getAccessibleContext().setAccessibleName("null");
-        buttonAdd.getAccessibleContext().setAccessibleDescription("null");
-        buttonRemove.getAccessibleContext().setAccessibleName("null");
-        buttonRemove.getAccessibleContext().setAccessibleDescription("null");
-        buttonAddAll.getAccessibleContext().setAccessibleName("null");
-        buttonAddAll.getAccessibleContext().setAccessibleDescription("null");
-        buttonRemoveAll.getAccessibleContext().setAccessibleName("null");
-        buttonRemoveAll.getAccessibleContext().setAccessibleDescription("null");
+        buttonAdd.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(LibrarySelectionPanel.class, "DESC_AddEntityClass")); // NOI18N
+        buttonRemove.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(LibrarySelectionPanel.class, "DESC_RemoveEntityClass")); // NOI18N
+        buttonAddAll.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(LibrarySelectionPanel.class, "DESC_AddAllEntityClasses")); // NOI18N
+        buttonRemoveAll.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(LibrarySelectionPanel.class, "DESC_RemoveAllEntityClasses")); // NOI18N
 
         labelSelectedLibraries.setLabelFor(listSelected);
         org.openide.awt.Mnemonics.setLocalizedText(labelSelectedLibraries, bundle.getString("LBL_SelectedLibraries")); // NOI18N
@@ -280,16 +273,14 @@ public class LibrarySelectionPanel extends javax.swing.JPanel {
                     .addContainerGap()))
         );
 
-        labelAvailableLibraries.getAccessibleContext().setAccessibleName("null");
-        labelAvailableLibraries.getAccessibleContext().setAccessibleDescription("null");
-        panelButtons.getAccessibleContext().setAccessibleName("null");
-        panelButtons.getAccessibleContext().setAccessibleDescription("null");
-        labelSelectedLibraries.getAccessibleContext().setAccessibleName("null");
-        labelSelectedLibraries.getAccessibleContext().setAccessibleDescription("null");
+        labelAvailableLibraries.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(LibrarySelectionPanel.class, "DESC_AvailableEntityClasses")); // NOI18N
+        labelSelectedLibraries.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(LibrarySelectionPanel.class, "DESC_SelectedEntityClasses")); // NOI18N
 
         jTabbedPane1.addTab(org.openide.util.NbBundle.getMessage(LibrarySelectionPanel.class, "LBL_Libraries"), jPanel1); // NOI18N
 
         add(jTabbedPane1, java.awt.BorderLayout.CENTER);
+
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(LibrarySelectionPanel.class, "DESC_LibrariesPanel")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
 private void removeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeActionPerformed

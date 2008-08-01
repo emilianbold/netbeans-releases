@@ -42,19 +42,22 @@
 package org.netbeans.modules.viewmodel;
 
 import java.lang.ref.WeakReference;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.WeakHashMap;
+import javax.swing.JTree;
 import javax.swing.SwingUtilities;
+import javax.swing.event.TreeExpansionEvent;
+import javax.swing.event.TreeExpansionListener;
 import org.netbeans.spi.viewmodel.Models;
 
-import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.ModelEvent;
 import org.netbeans.spi.viewmodel.ModelListener;
 
+import org.netbeans.spi.viewmodel.Models.TreeFeatures;
+import org.openide.explorer.view.TreeView;
+import org.openide.explorer.view.Visualizer;
+import org.openide.nodes.Children;
 import org.openide.nodes.Node;
-import org.openide.util.HelpCtx;
-import org.openide.util.RequestProcessor;
+import org.openide.util.Exceptions;
 
 
 /**
@@ -72,7 +75,7 @@ public class TreeModelRoot implements ModelListener {
     private Models.CompoundModel model;
     private TreeModelNode rootNode;
     private WeakHashMap<Object, WeakReference<TreeModelNode>> objectToNode = new WeakHashMap<Object, WeakReference<TreeModelNode>>();
-    private TreeTable treeTable;
+    private DefaultTreeFeatures treeFeatures;
     
     /** The children evaluator for view if this root. */
     private TreeModelNode.LazyEvaluator childrenEvaluator;
@@ -80,14 +83,14 @@ public class TreeModelRoot implements ModelListener {
     private TreeModelNode.LazyEvaluator valuesEvaluator;
 
 
-    public TreeModelRoot (Models.CompoundModel model, TreeTable treeTable) {
+    public TreeModelRoot (Models.CompoundModel model, TreeView treeView) {
         this.model = model;
-        this.treeTable = treeTable;
+        this.treeFeatures = new DefaultTreeFeatures(treeView);
         model.addModelListener (this);
     }
     
-    public TreeTable getTreeTable () {
-        return treeTable;
+    public TreeFeatures getTreeFeatures () {
+        return treeFeatures;
     }
 
     public TreeModelNode getRootNode () {
@@ -175,11 +178,138 @@ public class TreeModelRoot implements ModelListener {
         return valuesEvaluator;
     }
 
-    public void destroy () {
-        if (model != null)
+    public synchronized void destroy () {
+        if (model != null) {
             model.removeModelListener (this);
+            treeFeatures.destroy();
+            treeFeatures = null;
+        }
         model = null;
         objectToNode = new WeakHashMap<Object, WeakReference<TreeModelNode>>();
     }
+
+    public synchronized Models.CompoundModel getModel() {
+        return model;
+    }
+
+    /**
+     * Implements set of tree view features.
+     */
+    private final class DefaultTreeFeatures extends TreeFeatures implements TreeExpansionListener {
+        
+        private TreeView view;
+        
+        private DefaultTreeFeatures (TreeView view) {
+            this.view = view;
+            JTree tree;
+            try {
+                java.lang.reflect.Field treeField = TreeView.class.getDeclaredField("tree");
+                treeField.setAccessible(true);
+                tree = (JTree) treeField.get(view);
+            } catch (Exception ex) {
+                Exceptions.printStackTrace(ex);
+                return ;
+            }
+            tree.addTreeExpansionListener(this);
+        }
+        
+        public void destroy() {
+            JTree tree;
+            try {
+                java.lang.reflect.Field treeField = TreeView.class.getDeclaredField("tree");
+                treeField.setAccessible(true);
+                tree = (JTree) treeField.get(view);
+            } catch (Exception ex) {
+                Exceptions.printStackTrace(ex);
+                return ;
+            }
+            tree.removeTreeExpansionListener(this);
+        }
+        
+        /**
+         * Returns <code>true</code> if given node is expanded.
+         *
+         * @param node a node to be checked
+         * @return <code>true</code> if given node is expanded
+         */
+        public boolean isExpanded (
+            Object node
+        ) {
+            Node n = findNode (node);
+            if (n == null) return false; // Something what does not exist is not expanded ;-)
+            return view.isExpanded (n);
+        }
+
+        /**
+         * Expands given list of nodes.
+         *
+         * @param node a list of nodes to be expanded
+         */
+        public void expandNode (
+            Object node
+        ) {
+            Node n = findNode (node);
+            if (n != null)
+                view.expandNode (n);
+
+        }
+
+        /**
+         * Collapses given node.
+         *
+         * @param node a node to be expanded
+         */
+        public void collapseNode (
+            Object node
+        ) {
+            Node n = findNode (node);
+            if (n != null)
+                view.collapseNode (n);
+        }
+        
+        /**
+          * Called whenever an item in the tree has been expanded.
+          */
+        public void treeExpanded (TreeExpansionEvent event) {
+            Models.CompoundModel model = getModel();
+            if (model != null) {
+                model.nodeExpanded (initExpandCollapseNotify(event));
+            }
+        }
+
+        /**
+          * Called whenever an item in the tree has been collapsed.
+          */
+        public void treeCollapsed (TreeExpansionEvent event) {
+            Models.CompoundModel model = getModel();
+            if (model != null) {
+                model.nodeCollapsed (initExpandCollapseNotify(event));
+            }
+        }
+
+        private Object initExpandCollapseNotify(TreeExpansionEvent event) {
+            Node node = Visualizer.findNode(event.getPath ().getLastPathComponent());
+            Object obj = node.getLookup().lookup(Object.class);
+            Object actOn;
+            node = node.getParentNode();
+            if (node == null) {
+                actOn = new Integer(0);
+            } else {
+                Children ch = node.getChildren();
+                if (ch instanceof TreeModelNode.TreeModelChildren) {
+                    actOn = ((TreeModelNode.TreeModelChildren) ch).getTreeDepth();
+                } else {
+                    actOn = ch;
+                }
+            }
+            Models.CompoundModel model = getModel();
+            if (model != null) {
+                DefaultTreeExpansionManager.get(model).setChildrenToActOn(actOn);
+            }
+            return obj;
+        }
+
+    }
+
 }
 

@@ -105,6 +105,26 @@ is the proper place.
 
 <changes>
 
+    <change id="winsysinfo_for_tabbed_container">
+      <api name="tabcontrol"/>
+      <summary>Added new abstract class WinsysInfoForTabbedContainer which can 
+      adjust some tabbed container properties and behavior.</summary>
+      <version major="1" minor="13"/>
+      <date day="6" month="6" year="2008"/>
+      <author login="saubrecht"/>
+      <compatibility addition="yes" binary="compatible" deprecation="yes"/>
+      <description>
+        <p>The new abstract class WinsysInfoForTabbedContainer is a replacement
+        for interface WinsysInfoForTabbed. The new class implements the old interface
+        and also contains method informing the tabbed containers about the state
+        of some of window system switches that may disable some of its functionality.
+        (For example disable window sliding).
+        </p>
+      </description>
+      <class package="org.netbeans.swing.tabcontrol" name="WinsysInfoForTabbedContainer"/>
+      <issue number="136636"/>
+    </change>
+
     <change id="slide_transparency">
       <api name="tabcontrol"/>
       <summary>Added support for transparency of slided-in windows</summary>

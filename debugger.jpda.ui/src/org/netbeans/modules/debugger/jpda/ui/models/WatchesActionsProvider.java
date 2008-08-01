@@ -49,12 +49,15 @@ import javax.swing.KeyStroke;
 import org.netbeans.api.debugger.DebuggerManager;
 
 import org.netbeans.api.debugger.jpda.JPDAWatch;
+import org.netbeans.modules.debugger.jpda.ui.FixedWatchesManager;
 import org.netbeans.spi.viewmodel.Models;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.NodeActionsProvider;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.netbeans.modules.debugger.jpda.ui.WatchPanel;
+import org.netbeans.spi.debugger.ContextProvider;
+import org.netbeans.spi.viewmodel.NodeActionsProviderFilter;
 import org.openide.util.NbBundle;
 import org.openide.util.HelpCtx;
 import org.openide.DialogDisplayer;
@@ -63,8 +66,8 @@ import org.openide.DialogDisplayer;
 /**
  * @author   Jan Jancura
  */
-public class WatchesActionsProvider implements NodeActionsProvider {    
-    
+public class WatchesActionsProvider implements NodeActionsProvider {
+
     
     private static final Action NEW_WATCH_ACTION = new AbstractAction
         (NbBundle.getBundle(WatchesActionsProvider.class).getString("CTL_WatchAction_AddNew")) {
@@ -72,10 +75,22 @@ public class WatchesActionsProvider implements NodeActionsProvider {
                 newWatch ();
             }
     };
-    private static final Action DELETE_ALL_ACTION = new AbstractAction 
+    private final Action DELETE_ALL_ACTION = new AbstractAction 
         (NbBundle.getBundle(WatchesActionsProvider.class).getString("CTL_WatchAction_DeleteAll")) {
             public void actionPerformed (ActionEvent e) {
                 DebuggerManager.getDebuggerManager ().removeAllWatches ();
+                List list = contextProvider.lookup("WatchesView", NodeActionsProviderFilter.class); // NOI18N
+                FixedWatchesManager man = null;
+                for (Iterator iter = list.iterator(); iter.hasNext();)  {
+                    Object obj = iter.next();
+                    if (obj instanceof FixedWatchesManager) {
+                        man = (FixedWatchesManager) obj;
+                        break;
+                    }
+                }
+                if (man != null) {
+                    man.deleteAllFixedWatches();
+                }
             }
     };
     private static final Action DELETE_ACTION = Models.createAction (
@@ -112,6 +127,12 @@ public class WatchesActionsProvider implements NodeActionsProvider {
     );
     
     
+    private ContextProvider contextProvider;
+    
+    public WatchesActionsProvider (ContextProvider contextProvider) {
+        this.contextProvider = contextProvider;
+    }
+        
     public Action[] getActions (Object node) throws UnknownTypeException {
         if (node == TreeModel.ROOT) 
             return new Action [] {

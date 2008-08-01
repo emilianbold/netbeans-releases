@@ -11,9 +11,9 @@
  * http://www.netbeans.org/cddl-gplv2.html
  * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
  * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
+ * License. When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
  * particular file as subject to the "Classpath" exception as provided
  * by Sun in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
@@ -69,7 +69,7 @@ import org.netbeans.modules.xml.xam.Referenceable;
 
 import org.netbeans.modules.bpel.model.api.Import;
 import org.netbeans.modules.bpel.model.api.events.VetoException;
-import static org.netbeans.modules.soa.ui.util.UI.*;
+import static org.netbeans.modules.xml.ui.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -100,8 +100,7 @@ final class Mover extends Plugin {
   }
     
   public Problem prepare(RefactoringElementsBag refactoringElements) {
-    Referenceable reference =
-      myRequest.getRefactoringSource().lookup(Referenceable.class);
+    Referenceable reference = myRequest.getRefactoringSource().lookup(Referenceable.class);
 
     if (reference == null) {
       return null;
@@ -127,8 +126,7 @@ final class Mover extends Plugin {
         return processErrors(errors);
       } 
     } 
-    XMLRefactoringTransaction transaction =
-      myRequest.getContext().lookup(XMLRefactoringTransaction.class);
+    XMLRefactoringTransaction transaction = myRequest.getContext().lookup(XMLRefactoringTransaction.class);
     transaction.register(this, elements);
     refactoringElements.registerTransaction(transaction);
 
@@ -139,13 +137,10 @@ final class Mover extends Plugin {
     return null;
   }
       
-  public void doRefactoring(
-    List<RefactoringElementImplementation> elements) throws IOException
-  {
+  public void doRefactoring(List<RefactoringElementImplementation> elements) throws IOException {
     Map<Model, Set<RefactoringElementImplementation>> map = getModelMap(elements);
     Set<Model> models = map.keySet();
-    Referenceable reference =
-      myRequest.getRefactoringSource().lookup(Referenceable.class);
+    Referenceable reference = myRequest.getRefactoringSource().lookup(Referenceable.class);
 
     for (Model model : models) {
       if (reference instanceof Model) {
@@ -161,11 +156,8 @@ final class Mover extends Plugin {
     return null;
   }
 
-  private Map<Model, Set<RefactoringElementImplementation>> getModelMap(
-    List<RefactoringElementImplementation> elements)
-  {
-    Map<Model, Set<RefactoringElementImplementation>> results =
-      new HashMap<Model, Set<RefactoringElementImplementation>>();
+  private Map<Model, Set<RefactoringElementImplementation>> getModelMap(List<RefactoringElementImplementation> elements) {
+    Map<Model, Set<RefactoringElementImplementation>> results = new HashMap<Model, Set<RefactoringElementImplementation>>();
   
     for(RefactoringElementImplementation element : elements) {
       Model model = (element.getLookup().lookup(Component.class)).getModel();
@@ -183,9 +175,7 @@ final class Mover extends Plugin {
     return results;
   }
 
-  private List<Component> getComponents(
-    Set<RefactoringElementImplementation> elements)
-  {
+  private List<Component> getComponents(Set<RefactoringElementImplementation> elements) {
     List<Component> component = new ArrayList<Component>(elements.size());
   
     for (RefactoringElementImplementation element : elements) {

@@ -38,25 +38,19 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
-
 package org.netbeans.modules.uml.ui.support;
 
-import com.tomsawyer.util.TSObject;
-//import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
-import org.netbeans.modules.uml.core.support.umlutils.ETList;
-import org.netbeans.modules.uml.ui.products.ad.diagramengines.DiagramEngineResources;
-//import org.netbeans.modules.uml.ui.support.viewfactorysupport.TypeConversions;
-//import org.openide.util.NbBundle;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author  Sheryl Su
  */
-public class ElementDeletePanel extends javax.swing.JPanel {
-    
-    /** Creates new form NewJPanel */
-    public ElementDeletePanel(ETList<TSObject> objects, boolean displayRemove) {
+public class ElementDeletePanel extends javax.swing.JPanel
+{
+
+    public ElementDeletePanel(boolean displayRemove)
+    {
         initComponents();
         jCheckBox2.setVisible(displayRemove);
 //        if (objects.size() > 1) {
@@ -72,19 +66,19 @@ public class ElementDeletePanel extends javax.swing.JPanel {
 //                        "ElementDeletePanel.jLabel1.text_unnamed", e.getElementType()));
 //            }
 //        }
-        jLabel1.setText(DiagramEngineResources.getString("ADCoreEngine.DELETE_GRAPH_OBJECTS_MESSAGE"));
+        jLabel1.setText(NbBundle.getMessage(ElementDeletePanel.class, "DELETE_GRAPH_OBJECTS_MESSAGE"));
     }
 
     public boolean getDeleteFromOriginal()
     {
         return jCheckBox1.isSelected();
     }
-    
+
     public boolean getRemoveFromImport()
     {
         return jCheckBox2.isSelected();
     }
-    
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -138,18 +132,14 @@ public class ElementDeletePanel extends javax.swing.JPanel {
         {
             jCheckBox2.setEnabled(false);
             jCheckBox2.setSelected(true);
-        }
-        else
+        } else
         {
             jCheckBox2.setEnabled(true);
         }
     }//GEN-LAST:event_jCheckBox1ActionPerformed
-    
-    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox jCheckBox1;
     private javax.swing.JCheckBox jCheckBox2;
     private javax.swing.JLabel jLabel1;
     // End of variables declaration//GEN-END:variables
-    
 }

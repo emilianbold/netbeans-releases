@@ -68,7 +68,6 @@ import org.netbeans.modules.uml.core.support.umlutils.IElementLocator;
 import org.netbeans.modules.uml.ui.support.NewPackageKind;
 import org.netbeans.modules.uml.ui.support.wizard.IWizardSheet;
 import org.netbeans.modules.uml.ui.support.wizard.WizardInteriorPage;
-import org.netbeans.modules.uml.ui.swing.drawingarea.DiagramEngine;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
@@ -905,7 +904,7 @@ public class NewPackageUI extends WizardInteriorPage implements INewDialogUI
 					{
 						DialogDisplayer.getDefault().notify(
 							new NotifyDescriptor.Message(NbBundle.getMessage(
-							DiagramEngine.class, "IDS_NAMESPACECOLLISION")));
+							NewElementUI.class, "IDS_NAMESPACECOLLISION")));
 						return false;
 					}
 				}

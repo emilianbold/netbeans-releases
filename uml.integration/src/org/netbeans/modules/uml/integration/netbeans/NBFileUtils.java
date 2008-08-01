@@ -238,6 +238,7 @@ public class NBFileUtils
         {
             logger.log(Level.WARNING, null, ioE);
         }
+        
         return retVal;
     }
     
@@ -287,7 +288,7 @@ public class NBFileUtils
         }
         catch (Exception E)
         {
-            Log.stackTrace(E);
+            logger.log(Level.WARNING, null, E);
         }
         return retVal;
     }
@@ -401,11 +402,10 @@ public class NBFileUtils
      */
     public static boolean isWritable(File dir)
     {
-        if ( dir == null) 
+        if ( dir == null)
         {
             return false;
-        }
-        
+        }         
         FileObject folderObj = FileUtil.toFileObject(dir);
         return (folderObj != null && folderObj.isFolder() && folderObj.canWrite());
     }
@@ -493,9 +493,9 @@ public class NBFileUtils
                     }
                 }
             }
-            catch (Exception E)
+            catch (Exception ex)
             {
-                Log.stackTrace(E);
+                logger.log(Level.WARNING, null, ex);
             }
         }
         return retVal;
@@ -591,7 +591,7 @@ public class NBFileUtils
         }
         catch (Exception E)
         {
-            Log.stackTrace(E);
+            logger.log(Level.WARNING, null, E);
         }
         
         return retVal;
@@ -791,6 +791,7 @@ public class NBFileUtils
         {
             logger.log(Level.WARNING, null, ioE);
         }
+        
         return retVal;
     }
     

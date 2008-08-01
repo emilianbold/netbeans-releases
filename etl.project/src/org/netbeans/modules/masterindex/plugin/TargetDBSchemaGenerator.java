@@ -62,8 +62,6 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import javax.swing.JFrame;
-import javax.swing.JOptionPane;
 import net.java.hulp.i18n.Logger;
 import org.axiondb.AxionException;
 import org.axiondb.io.AxionFileSystem;
@@ -125,6 +123,14 @@ public class TargetDBSchemaGenerator {
             for (int i = 0; i < tablelist.size(); i++) {
                 createTable(normalizeTableName(tablelist.get(i).toString()), tablelist.get(i).toString());
             }
+            // Close open Connection
+            try {
+                mLogger.infoNoloc("Closing connection to database : " + conn.getMetaData().getURL());
+                conn.createStatement().execute("shutdown");
+                conn.close();
+            } catch (SQLException sqlexception) {
+                mLogger.errorNoloc(mLoc.t("PRJS804: Execption while closing connection"), sqlexception);
+            }
         }
     }
 
@@ -133,6 +139,8 @@ public class TargetDBSchemaGenerator {
             mLogger.infoNoloc(mLoc.t("PRJS001: Creating Table [ {0}", NormtableName));
             Statement stmt = conn.createStatement();
             stmt.execute(createSQL(NormtableName, ModelTableName));
+            stmt.close();
+            addForeignKeys(NormtableName, ModelTableName);
         } catch (SQLException ex) {
             mLogger.errorNoloc(mLoc.t("PRJS802: global"), ex);
         }
@@ -172,13 +180,13 @@ public class TargetDBSchemaGenerator {
             //Table Being added is a child table
             String fk_col = lookup.getRootName() + "Id";
             if (!colmap.containsKey(fk_col)) {
-                //Check if see if colum is already generated using object.xml
+                //Check if see if colum is already generated using object definition xml file
                 columns.append(fk_col + " " + getDataTypeMapping(PluginDTConstants.datatype) + "(" + PluginDTConstants.datasize + "), ");
             }
         }
 
         columns.append(createPrimaryKeyConstraint(defaultCol));
-        columns.append(createForeignKeyConstraint(modeltablename));
+        //columns.append(createForeignKeyConstraint(modeltablename));
 
         return columns.toString();
     }
@@ -194,6 +202,19 @@ public class TargetDBSchemaGenerator {
             return ", CONSTRAINT fk_" + lookup.getRootName().toLowerCase() + "id" + tablename.toLowerCase() + " FOREIGN KEY (" + lookup.getRootName() + "Id" + ") REFERENCES " + normalizeTableName(lookup.getRootName()) + "(" + lookup.getRootName() + "Id" + ")";
         }
         return "";
+    }
+    private void addForeignKeys(String normtablename, String modeltablename) {
+        String tablename = modeltablename.substring(modeltablename.lastIndexOf(".") + 1);
+        if (!tablename.equals(lookup.getRootName())) {
+            try {
+                Statement stmt1 = conn.createStatement();
+		mLogger.infoNoloc(mLoc.t("PRJS020: Creating Foreign Key [ {0} ] on table [ {1} ]. Reference table is [ {2} ]", "fk_" + lookup.getRootName().toLowerCase() + "id" + tablename.toLowerCase(), normtablename, normalizeTableName(lookup.getRootName()) + "(" + lookup.getRootName() + "Id" + ")"));
+                stmt1.execute("ALTER TABLE " + normtablename + " ADD CONSTRAINT fk_" + lookup.getRootName().toLowerCase() + "id" + tablename.toLowerCase() + " FOREIGN KEY (" + lookup.getRootName() + "Id" + ") REFERENCES " + normalizeTableName(lookup.getRootName()) + "(" + lookup.getRootName() + "Id" + ")");
+                stmt1.close();
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
+        }
     }
 
     private String createOrganizationString(String normtablename) {
@@ -375,10 +396,10 @@ public class TargetDBSchemaGenerator {
     }
 
     /**
-     * EView Model object.xml is validated against all child tables containing FK column.
+     * EView Model object definition xml file is validated against all child tables containing FK column.
      * All chld tables must contain ObjectId column for the parent to achieve join condition.
      * This is validated at schema generation level. If not found compliant, used is blocked to generate
-     * staging schema till proper object.xml is provided.
+     * staging schema till proper object definition xml file is provided.
      */
     private void validateEviewModel() {
         String fkname = this.lookup.getRootName() + "Id";
@@ -405,8 +426,9 @@ public class TargetDBSchemaGenerator {
             }
         }
         if (!overallstatus) {
-            String errMsg = "Object.xml validation failed!.\nGenerate [ " + fkname + " ] field in all the child objects and re-run schema generator with the valid object.xml";
-            mLogger.infoNoloc(mLoc.t(errMsg));            
+            String errMsg = "object definition xml file validation failed!.\nGenerate [ " + fkname + " ] field in all the child objects and re-run schema generator with the valid object definition xml file";
+            mLogger.infoNoloc(mLoc.t(errMsg));    
+            System.out.println(errMsg);
             //JOptionPane.showMessageDialog(new JFrame(), errMsg, "Error", JOptionPane.ERROR_MESSAGE);
         }
     }

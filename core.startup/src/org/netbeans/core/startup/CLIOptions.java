@@ -46,7 +46,6 @@ import java.io.PrintWriter;
 import java.util.Locale;
 import java.util.MissingResourceException;
 import org.netbeans.CLIHandler;
-import org.netbeans.TopSecurityManager;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
@@ -138,6 +137,18 @@ public class CLIOptions extends CLIHandler {
                 args[i] = null;
                 try {
                     String ui = args[++i];
+                    //Translate L&F ID into L&F class for known IDs
+                    if ("Metal".equals(ui)) {
+                        ui = "javax.swing.plaf.metal.MetalLookAndFeel";
+                    } else if ("GTK".equals(ui)) {
+                        ui = "com.sun.java.swing.plaf.gtk.GTKLookAndFeel";
+                    } else if ("Nimbus".equals(ui)) {
+                        ui = "com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel";
+                    } else if ("Windows".equals(ui)) {
+                        ui = "com.sun.java.swing.plaf.windows.WindowsLookAndFeel";
+                    } else if ("Aqua".equals(ui)) {
+                        ui = "apple.laf.AquaLookAndFeel";
+                    }
                     uiClass = Class.forName(ui);
                 } catch(ArrayIndexOutOfBoundsException e) {
                     System.err.println(getString("ERR_UIExpected"));
@@ -273,9 +284,9 @@ public class CLIOptions extends CLIHandler {
             // #11735, #21085: avoid relative user dirs, or ../ seqs
             File userDirF = FileUtil.normalizeFile(new File(userDir));
 
-            String homeDir = getHomeDir();
-            if (homeDir != null) {
-                File homeDirF = FileUtil.normalizeFile(new File(homeDir));
+            String _homeDir = getHomeDir();
+            if (_homeDir != null) {
+                File homeDirF = FileUtil.normalizeFile(new File(_homeDir));
                 if ((userDirF.getAbsolutePath() + File.separatorChar).startsWith(homeDirF.getParentFile().getAbsolutePath() + File.separatorChar)) {
                     System.err.println(NbBundle.getMessage(CLIOptions.class, "ERR_user_directory_is_inside_home"));
                     TopLogging.exit(1);
@@ -285,7 +296,7 @@ public class CLIOptions extends CLIHandler {
             userDir = userDirF.getPath();
             System.setProperty("netbeans.user", userDir); // NOI18N
             
-            File systemDirFile = new File(userDirF, NbRepository.SYSTEM_FOLDER);
+            File systemDirFile = new File(userDirF, NbRepository.CONFIG_FOLDER);
             makedir (systemDirFile);
             systemDir = systemDirFile.getAbsolutePath ();
             makedir(new File(userDirF, DIR_MODULES)); // NOI18N

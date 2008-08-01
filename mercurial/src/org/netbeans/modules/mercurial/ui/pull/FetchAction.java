@@ -58,6 +58,7 @@ import java.util.List;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.ui.actions.ContextAction;
 import org.netbeans.modules.mercurial.config.HgConfigFiles;
+import org.netbeans.modules.mercurial.ui.merge.MergeAction;
 import org.openide.util.NbBundle;
 
 /**
@@ -106,6 +107,7 @@ public class FetchAction extends ContextAction {
             
             if (list != null && !list.isEmpty()) {
                 logger.output(HgUtils.replaceHttpPassword(list));
+                MergeAction.handleMergeOutput(root, list, false, logger);
             }
         } catch (HgException ex) {
             NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);

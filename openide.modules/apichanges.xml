@@ -49,13 +49,13 @@ made subject to such option by the copyright holder.
 <changes>
     <change id="OpenIDE-Module-Hide-Classpath-Packages">
         <api name="modules"/>
-        <summary></summary>
+        <summary>Ability to hide JRE packages from the module classpath</summary>
         <version major="7" minor="6"/>
         <date day="23" month="2" year="2008"/>
         <author login="jglick"/>
         <compatibility semantic="incompatible">
             <p>
-                To guaranteed that the new tag will be honored you should also:
+                To guarantee that the new tag will be honored you should also:
             </p>
             <pre>OpenIDE-Module-Requires: org.openide.modules.ModuleFormat2</pre>
             <p>

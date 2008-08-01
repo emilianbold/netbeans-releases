@@ -41,17 +41,57 @@
 
 package org.netbeans.modules.websvc.core.jaxws.actions;
 
+import java.util.List;
+import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.core.AddOperationActionProvider;
 import org.netbeans.modules.websvc.core.AddOperationCookie;
 import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.*;
+import org.openide.filesystems.FileUtil;
 
 public class JaxWsAddOperationProvider implements AddOperationActionProvider {
-	public AddOperationCookie getAddOperationCookie(FileObject fileObject) {
+    
+    public AddOperationCookie getAddOperationCookie(FileObject fileObject) {
         JAXWSSupport support = JAXWSSupport.getJAXWSSupport(fileObject);
-        if (support!=null && support.getServices().size()>0) 
-            return new JaxWsAddOperation(fileObject);
+        if (support != null) {
+            String packageName = getPackageName(fileObject);
+            if (packageName != null) {
+                Service service = getService(support, packageName);
+                if (service != null && service.getWsdlUrl() == null) return new JaxWsAddOperation(fileObject);
+            }
+        }
+        return null;
+    }
+        
+    private Service getService(JAXWSSupport support, String packageName) {
+        List services = support.getServices();
+        for (Object service:services) {
+            if (packageName.equals(((Service)service).getImplementationClass())) {
+                return (Service)service;
+            } 
+        }
+        return null;
+    }
+    
+    private String getPackageName(FileObject fo) {
+        Project project = FileOwnerQuery.getOwner(fo);
+        SourceGroup[] groups = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        if (groups!=null) {
+            for (SourceGroup group: groups) {
+                FileObject rootFolder = group.getRootFolder();
+                if (FileUtil.isParentOf(rootFolder, fo)) {
+                    String relativePath = FileUtil.getRelativePath(rootFolder, fo).replace('/', '.');
+                    return (relativePath.endsWith(".java")? //NOI18N
+                        relativePath.substring(0,relativePath.length()-5):
+                        relativePath);
+                }
+            }
+        }
         return null;
     }
 

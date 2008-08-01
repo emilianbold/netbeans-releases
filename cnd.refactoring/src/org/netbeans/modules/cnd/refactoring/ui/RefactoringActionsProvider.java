@@ -51,6 +51,7 @@ import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmModelState;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
+import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
 import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
 import org.netbeans.modules.refactoring.spi.ui.UI;
 import org.netbeans.modules.refactoring.spi.ui.ActionsImplementationProvider;
@@ -239,8 +240,18 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider {
         }
         
         public final void run() {
-            DataObject o = node.getCookie(DataObject.class);
-            UI.openRefactoringUI(ui);
+            CsmReference ctx = CsmReferenceResolver.getDefault().findReference(node);
+            if (!CsmRefactoringUtils.isSupportedReference(ctx)) {
+                return;
+            }
+            ui = createRefactoringUI(ctx);
+            TopComponent activetc = TopComponent.getRegistry().getActivated();
+
+            if (ui!=null) {
+                UI.openRefactoringUI(ui, activetc);
+            } else {
+                JOptionPane.showMessageDialog(null,NbBundle.getMessage(RefactoringActionsProvider.class, "ERR_CannotRenameLoc"));
+            }
         }
         protected abstract RefactoringUI createRefactoringUI(CsmObject selectedElement/*RubyElementCtx selectedElement, CompilationInfo info*/);
     }

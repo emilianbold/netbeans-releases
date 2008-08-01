@@ -599,9 +599,21 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
         }
     }
     
+    private Lookup lkp;
+    private static Object INIT_LOOKUP = new Object();
     @Override
     public Lookup getLookup() {
-        return getCookieSet().getLookup();
+        synchronized(INIT_LOOKUP) {
+            if (lkp != null) {
+                return lkp;
+            }
+            if (getPrimaryFile().hasExt(XML_EXT)) {
+                lkp = new ProxyLookup(getCookieSet().getLookup(), getCookiesLookup());
+            } else {
+                lkp = getCookieSet().getLookup();
+            }
+            return lkp;
+        }
     }
 
     private Lookup.Result cookieResult = null;
@@ -1144,6 +1156,10 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
 
             attr = fo.getAttribute (EA_INSTANCE_CREATE);
             if (attr != null) {
+                err.warning("Instance file " + fo + " uses " + EA_INSTANCE_CREATE + // NOI18N
+                        " attribute, but doesn't define " + EA_INSTANCE_CLASS + " attribute. " + // NOI18N
+                        "Please add " + EA_INSTANCE_CLASS + " attr to avoid multiple instances creation," + // NOI18N
+                        "see details at http://www.netbeans.org/issues/show_bug.cgi?id=131951"); // NOI18N
                 return attr.getClass().getName();
             }
 

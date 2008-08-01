@@ -69,6 +69,7 @@ import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Settings;
 import org.netbeans.editor.SettingsNames;
+import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.Exceptions;
 
@@ -123,8 +124,9 @@ public class FmtOptions {
 
     public static boolean getGlobalExpandTabToSpaces() {
         org.netbeans.editor.Formatter f = (org.netbeans.editor.Formatter)Settings.getValue(getKitClass(), "formatter");
-        if (f != null)
+        if (f != null) {
             return f.expandTabs();
+        }
         return getDefaultAsBoolean(expandTabToSpaces);
     }
     
@@ -148,7 +150,7 @@ public class FmtOptions {
     
     public static Class<? extends EditorKit> getKitClass() {
         if (kitClass == null) {
-            EditorKit kit = MimeLookup.getLookup(MimePath.get(JsMimeResolver.JAVASCRIPT_MIME_TYPE)).lookup(EditorKit.class); //NOI18N
+            EditorKit kit = MimeLookup.getLookup(MimePath.get(JsTokenId.JAVASCRIPT_MIME_TYPE)).lookup(EditorKit.class); //NOI18N
             kitClass = kit != null ? kit.getClass() : EditorKit.class;
         }
         return kitClass;

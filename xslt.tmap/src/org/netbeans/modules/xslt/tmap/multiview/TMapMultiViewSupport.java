@@ -29,7 +29,6 @@ import org.netbeans.core.spi.multiview.MultiViewDescription;
 import org.netbeans.core.spi.multiview.MultiViewFactory;
 import org.netbeans.modules.xslt.tmap.TMapDataEditorSupport;
 import org.netbeans.modules.xslt.tmap.TMapDataObject;
-import org.netbeans.modules.xslt.tmap.multiview.designer.DesignerMultiViewElementDesc;
 import org.netbeans.modules.xslt.tmap.multiview.source.TMapSourceMultiViewElementDesc;
 import org.netbeans.modules.xslt.tmap.multiview.tree.TreeMultiViewElementDesc;
 import org.openide.loaders.DataObject;
@@ -79,14 +78,15 @@ public class TMapMultiViewSupport {
         List<TopComponent> associatedTCs = new ArrayList<TopComponent>();
         DataObject targetDO = support.getDataObject();
         TopComponent activeTC = TopComponent.getRegistry().getActivated();
-        if (targetDO ==  (DataObject) activeTC.getLookup().lookup(DataObject.class)) {
+        if (targetDO ==  activeTC.getLookup().
+                lookup(DataObject.class)) {
             associatedTCs.add(activeTC);
         }
         Set openTCs = TopComponent.getRegistry().getOpened();
         for (Object tc : openTCs) {
             TopComponent topComponent = (TopComponent) tc;
-            if (targetDO == (DataObject)topComponent.getLookup().lookup(
-                    DataObject.class)) {
+            if (targetDO == topComponent.getLookup().
+                    lookup(DataObject.class)) {
                 associatedTCs.add(topComponent);
             }
         }

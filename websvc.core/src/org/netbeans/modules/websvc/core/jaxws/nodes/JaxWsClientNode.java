@@ -141,6 +141,10 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie, JaxWsRe
         setValue("wsdl-url",client.getWsdlUrl());
     }
     
+    public WsdlModel getWsdlModel(){
+        return this.getWsdlModeler().getAndWaitForWsdlModel();
+    }
+    
     @Override
     public String getShortDescription() {
         return client.getWsdlUrl();
@@ -319,7 +323,7 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie, JaxWsRe
                 }
             }
             // cleaning java artifacts
-            FileObject buildImplFo = project.getProjectDirectory().getFileObject(GeneratedFilesHelper.BUILD_IMPL_XML_PATH);
+            FileObject buildImplFo = project.getProjectDirectory().getFileObject(GeneratedFilesHelper.BUILD_XML_PATH);
             try {
                 ExecutorTask wsimportTask =
                         ActionUtils.runTarget(buildImplFo,
@@ -346,6 +350,7 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie, JaxWsRe
             else if (RefreshClientDialog.NO_DOWNLOAD.equals(result)) {
                 ((JaxWsClientChildren)getChildren()).refreshKeys(false);
             } else {
+                wsdlFileObject= null;
                 ((JaxWsClientChildren)getChildren()).refreshKeys(true, result);
             }
         } else {
@@ -465,8 +470,12 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie, JaxWsRe
     FileObject getLocalWsdl() {
         if (wsdlFileObject==null) {
             FileObject localWsdlocalFolder = getJAXWSClientSupport().getLocalWsdlFolderForClient(client.getName(),false);
-            if (localWsdlocalFolder!=null)
-                wsdlFileObject=localWsdlocalFolder.getFileObject(client.getLocalWsdlFile());
+            if (localWsdlocalFolder!=null) {
+                String relativePath = client.getLocalWsdlFile();
+                if (relativePath != null) {
+                    wsdlFileObject=localWsdlocalFolder.getFileObject(relativePath);
+                }
+            }
         }
         return wsdlFileObject;
     }

@@ -50,7 +50,6 @@ import javax.swing.text.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import org.netbeans.core.output2.ui.AbstractOutputPane;
 import org.openide.util.Exceptions;
@@ -191,7 +190,7 @@ public class OutputDocument implements Document, Element, ChangeListener, Action
         if (offset < 0) {
             throw new BadLocationException ("Negative offset", offset); //NOI18N
         }
-        if (getLines().getLineCount() == 0) {
+        if (getLines().getLineCount() == -1) {
             txt.array = new char[] {'\n'};
             txt.offset = 0;
             txt.count = 1;
@@ -228,7 +227,6 @@ public class OutputDocument implements Document, Element, ChangeListener, Action
             error);
         }
     }
-    
     public void insertString(int offset, String str, AttributeSet attributeSet) throws BadLocationException {
         final int off = Math.max(offset, getLength() - inBuffer.length());
         final int len = str.length();
@@ -254,6 +252,13 @@ public class OutputDocument implements Document, Element, ChangeListener, Action
                 return null;
             }
         };
+
+        if (getLines() instanceof AbstractLines) {
+            AbstractLines lines = (AbstractLines) getLines();
+            int start = lines.getLineStart(lines.getLineCount() - 1);
+            int length = getLength() - start;
+            lines.lineUpdated(2*start, 2*length, false);
+        }
         fireDocumentEvent(ev);
     }
     
@@ -283,6 +288,11 @@ public class OutputDocument implements Document, Element, ChangeListener, Action
                 return null;
             }
         };
+        if (getLines() instanceof AbstractLines) {
+            AbstractLines lines = (AbstractLines) getLines();
+            int start = lines.getLineStart(lines.getLineCount() - 1);
+            lines.lineUpdated(2*start, 0, false);
+        }        
         fireDocumentEvent(ev);
         return toReturn;
     }
@@ -318,6 +328,12 @@ public class OutputDocument implements Document, Element, ChangeListener, Action
                 return null;
             }
             };
+            if (getLines() instanceof AbstractLines) {
+                AbstractLines lines = (AbstractLines) getLines();
+                int start = lines.getLineStart(lines.getLineCount() - 1);
+                int l = getLength() - start;
+                lines.lineUpdated(2*start, 2*l, false);
+            }            
             fireDocumentEvent(ev);
         }
     }
@@ -348,7 +364,7 @@ public class OutputDocument implements Document, Element, ChangeListener, Action
         if (lineIndex >= getLines().getLineCount()-1) {
             endOffset = getLines().getCharCount() + inBuffer.length();
         } else {
-            endOffset = getLines().getLineStart(lineIndex+1);
+            endOffset = getLines().getLineStart(lineIndex+1) - 1;
         }
         return endOffset;
     }
@@ -373,9 +389,9 @@ public class OutputDocument implements Document, Element, ChangeListener, Action
     public Element getElement(int index) {
         //Thanks to Mila Metelka for pointing out that Swing documents always
         //are expected to have a trailing empty element
-        if (getLines().getLineCount() == 0) {
+        /*if (getLines().getLineCount() == 0) {
             return new EmptyElement(OutputDocument.this);
-        }
+        }*/
         synchronized (getLines().readLock()) {
             if (index > lastPostedLine) {
                 lastPostedLine = index;
@@ -401,7 +417,7 @@ public class OutputDocument implements Document, Element, ChangeListener, Action
     }
     
     public int getEndOffset() {
-        return getLength();
+        return getLength() + 1;
     }
     
     public String getName() {
@@ -417,7 +433,7 @@ public class OutputDocument implements Document, Element, ChangeListener, Action
     }
     
     public boolean isLeaf() {
-        return getLines().getLineCount() == 0;
+        return false;
     }
 
     private volatile DO lastEvent = null;
@@ -551,10 +567,12 @@ public class OutputDocument implements Document, Element, ChangeListener, Action
             return offset;
         }
         
+        @Override
         public int hashCode() {
             return offset * 11;
         }
         
+        @Override
         public boolean equals (Object o) {
             return (o instanceof ODPosition) && 
                 ((ODPosition) o).getOffset() == offset;
@@ -570,11 +588,13 @@ public class OutputDocument implements Document, Element, ChangeListener, Action
             return OutputDocument.this;
         }
         
+        @Override
         public boolean equals (Object o) {
             return (o instanceof ODEndPosition) && ((ODEndPosition) o).doc() == 
                 doc();
         }
         
+        @Override
         public int hashCode() {
             return -2390481;
         }
@@ -589,11 +609,13 @@ public class OutputDocument implements Document, Element, ChangeListener, Action
             return OutputDocument.this;
         }
         
+        @Override
         public boolean equals (Object o) {
             return (o instanceof ODStartPosition) && ((ODStartPosition) o).doc() == 
                 doc();
         }
         
+        @Override
         public int hashCode() {
             return 2190481;
         }
@@ -607,10 +629,12 @@ public class OutputDocument implements Document, Element, ChangeListener, Action
             this.lineIndex = lineIndex;
         }
         
+        @Override
         public int hashCode() {
             return lineIndex;
         }
         
+        @Override
         public boolean equals (Object o) {
             return (o instanceof ODElement) && ((ODElement) o).lineIndex == lineIndex &&
                 ((ODElement) o).getDocument() == getDocument();
@@ -657,17 +681,20 @@ public class OutputDocument implements Document, Element, ChangeListener, Action
         void calc() {
             synchronized (getLines().readLock()) {
                 if (startOffset == -1) {
-                    startOffset = getLines().getLineCount() > 0 ? getLines().getLineStart(lineIndex) : 0;
+                    startOffset = getLines().getLineStart(lineIndex);
                     if (lineIndex >= getLines().getLineCount()-1) {
-                        endOffset = getLines().getCharCount() + inBuffer.length();
+                        endOffset = getLines().getCharCount() + inBuffer.length() + 1;
                     } else {
                         endOffset = getLines().getLineStart(lineIndex+1);
                     }
-                    assert endOffset >= getStartOffset() : "Illogical getLine #" + lineIndex
-                        + " with lines " + getLines() + " or writer has been reset";
+                    assert endOffset >= startOffset : "Illogical getLine #" + lineIndex
+                        + " with lines " + getLines() + " or writer has been reset"
+                        + ". writer: " + (writer == null ? "is null" : 
+                            ("writer.isDisposed(): " + writer.isDisposed()
+                            + ". writer.getStorage(): " + writer.getStorage()));
                 } else if (lineIndex >= getLines().getLineCount()-1) {
                     //always recalculate the last line...
-                    endOffset = getLines().getCharCount() + inBuffer.length();
+                    endOffset = getLines().getCharCount() + inBuffer.length() + 1;
                 }
             }
         }
@@ -676,6 +703,7 @@ public class OutputDocument implements Document, Element, ChangeListener, Action
             return true;
         }
         
+        @Override
         public String toString() {
             try {
                 return OutputDocument.this.getText(getStartOffset(), getEndOffset() 
@@ -684,58 +712,6 @@ public class OutputDocument implements Document, Element, ChangeListener, Action
                 Exceptions.printStackTrace(ble);
                 return "";
             }
-        }
-    }
-    
-    /**
-     * Bug in javax.swing.text.PlainView - even if the element count is 0,
-     * it tries to fetch the 0th element.
-     */
-    private static class EmptyElement implements Element {
-        private final OutputDocument doc;
-
-        EmptyElement (OutputDocument doc) {
-            this.doc = doc;
-        }
-
-        public javax.swing.text.AttributeSet getAttributes() {
-            return SimpleAttributeSet.EMPTY;
-        }
-        
-        public javax.swing.text.Document getDocument() {
-            return doc;
-        }
-        
-        public javax.swing.text.Element getElement(int param) {
-            return null;
-        }
-        
-        public int getElementCount() {
-            return 0;
-        }
-        
-        public int getElementIndex(int param) {
-            return 0;
-        }
-        
-        public int getEndOffset() {
-            return 0;
-        }
-        
-        public String getName() {
-            return "empty";
-        }
-        
-        public javax.swing.text.Element getParentElement() {
-            return doc;
-        }
-        
-        public int getStartOffset() {
-            return 0;
-        }
-        
-        public boolean isLeaf() {
-            return true;
         }
     }
 
@@ -771,10 +747,6 @@ public class OutputDocument implements Document, Element, ChangeListener, Action
                         length = charsWritten;
                     } else {
                         first = start;
-//                        if (first == getLines().getLineCount()) {
-//                            throw new IllegalStateException ("Out of bounds");
-//                        }
-
                         offset = getLines().getLineStart(first);
                         lineCount = getLines().getLineCount() - first;
                         length = charsWritten - offset;
@@ -787,6 +759,7 @@ public class OutputDocument implements Document, Element, ChangeListener, Action
             return consumed;
         }
         
+        @Override
         public String toString() {
             boolean wasConsumed = isConsumed();
             calc();
@@ -822,26 +795,19 @@ public class OutputDocument implements Document, Element, ChangeListener, Action
         
         public Element[] getChildrenAdded() {
             calc();
+            if (first + lineCount > getLines().getLineCount()) {
+                throw new IllegalStateException ("Document line count: " + getLines().getLineCount() +
+                         ", OD line count: " + (first + lineCount));
+            }
             Element[] e = new Element[lineCount];
-            if (e.length == 0) {
-                return new Element[] { new EmptyElement(OutputDocument.this) };
-            } else {
-                for (int i=0; i < lineCount; i++) {
-                    e[i] = new ODElement(first + i);
-                    if (first + i >= getLines().getLineCount()) {
-                        throw new IllegalStateException ("UGH!!!");
-                    }
-                }
+            for (int i = 0; i < lineCount; i++) {
+                e[i] = new ODElement(first + i);
             }
             return e;
         }
         
         public Element[] getChildrenRemoved() {
-            if (start == 0) {
-                return new Element[] { new EmptyElement(OutputDocument.this) };
-            } else {
-                return new Element[0];
-            }
+            return new Element[0];
         }
         
         public Element getElement() {
@@ -854,6 +820,7 @@ public class OutputDocument implements Document, Element, ChangeListener, Action
         }
     }
     
+    @Override
     public String toString() {
         return "OD@" + System.identityHashCode(this) + " for " + getLines().readLock();
     }

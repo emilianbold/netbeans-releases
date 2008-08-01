@@ -78,6 +78,7 @@ import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  * @author Tomas Stupka
@@ -92,8 +93,12 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
     public final static int FLAG_SHOW_PROXY             = 64;    
     
     private final static String LOCAL_URL_HELP          = "file:///repository_path";              // NOI18N
-    private final static String HTTP_URL_HELP           = "http://[username[:password]@]hostname/repository_path";      // NOI18N
-    private final static String HTTPS_URL_HELP          = "https://[username[:password]@]hostname/repository_path";     // NOI18N
+    private final static String HTTP_URL_HELP           = Utilities.isWindows()? 
+        "http://[DOMAIN%5C[username[:password]@]hostname/repository_path":      // NOI18N
+        "http://[username[:password]@]hostname/repository_path";      // NOI18N
+    private final static String HTTPS_URL_HELP          = Utilities.isWindows()? 
+        "https://[DOMAIN%5C[username[:password]@]hostname/repository_path":     // NOI18N
+        "https://[username[:password]@]hostname/repository_path";     // NOI18N
     private final static String STATIC_HTTP_URL_HELP    = "static-http://hostname/repository_path";       // NOI18N
     private final static String SSH_URL_HELP            = "ssh://hostname/repository_path";   // NOI18N   
                

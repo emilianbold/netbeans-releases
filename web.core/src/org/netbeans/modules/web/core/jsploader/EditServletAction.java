@@ -69,6 +69,7 @@ public class EditServletAction extends CookieAction {
     *
     * @return false do not survive the change of focus
     */
+    @Override
     protected boolean surviveFocusChange () {
         return false;
     }
@@ -92,6 +93,7 @@ public class EditServletAction extends CookieAction {
      * We always enable View Servlet action, but show an error message 
      * in case when JSP has not been compiled yet.
      */ 
+    @Override
     protected boolean enable(Node[] activatedNodes) {
         for (int i = 0; i < activatedNodes.length; i++) {
             JspDataObject jspdo = (JspDataObject)activatedNodes[i].getCookie(JspDataObject.class);
@@ -154,6 +156,7 @@ public class EditServletAction extends CookieAction {
         }
     }
     
+    @Override
     protected boolean asynchronous() {
         return false;
     }

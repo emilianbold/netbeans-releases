@@ -55,8 +55,6 @@ import org.openide.text.ActiveEditorDrop;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
-
-
 /**
  *
  * @author Libor Kotouc
@@ -98,10 +96,6 @@ public class JSPPaletteActions extends PaletteActions {
         public void actionPerformed(ActionEvent e) {
       
             ActiveEditorDrop drop = (ActiveEditorDrop) item.lookup(ActiveEditorDrop.class);
-//            if (drop == null) {
-//                String body = (String) item.lookup(String.class);
-//                drop = new JSPEditorDropDefault(body);
-//            }
             
             JTextComponent target = Utilities.getFocusedComponent();
             if (target == null) {
@@ -121,7 +115,9 @@ public class JSPPaletteActions extends PaletteActions {
                 PaletteController pc = JSPPaletteFactory.getPalette();
                 pc.clearSelection();
             }
-            catch (IOException ioe) {} //should not occur
+            catch (IOException ioe) {
+                //should not occur
+            } 
         }
     }
     

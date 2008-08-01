@@ -51,6 +51,8 @@ import org.netbeans.api.debugger.jpda.*;
 import org.netbeans.spi.debugger.jpda.*;
 
 import org.netbeans.modules.web.debug.breakpoints.JspLineBreakpoint;
+import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -137,13 +139,20 @@ public class Context {
     public static String getCurrentURL () {
         return getContext ().getCurrentURL ();
     }
+    
+    public static FileObject getCurrentFile() {
+        return EditorContextDispatcher.getDefault().getCurrentFile();
+    }
 
     public static void addPropertyChangeListener (PropertyChangeListener l) {
-        getContext ().addPropertyChangeListener (l);
+        //getContext ().addPropertyChangeListener (l);
+        EditorContextDispatcher.getDefault().addPropertyChangeListener("text/x-jsp", l);
+        EditorContextDispatcher.getDefault().addPropertyChangeListener("text/x-tag", l);
     }
 
     public static void removePropertyChangeListener (PropertyChangeListener l) {
-        getContext ().removePropertyChangeListener (l);
+        //getContext ().removePropertyChangeListener (l);
+        EditorContextDispatcher.getDefault().removePropertyChangeListener(l);
     }    
     
     /**

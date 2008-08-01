@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -23,7 +23,7 @@
  * 
  * Contributor(s):
  * 
- * Portions Copyrighted 2007 Sun Microsystems, Inc.
+ * Portions Copyrighted 2007-2008 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.java.hints.errors;
@@ -77,6 +77,23 @@ public class AddCastTest extends ErrorHintsTestBase {
                        "package test; public class Test {private static void test() {Object o = null; |new Test(o);} public Test(String s) {} }",
                        "[AddCastFix:...o:String]",
                        "package test; public class Test {private static void test() {Object o = null; new Test((String) o);} public Test(String s) {} }");
+    }
+    
+    public void test132639() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test; import javax.swing.JComponent; public class Test {private static void test() {Class<? extends JComponent> c; c = |Class.forName(\"java.swingx.JLabel\");}}",
+                       "[AddCastFix:...forName(...):Class<? extends JComponent>]",
+                       "package test; import javax.swing.JComponent; public class Test {private static void test() {Class<? extends JComponent> c; c = (Class<? extends JComponent>) Class.forName(\"java.swingx.JLabel\");}}");
+    }
+    
+    public void test133392() throws Exception {
+        performAnalysisTest("test/Test.java",
+                            "package test; public class Test {private static void test() {Unknown u |= }}");
+    }
+
+    public void test136313() throws Exception {
+        performAnalysisTest("test/Test.java",
+                            "package test; import java.util.ArrayList; public class Test {int[] convert(ArrayList<Integer> l) {Integer[] ex = {}; return |l.toArray(ex);}}");
     }
     
     @Override

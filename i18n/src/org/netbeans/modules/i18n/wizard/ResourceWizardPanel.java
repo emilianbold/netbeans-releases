@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -43,14 +43,15 @@
 package org.netbeans.modules.i18n.wizard;
 
 
+import java.awt.CardLayout;
 import java.awt.Component;
 import java.awt.Container;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
+import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.BeanInfo;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -58,7 +59,6 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
-import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -67,8 +67,6 @@ import javax.swing.JTextArea;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.FileOwnerQuery;
 
 import org.netbeans.modules.i18n.FactoryRegistry;
 import org.netbeans.modules.i18n.HardCodedString;
@@ -78,11 +76,14 @@ import org.netbeans.modules.i18n.I18nUtil;
 import org.netbeans.modules.i18n.ResourceHolder;
 import org.netbeans.modules.i18n.SelectorUtils;
 
+import org.openide.WizardValidationException;
 import org.openide.loaders.DataObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.filesystems.FileObject;
 import org.openide.ErrorManager;
+import org.openide.WizardDescriptor;
+import org.openide.WizardDescriptor.AsynchronousValidatingPanel;
 import org.openide.awt.Mnemonics;
 
 
@@ -122,14 +123,14 @@ final class ResourceWizardPanel extends JPanel {
 
     
     /** Getter for <code>resources</code> property. */
-    public Map getSourceMap() {
+    public Map<DataObject,SourceData> getSourceMap() {
         return sourceMap;
     }
     
     /** Setter for <code>resources</code> property. */
     public void setSourceMap(Map<DataObject,SourceData> sourceMap) {
-        this.sourceMap.clear();
-        this.sourceMap.putAll(sourceMap);
+            this.sourceMap.clear();
+            this.sourceMap.putAll(sourceMap);
         
         tableModel.fireTableDataChanged();
        
@@ -247,8 +248,9 @@ final class ResourceWizardPanel extends JPanel {
     private void addButtonActionPerformed(ActionEvent evt) {
         DataObject resource = selectResource();
         
-        if(resource == null)
+        if (resource == null) {
             return;
+        }
 
         int[] selectedRows = resourcesTable.getSelectedRows();
 
@@ -267,8 +269,9 @@ final class ResourceWizardPanel extends JPanel {
     private void addAllButtonActionPerformed(ActionEvent evt) {
         DataObject resource = selectResource();
         
-        if(resource == null)
+        if (resource == null) {
             return;
+        }
 
         // Feed data.
         for (int i = 0; i < resourcesTable.getRowCount(); i++) {
@@ -371,7 +374,11 @@ final class ResourceWizardPanel extends JPanel {
     /** <code>WizardDescriptor.Panel</code> used for <code>ResourceChooserPanel</code>. 
      * @see I18nWizardDescriptorPanel
      * @see org.openide.WizardDescriptor.Panel */
-    public static class Panel extends I18nWizardDescriptor.Panel implements I18nWizardDescriptor.ProgressMonitor {
+    public static class Panel extends I18nWizardDescriptor.Panel
+            implements AsynchronousValidatingPanel<I18nWizardDescriptor.Settings> {
+
+        private static final String CARD_GUI = "gui";                   //NOI18N
+        private static final String CARD_PROGRESS = "progress";         //NOI18N
 
         /** Cached component. */
         private transient ResourceWizardPanel resourcePanel;
@@ -379,6 +386,8 @@ final class ResourceWizardPanel extends JPanel {
         /** Indicates whether this panel is used in i18n test wizard or not. */
         private final boolean testWizard;
 
+        /** */
+        private volatile ProgressWizardPanel progressPanel;
 
         /** Constructs Panel for i18n wizard. */
         public Panel() {
@@ -394,25 +403,20 @@ final class ResourceWizardPanel extends JPanel {
         /** Gets component to display. Implements superclass abstract method. 
          * @return this instance */
         protected Component createComponent() {
-            JPanel panel = new JPanel();
+            JPanel panel = new JPanel(new CardLayout());
 
             // Accessibility
             panel.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(ResourceWizardPanel.class).getString("ACS_ResourceWizardPanel"));                 
             
-            panel.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(1)); // NOI18N
+            panel.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, Integer.valueOf(1));
 
             String msgKey = testWizard ? "TXT_SelectTestResource"       //NOI18N
                                        : "TXT_SelectResource";          //NOI18N
             panel.setName(NbBundle.getMessage(ResourceWizardPanel.class, msgKey));
             panel.setPreferredSize(I18nWizardDescriptor.PREFERRED_DIMENSION);
             
-            panel.setLayout(new GridBagLayout());
-            GridBagConstraints constraints = new GridBagConstraints();
-            constraints.weightx = 1.0;
-            constraints.weighty = 1.0;
-            constraints.fill = GridBagConstraints.BOTH;
-            panel.add(getUI(), constraints);            
-            
+            panel.add(getUI(), CARD_GUI);
+
             return panel;
         }
 
@@ -427,6 +431,9 @@ final class ResourceWizardPanel extends JPanel {
         public void readSettings(I18nWizardDescriptor.Settings settings) {
 	    super.readSettings(settings);
             getUI().setSourceMap(getMap());
+
+            Container container = (Container) getComponent();
+            ((CardLayout) container.getLayout()).show(container, CARD_GUI);
         }
 
         /** Stores settings at the end of panel show. Overrides superclass abstract method. */
@@ -438,34 +445,46 @@ final class ResourceWizardPanel extends JPanel {
             getMap().putAll(getUI().getSourceMap());
         }
         
-        /** Searches hard coded strings in sources and puts found hard coded string - i18n string pairs
-         * into settings. Implements <code>ProgressMonitor</code> interface. */
-        public void doLongTimeChanges() {
-            // Replace panel.
-            ProgressWizardPanel progressPanel = new ProgressWizardPanel(false);
-            
+        /** */
+        public void prepareValidation() {
+            assert EventQueue.isDispatchThread();
+            if (progressPanel == null) {
+                progressPanel = new ProgressWizardPanel(false);
+            }
+
             showProgressPanel(progressPanel);
-            
+
             progressPanel.setMainText(NbBundle.getMessage(ResourceWizardPanel.class,
                                                           "TXT_Loading"));//NOI18N
             progressPanel.setMainProgress(0);
-            
+        }
+
+        public void validate() throws WizardValidationException {
+            assert !EventQueue.isDispatchThread();
+
             // Do search.
             Map<DataObject,SourceData> sourceMap = getUI().getSourceMap();
             Iterator<Map.Entry<DataObject,SourceData>> sourceIterator
                     = sourceMap.entrySet().iterator();
 
             // For each source perform the task.
+            final String prefixLoading
+                    = NbBundle.getMessage(ResourceWizardPanel.class,
+                                          "TXT_Loading")                //NOI18N
+                      + ' ';
+            final String prefixSearchingIn
+                    = NbBundle.getMessage(ResourceWizardPanel.class,
+                                          "TXT_SearchingIn")            //NOI18N
+                      + ' ';
+
             for (int i = 0; sourceIterator.hasNext(); i++) {
                 Map.Entry<DataObject,SourceData> entry = sourceIterator.next();
                 DataObject source = entry.getKey();
+                FileObject fileObj = source.getPrimaryFile();
+                String fileName = ClassPath.getClassPath(fileObj, ClassPath.SOURCE)
+                                  .getResourceName(fileObj, '.', false);
 
-                ClassPath cp = ClassPath.getClassPath(source.getPrimaryFile(), ClassPath.SOURCE);
-                progressPanel.setMainText(
-                        NbBundle.getMessage(ResourceWizardPanel.class, "TXT_Loading")//NOI18N
-                        + " "                                           //NOI18N
-                        + cp.getResourceName(source.getPrimaryFile(), '.', false ));
-
+                progressPanel.setMainText(prefixLoading + fileName);
 
                 // retrieve existing sourcedata -- will provide the resource for the new instance
                 SourceData sourceData = entry.getValue();
@@ -483,13 +502,9 @@ final class ResourceWizardPanel extends JPanel {
                 }
 
                 sourceData = new SourceData(sourceData.getResource(), support);
-                sourceMap.put(source, sourceData);              //PENDING - concurrent modification?
+                entry.setValue(sourceData);
                 
-                cp = ClassPath.getClassPath(source.getPrimaryFile(), ClassPath.SOURCE );
-                progressPanel.setMainText(
-                        NbBundle.getMessage(ResourceWizardPanel.class, "TXT_SearchingIn")//NOI18N
-                        + " "
-                        + cp.getResourceName(source.getPrimaryFile(), '.', false));
+                progressPanel.setMainText(prefixSearchingIn + fileName);
                 
                 HardCodedString[] foundStrings;
                 
@@ -503,7 +518,7 @@ final class ResourceWizardPanel extends JPanel {
 
                 if (foundStrings == null) {
                     // Set empty map.
-                    sourceData.setStringMap(new HashMap(0));
+                    sourceData.setStringMap(Collections.<HardCodedString,I18nString>emptyMap());
                     continue;
                 }
 
@@ -524,31 +539,12 @@ final class ResourceWizardPanel extends JPanel {
                 sourceData.setStringMap(map);
             } // End of outer for.
         }
-        
+
         /** Helper method. Places progress panel for monitoring search. */
         private void showProgressPanel(ProgressWizardPanel progressPanel) {
-            ((Container)getComponent()).remove(getUI());
-            GridBagConstraints constraints = new GridBagConstraints();
-            constraints.weightx = 1.0;
-            constraints.weighty = 1.0;
-            constraints.fill = GridBagConstraints.BOTH;
-            ((Container)getComponent()).add(progressPanel, constraints);
-            ((JComponent)getComponent()).revalidate();
-            getComponent().repaint();
-        }
-        
-        /** Resets panel back after monitoring search. Implements <code>ProgressMonitor</code> interface. */
-        public void reset() {
             Container container = (Container) getComponent();
-            
-            if (!container.isAncestorOf(getUI())) {
-                container.removeAll();
-                GridBagConstraints constraints = new GridBagConstraints();
-                constraints.weightx = 1.0;
-                constraints.weighty = 1.0;
-                constraints.fill = GridBagConstraints.BOTH;
-                container.add(getUI(), constraints);
-            }
+            container.add(progressPanel, CARD_PROGRESS);
+            ((CardLayout) container.getLayout()).show(container, CARD_PROGRESS);
         }
         
         /** Gets help. Implements superclass abstract method. */

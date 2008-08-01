@@ -44,9 +44,8 @@ package org.netbeans.core.startup.layers;
 import java.beans.PropertyVetoException;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
-import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Constructor;
+import java.io.InputStream;
 import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -54,6 +53,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.Stamps;
@@ -68,6 +68,7 @@ import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
+import org.openide.util.NbCollections;
 
 /** Layered file system serving itself as either the user or installation layer.
  * Holds one layer of a writable system directory, and some number
@@ -114,7 +115,7 @@ implements LookupListener {
     }
     
     private ModuleLayeredFileSystem(FileSystem writableLayer, boolean addLookup, FileSystem[] otherLayers, LayerCacheManager mgr, FileSystem cacheLayer) throws IOException {
-        super(appendLayers(writableLayer, addLookup, otherLayers, cacheLayer));
+        super(appendLayers(writableLayer, addLookup, otherLayers, cacheLayer, addLookup));
         this.manager = mgr;
         this.writableLayer = writableLayer;
         this.otherLayers = otherLayers;
@@ -161,7 +162,7 @@ implements LookupListener {
         return fs != null ? fs : mgr.createEmptyFileSystem();
     }
     
-    private static FileSystem[] appendLayers(FileSystem fs1, boolean addLookup, FileSystem[] fs2s, FileSystem fs3) {
+    private static FileSystem[] appendLayers(FileSystem fs1, boolean addLookup, FileSystem[] fs2s, FileSystem fs3, boolean addClasspathLayers) {
         List<FileSystem> l = new ArrayList<FileSystem>(fs2s.length + 2);
         l.add(fs1);
         if (addLookup) {
@@ -170,6 +171,36 @@ implements LookupListener {
         }
         l.addAll(Arrays.asList(fs2s));
         l.add(fs3);
+        if (addClasspathLayers) { // #129583
+            List<URL> layerUrls = new ArrayList<URL>();
+            // Basic impl copied from ExternalUtil.MainFS:
+            ClassLoader loader = Thread.currentThread().getContextClassLoader();
+            try {
+                for (URL manifest : NbCollections.iterable(loader.getResources("META-INF/MANIFEST.MF"))) { // NOI18N
+                    InputStream is = manifest.openStream();
+                    try {
+                        Manifest mani = new Manifest(is);
+                        String layerLoc = mani.getMainAttributes().getValue("OpenIDE-Module-Layer"); // NOI18N
+                        if (layerLoc != null) {
+                            URL layer = loader.getResource(layerLoc);
+                            if (layer != null) {
+                                layerUrls.add(layer);
+                            } else {
+                                err.warning("No such layer: " + layerLoc);
+                            }
+                        }
+                    } finally {
+                        is.close();
+                    }
+                }
+                XMLFileSystem xmlfs = new XMLFileSystem();
+                xmlfs.setXmlUrls(layerUrls.toArray(new URL[layerUrls.size()]));
+                l.add(xmlfs);
+                err.log(Level.FINE, "Loading classpath layers: {0}", layerUrls);
+            } catch (Exception x) {
+                err.log(Level.WARNING, "Setting layer URLs: " + layerUrls, x);
+            }
+        }
         return l.toArray(new FileSystem[l.size()]);
     }
 
@@ -269,7 +300,7 @@ implements LookupListener {
                     }
                 }
                 err.log(Level.FINEST, "changing delegates");
-                setDelegates(appendLayers(writableLayer, addLookup, otherLayers, cacheLayer));
+                setDelegates(appendLayers(writableLayer, addLookup, otherLayers, cacheLayer, false));
                 err.log(Level.FINEST, "delegates changed");
                 err.log(Level.FINEST, "scheduling save");
                 Stamps.getModulesJARs().scheduleSave(this, manager.cacheLocation(), false);
@@ -307,7 +338,7 @@ implements LookupListener {
     
     /** Refresh layers */
     public void resultChanged(LookupEvent ev) {
-        setDelegates(appendLayers(writableLayer, addLookup, otherLayers, cacheLayer));
+        setDelegates(appendLayers(writableLayer, addLookup, otherLayers, cacheLayer, false));
     }
     
     private static void setStatusText (String msg) {

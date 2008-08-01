@@ -27,144 +27,82 @@
  */
 package org.netbeans.modules.javascript.hints.infrastructure;
 
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.prefs.Preferences;
 import org.mozilla.javascript.Node;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.Error;
+import org.netbeans.modules.gsf.api.Hint;
+import org.netbeans.modules.gsf.api.HintSeverity;
 import org.netbeans.modules.gsf.api.HintsProvider;
-import org.netbeans.modules.gsf.api.OffsetRange;
+import org.netbeans.modules.gsf.api.HintsProvider.HintsManager;
 import org.netbeans.modules.gsf.api.ParserResult;
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.gsf.api.Severity;
+import org.netbeans.modules.gsf.api.Rule;
+import org.netbeans.modules.gsf.api.RuleContext;
 import org.netbeans.modules.javascript.editing.AstPath;
 import org.netbeans.modules.javascript.editing.AstUtilities;
-import org.netbeans.modules.javascript.editing.JsMimeResolver;
-import org.netbeans.modules.javascript.hints.options.HintsSettings;
-import org.netbeans.modules.javascript.hints.spi.AstRule;
-import org.netbeans.modules.javascript.hints.spi.Description;
-import org.netbeans.modules.javascript.hints.spi.ErrorRule;
-import org.netbeans.modules.javascript.hints.spi.HintSeverity;
-import org.netbeans.modules.javascript.hints.spi.PreviewableFix;
-import org.netbeans.modules.javascript.hints.spi.Rule;
-import org.netbeans.modules.javascript.hints.spi.RuleContext;
-import org.netbeans.modules.javascript.hints.spi.SelectionRule;
-import org.netbeans.modules.javascript.hints.spi.UserConfigurableRule;
-import org.netbeans.spi.editor.hints.ChangeInfo;
-import org.netbeans.spi.editor.hints.EnhancedFix;
-import org.netbeans.spi.editor.hints.ErrorDescription;
-import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
-import org.netbeans.spi.editor.hints.Fix;
-import org.openide.util.Exceptions;
+import org.netbeans.modules.javascript.hints.StrictWarning;
 
 /**
  * Class which acts on the rules and suggestions by iterating the 
  * AST and invoking applicable rules
  * 
- * 
  * @author Tor Norbye
  */
 public class JsHintsProvider implements HintsProvider {
     private boolean cancelled;
-    private Map<Integer,List<AstRule>> testHints;
-    private Map<Integer,List<AstRule>> testSuggestions;
-    private List<SelectionRule> testSelectionHints;
-    private Map<String,List<ErrorRule>> testErrors;
-    
+ 
     public JsHintsProvider() {
     }
 
-    private boolean isTest() {
-        return testHints != null || testSuggestions != null || testSelectionHints != null ||
-                testErrors != null;
-    }
-    
-    public List<Error> computeErrors(CompilationInfo info, List<ErrorDescription> result) {
-        try {
-            if (info.getDocument() == null) {
-                // Document probably closed
-                return Collections.emptyList();
-            }
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+    public void computeErrors(HintsManager manager, RuleContext context, List<Hint> result, List<Error> unhandled) {
+        ParserResult parserResult = context.parserResult;
+        if (parserResult == null) {
+            return;
         }
-
-        Collection<? extends ParserResult> embeddedResults = info.getEmbeddedResults(JsMimeResolver.JAVASCRIPT_MIME_TYPE);
-        if (embeddedResults.size() == 0) {
-            return Collections.emptyList();
-        }
-
-        assert embeddedResults.size() == 1; // I don't create multiple discontiguous ruby sections
-        ParserResult parserResult = embeddedResults.iterator().next();
 
         List<Error> errors = parserResult.getDiagnostics();
         if (errors == null || errors.size() == 0) {
-            return Collections.emptyList();
+            return;
         }
 
         cancelled = false;
         
-        Map<String,List<ErrorRule>> hints = testErrors;
-        if (hints == null) {
-            hints = RulesManager.getInstance().getErrors();
-        }
+        @SuppressWarnings("unchecked")
+        Map<String,List<JsErrorRule>> hints = (Map)manager.getErrors();
 
         if (hints.isEmpty() || isCancelled()) {
-            return errors;
+            unhandled.addAll(errors);
+            return;
         }
         
-        List<Description> descriptions = new ArrayList<Description>();
-        
-        List<Error> unhandled = new ArrayList<Error>();
-        
         for (Error error : errors) {
-            if (!applyRules(error, info, hints, descriptions)) {
+            if (!applyErrorRules(manager, context, error, hints, result)) {
                 unhandled.add(error);
             }
         }
-        
-        if (descriptions.size() > 0) {
-            for (Description desc : descriptions) {
-                ErrorDescription errorDesc = createDescription(desc, info, -1, true);
-                result.add(errorDesc);
-            }
-        }
-        
-        return unhandled;
     }
 
-    public void computeSelectionHints(CompilationInfo info, List<ErrorDescription> result, int start, int end) {
-        try {
-            if (info.getDocument() == null) {
-                // Document probably closed
-                return;
-            }
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-
+    public void computeSelectionHints(HintsManager manager, RuleContext context, List<Hint> result, int start, int end) {
         cancelled = false;
         
-        Node root = AstUtilities.getRoot(info);
+        if (context.parserResult == null) {
+            return;
+        }
+        Node root = AstUtilities.getRoot(context.parserResult);
 
         if (root == null) {
             return;
         }
-        List<SelectionRule> hints = testSelectionHints;
-        if (hints == null) {
-            hints = RulesManager.getInstance().getSelectionHints();
-        }
+
+        @SuppressWarnings("unchecked")
+        List<JsSelectionRule> hints = (List<JsSelectionRule>) manager.getSelectionHints();
 
         if (hints.isEmpty()) {
             return;
@@ -174,39 +112,23 @@ public class JsHintsProvider implements HintsProvider {
             return;
         }
         
-        List<Description> descriptions = new ArrayList<Description>();
-        
-        applyRules(info, hints, start, end, descriptions);
-        
-        if (descriptions.size() > 0) {
-            for (Description desc : descriptions) {
-                ErrorDescription errorDesc = createDescription(desc, info, -1, false);
-                result.add(errorDesc);
-            }
-        }
+        applySelectionRules(manager, context, hints, result);
     }
     
-    public void computeHints(CompilationInfo info, List<ErrorDescription> result) {
-        try {
-            if (info.getDocument() == null) {
-                // Document probably closed
-                return;
-            }
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-
+    public void computeHints(HintsManager manager, RuleContext context, List<Hint> result) {
         cancelled = false;
         
-        Node root = AstUtilities.getRoot(info);
+        if (context.parserResult == null) {
+            return;
+        }
+        Node root = AstUtilities.getRoot(context.parserResult);
 
         if (root == null) {
             return;
         }
-        Map<Integer,List<AstRule>> hints = testHints;
-        if (hints == null) {
-            hints = RulesManager.getInstance().getHints(false, info);
-        }
+
+        @SuppressWarnings("unchecked")
+        Map<Integer,List<JsAstRule>> hints = (Map)manager.getHints(false, context);
 
         if (hints.isEmpty()) {
             return;
@@ -215,110 +137,47 @@ public class JsHintsProvider implements HintsProvider {
         if (isCancelled()) {
             return;
         }
-        
-        List<Description> descriptions = new ArrayList<Description>();
         
         AstPath path = new AstPath();
         path.descend(root);
         
-        //applyRules(NodeTypes.ROOTNODE, root, path, info, hints, -1, descriptions);
-        applyRules(-1, root, path, info, hints, -1, descriptions);
+        //applyRules(manager, NodeTypes.ROOTNODE, root, path, info, hints, descriptions);
+        applyHints(manager, context, -1, root, path, hints, result);
         
-        scan(root, path, info, hints, -1, descriptions);
+        scan(manager, context, root, path, hints, result);
         path.ascend();
-        
-        if (descriptions.size() > 0) {
-            for (Description desc : descriptions) {
-                ErrorDescription errorDesc = createDescription(desc, info, -1, false);
-                result.add(errorDesc);
-            }
-        }
     }
     
-    private ErrorDescription createDescription(Description desc, CompilationInfo info, int caretPos, 
-            boolean allowDisableEmpty) {
-        Rule rule = desc.getRule();
-        HintSeverity severity;
-        if (rule instanceof UserConfigurableRule) {
-            severity = RulesManager.getInstance().getSeverity((UserConfigurableRule)rule);
-        } else {
-            severity = rule.getDefaultSeverity();
-        }
-        OffsetRange range = desc.getRange();
-        List<Fix> fixList;
-        
-        if (desc.getFixes() != null && desc.getFixes().size() > 0) {
-            fixList = new ArrayList<Fix>(desc.getFixes().size());
-            
-            // TODO print out priority with left flushed 0's here
-            // this is just a hack
-            String sortText = Integer.toString(10000+desc.getPriority());
-            
-            for (org.netbeans.modules.javascript.hints.spi.Fix fix : desc.getFixes()) {
-                fixList.add(new FixWrapper(fix, sortText));
-                
-                if (fix instanceof PreviewableFix) {
-                    PreviewableFix previewFix = (PreviewableFix)fix;
-                    if (previewFix.canPreview() && !isTest()) {
-                        fixList.add(new PreviewHintFix(info, previewFix, sortText));
-                    }
-                }
-            }
-            
-            if (rule instanceof UserConfigurableRule && !isTest()) {
-                // Add a hint for disabling this fix
-                fixList.add(new DisableHintFix((UserConfigurableRule)rule, info, caretPos, sortText));
-            }
-        } else if (allowDisableEmpty && rule instanceof UserConfigurableRule && !isTest()) {
-            // Add a hint for disabling this fix
-            String sortText = Integer.toString(10000+desc.getPriority());
-            fixList = Collections.<Fix>singletonList(new DisableHintFix((UserConfigurableRule)rule, info, caretPos, sortText));
-        } else {
-            fixList = Collections.emptyList();
-        }
-        return ErrorDescriptionFactory.createErrorDescription(
-                severity.toEditorSeverity(), 
-                desc.getDescription(), fixList, desc.getFile(), range.getStart(), range.getEnd());
-        
-    }
-
-    public void computeSuggestions(CompilationInfo info, List<ErrorDescription> result, int caretOffset) {
-        try {
-            if (info.getDocument() == null) {
-                // Document probably closed
-                return;
-            }
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-
+    @SuppressWarnings("unchecked")
+    public void computeSuggestions(HintsManager manager, RuleContext context, List<Hint> result, int caretOffset) {
         cancelled = false;
+        if (context.parserResult == null) {
+            return;
+        }
         
-        Node root = AstUtilities.getRoot(info);
+        Node root = AstUtilities.getRoot(context.parserResult);
 
         if (root == null) {
             return;
         }
 
-        Map<Integer, List<AstRule>> suggestions = testSuggestions;
-        if (suggestions == null) {
-            suggestions = new HashMap<Integer, List<AstRule>>();
+        Map<Integer, List<JsAstRule>> suggestions = new HashMap<Integer, List<JsAstRule>>();
    
-            suggestions.putAll(RulesManager.getInstance().getHints(true, info));
+        suggestions.putAll((Map)manager.getHints(true, context));
 
-            for (Entry<Integer, List<AstRule>> e : RulesManager.getInstance().getSuggestions().entrySet()) {
-                List<AstRule> rules = suggestions.get(e.getKey());
+        Set<Entry<Integer, List<JsAstRule>>> entrySet = (Set)manager.getSuggestions().entrySet();
+        for (Entry<Integer, List<JsAstRule>> e : entrySet) {
+            List<JsAstRule> rules = suggestions.get(e.getKey());
 
-                if (rules != null) {
-                    List<AstRule> res = new LinkedList<AstRule>();
+            if (rules != null) {
+                List<JsAstRule> res = new LinkedList<JsAstRule>();
 
-                    res.addAll(rules);
-                    res.addAll(e.getValue());
+                res.addAll(rules);
+                res.addAll(e.getValue());
 
-                    suggestions.put(e.getKey(), res);
-                } else {
-                    suggestions.put(e.getKey(), e.getValue());
-                }
+                suggestions.put(e.getKey(), res);
+            } else {
+                suggestions.put(e.getKey(), e.getValue());
             }
         }
 
@@ -331,11 +190,10 @@ public class JsHintsProvider implements HintsProvider {
             return;
         }
         
+        CompilationInfo info = context.compilationInfo;
         int astOffset = AstUtilities.getAstOffset(info, caretOffset);
 
         AstPath path = new AstPath(root, astOffset);
-        List<Description> descriptions = new ArrayList<Description>();
-        
         Iterator<Node> it = path.leafToRoot();
         while (it.hasNext()) {
             if (isCancelled()) {
@@ -343,109 +201,65 @@ public class JsHintsProvider implements HintsProvider {
             }
 
             Node node = it.next();
-            applyRules(node.getType(), node, path, info, suggestions, caretOffset, descriptions);
+            applyHints(manager, context, node.getType(), node, path, suggestions, result);
         }
         
         //applyRules(NodeTypes.ROOTNODE, path, info, suggestions, caretOffset, result);
-
-        if (descriptions.size() > 0) {
-            for (Description desc : descriptions) {
-                ErrorDescription errorDesc = createDescription(desc, info, caretOffset, false);
-                result.add(errorDesc);
-            }
-        }
     }
 
-    private void applyRules(int nodeType, Node node, AstPath path, CompilationInfo info, Map<Integer,List<AstRule>> hints,
-            int caretOffset, List<Description> result) {
-        List<AstRule> rules = hints.get(nodeType);
+    private void applyHints(HintsManager manager, RuleContext context, int nodeType, Node node, AstPath path, Map<Integer,List<JsAstRule>> hints,
+            List<Hint> result) {
+        List<JsAstRule> rules = hints.get(nodeType);
 
         if (rules != null) {
-            RuleContext context = new RuleContext();
-            context.compilationInfo = info;
-            try {
-                context.doc = (BaseDocument) info.getDocument();
-                if (context.doc == null) {
-                    // Document closed
-                    return;
-                }
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-            context.node = node;
-            context.path = path;
-            context.caretOffset = caretOffset;
+            JsRuleContext jsContext = (JsRuleContext)context;
+            jsContext.node = node;
+            jsContext.path = path;
             
-            for (AstRule rule : rules) {
-                if (HintsSettings.isEnabled(rule)) {
-                    rule.run(context, result);
+            for (JsAstRule rule : rules) {
+                if (manager.isEnabled(rule)) {
+                    rule.run(jsContext, result);
                 }
             }
         }
     }
 
     /** Apply error rules and return true iff somebody added an error description for it */
-    private boolean applyRules(Error error, CompilationInfo info, Map<String,List<ErrorRule>> hints,
-            List<Description> result) {
+    private boolean applyErrorRules(HintsManager manager, RuleContext context, Error error, Map<String,List<JsErrorRule>> hints,
+            List<Hint> result) {
         String code = error.getKey();
         if (code != null) {
-            List<ErrorRule> rules = hints.get(code);
+            List<JsErrorRule> rules = hints.get(code);
 
             if (rules != null) {
                 int countBefore = result.size();
-                RuleContext context = new RuleContext();
-                context.compilationInfo = info;
-                try {
-                    context.doc = (BaseDocument) info.getDocument();
-                    if (context.doc == null) {
-                        // Document closed
-                        return false;
-                    }
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
+                JsRuleContext jsContext = (JsRuleContext)context;
                 
                 boolean disabled = false;
-                for (ErrorRule rule : rules) {
-                    if (!HintsSettings.isEnabled(rule)) {
+                for (JsErrorRule rule : rules) {
+                    if (!manager.isEnabled(rule)) {
                         disabled = true;
-                    } else if (rule.appliesTo(info)) {
-                        rule.run(context, error, result);
+                    } else if (rule.appliesTo(context)) {
+                        rule.run(jsContext, error, result);
                     }
                 }
                 
-                return disabled || countBefore < result.size();
+                return disabled || countBefore < result.size() || jsContext.remove;
             }
         }
         
         return false;
     }
 
-    private void applyRules(CompilationInfo info, List<SelectionRule> rules, int start, int end, 
-            List<Description> result) {
-
-        RuleContext context = new RuleContext();
-        context.compilationInfo = info;
-        //context.node = node;
-        //context.path = path;
-        context.selectionStart = start;
-        context.selectionEnd = end;
-        try {
-            context.doc = (BaseDocument) info.getDocument();
-            if (context.doc == null) {
-                // Document closed
-                return;
-            }
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+    private void applySelectionRules(HintsManager manager, RuleContext context, List<JsSelectionRule> rules,
+            List<Hint> result) {
         
-        for (SelectionRule rule : rules) {
-            if (!rule.appliesTo(info)) {
+        for (JsSelectionRule rule : rules) {
+            if (!rule.appliesTo(context)) {
                 continue;
             }
             
-            //if (!HintsSettings.isEnabled(rule)) {
+            //if (!manager.isEnabled(rule)) {
             //    continue;
             //}
 
@@ -453,9 +267,9 @@ public class JsHintsProvider implements HintsProvider {
         }
     }
     
-    private void scan(Node node, AstPath path, CompilationInfo info, Map<Integer,List<AstRule>> hints, int caretOffset, 
-            List<Description> result) {
-        applyRules(node.getType(), node, path, info, hints, caretOffset, result);
+    private void scan(HintsManager manager, RuleContext context, Node node, AstPath path, Map<Integer,List<JsAstRule>> hints,
+            List<Hint> result) {
+        applyHints(manager, context, node.getType(), node, path, hints, result);
         
         for (Node child = node.getFirstChild(); child != null; child = child.getNext()) {
             if (isCancelled()) {
@@ -463,7 +277,7 @@ public class JsHintsProvider implements HintsProvider {
             }
 
             path.descend(child);
-            scan(child, path, info, hints, caretOffset, result);
+            scan(manager, context, child, path, hints, result);
             path.ascend();
         }        
     }
@@ -475,37 +289,23 @@ public class JsHintsProvider implements HintsProvider {
     private boolean isCancelled() {
         return cancelled;
     }
-    
-    /** For testing purposes only! */
-    public void setTestingHints(Map<Integer,List<AstRule>> testHints, Map<Integer,List<AstRule>> testSuggestions, Map<String,List<ErrorRule>> testErrors,
-            List<SelectionRule> testSelectionHints) {
-        this.testHints = testHints;
-        this.testSuggestions = testSuggestions;
-        this.testErrors = testErrors;
-        this.testSelectionHints = testSelectionHints;
+
+    public RuleContext createRuleContext() {
+        return new JsRuleContext();
     }
     
-    private static class FixWrapper implements EnhancedFix {
-        private org.netbeans.modules.javascript.hints.spi.Fix fix;
-        private String sortText;
-        
-        FixWrapper(org.netbeans.modules.javascript.hints.spi.Fix fix, String sortText) {
-            this.fix = fix;
-            this.sortText = sortText;
+    public List<Rule> getBuiltinRules() {
+        List<Rule> rules = new ArrayList<Rule>(StrictWarning.KNOWN_STRICT_ERROR_KEYS.length);
+
+        // Add builtin wrappers for strict warnings
+        for (String key : StrictWarning.KNOWN_STRICT_ERROR_KEYS) {
+            StrictWarning rule = new StrictWarning(key);
+            if (StrictWarning.RESERVED_KEYWORD.equals(key) || StrictWarning.TRAILING_COMMA.equals(key)) { // NOI18N
+                rule.setDefaultSeverity(HintSeverity.ERROR);
+            }
+            rules.add(rule);
         }
 
-        public String getText() {
-            return fix.getDescription();
-        }
-
-        public ChangeInfo implement() throws Exception {
-            fix.implement();
-            
-            return null;
-        }
-
-        public CharSequence getSortText() {
-            return sortText;
-        }
+        return rules;
     }
 }

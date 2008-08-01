@@ -1,21 +1,16 @@
 Manifest-Version: 1.0
 OpenIDE-Module: org.netbeans.modules.form/2
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/form/Bundle2.properties
-OpenIDE-Module-Specification-Version: 1.23
+OpenIDE-Module-Specification-Version: 1.24
 OpenIDE-Module-Implementation-Version: 2
 OpenIDE-Module-Install: org/netbeans/modules/form/FormEditorModule.class
+OpenIDE-Module-Package-Dependencies: [javax.swing.JComponentBeanInfo]
+OpenIDE-Module-Needs: javax.script.ScriptEngine.freemarker
 OpenIDE-Module-Requires: 
   org.netbeans.api.editor.guards.Java,
   org.openide.modules.InstalledFileLocator
 OpenIDE-Module-Layer: org/netbeans/modules/form/resources/layer.xml
 AutoUpdate-Show-In-Client: false
-
-Name: org/netbeans/modules/form/FormDataLoader.class
-OpenIDE-Module-Class: Loader
-Install-Before: org.netbeans.modules.java.JavaDataObject
-
-Name: org/netbeans/modules/form/palette/PaletteItemDataObject$PaletteItemDataLoader.class
-OpenIDE-Module-Class: Loader
 
 Name: org/netbeans/modules/form/actions/InstallToPaletteAction.class
 OpenIDE-Module-Class: Action

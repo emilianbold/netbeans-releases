@@ -60,7 +60,6 @@ import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
-import org.netbeans.modules.apisupport.project.NbModuleProjectType;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.universe.ModuleList;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
@@ -383,9 +382,9 @@ public final class GlobalSourceForBinaryImpl implements SourceForBinaryQueryImpl
             String cnb = null;
             if (Util.findText(type).equals("org.netbeans.modules.apisupport.project")) { // NOI18N
                 Element cfg = Util.findElement(docel, "configuration", "http://www.netbeans.org/ns/project/1"); // NOI18N
-                Element data = Util.findElement(cfg, "data", NbModuleProjectType.NAMESPACE_SHARED); // NOI18N
+                Element data = Util.findElement(cfg, "data", null); // NOI18N
                 if (data != null) {
-                    cnb = Util.findText(Util.findElement(data, "code-name-base", NbModuleProjectType.NAMESPACE_SHARED)); // NOI18N
+                    cnb = Util.findText(Util.findElement(data, "code-name-base", null)); // NOI18N
                 }
             }
             return cnb;

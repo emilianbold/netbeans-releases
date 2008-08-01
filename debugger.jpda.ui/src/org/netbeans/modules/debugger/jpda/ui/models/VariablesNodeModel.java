@@ -94,7 +94,9 @@ public class VariablesNodeModel implements ExtendedNodeModel {
     public static final String EXPR_ARGUMENTS =
         "org/netbeans/modules/debugger/jpda/resources/ExprArguments.gif";
 
-    
+    private static final int TO_STRING_LENGTH_LIMIT = 10000;
+
+
     private JPDADebugger debugger;
     
     private RequestProcessor evaluationRP = new RequestProcessor();
@@ -249,14 +251,14 @@ public class VariablesNodeModel implements ExtendedNodeModel {
                 if (type.equals (declaredType))
                     try {
                         return "(" + type + ") " + 
-                            ((ObjectVariable) o).getToStringValue ();
+                            getLimitedToString((ObjectVariable) o);
                     } catch (InvalidExpressionException ex) {
                         return ex.getLocalizedMessage ();
                     }
                 else
                     try {
                         return "(" + declaredType + ") " + "(" + type + ") " + 
-                            ((ObjectVariable) o).getToStringValue ();
+                            getLimitedToString((ObjectVariable) o);
                     } catch (InvalidExpressionException ex) {
                         return ex.getLocalizedMessage ();
                     }
@@ -271,14 +273,14 @@ public class VariablesNodeModel implements ExtendedNodeModel {
                 if (type.equals (declaredType))
                     try {
                         return "(" + type + ") " + 
-                            ((ObjectVariable) o).getToStringValue ();
+                            getLimitedToString((ObjectVariable) o);
                     } catch (InvalidExpressionException ex) {
                         return ex.getLocalizedMessage ();
                     }
                 else
                     try {
                         return "(" + declaredType + ") " + "(" + type + ") " + 
-                            ((ObjectVariable) o).getToStringValue ();
+                            getLimitedToString((ObjectVariable) o);
                     } catch (InvalidExpressionException ex) {
                         return ex.getLocalizedMessage ();
                     }
@@ -291,12 +293,29 @@ public class VariablesNodeModel implements ExtendedNodeModel {
         if (o instanceof This)
             try {
                 return "(" + ((This) o).getType () + ") " + 
-                    ((This) o).getToStringValue ();
+                    getLimitedToString((This) o);
             } catch (InvalidExpressionException ex) {
                 return ex.getLocalizedMessage ();
             }
         return null;
         //throw new UnknownTypeException (o);
+    }
+    
+    private static String getLimitedToString(ObjectVariable v) throws InvalidExpressionException {
+        String toString = null;
+        try {
+            java.lang.reflect.Method toStringMethod =
+                    v.getClass().getMethod("getToStringValue",  // NOI18N
+                                           new Class[] { Integer.TYPE });
+            toStringMethod.setAccessible(true);
+            toString = (String) toStringMethod.invoke(v, TO_STRING_LENGTH_LIMIT);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        if (toString == null) {
+            toString = v.getToStringValue();
+        }
+        return toString;
     }
     
     protected void testKnown(Object o) throws UnknownTypeException {

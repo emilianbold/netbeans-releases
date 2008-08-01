@@ -64,7 +64,7 @@ import org.netbeans.api.debugger.jpda.MethodBreakpoint;
 import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.modules.debugger.jpda.ExpressionPool;
 import org.netbeans.modules.debugger.jpda.JPDAStepImpl.MethodExitBreakpointListener;
-import org.netbeans.modules.debugger.jpda.JPDAStepImpl.SingleThreadedStepWatch;
+//import org.netbeans.modules.debugger.jpda.JPDAStepImpl.SingleThreadedStepWatch;
 import org.netbeans.modules.debugger.jpda.SourcePath;
 import org.netbeans.modules.debugger.jpda.breakpoints.MethodBreakpointImpl;
 import org.netbeans.spi.debugger.ContextProvider;
@@ -93,7 +93,7 @@ implements Executor {
     private StepRequest             stepRequest;
     private ContextProvider         lookupProvider;
     private MethodExitBreakpointListener lastMethodExitBreakpointListener;
-    private SingleThreadedStepWatch stepWatch;
+    //private SingleThreadedStepWatch stepWatch;
     private boolean smartSteppingStepOut;
 
     
@@ -193,8 +193,9 @@ implements Executor {
                     resumeThread.disableMethodInvokeUntilResumed();
                 }
                 // 3) resume JVM
+                resumeThread.setInStep(true, stepRequest);
                 if (suspendPolicy == JPDADebugger.SUSPEND_EVENT_THREAD) {
-                    stepWatch = new SingleThreadedStepWatch(getDebuggerImpl(), stepRequest);
+                    //stepWatch = new SingleThreadedStepWatch(getDebuggerImpl(), stepRequest);
                     getDebuggerImpl().resumeCurrentThread();
                     //resumeThread.resume();
                 } else {
@@ -254,10 +255,13 @@ implements Executor {
     public boolean exec (Event ev) {
         // TODO: fetch current engine from the Event
         // 1) init info about current state
-        if (stepWatch != null) {
+        StepRequest sr = (StepRequest) ev.request();
+        JPDAThreadImpl st = (JPDAThreadImpl) getDebuggerImpl().getThread(sr.thread());
+        st.setInStep(false, null);
+        /*if (stepWatch != null) {
             stepWatch.done();
             stepWatch = null;
-        }
+        }*/
         LocatableEvent event = (LocatableEvent) ev;
         String className = event.location ().declaringType ().name ();
         ThreadReference tr = event.thread ();
@@ -296,7 +300,7 @@ implements Executor {
                     return true;
                 }
             } catch (IncompatibleThreadStateException e) {
-                ErrorManager.getDefault().notify(e);
+                logger.fine("Incompatible Thread State: " + e.getLocalizedMessage());
             }
             
             // Stop execution here?
@@ -311,11 +315,6 @@ implements Executor {
                      (lookupProvider, t, getSmartSteppingFilterImpl ())
                 ) {
                     // YES!
-                    Session session = lookupProvider.lookupFirst(null, Session.class);
-                    if (session != null) {
-                        DebuggerManager.getDebuggerManager().setCurrentSession(session);
-                    }
-                    getDebuggerImpl ().setStoppedState (tr);
                     //S ystem.out.println("/nStepAction.exec end - do not resume");
                     return false; // do not resume
                 }
@@ -327,7 +326,7 @@ implements Executor {
             if (smartSteppingStepOut) {
                 getStepIntoActionProvider ().doAction(ActionsManager.ACTION_STEP_OUT);
             } else {
-                getStepIntoActionProvider ().doAction(ActionsManager.ACTION_STEP_INTO);
+                getStepIntoActionProvider ().doAction(StepIntoActionProvider.ACTION_SMART_STEP_INTO);
             }
             //S ystem.out.println("/nStepAction.exec end - resume");
             return true; // resume
@@ -335,10 +334,13 @@ implements Executor {
     }
 
     public void removed(EventRequest eventRequest) {
-        if (stepWatch != null) {
+        StepRequest sr = (StepRequest) eventRequest;
+        JPDAThreadImpl st = (JPDAThreadImpl) getDebuggerImpl().getThread(sr.thread());
+        st.setInStep(false, null);
+        /*if (stepWatch != null) {
             stepWatch.done();
             stepWatch = null;
-        }
+        }*/
         if (lastMethodExitBreakpointListener != null) {
             lastMethodExitBreakpointListener.destroy();
             lastMethodExitBreakpointListener = null;

@@ -46,14 +46,16 @@ import org.netbeans.modules.websvc.wsitmodelext.rm.Ordered;
 import org.netbeans.modules.websvc.wsitmodelext.rm.RMAssertion;
 import org.netbeans.modules.websvc.wsitmodelext.security.Wss10;
 import org.netbeans.modules.websvc.wsitmodelext.security.Wss11;
+import org.netbeans.modules.xml.wsdl.model.ExtensibilityElement;
 
 /**
  *
  * @author Martin Grebac
  */
-public interface All extends NestedPolicyAllowed {
+public interface All extends ExtensibilityElement {
     public static final String ALL_PROPERTY = "ALL";     //NOI18N
     public static final String EXACTLYONE_PROPERTY = "EXACTLYONE";     //NOI18N
+    public static final String POLICY_PROPERTY = "POLICY";     //NOI18N
     public static final String POLICYREFERENCE_PROPERTY = "POLICYREFERENCE";     //NOI18N
     
     All getAll();

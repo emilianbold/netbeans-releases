@@ -54,7 +54,6 @@ import org.netbeans.modules.cnd.apt.support.APTDriver;
 import org.netbeans.modules.cnd.apt.utils.APTCommentsFilter;
 import org.netbeans.modules.cnd.apt.utils.APTTraceUtils;
 import org.netbeans.modules.cnd.modelimpl.cache.CacheManager;
-import org.netbeans.modules.cnd.modelimpl.csm.core.LibProjectImpl;
 import java.io.*;
 import java.util.*;
 import java.util.List;
@@ -62,6 +61,7 @@ import java.util.List;
 import antlr.*;
 import antlr.collections.*;
 
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.util.*;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
@@ -816,10 +816,12 @@ public class TraceModel extends TraceModelBase {
     private long testAPTLexer(File file, boolean printTokens) throws FileNotFoundException, RecognitionException, TokenStreamException, IOException, ClassNotFoundException {
 	print("Testing APT lexer:"); // NOI18N
 	long time = System.currentTimeMillis();
+        Reader reader = null;
 	InputStream stream = null;
 	try {
 	    stream = new BufferedInputStream(new FileInputStream(file), TraceFlags.BUF_SIZE);
-	    TokenStream ts = APTTokenStreamBuilder.buildTokenStream(file.getAbsolutePath(), stream);
+            reader = new InputStreamReader(stream, FileEncodingQuery.getDefaultEncoding());
+	    TokenStream ts = APTTokenStreamBuilder.buildTokenStream(file.getAbsolutePath(), reader);
 	    for (Token t = ts.nextToken(); !APTUtils.isEOF(t); t = ts.nextToken()) {
 		if (printTokens) {
 		    print("" + t);
@@ -831,6 +833,9 @@ public class TraceModel extends TraceModelBase {
 	    }
 	    return time;
 	} finally {
+            if (reader != null) {
+                reader.close();
+            }
 	    if (stream != null) {
 		stream.close();
 	    }
@@ -934,7 +939,7 @@ public class TraceModel extends TraceModelBase {
     private void testAPT(NativeFileItem item) throws FileNotFoundException, RecognitionException, TokenStreamException, IOException, ClassNotFoundException {
 	File file = item.getFile();
 	FileBuffer buffer = new FileBufferFile(file);
-	print("Testing APT:" + file); // NOI18N
+	print("Testing APT: " + file.getName()); // NOI18N
 	long minLexer = Long.MAX_VALUE;
 	long maxLexer = Long.MIN_VALUE;
 	long minAPTLexer = Long.MAX_VALUE;

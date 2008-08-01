@@ -113,7 +113,7 @@ import org.netbeans.modules.bpel.nodes.dnd.Util;
 import org.netbeans.modules.bpel.properties.PropertyType;
 import org.netbeans.modules.bpel.properties.props.PropertyUtils;
 import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
-import org.netbeans.modules.soa.ui.SoaUiUtil;
+import org.netbeans.modules.soa.ui.SoaUtil;
 import org.netbeans.modules.soa.ui.form.CustomNodeEditor;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.Model;
@@ -151,7 +151,6 @@ public abstract class BpelNode<T>
         extends AbstractNode
         implements InstanceRef<T>, NodeTypeHolder<NodeType>
 {
-    
     // constants used in childs
     public static final String VARIABLE_EQ = " variable="; // NOI18N
     public static final String MESSAGE_EXCHANGE_EQ = " messageExchange="; // NOI18N
@@ -664,26 +663,26 @@ public abstract class BpelNode<T>
     }
     
     private Image getDebuggerBadgedImage(Image nodeImage ) {
-        return SoaUiUtil.getBadgedIcon(
+        return SoaUtil.getBadgedIcon(
                 nodeImage,getBreakpointBadge(), 9, 9);
     }
     
     private Image getAnnotationIcon(Image nodeImage, AnnotationType type) {
         switch (type) {
             case BREAKPOINT :
-                return SoaUiUtil.getBadgedIcon(
+                return SoaUtil.getBadgedIcon(
                         nodeImage,getBreakpointBadge(), 9, 9);
             case CURRENT_BREAKPOINT :
-                return SoaUiUtil.getBadgedIcon(
+                return SoaUtil.getBadgedIcon(
                         nodeImage,getCurrentBreakpointBadge(), 9, 9);
             case DISABLED_BREAKPOINT :
-                return SoaUiUtil.getBadgedIcon(
+                return SoaUtil.getBadgedIcon(
                         nodeImage,getDisabledBreakpointBadge(), 9, 9);
             case CURRENT_DISABLED_BREAKPOINT :
-                return SoaUiUtil.getBadgedIcon(
+                return SoaUtil.getBadgedIcon(
                         nodeImage,getCurrentDisabledBreakpointBadge(), 9, 9);
             case CURRENT_POSITION :
-                return SoaUiUtil.getBadgedIcon(
+                return SoaUtil.getBadgedIcon(
                         nodeImage,getCurrentPositionBadge(), 9, 9);
         }
         
@@ -702,12 +701,12 @@ public abstract class BpelNode<T>
         
         if (isErrorBadged) {
             return getErrorBadge() != null
-                    ? SoaUiUtil.getBadgedIcon(
+                    ? SoaUtil.getBadgedIcon(
                     vrgnImage/*getNodeType().getImage()*/,getErrorBadge())
                     : vrgnImage;//getNodeType().getImage();
         } else if (isWarningBadged) {
             return getWarningBadge() != null
-                    ? SoaUiUtil.getBadgedIcon(
+                    ? SoaUtil.getBadgedIcon(
                     vrgnImage/*getNodeType().getImage()*/,getWarningBadge())
                     : vrgnImage;//getNodeType().getImage();
         }
@@ -785,17 +784,10 @@ public abstract class BpelNode<T>
         htmlDisplayName = htmlDisplayName != null && htmlDisplayName.length() > 0 ?
             htmlDisplayName : getNodeType().getDisplayName();
         
-        return org.netbeans.modules.bpel.editors.api.utils.Util.getCorrectedHtmlRenderedString(htmlDisplayName);
+        return org.netbeans.modules.bpel.editors.api.EditorUtil.getCorrectedHtmlRenderedString(htmlDisplayName);
     }
     
     protected String getImplShortDescription() {
-//        String instanceName = getName();
-//        return NbBundle.getMessage(BpelNode.class,
-//                "LBL_SHORT_TOOLTIP_HTML_TEMPLATE", // NOI18N
-//                getNodeType().getDisplayName(), 
-//                instanceName); // NOI18N
-//        return getDisplayName();
-       
         return decorationProvider == null 
                 ? EMPTY_STRING 
                 : decorationProvider.getTooltip(getNodeType(),getReference());
@@ -811,17 +803,15 @@ public abstract class BpelNode<T>
     }
     
     public void updateName(){
-        
         //name will be reloaded from model during next getName call
         synchronized(NAME_LOCK){
             cachedName = null;
         }
-        
         fireNameChange(null, getName());
+
         synchronized(NAME_LOCK){
             cachedShortDescription = null;
         }
-        
         synchronized(NAME_LOCK){
             cachedHtmlDisplayName = null;
         }
@@ -847,6 +837,7 @@ public abstract class BpelNode<T>
     public void updatePropertyChange(String propertyName,
             Object oldValue,Object newValue) {
         firePropertyChange(propertyName, oldValue, newValue);
+       
         synchronized(NAME_LOCK){
             cachedShortDescription = null;
         }
@@ -862,7 +853,6 @@ public abstract class BpelNode<T>
         synchronized(NAME_LOCK){
             cachedShortDescription = null;
         }
-        
         fireShortDescriptionChange(null,getShortDescription());
     }
 
@@ -1038,22 +1028,14 @@ public abstract class BpelNode<T>
     }
     
     private class Synchronizer extends ChangeEventListenerAdapter{
-        public Synchronizer() {
-        }
-        
-        
-        private ChangeEventListener listener;
+        public Synchronizer() {}
         
         private void subscribe(BpelModel model) {
             listener = new DelegatingChangeEventListener(this);
             model.addEntityChangeListener(listener);
-            
         }
-
-        
         
         private void reloadChildren() {
-            
             Children children = getChildren();
             if (children instanceof ReloadableChildren) {
                 ((ReloadableChildren)children).reload();
@@ -1063,37 +1045,37 @@ public abstract class BpelNode<T>
         }
         
         public void notifyEntityRemoved(EntityRemoveEvent event) {
+//System.out.println("notifyEntityRemoved");
             BpelEntity entity = event.getOutOfModelEntity();
-            //
             T ref = getReference();
+
             if (ref == null) {
                 //
                 // the referenced element already removed
                 //
                 BpelModel bpelModel = entity.getBpelModel();
                 unsubscribedFromAndDestroy(bpelModel);
-            } else {
+            }
+            else {
                 if (BpelNode.this.isEventRequreUpdate(event)) {
                     reloadChildren();
                 }
-                
-                if (event.getOutOfModelEntity() instanceof Documentation 
-                        && ref.equals(event.getParent())) 
-                {
+                if (event.getOutOfModelEntity() instanceof Documentation && ref.equals(event.getParent())) {
                     updateShortDescription();
+                    // # 126692
+                    updateDocumentation(event);
                 }
             }
-            //
             // Perform update processing of complex ptoperties
             updateComplexProperties(event);
             updateComplexNames(event);
         }
         
         public void notifyPropertyRemoved(PropertyRemoveEvent event) {
+//System.out.println("notifyPropertyRemoved");
             BpelEntity entity = event.getParent();
-            
-
             T ref = getReference();
+
             if (ref == null) {
                 //
                 // the referenced element already removed
@@ -1103,22 +1085,23 @@ public abstract class BpelNode<T>
             } else {
                 if (BpelNode.this.isEventRequreUpdate(event)) {
                     reloadChildren();
+                    updateName();
                 }
             }
-            //
             // Perform update processing of complex ptoperties
             updateComplexProperties(event);
             updateComplexNames(event);
         }
         
         public void notifyPropertyUpdated(PropertyUpdateEvent event) {
+//System.out.println("notifyPropertyUpdated");
             if (BpelNode.this.isEventRequreUpdate(event)) {
                 String attributeName = event.getName();
                 updateAttributeProperty(attributeName);
                 updateName();
-                //
                 // Check if the property has the List type
                 Object value = event.getNewValue();
+
                 if (value == null) {
                     value = event.getOldValue();
                 }
@@ -1126,39 +1109,42 @@ public abstract class BpelNode<T>
                     reloadChildren();
                 }
             }
-            //
             // Check that the property is the content of an entity
             // which owned by the node's entity.
             if (ContentElement.CONTENT_PROPERTY.equals(event.getName())) {
                 BpelEntity parentEntity = event.getParent();
                 //
                 T curEntity = getReference();
-                if (curEntity != null && parentEntity != null &&
-                        parentEntity.getParent() == curEntity) {
+
+                if (curEntity != null && parentEntity != null && parentEntity.getParent() == curEntity) {
                     updateElementProperty(parentEntity.getClass());
+
                     if (parentEntity instanceof Documentation) {
                         updateShortDescription();
+                        // # 126692
+                        updateDocumentation(event);
                     }
                 }
             }
-            //
             // Perform update processing of complex ptoperties
             updateComplexProperties(event);
         }
         
         public void notifyArrayUpdated(ArrayUpdateEvent event) {
+//System.out.println("notifyArrayUpdated");
             if (BpelNode.this.isEventRequreUpdate(event)) {
                 reloadChildren();
             }
-            //
             // Perform update processing of complex ptoperties
             updateComplexProperties(event);
             updateComplexNames(event);
         }
         
         public void notifyEntityUpdated(EntityUpdateEvent event) {
+//System.out.println("notifyEntityUpdated");
             if (BpelNode.this.isEventRequreUpdate(event)) {
                 BpelEntity entity = event.getNewValue();
+  
                 if (entity == null) {
                     entity = event.getOldValue();
                 }
@@ -1168,84 +1154,60 @@ public abstract class BpelNode<T>
                 //
                 reloadChildren();
             }
-            
-            //
             // Perform update processing of complex ptoperties
             updateComplexProperties(event);
             updateComplexNames(event);
         }
         
         public void notifyEntityInserted(EntityInsertEvent event) {
+//System.out.println("notifyEntityInserted");
             if (BpelNode.this.isEventRequreUpdate(event)) {
                 BpelEntity entity = event.getValue();
+
                 if (entity != null) {
                     updateElementProperty(entity.getClass());
                 }
-                
                 if (entity instanceof Documentation) {
+//System.out.println("  documentation");
                     updateShortDescription();
-                } else {
-                    //
+                    // # 126692
+                    updateDocumentation(event);
+                }
+                else {
                     reloadChildren();
                 }
             }
-            //
             // Perform update processing of complex ptoperties
             updateComplexProperties(event);
             updateComplexNames(event);
         }
 
-        
+        private ChangeEventListener listener;
+    }
+
+    // # 126692
+    private void updateDocumentation(ChangeEvent event) {
+//System.out.println();
+//System.out.println("UPDATE DOC: " + event.getClass().getName());
+
+        if (event instanceof EntityInsertEvent) {
+            BpelEntity parentEvent = event.getParent();
+            if (parentEvent != null && parentEvent.equals(this.getReference())) {
+                updateProperty(org.netbeans.modules.bpel.properties.PropertyType.DOCUMENTATION);
+            }
+        } 
+        else if (event instanceof EntityRemoveEvent) {
+            BpelEntity parentEvent = event.getParent();
+            if (parentEvent != null && parentEvent.equals(this.getReference())) {
+                updateProperty(org.netbeans.modules.bpel.properties.PropertyType.DOCUMENTATION);
+            }
+        }
+        else if (event instanceof PropertyUpdateEvent) {
+            updateProperty(org.netbeans.modules.bpel.properties.PropertyType.DOCUMENTATION);
+        }
     }
     
     private class ValidationChangesListener implements ChangeValidationListener {
-        // TODO r
-//        public void validationUpdated(Validator.ResultItem updatedItem) {
-//            for(Component component: updatedItem.getComponents()) {
-//                Object reference = BpelNode.this instanceof ContainerBpelNode
-//                        ? ((ContainerBpelNode)BpelNode.this).getContainerReference()
-//                        : getReference();
-//                if (reference == null) {
-//                    return;
-//                }
-//                if (reference.equals(component)) {
-//                    switch (updatedItem.getType()) {
-//                        case ERROR :
-//                            isErrorBadged = true;
-//                            isWarningBadged = false;
-//                            fireIconChange();
-//                            fireOpenedIconChange();
-//                            break;
-//                        case WARNING :
-//                            isErrorBadged = false;
-//                            isWarningBadged = true;
-//                            fireIconChange();
-//                            fireOpenedIconChange();
-//                            break;
-//                        default :
-//                            isErrorBadged = false;
-//                            isWarningBadged = false;
-//                            fireIconChange();
-//                            fireOpenedIconChange();
-//                    }
-//                }
-//            }
-//        }
-//
-//        public void validationRemoved(Validator.ResultItem updatedItem) {
-//            for(Component component: updatedItem.getComponents()) {
-//                Object reference = getReference();
-//                if (reference == null) {
-//                    return;
-//                }
-//                if (reference.equals(component)) {
-//                    isErrorBadged = false;
-//                    isWarningBadged = false;
-//                    fireIconChange();
-//                    fireOpenedIconChange();
-//                }
-//            }
-//        }
         public void validationUpdated(Component component, Validator.ResultType resultType) {
             if (isValidationAnnotatedEntity(component)) {
 
@@ -1454,7 +1416,7 @@ public abstract class BpelNode<T>
         return true;
     }
     
-    
+   
     public Transferable clipboardCopy() throws IOException {
         try {
             return new BpelNodeTransferable(this);

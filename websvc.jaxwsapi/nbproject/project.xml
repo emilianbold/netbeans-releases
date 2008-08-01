@@ -157,6 +157,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.websvc.jaxrpc</friend>
                 <friend>org.netbeans.modules.websvc.restapi</friend>
                 <friend>org.netbeans.modules.websvc.wsitconf</friend>
+                <friend>org.netbeans.modules.websvc.wsitest</friend>
                 <package>org.netbeans.modules.websvc.jaxws.api</package>
                 <package>org.netbeans.modules.websvc.jaxws.spi</package>
             </friend-packages>

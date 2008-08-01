@@ -53,7 +53,6 @@ import org.openide.loaders.UniFileLoader;
 import org.openide.loaders.ExtensionList;
 import org.openide.loaders.MultiDataObject;
 import org.openide.filesystems.FileObject;
-import org.openide.actions.*;
 import org.openide.util.NbBundle;
 
 /** Data loader which recognizes .tld files.
@@ -61,7 +60,6 @@ import org.openide.util.NbBundle;
 * can be unfinaled if desired.
 *
 */
-
 public final class TLDLoader extends UniFileLoader {
     
     public static final String tldExt = "tld"; //NOI18N
@@ -76,7 +74,7 @@ public final class TLDLoader extends UniFileLoader {
     
      /** Does initialization. Initializes display name,
      * extension list and the actions. */
-    
+    @Override
     protected void initialize () {
     	super.initialize();
 	ExtensionList ext = new ExtensionList();
@@ -91,10 +89,12 @@ public final class TLDLoader extends UniFileLoader {
 	return obj;
     }
 
+    @Override
     protected String defaultDisplayName () {
 	return NbBundle.getMessage (TLDLoader.class, "TLD_loaderName");
     }
     
+    @Override
     protected String actionsContext() {
         return "Loaders/text/x-tld/Actions/"; // NOI18N
     }

@@ -39,8 +39,8 @@
 
 package org.netbeans.modules.db.mysql.installations;
 
-import org.netbeans.modules.db.mysql.Installation;
-import org.netbeans.modules.db.mysql.Utils;
+import org.netbeans.modules.db.mysql.impl.Installation;
+import org.netbeans.modules.db.mysql.util.Utils;
 import org.openide.util.Utilities;
 
 /**
@@ -51,7 +51,7 @@ import org.openide.util.Utilities;
  * @author David Van Couvering
  */
 public class MAMPInstallation implements Installation {
-    private static final String DEFAULT_BASE_PATH = "/Applications/MAMP"; // NOI8N
+    private static final String DEFAULT_BASE_PATH = "/Applications/MAMP"; // NOI18N
     private static final String START_PATH = "/bin/startMysql.sh"; // NOI18N
     private static final String STOP_PATH = "/bin/stopMysql.sh"; // NOI18N
     private static final String DEFAULT_PORT = "8889";

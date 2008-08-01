@@ -1,3 +1,4 @@
+// <editor-fold defaultstate="collapsed" desc=" License Header ">
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
@@ -38,6 +39,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+// </editor-fold>
 
 package org.netbeans.modules.j2ee.sun.ide.j2ee.ui;
 
@@ -54,7 +56,6 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListDataListener;
 import org.netbeans.modules.j2ee.sun.api.ServerLocationManager;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -63,17 +64,27 @@ class AddInstanceVisualPlatformPanel extends javax.swing.JPanel  {
     
     private Object type;
     
+    private static Profile[] SHORT_PROFILES_LIST = { Profile.DEFAULT };
+    private static Profile[] LONG_PROFILES_LIST = { Profile.DEFAULT, Profile.DEVELOPER,
+        Profile.CLUSTER, Profile.ENTERPRISE };
+
     AddInstanceVisualPlatformPanel(File defaultLoc) {
         initComponents();
         platformField.getDocument().addDocumentListener(new DocumentListener() {
             public void changedUpdate(DocumentEvent e) {
                 fireChangeEvent();
+                updateDomainList();
+                updateProfileList();
             }
             public void insertUpdate(DocumentEvent e) {
                 fireChangeEvent();
+                updateDomainList();
+                updateProfileList();
             }
             public void removeUpdate(DocumentEvent e) {
                 fireChangeEvent();
+                updateDomainList();
+                updateProfileList();
             }
         });
         platformField.setText(defaultLoc.getAbsolutePath());
@@ -102,6 +113,8 @@ class AddInstanceVisualPlatformPanel extends javax.swing.JPanel  {
             }
         });
         instanceSelector.setPrototypeDisplayValue("WWWWWWWWWWWWWWWW");
+        updateDomainList();
+        updateProfileList();
     }
     
     Object getSelectedType() {
@@ -119,11 +132,11 @@ class AddInstanceVisualPlatformPanel extends javax.swing.JPanel  {
     void setDomainsList(Object[] domainsList, boolean react) {
         if (domainsList != null) {
             instanceSelector.setModel(new javax.swing.DefaultComboBoxModel(domainsList));
+            boolean hasWritableDomains = (domainsList.length >= 1);
+            registerDefault.setEnabled(hasWritableDomains);
+            instanceSelector.setEnabled(hasWritableDomains);
+            instanceSelectorLabel.setEnabled(hasWritableDomains);
             if (react && !registerLocal.isSelected() && !registerRemote.isSelected()) {
-                boolean hasWritableDomains = (domainsList.length >= 1);
-                registerDefault.setEnabled(hasWritableDomains);
-                instanceSelector.setEnabled(hasWritableDomains);
-                instanceSelectorLabel.setEnabled(hasWritableDomains);
                 if (!hasWritableDomains) {
                     createPersonal.setSelected(true);
                 } else {
@@ -459,7 +472,40 @@ private void profileSelectorActionPerformed(java.awt.event.ActionEvent evt) {//G
     ComboBoxModel getProfilesListModel() {
         return profileSelector.getModel();
     }
+    
+    private void updateDomainList() {
+        File location = new File(platformField.getText());
+        Object[] domainsList = getDomainList(Util.getRegisterableDefaultDomains(location),location);
+        setDomainsList(domainsList,true);        
+    }
+    
+    private void updateProfileList() {
+        File location = new File(platformField.getText());
+        if (ServerLocationManager.getAppServerPlatformVersion(location) !=
+                ServerLocationManager.GF_V2) {
+            setProfilesList(SHORT_PROFILES_LIST,true);
+        } else {
+            setProfilesList(LONG_PROFILES_LIST,true);
+        }
+        
+    }
 
+    static private Object[] getDomainList(File[] dirs, File location){
+        return getServerList(dirs,location);
+    }
+    
+    static private Object[] getServerList(File[] dirs,File location){
+        java.util.List xmlList = new java.util.ArrayList();
+        Object retVal[];
+        for(int i=0; location != null && i<dirs.length; i++){
+            String hostPort = Util.getHostPort(dirs[i],location);
+            if(hostPort != null) {
+                xmlList.add(new DomainListEntry(hostPort,dirs[i],location));                    
+            }
+        }//for
+        retVal = xmlList.toArray();
+        return retVal;
+    }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JRadioButton createPersonal;

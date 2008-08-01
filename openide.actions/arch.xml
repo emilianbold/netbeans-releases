@@ -849,8 +849,6 @@ are typically used in xml layers.
 No.
 </answer>
 
-
-
 <!-- Question: resources-read
 
      <question id="resources-read">
@@ -877,6 +875,53 @@ it belongs to <em>Window system module</em>.
 </answer>
 
 
+<!-- Question: resources-preferences
+
+     <question id="resources-preferences">
+            Does your module uses preferences via Preferences API? Does your module use 
+            NbPreferences or or regular JDK Preferences ? Does it read, write or both ? 
+            Does it share preferences with other modules ? If so, then why ?
+            
+            <hint>You may use &lt;api type="export" group="preferences" name="preference node name"
+            category="private"&gt;  description of individual keys, where it is used, what it influences, 
+            whether the module reads/write it, etc. &lt;/api&gt;  Due to XML ID restrictions, rather than 
+            /org/netbeans/modules/foo give the "name" as org.netbeans.modules.foo. Note that if you use 
+            NbPreferences this name will then be the same as the code name base of the module.
+            </hint>
+        </question>
+-->
+<answer id="resources-preferences">
+    <api group="preferences" name="org.openide.actions.HeapView" type="export" category="private">
+      <table>
+          <tbody>
+              <tr>
+                  <th>key</th>
+                  <th>description</th>
+                  <th>read</th>
+                  <th>write</th>
+              </tr>
+              <tr>
+                  <td>showDropShadow</td>
+                  <td>Preserves "Drop Shadow" setting of the view</td>
+                  <td>x</td>
+                  <td>x</td>
+              </tr>
+              <tr>
+                  <td>showText</td>
+                  <td>Preserves "Show Text" setting of the view</td>
+                  <td>x</td>
+                  <td>x</td>
+              </tr>
+              <tr>
+                  <td>tickStyle</td>
+                  <td>Preserves "Overlay Grid" setting of the view</td>
+                  <td>x</td>
+                  <td>x</td>
+              </tr>
+          </tbody>
+      </table>
+  </api>
+</answer>
 
 
 <!--

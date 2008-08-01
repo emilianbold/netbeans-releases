@@ -42,16 +42,17 @@
 package org.netbeans.modules.websvc.wsitmodelext.policy;
 
 import org.netbeans.modules.websvc.wsitmodelext.rm.RMAssertion;
+import org.netbeans.modules.xml.wsdl.model.ExtensibilityElement;
 
 /**
  *
  * @author Martin Grebac
  */
-public interface ExactlyOne extends NestedPolicyAllowed {
+public interface ExactlyOne extends ExtensibilityElement {
     public static final String ALL_PROPERTY = "EAALL";     //NOI18N
     public static final String EXACTLYONE_PROPERTY = "EAEXACTLYONE";     //NOI18N
     public static final String POLICYREFERENCE_PROPERTY = "EAPOLICYREFERENCE";     //NOI18N
-//    public static final String RMASSERTION_PROPERTY = "EARMASSERTION";     //NOI18N
+    public static final String POLICY_PROPERTY = "POLICY";     //NOI18N
     
     All getAll();
     void setAll(All all);

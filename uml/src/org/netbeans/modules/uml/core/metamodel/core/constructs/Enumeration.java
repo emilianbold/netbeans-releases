@@ -69,54 +69,62 @@ public class Enumeration extends DataType implements IEnumeration
      */
     public void addLiteral(final IEnumerationLiteral literal)
     {
-		if (literal != null)
-		{
-			// Pop the context that has been plugging events
-			// for feature.
-			revokeEventContext(literal);
-	
-			EventDispatchRetriever ret = EventDispatchRetriever.instance();
-            
-			IClassifierEventDispatcher disp = 
-                (IClassifierEventDispatcher)ret.getDispatcher(
+        if (literal != null)
+        {
+            // Pop the context that has been plugging events
+            // for feature.
+            revokeEventContext(literal);
+
+            EventDispatchRetriever ret = EventDispatchRetriever.instance();
+
+            IClassifierEventDispatcher disp =
+                    (IClassifierEventDispatcher) ret.getDispatcher(
                     EventDispatchNameKeeper.classifier());
-            
-			boolean proceed = true;
-			
-            if (disp != null) 
+
+            boolean proceed = true;
+
+            if (disp != null)
             {
-				IEventPayload payload = disp.createPayload("EnumerationLiteralPreAdded");
-				proceed = disp.fireEnumerationLiteralPreAdded(this, literal, payload);
-			}
-	
-			if (proceed) 
+                IEventPayload payload = disp.createPayload("EnumerationLiteralPreAdded");
+                proceed = disp.fireEnumerationLiteralPreAdded(this, literal, payload);
+            }
+
+            for(IEnumerationLiteral curLiteral : getLiterals())
             {
-               new ElementConnector<IEnumeration>().addChildAndConnect
-               ( 
-                   this,
-                   false, 
-                   "UML:Enumeration.literal", // NOI18N
-                   "UML:Enumeration.literal", // NOI18N
-                   literal, 
-                   new IBackPointer<IEnumeration>() 
-                   {
-                        public void execute(IEnumeration enumeration) 
-                        {
-                            literal.setEnumeration(enumeration);
-                        }
-                   }
-                );
-                
-                if (disp != null) 
+                if(curLiteral.isSame(literal) == true)
                 {
-					IEventPayload payload = disp.createPayload("EnumerationLiteralAdded");
-					disp.fireEnumerationLiteralAdded(this, literal, payload);
-				}
-                
-				else 
-					proceed = false;
-            }     
-		}
+                    proceed = false;
+                    break;
+                }
+            }
+            
+            if (proceed)
+            {
+                new ElementConnector<IEnumeration>().addChildAndConnect(
+                        this,
+                        false,
+                        "UML:Enumeration.literal", // NOI18N
+                        "UML:Enumeration.literal", // NOI18N
+                        literal,
+                        new IBackPointer<IEnumeration>()
+                        {
+
+                            public void execute(IEnumeration enumeration)
+                            {
+                                literal.setEnumeration(enumeration);
+                            }
+                        });
+
+                if (disp != null)
+                {
+                    IEventPayload payload = disp.createPayload("EnumerationLiteralAdded");
+                    disp.fireEnumerationLiteralAdded(this, literal, payload);
+                } else
+                {
+                    proceed = false;
+                }
+            }
+        }
     }
     
 	

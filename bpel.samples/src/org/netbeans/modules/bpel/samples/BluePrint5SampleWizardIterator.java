@@ -53,7 +53,7 @@ public class BluePrint5SampleWizardIterator extends BluePrintSampleWizardIterato
     }
     
     protected String[] createSteps() {
-      return new String[] { NbBundle.getMessage(BluePrintSampleWizardIterator.class, "MSG_CreateBPELBluePrint5Project") };
+      return new String[] { NbBundle.getMessage(BluePrintSampleWizardIterator.class, "MSG_CreateBPELBluePrint5Project") }; // NOI18N
     }
     
     protected WizardDescriptor.Panel[] createPanels() {

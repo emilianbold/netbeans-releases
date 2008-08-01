@@ -48,9 +48,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.netbeans.modules.dbschema.ColumnElement;
 import org.netbeans.modules.dbschema.ForeignKeyElement;
 import org.netbeans.modules.dbschema.SchemaElement;
 import org.netbeans.modules.dbschema.TableElement;
+import org.netbeans.modules.dbschema.UniqueKeyElement;
 import org.netbeans.modules.j2ee.persistence.entitygenerator.DbSchemaEjbGenerator;
 import org.netbeans.modules.j2ee.persistence.wizard.fromdb.Table.DisabledReason;
 import org.netbeans.modules.j2ee.persistence.wizard.fromdb.Table.ExistingDisabledReason;
@@ -87,29 +89,32 @@ public class DBSchemaTableProvider implements TableProvider {
         // need to create all the tables first
         TableElement[] tableElements = schemaElement.getTables();
         for (TableElement tableElement : tableElements) {
-            if (tableElement.isTable()) {
-                boolean join = DbSchemaEjbGenerator.isJoinTable(tableElement);
+            boolean join = DbSchemaEjbGenerator.isJoinTable(tableElement);
 
-                List<DisabledReason> disabledReasons = getDisabledReasons(tableElement, persistenceGen);
-                DisabledReason disabledReason = null;
-                // only take the first disabled reason
-                for (DisabledReason reason : disabledReasons) {
-                    // issue 76202: join tables are not required to have a primary key
-                    // so try the other disabled reasons, if any
-                    if (!(join && reason instanceof NoPrimaryKeyDisabledReason)) {
-                        disabledReason = reason;
-                        break;
-                    }
+            List<DisabledReason> disabledReasons = getDisabledReasons(tableElement, persistenceGen);
+            DisabledReason disabledReason = null;
+            // only take the first disabled reason
+            for (DisabledReason reason : disabledReasons) {
+                // issue 76202: join tables are not required to have a primary key
+                // so try the other disabled reasons, if any
+                if (!(join && reason instanceof NoPrimaryKeyDisabledReason)) {
+                    disabledReason = reason;
+                    break;
                 }
-
-                String tableName = tableElement.getName().getName();
-                DBSchemaTable table = new DBSchemaTable(tableName, join, disabledReason, persistenceGen);
-
-                name2Table.put(tableName, table);
-                name2Referenced.put(tableName, new HashSet<Table>());
-                name2ReferencedBy.put(tableName, new HashSet<Table>());
-                name2Join.put(tableName, new HashSet<Table>());
             }
+
+            String catalogName = tableElement.getDeclaringSchema().getCatalog().getName();
+            String schemaName = tableElement.getDeclaringSchema().getSchema().getName();
+            String tableName = tableElement.getName().getName();
+            DBSchemaTable table = new DBSchemaTable(catalogName, schemaName, tableName, join, disabledReason, persistenceGen, tableElement.isTable());
+            
+            // Set the unique constraints columns
+            table.setUniqueConstraints(getUniqueConstraints(tableElement));
+
+            name2Table.put(tableName, table);
+            name2Referenced.put(tableName, new HashSet<Table>());
+            name2ReferencedBy.put(tableName, new HashSet<Table>());
+            name2Join.put(tableName, new HashSet<Table>());
         }
 
         // referenced, referenced by and join tables
@@ -151,11 +156,31 @@ public class DBSchemaTableProvider implements TableProvider {
 
         return Collections.unmodifiableSet(result);
     }
+    
+    private Set<List<String>> getUniqueConstraints(TableElement tableElement) {
+        Set<List<String>> uniqueConstraintsCols = new HashSet<List<String>>();
+        UniqueKeyElement[] uks = tableElement.getUniqueKeys();
+        for (int ukIx = 0; ukIx < uks.length; ukIx++) {
+            if (!uks[ukIx].isPrimaryKey()) {
+                ColumnElement[] colElms = uks[ukIx].getColumns();
+                if (colElms == null || colElms.length == 0) {
+                    // bad one
+                    continue;
+                }
+                List<String> cols = new ArrayList<String>();
+                for (int cIx = 0; cIx < colElms.length; cIx++) {
+                    cols.add( colElms[cIx].getName().getName());
+                }
+                uniqueConstraintsCols.add(cols);
+            }
+        }
+        return uniqueConstraintsCols;
+    }
 
     private static List<DisabledReason> getDisabledReasons(TableElement tableElement, PersistenceGenerator persistenceGen) {
         List<DisabledReason> result = new ArrayList<DisabledReason>();
 
-        if (hasNoPrimaryKey(tableElement)) {
+        if (tableElement.isTable() && hasNoPrimaryKey(tableElement)) {
             result.add(new NoPrimaryKeyDisabledReason());
         }
 
@@ -178,9 +203,17 @@ public class DBSchemaTableProvider implements TableProvider {
         private Set<Table> referencedTables;
         private Set<Table> referencedByTables;
         private Set<Table> joinTables;
-
-        public DBSchemaTable(String name, boolean join, DisabledReason disabledReason, PersistenceGenerator persistenceGen) {
-            super(name, join, disabledReason);
+        
+        // A set of unique constraints columns
+        private Set<List<String>> uniqueConstraints;
+        
+        public DBSchemaTable(String catalog, String schema, String name, boolean join, DisabledReason disabledReason, PersistenceGenerator persistenceGen) {
+            super(catalog, schema, name, join, disabledReason);
+            this.persistenceGen = persistenceGen;
+        }
+        
+        public DBSchemaTable(String catalog, String schema, String name, boolean join, DisabledReason disabledReason, PersistenceGenerator persistenceGen, boolean isTable) {
+            super(catalog, schema, name, join, disabledReason, isTable);
             this.persistenceGen = persistenceGen;
         }
 
@@ -206,6 +239,14 @@ public class DBSchemaTableProvider implements TableProvider {
 
         private void setJoinTables(Set<Table> joinTables) {
             this.joinTables = joinTables;
+        }
+        
+        public Set<List<String>> getUniqueConstraints() {
+            return this.uniqueConstraints;
+        }
+        
+        public void setUniqueConstraints(Set<List<String>> constraints) {
+            this.uniqueConstraints = constraints;
         }
     }
 }

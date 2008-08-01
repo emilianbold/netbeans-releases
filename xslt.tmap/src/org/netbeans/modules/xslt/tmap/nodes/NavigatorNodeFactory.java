@@ -20,6 +20,7 @@ package org.netbeans.modules.xslt.tmap.nodes;
 
 import org.netbeans.modules.soa.ui.nodes.ReflectionNodeFactory;
 import org.netbeans.modules.xslt.tmap.model.api.Invoke;
+import org.netbeans.modules.xslt.tmap.model.api.Import;
 import org.netbeans.modules.xslt.tmap.model.api.Param;
 import org.netbeans.modules.xslt.tmap.model.api.TMapComponent;
 import org.netbeans.modules.xslt.tmap.model.api.TMapModel;
@@ -41,9 +42,10 @@ public class NavigatorNodeFactory extends ReflectionNodeFactory<NodeType> {
     }
     
     private NavigatorNodeFactory() {
-        super(6);
+        super(7);
         //
         key2Class.put(NodeType.TRANSFORMMAP, TransformMapNode.class);
+        key2Class.put(NodeType.IMPORT, ImportNode.class);
         key2Class.put(NodeType.SERVICE, ServiceNode.class);
         key2Class.put(NodeType.OPERATION, OperationNode.class);
         key2Class.put(NodeType.INVOKE, InvokeNode.class);
@@ -100,6 +102,11 @@ public class NavigatorNodeFactory extends ReflectionNodeFactory<NodeType> {
                 assert ref instanceof TMapComponent 
                         : "reference should be TMapComponent type to create TMapComponent type Node"; // NOI18N
                 node = super.createNode(nodeType, ref, new TMapComponentNodeChildrenImpl((TMapComponent) ref, lookup), lookup);
+                break;
+            case IMPORT:
+                assert ref instanceof Import 
+                        : "reference should be Import type to create Import type Node"; // NOI18N
+                node = super.createNode(nodeType, ref, Children.LEAF, lookup);
                 break;
             case PARAM:
                 assert ref instanceof Param 

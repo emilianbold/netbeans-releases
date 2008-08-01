@@ -965,7 +965,7 @@ Nothing.
 -->
  <answer id="resources-read">
   <p>
-   No.
+   XML schemas are read from <code>ProjectXMLCatalog</code>.
   </p>
  </answer>
 

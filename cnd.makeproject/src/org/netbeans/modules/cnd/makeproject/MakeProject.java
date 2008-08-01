@@ -56,6 +56,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifactProvider;
@@ -191,7 +192,8 @@ public final class MakeProject implements Project, AntProjectListener {
             new MakeProjectOperations(this),
             new FolderSearchInfo(projectDescriptorProvider),
             new MakeProjectType(),
-            new MakeProjectEncodingQueryImpl(projectDescriptorProvider)
+            new MakeProjectEncodingQueryImpl(projectDescriptorProvider),
+            new RemoteProjectImpl()
         });
     }
 
@@ -219,44 +221,46 @@ public final class MakeProject implements Project, AntProjectListener {
     private static final class RecommendedTemplatesImpl implements RecommendedTemplates, PrivilegedTemplates {
 
         private static final String[] RECOMMENDED_TYPES = new String[]{
-            "c-types",
-            "cpp-types",
-            "shell-types",
-            "makefile-types",
-            "c-types",
-            "simple-files",
+            "c-types", // NOI18N
+            "cpp-types", // NOI18N
+            "shell-types", // NOI18N
+            "makefile-types", // NOI18N
+            "c-types", // NOI18N
+            "simple-files", // NOI18N
             "asm-types"}; // NOI18N
         private static final String[] RECOMMENDED_TYPES_FORTRAN = new String[]{
-            "c-types",
-            "cpp-types",
-            "shell-types",
-            "makefile-types",
-            "c-types",
-            "simple-files",
-            "fortran-types",
+            "c-types", // NOI18N
+            "cpp-types", // NOI18N
+            "shell-types", // NOI18N
+            "makefile-types", // NOI18N
+            "c-types", // NOI18N
+            "simple-files", // NOI18N
+            "fortran-types", // NOI18N
             "asm-types"}; // NOI18N
         private static final String[] PRIVILEGED_NAMES = new String[]{
-            "Templates/cFiles/main.c",
-            "Templates/cFiles/file.c",
-            "Templates/cFiles/file.h",
-            "Templates/cppFiles/main.cc",
-            "Templates/cppFiles/file.cc",
-            "Templates/cppFiles/file.h",
-            "Templates/MakeTemplates/ComplexMakefile",
-            "Templates/MakeTemplates/SimpleMakefile/ExecutableMakefile",
-            "Templates/MakeTemplates/SimpleMakefile/SharedLibMakefile",
+            "Templates/cFiles/main.c", // NOI18N
+            "Templates/cFiles/file.c", // NOI18N
+            "Templates/cFiles/file.h", // NOI18N
+            "Templates/cppFiles/class.cc", // NOI18N
+            "Templates/cppFiles/main.cc", // NOI18N
+            "Templates/cppFiles/file.cc", // NOI18N
+            "Templates/cppFiles/file.h", // NOI18N
+            "Templates/MakeTemplates/ComplexMakefile", // NOI18N
+            "Templates/MakeTemplates/SimpleMakefile/ExecutableMakefile", // NOI18N
+            "Templates/MakeTemplates/SimpleMakefile/SharedLibMakefile", // NOI18N
             "Templates/MakeTemplates/SimpleMakefile/StaticLibMakefile"}; // NOI18N
         private static final String[] PRIVILEGED_NAMES_FORTRAN = new String[]{
-            "Templates/cFiles/main.c",
-            "Templates/cFiles/file.c",
-            "Templates/cFiles/file.h",
-            "Templates/cppFiles/main.cc",
-            "Templates/cppFiles/file.cc",
-            "Templates/cppFiles/file.h",
-            "Templates/fortranFiles/fortranFreeFormatFile.f90",
-            "Templates/MakeTemplates/ComplexMakefile",
-            "Templates/MakeTemplates/SimpleMakefile/ExecutableMakefile",
-            "Templates/MakeTemplates/SimpleMakefile/SharedLibMakefile",
+            "Templates/cFiles/main.c", // NOI18N
+            "Templates/cFiles/file.c", // NOI18N
+            "Templates/cFiles/file.h", // NOI18N
+            "Templates/cppFiles/class.cc", // NOI18N
+            "Templates/cppFiles/main.cc", // NOI18N
+            "Templates/cppFiles/file.cc", // NOI18N
+            "Templates/cppFiles/file.h", // NOI18N
+            "Templates/fortranFiles/fortranFreeFormatFile.f90", // NOI18N
+            "Templates/MakeTemplates/ComplexMakefile", // NOI18N
+            "Templates/MakeTemplates/SimpleMakefile/ExecutableMakefile", // NOI18N
+            "Templates/MakeTemplates/SimpleMakefile/SharedLibMakefile", // NOI18N
             "Templates/MakeTemplates/SimpleMakefile/StaticLibMakefile"}; // NOI18N
 
         public String[] getRecommendedTypes() {
@@ -510,41 +514,41 @@ public final class MakeProject implements Project, AntProjectListener {
                 openedTasks = null;
             }
 
-            /* Don't do this for two reasons: semantically it is wrong (IZ 115314) and it is dangerous (IZ 118575)
-            ConfigurationDescriptor projectDescriptor = null;
-            int count = 15;
-
-            // The code to wait on projectDescriptor is due to a synchronization problem in makeproject.
-            // If it gets fixed then projectDescriptorProvider.getConfigurationDescriptor() will never
-            // return null and we can remove this change.
-            while (projectDescriptor == null && count-- > 0) {
-                projectDescriptor = projectDescriptorProvider.getConfigurationDescriptor();
-                if (projectDescriptor == null) {
-                    try {
-                        Thread.sleep(100);
-                    } catch (InterruptedException ex) {
-                        return;
-                    }
-                }
-            }
-            if (projectDescriptor == null) {
-                ErrorManager.getDefault().log(ErrorManager.WARNING, "Skipping project open validation"); // NOI18N
-                return;
-            }
-
-            Configuration[] confs = projectDescriptor.getConfs().getConfs();
-            for (int i = 0; i < confs.length; i++) {
-                MakeConfiguration makeConfiguration = (MakeConfiguration) confs[i];
-                CompilerSetConfiguration csconf = makeConfiguration.getCompilerSet();
-                if (!csconf.isValid()) {
-                    CompilerSet cs = CompilerSet.getCompilerSet(csconf.getOldName());
-                    CompilerSetManager.getDefault().add(cs);
-                    if (cs.isValid()) {
-                        csconf.setValue(cs.getName());
-                    }
-                }
-            }
-             */
+//            /* Don't do this for two reasons: semantically it is wrong (IZ 115314) and it is dangerous (IZ 118575)
+//            ConfigurationDescriptor projectDescriptor = null;
+//            int count = 15;
+//
+//            // The code to wait on projectDescriptor is due to a synchronization problem in makeproject.
+//            // If it gets fixed then projectDescriptorProvider.getConfigurationDescriptor() will never
+//            // return null and we can remove this change.
+//            while (projectDescriptor == null && count-- > 0) {
+//                projectDescriptor = projectDescriptorProvider.getConfigurationDescriptor();
+//                if (projectDescriptor == null) {
+//                    try {
+//                        Thread.sleep(100);
+//                    } catch (InterruptedException ex) {
+//                        return;
+//                    }
+//                }
+//            }
+//            if (projectDescriptor == null) {
+//                ErrorManager.getDefault().log(ErrorManager.WARNING, "Skipping project open validation"); // NOI18N
+//                return;
+//            }
+//
+//            Configuration[] confs = projectDescriptor.getConfs().getConfs();
+//            for (int i = 0; i < confs.length; i++) {
+//                MakeConfiguration makeConfiguration = (MakeConfiguration) confs[i];
+//                CompilerSetConfiguration csconf = makeConfiguration.getCompilerSet();
+//                if (!csconf.isValid()) {
+//                    CompilerSet cs = CompilerSet.getCompilerSet(csconf.getOldName());
+//                    CompilerSetManager.getDefault(makeConfiguration.getDevelopmentHost().getName()).add(cs);
+//                    if (cs.isValid()) {
+//                        csconf.setValue(cs.getName());
+//                    }
+//                }
+//            }
+//             */
         }
 
         protected void projectClosed() {
@@ -564,17 +568,16 @@ public final class MakeProject implements Project, AntProjectListener {
             MakeConfigurationDescriptor projectDescriptor = (MakeConfigurationDescriptor) projectDescriptorProvider.getConfigurationDescriptor();
             Configuration[] confs = projectDescriptor.getConfs().getConfs();
 
-            String projectLocation = null;
-            int configurationType = 0;
-            String configurationName = null;
-            boolean active = false;
-            ;
-            String workingDirectory = null;
-            String buildCommand = null;
-            String cleanCommand = null;
-            String output = null;
+//            String projectLocation = null;
+//            int configurationType = 0;
+//            String configurationName = null;
+//            boolean active = false;
+//            String workingDirectory = null;
+//            String buildCommand = null;
+//            String cleanCommand = null;
+//            String output = null;
 
-            projectLocation = FileUtil.toFile(helper.getProjectDirectory()).getPath();
+//            projectLocation = FileUtil.toFile(helper.getProjectDirectory()).getPath();
             for (int i = 0; i < confs.length; i++) {
                 MakeConfiguration makeConfiguration = (MakeConfiguration) confs[i];
                 artifacts.add(new MakeArtifact(projectDescriptor, makeConfiguration));
@@ -601,4 +604,14 @@ public final class MakeProject implements Project, AntProjectListener {
             return rootFolder.getAllItemsAsDataObjectSet(false, "text/").iterator(); // NOI18N
         }
     }
+
+    class RemoteProjectImpl implements RemoteProject {
+
+        public String getDevelopmentHost() {
+            MakeConfigurationDescriptor projectDescriptor = (MakeConfigurationDescriptor) projectDescriptorProvider.getConfigurationDescriptor();
+            MakeConfiguration conf = (MakeConfiguration)projectDescriptor.getConfs().getActive();
+            return conf.getDevelopmentHost().getName();
+        }
+
     }
+}

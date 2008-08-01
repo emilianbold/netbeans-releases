@@ -48,6 +48,81 @@ made subject to such option by the copyright holder.
 </apidefs>
 <changes>
 
+<change id="tc.open">
+    <api name="winsys"/>
+    <summary>TopComponent.openAction</summary>
+    <version major="6" minor="24"/>
+    <date day="8" month="7" year="2008"/>
+    <author login="jtulach"/>
+    <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+    <description>
+        Adding new factory method that creates an action to open a <code>TopComponent</code>.
+    </description>
+    <issue number="136636"/>
+</change>
+<change id="winsys_customizations">
+    <api name="winsys"/>
+    <summary>Added a group of resource bundle properties for customization
+    of window system behavior.</summary>
+    <version major="6" minor="23"/>
+    <date day="6" month="6" year="2008"/>
+    <author login="saubrecht"/>
+    <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+    <description>
+	<p>There is a set of new properties defined in resource bundle which platform 
+        developers can use to customize the behavior of NetBeans' window system:</p>
+        <ul>
+            <li>Disable window drag and drop</li>
+            <li>Disable window undocking (floating windows)</li>
+            <li>Disable window sliding</li>
+            <li>Disable window resizing</li>
+            <li>Disable window maximization</li>
+            <li>Disable closing of non-editor windows (views)</li>
+            <li>Disable closing of editor windows</li>
+            <li>Force window system into respecting window minimum sizes when resizing windows using splitter bars</li>
+        </ul>
+        <p>The features above can be turned on/off simply by branding of core.windows module.</p>
+    </description>
+    <issue number="136636"/>
+</change>
+
+<change id="keep_preferred_size_when_slided_in">
+    <api name="winsys"/>
+    <summary>Changed behavior of TopComponent.close() and TopComponentGroup.close() for non persistent TopComponent</summary>
+    <version major="6" minor="22"/>
+    <date day="27" month="5" year="2008"/>
+    <author login="saubrecht"/>
+    <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+    <description>
+	Added TopComponent client property netbeans.winsys.tc.keep_preferred_size_when_slided_in which forces the window system
+        to respect TopComponent's preferred size when it is slided-in from left/right/bottom 
+        sliding bar when set to Boolean.TRUE. Otherwise the slided-in TopComponent
+        will fill the entire width/length of the IDE window (the default behavior).
+        This switch is intended for tools/palette windows like e.g. color chooser, 
+        tool picker etc.
+    </description>
+    <issue number="135318"/>
+</change>
+
+<change id="KeepNonPersistentTCInModelWhenClosed">
+    <api name="winsys"/>
+    <summary>Changed behavior of TopComponent.close() and TopComponentGroup.close() for non persistent TopComponent</summary>
+    <version major="6" minor="20"/>
+    <date day="27" month="3" year="2008"/>
+    <author login="mslama"/>
+    <compatibility addition="no" binary="compatible" source="compatible" semantic="incompatible" deprecation="no" deletion="no" modification="no"/>
+    <description>
+	Add client property KeepNonPersistentTCInModelWhenClosed to TopComponent to control behavior of winsys
+        when nonpersistent TopComponent is closed. As some TopComponent wants to keep their position in winsys
+	ie. be able to reopen at the same place and some TopComponent wants to be removed from winsys model.
+	We added client boolean property KeepNonPersistentTCInModelWhenClosed. When this property is not set
+	nn persistent TopComponent is removed from model when closed - it is original behavior before fix of
+	issue #101700. If client property is set (to Boolean.TRUE) then TopComponent is kept in model. It means that
+	client must explicitly set this client property to get behavior requested by issue #101700.
+    </description>
+    <issue number="121218"/>
+</change>
+
 <change id="close_component_group">
     <api name="winsys"/>
     <summary>Changed behavior of TopComponent.close() and TopComponentGroup.close() for non persistent TopComponent</summary>

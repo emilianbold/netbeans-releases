@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<filesystem>
+    <folder name="OptionsDialog">
+        <folder name="Advanced">
+            <file name="org-netbeans-modules-vmd-componentssupport-options-ComponentssupportAdvancedOption.instance"/>
+        </folder>
+    </folder>
+    <folder name="Templates">
+        <folder name="Project">
+            <folder name="J2ME">
+                <file name="CustomComponentProject.zip" url="nbresloc:/org/netbeans/modules/vmd/componentssupport/templates/CustomComponentProject.zip">
+                    <attr name="position" intvalue="900"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/vmd/componentssupport/ui/resources/module.png"/>
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.vmd.componentssupport.Bundle"/>
+                    <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.vmd.componentssupport.ui.wizard.CustomComponentWizardIterator.createIterator"/>
+                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/vmd/componentssupport/ui/resources/CustomComponentProject.html"/>
+                    <attr name="template" boolvalue="true"/>
+                </file>
+            </folder>
+        </folder>
+        <folder name="J2MEComponents">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.vmd.componentssupport.Bundle"/>
+            <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/vmd/componentssupport/ui/resources/j2meComponentsCategory.html"/>
+            <attr name="position" intvalue="250"/>
+
+            <file name="CustomComponent">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.vmd.componentssupport.Bundle"/>
+                <attr name="instantiatingIterator" newvalue="org.netbeans.modules.vmd.componentssupport.ui.wizard.NewComponentDescriptor"/>
+                <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/vmd/componentssupport/ui/resources/CustomComponent.html"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/vmd/componentssupport/ui/resources/CustomComponentIcon.gif"/>
+                <attr name="templateCategory" stringvalue="nbm-specific"/>
+            </file>           
+        </folder> 
+        <folder name="MobilityCustomComponent-files">
+            <attr name="position" intvalue="0"/>
+            <attr name="simple" boolvalue="false"/>
+            <file name="libdescriptemplate.xml" url="templates/libdescriptemplate.xml"/>
+            <file name="CustomComponentCD.java" url="templates/CustomComponentCD.template"/>
+            <file name="CustomComponentProducer.java" url="templates/CustomComponentProducer.template"/>
+            <file name="layer.xml" url="templates/layer.xml"/>
+        </folder>
+    </folder>
+</filesystem>

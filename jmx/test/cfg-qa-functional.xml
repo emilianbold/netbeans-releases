@@ -58,7 +58,6 @@ made subject to such option by the copyright holder.
                 <include name="org/netbeans/modules/jmx/test/mbeanwizard/MBeanOperationsWizard.class"/>
                 <include name="org/netbeans/modules/jmx/test/helpers/CloseAllDocuments.class"/>
                 <include name="org/netbeans/modules/jmx/test/mbeanwizard/TestMBeanProject.class"/>
-                <include name="org/netbeans/modules/jmx/test/configwizard/ManagementConfigurationWizard.class"/>
                 <include name="org/netbeans/modules/jmx/test/helpers/CloseAllDocuments.class"/>
                 <include name="org/netbeans/modules/jmx/test/managerwizard/ManagerWizard.class"/>
                 <include name="org/netbeans/modules/jmx/test/helpers/CloseAllDocuments.class"/>
@@ -69,9 +68,6 @@ made subject to such option by the copyright holder.
                 <include name="org/netbeans/modules/jmx/test/actions/ImplementNotificationEmitterActions.class"/>
                 <include name="org/netbeans/modules/jmx/test/actions/GenerateMBeanRegistrationActions.class"/>
                 <include name="org/netbeans/modules/jmx/test/helpers/CloseAllDocuments.class"/>
-                <include name="org/netbeans/modules/jmx/test/jconsole/JConsole.class"/>
-                <include name="org/netbeans/modules/jmx/test/jconsole/CreateAnagramProject.class"/>
-                <include name="org/netbeans/modules/jmx/test/jconsole/J2SEProject.class"/>
 
             </patternset>
         </testset>

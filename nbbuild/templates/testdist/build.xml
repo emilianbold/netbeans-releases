@@ -42,15 +42,10 @@ made subject to such option by the copyright holder.
 -->
 <project name="Test Distribution" default="all" basedir=".">
     <property name="test.required.modules" value=""/>
-    <target name="all" depends="unit,qa-functional" description="Run all tests">
-    </target>
-    <target name="unit" description="Run all unit tests">
-        <subant antfile="xtest-all-unit.xml"  buildpath="unit">
+    <property name="test.types" value="unit:qa-functional"/>
+    <target name="all" description="Run all tests">
+        <subant genericantfile="all-tests.xml" buildpath="${test.types}">
             <property name="test.required.modules" value="${test.required.modules}"/>
         </subant>
-        <ant dir="unit" antfile="xtest-all-unit.xml" target="junit-format"/>
-    </target>
-    <target name="qa-functional" description="Run all qa-functional tests">
-        <subant antfile="xtest-all-qa-functional.xml" buildpath="qa-functional"/>
     </target>
 </project>

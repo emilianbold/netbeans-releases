@@ -40,6 +40,7 @@
  */
 package org.netbeans.jellytools.nodes;
 
+import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Arrays;
 import javax.swing.tree.TreePath;
@@ -79,6 +80,7 @@ public class NodeTest extends JellyTestCase {
     /** method used for explicit testsuite definition
      */
     public static Test suite() {
+        /*
         TestSuite suite = new NbTestSuite();
         suite.addTest(new NodeTest("testConstructor"));
         suite.addTest(new NodeTest("testSelect"));
@@ -100,6 +102,27 @@ public class NodeTest extends JellyTestCase {
         suite.addTest(new NodeTest("testIsChildPresent"));
         suite.addTest(new NodeTest("testNodeRecreated"));
         return suite;
+         */
+        return createModuleTest(NodeTest.class, 
+        "testConstructor",
+        "testSelect",
+        "testSelectDoubleClick",
+        "testPerformAPIAction",
+        "testPerformAPIActionNoBlock",
+        "testPerformMenuAction",
+        "testPerformMenuActionNoBlock",
+        "testPerformPopupAction",
+        "testPerformPopupActionNoBlock",
+        "testGetPath",
+        "testGetParentPath",
+        "testGetChildren",
+        "testIsLeaf",
+        "testIsPresent",
+        "testVerifyPopup",
+        "testWaitNotPresent",
+        "testWaitChildNotPresent",
+        "testIsChildPresent",
+        "testNodeRecreated");
     }
     
     private static Node projectRootNode;
@@ -109,8 +132,13 @@ public class NodeTest extends JellyTestCase {
     
     /** method called before each testcase */
     @Override
-    protected void setUp() {
+    protected void setUp() throws IOException {
+        safeDeleteTitle = Bundle.getString("org.netbeans.modules.refactoring.spi.impl.Bundle",
+                                                             "LBL_SafeDel"); // NOI18N
+        runtimeLabel = Bundle.getString("org.netbeans.core.ide.resources.Bundle",
+                                                                "UI/Runtime"); // NOI18N
         System.out.println("### "+getName()+" ###");
+        openDataProjects("SampleProject");
         if(projectRootNode == null) {
             projectRootNode = new ProjectsTabOperator().getProjectRootNode("SampleProject");
         }
@@ -138,12 +166,10 @@ public class NodeTest extends JellyTestCase {
     }
     
     // "Safe Delete"
-    private static String safeDeleteTitle = Bundle.getString("org.netbeans.modules.refactoring.spi.impl.Bundle",
-                                                             "LBL_SafeDel"); // NOI18N
+    private static String safeDeleteTitle;
 
     // "Runtime"
-    private static final String runtimeLabel = Bundle.getString("org.netbeans.core.Bundle",
-                                                                "UI/Runtime"); // NOI18N
+    private static String runtimeLabel;
     
     /** Test constructor  */
     public void testConstructor() {
@@ -203,7 +229,7 @@ public class NodeTest extends JellyTestCase {
     /** Test performMenuAction */
     public void testPerformMenuAction() {
         // Window|Properties
-        String propertiesPath = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/Window")+
+        String propertiesPath = Bundle.getStringTrimmed("org.netbeans.core.windows.resources.Bundle", "Menu/Window")+
                                 "|"+
                                 Bundle.getStringTrimmed("org.openide.actions.Bundle", "Properties");
         sampleClass1Node.performMenuAction(propertiesPath);
@@ -212,7 +238,7 @@ public class NodeTest extends JellyTestCase {
     
     /** Test performMenuActionNoBlock */
     public void testPerformMenuActionNoBlock() {
-        String helpItem = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/Help");
+        String helpItem = Bundle.getStringTrimmed("org.netbeans.core.ui.resources.Bundle", "Menu/Help");
         String aboutItem = Bundle.getStringTrimmed("org.netbeans.core.actions.Bundle", "About");
         sourcePackagesNode.performMenuActionNoBlock(helpItem+"|"+aboutItem);    // NOI18N
         String aboutTitle = Bundle.getString("org.netbeans.core.startup.Bundle", "CTL_About_Title");
@@ -388,7 +414,7 @@ public class NodeTest extends JellyTestCase {
             super(treeOperator, treePath);
         }
         public ImmutableNode(Node node) {
-            super(node.treeOperator, node.treePath);
+            super(node.tree(), node.getTreePath());
         }
         
         private int count = 0;

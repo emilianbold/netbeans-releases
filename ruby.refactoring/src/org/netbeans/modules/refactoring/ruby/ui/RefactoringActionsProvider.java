@@ -48,6 +48,7 @@ import java.util.Collection;
 import java.util.Dictionary;
 import java.util.List;
 import javax.swing.JOptionPane;
+import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.modules.gsf.api.CancellableTask;
@@ -64,10 +65,11 @@ import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
 import org.netbeans.modules.ruby.AstUtilities;
 import org.netbeans.modules.ruby.RubyParseResult;
 import org.netbeans.modules.ruby.RubyUtils;
-import org.netbeans.modules.ruby.StructureAnalyzer.AnalysisResult;
+import org.netbeans.modules.ruby.RubyStructureAnalyzer.AnalysisResult;
 import org.netbeans.modules.ruby.elements.AstElement;
 import org.netbeans.modules.ruby.elements.Element;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
+import org.netbeans.napi.gsfret.source.ClasspathInfo;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
@@ -167,8 +169,12 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
             EditorCookie ec = lookup.lookup(EditorCookie.class);
             if (isFromEditor(ec)) {
                 JTextComponent textC = ec.getOpenedPanes()[0];
+                Document d = textC.getDocument();
+                if (!(d instanceof BaseDocument)) {
+                    return true;
+                }
                 int caret = textC.getCaretPosition();
-                if (LexUtilities.getToken((BaseDocument) textC.getDocument(), caret) == null) {
+                if (LexUtilities.getToken((BaseDocument)d, caret) == null) {
                     // Not in Ruby code!
                     return true;
                 }
@@ -287,9 +293,14 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
         }
         
         public final void run() {
+            FileObject fo = null;
             try {
                 Source source = RetoucheUtils.getSource(textC.getDocument());
                 source.runUserActionTask(this, false);
+                Collection<FileObject> fileObjects = source.getFileObjects();
+                if (fileObjects.size() > 0) {
+                    fo = fileObjects.iterator().next();
+                }
             } catch (IOException ioe) {
                 ErrorManager.getDefault().notify(ioe);
                 return ;
@@ -297,6 +308,14 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
             TopComponent activetc = TopComponent.getRegistry().getActivated();
             
             if (ui!=null) {
+                if (fo != null) {
+                    ClasspathInfo classpathInfoFor = RetoucheUtils.getClasspathInfoFor(fo);
+                    if (classpathInfoFor == null) {
+                        JOptionPane.showMessageDialog(null, NbBundle.getMessage(RefactoringActionsProvider.class, "ERR_CannotFindClasspath"));
+                        return;
+                    }
+                }
+                
                 UI.openRefactoringUI(ui, activetc);
             } else {
                 String key = "ERR_CannotRenameLoc"; // NOI18N
@@ -306,6 +325,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                 JOptionPane.showMessageDialog(null,NbBundle.getMessage(RefactoringActionsProvider.class, key));
             }
         }
+
         
         protected abstract RefactoringUI createRefactoringUI(RubyElementCtx selectedElement,int startOffset,int endOffset, CompilationInfo info);
     }
@@ -377,6 +397,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                         AstElement element = els.get(0);
                         org.jruby.ast.Node node = element.getNode();
                         RubyElementCtx representedObject = new RubyElementCtx(root, node, element, info.getFileObject(), info);
+                        representedObject.setNames(element.getFqn(), element.getName());
                         handles.add(representedObject);
                     }
                 }

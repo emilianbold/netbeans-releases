@@ -15,12 +15,12 @@ rm -rf real.workspace
 hg clone . real.workspace || exit 1
 cd real.workspace
 
-RESULT=`pwd`/test-results.txt
+RESULT=`pwd`/nbbuild/build/test-results.txt
 export RESULT
 rm $RESULT
 
 testmodule() {
-    if ant -f $1/build.xml test -Dtest-unit-sys-prop.ignore.random.failures=true; then
+    if ant -f $1/build.xml test-unit -Dtest-unit-sys-prop.ignore.random.failures=true; then
         echo Test OK: $1
     else
         echo $1 >>$RESULT
@@ -39,69 +39,81 @@ if [ "$action" = "build" ]; then
 #    fi
 
     ant build || exit 2
-    ant commit-validation # || exit 3
-    ant commit-validation-junit-format # || exit 3
-    testmodule openide.util  || exit 4
-    testmodule openide.modules || exit 4
-    testmodule openide.filesystems || exit 4
-    testmodule openide.nodes|| exit 4
-    testmodule openide.options || exit 4
-    testmodule openide.dialogs || exit 4
-    testmodule openide.awt || exit 4
-    testmodule openide.windows || exit 4
-    testmodule core.startup  || exit 4
-    testmodule api.progress  # || exit 4
-    testmodule api.visual  # || exit 4
-    testmodule applemenu  # || exit 4
-    testmodule autoupdate.services  # || exit 4
-    testmodule autoupdate.ui  # || exit 4
-    testmodule core.execution  # || exit 4
-    testmodule core.kit  # || exit 4
-    testmodule core.multiview  # || exit 4
-    testmodule core.nativeaccess  # || exit 4
-    testmodule core.output2  # || exit 4
-    testmodule core.ui  # || exit 4
-    testmodule core.windows  # || exit 4
-    testmodule editor.mimelookup  # || exit 4
-    testmodule editor.mimelookup.impl  # || exit 4
-    testmodule favorites  # || exit 4
-    testmodule javahelp  # || exit 4
-    testmodule libs.jna  # || exit 4
-    testmodule libs.jsr223  # || exit 4
-    testmodule masterfs  # || exit 4
-    testmodule o.jdesktop.layout  # || exit 4
-    testmodule o.n.bootstrap  # || exit 4
-    testmodule o.n.core  # || exit 4
-    testmodule o.n.swing.plaf  # || exit 4
-    testmodule o.n.swing.tabcontrol  # || exit 4
-    testmodule openide.actions  # || exit 4
-    testmodule openide.compat  # || exit 4
-    testmodule openide.dialogs  # || exit 4
-    testmodule openide.execution  # || exit 4
-    testmodule openide.explorer  # || exit 4
-    testmodule openide.io  # || exit 4
-    testmodule openide.loaders  # || exit 4
-    testmodule openide.modules || exit 4
-    testmodule openide.nodes || exit 4
-    testmodule openide.options  # || exit 4
-    testmodule openide.text  # || exit 4
-    testmodule openide.util  || exit 4
-    testmodule openide.util.enumerations  # || exit 4
-    testmodule options.api  # || exit 4
-    testmodule options.keymap  # || exit 4
-    testmodule progress.ui  # || exit 4
-    testmodule queries  # || exit 4
-    testmodule sendopts  # || exit 4
-    testmodule settings  # || exit 4
-    testmodule templates # || exit 4
+    ant commit-validation || echo commit-validation >$RESULT
 
+    testmodule ant.freeform
+    testmodule api.java
+    testmodule api.java.classpath
+    testmodule api.progress
+    testmodule api.visual
+    testmodule autoupdate.services
+    testmodule autoupdate.ui
+    testmodule core.execution
+    testmodule core.kit
+    testmodule core.multiview
+    testmodule core.output2
+    testmodule core.startup
+    testmodule core.windows
+    testmodule editor.mimelookup
+    testmodule editor.mimelookup.impl
+    testmodule favorites
+    testmodule java.api.common
+    testmodule java.freeform
+    testmodule java.j2seplatform
+    testmodule java.platform
+    testmodule java.project
+    testmodule javahelp
+    testmodule masterfs
+    testmodule nbjunit
+    testmodule o.apache.tools.ant.module
+    testmodule o.n.bootstrap
+    testmodule o.n.core
+    testmodule o.n.swing.tabcontrol
+    testmodule openide.actions
+    testmodule openide.awt
+    testmodule openide.compat
+    testmodule openide.dialogs
+    testmodule openide.execution
+    testmodule openide.explorer
+    testmodule openide.filesystems
+    testmodule openide.loaders
+    testmodule openide.modules
+    testmodule openide.nodes
+    testmodule openide.options
+    testmodule openide.text
+    testmodule openide.util
+    testmodule openide.util.enumerations
+    testmodule openide.windows
+    testmodule options.api
+    testmodule options.keymap
+    testmodule progress.ui
+    testmodule project.ant
+    testmodule project.libraries
+    testmodule projectapi
+    testmodule projectimport.eclipse.core
+    testmodule projectui
+    testmodule projectuiapi
+    testmodule queries
+    testmodule sendopts
+    testmodule settings
+    testmodule spi.quicksearch
+    testmodule tasklist.todo
+    testmodule tasklist.ui
+    testmodule templates
 
     if [ `hg out --template '{node|short}\n' http://hg.netbeans.org/main | wc -l` > 0 ]; then
         echo No outgoing changes
 #        exit 0
     fi
 
-    for i in 1 2 3; do
+    FAILED=`cat $RESULT | wc -l`
+    if [ "$FAILED" -gt 0 ]; then
+        echo "No push. Failed tests in following modules:"
+        cat $RESULT
+        exit 5
+    fi
+
+    for i in 1 2 3 4 5; do
        hg pull http://hg.netbeans.org/main || exit 5
        if [ `hg heads --template '{node|short}\n' | wc -l` = 1 ]
        then

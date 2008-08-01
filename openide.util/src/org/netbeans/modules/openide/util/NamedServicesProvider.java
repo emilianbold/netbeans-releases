@@ -33,9 +33,9 @@ package org.netbeans.modules.openide.util;
 
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import org.openide.util.Lookup;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 
@@ -45,12 +45,12 @@ import org.openide.util.lookup.Lookups;
  * @author Jaroslav Tulach
  */
 public abstract class NamedServicesProvider {
-    private static volatile Map<String,Reference<Lookup>> map = new HashMap<String,Reference<Lookup>>();
-    
+
+    private static final Map<String,Reference<Lookup>> map = Collections.synchronizedMap(new HashMap<String,Reference<Lookup>>());
     
     public abstract Lookup create(String path);
     
-    public static synchronized Lookup find(String path) {
+    public static Lookup find(String path) {
         if (!path.endsWith("/")) {
             path = path + "/";
         }

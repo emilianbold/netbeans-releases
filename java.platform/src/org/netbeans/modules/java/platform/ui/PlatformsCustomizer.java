@@ -320,9 +320,9 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
             DataFolder folder = DataFolder.findFolder(
                     Repository.getDefault().getDefaultFileSystem().findResource(STORAGE));
             wiz.putProperty("targetFolder",folder); //NOI18N
-            wiz.putProperty("WizardPanel_autoWizardStyle", Boolean.TRUE); // NOI18N
-            wiz.putProperty("WizardPanel_contentDisplayed", Boolean.TRUE); // NOI18N
-            wiz.putProperty("WizardPanel_contentNumbered", Boolean.TRUE); // NOI18N
+            wiz.putProperty(WizardDescriptor.PROP_AUTO_WIZARD_STYLE, Boolean.TRUE); // NOI18N
+            wiz.putProperty(WizardDescriptor.PROP_CONTENT_DISPLAYED, Boolean.TRUE); // NOI18N
+            wiz.putProperty(WizardDescriptor.PROP_CONTENT_NUMBERED, Boolean.TRUE); // NOI18N
             wiz.setTitle(NbBundle.getMessage(PlatformsCustomizer.class,"CTL_AddPlatformTitle"));
             wiz.setTitleFormat(new java.text.MessageFormat("{0}")); // NOI18N
             Dialog dlg = DialogDisplayer.getDefault().createDialog(wiz);

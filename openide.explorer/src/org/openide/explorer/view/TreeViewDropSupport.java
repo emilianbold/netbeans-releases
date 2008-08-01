@@ -661,135 +661,137 @@ final class TreeViewDropSupport implements DropTargetListener, Runnable {
     * right node and target node agrees.
     */
     public void drop(DropTargetDropEvent dtde) {
-        stopDragging();
+        boolean dropResult = true;
+        try {
+            stopDragging();
 
-        // find node for the drop perform
-        Node dropNode = getNodeForDrop(dtde.getLocation());
-        
-        // #64469: Can't drop into empty explorer area
-        if (dropNode == null) {
-            dropNode = view.manager.getRootContext ();
-        } else if (pointAt != DragDropUtilities.NODE_CENTRAL) {
-            dropNode = dropNode.getParentNode();
-        }
+            // find node for the drop perform
+            Node dropNode = getNodeForDrop(dtde.getLocation());
 
-        Node[] dragNodes = ExplorerDnDManager.getDefault().getDraggedNodes();
-        int dropAction = ExplorerDnDManager.getDefault().getAdjustedDropAction(
-                dtde.getDropAction(), view.getAllowedDropActions()
-            );
-
-        ExplorerDnDManager.getDefault().setMaybeExternalDragAndDrop( false );
-
-        // finally perform the drop
-        dtde.acceptDrop(dropAction);
-
-        if (!canDrop(dropNode, dropAction, dtde.getTransferable())) {
-            if( null != dragNodes && canReorderWhenMoving(dropNode, dragNodes)) {
-                performReorder(dropNode, dragNodes, lowerNodeIdx, upperNodeIdx);
-                dtde.dropComplete(true);
-            } else {
-                dtde.dropComplete(false);
+            // #64469: Can't drop into empty explorer area
+            if (dropNode == null) {
+                dropNode = view.manager.getRootContext ();
+            } else if (pointAt != DragDropUtilities.NODE_CENTRAL) {
+                dropNode = dropNode.getParentNode();
             }
 
-            return;
-        }
-
-        if (DnDConstants.ACTION_LINK == dropAction && null != dragNodes) {
-            // construct all paste types
-            PasteType[] ptCut = new PasteType[] {  };
-
-            // construct all paste types
-            PasteType[] ptCopy = new PasteType[] {  };
-
-            // do not try get paste types for move if MOVE is not allowed
-            if ((ExplorerDnDManager.getDefault().getNodeAllowedActions() & DnDConstants.ACTION_MOVE) != 0) {
-                ptCut = DragDropUtilities.getPasteTypes(
-                        dropNode, ExplorerDnDManager.getDefault().getDraggedTransferable(true)
-                    );
-            }
-
-            // do not try get paste types for copy if COPY is not allowed
-            if ((ExplorerDnDManager.getDefault().getNodeAllowedActions() & DnDConstants.ACTION_COPY) != 0) {
-                ptCopy = DragDropUtilities.getPasteTypes(
-                        dropNode, ExplorerDnDManager.getDefault().getDraggedTransferable(false)
-                    );
-            }
-
-            TreeSet<PasteType> setPasteTypes = new TreeSet<PasteType>(
-                    new Comparator<PasteType>() {
-                        public int compare(PasteType obj1, PasteType obj2) {
-                            return obj1.getName().compareTo(obj2.getName());
-
-                        }
-                    }
+            Node[] dragNodes = ExplorerDnDManager.getDefault().getDraggedNodes();
+            int dropAction = ExplorerDnDManager.getDefault().getAdjustedDropAction(
+                    dtde.getDropAction(), view.getAllowedDropActions()
                 );
 
-            for (int i = 0; i < ptCut.length; i++) {
-                //System.out.println(ptCut[i].getName()+", "+System.identityHashCode(ptCut[i]));
-                setPasteTypes.add(ptCut[i]);
-            }
+            ExplorerDnDManager.getDefault().setMaybeExternalDragAndDrop( false );
 
-            for (int i = 0; i < ptCopy.length; i++) {
-                //System.out.println(ptCopy[i].getName()+", "+System.identityHashCode(ptCopy[i]));
-                setPasteTypes.add(ptCopy[i]);
-            }
+            // finally perform the drop
+            dtde.acceptDrop(dropAction);
 
-            DragDropUtilities.createDropFinishPopup(setPasteTypes).show(
-                tree, Math.max(dtde.getLocation().x - 5, 0), Math.max(dtde.getLocation().y - 5, 0)
-            );
-
-            // reorder have to be perform
-            if (canReorder(dropNode, dragNodes)) {
-                final Node tempDropNode = dropNode;
-                final int tmpUpper = upperNodeIdx;
-                final int tmpLower = lowerNodeIdx;
-                final Node[] tempDragNodes = dragNodes;
-                DragDropUtilities.setPostDropRun(
-                    new Runnable() {
-                        public void run() {
-                            performReorder(
-                                tempDropNode, findDropedNodes(tempDropNode, tempDragNodes), tmpLower, tmpUpper
-                            );
-                        }
-                    }
-                );
-            }
-        } else if( dropAction != DnDConstants.ACTION_LINK ) {
-            // get correct paste type
-            Transferable t = ExplorerDnDManager.getDefault().getDraggedTransferable( (DnDConstants.ACTION_MOVE & dropAction) != 0 );
-            if( null == t ) {
-                t = dtde.getTransferable();
-            }
-            PasteType pt = DragDropUtilities.getDropType( dropNode, t, dropAction, dropIndex );
-
-            //remember the Nodes before the drop
-            final Node[] preNodes = dropNode.getChildren().getNodes( true );
-            final Node parentNode = dropNode;
-            
-            Node[] diffNodes = DragDropUtilities.performPaste(pt, dropNode);
-            
-            ExplorerDnDManager.getDefault().setDraggedNodes(diffNodes);
-
-            //postpone the potential re-order so that the drop Node has enough 
-            //time to re-create its children
-            SwingUtilities.invokeLater( new Runnable() {
-                public void run() {
-                    Node[] diffNodes = getDiffNodes( parentNode, preNodes );
-                    if( canReorder( parentNode, diffNodes ) ) {
-                        performReorder( parentNode, diffNodes, lowerNodeIdx, upperNodeIdx );
-                    }
+            if (!canDrop(dropNode, dropAction, dtde.getTransferable())) {
+                if( null != dragNodes && canReorderWhenMoving(dropNode, dragNodes)) {
+                    performReorder(dropNode, dragNodes, lowerNodeIdx, upperNodeIdx);
+                } else {
+                    dropResult = false;
                 }
-            });
+
+                return;
+            }
+
+            if (DnDConstants.ACTION_LINK == dropAction && null != dragNodes) {
+                // construct all paste types
+                PasteType[] ptCut = new PasteType[] {  };
+
+                // construct all paste types
+                PasteType[] ptCopy = new PasteType[] {  };
+
+                // do not try get paste types for move if MOVE is not allowed
+                if ((ExplorerDnDManager.getDefault().getNodeAllowedActions() & DnDConstants.ACTION_MOVE) != 0) {
+                    ptCut = DragDropUtilities.getPasteTypes(
+                            dropNode, ExplorerDnDManager.getDefault().getDraggedTransferable(true)
+                        );
+                }
+
+                // do not try get paste types for copy if COPY is not allowed
+                if ((ExplorerDnDManager.getDefault().getNodeAllowedActions() & DnDConstants.ACTION_COPY) != 0) {
+                    ptCopy = DragDropUtilities.getPasteTypes(
+                            dropNode, ExplorerDnDManager.getDefault().getDraggedTransferable(false)
+                        );
+                }
+
+                TreeSet<PasteType> setPasteTypes = new TreeSet<PasteType>(
+                        new Comparator<PasteType>() {
+                            public int compare(PasteType obj1, PasteType obj2) {
+                                return obj1.getName().compareTo(obj2.getName());
+
+                            }
+                        }
+                    );
+
+                for (int i = 0; i < ptCut.length; i++) {
+                    //System.out.println(ptCut[i].getName()+", "+System.identityHashCode(ptCut[i]));
+                    setPasteTypes.add(ptCut[i]);
+                }
+
+                for (int i = 0; i < ptCopy.length; i++) {
+                    //System.out.println(ptCopy[i].getName()+", "+System.identityHashCode(ptCopy[i]));
+                    setPasteTypes.add(ptCopy[i]);
+                }
+
+                DragDropUtilities.createDropFinishPopup(setPasteTypes).show(
+                    tree, Math.max(dtde.getLocation().x - 5, 0), Math.max(dtde.getLocation().y - 5, 0)
+                );
+
+                // reorder have to be perform
+                if (canReorder(dropNode, dragNodes)) {
+                    final Node tempDropNode = dropNode;
+                    final int tmpUpper = upperNodeIdx;
+                    final int tmpLower = lowerNodeIdx;
+                    final Node[] tempDragNodes = dragNodes;
+                    DragDropUtilities.setPostDropRun(
+                        new Runnable() {
+                            public void run() {
+                                performReorder(
+                                    tempDropNode, findDropedNodes(tempDropNode, tempDragNodes), tmpLower, tmpUpper
+                                );
+                            }
+                        }
+                    );
+                }
+            } else if( dropAction != DnDConstants.ACTION_LINK ) {
+                // get correct paste type
+                Transferable t = ExplorerDnDManager.getDefault().getDraggedTransferable( (DnDConstants.ACTION_MOVE & dropAction) != 0 );
+                if( null == t ) {
+                    t = dtde.getTransferable();
+                }
+                PasteType pt = DragDropUtilities.getDropType( dropNode, t, dropAction, dropIndex );
+
+                //remember the Nodes before the drop
+                final Node[] preNodes = dropNode.getChildren().getNodes( true );
+                final Node parentNode = dropNode;
+
+                Node[] diffNodes = DragDropUtilities.performPaste(pt, dropNode);
+
+                ExplorerDnDManager.getDefault().setDraggedNodes(diffNodes);
+
+                //postpone the potential re-order so that the drop Node has enough 
+                //time to re-create its children
+                SwingUtilities.invokeLater( new Runnable() {
+                    public void run() {
+                        Node[] diffNodes = getDiffNodes( parentNode, preNodes );
+                        if( canReorder( parentNode, diffNodes ) ) {
+                            performReorder( parentNode, diffNodes, lowerNodeIdx, upperNodeIdx );
+                        }
+                    }
+                });
+            }
+
+            TreeCellEditor tce = tree.getCellEditor();
+
+            if (tce instanceof TreeViewCellEditor) {
+                ((TreeViewCellEditor) tce).setDnDActive(false);
+            }
+        } finally {
+            // finished
+            dtde.dropComplete( dropResult );
         }
-
-        TreeCellEditor tce = tree.getCellEditor();
-
-        if (tce instanceof TreeViewCellEditor) {
-            ((TreeViewCellEditor) tce).setDnDActive(false);
-        }
-
-        // finished
-        dtde.dropComplete(true);
     }
 
     private Node[] getDiffNodes( Node parent, Node[] childrenBefore ) {

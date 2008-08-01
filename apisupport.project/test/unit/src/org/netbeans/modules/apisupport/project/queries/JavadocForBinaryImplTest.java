@@ -48,7 +48,7 @@ import java.util.TreeSet;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.JavadocForBinaryQuery;
 import org.netbeans.modules.apisupport.project.TestBase;
-import org.netbeans.modules.apisupport.project.Util;
+import org.openide.filesystems.FileUtil;
 
 /**
  * Test {@link JavadocForBinaryImpl}.
@@ -77,9 +77,9 @@ public class JavadocForBinaryImplTest extends TestBase {
         // Have to load at least one module to get the scan going.
         ClassPath.getClassPath(nbRoot().getFileObject("o.apache.tools.ant.module/src"), ClassPath.COMPILE);
         File classfileJar = file("nbbuild/netbeans/" + TestBase.CLUSTER_IDE + "/modules/org-netbeans-modules-classfile.jar");
-        URL[] roots = JavadocForBinaryQuery.findJavadoc(Util.urlForJar(classfileJar)).getRoots();
+        URL[] roots = JavadocForBinaryQuery.findJavadoc(FileUtil.urlForArchiveOrDir(classfileJar)).getRoots();
         URL[] expectedRoots = {
-            Util.urlForDir(file("nbbuild/build/javadoc/org-netbeans-modules-classfile")),
+            FileUtil.urlForArchiveOrDir(file("nbbuild/build/javadoc/org-netbeans-modules-classfile")),
             urlForJar(apisZip, "org-netbeans-modules-classfile/"),
         };
         assertEquals("correct Javadoc roots for classfile", urlSet(expectedRoots), urlSet(roots));
@@ -88,24 +88,24 @@ public class JavadocForBinaryImplTest extends TestBase {
     public void testJavadocForExternalModules() throws Exception {
         ClassPath.getClassPath(resolveEEP("/suite2/misc-project/src"), ClassPath.COMPILE);
         File miscJar = resolveEEPFile("/suite2/build/cluster/modules/org-netbeans-examples-modules-misc.jar");
-        URL[] roots = JavadocForBinaryQuery.findJavadoc(Util.urlForJar(miscJar)).getRoots();
+        URL[] roots = JavadocForBinaryQuery.findJavadoc(FileUtil.urlForArchiveOrDir(miscJar)).getRoots();
         URL[] expectedRoots = new URL[] {
-            Util.urlForDir(file(suite2, "misc-project/build/javadoc/org-netbeans-examples-modules-misc")),
+            FileUtil.urlForArchiveOrDir(file(suite2, "misc-project/build/javadoc/org-netbeans-examples-modules-misc")),
             // It is inside ${netbeans.home}/.. so read this.
             urlForJar(apisZip, "org-netbeans-examples-modules-misc/"),
         };
         assertEquals("correct Javadoc roots for misc", urlSet(expectedRoots), urlSet(roots));
         ClassPath.getClassPath(resolveEEP("/suite3/dummy-project/src"), ClassPath.COMPILE);
         File dummyJar = file(suite3, "dummy-project/build/cluster/modules/org-netbeans-examples-modules-dummy.jar");
-        roots = JavadocForBinaryQuery.findJavadoc(Util.urlForJar(dummyJar)).getRoots();
+        roots = JavadocForBinaryQuery.findJavadoc(FileUtil.urlForArchiveOrDir(dummyJar)).getRoots();
         expectedRoots = new URL[] {
-            Util.urlForDir(file(suite3, "dummy-project/build/javadoc/org-netbeans-examples-modules-dummy")),
+            FileUtil.urlForArchiveOrDir(file(suite3, "dummy-project/build/javadoc/org-netbeans-examples-modules-dummy")),
         };
         assertEquals("correct Javadoc roots for dummy", urlSet(expectedRoots), urlSet(roots));
     }
     
     private static URL urlForJar(File jar, String path) throws Exception {
-        return new URL(Util.urlForJar(jar), path);
+        return new URL(FileUtil.urlForArchiveOrDir(jar), path);
     }
     
     private static SortedSet<String> urlSet(URL[] urls) {

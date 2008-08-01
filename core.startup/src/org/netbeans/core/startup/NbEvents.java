@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -42,22 +42,30 @@
 package org.netbeans.core.startup;
 
 import java.awt.Component;
-import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
+import java.lang.reflect.Method;
+import java.net.URI;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JButton;
+import javax.swing.JDialog;
 import javax.swing.JOptionPane;
-import javax.swing.JTextArea;
+import javax.swing.JTextPane;
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
+import javax.swing.event.HyperlinkEvent;
+import javax.swing.event.HyperlinkEvent.EventType;
+import javax.swing.event.HyperlinkListener;
 import org.netbeans.Events;
 import org.netbeans.Module;
-import org.netbeans.TopSecurityManager;
 import org.netbeans.Util;
-import org.openide.filesystems.FileObject;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.NbBundle;
 import org.openide.util.NbCollections;
@@ -164,18 +172,19 @@ final class NbEvents extends Events {
             setStatusText("");
         } else if (message == FAILED_INSTALL_NEW_UNEXPECTED) {
             Module m = (Module)args[0];
-            // ignore args[1]: InvalidException
+            List<Module> modules = new ArrayList<Module> ();
+            modules.add (m);
+            modules.addAll (NbCollections.checkedSetByCopy((Set) args[1], Module.class, true));
+            // ignore args[2]: InvalidException
             {
                 StringBuilder buf = new StringBuilder(NbBundle.getMessage(NbEvents.class, "MSG_failed_install_new_unexpected", m.getDisplayName()));
-                NbProblemDisplayer.problemMessagesForModules(buf, Collections.singleton(m), false);
+                NbProblemDisplayer.problemMessagesForModules(buf, modules, false);
                 buf.append('\n');
                 logger.log(Level.INFO, buf.toString());
             }
 
             {
-                StringBuilder buf = new StringBuilder(NbBundle.getMessage(NbEvents.class, "MSG_failed_install_new_unexpected", m.getDisplayName()));
-                NbProblemDisplayer.problemMessagesForModules(buf, Collections.singleton(m), true);
-                notify(buf.toString(), true);
+                notify(NbProblemDisplayer.messageForProblem (m, m.getProblems ().iterator ().next (), true), true);
             }
             setStatusText("");
         } else if (message == START_READ) {
@@ -306,29 +315,20 @@ final class NbEvents extends Events {
         }
     }
     private static final class Notifier implements Runnable {
-        private static int questions;
+        private static boolean showDialog = true;
         
         private boolean warn;
         private String text;
         private static RequestProcessor RP = new RequestProcessor("Notify About Module System"); // NOI18N
-        private Object[] options;
         
         public Notifier(String text, boolean type) {
             this.warn = type;
             this.text = text;
-            //this.options = options;
             
-            if (questions++ == 0) {
-                this.options = new String[] {
-                    NbBundle.getMessage(Notifier.class, "MSG_continue"),
-                    NbBundle.getMessage(Notifier.class, "MSG_exit"),
-                };
-            }
-
-            RequestProcessor.Task t = RP.post(this, 0, Thread.MIN_PRIORITY);
             
-            if (options != null) {
-                t.waitFinished();
+            if (showDialog) {
+                showDialog = false;
+                RP.post(this, 0, Thread.MIN_PRIORITY).waitFinished ();
             }
         }
         
@@ -337,28 +337,86 @@ final class NbEvents extends Events {
             String msg = NbBundle.getMessage(Notifier.class, warn ? "MSG_warning" : "MSG_info"); // NOI18N
 
             Splash out = Splash.getInstance();
-            Component c = out.getComponent() == null ? null : out.getComponent();
+            final Component c = out.getComponent() == null ? null : out.getComponent();
+            try {
+                UIManager.setLookAndFeel (UIManager.getSystemLookAndFeelClassName ());
+            } catch (ClassNotFoundException ex) {
+                Logger.getLogger (NbBundle.class.getName ()).log(Level.INFO, null, ex);
+            } catch (InstantiationException ex) {
+                Logger.getLogger (NbBundle.class.getName ()).log(Level.INFO, null, ex);
+            } catch (IllegalAccessException ex) {
+                Logger.getLogger (NbBundle.class.getName ()).log(Level.INFO, null, ex);
+            } catch (UnsupportedLookAndFeelException ex) {
+                Logger.getLogger (NbBundle.class.getName ()).log(Level.INFO, null, ex);
+            }
+            JTextPane tp = new JTextPane ();
+            tp.setContentType("text/html"); // NOI18N
+            text = text.replace ("\n", "<br>"); // NOI18N
+
+            tp.setEditable(false);
+            tp.setOpaque (false);
+            tp.setEnabled(true);
+            tp.addHyperlinkListener(new HyperlinkListener() {
+                public void hyperlinkUpdate(HyperlinkEvent hlevt) {
+                    if (EventType.ACTIVATED == hlevt.getEventType()) {
+                        assert hlevt.getURL() != null;
+                        try {
+                            showUrl (hlevt.getURL ().toURI (), c);
+                        } catch (Exception ex) {
+                            Logger.getLogger (NbBundle.class.getName ()).log(Level.INFO, null, ex);
+                        }
+                    }
+                }
+            });
+
+//            JScrollPane pane = new javax.swing.JScrollPane(tp);
+//            tp.setPreferredSize(new Dimension(pane.getPreferredSize().width + 50, tp.getFont().getSize() * 15));
+            tp.setText (text);
             
-            JTextArea area = new JTextArea();
-            area.setText(text);
-            area.setEditable(false);
-            area.setEnabled(true);
-            area.setOpaque(false);
-            javax.swing.JScrollPane pane = new javax.swing.JScrollPane(area);
-            pane.setPreferredSize(new Dimension(pane.getPreferredSize().width + 50, area.getFont().getSize() * 15));
+            final JOptionPane op = new JOptionPane (tp, type, JOptionPane.YES_NO_OPTION, null);
+
+            JButton continueButton = new JButton (NbBundle.getMessage(Notifier.class, "MSG_continue")); // NOI18N
+            continueButton.setDisplayedMnemonicIndex (0);
+            continueButton.addActionListener (new ActionListener () {
+                public void actionPerformed (ActionEvent e) {
+                    op.setValue (0);
+                }
+            });
+            JButton exitButton = new JButton (NbBundle.getMessage(Notifier.class, "MSG_exit")); // NOI18N
+            exitButton.addActionListener (new ActionListener () {
+                public void actionPerformed (ActionEvent e) {
+                    op.setValue (1);
+                }
+            });
+
+            Object [] options = new JButton [] {continueButton, exitButton};
+            op.setOptions (options);
+            op.setInitialValue (options [1]);
+            JDialog d = op.createDialog (c, msg);
+            d.setVisible (true);
             
-            if (options == null) {
-                JOptionPane.showMessageDialog(null, pane, msg, type);
-            } else {
-                int ret = JOptionPane.showOptionDialog(c, pane, msg, 0, type, null, options, options[1]);
+            Object res = op.getValue ();
+            if (res instanceof Integer) {
+                int ret = (Integer) res;
                 if (ret == 1 || ret == -1) { // exit or close
                     TopLogging.exit(1);
                 }
             }
         }
     }
-
+        
     private static void setStatusText (String msg) {
         Main.setStatusText (msg);
+    }
+    
+    private static void showUrl (URI uri, Component c) throws Exception {
+        SpecificationVersion javaSpec = new SpecificationVersion (System.getProperty("java.specification.version")); // NOI18N
+        if (javaSpec.compareTo (new SpecificationVersion ("1.6")) >= 0) {
+            Class desktopC = Class.forName ("java.awt.Desktop");
+            Method getDesktopM = desktopC.getMethod ("getDesktop");
+            Object desktopInstanceO = getDesktopM.invoke (null);
+            Method browseM = desktopC.getMethod ("browse", URI.class);
+            browseM.invoke (desktopInstanceO, uri);
+        }
     }
 }

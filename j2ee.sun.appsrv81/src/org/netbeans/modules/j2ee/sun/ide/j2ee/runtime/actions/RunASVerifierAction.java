@@ -41,6 +41,8 @@
 
 package org.netbeans.modules.j2ee.sun.ide.j2ee.runtime.actions;
 
+import java.io.File;
+import java.util.logging.Logger;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.PluginProperties;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
@@ -76,7 +78,8 @@ public class RunASVerifierAction extends NodeAction {
                 String ext=fo.getExt();
                 //System.out.println(fo + " " + ext);
                 if("jar".equals(ext) || "war".equals(ext) || "ear".equals(ext) || "rar".equals(ext)){
-                     final String jname = FileUtil.toFile(fo).getAbsolutePath();
+                     File file = FileUtil.toFile(fo);
+                     final String jname = file.getAbsolutePath();
                      RequestProcessor.getDefault().post(new Runnable() {
                         public void run() {
                             launchVerifier(jname);
@@ -134,7 +137,8 @@ public class RunASVerifierAction extends NodeAction {
                 String ext=fo.getExt();
                 //System.out.println(fo + " " + ext);
                 if("jar".equals(ext) || "war".equals(ext) || "ear".equals(ext) || "rar".equals(ext)){
-                    result=true;
+                    File archive = FileUtil.toFile(fo);
+                    result = null != archive;
                 }
             }
         }

@@ -44,10 +44,56 @@
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
     
+    <folder name="Templates">
+        <folder name="SaaSServices">
+            <file name="FlickrAuthenticator.java" 
+                  url="/org/netbeans/modules/websvc/saas/services/flickr/resources/j2ee/FlickrAuthenticator.template">
+                <attr name="position" intvalue="3710"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
+            </file>
+            <file name="FlickrLogin.java" 
+                  url="/org/netbeans/modules/websvc/saas/services/flickr/resources/j2ee/FlickrLogin.template">
+                <attr name="position" intvalue="3720"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
+            </file>
+            <file name="FlickrCallback.java" 
+                  url="/org/netbeans/modules/websvc/saas/services/flickr/resources/j2ee/FlickrCallback.template">
+                <attr name="position" intvalue="3730"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
+            </file>
+            <file name="FlickrAuthenticatorDesktop.java" 
+                  url="/org/netbeans/modules/websvc/saas/services/flickr/resources/java/FlickrAuthenticator.template">
+                <attr name="position" intvalue="3740"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
+            </file>
+            
+            <!-- PHP templates -->
+            <file name="FlickrAuthenticator.php" 
+                  url="/org/netbeans/modules/websvc/saas/services/flickr/resources/php/FlickrAuthenticator.template">
+                <attr name="position" intvalue="3750"/>
+            </file>
+            <file name="FlickrLogin.php" 
+                  url="/org/netbeans/modules/websvc/saas/services/flickr/resources/php/FlickrLogin.template">
+                <attr name="position" intvalue="3760"/>
+            </file>
+            <file name="FlickrCallback.php" 
+                  url="/org/netbeans/modules/websvc/saas/services/flickr/resources/php/FlickrCallback.template">
+                <attr name="position" intvalue="3770"/>
+            </file>
+            <file name="FlickrAuthenticatorDesktop.php" 
+                  url="/org/netbeans/modules/websvc/saas/services/flickr/resources/php/FlickrAuthenticatorDesktop.template">
+                <attr name="position" intvalue="3780"/>
+            </file>
+        </folder>
+    </folder>
+    
     <folder name="SaaSServices">
         <folder name="Flickr">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.saas.services.flickr.Bundle"/>
-            <file name="profile.properties" url="/org/netbeans/modules/websvc/saas/services/flickr/resources/profile.properties"/>
             <file name="Flickr.xml" url="/org/netbeans/modules/websvc/saas/services/flickr/resources/Flickr.xml"/>
         </folder>
     </folder>

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project basedir="." default="netbeans" name="websvc.saas.kit">
+    <description>Builds, tests, and runs the project org.netbeans.modules.websvc.saas.kit</description>
+    <import file="../nbbuild/templates/projectized.xml"/>
+    
+    <target name="all-saas">
+        <antcall target="netbeans"/>
+        <ant dir="../websvc.saas.api"/>
+        <ant dir="../websvc.saas.ui"/>
+        <ant dir="../websvc.saas.codegen"/>
+        <ant dir="../websvc.saas.services.amazon"/>
+        <ant dir="../websvc.saas.services.delicious"/>
+        <ant dir="../websvc.saas.services.facebook"/>
+        <ant dir="../websvc.saas.services.flickr"/>
+        <ant dir="../websvc.saas.services.google"/>
+        <ant dir="../websvc.saas.services.strikeiron"/>
+        <ant dir="../websvc.saas.services.twitter"/>
+        <ant dir="../websvc.saas.services.yahoo"/>
+        <ant dir="../websvc.saas.services.zillow"/>
+        <ant dir="../websvc.saas.services.weatherbug"/>
+        <ant dir="../websvc.saas.services.zvents"/>
+    </target>
+
+    <target name="all-saas-clean">
+        <antcall target="clean"/>
+        <ant dir="../websvc.saas.api" target="clean"/>
+        <ant dir="../websvc.saas.ui" target="clean"/>
+        <ant dir="../websvc.saas.codegen" target="clean"/>
+        <ant dir="../websvc.saas.services.amazon" target="clean"/>
+        <ant dir="../websvc.saas.services.delicious" target="clean"/>
+        <ant dir="../websvc.saas.services.facebook" target="clean"/>
+        <ant dir="../websvc.saas.services.flickr" target="clean"/>
+        <ant dir="../websvc.saas.services.google" target="clean"/>
+        <ant dir="../websvc.saas.services.strikeiron" target="clean"/>
+        <ant dir="../websvc.saas.services.twitter" target="clean"/>
+        <ant dir="../websvc.saas.services.yahoo" target="clean"/>
+        <ant dir="../websvc.saas.services.zillow" target="clean"/>
+        <ant dir="../websvc.saas.services.weatherbug" target="clean"/>
+        <ant dir="../websvc.saas.services.zvents" target="clean"/>
+    </target>
+    
+</project>

@@ -10,6 +10,7 @@ import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
+import javax.jms.TextMessage;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -107,10 +108,9 @@ public class TestingSessionBean implements SessionBean, TestingSessionRemoteBusi
     }
 
     private Message createJMSMessageForTestingMessageDestination(Session session, Object messageData) throws JMSException {
-        // TODO create and populate message to send
-        // javax.jms.TextMessage tm = session.createTextMessage();
-        // tm.setText(messageData.toString());
-        // return tm;
+        TextMessage tm = session.createTextMessage();
+        tm.setText(messageData.toString());
+        return tm;
     }
 
     private void sendJMSMessageToTestingMessageDestination(Object messageData) throws NamingException, JMSException {
@@ -126,7 +126,11 @@ public class TestingSessionBean implements SessionBean, TestingSessionRemoteBusi
             mp.send(createJMSMessageForTestingMessageDestination(s,messageData));
         } finally {
             if (s != null) {
-                s.close();
+                try {
+                    s.close();
+                } catch (JMSException e) {
+                    Logger.getLogger(this.getClass().getName()).log(Level.WARNING, "Cannot close session", e);
+                }
             }
             if (conn != null) {
                 conn.close();

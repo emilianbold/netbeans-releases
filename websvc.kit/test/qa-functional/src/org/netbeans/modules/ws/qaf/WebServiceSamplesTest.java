@@ -39,10 +39,9 @@
 package org.netbeans.modules.ws.qaf;
 
 import java.io.IOException;
-import junit.framework.TestSuite;
-import junit.textui.TestRunner;
+import junit.framework.Test;
 import org.netbeans.jellytools.Bundle;
-import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 
 /**
  *
@@ -107,19 +106,23 @@ public class WebServiceSamplesTest extends WebServicesTestBase {
             undeployProject("SecureCalculatorClientApp"); //NOI18N
         }
     }
+    
+    public static Test suite() {
+        return NbModuleSuite.create(addServerTests(Server.GLASSFISH, NbModuleSuite.createConfiguration(WebServiceSamplesTest.class), "testCalculatorApp", "testSecureCalculatorApp", "testUndeployAll").enableModules(".*").clusters(".*"));
+    }
 
     /** Creates suite from particular test cases. You can define order of testcases here. */
-    public static TestSuite suite() {
-        TestSuite suite = new NbTestSuite();
-        suite.addTest(new WebServiceSamplesTest("testCalculatorApp"));
-        suite.addTest(new WebServiceSamplesTest("testSecureCalculatorApp"));
-        suite.addTest(new WebServiceSamplesTest("testUndeployAll"));
-        return suite;
-    }
-
-    /* Method allowing test execution directly from the IDE. */
-    public static void main(java.lang.String[] args) {
-        // run whole suite
-        TestRunner.run(suite());
-    }
+//    public static TestSuite suite() {
+//        TestSuite suite = new NbTestSuite(); 
+//        suite.addTest(new WebServiceSamplesTest("testCalculatorApp"));
+//        suite.addTest(new WebServiceSamplesTest("testSecureCalculatorApp"));
+//        suite.addTest(new WebServiceSamplesTest("testUndeployAll"));
+//        return suite;
+//    }
+//
+//    /* Method allowing test execution directly from the IDE. */
+//    public static void main(java.lang.String[] args) {
+//        // run whole suite
+//        TestRunner.run(suite());
+//    }
 }

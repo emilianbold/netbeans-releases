@@ -45,6 +45,7 @@ import java.io.*;
 import java.util.*;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.client.parser.ParserSvnInfo;
+import org.netbeans.modules.subversion.client.parser.SvnWcUtils;
 import org.netbeans.modules.subversion.config.KVFile;
 import org.tigris.subversion.svnclientadapter.ISVNInfo;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
@@ -122,7 +123,6 @@ public final class PropertiesClient {
     }
 
     private File getPropertyFile(boolean base) throws SVNClientException {
-        // XXX realy not sure if this is the best way ...
         SvnClient client = Subversion.getInstance().getClient(false);
         ISVNInfo info = null;
         try {
@@ -137,7 +137,7 @@ public final class PropertiesClient {
                 return ((ParserSvnInfo) info).getPropertyFile();                
             }
         } else {
-            throw new SVNClientException("Unexpected value:" + info + " should be from type " + ParserSvnInfo.class);            
+            return SvnWcUtils.getPropertiesFile(file, base);
         }         
     }    
 

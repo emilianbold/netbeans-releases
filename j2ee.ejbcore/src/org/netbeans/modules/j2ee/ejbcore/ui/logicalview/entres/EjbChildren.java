@@ -41,7 +41,10 @@
 
 package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entres;
 
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.Action;
+import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.mdb.MessageNode;
 import org.netbeans.modules.j2ee.spi.ejbjar.EjbNodesFactory;
 import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
@@ -59,21 +62,26 @@ public class EjbChildren extends Children.Array {
         this.projectNode = projectNode;
     }
 
+    @Override
     protected void addNotify() {
         super.addNotify();
         Node ejbsNode = projectNode.getChildren().findChild(EjbNodesFactory.CONTAINER_NODE_NAME);
-        // could add code here to only show ejb's which can be referenced
         if (ejbsNode != null) {
             Node[] ejbNodes = ejbsNode.getChildren().getNodes(true);
-            Node[] filteredNodes = new Node[ejbNodes.length];
-            for (int i =0; i < ejbNodes.length; i++) {
-                filteredNodes[i] = new FilterNode(ejbNodes[i], Children.LEAF) {
+            List<Node> filteredNodes = new ArrayList<Node>();
+            for (Node node : ejbNodes) {
+                // #75721: MDB should not appear in Call EJB dialog
+                if (node instanceof MessageNode)
+                    continue;
+                filteredNodes.add(new FilterNode(node, Children.LEAF) {
+                    @Override
                     public Action[] getActions(boolean context) {
                         return new Action[0];
                     }
-                };
+                });
             }
-            add(filteredNodes);
+            Node[] filteredNodesArray = new Node[filteredNodes.size()];
+            add(filteredNodes.toArray(filteredNodesArray));
         }
     }
     

@@ -92,7 +92,10 @@ import com.sun.sql.framework.exception.BaseException;
 import com.sun.sql.framework.utils.Attribute;
 import net.java.hulp.i18n.Logger;
 import com.sun.sql.framework.utils.StringUtil;
+import java.io.File;
 import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.ui.ETLEditorSupport;
+import org.netbeans.modules.etl.ui.ETLEditorSupport;
 import org.netbeans.modules.sql.framework.model.DBColumn;
 import org.netbeans.modules.sql.framework.model.DBTable;
 import org.netbeans.modules.sql.framework.model.DatabaseModel;
@@ -426,17 +429,32 @@ public class SQLDefinitionImpl implements SQLDefinition, Serializable {
         return (Integer) this.getAttributeValue(ATTR_EXECUTION_STRATEGY_CODE);
     }
 
-    public String getDBWorkingFolder() {
-        String workingFolder = (String) this.getAttributeValue(AXION_DB_WORKING_FOLDER);
-        workingFolder = (workingFolder == null) ? "" : workingFolder;
+    public String getAxiondbWorkingDirectory() {
+        String fs = File.separator;
+        String workingFolder = (String) this.getAttributeValue(AXION_DB_WORKING_DIR);
+        workingFolder = (workingFolder == null || "".equalsIgnoreCase(workingFolder)) ? System.getProperty("netbeans.user") : workingFolder;
         return workingFolder;
     }
 
-    public String getDbInstanceName() {
-        String dbName = (String) this.getAttributeValue(AXION_DB_INSTANCE_NAME);
-        dbName = (dbName == null) ? "" : dbName;
+    public String getAxiondbDataDirectory() {
+        String dbName = (String) this.getAttributeValue(AXION_DB_DATA_DIR);
+        dbName = (dbName == null) ? ETLEditorSupport.PRJ_PATH + File.separator + "data" + File.separator :  dbName;
         return dbName;
     }
+    
+    public boolean isDynamicFlatFile() {
+        Boolean dynamicFlatFile = (Boolean) this.getAttributeValue(DYNAMIC_FLAT_FILE);
+        boolean flag = false;
+        if(dynamicFlatFile != null) {
+            flag = dynamicFlatFile.booleanValue();
+        }
+        return flag;
+    }
+    
+    public void setDynamicFlatFile(boolean flag) {
+        this.setAttribute(DYNAMIC_FLAT_FILE, Boolean.valueOf(flag));
+    }
+    
 
     public String getExecutionStrategyStr() {
         int code = getExecutionStrategyCode().intValue();
@@ -1016,18 +1034,18 @@ public class SQLDefinitionImpl implements SQLDefinition, Serializable {
      * sets the axion database working folder
      * @param appDataRoot
      */
-    public void setWorkingFolder(String appDataRoot) {
-        this.setAttribute(AXION_DB_WORKING_FOLDER, appDataRoot);
+    public void setAxiondbWorkingDirectory(String appDataRoot) {
+        this.setAttribute(AXION_DB_WORKING_DIR, appDataRoot);
     }
 
     /**
      * sets the axion database instance name
      * @param dbInstanceName
      */
-    public void setDbInstanceName(String dbInstanceName) {
-        this.setAttribute(AXION_DB_INSTANCE_NAME, dbInstanceName);
+    public void setAxiondbDataDirectory(String dbInstanceName) {
+        this.setAttribute(AXION_DB_DATA_DIR, dbInstanceName);
     }
-
+    
     /**
      * @see SQLDefinition#setParent
      */

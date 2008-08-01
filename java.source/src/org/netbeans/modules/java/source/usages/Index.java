@@ -70,7 +70,7 @@ public abstract class Index {
     };
     
     private static final int VERSION = 0;
-    private static final int SUBVERSION = 8;
+    private static final int SUBVERSION = 11;
     private static final String NB_USER_DIR = "netbeans.user";   //NOI18N
     private static final String SEGMENTS_FILE = "segments";      //NOI18N
     private static final String CLASSES = "classes";             //NOI18N
@@ -92,9 +92,10 @@ public abstract class Index {
     public abstract boolean isValid (boolean tryOpen) throws IOException;   
     public abstract List<String> getUsagesFQN (String resourceName, Set<ClassIndexImpl.UsageType> mask, BooleanOperator operator) throws IOException, InterruptedException;
     public abstract <T> void getDeclaredTypes (String simpleName, ClassIndex.NameKind kind, ResultConvertor<T> convertor, Set<? super T> result) throws IOException, InterruptedException;
+    public abstract <T> void getDeclaredElements (String ident, ClassIndex.NameKind kind, ResultConvertor<T> convertor,Map<T,Set<String>> result) throws IOException, InterruptedException;
     public abstract void getPackageNames (String prefix, boolean directOnly, Set<String> result) throws IOException, InterruptedException;
-    public abstract void store (Map<Pair<String,String>,List<String>> refs, Set<Pair<String,String>> toDelete) throws IOException;
-    public abstract void store (Map<Pair<String,String>,List<String>> refs, List<Pair<String,String>> topLevels) throws IOException;
+    public abstract void store (Map<Pair<String,String>,Object[]> refs, Set<Pair<String,String>> toDelete) throws IOException;
+    public abstract void store (Map<Pair<String,String>,Object[]> refs, List<Pair<String,String>> topLevels) throws IOException;
     public abstract boolean isUpToDate (String resourceName, long timeStamp) throws IOException;
     public abstract String getSourceName (String binaryName) throws IOException;
     public abstract void clear () throws IOException;

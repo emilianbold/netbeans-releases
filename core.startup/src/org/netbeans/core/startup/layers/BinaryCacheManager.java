@@ -184,16 +184,19 @@ final class BinaryCacheManager extends ParsingLayerCacheManager {
         "methodvalue", // NOI18N
         "newvalue", // NOI18N
         "serialvalue", // NOI18N
+        "bundlevalue", // NOI18N
     };
 
     private void writeAttribute(BinaryWriter bw, MemAttr attr) throws IOException {
         bw.writeString(attr.name);
-        int i = 0;
-        for(; i < ATTR_TYPES.length; i++) {
-            if(ATTR_TYPES[i].equals(attr.type)) break;
+        for (int i = 0; i < ATTR_TYPES.length; i++) {
+            if(ATTR_TYPES[i].equals(attr.type)) {
+                bw.writeByte((byte)i);
+                bw.writeString(attr.data);
+                return;
+            }
         }
-        bw.writeByte((byte)i); // XXX - may write wrong value if unknown type!
-        bw.writeString(attr.data);
+        throw new IOException("Wrong type: " + attr);
     }
     
     // this map is actually valid only during BFS regeneration, null otherwise

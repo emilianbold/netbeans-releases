@@ -72,7 +72,7 @@ class TabsComponent extends JPanel {
     MultiViewModel model;
     private MouseListener buttonMouseListener = null;
     private JComponent toolbarPanel;
-    private JPanel componentPanel;
+    JPanel componentPanel; /** package private for tests */
     private CardLayout cardLayout;
     private Set<MultiViewElement> alreadyAddedElements;
     private JToolBar bar;
@@ -164,7 +164,16 @@ class TabsComponent extends JPanel {
         }
         cardLayout.show(componentPanel, id);
     }
-    
+
+    /** Part of 130919 fix - don't hold visual representations after close */
+    void peerComponentClosed() {
+        if (componentPanel != null) {
+            componentPanel.removeAll();
+        }
+        if (alreadyAddedElements != null) {
+            alreadyAddedElements.clear();
+        }
+    }
     
     void changeActiveManually(MultiViewDescription desc) {
         Enumeration en = model.getButtonGroup().getElements();
@@ -441,6 +450,7 @@ class TabsComponent extends JPanel {
          */
         @Override
         public void mousePressed(MouseEvent e) {
+            e.consume();
             AbstractButton b = (AbstractButton)e.getComponent();
             MultiViewModel model = TabsComponent.this.model;
             if (model != null) {

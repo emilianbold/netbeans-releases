@@ -19,6 +19,11 @@
 
 set -e
 
+script_dir=`dirname "$0"`
+
+#add Product ID
+"$script_dir"/addproduct_id.sh "CND"
+
 if [ -d "/Library/Receipts/cpp.pkg" ] ; then
     rm -rf "/Library/Receipts/cpp.pkg"
 fi

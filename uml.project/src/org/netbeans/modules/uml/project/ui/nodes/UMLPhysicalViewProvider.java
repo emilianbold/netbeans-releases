@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.uml.project.ui.nodes;
 
-import java.util.Iterator;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
@@ -58,7 +57,6 @@ import java.util.ResourceBundle;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.JSeparator;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -77,15 +75,8 @@ import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
-import org.openide.loaders.DataFolder;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.loaders.FolderLookup;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -105,8 +96,6 @@ import org.netbeans.modules.uml.project.ui.nodes.actions.NewElementType;
 import org.netbeans.modules.uml.project.ui.nodes.actions.NewPackageType;
 import org.netbeans.modules.uml.resources.images.ImageUtil;
 import org.netbeans.modules.uml.ui.support.applicationmanager.IProduct;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 
 import org.openide.DialogDisplayer;
@@ -459,7 +448,7 @@ public class UMLPhysicalViewProvider implements LogicalViewProvider
                             IDiagram diag = diagram.getDiagram();
                             if (diag != null)
                             {
-                                diag.setIsDirty(false);
+                                diag.setDirty(false);
                                 product.getDiagramManager().closeDiagram2(diag);
                             }
                         }
@@ -561,40 +550,7 @@ public class UMLPhysicalViewProvider implements LogicalViewProvider
             actions.add(null);
             actions.add(CommonProjectActions.deleteProjectAction());
             actions.add(null);
-            
-            try
-            {
-                Repository repository  = Repository.getDefault();
-                FileSystem sfs = repository.getDefaultFileSystem();
-                FileObject fo = sfs.findResource("UMLProjects/Actions"); // NOI18N
-                
-                if (fo != null)
-                {
-                    DataObject dobj = DataObject.find(fo);
-                    FolderLookup actionRegistry = new FolderLookup((DataFolder)dobj);
-                    Lookup.Template query = new Lookup.Template(Object.class);
-                    Lookup lkup = actionRegistry.getLookup();
-                    Iterator it = lkup.lookup(query).allInstances().iterator();
-
-                    while (it.hasNext())
-                    {
-                        Object next = it.next();
-                        
-                        if (next instanceof Action)
-                            actions.add(next);
-                        
-                        else if (next instanceof JSeparator)
-                            actions.add(null);
-                    }
-                }
-            }
-            
-            catch (DataObjectNotFoundException ex)
-            {
-                // data folder for exitinf fileobject expected
-                ErrorManager.getDefault().notify(ex);
-            }
-            
+            actions.addAll(Utilities.actionsForPath("UMLProjects/Actions")); // NOI18N
             addContextMenus(actions);
             actions.add(null);
             

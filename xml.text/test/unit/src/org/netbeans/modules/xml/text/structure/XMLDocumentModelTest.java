@@ -44,8 +44,9 @@ import java.util.List;
 import java.util.Vector;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.editor.structure.api.DocumentElement;
 import org.netbeans.modules.editor.structure.api.DocumentElementEvent;
 import org.netbeans.modules.editor.structure.api.DocumentElementListener;
@@ -53,8 +54,6 @@ import org.netbeans.modules.editor.structure.api.DocumentModel;
 import org.netbeans.modules.editor.structure.api.DocumentModelException;
 import org.netbeans.modules.editor.structure.api.DocumentModelListener;
 import org.netbeans.modules.editor.structure.api.DocumentModelStateListener;
-import org.netbeans.modules.editor.structure.api.DocumentModelUtils;
-import org.netbeans.modules.editor.structure.spi.DocumentModelProvider;
 import org.netbeans.modules.xml.text.syntax.XMLKit;
 import org.netbeans.modules.xml.text.test.TestBase;
 
@@ -71,13 +70,42 @@ public class XMLDocumentModelTest extends TestBase {
     public XMLDocumentModelTest() {
         super("xml-document-model-test");
     }
-
+    
+    public XMLDocumentModelTest(String testName) {
+        super(testName);
+    }
+    
     public void setUp() throws BadLocationException {
     }
 
     protected void runTest() throws Throwable {
-        System.out.println(getName());
+        //System.out.println(getName());
         super.runTest();
+    }
+    
+    public static Test suite() {
+        TestSuite suite = new TestSuite();
+        suite.addTest(new XMLDocumentModelTest("testAddElement"));
+        suite.addTest(new XMLDocumentModelTest("testChangeTreeFromElementsWithSameName"));
+        suite.addTest(new XMLDocumentModelTest("testCreateAndUpdateCommentElement"));
+        suite.addTest(new XMLDocumentModelTest("testDoTwoModificationsOnVariousPlaces"));
+        suite.addTest(new XMLDocumentModelTest("testDocumentModelStateListener"));
+        //suite.addTest(new XMLDocumentModelTest("testEditElementWithOneCharContent_71596"));
+        suite.addTest(new XMLDocumentModelTest("testElementAttributes"));
+        suite.addTest(new XMLDocumentModelTest("testInvalidateTagElement"));
+        suite.addTest(new XMLDocumentModelTest("testMergeTwoElementsIntoOne"));
+        suite.addTest(new XMLDocumentModelTest("testModelBasis"));
+        suite.addTest(new XMLDocumentModelTest("testModelLocking"));
+        suite.addTest(new XMLDocumentModelTest("testRemoveAndAddEntireDocumentContent"));
+        suite.addTest(new XMLDocumentModelTest("testRemoveDocumentContentPartToTheEndOfTheFile"));
+        suite.addTest(new XMLDocumentModelTest("testRemoveElementAttributes"));
+        suite.addTest(new XMLDocumentModelTest("testRemoveElementsInText"));
+        suite.addTest(new XMLDocumentModelTest("testRemoveEmptyTagElement"));
+        suite.addTest(new XMLDocumentModelTest("testRemoveNestedElements"));
+        suite.addTest(new XMLDocumentModelTest("testRemoveTagElementWithTextContent"));
+        suite.addTest(new XMLDocumentModelTest("testRemoveTwoElementsWithSameName"));
+        suite.addTest(new XMLDocumentModelTest("testReplaceEntireDocumentContent"));
+        return suite;
     }
 
 //--------- test methods -----------

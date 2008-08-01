@@ -135,7 +135,7 @@ public class BridgingServerInstanceProvider implements org.netbeans.spi.server.S
         return hash;
     }
 
-    protected synchronized ServerInstance getBridge(org.netbeans.modules.j2ee.deployment.impl.ServerInstance instance) {
+    public synchronized ServerInstance getBridge(org.netbeans.modules.j2ee.deployment.impl.ServerInstance instance) {
         refreshCache();
         BridgingServerInstance bridgingInstance = instances.get(instance);
         return bridgingInstance == null ? null : bridgingInstance.getCommonInstance();

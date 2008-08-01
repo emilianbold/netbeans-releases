@@ -46,6 +46,9 @@ import java.io.*;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.*;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.Executor;
 import java.util.logging.*;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
@@ -277,9 +280,35 @@ public class FolderLookup extends FolderInstance {
         exception(e);
     }
 
+    static final class Dispatch implements Executor, Runnable {
+        private static final RequestProcessor DISPATCH = new RequestProcessor("Lookup Dispatch Thread"); // NOI18N
+        
+        private final Queue<Runnable> queue = new ConcurrentLinkedQueue<Runnable>();
+        private final RequestProcessor.Task task = DISPATCH.create(this, true);
+
+        public void execute(Runnable command) {
+            queue.add(command);
+            task.schedule(0);
+        }
+        
+        public void waitFinished() {
+            task.waitFinished();
+        }
+        
+        public void run() {
+            for (;;) {
+                Runnable r = queue.poll();
+                if (r == null) {
+                    return;
+                }
+                r.run();
+            }
+        }
+    }
     
     /** <code>ProxyLookup</code> delegate so we can change the lookups on fly. */
     static final class ProxyLkp extends ProxyLookup implements Serializable {
+        static final Dispatch DISPATCH = new Dispatch();
         
         private static final long serialVersionUID = 1L;
 
@@ -294,7 +323,7 @@ public class FolderLookup extends FolderInstance {
         /** Constructs lookup which holds all items+lookups from underlying world.
          * @param folder <code>FolderLookup</code> to associate to */
         public ProxyLkp(FolderLookup folder) {
-            this(folder, new AbstractLookup.Content());
+            this(folder, new AbstractLookup.Content(DISPATCH));
         }
 
         /** Constructs lookup. */
@@ -305,6 +334,7 @@ public class FolderLookup extends FolderInstance {
             this.content = content;
         }
         
+        @Override
         public String toString() {
             return "FolderLookup.lookup[\"" + fl.rootName + "\"]";
         }
@@ -335,7 +365,7 @@ public class FolderLookup extends FolderInstance {
             
             content = (AbstractLookup.Content)ois.readObject ();
             
-            setLookups (arr);
+            setLookups (DISPATCH, arr);
 
             readFromStream = true;
             org.openide.util.RequestProcessor.getDefault ().post (fl, 0, Thread.MIN_PRIORITY);
@@ -359,11 +389,12 @@ public class FolderLookup extends FolderInstance {
             lookups.set(0, pairs);
 
             Lookup[] arr = (Lookup[])lookups.toArray (new Lookup[lookups.size ()]);
-            setLookups (arr);
+            setLookups (DISPATCH, arr);
             if (fl.err().isLoggable(Level.FINE)) fl.err ().fine("Changed lookups: " + lookups); // NOI18N
         }
         
         /** Waits before the processing of changes is finished. */
+        @Override
         protected void beforeLookup (Template template) {
             if (readFromStream) {
                 // ok
@@ -377,6 +408,7 @@ public class FolderLookup extends FolderInstance {
             ) {
                 if (!DataObjectPool.isConstructorAllowed()) {
                     fl.waitFinished();
+                    DISPATCH.waitFinished();
                 } else {
                     try {
                         // try a bit but prevent deadlock from CanYouQueryFolderLookupFromHandleFindTest
@@ -393,6 +425,16 @@ public class FolderLookup extends FolderInstance {
                     } catch (InterruptedException ex) {
                         fl.err().log(Level.WARNING, null, ex);
                     }
+                }
+            } else {
+                // there is a special need to wait for loaders commint from
+                // layers
+                if (
+                    fl.folder != null &&
+                    fl.folder.getName().equals("Factories") &&
+                    template.getType().isAssignableFrom(DataObject.Factory.class)
+                ) {
+                    fl.waitFinished();
                 }
             }
         }

@@ -53,6 +53,7 @@ import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import javax.swing.*;
+import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.PolicyModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.ProfilesModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.SecurityPolicyModelHelper;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
@@ -196,7 +197,8 @@ public class GenericElementPanel<T extends WSDLComponent> extends SectionInnerPa
                 }
             }
         } else {
-            SecurityPolicyModelHelper.setTargets(element, targetsPanel.getTargetsModel());
+            SecurityPolicyModelHelper spmh = SecurityPolicyModelHelper.getInstance(PolicyModelHelper.getConfigVersion(element));
+            spmh.setTargets(element, targetsPanel.getTargetsModel());
         }
         
         model.removeUndoableEditListener(undoCounter);

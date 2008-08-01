@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -49,6 +49,7 @@ import org.openide.util.Lookup;
  * @see org.netbeans.api.project.Project#getLookup
  * @see <a href="@org-apache-tools-ant-module@/org/apache/tools/ant/module/api/support/ActionUtils.html"><code>ActionUtils</code></a>
  * @see <a href="@org-netbeans-modules-projectuiapi@/org/netbeans/spi/project/ui/support/ProjectSensitiveActions.html#projectCommandAction(java.lang.String,%20java.lang.String,%20javax.swing.Icon)"><code>ProjectSensitiveActions.projectCommandAction(...)</code></a>
+ * @see SingleMethod
  * @author Jesse Glick
  */
 public interface ActionProvider {
@@ -80,6 +81,8 @@ public interface ActionProvider {
 
     /** 
      * Standard command for running one file
+     *
+     * @see  SingleMethod#COMMAND_RUN_SINGLE_METHOD
      */
     String COMMAND_RUN_SINGLE = "run.single"; // NOI18N
     
@@ -100,6 +103,8 @@ public interface ActionProvider {
     
     /**
      * Standard command for running single file in debugger
+     *
+     * @see  SingleMethod#COMMAND_DEBUG_SINGLE_METHOD
      */    
     String COMMAND_DEBUG_SINGLE = "debug.single"; // NOI18N
     

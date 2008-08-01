@@ -170,7 +170,8 @@ public class VariablesModelFilter extends ViewModelSupport
                 FilterType.ARRAY,
                 FilterType.OBJECT,
                 FilterType.SCALARS,
-                FilterType.SUPERGLOBALS
+                FilterType.SUPERGLOBALS,
+                FilterType.RESOURCE,
         };
         myShowFilters.set( filters );
     }

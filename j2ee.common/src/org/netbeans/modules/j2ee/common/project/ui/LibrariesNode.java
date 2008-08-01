@@ -50,6 +50,7 @@ import java.io.IOException;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -93,7 +94,6 @@ import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
 import org.netbeans.modules.j2ee.common.project.ui.AntArtifactChooser.ArtifactItem;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
-import org.netbeans.spi.java.project.classpath.ProjectClassPathModifierImplementation;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -135,10 +135,9 @@ public final class LibrariesNode extends AbstractNode {
      */
     public LibrariesNode (String displayName, Project project, PropertyEvaluator eval, UpdateHelper helper, ReferenceHelper refHelper,
                    String classPathProperty, String[] classPathIgnoreRef, String platformProperty, String j2eePlatformProperty,
-                   String j2eeClassPathProperty, Action[] librariesNodeActions, String webModuleElementName, ClassPathSupport cs,
-                   String[] libUpdaterProperties) {
+                   String j2eeClassPathProperty, Action[] librariesNodeActions, String webModuleElementName, ClassPathSupport cs) {
         super (new LibrariesChildren (eval, helper, refHelper, classPathProperty,
-                classPathIgnoreRef, platformProperty, j2eePlatformProperty, j2eeClassPathProperty, webModuleElementName, cs, libUpdaterProperties), Lookups.singleton(project));
+                classPathIgnoreRef, platformProperty, j2eePlatformProperty, j2eeClassPathProperty, webModuleElementName, cs), Lookups.singleton(project));
         this.displayName = displayName;
         this.librariesNodeActions = librariesNodeActions;
     }
@@ -180,7 +179,8 @@ public final class LibrariesNode extends AbstractNode {
         if (sources.getRoots().length == 0) {
             return null;
         }
-        return new AddLibraryAction(helper, sources.getRoots()[0], filter);
+        return new AddLibraryAction(helper, sources.getRoots()[0], 
+                filter != null ? filter : EditMediator.createLibraryFilter());
     }
 
     public static Action createAddFolderAction (AntProjectHelper p, SourceRoots sources) {
@@ -251,7 +251,6 @@ public final class LibrariesNode extends AbstractNode {
         private final Set classPathIgnoreRef;
         private final String webModuleElementName;
         private final ClassPathSupport cs;
-        private final String[] libUpdaterProperties;
 
         //XXX: Workaround: classpath is used only to listen on non existent files.
         // This should be removed when there will be API for it
@@ -262,7 +261,7 @@ public final class LibrariesNode extends AbstractNode {
         LibrariesChildren (PropertyEvaluator eval, UpdateHelper helper, ReferenceHelper refHelper,
                            String classPathProperty, String[] classPathIgnoreRef, String platformProperty, 
                            String j2eePlatformProperty, String j2eeClassPathProperty, String webModuleElementName, 
-                           ClassPathSupport cs, String[] libUpdaterProperties) {
+                           ClassPathSupport cs) {
             this.eval = eval;
             this.helper = helper;
             this.refHelper = refHelper;
@@ -273,7 +272,6 @@ public final class LibrariesNode extends AbstractNode {
             this.j2eeClassPathProperty = j2eeClassPathProperty;
             this.webModuleElementName = webModuleElementName;
             this.cs = cs;
-            this.libUpdaterProperties = libUpdaterProperties;
         }
 
         public void propertyChange(PropertyChangeEvent evt) {
@@ -332,11 +330,11 @@ public final class LibrariesNode extends AbstractNode {
                         break;
                     case Key.TYPE_PROJECT:
                         result = new Node[] {new ProjectNode(key.getProject(), key.getArtifactLocation(), helper, key.getClassPathId(),
-                            key.getEntryId(), webModuleElementName, cs, libUpdaterProperties)};
+                            key.getEntryId(), webModuleElementName, cs, refHelper)};
                         break;
                     case Key.TYPE_LIBRARY:
                         result = new Node[] {ActionFilterNode.create(PackageView.createPackageView(key.getSourceGroup()),
-                            helper, key.getClassPathId(), key.getEntryId(), webModuleElementName, cs, libUpdaterProperties)};
+                            helper, key.getClassPathId(), key.getEntryId(), webModuleElementName, cs, refHelper)};
                         break;
                 }
             }
@@ -402,7 +400,6 @@ public final class LibrariesNode extends AbstractNode {
                         Icon libIcon = new ImageIcon (Utilities.loadImage(LIBRARIES_ICON));
                         for (Iterator it = roots.iterator(); it.hasNext();) {
                             URL rootUrl = (URL) it.next();
-                            rootUrl = LibrariesSupport.resolveLibraryEntryURL(lib.getManager().getLocation(), rootUrl);
                             rootsList.add (rootUrl);
                             FileObject root = URLMapper.findFileObject (rootUrl);
                             if (root != null) {
@@ -616,13 +613,17 @@ public final class LibrariesNode extends AbstractNode {
         }
 
         private void addArtifacts (AntArtifactChooser.ArtifactItem[] artifactItems) {
-            for (int i=0; i<artifactItems.length;i++) {
-                try {
-                    ProjectClassPathModifier.addAntArtifacts(new AntArtifact[]{artifactItems[i].getArtifact()}, 
-                            new URI[]{artifactItems[i].getArtifactURI()}, projectSourcesArtifact, ClassPath.COMPILE);
-                } catch (IOException ioe) {
-                    Exceptions.printStackTrace(ioe);
-                }
+            AntArtifact[] artifacts = new AntArtifact[artifactItems.length];
+            URI[] artifactURIs = new URI[artifactItems.length];
+            for (int i = 0; i < artifactItems.length; i++) {
+                artifacts[i] = artifactItems[i].getArtifact();
+                artifactURIs[i] = artifactItems[i].getArtifactURI();
+            }
+            try {
+                ProjectClassPathModifier.addAntArtifacts(artifacts, artifactURIs,
+                        projectSourcesArtifact, ClassPath.COMPILE);
+            } catch (IOException ioe) {
+                Exceptions.printStackTrace(ioe);
             }
         }
     }
@@ -650,13 +651,11 @@ public final class LibrariesNode extends AbstractNode {
         }
 
         private void addLibraries (Library[] libraries) {
-            for (int i=0; i<libraries.length;i++) {
-                try {
-                    ProjectClassPathModifier.addLibraries(new Library[]{libraries[i]}, 
-                            projectSourcesArtifact, ClassPath.COMPILE);
-                } catch (IOException ioe) {
-                    Exceptions.printStackTrace(ioe);
-                }
+            try {
+                ProjectClassPathModifier.addLibraries(libraries,
+                        projectSourcesArtifact, ClassPath.COMPILE);
+            } catch (IOException ioe) {
+                Exceptions.printStackTrace(ioe);
             }
         }
         
@@ -674,8 +673,14 @@ public final class LibrariesNode extends AbstractNode {
         }
 
         public void actionPerformed(ActionEvent e) {
-            org.netbeans.api.project.ant.FileChooser chooser = 
-                    new org.netbeans.api.project.ant.FileChooser(helper, true);
+            org.netbeans.api.project.ant.FileChooser chooser;
+            if (helper.isSharableProject()) {
+                chooser = new org.netbeans.api.project.ant.FileChooser(helper, true);
+            } else {
+                chooser = new org.netbeans.api.project.ant.FileChooser(FileUtil.toFile(helper.getProjectDirectory()), null);
+            }
+            chooser.enableVariableBasedSelection(true);
+            chooser.setFileHidingEnabled(false);
             FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
             chooser.setFileSelectionMode( JFileChooser.FILES_AND_DIRECTORIES );
             chooser.setMultiSelectionEnabled( true );
@@ -696,33 +701,52 @@ public final class LibrariesNode extends AbstractNode {
                     Exceptions.printStackTrace(ex);
                     return;
                 }
-                addJarFiles( filePaths, fileFilter, FileUtil.toFile(helper.getProjectDirectory()));
+                addJarFiles( filePaths, chooser.getSelectedPathVariables(), fileFilter, FileUtil.toFile(helper.getProjectDirectory()));
                 curDir = FileUtil.normalizeFile(chooser.getCurrentDirectory());
                 UserProjectSettings.getDefault().setLastUsedClassPathFolder(curDir);
             }
         }
 
-        private void addJarFiles (String[] filePaths, FileFilter fileFilter, File base) {
+        private void addJarFiles (String[] filePaths, final String[] pathBasedVariables, FileFilter fileFilter, File base) {
             for (int i=0; i<filePaths.length;i++) {
                 try {
                     //Check if the file is acceted by the FileFilter,
                     //user may enter the name of non displayed file into JFileChooser
                     File fl = PropertyUtils.resolveFile(base, filePaths[i]);
-                    if (fileFilter.accept(fl)) {
-                        URL u = LibrariesSupport.convertFilePathToURL(filePaths[i]);
-                        u = FileUtil.getArchiveRoot(u);
+                    FileObject fo = FileUtil.toFileObject(fl);
+                    assert fo != null : fl;
+                    if (fo != null && fileFilter.accept(fl)) {
+                        URI u;
+                        boolean isArchiveFile = FileUtil.isArchiveFile(fo);
+                        if (pathBasedVariables == null) {
+                            u = LibrariesSupport.convertFilePathToURI(filePaths[i]);
+                        } else {
+                            try {
+                                String path = pathBasedVariables[i];
+                                // append slash before creating relative URI:
+                                if (!isArchiveFile && !path.endsWith("/")) { // NOI18N
+                                    path += "/"; // NOI18N
+                                }
+                                // create relative URI
+                                u = new URI(null, null, path, null);
+                            } catch (URISyntaxException ex) {
+                                Exceptions.printStackTrace(ex);
+                                u = LibrariesSupport.convertFilePathToURI(filePaths[i]);
+                            }
+                        }
+                        if (isArchiveFile) {
+                            u = LibrariesSupport.getArchiveRoot(u);
+                        } else if (!u.toString().endsWith("/")) { // NOI18N
+                            try {
+                                u = new URI(u.toString() + "/"); // NOI18N
+                            } catch (URISyntaxException ex) {
+                                throw new AssertionError(ex);
+                            }
+                        }
                         Project prj = FileOwnerQuery.getOwner(helper.getProjectDirectory());
                         ClassPathModifier modifierImpl = prj.getLookup().lookup(ClassPathModifier.class);
-                        if (modifierImpl != null) {
-                            //sort of hack, in this case we don't want the classpath modifier to perform
-                            // the heuristics it normally does, as the user explitly defined how the jar/folder
-                            //shall be referenced.
-                            SourceGroup[] grps = modifierImpl.getExtensibleSourceGroups();
-                            modifierImpl.addRoots(new URL[]{u}, grps[0], ClassPath.COMPILE, ClassPathModifier.ADD_NO_HEURISTICS);
-                        } else {
-                            //fallback to call that will perform heuristics and eventually override user preferences..
-                            ProjectClassPathModifier.addRoots(new URL[]{u}, projectSourcesArtifact, ClassPath.COMPILE);
-                        }
+                        assert modifierImpl != null : prj.getProjectDirectory();
+                        modifierImpl.addRoots(new URI[]{u}, findSourceGroup(projectSourcesArtifact, modifierImpl), ClassPath.COMPILE, ClassPathModifier.ADD_NO_HEURISTICS);
                     }
                 } catch (IOException ioe) {
                     Exceptions.printStackTrace(ioe);
@@ -730,6 +754,16 @@ public final class LibrariesNode extends AbstractNode {
             }
         }
 
+    }
+    
+    private static SourceGroup findSourceGroup(FileObject fo, ClassPathModifier modifierImpl) {
+        SourceGroup[]sgs = modifierImpl.getExtensibleSourceGroups();
+        for (SourceGroup sg : sgs) {
+            if ((fo == sg.getRootFolder() || FileUtil.isParentOf(sg.getRootFolder(),fo)) && sg.contains(fo)) {
+                return sg;
+            }
+        }
+        throw new AssertionError("Cannot find source group for '"+fo+"' in "+Arrays.asList(sgs)); // NOI18N
     }
 
     private static class SimpleFileFilter extends FileFilter {

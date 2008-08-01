@@ -1,6 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
-* Copyright 2007 Sun Microsystems, Inc. All rights reserved.
+* Copyright 2008 Sun Microsystems, Inc. All rights reserved.
 * Use is subject to license terms.
 -->
 <html>
@@ -13,7 +13,7 @@
 <p><small><a href="#seealso">See Also</a></small></p>
 <p>You can enhance a JBI deployment project by adding one or more test cases.</p>
 <h3>Creating and Running Test Cases</h3>
-<p>In order to obtain test results you must do the following:
+<p>In order to obtain test results you must do the following:</p>
 <ol>
   <li><a href="jbi_tester_adding_test.html" title="Adding/Binding a Test Case">Add a test case and bind it to a BPEL operation</a></li>
   <li><a href="jbi_tester_setting_props.html" title="Setting Test Properties">Set the test properties</a></li>
@@ -21,30 +21,32 @@
   <li><a href="jbi_tester_running_tester.html" title="Running the Tester">Run the Tester</a></li>
 </ol>
 <ul class="note">
-  <li>All steps in this section assume the following:</li>
+  <li>All steps in this section assume the following:
   <ul>
     <li>You have already created a BPEL, IEP, SQL, or XSLT Module project containing 
-      a .wsdl file that codes an operation you want to test.</li>
+      a WSDL file that codes an operation you want to test.</li>
     <li>You have successfully built your BPEL, IEP, SQL, or XSLT Module project.</li>
     <li>You have added your BPEL, IEP, SQL, or XSLT Module project to a Composite 
       Application project as a JBI Module.</li>
   </ul>
+  </li>
 </ul>
 <h3>Looking at Test Case Results</h3>
 <ul>
-  <li>The first run correctly reports that it failed: 
-    The output produced does not match the (empty) <tt>Output.xml</tt> file, 
-    and the file&rsquo;s null content is replaced with the output of the first run. </li>
+  <li>The first run correctly reports that it failed: The output produced does 
+    not match the (empty) <tt>Output.xml</tt> file, and the file's null content 
+    is replaced with the output of the first run. </li>
   <li>If you run the test again without changing the input, 
     second and subsequent runs report success, 
     since the output matches the contents of <tt>Output.xml</tt>. </li>
-  <li>If you change the value in the <tt>Input.xml</tt> and re-run the test, then:</li>
+  <li>If you change the value in the <tt>Input.xml</tt> and re-run the test, then:
   <ul>
     <li>If the feature-status property is set to progress, 
       then the test indicates success even though a mismatch occurred. </li>
     <li>If the feature-status property is set to done, 
       then the test indicates failure. </li>
   </ul>
+  </li>
   <li>If you right-click <tt>myTestcase1</tt> and click the Diff pop-up menu item, 
     the window displays the difference between the latest output 
     and the contents of <tt>Output.xml</tt>. </li>

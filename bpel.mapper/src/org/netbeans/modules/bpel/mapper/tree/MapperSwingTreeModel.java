@@ -16,32 +16,34 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
 package org.netbeans.modules.bpel.mapper.tree;
 
+import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Stack;
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
+import javax.swing.KeyStroke;
 import javax.swing.event.EventListenerList;
 import javax.swing.event.TreeModelEvent;
 import javax.swing.event.TreeModelListener;
-import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
 import org.netbeans.modules.bpel.mapper.multiview.DesignContextController;
-import org.netbeans.modules.bpel.mapper.predicates.editor.PathConverter;
-import org.netbeans.modules.bpel.mapper.tree.spi.MapperTcContext;
-import org.netbeans.modules.bpel.mapper.tree.spi.MapperTreeModel;
-import org.netbeans.modules.bpel.mapper.tree.spi.RestartableIterator;
-import org.netbeans.modules.bpel.mapper.tree.spi.TreeItemFinder;
-import org.netbeans.modules.bpel.mapper.tree.spi.TreeItemFinder.FindResult;
-import org.netbeans.modules.bpel.mapper.tree.spi.TreeItemInfoProvider;
+import org.netbeans.modules.bpel.mapper.tree.models.MapperConnectabilityProvider;
+import org.netbeans.modules.bpel.mapper.model.MapperTcContext;
+import org.netbeans.modules.bpel.mapper.model.MapperTreeContext;
+import org.netbeans.api.print.PrintManager;
+import org.netbeans.modules.soa.mappercore.model.GraphItem;
+import org.netbeans.modules.soa.ui.tree.ExtTreeModel;
+import org.netbeans.modules.soa.ui.tree.SoaTreeModel;
+import org.netbeans.modules.soa.ui.tree.TreeItemActionsProvider;
+import org.netbeans.modules.soa.ui.tree.TreeItemInfoProvider;
+import org.netbeans.modules.soa.ui.tree.impl.TreePathComparator;
 
 /**
  * An internal tree model based on the Swing Tree Model. 
@@ -51,16 +53,17 @@ import org.netbeans.modules.bpel.mapper.tree.spi.TreeItemInfoProvider;
  * 
  * @author nk160297
  */
-public class MapperSwingTreeModel implements TreeModel, MapperTcContext.Provider {
+public class MapperSwingTreeModel implements ExtTreeModel<MapperTreeNode>, 
+        MapperTcContext.Provider {
     
     protected EventListenerList listenerList = new EventListenerList();
-    private MapperTreeModel mSourceModel;
+    private SoaTreeModel mSourceModel;
     private MapperTcContext mMapperTcContext;
     private MapperTreeNode mRootNode;
     
     
     public MapperSwingTreeModel(MapperTcContext mapperTcContext, 
-            MapperTreeModel sourceModel) {
+            SoaTreeModel sourceModel) {
         //
         mMapperTcContext = mapperTcContext;
         mSourceModel = sourceModel;
@@ -97,11 +100,10 @@ public class MapperSwingTreeModel implements TreeModel, MapperTcContext.Provider
     public boolean isLeaf(Object node) {
         assert node instanceof MapperTreeNode;
         MapperTreeNode mNode = (MapperTreeNode)node;
-        Object dataObject = mNode.getDataObject();
         //
         Boolean isLeafObj = mNode.isLeaf();
         if (isLeafObj == null) {
-            isLeafObj = mSourceModel.isLeaf(dataObject);
+            isLeafObj = mSourceModel.getTreeStructureProvider().isLeaf(mNode);
         }
         //
         if (isLeafObj == null) {
@@ -157,7 +159,7 @@ public class MapperSwingTreeModel implements TreeModel, MapperTcContext.Provider
         fireTreeNodesRemoved(this, parentTreePath, childIndex, lastComp);
     }
     
-    public MapperTreeModel getSourceModel() {
+    public SoaTreeModel getSourceModel() {
         return mSourceModel;
     }
     
@@ -170,8 +172,7 @@ public class MapperSwingTreeModel implements TreeModel, MapperTcContext.Provider
                 TreeItemInfoProvider infoProvider = 
                         mSourceModel.getTreeItemInfoProvider();
                 if (infoProvider != null) {
-                    Object dataObject = mNode.getDataObject();
-                    displayName = infoProvider.getDisplayName(dataObject);
+                    displayName = infoProvider.getDisplayName(mNode);
                     mNode.setDisplayName(displayName);
                 }
             }
@@ -187,8 +188,7 @@ public class MapperSwingTreeModel implements TreeModel, MapperTcContext.Provider
             TreeItemInfoProvider infoProvider =
                     mSourceModel.getTreeItemInfoProvider();
             if (infoProvider != null) {
-                Object dataObject = mNode.getDataObject();
-                toolTipText = infoProvider.getToolTipText(dataObject);
+                toolTipText = infoProvider.getToolTipText(mNode);
             }
         }
         return toolTipText;
@@ -202,8 +202,7 @@ public class MapperSwingTreeModel implements TreeModel, MapperTcContext.Provider
                 TreeItemInfoProvider infoProvider = 
                         mSourceModel.getTreeItemInfoProvider();
                 if (infoProvider != null) {
-                    Object dataObject = mNode.getDataObject();
-                    icon = infoProvider.getIcon(dataObject);
+                    icon = infoProvider.getIcon(mNode);
                     mNode.setIcon(icon);
                 }
             }
@@ -215,9 +214,13 @@ public class MapperSwingTreeModel implements TreeModel, MapperTcContext.Provider
         Object node = treePath.getLastPathComponent();
         assert node instanceof MapperTreeNode;
         MapperTreeNode mNode = (MapperTreeNode)node;
-        Object dataObject = mNode.getDataObject();
         //
-        return mSourceModel.isConnectable(dataObject) == Boolean.TRUE;
+        if (mSourceModel instanceof MapperConnectabilityProvider) {
+            return ((MapperConnectabilityProvider)mSourceModel).
+                    isConnectable(mNode) == Boolean.TRUE;
+        }
+        //
+        return false;
     }
     
     public JPopupMenu getPopupMenu(Object node) {
@@ -225,19 +228,20 @@ public class MapperSwingTreeModel implements TreeModel, MapperTcContext.Provider
         MapperTreeNode mNode = (MapperTreeNode)node;
         //
         TreePath treePath = mNode.getTreePath();
-        RestartableIterator<Object> dataObjectPathItr = 
-                getDataObjectsPathIterator(mNode);
         //
-        TreeItemInfoProvider infoProvider = mSourceModel.getTreeItemInfoProvider();
-        if (infoProvider != null) {
+        TreeItemActionsProvider actionProvider = 
+                mSourceModel.getTreeItemActionsProvider();
+        if (actionProvider != null) {
             //
             // Determine if the model is the left one
             TreeModel leftTreeModel = 
                     mMapperTcContext.getMapper().getModel().getLeftTreeModel();
             boolean isLeft = (leftTreeModel == this);
             //
-            List<Action> menuActionList = infoProvider.getMenuActions(
-                    mMapperTcContext, isLeft, treePath, dataObjectPathItr);
+            MapperTreeContext context = new MapperTreeContext(mMapperTcContext, isLeft);
+            List<Action> menuActionList = actionProvider.getMenuActions(mNode,
+                    context, treePath);
+            //
             if (menuActionList != null && !menuActionList.isEmpty()) {
                 JPopupMenu newMenu = new JPopupMenu();
                 for (Action menuAction : menuActionList) {
@@ -252,16 +256,31 @@ public class MapperSwingTreeModel implements TreeModel, MapperTcContext.Provider
         return null;
     }
     
-    private List<MapperTreeNode> getChildren(MapperTreeNode parent) {
+    public JPopupMenu getCanvasPopupMenu(GraphItem item) {
+        JPopupMenu newMenu = new JPopupMenu();
+
+        // vlv: print
+        JMenuItem newItem = new JMenuItem(PrintManager.printAction(
+                mMapperTcContext.getMapper()));
+        
+        newItem.setText("Print...");
+//        newItem.setMnemonic(KeyStroke.getKeyStroke(KeyEvent.VK_P, KeyEvent.CTRL_DOWN_MASK +
+//                KeyEvent.SHIFT_DOWN_MASK + KeyEvent.ALT_DOWN_MASK).getKeyCode());
+        newItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_P, KeyEvent.CTRL_DOWN_MASK +
+                KeyEvent.SHIFT_DOWN_MASK + KeyEvent.ALT_DOWN_MASK));
+        newMenu.add(newItem);
+
+        return newMenu;
+    }
+    
+    public List<MapperTreeNode> getChildren(MapperTreeNode parent) {
         List<MapperTreeNode> childrenList = parent.getChildren();
         if (childrenList == null) {
             //
             // Construct children nodes here
             childrenList = new ArrayList<MapperTreeNode>();
-            RestartableIterator<Object> dataObjectPathItr = 
-                    getDataObjectsPathIterator(parent);
             List<Object> childrenDataObjectList = 
-                    mSourceModel.getChildren(dataObjectPathItr);
+                    mSourceModel.getTreeStructureProvider().getChildren(parent);
             
             if (childrenDataObjectList != null) {
                 DesignContextController dcc = mMapperTcContext
@@ -355,46 +374,6 @@ public class MapperSwingTreeModel implements TreeModel, MapperTcContext.Provider
         }
     }
     
-    /**
-     * Returns an iterator, which provides a tree path from the specifed node to 
-     * the tree root. The path consists not from the MapperTreeNode objects, but 
-     * from containing data objects. The first element is get from the result 
-     * iterator references the data object of the specified node. 
-     * @param node
-     * @return
-     */
-    private RestartableIterator<Object> getDataObjectsPathIterator(
-            final MapperTreeNode node) {
-        return new RestartableIterator() {
-
-            private MapperTreeNode mNextNode = node;
-            
-            public boolean hasNext() {
-                return mNextNode != null;
-            }
-
-            public Object next() {
-                assert mNextNode != null;
-                Object result = mNextNode.getDataObject();
-                mNextNode = mNextNode.getParent();
-                return result;
-            }
-
-            public void remove() {
-                throw new UnsupportedOperationException();
-            }
-
-            public void restart() {
-                mNextNode = node;
-            }
-            
-            @Override
-            public String toString() {
-                return PathConverter.toString(this);
-            }
-        };
-    }
-    
     public List<TreePath> sortByLocation(Collection<TreePath> unsorted) {
         //
         ArrayList<TreePath> sorted = new ArrayList<TreePath>(unsorted.size());
@@ -406,7 +385,7 @@ public class MapperSwingTreeModel implements TreeModel, MapperTcContext.Provider
     }
     
     //-------------------------------------------------------------------------
-    // Search Engine functions
+    // Utility functions
     //-------------------------------------------------------------------------
 
     /**
@@ -435,7 +414,7 @@ public class MapperSwingTreeModel implements TreeModel, MapperTcContext.Provider
         }
         return null;
     }
-    
+ 
     /**
      * Returns true if the specified tree path contains a tree item with the 
      * specified data object.
@@ -456,260 +435,6 @@ public class MapperSwingTreeModel implements TreeModel, MapperTcContext.Provider
         }
         //
         return false;
-    }
-    
-    /**
-     * Looks for the first node, which satisfies the search conditions, 
-     * which are specified by the finderList argument.
-     * The finderList contains the list of TreeItemFinder objects which 
-     * has to be applied sequentially.
-     * 
-     * @param helper
-     * @return TreePath of the found tree item. 
-     */
-    public TreePath findFirstNode(List<TreeItemFinder> finderList) {
-        if (finderList == null || finderList.isEmpty()) {
-            return null;
-        }
-        //
-        MapperTreeNode rootNode = (MapperTreeNode)getRoot();
-        Stack<MapperTreeNode> locationStack = new Stack<MapperTreeNode>();
-        locationStack.push(rootNode);
-        //
-        for (TreeItemFinder finder : finderList) {
-            //
-            boolean found = findFirstChild(locationStack, finder, -1);
-            //
-            if (!found) {
-                return null;
-            }
-        }
-        //
-        TreePath result = new TreePath(locationStack.toArray());
-        return result;
-    }
-    
-    /**
-     * An auxiliary method is intended to help seach nodes recursively.
-     * The locationStack parameter specifies a chain of MapperTreeNode 
-     * objects, which points to the tree node, from which the searching 
-     * has to be started. 
-     * <p>
-     * The finder parameter is an object which makes decision. 
-     * It has to be implemented externally.
-     * <p>
-     * The maxDepth parameter specifies the maximum depth do
-     * which the recursive algorithm can go.
-     * <p>
-     * If it equals to -1, then infinite depth is emplied.
-     * <p>
-     * if it equals to 0 than it means that it only necessary to check
-     * if the top node in the stack satisfies to the searching conditions.
-     * <p>
-     * if it equals to 1 than it means that searching is requested
-     * only among direct children of the source node.
-     */
-    public boolean checkNode(
-            Stack<MapperTreeNode> locationStack, 
-            TreeItemFinder finder, int maxDepth) {
-        //
-        MapperTreeNode parentNode = locationStack.peek();
-        Object dataObject = parentNode.getDataObject();
-        //
-        FindResult fr = finder.process(dataObject, null);
-        //
-        if (fr.isFit()) {
-            return true;
-        }
-        //
-        if (maxDepth == 0) {
-            return false;
-        }
-        //
-        if (fr.drillDeeper()) {
-            return findFirstChild(locationStack, finder, maxDepth);
-        }
-        return false;
-    }
-    
-    public boolean findFirstChild(
-            Stack<MapperTreeNode> locationStack,
-            TreeItemFinder finder, int maxDepth) {
-        //
-        MapperTreeNode parentNode = locationStack.peek();
-        List<MapperTreeNode> children = getChildren(parentNode);
-        if (children != null && children.size() != 0) {
-            maxDepth--;
-            for (MapperTreeNode child : children) {
-                locationStack.push(child);
-                //
-                if (checkNode(locationStack, finder, maxDepth)) {
-                    return true;
-                }
-                //
-                locationStack.pop();
-            }
-        }
-        //
-        return false;
-    }
-    
-    /**
-     * An auxiliary method is intended to help seach nodes recursively.
-     * See description of the findFirstNode method. 
-     * Unlike the findFirstNode it can find more then one node.
-     */
-    public void fillNodesList(
-            List<List<MapperTreeNode>> foundLocationsList,
-            Stack<MapperTreeNode> locationStack,
-            TreeItemFinder finder,
-            int maxDepth,
-            boolean lookDeeperIfFound) {
-        //
-        MapperTreeNode parentNode = locationStack.peek();
-        Object dataObject = parentNode.getDataObject();
-        //
-        FindResult fr = finder.process(dataObject, null);
-        //
-        if (fr.isFit()) {
-            // Copy location stack content to separate list and save it to result list.
-            ArrayList<MapperTreeNode> foundLocation = 
-                    new ArrayList<MapperTreeNode>(locationStack);
-            foundLocationsList.add(foundLocation);
-            if (!lookDeeperIfFound) {
-                return;
-            }
-        }
-        //
-        if (maxDepth == 0) {
-            return;
-        }
-        //
-        if (fr.drillDeeper()) {
-            List<MapperTreeNode> children = getChildren(parentNode);
-            maxDepth--;
-            for (MapperTreeNode child : children) {
-                locationStack.push(child);
-                //
-                fillNodesList(foundLocationsList, locationStack, 
-                        finder, maxDepth, lookDeeperIfFound);
-                //
-                locationStack.pop();
-            }
-        }
-        return;
-    }
-    
-    /**
-     * Looks for the first child of the specified parent according to the 
-     * finder. 
-     * @param parentPath
-     * @param finder
-     * @return the tree path of the found child or null. 
-     */
-    public TreePath findChild(TreePath parentPath, TreeItemFinder finder) {
-        if (finder == null) {
-            return null;
-        }
-        //
-        Object parentObj = parentPath.getLastPathComponent();
-        assert parentObj instanceof MapperTreeNode;
-        //
-        List<MapperTreeNode> children = getChildren((MapperTreeNode)parentObj);
-        for (MapperTreeNode childNode : children) {
-            Object childDo = childNode.getDataObject();
-            assert childDo != null;
-            //
-            FindResult fr = finder.process(childDo, null);
-            //
-            if (fr.isFit()) {
-                return parentPath.pathByAddingChild(childNode);
-            }
-        }
-        //
-        return null;
-    }
-    
-    /**
-     * Looks for the set of children of the specified parent according to the 
-     * finder. 
-     * @param parentPath
-     * @param finder
-     * @return the tree path of the found child or null. 
-     */
-    public List<TreePath> findChildren(TreePath parentPath, TreeItemFinder finder) {
-        if (finder == null) {
-            return null;
-        }
-        //
-        Object parentObj = parentPath.getLastPathComponent();
-        assert parentObj instanceof MapperTreeNode;
-        //
-        ArrayList<TreePath> result = new ArrayList<TreePath>();
-        List<MapperTreeNode> children = getChildren((MapperTreeNode)parentObj);
-        for (MapperTreeNode childNode : children) {
-            Object childDo = childNode.getDataObject();
-            assert childDo != null;
-            //
-            FindResult fr = finder.process(childDo, null);
-            //
-            if (fr.isFit()) {
-                TreePath foundChildPath = parentPath.pathByAddingChild(childNode);
-                result.add(foundChildPath);
-            }
-        }
-        //
-        return result;
-    }
-    
-    /**
-     * Looks for a child node by data object
-     * @param parentPath
-     * @param dataObject
-     * @return
-     */
-    public TreePath findChildByDataObj(TreePath parentPath, Object dataObject) {
-        if (dataObject == null) {
-            return null;
-        }
-        //
-        Object parentObj = parentPath.getLastPathComponent();
-        assert parentObj instanceof MapperTreeNode;
-        //
-        List<MapperTreeNode> children = getChildren((MapperTreeNode)parentObj);
-        for (MapperTreeNode childNode : children) {
-            Object childDo = childNode.getDataObject();
-            assert childDo != null;
-            //
-            if (childDo.equals(dataObject)) {
-                return childNode.getTreePath();
-            }
-        }
-        //
-        return null;
-    }
-    
-    /**
-     * Looks for a child node by index
-     * @param parentPath
-     * @param dataObject
-     * @return
-     */
-    public TreePath findChildByIndex(TreePath parentPath, int index) {
-        if (index < 0) {
-            return null;
-        }
-        //
-        Object parentObj = parentPath.getLastPathComponent();
-        assert parentObj instanceof MapperTreeNode;
-        //
-        List<MapperTreeNode> children = getChildren((MapperTreeNode)parentObj);
-        if (index >= children.size()) {
-            return null;
-        }
-        //
-        MapperTreeNode childNode = children.get(index);
-        return childNode.getTreePath();
     }
     
 }

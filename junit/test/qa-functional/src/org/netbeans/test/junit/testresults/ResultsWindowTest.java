@@ -7,10 +7,13 @@
 
 package org.netbeans.test.junit.testresults;
 
+import junit.framework.Test;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
+import org.netbeans.test.junit.pkgtestcreation.PkgCreateTestTest;
 import org.netbeans.test.junit.utils.ResultWindowOperator;
 import org.netbeans.test.junit.utils.Utilities;
 
@@ -30,9 +33,11 @@ public class ResultsWindowTest extends NbTestCase {
      * Adds tests to suite
      * @return created suite
      */
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite(ResultsWindowTest.class);
-        return suite;
+    public static Test suite() {
+        return NbModuleSuite.create(NbModuleSuite.createConfiguration(ResultsWindowTest.class).addTest(
+            "testResultWindowOpened",
+            "testFilterButtonEnabled",
+            "testFilterButtonEnabled").enableModules(".*").clusters(".*"));
     }
     
     /** Creates a new instance of ResultsWindowTest */

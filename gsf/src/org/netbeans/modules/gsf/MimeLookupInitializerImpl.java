@@ -134,7 +134,7 @@ public class MimeLookupInitializerImpl implements MimeLookupInitializer {
                 LanguageRegistry.getInstance().initializeLanguageForEditor(language);
 
                 Integer[] supportedOps = null;
-                if (((DefaultLanguage)language).hasFormatter()) {
+                if (language.hasFormatter()) {
                     supportedOps = new Integer[]{Integer.valueOf(EDITOR_KIT_ID), Integer.valueOf(INDENT_ID), Integer.valueOf(FORMAT_ID) };
                 } else {
                     supportedOps = new Integer[]{Integer.valueOf(EDITOR_KIT_ID), Integer.valueOf(INDENT_ID) };

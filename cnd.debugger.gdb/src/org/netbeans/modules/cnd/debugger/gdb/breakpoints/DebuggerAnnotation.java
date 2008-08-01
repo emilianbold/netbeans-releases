@@ -70,18 +70,7 @@ public class DebuggerAnnotation extends Annotation {
     }
     
     public String getShortDescription() {
-        if (EditorContext.BREAKPOINT_ANNOTATION_TYPE.equals(type)) {
-            return NbBundle.getBundle(DebuggerAnnotation.class).getString("TOOLTIP_BREAKPOINT"); // NOI18N
-        } else if (EditorContext.DISABLED_BREAKPOINT_ANNOTATION_TYPE.equals(type)) {
-            return NbBundle.getBundle(DebuggerAnnotation.class).getString 
-                    ("TOOLTIP_DISABLED_BREAKPOINT"); // NOI18N
-        } else if (EditorContext.CONDITIONAL_BREAKPOINT_ANNOTATION_TYPE.equals(type)) {
-            return NbBundle.getBundle(DebuggerAnnotation.class).getString 
-                    ("TOOLTIP_CONDITIONAL_BREAKPOINT"); // NOI18N
-        } else if (EditorContext.DISABLED_CONDITIONAL_BREAKPOINT_ANNOTATION_TYPE.equals(type)) {
-            return NbBundle.getBundle(DebuggerAnnotation.class).getString 
-                    ("TOOLTIP_DISABLED_CONDITIONAL_BREAKPOINT"); // NOI18N
-        } else if (EditorContext.CURRENT_LINE_ANNOTATION_TYPE.equals(type)) {
+        if (EditorContext.CURRENT_LINE_ANNOTATION_TYPE.equals(type)) {
             return NbBundle.getMessage(DebuggerAnnotation.class, "TOOLTIP_CURRENT_PC"); // NOI18N
         } else if (EditorContext.CALL_STACK_FRAME_ANNOTATION_TYPE.equals(type)) {
             return NbBundle.getBundle(DebuggerAnnotation.class).getString("TOOLTIP_CALLSITE"); // NOI18N

@@ -53,7 +53,7 @@ package org.netbeans.test.cvsmodule;
 import java.io.File;
 import java.io.InputStream;
 import javax.swing.table.TableModel;
-import junit.textui.TestRunner;
+import junit.framework.Test;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.OutputOperator;
@@ -65,14 +65,11 @@ import org.netbeans.jellytools.modules.javacvs.ModuleToCheckoutStepOperator;
 import org.netbeans.jellytools.modules.javacvs.VersioningOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
-import org.netbeans.jemmy.QueueTool;
-import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JButtonOperator;
-import org.netbeans.jemmy.operators.JProgressBarOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.jemmy.operators.Operator;
 import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
-import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.ide.ProjectSupport;
 
 
@@ -95,30 +92,36 @@ public class IgnoreUnignoreTest extends JellyTestCase {
         super(name);
     }
     
-    public static void main(String[] args) {
-        // TODO code application logic here
-        TestRunner.run(suite());
-    }
-    
+    @Override
     protected void setUp() throws Exception {
         os_name = System.getProperty("os.name");
         //System.out.println(os_name);
         System.out.println("### " + getName() + " ###");
+        try {
+            TestKit.extractProtocol(getDataDir());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
     
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new IgnoreUnignoreTest("testCheckOutProject"));
-        suite.addTest(new IgnoreUnignoreTest("testIgnoreUnignoreFile"));
-        suite.addTest(new IgnoreUnignoreTest("testIgnoreUnignoreGuiForm"));                
-        suite.addTest(new IgnoreUnignoreTest("removeAllData"));
-        return suite;
-    }
+    public static Test suite() {
+        return NbModuleSuite.create(
+                NbModuleSuite.createConfiguration(IgnoreUnignoreTest.class).addTest(
+                     "testCheckOutProject",
+                     "testIgnoreUnignoreFile",
+                     "testIgnoreUnignoreGuiForm",
+                     "removeAllData"
+                )
+                .enableModules(".*")
+                .clusters(".*")
+        );
+     }
     
     public void testCheckOutProject() throws Exception {
         //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 18000);
         //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 18000);
         TestKit.closeProject(projectName);
+        OutputOperator.invoke();
         new ProjectsTabOperator().tree().clearSelection();
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
@@ -158,8 +161,8 @@ public class IgnoreUnignoreTest extends JellyTestCase {
         CVSroot = cvss.getCvsRoot();
         System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", CVSroot);
         cwo.finish();
-        OutputOperator oo = OutputOperator.invoke();
-        OutputTabOperator oto = oo.getOutputTab(sessionCVSroot);
+        //OutputOperator oo = OutputOperator.invoke();
+        OutputTabOperator oto = new OutputTabOperator(sessionCVSroot);
         oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
         oto.waitText("Checking out finished");
         cvss.stop();
@@ -169,8 +172,8 @@ public class IgnoreUnignoreTest extends JellyTestCase {
         open.push();
         
         ProjectSupport.waitScanFinished();
-        TestKit.waitForQueueEmpty();
-        ProjectSupport.waitScanFinished();
+//        TestKit.waitForQueueEmpty();
+//        ProjectSupport.waitScanFinished();
         
         //create new elements for testing
         TestKit.createNewElements(projectName);
@@ -240,6 +243,7 @@ public class IgnoreUnignoreTest extends JellyTestCase {
         new Thread(cvss).start();
         CVSroot = cvss.getCvsRoot();
         System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", CVSroot);
+        Thread.sleep(1000);
         nodeClass.performPopupAction("CVS|Show Changes");
         oto.waitText("Refreshing CVS Status finished");
         Thread.sleep(1000);
@@ -307,7 +311,7 @@ public class IgnoreUnignoreTest extends JellyTestCase {
         CVSroot = cvss.getCvsRoot();
         System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", CVSroot);
         
-        Thread.sleep(1000);
+        Thread.sleep(3000);
         assertEquals("File should not be listed in table", 0, table.getRowCount());
         cvss.stop();
         
@@ -327,7 +331,7 @@ public class IgnoreUnignoreTest extends JellyTestCase {
         System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", CVSroot);
         nodeFrame.performPopupAction("CVS|Show Changes");
         oto.waitText("Refreshing CVS Status finished");
-        Thread.sleep(1000);
+        Thread.sleep(3000);
         assertEquals("File should not be listed in table", 2, table.getRowCount());
         cvss.stop();
         

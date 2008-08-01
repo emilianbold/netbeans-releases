@@ -46,7 +46,7 @@ made subject to such option by the copyright holder.
             elementFormDefault="qualified">
     <xsd:element name="data">
         <xsd:complexType>
-            <xsd:sequence>
+            <xsd:all>
                 <xsd:element name="name" type="xsd:token"/>
                 <xsd:element name="minimum-ant-version" minOccurs="0">
                     <xsd:simpleType>
@@ -92,7 +92,7 @@ made subject to such option by the copyright holder.
                         </xsd:sequence>
                     </xsd:complexType>
                 </xsd:element>
-            </xsd:sequence>
+            </xsd:all>
         </xsd:complexType>
     </xsd:element>
     

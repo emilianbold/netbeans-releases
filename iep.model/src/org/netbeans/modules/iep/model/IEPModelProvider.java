@@ -26,5 +26,5 @@ import java.net.URI;
  */
 public interface IEPModelProvider {
    
-    IEPModel getWLMModel(URI locationURI) throws Exception;
+    IEPModel getIEPModel(URI locationURI) throws Exception;
 }

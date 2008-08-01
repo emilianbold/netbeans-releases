@@ -1,20 +1,42 @@
 /*
- * The contents of this file are subject to the terms of the Common Development
- * and Distribution License (the License). You may not use this file except in
- * compliance with the License.
- * 
- * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
- * or http://www.netbeans.org/cddl.txt.
- * 
- * When distributing Covered Code, include this CDDL Header Notice in each file
- * and include the License file at http://www.netbeans.org/cddl.txt.
- * If applicable, add the following below the CDDL Header, with the fields
- * enclosed by brackets [] replaced by your own identifying information:
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License. When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Sun in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
+ * Contributor(s):
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
  */
 package org.netbeans.modules.bpel.core;
 
@@ -29,12 +51,11 @@ import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.xml.transform.Source;
-import org.netbeans.modules.bpel.core.annotations.impl.AnnotationManagerProvider;
 
+import org.netbeans.modules.soa.validation.core.Controller;
+import org.netbeans.modules.bpel.core.annotations.impl.AnnotationManagerProvider;
 import org.netbeans.modules.bpel.core.helper.impl.BusinessProcessHelperImpl;
 import org.netbeans.modules.bpel.core.multiview.BpelMultiViewSupport;
-import org.netbeans.modules.bpel.core.util.BadgedIconCache;
-import org.netbeans.modules.bpel.core.util.BPELValidationController;
 import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.xml.api.XmlFileEncodingQueryImpl;
 import org.netbeans.spi.xml.cookies.CheckXMLSupport;
@@ -64,50 +85,53 @@ import org.xml.sax.InputSource;
 public class BPELDataObject extends MultiDataObject {
     
     private static final long serialVersionUID = 1L;
+    private static final String ICON_BASE = "org/netbeans/modules/bpel/core/resources/bp_file.gif"; // NOI18N
+    private static final String FILE_DESC = "LBL_FileNode_desc"; // NOI18N
     
-    private static final String ICON_BASE =
-        "org/netbeans/modules/bpel/core/resources/bp_file.gif";         // NOI18N
-    
-    private static final String FILE_DESC = "LBL_FileNode_desc";        // NOI18N
-    
-    public BPELDataObject( final FileObject obj, final MultiFileLoader loader )
-            throws DataObjectExistsException 
-    {
+    public BPELDataObject(final FileObject obj, final MultiFileLoader loader) throws DataObjectExistsException {
         super(obj, loader);
+        myEditorSupport = new BPELDataEditorSupport(this);
         
-        myEditorSupport = new BPELDataEditorSupport (this);
+        CookieSet cookies = getCookieSet();
+        cookies.add(getEditorSupport());
         
-        CookieSet set = getCookieSet();
-        set.add(getEditorSupport());
-        
-        InputSource in = DataObjectAdapters.inputSource(this);
-        set.add(new CheckXMLSupport(in));
-        // add TransformableCookie
-        Source source = DataObjectAdapters.source (this);
-        set.add (new TransformableSupport (source));
-        //set.add(new ValidateXMLSupport(in));
-        set.add(new AnnotationManagerProvider(this));
+        InputSource is = DataObjectAdapters.inputSource(this);
+        cookies.add(new CheckXMLSupport(is));
+
+        Source source = DataObjectAdapters.source(this);
+        cookies.add(new TransformableSupport(source));
+        cookies.add(new AnnotationManagerProvider(this));
     }
  
     public HelpCtx getHelpCtx() {
         return new HelpCtx(BPELDataObject.class);
     }
     
+    public void addSaveCookie(SaveCookie cookie){
+        getCookieSet().add(cookie);
+    }
+
+    public void removeSaveCookie(){
+        Node.Cookie cookie = getCookie(SaveCookie.class);
+        if (cookie != null) {
+            getCookieSet().remove(cookie);
+        }
+    }
+
     @Override
-    public void setModified( boolean modified )
-    {
+    public void setModified( boolean modified ) {
         super.setModified(modified);
         if (modified) {
             getCookieSet().add(getSaveCookie());
-            if ( isLookupInit.get() ) {
-                myServices.get().add(getSaveCookie());
-            }
+//            if ( isLookupInit.get() ) {
+//                myServices.get().add(getSaveCookie());
+//            }
         }
         else {
             getCookieSet().remove(getSaveCookie());
-            if ( isLookupInit.get() ) {
-                myServices.get().remove( getSaveCookie());
-            }
+//            if ( isLookupInit.get() ) {
+//                myServices.get().remove( getSaveCookie());
+//            }
         }
     }
 
@@ -123,19 +147,18 @@ public class BPELDataObject extends MultiDataObject {
             }
 
             @Override
-            public int hashCode()
-            {
+            public int hashCode() {
                 return getClass().hashCode();
             }
 
             @Override
-            public boolean equals( Object other )
-            {
+            public boolean equals(Object other) {
                 return other != null && getClass().equals(other.getClass());
             }
         };
     }
     
+    @Override
     public final Lookup getLookup() {
         if (myLookup.get() == null) {
             
@@ -145,36 +168,32 @@ public class BPELDataObject extends MultiDataObject {
             list.add(Lookups.fixed( new Object[]{
                     super.getLookup(), 
                     this ,
-                    // getEditorSupport() is needed for retrieving Editor Support.
-                    // This lookup will be put into Design Nodes, so they will have the same lookup. 
                     getEditorSupport(),
-                    // Model is needed by all design. Design is used lookup for accessing to model.
-////                    getEditorSupport().getBpelModel(),
-                    // Helper is also needed by design. It used in property editors.
+                    new SearchProvider(this),
                     new BusinessProcessHelperImpl(this),
                     XmlFileEncodingQueryImpl.singleton()
-                    // Add Validation Controller.
-////                    new BPELValidationController(getEditorSupport().getBpelModel())
-                    }));
+                  }));
 
-            list.add(getCookieSet().getLookup());// 125540
+            list.add(getCookieSet().getLookup());
             
             // add lazy initialization
-            InstanceContent.Convertor<Class, Object> conv =
-                    new InstanceContent.Convertor<Class, Object>() {
-                private AtomicReference<BPELValidationController> valControllerRef = 
-                        new AtomicReference<BPELValidationController>();
+            InstanceContent.Convertor<Class, Object> conv = new InstanceContent.Convertor<Class, Object>() {
+                private AtomicReference<Controller> valControllerRef = new AtomicReference<Controller>();
                 
                 public Object convert(Class obj) {
                     if (obj == BpelModel.class) {
                         return getEditorSupport().getBpelModel();
                     }
-                    
-                    if (obj == BPELValidationController.class) {
-                        valControllerRef.compareAndSet(null, 
-                                new BPELValidationController(getEditorSupport().getBpelModel()));
+                    if (obj == Controller.class) {
+                        valControllerRef.compareAndSet(null, new Controller(getEditorSupport().getBpelModel()));
                         return valControllerRef.get();
                     }
+
+                    
+                    
+                    
+                    
+                    
                     return null;
                 }
 
@@ -190,20 +209,11 @@ public class BPELDataObject extends MultiDataObject {
                     return obj.getName();
                 }
             };
-            
             list.add(Lookups.fixed(
-                    new Class[] {BpelModel.class, BPELValidationController.class}
-                    , conv));
-            //
-                    
-            /* 
-             * Services are used for push/pop SaveCookie in lookup. This allow to work
-             * "Save" action on diagram.
-             */ 
-            myServices.compareAndSet( null, new InstanceContent() );
-            myServices.get().add( new Empty() );                      // FIX for #IZ78702
-            list.add(new AbstractLookup(myServices.get()));
+                    new Class[] { BpelModel.class,
+                    Controller.class
 
+                                               }, conv));
             lookup = new ProxyLookup(list.toArray(new Lookup[list.size()]));
 
             myLookup.compareAndSet(null, lookup);
@@ -221,12 +231,7 @@ public class BPELDataObject extends MultiDataObject {
         public BPELNode( BPELDataObject obj, BPELDataEditorSupport support ) {
             super( obj , Children.LEAF );
             myEditorSupport = support;  
-            
-            /* 
-             * recomendation from javadoc for createNodeDelegate() that
-             * getCookie(DataObject.class) for this class should return obj. 
-             */ 
-            getCookieSet().add( obj );
+            getCookieSet().add(obj);
             
             setIconBaseWithExtension( ICON_BASE );
             setShortDescription(NbBundle.getMessage( getClass(), FILE_DESC ));
@@ -237,12 +242,9 @@ public class BPELDataObject extends MultiDataObject {
                     private static final long serialVersionUID = 1L;
             public void actionPerformed(ActionEvent e) {
                 // Fix for #81066
-                if ( myEditorSupport.getOpenedPanes()==null ||
-                        myEditorSupport.getOpenedPanes().length==0 ) 
-                {
+                if (myEditorSupport.getOpenedPanes() == null || myEditorSupport.getOpenedPanes().length == 0) {
                     myEditorSupport.open();
-                    BpelMultiViewSupport support = 
-                        BpelMultiViewSupport.getInstance();
+                    BpelMultiViewSupport support = BpelMultiViewSupport.getInstance();
                     support.requestViewOpen(myEditorSupport);
                 }
                 else {
@@ -260,9 +262,6 @@ public class BPELDataObject extends MultiDataObject {
             return false; // TODO - hook in to dataobject
         }
 
-        /**
-         * to pick up change in warn/error condition call fireIconChange()
-         */
         public Image getIcon(int type) {
             if(!isWarning() && !isError())
                 return super.getIcon(type);
@@ -292,14 +291,7 @@ public class BPELDataObject extends MultiDataObject {
         private BPELDataEditorSupport myEditorSupport;
     }
 
-    private static class Empty {
-        
-    }
-    
     private transient BPELDataEditorSupport myEditorSupport;
-    private transient AtomicReference<Lookup> myLookup = 
-        new AtomicReference<Lookup>();
-    private transient AtomicReference<InstanceContent> myServices = 
-        new AtomicReference<InstanceContent>();
+    private transient AtomicReference<Lookup> myLookup = new AtomicReference<Lookup>();
     private transient AtomicBoolean isLookupInit = new AtomicBoolean( false );
 }

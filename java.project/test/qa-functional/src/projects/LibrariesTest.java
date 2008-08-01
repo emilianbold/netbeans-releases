@@ -45,7 +45,6 @@
  *
  * Created on 06 September 2004, 15:37
  */
-
 package projects;
 
 import java.io.BufferedReader;
@@ -71,9 +70,10 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
-import junit.framework.*;
 import org.netbeans.jellytools.JellyTestCase;
-import org.netbeans.junit.*;
+import junit.framework.Test;
+import org.netbeans.junit.NbModuleSuite;
+//import org.netbeans.junit.ide.ProjectSupport;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.api.project.libraries.Library;
 
@@ -81,29 +81,27 @@ import org.netbeans.api.project.libraries.Library;
  *
  */
 public class LibrariesTest extends JellyTestCase {
-    Map<String,Set<String>> librariesUrls;
+
+    Map<String, Set<String>> librariesUrls;
+
     public LibrariesTest(java.lang.String testName) {
         super(testName);
     }
-    
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
-    
+
     public static Test suite() {
-        TestSuite suite = new NbTestSuite(LibrariesTest.class);
-        return suite;
+        return NbModuleSuite.create(
+                NbModuleSuite.createConfiguration(LibrariesTest.class).
+                addTest("testDefaultLibrariesIgnoreOrder").
+                enableModules(".*").clusters(".*"));
     }
 
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        librariesUrls = new HashMap<String,Set<String>>();
-        
+        librariesUrls = new HashMap<String, Set<String>>();
+
     }
-    
     // -------------------------------------------------------------------------
-    
     /**
      * This test fails only for golden files that differ from current state
      * in content (ignored are differnces related to lines order).
@@ -112,10 +110,10 @@ public class LibrariesTest extends JellyTestCase {
     public void testDefaultLibrariesIgnoreOrder() throws IOException {
         init1();
         LibraryManager libMan = LibraryManager.getDefault();
-        Library [] libs = libMan.getLibraries();
+        Library[] libs = libMan.getLibraries();
         String errorString = "";
 
-        PrintWriter initMethodBuff = new PrintWriter(new FileWriter(new File(getWorkDir(),"testDefaultLibrariesIgnoreOrder.txt")));
+        PrintWriter initMethodBuff = new PrintWriter(new FileWriter(new File(getWorkDir(), "testDefaultLibrariesIgnoreOrder.txt")));
         try {
             for (int i = 0; i < libs.length; i++) {
 
@@ -123,19 +121,20 @@ public class LibrariesTest extends JellyTestCase {
                 String baseName = libs[i].getName();
 
                 Set<String> urls = new TreeSet<String>();
-                addURLs(urls,libs[i].getContent("classpath"));
-                addURLs(urls,libs[i].getContent("javadoc"));
-                addURLs(urls,libs[i].getContent("src"));
-                generateInitDefaultLibrariesIngoreOrder(initMethodBuff,urls,baseName);
-                assertEquals("Following files differ other way than lines order:",librariesUrls.get(baseName),urls);
+                addURLs(urls, libs[i].getContent("classpath"));
+                addURLs(urls, libs[i].getContent("javadoc"));
+                addURLs(urls, libs[i].getContent("src"));
+                generateInitDefaultLibrariesIngoreOrder(initMethodBuff, urls, baseName);
+                assertEquals("Following files differ other way than lines order:", librariesUrls.get(baseName), urls);
 
             }
         } finally {
             initMethodBuff.close();
         }
     }
-    public void init1() {        
-        Set <String> set = new TreeSet<String>();
+
+    public void init1() {
+        Set<String> set = new TreeSet<String>();
         set.add("jar:nbinst://org.netbeans.modules.websvc.jaxrpc16/modules/ext/jaxrpc16/FastInfoset.jar!/");
         set.add("jar:nbinst://org.netbeans.modules.websvc.jaxrpc16/modules/ext/jaxrpc16/activation.jar!/");
         set.add("jar:nbinst://org.netbeans.modules.websvc.jaxrpc16/modules/ext/jaxrpc16/jax-qname.jar!/");
@@ -228,7 +227,7 @@ public class LibrariesTest extends JellyTestCase {
         set = new TreeSet<String>();
         set.add("jar:nbinst:///docs/javaee5-doc-api.zip!/");
         set.add("jar:nbinst://org.netbeans.modules.web.jsf/modules/ext/jsf/commons-beanutils.jar!/");
-        set.add("jar:nbinst://org.netbeans.modules.web.jsf/modules/ext/jsf/commons-collections.jar!/"); 
+        set.add("jar:nbinst://org.netbeans.modules.web.jsf/modules/ext/jsf/commons-collections.jar!/");
         set.add("jar:nbinst://org.netbeans.modules.web.jsf/modules/ext/jsf/commons-digester.jar!/");
         set.add("jar:nbinst://org.netbeans.modules.web.jsf/modules/ext/jsf/commons-logging.jar!/");
         set.add("jar:nbinst://org.netbeans.modules.web.jsf/modules/ext/jsf/jsf-api.jar!/");
@@ -236,21 +235,22 @@ public class LibrariesTest extends JellyTestCase {
         librariesUrls.put("jsf", set);
 
     }
-    
-    private void generateInitDefaultLibrariesIngoreOrder(PrintWriter buff,Set<String> urls,String baseName) {
+
+    private void generateInitDefaultLibrariesIngoreOrder(PrintWriter buff, Set<String> urls, String baseName) {
         buff.println("set = new TreeSet<String>();");
         for (String url : urls) {
             buff.println("set.add(\"" + url + "\");");
-        }     
-        buff.println("librariesUrls.put(\""+ baseName + "\", set);"); 
+        }
+        buff.println("librariesUrls.put(\"" + baseName + "\", set);");
     }
-    private void addURLs(Set<String> urls,Iterable<URL> sourceUrls) {
+
+    private void addURLs(Set<String> urls, Iterable<URL> sourceUrls) {
         for (URL url : sourceUrls) {
             urls.add(url.toExternalForm());
         }
     }
-    
-   /**
+
+    /**
      * This test fails if golden files differ from current state even if there are
      * only differnces in lines order.
      */
@@ -292,9 +292,8 @@ public class LibrariesTest extends JellyTestCase {
 //        }
 //        
 //    }
-    
     public void __testCreateLibrary() {
-        
+
         // learn hostname
         String hostName = null;
         try {
@@ -303,7 +302,7 @@ public class LibrariesTest extends JellyTestCase {
             fail("Cannot get hostname: " + uhe.getMessage()); // NOI18N
         }
         hostName = hostName.replace('-', '_');
-        
+
         // load platforms.properties file
         InputStream is = this.getClass().getResourceAsStream("libraries.properties");
         Properties props = new Properties();
@@ -312,36 +311,34 @@ public class LibrariesTest extends JellyTestCase {
         } catch (java.io.IOException ioe) {
             fail("Cannot load platforms properties: " + ioe.getMessage()); // NOI18N
         }
-        
+
         String[] libCp = getTokensAsArray(props.getProperty(hostName + "library1_cp"));
         String[] libSrc = getTokensAsArray(props.getProperty(hostName + "library1_src"));
         String[] libJdoc = getTokensAsArray(props.getProperty(hostName + "library1_jdoc"));
-        
+
         TestProjectUtils.addLibrary(props.getProperty(hostName + "library1_name"),
                 libCp, libSrc, libJdoc);
     }
-    
+
     public void __testListDefaultLibraries() {
         listDefaultLibs("e:\\work\\libs\\");
     }
-    
     // -------------------------------------------------------------------------
-    
     /* This method is intended only for generation of golden files from Beta2 release build
      */
     private void listDefaultLibs(String folder) {
-        
+
         PrintStream pw = null;
         LibraryManager libMan = LibraryManager.getDefault();
-        Library [] libs = libMan.getLibraries();
-        
+        Library[] libs = libMan.getLibraries();
+
         for (int i = 0; i < libs.length; i++) {
             try {
                 pw = new PrintStream(new FileOutputStream(folder + libs[i].getName() + ".txt"));
             } catch (FileNotFoundException fnfe) {
                 fnfe.printStackTrace();
             }
-            
+
             System.out.println("Display name: " + libs[i].getDisplayName());
             System.out.println("Name: " + libs[i].getName());
             List listOfClasspaths = libs[i].getContent("classpath");
@@ -354,11 +351,12 @@ public class LibrariesTest extends JellyTestCase {
             dumpList("Sources: ", listOfSrcs, System.out);
             dumpList("", listOfSrcs, pw);
             pw.close();
-            
+
         }
-        
+
     }
-    public String[] getGoldenFileLines(String goldenFileName){
+
+    public String[] getGoldenFileLines(String goldenFileName) {
         File goldenFile = null;
         BufferedReader reader = null;
         try {
@@ -369,26 +367,28 @@ public class LibrariesTest extends JellyTestCase {
         }
         List<String> linesList = new ArrayList<String>();
         String line;
-        try{
-            while((line = reader.readLine()) != null){
+        try {
+            while ((line = reader.readLine()) != null) {
                 System.out.println(line);
-                if(line.trim()!="")
-                linesList.add(line);
+                if (line.trim() != "") {
+                    linesList.add(line);
+                }
             }
             reader.close();
-        } catch(Exception e){}
+        } catch (Exception e) {
+        }
         String[] lines = (String[]) linesList.toArray(new String[0]);
         Arrays.sort(lines);
         return lines;
     }
-    
+
     private void dumpList(String prefix, List list, PrintStream ps) {
         Iterator iter = list.iterator();
         while (iter.hasNext()) {
             ps.println(prefix + iter.next());
         }
     }
-    
+
     private String[] getTokensAsArray(String str) {
         StringTokenizer st = new StringTokenizer(str, ",");
         String[] array = new String[st.countTokens()];
@@ -398,5 +398,4 @@ public class LibrariesTest extends JellyTestCase {
         }
         return array;
     }
-    
 }

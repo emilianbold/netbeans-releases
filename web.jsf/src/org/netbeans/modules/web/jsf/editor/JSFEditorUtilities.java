@@ -59,7 +59,7 @@ import org.openide.util.Task;
 
 /**
  *
- * @author Petr Pisl
+ * @author Petr Pisl, Po-Ting Wu
  */
 
 public class JSFEditorUtilities {
@@ -162,6 +162,59 @@ public class JSFEditorUtilities {
                 offset = text.indexOf(ruleName, offset+ruleName.length());
             }
         } catch (BadLocationException e) {
+            Exceptions.printStackTrace(e);
+        } 
+        return new int []{-1,-1};
+    }
+    
+    /* Returns offset, where starts the definition of the manage bean
+     **/
+    public static int[] getManagedBeanDefinition(BaseDocument doc, String byElement, String content){
+        try{
+            String text = doc.getText(0, doc.getLength());
+            int offset = text.indexOf(content);
+            int start = 0;
+            int end = 0;
+            ExtSyntaxSupport sup = (ExtSyntaxSupport)doc.getSyntaxSupport();
+            TokenItem token;
+            
+            while (offset != -1){
+                token = sup.getTokenChain(offset, offset+1);
+                if (token != null && token.getTokenID().getNumericID() == JSFEditorUtilities.XML_TEXT){
+                    while (token!=null 
+                            && !(token.getTokenID().getNumericID() == JSFEditorUtilities.XML_ELEMENT
+                            && !token.getImage().equals(">")))
+                        token = token.getPrevious();
+                    if (token != null && token.getImage().equals("<" + byElement)){    //NOI18N
+                        while (token != null
+                                && !(token.getTokenID().getNumericID() == JSFEditorUtilities.XML_ELEMENT
+                                && token.getImage().equals("<managed-bean")))
+                            token = token.getPrevious();
+                        if(token != null && token.getImage().equals("<managed-bean")){
+                            start = token.getOffset();
+                            token = sup.getTokenChain(offset, offset+1);
+                            while (token != null
+                                    && !(token.getTokenID().getNumericID() == JSFEditorUtilities.XML_ELEMENT
+                                    && token.getImage().equals("</managed-bean")))
+                                token = token.getNext();
+                            if (token!=null && token.getImage().equals("</managed-bean")){
+                                while (token != null
+                                        && !(token.getTokenID().getNumericID() == JSFEditorUtilities.XML_ELEMENT
+                                        && token.getImage().equals(">")))
+                                    token = token.getNext();
+                                if (token!=null && token.getImage().equals(">")){
+                                    end = token.getOffset()+1;
+                                    return new int[]{start, end};
+                                }
+                            }
+                            return new int[]{start, text.length()};
+                        }
+                    }
+                }
+                offset = text.indexOf(content, offset+content.length());
+            }
+        }
+        catch (BadLocationException e) {
             Exceptions.printStackTrace(e);
         } 
         return new int []{-1,-1};
@@ -295,59 +348,6 @@ public class JSFEditorUtilities {
             doc.atomicUnlock();
         }
         return offset + formatLength + 1;
-    }
-    
-    /* Returns offset, where starts the definition of the manage bean
-     **/
-    public static int[] getManagedBeanDefinition(BaseDocument doc, String beanName){
-        try{
-            String text = doc.getText(0, doc.getLength());
-            int offset = text.indexOf(beanName);
-            int start = 0;
-            int end = 0;
-            ExtSyntaxSupport sup = (ExtSyntaxSupport)doc.getSyntaxSupport();
-            TokenItem token;
-            
-            while (offset != -1){
-                token = sup.getTokenChain(offset, offset+1);
-                if (token != null && token.getTokenID().getNumericID() == JSFEditorUtilities.XML_TEXT){
-                    while (token!=null 
-                            && !(token.getTokenID().getNumericID() == JSFEditorUtilities.XML_ELEMENT
-                            && !token.getImage().equals(">")))
-                        token = token.getPrevious();
-                    if (token != null && token.getImage().equals("<managed-bean-name")){    //NOI18N
-                        while (token != null
-                                && !(token.getTokenID().getNumericID() == JSFEditorUtilities.XML_ELEMENT
-                                && token.getImage().equals("<managed-bean")))
-                            token = token.getPrevious();
-                        if(token != null && token.getImage().equals("<managed-bean")){
-                            start = token.getOffset();
-                            token = sup.getTokenChain(offset, offset+1);
-                            while (token != null
-                                    && !(token.getTokenID().getNumericID() == JSFEditorUtilities.XML_ELEMENT
-                                    && token.getImage().equals("</managed-bean")))
-                                token = token.getNext();
-                            if (token!=null && token.getImage().equals("</managed-bean")){
-                                while (token != null
-                                        && !(token.getTokenID().getNumericID() == JSFEditorUtilities.XML_ELEMENT
-                                        && token.getImage().equals(">")))
-                                    token = token.getNext();
-                                if (token!=null && token.getImage().equals(">")){
-                                    end = token.getOffset()+1;
-                                    return new int[]{start, end};
-                                }
-                            }
-                            return new int[]{start, text.length()};
-                        }
-                    }
-                }
-                offset = text.indexOf(beanName, offset+beanName.length());
-            }
-        }
-        catch (BadLocationException e) {
-            Exceptions.printStackTrace(e);
-        } 
-        return new int []{-1,-1};
     }
     
     /**

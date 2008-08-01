@@ -44,6 +44,7 @@
 package org.netbeans.modules.uml.ui.controls.newdialog;
 
 import java.io.File;
+import java.io.IOException;
 
 import org.netbeans.modules.uml.core.IApplication;
 import org.netbeans.modules.uml.core.coreapplication.ICoreProduct;
@@ -73,6 +74,7 @@ import org.netbeans.modules.uml.ui.support.applicationmanager.IProductDiagramMan
 import org.netbeans.modules.uml.core.scm.ISCMIntegrator;
 import java.util.Arrays;
 import java.util.List;
+import org.openide.util.Exceptions;
 
 /**
  * @author sumitabhk
@@ -355,8 +357,12 @@ public class NewDialogResultProcessor implements INewDialogResultProcessor
                                 // Set the dirty state to true to have the diagram autosaved.
                                 if (newDiagram != null )
                                 {
-                                    newDiagram.setIsDirty(true);
-                                    newDiagram.save();
+                                    newDiagram.setDirty(true);
+                                    try {
+                                        newDiagram.save();
+                                    } catch (IOException e) {
+                                        Exceptions.printStackTrace(e);
+                                    }
                                 }
                             }
                         }
@@ -398,8 +404,14 @@ public class NewDialogResultProcessor implements INewDialogResultProcessor
                     // Set the dirty state to true to have the diagram autosaved.
                     if (retDia != null )
                     {
-                        retDia.setIsDirty(true);
-                        retDia.save();
+                        retDia.setDirty(true);
+                        try
+                        {
+                            retDia.save();
+                        } catch (IOException e)
+                        {
+                            Exceptions.printStackTrace(e);
+                        }
                     }
                 }
             }

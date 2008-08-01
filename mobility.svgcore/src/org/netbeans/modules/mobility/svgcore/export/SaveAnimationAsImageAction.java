@@ -54,8 +54,10 @@ import java.awt.Dimension;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import org.netbeans.modules.mobility.svgcore.SVGDataObject;
+import org.netbeans.modules.mobility.svgcore.composer.SceneManager;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
@@ -109,11 +111,19 @@ public class SaveAnimationAsImageAction extends CookieAction {
                 setDialogMinimumSize( dlg);
                 dlg.setVisible(true);
 
-                if (dd.getValue() == DialogDescriptor.OK_OPTION){
+                panel.stopProcessing();
+                if (dd.getValue() == DialogDescriptor.OK_OPTION
+                        && panel.isExportConfirmed())
+                {
                     AnimationRasterizer.export(doj, panel);
                 }
+            } catch( javax.imageio.IIOException e) {
+                String msg = NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "MSG_IMG_ENCODING_ERROR") + ": " +
+                             e.getLocalizedMessage();
+                DialogDisplayer.getDefault().notify(
+                        new NotifyDescriptor.Message( msg, NotifyDescriptor.ERROR_MESSAGE));
             } catch( Exception e) {
-                Exceptions.printStackTrace(e);
+                SceneManager.error("Animation export failed", e);
             }
         }
     }

@@ -52,7 +52,10 @@ Contributor(s): Andrei Badea, Leon Chiver
             <!-- attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.project.ui.Bundle" / -->
             <file name="org-netbeans-modules-jumpto-type-GoToType.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.jumpto.type.GoToTypeAction"/>
-            </file>            
+            </file>
+            <file name="org-netbeans-modules-jumpto-symbol-GoToSymbol.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.jumpto.symbol.GoToSymbolAction"/>
+            </file>
         </folder>
         <folder name="Tools">
             <file name="org-netbeans-modules-jumpto-file-FileSearchAction.instance"/>
@@ -71,7 +74,10 @@ Contributor(s): Andrei Badea, Leon Chiver
                 <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-jumpto-type-GoToType.instance"/>
                 <attr name="position" intvalue="150"/>
             </file>
-            
+            <file name="org-netbeans-modules-jumpto-symbol-GoToSymbol.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-jumpto-symbol-GoToSymbol.instance"/>
+                <attr name="position" intvalue="151"/>
+            </file>
                         
                             
         </folder>
@@ -90,6 +96,7 @@ Contributor(s): Andrei Badea, Leon Chiver
         </folder>
     </folder>
     -->
+    
     
     <!-- folder name="Editors">
       <folder name="text">
@@ -118,4 +125,12 @@ Contributor(s): Andrei Badea, Leon Chiver
         </folder>
     </folder>
     
+    <folder name="QuickSearch">
+        <folder name="GoToType">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.jumpto.resources.Bundle"/>
+            <attr name="command" stringvalue="t"/>
+            <attr name="position" intvalue="300"/>
+            <file name="org-netbeans-modules-jumpto-quicksearch-JavaTypeSearchProvider.instance"/>
+        </folder>            
+    </folder>
 </filesystem>

@@ -59,6 +59,7 @@ import java.util.Set;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.wsitconf.ui.ClassDialog;
 import org.netbeans.modules.websvc.wsitconf.ui.ComboConstants;
+import org.netbeans.modules.websvc.wsitmodelext.versioning.ConfigVersion;
 
 /**
  *
@@ -81,15 +82,18 @@ public class TruststorePanel extends JPanel {
     
     private boolean inSync = false;
     
+    private ConfigVersion cfgVersion = null;
+
     private boolean client;
     
-    public TruststorePanel(WSDLComponent comp, Project p, boolean jsr109, String profile, boolean client) {
+    public TruststorePanel(WSDLComponent comp, Project p, boolean jsr109, String profile, boolean client, ConfigVersion cfgVersion) {
         super();
         this.comp = comp;
         this.jsr109 = jsr109;
         this.project = p;
         this.profile = profile;
         this.client = client;
+        this.cfgVersion = cfgVersion;
         
         initComponents();
 
@@ -212,6 +216,7 @@ public class TruststorePanel extends JPanel {
                 ComboConstants.PROF_STSISSUED.equals(profile) ||
                 ComboConstants.PROF_STSISSUEDCERT.equals(profile) ||
                 ComboConstants.PROF_STSISSUEDENDORSE.equals(profile) ||
+                ComboConstants.PROF_STSISSUEDSUPPORTING.equals(profile) ||
                 ComboConstants.PROF_MUTUALCERT.equals(profile)) {
                 aliasRequired = false;
             }
@@ -292,15 +297,15 @@ public class TruststorePanel extends JPanel {
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(layout.createSequentialGroup()
                                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                                    .add(org.jdesktop.layout.GroupLayout.LEADING, keyAliasCombo, 0, 218, Short.MAX_VALUE)
-                                    .add(storePasswordField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 218, Short.MAX_VALUE))
+                                    .add(org.jdesktop.layout.GroupLayout.LEADING, keyAliasCombo, 0, 164, Short.MAX_VALUE)
+                                    .add(storePasswordField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 164, Short.MAX_VALUE))
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(loadkeysButton)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 137, Short.MAX_VALUE))
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 84, Short.MAX_VALUE))
                             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                                    .add(org.jdesktop.layout.GroupLayout.LEADING, certSelectorField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 462, Short.MAX_VALUE)
-                                    .add(storeLocationTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 462, Short.MAX_VALUE))
+                                    .add(org.jdesktop.layout.GroupLayout.LEADING, certSelectorField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 355, Short.MAX_VALUE)
+                                    .add(storeLocationTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 355, Short.MAX_VALUE))
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED))))
                     .add(layout.createSequentialGroup()
                         .add(certSelectorLbl)
@@ -390,7 +395,6 @@ public class TruststorePanel extends JPanel {
 
     public void storeState() {
         String peerAlias = getPeerAlias();
-//        ProprietarySecurityPolicyModelHelper pmh = ProprietarySecurityPolicyModelHelper.getInstance(cfgVersion);
         if ((peerAlias != null) && (peerAlias.length() == 0)) {
             ProprietarySecurityPolicyModelHelper.setTrustPeerAlias(comp, null, client);
         } else {

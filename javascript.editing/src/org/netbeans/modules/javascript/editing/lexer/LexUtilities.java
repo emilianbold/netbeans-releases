@@ -60,7 +60,7 @@ import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
-import org.netbeans.modules.javascript.editing.JsMimeResolver;
+import org.netbeans.modules.gsf.api.annotations.CheckForNull;
 import org.netbeans.modules.javascript.editing.NbUtilities;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -102,17 +102,22 @@ public class LexUtilities {
         INDENT_WORDS.add(JsTokenId.WHILE);
     }
 
+    @CheckForNull
     public static BaseDocument getDocument(CompilationInfo info, boolean forceOpen) {
         try {
+            if (info == null) {
+                return null;
+            }
             BaseDocument doc = (BaseDocument) info.getDocument();
             if (doc == null && forceOpen) {
                 doc = NbUtilities.getBaseDocument(info.getFileObject(), true);
             }
             
             return doc;
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-            return null;
+        } catch (ClassCastException ex) {
+            // TESTS! If data object for GSF isn't found it will be a FilterDocument
+            // rather than a BaseDocument
+            return NbUtilities.getBaseDocument(info.getFileObject(), true);
         }
     }
 
@@ -143,7 +148,10 @@ public class LexUtilities {
 
     /** For a possibly generated offset in an AST, return the corresponding lexing/true document offset */
     public static int getLexerOffset(CompilationInfo info, int astOffset) {
-        ParserResult result = info.getEmbeddedResult(JsMimeResolver.JAVASCRIPT_MIME_TYPE, 0);
+        ParserResult result = info.getEmbeddedResult(JsTokenId.JAVASCRIPT_MIME_TYPE, 0);
+        if (result == null) {
+            result = info.getEmbeddedResult(JsTokenId.JSON_MIME_TYPE, 0);
+        }
         if (result != null) {
             TranslatedSource ts = result.getTranslatedSource();
             if (ts != null) {
@@ -155,7 +163,10 @@ public class LexUtilities {
     }
     
     public static OffsetRange getLexerOffsets(CompilationInfo info, OffsetRange astRange) {
-        ParserResult result = info.getEmbeddedResult(JsMimeResolver.JAVASCRIPT_MIME_TYPE, 0);
+        ParserResult result = info.getEmbeddedResult(JsTokenId.JAVASCRIPT_MIME_TYPE, 0);
+        if (result == null) {
+            result = info.getEmbeddedResult(JsTokenId.JSON_MIME_TYPE, 0);
+        }
         if (result != null) {
             TranslatedSource ts = result.getTranslatedSource();
             if (ts != null) {
@@ -346,7 +357,7 @@ public class LexUtilities {
                 if (balance == 0) {
                     return false;
                 } else if (balance == 1) {
-                    int length = ts.offset() + token.length();
+                    //int length = ts.offset() + token.length();
                     if (back) {
                         ts.movePrevious();
                     } else {
@@ -1258,15 +1269,11 @@ public class LexUtilities {
     public static List<String> gatherDocumentation(CompilationInfo info, BaseDocument baseDoc, int nodeOffset) {
         LinkedList<String> comments = new LinkedList<String>();
         int elementBegin = nodeOffset;
-        try {
-            if (info != null && info.getDocument() == baseDoc) {
-                elementBegin = LexUtilities.getLexerOffset(info, elementBegin);
-                if (elementBegin == -1) {
-                    return null;
-                }
+        if (info != null && info.getDocument() == baseDoc) {
+            elementBegin = LexUtilities.getLexerOffset(info, elementBegin);
+            if (elementBegin == -1) {
+                return null;
             }
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
         }
         
         try {

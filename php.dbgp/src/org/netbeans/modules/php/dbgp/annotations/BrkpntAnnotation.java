@@ -40,7 +40,21 @@
  */
 package org.netbeans.modules.php.dbgp.annotations;
 
+import javax.swing.text.Element;
+import javax.swing.text.StyledDocument;
+import org.netbeans.api.debugger.Breakpoint;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenId;
+import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.modules.php.dbgp.breakpoints.LineBreakpoint;
+import org.netbeans.modules.php.editor.lexer.PHPTokenId;
+import org.netbeans.spi.debugger.ui.BreakpointAnnotation;
+import org.openide.cookies.EditorCookie;
+import org.openide.loaders.DataObject;
 import org.openide.text.Annotatable;
+import org.openide.text.DataEditorSupport;
+import org.openide.text.Line;
+import org.openide.text.NbDocument;
 import org.openide.util.NbBundle;
 
 
@@ -48,23 +62,69 @@ import org.openide.util.NbBundle;
  * @author ads
  *
  */
-public class BrkpntAnnotation extends DebuggerAnnotation {
+public class BrkpntAnnotation extends BreakpointAnnotation {
 
     public static final String BREAKPOINT_ANNOTATION_TYPE = "Breakpoint";     // NOI18N
-    
+
     private static final String BREAKPOINT                = "ANTN_BREAKPOINT";// NOI18N
 
-    public BrkpntAnnotation( Annotatable annotatable ) {
-        super(annotatable);
+    private Breakpoint breakpoint;
+
+    public BrkpntAnnotation( Annotatable annotatable, Breakpoint breakpoint ) {
+        this.breakpoint = breakpoint;
+        attach(annotatable);
     }
 
     /* (non-Javadoc)
      * @see org.openide.text.Annotation#getAnnotationType()
      */
     @Override
-    public String getAnnotationType()
-    {
-        return BREAKPOINT_ANNOTATION_TYPE;
+    public String getAnnotationType() {
+        if (breakpoint instanceof LineBreakpoint) {
+            LineBreakpoint lineBreakpoint = (LineBreakpoint) breakpoint;
+            Line line = lineBreakpoint.getLine();
+            DataObject dataObject = DataEditorSupport.findDataObject(line);
+            EditorCookie editorCookie = (EditorCookie) dataObject.getCookie(EditorCookie.class);
+            StyledDocument document = editorCookie.getDocument();
+            if (document != null) {
+                int offset = NbDocument.findLineOffset(document, line.getLineNumber());
+                int l = line.getLineNumber();
+                int col = NbDocument.findLineColumn(document, offset);
+                Element lineElem = NbDocument.findLineRootElement(document).getElement(l);
+                int startOffset = lineElem.getStartOffset();
+                int endOffset = lineElem.getEndOffset();
+                TokenHierarchy th = TokenHierarchy.get(document);
+                TokenSequence<TokenId> ts = th.tokenSequence();
+                boolean isValid = false;
+                ts.move(startOffset);
+                ts.moveNext();
+                for (; !isValid && ts.offset() < endOffset;) {
+                    TokenId id = ts.token().id();
+                    if (id == PHPTokenId.PHPDOC_COMMENT
+                            || id == PHPTokenId.PHPDOC_COMMENT_END
+                            || id == PHPTokenId.PHPDOC_COMMENT_START
+                            || id == PHPTokenId.PHP_LINE_COMMENT
+                            || id == PHPTokenId.PHP_COMMENT_START
+                            || id == PHPTokenId.PHP_COMMENT_END
+                            || id == PHPTokenId.PHP_COMMENT                            
+                            ) {
+                        break;
+                    }
+
+                    isValid = id != PHPTokenId.T_INLINE_HTML && id != PHPTokenId.WHITESPACE;
+                    if (!ts.moveNext()) {
+                        break;
+                    }
+                }
+                if (!isValid) {
+                    lineBreakpoint.setInvalid(null);
+                } else {
+                    lineBreakpoint.setValid(null);
+                }
+            }
+        }
+        return (breakpoint.getValidity() == Breakpoint.VALIDITY.INVALID) ?
+            BREAKPOINT_ANNOTATION_TYPE+"_broken" : BREAKPOINT_ANNOTATION_TYPE;//NOI18N
     }
 
     /* (non-Javadoc)
@@ -74,6 +134,11 @@ public class BrkpntAnnotation extends DebuggerAnnotation {
     public String getShortDescription()
     {
         return NbBundle.getBundle(DebuggerAnnotation.class).getString(BREAKPOINT);
+    }
+
+    @Override
+    public Breakpoint getBreakpoint() {
+        return breakpoint;
     }
 
 }

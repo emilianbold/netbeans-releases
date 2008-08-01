@@ -68,6 +68,7 @@ public class ServiceConfigurationPanel extends javax.swing.JPanel implements jav
 
         wsNameLabel = new javax.swing.JLabel();
         jTextField1 = new javax.swing.JTextField();
+        jPanel1 = new javax.swing.JPanel();
         wsClassLabel = new javax.swing.JLabel();
         jTextField2 = new javax.swing.JTextField();
         browseButton = new javax.swing.JButton();
@@ -80,33 +81,48 @@ public class ServiceConfigurationPanel extends javax.swing.JPanel implements jav
         cbDefault2 = new javax.swing.JCheckBox();
         generateWsdlDesc = new javax.swing.JLabel();
 
-        wsNameLabel.setText(org.openide.util.NbBundle.getMessage(ServiceConfigurationPanel.class, "ServiceConfigurationPanel.wsNameLabel.text")); // NOI18N
+        wsNameLabel.setLabelFor(jTextField1);
+        org.openide.awt.Mnemonics.setLocalizedText(wsNameLabel, org.openide.util.NbBundle.getMessage(ServiceConfigurationPanel.class, "ServiceConfigurationPanel.wsNameLabel.text")); // NOI18N
 
-        wsClassLabel.setText(org.openide.util.NbBundle.getMessage(ServiceConfigurationPanel.class, "ServiceConfigurationPanel.wsClassLabel.text")); // NOI18N
+        org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(0, 224, Short.MAX_VALUE)
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(0, 16, Short.MAX_VALUE)
+        );
 
-        browseButton.setText(org.openide.util.NbBundle.getMessage(ServiceConfigurationPanel.class, "ServiceConfigurationPanel.browseButton.text")); // NOI18N
+        wsClassLabel.setLabelFor(jTextField2);
+        org.openide.awt.Mnemonics.setLocalizedText(wsClassLabel, org.openide.util.NbBundle.getMessage(ServiceConfigurationPanel.class, "ServiceConfigurationPanel.wsClassLabel.text")); // NOI18N
 
-        cbGenerateWsdl.setText(org.openide.util.NbBundle.getMessage(ServiceConfigurationPanel.class, "ServiceConfigurationPanel.cbGenerateWsdl.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(browseButton, org.openide.util.NbBundle.getMessage(ServiceConfigurationPanel.class, "ServiceConfigurationPanel.browseButton.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(cbGenerateWsdl, org.openide.util.NbBundle.getMessage(ServiceConfigurationPanel.class, "ServiceConfigurationPanel.cbGenerateWsdl.text")); // NOI18N
         cbGenerateWsdl.addChangeListener(new javax.swing.event.ChangeListener() {
             public void stateChanged(javax.swing.event.ChangeEvent evt) {
                 cbGenerateWsdlStateChanged(evt);
             }
         });
 
-        nsLabel.setText(org.openide.util.NbBundle.getMessage(ServiceConfigurationPanel.class, "ServiceConfigurationPanel.nsLabel.text")); // NOI18N
+        nsLabel.setLabelFor(jTextField3);
+        org.openide.awt.Mnemonics.setLocalizedText(nsLabel, org.openide.util.NbBundle.getMessage(ServiceConfigurationPanel.class, "ServiceConfigurationPanel.nsLabel.text")); // NOI18N
 
         jTextField3.setEditable(false);
 
         cbDefault1.setSelected(true);
-        cbDefault1.setText(org.openide.util.NbBundle.getMessage(ServiceConfigurationPanel.class, "ServiceConfigurationPanel.cbDefault1.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(cbDefault1, org.openide.util.NbBundle.getMessage(ServiceConfigurationPanel.class, "ServiceConfigurationPanel.cbDefault1.text")); // NOI18N
         cbDefault1.setEnabled(false);
 
-        schemaNsLabel.setText(org.openide.util.NbBundle.getMessage(ServiceConfigurationPanel.class, "ServiceConfigurationPanel.schemaNsLabel.text")); // NOI18N
+        schemaNsLabel.setLabelFor(jTextField4);
+        org.openide.awt.Mnemonics.setLocalizedText(schemaNsLabel, org.openide.util.NbBundle.getMessage(ServiceConfigurationPanel.class, "ServiceConfigurationPanel.schemaNsLabel.text")); // NOI18N
 
         jTextField4.setEditable(false);
 
         cbDefault2.setSelected(true);
-        cbDefault2.setText(org.openide.util.NbBundle.getMessage(ServiceConfigurationPanel.class, "ServiceConfigurationPanel.cbDefault2.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(cbDefault2, org.openide.util.NbBundle.getMessage(ServiceConfigurationPanel.class, "ServiceConfigurationPanel.cbDefault2.text")); // NOI18N
         cbDefault2.setEnabled(false);
 
         generateWsdlDesc.setText(org.openide.util.NbBundle.getMessage(ServiceConfigurationPanel.class, "ServiceConfigurationPanel.generateWsdlDesc.text")); // NOI18N
@@ -127,7 +143,10 @@ public class ServiceConfigurationPanel extends javax.swing.JPanel implements jav
                                     .add(wsNameLabel))
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(jTextField1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 140, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                                        .add(jTextField1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 231, Short.MAX_VALUE)
+                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                                        .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                                     .add(jTextField2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 467, Short.MAX_VALUE))))
                         .addContainerGap())
                     .add(layout.createSequentialGroup()
@@ -155,9 +174,11 @@ public class ServiceConfigurationPanel extends javax.swing.JPanel implements jav
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(wsNameLabel)
-                    .add(jTextField1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                        .add(wsNameLabel)
+                        .add(jTextField1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(wsClassLabel)
@@ -184,6 +205,17 @@ public class ServiceConfigurationPanel extends javax.swing.JPanel implements jav
                 .add(cbDefault2)
                 .addContainerGap(17, Short.MAX_VALUE))
         );
+
+        jTextField1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServiceConfigurationPanel.class, "ServiceConfigurationPanel.jTextField1.AccessibleContext.accessibleDescription")); // NOI18N
+        jTextField2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServiceConfigurationPanel.class, "ServiceConfigurationPanel.jTextField2.AccessibleContext.accessibleDescription")); // NOI18N
+        browseButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServiceConfigurationPanel.class, "ServiceConfigurationPanel.browseButton.AccessibleContext.accessibleDescription")); // NOI18N
+        cbGenerateWsdl.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServiceConfigurationPanel.class, "ServiceConfigurationPanel.cbGenerateWsdl.AccessibleContext.accessibleDescription")); // NOI18N
+        jTextField3.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServiceConfigurationPanel.class, "ServiceConfigurationPanel.jTextField3.AccessibleContext.accessibleDescription")); // NOI18N
+        cbDefault1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServiceConfigurationPanel.class, "ServiceConfigurationPanel.cbDefault1.AccessibleContext.accessibleDescription")); // NOI18N
+        jTextField4.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServiceConfigurationPanel.class, "ServiceConfigurationPanel.jTextField4.AccessibleContext.accessibleDescription")); // NOI18N
+        cbDefault2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServiceConfigurationPanel.class, "ServiceConfigurationPanel.cbDefault2.AccessibleContext.accessibleDescription")); // NOI18N
+
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServiceConfigurationPanel.class, "ServiceConfigurationPanel.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void cbGenerateWsdlStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_cbGenerateWsdlStateChanged
@@ -228,6 +260,7 @@ public class ServiceConfigurationPanel extends javax.swing.JPanel implements jav
     private javax.swing.JCheckBox cbDefault2;
     private javax.swing.JCheckBox cbGenerateWsdl;
     private javax.swing.JLabel generateWsdlDesc;
+    private javax.swing.JPanel jPanel1;
     private javax.swing.JTextField jTextField1;
     private javax.swing.JTextField jTextField2;
     private javax.swing.JTextField jTextField3;

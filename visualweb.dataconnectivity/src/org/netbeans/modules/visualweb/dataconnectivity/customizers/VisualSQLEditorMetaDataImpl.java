@@ -50,11 +50,9 @@ package org.netbeans.modules.visualweb.dataconnectivity.customizers;
 
 import org.netbeans.modules.visualweb.dataconnectivity.Log;
 import org.netbeans.modules.visualweb.dataconnectivity.model.DataSourceInfo;
-import org.netbeans.modules.visualweb.dataconnectivity.model.DataSourceInfo.TestConnectionResults;
 import org.netbeans.modules.visualweb.dataconnectivity.model.DatasourceConnectionListener;
 import org.netbeans.modules.db.sql.visualeditor.api.VisualSQLEditorMetaData;
 import org.netbeans.modules.visualweb.dataconnectivity.sql.DatabaseMetaDataHelper;
-import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 
 import org.netbeans.modules.visualweb.dataconnectivity.model.DatasourceConnectionListener ;
@@ -64,8 +62,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.List;
+import javax.naming.NamingException;
 import org.netbeans.modules.visualweb.dataconnectivity.sql.DesignTimeDataSourceHelper;
 import org.openide.ErrorManager;
+import org.openide.util.NbBundle;
 
 /**
  * Database meta data cache for the QueryBuilder.
@@ -85,7 +85,12 @@ public class VisualSQLEditorMetaDataImpl implements VisualSQLEditorMetaData {
     /**
      * Factory methods for finding a cache for a datasource.
      */
-    public static synchronized VisualSQLEditorMetaData getDataSourceCache(String dsName) throws SQLException {
+    public static synchronized VisualSQLEditorMetaData getDataSourceCache(String dsName) throws SQLException, NamingException {
+        // data source name not found, most likely the name had been renamed
+        if (dsName == null) {
+            throw new NamingException(NbBundle.getMessage(VisualSQLEditorMetaDataImpl.class, "NAME_REMOVED") + " " + dsName); //NOI18N    
+        }
+        
 	VisualSQLEditorMetaData cache = (VisualSQLEditorMetaData)dataSourceCache.get(dsName) ;
         if ( cache == null ){
             logInfo("Creating cache for " + dsName) ;

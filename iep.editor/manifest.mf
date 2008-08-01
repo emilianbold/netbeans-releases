@@ -3,6 +3,3 @@ OpenIDE-Module: org.netbeans.modules.iep.editor
 OpenIDE-Module-Layer: org/netbeans/modules/iep/editor/mf-layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/iep/editor/Bundle.properties
 OpenIDE-Module-Specification-Version: 1.0
-
-Name: org/netbeans/modules/iep/editor/PlanDataLoader.class
-OpenIDE-Module-Class: Loader 

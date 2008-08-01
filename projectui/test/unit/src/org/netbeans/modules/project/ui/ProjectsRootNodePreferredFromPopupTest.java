@@ -113,11 +113,6 @@ public class ProjectsRootNodePreferredFromPopupTest extends NbTestCase {
         OpenProjectListSettings.getInstance().setOpenProjectsIcons(icons);
     }
 
-    @Override
-    protected void tearDown() throws Exception {
-        super.tearDown();
-    }
-
     public void testPreferencesInOpenCanBeChanged() throws InterruptedException, IOException, Exception {
         Node logicalView = new ProjectsRootNode(ProjectsRootNode.LOGICAL_VIEW);
         L listener = new L();

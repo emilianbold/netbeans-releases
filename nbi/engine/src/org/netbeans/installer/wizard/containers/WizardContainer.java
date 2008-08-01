@@ -65,4 +65,19 @@ public interface WizardContainer {
      * @param ui UI which needs to be shown.
      */
     void updateWizardUi(final WizardUi ui);
+    
+    /**
+     * Opens(creates) the container. This method is usually called by the wizard upon 
+     * container initialization
+     *      
+     */
+    void open();    
+    
+    /**
+     * Closes(destroyes) the container. This method is usually called by the wizard upon 
+     * container closing
+     *      
+     */
+    void close();
+    
 }

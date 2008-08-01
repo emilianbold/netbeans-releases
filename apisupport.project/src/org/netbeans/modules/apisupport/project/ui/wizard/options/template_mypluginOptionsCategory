@@ -10,12 +10,13 @@ import javax.swing.ImageIcon;
 import org.netbeans.spi.options.OptionsCategory;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
+import org.openide.util.ImageUtilities;
 
 public final class ${OptionsCategory_CLASS_NAME} extends OptionsCategory {
 
+    @Override
     public Icon getIcon() {
-        return new ImageIcon(Utilities.loadImage("${ICON_PATH}"));
+        return new ImageIcon(ImageUtilities.loadImage("${ICON_PATH}"));
     }
 
     public String getCategoryName() {
@@ -27,7 +28,7 @@ public final class ${OptionsCategory_CLASS_NAME} extends OptionsCategory {
     }
 
     public OptionsPanelController create() {
-        return new ${OptionsPanelController_CLASS_NAME}();
+        return ${OptionsPanelController_INSTANCE};
     }
 
 }

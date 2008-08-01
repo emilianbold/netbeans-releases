@@ -1,0 +1,19 @@
+<g id="%%COMPONENT_ID%%" transform="translate(%%COORDINATE_X%%,%%COORDINATE_Y%%)">
+	    <!-- Metadata information. Please don't edit. -->
+	    <text display="none">type=slider</text>
+
+        <rect x="0" y="-10" rx="5" ry="5" width="200" height="30" fill="none" stroke="rgb(255,165,0)" 
+                       stroke-width="2" visibility="hidden">
+            <set attributeName="visibility" attributeType="XML" begin="%%COMPONENT_ID%%.focusin" fill="freeze" to="visible"/>
+            <set attributeName="visibility" attributeType="XML" begin="%%COMPONENT_ID%%.focusout" fill="freeze" to="hidden"/>
+        </rect>
+	<g id="%%COMPONENT_ID%%_rule" >
+	    <text display="none">type=rule</text>
+	    <rect  x="10.0" y="1.0" width="180" height="4" fill="rgb(240,240,255)" stroke="black" stroke-width="1"/>
+	</g>
+        <g id="%%COMPONENT_ID%%_knob"  transform="translate(0,-5)">
+	    <text display="none">type=knob</text>
+            <polygon transform="scale(0.2,0.2)"  points="20,10 80,10 80,40 50,70 20,40" 
+			   fill="rgb(220,220,255)" stroke="black" stroke-width="1"/>
+        </g>
+</g>

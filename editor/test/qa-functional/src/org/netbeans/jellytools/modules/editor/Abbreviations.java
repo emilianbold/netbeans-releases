@@ -46,11 +46,13 @@
  */
 package org.netbeans.jellytools.modules.editor;
 
+import java.awt.Component;
 import java.util.*;
+import javax.swing.JButton;
 import javax.swing.table.TableModel;
+import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.OptionsOperator;
-import org.netbeans.jellytools.properties.Property;
-import org.netbeans.jellytools.properties.PropertySheetOperator;
+import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.*;
 
@@ -61,228 +63,149 @@ import org.netbeans.jemmy.operators.*;
  * @author Max Sauer
  * @version 1.1
  */
-public class Abbreviations extends JDialogOperator {
+public class Abbreviations {
+    
+    private OptionsOperator optionOperator;
     
     /** Creates new Abbreviations that can handle it.
      */
-    public Abbreviations() {
-        super(java.util.ResourceBundle.getBundle("org/netbeans/modules/editor/options/Bundle").getString("PROP_Abbreviations"));
-    }
+    public Abbreviations(OptionsOperator operator) {
+        this.optionOperator = operator;        
+    }    
     
-    private JTableOperator _tabAbbreviations;
-    private JButtonOperator _btMetalScrollButton;
-    private JButtonOperator _btMetalScrollButton2;
-    private JButtonOperator _btAdd;
-    private JButtonOperator _btEdit;
-    private JButtonOperator _btRemove;
-    private JButtonOperator _btOK;
-    private JButtonOperator _btCancel;
-    private JButtonOperator _btHelp;
-    
-    
-    //******************************
-    // Subcomponents definition part
-    //******************************
-    
-    /** Tries to find null JTable in this dialog.
-     * @return JTableOperator
-     */
-    public JTableOperator tabAbbreviations() {
-        if (_tabAbbreviations==null) {
-            _tabAbbreviations = new JTableOperator(this);
+    private JButtonOperator newButton;
+    private JButtonOperator removeButton;
+    private JComboBoxOperator languageCombo;
+    private JComboBoxOperator expandOnCombo;
+    private JTableOperator templateTable;
+    private JTabbedPaneOperator detailTabbedPane;
+
+    public JTabbedPaneOperator getDetailTabbedPane() {
+        if(detailTabbedPane==null) {
+            detailTabbedPane = new JTabbedPaneOperator(optionOperator,1);
         }
-        return _tabAbbreviations;
+        return detailTabbedPane;
     }
-    
-    /** Tries to find "" MetalScrollButton in this dialog.
-     * @return JButtonOperator
-     */
-    public JButtonOperator btMetalScrollButton() {
-        if (_btMetalScrollButton==null) {
-            _btMetalScrollButton = new JButtonOperator(this, "");
+
+    public JComboBoxOperator getExpandOnCombo() {
+        if(expandOnCombo==null) {
+            expandOnCombo = new JComboBoxOperator(optionOperator,1);
         }
-        return _btMetalScrollButton;
+        return expandOnCombo;
     }
-    
-    /** Tries to find "" MetalScrollButton in this dialog.
-     * @return JButtonOperator
-     */
-    public JButtonOperator btMetalScrollButton2() {
-        if (_btMetalScrollButton2==null) {
-            _btMetalScrollButton2 = new JButtonOperator(this, "", 1);
+
+    public JComboBoxOperator getLanguageCombo() {
+        if(languageCombo==null) {
+            languageCombo = new JComboBoxOperator(optionOperator,0);
         }
-        return _btMetalScrollButton2;
+        return languageCombo;
     }
-    
-    /** Tries to find "Add..." JButton in this dialog.
-     * @return JButtonOperator
-     */
-    public JButtonOperator btAdd() {
-        if (_btAdd==null) {
-            _btAdd = new JButtonOperator(this, java.util.ResourceBundle.getBundle("org.netbeans.modules.editor.options.Bundle").getString("KBEP_Add"));
+
+    public JButtonOperator getNewButton() {
+        if(newButton==null) {
+            newButton = new JButtonOperator(optionOperator,new ComponentChooser() {
+
+                public boolean checkComponent(Component component) {
+                    if(component instanceof JButton) {                        
+                        return ((JButton)component).getText().equals("New");
+                    } 
+                    return false;
+                }
+
+                public String getDescription() {
+                    return "";
+                }
+            });
         }
-        return _btAdd;
+        return newButton;
     }
     
-    /** Tries to find "Edit..." JButton in this dialog.
-     * @return JButtonOperator
-     */
-    public JButtonOperator btEdit() {
-        if (_btEdit==null) {
-            _btEdit = new JButtonOperator(this, java.util.ResourceBundle.getBundle("org/netbeans/modules/editor/options/Bundle").getString("AEP_Edit"));
+    public JButtonOperator getRemoveButton() {
+        if(removeButton==null) {
+            removeButton = new JButtonOperator(optionOperator,new ComponentChooser() {
+
+                public boolean checkComponent(Component component) {                    
+                    if(component instanceof JButton) {               
+                        JButton b = (JButton) component;                        
+                        if(b.getText().equals("Remove")) {
+                            return b.isEnabled();
+                        } else return false;                        
+                    } 
+                    return false;                    
+                }
+
+                public String getDescription() {
+                    return "";
+                }
+            });
         }
-        return _btEdit;
+        return removeButton;
     }
-    
-    /** Tries to find "Remove" JButton in this dialog.
-     * @return JButtonOperator
-     */
-    public JButtonOperator btRemove() {
-        if (_btRemove==null) {
-            _btRemove = new JButtonOperator(this, java.util.ResourceBundle.getBundle("org/netbeans/modules/editor/options/Bundle").getString("Remove"));
+
+    public JTableOperator getTemplateTable() {
+        if(templateTable==null) {
+            templateTable = new JTableOperator(optionOperator);
         }
-        return _btRemove;
+        return templateTable;
     }
-    
-    /** Tries to find "OK" JButton in this dialog.
-     * @return JButtonOperator
-     */
-    public JButtonOperator btOK() {
-        if (_btOK==null) {
-            _btOK = new JButtonOperator(this, java.util.ResourceBundle.getBundle("org/netbeans/modules/editor/options/Bundle").getString("KBEP_OK_LABEL"));
-        }
-        return _btOK;
+                
+    public void addAbbreviation(String abbreviation, String expansion, String description) {
+        getNewButton().push();
+        NbDialogOperator dialogOperator = new NbDialogOperator("New Code Template Dialog");
+        JTextFieldOperator abbrev = new JTextFieldOperator(dialogOperator);
+        abbrev.typeText(abbreviation);        
+        JButtonOperator ok = new JButtonOperator(abbrev.getWindowContainerOperator());        
+        ok.push();
+        JTabbedPaneOperator detailPanel = getDetailTabbedPane();
+        detailPanel.selectPage("Expanded Text");
+        JEditorPaneOperator expaneded = new JEditorPaneOperator(detailPanel.getWindowContainerOperator());
+        expaneded.typeText(expansion);
+        if(description!=null) {
+            detailPanel.selectPage("Description");
+            JEditorPaneOperator descript = new JEditorPaneOperator(detailPanel);
+            descript.typeText(description);
+            detailPanel.selectPage("Expanded Text");
+        }                        
     }
-    
-    /** Tries to find "Cancel" JButton in this dialog.
-     * @return JButtonOperator
-     */
-    public JButtonOperator btCancel() {
-        if (_btCancel==null) {
-            _btCancel = new JButtonOperator(this, java.util.ResourceBundle.getBundle("org.openide.explorer.propertysheet.Bundle").getString("CTL_Cancel"));
-        }
-        return _btCancel;
-    }
-    
-    /** Tries to find "Help" JButton in this dialog.
-     * @return JButtonOperator
-     */
-    public JButtonOperator btHelp() {
-        if (_btHelp==null) {
-            _btHelp = new JButtonOperator(this, java.util.ResourceBundle.getBundle("org.openide.explorer.propertysheet.Bundle").getString("CTL_Help"));
-        }
-        return _btHelp;
-    }
-    
-    
-    //****************************************
-    // Low-level functionality definition part
-    //****************************************
-    
-    /** clicks on "" MetalScrollButton
-     */
-    public void metalScrollButton() {
-        btMetalScrollButton().push();
-    }
-    
-    /** clicks on "" MetalScrollButton
-     */
-    public void metalScrollButton2() {
-        btMetalScrollButton2().push();
-    }
-    
-    /** clicks on "Add..." JButton
-     */
-    public void add() {
-        btAdd().push();
-    }
-    
-    /** clicks on "Edit..." JButton
-     */
-    public void edit() {
-        btEdit().push();
-    }
-    
-    /** clicks on "Remove" JButton
-     */
-    public void remove() {
-        btRemove().push();
-    }
-    
-    /** clicks on "OK" JButton
-     */
-    public void oK() {
-        btOK().push();
-    }
-    
-    /** clicks on "Cancel" JButton
-     */
-    public void cancel() {
-        btCancel().push();
-    }
-    
-    /** clicks on "Help" JButton
-     */
-    public void help() {
-        btHelp().push();
-    }
-    
-    
-    //*****************************************
-    // High-level functionality definition part
-    //*****************************************
-    
-    /** Performs verification of Abbreviations by accessing all its components.
-     */
-    public void verify() {
-        tabAbbreviations();
-        btMetalScrollButton();
-        btMetalScrollButton2();
-        btAdd();
-        btEdit();
-        btRemove();
-        btOK();
-        btCancel();
-        btHelp();
-    }
-    
-    public void addAbbreviation(String abbreviation, String expansion) {
-        new EventTool().waitNoEvent(500);
-        btAdd().pushNoBlock();
-        EnterAbbreviation enter = new EnterAbbreviation();
-        enter.fillAbbreviation(abbreviation, expansion);
-        enter.oK();
-    }
-    
-    public boolean editAbbreviation(String abbreviationName, String newAbbreviationName, String newExpansion) {
-        int row = tabAbbreviations().findCellRow(abbreviationName);
-        
-        if (row == (-1))
+
+    public boolean editAbbreviation(String abbreviationName, String newExpansion, String newDesc) {
+        int row = getTemplateTable().findCellRow(abbreviationName);
+        if (row == (-1)) {
             return false;
-        
-        tabAbbreviations().selectCell(row, 0);
-        btEdit().pushNoBlock();
-        
-        EnterAbbreviation enter = new EnterAbbreviation();
-        
-        enter.fillAbbreviation(newAbbreviationName, newExpansion);
-        enter.oK();
-        
+        }
+        getTemplateTable().selectCell(row, 0);        
+        JTabbedPaneOperator detailPanel = getDetailTabbedPane();
+        detailPanel.selectPage("Expanded Text");        
+        JEditorPaneOperator expaneded = new JEditorPaneOperator(detailPanel.getWindowContainerOperator());
+        expaneded.clearText();
+        expaneded.typeText(newExpansion);        
+        if (newDesc != null) {
+            detailPanel.selectPage("Description");            
+            JEditorPaneOperator descript = new JEditorPaneOperator(detailPanel);
+            descript.clearText();
+            descript.typeText(newDesc);            
+            detailPanel.selectPage("Expanded Text");
+        }        
+        getTemplateTable().selectCell(row, 0);  //changing focus        
         return true;
     }
-    
-    public void addOrEditAbbreviation(String abbreviationName, String newAbbreviationName, String newExpansion) {
-        if (!editAbbreviation(abbreviationName, newAbbreviationName, newExpansion))
-            addAbbreviation(newAbbreviationName, newExpansion);
+
+     public void addOrEditAbbreviation(String abbreviationName, String newAbbreviationName, String newExpansion, String newDesc) {
+        if (!editAbbreviation(abbreviationName, newExpansion, newDesc)) {
+            addAbbreviation(newAbbreviationName, newExpansion, newDesc);
+        }
+    }
+
+    public void ok() {
+        optionOperator.ok();
     }
     
     public boolean removeAbbreviation(String abbreviation) {
-        int row = tabAbbreviations().findCellRow(abbreviation,
-                new Operator.DefaultStringComparator(true, true));
-        
+        int row = getTemplateTable().findCellRow(abbreviation,
+                new Operator.DefaultStringComparator(true, true));        
         if (row == (-1)) {
             System.out.println("Didn't find "+abbreviation);
-            TableModel model = tabAbbreviations().getModel();
+            TableModel model = getTemplateTable().getModel();
             int rowCount = model.getRowCount();
             for (int cntr = 0; cntr < rowCount; cntr++) {
                 System.out.print(model.getValueAt(cntr, 0)+" ");
@@ -290,14 +213,13 @@ public class Abbreviations extends JDialogOperator {
             System.out.println("");
             return false;
         }
-        tabAbbreviations().selectCell(row, 0);
-        btRemove().pushNoBlock();
-        
+        getTemplateTable().selectCell(row, 0);                
+        getRemoveButton().push();        
         return true;
     }
     
     public Map listAbbreviations() {
-        TableModel model = tabAbbreviations().getModel();
+        TableModel model = getTemplateTable().getModel();
         int rowCount = model.getRowCount();
         Map result = new HashMap();
         
@@ -308,88 +230,46 @@ public class Abbreviations extends JDialogOperator {
         return result;
     }
     
-    public static Abbreviations invoke(String editorName) {
+    public static Abbreviations invoke(String language) {
         OptionsOperator options = OptionsOperator.invoke();
-        options.switchToClassicView(); //use switchToClassic, do not push the button
-        options.selectOption(ResourceBundle.getBundle("org/netbeans/core/Bundle").getString("UI/Services/Editing")+
-                "|"+ResourceBundle.getBundle("org/netbeans/modules/editor/options/Bundle").getString("OPTIONS_all")+
-                "|" + editorName);
-        new EventTool().waitNoEvent(500);
-        PropertySheetOperator pso = new PropertySheetOperator(options);
-        new Property(pso,ResourceBundle.getBundle("org/netbeans/modules/editor/options/Bundle").getString("PROP_Abbreviations")).openEditor();
-        
-        Abbreviations abbs = new Abbreviations();
-        
-        options.btClose().push();
-        return abbs;
+        options.selectCategory("Editor");
+        JTabbedPaneOperator jtpo = new JTabbedPaneOperator(options);
+        jtpo.selectPage("Code Templates");                
+        new EventTool().waitNoEvent(500);                
+        Abbreviations abbreviations = new Abbreviations(options);
+        abbreviations.getLanguageCombo().selectItem(language);               
+        return abbreviations;
+    }
+            
+    public static void addOrEditAbbreviation(String language, String abbreviationName, String newAbbreviationName, String newExpansion, String newDesc) {
+        Abbreviations instance = invoke(language);        
+        instance.addOrEditAbbreviation(abbreviationName, newAbbreviationName, newExpansion, newDesc);
+        instance.ok();
     }
     
-    public static void addAbbreviation(String editorName, String abbreviation, String expansion) {
-        Abbreviations instance = invoke(editorName);
+    public static boolean removeAbbreviation(String language, String abbreviation) {
+        Abbreviations instance = invoke(language);
+        boolean       result   = instance.removeAbbreviation(abbreviation);        
         
-        instance.addAbbreviation(abbreviation, expansion);
-        instance.oK();
-    }
-    
-    public static void addOrEditAbbreviation(String editorName, String abbreviationName, String newAbbreviationName, String newExpansion) {
-        Abbreviations instance = invoke(editorName);
-        
-        instance.addOrEditAbbreviation(abbreviationName, newAbbreviationName, newExpansion);
-        instance.oK();
-    }
-    
-    public static boolean removeAbbreviation(String editorName, String abbreviation) {
-        Abbreviations instance = invoke(editorName);
-        boolean       result   = instance.removeAbbreviation(abbreviation);
-        
-        instance.oK();
+        instance.ok();
         return result;
     }
     
-    public static boolean editAbbreviation(String editorName, String abbreviationName, String newAbbreviationName, String newExpansion) {
-        Abbreviations instance = invoke(editorName);
-        boolean       result   = instance.editAbbreviation(abbreviationName, newAbbreviationName, newExpansion);
-        
-        instance.oK();
+    public static boolean editAbbreviation(String language, String abbreviationName, String newExpansion, String newDesc) {
+        Abbreviations instance = invoke(language);
+        boolean       result   = instance.editAbbreviation(abbreviationName, newExpansion, newDesc);
+        instance.ok();
+        new EventTool().waitNoEvent(2000);
         return result;
     }
     
-    public static Map listAbbreviations(String editorName) {
-        Abbreviations instance = invoke(editorName);
+    public static Map listAbbreviations(String language) {
+        Abbreviations instance = invoke(language);
         Map           result   = instance.listAbbreviations();
         
-        instance.oK();
-        
+        instance.ok();        
         return result;
     }
-    
-    /** Performs simple test of Abbreviations
-     * @param args the command line arguments
-     */
-    public static void main(String args[]) {
-        Abbreviations.addAbbreviation("Java Editor","aaa","All abbrev");
-        try {
-            Thread.currentThread().sleep(5000);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-        Abbreviations.removeAbbreviation("Java Editor","aaa");
-        /*
-        try {
-            //java.io.PrintWriter pw= new java.io.PrintWriter(new java.io.FileWriter("/tmp/abbrevs.java"));
-            Map map=Abbreviations.listAbbreviations(java.util.ResourceBundle.getBundle("org/netbeans/modules/editor/options/Bundle").getString("OPTIONS_java"));
-            java.util.Iterator keys=map.keySet().iterator();
-            String key;
-            while (keys.hasNext()) {
-                key=(String)(keys.next());
-                System.out.println(key+" "+map.get(key));
-                //  pw.println("new Abbreviation(\""+key+"\", \""+map.get(key)+"\", \"\", \"\"),");
-            }
-            //pw.close();
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }*/
-        
-    }
+
 }
 

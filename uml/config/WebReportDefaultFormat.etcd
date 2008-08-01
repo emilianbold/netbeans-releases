@@ -1,4 +1,4 @@
-<?xml version="1.0"?>
+<?xml version="1.0"?> 
 <PropertyElements>
 	<PropertyElement name="Workspace">
 		<aElement name="XSL" value="WebReportSupport\Overview.html"/>
@@ -1510,6 +1510,7 @@
 				<aElement name="Transition">
 					<aElement name="InReport" value="PSK_TRUE"/>
 					<aElement name="InTree" value="PSK_TRUE"/>
+
 					<aElement name="XSL" value="WebReportSupport\XSL\transition.xsl"/>
 				</aElement>
 				<aElement name="Dependency">

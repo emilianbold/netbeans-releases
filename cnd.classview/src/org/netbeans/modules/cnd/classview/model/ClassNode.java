@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.classview.model;
 
 import javax.swing.event.ChangeEvent;
 import org.netbeans.modules.cnd.api.model.*;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.openide.nodes.Children;
 
 /**
@@ -61,7 +62,7 @@ public class ClassNode extends ClassifierNode {
     
     private void init(CsmClass cls){
         CharSequence old = name;
-        name = cls.isTemplate() ? ((CsmTemplate)cls).getDisplayName() : cls.getName();
+        name = CsmKindUtilities.isTemplate(cls) ? ((CsmTemplate)cls).getDisplayName() : cls.getName();
         if ((old == null) || !old.equals(name)) {
             fireNameChange(old == null ? null : old.toString(),
                     name == null ? null : name.toString());
@@ -69,7 +70,7 @@ public class ClassNode extends ClassifierNode {
                     name == null ? null : name.toString());
         }
         old = qname;
-        if (cls.isTemplate()) {
+        if (CsmKindUtilities.isTemplate(cls)) {
             qname = cls.getQualifiedName()+"<>"; // NOI18N
         } else {
             qname = cls.getQualifiedName();

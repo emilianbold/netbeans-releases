@@ -131,7 +131,7 @@ public class RunDialogAction extends NodeAction {
 			ProjectActionEvent.RUN,
 			IpeUtils.getBaseName(path) + " (run)", // NOI18N
 			path,
-			null,
+			ConfigurationSupport.getProjectDescriptor(project).getConfs().getActive(),
 			profile,
 			false);
 	    ProjectActionSupport.fireActionPerformed(new ProjectActionEvent[] {projectActionEvent});

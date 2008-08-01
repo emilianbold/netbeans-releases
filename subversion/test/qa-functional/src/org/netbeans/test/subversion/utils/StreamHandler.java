@@ -30,6 +30,7 @@ public class StreamHandler extends Thread {
         this.out = new BufferedOutputStream(out);
     }
     
+    @Override
     public void run () {
         try {
             try {

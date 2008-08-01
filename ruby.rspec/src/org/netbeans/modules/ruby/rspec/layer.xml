@@ -7,11 +7,9 @@
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.ruby.Bundle"/>
 
                 <folder name="CodeTemplates">
-                    <folder name="Defaults">
-                        <file name="rspec.xml" url="codetemplates.xml">
-                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.ruby.rspec.Bundle"/>
-                        </file>
-                    </folder>
+                    <file name="rspec.xml" url="codetemplates.xml">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.ruby.rspec.Bundle"/>
+                    </file>
                 </folder>
             </folder>
         </folder>

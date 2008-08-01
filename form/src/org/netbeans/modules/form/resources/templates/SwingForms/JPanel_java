@@ -1,19 +1,27 @@
+<#-- FreeMarker template (see http://freemarker.org/) -->
+<#assign licenseFirst = "/*">
+<#assign licensePrefix = " * ">
+<#assign licenseLast = " */">
+<#include "../Licenses/license-${project.license}.txt">
+
 /*
- * __NAME__.java
+ * ${name}.java
  *
- * Created on __DATE__, __TIME__
+ * Created on ${date}, ${time}
  */
 
-package Templates.GUIForms;
+<#if package?? && package != "">
+package ${package};
 
+</#if>
 /**
  *
- * @author  __USER__
+ * @author ${user}
  */
-public class JPanel extends javax.swing.JPanel {
+public class ${name} extends javax.swing.JPanel {
 
-    /** Creates new form __NAME__ */
-    public JPanel() {
+    /** Creates new form ${name} */
+    public ${name}() {
         initComponents();
     }
 

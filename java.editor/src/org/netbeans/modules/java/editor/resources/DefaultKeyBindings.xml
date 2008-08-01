@@ -46,12 +46,10 @@ made subject to such option by the copyright holder.
     IMPORTANT:  To handle Apple-specific keybindings, some of the keybindings
     added here are modified in DefaultKeyBindings-Mac.xml.
 -->
-
 <bindings>
     <bind actionName="goto-source" key="DS-B"/>
     <bind actionName="fast-import" key="OS-I"/>
     <bind actionName="fix-imports" key="DS-I"/>
-
     <bind actionName="goto-super-implementation" key="DS-P"/>
     <bind actionName="goto-help" key="O-F1"/>
 <!--    <bind actionName="make-is" key="O-U$I"/> -->
@@ -60,8 +58,9 @@ made subject to such option by the copyright holder.
 <!--    <bind actionName="make-setter" key="O-U$S"/> -->
     <bind actionName="select-element-next" key="OS-PERIOD"/>
     <bind actionName="select-element-previous" key="OS-COMMA"/>
-
-    <bind actionName="generate-code" key="O-INSERT"/>
     <bind actionName="complete-line" key="D-SEMICOLON"/>
     <bind actionName="complete-line-newline" key="DS-SEMICOLON"/>
+    
+    <bind actionName="java-next-marked-occurrence" key="O-DOWN"/>
+    <bind actionName="java-prev-marked-occurrence" key="O-UP"/>
 </bindings>

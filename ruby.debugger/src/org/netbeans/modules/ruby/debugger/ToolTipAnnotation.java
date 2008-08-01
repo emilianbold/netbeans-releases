@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -42,23 +42,19 @@
 package org.netbeans.modules.ruby.debugger;
 
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import javax.swing.JEditorPane;
-import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Element;
 import javax.swing.text.StyledDocument;
-import org.openide.ErrorManager;
+import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
 import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataObject;
-import org.openide.nodes.Node;
 import org.openide.text.Annotation;
 import org.openide.text.DataEditorSupport;
 import org.openide.text.Line;
 import org.openide.text.Line.Part;
 import org.openide.text.NbDocument;
 import org.openide.util.RequestProcessor;
-import org.openide.windows.TopComponent;
 import org.rubyforge.debugcommons.model.RubyValue;
 import org.rubyforge.debugcommons.model.RubyVariable;
 
@@ -91,7 +87,7 @@ public final class ToolTipAnnotation extends Annotation implements Runnable {
         } catch (IOException ex) {
             return;
         }
-        JEditorPane ep = getCurrentEditor();
+        JEditorPane ep = EditorContextDispatcher.getDefault().getCurrentEditor();
         if (ep == null) { return; }
         String expression = getIdentifier(doc, ep, NbDocument.findLineOffset(doc, lp.getLine().getLineNumber()) + lp.getColumn());
         if (expression == null) { return; }
@@ -142,7 +138,7 @@ public final class ToolTipAnnotation extends Annotation implements Runnable {
             identStart--;
         }
         int identEnd = col;
-        while (identEnd < text.length() && Character.isJavaIdentifierPart(text.charAt(identEnd))) {
+        while (identEnd < text.length() && isRubyIdentifier(text.charAt(identEnd))) {
             identEnd++;
         }
         if (identStart == identEnd) {
@@ -152,51 +148,8 @@ public final class ToolTipAnnotation extends Annotation implements Runnable {
     }
     
     static boolean isRubyIdentifier(char ch) {
-        return ch == '@' || Character.isJavaIdentifierPart(ch);
+        return ch == '@' || ch == '?' || Character.isJavaIdentifierPart(ch);
     }
 
-    /** Returns current editor component instance. */
-    private static JEditorPane getCurrentEditor_() {
-        EditorCookie e = getCurrentEditorCookie();
-        if (e == null) { return null; }
-        JEditorPane[] op = e.getOpenedPanes();
-        if ((op == null) || (op.length < 1)) { return null; }
-        return op[0];
-    }
-    
-    private static JEditorPane getCurrentEditor() {
-        if (SwingUtilities.isEventDispatchThread()) {
-            return getCurrentEditor_();
-        } else {
-            final JEditorPane[] ce = new JEditorPane[1];
-            try {
-                SwingUtilities.invokeAndWait(new Runnable() {
-                    public void run() {
-                        ce[0] = getCurrentEditor_();
-                    }
-                });
-            } catch (InvocationTargetException ex) {
-                ErrorManager.getDefault().notify(ex.getTargetException());
-            } catch (InterruptedException ex) {
-                ErrorManager.getDefault().notify(ex);
-            }
-            return ce[0];
-        }
-    }
-    
-    /**
-     * Returns current editor component instance.
-     *
-     * @return current editor component instance
-     */
-    private static EditorCookie getCurrentEditorCookie() {
-        Node[] nodes = TopComponent.getRegistry().getActivatedNodes();
-        if ((nodes == null) || (nodes.length != 1)) {
-            return null;
-        }
-        Node n = nodes[0];
-        return n.getCookie(EditorCookie.class);
-    }
-    
 }
 

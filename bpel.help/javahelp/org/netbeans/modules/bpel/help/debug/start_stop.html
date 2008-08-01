@@ -1,6 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
-* Copyright 2007 Sun Microsystems, Inc. All rights reserved.
+* Copyright 2008 Sun Microsystems, Inc. All rights reserved.
 * Use is subject to license terms.
 -->
 <html>
@@ -13,10 +13,10 @@
 <p><small><a href="#seealso">See Also</a></small></p>
 <!--Review about testing procedures needed to start debugging, provide a workaround what to do if a session fails to start,  -->
 <p>A debugging session begins when you start the BPEL Debugger on the BPEL Service Engine. Only one debugging session can be running on the BPEL Service Engine at a given time. However, several Java debugging sessions can be started at the same time. </p>
-<p>After a BPEL debugging session starts, you can execute process instances step-by-step, inspecting the values of BPEL variables and XPath expressions in the <a href="debug_windows_variables.html">BPEL Variables</a> and <a href="watches.html">Watches</a> windows. You can monitor the execution of a BPEL process within a debugger session on the diagram in the Design view: the activities that are being executed are highlighted on the diagram as the current execution position advances. The <a href="debug_windows_execution.html">BPEL Process Execution</a> window also shows the execution of the BPEL process. </p>
+<p>After a BPEL debugging session starts, you can execute process instances step-by-step, inspecting the values of BPEL variables and XPath expressions in the <a href="debug_windows_variables.html">Local Variables</a> and <a href="watches.html">Watches</a> windows. You can monitor the execution of a BPEL process within a debugger session on the diagram in the Design view: the activities that are being executed are highlighted on the diagram as the current execution position advances. The <a href="debug_windows_execution.html">BPEL Process Execution</a> window also shows the execution of the BPEL process. </p>
 <p><b><a name="prepare"></a>To prepare for debugging:</b></p>
 <ul>
-  <li>In the Runtime window, check to be sure that the <a href="nbdocs://org.netbeans.modules.j2ee.platform/org/netbeans/modules/j2ee/platform/docs/server/server_start.html" title="Starting and Stopping a Server">Sun Java System Application 
+  <li>In the Services window, check to be sure that the <a href="nbdocs://org.netbeans.modules.j2ee.platform/org/netbeans/modules/j2ee/platform/docs/server/server_start.html" title="Starting and Stopping a Server">Sun Java System Application 
     Server is running</a>.</li>
   <li>In the IDE, open the BPEL process in either the Source or Design view.</li>
   <li>Set <a href="breakpoints.html">breakpoints</a> in the BPEL process. </li>
@@ -24,12 +24,16 @@
 </ul>
 <p><b>To start a debugging session on the BPEL Service Engine:</b></p>
 <ul>
-  <li>In the Projects window, right-click the Composite Applications project you want to debug and choose Debug Project (BPEL) from the pop-up menu.<br>
+  <li>In the Projects window, right-click the Composite Applications project you want to debug and choose Debug  (BPEL) from the pop-up menu.<br>
     The IDE  establishes a debug session on the BPEL Service Engine. Watch 
     the BPEL Debugger Console window for confirmation. 
-    The connection might take some time to complete. When it is successfully completed, you can see the new session in the <a href="debug_windows_sessions.html">Sessions</a> window and the following messages in the BPEL Debugger Console:<br>
-  <tt>11:35:17 Connecting to localhost:3343<br>
-  11:36:19 Debug session started</tt></li>
+    The connection might take some time to complete. When it is successfully completed, you can see the new session in the <a href="debug_windows_sessions.html">Sessions</a> window. On the BPEL Debugger Console tab in the Output window you can see the following messages:
+    <p><tt>17:20:01 Connecting to localhost:3343<br>
+17:20:01 Debug session started
+</tt></p>
+  
+  <p>If the  BPEL Debugger Console is not visible, choose Window &gt; Debugging &gt;  BPEL Debugger Console from the main menu. </p>
+  </li>
 </ul>
 <p>Note that the Debug Project (BPEL) command performs the following actions:</p>
 <ul>
@@ -43,7 +47,7 @@
 <p><b>To change the current debugging session:</b></p>
 <ul>
 <li>In the Sessions window, double-click the name of the session that you want to make current or choose Make Current from the pop-up menu.<br>
-  The session becomes current and the BPEL Process Instances and BPEL Variables windows are updated to show the data related to the new current session.</li>
+  The session becomes current and the BPEL Process Instances and Local Variables windows are updated to show the data related to the new current session.</li>
 </ul>
 <p><b><a name="finish"></a>To finish a debugging session:</b></p>
 <ul>
@@ -63,6 +67,7 @@
    <dd><a href="debug_windows.html" title="BPEL Debugger Windows">BPEL Debugger Windows</a></dd>
 <dd><a href="breakpoints.html" title="Using Breakpoints to Debug BPEL Processes">Using Breakpoints to Debug BPEL Processes</a></dd>
 <dd><a href="watches.html" title="Using Watches to Debug BPEL Processes">Using Watches to Debug BPEL Processes</a></dd>
+<dd><a href="../logging/about_logging.html">Logging and Alerting</a></dd>
 </dl>
 <hr>
 <small>  

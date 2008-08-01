@@ -1,0 +1,17 @@
+# Everything starting with "cus" should show up,
+# except for the "customization" table (not in the default schema).
+# No columns other than those in the default schema should show up.
+# Completion works, although "c" is a SQL keyword, not an identifier.
+
+select c|
+
+--
+customers*
+  customer
+    customer_id
+  address
+    address_id
+customizations
+  customization
+    invoice_id
+    customer_id

@@ -56,8 +56,10 @@ class MySQLAdapter implements RailsDatabaseConfiguration {
     public void editConfig(RailsProject project) {
         RubyPlatform platform = RubyPlatform.platformFor(project);
         if (platform.isJRuby()) {
-            // JRuby doesn't support socket
-            RailsAdapters.commentOutSocket(project.getProjectDirectory());
+            // as of 1.1 RC2 JRuby apparently supports socket, but commenting it 
+            // out still using 127.0.0.1 rather than localhost for the reasons
+            // described in issue #131024
+            RailsAdapters.commentOutSocket(project.getProjectDirectory(), "127.0.0.1"); //NOI18N
         }
     }
 
@@ -69,7 +71,7 @@ class MySQLAdapter implements RailsDatabaseConfiguration {
             }
 
             public String getURL(String host, String database) {
-                return "jdbc:mysql://" + host + ":3306/" + database;
+                return "jdbc:mysql://" + host + ":3306/" + database; 
             }
         };
     }

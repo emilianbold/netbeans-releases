@@ -193,7 +193,7 @@ Spry.Effect.Utils.camelize = function(stringToCamelize)
     return oStringList[0];
 
   var camelizedString = stringToCamelize.indexOf('-') == 0
-    ? oStringList[0].charAt(0).toUpperCase() + oStringList[0].substring(1)
+  ? oStringList[0].charAt(0).toUpperCase() + oStringList[0].substring(1)
   : oStringList[0];
 
   for (var i = 1, len = oStringList.length; i < len; i++) {
@@ -223,7 +223,9 @@ Spry.Effect.Utils.getPercentValue = function(value)
   {
     result = value.substring(0, value.lastIndexOf("%"));
   }
-  catch (e) {alert('ERR: Spry.Effect.Utils.getPercentValue: ' + e);}
+  catch (e) {
+    alert('ERR: Spry.Effect.Utils.getPercentValue: ' + e);
+  }
   return result;
 }
 
@@ -318,7 +320,9 @@ Spry.Effect.getStyleProp = function(element, prop)
       }
     }
   }
-  catch (e) {alert('ERR: Spry.Effect.getStyleProp: ' + e);}
+  catch (e) {
+    alert('ERR: Spry.Effect.getStyleProp: ' + e);
+  }
 
   return value == 'auto' ? null : value;
 };
@@ -329,7 +333,9 @@ Spry.Effect.setStyleProp = function(element, prop, value)
   {
     element.style[Spry.Effect.Utils.camelize(prop)] = value;
   }
-  catch (e) {alert('ERR: Spry.Effect.setStyleProp: ' + e);}
+  catch (e) {
+    alert('ERR: Spry.Effect.setStyleProp: ' + e);
+  }
 
   return null;
 };
@@ -339,14 +345,14 @@ Spry.Effect.makePositioned = function(element)
   var pos = Spry.Effect.getStyleProp(element, 'position');
   if (!pos || pos == 'static') {
     element.style.position = 'relative';
-    // Opera returns the offset relative to the positioning context, when an
-    // element is position relative but top and left have not been defined
-    /*
+  // Opera returns the offset relative to the positioning context, when an
+  // element is position relative but top and left have not been defined
+  /*
 		if (window.opera) {
 			element.style.top = 0;
 			element.style.left = 0;
 		}
-     */
+		*/
   }
 }
 
@@ -378,7 +384,9 @@ Spry.Effect.cleanWhitespace = function(element)
       {
         element.parentNode.removeChild(element);
       }
-      catch (e) {alert('ERR: Spry.Effect.cleanWhitespace: ' + e);}
+      catch (e) {
+        alert('ERR: Spry.Effect.cleanWhitespace: ' + e);
+      }
     }
   }
 }
@@ -393,9 +401,9 @@ Spry.Effect.getDimensions = function(element)
   }
   return dimensions;
 
-  // All *Width and *Height properties give 0 on elements with display none,
-  // so enable the element temporarily
-  /*
+// All *Width and *Height properties give 0 on elements with display none,
+// so enable the element temporarily
+/*
     var els = element.style;
     var originalVisibility = els.visibility;
     var originalPosition = els.position;
@@ -408,7 +416,7 @@ Spry.Effect.getDimensions = function(element)
     els.position = originalPosition;
     els.visibility = originalVisibility;
     return {width: originalWidth, height: originalHeight};
-   */
+	*/
 }
 
 Spry.Effect.getOffsetPosition = function(element)
@@ -474,12 +482,16 @@ Spry.Effect.Animator.prototype.start = function(queue)
     {
       this.options.setup(this.element, this);
     }
-    catch (e) {alert('ERR: Spry.Effect.Animator.prototype.start: ' + e);}
+    catch (e) {
+      alert('ERR: Spry.Effect.Animator.prototype.start: ' + e);
+    }
   }
 	
   var currDate = new Date();
   this.startMilliseconds = currDate.getTime();
-  this.timer = setInterval(function() { self.drawEffect(); }, this.interval);
+  this.timer = setInterval(function() { 
+    self.drawEffect(); 
+  }, this.interval);
 };
 
 Spry.Effect.Animator.prototype.stop = function()
@@ -504,17 +516,19 @@ Spry.Effect.Animator.prototype.stop = function()
       {
         this.options.finish(this.element, this);
       }
-      catch (e) {alert('ERR: Spry.Effect.Animator.prototype.stop: ' + e);}
+      catch (e) {
+        alert('ERR: Spry.Effect.Animator.prototype.stop: ' + e);
+      }
     }
     this.isFinished = true;
   }
-  /*
+/*
 	Spry.Debug.trace('after stop:' + this.name);
 	Spry.Debug.trace('this.element.style.top: ' + this.element.style.top);
 	Spry.Debug.trace('this.element.style.left: ' + this.element.style.left);
 	Spry.Debug.trace('this.element.style.width: ' + this.element.style.width);
 	Spry.Debug.trace('this.element.style.height: ' + this.element.style.height);
-   */
+	*/
 };
 
 Spry.Effect.Animator.prototype.cancel = function()
@@ -539,7 +553,7 @@ Spry.Effect.Animator.prototype.drawEffect = function()
     }
     else if (this.options.transition == Spry.linearTransition)
     {
-      // default: linear
+    // default: linear
     }
     else
     {
@@ -911,7 +925,9 @@ Spry.Effect.Cluster = function()
   this.effectsArray = new Array();
   this.currIdx = -1;
   this.direction = Spry.forwards;
-  this.options = {toggle: false};
+  this.options = {
+    toggle: false
+  };
   this.clusterIsFinished = false;
 }
 
@@ -952,7 +968,9 @@ Spry.Effect.Cluster.prototype.start = function()
     {
       this.setup(this.effectsArray[0].effect.element, this.effectsArray);
     }
-    catch (e) {alert('ERR: Spry.Effect.Cluster.prototype.start: ' + e);}
+    catch (e) {
+      alert('ERR: Spry.Effect.Cluster.prototype.start: ' + e);
+    }
   }
   this.currIdx = 0;
   var quit = false;
@@ -991,7 +1009,9 @@ Spry.Effect.Cluster.prototype.startNextEffect = function()
       {
         this.finish(this.effectsArray[0].effect.element, this.effectsArray);
       }
-      catch (e) {alert('ERR: Spry.Effect.Cluster.prototype.startNextEffect: ' + e);}
+      catch (e) {
+        alert('ERR: Spry.Effect.Cluster.prototype.startNextEffect: ' + e);
+      }
     }
     this.clusterIsFinished = true;
   }
@@ -1076,7 +1096,7 @@ Spry.Effect.AppearFade = function (element, options)
 	} else {
 		this.opacity = parseFloat(this.opacity);
 	}
-   */
+	*/
 
   var element = Spry.Effect.getElement(element);
 
@@ -1100,7 +1120,15 @@ Spry.Effect.AppearFade = function (element, options)
     if (options.setup != null) setupCallback = options.setup;
     if (options.finish != null) finishCallback = options.finish;
   }
-  options = {duration: durationInMilliseconds, toggle: doToggle, transition: kindOfTransition, setup: setupCallback, finish: finishCallback, from: fromOpacity, to: toOpacity};
+  options = {
+    duration: durationInMilliseconds, 
+    toggle: doToggle, 
+    transition: kindOfTransition, 
+    setup: setupCallback, 
+    finish: finishCallback, 
+    from: fromOpacity, 
+    to: toOpacity
+  };
 
   fromOpacity = fromOpacity/ 100.0;
   toOpacity = toOpacity / 100.0;
@@ -1181,7 +1209,16 @@ Spry.Effect.Blind = function (element, options)
   toRect.width = stopWidthPx;
   toRect.height = stopHeightPx * (toHeight / 100);
 
-  options = {duration:durationInMilliseconds, toggle:doToggle, transition:kindOfTransition, scaleContent:doScaleContent, setup: setupCallback, finish: finishCallback, from: optionFrom, to: optionTo};
+  options = {
+    duration:durationInMilliseconds, 
+    toggle:doToggle, 
+    transition:kindOfTransition, 
+    scaleContent:doScaleContent, 
+    setup: setupCallback, 
+    finish: finishCallback, 
+    from: optionFrom, 
+    to: optionTo
+  };
 
   var blindEffect = new Spry.Effect.Size(element, fromRect, toRect, options);
   blindEffect.name = 'Blind';
@@ -1237,7 +1274,17 @@ Spry.Effect.Highlight = function (element, options)
 
   var restoreBackgroundImage = Spry.Effect.getStyleProp(element, 'background-image');
 	
-  options = {duration: durationInMilliseconds, toggle: doToggle, transition: kindOfTransition, setup: setupCallback, finish: finishCallback, restoreColor: restoreColor, restoreBackgroundImage: restoreBackgroundImage, from: optionFrom, to: optionTo};
+  options = {
+    duration: durationInMilliseconds, 
+    toggle: doToggle, 
+    transition: kindOfTransition, 
+    setup: setupCallback, 
+    finish: finishCallback, 
+    restoreColor: restoreColor, 
+    restoreBackgroundImage: restoreBackgroundImage, 
+    from: optionFrom, 
+    to: optionTo
+  };
 
   var highlightEffect = new Spry.Effect.Color(element, fromColor, toColor, options);
   highlightEffect.name = 'Highlight';
@@ -1324,7 +1371,15 @@ Spry.Effect.Slide = function (element, options)
     if (options.finish != null) finishCallback = options.finish;
   }
 
-  options = {duration:durationInMilliseconds, toggle:doToggle, transition:kindOfTransition, setup: setupCallback, finish: finishCallback, from: optionFrom, to: optionTo};
+  options = {
+    duration:durationInMilliseconds, 
+    toggle:doToggle, 
+    transition:kindOfTransition, 
+    setup: setupCallback, 
+    finish: finishCallback, 
+    from: optionFrom, 
+    to: optionTo
+  };
 
   var slideEffect = new Spry.Effect.MoveSlide(element, fromPos, toPos, options);
   slideEffect.name = 'Slide';
@@ -1409,11 +1464,24 @@ Spry.Effect.GrowShrink = function (element, options)
     if (options.finish != null) finishCallback = options.finish;
   }
 
-  options = {duration:durationInMilliseconds, toggle:doToggle, transition:kindOfTransition, scaleContent:doScaleContent, from: optionFrom, to: optionTo};
+  options = {
+    duration:durationInMilliseconds, 
+    toggle:doToggle, 
+    transition:kindOfTransition, 
+    scaleContent:doScaleContent, 
+    from: optionFrom, 
+    to: optionTo
+  };
   var sizeEffect = new Spry.Effect.Size(element, fromRect, toRect, options);
   effectCluster.addParallelEffect(sizeEffect);
 
-  options = {duration:durationInMilliseconds, toggle:doToggle, transition:kindOfTransition, from: optionFrom, to: optionTo};
+  options = {
+    duration:durationInMilliseconds, 
+    toggle:doToggle, 
+    transition:kindOfTransition, 
+    from: optionFrom, 
+    to: optionTo
+  };
   var fromPos = new Spry.Effect.Utils.Position;
   fromPos.x = startOffsetPosition.x + (originalWidth - fromRect.width) / 2.0;
   fromPos.y = startOffsetPosition.y + (originalHeight -fromRect.height) / 2.0;
@@ -1422,7 +1490,10 @@ Spry.Effect.GrowShrink = function (element, options)
   toPos.x = startOffsetPosition.x + (originalWidth - toRect.width) / 2.0;
   toPos.y = startOffsetPosition.y + (originalHeight -toRect.height) / 2.0;
 
-  var initialProps2 = {top: fromPos.y, left: fromPos.x};
+  var initialProps2 = {
+    top: fromPos.y, 
+    left: fromPos.x
+    };
 
   var moveEffect = new Spry.Effect.Move(element, fromPos, toPos, options, initialProps2);
   effectCluster.addParallelEffect(moveEffect);
@@ -1471,7 +1542,10 @@ Spry.Effect.Shake = function (element, options)
   toPos.x = startOffsetPosition.x + 20;
   toPos.y = startOffsetPosition.y + 0;
 
-  options = {duration:50, toggle:false};
+  options = {
+    duration:50, 
+    toggle:false
+  };
   var effect = new Spry.Effect.Move(element, fromPos, toPos, options);
   shakeEffectCluster.addNextEffect(effect);
 	
@@ -1483,7 +1557,10 @@ Spry.Effect.Shake = function (element, options)
   toPos.x = startOffsetPosition.x + -20;
   toPos.y = startOffsetPosition.y + 0;
 
-  options = {duration:100, toggle:false};
+  options = {
+    duration:100, 
+    toggle:false
+  };
   var effect = new Spry.Effect.Move(element, fromPos, toPos, options);
   shakeEffectCluster.addNextEffect(effect);
 
@@ -1495,7 +1572,10 @@ Spry.Effect.Shake = function (element, options)
   toPos.x = startOffsetPosition.x + 20;
   toPos.y = startOffsetPosition.y + 0;
 
-  options = {duration:100, toggle:false};
+  options = {
+    duration:100, 
+    toggle:false
+  };
   var effect = new Spry.Effect.Move(element, fromPos, toPos, options);
   shakeEffectCluster.addNextEffect(effect);
 
@@ -1507,7 +1587,10 @@ Spry.Effect.Shake = function (element, options)
   toPos.x = startOffsetPosition.x + -20;
   toPos.y = startOffsetPosition.y + 0;
 
-  options = {duration:100, toggle:false};
+  options = {
+    duration:100, 
+    toggle:false
+  };
   var effect = new Spry.Effect.Move(element, fromPos, toPos, options);
   shakeEffectCluster.addNextEffect(effect);
 
@@ -1519,7 +1602,10 @@ Spry.Effect.Shake = function (element, options)
   toPos.x = startOffsetPosition.x + 20;
   toPos.y = startOffsetPosition.y + 0;
 
-  options = {duration:100, toggle:false};
+  options = {
+    duration:100, 
+    toggle:false
+  };
   var effect = new Spry.Effect.Move(element, fromPos, toPos, options);
   shakeEffectCluster.addNextEffect(effect);
 
@@ -1531,7 +1617,10 @@ Spry.Effect.Shake = function (element, options)
   toPos.x = startOffsetPosition.x + 0;
   toPos.y = startOffsetPosition.y + 0;
 
-  options = {duration:50, toggle:false};
+  options = {
+    duration:50, 
+    toggle:false
+  };
   var effect = new Spry.Effect.Move(element, fromPos, toPos, options);
   shakeEffectCluster.addNextEffect(effect);
 
@@ -1584,7 +1673,13 @@ Spry.Effect.Squish = function (element, options)
 	
   var doScaleContent = true;
 
-  options = {duration:durationInMilliseconds, toggle:doToggle, scaleContent:doScaleContent, setup: setupCallback, finish: finishCallback};
+  options = {
+    duration:durationInMilliseconds, 
+    toggle:doToggle, 
+    scaleContent:doScaleContent, 
+    setup: setupCallback, 
+    finish: finishCallback
+  };
 
   var squishEffect = new Spry.Effect.Size(element, fromRect, toRect, options);
   squishEffect.name = 'Squish';
@@ -1616,7 +1711,13 @@ Spry.Effect.Pulsate = function (element, options)
     if (options.setup != null) setupCallback = options.setup;
     if (options.finish != null) finishCallback = options.finish;
   }
-  options = {duration:durationInMilliseconds, toggle:doToggle, transition:kindOfTransition, setup: setupCallback, finish: finishCallback};
+  options = {
+    duration:durationInMilliseconds, 
+    toggle:doToggle, 
+    transition:kindOfTransition, 
+    setup: setupCallback, 
+    finish: finishCallback
+  };
   fromOpacity = fromOpacity / 100.0;
   toOpacity = toOpacity / 100.0;
 	
@@ -1675,17 +1776,27 @@ Spry.Effect.Puff = function (element, options)
 	
   var doScaleContent = false;
 	
-  options = {duration:durationInMilliseconds, toggle:false, scaleContent:doScaleContent};
+  options = {
+    duration:durationInMilliseconds, 
+    toggle:false, 
+    scaleContent:doScaleContent
+  };
   var sizeEffect = new Spry.Effect.Size(element, fromRect, toRect, options);
   puffEffectCluster.addParallelEffect(sizeEffect);
 
-  options = {duration:durationInMilliseconds, toggle:false};
+  options = {
+    duration:durationInMilliseconds, 
+    toggle:false
+  };
   var fromOpacity = 1.0;
   var toOpacity = 0.0;
   var opacityEffect = new Spry.Effect.Opacity(element, fromOpacity, toOpacity, options);
   puffEffectCluster.addParallelEffect(opacityEffect);
 
-  options = {duration:durationInMilliseconds, toggle:false};
+  options = {
+    duration:durationInMilliseconds, 
+    toggle:false
+  };
   var fromPos = new Spry.Effect.Utils.Position;
   fromPos.x = 0;
   fromPos.y = 0;
@@ -1737,11 +1848,19 @@ Spry.Effect.DropOut = function (element, options)
   toPos.x = startOffsetPosition.x + 0;
   toPos.y = startOffsetPosition.y + 160;
 
-  options = {from:fromPos, to:toPos, duration:durationInMilliseconds, toggle:true};
+  options = {
+    from:fromPos, 
+    to:toPos, 
+    duration:durationInMilliseconds, 
+    toggle:true
+  };
   var moveEffect = new Spry.Effect.Move(element, options.from, options.to, options);
   dropoutEffectCluster.addParallelEffect(moveEffect);
 
-  options = {duration:durationInMilliseconds, toggle:true};
+  options = {
+    duration:durationInMilliseconds, 
+    toggle:true
+  };
   var fromOpacity = 1.0;
   var toOpacity = 0.0;
   var opacityEffect = new Spry.Effect.Opacity(element, fromOpacity, toOpacity, options);
@@ -1782,12 +1901,20 @@ Spry.Effect.Fold = function (element, options)
   toRect.width = stopWidth;
   toRect.height = stopHeight;
 	
-  options = {duration:durationInMilliseconds, toggle:doToggle, scaleContent:doScaleContent};
+  options = {
+    duration:durationInMilliseconds, 
+    toggle:doToggle, 
+    scaleContent:doScaleContent
+  };
   var sizeEffect = new Spry.Effect.Size(element, fromRect, toRect, options);
   foldEffectCluster.addNextEffect(sizeEffect);
 	
   durationInMilliseconds = 500;
-  options = {duration:durationInMilliseconds, toggle:doToggle, scaleContent:doScaleContent};
+  options = {
+    duration:durationInMilliseconds, 
+    toggle:doToggle, 
+    scaleContent:doScaleContent
+  };
   fromRect.width = "100%";
   fromRect.height = "20%";
   toRect.width = "10%";

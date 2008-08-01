@@ -42,6 +42,10 @@
 package org.netbeans.modules.autoupdate.services;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
 import java.text.ParseException;
 import java.util.jar.JarEntry;
 import org.netbeans.modules.autoupdate.updateprovider.UpdateItemImpl;
@@ -51,13 +55,14 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.security.KeyStore;
+import java.security.cert.Certificate;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -69,6 +74,7 @@ import java.util.Set;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 import org.netbeans.Module;
 import org.netbeans.ModuleManager;
 import org.netbeans.api.autoupdate.UpdateElement;
@@ -84,6 +90,7 @@ import org.netbeans.updater.ModuleUpdater;
 import org.netbeans.updater.UpdateTracking;
 import org.netbeans.updater.UpdaterDispatcher;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.Repository;
 import org.openide.modules.Dependency;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.modules.ModuleInfo;
@@ -93,6 +100,7 @@ import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -117,7 +125,9 @@ public class Utilities {
     public static final String ATTR_VISIBLE = "AutoUpdate-Show-In-Client";
     public static final String ATTR_ESSENTIAL = "AutoUpdate-Essential-Module";
     
-    
+    private static final String USER_KS_KEY = "userKS";
+    private static final String USER_KS_FILE_NAME = "user.ks";
+    private static final String KS_USER_PASSWORD = "open4user";
     private static Lookup.Result<KeyStoreProvider> result;
     private static Logger err = null;
     private static ModuleManager mgr = null;
@@ -460,33 +470,23 @@ public class Utilities {
         return takeModuleInfo (el).getDependencies();
     }
     
-    private static UpdateElement findRequiredModule (Dependency dep, Collection<ModuleInfo> installedModules) {
+    private static Collection<UpdateElement> findRequiredUpdateElements (Dependency dep) {
+        Collection<UpdateElement> res = new HashSet<UpdateElement> (2);
         switch (dep.getType ()) {
             case (Dependency.TYPE_NEEDS) :
             case (Dependency.TYPE_RECOMMENDS) :
             case (Dependency.TYPE_REQUIRES) :
+                UpdateManagerImpl updateMgr = UpdateManagerImpl.getInstance ();
                 // find if some module fit the dependency
-                ModuleInfo info = DependencyChecker.findModuleMatchesDependencyRequires (dep, installedModules);
-                if (info != null) {
+                if (updateMgr.getInstalledProviders (dep.getName ()).size () > 0) {
                     // it's Ok, no module is required
                 } else {
                     // find corresponding UpdateUnit
-                    for (UpdateUnit unit : UpdateManagerImpl.getInstance ().getUpdateUnits (UpdateManager.TYPE.MODULE)) {
-                        assert unit != null : "UpdateUnit for " + info.getCodeName() + " found.";
-                        // find correct UpdateElement
-                        // installed module can ignore here
-                        if (unit.getAvailableUpdates ().size () > 0) {
-                            for (UpdateElement el : unit.getAvailableUpdates ()) {
-                                UpdateElementImpl impl = Trampoline.API.impl (el);
-                                List<ModuleInfo> moduleInfos = impl.getModuleInfos ();
-                                for (ModuleInfo moduleInfo : moduleInfos) {
-                                    if (Arrays.asList (moduleInfo.getProvides ()).contains (dep.getName ())) {
-                                        return el;
-                                    }
-                                }
-                                break;
-                            }
-                        }
+                    for (ModuleInfo mi : updateMgr.getAvailableProviders (dep.getName ())) {
+                        UpdateUnit u = toUpdateUnit (mi.getCodeNameBase ());
+                        assert u != null : "UpdateUnit found with codeName " + mi.getCodeNameBase ();
+                        assert u.getAvailableUpdates ().size () > 0 : "UpdateUnit " + u + " has available updates.";
+                        res.add (u.getAvailableUpdates ().get (0));
                     }
                 }
                 break;
@@ -519,7 +519,7 @@ public class Utilities {
                     if (impl instanceof ModuleUpdateElementImpl) {
                         ModuleInfo moduleInfo = impl.getModuleInfos ().get (0);
                         if (DependencyChecker.checkDependencyModule (dep, moduleInfo)) {
-                            return el;
+                            return Collections.singleton (el);
                         }
                     } else {
                         // XXX: maybe useful later, now I don't need it
@@ -538,10 +538,23 @@ public class Utilities {
                 getLogger ().log (Level.FINE, "Uncovered Dependency " + dep);                    
                 break;
         }
-        return null;
+        return res;
     }
     
     private static Set<UpdateElement> findAffectedModules (Set<UpdateElement> modulesForInstall) {
+        if (modulesForInstall.isEmpty ()) {
+            return modulesForInstall;
+        }
+        Set<UpdateElement> res = new HashSet<UpdateElement> (modulesForInstall);
+        Set<UpdateElement> forInstall = new HashSet<UpdateElement> (modulesForInstall);
+        Set<UpdateElement> tmp = Collections.emptySet ();
+        while (res.addAll (tmp = findAffectedModulesImpl (forInstall))) {
+            forInstall = tmp;
+        }
+        return res;
+    }
+    
+    private static Set<UpdateElement> findAffectedModulesImpl (Set<UpdateElement> modulesForInstall) {
         Collection<Module> updatedModules = new HashSet<Module> ();
         for (UpdateElement el : modulesForInstall) {
             UpdateElement installed = el.getUpdateUnit ().getInstalled ();
@@ -577,7 +590,7 @@ public class Utilities {
                     // skip this module because it has own problems already
                     continue;
                 }
-                Set<Dependency> brokenDeps = DependencyChecker.findBrokenDependencies (affectedModule.getDependencies (), limitedModules);
+                Set<Dependency> brokenDeps = DependencyChecker.findBrokenDependencies (affectedModule.getDependencies (), extendedModules);
                 if (! brokenDeps.isEmpty ()) {
                     getLogger ().log (Level.FINEST, "Module " + affectedModule + " has broken dependecies " + brokenDeps);
                     UpdateUnit affectedUnit = UpdateManagerImpl.getInstance ().getUpdateUnit (affectedModule.getCodeNameBase ());
@@ -610,14 +623,16 @@ public class Utilities {
     static Set<UpdateElement> findRequiredModules(Set<Dependency> deps, Collection<ModuleInfo> installedModules) {
         Set<UpdateElement> requiredElements = new HashSet<UpdateElement> ();
         for (Dependency dep : deps) {
-            UpdateElement el = findRequiredModule (dep, installedModules);
-            if (el != null) {
-                UpdateElementImpl elImpl = Trampoline.API.impl(el);
-                List<ModuleInfo> mInfos = elImpl.getModuleInfos ();
-                assert mInfos != null;
-                if (!installedModules.containsAll (mInfos)) {
-                    requiredElements.add(el);
-                    installedModules.add(takeModuleInfo(el));
+            Collection<UpdateElement> reqs = findRequiredUpdateElements (dep);
+            if (reqs != null && reqs.size () > 0) {
+                for (UpdateElement el : reqs) {
+                    UpdateElementImpl elImpl = Trampoline.API.impl(el);
+                    List<ModuleInfo> mInfos = elImpl.getModuleInfos ();
+                    assert mInfos != null;
+                    if (!installedModules.containsAll (mInfos)) {
+                        requiredElements.add(el);
+                        installedModules.add(takeModuleInfo(el));
+                    }
                 }
             }
         }
@@ -650,7 +665,7 @@ public class Utilities {
             final Set<Dependency> deps = ((ModuleUpdateElementImpl) el).getModuleInfo ().getDependencies ();
             final Collection<ModuleInfo> extendedModules = getInstalledModules ();
             extendedModules.addAll (infos);
-            final Set<Dependency> brokenDeps = DependencyChecker.findBrokenDependencies (deps, extendedModules);
+            Set<Dependency> brokenDeps = DependencyChecker.findBrokenDependencies (deps, extendedModules);
             retval = findRequiredModules (brokenDeps, extendedModules);
             
             // go up and find affected modules
@@ -664,10 +679,18 @@ public class Utilities {
             }
             Collection<Dependency> byToken = takeRecommendsRequiresNeeds (primaryAndRequiredElementDeps);
             if (! byToken.isEmpty ()) {
-                retval.addAll (checkUpdateTokenProvider (byToken));
+                Collection<UpdateElement> newModules = checkUpdateTokenProvider (byToken);
+                retval.addAll (newModules);
+                Set<Dependency> newDeps = new HashSet<Dependency> ();
+                for (UpdateElement newEl : newModules) {
+                    UpdateElementImpl newElImpl = Trampoline.API.impl (newEl);
+                    newDeps.addAll (((ModuleUpdateElementImpl) newElImpl).getModuleInfo ().getDependencies ());
+                }
+                brokenDeps = DependencyChecker.findBrokenDependencies (newDeps, extendedModules);
+                retval.addAll (findRequiredModules (brokenDeps, extendedModules));
+                // go up and find affected modules again including new ones
+                retval = findAffectedModules (retval);
             }
-            // go up and find affected modules again
-            retval = findAffectedModules (retval);
             // end of #123871
             
             break;
@@ -686,11 +709,15 @@ public class Utilities {
     
     private static Collection<UpdateElement> checkUpdateTokenProvider (Collection<Dependency> deps) {
         Collection<UpdateElement> elems = new HashSet<UpdateElement> ();
+        UpdateManagerImpl updateMgr = UpdateManagerImpl.getInstance ();
         for (Dependency dep : deps) {
-            Collection<ModuleInfo> noModules = Collections.emptySet ();
-            UpdateElement el = findRequiredModule (dep, noModules);
-            if (el != null) {
-                elems.add (el);
+            if (updateMgr.getInstalledProviders (dep.getName ()).isEmpty ()) {
+                for (ModuleInfo mi : updateMgr.getAvailableProviders (dep.getName ())) {
+                    UpdateUnit u = toUpdateUnit (mi.getCodeNameBase ());
+                    assert u != null : "UpdateUnit found with codeName " + mi.getCodeNameBase ();
+                    assert u.getAvailableUpdates ().size () > 0 : "UpdateUnit " + u + " has available updates.";
+                    elems.add (u.getAvailableUpdates ().get (0));
+                }
             }
         }
         return elems;
@@ -889,13 +916,17 @@ public class Utilities {
                 is.close ();
             }
         } catch (SAXException saxe) {
-            getLogger ().log (Level.WARNING, null, saxe);
+            getLogger ().log (Level.INFO, "SAXException when reading " + moduleUpdateTracking, saxe);
             return null;
         } catch (IOException ioe) {
-            getLogger ().log (Level.WARNING, null, ioe);
+            getLogger ().log (Level.INFO, "IOException when reading " + moduleUpdateTracking, ioe);
+            return null;
         }
 
         assert document.getDocumentElement () != null : "File " + moduleUpdateTracking + " must contain <module> element.";
+        if (document.getDocumentElement () == null) {
+            return null;
+        }
         return getModuleElement (document.getDocumentElement ());
     }
     
@@ -1017,7 +1048,7 @@ public class Utilities {
     public static Set<Module> findDependingModules (Module m, ModuleManager mm) {
         return mm.getModuleInterdependencies(m, true, false);
     }
-
+    
     public static String formatDate(Date date) {
         synchronized(DATE_FORMAT) {
             return DATE_FORMAT.format(date);
@@ -1029,4 +1060,203 @@ public class Utilities {
             return DATE_FORMAT.parse(date);
         }
     }    
+    
+    public static boolean canWriteInCluster (File cluster) {
+        assert cluster != null : "dir cannot be null";
+        if (cluster == null) {
+            return false;
+        }
+        if (cluster.exists () && cluster.isDirectory ()) {
+            File dir4test = null;
+            File update = new File (cluster, UPDATE_DIR);
+            File download = new File (cluster, DOWNLOAD_DIR);
+            if (download.exists ()) {
+                dir4test = download;
+            } else if (update.exists ()) {
+                dir4test = update;
+            } else {
+                dir4test = cluster;
+            }
+            // workaround the bug: http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4420020
+            if (dir4test.canWrite () && dir4test.canRead ()) {
+                boolean canWrite = canWrite (dir4test);
+                getLogger ().log (Level.FINE, "Can write into " + dir4test + "? " + canWrite);
+                return canWrite;
+            } else {
+                getLogger ().log (Level.FINE, "Can write into " + dir4test + "? " + dir4test.canWrite ());
+                return dir4test.canWrite ();
+            }
+        }
+        
+        cluster.mkdirs ();
+        getLogger ().log (Level.FINE, "Can write into new cluster " + cluster + "? " + cluster.canWrite ());
+        return cluster.canWrite ();
+    }
+    
+    public static boolean canWrite (File f) {
+        // workaround the bug: http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4420020
+        if (org.openide.util.Utilities.isWindows ()) {
+            if (f.isFile ()) {
+                FileWriter fw = null;
+                try {
+                    fw = new FileWriter (f, true);
+                    getLogger ().log (Level.FINE, f + " has write permission");
+                } catch (IOException ioe) {
+                    // just check of write permission
+                    getLogger ().log (Level.FINE, f + " has no write permission", ioe);
+                    return false;
+                } finally {
+                    try {
+                        if (fw != null) {
+                            fw.close ();
+                        }
+                    } catch (IOException ex) {
+                        getLogger ().log (Level.INFO, ex.getLocalizedMessage (), ex);
+                    }
+                }
+                return true;
+            } else {
+                try {
+                    File dummy = File.createTempFile ("dummy", null, f);
+                    dummy.delete ();
+                    getLogger ().log (Level.FINE, f + " has write permission");
+                } catch (IOException ioe) {
+                    getLogger ().log (Level.FINE, f + " has no write permission", ioe);
+                    return false;
+                }
+                return true;
+            }
+        } else {
+            return f.canWrite ();
+        }
+    }
+    
+    public static KeyStore loadKeyStore () {
+        String fileName = getPreferences ().get (USER_KS_KEY, null);
+        if (fileName == null) {
+            return null;
+        } else {
+            InputStream is = null;
+            KeyStore ks = null;
+            try {
+                File f = new File (getCacheDirectory (), fileName);
+                assert f.exists () : f + " exists.";
+                is = new BufferedInputStream (new FileInputStream (f));
+                ks = KeyStore.getInstance (KeyStore.getDefaultType ());
+                ks.load (is, KS_USER_PASSWORD.toCharArray ());
+            } catch (IOException ex) {
+                getLogger ().log (Level.INFO, ex.getLocalizedMessage (), ex);
+            } catch (NoSuchAlgorithmException ex) {
+                getLogger ().log (Level.INFO, ex.getLocalizedMessage (), ex);
+            } catch (CertificateException ex) {
+                getLogger ().log (Level.INFO, ex.getLocalizedMessage (), ex);
+            } catch (KeyStoreException ex) {
+                getLogger ().log (Level.INFO, ex.getLocalizedMessage (), ex);
+            } finally {
+                try {
+                    if (is != null) {
+                        is.close ();
+                    }
+                } catch (IOException ex) {
+                    getLogger ().log (Level.INFO, ex.getLocalizedMessage (), ex);
+                }
+            }
+            return ks;
+        }
+    }
+    
+    private static void storeKeyStore (KeyStore ks) {
+        OutputStream os = null;
+        try {
+            File f = new File (getCacheDirectory (), USER_KS_FILE_NAME);
+            os = new BufferedOutputStream (new FileOutputStream (f));
+            ks.store (os, KS_USER_PASSWORD.toCharArray ());
+            getPreferences ().put (USER_KS_KEY, USER_KS_FILE_NAME);
+        } catch (KeyStoreException ex) {
+            getLogger ().log (Level.INFO, ex.getLocalizedMessage (), ex);
+        } catch (IOException ex) {
+            getLogger ().log (Level.INFO, ex.getLocalizedMessage (), ex);
+        } catch (NoSuchAlgorithmException ex) {
+            getLogger ().log (Level.INFO, ex.getLocalizedMessage (), ex);
+        } catch (CertificateException ex) {
+            getLogger ().log (Level.INFO, ex.getLocalizedMessage (), ex);
+            } finally {
+                try {
+                    if (os != null) {
+                        os.close ();
+                    }
+                } catch (IOException ex) {
+                    getLogger ().log (Level.INFO, ex.getLocalizedMessage (), ex);
+                }
+            }
+    }
+    
+    public static void addCertificates (Collection<Certificate> certs) {
+        KeyStore ks = loadKeyStore ();
+        if (ks == null) {
+            try {
+                ks = KeyStore.getInstance (KeyStore.getDefaultType ());
+                ks.load (null, KS_USER_PASSWORD.toCharArray ());
+            } catch (IOException ex) {
+                getLogger ().log (Level.INFO, ex.getLocalizedMessage (), ex);
+                return ;
+            } catch (NoSuchAlgorithmException ex) {
+                getLogger ().log (Level.INFO, ex.getLocalizedMessage (), ex);
+                return ;
+            } catch (CertificateException ex) {
+                getLogger ().log (Level.INFO, ex.getLocalizedMessage (), ex);
+                return ;
+            } catch (KeyStoreException ex) {
+                getLogger ().log (Level.INFO, ex.getLocalizedMessage (), ex);
+                return ;
+            }
+        }
+
+        for (Certificate c : certs) {
+            
+            try {
+                // don't add certificate twice
+                if (ks.getCertificateAlias (c) != null) {
+                    continue;
+                }
+
+                // Find free alias name
+                String alias = null;
+                for (int i = 0; i < 9999; i++) {
+                    alias = "genAlias" + i; // NOI18N
+                    if (! ks.containsAlias (alias)) {
+                        break;
+                    }
+                }
+                if (alias == null) {
+                    getLogger ().log (Level.INFO, "Too many certificates with " + c);
+                }
+
+                ks.setCertificateEntry (alias, c);
+            } catch (KeyStoreException ex) {
+                getLogger ().log (Level.INFO, ex.getLocalizedMessage (), ex);
+            }
+            
+        }
+        
+        storeKeyStore (ks);
+    }
+
+    private static File getCacheDirectory () {
+        File cacheDir = null;
+        String userDir = System.getProperty ("netbeans.user"); // NOI18N
+        if (userDir != null) {
+            cacheDir = new File (new File (new File (userDir, "var"), "cache"), "catalogcache"); // NOI18N
+        } else {
+            File dir = FileUtil.toFile (Repository.getDefault ().getDefaultFileSystem ().getRoot());
+            cacheDir = new File (dir, "catalogcache"); // NOI18N
+        }
+        cacheDir.mkdirs();
+        return cacheDir;
+    }
+    
+    private static Preferences getPreferences() {
+        return NbPreferences.root ().node ("/org/netbeans/modules/autoupdate"); // NOI18N
+    }    
+    
 }

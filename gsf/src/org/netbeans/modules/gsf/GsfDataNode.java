@@ -56,20 +56,17 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataNode;
-import org.openide.loaders.DataNode;
 import org.openide.loaders.DataObject;
-import org.openide.nodes.Children;
 import org.openide.nodes.Children;
 import org.openide.util.actions.SystemAction;
 
 
 public class GsfDataNode extends DataNode {
-    // XXX Shouldn't this be static?
     private static Map<String, Action[]> mimeTypeToActions = new HashMap<String, Action[]>();
 
     public GsfDataNode(GsfDataObject basDataObject, Language language) {
         super(basDataObject, Children.LEAF);
-        if (language != null) {
+        if (language != null && language.getIconBase() != null) {
             setIconBaseWithExtension(language.getIconBase());
         }
     }

@@ -101,6 +101,8 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
      */
     static final String EA_ASSIGNED_LOADER_MODULE = "NetBeansAttrAssignedLoaderModule"; // NOI18N
 
+    private static final Logger OBJ_LOG = Logger.getLogger(DataObject.class.getName());
+
     /** all modified data objects contains DataObjects.
     * ! Use syncModified for modifications instead !*/
     private static ModifiedRegistry modified = new ModifiedRegistry();
@@ -162,6 +164,7 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
     * @param loader loader that created the data object
     */
     private DataObject (FileObject pf, DataObjectPool.Item item, DataLoader loader) {
+        OBJ_LOG.log(Level.FINE, "created {0}", pf); // NOI18N
         this.item = item;
         this.loader = loader;
         item.setDataObject (this);
@@ -655,7 +658,11 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
         // executes atomic action with renaming
         Op op = new Op();
         op.newName = name;
-        invokeAtomicAction (getPrimaryFile().getParent(), op, synchObject());
+        FileObject target = getPrimaryFile().getParent();
+        if (target == null) {
+            target = getPrimaryFile();
+        }
+        invokeAtomicAction (target, op, synchObject());
 
         if (op.oldName.equals (op.newName)) {
             return; // the new name is the same as the old one
@@ -1069,6 +1076,32 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
     */
     static String getString (String name) {
         return NbBundle.getMessage (DataObject.class, name);
+    }
+    
+    /** Factory interface for converting file object to data objects. Read
+     * more about the layer based registrations in 
+     * <a href="@TOP@/org/openide/loaders/doc-files/api.html#register"/>separate document</a>.
+     * @since 7.0
+     */
+    public static interface Factory {
+        /** Find a data object appropriate to the given file object--the meat of this class.
+        * The loader can add all files it has recognized into the <CODE>recognized</CODE>
+        * buffer. Then all these files will be excluded from further processing.
+        *
+        * @param fo file object to recognize
+        * @param recognized recognized file buffer
+        * @exception DataObjectExistsException if the data object for the
+        *    primary file already exists
+        * @exception IOException if the object is recognized but cannot be created
+        * @exception InvalidClassException if the class is not instance of
+        *    {@link #getRepresentationClass}
+        *
+        * @return suitable data object or <CODE>null</CODE> if the handler cannot
+        *   recognize this object (or its group)
+        * @see DataLoader
+        */
+        public DataObject findDataObject(FileObject fo, Set<? super FileObject> recognized)
+        throws IOException;
     }
     
     /** Interface for objects that can contain other data objects.

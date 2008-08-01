@@ -1,6 +1,8 @@
 package org.netbeans.modules.iep.model.validator.visitor;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Logger;
@@ -13,8 +15,10 @@ import org.netbeans.modules.iep.model.IEPModel;
 import org.netbeans.modules.iep.model.IEPVisitor;
 import org.netbeans.modules.iep.model.Import;
 import org.netbeans.modules.iep.model.InputOperatorComponent;
+import org.netbeans.modules.iep.model.InvokeStreamOperatorComponent;
 import org.netbeans.modules.iep.model.LinkComponent;
 import org.netbeans.modules.iep.model.LinkComponentContainer;
+import org.netbeans.modules.iep.model.ModelHelper;
 import org.netbeans.modules.iep.model.OperatorComponent;
 import org.netbeans.modules.iep.model.OperatorComponentContainer;
 import org.netbeans.modules.iep.model.OutputOperatorComponent;
@@ -23,12 +27,15 @@ import org.netbeans.modules.iep.model.Property;
 import org.netbeans.modules.iep.model.SchemaAttribute;
 import org.netbeans.modules.iep.model.SchemaComponent;
 import org.netbeans.modules.iep.model.SchemaComponentContainer;
+import org.netbeans.modules.iep.model.TableInputOperatorComponent;
 import org.netbeans.modules.iep.model.lib.TcgComponentType;
 import org.netbeans.modules.iep.model.lib.TcgPropertyType;
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.spi.Validation;
 import org.netbeans.modules.xml.xam.spi.Validator;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
 
 public class IEPSemanticsVisitor implements IEPVisitor {
@@ -93,10 +100,8 @@ public class IEPSemanticsVisitor implements IEPVisitor {
     }
 
     public void visitImport(Import imp) {
-        
     }
 
-    
     public void visitDocumentation(Documentation doc) {
     }
 
@@ -145,6 +150,23 @@ public class IEPSemanticsVisitor implements IEPVisitor {
     }
 
     public void visitPlanComponent(PlanComponent component) {
+        //validate package name not matching directory structure
+        String packageName = component.getPackageName();
+        if (packageName == null) {
+            packageName = "";
+        }
+        IEPModel model = component.getModel();
+
+        DataObject iepFile = model.getModelSource().getLookup().lookup(DataObject.class);
+        String expectedPackageName = ModelHelper.getPackageName(iepFile);
+        if (!expectedPackageName.equals(packageName)) {
+            String message = NbBundle.getMessage(IEPSemanticsVisitor.class, "DefaultOperatorValidator.expected_packageName_does_not_match_specified_package_name", new Object[]{expectedPackageName, packageName});
+            ResultItem item = new ResultItem(mValidator, Validator.ResultType.ERROR, component, message);
+            mResultItems.add(item);
+        }
+
+
+
         OperatorComponentContainer opContainer = component.getOperatorComponentContainer();
         if (opContainer == null) {
             String message = NbBundle.getMessage(IEPSemanticsVisitor.class, "DefaultOperatorValidator.atleast_one_operator_required");
@@ -162,23 +184,37 @@ public class IEPSemanticsVisitor implements IEPVisitor {
         }
 
 
-        IEPModel model = component.getModel();
-
         //inputs
-        List<InputOperatorComponent> inputs = model.getInputList();
+        boolean wsOnly = false;
+        List<InputOperatorComponent> inputs = model.getInputList(wsOnly);
+
         if (inputs.size() == 0) {
-            String message = NbBundle.getMessage(IEPSemanticsVisitor.class, "DefaultOperatorValidator.atleast_one_input_required");
-            ResultItem item = new ResultItem(mValidator, Validator.ResultType.ERROR, component, message);
-            mResultItems.add(item);
+            List<TableInputOperatorComponent> tableInputs = model.getPlanComponent().getOperatorComponentContainer().getTableInputOperatorComponent();
+            if (tableInputs.size() == 0) {
+                String message = NbBundle.getMessage(IEPSemanticsVisitor.class, "DefaultOperatorValidator.atleast_one_input_required");
+                ResultItem item = new ResultItem(mValidator, Validator.ResultType.ERROR, component, message);
+                mResultItems.add(item);
+            }
 
         }
 
         //outputs
-        List<OutputOperatorComponent> outputs = model.getOutputList();
+        //check for atleast one output if there are no InvokeStream operators.
+
+        List<InvokeStreamOperatorComponent> invokeOps = Collections.EMPTY_LIST;
+        if (opContainer != null) {
+            invokeOps = opContainer.getInvokeStreamOperatorComponent();
+        }
+
+
+        List<OutputOperatorComponent> outputs = model.getOutputList(wsOnly);
         if (outputs.size() == 0) {
-            String message = NbBundle.getMessage(IEPSemanticsVisitor.class, "DefaultOperatorValidator.atleast_one_output_required");
-            ResultItem item = new ResultItem(mValidator, Validator.ResultType.ERROR, component, message);
-            mResultItems.add(item);
+            //if there is no invoke stream then we should have atleat one output
+            if (invokeOps.size() == 0) {
+                String message = NbBundle.getMessage(IEPSemanticsVisitor.class, "DefaultOperatorValidator.atleast_one_output_required");
+                ResultItem item = new ResultItem(mValidator, Validator.ResultType.ERROR, component, message);
+                mResultItems.add(item);
+            }
         }
 
         visitComponent(component);

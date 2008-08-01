@@ -44,10 +44,6 @@ package org.netbeans.modules.uml.core.support.umlutils;
 import java.io.File;
 
 import java.io.IOException;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-
-//import org.apache.xpath.XPathAPI;
 import org.dom4j.Document;
 import org.dom4j.Element;
 import org.dom4j.Node;
@@ -69,8 +65,8 @@ import org.openide.util.Exceptions;
  */
 
 public class PropertyDefinitionXML extends PropertyDefinition 
-        implements IPropertyDefinitionXML {
-  
+        implements IPropertyDefinitionXML{
+
   private static final Logger logger = Logger.getLogger("org.netbeans.modules.uml.core");
 
   private String m_File = null;

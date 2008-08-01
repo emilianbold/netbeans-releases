@@ -69,7 +69,7 @@ public class RepositoryUtils {
     /**
      * the version of the persistency mechanism
      */
-    private static int CURRENT_VERSION_OF_PERSISTENCY = 24;
+    private static int CURRENT_VERSION_OF_PERSISTENCY = 39;
     /** Creates a new instance of RepositoryUtils */
     private RepositoryUtils() {
     }
@@ -163,6 +163,10 @@ public class RepositoryUtils {
 		System.err.println(index + ":putting key " + key);
 	    }
 	    RepositoryAccessor.getRepository().put(key, obj);
+            // A workaround for #131701
+            if( key instanceof FileKey ) {
+                RepositoryAccessor.getRepository().hang(key, obj);
+            }
 	    if (TRACE_REPOSITORY_ACCESS) {
 		time = System.currentTimeMillis() - time;
 		System.err.println(index + ":put in " + time + "ms the key " + key);

@@ -41,17 +41,16 @@
 
 package org.netbeans.modules.websvc.wsitmodelext.security.tokens.impl;
 
+import org.netbeans.modules.websvc.wsitmodelext.security.impl.SecurityPolicyComponentImpl;
 import org.netbeans.modules.websvc.wsitmodelext.security.tokens.EndorsingSupportingTokens;
-import org.netbeans.modules.websvc.wsitmodelext.security.tokens.TokensQName;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import org.netbeans.modules.xml.wsdl.model.visitor.WSDLVisitor;
 import org.w3c.dom.Element;
 
 /**
  *
  * @author Martin Grebac
  */
-public class EndorsingSupportingTokensImpl extends TokensComponentImpl implements EndorsingSupportingTokens {
+public class EndorsingSupportingTokensImpl extends SecurityPolicyComponentImpl implements EndorsingSupportingTokens {
     
     /**
      * Creates a new instance of EndorsingSupportingTokensImpl
@@ -60,13 +59,4 @@ public class EndorsingSupportingTokensImpl extends TokensComponentImpl implement
         super(model, e);
     }
     
-    public EndorsingSupportingTokensImpl(WSDLModel model){
-        this(model, createPrefixedElement(TokensQName.ENDORSINGSUPPORTINGTOKENS.getQName(), model));
-    }
-
-    @Override
-    public void accept(WSDLVisitor visitor) {
-        visitor.visit(this);
-    }
-
 }

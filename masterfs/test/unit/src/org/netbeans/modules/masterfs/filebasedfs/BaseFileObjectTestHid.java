@@ -56,6 +56,7 @@ import org.openide.util.io.NbMarshalledObject;
 import org.openide.util.Utilities;
 
 import javax.swing.filechooser.FileSystemView;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.masterfs.filebasedfs.fileobjects.FileObjectFactory;
 import org.netbeans.modules.masterfs.filebasedfs.fileobjects.WriteLockUtils;
 import org.netbeans.modules.masterfs.providers.ProvidedExtensionsTest;
@@ -350,7 +351,8 @@ public class BaseFileObjectTestHid extends TestBaseHid{
         assertEquals(name, fo2.getName());
         assertEquals(ext, fo2.getExt());
     }
-    
+
+    @RandomlyFails
     public void testFileUtilToFileObjectIsValid() throws Exception {
         char SEP = File.separatorChar;
         final File fileF = new File(FileUtil.toFile(root).getAbsolutePath() + SEP + "dir" + SEP + "file2");
@@ -629,6 +631,9 @@ public class BaseFileObjectTestHid extends TestBaseHid{
             boolean created;
             public void fileDataCreated(FileEvent e) {
                 created = true;
+                synchronized(BaseFileObjectTestHid.this) {
+                    BaseFileObjectTestHid.this.notifyAll();
+                }
             }
         }        
         FCLImpl fl = new FCLImpl();        
@@ -644,6 +649,9 @@ public class BaseFileObjectTestHid extends TestBaseHid{
         
         
         parent.refresh();
+        synchronized(this) {
+            wait(1000);
+        }
         parent.removeFileChangeListener(fl);
         assertTrue("Didn't receive a FileEvent on the parent.", fl.created);
     }

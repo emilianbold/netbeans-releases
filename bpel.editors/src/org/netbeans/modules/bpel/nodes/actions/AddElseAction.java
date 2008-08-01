@@ -18,7 +18,6 @@
  */
 package org.netbeans.modules.bpel.nodes.actions;
 
-import org.netbeans.modules.bpel.nodes.actions.BpelNodeAction;
 import org.netbeans.modules.bpel.editors.api.nodes.actions.ActionType;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.Else;
@@ -63,7 +62,6 @@ public class AddElseAction extends BpelNodeAction {
         if (!super.enable(bpelEntities)) {
             return false;
         }
-        return (bpelEntities[0] instanceof If 
-                && ((If)bpelEntities[0]).getElse() == null);
+        return bpelEntities[0] instanceof If && ((If)bpelEntities[0]).getElse() == null;
     }    
 }

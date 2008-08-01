@@ -42,6 +42,7 @@ package org.netbeans.modules.editor.java;
 import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.IOException;
+import java.util.concurrent.CountDownLatch;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -52,7 +53,11 @@ import javax.lang.model.type.TypeMirror;
 import javax.swing.text.Document;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.SourceUtilsTestUtil;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TestUtilities;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.junit.NbTestCase;
@@ -63,6 +68,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.LocalFileSystem;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataObject;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -802,12 +808,12 @@ public class GoToSupportTest extends NbTestCase {
             public void beep(boolean goToSource, boolean goToJavadoc) {
                 fail("Should not be called.");
             }
-            public boolean open(ClasspathInfo info, Element el) {
+            public boolean open(ClasspathInfo info, ElementHandle<?> el) {
                 fail("Should not be called.");
                 return true;
             }
-            public void warnCannotOpen(Element el) {
-                assertEquals("TT", el.getSimpleName().toString());
+            public void warnCannotOpen(String displayName) {
+                assertEquals("TT", displayName);
                 wasCalled[0] = true;
             }
         }, false);
@@ -826,12 +832,69 @@ public class GoToSupportTest extends NbTestCase {
             public void beep(boolean goToSource, boolean goToJavadoc) {
                 fail("Should not be called.");
             }
-            public boolean open(ClasspathInfo info, Element el) {
+            public boolean open(ClasspathInfo info, ElementHandle<?> el) {
                 return false;
             }
-            public void warnCannotOpen(Element el) {
-                assertEquals("String", el.getSimpleName().toString());
+            public void warnCannotOpen(String displayName) {
+                assertEquals("String", displayName);
                 wasCalled[0] = true;
+            }
+        }, false);
+        
+        assertTrue(wasCalled[0]);
+    }
+    
+    public void testDeadlock135736() throws Exception {
+        final CountDownLatch l1 = new CountDownLatch(1);
+        final CountDownLatch l2 = new CountDownLatch(1);
+        final boolean[] wasCalled = new boolean[1];
+        
+        new Thread() {
+            @Override
+            public void run() {
+                try {
+                    FileObject f = FileUtil.createMemoryFileSystem().getRoot().createData("Test.java");
+                    
+                    try {
+                        l1.await();
+                    } catch (InterruptedException ex) {
+                        throw new IllegalStateException(ex);
+                    }
+                    
+                    JavaSource.forFileObject(f).runUserActionTask(new Task<CompilationController>() {
+                        public void run(CompilationController parameter) throws Exception {
+                            l2.countDown();
+                        }
+                    }, true);
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }.start();
+        
+        performTest("package test; public class Test { public static void main(String[] args) {} }", 62, new UiUtilsCaller() {
+            public boolean open(FileObject fo, int pos) {
+                fail("Should not be called.");
+                return true;
+            }
+            public void beep(boolean goToSource, boolean goToJavadoc) {
+                fail("Should not be called.");
+            }
+            public boolean open(ClasspathInfo info, ElementHandle<?> el) {
+                assertEquals(ElementKind.CLASS, el.getKind());
+                assertEquals("java.lang.String", el.getQualifiedName());
+                wasCalled[0] = true;
+                l1.countDown();
+                try {
+                    l2.await();
+                } catch (InterruptedException ex) {
+                    throw new IllegalStateException(ex);
+                }
+                return true;
+            }
+
+            public void warnCannotOpen(String displayName) {
+                fail("Should not be called.");
             }
         }, false);
         
@@ -849,11 +912,21 @@ public class GoToSupportTest extends NbTestCase {
             public void beep(boolean goToSource, boolean goToJavadoc) {
                 validator.beep();
             }
-            public boolean open(ClasspathInfo info, Element el) {
-                validator.open(info, el);
+            public boolean open(final ClasspathInfo info, final ElementHandle<?> el) {
+                try {
+                    JavaSource.create(info).runUserActionTask(new Task<CompilationController>() {
+                        public void run(CompilationController parameter) throws Exception {
+                            Element e = el.resolve(parameter);
+
+                            validator.open(info, e);
+                        }
+                    }, true);
+                } catch (IOException ex) {
+                    throw new IllegalStateException(ex);
+                }
                 return true;
             }
-            public void warnCannotOpen(Element el) {
+            public void warnCannotOpen(String displayName) {
                 fail("Should not be called.");
             }
         }, tooltip);
@@ -891,6 +964,11 @@ public class GoToSupportTest extends NbTestCase {
             GoToSupport.goTo(doc, offset, false);
         
         return null;
+    }
+
+    @Override
+    protected boolean runInEQ() {
+        return true;
     }
     
     /**Copied from org.netbeans.api.project.

@@ -1,5 +1,5 @@
 #API master signature file
-#Version 2.1.1
+#Version 2.2
 CLSS public static abstract org.netbeans.modules.sendopts.OptionImpl$Trampoline
 cons public Trampoline()
 fld  public static org.netbeans.modules.sendopts.OptionImpl$Trampoline org.netbeans.modules.sendopts.OptionImpl$Trampoline.DEFAULT

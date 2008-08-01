@@ -103,6 +103,7 @@ public class L10nTask extends Task {
             String line = null;
             Map<String, Set<String>> includes = new HashMap<String, Set<String>>();
             Map<String, Set<String>> excludes = new HashMap<String, Set<String>>();
+            Set<String> excludeFiles = new HashSet<String>();
 
             //Read all the patterns from patternsFile
             while ((line = lnr.readLine()) != null) {
@@ -134,6 +135,7 @@ public class L10nTask extends Task {
                     if (p.length != 2) {
                         if (line.endsWith(":")) {
                             excludes.put(line.substring(0, line.length() - 1), null);
+                            excludeFiles.add(line.substring(0, line.length() - 1));
                             continue;
                         } else {
                             throw new BuildException("Wrong pattern '" + line + "' found in pattern file: " + patternsFile.getAbsolutePath());
@@ -170,8 +172,8 @@ public class L10nTask extends Task {
             if (includesKeys[0] != null) {
                 ds.setIncludes(includesKeys);
             }
-            if (excludesKeys[0] != null) {
-                ds.setExcludes(excludesKeys);
+            if (excludeFiles.size() > 0) {
+                ds.setExcludes(excludeFiles.toArray(new String[]{""}));
             }
             
             //Go though all the found files maching the first part of the pattern
@@ -209,9 +211,16 @@ public class L10nTask extends Task {
                             }
                         }
                     }
-
+                    
                     File oneFile = new File(tmpDir, file);
                     zipFileSet.setSrc(oneFile);
+                    file = file.replaceAll("^visualweb","vw");
+                    file = file.replaceAll("visualweb-","vw-");
+                    file = file.replaceAll("ravehelp-rave_nbpack","rh");
+                    file = file.replaceAll("org-netbeans-modules-", "");
+                    file = file.replaceAll("/netbeans/modules/", "/");
+                    file = file.replaceAll("\\.nbm/", "/");
+                    file = file.replaceAll("\\.jar", "");
                     zipFileSet.setPrefix(file);
                     zip.addZipfileset(zipFileSet);
                 }

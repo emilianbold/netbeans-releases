@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -1625,6 +1625,8 @@ public final class DefaultPlugin extends JUnitPlugin {
      * @see  #junitVer
      */
     private void readSystemSettingsJUnitVer() {
+        junitVer = null;
+        /*
         String value = JUnitSettings.getDefault().getGenerator();
         if ((value == null) || value.equals(JUNIT_GENERATOR_ASK_USER)) {
             junitVer = null;
@@ -1635,6 +1637,7 @@ public final class DefaultPlugin extends JUnitPlugin {
                 junitVer = null;
             }
         }
+        */
     }
     
     /**

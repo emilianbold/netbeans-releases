@@ -52,6 +52,7 @@ import org.netbeans.spi.project.libraries.LibraryTypeProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.Exceptions;
 import org.openide.util.Parameters;
 
 /**
@@ -96,28 +97,22 @@ public final class LibrariesSupport {
     }
     
     /**
-     * Properly converts possibly relative file to URL.
-     * @param f file to convert; can be relative; cannot be null
-     * @return url
-     * @since org.netbeans.modules.project.libraries/1 1.17
+     * Properly converts possibly relative file path to URI.
+     * @param path file path to convert; can be relative; cannot be null
+     * @return uri
+     * @since org.netbeans.modules.project.libraries/1 1.18
      */
-    public static URL convertFilePathToURL(String path) {
+    public static URI convertFilePathToURI(String path) {
         try {
             File f = new File(path);
             if (f.isAbsolute()) {
-                return f.toURI().toURL();
+                return f.toURI();
             } else {
                 // create hierarchical relative URI (that is no schema)
-                // to encode OS characters
-                URI uri = new URI(null, null, path.replace('\\', '/'), null);
-                return new URL("file", null, uri.getRawPath());
+                return new URI(null, null, path.replace('\\', '/'), null);
             }
 
         } catch (URISyntaxException ex) {
-	    IllegalArgumentException y = new IllegalArgumentException();
-	    y.initCause(ex);
-	    throw y;
-        } catch (MalformedURLException ex) {
 	    IllegalArgumentException y = new IllegalArgumentException();
 	    y.initCause(ex);
 	    throw y;
@@ -125,69 +120,49 @@ public final class LibrariesSupport {
     }
     
     /**
-     * Properly converts possibly relative URL to file.
-     * @param url file URL to convert; can be relative; cannot be null
-     * @return url
-     * @since org.netbeans.modules.project.libraries/1 1.17
+     * Properly converts possibly relative URI to file path.
+     * @param uri URI convert; can be relative URI; cannot be null
+     * @return file path
+     * @since org.netbeans.modules.project.libraries/1 1.18
      */
-    public static String convertURLToFilePath(URL url) {
-        if (!"file".equals(url.getProtocol())) {
-            throw new IllegalArgumentException("not file URL "+url); //NOI18N
+    public static String convertURIToFilePath(URI uri) {
+        if (uri.isAbsolute()) {
+            // uri.getPath() starts with extra slath, e.g. "/D:/path/"
+            return new File(uri).getPath();
+        } else {
+            return uri.getPath().replace('/', File.separatorChar);
         }
-        try {
-            if (isAbsoluteURL(url)) {
-                return new File(new URI(url.toExternalForm())).getPath();
-            } else {
-                // workaround to decode URL path - created fake absolute URI 
-                // just to construct File instance and properly decoded path:
-                URI uri3 = new URI("file:/"+url.getPath());
-                return new File(uri3).getPath().substring(1);
-            }
-        } catch (URISyntaxException ex) {
-	    IllegalArgumentException y = new IllegalArgumentException();
-	    y.initCause(ex);
-	    throw y;
-        }
-    }
-
-    /**
-     * Is given URL absolute?
-     * 
-     * @param url url to test; cannot be null
-     * @return is absolute
-     * @since org.netbeans.modules.project.libraries/1 1.17
-     */
-    public static boolean isAbsoluteURL(URL url) {
-        if ("jar".equals(url.getProtocol())) { // NOI18N
-            url = FileUtil.getArchiveFile(url);
-        }
-        return url.getPath().startsWith("/");
     }
     
     /**
-     * Helper method to resolve (possibly relative) library content URL to FileObject.
+     * Helper method to resolve (possibly relative) library content URI to FileObject.
      * 
      * @param libraryLocation library location file; can be null for global libraries
      * @param libraryEntry library entry to resolve
      * @return file object
-     * @since org.netbeans.modules.project.libraries/1 1.17
+     * @since org.netbeans.modules.project.libraries/1 1.18
      */
-    public static FileObject resolveLibraryEntryFileObject(URL libraryLocation, URL libraryEntry) {
-        URL u = resolveLibraryEntryURL(libraryLocation, libraryEntry);
-        return URLMapper.findFileObject(u);
+    public static FileObject resolveLibraryEntryFileObject(URL libraryLocation, URI libraryEntry) {
+        URI u = resolveLibraryEntryURI(libraryLocation, libraryEntry);
+        try {
+            return URLMapper.findFileObject(u.toURL());
+        } catch (MalformedURLException ex) {
+            Exceptions.printStackTrace(ex);
+            return null;
+        }
     }
     
     /**
-     * Helper method to resolve (possibly relative) library content URL.
+     * Helper method to resolve (possibly relative) library content URI.
      * 
-     * @param libraryLocation library location file; can be null for global libraries
-     * @param libraryEntry library entry to resolve
-     * @return absolute URL
-     * @since org.netbeans.modules.project.libraries/1 1.17
+     * @param libraryLocation library location file
+     * @param libraryEntry relative library entry to resolve
+     * @return absolute URI
+     * @since org.netbeans.modules.project.libraries/1 1.18
      */
-    public static URL resolveLibraryEntryURL(URL libraryLocation, URL libraryEntry) {
+    public static URI resolveLibraryEntryURI(URL libraryLocation, URI libraryEntry) {
         Parameters.notNull("libraryEntry", libraryEntry); //NOI18N
-        if (isAbsoluteURL(libraryEntry)) {
+        if (libraryEntry.isAbsolute()) {
             return libraryEntry;
         } else {
             if (libraryLocation == null) {
@@ -201,35 +176,60 @@ public final class LibrariesSupport {
                 throw new IllegalArgumentException("library location must be a file - "+libraryLocation.toExternalForm()); //NOI18N
             }
             File libBase = libLocation.getParentFile();
+            /* Do not use URI.resolve because of http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4723726 (URI.normalize() ruins URI built from UNC File) */
             String jarFolder = null;
-            if ("jar".equals(libraryEntry.getProtocol())) {
-                assert libraryEntry.toExternalForm().indexOf("!/") != -1 : libraryEntry.toExternalForm(); //NOI18N
-                jarFolder = libraryEntry.toExternalForm().substring(libraryEntry.toExternalForm().indexOf("!/")+2); //NOI18N
-                libraryEntry = FileUtil.getArchiveFile(libraryEntry);
+            String libEntryPath = libraryEntry.getPath();
+            int index = libEntryPath.indexOf("!/");
+            if (index != -1) { // NOI18N
+                libEntryPath = libEntryPath.substring(0, index);
+                // use raw path instead because it will be append to URI as is:
+                jarFolder = libraryEntry.getRawPath().substring(libraryEntry.getRawPath().indexOf("!/")+2);
             }
-            String path = convertURLToFilePath(libraryEntry);
-            File f = FileUtil.normalizeFile(new File(libBase, path));
-            URL u;
-            try {
-                u = f.toURI().toURL();
-            } catch (MalformedURLException ex) {
-                IllegalArgumentException y = new IllegalArgumentException();
-                y.initCause(ex);
-                throw y;
+            URI resolvedPath = FileUtil.normalizeFile(new File(libBase, libEntryPath)).toURI();
+            if (jarFolder != null) { // NOI18N
+                return URI.create("jar:"+resolvedPath.toString()+"!/"+jarFolder); // NOI18N
+            } else {
+                return resolvedPath;
             }
-            if (jarFolder != null) {
-                u = FileUtil.getArchiveRoot(u);
-                try {
-                    u = new URL(u + jarFolder.replace('\\', '/')); //NOI18N
-                } catch (MalformedURLException e) {
-                    throw new AssertionError(e);
-                }
-            }
-            return u;
         }
     }
-
-    // TODO: add method which compares two libraries: compare content and file sizes and ...
     
-    // TODO: move some of these methods to openide.FileUtil
+    /**
+     * Returns the URI of the archive file containing the file
+     * referred to by a <code>jar</code>-protocol URL.
+     * <strong>Remember</strong> that any path within the archive is discarded
+     * so you may need to check for non-root entries.
+     * @param uri a URI; can be relative URI
+     * @return the embedded archive URI, or null if the URI is not a
+     *         <code>jar</code>-protocol URI containing <code>!/</code>
+     * @since org.netbeans.modules.project.libraries/1 1.18
+     */
+    public static URI getArchiveFile(URI uri) {
+        String u = uri.toString();
+        int index = u.indexOf("!/"); //NOI18N
+        if (index != -1) {
+            try {
+                return new URI(u.substring(u.startsWith("jar:") ? 4 : 0, index)); // NOI18N
+            } catch (URISyntaxException e) {
+                throw new AssertionError(e);
+            }
+        }
+        return null;
+    }
+    
+    /**
+     * Returns a URI representing the root of an archive.
+     * @param uri of a ZIP- (or JAR-) format archive file; can be relative
+     * @return the <code>jar</code>-protocol URI of the root of the archive
+     * @since org.netbeans.modules.project.libraries/1 1.18
+     */
+    public static URI getArchiveRoot(URI uri) {
+        assert !uri.toString().contains("!/") : uri;
+        try {
+            return new URI((uri.isAbsolute() ? "jar:" : "") + uri.toString() + "!/"); // NOI18N
+        } catch (URISyntaxException ex) {
+                throw new AssertionError(ex);
+        }
+    }
+    
 }

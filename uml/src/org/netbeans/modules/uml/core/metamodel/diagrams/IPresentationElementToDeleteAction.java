@@ -44,14 +44,14 @@
 package org.netbeans.modules.uml.core.metamodel.diagrams;
 
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
-import org.netbeans.modules.uml.ui.controls.drawingarea.IExecutableAction;
-import com.tomsawyer.graph.TSGraphObject;
+//import org.netbeans.modules.uml.ui.controls.drawingarea.IExecutableAction;
 
 /**
  * @author KevinM
  *
  */
-public interface IPresentationElementToDeleteAction extends IDelayedAction, IExecutableAction {
+public interface IPresentationElementToDeleteAction extends IDelayedAction//, IExecutableAction 
+{
 
 	/*
 	 * Returns the element to delete.
@@ -66,10 +66,10 @@ public interface IPresentationElementToDeleteAction extends IDelayedAction, IExe
 	/*
 	 * Returns the element to delete.
 	 */
-	public TSGraphObject getGraphObject();
+//	public TSGraphObject getGraphObject();
 
 	/*
 	 * sets the element to delete.
 	 */
-	public void setGraphObject(TSGraphObject graphObject);
+//	public void setGraphObject(TSGraphObject graphObject);
 }

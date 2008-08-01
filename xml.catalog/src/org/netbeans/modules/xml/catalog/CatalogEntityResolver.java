@@ -91,31 +91,34 @@ public class CatalogEntityResolver extends UserCatalog implements EntityResolver
         
         // try to use full featured entiry resolvers
         
+        
         CatalogSettings mounted = CatalogSettings.getDefault();
-        it = mounted.getCatalogs( new Class[] {EntityResolver.class});
-
-        while (it.hasNext()) {
-            EntityResolver next = (EntityResolver) it.next();
-            result = next.resolveEntity(publicId, systemId);
-            if (result != null) break;
-        }
-        
-        // fallback to ordinaly readers        
-        
-        if (result == null && publicId != null) {
-            
-            it = mounted.getCatalogs(new Class[] {CatalogReader.class});
+        if (mounted != null) {
+            it = mounted.getCatalogs( new Class[] {EntityResolver.class});
 
             while (it.hasNext()) {
-                CatalogReader next = (CatalogReader) it.next();
-                String sid = next.getSystemID(publicId);
-                if (sid != null) {
-                    result =  new InputSource(sid);
-                    break;
-                }
+                EntityResolver next = (EntityResolver) it.next();
+                result = next.resolveEntity(publicId, systemId);
+                if (result != null) break;
             }
-        }        
+        
+            // fallback to ordinaly readers        
+
+            if (result == null && publicId != null) {
+
+                it = mounted.getCatalogs(new Class[] {CatalogReader.class});
+
+                while (it.hasNext()) {
+                    CatalogReader next = (CatalogReader) it.next();
+                    String sid = next.getSystemID(publicId);
+                    if (sid != null) {
+                        result =  new InputSource(sid);
+                        break;
+                    }
+                }
+            }        
         // return result (null is allowed)
+        }
 
         //if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("CatalogEntityResolver:PublicID: " + publicId + ", " + systemId + " => " + (result == null ? "null" : result.getSystemId())); // NOI18N
 

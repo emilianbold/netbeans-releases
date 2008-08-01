@@ -56,7 +56,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JButton;
 import javax.swing.JPanel;
@@ -68,7 +67,6 @@ import org.netbeans.modules.cnd.navigation.includeview.IncludeHierarchyPanel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.explorer.ExplorerManager;
-import org.openide.explorer.view.BeanTreeView;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -96,9 +94,8 @@ class HierarchyDialog {
             ClassHierarchyPanel panel = new ClassHierarchyPanel(false);
             String title = decl.getName() + " - " + NbBundle.getMessage(HierarchyDialog.class, "CTL_ClassHierarchyDialogTitle"); // NOI18N
             Dialog dialog = createDialog(panel, title);
-            panel.setClose(new DialogClose(panel));
+            panel.setClose();
             panel.setClass(decl);
-            addKeyListeners(panel.getTreeView(), (ExplorerManager.Provider)panel);
             dialog.setVisible(true);
         }
     }    
@@ -111,26 +108,11 @@ class HierarchyDialog {
             IncludeHierarchyPanel panel = new IncludeHierarchyPanel(false);
             String title = decl.getName() + " - " + NbBundle.getMessage(HierarchyDialog.class, "CTL_IncludeHierarchyDialogTitle"); // NOI18N
             Dialog dialog = createDialog(panel, title);
-            panel.setClose(new DialogClose(panel));
+            panel.setClose();
             panel.setFile(decl);
-            addKeyListeners(panel.getTreeView(), (ExplorerManager.Provider)panel);
             dialog.setVisible(true);
         }
     }    
-    
-    private static void addKeyListeners(final BeanTreeView tree, final ExplorerManager.Provider panel){
-// This is a fix context menu by Shift+F10.
-// This code does not work right. Because pop up menu is shown after editor context menu.
-//        tree.registerKeyboardAction(new ActionListener(){
-//            public void actionPerformed(ActionEvent e) {
-//                Node[] nodes = panel.getExplorerManager().getSelectedNodes();
-//                    JPopupMenu popup = NodeOp.findContextMenu(nodes);
-//                    if (popup != null){
-//                        popup.show(tree, 10, 10);
-//                    }
-//            }
-//        }, KeyStroke.getKeyStroke(KeyEvent.VK_F10,KeyEvent.SHIFT_MASK,true), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
-    }
     
     private static JPanel createPanel(JPanel panel){
         JPanel outter = new JPanel();
@@ -217,20 +199,8 @@ class HierarchyDialog {
                 }
             }
         }
-    }   
-    
-    private static class DialogClose extends AbstractAction {
-        private ExplorerManager.Provider panel;
-        
-        public DialogClose(ExplorerManager.Provider panel) {
-            this.panel = panel;
-        }
-        
-        public void actionPerformed(ActionEvent e) {
-            Window window = SwingUtilities.getWindowAncestor((Component) panel);
-            if (window != null) {
-                window.setVisible(false);
-            }
-        }
+    }
+
+    private HierarchyDialog() {
     }
 }

@@ -59,7 +59,10 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.j2ee.core.api.support.SourceGroups;
 import org.netbeans.modules.j2ee.core.api.support.java.JavaIdentifiers;
 import org.netbeans.modules.j2ee.persistence.api.EntityClassScope;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
@@ -125,8 +128,9 @@ public class PersistenceClientEntitySelectionVisual extends javax.swing.JPanel {
         }
         return result;
     }
-    // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
+
         jScrollPane1 = new javax.swing.JScrollPane();
         listAvailable = new javax.swing.JList();
         jScrollPane2 = new javax.swing.JScrollPane();
@@ -143,17 +147,17 @@ public class PersistenceClientEntitySelectionVisual extends javax.swing.JPanel {
 
         listAvailable.setCellRenderer(ENTITY_LIST_RENDERER);
         jScrollPane1.setViewportView(listAvailable);
-        listAvailable.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/persistence/wizard/Bundle").getString("LBL_AvailableEntitiesList"));
-        listAvailable.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/persistence/wizard/Bundle").getString("ACSD_AvailableEntitiesList"));
+        listAvailable.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "LBL_AvailableEntitiesList")); // NOI18N
+        listAvailable.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "ACSD_AvailableEntitiesList")); // NOI18N
 
         listSelected.setCellRenderer(ENTITY_LIST_RENDERER);
         jScrollPane2.setViewportView(listSelected);
-        listSelected.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/persistence/wizard/Bundle").getString("LBL_SelectedEntitiesList"));
-        listSelected.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/persistence/wizard/Bundle").getString("ACSD_SelectedEntitiesList"));
+        listSelected.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "LBL_SelectedEntitiesList")); // NOI18N
+        listSelected.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "ACSD_SelectedEntitiesList")); // NOI18N
 
         cbAddRelated.setMnemonic(org.openide.util.NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "MNE_InludeRelated").charAt(0));
         cbAddRelated.setSelected(true);
-        cbAddRelated.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/persistence/wizard/Bundle").getString("LBL_IncludeReferenced"));
+        cbAddRelated.setText(org.openide.util.NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "LBL_IncludeReferenced")); // NOI18N
         cbAddRelated.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         cbAddRelated.setMargin(new java.awt.Insets(0, 0, 0, 0));
         cbAddRelated.addActionListener(new java.awt.event.ActionListener() {
@@ -162,15 +166,12 @@ public class PersistenceClientEntitySelectionVisual extends javax.swing.JPanel {
             }
         });
 
-        cbAddRelated.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/persistence/wizard/Bundle").getString("LBL_IncludeReferencedCheckbox"));
-        cbAddRelated.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/persistence/wizard/Bundle").getString("ACSD_IncludeReferencedCheckbox"));
-
-        labelAvailableEntities.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/persistence/wizard/Bundle").getString("MNE_AvailableEntityClasses").charAt(0));
+        labelAvailableEntities.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "MNE_AvailableEntityClasses").charAt(0));
         labelAvailableEntities.setLabelFor(listAvailable);
-        labelAvailableEntities.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/persistence/wizard/Bundle").getString("LBL_AvailableEntities"));
+        labelAvailableEntities.setText(org.openide.util.NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "LBL_AvailableEntities")); // NOI18N
 
         buttonRemove.setMnemonic(org.openide.util.NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "MNE_Remove").charAt(0));
-        buttonRemove.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/persistence/wizard/Bundle").getString("LBL_Remove"));
+        buttonRemove.setText(org.openide.util.NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "LBL_Remove")); // NOI18N
         buttonRemove.setActionCommand("< &Remove");
         buttonRemove.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -179,7 +180,7 @@ public class PersistenceClientEntitySelectionVisual extends javax.swing.JPanel {
         });
 
         buttonAdd.setMnemonic(org.openide.util.NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "MNE_Add").charAt(0));
-        buttonAdd.setText(org.openide.util.NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "LBL_Add"));
+        buttonAdd.setText(org.openide.util.NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "LBL_Add")); // NOI18N
         buttonAdd.setActionCommand("&Add >");
         buttonAdd.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -188,7 +189,7 @@ public class PersistenceClientEntitySelectionVisual extends javax.swing.JPanel {
         });
 
         buttonAddAll.setMnemonic(org.openide.util.NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "MNE_AddAll").charAt(0));
-        buttonAddAll.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/persistence/wizard/Bundle").getString("LBL_AddAll"));
+        buttonAddAll.setText(org.openide.util.NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "LBL_AddAll")); // NOI18N
         buttonAddAll.setActionCommand("Add A&ll >>");
         buttonAddAll.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -197,7 +198,7 @@ public class PersistenceClientEntitySelectionVisual extends javax.swing.JPanel {
         });
 
         buttonRemoveAll.setMnemonic(org.openide.util.NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "MNE_RemoveAll").charAt(0));
-        buttonRemoveAll.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/persistence/wizard/Bundle").getString("LBL_RemoveAll"));
+        buttonRemoveAll.setText(org.openide.util.NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "LBL_RemoveAll")); // NOI18N
         buttonRemoveAll.setActionCommand("<< Re&moveAll");
         buttonRemoveAll.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -232,20 +233,22 @@ public class PersistenceClientEntitySelectionVisual extends javax.swing.JPanel {
                 .addContainerGap(103, Short.MAX_VALUE))
         );
 
-        labelSelectedEntities.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/persistence/wizard/Bundle").getString("MNE_SelectedEntityClasses").charAt(0));
-        labelSelectedEntities.setLabelFor(listSelected);
-        labelSelectedEntities.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/persistence/wizard/Bundle").getString("LBL_SelectedEntities"));
+        buttonRemove.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "ACSD_Remove")); // NOI18N
+        buttonAdd.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "ACSD_Add")); // NOI18N
+        buttonAddAll.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "ACSD_AddAll")); // NOI18N
+        buttonRemoveAll.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "ACSD_RemoveAll")); // NOI18N
 
-        createPUButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/persistence/wizard/Bundle").getString("MNE_CreatePersistenceUnit").charAt(0));
-        createPUButton.setText(org.openide.util.NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "LBL_CreatePersistenceUnit"));
+        labelSelectedEntities.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "MNE_SelectedEntityClasses").charAt(0));
+        labelSelectedEntities.setLabelFor(listSelected);
+        labelSelectedEntities.setText(org.openide.util.NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "LBL_SelectedEntities")); // NOI18N
+
+        createPUButton.setMnemonic(org.openide.util.NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "MNE_CreatePersistenceUnit").charAt(0));
+        createPUButton.setText(org.openide.util.NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "LBL_CreatePersistenceUnit")); // NOI18N
         createPUButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 createPUButtonActionPerformed(evt);
             }
         });
-
-        createPUButton.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/persistence/wizard/Bundle").getString("LBL_CreatePersistenceUnitButton"));
-        createPUButton.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/persistence/wizard/Bundle").getString("ACSD_CreatePersistenceUnitButton"));
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -278,9 +281,9 @@ public class PersistenceClientEntitySelectionVisual extends javax.swing.JPanel {
                     .add(labelAvailableEntities))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 294, Short.MAX_VALUE)
+                    .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 302, Short.MAX_VALUE)
                     .add(panelButtons, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 294, Short.MAX_VALUE))
+                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 302, Short.MAX_VALUE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                     .add(layout.createSequentialGroup()
@@ -290,6 +293,11 @@ public class PersistenceClientEntitySelectionVisual extends javax.swing.JPanel {
                         .add(createPUButton)
                         .addContainerGap())))
         );
+
+        cbAddRelated.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "LBL_IncludeReferencedCheckbox")); // NOI18N
+        cbAddRelated.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "ACSD_IncludeReferencedCheckbox")); // NOI18N
+        createPUButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "LBL_CreatePersistenceUnitButton")); // NOI18N
+        createPUButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "ACSD_CreatePersistenceUnitButton")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void cbAddRelatedActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbAddRelatedActionPerformed
@@ -361,8 +369,17 @@ public class PersistenceClientEntitySelectionVisual extends javax.swing.JPanel {
     boolean valid(WizardDescriptor wizard) {
         // check PU - not just warning, required
         if (createPUButton.isVisible()) {
-            wizard.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "ERR_NoPersistenceUnit"));
+            wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "ERR_NoPersistenceUnit"));
             return false;
+        }
+        
+        SourceGroup[] groups = SourceGroups.getJavaSourceGroups(project);
+        if (groups.length > 0) {
+            ClassPath compileCP = ClassPath.getClassPath(groups[0].getRootFolder(), ClassPath.COMPILE);
+            if (compileCP.findResource("javax/persistence/Entity.class") == null) { // NOI18N
+                wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "ERR_NoPersistenceProvider"));
+                return false;
+            }
         }
 
         if (!entityClosure.isModelReady()) {
@@ -374,16 +391,16 @@ public class PersistenceClientEntitySelectionVisual extends javax.swing.JPanel {
                     updateButtons();
                 }
             });
-            wizard.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "scanning-in-progress"));
+            wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "scanning-in-progress"));
             task.schedule(0);
             return false;
         }
 
         if (listSelected.getModel().getSize() == 0) {
-            wizard.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "MSG_NoEntityClassesSelected"));
+            wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "MSG_NoEntityClassesSelected"));
             return false;
         }
-        wizard.putProperty("WizardPanel_errorMessage", " "); //NOI18N
+        wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, " "); //NOI18N
         return true;
     }
 

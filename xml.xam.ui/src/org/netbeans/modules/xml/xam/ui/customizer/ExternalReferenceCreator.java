@@ -552,6 +552,20 @@ public abstract class ExternalReferenceCreator<T extends Component>
                 set = new NodeSet(this);
                 set.add(erdn);
             }
+            String ns = null;
+            if (selected) {
+                // Have to collect the namespace value
+                // when the node is selected.
+                Model model = erdn.getModel();
+                if (model != null) {
+                    ns = getTargetNamespace(model);
+                }
+            }
+            // This will clear the field if the user has
+            // deselected the file, which is to prevent
+            // the user from being confused as to what
+            // the namespace field represents.
+            namespaceTextField.setText(ns);
             set.setSelected(selected);
             // Check if the current selection is valid.
             validateInput(erdn);

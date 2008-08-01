@@ -67,7 +67,7 @@ import org.openide.util.NbBundle;
  */
 public class WebProjectModule extends ModuleInstall {
     public static final String JSPC_CLASSPATH = "jspc.classpath"; //NOI18N
-    public static final String COPYFILES_CLASSPATH = "copyfiles.classpath"; //NOI18N
+    public static final String JSPCTASK_CLASSPATH = "jspctask.classpath"; //NOI18N
     
     public void restored() {
         
@@ -90,7 +90,7 @@ public class WebProjectModule extends ModuleInstall {
                             .append(':') // NOI18N
                             .append(InstalledFileLocator.getDefault().locate("modules/ext/glassfish-logging-2.0.jar", null, false)) //NOI18N
                             .append(':') // NOI18N
-                            .append(InstalledFileLocator.getDefault().locate("modules/ext/commons-logging-1.0.4.jar", null, false)) //NOI18N
+                            .append(InstalledFileLocator.getDefault().locate("modules/ext/commons-logging-1.1.jar", null, false)) //NOI18N
                             .append(':') // NOI18N
                             .append(InstalledFileLocator.getDefault().locate("ant/lib/ant-launcher.jar", null, false)); //NOI18N
                     String jspc_cp_old = ep.getProperty(JSPC_CLASSPATH);
@@ -99,14 +99,14 @@ public class WebProjectModule extends ModuleInstall {
                         ep.setProperty(JSPC_CLASSPATH, jspc_cp);
                             changed = true;
                     }
-                    File copy_files = InstalledFileLocator.getDefault().locate("ant/extra/copyfiles.jar", null, false); //NOI18N
+                    File copy_files = InstalledFileLocator.getDefault().locate("ant/extra/jspcompile.jar", null, false); //NOI18N
                     if (copy_files == null) {
-                        String msg = NbBundle.getMessage(WebProjectModule.class,"MSG_CopyFileMissing"); //NOI18N
+                        String msg = NbBundle.getMessage(WebProjectModule.class,"MSG_JSPCompileFileMissing"); //NOI18N
                         DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE));
                     } else {
-                        String copy_files_old = ep.getProperty(COPYFILES_CLASSPATH);
+                        String copy_files_old = ep.getProperty(JSPCTASK_CLASSPATH);
                         if (copy_files_old == null || !copy_files_old.equals(copy_files.toString())) {
-                            ep.setProperty(COPYFILES_CLASSPATH, copy_files.toString());
+                            ep.setProperty(JSPCTASK_CLASSPATH, copy_files.toString());
                             changed = true;
                         }
                     }

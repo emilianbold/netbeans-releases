@@ -75,13 +75,9 @@ public class OutputProcessor implements OutputListener {
     private final FileLocator fileLocator;
 
     OutputProcessor(String file, int lineno, FileLocator fileLocator) {
-        if (lineno < 0) {
-            lineno = 0;
-        }
-
         // TODO : columns?
         this.file = file;
-        this.lineno = lineno;
+        this.lineno = lineno < 0 ? 0 : lineno;
         this.fileLocator = fileLocator;
     }
 
@@ -156,7 +152,7 @@ public class OutputProcessor implements OutputListener {
                         Line.Set lines = lc.getLineSet();
                         Line l = lines.getCurrent(line - 1);
                         if (l != null) {
-                            l.show(Line.SHOW_GOTO);
+                            l.show(Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FOCUS);
                             return true;
                         }
                     } catch (IndexOutOfBoundsException ioobe) {

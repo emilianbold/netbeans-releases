@@ -29,19 +29,19 @@
   THE POSSIBILITY OF SUCH DAMAGE.
 -->
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" 
-        targetNamespace="http://manufacturing.org/xsd/purchase"
-        xmlns:tns ="http://manufacturing.org/xsd/purchase"
-        elementFormDefault="qualified" attributeFormDefault="unqualified">
+    targetNamespace="http://manufacturing.org/xsd/purchase"
+    xmlns:tns ="http://manufacturing.org/xsd/purchase"
+    elementFormDefault="qualified"
+    attributeFormDefault="unqualified">
+   
+    <xs:element name="purchaseOrder" type="tns:purchaseOrderType"></xs:element>
 
-        <xs:element name="purchaseOrder" type="tns:purchaseOrderType">
-        </xs:element>
-    
-        <xs:complexType name="purchaseOrderType">
-            <xs:sequence>
-                <xs:element name="orderId" type="xs:int"/>
-                <xs:element name="customerId" type="xs:int"/>
-                <xs:element name="price" type="xs:float"/>
-                <xs:element name="orderDescription" type="xs:string"/>
-            </xs:sequence>
-        </xs:complexType>
+    <xs:complexType  name="purchaseOrderType">
+        <xs:sequence>
+            <xs:element name="orderId" type="xs:int"/>
+            <xs:element name="customerId" type="xs:int"/>
+            <xs:element name="orderDescription" type="xs:string"/>
+            <xs:element name="price" type="xs:string"/>
+        </xs:sequence>
+    </xs:complexType>
 </xs:schema>

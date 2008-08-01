@@ -60,6 +60,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListDataEvent;
 import org.netbeans.core.windows.Constants;
+import org.netbeans.core.windows.Switches;
 import org.netbeans.core.windows.WindowManagerImpl;
 import org.netbeans.core.windows.view.ui.Tabbed;
 import org.netbeans.core.windows.view.ui.tabcontrol.TabbedAdapter;
@@ -69,6 +70,7 @@ import org.netbeans.swing.tabcontrol.TabData;
 import org.netbeans.swing.tabcontrol.TabDisplayer;
 import org.netbeans.swing.tabcontrol.TabbedContainer;
 import org.netbeans.swing.tabcontrol.WinsysInfoForTabbed;
+import org.netbeans.swing.tabcontrol.WinsysInfoForTabbedContainer;
 import org.netbeans.swing.tabcontrol.event.ComplexListDataEvent;
 import org.netbeans.swing.tabcontrol.event.ComplexListDataListener;
 import org.openide.windows.TopComponent;
@@ -84,7 +86,7 @@ import org.openide.windows.TopComponent;
  * @author Dafe Simonek
  */
 public final class SlideBar extends Box implements ComplexListDataListener,
-    SlideBarController, Tabbed.Accessor, WinsysInfoForTabbed, ChangeListener {
+    SlideBarController, Tabbed.Accessor, ChangeListener {
     
     /** Command indicating request for slide in (appear) of sliding component */
     public static final String COMMAND_SLIDE_IN = "slideIn"; //NOI18N
@@ -369,19 +371,39 @@ public final class SlideBar extends Box implements ComplexListDataListener,
         return tabbed;
     }
     
-    /********* implementation of WinsysInfoForTabbed **************/
+    /********* implementation of WinsysInfoForTabbedContainer **************/
     
-    public Object getOrientation(Component comp) {
-        if (WindowManagerImpl.getInstance().getEditorAreaState() != Constants.EDITOR_AREA_JOINED) {
-            return TabDisplayer.ORIENTATION_INVISIBLE;
+    public WinsysInfoForTabbedContainer createWinsysInfo() {
+        return new SlidedWinsysInfoForTabbedContainer();
+    }
+    
+    private class SlidedWinsysInfoForTabbedContainer extends WinsysInfoForTabbedContainer {
+        public Object getOrientation(Component comp) {
+            if (WindowManagerImpl.getInstance().getEditorAreaState() != Constants.EDITOR_AREA_JOINED) {
+                return TabDisplayer.ORIENTATION_INVISIBLE;
+            }
+            return TabDisplayer.ORIENTATION_CENTER;
         }
-        return TabDisplayer.ORIENTATION_CENTER;
+
+        public boolean inMaximizedMode(Component comp) {
+            return TabbedAdapter.isInMaximizedMode(comp);
+        }
+
+        @Override
+        public boolean isTopComponentSlidingEnabled() {
+            return Switches.isTopComponentSlidingEnabled();
+        }
+
+        @Override
+        public boolean isTopComponentClosingEnabled() {
+            return Switches.isViewTopComponentClosingEnabled();
+        }
+
+        @Override
+        public boolean isTopComponentMaximizationEnabled() {
+            return Switches.isTopComponentMaximizationEnabled();
+        }
     }
-    
-    public boolean inMaximizedMode(Component comp) {
-        return TabbedAdapter.isInMaximizedMode(comp);
-    }
-    
     
     /*************** non public stuff **************************/
     

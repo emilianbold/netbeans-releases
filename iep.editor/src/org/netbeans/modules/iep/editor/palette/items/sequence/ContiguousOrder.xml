@@ -24,8 +24,8 @@
     
     <!--<icon16 urlvalue="images/contiguousOrderx16.png" />
     <icon32 urlvalue="images/contiguousOrderx32.png" />-->
-    <icon16 urlvalue="images/icons32x32/contiguousOrderx32.png" />
-    <icon32 urlvalue="images/icons32x32/contiguousOrderx32.png" />
+    <icon16 urlvalue="images/new/icons32x32/contiguousOrderx32.png" />
+    <icon32 urlvalue="images/new/icons32x32/contiguousOrderx32.png" />
     <description localizing-bundle="org.netbeans.modules.iep.editor.palette.items.sequence.Bundle"
                display-name-key="NAME_html-ContiguousOrder"
                tooltip-key="HINT_html-ContiguousOrder" />

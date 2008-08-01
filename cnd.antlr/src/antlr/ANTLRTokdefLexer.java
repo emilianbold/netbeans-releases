@@ -33,10 +33,10 @@ public ANTLRTokdefLexer(Reader in) {
 	this(new CharBuffer(in));
 }
 public ANTLRTokdefLexer(InputBuffer ib) {
-	this(new LexerSharedInputState(ib));
+	this(new LexerSharedInputState(), ib);
 }
-public ANTLRTokdefLexer(LexerSharedInputState state) {
-	super(state);
+public ANTLRTokdefLexer(LexerSharedInputState state, InputBuffer ib) {
+	super(state, ib);
 	caseSensitiveLiterals = true;
 	setCaseSensitive(true);
 	literals = new Hashtable();

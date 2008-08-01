@@ -243,14 +243,17 @@ public class EditorView extends ViewElement {
                     }
                 }
                 public void drop(DropTargetDropEvent dtde) {
-                    ExternalDropHandler handler = (ExternalDropHandler)Lookup.getDefault().lookup( ExternalDropHandler.class );
-                    if( handler.canDrop( dtde ) ) {
-                        //file is being dragged over
-                        dtde.acceptDrop( DnDConstants.ACTION_COPY );
-                        //let the handler to take care of it
-                        dtde.dropComplete( handler.handleDrop( dtde ) );
-                    } else {
-                        dtde.dropComplete( false );
+                    boolean dropRes = false;
+                    try {
+                        ExternalDropHandler handler = (ExternalDropHandler)Lookup.getDefault().lookup( ExternalDropHandler.class );
+                        if( handler.canDrop( dtde ) ) {
+                            //file is being dragged over
+                            dtde.acceptDrop( DnDConstants.ACTION_COPY );
+                            //let the handler to take care of it
+                            dropRes = handler.handleDrop( dtde );
+                        }
+                    } finally {
+                        dtde.dropComplete( dropRes );
                     }
                 }
                 public void dropActionChanged(DropTargetDragEvent dtde) {

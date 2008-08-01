@@ -24,9 +24,9 @@ import javax.swing.tree.TreePath;
 import org.netbeans.modules.bpel.mapper.model.BpelMapperModel;
 import org.netbeans.modules.bpel.mapper.predicates.editor.PredicateExprTreeModel;
 import org.netbeans.modules.bpel.mapper.tree.MapperSwingTreeModel;
-import org.netbeans.modules.bpel.mapper.tree.spi.MapperTcContext;
-import org.netbeans.modules.bpel.mapper.tree.spi.MapperTreeModel;
+import org.netbeans.modules.bpel.mapper.model.MapperTcContext;
 import org.netbeans.modules.soa.mappercore.model.MapperModel;
+import org.netbeans.modules.soa.ui.tree.SoaTreeModel;
 import org.openide.util.NbBundle;
 
 /**
@@ -53,7 +53,7 @@ public class AddPredicateConditionAction extends MapperAction<TreePath> {
         MapperModel mm = mMapperTcContext.getMapper().getModel();
         assert mm instanceof BpelMapperModel;
         MapperSwingTreeModel treeModel = ((BpelMapperModel)mm).getRightTreeModel();
-        MapperTreeModel sourceTreeModel = treeModel.getSourceModel();
+        SoaTreeModel sourceTreeModel = treeModel.getSourceModel();
         assert sourceTreeModel instanceof PredicateExprTreeModel;
         Object dataObject = ((PredicateExprTreeModel)sourceTreeModel).addPredicateExpr();
         //

@@ -60,7 +60,7 @@ public final class SAXGeneratorVersionPanel extends SAXGeneratorAbstractPanel im
     /** Creates new form SAXGeneratorVersionPanel */
     public SAXGeneratorVersionPanel() {
 //        try {
-//            this.putClientProperty("WizardPanel_helpURL", new URL("nbresloc:/org/netbeans/modules/xml/tools/generator/SAXGeneratorVersionPanel.html"));  //NOI18N        
+//            this.putClientProperty(WizardDescriptor.PROP_HELP_URL, new URL("nbresloc:/org/netbeans/modules/xml/tools/generator/SAXGeneratorVersionPanel.html"));  //NOI18N        
 //        } catch (MalformedURLException ex) {
 //        }            
     }

@@ -221,6 +221,7 @@ public final class TabDisplayer extends JComponent implements Accessible {
     private transient List<ActionListener> actionListenerList;
     
     private WinsysInfoForTabbed winsysInfo = null;
+    private WinsysInfoForTabbedContainer containerWinsysInfo = null;
     
     @Deprecated
     private LocationInformer locationInformer = null;
@@ -249,9 +250,16 @@ public final class TabDisplayer extends JComponent implements Accessible {
     }
         
     /**
+     * Depreacated, please use constructor with WinsysInfoForTabbedContainer param.
+     */
+    @Deprecated
+    public TabDisplayer(TabDataModel model, int type, WinsysInfoForTabbed winsysInfo) {
+        this( model, type, WinsysInfoForTabbedContainer.getDefault(winsysInfo) );
+    }
+    /**
      * Creates a new instance of TabDisplayer
      */
-    public TabDisplayer(TabDataModel model, int type, WinsysInfoForTabbed winsysInfo) {
+    public TabDisplayer(TabDataModel model, int type, WinsysInfoForTabbedContainer containerWinsysInfo) {
         switch (type) {
             case TYPE_VIEW:
             case TYPE_EDITOR:
@@ -263,7 +271,9 @@ public final class TabDisplayer extends JComponent implements Accessible {
         }
         this.model = model;
         this.type = type;
-        this.winsysInfo = winsysInfo;
+        this.winsysInfo = containerWinsysInfo;
+        this.containerWinsysInfo = containerWinsysInfo;
+        showClose &= containerWinsysInfo.isTopComponentClosingEnabled();
         putClientProperty (PROP_ORIENTATION, ORIENTATION_NORTH);
         initialized = true;
         updateUI();
@@ -377,6 +387,10 @@ public final class TabDisplayer extends JComponent implements Accessible {
 
     public final Dimension getPreferredSize() {
         return getUI().getPreferredSize(this);
+    }
+    
+    public final Font getFont() {
+        return getUI().getTxtFont();
     }
 
     public final Dimension getMinimumSize() {
@@ -548,8 +562,13 @@ public final class TabDisplayer extends JComponent implements Accessible {
         return getUI().tabForCoordinate(p);
     }
     
+    @Deprecated
     public WinsysInfoForTabbed getWinsysInfo() {
         return winsysInfo;
+    }
+    
+    public WinsysInfoForTabbedContainer getContainerWinsysInfo() {
+        return containerWinsysInfo;
     }
     
     @Deprecated

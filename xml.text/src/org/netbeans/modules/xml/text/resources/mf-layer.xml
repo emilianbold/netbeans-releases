@@ -104,7 +104,13 @@ made subject to such option by the copyright holder.
                 <folder name="CompletionProviders">
                     <file name="org-netbeans-modules-xml-text-completion-XMLCompletionProvider.instance"/>
                 </folder>
-                
+
+                <folder name="BracesMatchers">
+                    <file name="org-netbeans-modules-xml-text-bracematch-XMLBraceMatcherFactory.instance">
+                        <attr name="position" intvalue="50"/>
+                    </file>
+                </folder>
+
                 <folder name="FontsColors">
                     <folder name="NetBeans">
                         <folder name="Defaults">
@@ -161,7 +167,11 @@ made subject to such option by the copyright holder.
                     </folder>
                 </folder>
                 
-                <file name="Settings.settings" url="XMLEditor-options.xml"/>
+                <folder name="Preferences">
+                    <folder name="Defaults">
+                        <file name="org-netbeans-modules-xml-text-xmlPreferences.xml" url="XMLEditor-preferences.xml"/>
+                    </folder>
+                </folder>
                 
                 <file name="EditorKit.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.xml.text.syntax.XMLKit"/>
@@ -291,7 +301,12 @@ made subject to such option by the copyright holder.
                     </folder>
                 </folder>
                 
-                <file name="Settings.settings" url="DTDEditor-options.xml"/>
+                <folder name="Preferences">
+                    <folder name="Defaults">
+                        <file name="org-netbeans-modules-xml-text-dtdPreferences.xml" url="DTDEditor-preferences.xml"/>
+                    </folder>
+                </folder>
+                
                 <file name="EditorKit.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.xml.text.syntax.DTDKit"/>
                     <attr name="instanceOf" stringvalue="javax.swing.text.EditorKit,org.netbeans.modules.xml.text.syntax.DTDKit"/>

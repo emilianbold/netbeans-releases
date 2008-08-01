@@ -43,27 +43,25 @@ package org.netbeans.modules.php.dbgp.breakpoints;
 import java.lang.reflect.InvocationTargetException;
 
 import javax.swing.JEditorPane;
-import javax.swing.SwingUtilities;
 import javax.swing.text.Caret;
 import javax.swing.text.StyledDocument;
 
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.modules.php.dbgp.DebugSession;
-import org.netbeans.modules.php.dbgp.api.SessionId;
+import org.netbeans.modules.php.dbgp.SessionId;
 import org.netbeans.modules.php.dbgp.breakpoints.FunctionBreakpoint.Type;
 import org.netbeans.modules.php.dbgp.packets.BrkpntCommandBuilder;
 import org.netbeans.modules.php.dbgp.packets.BrkpntRemoveCommand;
 import org.netbeans.modules.php.dbgp.packets.BrkpntSetCommand;
 import org.netbeans.modules.php.dbgp.packets.BrkpntSetCommand.State;
+import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
-import org.openide.nodes.Node;
 import org.openide.text.Line;
 import org.openide.text.NbDocument;
-import org.openide.windows.TopComponent;
 
 
 /**
@@ -72,31 +70,21 @@ import org.openide.windows.TopComponent;
  */
 public class Utils {
     
-    private final static String  MIME_TYPE = "text/x-php5"; //NOI18N
+    final static String  MIME_TYPE = "text/x-php5"; //NOI18N
+    public static LineFactory lineFactory = new LineFactory();
     
     private Utils(){
         // avoid inst-ion
     }
     
     public static Line getCurrentLine() {
-        if ( !SwingUtilities.isEventDispatchThread() ){
-            return getCurrentLineInAwt();
-        }
-        
-        Node node = getCurrentNode();
-        FileObject fileObject = getCurrentFileObject( node );
+        FileObject fileObject = EditorContextDispatcher.getDefault().getCurrentFile();
         
         if (!isPhpFile(fileObject)) {
             return null;
         }
         
-        LineCookie lineCookie = node.getCookie(LineCookie.class);
-        
-        if (lineCookie == null) {
-            return null;
-        }
-        
-        return getLine(lineCookie, node.getCookie(EditorCookie.class));
+        return EditorContextDispatcher.getDefault().getCurrentLine();
     }
     
     public static BrkpntSetCommand getCommand( DebugSession session, SessionId id,
@@ -168,97 +156,6 @@ public class Utils {
         log( exception.getCause() );
     }
     
-    private static Line getCurrentLineInAwt() {
-        final Line[] lines = new Line[1];
-        try {
-            SwingUtilities.invokeAndWait( new Runnable(){
-                    public void run() {
-                        Line line = getCurrentLine();
-                        lines[ 0 ] = line;
-                    }
-                }
-            );
-        }
-        catch (InterruptedException e) {
-            // awt thread should not be interrupted
-            assert false;
-        }
-        catch (InvocationTargetException e) {
-            log( e );
-        }
-        return lines[0];
-    }
-
-    private static Line getLine( LineCookie lineCookie, 
-            EditorCookie editorCookie ) 
-    {
-        if (editorCookie == null) {
-            return null;
-        }
-        
-        JEditorPane editorPane = getEditorPane(editorCookie);
-        
-        if (editorPane == null) {
-            return null;
-        }
-        
-        StyledDocument document = editorCookie.getDocument();
-        if (document == null) {
-            return null;
-        }
-        
-        Caret caret = editorPane.getCaret();
-        
-        if (caret == null) {
-            return null;
-        }
-        
-        int lineNumber = NbDocument.findLineNumber(document, caret.getDot());
-        
-        try {
-            Line.Set lineSet = lineCookie.getLineSet();
-            assert lineSet != null ;
-        
-            return lineSet.getCurrent(lineNumber);
-        } catch (IndexOutOfBoundsException ex) {
-            return null;
-        }
-    }
-
-    public static FileObject getCurrentFileObject( Node node ) {
-        if ( node == null ) {
-            return null;
-        }
-        FileObject fileObject = node.getLookup().lookup(FileObject.class);
-        
-        if (fileObject == null) {
-            DataObject dobj = node.getLookup().lookup(DataObject.class);
-            
-            if (dobj != null) {
-                fileObject = dobj.getPrimaryFile();
-            }
-        }
-        return fileObject;
-    }
-    
-    public static Node getCurrentNode() {
-        Node[] nodes = TopComponent.getRegistry().getCurrentNodes();
-        if (nodes == null || nodes.length != 1) {
-            return null;
-        }
-        return nodes [0];
-    }
-
-
-    public static JEditorPane getEditorPane( final EditorCookie editorCookie ) {
-        assert SwingUtilities.isEventDispatchThread();
-        JEditorPane[] panes = editorCookie.getOpenedPanes();
-        if (panes == null || panes.length == 0) {
-            return null;
-        }
-        return panes[0];
-    }
-
     public static boolean isPhpFile(FileObject fileObject) {
         if (fileObject == null) {
             return false;
@@ -278,21 +175,25 @@ public class Utils {
      * @return
      */
     public static Line getLine( int line, String remoteFileName , SessionId id) {
-        DataObject dataObject = id.getDataObjectByRemote( remoteFileName );
-        if ( dataObject == null ){
-            return null;
-        }
-
-        LineCookie lineCookie = (LineCookie) dataObject
-                .getCookie(LineCookie.class);
-        if ( lineCookie == null ){
-            return null;
-        }
-        Line.Set set = lineCookie.getLineSet();
-        if ( set == null ){
-            return null;
-        }
-        return set.getOriginal(line - 1);
+        return lineFactory.getLine(line, remoteFileName, id);
     }
+    
+    public static class LineFactory {
+        public Line getLine(int line, String remoteFileName, SessionId id) {
+            DataObject dataObject = id.getDataObjectByRemote(remoteFileName);
+            if (dataObject == null) {
+                return null;
+            }
 
+            LineCookie lineCookie = (LineCookie) dataObject.getCookie(LineCookie.class);
+            if (lineCookie == null) {
+                return null;
+            }
+            Line.Set set = lineCookie.getLineSet();
+            if (set == null) {
+                return null;
+            }
+            return set.getOriginal(line - 1);
+        }        
+    }
 }

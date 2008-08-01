@@ -42,18 +42,18 @@
 package org.netbeans.modules.websvc.api.jaxws.wsdlmodel;
 
 import com.sun.tools.ws.processor.model.Operation;
-import com.sun.tools.ws.processor.model.java.JavaParameter;
 import java.util.*;
+import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.java.WsdlJavaMethod;
+import org.netbeans.modules.websvc.jaxwsmodelapi.WSOperation;
+import org.netbeans.modules.websvc.jaxwsmodelapi.WSParameter;
+import org.netbeans.modules.websvc.jaxwsmodelapi.java.JavaMethod;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author mkuchtiak
  */
-public class WsdlOperation {
-    public static final int TYPE_NORMAL=0;
-    public static final int TYPE_ASYNC_POLLING=1;
-    public static final int TYPE_ASYNC_CALLBACK=2;
+public class WsdlOperation implements WSOperation {
     
     private String operationName;
     private Operation operation;
@@ -62,8 +62,15 @@ public class WsdlOperation {
         this.operation=operation;
     }
     
-    public Object /*com.sun.tools.ws.processor.model.Operation*/ getInternalJAXWSOperation() {
+    public Object getInternalJAXWSOperation() {
         return operation;
+    }
+    
+    public JavaMethod getJavaMethod() {
+        Operation op = (Operation)getInternalJAXWSOperation();
+        com.sun.tools.ws.processor.model.java.JavaMethod m = (op != null) ? op.getJavaMethod() : null;
+        WsdlJavaMethod method = new WsdlJavaMethod(m);
+        return method;
     }
     
     public String getName() {
@@ -95,11 +102,11 @@ public class WsdlOperation {
         return operation.getJavaMethod().getReturnType().getName();
     }
     
-    public List<WsdlParameter> getParameters() {
-        List<WsdlParameter> wsdlParameters = new ArrayList<WsdlParameter> ();
+    public List<WSParameter> getParameters() {
+        List<WSParameter> wsdlParameters = new ArrayList<WSParameter> ();
         if (operation==null) return wsdlParameters;
-        List<JavaParameter> parameterList = operation.getJavaMethod().getParametersList();
-        for (JavaParameter param: parameterList)
+        List<com.sun.tools.ws.processor.model.java.JavaParameter> parameterList = operation.getJavaMethod().getParametersList();
+        for (com.sun.tools.ws.processor.model.java.JavaParameter param: parameterList)
             wsdlParameters.add(new WsdlParameter(param));
         return wsdlParameters;
     }

@@ -338,13 +338,13 @@ public class WeakListenersTest extends NbTestCase {
         
         
         PropertyChangeListener pcl = WeakListeners.propertyChange(l, button);
-        assertSize ("Not too big (plus 32 from ReferenceQueue)", java.util.Collections.singleton (pcl), 112, ignore);
+        assertSize ("Not too big (plus 32 from ReferenceQueue)", java.util.Collections.singleton (pcl), 120, ignore);
         
         Object ocl = WeakListeners.create (javax.naming.event.ObjectChangeListener.class, javax.naming.event.NamingListener.class, l, c);
-        assertSize ("A bit bigger (plus 32 from ReferenceQueue)", java.util.Collections.singleton (ocl), 128, ignore);
+        assertSize ("A bit bigger (plus 32 from ReferenceQueue)", java.util.Collections.singleton (ocl), 136, ignore);
         
         Object nl = WeakListeners.create (javax.naming.event.NamingListener.class, l, c);
-        assertSize ("The same (plus 32 from ReferenceQueue)", java.util.Collections.singleton (nl), 128, ignore);
+        assertSize ("The same (plus 32 from ReferenceQueue)", java.util.Collections.singleton (nl), 136, ignore);
         
     }
 

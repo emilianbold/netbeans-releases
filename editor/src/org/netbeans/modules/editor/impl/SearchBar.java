@@ -99,6 +99,7 @@ import javax.swing.event.PopupMenuListener;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Keymap;
 import org.netbeans.api.editor.EditorRegistry;
+import org.netbeans.modules.editor.lib2.search.EditorFindSupport;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbPreferences;
 import org.openide.util.Utilities;
@@ -170,6 +171,8 @@ public final class SearchBar extends JPanel {
     private Map<Object, Object> findProps;
     private JPopupMenu expandPopup;
     private JPanel padding;
+    private boolean navigateOnFocusLost = false;
+    
     /**
      * contains everything that is in Search bar and is possible to move to expand popup
      */
@@ -343,6 +346,7 @@ public final class SearchBar extends JPanel {
 
         incrementalSearchTextField.addFocusListener(new FocusAdapter() {
             public @Override void focusLost(FocusEvent e) {
+                navigateOnFocusLost = false;
                 looseFocus();
             }
         });
@@ -463,16 +467,16 @@ public final class SearchBar extends JPanel {
 
         // configure find properties
         findProps = new HashMap<Object, Object>();
-        findProps.put(SettingsNames.FIND_HIGHLIGHT_SEARCH, true);
-        findProps.put(SettingsNames.FIND_WHOLE_WORDS, false);
-        findProps.put(SettingsNames.FIND_WRAP_SEARCH, true);
-        findProps.put(SettingsNames.FIND_BLOCK_SEARCH, false);
-        findProps.put(SettingsNames.FIND_BLOCK_SEARCH_START, null);
-        findProps.put(SettingsNames.FIND_BLOCK_SEARCH_END, null);
+        findProps.put(EditorFindSupport.FIND_HIGHLIGHT_SEARCH, true);
+        findProps.put(EditorFindSupport.FIND_WHOLE_WORDS, false);
+        findProps.put(EditorFindSupport.FIND_WRAP_SEARCH, true);
+        findProps.put(EditorFindSupport.FIND_BLOCK_SEARCH, false);
+        findProps.put(EditorFindSupport.FIND_BLOCK_SEARCH_START, null);
+        findProps.put(EditorFindSupport.FIND_BLOCK_SEARCH_END, null);
         // XXX take from preferences
-        findProps.put(SettingsNames.FIND_MATCH_CASE, false);
-        findProps.put(SettingsNames.FIND_REG_EXP, false);
-        findProps.put(SettingsNames.FIND_HIGHLIGHT_SEARCH, true);
+        findProps.put(EditorFindSupport.FIND_MATCH_CASE, false);
+        findProps.put(EditorFindSupport.FIND_REG_EXP, false);
+        findProps.put(EditorFindSupport.FIND_HIGHLIGHT_SEARCH, true);
         
         // padding at the end of the toolbar
         JPanel spacer = new JPanel();
@@ -645,6 +649,12 @@ public final class SearchBar extends JPanel {
             isPopupGoingToShow = false;
             return;
         }
+        
+        if (navigateOnFocusLost) {
+            findNext();
+        }
+        
+        org.netbeans.editor.Utilities.setStatusText(component, null);
         FindSupport.getFindSupport().setBlockSearchHighlight(0, 0);
         FindSupport.getFindSupport().incSearchReset();
         setVisible(false);
@@ -665,14 +675,14 @@ public final class SearchBar extends JPanel {
         // configure find properties
         FindSupport findSupport = FindSupport.getFindSupport();
 
-        findProps.put(SettingsNames.FIND_WHAT, incrementalSearchText);
-        findProps.put(SettingsNames.FIND_MATCH_CASE, matchCaseCheckBox.isSelected());
-        findProps.put(SettingsNames.FIND_WHOLE_WORDS, wholeWordsCheckBox.isSelected());
-        findProps.put(SettingsNames.FIND_REG_EXP, regexpCheckBox.isSelected());
-        findProps.put(SettingsNames.FIND_HIGHLIGHT_SEARCH, !empty && highlightCheckBox.isSelected());
+        findProps.put(EditorFindSupport.FIND_WHAT, incrementalSearchText);
+        findProps.put(EditorFindSupport.FIND_MATCH_CASE, matchCaseCheckBox.isSelected());
+        findProps.put(EditorFindSupport.FIND_WHOLE_WORDS, wholeWordsCheckBox.isSelected());
+        findProps.put(EditorFindSupport.FIND_REG_EXP, regexpCheckBox.isSelected());
+        findProps.put(EditorFindSupport.FIND_HIGHLIGHT_SEARCH, !empty && highlightCheckBox.isSelected());
         
-        findProps.put(SettingsNames.FIND_BACKWARD_SEARCH, false);        
-        findProps.put(SettingsNames.FIND_INC_SEARCH, true);
+        findProps.put(EditorFindSupport.FIND_BACKWARD_SEARCH, false);        
+        findProps.put(EditorFindSupport.FIND_INC_SEARCH, true);
         
         findSupport.putFindProperties(findProps);
         
@@ -681,30 +691,40 @@ public final class SearchBar extends JPanel {
 
         if (regexpCheckBox.isSelected()) {
             Pattern pattern;
+            String patternErrorMsg = null;
             try {
                 pattern = Pattern.compile(incrementalSearchText);
             } catch (PatternSyntaxException e) {
                 pattern = null;
+                patternErrorMsg = e.getDescription();
             }
             if (pattern != null) {
                 // valid regexp
                 incrementalSearchTextField.setBackground(null);
                 incrementalSearchTextField.setForeground(Color.BLACK);
+                org.netbeans.editor.Utilities.setStatusText(component, null);
             } else {
                 // invalid regexp
                 incrementalSearchTextField.setBackground(null);
                 incrementalSearchTextField.setForeground(INVALID_REGEXP);
+                org.netbeans.editor.Utilities.setStatusBoldText(component, NbBundle.getMessage(
+                    SearchBar.class, "incremental-search-invalid-regexp", patternErrorMsg)); //NOI18N
             }
         } else {
             if (findSupport.incSearch(findProps, caretPosition) || empty) {
                 // text found - reset incremental search text field's foreground
                 incrementalSearchTextField.setBackground(null);
                 incrementalSearchTextField.setForeground(Color.BLACK);
+                navigateOnFocusLost = !empty;
+                org.netbeans.editor.Utilities.setStatusText(component, null);
             } else {
                 // text not found - indicate error in incremental search
                 // text field with red foreground
                 incrementalSearchTextField.setBackground(null);
                 incrementalSearchTextField.setForeground(NOT_FOUND);
+                navigateOnFocusLost = false;
+                org.netbeans.editor.Utilities.setStatusText(component, NbBundle.getMessage(
+                    SearchBar.class, "incremental-search-not-found", incrementalSearchText)); //NOI18N
                 Toolkit.getDefaultToolkit().beep();
             }
         }
@@ -737,13 +757,13 @@ public final class SearchBar extends JPanel {
         // configure find properties
         FindSupport findSupport = FindSupport.getFindSupport();
 
-        findProps.put(SettingsNames.FIND_WHAT, incrementalSearchText);
-        findProps.put(SettingsNames.FIND_MATCH_CASE, matchCaseCheckBox.isSelected());
-        findProps.put(SettingsNames.FIND_WHOLE_WORDS, wholeWordsCheckBox.isSelected());
-        findProps.put(SettingsNames.FIND_REG_EXP, regexpCheckBox.isSelected());
-        findProps.put(SettingsNames.FIND_BACKWARD_SEARCH, Boolean.FALSE);
-        findProps.put(SettingsNames.FIND_INC_SEARCH, Boolean.TRUE);
-        findProps.put(SettingsNames.FIND_HIGHLIGHT_SEARCH, !empty && highlightCheckBox.isSelected());
+        findProps.put(EditorFindSupport.FIND_WHAT, incrementalSearchText);
+        findProps.put(EditorFindSupport.FIND_MATCH_CASE, matchCaseCheckBox.isSelected());
+        findProps.put(EditorFindSupport.FIND_WHOLE_WORDS, wholeWordsCheckBox.isSelected());
+        findProps.put(EditorFindSupport.FIND_REG_EXP, regexpCheckBox.isSelected());
+        findProps.put(EditorFindSupport.FIND_BACKWARD_SEARCH, Boolean.FALSE);
+        findProps.put(EditorFindSupport.FIND_INC_SEARCH, Boolean.TRUE);
+        findProps.put(EditorFindSupport.FIND_HIGHLIGHT_SEARCH, !empty && highlightCheckBox.isSelected());
 
         findSupport.putFindProperties(findProps);
         
@@ -757,6 +777,7 @@ public final class SearchBar extends JPanel {
             incrementalSearchTextField.setForeground(NOT_FOUND);
             Toolkit.getDefaultToolkit().beep();
         }
+        navigateOnFocusLost = false;
     }
 
     private void processButton(AbstractButton button) {
@@ -805,7 +826,7 @@ public final class SearchBar extends JPanel {
                     // findWhat.getEditor().setItem(selText);
                     // changeFindWhat(true);
                 } else {
-                    String findWhat = (String) FindSupport.getFindSupport().getFindProperty(SettingsNames.FIND_WHAT);
+                    String findWhat = (String) FindSupport.getFindSupport().getFindProperty(EditorFindSupport.FIND_WHAT);
                     if (findWhat != null && findWhat.length() > 0) {
                         incrementalSearchTextField.setText(findWhat);
                     }
@@ -816,18 +837,18 @@ public final class SearchBar extends JPanel {
             int blockSearchEndPos = blockSearchVisible ? endSelection : 0;
 
             try{                
-                findProps.put(SettingsNames.FIND_BLOCK_SEARCH, blockSearchVisible);
-                findProps.put(SettingsNames.FIND_BLOCK_SEARCH_START, blockSearchStartPos);
+                findProps.put(EditorFindSupport.FIND_BLOCK_SEARCH, blockSearchVisible);
+                findProps.put(EditorFindSupport.FIND_BLOCK_SEARCH_START, blockSearchStartPos);
                 int be = getBlockEndOffset();
                 if (be < 0){
-                    findProps.put(SettingsNames.FIND_BLOCK_SEARCH_END, doc.createPosition(blockSearchEndPos));
+                    findProps.put(EditorFindSupport.FIND_BLOCK_SEARCH_END, doc.createPosition(blockSearchEndPos));
                 }else{
                     blockSearchEndPos = be;
                 }
                 FindSupport.getFindSupport().setBlockSearchHighlight(blockSearchStartPos, blockSearchEndPos);
             } catch(BadLocationException ble){
-                findProps.put(SettingsNames.FIND_BLOCK_SEARCH, Boolean.FALSE);
-                findProps.put(SettingsNames.FIND_BLOCK_SEARCH_START, null);
+                findProps.put(EditorFindSupport.FIND_BLOCK_SEARCH, Boolean.FALSE);
+                findProps.put(EditorFindSupport.FIND_BLOCK_SEARCH_START, null);
             }
             
             FindSupport.getFindSupport().putFindProperties(findProps);
@@ -835,7 +856,7 @@ public final class SearchBar extends JPanel {
     }
     
     private int getBlockEndOffset(){
-        Position pos = (Position) FindSupport.getFindSupport().getFindProperties().get(SettingsNames.FIND_BLOCK_SEARCH_END);
+        Position pos = (Position) FindSupport.getFindSupport().getFindProperties().get(EditorFindSupport.FIND_BLOCK_SEARCH_END);
         return (pos != null) ? pos.getOffset() : -1;
     }
     

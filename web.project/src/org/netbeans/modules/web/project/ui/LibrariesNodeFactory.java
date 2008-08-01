@@ -160,8 +160,7 @@ public final class LibrariesNodeFactory implements NodeFactory {
                             new SourceNodeFactory.PreselectPropertiesAction(project, "Libraries", CustomizerLibraries.COMPILE), // NOI18N
                         },
                         WebProjectProperties.TAG_WEB_MODULE_LIBRARIES,
-                        cs,
-                        new String[]{ProjectProperties.JAVAC_CLASSPATH, WebProjectProperties.WAR_CONTENT_ADDITIONAL}
+                        cs
                     );
             } else if (key == TEST_LIBRARIES) {
                 return  
@@ -188,8 +187,7 @@ public final class LibrariesNodeFactory implements NodeFactory {
                             new SourceNodeFactory.PreselectPropertiesAction(project, "Libraries", CustomizerLibraries.COMPILE_TESTS), // NOI18N
                         },
                         null,
-                        cs,
-                        null
+                        cs
                     );
             }
             assert false: "No node for key: " + key;

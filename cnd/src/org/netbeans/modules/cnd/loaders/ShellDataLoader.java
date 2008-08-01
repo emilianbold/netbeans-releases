@@ -57,21 +57,18 @@ import org.openide.loaders.DataObjectExistsException;
 import org.openide.util.NbBundle;
 
 import org.netbeans.modules.cnd.MIMENames;
+import org.netbeans.modules.cnd.editor.filecreation.ExtensionsSettings;
 import org.openide.util.SharedClassObject;
 
 /**
  *  Recognizes single files in the Repository as being of a certain type.
  */
-public class ShellDataLoader extends CndAbstractDataLoader {
+public class ShellDataLoader extends CndAbstractDataLoaderExt {
 
     private static ShellDataLoader instance = null;
 
     /** Serial version number */
     static final long serialVersionUID = -7173746465817543299L;
-
-    /** The suffix list for shell files */
-    private static final String[] shellExtensions =
-	    {"bash", "csh", "ksh", "sh", "zsh", "bat", "cmd"}; // NOI18N
 
 
     /**
@@ -80,7 +77,6 @@ public class ShellDataLoader extends CndAbstractDataLoader {
     public ShellDataLoader() {
 	super("org.netbeans.modules.cnd.loaders.ShellDataObject"); // NOI18N
 	instance = this;
-	createExtentions(shellExtensions);
     }
     
     public static ShellDataLoader getInstance() {
@@ -192,5 +188,13 @@ public class ShellDataLoader extends CndAbstractDataLoader {
                 fo.setAttribute(DataObject.PROP_TEMPLATE, null);
             }
         }
+    }
+
+    public String getDisplayNameForExtensionList() {
+	throw new UnsupportedOperationException();
+    }
+
+    public String getSettingsName() {
+        return ExtensionsSettings.SHELL;
     }
 }

@@ -63,17 +63,16 @@ public class ZoomInAction extends GraphAction {
 
     public ZoomInAction() {
         //action name
-        String nbBundle = mLoc.t("BUND321: Zoom In...");
+        String nbBundle = mLoc.t("BUND321: Zoom In");
         this.putValue(Action.NAME, nbBundle.substring(15));
 
         //action icon
         this.putValue(Action.SMALL_ICON, new ImageIcon(zoomInImgUrl));
 
         //action tooltip
-        String nbBundle1 = mLoc.t("BUND322: Zoom In (Shift-Q)");
+        String nbBundle1 = mLoc.t("BUND321: Zoom In");
         this.putValue(Action.SHORT_DESCRIPTION, nbBundle1.substring(15));
         // Acceleratot Shift-Q
-        this.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke('Q', InputEvent.SHIFT_DOWN_MASK));
     }
 
     public void actionPerformed(ActionEvent e) {

@@ -48,10 +48,9 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.editor.BaseDocument;
-import org.openide.cookies.EditorCookie;
+import org.netbeans.modules.gsf.api.DataLoadersBridge;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
 import org.openide.text.PositionRef;
 
 /**
@@ -101,14 +100,11 @@ public final class ModificationResult {
     }
     
     private void commit(final FileObject fo, final List<Difference> differences, Writer out) throws IOException {
-        DataObject dObj = DataObject.find(fo);
-        EditorCookie ec = dObj != null ? dObj.getCookie(org.openide.cookies.EditorCookie.class) : null;
         // if editor cookie was found and user does not provided his own
         // writer where he wants to see changes, commit the changes to 
         // found document.
-        if (ec != null && out == null) {
-            Document doc = ec.getDocument();
-            if (doc != null) {
+        Document doc = DataLoadersBridge.getDefault().getDocument(fo);
+        if (doc != null && out == null) {
                 if (doc instanceof BaseDocument)
                     ((BaseDocument)doc).atomicLock();
                 try {
@@ -139,7 +135,6 @@ public final class ModificationResult {
                         ((BaseDocument)doc).atomicUnlock();
                 }
                 return;
-            }
         }
         InputStream ins = null;
         ByteArrayOutputStream baos = null;           

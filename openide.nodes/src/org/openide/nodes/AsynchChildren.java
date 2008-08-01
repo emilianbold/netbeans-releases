@@ -113,12 +113,17 @@ final class AsynchChildren <T> extends Children.Keys <Object> implements
             task.schedule (0);
         }
     }
-    
-    public @Override Node[] getNodes(boolean optimalResult) {
+
+    @Override
+    public Node[] getNodes(boolean optimalResult) {
+        Node[] result = super.getNodes();
         if (optimalResult) {
+            // The getNodes() call above called addNotify() and started the task
+            // for the first time if needed.
             task.waitFinished();
+            result = super.getNodes();
         }
-        return super.getNodes();
+        return result;
     }
     
     @SuppressWarnings("unchecked") // Union2<T,Node> undesirable since refresh could not use raw keys list

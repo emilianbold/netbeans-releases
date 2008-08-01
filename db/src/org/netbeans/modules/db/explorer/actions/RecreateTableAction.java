@@ -44,11 +44,12 @@ package org.netbeans.modules.db.explorer.actions;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.ObjectInputStream;
-import java.text.MessageFormat;
+import java.util.concurrent.FutureTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.swing.JFileChooser;
+import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.modules.db.explorer.DbUtilities;
 
 import org.openide.DialogDisplayer;
@@ -65,6 +66,7 @@ import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
 import org.netbeans.modules.db.explorer.infos.TableListNodeInfo;
 import org.netbeans.modules.db.explorer.dlg.LabeledTextFieldDialog;
 import org.netbeans.modules.db.explorer.dataview.DataViewWindow;
+import org.openide.util.Mutex;
 
 public class RecreateTableAction extends DatabaseAction {
     static final long serialVersionUID =6992569917995229492L;
@@ -125,30 +127,10 @@ public class RecreateTableAction extends DatabaseAction {
                     boolean noResult = true;
                     while(noResult) {
                         if (dlg.run()) { // OK option
-                            try {
-                                if(!dlg.isEditable()) { // from file
-                                    newtab = dlg.getStringValue();
-                                    cmd.setObjectName(newtab);
-                                    try {
-                                        cmd.execute();
-                                        nfo.addTable(newtab);
-                                    } catch (org.netbeans.lib.ddl.DDLException exc) {
-                                        Logger.getLogger("global").log(Level.INFO, null, exc);
-                                        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(exc.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
-                                        continue;
-                                    } catch (org.netbeans.api.db.explorer.DatabaseException exc) {
-                                        Logger.getLogger("global").log(Level.INFO, null, exc);
-                                        continue;
-                                    }
-                                    noResult = false;
-                                } else { // from editable text area
-                                    DataViewWindow win = new DataViewWindow(info, dlg.getEditedCommand());
-                                    if(win.executeCommand())
-                                        noResult = false;
-                                }
-                            } catch (Exception exc) {
-                                Logger.getLogger("global").log(Level.INFO, null, exc);
-                                DbUtilities.reportError(bundle().getString("ERR_UnableToRecreateTable"), exc.getMessage()); //NOI18N
+                            if(!dlg.isEditable()) {
+                                noResult = runCommand(nfo, dlg, cmd);
+                            } else { // from editable text area
+                                noResult = runWindow(info, dlg);
                             }
                         } else { // CANCEL option
                             noResult = false;
@@ -160,5 +142,83 @@ public class RecreateTableAction extends DatabaseAction {
                 }
             }
         }, 0);
+    }
+    
+    private boolean runCommand(final TableListNodeInfo info, 
+            final LabeledTextFieldDialog dlg,
+            final AbstractCommand cmd) {
+        boolean noResult = true;
+        String newtab = dlg.getStringValue();
+        cmd.setObjectName(newtab);
+        try {
+            cmd.execute();
+            info.addTable(newtab);
+            noResult = false;
+        } catch (org.netbeans.lib.ddl.DDLException exc) {
+            Logger.getLogger("global").log(Level.INFO, null, exc);
+            DialogDisplayer.getDefault().notify(
+                    new NotifyDescriptor.Message(exc.getMessage(), 
+                    NotifyDescriptor.ERROR_MESSAGE));
+            noResult = true;
+        } catch (org.netbeans.api.db.explorer.DatabaseException exc) {
+            Logger.getLogger("global").log(Level.INFO, null, exc);
+            noResult = true;
+        } catch (Exception exc) {
+            Logger.getLogger("global").log(Level.INFO, null, exc);
+            DbUtilities.reportError(bundle().
+                    getString("ERR_UnableToRecreateTable"), 
+                    exc.getMessage()); //NOI18N
+            noResult = false;
+        }
+        return noResult;
+    }
+    
+    private boolean runWindow(DatabaseNodeInfo info, LabeledTextFieldDialog dlg) 
+        throws Exception {
+        WindowTask wintask = new WindowTask(info, dlg);
+        
+        // We have to create the window on the AWT thread...
+        Mutex.EVENT.postReadRequest(wintask);
+        
+        // I thought Thread.join() was supposed to wait for the thread to
+        // complete, but this isn't working, perhaps because the run method
+        // has not yet been called?
+        while ( ! wintask.completed ) {
+            Thread.sleep(10);
+        }
+
+        if ( wintask.exc != null ) {
+            throw new DatabaseException(wintask.exc);
+        }
+        
+        if ( wintask.win.executeCommand() ) {
+            return false;
+        } else {
+            return true;   
+        }
+    }
+    
+    private static class WindowTask implements Runnable {
+        public DataViewWindow win;
+        public Exception exc = null;
+        public boolean completed = false;
+        private final DatabaseNodeInfo info;
+        private final LabeledTextFieldDialog dlg;
+        
+        public WindowTask(DatabaseNodeInfo info, LabeledTextFieldDialog dlg) {
+            super();
+            this.info = info;
+            this.dlg = dlg;
+        }
+        
+        public void run() {
+            try {
+                win = new DataViewWindow(info, dlg.getEditedCommand());
+            } catch ( Exception e ) {
+                this.exc = e;                
+            }
+            
+            completed = true;
+        }
     }
 }

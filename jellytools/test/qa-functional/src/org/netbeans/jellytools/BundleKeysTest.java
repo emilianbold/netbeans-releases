@@ -44,6 +44,7 @@ import java.util.Enumeration;
 import java.util.MissingResourceException;
 import java.util.Properties;
 import java.util.ResourceBundle;
+import java.util.Set;
 import java.util.StringTokenizer;
 import junit.framework.*;
 import org.netbeans.junit.*;
@@ -63,13 +64,25 @@ public class BundleKeysTest extends NbTestCase {
         junit.textui.TestRunner.run(suite());
     }
     
+    private static Properties props;
     /** Method used for explicit testsuite definition
      * @return  created suite
      */
     public static Test suite() {
-        TestSuite suite = new NbTestSuite();
+        NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(BundleKeysTest.class);
         try {
-            Properties props=new Properties();
+            props=new Properties();
+            props.load(BundleKeysTest.class.getClassLoader().getResourceAsStream("org/netbeans/jellytools/BundleKeysTest.properties"));
+            Set bundles=props.keySet();
+            for(Object bundle : bundles) {
+                conf = conf.addTest((String) bundle);
+            }
+        } catch (Exception e) {}
+        return NbModuleSuite.create(conf.clusters(".*").enableModules(".*"));
+        /*
+        NbTestSuite suite = new NbTestSuite();
+        try {
+            props=new Properties();
             props.load(BundleKeysTest.class.getClassLoader().getResourceAsStream("org/netbeans/jellytools/BundleKeysTest.properties"));
             Enumeration bundles=props.keys();
             String bundle;
@@ -79,8 +92,12 @@ public class BundleKeysTest extends NbTestCase {
             }
         } catch (Exception e) {}
         return suite;
+         */
     }
     
+    public BundleKeysTest(String bundleName) {
+        this(bundleName, null);
+    }
     /** Constructor required by JUnit.
      * @param testName method name to be used as testcase
      */
@@ -90,6 +107,13 @@ public class BundleKeysTest extends NbTestCase {
     }
     
     protected void runTest() throws Throwable {
+        if(keys == null) {
+            if(props == null) {
+                props=new Properties();
+                props.load(BundleKeysTest.class.getClassLoader().getResourceAsStream("org/netbeans/jellytools/BundleKeysTest.properties"));
+            }
+            keys = props.getProperty(getName());
+        }
         ResourceBundle bundle=ResourceBundle.getBundle(getName());
         StringTokenizer tok=new StringTokenizer(keys, ",");
         String key="";

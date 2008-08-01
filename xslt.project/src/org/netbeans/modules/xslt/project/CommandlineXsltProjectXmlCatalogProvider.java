@@ -66,10 +66,14 @@ public class CommandlineXsltProjectXmlCatalogProvider {
         mCatalogXMLPath =(catalogXMLDir+File.separator+"catalog.xml").replace('\\','/');;
         mRetreiverPath =(catalogXMLDir+File.separator+"src").replace('\\','/');
         
-        mCatlogXMLLocationForWizardURI = new File((projectDir + File.separator+"catalog.xml").replace('\\','/')).toURI();
+        mCatlogXMLLocationForWizardURI = new File((projectDir + File.separator + "catalog.xml").replace('\\','/')).toURI();
         mCatalogXMLURI = new File(mCatalogXMLPath).toURI();
     }
     
+    public URI getProjectCatalogUri() {
+        return mCatlogXMLLocationForWizardURI;
+    }        
+
     /**
      * Set the catalog xml location
      * @param catalogXMLPath Catalog XML location
@@ -97,5 +101,4 @@ public class CommandlineXsltProjectXmlCatalogProvider {
     public URI getProjectWideCatalogForWizard(){
         return mCatlogXMLLocationForWizardURI;
     }        
-
 }

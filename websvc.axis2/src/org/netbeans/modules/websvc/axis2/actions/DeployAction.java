@@ -99,27 +99,26 @@ public class DeployAction extends NodeAction  {
         }     
         
         AxisUtils.runTargets(project.getProjectDirectory(), new String[]{"axis2-deploy"}); //NOI18N
-        String tomcatUser = preferences.get("TOMCAT_MANAGER_USER", null);
+        String tomcatUser = preferences.get("TOMCAT_MANAGER_USER", null); // NOI18N
         if (tomcatUser != null) {
             Preferences prefs = AxisUtils.getPreferences();
-            String axisUrl = prefs.get("AXIS_URL", "").trim();
+            String axisUrl = prefs.get("AXIS_URL", "").trim(); // NOI18N
             if (axisUrl.length() > 0) {
                 try {
-                    String tomcatPassword = preferences.get("TOMCAT_MANAGER_PASSWORD", null);
+                    String tomcatPassword = preferences.get("TOMCAT_MANAGER_PASSWORD", null); // NOI18N
                     URL reloadAxisUrl = new URL(getReloadUrlForTomcatManager(axisUrl));
                     URLConnection conn = reloadAxisUrl.openConnection();
                     HttpURLConnection hconn = (HttpURLConnection) conn;
                     hconn.setAllowUserInteraction(false);
                     hconn.setRequestProperty("User-Agent", // NOI18N
                              "NetBeansIDE-Tomcat-Manager/1.0"); // NOI18N
-                    String input = tomcatUser + ":" + tomcatPassword;
+                    String input = tomcatUser + ":" + tomcatPassword; // NOI18N
                     String auth = new String(Base64.encode(input.getBytes()));                
                     //String auth = input;
                     hconn.setRequestProperty("Authorization", // NOI18N
                                              "Basic " + auth); // NOI18N
                     hconn.connect();
                     int respCode = hconn.getResponseCode();
-                    System.out.println("Server response = "+respCode);
                 } catch (MalformedURLException ex) {
                     ex.printStackTrace();
                 } catch (IOException ex) {
@@ -139,7 +138,7 @@ public class DeployAction extends NodeAction  {
         int index = axisUrl.indexOf("//"); //NOI18N
         if (index>=0) {
             String ignoreProtocol = axisUrl.substring(index+2);
-            int ind  = ignoreProtocol.indexOf("/");
+            int ind  = ignoreProtocol.indexOf("/"); // NOI18N
             if (ind>0) {
                 postfix = ignoreProtocol.substring(ind);
                 int axisUriIndex = axisUrl.indexOf(postfix);

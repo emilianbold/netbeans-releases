@@ -158,5 +158,24 @@ public class TaskTest extends NbTestCase {
             }
         }
     }
+    
+    /*
+     * see issue #130265
+     */
+    public void testWaitFinished0WaitsUntilFinished() throws Exception {
+        Task task = new Task(new Runnable() {
 
+            public void run() {
+                try {
+                    Thread.sleep(5000);
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        });
+        Thread thread = new Thread(task);
+        thread.start();
+        task.waitFinished(0);
+        assertTrue ("Should be finished", task.isFinished());
+    }
 }

@@ -53,7 +53,6 @@ import org.netbeans.modules.websvc.saas.model.wadl.Application;
 import org.netbeans.modules.websvc.saas.model.wadl.Include;
 import org.netbeans.modules.websvc.saas.model.wadl.Resource;
 import org.netbeans.modules.websvc.saas.util.SaasUtil;
-import org.netbeans.modules.websvc.saas.util.Xsd2Java;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -184,12 +183,12 @@ public class WadlSaas extends Saas {
             return;
         }
         
-        try {
-            compileSchemas();
+//        try {
+//            compileSchemas();
             setState(State.READY);
-        } catch (IOException ioe) {
-            Exceptions.printStackTrace(ioe);
-        }
+//        } catch (IOException ioe) {
+//            Exceptions.printStackTrace(ioe);
+//        }
     }
 
     /**
@@ -229,22 +228,6 @@ public class WadlSaas extends Saas {
         toStateReady(false);
     }
     
-    private boolean compileSchemas() throws IOException {
-        assert wadlModel != null;
-        jaxbJars = new ArrayList<FileObject>();
-        jaxbSourceJars = new ArrayList<FileObject>();
-        for (FileObject xsdFile : getLocalSchemaFiles()) {
-            Xsd2Java xjCompiler = new Xsd2Java(xsdFile, getPackageName());
-            if (! xjCompiler.compile()) {
-                return false;
-            }
-            jaxbJars.add(xjCompiler.getJaxbJarFile());
-            jaxbSourceJars.add(xjCompiler.getJaxbSourceJarFile());
-        }
-        
-        return true;
-    }
-    
     public List<FileObject> getLocalSchemaFiles() throws IOException {
         if (wadlModel == null) {
             throw new IllegalStateException("Should transition state to at least RETRIEVED");
@@ -270,29 +253,21 @@ public class WadlSaas extends Saas {
         }
         return schemaFiles;
     }
-
+    
+    @Override
     public List<FileObject> getLibraryJars() {
-        List<FileObject> result = new ArrayList(super.getLibraryJars());
-        if (jaxbJars == null) {
-            try {
-                compileSchemas();
-                result.addAll(jaxbJars);
-            } catch(IOException ex) {
-                ex.printStackTrace();
-            }
-        }
-        return result;
+        return jaxbJars;
+    }
+    
+    public void setLibraryJars(List<FileObject> jaxbJars) {
+        this.jaxbJars = jaxbJars;
     }
     
     public List<FileObject> getJaxbSourceJars() {
-        if (jaxbSourceJars == null) {
-            try {
-                compileSchemas();
-                return Collections.unmodifiableList(jaxbSourceJars);
-            } catch(IOException ex) {
-                ex.printStackTrace();
-            }
-        }
-        return Collections.emptyList();
+        return jaxbSourceJars;
+    } 
+    
+    public void setJaxbSourceJars(List<FileObject> jaxbSourceJars) {
+        this.jaxbSourceJars = jaxbSourceJars;
     }
 }

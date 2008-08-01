@@ -6,6 +6,7 @@ package org.netbeans.modules.bpel.design.actions;
 
 import javax.swing.AbstractAction;
 import org.netbeans.modules.bpel.design.DesignView;
+import org.netbeans.modules.bpel.design.model.DiagramModel;
 
 /**
  *
@@ -26,6 +27,14 @@ public abstract class DesignViewAction extends AbstractAction {
 
     protected DesignView getDesignView(){
         return this.designView;
+    }
+    public boolean isEnabled() {
+        DesignView view = getDesignView();
+        DiagramModel model = view == null ? null : view.getModel();
+        return super.isEnabled() && 
+               view != null && 
+               model != null;
+        
     }
     /**
          * Defines an <code>Action</code> object with the specified

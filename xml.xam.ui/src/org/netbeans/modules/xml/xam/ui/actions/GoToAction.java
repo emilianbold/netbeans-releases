@@ -116,46 +116,17 @@ public class GoToAction extends CookieAction {
     public Action createContextAwareInstance(Lookup actionContext) {
         return new DelegateAction(this, actionContext);
     }
-
-    /** Implementation of Actions.SubMenuModel */
-    private class ActSubMenuModel extends EventListenerList implements Actions.SubMenuModel {
-        static final long serialVersionUID = -4273674308662494596L;
-        
-        //IZ: 115374: Cache the last selected gotoNode and gotoTypes
-        //getRegistry().getCurrentNodes() returns a different one
-        //when user clicks on goto.
-        private transient Node gotoNode;
-        private transient GotoType[] gotoTypes;
-        
-        ActSubMenuModel(Lookup lookup) {
-        }
-
-        private Node getSelectedNode() {
-            //return the cached one, if exists
-            if(gotoNode != null)
-                return gotoNode;
-            
-            //new one
-            Node[] nodes = WindowManager.getDefault().getRegistry().getCurrentNodes();            
-            if (nodes != null && nodes.length == 1 && nodes[0] != gotoNode) {
-                gotoNode = nodes[0];
-            }
-            //worst case
-            return gotoNode;
-        }
-        
-        /**
-         * Getter for array of activated goto types.
-         *
-         * @param  activatedNodes  array of activated nodes.
-         * @return  array of GotoType.
-         */
-        private GotoType[] getGotoTypes(Node node) {
-            if(node == null)
-                return null;
-            if( (gotoNode == node) && (gotoTypes != null))
-                return gotoTypes;
-            List<GotoType> types = new ArrayList<GotoType>();
+    
+/**
+     * Getter for array of activated goto types.
+     *
+     * @param  activatedNodes  array of activated nodes.
+     * @return  array of GotoType.
+     */
+    private static GotoType[] getGotoTypes(Node[] activatedNodes) {
+        List<GotoType> types = new ArrayList<GotoType>();
+        if (activatedNodes != null && activatedNodes.length == 1) {
+            Node node = activatedNodes[0];
             GotoCookie cookie = node.getCookie(GotoCookie.class);
             if (cookie != null) {
                 for (GotoType type : cookie.getGotoTypes()) {
@@ -166,13 +137,27 @@ public class GoToAction extends CookieAction {
                         types.add(type);
                     }
                 }
-            }            
-            gotoTypes = types.toArray(new GotoType[types.size()]);
-            return gotoTypes;
+            }
+        }
+        return types.toArray(new GotoType[types.size()]);
+    }    
+
+    /** Implementation of Actions.SubMenuModel */
+    private class ActSubMenuModel extends EventListenerList implements Actions.SubMenuModel {
+        static final long serialVersionUID = -4273674308662494596L;
+        
+        private transient Lookup lookup;
+        
+        ActSubMenuModel(Lookup lookup) {
+            this.lookup = lookup;
+        }
+
+        private Node[] nodes() {
+            return WindowManager.getDefault().getRegistry().getCurrentNodes();
         }
         
         private String createName() {
-            GotoType[] types = getGotoTypes(getSelectedNode());
+            GotoType[] types = getGotoTypes(nodes());
             if (types != null && types.length == 1) {
                 return NbBundle.getMessage(GoToAction.class,
                         "LBL_GoTo_Name", types[0].getName());
@@ -182,11 +167,11 @@ public class GoToAction extends CookieAction {
         }
 
         public int getCount() {
-            return getSelectedNode()==null?0:getGotoTypes(getSelectedNode()).length;
+            return nodes()==null?0:getGotoTypes(nodes()).length;
         }
 
         public String getLabel(int index) {
-            GotoType[] types = getGotoTypes(getSelectedNode());
+            GotoType[] types = getGotoTypes(nodes());
             if ( (types == null) || (types.length <= index) ) {
                 return null;
             } else {
@@ -195,7 +180,7 @@ public class GoToAction extends CookieAction {
         }
 
         public HelpCtx getHelpCtx(int index) {
-            GotoType[] types = getGotoTypes(getSelectedNode());
+            GotoType[] types = getGotoTypes(nodes());
             if ( (types == null) || (types.length <= index) ) {
                 return null;
             } else {
@@ -204,13 +189,11 @@ public class GoToAction extends CookieAction {
         }
 
         public void performActionAt(int index) {
-            Node node = getSelectedNode();
-            GotoType[] types = getGotoTypes(getSelectedNode());
+            Node[] nodes = nodes();
+            GotoType[] types = getGotoTypes(nodes);
             if ((types != null) && (types.length > index)) {
-                types[index].show(node);
+                types[index].show(nodes[0]);
             }
-            this.gotoNode = null;
-            this.gotoTypes = null;
         }
 
         /** Adds change listener for changes of the model.

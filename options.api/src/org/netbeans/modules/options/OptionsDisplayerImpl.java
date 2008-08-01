@@ -64,6 +64,13 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.NotifyDescriptor.Confirmation;
 import org.openide.awt.Mnemonics;
+import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.Repository;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
@@ -84,16 +91,20 @@ public class OptionsDisplayerImpl {
     private static Logger log = Logger.getLogger(OptionsDisplayerImpl.class.getName ());    
     private boolean modal;
     static final LookupListener lookupListener = new LookupListenerImpl();
+    /** Advanced Options button. */
+    private JButton bClassic;
     
     public OptionsDisplayerImpl (boolean modal) {
         this.modal = modal;
+        // 91106 - listen to default FS changes to update Advanced Options button
+        Repository.getDefault().getDefaultFileSystem().getRoot().addFileChangeListener(new AdvancedOptionsListener());
     }
     
     public boolean isOpen() {
         return dialog != null;
     }
         
-    public void showOptionsDialog (String categoryID) {
+    public void showOptionsDialog (String categoryID, String subpath) {
         if (isOpen()) {
             // dialog already opened
             dialog.setVisible (true);
@@ -112,8 +123,9 @@ public class OptionsDisplayerImpl {
             optionsPanel = categoryID == null ? new OptionsPanel () : new OptionsPanel(categoryID);            
             JButton bOK = (JButton) loc(new JButton(), "CTL_OK");//NOI18N
             bOK.getAccessibleContext().setAccessibleDescription(loc("ACS_OKButton"));//NOI18N
-            JButton bClassic = (JButton) loc(new JButton(), "CTL_Classic");//NOI18N
+            bClassic = (JButton) loc(new JButton(), "CTL_Classic");//NOI18N
             bClassic.getAccessibleContext().setAccessibleDescription(loc("ACS_ClassicButton"));//NOI18N
+            setVisibleAdvancedOptionsButton();
             boolean isMac = Utilities.isMac();
             Object[] options = new Object[2];            
             options[0] = isMac ? DialogDescriptor.CANCEL_OPTION : bOK;
@@ -137,11 +149,38 @@ public class OptionsDisplayerImpl {
         }
         
         dialog = DialogDisplayer.getDefault ().createDialog (descriptor);
-        optionsPanel.initCurrentCategory(categoryID);
+        optionsPanel.initCurrentCategory(categoryID, subpath);
         dialog.addWindowListener (new MyWindowListener (optionsPanel));
-        dialog.setVisible (true);        
+        dialog.setVisible (true);     
     }
-    
+
+    /** Set visibility of Advanced Options button (AKA classic) according to
+     * existence of advanced options. */
+    private void setVisibleAdvancedOptionsButton() {
+        if(bClassic != null) {
+            bClassic.setVisible(advancedOptionsNotEmpty());
+        }
+    }
+
+    /** Returns true if some non hidden advanced options are registered
+     * under UI/Services folder.
+     * @return true if exists some advanced options, false otherwise
+     */
+    private boolean advancedOptionsNotEmpty() {
+        FileSystem defaultFS = Repository.getDefault().getDefaultFileSystem();
+        FileObject servicesFO = defaultFS.findResource("UI/Services");  //NOI18N
+        if(servicesFO != null) {
+            FileObject[] advancedOptions = servicesFO.getChildren();
+            for (FileObject advancedOption : advancedOptions) {
+                Object hidden = advancedOption.getAttribute("hidden");  //NOI18N
+                if(hidden == null || !(Boolean)hidden) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     private static String loc (String key) {
         return NbBundle.getMessage (OptionsDisplayerImpl.class, key);
     }
@@ -313,5 +352,33 @@ public class OptionsDisplayerImpl {
         }
         
     }
+
+    /** 91106 - used to listen to default FS changes to update Advanced Options button. */
+    private class AdvancedOptionsListener implements FileChangeListener {
+
+        public void fileRenamed(FileRenameEvent fe) {
+            setVisibleAdvancedOptionsButton();
+        }
+
+        public void fileChanged(FileEvent fe) {
+            setVisibleAdvancedOptionsButton();
+        }
+
+        public void fileFolderCreated(FileEvent fe) {
+            setVisibleAdvancedOptionsButton();
+        }
+
+        public void fileDataCreated(FileEvent fe) {
+            setVisibleAdvancedOptionsButton();
+        }
+
+        public void fileDeleted(FileEvent fe) {
+            setVisibleAdvancedOptionsButton();
+        }
+
+        public void fileAttributeChanged(FileAttributeEvent fe) {
+            setVisibleAdvancedOptionsButton();
+        }
+    };
 }
 

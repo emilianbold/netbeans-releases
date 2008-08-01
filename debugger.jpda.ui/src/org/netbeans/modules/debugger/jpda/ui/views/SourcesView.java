@@ -41,80 +41,43 @@
 
 package org.netbeans.modules.debugger.jpda.ui.views;
 
-import java.awt.BorderLayout;
-import java.util.ArrayList;
-import javax.swing.JComponent;
-import org.netbeans.spi.viewmodel.Models;
-import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
+import java.io.ObjectStreamException;
+import java.lang.reflect.Method;
+import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.windows.TopComponent;
 
-// <RAVE>
-// Implement HelpCtx.Provider interface to provide help ids for help system
-// public class SourcesView extends TopComponent {
-// ====
+/**
+ * Just an empty implementation for compatibility reasons.
+ *
+ * It delegates to org.netbeans.modules.debugger.ui.views.View.getSourcesView()
+ */
 public class SourcesView extends TopComponent implements org.openide.util.HelpCtx.Provider {
-// </RAVE>
-    
-    private transient JComponent tree;
-    private transient ViewModelListener viewModelListener;
     
     
     public SourcesView () {
-        setIcon (Utilities.loadImage ("org/netbeans/modules/debugger/jpda/resources/root.png")); // NOI18N
     }
 
-    protected String preferredID() {
-        return this.getClass().getName();
+    public Object readResolve() throws ObjectStreamException {
+        try {
+            Class c = Lookup.getDefault().lookup(ClassLoader.class).loadClass("org.netbeans.modules.debugger.ui.views.View"); // NOI18N
+            Method m = c.getDeclaredMethod("getSourcesView", new Class[] {}); // NOI18N
+            Object tc = m.invoke(null, new Object[] {});
+            return tc;
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
+            return null;
+        }
     }
 
-    protected void componentShowing () {
-        super.componentShowing ();
-        if (viewModelListener != null) {
-            viewModelListener.setUp();
-            return;
-        }
-        if (tree == null) {
-            setLayout (new BorderLayout ());
-            tree = Models.createView (Models.EMPTY_MODEL);
-            tree.setName (NbBundle.getMessage (SourcesView.class, "CTL_Sources_tooltip")); // NOI18N
-            add (tree, "Center");  //NOI18N
-        }
-        if (viewModelListener != null)
-            throw new InternalError ();
-        viewModelListener = new ViewModelListener (
-            "SourcesView",
-            tree
-        );
-    }
-    
-    protected void componentHidden () {
-        super.componentHidden ();
-        viewModelListener.destroy ();
-    }
-    
-    // <RAVE>
-    // Implement getHelpCtx() with the correct helpID
+    @Override
     public org.openide.util.HelpCtx getHelpCtx() {
         return new org.openide.util.HelpCtx("NetbeansDebuggerSourcesNode"); // NOI18N
     }
-    // </RAVE>
-    
+
+    @Override
     public int getPersistenceType () {
         return PERSISTENCE_ALWAYS;
     }
         
-    public boolean requestFocusInWindow () {
-        super.requestFocusInWindow ();
-        if (tree == null) return false;
-        return tree.requestFocusInWindow ();
-    }
-    
-    public String getName () {
-        return NbBundle.getMessage (SourcesView.class, "CTL_Sourcess_view");
-    }
-    
-    public String getToolTipText () {
-        return NbBundle.getMessage (SourcesView.class, "CTL_Sources_tooltip");// NOI18N
-    }
 }

@@ -52,6 +52,7 @@ import org.openide.xml.*;
 
 import org.netbeans.api.xml.services.UserCatalog;
 import org.netbeans.api.xml.parsers.SAXEntityParser;
+import org.netbeans.modules.xml.lib.Util;
 
 /**
  * Silently produces Set<String> of roots from passed SAX declaration handler events.

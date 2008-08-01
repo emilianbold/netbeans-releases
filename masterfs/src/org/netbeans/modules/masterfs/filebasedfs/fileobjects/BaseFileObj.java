@@ -60,9 +60,6 @@ import java.util.Date;
 import java.util.Enumeration;
 import java.util.NoSuchElementException;
 import java.util.Stack;
-import java.util.concurrent.Callable;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.netbeans.modules.masterfs.filebasedfs.FileBasedFileSystem;
 import org.netbeans.modules.masterfs.filebasedfs.utils.FileChangedManager;
 import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
@@ -80,8 +77,6 @@ import org.openide.util.WeakListeners;
 
 public abstract class BaseFileObj extends FileObject {
     //constants
-    private static final char EXTENSION_SEPARATOR = '.';
-    private static final char UNC_PREFIX = '\\';//NOI18N
     private static final String PATH_SEPARATOR = File.separator;//NOI18N
     private static final char EXT_SEP = '.';//NOI18N
     private FileChangeListener versioningWeakListener;    
@@ -111,10 +106,12 @@ public abstract class BaseFileObj extends FileObject {
 
     }
        
+    @Override
     public final String toString() {
         return getFileName().toString();
     }
 
+    @Override
     public final String getNameExt() {
         final File file = getFileName().getFile();
         final String retVal = BaseFileObj.getNameExt(file);
@@ -122,8 +119,22 @@ public abstract class BaseFileObj extends FileObject {
 
     }
 
+    /** Returns true is file is \\ComputerName\sharedFolder. */
+    private static boolean isUncRoot(final File file) {
+        if(file.getPath().startsWith("\\\\")) { //NOI18N
+            File parent = file.getParentFile();
+            if(parent != null) {
+                parent = parent.getParentFile();
+                if(parent != null) {
+                    return parent.getPath().equals("\\\\"); // NOI18N
+                }
+            }
+        }
+        return false;
+    }
+    
     static String getNameExt(final File file) {
-        String retVal = (file.getParentFile() == null) ? file.getAbsolutePath() : file.getName();
+        String retVal = (file.getParentFile() == null || isUncRoot(file)) ? file.getAbsolutePath() : file.getName();
         if (retVal.endsWith(PATH_SEPARATOR)) {//NOI18N
             final boolean isPermittedToStripSlash = !(file.getParentFile() == null && new FileInfo(file).isUNCFolder());
             if (isPermittedToStripSlash) {
@@ -133,14 +144,17 @@ public abstract class BaseFileObj extends FileObject {
         return retVal;
     }
 
+    @Override
     public boolean canRead() {
         final File file = getFileName().getFile();        
         return file.canRead();
     }
 
+    @Override
     public boolean canWrite() {
         final File file = getFileName().getFile();        
-        return file.canWrite();
+        ProvidedExtensions extension = getProvidedExtensions();
+        return extension.canWrite(file);
     }
 
     public final boolean isData() {
@@ -155,10 +169,15 @@ public abstract class BaseFileObj extends FileObject {
         return FileInfo.getExt(getNameExt());
     }
 
+    @Override
     public final String getPath() {
         String prefix = "";
         if (Utilities.isWindows()) {
             prefix = getFactory().getRoot().getFileName().getFile().getPath().replace(File.separatorChar, '/');
+            if(prefix.startsWith("//")) {
+                // UNC root like //computer/sharedFolder
+                prefix += "/";
+            }
         }
         return prefix+getRelativePath(getFactory().getRoot().getFileName().getFile(), this.getFileName().getFile());//NOI18N
     }
@@ -189,6 +208,7 @@ public abstract class BaseFileObj extends FileObject {
         return false;
     }
      
+    @Override
     public final FileObject move(FileLock lock, FileObject target, String name, String ext) throws IOException {
         if (!checkLock(lock)) {
             FSException.io("EXC_InvalidLock", lock, getPath()); // NOI18N
@@ -374,7 +394,8 @@ public abstract class BaseFileObj extends FileObject {
 
     public boolean isReadOnly() {
         final File f = getFileName().getFile();
-        return !f.canWrite() && FileChangedManager.getInstance().exists(f);
+        ProvidedExtensions extension = getProvidedExtensions();
+        return !extension.canWrite(f) && FileChangedManager.getInstance().exists(f);
     }
 
     public final FileObject getParent() {
@@ -801,6 +822,7 @@ public abstract class BaseFileObj extends FileObject {
     }
     
     private final class FileChangeListenerForVersioning extends FileChangeAdapter {
+        @Override
         public void fileDataCreated(FileEvent fe) {
             if (fe.getFile() == BaseFileObj.this) {
                 getProvidedExtensions().createSuccess(fe.getFile());
@@ -810,12 +832,14 @@ public abstract class BaseFileObj extends FileObject {
         /**
          * Implements FileChangeListener.fileFolderCreated(FileEvent fe)
          */
+        @Override
         public void fileFolderCreated(FileEvent fe) {
             if (fe.getFile() == BaseFileObj.this) {            
                 getProvidedExtensions().createSuccess(fe.getFile());
             }
         }
 
+        @Override
         public void fileDeleted(FileEvent fe) {
             if (fe.getFile() == BaseFileObj.this) {
                 getProvidedExtensions().deleteSuccess(fe.getFile());

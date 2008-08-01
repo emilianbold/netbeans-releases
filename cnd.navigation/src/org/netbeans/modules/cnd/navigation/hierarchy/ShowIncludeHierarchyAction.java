@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.cnd.navigation.hierarchy;
 
-import org.netbeans.modules.cnd.navigation.includeview.*;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
@@ -57,12 +56,14 @@ public final class ShowIncludeHierarchyAction extends CookieAction {
         CsmFile file = ContextUtils.findFile(activatedNodes);
         if (file != null){
             HierarchyTopComponent view = HierarchyTopComponent.findInstance();
-            view.setFile(file);
-            view.open();
+            if (!view.isOpened()) {
+                view.open();
+            }
+            view.setFile(file, false);
             view.requestActive();
         }
     }
-
+    
     @Override
     protected boolean enable(Node[] activatedNodes) {
         if (activatedNodes != null && activatedNodes.length > 0) {

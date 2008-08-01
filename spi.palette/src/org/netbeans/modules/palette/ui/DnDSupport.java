@@ -68,6 +68,7 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import org.netbeans.modules.palette.Category;
@@ -105,6 +106,7 @@ public class DnDSupport  implements DragGestureListener, DropTargetListener {
     /** Creates a new instance of DnDSupport */
     public DnDSupport( PalettePanel palette ) {
         this.palette = palette;
+        new DropTarget( palette.getScrollPane(), this );
     }
     
     void add( CategoryDescriptor descriptor ) {
@@ -186,6 +188,13 @@ public class DnDSupport  implements DragGestureListener, DropTargetListener {
             targetCategory = ((CategoryList)target).getCategory();
         } else if( target instanceof CategoryButton ) {
             targetCategory = ((CategoryButton)target).getCategory();
+        } else if( target instanceof JScrollPane ) {
+            //use the last category in the list as drop target
+            if( null != palette.getModel() ) {
+            Category[] cats = palette.getModel().getCategories();
+                if( null != cats && cats.length > 0 )
+                    targetCategory = cats[cats.length-1];
+            }
         }
         if( null != draggingCategory ) {
             //dragging a category to reorder
@@ -307,7 +316,14 @@ public class DnDSupport  implements DragGestureListener, DropTargetListener {
             } else if( target instanceof CategoryButton ) {
                 CategoryButton button = (CategoryButton)target;
                 targetCategory = button.getCategory();
-            } 
+            } else if( target instanceof JScrollPane ) {
+                //use the last category in the list as drop target
+                if( null != palette.getModel() ) {
+                    Category[] cats = palette.getModel().getCategories();
+                    if( null != cats && cats.length > 0 )
+                        targetCategory = cats[cats.length-1];
+                }
+            }
             if( null != targetCategory && targetCategory.dragOver( dtde ) ) {
                 dtde.acceptDrag( dtde.getDropAction() );
             } else {
@@ -324,32 +340,20 @@ public class DnDSupport  implements DragGestureListener, DropTargetListener {
                     dropPane.setDropLine( null );
                     targetItem = null;
                 } else {
-                    boolean verticalDropBar = list.getColumnCount() > 1;
-                    Rectangle rect = list.getCellBounds( dropIndex, dropIndex );
-                    if( verticalDropBar )
-                        dropBefore = dtde.getLocation().x < (rect.x + rect.width/2);
-                    else
-                        dropBefore = dtde.getLocation().y < (rect.y + rect.height/2);
-                    Point p1 = rect.getLocation();
-                    Point p2 = rect.getLocation();
-                    if( verticalDropBar ) {
-                        p2.y += rect.height;
-                        if( !dropBefore ) {
-                            p1.x += rect.width;
-                            p2.x += rect.width;
-                        }
-                    } else {
-                        p2.x += rect.width;
-                        if( !dropBefore ) {
-                            p1.y += rect.height;
-                            p2.y += rect.height;
-                        }
-                    }
-                    p1 = SwingUtilities.convertPoint( list, p1, palette.getRootPane() );
-                    p2 = SwingUtilities.convertPoint( list, p2, palette.getRootPane() );
-                    Line2D line = new Line2D.Double( p1.x, p1.y, p2.x, p2.y );
-                    dropPane.setDropLine( line );
-                    targetItem = (Item)list.getModel().getElementAt( dropIndex );
+                    setupDropLine( dtde, list, dropIndex );
+                }
+            } else if( target instanceof JScrollPane ) {
+                if( null != palette.getModel() ) {
+                    Category[] cats = palette.getModel().getCategories();
+                    if( null != cats && cats.length > 0 )
+                        targetCategory = cats[cats.length-1];
+                }
+                CategoryDescriptor cd = palette.getCategoryDescriptor(targetCategory);
+                if( null != cd ) {
+                    cd.getButton().setExpanded(true);
+                    CategoryList list = cd.getList();
+                    int dropIndex = targetCategory.getItems().length-1;
+                    setupDropLine(dtde, list, dropIndex);
                 }
             } else {
                 targetItem = null;
@@ -362,6 +366,7 @@ public class DnDSupport  implements DragGestureListener, DropTargetListener {
     private DragSourceListener getDragSourceListener() {
         if( null == dragSourceListener ) {
             dragSourceListener = new DragSourceAdapter() {
+                @Override
                 public void dragDropEnd( DragSourceDropEvent dsde ) {
                     dsde.getDragSourceContext().getDragSource().removeDragSourceListener( this );
                     cleanupAfterDnD();
@@ -404,5 +409,34 @@ public class DnDSupport  implements DragGestureListener, DropTargetListener {
     private void removeDropLine() {
         if( null != dropPane )
             dropPane.setDropLine( null );
+    }
+
+    private void setupDropLine( DropTargetDragEvent dtde, CategoryList list, int dropIndex ) {
+        boolean verticalDropBar = list.getColumnCount() > 1;
+        Rectangle rect = list.getCellBounds( dropIndex, dropIndex );
+        if( verticalDropBar )
+            dropBefore = dtde.getLocation().x < (rect.x + rect.width/2);
+        else
+            dropBefore = dtde.getLocation().y < (rect.y + rect.height/2);
+        Point p1 = rect.getLocation();
+        Point p2 = rect.getLocation();
+        if( verticalDropBar ) {
+            p2.y += rect.height;
+            if( !dropBefore ) {
+                p1.x += rect.width;
+                p2.x += rect.width;
+            }
+        } else {
+            p2.x += rect.width;
+            if( !dropBefore ) {
+                p1.y += rect.height;
+                p2.y += rect.height;
+            }
+        }
+        p1 = SwingUtilities.convertPoint( list, p1, palette.getRootPane() );
+        p2 = SwingUtilities.convertPoint( list, p2, palette.getRootPane() );
+        Line2D line = new Line2D.Double( p1.x, p1.y, p2.x, p2.y );
+        dropPane.setDropLine( line );
+        targetItem = (Item)list.getModel().getElementAt( dropIndex );
     }
 }

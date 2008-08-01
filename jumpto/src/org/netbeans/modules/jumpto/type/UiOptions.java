@@ -48,7 +48,7 @@ import org.openide.util.NbPreferences;
  *
  * @author phrebejk
  */
-final class UiOptions {
+public final class UiOptions {
             
     /** Creates a new instance of UiOptions */
     private UiOptions() {}
@@ -72,7 +72,7 @@ final class UiOptions {
         }
         
         public static int getHeight() {
-            return getNode().getInt(HEIGHT, 460);
+            return getNode().getInt(HEIGHT, -1);
         }
         
         public static void setHeight( int height ) {
@@ -80,7 +80,7 @@ final class UiOptions {
         }
         
         public static int getWidth() {
-            return getNode().getInt(WIDTH, 680);
+            return getNode().getInt(WIDTH, -1);
         }
          
         public static void setWidth( int width ) {
@@ -91,6 +91,49 @@ final class UiOptions {
             if ( node == null ) {                
                 Preferences p = NbPreferences.forModule(UiOptions.class);
                 node = p.node(GO_TO_TYPE_DIALOG);
+            }
+            return node;
+        }
+    }
+    
+    public final static class GoToSymbolDialog {
+    
+        private static final String GO_TO_SYMBOL_DIALOG = "GoToSymbolDialog"; // NOI18N    
+        
+        private static final String CASE_SENSITIVE = "caseSensitive"; // NOI18N
+        private static final String WIDTH = "width"; // NOI18N
+        private static final String HEIGHT = "height"; // NOI18N
+    
+        private static Preferences node;                       
+        
+        public static boolean getCaseSensitive() {
+            return getNode().getBoolean(CASE_SENSITIVE, false);
+        }
+        
+        public static void setCaseSensitive( boolean caseSensitive) {
+            getNode().putBoolean(CASE_SENSITIVE, caseSensitive);
+        }
+        
+        public static int getHeight() {
+            return getNode().getInt(HEIGHT, -1);
+        }
+        
+        public static void setHeight( int height ) {
+            getNode().putInt(HEIGHT, height);
+        }
+        
+        public static int getWidth() {
+            return getNode().getInt(WIDTH, -1);
+        }
+         
+        public static void setWidth( int width ) {
+            getNode().putInt(WIDTH, width);
+        }
+        
+        private static synchronized Preferences getNode() {
+            if ( node == null ) {                
+                Preferences p = NbPreferences.forModule(UiOptions.class);
+                node = p.node(GO_TO_SYMBOL_DIALOG);
             }
             return node;
         }

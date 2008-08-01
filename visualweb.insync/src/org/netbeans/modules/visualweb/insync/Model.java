@@ -292,15 +292,15 @@ public abstract class Model implements SourceUnitListener {
     }
     
     public void sourceUnitModelDirtied(SourceUnit unit) {
-//NB60         MdrInSyncSynchronizer.get().addModelDirtied(this);
     }
 
     protected  boolean needSyncing = true;
 
     public void sourceUnitSourceDirtied(SourceUnit unit) {
-//NB60         MdrInSyncSynchronizer.get().addModelDirtied(this);
-        needSyncing = true;
-        getOwner().addToModelsToSync(this);
+        if(isValid()) {
+            needSyncing = true;
+            getOwner().addToModelsToSync(this);
+        }
     }
     
     /**

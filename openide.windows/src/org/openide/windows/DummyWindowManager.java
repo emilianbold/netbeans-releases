@@ -435,6 +435,24 @@ final class DummyWindowManager extends WindowManager {
         //TODO what to do here?
     }
 
+    @Override
+    public boolean isEditorTopComponent(TopComponent tc) {
+        Mode md = findMode(tc);
+        if (md != null && "editor".equals(md.getName())) {
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public boolean isOpenedEditorTopComponent(TopComponent tc) {
+        Mode md = findMode(tc);
+        if (md != null && "editor".equals(md.getName())) {
+            return tc.isOpened();
+        }
+        return super.isOpenedEditorTopComponent(tc);
+    }
+
     private final class W implements Workspace {
         private static final long serialVersionUID = 1L;
         private final String name;

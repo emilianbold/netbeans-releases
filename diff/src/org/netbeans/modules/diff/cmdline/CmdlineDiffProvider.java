@@ -90,9 +90,13 @@ public class CmdlineDiffProvider extends DiffProvider implements java.io.Seriali
         //firstText = new StringBuffer();
         //secondText = new StringBuffer();
     }
+
+    public CmdlineDiffProvider() {
+        this("diff {0} {1}"); // NOI18N
+    }
     
     public static CmdlineDiffProvider createDefault() {
-        return new CmdlineDiffProvider("diff {0} {1}"); // NOI18N
+        return new CmdlineDiffProvider(); // NOI18N
     }
 
     /**

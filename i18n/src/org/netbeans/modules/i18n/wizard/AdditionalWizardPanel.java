@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -64,6 +64,7 @@ import org.netbeans.modules.i18n.I18nString;
 import org.netbeans.modules.i18n.I18nSupport;
 import org.netbeans.modules.i18n.I18nUtil;
 
+import org.openide.WizardDescriptor;
 import org.openide.loaders.DataObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -90,7 +91,7 @@ final class AdditionalWizardPanel extends JPanel {
     
     /** Empty component to show when no additional values are supported. */
     private static final JLabel EMPTY_COMPONENT = 
-                         new JLabel(Util.getString("TXT_HasNoAdditonal"));
+                         new JLabel(Util.getString("TXT_HasNoAdditonal"));//NOI18N
     
     
     /** Creates new form HardCodedStringsPanel */
@@ -105,7 +106,7 @@ final class AdditionalWizardPanel extends JPanel {
     /** Does additional init of components. */
     private void initA11Y() {
         sourceLabel.setLabelFor(sourceCombo);
-        sourceCombo.getAccessibleContext().setAccessibleDescription(Util.getString("ACS_sourceCombo"));
+        sourceCombo.getAccessibleContext().setAccessibleDescription(Util.getString("ACS_sourceCombo"));//NOI18N
     }
     
     
@@ -233,7 +234,7 @@ final class AdditionalWizardPanel extends JPanel {
         private transient AdditionalWizardPanel additionalPanel;
 
         Panel () {
-            emptyLabel = new JLabel(Util.getString("TXT_HasNoAdditonal"));
+            emptyLabel = new JLabel(Util.getString("TXT_HasNoAdditonal"));//NOI18N
             emptyLabel.setHorizontalAlignment(JLabel.CENTER);
             emptyLabel.setVerticalAlignment(JLabel.CENTER);
         }        
@@ -247,7 +248,7 @@ final class AdditionalWizardPanel extends JPanel {
             //Accessibility
             panel.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(AdditionalWizardPanel.class).getString("ACS_AdditionalWizardPanel"));                    
             
-            panel.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(2)); // NOI18N
+            panel.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, Integer.valueOf(2));
             panel.setName(NbBundle.getBundle(getClass()).getString("TXT_ModifyAdditional"));
             panel.setPreferredSize(I18nWizardDescriptor.PREFERRED_DIMENSION);
 

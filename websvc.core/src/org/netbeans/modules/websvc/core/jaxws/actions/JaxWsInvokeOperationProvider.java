@@ -67,8 +67,7 @@ public class JaxWsInvokeOperationProvider implements InvokeOperationActionProvid
             if ((projectType == ProjectInfo.JSE_PROJECT_TYPE && !isJAXRPCProject(project) && !isJAXWSProject(project)) 
                     ||(projectType == ProjectInfo.JSE_PROJECT_TYPE && isJAXWSProject(project) && isJaxWsLibraryOnClasspath(targetSource)) ||
                     (Util.isJavaEE5orHigher(project) && (projectType == ProjectInfo.WEB_PROJECT_TYPE || 
-                    projectType == ProjectInfo.CAR_PROJECT_TYPE || projectType == ProjectInfo.EJB_PROJECT_TYPE)) ||
-                    (projectInfo.isJwsdpSupported())
+                    projectType == ProjectInfo.CAR_PROJECT_TYPE || projectType == ProjectInfo.EJB_PROJECT_TYPE))
                     ) {
                 return new JaxWsInvokeOperation();
             } else if (JaxWsUtils.isEjbJavaEE5orHigher(projectInfo)) {

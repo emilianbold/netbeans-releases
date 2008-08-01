@@ -56,10 +56,10 @@ import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
 import org.openide.loaders.TemplateWizard;
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
-import org.netbeans.modules.jmx.WizardConstants;
-import org.netbeans.modules.jmx.WizardHelpers;
-import org.netbeans.modules.jmx.FinishableDelegatedWizardPanel;
-import org.netbeans.modules.jmx.WizardPanelWithoutReadSettings;
+import org.netbeans.modules.jmx.common.WizardConstants;
+import org.netbeans.modules.jmx.common.WizardHelpers;
+import org.netbeans.modules.jmx.common.FinishableDelegatedWizardPanel;
+import org.netbeans.modules.jmx.common.WizardPanelWithoutReadSettings;
 import org.netbeans.modules.jmx.mbeanwizard.generator.GeneratorControler;
 import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
 import org.openide.WizardDescriptor;
@@ -242,8 +242,8 @@ public class DynamicMBeanIterator implements TemplateWizard.Iterator {
     }
      
     private void initializeComponent(String[] steps, int panelOffset,JComponent jc) {
-        jc.putClientProperty("WizardPanel_contentData", steps); // NOI18N
-        jc.putClientProperty("WizardPanel_contentSelectedIndex", panelOffset);// NOI18N
+        jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps); // NOI18N
+        jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, panelOffset);// NOI18N
     }
     
     /**

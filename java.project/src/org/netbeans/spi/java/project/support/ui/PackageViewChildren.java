@@ -152,14 +152,11 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
         if ( fo != null && fo.isValid()) {
             Object o = names2nodes.get(path);
             PackageNode n;
+            DataFolder folder = DataFolder.findFolder(fo);
             if ( o == NODE_NOT_CREATED ) {
-                n = new PackageNode( root, DataFolder.findFolder( fo ), false );
-            }
-            else if ( o ==  NODE_NOT_CREATED_EMPTY ) {
-                n = new PackageNode( root, DataFolder.findFolder( fo ), true );
-            }
-            else {
-                n = new PackageNode( root, DataFolder.findFolder( fo ) );
+                n = new PackageNode(root, folder, false);
+            } else { // NODE_NOT_CREATED_EMPTY, PackageNode
+                n = new PackageNode(root, folder);
             }            
             names2nodes.put(path, n);
             return new Node[] {n};
@@ -999,7 +996,7 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
         }
         
         private Image getMyOpenedIcon(int type) {
-            return getIcon(type);
+            return getMyIcon(type);
         }
         
         public void update() {

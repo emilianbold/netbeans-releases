@@ -80,7 +80,6 @@ import org.netbeans.editor.*;
 import org.netbeans.modules.collab.*;
 
 import org.netbeans.modules.editor.NbEditorKit;
-import org.netbeans.modules.editor.plain.*;
 
 
 /**

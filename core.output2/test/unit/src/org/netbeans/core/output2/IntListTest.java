@@ -123,8 +123,8 @@ public class IntListTest extends TestCase {
             near21000 == 99);
         
         int nearNeg475 = il.findNearest (-475);
-        assertTrue ("Nearest entry to -475 should be 0 not " + nearNeg475, 
-            nearNeg475 == 0);
+        assertTrue ("Nearest entry to -475 should be -1 not " + nearNeg475, 
+            nearNeg475 == -1);
     
     }
     

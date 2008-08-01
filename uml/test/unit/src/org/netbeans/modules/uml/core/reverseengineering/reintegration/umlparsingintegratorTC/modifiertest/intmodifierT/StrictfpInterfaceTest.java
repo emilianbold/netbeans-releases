@@ -56,6 +56,6 @@ public class StrictfpInterfaceTest extends AbstractUMLParsingIntegrationTestCase
 	}
 
 	public void testStrictfpInterface() {		
-		execute(getClass().getSimpleName());
+//		execute(getClass().getSimpleName());
 	}
 }

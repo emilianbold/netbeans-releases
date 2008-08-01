@@ -54,11 +54,11 @@ import org.netbeans.lib.lexer.LexerInputOperation;
 import org.netbeans.lib.lexer.LexerUtilsConstants;
 import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.Language;
-import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.lib.lexer.TokenHierarchyOperation;
 import org.netbeans.lib.lexer.token.AbstractToken;
 import org.netbeans.lib.lexer.token.TextToken;
+import org.netbeans.lib.lexer.TokenOrEmbedding;
 import org.netbeans.spi.lexer.MutableTextInput;
 
 
@@ -80,13 +80,13 @@ import org.netbeans.spi.lexer.MutableTextInput;
  */
 
 public final class IncTokenList<T extends TokenId>
-extends FlyOffsetGapList<Object> implements MutableTokenList<T> {
+extends FlyOffsetGapList<TokenOrEmbedding<T>> implements MutableTokenList<T> {
     
     private final TokenHierarchyOperation<?,T> tokenHierarchyOperation;
 
     private LanguagePath languagePath;
     
-    private CharSequence text;
+    private CharSequence inputSourceText;
     
     /**
      * Lexer input operation used for lexing of the input.
@@ -109,30 +109,22 @@ extends FlyOffsetGapList<Object> implements MutableTokenList<T> {
     public void reinit() {
         if (languagePath != null) {
             MutableTextInput input = tokenHierarchyOperation.mutableTextInput();
-            this.text = LexerSpiPackageAccessor.get().text(input);
-            this.lexerInputOperation = new TextLexerInputOperation<T>(this, text);
+            this.inputSourceText = LexerSpiPackageAccessor.get().text(input);
+            this.lexerInputOperation = new TextLexerInputOperation<T>(this);
         } else {
-            this.text = null;
+            this.inputSourceText = null;
             releaseLexerInputOperation();
         }
         this.laState = LAState.empty();
     }
     
-    private void releaseLexerInputOperation() {
-        if (lexerInputOperation != null)
+    public void releaseLexerInputOperation() {
+        if (lexerInputOperation != null) {
             lexerInputOperation.release();
+            lexerInputOperation = null;
+        }
     }
 
-    public void refreshLexerInputOperation() {
-        releaseLexerInputOperation();
-        int lastTokenIndex = tokenCountCurrent() - 1;
-        lexerInputOperation = createLexerInputOperation(
-                lastTokenIndex + 1,
-                existingTokensEndOffset(),
-                (lastTokenIndex >= 0) ? state(lastTokenIndex) : null
-        );
-    }
-    
     public LanguagePath languagePath() {
         return languagePath;
     }
@@ -152,28 +144,24 @@ extends FlyOffsetGapList<Object> implements MutableTokenList<T> {
     
     public synchronized int tokenCount() {
         if (lexerInputOperation != null) { // still lexing
-            tokenOrEmbeddingContainerImpl(Integer.MAX_VALUE);
+            tokenOrEmbeddingImpl(Integer.MAX_VALUE);
         }
         return size();
     }
 
-    public char childTokenCharAt(int rawOffset, int index) {
-        index += childTokenOffset(rawOffset);
-        return text.charAt(index);
-    }
-    
-    public int childTokenOffset(int rawOffset) {
+    public int tokenOffset(AbstractToken<T> token) {
+        int rawOffset = token.rawOffset();
         return (rawOffset < offsetGapStart()
                 ? rawOffset
                 : rawOffset - offsetGapLength());
     }
-    
-    public int tokenOffset(int index) {
+
+    public int tokenOffsetByIndex(int index) {
         return elementOffset(index);
     }
     
-    public int existingTokensEndOffset() {
-        return elementOrEndOffset(tokenCountCurrent());
+    public int[] tokenIndex(int offset) {
+        return LexerUtilsConstants.tokenIndexLazyTokenCreation(this, offset);
     }
 
     /**
@@ -188,21 +176,22 @@ extends FlyOffsetGapList<Object> implements MutableTokenList<T> {
         rootModCount++;
     }
     
-    public synchronized Object tokenOrEmbeddingContainer(int index) {
-        return tokenOrEmbeddingContainerImpl(index);
+    public synchronized TokenOrEmbedding<T> tokenOrEmbedding(int index) {
+        return tokenOrEmbeddingImpl(index);
     }
     
-    private Object tokenOrEmbeddingContainerImpl(int index) {
+    private TokenOrEmbedding<T> tokenOrEmbeddingImpl(int index) {
         while (lexerInputOperation != null && index >= size()) {
-            Token token = lexerInputOperation.nextToken();
+            AbstractToken<T> token = lexerInputOperation.nextToken();
             if (token != null) { // lexer returned valid token
+                if (!token.isFlyweight())
+                    token.setTokenList(this);
                 updateElementOffsetAdd(token);
                 add(token);
                 laState = laState.add(lexerInputOperation.lookahead(),
                         lexerInputOperation.lexerState());
             } else { // no more tokens from lexer
-                lexerInputOperation.release();
-                lexerInputOperation = null;
+                releaseLexerInputOperation();
                 trimToSize();
                 laState.trimToSize();
             }
@@ -217,7 +206,7 @@ extends FlyOffsetGapList<Object> implements MutableTokenList<T> {
         return nonFlyToken;
     }
 
-    public synchronized void wrapToken(int index, EmbeddingContainer embeddingContainer) {
+    public synchronized void wrapToken(int index, EmbeddingContainer<T> embeddingContainer) {
         set(index, embeddingContainer);
     }
 
@@ -225,36 +214,30 @@ extends FlyOffsetGapList<Object> implements MutableTokenList<T> {
         return LexerSpiPackageAccessor.get().inputAttributes(tokenHierarchyOperation.mutableTextInput());
     }
     
-    protected int elementRawOffset(Object elem) {
-        return LexerUtilsConstants.token(elem).rawOffset();
+    protected int elementRawOffset(TokenOrEmbedding<T> elem) {
+        return elem.token().rawOffset();
     }
  
-    protected void setElementRawOffset(Object elem, int rawOffset) {
-        LexerUtilsConstants.token(elem).setRawOffset(rawOffset);
+    protected void setElementRawOffset(TokenOrEmbedding<T> elem, int rawOffset) {
+        elem.token().setRawOffset(rawOffset);
     }
     
-    protected boolean isElementFlyweight(Object elem) {
+    protected boolean isElementFlyweight(TokenOrEmbedding<T> elem) {
         // token wrapper always contains non-flyweight token
-        return (elem.getClass() != EmbeddingContainer.class)
-            && ((AbstractToken)elem).isFlyweight();
+        return (elem.embedding() == null)
+            && elem.token().isFlyweight();
     }
     
-    protected int elementLength(Object elem) {
-        return LexerUtilsConstants.token(elem).length();
+    protected int elementLength(TokenOrEmbedding<T> elem) {
+        return elem.token().length();
     }
     
-    private AbstractToken<T> existingToken(int index) {
-        // Must use synced tokenOrEmbeddingContainer() because of possible change
-        // of the underlying list impl when adding lazily requested tokens
-        return LexerUtilsConstants.token(tokenOrEmbeddingContainer(index));
-    }
-
-    public Object tokenOrEmbeddingContainerUnsync(int index) {
+    public TokenOrEmbedding<T> tokenOrEmbeddingUnsync(int index) {
         // Solely for token list updater or token hierarchy snapshots
         // having single-threaded exclusive write access
         return get(index);
     }
-    
+
     public int lookahead(int index) {
         return laState.lookahead(index);
     }
@@ -267,8 +250,12 @@ extends FlyOffsetGapList<Object> implements MutableTokenList<T> {
         return size();
     }
 
-    public TokenList<?> root() {
+    public TokenList<?> rootTokenList() {
         return this;
+    }
+
+    public CharSequence inputSourceText() {
+        return inputSourceText;
     }
 
     public TokenHierarchyOperation<?,?> tokenHierarchyOperation() {
@@ -277,74 +264,94 @@ extends FlyOffsetGapList<Object> implements MutableTokenList<T> {
     
     public LexerInputOperation<T> createLexerInputOperation(
     int tokenIndex, int relexOffset, Object relexState) {
+        // Possibly release unfinished lexing - will be restarted in replaceTokens()
+        // Releasing the lexer now allows to share a single backing lexer's impl instance better.
+        // Do not assign null to lexerInputOperation since the replaceTokens() would not know
+        // that the lexing was unfinished.
+        if (lexerInputOperation != null)
+            lexerInputOperation.release();
+
         // Used for mutable lists only so maintain LA and state
         return new TextLexerInputOperation<T>(this, tokenIndex, relexState,
-                text, 0, relexOffset, text.length());
+                relexOffset, inputSourceText.length());
     }
 
     public boolean isFullyLexed() {
         return (lexerInputOperation == null);
     }
 
-    public void replaceTokens(TokenListChange<T> change, int removeTokenCount, int diffLength) {
+    public void replaceTokens(TokenListChange<T> change, TokenHierarchyEventInfo eventInfo, boolean modInside) {
         int index = change.index();
         // Remove obsolete tokens (original offsets are retained)
-        Object[] removedTokensOrEmbeddingContainers = new Object[removeTokenCount];
-        copyElements(index, index + removeTokenCount, removedTokensOrEmbeddingContainers, 0);
-        int offset = change.offset();
-        for (int i = 0; i < removeTokenCount; i++) {
-            Object tokenOrEmbeddingContainer = removedTokensOrEmbeddingContainers[i];
-            AbstractToken<?> token;
-            // It's necessary to update-status of all removed tokens' contained embeddings
-            // since otherwise (if they would not be up-to-date) they could not be updated later
-            // as they lose their parent token list which the update-status relies on.
-            if (tokenOrEmbeddingContainer.getClass() == EmbeddingContainer.class) {
-                EmbeddingContainer<?> ec = (EmbeddingContainer<?>)tokenOrEmbeddingContainer;
-                ec.updateStatusAndInvalidate();
-                token = ec.token();
-            } else { // Regular token
-                token = (AbstractToken<?>)tokenOrEmbeddingContainer;
+        int removeTokenCount = change.removedTokenCount();
+        AbstractToken<T> firstRemovedToken = null;
+        if (removeTokenCount > 0) {
+            @SuppressWarnings("unchecked")
+            TokenOrEmbedding<T>[] removedTokensOrEmbeddings = new TokenOrEmbedding[removeTokenCount];
+            copyElements(index, index + removeTokenCount, removedTokensOrEmbeddings, 0);
+            firstRemovedToken = removedTokensOrEmbeddings[0].token();
+            for (int i = 0; i < removeTokenCount; i++) {
+                TokenOrEmbedding<T> tokenOrEmbedding = removedTokensOrEmbeddings[i];
+                // It's necessary to update-status of all removed tokens' contained embeddings
+                // since otherwise (if they would not be up-to-date) they could not be updated later
+                // as they lose their parent token list which the update-status relies on.
+                AbstractToken<T> token = tokenOrEmbedding.token();
+                if (!token.isFlyweight()) {
+                    updateElementOffsetRemove(token);
+                    token.setTokenList(null);
+                    EmbeddingContainer<T> ec = tokenOrEmbedding.embedding();
+                    if (ec != null) {
+                        assert (ec.cachedModCount() != rootModCount) : "ModCount already updated"; // NOI18N
+                        ec.markRemoved(token.rawOffset());
+                    }
+                }
             }
-            if (!token.isFlyweight()) {
-                updateElementOffsetRemove(token);
-                token.setTokenList(null);
-            }
-            offset += token.length();
+            remove(index, removeTokenCount); // Retain original offsets
+            laState.remove(index, removeTokenCount); // Remove lookaheads and states
+            change.setRemovedTokens(removedTokensOrEmbeddings);
+        } else {
+            change.setRemovedTokensEmpty();
         }
-        remove(index, removeTokenCount); // Retain original offsets
-        laState.remove(index, removeTokenCount); // Remove lookaheads and states
-        change.setRemovedTokens(removedTokensOrEmbeddingContainers);
-        change.setRemovedEndOffset(offset);
 
         // Move and fix the gap according to the performed modification.
+        // Instead of modOffset the gap is located at first relexed token's start
+        // because then the already precomputed index corresponding to the given offset
+        // can be reused. Otherwise there would have to be another binary search for index.
         if (offsetGapStart() != change.offset()) {
             // Minimum of the index of the first removed index and original computed index
-            moveOffsetGap(change.offset(), Math.min(index, change.offsetGapIndex()));
+            moveOffsetGap(change.offset(), change.index());
         }
-        updateOffsetGapLength(-diffLength);
+        updateOffsetGapLength(-eventInfo.diffLength());
 
         // Add created tokens.
-        List<Object> addedTokensOrBranches = change.addedTokensOrBranches();
-        if (addedTokensOrBranches != null) {
-            for (Object tokenOrBranch : addedTokensOrBranches) {
-                @SuppressWarnings("unchecked")
-                AbstractToken<T> token = (AbstractToken<T>)tokenOrBranch;
+        List<TokenOrEmbedding<T>> addedTokensOrEmbeddings = change.addedTokenOrEmbeddings();
+        if (addedTokensOrEmbeddings != null && addedTokensOrEmbeddings.size() > 0) {
+            for (TokenOrEmbedding<T> tokenOrEmbedding : addedTokensOrEmbeddings) {
+                AbstractToken<T> token = tokenOrEmbedding.token();
+                if (!token.isFlyweight())
+                    token.setTokenList(this);
                 updateElementOffsetAdd(token);
             }
-            addAll(index, addedTokensOrBranches);
+            addAll(index, addedTokensOrEmbeddings);
             laState = laState.addAll(index, change.laState());
             change.syncAddedTokenCount();
             // Check for bounds change only
-            if (removeTokenCount == 1 && addedTokensOrBranches.size() == 1) {
+            if (removeTokenCount == 1 && addedTokensOrEmbeddings.size() == 1) {
                 // Compare removed and added token ids and part types
-                AbstractToken<T> removedToken = LexerUtilsConstants.token(removedTokensOrEmbeddingContainers[0]);
-                AbstractToken<T> addedToken = change.addedToken(0);
-                if (removedToken.id() == addedToken.id()
-                    && removedToken.partType() == addedToken.partType()
+                AbstractToken<T> addedToken = change.addedTokenOrEmbeddings().get(0).token();
+                if (firstRemovedToken.id() == addedToken.id()
+                    && firstRemovedToken.partType() == addedToken.partType()
                 ) {
                     change.markBoundsChange();
                 }
             }
+        }
+
+        // Possibly restart unfinished lexing
+        if (this.lexerInputOperation != null) { // Lexing was not finished before update
+            int tokenCount = tokenCountCurrent();
+            lexerInputOperation = createLexerInputOperation(tokenCount, elementOrEndOffset(tokenCount),
+                (tokenCount > 0) ? state(tokenCount - 1) : null);
         }
     }
     
@@ -356,29 +363,26 @@ extends FlyOffsetGapList<Object> implements MutableTokenList<T> {
         return null;
     }
 
+    @Override
     public int startOffset() {
         return 0;
     }
 
     public int endOffset() {
-        return text.length();
+        return (inputSourceText != null) ? inputSourceText.length() : 0;
     }
 
     public boolean isRemoved() {
         return false; // Should never become removed
     }
 
+    public void setInputSourceText(CharSequence text) {
+        this.inputSourceText = text;
+    }
+
     @Override
     public String toString() {
         return LexerUtilsConstants.appendTokenList(null, this).toString();
-    }
-    
-    public CharSequence text() {
-        return text;
-    }
-    
-    public void setText(CharSequence text) {
-        this.text = text;
     }
     
 }

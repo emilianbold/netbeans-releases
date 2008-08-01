@@ -58,6 +58,7 @@ import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.Profile;
 import org.netbeans.api.java.platform.Specification;
 import org.netbeans.modules.mobility.cldcplatform.J2MEPlatform;
+import org.openide.WizardDescriptor;
 import org.openide.loaders.TemplateWizard;
 import org.openide.util.NbBundle;
 
@@ -234,7 +235,7 @@ public class PlatformSelectionPanelGUI extends JPanel implements ActionListener 
             } else if (profError) {
                 message = NbBundle.getMessage(PlatformSelectionPanelGUI.class, "ERR_PlatformSelection_Platform_does_not_support_1", reqProf); //NOI18N
             }
-            wiz.putProperty("WizardPanel_errorMessage", message); //NOI18N
+            wiz.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, message); //NOI18N
         }
     }
     

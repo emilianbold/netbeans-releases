@@ -67,16 +67,7 @@ public class DrawingAreaModule extends ModuleInstall
    {
    }
  
-   public void restored()
-   {
-      IADProduct product = getProduct();
-      //System.out.println("The projecdt = " + product);
-      if(product != null)
-      {         
-         product.setDiagramManager(new UMLDiagramManager());
-      }    
-   }
-   
+
    //////////////////////////////////////////////////////////////////
    // Helper Methods
    
@@ -97,6 +88,10 @@ public class DrawingAreaModule extends ModuleInstall
                break;
             }
          }
+      }
+      else
+      {
+          retVal = (IADProduct) productManager.getCoreProduct();
       }
       
       return retVal;

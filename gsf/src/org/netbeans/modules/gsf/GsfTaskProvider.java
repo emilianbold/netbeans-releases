@@ -53,7 +53,10 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.modules.gsf.api.Hint;
 import org.netbeans.modules.gsf.api.ParserResult;
+import org.netbeans.modules.gsf.api.RuleContext;
+import org.netbeans.modules.gsfret.hints.infrastructure.GsfHintsManager;
 import org.netbeans.napi.gsfret.source.CompilationController;
 import org.netbeans.napi.gsfret.source.Phase;
 import org.netbeans.napi.gsfret.source.Source;
@@ -121,8 +124,10 @@ public class GsfTaskProvider extends PushTaskScanner  {
         //cancel all current operations:
         cancelAllCurrent();
         
-        this.scope = scope;
-        this.callback = callback;
+        synchronized (TASKS) {
+            this.scope = scope;
+            this.callback = callback;
+        }
         
         if (scope == null || callback == null) {
             return;
@@ -134,6 +139,7 @@ public class GsfTaskProvider extends PushTaskScanner  {
         
         for (Project p : scope.getLookup().lookupAll(Project.class)) {
             // TODO - find out which subgroups to use
+            
             for (SourceGroup sg : ProjectUtils.getSources(p).getSourceGroups(Sources.TYPE_GENERIC)) {
                 enqueue(new Work(sg.getRootFolder(), callback));
             }
@@ -170,7 +176,7 @@ public class GsfTaskProvider extends PushTaskScanner  {
     
     private static void enqueue(Work w) {
         synchronized (TASKS) {
-            if (INSTANCE != null && TASKS.size() == 0) {
+            if (INSTANCE != null && TASKS.size() == 0 && INSTANCE.callback != null) {
                INSTANCE.callback.started();
             }
             final RequestProcessor.Task task = WORKER.post(w);
@@ -181,7 +187,7 @@ public class GsfTaskProvider extends PushTaskScanner  {
                     synchronized (TASKS) {
                         if (!clearing) {
                             TASKS.remove(task);
-                            if (INSTANCE != null && TASKS.size() == 0) {
+                            if (INSTANCE != null && TASKS.size() == 0 && INSTANCE.callback != null) {
                                INSTANCE.callback.finished();
                             }
                         }
@@ -190,7 +196,7 @@ public class GsfTaskProvider extends PushTaskScanner  {
             });
             if (task.isFinished()) {
                 TASKS.remove(task);
-                if (INSTANCE != null && TASKS.size() == 0) {
+                if (INSTANCE != null && TASKS.size() == 0 && INSTANCE.callback != null) {
                    INSTANCE.callback.finished();
                 }
             }
@@ -235,6 +241,10 @@ public class GsfTaskProvider extends PushTaskScanner  {
         }
         
         private void refreshFile(final FileObject file) {
+            if (!file.isValid()) {
+                return;
+            }
+
             if (file.isFolder()) {
                 // HACK Bypass all the libraries in Rails projects
                 // TODO FIXME The hints providers need to pass in relevant directories
@@ -260,6 +270,19 @@ public class GsfTaskProvider extends PushTaskScanner  {
                 return;
             }
 
+            // Make sure we're not dealing with a huge file!
+            // Causes issues like 132306
+            // openide.loaders/src/org/openide/text/DataEditorSupport.java
+            // has an Env#inputStream method which posts a warning to the user
+            // if the file is greater than 1Mb...
+            //SG_ObjectIsTooBig=The file {1} seems to be too large ({2,choice,0#{2}b|1024#{3} Kb|1100000#{4} Mb|1100000000#{5} Gb}) to safely open. \n\
+            //  Opening the file could cause OutOfMemoryError, which would make the IDE unusable. Do you really want to open it?
+            // I don't want to try indexing these files... (you get an interactive
+            // warning during indexing
+            if (file.getSize () > 1024 * 1024) {
+                return;
+            }
+            
             final List<ErrorDescription> result = new ArrayList<ErrorDescription>();
             
             Source source = Source.forFileObject(file);
@@ -288,30 +311,50 @@ public class GsfTaskProvider extends PushTaskScanner  {
                                 continue;
                             }
 
-                            List<Error> errors = provider.computeErrors(info, result);
-                            provider.computeHints(info, result);
+                            List<Error> errors = new ArrayList<Error>();
+                            GsfHintsManager manager = language.getHintsManager();
+                            if (manager == null) {
+                                continue;
+                            }
+                            RuleContext ruleContext = manager.createRuleContext(info, language, -1, -1, -1);
+                            if (ruleContext == null) {
+                                continue;
+                            }
+                            final List<Hint> hints = new ArrayList<Hint>();
+                            provider.computeErrors(manager, ruleContext, hints, errors);
+                            provider.computeHints(manager, ruleContext, hints);
                             for (Error error : errors) {
-                                try {
-                                    int astOffset = error.getStartPosition();
-                                    int lexOffset;
-                                    if (parserResult.getTranslatedSource() != null) {
-                                        lexOffset = parserResult.getTranslatedSource().getLexicalOffset(astOffset);
-                                        if (lexOffset == -1) {
-                                            continue;
-                                        }
-                                    } else {
-                                        lexOffset = astOffset;
+                                StyledDocument doc = (StyledDocument) info.getDocument();
+                                if (doc == null) {
+                                    continue;
+                                }
+
+                                int astOffset = error.getStartPosition();
+                                int lexOffset;
+                                if (parserResult.getTranslatedSource() != null) {
+                                    lexOffset = parserResult.getTranslatedSource().getLexicalOffset(astOffset);
+                                    if (lexOffset == -1) {
+                                        continue;
                                     }
+                                } else {
+                                    lexOffset = astOffset;
+                                }
 
-
-                                    int lineno = NbDocument.findLineNumber((StyledDocument)info.getDocument(), lexOffset)+1;
-                                    Task task = Task.create(file, 
-                                            error.getSeverity() == org.netbeans.modules.gsf.api.Severity.ERROR ? TASKLIST_ERROR : TASKLIST_WARNING,
-                                            error.getDisplayName(),
-                                            lineno);
-                                    tasks.add(task);
-                                } catch (IOException ioe) {
-                                    Exceptions.printStackTrace(ioe);
+                                int lineno = NbDocument.findLineNumber(doc, lexOffset) + 1;
+                                Task task = Task.create(file, 
+                                        error.getSeverity() == org.netbeans.modules.gsf.api.Severity.ERROR ? TASKLIST_ERROR : TASKLIST_WARNING,
+                                        error.getDisplayName(),
+                                        lineno);
+                                tasks.add(task);
+                            }
+                            
+                            if (!file.isValid()) {
+                                continue;
+                            }
+                            for (Hint desc : hints) {
+                                ErrorDescription errorDesc = manager.createDescription(desc, ruleContext, false);
+                                if (errorDesc != null) {
+                                    result.add(errorDesc);
                                 }
                             }
                         }

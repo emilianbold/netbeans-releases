@@ -43,6 +43,8 @@ package org.netbeans.modules.gsf.api;
 
 import java.util.Collections;
 import java.util.Set;
+import org.netbeans.modules.gsf.api.annotations.CheckForNull;
+import org.netbeans.modules.gsf.api.annotations.NonNull;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -57,17 +59,26 @@ public interface ElementHandle {
      * file object is the same as the file object in the CompilationInfo
      * for the root of the parse tree.
      */
+    @CheckForNull
     FileObject getFileObject();
     
     /**
      * The mime type associated with this element. This is typically
      * used to identify the type of element in embedded scenarios.
      */
+    @CheckForNull
     String getMimeType();
 
+    @NonNull
     String getName();
+
+    @CheckForNull
     String getIn();
+
+    @NonNull
     ElementKind getKind();
+
+    @NonNull
     Set<Modifier> getModifiers();
     
     /** 
@@ -79,7 +90,7 @@ public interface ElementHandle {
      * @return true if the handles resolve into the same {@link Element}s
      * in the same {@link javax.tools.JavaCompiler} task.
      */
-    boolean signatureEquals (final ElementHandle handle);
+    boolean signatureEquals (@NonNull final ElementHandle handle);
 
     /** 
      * A special handle which holds URL. Can be used to handle documentation
@@ -88,7 +99,7 @@ public interface ElementHandle {
     public static class UrlHandle implements ElementHandle {
         private String url;
 
-        public UrlHandle(String url) {
+        public UrlHandle(@NonNull String url) {
             this.url = url;
         }
 
@@ -107,7 +118,8 @@ public interface ElementHandle {
             
             return false;
         }
-        
+
+        @NonNull
         public String getUrl() {
             return url;
         }

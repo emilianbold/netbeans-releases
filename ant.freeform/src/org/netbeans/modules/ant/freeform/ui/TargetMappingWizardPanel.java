@@ -43,10 +43,11 @@ package org.netbeans.modules.ant.freeform.ui;
 
 import java.awt.Component;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.ant.freeform.Util;
+import org.apache.tools.ant.module.api.support.AntScriptUtils;
 import org.netbeans.modules.ant.freeform.spi.ProjectConstants;
 import org.netbeans.modules.ant.freeform.spi.TargetDescriptor;
 import org.netbeans.modules.ant.freeform.spi.support.NewFreeformProjectSupport;
@@ -109,7 +110,10 @@ public class TargetMappingWizardPanel implements WizardDescriptor.Panel {
         FileObject fo = FileUtil.toFileObject(f);
         // Util.getAntScriptTargetNames can return null when script is 
         // invalid but first panel checks script validity so it is OK here.
-        List<String> l = Util.getAntScriptTargetNames(fo);
+        List<String> l = null;
+        try {
+            l = AntScriptUtils.getCallableTargetNames(fo);
+        } catch (IOException x) {/* ignore */}
         // #47784 - update panel only once or when Ant script has changed
         if (targetNames == null || !targetNames.equals(l)) {
             targetNames = new ArrayList<String>(l);

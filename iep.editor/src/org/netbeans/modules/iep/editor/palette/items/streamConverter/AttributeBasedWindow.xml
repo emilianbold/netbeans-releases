@@ -24,8 +24,8 @@
     
     <!--<icon16 urlvalue="images/attributeBasedWindowx16.png" />
     <icon32 urlvalue="images/attributeBasedWindowx32.png" />-->
-    <icon16 urlvalue="images/icons32x32/attributeBasedWindowx32.png" />
-    <icon32 urlvalue="images/icons32x32/attributeBasedWindowx32.png" />
+    <icon16 urlvalue="images/new/icons32x32/attributeBasedWindowx32.png" />
+    <icon32 urlvalue="images/new/icons32x32/attributeBasedWindowx32.png" />
     <description localizing-bundle="org.netbeans.modules.iep.editor.palette.items.streamConverter.Bundle"
                display-name-key="NAME_html-AttributeBasedWindow"
                tooltip-key="HINT_html-AttributeBasedWindow" />

@@ -44,6 +44,7 @@ package org.netbeans.modules.ruby.railsprojects.ui.customizer;
 import java.util.ResourceBundle;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
+import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -101,4 +102,5 @@ public class RailsCompositePanelProvider implements ProjectCustomizer.CompositeC
     public static RailsCompositePanelProvider createRails() {
         return new RailsCompositePanelProvider(RAILS);
     }
+    
 }

@@ -59,6 +59,7 @@ import javax.swing.ImageIcon;
 import javax.swing.SingleSelectionModel;
 import javax.swing.event.ChangeListener;
 import org.netbeans.core.windows.Constants;
+import org.netbeans.core.windows.Switches;
 import org.netbeans.core.windows.WindowManagerImpl;
 import org.netbeans.core.windows.actions.ActionUtils;
 import org.netbeans.core.windows.view.ui.Tabbed;
@@ -372,9 +373,9 @@ public final class TabbedSlideAdapter implements Tabbed {
     /** Add action for disabling slide */
     public Action[] getPopupActions(Action[] defaultActions, int tabIndex) {
         boolean isMDI = WindowManagerImpl.getInstance().getEditorAreaState() == Constants.EDITOR_AREA_JOINED;
-        Action[] result = new Action[defaultActions.length + (isMDI ? 2 : 0)];
+        Action[] result = new Action[defaultActions.length + (isMDI && Switches.isTopComponentSlidingEnabled() ? 2 : 0)];
         System.arraycopy(defaultActions, 0, result, 0, defaultActions.length);
-        if (isMDI) {
+        if (isMDI && Switches.isTopComponentSlidingEnabled() ) {
             result[defaultActions.length] = 
                 new ActionUtils.AutoHideWindowAction(slideBar, tabIndex, true);
                 result[defaultActions.length+1] = 

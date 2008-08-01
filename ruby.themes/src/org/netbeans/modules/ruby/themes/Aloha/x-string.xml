@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE fontscolors PUBLIC "-//NetBeans//DTD Editor Fonts and Colors settings 1.1//EN" "http://www.netbeans.org/dtds/EditorFontsColors-1_1.dtd">
+<fontscolors>
+    <fontcolor default="string" name="s_p">
+        <font style="bold"/>
+    </fontcolor>
+    <fontcolor bgColor="ff2b2b2b" default="error" name="error" waveUnderlined="red"/>
+    <fontcolor default="string" name="s_string"/>
+</fontscolors>

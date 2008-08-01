@@ -75,10 +75,13 @@ public final class InstanceProviderLookup extends AbstractLookup {
         
         this.children = new CompoundFolderChildren(paths, true);
         this.children.addPropertyChangeListener(listener);
-        
-        rebuild();
     }
 
+    @Override
+    protected void initialize() {
+        rebuild();
+    }
+    
     private void rebuild() {
         List<FileObject> files = children.getChildren();
         Object instance = instanceProvider.createInstance(files);

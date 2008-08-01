@@ -44,7 +44,6 @@ import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodTree;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -56,10 +55,12 @@ import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.netbeans.modules.websvc.rest.support.JavaSourceHelper;
 import org.openide.filesystems.FileObject;
 import javax.xml.xpath.*;
+import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.websvc.rest.codegen.Constants;
 import org.netbeans.modules.websvc.rest.codegen.model.ClientStubModel;
 import org.netbeans.modules.websvc.rest.model.api.RestConstants;
 import org.netbeans.modules.websvc.rest.model.api.RestServicesModel;
+import org.netbeans.modules.websvc.rest.projects.WebProjectRestSupport;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
@@ -74,6 +75,13 @@ import org.w3c.dom.NodeList;
  */
 public class RestUtils {
    
+    public static void upgrade(Project project) {
+         RestSupport restSupport = project.getLookup().lookup(RestSupport.class);
+        if (restSupport != null) {
+            restSupport.upgrade();
+        }
+    }
+    
     /**
      *  Makes sure project is ready for REST development.
      *  @param source source file or directory as part of REST application project.
@@ -156,6 +164,36 @@ public class RestUtils {
          wsModel.enablePropertyChangeListener();
     }
 
+    public static boolean hasJTASupport(Project project) {
+        RestSupport support = getRestSupport(project);
+        
+        if (support != null) {
+            return support.hasJTASupport();
+        }
+        
+        return false;
+    }
+    
+    public static boolean hasSpringSupport(Project project) {
+        RestSupport support = getRestSupport(project);
+        
+        if (support != null) {
+            return support.hasSpringSupport();
+        }
+        
+        return false;
+    }
+    
+    public static Datasource getDatasource(Project project, String jndiName) {
+        RestSupport support = getRestSupport(project);
+        
+        if (support != null) {
+            return ((WebProjectRestSupport) support).getDatasource(jndiName);
+        }
+        
+        return null;
+    }
+    
     //
     // TODO: The following methods don't belong here. Some of them should go into
     // JavaSourceHelper and the XML/DOM related methods should go into
@@ -207,11 +245,11 @@ public class RestUtils {
 
     public static String findStubNameFromClass(String className) {
         String name = className;
-        int index = name.lastIndexOf("Resource");
+        int index = name.lastIndexOf(Constants.RESOURCE_SUFFIX);
         if (index != -1) {
             name = name.substring(0, index);
         } else {
-            index = name.lastIndexOf("Converter");
+            index = name.lastIndexOf(Constants.CONVERTER_SUFFIX);
             if (index != -1)
                 name = name.substring(0, index);
         }

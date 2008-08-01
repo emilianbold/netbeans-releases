@@ -69,7 +69,7 @@ import org.dom4j.DocumentFactory;
  * supports the W3C DOM API.</p>
  *
  * @author <a href="mailto:jstrachan@apache.org">James Strachan</a>
- * @version $Revision$
+ * @version $Revision: 1.2.6.1 $
  */
 public class W3CNodeProxy extends Dom4JNodeProxy implements org.w3c.dom.Element
 {

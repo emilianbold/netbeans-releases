@@ -154,7 +154,7 @@ public class Generator {
             if (railsInstall != null) {
                 gemLocation = FileUtil.toFile(railsInstall);
             } else {
-                String version = platform.getGemManager().getVersion("rails"); // NOI18N
+                String version = platform.getGemManager().getLatestVersion("rails"); // NOI18N
                 if (version != null) {
                     gemLocation =
                         new File(platform.getGemManager().getGemHome() + File.separator +

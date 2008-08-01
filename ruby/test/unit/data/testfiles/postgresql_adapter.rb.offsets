@@ -1,0 +1,30 @@
+
+# Boiled down code snippet from postgresql_adapter.rb which trips up the
+# lexer; the query call is not properly lexed
+<MODULENODE>module <COLON2NODE>ActiveRecord</COLON2NODE>
+  <BLOCKNODE><DEFNNODE>def <ARGUMENTNODE>indexes</ARGUMENTNODE><ARGSNODE>(<LISTNODE><ARGUMENTNODE>table_name</ARGUMENTNODE></LISTNODE>, <LOCALASGNNODE>name = <NILNODE>nil</NILNODE></LOCALASGNNODE><BLOCKNODE/>)</ARGSNODE> #:nodoc:
+    <LOCALASGNNODE>result = <FCALLNODE>query<ARRAYNODE><STRNODE>(<DSTRNODE>&lt;&lt;-SQL, name)
+      SELECT i.relname, d.indisunique, a.attname
+        FROM pg_class t, pg_class i, pg_index d, pg_attribute a
+       WHERE i.relkind = 'i'
+         AND d.indexrelid = i.oid
+         AND d.indisprimary = 'f'
+         AND t.oid = d.indrelid
+         AND t.relname = '</STRNODE><EVSTRNODE>#{<LOCALVARNODE>table_name</LOCALVARNODE>}</EVSTRNODE><STRNODE>'
+         AND a.attrelid = t.oid
+         AND ( d.indkey[0]=a.attnum OR d.indkey[1]=a.attnum
+            OR d.indkey[2]=a.attnum OR d.indkey[3]=a.attnum
+            OR d.indkey[4]=a.attnum OR d.indkey[5]=a.attnum
+            OR d.indkey[6]=a.attnum OR d.indkey[7]=a.attnum
+            OR d.indkey[8]=a.attnum OR d.indkey[9]=a.attnum )
+      ORDER BY i.relname
+</STRNODE></DSTRNODE>  <LOCALVARNODE>  SQ</LOCALVARNODE>L</ARRAYNODE></FCALLNODE></LOCALASGNNODE>
+  end</DEFNNODE>
+
+  <DEFNNODE>def <ARGUMENTNODE>columns</ARGUMENTNODE><ARGSNODE>(<LISTNODE><ARGUMENTNODE>table_name</ARGUMENTNODE></LISTNODE>, <LOCALASGNNODE>name = <NILNODE>nil</NILNODE></LOCALASGNNODE><BLOCKNODE/>)</ARGSNODE> #:nodoc:
+    <CALLNODE><FCALLNODE>column_definitions<ARRAYNODE>(<LOCALVARNODE>table_name</LOCALVARNODE>)</ARRAYNODE></FCALLNODE>.collect <ITERNODE>do <MULTIPLEASGNNODE>|<ARRAYNODE><LOCALASGNNODE>name</LOCALASGNNODE>, <DASGNNODE>type</DASGNNODE>, <DASGNNODE>default</DASGNNODE>, <DASGNNODE>notnull</DASGNNODE>, <DASGNNODE>typmod</DASGNNODE></ARRAYNODE>|</MULTIPLEASGNNODE>
+      # typmod now unused as limit, precision, scale all handled by superclass
+      <CALLNODE><CONSTNODE>Column</CONSTNODE>.new<ARRAYNODE>(<LOCALVARNODE>name</LOCALVARNODE>, <FCALLNODE>default_value<ARRAYNODE>(<DVARNODE>default</DVARNODE>)</ARRAYNODE></FCALLNODE>, <FCALLNODE>translate_field_type<ARRAYNODE>(<DVARNODE>type</DVARNODE>)</ARRAYNODE></FCALLNODE>, <CALLNODE><DVARNODE>notnull</DVARNODE> == <ARRAYNODE><STRNODE>"f"</STRNODE></ARRAYNODE></CALLNODE>)</ARRAYNODE></CALLNODE>
+    end</ITERNODE></CALLNODE>
+  end</DEFNNODE></BLOCKNODE>
+end</MODULENODE>

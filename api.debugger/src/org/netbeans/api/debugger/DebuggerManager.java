@@ -278,8 +278,8 @@ public final class DebuggerManager implements ContextProvider {
         //S ystem.out.println("@StartDebugging info: " + info);
         
         // init sessions
-        ArrayList sessionProviders = new ArrayList ();
-        ArrayList engines = new ArrayList ();
+        List sessionProviders = new ArrayList();
+        List<DebuggerEngine> engines = new ArrayList<DebuggerEngine>();
         Lookup l = info.getLookup ();
         Lookup l2 = info.getLookup ();
         synchronized (l) {
@@ -346,8 +346,7 @@ public final class DebuggerManager implements ContextProvider {
                         engineProviders.get (j);
                     Object[] services = ep.getServices ();
                     engine = new DebuggerEngine (
-                        ((DebuggerEngineProvider) engineProviders.get (j)).
-                            getEngineTypeID (),
+                        ep.getEngineTypeID (),
                         s,
                         services,
                         l
@@ -376,7 +375,7 @@ public final class DebuggerManager implements ContextProvider {
             if (Thread.interrupted()) {
                 break;
             }
-            Task task = ((DebuggerEngine) engines.get (i)).getActionsManager ().postAction
+            Task task = engines.get(i).getActionsManager ().postAction
                 (ActionsManager.ACTION_START);
             if (task instanceof Cancellable) {
                 try {
@@ -395,18 +394,20 @@ public final class DebuggerManager implements ContextProvider {
         if (i < k) { // It was canceled
             int n = i + 1;
             for (i = 0; i < k; i++) {
-                ActionsManager am = ((DebuggerEngine) engines.get (i)).getActionsManager();
+                ActionsManager am = engines.get(i).getActionsManager();
                 if (i < (n - 1)) am.postAction(ActionsManager.ACTION_KILL); // kill the started engines
                 am.destroy();
             }
             return new DebuggerEngine[] {};
         }
         
-        if (sessionToStart != null)
+        if (sessionToStart != null) {
+            GestureSubmitter.logDebugStart(sessionToStart, engines);
             setCurrentSession (sessionToStart);
+        }
         
         DebuggerEngine[] des = new DebuggerEngine [engines.size ()];
-        return (DebuggerEngine[]) engines.toArray (des);
+        return engines.toArray (des);
     }
 
     /**
@@ -514,13 +515,15 @@ public final class DebuggerManager implements ContextProvider {
         Breakpoint breakpoint
     ) {
         if (initBreakpoints (breakpoint)) {
-            registerBreakpoint(breakpoint);
-            breakpoints.addElement (breakpoint);
-            fireBreakpointCreated (breakpoint, null);
+            // do not add one breakpoint more than once.
+            if (registerBreakpoint(breakpoint)) {
+                breakpoints.addElement (breakpoint);
+                fireBreakpointCreated (breakpoint, null);
+            }
         }
     }
     
-    private void registerBreakpoint(Breakpoint breakpoint) {
+    private boolean registerBreakpoint(Breakpoint breakpoint) {
         Class c = breakpoint.getClass();
         ClassLoader cl = c.getClassLoader();
         synchronized (breakpointsByClassLoaders) {
@@ -530,7 +533,7 @@ public final class DebuggerManager implements ContextProvider {
                 breakpointsByClassLoaders.put(cl, lb);
                 //moduleUnloadListeners.listenOn(cl);
             }
-            lb.add(breakpoint);
+            return lb.add(breakpoint);
         }
     }
     

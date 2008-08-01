@@ -67,8 +67,10 @@ import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.Persistenc
 import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlException;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
 import org.netbeans.modules.j2ee.persistence.spi.moduleinfo.JPAModuleInfo;
+import org.netbeans.modules.j2ee.persistence.spi.provider.PersistenceProviderSupplier;
 import org.netbeans.modules.j2ee.persistence.unit.PUDataObject;
 import org.netbeans.modules.j2ee.persistence.wizard.entity.WrapperPanel;
+import org.netbeans.modules.j2ee.persistence.wizard.library.PersistenceLibrarySupport;
 import org.netbeans.modules.j2ee.persistence.wizard.unit.PersistenceUnitWizardPanel.TableGeneration;
 import org.netbeans.modules.j2ee.persistence.wizard.unit.PersistenceUnitWizardPanel;
 import org.netbeans.modules.j2ee.persistence.wizard.unit.PersistenceUnitWizardPanelDS;
@@ -209,6 +211,11 @@ public class Util {
         return false;
     }
     
+    public static boolean isContainerManaged(Project project) {
+        PersistenceProviderSupplier providerSupplier = project.getLookup().lookup(PersistenceProviderSupplier.class);
+        return Util.isSupportedJavaEEVersion(project) && providerSupplier != null && providerSupplier.supportsDefaultProvider();
+    }
+    
     public static boolean isEjbModule(Project project) {
         JPAModuleInfo moduleInfo = project.getLookup().lookup(JPAModuleInfo.class);
         if (moduleInfo == null){
@@ -247,9 +254,9 @@ public class Util {
     public static PersistenceUnit buildPersistenceUnitUsingWizard(Project project,
             String preselectedDB, TableGeneration tableGeneration){
         
-        boolean isContainer = Util.isSupportedJavaEEVersion(project);
+        boolean isContainerManaged = Util.isContainerManaged(project);
         PersistenceUnitWizardPanel panel;
-        if (isContainer) {
+        if (isContainerManaged) {
             panel = new PersistenceUnitWizardPanelDS(project, null, true, tableGeneration);
         } else {
             panel = new PersistenceUnitWizardPanelJdbc(project, null, true, tableGeneration);
@@ -290,7 +297,7 @@ public class Util {
         Object result = DialogDisplayer.getDefault().notify(nd);
         if (result == createPUButton) {
             PersistenceUnit punit = new PersistenceUnit();
-            if (isContainer) {
+            if (isContainerManaged) {
                 PersistenceUnitWizardPanelDS puPanel = (PersistenceUnitWizardPanelDS) panel;
                 if (puPanel.getDatasource() != null && !"".equals(puPanel.getDatasource().trim())){
                     if (puPanel.isJTA()) {
@@ -309,8 +316,9 @@ public class Util {
                 PersistenceUnitWizardPanelJdbc puJdbc = (PersistenceUnitWizardPanelJdbc) panel;
                 punit = ProviderUtil.buildPersistenceUnit(puJdbc.getPersistenceUnitName(), puJdbc.getSelectedProvider(), puJdbc.getPersistenceConnection());
                 punit.setTransactionType("RESOURCE_LOCAL"); //NOI18N
-                if (puJdbc.getPersistenceLibrary() != null){
-                    addLibraryToProject(project, puJdbc.getPersistenceLibrary());
+                Library lib = PersistenceLibrarySupport.getLibrary(puJdbc.getSelectedProvider());
+                if (lib != null){
+                    addLibraryToProject(project, lib);
                 }
             }
             punit.setName(panel.getPersistenceUnitName());
@@ -344,6 +352,9 @@ public class Util {
             return false;
         }
         PUDataObject pud = ProviderUtil.getPUDataObject(project);
+        if (pud == null) {
+            return false;
+        }
         pud.addPersistenceUnit(punit);
         pud.save();
         return true;

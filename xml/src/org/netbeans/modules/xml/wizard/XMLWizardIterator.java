@@ -64,27 +64,30 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.JComponent;
 import org.netbeans.api.project.Project;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.xml.api.EncodingUtil;
 
+import org.netbeans.modules.xml.lib.Util;
 import org.netbeans.modules.xml.retriever.RetrieveEntry;
-import org.netbeans.modules.xml.retriever.Retriever;
 import org.netbeans.modules.xml.retriever.RetrieverEngine;
 import org.netbeans.modules.xml.retriever.catalog.Utilities;
 import org.netbeans.modules.xml.retriever.catalog.Utilities.DocumentTypesEnum;
 
-import org.netbeans.modules.xml.xam.ModelSource;
+import org.netbeans.modules.xml.text.TextEditorSupport;
 import org.netbeans.spi.project.CacheDirectoryProvider;
 import org.netbeans.spi.project.ui.templates.support.Templates;
-import org.openide.WizardDescriptor.Panel;
 import org.openide.loaders.TemplateWizard;
 import org.openide.WizardDescriptor;
+import org.openide.cookies.EditCookie;
+import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataFolder;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileUtil;
-import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
+
 
 
 /**
@@ -160,7 +163,7 @@ public class XMLWizardIterator implements TemplateWizard.Iterator {
         } catch (IOException ignore) {
         }
         model = new DocumentModel(targetFolderURL);
-        Object prop = templateWizard.getProperty ("WizardPanel_contentData"); // NOI18N
+        Object prop = templateWizard.getProperty (WizardDescriptor.PROP_CONTENT_DATA); // NOI18N
         if (prop != null && prop instanceof String[]) {
             beforeSteps = (String[])prop;
         }
@@ -168,7 +171,7 @@ public class XMLWizardIterator implements TemplateWizard.Iterator {
 
     public void uninitialize(TemplateWizard templateWizard) {
         if (targetPanel!=null) {
-            ((JComponent)targetPanel.getComponent()).putClientProperty("WizardPanel_contentData", targetSteps);
+            ((JComponent)targetPanel.getComponent()).putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, targetSteps);
             targetPanel = null;
         }
         current = -1;
@@ -204,137 +207,58 @@ public class XMLWizardIterator implements TemplateWizard.Iterator {
         }
 
         final String name = uniqueTargetName;
+        String encoding = EncodingUtil.getProjectEncoding(folder.getPrimaryFile());
+        if (!EncodingUtil.isValidEncoding(encoding)) 
+            encoding = "UTF-8"; //NOI18N
+        String nameExt = name + "." + extension;
 
         // in atomic action create data object and return it
         
-        FileSystem filesystem = targetFolder.getFileSystem();        
+        FileSystem filesystem = targetFolder.getFileSystem();
         final FileObject[] fileObject = new FileObject[1];
         FileSystem.AtomicAction fsAction = new FileSystem.AtomicAction() {
             public void run() throws IOException {
+                // XXX use Freemarker instead of this hardcoded template!
                 //use the project's encoding if there is one
-                String encoding = EncodingUtil.getProjectEncoding(folder.getPrimaryFile());
-                if(!EncodingUtil.isValidEncoding(encoding))
-                    encoding = "UTF-8"; //NOI18N
-                FileObject fo = targetFolder.createData(name, extension);
-                FileLock lock = null;
-                try {
-                    lock = fo.lock();
-                    OutputStream out = fo.getOutputStream(lock);
-                    out = new BufferedOutputStream(out, 999);
-                    Writer writer = new OutputStreamWriter(out, encoding);        // NOI18N
-
-                    String root = model.getRoot();
-                    if (root == null) root = "root";
-                    String prefix = model.getPrefix();
-                    
-                    // generate file content
-                    // header
-                    writer.write("<?xml version=\"1.0\" encoding=\""+encoding+"\"?>\n");  // NOI18N
-                    writer.write("\n");                                         // NOI18N
-                    // comment
-                    String nameExt = name + "." + extension; // NOI18N
-                    Date now = new Date();
-                    String currentDate = DateFormat.getDateInstance (DateFormat.LONG).format (now);
-                    String currentTime = DateFormat.getTimeInstance (DateFormat.SHORT).format (now);
-                    String userName = System.getProperty ("user.name");
-                    writer.write ("<!--\n"); // NOI18N
-                    writer.write ("    Document   : " + nameExt + "\n"); // NOI18N
-                    writer.write ("    Created on : " + currentDate + ", " + currentTime + "\n"); // NOI18N
-                    writer.write ("    Author     : " + userName + "\n"); // NOI18N
-                    writer.write ("    Description:\n"); // NOI18N
-                    writer.write ("        Purpose of the document follows.\n"); // NOI18N
-                    writer.write ("-->\n"); // NOI18N
-                    writer.write ("\n");                                         // NOI18N
-                    
-                    if (model.getType() == model.DTD) {
-                        if (model.getPublicID() == null) {
-                            writer.write("<!DOCTYPE " + root + " SYSTEM '" + model.getSystemID() + "'>\n");                                 // NOI18N
-                        } else {
-                            writer.write("<!DOCTYPE " + root + " PUBLIC '" + model.getPublicID() + "' '" + model.getSystemID() + "'>\n");   // NOI18N
-                        }
-                        writer.write("<" + root + ">\n");                                                                                   // NOI18N
-                    } else if (model.getType() == model.SCHEMA) {
-                        String namespace = model.getNamespace();
-                        List nodes = model.getSchemaNodes();
-                        
-                            if(prefix == null || "".equals(prefix)){
-                                writer.write("<" + root + "  xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'\n");
-                            } else{
-                                writer.write("<" +prefix +":" + root + "  xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'\n"); 
-                            }
-                        
-                            //if (namespace == null || "".equals(namespace)) {
-                              //  writer.write("  xsi:noNamespaceSchemaLocation='" + model.getSystemID() + "'>\n");
-                            //}
-                            
-                            if(nodes != null){
-                                for(int i=0;i < nodes.size(); i++ ){
-                                    SchemaObject erdn = (SchemaObject)nodes.get(i);
-                                    if(erdn.getPrefix() == null || "".equals(erdn.getPrefix()) ){
-                                        writer.write("   xmlns='" + erdn.getNamespace() + "'\n");
-                                    }else {
-                                        writer.write("   xmlns:" + erdn.getPrefix() + "='" + erdn.getNamespace() + "'\n" );
-                                    }
-                                }
-                                for(int i=0; i<nodes.size();i++){
-                                    SchemaObject erdn = (SchemaObject)nodes.get(i);
-                                    String relativePath = null;
-                                    if(erdn.toString().startsWith("http"))
-                                        relativePath = erdn.toString();
-                                    else
-                                        relativePath = Util.getRelativePath((new File(erdn.getSchemaFileName())), pobj);
-                                    if(i==0) {
-                                        if(nodes.size() ==1)
-                                            writer.write("   xsi:schemaLocation='" + erdn.getNamespace() + " " + relativePath + "'>\n");
-                                        else
-                                            writer.write("   xsi:schemaLocation='" + erdn.getNamespace() + " " + relativePath + "\n");
-                                    } else if(i == nodes.size() -1 )
-                                        writer.write("   " + erdn.getNamespace() + " " + relativePath + "'>\n");
-                                    else
-                                        writer.write("   " + erdn.getNamespace() + " " + relativePath + "\n");
-                                }
-                               
-                            }
-                            
-                        generateXMLBody(model, root, writer);
-                        
-                    } else {
-                        writer.write("<" + root + ">\n");                       // NOI18N
-                    }
-                    
-                    if(prefix== null || "".equals(prefix)){
-                        writer.write("\n");                                         // NOI18N
-                        writer.write("</" + root + ">\n");                          // NOI18N
-                    }else{
-                        writer.write("\n");                                         // NOI18N
-                        writer.write("</" +prefix + ":"+ root + ">\n");
-                    }
-
-                    writer.flush();
-                    writer.close();
-                    
-                    // return DataObject
-                    lock.releaseLock();
-                    lock = null;
-                    
-                    fileObject[0] = fo;
-                    
-                } finally {
-                    if (lock != null) lock.releaseLock();
-                }
+                FileObject fo = targetFolder.createData(name, extension); 
+                fileObject[0] = fo;
+                
             }
         };
         
                 
         filesystem.runAtomicAction(fsAction);
-
-        // perform default action and return
         
+        StringBuffer sb = new StringBuffer();
+        //write the comment
+        writeXMLComment(sb, nameExt, encoding);
+        //write the body
+        writeXMLFile(sb);
+                
+        FileLock lock = null;
+        try {
+            lock = fileObject[0].lock();
+            OutputStream out = fileObject[0].getOutputStream(lock);
+            out = new BufferedOutputStream(out, 999);
+            Writer writer = new OutputStreamWriter(out, encoding); 
+            writer.write(sb.toString());
+            writer.flush();
+            writer.close();
+            lock.releaseLock();
+            lock = null;
+
+        } finally {
+            if (lock != null) {
+                lock.releaseLock();
+            }
+        }
+        // perform default action and return
         Set set = new HashSet(1);                
         DataObject createdObject = DataObject.find(fileObject[0]);        
         Util.performDefaultAction(createdObject);
-        set.add(createdObject);      
-       
+        set.add(createdObject);    
+        
+        formatXML(fileObject[0]);
         return set;
     }
     
@@ -343,7 +267,7 @@ public class XMLWizardIterator implements TemplateWizard.Iterator {
         WizardDescriptor.Panel panel = currentComponent();
         if (panel.getComponent() instanceof JComponent) {
             ((JComponent)panel.getComponent()).putClientProperty(
-                "WizardPanel_contentSelectedIndex",                             // NOI18N
+                WizardDescriptor.PROP_CONTENT_SELECTED_INDEX,                             // NOI18N
                 new Integer(current)
             );        
         }
@@ -391,7 +315,8 @@ public class XMLWizardIterator implements TemplateWizard.Iterator {
     }
             
     public String name() {
-        return "//TODO";
+        return NbBundle.getMessage(XMLWizardIterator.class, "TITLE_x_of_y",
+            Integer.valueOf(current + 1), Integer.valueOf(current));
     }
     
     public void nextPanel() {
@@ -446,10 +371,10 @@ public class XMLWizardIterator implements TemplateWizard.Iterator {
             String[]  steps = new String[3];
             steps[0] = getTargetPanelName();
             steps[1] = getDocumentPanelName();
-            steps[2] = Util.THIS.getString("MSG_unknown");
+            steps[2] = Util.THIS.getString(XMLWizardIterator.class, "MSG_unknown");
             String[] newSteps = createSteps(beforeSteps,steps);
             documentPanel.putClientProperty(
-                "WizardPanel_contentData",                                      // NOI18N
+                WizardDescriptor.PROP_CONTENT_DATA,                                      // NOI18N
                 newSteps
             );
             
@@ -468,7 +393,7 @@ public class XMLWizardIterator implements TemplateWizard.Iterator {
             steps[2] = getDTDPanelName();
             String[] newSteps = createSteps(beforeSteps,steps);
             dtdPanel.putClientProperty(
-                "WizardPanel_contentData",                                      // NOI18N
+                WizardDescriptor.PROP_CONTENT_DATA,                                      // NOI18N
                 newSteps
             );
             
@@ -488,7 +413,7 @@ public class XMLWizardIterator implements TemplateWizard.Iterator {
             steps[3] = getXMLContentPanelName();
             String[] newSteps = createSteps(beforeSteps,steps);
             schemaPanel.putClientProperty(
-                "WizardPanel_contentData",                                      // NOI18N
+                WizardDescriptor.PROP_CONTENT_DATA,                                      // NOI18N
                 newSteps
             );
         }
@@ -501,15 +426,15 @@ public class XMLWizardIterator implements TemplateWizard.Iterator {
             // fill component with step hints
             if (targetPanel.getComponent() instanceof JComponent) {
                 JComponent panel = (JComponent) targetPanel.getComponent();
-                targetSteps = panel.getClientProperty("WizardPanel_contentData");
+                targetSteps = panel.getClientProperty(WizardDescriptor.PROP_CONTENT_DATA);
                 String[] steps = new String[3];
                 //steps[0] = "Hello";
                 steps[0] = getTargetPanelName();
                 steps[1] = getDocumentPanelName();
-                steps[2] = Util.THIS.getString("MSG_unknown");
+                steps[2] = Util.THIS.getString(XMLWizardIterator.class, "MSG_unknown");
                 String[] newSteps = createSteps(beforeSteps,steps);
                 panel.putClientProperty(
-                    "WizardPanel_contentData",                                  // NOI18N
+                    WizardDescriptor.PROP_CONTENT_DATA,                                  // NOI18N
                     newSteps
                 );
             }
@@ -528,15 +453,15 @@ public class XMLWizardIterator implements TemplateWizard.Iterator {
     }
     
     private String getDocumentPanelName() {
-        return Util.THIS.getString("PROP_doc_panel_name");
+        return Util.THIS.getString(XMLWizardIterator.class, "PROP_doc_panel_name");
     }
         
     private String getDTDPanelName() {
-        return Util.THIS.getString("PROP_dtd_panel_name");
+        return Util.THIS.getString(XMLWizardIterator.class, "PROP_dtd_panel_name");
     }
     
     private String getSchemaPanelName() {
-        return Util.THIS.getString("PROP_schema_panel_name");
+        return Util.THIS.getString(XMLWizardIterator.class, "PROP_schema_panel_name");
     }
     
     private static String[] createSteps(String[] before, String[] panelNames) {
@@ -571,7 +496,7 @@ public class XMLWizardIterator implements TemplateWizard.Iterator {
             steps[3] = getXMLContentPanelName();
             String[] newSteps = createSteps(beforeSteps,steps);
             xmlPanel.putClientProperty(
-                "WizardPanel_contentData",                                      // NOI18N
+                WizardDescriptor.PROP_CONTENT_DATA,                                      // NOI18N
                 newSteps
             );
         }
@@ -579,10 +504,10 @@ public class XMLWizardIterator implements TemplateWizard.Iterator {
     }
 
     private String getXMLContentPanelName() {
-        return Util.THIS.getString("PROP_xml_content_panel_name");
+        return Util.THIS.getString(XMLWizardIterator.class, "PROP_xml_content_panel_name");
     }
     
-    private void generateXMLBody(DocumentModel model, String root, Writer writer){
+    private void generateXMLBody(DocumentModel model, String root, StringBuffer writer){
         String schemaFileName = model.getPrimarySchema();
         if(model.getPrimarySchema().startsWith("http")) {
             schemaFileName = retrieveURLSchema(model.getPrimarySchema());             
@@ -637,5 +562,156 @@ public class XMLWizardIterator implements TemplateWizard.Iterator {
         }
     }
     
+     private void modifyRootElementAttrs(StringBuffer xmlBuffer) {
+         Map<String, String> nsAttrs = model.getXMLContentAttributes().getNamespaceToPrefixMap();
+           
+         if (nsAttrs == null || nsAttrs.size() == 0) {
+             return;
+         }
+         int firstOccur = xmlBuffer.indexOf("xmlns");
+         int insertLoc = xmlBuffer.indexOf("xmlns", firstOccur + 1);
 
+         StringBuffer sb = new StringBuffer();
+         for (String ns : nsAttrs.keySet()) {
+             String xmlnsString = "xmlns:" + nsAttrs.get(ns) + "='" + ns + "'";
+             if (xmlBuffer.indexOf(xmlnsString) == -1) {
+                 xmlBuffer.insert(insertLoc, xmlnsString + "\n   ");
+             }
+
+         }
+            xmlBuffer.insert(insertLoc, sb.toString());            
+            
+     }
+
+     
+    private void writeXMLFile(StringBuffer writer) throws IOException {
+        DataFolder folder = templateWizard.getTargetFolder();
+        File pobj = FileUtil.toFile(folder.getPrimaryFile());
+        String root = model.getRoot();
+        if (root == null) {
+            root = "root";
+        }
+        String prefix = model.getPrefix();
+
+        if (model.getType() == model.DTD) {
+            if (model.getPublicID() == null) {
+                writer.append("<!DOCTYPE " + root + " SYSTEM '" + model.getSystemID() + "'>\n");                                 // NOI18N
+
+            } else {
+                writer.append("<!DOCTYPE " + root + " PUBLIC '" + model.getPublicID() + "' '" + model.getSystemID() + "'>\n");   // NOI18N
+
+            }
+            writer.append("<" + root + ">\n");                                                                                   // NOI18N
+
+        } else if (model.getType() == model.SCHEMA) {
+            String namespace = model.getNamespace();
+            List nodes = model.getSchemaNodes();
+
+            if (prefix == null || "".equals(prefix)) {
+                writer.append("<" + root + "  xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'\n");
+            } else {
+                writer.append("<" + prefix + ":" + root + "  xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'\n");
+            }
+
+
+            Map<String, String> nsToPre = new HashMap<String, String>();
+            if (nodes != null) {
+                for (int i = 0; i < nodes.size(); i++) {
+                    SchemaObject erdn = (SchemaObject) nodes.get(i);
+                    nsToPre.put(erdn.getNamespace(), erdn.getPrefix());
+
+                    if (erdn.getPrefix() == null || "".equals(erdn.getPrefix())) {
+                        writer.append("   xmlns='" + erdn.getNamespace() + "'\n");
+                    } else {
+                        writer.append("   xmlns:" + erdn.getPrefix() + "='" + erdn.getNamespace() + "'\n");
+                    }
+                }
+                for (int i = 0; i < nodes.size(); i++) {
+                    SchemaObject erdn = (SchemaObject) nodes.get(i);
+                    String relativePath = null;
+                    if (erdn.toString().startsWith("http")) {
+                        relativePath = erdn.toString();
+                    } else {
+                        relativePath = Util.getRelativePath((new File(erdn.getSchemaFileName())), pobj);
+                    }
+                    if (i == 0) {
+                        if (nodes.size() == 1) {
+                            writer.append("   xsi:schemaLocation='" + erdn.getNamespace() + " " + relativePath + "'>\n");
+                        } else {
+                            writer.append("   xsi:schemaLocation='" + erdn.getNamespace() + " " + relativePath + "\n");
+                        }
+                    } else if (i == nodes.size() - 1) {
+                        writer.append("   " + erdn.getNamespace() + " " + relativePath + "'>\n");
+                    } else {
+                        writer.append("   " + erdn.getNamespace() + " " + relativePath + "\n");
+                    }
+                }
+
+            }
+            model.getXMLContentAttributes().setNamespaceToPrefixMap(nsToPre);
+            generateXMLBody(model, root, writer);
+            modifyRootElementAttrs(writer);
+        } else {
+            writer.append("<" + root + ">\n");                       // NOI18N
+
+        }
+
+        if (prefix == null || "".equals(prefix)) {
+            writer.append("\n");                                         // NOI18N
+
+            writer.append("</" + root + ">\n");                          // NOI18N
+
+        } else {
+            writer.append("\n");                                         // NOI18N
+
+            writer.append("</" + prefix + ":" + root + ">\n");
+        }
+
+      //  writer.flush();
+     //   writer.close();
+
+    }
+    
+    private void writeXMLComment(StringBuffer writer, String filename, String encoding) throws IOException {
+        writer.append("<?xml version=\"1.0\" encoding=\"" + encoding + "\"?>\n");  // NOI18N
+        writer.append("\n");                                         // NOI18N
+        // comment
+        Date now = new Date();
+        String currentDate = DateFormat.getDateInstance(DateFormat.LONG).format(now);
+        String currentTime = DateFormat.getTimeInstance(DateFormat.SHORT).format(now);
+        String userName = System.getProperty("user.name");
+        writer.append("<!--\n"); // NOI18N
+        writer.append("    Document   : " + filename + "\n"); // NOI18N
+        writer.append("    Created on : " + currentDate + ", " + currentTime + "\n"); // NOI18N
+        writer.append("    Author     : " + userName + "\n"); // NOI18N
+        writer.append("    Description:\n"); // NOI18N
+        writer.append("        Purpose of the document follows.\n"); // NOI18N
+        writer.append("-->\n"); // NOI18N
+        writer.append("\n");
+    }
+    
+    
+    
+    private void formatXML(FileObject fobj){
+        try {
+            DataObject dobj = DataObject.find(fobj);
+            EditorCookie ec = dobj.getCookie(EditorCookie.class);
+            if (ec == null) {
+                return;
+            }
+            BaseDocument doc = (BaseDocument) ec.getDocument();
+            org.netbeans.modules.xml.text.api.XMLFormatUtil.reformat(doc, 0, doc.getLength());
+            EditCookie cookie = dobj.getCookie(EditCookie.class);
+            if (cookie instanceof TextEditorSupport) {
+                if (cookie != null) {
+                    ((TextEditorSupport) cookie).saveDocument();
+                } 
+            }
+
+        } catch (Exception e) {
+            //if exception , then the file will be informatted
+        }
+                 
+        
+    }
 }

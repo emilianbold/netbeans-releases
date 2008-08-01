@@ -55,6 +55,8 @@ import org.netbeans.modules.xml.schema.model.Attribute.Use;
  */
 public class ElementResultItem extends CompletionResultItem {
     
+    private int caretPosition = 0;
+    
     /**
      * Creates a new instance of ElementResultItem
      */
@@ -98,13 +100,20 @@ public class ElementResultItem extends CompletionResultItem {
     public String getReplacementText(){
         AbstractElement element = (AbstractElement)axiComponent;
         StringBuffer buffer = new StringBuffer();
+        boolean firstAttr = false;
         for(AbstractAttribute aa : element.getAttributes()) {
             if(aa instanceof AnyAttribute)
                 continue;
             Attribute a = (Attribute)aa;
             if(a.getUse() == Use.REQUIRED) {
+                if(buffer.length() == 0)
+                    firstAttr = true;
                 buffer.append(" " + a.getName()+
                         AttributeResultItem.ATTRIBUTE_EQUALS_AND_VALUE_STRING);
+                if(firstAttr) {
+                    caretPosition = buffer.length() -1;
+                    firstAttr = false;
+                }                
             }
         }
         return itemText + buffer.toString();
@@ -117,4 +126,13 @@ public class ElementResultItem extends CompletionResultItem {
         return component;
     }
 
+    
+    /**
+     * For elements, the caret should go inside the double quotes of
+     * the first mandatory attribute.
+     */
+    @Override
+    public int getCaretPosition() {
+        return itemText.length() + caretPosition;
+    }    
 }

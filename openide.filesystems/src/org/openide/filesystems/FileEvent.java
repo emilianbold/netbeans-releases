@@ -185,4 +185,18 @@ public class FileEvent extends EventObject {
 
         return false;
     }
+    
+    final boolean isAsynchronous() {
+        EventControl.AtomicActionLink currentPropID = this.atomActionID;
+        while (currentPropID != null) {
+            final Object atomicAction = currentPropID.getAtomicAction();
+            if (atomicAction != null && atomicAction.getClass().getName().indexOf("AsyncRefreshAtomicAction") != -1) {
+                return true;
+            }
+            currentPropID = currentPropID.getPreviousLink();
+        }
+
+        return false;
+    }
+    
 }

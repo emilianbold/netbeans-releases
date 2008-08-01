@@ -155,7 +155,7 @@ public class TestUtil extends ProxyLookup {
         /**************/
         
         // XXX please use MODULENAME.dir properties instead of hardcoding cluster names!
-        final String rootIDE=File.separator+"netbeans"+File.separator+"ide9";
+        final String rootIDE=File.separator+"netbeans"+File.separator+"ide10";
         final String rootAnt=File.separator+"java2"+File.separator+"ant";
         /* Hack to get ant directories */
         String classPath=System.getProperty("java.class.path");
@@ -195,17 +195,22 @@ public class TestUtil extends ProxyLookup {
     
     /**
      * Set the global default lookup.
+     * @deprecated Use MockLookup instead
      */
     public static void setLookup(Lookup l) {
         DEFAULT.setLookups(new Lookup[] {l});
     }
     
+    /**
+     * @deprecated Use MockLookup instead
+     */
     public static void setLookup(Lookup[] l) {
         DEFAULT.setLookups(l);
     }
     
     /**
      * Set the global default lookup with some fixed instances including META-INF/services/*.
+     * @deprecated Use MockLookup instead
      */
     public static void setLookup(Object[] instances, ClassLoader cl) {
         DEFAULT.setLookups(new Lookup[] {

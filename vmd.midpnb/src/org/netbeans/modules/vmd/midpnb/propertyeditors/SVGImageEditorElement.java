@@ -74,7 +74,8 @@ import org.netbeans.modules.vmd.midp.propertyeditors.api.resource.element.Proper
 import org.netbeans.modules.vmd.midp.propertyeditors.api.usercode.PropertyEditorMessageAwareness;
 import org.netbeans.modules.vmd.midpnb.components.svg.SVGImageCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.SVGMenuCD;
-import org.netbeans.modules.vmd.midpnb.components.svg.util.SVGUtils;
+import org.netbeans.modules.vmd.midpnb.components.svg.parsers.SVGComponentImageParser;
+import org.netbeans.modules.vmd.midpnb.components.svg.parsers.SVGMenuImageParser;
 import org.netbeans.modules.vmd.midpnb.screen.display.SVGImageComponent;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -205,27 +206,37 @@ public class SVGImageEditorElement extends PropertyEditorResourceElement impleme
             }
         });
 
-        if (svgImageFileObject[0] != null) {
-            InputStream inputStream = null;
-            try {
-                inputStream = svgImageFileObject[0].getInputStream();
-                if (inputStream != null) {
-                    SVGUtils.parseSVGMenu(inputStream, parentComponent);
-                }
-            } catch (FileNotFoundException ex) {
-                Debug.warning(ex);
-            } finally {
-                if (inputStream != null) {
-                    try {
-                        inputStream.close();
-                    } catch (IOException ioe) {
-                        Debug.warning(ioe);
-                    }
+        parseSVGImageItems(svgImageFileObject[0], parentComponent);
+    }
+
+    private void parseSVGImageItems(FileObject imageFO, DesignComponent parentComponent) {
+        if (imageFO == null) {
+            return;
+        }
+        SVGComponentImageParser parser = SVGComponentImageParser.getParserByComponent(parentComponent);
+        if (parser == null) {
+            return;
+        }
+        
+        InputStream inputStream = null;
+        try {
+            inputStream = imageFO.getInputStream();
+            if (inputStream != null) {
+                parser.parse(inputStream, parentComponent);
+            }
+        } catch (FileNotFoundException ex) {
+            Debug.warning(ex);
+        } finally {
+            if (inputStream != null) {
+                try {
+                    inputStream.close();
+                } catch (IOException ioe) {
+                    Debug.warning(ioe);
                 }
             }
         }
     }
-
+    
     private void setText(String text) {
         if (text == null) {
             text = ""; // NOI18N
@@ -473,6 +484,7 @@ public class SVGImageEditorElement extends PropertyEditorResourceElement impleme
         pathTextComboBox = new javax.swing.JComboBox();
         progressBar = new javax.swing.JProgressBar();
 
+        pathLabel.setLabelFor(pathTextComboBox);
         org.openide.awt.Mnemonics.setLocalizedText(pathLabel, org.openide.util.NbBundle.getMessage(SVGImageEditorElement.class, "ImageEditorElement.pathLabel.text")); // NOI18N
         pathLabel.setEnabled(false);
 
@@ -482,19 +494,21 @@ public class SVGImageEditorElement extends PropertyEditorResourceElement impleme
         previewPanel.setEnabled(false);
         previewPanel.setLayout(new java.awt.BorderLayout());
 
-        widthLabel.setText(org.openide.util.NbBundle.getMessage(SVGImageEditorElement.class, "ImageEditorElement.widthLabel.text")); // NOI18N
+        widthLabel.setLabelFor(widthTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(widthLabel, org.openide.util.NbBundle.getMessage(SVGImageEditorElement.class, "ImageEditorElement.widthLabel.text")); // NOI18N
         widthLabel.setEnabled(false);
 
         widthTextField.setEditable(false);
         widthTextField.setEnabled(false);
 
-        heightLabel.setText(org.openide.util.NbBundle.getMessage(SVGImageEditorElement.class, "ImageEditorElement.heightLabel.text")); // NOI18N
+        heightLabel.setLabelFor(heightTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(heightLabel, org.openide.util.NbBundle.getMessage(SVGImageEditorElement.class, "ImageEditorElement.heightLabel.text")); // NOI18N
         heightLabel.setEnabled(false);
 
         heightTextField.setEditable(false);
         heightTextField.setEnabled(false);
 
-        chooserButton.setText(org.openide.util.NbBundle.getMessage(SVGImageEditorElement.class, "ImageEditorElement.chooserButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(chooserButton, org.openide.util.NbBundle.getMessage(SVGImageEditorElement.class, "ImageEditorElement.chooserButton.text")); // NOI18N
         chooserButton.setEnabled(false);
         chooserButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -525,7 +539,7 @@ public class SVGImageEditorElement extends PropertyEditorResourceElement impleme
                     .add(layout.createSequentialGroup()
                         .add(previewLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(previewPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 85, Short.MAX_VALUE)
+                        .add(previewPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 36, Short.MAX_VALUE)
                         .add(18, 18, 18)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(layout.createSequentialGroup()
@@ -537,9 +551,9 @@ public class SVGImageEditorElement extends PropertyEditorResourceElement impleme
                                     .add(widthTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 92, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                                     .add(heightTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 92, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
                             .add(progressBar, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 146, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                    .add(pathTextComboBox, 0, 295, Short.MAX_VALUE))
+                    .add(pathTextComboBox, 0, 246, Short.MAX_VALUE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(chooserButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 30, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(chooserButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 79, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -547,8 +561,8 @@ public class SVGImageEditorElement extends PropertyEditorResourceElement impleme
                 .add(pathLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(chooserButton)
-                    .add(pathTextComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(pathTextComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(chooserButton))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
@@ -565,6 +579,15 @@ public class SVGImageEditorElement extends PropertyEditorResourceElement impleme
                     .add(previewLabel)
                     .add(previewPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 100, Short.MAX_VALUE)))
         );
+
+        widthTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SVGImageEditorElement.class, "ACSN_Width")); // NOI18N
+        widthTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SVGImageEditorElement.class, "ACSD_Width")); // NOI18N
+        heightTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SVGImageEditorElement.class, "ACSN_Height")); // NOI18N
+        heightTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SVGImageEditorElement.class, "ACSD_Height")); // NOI18N
+        chooserButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SVGImageEditorElement.class, "ACSN_Browse")); // NOI18N
+        chooserButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SVGImageEditorElement.class, "ACSD_Browse")); // NOI18N
+        pathTextComboBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SVGImageEditorElement.class, "ACSN_ImagePath")); // NOI18N
+        pathTextComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SVGImageEditorElement.class, "ACSD_ImagePath")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void chooserButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_chooserButtonActionPerformed

@@ -33,7 +33,7 @@ Microsystems, Inc. All Rights Reserved.
         <echo message="Copying netbeans home dir to ${appdir}/Contents/Resources/NetBeans"/>
         <exec executable="sh" failonerror="yes">
             <arg value="-c"/>
-            <arg value="cp -RP ${basedir}/build/netbeans '${appdir}/Contents/Resources/NetBeans'"/>
+            <arg value="cp -RPp ${basedir}/build/netbeans '${appdir}/Contents/Resources/NetBeans'"/>
         </exec>
         
         <echo message="Delete launchers for another platforms"/>
@@ -64,7 +64,7 @@ Microsystems, Inc. All Rights Reserved.
     
     
     <target name="build-pkg" depends="build-app">
-        <echo message="NETBEANS_INSTALL_DIR=&quot;${app.name}&quot;${line.separator}GLASSFISH_INSTALL_DIR=&quot;${glassfish.install.dir}&quot;${line.separator}TOMCAT_INSTALL_DIR=&quot;${tomcat.install.dir}&quot;${line.separator}NB_CLUSTER_DIR=&quot;${nbClusterDir}&quot;${line.separator}" file="pkg/scripts/env.sh"/>
+        <echo message="NETBEANS_INSTALL_DIR=&quot;${app.name}&quot;${line.separator}GLASSFISH_INSTALL_DIR=&quot;${glassfish.install.dir}&quot;${line.separator}TOMCAT_INSTALL_DIR=&quot;${tomcat.install.dir}&quot;${line.separator}NB_CLUSTER_DIR=&quot;${nbClusterDir}&quot;${line.separator}GLASSFISH_V3_INSTALL_DIR=&quot;${glassfish.v3.install.dir}&quot;" file="pkg/scripts/env.sh"/>
         
         <copy file="pkg/Info.plist" filtering="true" tofile="${basedir}/build/Info.plist">
             <filterset>
@@ -79,7 +79,7 @@ Microsystems, Inc. All Rights Reserved.
         
         <copy file="${basedir}/../../commonfiles/Description.plist" filtering="true" overwrite="true" tofile="pkg/scripts/Description.plist">
             <filterset>
-                <filter token="TITLE" value="${baseide.install.name}"/>
+                <filter token="TITLE" value="${netbeans-Title}"/>
             </filterset>
         </copy>
         

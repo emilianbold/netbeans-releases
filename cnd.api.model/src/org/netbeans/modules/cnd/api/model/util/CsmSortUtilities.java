@@ -91,24 +91,43 @@ public class CsmSortUtilities {
     }
     
     public static boolean matchName(CharSequence name_, CharSequence strPrefix_, boolean match, boolean caseSensitive) {
-        // mached element is not empty name
-        if (name_.length() > 0) {
-            String name = name_.toString();
-            String strPrefix = strPrefix_.toString();
-            if (!caseSensitive) {
-                name = name.toLowerCase();
-                strPrefix = strPrefix.toLowerCase();
-            }
-            if (strPrefix.length() == 0 || name.startsWith(strPrefix)) {
-                return match ? (name.compareTo(strPrefix) == 0) : true;
+        int n1 = name_.length();
+        if (n1 == 0) {
+            return false;
+        }
+        int n2 = strPrefix_.length();
+        for (int i1=0, i2=0; i1<n1 && i2<n2; i1++, i2++) {
+            char c1 = name_.charAt(i1);
+            char c2 = strPrefix_.charAt(i2);
+            if (c1 != c2) {
+                if (!caseSensitive && !match) {
+                    c1 = Character.toUpperCase(c1);
+                    c2 = Character.toUpperCase(c2);
+                    if (c1 != c2) {
+                        c1 = Character.toLowerCase(c1);
+                        c2 = Character.toLowerCase(c2);
+                        if (c1 != c2) {
+                            return false;
+                        }
+                    }
+                } else {
+                    return false;
+                }
             }
         }
-	return false;
-    }   
+        if (match) {
+            return n1==n2;
+        }
+        return n1 >= n2;
+    }
+
     
     public static List<CsmNamedElement> filterList(Collection<? extends CsmDeclaration> list, CharSequence strPrefix, boolean match, boolean caseSensitive) {
+        return filterList(list.iterator(), strPrefix, match, caseSensitive);
+    }
+
+    public static List<CsmNamedElement> filterList(Iterator<? extends CsmDeclaration> it, CharSequence strPrefix, boolean match, boolean caseSensitive) {
 	List<CsmNamedElement> res = new ArrayList<CsmNamedElement>();
-	Iterator it = list.iterator();
 	while (it.hasNext()) {
 	    Object elem = it.next();
 	    if (CsmKindUtilities.isNamedElement(elem) && 

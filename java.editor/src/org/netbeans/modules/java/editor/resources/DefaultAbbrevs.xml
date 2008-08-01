@@ -225,8 +225,7 @@ made subject to such option by the copyright holder.
         <code>
 <![CDATA[try {
    ${selection}${cursor}
-} catch (${EX_TYPE uncaughtExceptionType default="Exception"} ${EX newVarName default="e"}) {
-}
+} ${CATCH_STMTS uncaughtExceptionCatchStatements default="catch (Exception e) {}" editable=false}
 ]]>
         </code>
     </codetemplate>

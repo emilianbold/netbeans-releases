@@ -138,7 +138,7 @@ made subject to such option by the copyright holder.
         <folder name="Modes">
             <folder name="output">
                 <file name="svnversioning.wstcref" url="svn_wstcref.xml">
-                    <attr name="position" intvalue="700"/>
+                    <attr name="position" intvalue="3100"/>
                 </file>
             </folder>
         </folder>

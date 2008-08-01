@@ -41,19 +41,18 @@
 package org.netbeans.jellytools.nodes;
 
 import java.awt.Toolkit;
+import java.io.IOException;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.FilesTabOperator;
 import org.netbeans.jellytools.FindInFilesOperator;
 import org.netbeans.jellytools.MainWindowOperator;
-import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.NewFileNameLocationStepOperator;
 import org.netbeans.jellytools.NewFileWizardOperator;
 import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.TopComponentOperator;
-import org.netbeans.junit.ide.ProjectSupport;
 
 /** Test of org.netbeans.jellytools.nodes.FolderNode
  *
@@ -72,8 +71,9 @@ public class FolderNodeTest extends org.netbeans.jellytools.JellyTestCase {
     /** method used for explicit testsuite definition
      */
     public static junit.framework.Test suite() {
+        /*
         junit.framework.TestSuite suite = new org.netbeans.junit.NbTestSuite();
-        // Cannot test because folder at different view has different items. */
+        // Cannot test because folder at different view has different items. 
         // suite.addTest(new FolderNodeTest("testVerifyPopup"));
         // Explore from here is used on web services node but to create such
         // a node you need application server installed. For now we skip this test.
@@ -88,6 +88,17 @@ public class FolderNodeTest extends org.netbeans.jellytools.JellyTestCase {
         suite.addTest(new FolderNodeTest("testProperties"));
         suite.addTest(new FolderNodeTest("testNewFile"));
         return suite;
+         */
+        return createModuleTest(FolderNodeTest.class, 
+        "testFind",
+        "testCompile",
+        "testCut",
+        "testCopy",
+        "testPaste",
+        "testDelete",
+        "testRename",
+        "testProperties",
+        "testNewFile");
     }
     
     /** Use for internal test execution inside IDE
@@ -99,8 +110,9 @@ public class FolderNodeTest extends org.netbeans.jellytools.JellyTestCase {
     
     /** Test case setup. */
     @Override
-    protected void setUp() {
+    protected void setUp() throws IOException {
         System.out.println("### "+getName()+" ###");
+        openDataProjects("SampleProject");
     }
     
     /** Test verifyPopup method.
@@ -123,7 +135,7 @@ public class FolderNodeTest extends org.netbeans.jellytools.JellyTestCase {
     private static final String SAMPLE_WEB_SERVICE_NAME = "SampleWebService";  //NOI18N
 
     /** Test exploreFromHere. */
-    public void testExploreFromHere() {
+    public void testExploreFromHere() throws Exception {
         // create new web application project
         
         NewProjectWizardOperator npwo = NewProjectWizardOperator.invoke();
@@ -143,7 +155,12 @@ public class FolderNodeTest extends org.netbeans.jellytools.JellyTestCase {
         // wait index.jsp is opened in editor
         EditorOperator editor = new EditorOperator("index.jsp"); // NOI18N
         // wait classpath scanning finished
-        ProjectSupport.waitScanFinished();
+        try {
+            Class.forName("org.netbeans.api.java.source.SourceUtils", true, Thread.currentThread().getContextClassLoader()).
+                    getMethod("waitScanFinished").invoke(null);
+        } catch (ClassNotFoundException x) {
+            System.err.println("Warning: org.netbeans.api.java.source.SourceUtils could not be found, will not wait for scan to finish");
+        }
         
         // create a web service
 

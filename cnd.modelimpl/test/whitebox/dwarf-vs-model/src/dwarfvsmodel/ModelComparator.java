@@ -55,6 +55,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.io.PrintStream;
+import java.util.Collection;
 import modelutils.FileCodeModelDeclaration;
 
 import org.netbeans.modules.cnd.api.model.*;
@@ -142,12 +143,12 @@ public class ModelComparator {
     }
     
     private void setupStreams() throws IOException {
-	modelStream = printToScreen ? System.out : DMUtils.createStream(tempDir, csmFile.getName(), "model"); // NOI18N
-	dwarfStream = printToScreen ? System.out : DMUtils.createStream(tempDir, csmFile.getName(), "dwarf"); // NOI18N
-	diffStream = printToScreen ? System.out : DMUtils.createStream(tempDir, csmFile.getName(), "diff"); // NOI18N
+	modelStream = printToScreen ? System.out : DMUtils.createStream(tempDir, csmFile.getName().toString(), "model"); // NOI18N
+	dwarfStream = printToScreen ? System.out : DMUtils.createStream(tempDir, csmFile.getName().toString(), "dwarf"); // NOI18N
+	diffStream = printToScreen ? System.out : DMUtils.createStream(tempDir, csmFile.getName().toString(), "diff"); // NOI18N
 	//traceStream and resultStream are passed directly to the constructor 
-	modelListStream = printToScreen ? System.out : DMUtils.createStream(tempDir, csmFile.getName(), "model-list"); // NOI18N
-	dwarfListStream = printToScreen ? System.out : DMUtils.createStream(tempDir, csmFile.getName(), "dwarf-list"); // NOI18N
+	modelListStream = printToScreen ? System.out : DMUtils.createStream(tempDir, csmFile.getName().toString(), "model-list"); // NOI18N
+	dwarfListStream = printToScreen ? System.out : DMUtils.createStream(tempDir, csmFile.getName().toString(), "dwarf-list"); // NOI18N
     }
     
     private void printFileInfo() {
@@ -335,12 +336,12 @@ public class ModelComparator {
 	if( decl == null ) {
 	    return "null"; // NOI18N
 	}
-	String name = CsmKindUtilities.isFunction(decl) ? ComparisonUtils.getSignature((CsmFunction) decl) :  decl.getName();
+	String name = CsmKindUtilities.isFunction(decl) ? ComparisonUtils.getSignature((CsmFunction) decl) :  decl.getName().toString();
 	StringBuilder sb = new StringBuilder(name);
 	sb.append(' ');
 	sb.append(decl.getKind().toString());
 	sb.append(' ');
-	sb.append(CsmTracer.getOffsetString((CsmOffsetable) decl));
+	sb.append(CsmTracer.getOffsetString((CsmOffsetable) decl, true));
 	return sb.toString();
     }
     
@@ -361,7 +362,7 @@ public class ModelComparator {
 	    return false;
 	}
         // Remove spaces from modelName (ex. "operator <<" => "operator<<")
-        String modelName = modelDeclaration.getName().replaceAll(" ", ""); // NOI18N
+        String modelName = modelDeclaration.getName().toString().replaceAll(" ", ""); // NOI18N
         String dwarfName = ComparisonUtils.getName(dwarfDeclaration); // NOI18N
 	if( "...".equals(modelName) ) { // NOI18N
 	    modelName = "";
@@ -383,7 +384,7 @@ public class ModelComparator {
 	tracer.indent();
 	
 	if( ! areDeclarationNamesEqual(decl, entry) ) {
-	    reportDifferent(decl, entry, "Names differ: ", decl.getName(), entry.getName());	//NOI18N
+	    reportDifferent(decl, entry, "Names differ: ", decl.getName().toString(), entry.getName());	//NOI18N
 	}
 	if(CsmKindUtilities.isFunction(decl)) {
             compareFunctions((CsmFunction)decl, entry);
@@ -409,7 +410,7 @@ public class ModelComparator {
 	    sb.append(decl.getKind());
 	    sb.append(" (" + decl.getClass() + ") ");	//NOI18N
 	    sb.append(((CsmOffsetable) decl).getContainingFile().getAbsolutePath());
-	    sb.append(CsmTracer.getOffsetString((CsmOffsetable) decl));
+	    sb.append(CsmTracer.getOffsetString((CsmOffsetable) decl, true));
 	    reportError(sb.toString());
 	}
 	
@@ -480,7 +481,7 @@ public class ModelComparator {
 	}
 	if( ! areDeclarationNamesEqual(var, entry) ) {
 	    reportDifferent(var, entry, (CsmKindUtilities.isParamVariable(var) ? "Parameter" : "Variable") + " names differ", //NOI18N
-		    var.getName(), entry.getName());
+		    var.getName().toString(), entry.getName());
 	    return;
 	}
 	CsmType type = var.getType();
@@ -498,7 +499,7 @@ public class ModelComparator {
 	    return;
         }
 	if( ! areDeclarationNamesEqual(typedef, entry) ) {
-	    reportDifferent(typedef, entry, "Typedef names differ", typedef.getName(), entry.getName()); // NOI18N
+	    reportDifferent(typedef, entry, "Typedef names differ", typedef.getName().toString(), entry.getName()); // NOI18N
 	    return;
 	}
         
@@ -515,7 +516,8 @@ public class ModelComparator {
     /** Compares functions signature. Does NOT print to diff, does NOT affect counters  */ 
     boolean areFunctionSignaturesEqual(CsmFunction modelFunction, DwarfEntry dwarfFunction) {
 	
-        List<CsmParameter> modelFunctionParams = modelFunction.getParameters();
+        List<CsmParameter> modelFunctionParams = new ArrayList<CsmParameter>();
+        modelFunctionParams.addAll(modelFunction.getParameters());
         List<DwarfEntry> dwarfFunctionParams = dwarfFunction.getParameters();
         
         if (modelFunctionParams.size() != dwarfFunctionParams.size()) {
@@ -560,7 +562,7 @@ public class ModelComparator {
 	}
 	
 	if( "void".equals(dwarfType) ) { // NOI18N
-	    return csmType == null || ComparisonUtils.isEmpty(csmType.getText()) || "void".equals(csmType.getText()); // NOI18N
+	    return csmType == null || ComparisonUtils.isEmpty(csmType.getText().toString()) || "void".equals(csmType.getText().toString()); // NOI18N
 	}
 	dwarfType = dwarfType.replaceAll(" ", ""); // NOI18N
 	if( csmType == null && "null".equals(dwarfType) ) { // NOI18N

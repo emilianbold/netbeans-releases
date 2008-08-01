@@ -93,6 +93,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.enterprise.deploy.shared.ModuleType;
+import org.netbeans.modules.glassfish.eecommon.api.config.GlassfishConfiguration;
 import org.netbeans.modules.j2ee.sun.dd.api.ASDDVersion;
 import org.netbeans.modules.j2ee.sun.dd.api.DDProvider;
 import org.netbeans.modules.j2ee.sun.dd.api.RootInterface;
@@ -101,8 +102,7 @@ import org.netbeans.modules.j2ee.sun.dd.impl.ejb.SunEjbJarProxy;
 import org.netbeans.modules.j2ee.sun.ddloaders.editor.ErrorAnnotation;
 import org.netbeans.modules.j2ee.sun.ddloaders.DDMultiViewDataObject;
 //import org.openide.awt.HtmlBrowser;
-import org.netbeans.modules.j2ee.sun.share.configbean.J2EEBaseVersion;
-import org.netbeans.modules.j2ee.sun.share.configbean.SunONEDeploymentConfiguration;
+import org.netbeans.modules.glassfish.eecommon.api.config.J2EEBaseVersion;
 import org.netbeans.modules.schema2beans.Schema2BeansException;
 import org.netbeans.modules.schema2beans.Schema2BeansRuntimeException;
 import org.openide.awt.HtmlBrowser;
@@ -134,7 +134,7 @@ public class SunDescriptorDataObject extends DDMultiViewDataObject
     private static final long serialVersionUID = 8957663189355029479L;
     
     
-    private Object proxyMonitor = new Object();
+    private final Object proxyMonitor = new Object();
     private volatile RootInterfaceImpl ddRootProxy;
 //    private FileObject srcRoots[];
     private PropertyChangeListener ddRootChangeListener;
@@ -258,7 +258,7 @@ public class SunDescriptorDataObject extends DDMultiViewDataObject
         }
         // If we can't locate the configuration (either not there or no valid key)
         // then just return null version.  Nothing else we can do.
-        SunONEDeploymentConfiguration config = SunONEDeploymentConfiguration.getConfiguration(fileKey);
+        GlassfishConfiguration config = GlassfishConfiguration.getConfiguration(fileKey);
         return (config != null) ? config.getJ2eeVersion() : null;
     }
     

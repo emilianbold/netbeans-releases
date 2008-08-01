@@ -96,7 +96,7 @@ public class SessionEJBWizardDescriptor implements WizardDescriptor.FinishablePa
         boolean isLocal = wizardPanel.isLocal();
         boolean isRemote = wizardPanel.isRemote();
         if (!isLocal && !isRemote) {
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(SessionEJBWizardDescriptor.class,"ERR_RemoteOrLocal_MustBeSelected")); //NOI18N
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(SessionEJBWizardDescriptor.class,"ERR_RemoteOrLocal_MustBeSelected")); //NOI18N
             return false;
         }
         
@@ -115,7 +115,7 @@ public class SessionEJBWizardDescriptor implements WizardDescriptor.FinishablePa
             }
             for (String name : proposedNames) {
                 if (targetFolder.getFileObject(name + ".java") != null) { // NOI18N
-                    wizardDescriptor.putProperty("WizardPanel_errorMessage", // NOI18N
+                    wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, // NOI18N
                             NbBundle.getMessage(SessionEJBWizardDescriptor.class,"ERR_FileAlreadyExists", name + ".java")); //NOI18N
                     return false;
                 }
@@ -135,10 +135,10 @@ public class SessionEJBWizardDescriptor implements WizardDescriptor.FinishablePa
 //                    }
 //                });
 //            }
-//            wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(SessionEJBWizardPanel.class,"scanning-in-progress")); //NOI18N
+//            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(SessionEJBWizardPanel.class,"scanning-in-progress")); //NOI18N
 //            return false;
 //        }
-        wizardDescriptor.putProperty("WizardPanel_errorMessage", " "); //NOI18N
+        wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, " "); //NOI18N
         return true;
     }
     

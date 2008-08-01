@@ -980,7 +980,7 @@ public class Merger implements IUMLParserEventsSink {
 	List mrs2 = XMLManip.selectNodeList(pn2, query);
 	
 	if (! compareNodeLists(mrs1, mrs2,
-			       new BySpecificAttributeNodeComparator("collectionType"))) 
+			       new BySpecificAttributeNodeComparator("collectionType", pp))) 
 	{
 	    return false;
 	}
@@ -989,7 +989,7 @@ public class Merger implements IUMLParserEventsSink {
 	mrs1 = XMLManip.selectNodeList(pn1, query);
 	mrs2 = XMLManip.selectNodeList(pn2, query);
 	if (! compareNodeLists(mrs1, mrs2,
-			       new BySpecificAttributeNodeComparator("name"))) 
+			       new BySpecificAttributeNodeComparator("name", pp))) 
 	{
 	    return false;
 	}
@@ -998,7 +998,7 @@ public class Merger implements IUMLParserEventsSink {
 	mrs1 = XMLManip.selectNodeList(pn1, query);
 	mrs2 = XMLManip.selectNodeList(pn2, query);
 	if (! compareNodeLists(mrs1, mrs2,
-			       new BySpecificAttributeNodeComparator("value"))) 
+			       new BySpecificAttributeNodeComparator("value", pp))) 
 	{
 	    return false;
 	}	

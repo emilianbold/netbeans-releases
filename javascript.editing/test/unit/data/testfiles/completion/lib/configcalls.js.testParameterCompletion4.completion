@@ -1,0 +1,5 @@
+Code completion result for source line:
+somefunctio|n({}, {}, {});
+(QueryType=COMPLETION, NameKind=PREFIX)
+------------------------------------
+METHOD     somefunction(abc, def, ghi) :              configcalls.js

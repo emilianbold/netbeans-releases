@@ -41,13 +41,11 @@
 
 package org.netbeans.modules.debugger.jpda.models;
 
-import com.sun.jdi.ObjectReference;
 import com.sun.jdi.PrimitiveValue;
 import com.sun.jdi.Value;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import java.lang.ref.WeakReference;
 import java.util.*;
 import javax.security.auth.RefreshFailedException;
@@ -347,7 +345,12 @@ public class WatchesModel implements TreeModel {
                 getValue(watchRef); // To init the evaluatedWatch
                 evaluatedWatch = watchRef[0];
             }
-            return evaluatedWatch.getToStringValue();
+            String e = evaluatedWatch.getExceptionDescription();
+            if (e != null) {
+                return ">" + e + "<"; // NOI18N
+            } else {
+                return evaluatedWatch.getToStringValue();
+            }
         }
 
         public String getType() {

@@ -46,10 +46,12 @@
  */
 package org.netbeans.modules.mobility.project.ui.wizard;
 
+import java.awt.Component;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.MissingResourceException;
+import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.platform.JavaPlatform;
@@ -58,6 +60,7 @@ import org.netbeans.api.java.platform.PlatformsCustomizer;
 import org.netbeans.api.java.platform.Specification;
 import org.netbeans.modules.j2me.cdc.platform.CDCPlatform;
 import org.netbeans.modules.mobility.cldcplatform.J2MEPlatform;
+import org.openide.WizardDescriptor;
 import org.openide.loaders.TemplateWizard;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -187,17 +190,26 @@ public class PlatformInstallPanel extends javax.swing.JPanel {
     
     public static boolean isPlatformInstalled(String subType,String platformType) {
         JavaPlatform platforms[]=JavaPlatformManager.getDefault().getPlatforms(null, new Specification(platformType, null));
-        if (subType==null || !(platformType.equals(CDCPlatform.PLATFORM_CDC) || platformType.equals(J2MEPlatform.SPECIFICATION_NAME)))
-            return platforms.length > 0;
-        else
-            for (JavaPlatform platform : platforms)
-            {
+        if (subType==null || !(platformType.equals(CDCPlatform.PLATFORM_CDC) || platformType.equals(J2MEPlatform.SPECIFICATION_NAME))){
+            int cnt = platforms.length;
+            for (JavaPlatform javaPlatform : platforms) {
+                if (javaPlatform.getInstallFolders().size() == 0){ //invalid platform
+                    cnt--;
+                }
+            }
+            return cnt > 0;
+        } else {
+            for (JavaPlatform platform : platforms) {
+                if (platform.getInstallFolders().size() == 0){ //platform is not valid
+                    continue;
+                }
                 if (platform instanceof J2MEPlatform)
                     if (subType.equals(((J2MEPlatform)platform).getType())) return true;
                 if (platform instanceof CDCPlatform)
                     if (subType.equals(((CDCPlatform)platform).getType())) return true;
             }
-        return false;    
+            return false;
+        }
     }
     
     public static boolean isPlatformInstalled(String platformType) {
@@ -252,7 +264,7 @@ public class PlatformInstallPanel extends javax.swing.JPanel {
         
         public void showError(final String message) {
             if (wizard != null)
-                wizard.putProperty("WizardPanel_errorMessage", message); // NOI18N
+                wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, message); // NOI18N
         }
         
         public boolean isValid() {
@@ -266,6 +278,11 @@ public class PlatformInstallPanel extends javax.swing.JPanel {
         
         public void readSettings(final Object obj) {
             wizard = (TemplateWizard) obj;
+            Component component = getComponent();
+            Object substitute = ((JComponent)component).getClientProperty ("NewProjectWizard_Title"); // NOI18N
+            if (substitute != null) {
+                wizard.putProperty ("NewProjectWizard_Title", substitute); // NOI18N
+            }
         }
         
         public void storeSettings(final Object obj) {

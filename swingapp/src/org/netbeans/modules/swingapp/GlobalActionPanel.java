@@ -41,9 +41,14 @@
 
 package org.netbeans.modules.swingapp;
 
+import java.awt.AWTKeyStroke;
 import java.awt.Component;
 import java.awt.Dialog;
+import java.awt.EventQueue;
+import java.awt.KeyboardFocusManager;
 import java.awt.event.ActionEvent;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -62,6 +67,7 @@ import javax.swing.JList;
 import javax.swing.JOptionPane;
 import java.awt.event.MouseAdapter;
 import java.beans.PropertyVetoException;
+import java.util.HashSet;
 import javax.swing.JTable;
 import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
@@ -189,14 +195,14 @@ public class GlobalActionPanel extends javax.swing.JPanel {
         actionTable.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
             public void valueChanged(ListSelectionEvent e) {
                 ProxyAction act = getSelectedAction();
+                DefaultListModel mod = new DefaultListModel();
                 if(act != null) {
                     List<RADComponent> list = actionManager.getBoundComponents(act);
-                    DefaultListModel mod = new DefaultListModel();
                     for(Object o : list) {
                         mod.addElement(o);
                     }
-                    boundComponentList.setModel(mod);
                 }
+                boundComponentList.setModel(mod);
             }
         });
         
@@ -246,6 +252,12 @@ public class GlobalActionPanel extends javax.swing.JPanel {
         reloadProjectsCombo();
         reloadClassesCombo();
         reloadTable();
+
+        // Issue 110367
+        Set<AWTKeyStroke> set = actionTable.getFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS);
+        set = new HashSet<AWTKeyStroke>(set);
+        set.add(AWTKeyStroke.getAWTKeyStroke(KeyEvent.VK_TAB, InputEvent.CTRL_DOWN_MASK | InputEvent.ALT_DOWN_MASK));
+        actionTable.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, set);
     }
     
     private boolean actionHasSource(ProxyAction act) {
@@ -354,6 +366,7 @@ public class GlobalActionPanel extends javax.swing.JPanel {
         jScrollPane1 = new javax.swing.JScrollPane();
         boundComponentList = new javax.swing.JList();
         viewSourceButton = new javax.swing.JButton();
+        refreshButton = new javax.swing.JButton();
 
         newActionButton.setMnemonic('N');
         newActionButton.setText(org.openide.util.NbBundle.getMessage(GlobalActionPanel.class, "GlobalActionPanel.newActionButton.text")); // NOI18N
@@ -457,15 +470,15 @@ public class GlobalActionPanel extends javax.swing.JPanel {
             jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(jPanel2Layout.createSequentialGroup()
                 .add(jLabel3)
-                .addContainerGap(68, Short.MAX_VALUE))
-            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 191, Short.MAX_VALUE)
+                .addContainerGap(102, Short.MAX_VALUE))
+            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 195, Short.MAX_VALUE)
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(jPanel2Layout.createSequentialGroup()
                 .add(jLabel3)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 119, Short.MAX_VALUE))
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 123, Short.MAX_VALUE))
         );
 
         jSplitPane1.setRightComponent(jPanel2);
@@ -496,6 +509,17 @@ public class GlobalActionPanel extends javax.swing.JPanel {
             }
         });
 
+        refreshButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/swingapp/resources/refresh.png"))); // NOI18N
+        refreshButton.setToolTipText(org.openide.util.NbBundle.getMessage(GlobalActionPanel.class, "GlobalActionPanel.refreshButton.toolTipText")); // NOI18N
+        refreshButton.setBorderPainted(false);
+        refreshButton.setFocusPainted(false);
+        refreshButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        refreshButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                refreshButtonActionPerformed(evt);
+            }
+        });
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -508,7 +532,9 @@ public class GlobalActionPanel extends javax.swing.JPanel {
                 .add(jLabel1)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(classCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 349, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(refreshButton)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 382, Short.MAX_VALUE)
                 .add(jLabel2)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(filterTextfield, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 80, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
@@ -520,7 +546,7 @@ public class GlobalActionPanel extends javax.swing.JPanel {
                 .add(viewSourceButton)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(deleteActionButton)
-                .addContainerGap(313, Short.MAX_VALUE))
+                .addContainerGap(340, Short.MAX_VALUE))
             .add(jPanel3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
@@ -532,7 +558,8 @@ public class GlobalActionPanel extends javax.swing.JPanel {
                     .add(jLabel4)
                     .add(projectCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(filterTextfield, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(jLabel2))
+                    .add(jLabel2)
+                    .add(refreshButton))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jPanel3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -592,6 +619,9 @@ private void viewSourceButtonActionPerformed(java.awt.event.ActionEvent evt) {//
         if(fileObject == null) {
             fileObject = actionManager.getApplicationClassFile();
         }
+        if (fileObject == null) {
+            return; // Issue 134163
+        }
         ActionEditor editor = new ActionEditor(fileObject);
         editor.setValue(act);
         ActionPropertyEditorPanel comp = (ActionPropertyEditorPanel) editor.getCustomEditor();
@@ -636,6 +666,7 @@ private void viewSourceButtonActionPerformed(java.awt.event.ActionEvent evt) {//
         TableSorter sorter = (TableSorter) actionTable.getModel();
         row = sorter.modelIndex(row);
         FilteredTableModel filter = (FilteredTableModel) sorter.getTableModel();
+        row = filter.modelIndex(row);
         ActionTableModel model = (ActionTableModel) filter.getTableModel();
         ProxyAction act = model.getAction(row);
         return act;
@@ -706,9 +737,25 @@ private void viewSourceButtonActionPerformed(java.awt.event.ActionEvent evt) {//
             reloadTable();
         }
     }//GEN-LAST:event_classComboActionPerformed
+
+private void refreshButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_refreshButtonActionPerformed
+    refresh();
+}//GEN-LAST:event_refreshButtonActionPerformed
     
     // just reload the table
     private void reloadTable() {
+        if (EventQueue.isDispatchThread()) {
+            reloadTableInAWT();
+        } else {
+            EventQueue.invokeLater(new Runnable() {
+                public void run() {
+                    reloadTableInAWT();
+                }
+            });
+        }
+    }
+    
+    private void reloadTableInAWT() {
         if(filterClass == null) {
             realModel = new ActionTableModel(actionManager.getAllActions());
         } else {
@@ -731,13 +778,10 @@ private void viewSourceButtonActionPerformed(java.awt.event.ActionEvent evt) {//
     
     // rescan for actions, reload the class combo, and call reloadTable();
     public void refresh() {
-        // rescan the actions
-        if(true) {
-            actionManager.rescan();
-            reloadProjectsCombo();
-            reloadClassesCombo();
-            reloadTable();
-        }
+        actionManager.rescan();
+        reloadProjectsCombo();
+        reloadClassesCombo();
+        reloadTable();
     }
     
     private void setSelectedProject(Project project) {
@@ -799,6 +843,7 @@ private void viewSourceButtonActionPerformed(java.awt.event.ActionEvent evt) {//
     private javax.swing.JSplitPane jSplitPane1;
     private javax.swing.JButton newActionButton;
     private javax.swing.JComboBox projectCombo;
+    private javax.swing.JButton refreshButton;
     private javax.swing.JScrollPane scrollPane;
     private javax.swing.JButton viewSourceButton;
     // End of variables declaration//GEN-END:variables

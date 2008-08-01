@@ -44,20 +44,23 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import javax.swing.text.Document;
-import org.netbeans.modules.gsf.api.EmbeddingModel;
+import org.netbeans.modules.gsf.api.EditHistory;
+import org.netbeans.modules.gsf.api.IncrementalEmbeddingModel;
 import org.netbeans.modules.gsf.api.TranslatedSource;
-import org.netbeans.modules.javascript.editing.JsMimeResolver;
+import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
 
 /**
  *
  * @author Tor Norbye
  */
-public class JsEmbeddingModel implements EmbeddingModel {
+public class JsEmbeddingModel implements IncrementalEmbeddingModel {
     // Depend on RhtmlTokenId?
     static final String JSP_MIME_TYPE = "text/x-jsp"; // NOI18N
     static final String TAG_MIME_TYPE = "text/x-tag"; // NOI18N 
     static final String RHTML_MIME_TYPE = "application/x-httpd-eruby"; // NOI18N
     static final String HTML_MIME_TYPE = "text/html"; // NOI18N
+    static final String PHP_MIME_TYPE = "text/x-php5"; // NOI18N
+    
     final Set<String> sourceMimeTypes = new HashSet<String>();
 
     public JsEmbeddingModel() {
@@ -65,10 +68,11 @@ public class JsEmbeddingModel implements EmbeddingModel {
         sourceMimeTypes.add(TAG_MIME_TYPE);
         sourceMimeTypes.add(RHTML_MIME_TYPE);
         sourceMimeTypes.add(HTML_MIME_TYPE);
+        sourceMimeTypes.add(PHP_MIME_TYPE);
     }
     
     public String getTargetMimeType() {
-        return JsMimeResolver.JAVASCRIPT_MIME_TYPE;
+        return JsTokenId.JAVASCRIPT_MIME_TYPE;
     }
 
     public Set<String> getSourceMimeTypes() {
@@ -86,5 +90,7 @@ public class JsEmbeddingModel implements EmbeddingModel {
         return "JsEmbeddingModel(target=" + getTargetMimeType() + ",sources=" + getSourceMimeTypes() + ")";
     }
     
-    
+    public IncrementalEmbeddingModel.UpdateState update(EditHistory history, Collection<? extends TranslatedSource> previousTranslation) {
+        return ((JsTranslatedSource)previousTranslation.iterator().next()).incrementalUpdate(history);
+    }
 }

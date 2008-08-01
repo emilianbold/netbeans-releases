@@ -1,0 +1,79 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE map PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp Map Version 1.0//EN" "http://java.sun.com/products/javahelp/map_1_0.dtd">
+<!--
+DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+
+
+The contents of this file are subject to the terms of either the GNU
+General Public License Version 2 only ("GPL") or the Common
+Development and Distribution License("CDDL") (collectively, the
+"License"). You may not use this file except in compliance with the
+License. You can obtain a copy of the License at
+http://www.netbeans.org/cddl-gplv2.html
+or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+specific language governing permissions and limitations under the
+License.  When distributing the software, include this License Header
+Notice in each file and include the License file at
+nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+particular file as subject to the "Classpath" exception as provided
+by Sun in the GPL Version 2 section of the License file that
+accompanied this code. If applicable, add the following below the
+License Header, with the fields enclosed by brackets [] replaced by
+your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+Contributor(s):
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Microsystems, Inc. All Rights Reserved.
+
+If you wish your version of this file to be governed by only the CDDL
+or only the GPL Version 2, indicate your decision by adding
+"[Contributor] elects to include this software in this distribution
+under the [CDDL or GPL Version 2] license." If you do not indicate a
+single choice of license, a recipient has the option to distribute
+your version of this file under either the CDDL, the GPL Version 2 or
+to extend the choice of license to its licensees as provided above.
+However, if you add GPL Version 2 code and therefore, elected the GPL
+Version 2 license, then the option applies only if the new code is
+made subject to such option by the copyright holder.
+-->
+
+<map version="1.0">
+  <mapID target="jmx_about" url="jmx_about.html" />
+        <mapID target="tutorial" url="tutorial.html" />
+        <mapID target="ext_documentation" url="ext_documentation.html" />
+	<mapID target="jmx_architecture" url="jmx_architecture.html" />
+        <mapID target="jmx_instrumentation" url="jmx_instrumentation.html" />
+        <mapID target="jmx_agent" url="jmx_agent.html" />
+        <mapID target="jmx_manager" url="jmx_manager.html" />
+        <mapID target="jmx_jdk50" url="jmx_jdk50.html" />
+        <mapID target="jmx_jdk60" url="jmx_jdk60.html" />
+        <mapID target="jmx_progr_model" url="jmx_progr_model.html"/>
+        
+        <mapID target="jmx_instrumenting_app" url="jmx_instrumenting_app.html"/>
+        <mapID target="jmx_instrumenting_notification_app" url="jmx_instrumenting_notification_app.html"/>
+        <mapID target="jmx_instrumenting_from_existing_app" url="jmx_instrumenting_from_existing_app.html"/>
+        <mapID target="jmx_junit_app" url="jmx_junit_app.html"/>
+        <mapID target="jmx_mbean_update_attributes_operations" url="jmx_mbean_update_attributes_operations.html"/>
+        <mapID target="jmx_mbean_update_notification" url="jmx_mbean_update_notification.html"/>
+        <mapID target="jmx_mbean_update_registration" url="jmx_mbean_update_registration.html"/>
+
+        <mapID target="jmx_agent_app" url="jmx_agent_app.html"/>
+        <mapID target="jmx_agent_instantiate" url="jmx_agent_instantiate.html"/>
+        <mapID target="jmx_agent_instantiate_mbean" url="jmx_agent_instantiate_mbean.html"/>
+        <mapID target="jmx_agent_instantiate_java" url="jmx_agent_instantiate_java.html"/>
+        <mapID target="jmx_manager_app" url="jmx_manager_app.html"/>
+        
+        <mapID target="jmx_sample" url="jmx_sample.html"/>
+        <mapID target="jconsole_standalone" url="jconsole_standalone.html"/>
+        <mapID target="jmx_project_conf" url="jmx_project_conf.html"/>
+        <mapID target="jmx_remote_running_app" url="jmx_remote_running_app.html"/>
+        <mapID target="jmx_running_app" url="jmx_running_app.html"/>      
+        <mapID target="jmx_web_app" url="jmx_web_app.html"/>
+        <mapID target="jmx_web_jconsole" url="jmx_web_jconsole.html"/>
+        <mapID target="mgt_properties" url="mgt_properties.html"/>
+</map>

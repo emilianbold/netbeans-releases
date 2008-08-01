@@ -67,7 +67,6 @@ import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.MultiFileLoader;
 import org.openide.loaders.SaveAsCapable;
 import org.openide.nodes.Children;
-import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
 import org.openide.nodes.Node.Cookie;
 import org.openide.text.CloneableEditorSupport;
@@ -83,14 +82,13 @@ public final class JaxWsDataObject extends MultiDataObject {
     
     public JaxWsDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException {
         super(pf, loader);
-        CookieSet set = getCookieSet();
-        set.assign( SaveAsCapable.class, new SaveAsCapable() {
+        getCookieSet().assign( SaveAsCapable.class, new SaveAsCapable() {
             public void saveAs( FileObject folder, String fileName ) throws IOException {
                 createEditorSupport().saveAs( folder, fileName );
             }
         });
     }
-
+    
     private void lazyInitialize() {
         if(service==null) {
             service = findService();
@@ -104,6 +102,7 @@ public final class JaxWsDataObject extends MultiDataObject {
         JaxWsModel model = p.getLookup().lookup(JaxWsModel.class);
         if(model==null) return null;
         ClassPath classPath = ClassPath.getClassPath(fo, ClassPath.SOURCE);
+        if(classPath==null) return null;
         String implClass = classPath.getResourceName(fo, '.', false);
         if(implClass==null) return null;
         return model.findServiceByImplementationClass(implClass);
@@ -119,7 +118,7 @@ public final class JaxWsDataObject extends MultiDataObject {
         super.handleDelete();
         Project project = FileOwnerQuery.getOwner(getPrimaryFile());
         JAXWSSupport wss = JAXWSSupport.getJAXWSSupport(project.getProjectDirectory());
-        if (wss != null) {
+        if (service!=null && wss != null) {
             String serviceName = service.getName();
             FileObject localWsdlFolder = wss.getLocalWsdlFolderForService(serviceName, false);
             if (localWsdlFolder != null) {

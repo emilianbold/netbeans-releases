@@ -42,6 +42,8 @@ package org.netbeans.modules.java.source.tasklist;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.tools.Diagnostic;
+import javax.tools.Diagnostic.Kind;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.ClasspathInfo.PathKind;
@@ -89,8 +91,10 @@ public class IncorrectErrorBadges implements CancellableTask<CompilationInfo> {
         }
         
         try {
-            if (!info.getDiagnostics().isEmpty()) {
-                return;
+            for (Diagnostic d : info.getDiagnostics()) {
+                if (d.getKind() == Kind.ERROR) {
+                    return ;
+                }
             }
             
             final FileObject file = info.getFileObject();

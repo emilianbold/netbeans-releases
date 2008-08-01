@@ -384,7 +384,7 @@ public class ClassInfo extends ElementInfo
             // is an inner class, we'll want to skip past containing classes.
             while ((owner = owner.getOwner()) != null &&
                 !(owner instanceof IPackage));
-            
+	    
             if (owner == null)
             {
                 // What manner of demonic IClassifier is this anyway?
@@ -482,6 +482,7 @@ public class ClassInfo extends ElementInfo
         return sourceDir;
     }
     
+    @Override
     public IProject getProject()
     {
         return classElement != null? (IProject) classElement.getProject()
@@ -2368,13 +2369,13 @@ public class ClassInfo extends ElementInfo
     
     public FileObject getExportPackageFileObject(String subfolder)
     {
-         FileObject fileObj = null;
+        FileObject fileObj = null;
         try
         {
             String pathName = getExportSourcePackage();
             if (subfolder != null)
             {
-                pathName += File.separatorChar + subfolder;
+              pathName += File.separatorChar + subfolder;
             }
             File file = new File(pathName);
             fileObj = FileUtil.createFolder(file);
@@ -2561,9 +2562,14 @@ public class ClassInfo extends ElementInfo
 	while(ms.hasNext()) {
 	    MethodInfo method = (MethodInfo)ms.next(); 
 	    IOperation op = method.getOperation();
-	    if (op != null && op.getIsConstructor()) {		
-		res.add(method);
-	    }
+	    if (op != null) 
+            {
+                if ((getName() != null && (getName().equals(op.getName())))
+                    || op.getIsConstructor()) 
+                {
+                    res.add(method);
+                }
+            }
 	}
 
 	Collections.sort(res, new StaticAndAccessModifierComparator());	
@@ -2578,8 +2584,13 @@ public class ClassInfo extends ElementInfo
 	while(ms.hasNext()) {
 	    MethodInfo method = (MethodInfo)ms.next(); 
 	    IOperation op = method.getOperation();
-	    if (op != null && ( ! op.getIsConstructor() ) ) {		
-		res.add(method);
+	    if (op != null) 
+            {
+                if ((getName() != null && !(getName().equals(op.getName())))
+                    && ! op.getIsConstructor())
+                {		
+                    res.add(method);
+                }
 	    }
 	}
 

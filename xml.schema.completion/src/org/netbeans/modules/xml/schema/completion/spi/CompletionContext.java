@@ -95,8 +95,9 @@ public abstract class CompletionContext {
     public static enum CompletionType {
         COMPLETION_TYPE_UNKNOWN,
         COMPLETION_TYPE_ATTRIBUTE,
-        COMPLETION_TYPE_VALUE,
+        COMPLETION_TYPE_ATTRIBUTE_VALUE,
         COMPLETION_TYPE_ELEMENT,
+        COMPLETION_TYPE_ELEMENT_VALUE,
         COMPLETION_TYPE_ENTITY,
         COMPLETION_TYPE_NOTATION,
         COMPLETION_TYPE_DTD

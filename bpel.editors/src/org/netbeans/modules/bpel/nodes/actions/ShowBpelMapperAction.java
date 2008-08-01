@@ -21,7 +21,7 @@ package org.netbeans.modules.bpel.nodes.actions;
 import org.netbeans.modules.bpel.nodes.actions.BpelNodeAction;
 import org.netbeans.modules.bpel.editors.api.nodes.actions.ActionType;
 import javax.swing.KeyStroke;
-import org.netbeans.modules.bpel.editors.api.utils.Util;
+import org.netbeans.modules.bpel.editors.api.EditorUtil;
 import org.netbeans.modules.bpel.mapper.multiview.BpelDesignContextFactory;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.nodes.BpelNode;
@@ -30,7 +30,6 @@ import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
-//import org.netbeans.modules.bpel.mapper.topcomp.BpelMapperTopComponent;
 
 /**
  *
@@ -125,7 +124,7 @@ public class ShowBpelMapperAction extends BpelNodeAction {
     }
 
     protected void performAction(BpelEntity[] bpelEntities) {
-        Util.goToBusinessRules(bpelEntities[0]);
+        EditorUtil.goToBusinessRules(bpelEntities[0]);
 /**        TopComponent mapperTC = WindowManager.getDefault().
                 findTopComponent(BpelMapperTopComponent.ID);
         if (mapperTC == null) {

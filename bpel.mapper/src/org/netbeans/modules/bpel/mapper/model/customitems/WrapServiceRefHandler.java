@@ -22,7 +22,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.Icon;
-import org.netbeans.modules.bpel.editors.api.utils.Util;
+import org.netbeans.modules.soa.ui.SoaUtil;
 import org.netbeans.modules.bpel.mapper.model.ItemHandler;
 import org.netbeans.modules.bpel.mapper.model.VertexFactory;
 import org.netbeans.modules.bpel.mapper.multiview.BpelDesignContext;
@@ -38,7 +38,6 @@ import org.netbeans.modules.soa.mappercore.model.GraphSubset;
 import org.netbeans.modules.soa.mappercore.model.Link;
 import org.netbeans.modules.soa.mappercore.model.Vertex;
 import org.netbeans.modules.soa.mappercore.model.VertexItem;
-import org.netbeans.modules.soa.ui.SoaUiUtil;
 import org.netbeans.modules.soa.ui.nodes.InstanceRef;
 import org.netbeans.modules.xml.xpath.ext.metadata.ArgumentDescriptor;
 import org.netbeans.modules.xml.xpath.ext.metadata.XPathType;
@@ -130,7 +129,6 @@ public class WrapServiceRefHandler implements ItemHandler {
 ////        
 //////////        Mapper mapper = null;
 //////////        BpelDesignContext context = null;
-//////////        TopComponent tc = SoaUiUtil.safeFindTopComponent(BpelMapperMultiviewElementDesc.PREFERED_ID);
 //////////        if ( tc instanceof BpelMapperMultiviewElement) {
 //////////            mapper = ((BpelMapperMultiviewElement)tc).getMapper();
 //////////            context = ((BpelMapperMultiviewElement)tc).
@@ -149,7 +147,7 @@ public class WrapServiceRefHandler implements ItemHandler {
         
         BpelModel bpelModel = getActiveModel();
         
-        FileObject bpelFo = Util.getFileObjectByModel(bpelModel);
+        FileObject bpelFo = SoaUtil.getFileObjectByModel(bpelModel);
         FileObject wrap2servicerefFo = null;
         if (bpelFo != null) {
             wrap2servicerefFo = bpelFo.getParent().getFileObject(WRAP2SERVICEREF_XSL);
@@ -184,5 +182,4 @@ public class WrapServiceRefHandler implements ItemHandler {
         
         return model;
     }
-    
 }

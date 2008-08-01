@@ -5,7 +5,8 @@
     <!-- See http://ui.netbeans.org/docs/ui/editor_fonts_colors/Editor_fonts_and_colors.htm#ruby -->
     <!-- A couple of things are not accurate yet; globals are not bold, and method calls are
          black and bold instead of green (which would be identical to fields) -->
-    
+    <fontcolor name="keyword" default="keyword"/>
+
     <fontcolor name="CLASS_VAR" foreColor="ff098618">
         <font style="bold+italic"/>
     </fontcolor>
@@ -31,7 +32,6 @@
     <fontcolor name="TYPE_SYMBOL" foreColor="2E92C7"/>
     <fontcolor name="IDENTIFIER" default="identifier"/>
     <fontcolor name="WHITESPACE" default="whitespace"/>
-    <fontcolor name="ANY_KEYWORD" default="keyword"/>
     <fontcolor name="TODO" foreColor="ff99006b">
         <font style="bold"/>
     </fontcolor>

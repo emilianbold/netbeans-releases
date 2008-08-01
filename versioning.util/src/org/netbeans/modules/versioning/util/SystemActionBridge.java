@@ -41,12 +41,18 @@
 
 package org.netbeans.modules.versioning.util;
 
+import java.util.MissingResourceException;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.Lookup;
 import org.openide.util.ContextAwareAction;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
+import org.openide.awt.Actions;
+import org.openide.util.NbBundle;
 
 /**
  * Converts NetBeans {@link SystemAction} to Swing's {@link Action}.
@@ -55,26 +61,46 @@ import java.awt.event.ActionEvent;
  */
 public class SystemActionBridge extends AbstractAction {
 
+    /** UI logger to notify about invocation of an action */
+    private static Logger UILOG = Logger.getLogger("org.netbeans.ui.SystemActionBridge"); // NOI18N
+        
     private Action action;
+    private Action delegateAction;
 
     public static SystemActionBridge createAction(Action action, String name, Lookup context) {
+        Action delegateAction = action;
         if (context != null && action instanceof ContextAwareAction) {
             action = ((ContextAwareAction) action).createContextAwareInstance(context);
         }
-        return new SystemActionBridge(action, name);
+        return new SystemActionBridge(action, delegateAction, name);
     }
 
-    public SystemActionBridge(Action action, String name) {
+    private SystemActionBridge(Action action, Action delegateAction, String name) {
         super(name, null);
         putValue("noIconInMenu", Boolean.TRUE); // NOI18N
         this.action = action;
+        this.delegateAction = delegateAction;
+    }
+
+    public SystemActionBridge(Action action, String name) {
+        this(action, action, name);
     }
 
     public void actionPerformed(ActionEvent e) {
+        log();
         action.actionPerformed(e);
     }
 
     public boolean isEnabled() {
         return action.isEnabled();
+    }
+
+    private void log() throws MissingResourceException {
+        LogRecord rec = new LogRecord(Level.FINER, "UI_ACTION_BUTTON_PRESS"); // NOI18N
+        rec.setParameters(new Object[]{"", "", delegateAction, delegateAction.getClass().getName(), action.getValue(Action.NAME)});
+        rec.setResourceBundle(NbBundle.getBundle(Actions.class));
+        rec.setResourceBundleName(Actions.class.getPackage().getName() + ".Bundle"); // NOI18N
+        rec.setLoggerName(UILOG.getName());
+        UILOG.log(rec);
     }
 }

@@ -70,7 +70,6 @@ import java.lang.reflect.Constructor;
 import java.security.AccessControlException;
 import java.text.MessageFormat;
 import java.util.*;
-import java.util.List;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -96,7 +95,6 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 
-import sun.nio.cs.Surrogate;
 
 /**
  * An implementation of a customized filechooser.
@@ -113,9 +111,8 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
     private static Dimension MIN_SIZE = new Dimension(425, 245);
     private static Dimension TREE_PREF_SIZE = new Dimension(380, 230);
     private static final int ACCESSORY_WIDTH = 250;
-
-    /** icon representing netbeans project folder */
-    private static Icon projectIcon;
+    
+    private static final Logger LOG = Logger.getLogger(DirectoryChooserUI.class.getName());
     
     private JPanel centerPanel;
     
@@ -474,7 +471,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
         treePanel.add(topComboWrapper, BorderLayout.NORTH);
         treePanel.add(treeViewPanel, BorderLayout.CENTER);
         centerPanel.add(treePanel, BorderLayout.CENTER);
-        // #97049: control width of accessory panel, don't allow to jump (change width)
+        // control width of accessory panel, don't allow to jump (change width)
         JPanel wrapAccessory = new JPanel() {
             private Dimension prefSize = new Dimension(ACCESSORY_WIDTH, 0);
             private Dimension minSize = new Dimension(ACCESSORY_WIDTH, 0);
@@ -488,7 +485,18 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
             }
             public Dimension getPreferredSize () {
                 if (fc.getAccessory() != null) {
-                    prefSize.height = getAccessoryPanel().getPreferredSize().height;
+                    Dimension origPref = getAccessoryPanel().getPreferredSize();
+                    LOG.fine("AccessoryWrapper.getPreferredSize: orig pref size: " + origPref);
+                    
+                    prefSize.height = origPref.height;
+                    
+                    prefSize.width = Math.max(prefSize.width, origPref.width);
+                    int centerW = centerPanel.getWidth();
+                    if (centerW != 0 && prefSize.width > centerW / 2) {
+                        prefSize.width = centerW / 2;
+                    }
+                    LOG.fine("AccessoryWrapper.getPreferredSize: resulting pref size: " + prefSize);
+                    
                     return prefSize;
                 }
                 return super.getPreferredSize();
@@ -662,14 +670,32 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
                 dirHandler.preprocessMouseEvent(e);
                 super.processMouseEvent(e);
             }
-            
+
+            // For speed (#127170):
             @Override
-            /* #106223: Always compute row height from cell renderer, don't allow fixed
-             * row height */
-            public int getRowHeight() {
-                return 0;
+            public boolean isLargeModel() {
+                return true;
             }
-            
+
+            // To work with different font sizes (#106223); see: http://www.javalobby.org/java/forums/t19562.html
+            private boolean firstPaint = true;
+            @Override
+            public void setFont(Font f) {
+                firstPaint = true;
+                super.setFont(f);
+            }
+            @Override
+            public void paint(Graphics g) {
+                if (firstPaint) {
+                    g.setFont(getFont());
+                    setRowHeight(Math.max(/* icon height plus insets? */17, g.getFontMetrics().getHeight()));
+                    firstPaint = false;
+                    // Setting the fixed height will generate another paint request, no need to complete this one
+                    return;
+                }
+                super.paint(g);
+            }
+
         };
         // #105642: start with right content in tree 
         File curDir = fileChooser.getCurrentDirectory();
@@ -1572,15 +1598,6 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
         }
     }
     
-    private Icon getNbProjectIcon () {
-        if (projectIcon == null) {
-            projectIcon = new ImageIcon(Utilities.loadImage(
-                    "org/netbeans/swing/dirchooser/resources/main_project_16.png"));
-        }
-        return projectIcon;
-    }
-    
-    
     /*************** HELPER CLASSES ***************/
     
     private class IconIndenter implements Icon {
@@ -1589,6 +1606,9 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
         int depth = 0;
         
         public void paintIcon(Component c, Graphics g, int x, int y) {
+            if (icon == null) {
+                return;
+            }
             if (c.getComponentOrientation().isLeftToRight()) {
                 icon.paintIcon(c, g, x+depth*space, y);
             } else {
@@ -1597,11 +1617,11 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
         }
         
         public int getIconWidth() {
-            return icon.getIconWidth() + depth*space;
+            return icon != null ? icon.getIconWidth() + depth*space : null;
         }
         
         public int getIconHeight() {
-            return icon.getIconHeight();
+            return icon != null ? icon.getIconHeight() : null;
         }
         
     }
@@ -1625,12 +1645,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
             }
             File directory = (File)value;
             setText(getFileChooser().getName(directory));
-            Icon icon;
-            if (DirectoryNode.isNetBeansProject(directory)) {
-                icon = getNbProjectIcon();
-            } else {
-                icon = getFileChooser().getIcon(directory);
-            }
+            Icon icon = getFileChooser().getIcon(directory);
             indenter.icon = icon;
             indenter.depth = directoryComboBoxModel.getDepth(index);
             setIcon(indenter);
@@ -2289,10 +2304,6 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
                 int row,
                 boolean hasFocus) {
             
-            if (!tree.isFocusOwner()) {
-                isSelected = false;
-            }
-            
             Component stringDisplayer = renderer.getTreeCellRendererComponent(tree,
                     value,
                     isSelected,
@@ -2318,9 +2329,6 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
         }
         
         private Icon getNodeIcon(DirectoryNode node) {
-            if (node.isNetBeansProject()) {
-                return getNbProjectIcon();
-            }
             File file = node.getFile();
             if(file.exists()) {
                 return fileChooser.getIcon(file);

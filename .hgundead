@@ -1,6 +1,10 @@
 # List of files which are supposed to be deleted and should not be resurrected accidentally.
 # See: http://wiki.netbeans.org/HgHowTos#section-HgHowTos-ServerHooksAbortPretxnchangegroup.somethingHookFailed
 
+cnd.editor/build/classes/org/netbeans/modules/cnd/editor/Bundle.properties
+form/external/beansbinding-1.2.1-doc.zip
+form/external/beansbinding-1.2.1.jar
+nbbuild/velocity.log
 websvc.saas.api/build/classes/org/netbeans/modules/websvc/saas/Bundle.properties
 websvc.saas.api/build/classes/org/netbeans/modules/websvc/saas/resources/layer.xml
 websvc.saas.ui/build/classes/org/netbeans/modules/websvc/saas/ui/Bundle.properties

@@ -11,9 +11,9 @@
  * http://www.netbeans.org/cddl-gplv2.html
  * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
  * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
+ * License. When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
  * particular file as subject to the "Classpath" exception as provided
  * by Sun in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -60,7 +60,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.xml.wsdl.model.Operation;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.openide.filesystems.FileUtil;
-import static org.netbeans.modules.soa.ui.util.UI.*;
+import static org.netbeans.modules.xml.ui.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -97,10 +97,6 @@ final class PanelProxy<T> extends Panel<T> {
     }
     FileObject file = getFolder().getFileObject(name);
 
-    if (file != null) {
-      return i18n("ERR_File_Already_Exists", name); // NOI18N
-    }
-
     name = addExtension(myRequestFile.getText().trim());
     if (myReplyBox.isSelected() && !PanelUtil.isValidFileName(name)) {
         return i18n("ERR_WrongFileName", name); // NOI18N
@@ -108,9 +104,6 @@ final class PanelProxy<T> extends Panel<T> {
     
     file = getFolder().getFileObject(name);
 
-    if (file != null) {
-      return i18n("ERR_File_Already_Exists", name); // NOI18N
-    }
     return getError(myOperationImplement.getError(), myOperationCall.getError());
   }
 
@@ -283,13 +276,13 @@ final class PanelProxy<T> extends Panel<T> {
     // check
     c.gridy++;
     c.gridwidth = 2;
-    c.insets = new Insets(SMALL_INSET, 0, 0, 0);
+    c.insets = new Insets(LARGE_SIZE, 0, 0, 0);
     panel.add(checkBox, c);
 
     // text
     c.gridwidth = GridBagConstraints.REMAINDER;
     c.insets = new Insets(
-      SMALL_INSET, SMALL_INSET, TINY_INSET, 0);
+      LARGE_SIZE, LARGE_SIZE, TINY_SIZE, 0);
     c.fill = GridBagConstraints.HORIZONTAL;
     c.weightx = 1.0;
     text.setEnabled(false);
@@ -300,7 +293,7 @@ final class PanelProxy<T> extends Panel<T> {
     c.gridwidth = 2;
     c.anchor = GridBagConstraints.EAST;
     c.insets = new Insets(
-      SMALL_INSET, MEDIUM_INSET + SMALL_INSET + TINY_INSET + TINY_INSET, TINY_INSET, SMALL_INSET);
+      LARGE_SIZE, HUGE_SIZE + LARGE_SIZE + TINY_SIZE + TINY_SIZE, TINY_SIZE, LARGE_SIZE);
     c.fill = GridBagConstraints.NONE;
     c.weightx = 0.0;
     JLabel label = createLabel(i18n(getNextXslFileLabel()));
@@ -313,11 +306,11 @@ final class PanelProxy<T> extends Panel<T> {
     c.fill = GridBagConstraints.HORIZONTAL;
     c.weightx = 1.0;
     c.anchor = GridBagConstraints.WEST;
-    c.insets = new Insets(SMALL_INSET, SMALL_INSET, TINY_INSET, 0);
+    c.insets = new Insets(LARGE_SIZE, LARGE_SIZE, TINY_SIZE, 0);
     panel.add(file, c);
 
     c.weightx = 0.0;
-    c.insets = new Insets(TINY_INSET, SMALL_INSET, TINY_INSET, 0);
+    c.insets = new Insets(TINY_SIZE, LARGE_SIZE, TINY_SIZE, 0);
     panel.add(browseButton, c);
     
     return panel;

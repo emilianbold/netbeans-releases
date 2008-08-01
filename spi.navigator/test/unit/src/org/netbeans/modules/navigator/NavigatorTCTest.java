@@ -42,6 +42,7 @@
 package org.netbeans.modules.navigator;
 
 import java.lang.ref.WeakReference;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -61,6 +62,10 @@ import org.netbeans.spi.navigator.NavigatorLookupHint;
 import org.netbeans.spi.navigator.NavigatorPanel;
 import org.netbeans.spi.navigator.NavigatorPanelWithUndo;
 import org.openide.awt.UndoRedo;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
+import org.openide.loaders.DataObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -287,49 +292,52 @@ public class NavigatorTCTest extends NbTestCase {
             
         NavigatorTC navTC = NavigatorTC.getInstance();
         navTC.componentOpened();
+        
+        try {
 
-        List<NavigatorPanel> panels = navTC.getPanels();
-        assertNotNull("Selected panel should not be null", navTC.getSelectedPanel());
-        assertTrue("Expected 1 provider panel, but got " + panels.size(), panels != null && panels.size() == 1);
-        assertTrue("Panel class not expected", panels.get(0) instanceof ActNodeLookupProvider);
-        ActNodeLookupProvider provider = (ActNodeLookupProvider)panels.get(0);
-                
-        // wait for selected node change to be applied, because changes are
-        // reflected with little delay
-        waitForChange();
+            List<NavigatorPanel> panels = navTC.getPanels();
+            assertNotNull("Selected panel should not be null", navTC.getSelectedPanel());
+            assertTrue("Expected 1 provider panel, but got " + panels.size(), panels != null && panels.size() == 1);
+            assertTrue("Panel class not expected", panels.get(0) instanceof ActNodeLookupProvider);
+            ActNodeLookupProvider provider = (ActNodeLookupProvider)panels.get(0);
 
-        // test if lookup content from provider propagated correctly to the
-        // activated nodes of navigator TopComponent
-        Node[] actNodes = navTC.getActivatedNodes();
-        Node realContent = provider.getCurLookupContent();
-        String tcDisplayName = navTC.getDisplayName();
-        String providerDisplayName = provider.getDisplayName();
-        
-        assertNotNull("Activated nodes musn't be null", actNodes);
-        assertTrue("Expected 1 activated node, but got " + actNodes.length, actNodes.length == 1);
-        assertTrue("Incorrect instance of activated node " + actNodes[0].getName(), actNodes[0] == realContent);
-        assertTrue("Expected display name starting with '" + providerDisplayName +
-                    "', but got '" + tcDisplayName + "'",
-                    (tcDisplayName != null) && tcDisplayName.startsWith(providerDisplayName));
-        
-        // change provider's lookup content and check again, to test infrastructure
-        // ability to listen to client's lookup content change
-        provider.changeLookup();
-        actNodes = navTC.getActivatedNodes();
-        realContent = provider.getCurLookupContent();
-        tcDisplayName = navTC.getDisplayName();
-        providerDisplayName = provider.getDisplayName();
-        
-        assertNotNull("Activated nodes musn't be null", actNodes);
-        assertTrue("Expected 1 activated node, but got " + actNodes.length, actNodes.length == 1);
-        assertTrue("Incorrect instance of activated node " + actNodes[0].getName(), actNodes[0] == realContent);
-        assertTrue("Expected display name starting with '" + providerDisplayName +
-                    "', but got '" + tcDisplayName + "'",
-                    (tcDisplayName != null) && tcDisplayName.startsWith(providerDisplayName));
-        
-        // cleanup
-        ic.remove(actNodesHint);
-        navTC.componentClosed();
+            // wait for selected node change to be applied, because changes are
+            // reflected with little delay
+            waitForChange();
+
+            // test if lookup content from provider propagated correctly to the
+            // activated nodes of navigator TopComponent
+            Node[] actNodes = navTC.getActivatedNodes();
+            Node realContent = provider.getCurLookupContent();
+            String tcDisplayName = navTC.getDisplayName();
+            String providerDisplayName = provider.getDisplayName();
+
+            assertNotNull("Activated nodes musn't be null", actNodes);
+            assertTrue("Expected 1 activated node, but got " + actNodes.length, actNodes.length == 1);
+            assertTrue("Incorrect instance of activated node " + actNodes[0].getName(), actNodes[0] == realContent);
+            assertTrue("Expected display name starting with '" + providerDisplayName +
+                        "', but got '" + tcDisplayName + "'",
+                        (tcDisplayName != null) && tcDisplayName.startsWith(providerDisplayName));
+
+            // change provider's lookup content and check again, to test infrastructure
+            // ability to listen to client's lookup content change
+            provider.changeLookup();
+            actNodes = navTC.getActivatedNodes();
+            realContent = provider.getCurLookupContent();
+            tcDisplayName = navTC.getDisplayName();
+            providerDisplayName = provider.getDisplayName();
+
+            assertNotNull("Activated nodes musn't be null", actNodes);
+            assertTrue("Expected 1 activated node, but got " + actNodes.length, actNodes.length == 1);
+            assertTrue("Incorrect instance of activated node " + actNodes[0].getName(), actNodes[0] == realContent);
+            assertTrue("Expected display name starting with '" + providerDisplayName +
+                        "', but got '" + tcDisplayName + "'",
+                        (tcDisplayName != null) && tcDisplayName.startsWith(providerDisplayName));
+        } finally {
+            // cleanup
+            navTC.componentClosed();
+            ic.remove(actNodesHint);
+        }
     }
     
     /** Test for IZ feature #98125. It tests ability of NavigatorPanelWithUndo
@@ -434,11 +442,11 @@ public class NavigatorTCTest extends NbTestCase {
         // reflected with little delay
         waitForChange();
 
+        Node[] selNodes = provider.getExplorerManager().getSelectedNodes();
         Node[] actNodes = navTC.getActivatedNodes();
         Action copyAction = provider.getCopyAction();
         assertTrue("Copy action should be enabled", copyAction.isEnabled());
         assertNotNull("Activated nodes musn't be null", actNodes);
-        Node[] selNodes = provider.getExplorerManager().getSelectedNodes();
         assertNotNull("Explorer view selected nodes musn't be null", selNodes);
         assertTrue("Expected 1 activated node, but got " + actNodes.length, actNodes.length == 1);
         assertTrue("Nodes from explorer view not propagated correctly, should be the same as activated nodes, but got: \n"
@@ -462,6 +470,89 @@ public class NavigatorTCTest extends NbTestCase {
         // cleanup
         ic.remove(explorerHint);
         navTC.componentClosed();
+    }
+
+    public void test_112954_LastSelected () throws Exception {
+        System.out.println("Testing feature #112954, remembering last selected panel for context type...");
+
+        InstanceContent ic = getInstanceContent();
+        
+        URL url = NavigatorControllerTest.class.getResource("resources/lastsel/file.lastsel_mime1");
+        assertNotNull("url not found.", url);
+
+        FileUtil.setMIMEType("lastsel_mime1", "lastsel/mime1");
+        FileObject fo = URLMapper.findFileObject(url);
+        assertNotNull("File object for test node not found.", fo);
+        DataObject dObj = DataObject.find(fo);
+        assertNotNull("Data object for test node not found.", dObj);
+        Node mime1Node = dObj.getNodeDelegate();
+        
+        TestLookupHint mime2Hint = new TestLookupHint("lastsel/mime2");
+        
+        ic.add(mime1Node);
+            
+        NavigatorTC navTC = NavigatorTC.getInstance();
+        navTC.componentOpened();
+        
+        try {
+            List<NavigatorPanel> panels = navTC.getPanels();
+            assertNotNull("Selected panel should not be null", navTC.getSelectedPanel());
+            assertTrue("Expected 3 provider panels, but got " + panels.size(), panels != null && panels.size() == 3);
+            assertTrue("Panel class not expected", panels.get(0) instanceof LastSelMime1Panel1);
+            assertTrue("Panel class not expected", panels.get(1) instanceof LastSelMime1Panel2);
+            assertTrue("Panel class not expected", panels.get(2) instanceof LastSelMime1Panel3);
+
+            // selecting 3rd panel, this should be remembered
+            navTC.getController().activatePanel(panels.get(2));
+
+            ic.remove(mime1Node);
+            ic.add(mime2Hint);
+            
+            // wait for selected node change to be applied, because changes are
+            // reflected with little delay
+            waitForChange();
+            
+            panels = navTC.getPanels();
+            assertNotNull("Selected panel should not be null", navTC.getSelectedPanel());
+            assertTrue("Expected 3 provider panels, but got " + panels.size(), panels != null && panels.size() == 3);
+            assertTrue("Panel class not expected", panels.get(0) instanceof LastSelMime2Panel1);
+            assertTrue("Panel class not expected", panels.get(1) instanceof LastSelMime2Panel2);
+            assertTrue("Panel class not expected", panels.get(2) instanceof LastSelMime2Panel3);
+            
+            // selecting 2nd panel, this should be remembered
+            navTC.getController().activatePanel(panels.get(1));
+            
+            ic.remove(mime2Hint);
+            ic.add(mime1Node);
+            
+            // wait for selected node change to be applied, because changes are
+            // reflected with little delay
+            waitForChange();
+            
+            // third panel should be selected
+            panels = navTC.getPanels();
+            assertNotNull("Selected panel should not be null", navTC.getSelectedPanel());
+            assertTrue("Expected 3 provider panels, but got " + panels.size(), panels != null && panels.size() == 3);
+            assertTrue("Expected LastSelMime1Panel3 panel to be selected, but selected is "
+                    + navTC.getSelectedPanel().getClass().getSimpleName(), navTC.getSelectedPanel() instanceof LastSelMime1Panel3);
+            
+            ic.remove(mime1Node);
+            ic.add(mime2Hint);
+            
+            // wait for selected node change to be applied, because changes are
+            // reflected with little delay
+            waitForChange();
+            
+            // third panel should be selected
+            panels = navTC.getPanels();
+            assertNotNull("Selected panel should not be null", navTC.getSelectedPanel());
+            assertTrue("Expected 3 provider panels, but got " + panels.size(), panels != null && panels.size() == 3);
+            assertTrue("Expected LastSelMime2Panel2 panel to be selected, but selected is "
+                    + navTC.getSelectedPanel().getClass().getSimpleName(), navTC.getSelectedPanel() instanceof LastSelMime2Panel2);
+        } finally {
+            navTC.componentClosed();
+            ic.remove(mime2Hint);
+        }
     }
     
     /** Singleton global lookup. Lookup change notification won't come
@@ -718,9 +809,53 @@ public class NavigatorTCTest extends NbTestCase {
         public Lookup getLookup() {
             return null;
         }
+    }
+    
+    public static abstract class LastSelBase implements NavigatorPanel {
         
+        public Lookup getLookup () {
+            return null;
+        }
+        
+        public String getDisplayName() {
+            return getClass().getSimpleName();
+        }
+
+        public String getDisplayHint() {
+            return null;
+        }
+
+        public JComponent getComponent() {
+            return new JLabel(getDisplayName());
+        }
+
+        public void panelActivated(Lookup context) {
+            // no operation
+        }
+
+        public void panelDeactivated() {
+            // no operation
+        }
+    }
+    
+    public static class LastSelMime1Panel1 extends LastSelBase {
+    }
+    
+    public static class LastSelMime1Panel2 extends LastSelBase {
     }
 
+    public static class LastSelMime1Panel3 extends LastSelBase {
+    }
+
+    public static class LastSelMime2Panel1 extends LastSelBase {
+    }
+
+    public static class LastSelMime2Panel2 extends LastSelBase {
+    }
+
+    public static class LastSelMime2Panel3 extends LastSelBase {
+    }
+    
     /** Envelope for textual (mime-type like) content type to be used in 
      * global lookup
      */

@@ -45,6 +45,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -53,6 +54,8 @@ import org.netbeans.modules.ruby.platform.Util;
 import org.netbeans.modules.ruby.platform.execution.OutputRecognizer.ActionText;
 import org.netbeans.modules.ruby.platform.execution.OutputRecognizer.FileLocation;
 import org.netbeans.modules.ruby.platform.execution.OutputRecognizer.RecognizedOutput;
+import org.netbeans.modules.ruby.platform.execution.OutputRecognizer.FilteredOutput;
+import org.openide.util.Exceptions;
 import org.openide.windows.OutputEvent;
 import org.openide.windows.OutputListener;
 import org.openide.windows.OutputWriter;
@@ -84,14 +87,21 @@ final class OutputForwarder implements Runnable {
     private OutputWriter writer;
     private FileLocator fileLocator;
     private List<OutputRecognizer> recognizers;
+    private String encoding;
 
     OutputForwarder(InputStream instream, OutputWriter out, FileLocator fileLocator,
         List<OutputRecognizer> recognizers, StopAction stopAction) {
+        this(instream, out, fileLocator, recognizers, stopAction, null);
+    }
+
+    OutputForwarder(InputStream instream, OutputWriter out, FileLocator fileLocator,
+        List<OutputRecognizer> recognizers, StopAction stopAction, String encoding) {
         str = instream;
         writer = out;
         this.fileLocator = fileLocator;
         this.recognizers = recognizers;
         this.stopAction = stopAction;
+        this.encoding = encoding;
     }
 
     /** Package private for unit test. */
@@ -145,7 +155,16 @@ final class OutputForwarder implements Runnable {
                 }
                 handled = true;
 
-            } // TODO: Handle other forms of RecognizedOutput
+            } else if (recognizedOutput instanceof FilteredOutput) {
+                String[] toPrint = ((FilteredOutput) recognizedOutput).getLinesToPrint();
+                if (toPrint != null) {
+                    for (String l : toPrint) {
+                        writer.println(l);
+                    }
+                }
+                handled = true;
+            }
+        // TODO: Handle other forms of RecognizedOutput
         }
 
         if (!handled) {
@@ -161,32 +180,48 @@ final class OutputForwarder implements Runnable {
         for (OutputRecognizer recognizer : recognizers) {
             recognizer.start();
         }
-        
-        BufferedReader read = new BufferedReader(new InputStreamReader(str), 1200);
+
+        BufferedReader read = null;
+        try {
+            InputStreamReader isr = encoding == null
+                    ? new InputStreamReader(str)
+                    : new InputStreamReader(str, encoding);
+            read = new BufferedReader(isr, 1200);
+        } catch (UnsupportedEncodingException uee) {
+            Exceptions.printStackTrace(uee);
+            return;
+        }
 
         StringBuilder sb = new StringBuilder();
 
         try {
             while (true) {
                 if (!read.ready()) {
-                    try {
-                        Thread.sleep(50);
-                    } catch (InterruptedException ie) {
-                        return;
-                    }
-
                     if (stopAction.process == null) {
                         // process finished
                         return;
                     }
-                    
+
+                    final int millisToWait = 1000;
+                    final int waitMillis = 50;
+                    int millisWaited = 0;
+                    // wait upto millisToWait for the stream to be ready
+                    while (!read.ready() && millisWaited < millisToWait) {
+                        try {
+                            Thread.sleep(waitMillis);
+                            millisWaited += waitMillis;
+                        } catch (InterruptedException ie) {
+                            return;
+                        }
+                    }
+
                     if (!read.ready() && sb.length() > 0) {
                         // Some output has been written - not a complete line
                         // and the process seems to be stalling so emit what
                         // we've got.
                         String line = sb.toString();
                         sb.setLength(0);
-
+                        LOGGER.log(Level.INFO, "Process seems to be stalling, emitting chars read so far: " + line);
                         writer.print(line);
                     }
 
@@ -278,7 +313,7 @@ final class OutputForwarder implements Runnable {
             } catch (IOException e) {
                 // TODO: happens because at the end of the debugging session the
                 // underlying process is killed.
-                LOGGER.log(Level.INFO, "Process finished unexpectedly: " + e.getMessage());
+                LOGGER.log(Level.INFO, "Process finished unexpectedly: " + e.getMessage(), e);
             } finally {
                 try {
                     read.close();

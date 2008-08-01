@@ -43,7 +43,6 @@ package org.netbeans.modules.versioning.system.cvss;
 
 import org.openide.util.actions.SystemAction;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 import org.openide.util.Lookup;
 import org.openide.nodes.Node;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.status.StatusAction;
@@ -82,6 +81,7 @@ import java.awt.*;
 import java.lang.reflect.Field;
 import org.netbeans.modules.versioning.util.SystemActionBridge;
 import org.netbeans.modules.diff.PatchAction;
+import org.openide.util.ImageUtilities;
 
 /**
  * Annotates names for display in Files and Projects view (and possible elsewhere). Uses
@@ -104,6 +104,26 @@ public class Annotator {
     private static MessageFormat mergeableFormat = getFormat("mergeableFormat"); // NOI18N
     private static MessageFormat excludedFormat = getFormat("excludedFormat"); // NOI18N
 
+    private static MessageFormat newLocallyTooltipFormat = getFormat("newLocallyTooltipFormat");  // NOI18N
+    private static MessageFormat addedLocallyTooltipFormat = getFormat("addedLocallyTooltipFormat"); // NOI18N
+    private static MessageFormat modifiedLocallyTooltipFormat = getFormat("modifiedLocallyTooltipFormat"); // NOI18N
+    private static MessageFormat removedLocallyTooltipFormat = getFormat("removedLocallyTooltipFormat"); // NOI18N
+    private static MessageFormat deletedLocallyTooltipFormat = getFormat("deletedLocallyTooltipFormat"); // NOI18N
+    private static MessageFormat newInRepositoryTooltipFormat = getFormat("newInRepositoryTooltipFormat"); // NOI18N
+    private static MessageFormat modifiedInRepositoryTooltipFormat = getFormat("modifiedInRepositoryTooltipFormat"); // NOI18N
+    private static MessageFormat removedInRepositoryTooltipFormat = getFormat("removedInRepositoryTooltipFormat"); // NOI18N
+    private static MessageFormat conflictTooltipFormat = getFormat("conflictTooltipFormat"); // NOI18N
+    private static MessageFormat mergeableTooltipFormat = getFormat("mergeableTooltipFormat"); // NOI18N
+    private static MessageFormat excludedTooltipFormat = getFormat("excludedTooltipFormat"); // NOI18N
+
+    private static String badgeModified = "org/netbeans/modules/versioning/system/cvss/resources/icons/modified-badge.png";
+    private static String badgeConflicts = "org/netbeans/modules/versioning/system/cvss/resources/icons/conflicts-badge.png";
+    
+    private static String toolTipModified = "<img src=\"" + Annotator.class.getClassLoader().getResource(badgeModified) + "\">&nbsp;"
+            + NbBundle.getMessage(Annotator.class, "MSG_Contains_Modified_Locally");
+    private static String toolTipConflict = "<img src=\"" + Annotator.class.getClassLoader().getResource(badgeConflicts) + "\">&nbsp;"
+            + NbBundle.getMessage(Annotator.class, "MSG_Contains_Conflicts");
+  
     private static final int STATUS_TEXT_ANNOTABLE = FileInformation.STATUS_NOTVERSIONED_EXCLUDED | 
             FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY | FileInformation.STATUS_VERSIONED_UPTODATE |
             FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY | FileInformation.STATUS_VERSIONED_CONFLICT | FileInformation.STATUS_VERSIONED_MERGE |
@@ -348,68 +368,6 @@ public class Annotator {
     }
 
     /**
-     * Annotates icon of a node based on its versioning status.
-     *
-     * @param roots files that the node represents
-     * @param icon original node icon
-     * @return Image newly annotated icon or the original one
-     */
-    Image annotateFolderIcon(Set roots, Image icon) {
-        CvsModuleConfig config = CvsModuleConfig.getDefault();
-        boolean allExcluded = true;
-        boolean modified = false;
-
-        Map<File, FileInformation> map = cache.getAllModifiedFiles();
-        Map<File, FileInformation> modifiedFiles = new HashMap<File, FileInformation>();
-        for (Iterator i = map.keySet().iterator(); i.hasNext();) {
-            File file = (File) i.next();
-            FileInformation info = (FileInformation) map.get(file);
-            if (!info.isDirectory() && (info.getStatus() & FileInformation.STATUS_LOCAL_CHANGE) != 0) modifiedFiles.put(file, info);
-        }
-
-        for (Iterator i = roots.iterator(); i.hasNext();) {
-            File file = (File) i.next();
-            if (VersioningSupport.isFlat(file)) {
-                for (Iterator j = modifiedFiles.keySet().iterator(); j.hasNext();) {
-                    File mf = (File) j.next();
-                    if (mf.getParentFile().equals(file)) {
-                        FileInformation info = (FileInformation) modifiedFiles.get(mf);
-                        if (info.isDirectory()) continue;
-                        int status = info.getStatus();
-                        if (status == FileInformation.STATUS_VERSIONED_CONFLICT) {
-                            Image badge = Utilities.loadImage("org/netbeans/modules/versioning/system/cvss/resources/icons/conflicts-badge.png", true);  // NOI18N
-                            return Utilities.mergeImages(icon, badge, 16, 9);
-                        }
-                        modified = true;
-                        allExcluded &= config.isExcludedFromCommit(mf);
-                    }
-                }
-            } else {
-                for (Iterator j = modifiedFiles.keySet().iterator(); j.hasNext();) {
-                    File mf = (File) j.next();
-                    if (Utils.isParentOrEqual(file, mf)) {
-                        FileInformation info = (FileInformation) modifiedFiles.get(mf);
-                        int status = info.getStatus();
-                        if (status == FileInformation.STATUS_VERSIONED_CONFLICT) {
-                            Image badge = Utilities.loadImage("org/netbeans/modules/versioning/system/cvss/resources/icons/conflicts-badge.png", true); // NOI18N
-                            return Utilities.mergeImages(icon, badge, 16, 9);
-                        }
-                        modified = true;
-                        allExcluded &= config.isExcludedFromCommit(mf);
-                    }
-                }
-            }
-        }
-
-        if (modified && !allExcluded) {
-            Image badge = Utilities.loadImage("org/netbeans/modules/versioning/system/cvss/resources/icons/modified-badge.png", true); // NOI18N
-            return Utilities.mergeImages(icon, badge, 16, 9);
-        } else {
-            return null;
-        }
-    }
-
-    /**
      * Returns array of versioning actions that may be used to construct a popup menu. These actions
      * will act on the supplied context.
      *
@@ -526,7 +484,7 @@ public class Annotator {
 
     private static final int STATUS_BADGEABLE = FileInformation.STATUS_VERSIONED_UPTODATE | FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY;
     
-    public Image annotateIcon(Image icon, VCSContext context) {
+    public Image annotateIcon(Image icon, VCSContext context, int includeStatus) {
         boolean folderAnnotation = false;
         for (File file : context.getRootFiles()) {
             if (file.isDirectory()) {
@@ -540,35 +498,97 @@ public class Annotator {
         }
 
         if (folderAnnotation == false) {
-            return null;
+            return annotateFileIcon(context, icon, includeStatus);
+        } else {
+            return annotateFolderIcon(context, icon);
         }
+    }
 
+    private Image annotateFileIcon(VCSContext context, Image icon, int includeStatus) {
+        FileInformation mostImportantInfo = null;
+        for (File file : context.getRootFiles()) {
+            FileInformation info = cache.getStatus(file);
+            int status = info.getStatus();
+            if ((status & includeStatus) == 0) continue;
+            if (isMoreImportant(info, mostImportantInfo)) {
+                mostImportantInfo = info;
+            }
+        }
+        if(mostImportantInfo == null) return null; 
+        String statusText = null;
+        int status = mostImportantInfo.getStatus();
+        switch (status) {
+            case FileInformation.STATUS_UNKNOWN:
+                break;
+            case FileInformation.STATUS_NOTVERSIONED_NOTMANAGED:
+                statusText = null;
+                break;
+            case FileInformation.STATUS_VERSIONED_UPTODATE:
+                statusText = null;
+                break;
+            case FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY:
+                statusText = modifiedLocallyTooltipFormat.format(new Object [] { mostImportantInfo.getStatusText() });
+                break;
+            case FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY:
+                statusText = newLocallyTooltipFormat.format(new Object [] { mostImportantInfo.getStatusText() });
+                break;
+            case FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY:
+                statusText = removedLocallyTooltipFormat.format(new Object [] { mostImportantInfo.getStatusText() });
+                break;
+            case FileInformation.STATUS_VERSIONED_DELETEDLOCALLY:
+                statusText = deletedLocallyTooltipFormat.format(new Object [] { mostImportantInfo.getStatusText() });
+                break;
+            case FileInformation.STATUS_VERSIONED_NEWINREPOSITORY:
+                statusText = newInRepositoryTooltipFormat.format(new Object [] { mostImportantInfo.getStatusText() });
+                break;
+            case FileInformation.STATUS_VERSIONED_MODIFIEDINREPOSITORY:
+                statusText = modifiedInRepositoryTooltipFormat.format(new Object [] { mostImportantInfo.getStatusText() });
+                break;
+            case FileInformation.STATUS_VERSIONED_REMOVEDINREPOSITORY:
+                statusText = removedInRepositoryTooltipFormat.format(new Object [] { mostImportantInfo.getStatusText() });
+                break;
+            case FileInformation.STATUS_VERSIONED_ADDEDLOCALLY:
+                statusText = addedLocallyTooltipFormat.format(new Object [] { mostImportantInfo.getStatusText() });
+                break;
+            case FileInformation.STATUS_VERSIONED_MERGE:
+                statusText = mergeableTooltipFormat.format(new Object [] { mostImportantInfo.getStatusText() });
+                break;
+            case FileInformation.STATUS_VERSIONED_CONFLICT:
+                statusText = conflictTooltipFormat.format(new Object [] { mostImportantInfo.getStatusText() });
+                break;
+            case FileInformation.STATUS_NOTVERSIONED_EXCLUDED:
+                statusText = excludedTooltipFormat.format(new Object [] { mostImportantInfo.getStatusText() });
+                break;
+            default:
+                throw new IllegalArgumentException("Unknown status: " + status); // NOI18N
+        }
+        return statusText != null ? ImageUtilities.addToolTipToImage(icon, statusText) : null;
+    }
+
+    private Image annotateFolderIcon(VCSContext context, Image icon) {
         FileStatusCache cache = CvsVersioningSystem.getInstance().getStatusCache();
         boolean isVersioned = false;
         for (Iterator<File> i = context.getRootFiles().iterator(); i.hasNext();) {
             File file = i.next();
-            if ((cache.getStatus(file).getStatus() & STATUS_BADGEABLE) != 0) {  
+            if ((cache.getStatus(file).getStatus() & STATUS_BADGEABLE) != 0) {
                 isVersioned = true;
                 break;
             }
         }
-        if (!isVersioned) return null;
-
-        
-        
-        
-        
+        if (!isVersioned) {
+            return null;
+        }
         CvsModuleConfig config = CvsModuleConfig.getDefault();
         boolean allExcluded = true;
         boolean modified = false;
-
         Map<File, FileInformation> map = cache.getAllModifiedFiles();
         Map<File, FileInformation> modifiedFiles = new HashMap<File, FileInformation>();
         for (Map.Entry<File, FileInformation> entry : map.entrySet()) {
             FileInformation info = entry.getValue();
-            if (!info.isDirectory() && (info.getStatus() & FileInformation.STATUS_LOCAL_CHANGE) != 0) modifiedFiles.put(entry.getKey(), info);
+            if (!info.isDirectory() && (info.getStatus() & FileInformation.STATUS_LOCAL_CHANGE) != 0) {
+                modifiedFiles.put(entry.getKey(), info);
+            }
         }
-
         for (Iterator<File> i = context.getRootFiles().iterator(); i.hasNext();) {
             File file = i.next();
             if (VersioningSupport.isFlat(file)) {
@@ -576,11 +596,14 @@ public class Annotator {
                     File mf = j.next();
                     if (mf.getParentFile().equals(file)) {
                         FileInformation info = modifiedFiles.get(mf);
-                        if (info.isDirectory()) continue;
+                        if (info.isDirectory()) {
+                            continue;
+                        }
                         int status = info.getStatus();
                         if (status == FileInformation.STATUS_VERSIONED_CONFLICT) {
-                            Image badge = Utilities.loadImage("org/netbeans/modules/versioning/system/cvss/resources/icons/conflicts-badge.png", true);  // NOI18N
-                            return Utilities.mergeImages(icon, badge, 16, 9);
+                            Image badge = ImageUtilities.assignToolTipToImage(
+                                    ImageUtilities.loadImage(badgeConflicts, true), toolTipConflict); // NOI18N
+                            return ImageUtilities.mergeImages(icon, badge, 16, 9);
                         }
                         modified = true;
                         allExcluded &= config.isExcludedFromCommit(mf);
@@ -593,8 +616,9 @@ public class Annotator {
                         FileInformation info = modifiedFiles.get(mf);
                         int status = info.getStatus();
                         if (status == FileInformation.STATUS_VERSIONED_CONFLICT) {
-                            Image badge = Utilities.loadImage("org/netbeans/modules/versioning/system/cvss/resources/icons/conflicts-badge.png", true); // NOI18N
-                            return Utilities.mergeImages(icon, badge, 16, 9);
+                            Image badge = ImageUtilities.assignToolTipToImage(
+                                    ImageUtilities.loadImage(badgeConflicts, true), toolTipConflict); // NOI18N
+                            return ImageUtilities.mergeImages(icon, badge, 16, 9);
                         }
                         modified = true;
                         allExcluded &= config.isExcludedFromCommit(mf);
@@ -602,12 +626,13 @@ public class Annotator {
                 }
             }
         }
-
         if (modified && !allExcluded) {
-            Image badge = Utilities.loadImage("org/netbeans/modules/versioning/system/cvss/resources/icons/modified-badge.png", true); // NOI18N
-            return Utilities.mergeImages(icon, badge, 16, 9);
+            Image badge = ImageUtilities.assignToolTipToImage(
+                    ImageUtilities.loadImage(badgeModified, true), toolTipModified); // NOI18N
+            return ImageUtilities.mergeImages(icon, badge, 16, 9);
         } else {
             return null;
         }
     }
+
 }

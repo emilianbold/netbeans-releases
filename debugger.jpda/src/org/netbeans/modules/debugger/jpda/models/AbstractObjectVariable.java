@@ -45,6 +45,7 @@ import com.sun.jdi.ArrayReference;
 import com.sun.jdi.ArrayType;
 import com.sun.jdi.CharValue;
 import com.sun.jdi.ClassType;
+import com.sun.jdi.IntegerValue;
 import com.sun.jdi.Method;
 import com.sun.jdi.ObjectCollectedException;
 import com.sun.jdi.ObjectReference;
@@ -71,6 +72,7 @@ import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.JPDAClassType;
 import org.netbeans.api.debugger.jpda.Field;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
+import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.api.debugger.jpda.Super;
 import org.netbeans.api.debugger.jpda.Variable;
@@ -87,7 +89,7 @@ class AbstractObjectVariable extends AbstractVariable implements ObjectVariable 
     // Customized for add/removePropertyChangeListener
     // Cloneable for fixed watches
     
-    private static final Logger logger = Logger.getLogger("org.netbeans.modules.debugger.jpda.getValue"); // NOI8N
+    private static final Logger logger = Logger.getLogger("org.netbeans.modules.debugger.jpda.getValue"); // NOI18N
 
     private String          genericType;
     private Field[]         fields;
@@ -281,32 +283,77 @@ class AbstractObjectVariable extends AbstractVariable implements ObjectVariable 
      */
     public String getToStringValue () throws InvalidExpressionException {
         Value v = getInnerValue ();
-        return getToStringValue(v, getDebugger());
+        return getToStringValue(v, getDebugger(), 0);
     }
     
-    static String getToStringValue (Value v, JPDADebuggerImpl debugger) throws InvalidExpressionException {
+    /**
+     * Calls {@link java.lang.Object#toString} in debugged JVM and returns
+     * its value.
+     *
+     * @return toString () value of this instance
+     */
+    public String getToStringValue (int maxLength) throws InvalidExpressionException {
+        Value v = getInnerValue ();
+        return getToStringValue(v, getDebugger(), maxLength);
+    }
+    
+    static String getToStringValue (Value v, JPDADebuggerImpl debugger, int maxLength) throws InvalidExpressionException {
         if (v == null) return null;
         try {
             if (!(v.type () instanceof ClassType)) 
                 return AbstractVariable.getValue (v);
             if (v instanceof CharValue)
                 return "\'" + v.toString () + "\'";
-            if (v instanceof StringReference)
-                return "\"" +
-                    ((StringReference) v).value ()
-                    + "\"";
-            Method toStringMethod = ((ClassType) v.type ()).
-                concreteMethodByName ("toString", "()Ljava/lang/String;");
-            StringReference sr = (StringReference) debugger.invokeMethod (
-                (ObjectReference) v,
-                toStringMethod,
-                new Value [0]
-            );
+            boolean addQuotation = false;
+            boolean addDots = false;
+            StringReference sr;
+            if (v instanceof StringReference) {
+                sr = (StringReference) v;
+                addQuotation = true;
+            } else {
+                Method toStringMethod = ((ClassType) v.type ()).
+                    concreteMethodByName ("toString", "()Ljava/lang/String;");  // NOI18N
+                sr = (StringReference) debugger.invokeMethod (
+                    (ObjectReference) v,
+                    toStringMethod,
+                    new Value [0]
+                );
+            }
             if (sr == null) {
                 return null;
             } else {
-                return sr.value ();
+                if (maxLength > 0 && maxLength < Integer.MAX_VALUE) {
+                    Method stringLengthMethod = ((ClassType) sr.type ()).
+                        concreteMethodByName ("length", "()I");  // NOI18N
+                    IntegerValue lengthValue = (IntegerValue) debugger.invokeMethod (
+                        sr,
+                        stringLengthMethod,
+                        new Value [0]
+                    );
+                    if (lengthValue.value() > maxLength) {
+                        Method subStringMethod = ((ClassType) sr.type ()).
+                            concreteMethodByName ("substring", "(II)Ljava/lang/String;");  // NOI18N
+                        if (subStringMethod != null) {
+                            sr = (StringReference) debugger.invokeMethod (
+                                sr,
+                                subStringMethod,
+                                new Value [] { v.virtualMachine().mirrorOf(0),
+                                               v.virtualMachine().mirrorOf(maxLength) }
+                            );
+                            addDots = true;
+                        }
+                    }
+                    
+                }
             }
+            String str = sr.value();
+            if (addDots) {
+                str = str + "..."; // NOI18N
+            }
+            if (addQuotation) {
+                str = "\"" + str + "\""; // NOI18N
+            }
+            return str;
         } catch (VMDisconnectedException ex) {
             return NbBundle.getMessage(AbstractVariable.class, "MSG_Disconnected");
         } catch (ObjectCollectedException ocex) {
@@ -325,6 +372,26 @@ class AbstractObjectVariable extends AbstractVariable implements ObjectVariable 
      * @return value of given method call on this instance
      */
     public Variable invokeMethod (
+        String methodName,
+        String signature,
+        Variable[] arguments
+    ) throws NoSuchMethodException, InvalidExpressionException {
+        return invokeMethod(null, methodName, signature, arguments);
+    }
+
+    /**
+     * Calls given method in debugged JVM on this instance and returns
+     * its value.
+     *
+     * @param thread the thread on which the method invocation is performed.
+     * @param methodName a name of method to be called
+     * @param signature a signature of method to be called
+     * @param arguments a arguments to be used
+     *
+     * @return value of given method call on this instance
+     */
+    public Variable invokeMethod (
+        JPDAThread thread,
         String methodName,
         String signature,
         Variable[] arguments
@@ -369,6 +436,7 @@ class AbstractObjectVariable extends AbstractVariable implements ObjectVariable 
             for (i = 0; i < k; i++)
                 vs [i] = ((AbstractVariable) arguments [i]).getInnerValue ();
             Value v = getDebugger().invokeMethod (
+                (JPDAThreadImpl) thread,
                 (ObjectReference) this.getInnerValue(),
                 method,
                 vs
@@ -424,6 +492,9 @@ class AbstractObjectVariable extends AbstractVariable implements ObjectVariable 
                 (getID().equals (((AbstractObjectVariable) o).getID()));
     }
     
+    public int hashCode() {
+        return getID().hashCode();
+    }
     
     // other methods............................................................
     
@@ -592,32 +663,39 @@ class AbstractObjectVariable extends AbstractVariable implements ObjectVariable 
         ReferenceType rt,
         String parentID)
     {
-        List<Field> fields = new ArrayList<Field>();
-        List<Field> staticFields = new ArrayList<Field>();
+        List<Field> classFields = new ArrayList<Field>();
+        List<Field> classStaticFields = new ArrayList<Field>();
         List<Field> allInheretedFields = new ArrayList<Field>();
         
-        List<com.sun.jdi.Field> l = rt.allFields ();
-        Set<com.sun.jdi.Field> s = new HashSet<com.sun.jdi.Field>(rt.fields ());
+        List<com.sun.jdi.Field> l;
+        Set<com.sun.jdi.Field> s;
+        try {
+            l = rt.allFields ();
+            s = new HashSet<com.sun.jdi.Field>(rt.fields ());
+        } catch (VMDisconnectedException e) {
+            l = Collections.emptyList();
+            s = Collections.emptySet();
+        }
 
         int i, k = l.size();
         for (i = 0; i < k; i++) {
             com.sun.jdi.Field f = l.get (i);
             Field field = this.getField (f, or, this.getID());
             if (f.isStatic ())
-                staticFields.add(field);
+                classStaticFields.add(field);
             else {
                 if (s.contains (f))
-                    fields.add(field);
+                    classFields.add(field);
                 else
                     allInheretedFields.add(field);
             }
         }
-        this.fields = fields.toArray (new Field [fields.size ()]);
+        this.fields = classFields.toArray (new Field [classFields.size ()]);
         this.inheritedFields = allInheretedFields.toArray (
             new Field [allInheretedFields.size ()]
         );
-        this.staticFields = staticFields.toArray
-                (new Field [staticFields.size ()]);
+        this.staticFields = classStaticFields.toArray
+                (new Field [classStaticFields.size ()]);
     }
     
     org.netbeans.api.debugger.jpda.Field getField (

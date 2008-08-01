@@ -51,12 +51,8 @@ import java.util.Vector;
 
 import org.netbeans.modules.j2ee.sun.ide.editors.NameValuePair;
 import org.netbeans.modules.j2ee.sun.share.serverresources.JdbcCP;
-import org.netbeans.modules.j2ee.sun.dd.api.DDProvider;
 import org.netbeans.modules.j2ee.sun.dd.api.serverresources.*;
 
-import org.netbeans.modules.j2ee.sun.ide.editors.IsolationLevelEditor;
-import org.netbeans.modules.j2ee.sun.sunresources.beans.WizardConstants;
-import org.openide.util.NbBundle;
 /**
  *
  * @author  nityad

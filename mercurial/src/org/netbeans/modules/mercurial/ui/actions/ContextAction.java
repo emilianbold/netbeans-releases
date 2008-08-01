@@ -45,6 +45,7 @@ import org.netbeans.modules.mercurial.Mercurial;
 import javax.swing.AbstractAction;
 import org.openide.LifecycleManager;
 import java.awt.event.ActionEvent;
+import org.netbeans.modules.versioning.util.Utils;
 
 /**
  * Base for all context-sensitive Mercurial actions.
@@ -64,6 +65,7 @@ public abstract class ContextAction extends AbstractAction {
         // The same (global save) logic is in CVS, no complaint
         LifecycleManager.getDefault().saveAll();        
         if(!Mercurial.getInstance().isGoodVersionAndNotify()) return;
+        Utils.logVCSActionEvent("HG");
         performAction(event);
     }
 

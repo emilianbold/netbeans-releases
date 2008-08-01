@@ -115,7 +115,7 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.Panel<WizardDes
         FileObject template = Templates.getTemplate( wizard );
 
         String errorMessage = ProjectUtilities.canUseFileName (gui.getTargetGroup().getRootFolder(), gui.getTargetFolder(), gui.getTargetName(), template.getExt (), isFolder);
-        wizard.putProperty ("WizardPanel_errorMessage", errorMessage); // NOI18N
+        wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, errorMessage);
 
         return errorMessage == null;
     }
@@ -153,7 +153,7 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.Panel<WizardDes
             wizard.putProperty ("NewFileWizard_Title", substitute); // NOI18N
         }
         
-        wizard.putProperty ("WizardPanel_contentData", new String[] { // NOI18N
+        wizard.putProperty(WizardDescriptor.PROP_CONTENT_DATA, new String[] { // NOI18N
             NbBundle.getBundle (SimpleTargetChooserPanel.class).getString ("LBL_TemplatesPanel_Name"), // NOI18N
             NbBundle.getBundle (SimpleTargetChooserPanel.class).getString ("LBL_SimpleTargetChooserPanel_Name")}); // NOI18N
             

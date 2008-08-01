@@ -45,17 +45,19 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
-
-import org.openide.cookies.*;
-import org.openide.filesystems.*;
-import org.openide.loaders.*;
 import org.openide.nodes.Node;
 import org.openide.nodes.Node.Cookie;
 import org.openide.util.Task;
 import org.openide.text.Line;
 import org.openide.util.NbBundle;
-
 import org.netbeans.api.java.loaders.JavaDataSupport;
+import org.openide.cookies.EditorCookie;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectExistsException;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.loaders.MultiDataObject;
+import org.openide.loaders.MultiFileLoader;
 
 /** Dataobject representing a servlet generated from a JSP page
 *
@@ -72,11 +74,13 @@ public final class JspServletDataObject extends MultiDataObject {
         super(pf, loader);
     }
     
-    public @Override Node createNodeDelegate() {
+    @Override
+    public Node createNodeDelegate() {
         return JavaDataSupport.createJavaNode(getPrimaryFile());
     }
 
-    public @Override Cookie getCookie(Class type) {
+    @Override
+    public Cookie getCookie(Class type) {
         if (type.isAssignableFrom(ServletEditorCookie.class)) {
             if (servletEditor == null) {
                 EditorCookie ed = (EditorCookie) super.getCookie(EditorCookie.class);
@@ -93,6 +97,7 @@ public final class JspServletDataObject extends MultiDataObject {
     * Uses the name of the source JSP
     * @return the name
     */
+    @Override
     public String getName () {
         DataObject jsp = getSourceJspPage();
         if (jsp == null)
@@ -126,9 +131,10 @@ public final class JspServletDataObject extends MultiDataObject {
     	if (obj instanceof DataObject) return (DataObject)obj;
     	if (obj instanceof FileObject) {
     		if (((FileObject)obj).isValid()) {
-    			try {
-    				return DataObject.find((FileObject)obj);
-    			} catch (DataObjectNotFoundException e) {//nothing to do
+                    try {
+                        return DataObject.find((FileObject)obj);
+                    } catch (DataObjectNotFoundException e) {
+                        //nothing to do
     		    }
     		}
         }

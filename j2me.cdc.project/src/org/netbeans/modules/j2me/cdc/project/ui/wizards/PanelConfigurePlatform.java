@@ -94,7 +94,6 @@ final public class PanelConfigurePlatform implements WizardDescriptor.Panel, Wiz
     public void storeSettings(Object settings) {
         WizardDescriptor d = (WizardDescriptor)settings;       
         component.store(d);
-        d.putProperty ("NewProjectWizard_Title", null); // NOI18N
     }
 
     public boolean isValid() {

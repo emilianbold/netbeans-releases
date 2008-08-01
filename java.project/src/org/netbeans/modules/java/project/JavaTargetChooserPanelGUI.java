@@ -46,12 +46,10 @@ import java.awt.Dimension;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
-import javax.swing.JComboBox;
 import javax.swing.JList;
 import javax.swing.ListModel;
 import javax.swing.SwingUtilities;
@@ -225,7 +223,7 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
                     }
                 }
             }
-            updatePackages( false );
+            updatePackages();
         }
         // Determine the extension
         String ext = template == null ? "" : template.getExt(); // NOI18N
@@ -451,7 +449,7 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
     public void actionPerformed(java.awt.event.ActionEvent e) {
         if ( rootComboBox == e.getSource() ) {            
             if ( !ignoreRootCombo && type != NewJavaFileWizardIterator.TYPE_PACKAGE ) {
-                updatePackages( true );
+                updatePackages();
             }
             updateText();
         }
@@ -490,7 +488,7 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
         } 
     ); 
     
-    private void updatePackages( final boolean clean ) {
+    private void updatePackages() {
         WAIT_MODEL.setSelectedItem( packageComboBox.getEditor().getItem() );
         packageComboBox.setModel( WAIT_MODEL );
         
@@ -509,9 +507,7 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
                         SwingUtilities.invokeLater( this );
                     }
                     else {
-                        if ( !clean ) {
-                            model.setSelectedItem( packageComboBox.getEditor().getItem() );
-                        }
+                        model.setSelectedItem(packageComboBox.getEditor().getItem());
                         packageComboBox.setModel( model );
                     }
                 }

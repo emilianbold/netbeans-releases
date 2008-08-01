@@ -22,10 +22,10 @@ import org.openide.windows.WindowManager;
 
 public class PlanMultiviewSupport implements ViewComponentCookie, ShowCookie {
 
-	 /** The data object */
+     /** The data object */
     private PlanDataObject dobj;
     
-	/**
+    /**
      * Creates a new instance of WSDLMultiViewSupport.
      *
      * @param  dobj  the data object.
@@ -34,7 +34,7 @@ public class PlanMultiviewSupport implements ViewComponentCookie, ShowCookie {
         this.dobj = dobj;
     }
     
-	public void view(final View view, final Component component,
+    public void view(final View view, final Component component,
             final Object... parameters) {
         if (!EventQueue.isDispatchThread()) {
             EventQueue.invokeLater(new Runnable() {
@@ -60,7 +60,7 @@ public class PlanMultiviewSupport implements ViewComponentCookie, ShowCookie {
                                 PlanSourceMultiviewDesc.PREFERRED_ID);
                         break;
                     case DESIGN:
-                    	PlanMultiViewFactory.requestMultiviewActive(
+                        PlanMultiViewFactory.requestMultiviewActive(
                                 PlanDesignViewMultiViewDesc.PREFERRED_ID);
                         break;
                 }
@@ -100,7 +100,7 @@ public class PlanMultiviewSupport implements ViewComponentCookie, ShowCookie {
             case SUPER:
                 return true;
             case DESIGN:
-            	if (!(component instanceof IEPComponent)) {
+                if (!(component instanceof IEPComponent)) {
                     return false;
                 }
                 

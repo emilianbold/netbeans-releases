@@ -20,6 +20,8 @@ to represent default configuration properties for Contexts that are automaticall
 <!ATTLIST Context privileged CDATA #IMPLIED>
 <!ATTLIST Context workDir CDATA #IMPLIED>
 <!ATTLIST Context debug CDATA #IMPLIED>
+<!-- tomcat 5.5 and 6 -->
+<!ATTLIST Context antiJARLocking CDATA #IMPLIED>
 
 <!--
 A Valve element represents a comonent that will be inserted 

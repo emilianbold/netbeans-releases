@@ -42,6 +42,7 @@ package org.netbeans.modules.java.editor.javadoc;
 import com.sun.javadoc.Doc;
 import com.sun.javadoc.Tag;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.lexer.JavadocTokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.junit.NbTestSuite;
@@ -96,7 +97,7 @@ public class JavadocCompletionUtilsTest extends JavadocTestSupport {
         Tag[] inlineTags = javaDocFor.inlineTags();
         String commentText = javaDocFor.commentText();
         String rawCommentText = javaDocFor.getRawCommentText();
-        TokenSequence<JavadocTokenId> jdts = JavadocCompletionUtils.findJavadocTokenSequence(doc, code.indexOf("HUH"));
+        TokenSequence<JavadocTokenId> jdts = JavadocCompletionUtils.findJavadocTokenSequence(info, code.indexOf("HUH"));
         jdts.moveStart();
         jdts.moveNext();
         
@@ -265,12 +266,12 @@ public class JavadocCompletionUtilsTest extends JavadocTestSupport {
         
         String what = "     * HUH";
         int offset = code.indexOf(what) + what.length() - 4;
-        TokenSequence<JavadocTokenId> jdts = JavadocCompletionUtils.findJavadocTokenSequence(doc, offset);
+        TokenSequence<JavadocTokenId> jdts = JavadocCompletionUtils.findJavadocTokenSequence(info, offset);
         assertTrue(jdts.moveNext());
         assertTrue(insertPointer(code, offset),
                 JavadocCompletionUtils.isLineBreak(jdts.token()));
         offset += 1;
-        jdts = JavadocCompletionUtils.findJavadocTokenSequence(doc, offset);
+        jdts = JavadocCompletionUtils.findJavadocTokenSequence(info, offset);
         assertTrue(jdts.moveNext());
         // token is INDENT
         assertFalse(insertPointer(code, offset),
@@ -278,14 +279,14 @@ public class JavadocCompletionUtilsTest extends JavadocTestSupport {
         
         what = "  \n";
         offset = code.indexOf(what);
-        jdts = JavadocCompletionUtils.findJavadocTokenSequence(doc, offset);
+        jdts = JavadocCompletionUtils.findJavadocTokenSequence(info, offset);
         assertTrue(jdts.moveNext());
         assertTrue(insertPointer(code, offset),
                 JavadocCompletionUtils.isLineBreak(jdts.token(), offset - jdts.offset()));
         
         what = "  * {*i";
         offset = code.indexOf(what) + what.length() - 3;
-        jdts = JavadocCompletionUtils.findJavadocTokenSequence(doc, offset);
+        jdts = JavadocCompletionUtils.findJavadocTokenSequence(info, offset);
         assertTrue(jdts.moveNext());
         assertFalse(insertPointer(code, offset),
                 JavadocCompletionUtils.isLineBreak(jdts.token()));
@@ -312,7 +313,7 @@ public class JavadocCompletionUtilsTest extends JavadocTestSupport {
         
         String what = "{@code";
         int offset = code.indexOf(what);
-        TokenSequence<JavadocTokenId> jdts = JavadocCompletionUtils.findJavadocTokenSequence(doc, offset);
+        TokenSequence<JavadocTokenId> jdts = JavadocCompletionUtils.findJavadocTokenSequence(info, offset);
         // test OTHER_TEXT('     * {|')
         assertTrue(jdts.moveNext());
         assertTrue(jdts.token().id() == JavadocTokenId.OTHER_TEXT);
@@ -339,21 +340,37 @@ public class JavadocCompletionUtilsTest extends JavadocTestSupport {
         
         String what = "     * HUH";
         int offset = code.indexOf(what) + what.length() - 4;
-        TokenSequence<JavadocTokenId> jdts = JavadocCompletionUtils.findJavadocTokenSequence(doc, offset);
+        TokenSequence<JavadocTokenId> jdts = JavadocCompletionUtils.findJavadocTokenSequence(info, offset);
         assertTrue(jdts.moveNext());
         assertTrue(insertPointer(code, offset), JavadocCompletionUtils.isWhiteSpaceLast(jdts.token()));
         
         what = "Second  sentence.";
         offset = code.indexOf(what) + "Second".length();
-        jdts = JavadocCompletionUtils.findJavadocTokenSequence(doc, offset);
+        jdts = JavadocCompletionUtils.findJavadocTokenSequence(info, offset);
         assertTrue(jdts.moveNext());
         assertTrue(insertPointer(code, offset), JavadocCompletionUtils.isWhiteSpace(jdts.token()));
         
         what = "\t String}";
         offset = code.indexOf(what);
-        jdts = JavadocCompletionUtils.findJavadocTokenSequence(doc, offset);
+        jdts = JavadocCompletionUtils.findJavadocTokenSequence(info, offset);
         assertTrue(jdts.moveNext());
         assertTrue(insertPointer(code, offset), JavadocCompletionUtils.isWhiteSpace(jdts.token()));
+    }
+    
+    public void testIsFirstWhiteSpaceAtFirstLine_131826() throws Exception {
+        String code = 
+                "/** * @author\n" +
+                " */\n" +
+                "class C {\n" +
+                "}\n";
+        
+        prepareTest(code);
+        
+        String what = "* @author";
+        int offset = code.indexOf(what);
+        TokenSequence<JavadocTokenId> jdts = JavadocCompletionUtils.findJavadocTokenSequence(info, offset);
+        assertTrue(jdts.moveNext());
+        assertTrue(insertPointer(code, offset), JavadocCompletionUtils.isFirstWhiteSpaceAtFirstLine(jdts.token()));
     }
     
     public void testIsInlineTagStart() throws Exception {
@@ -372,16 +389,105 @@ public class JavadocCompletionUtilsTest extends JavadocTestSupport {
         
         String what = "HUH {@link";
         int offset = code.indexOf(what) + 3;
-        TokenSequence<JavadocTokenId> jdts = JavadocCompletionUtils.findJavadocTokenSequence(doc, offset);
+        TokenSequence<JavadocTokenId> jdts = JavadocCompletionUtils.findJavadocTokenSequence(info, offset);
         assertTrue(jdts.moveNext());
         assertTrue(insertPointer(code, offset), JavadocCompletionUtils.isWhiteSpaceFirst(jdts.token()));
         assertTrue(insertPointer(code, offset), JavadocCompletionUtils.isInlineTagStart(jdts.token()));
         
         what = "GUG{@link";
         offset = code.indexOf(what) + 3;
-        jdts = JavadocCompletionUtils.findJavadocTokenSequence(doc, offset);
+        jdts = JavadocCompletionUtils.findJavadocTokenSequence(info, offset);
         assertTrue(jdts.moveNext());
         assertTrue(insertPointer(code, offset), JavadocCompletionUtils.isInlineTagStart(jdts.token()));
+    }
+    
+    public void testIsInsideIndent() throws Exception {
+        String code = 
+                "/**\n" +
+                " * line1\n" +
+                " *   \n" +
+                "   line3\n" +
+                " */\n" +
+                "class C {\n" +
+                "}\n";
+        prepareTest(code);
+        
+        String what = " * line1";
+        int offset = code.indexOf(what);
+        TokenSequence<JavadocTokenId> jdts = JavadocCompletionUtils.findJavadocTokenSequence(info, offset);
+        assertTrue(jdts.moveNext());
+        assertTrue(insertPointer(code, offset), JavadocCompletionUtils.isInsideIndent(jdts.token(), offset - jdts.offset()));
+        
+        what = " * line1";
+        offset = code.indexOf(what) + 1;
+        jdts = JavadocCompletionUtils.findJavadocTokenSequence(info, offset);
+        assertTrue(jdts.moveNext());
+        assertTrue(insertPointer(code, offset), JavadocCompletionUtils.isInsideIndent(jdts.token(), offset - jdts.offset()));
+        
+        what = " * line1";
+        offset = code.indexOf(what) + 2;
+        jdts = JavadocCompletionUtils.findJavadocTokenSequence(info, offset);
+        assertTrue(jdts.moveNext());
+        assertFalse(insertPointer(code, offset), JavadocCompletionUtils.isInsideIndent(jdts.token(), offset - jdts.offset()));
+        
+        what = "   line3";
+        offset = code.indexOf(what);
+        jdts = JavadocCompletionUtils.findJavadocTokenSequence(info, offset);
+        assertTrue(jdts.moveNext());
+        assertFalse(insertPointer(code, offset), JavadocCompletionUtils.isInsideIndent(jdts.token(), offset - jdts.offset()));
+        
+        what = "line3";
+        offset = code.indexOf(what) + 1;
+        jdts = JavadocCompletionUtils.findJavadocTokenSequence(info, offset);
+        assertTrue(jdts.moveNext());
+        assertFalse(insertPointer(code, offset), JavadocCompletionUtils.isInsideIndent(jdts.token(), offset - jdts.offset()));
+        
+        // issue #128963
+        what = " * ";
+        offset = code.indexOf(what) + what.length();
+        jdts = JavadocCompletionUtils.findJavadocTokenSequence(info, offset);
+        assertTrue(jdts.moveNext());
+        assertFalse(insertPointer(code, offset), JavadocCompletionUtils.isInsideIndent(jdts.token(), offset - jdts.offset()));
+    }
+    
+    public void testConcurrentModification_130709() throws Exception {
+        String code = 
+                "/**\n" +
+                " * line1\n" +
+                " */\n" +
+                "class C {\n" +
+                "}\n";
+        prepareTest(code);
+        
+        String what = " * line1";
+        int offset = code.indexOf(what);
+        TokenSequence<JavadocTokenId> jdts = JavadocCompletionUtils.findJavadocTokenSequence(info, offset);
+        
+        doc.insertString(0, "\n", null);
+        assertTrue(jdts.moveNext());
+    }
+    
+    public void testFindJavadocTokenSequenceForElement() throws Exception {
+        String code = 
+                "/**\n" +
+                " * line1\n" +
+                " */\n" +
+                "class C {\n" +
+                "}\n";
+        prepareTest(code);
+
+        TypeElement clazzC = info.getTopLevelElements().iterator().next();
+        assertNotNull(clazzC);
+
+        TokenSequence<JavadocTokenId> jdts = JavadocCompletionUtils.findJavadocTokenSequence(info, clazzC);
+        assertNotNull(jdts);
+        assertTrue(jdts.moveNext());
+
+        // test synthetic element #131157
+        Element defConstructor = clazzC.getEnclosedElements().get(0);
+        assertNotNull(defConstructor);
+        assertTrue(info.getElementUtilities().isSynthetic(defConstructor));
+        assertNull(JavadocCompletionUtils.findJavadocTokenSequence(info, defConstructor));
     }
     
 }

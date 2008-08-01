@@ -1,0 +1,21 @@
+namespace std2 {
+    template<typename _CharT, typename _Traits>
+    class basic_ostream
+    {
+        template<typename _CharT2, typename _Traits2>
+            friend basic_ostream<_CharT2, _Traits2>&
+            operator<<(basic_ostream<_CharT2, _Traits2>&, const char*);
+        template<typename _CharT2, typename _Traits2>
+            friend basic_ostream<_CharT2, _Traits2>&
+            operator<<(basic_ostream<_CharT2, _Traits2>&,
+                       basic_ostream<_CharT2, _Traits2>& (*func)(basic_ostream<_CharT2, _Traits2>& __os));
+    };
+
+    template<typename _CharT, typename _Traits>
+        basic_ostream<_CharT, _Traits>& 
+        endl(basic_ostream<_CharT, _Traits>& __os) { return __os << "\n"; }
+
+    typedef basic_ostream<char> ostream;
+
+    extern ostream cout;
+}

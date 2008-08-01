@@ -55,12 +55,6 @@ made subject to such option by the copyright holder.
                     </run-dependency>
                 </dependency>
             </module-dependencies>
-            <public-packages>
-                <package>org.netbeans.modules.xml.xam</package>
-                <package>org.netbeans.modules.xml.xam.dom</package>
-                <package>org.netbeans.modules.xml.xam.locator</package>
-                <package>org.netbeans.modules.xml.xam.spi</package>
-            </public-packages>
             <test-dependencies>
                 <test-type>
                     <name>unit</name>
@@ -71,6 +65,12 @@ made subject to such option by the copyright holder.
                     </test-dependency>
                 </test-type>
             </test-dependencies>
+            <public-packages>
+                <package>org.netbeans.modules.xml.xam</package>
+                <package>org.netbeans.modules.xml.xam.dom</package>
+                <package>org.netbeans.modules.xml.xam.locator</package>
+                <package>org.netbeans.modules.xml.xam.spi</package>
+            </public-packages>
         </data>
     </configuration>
 </project>

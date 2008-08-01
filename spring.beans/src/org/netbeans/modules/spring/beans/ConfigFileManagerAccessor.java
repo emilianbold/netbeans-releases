@@ -49,14 +49,25 @@ import org.netbeans.modules.spring.api.beans.ConfigFileManager;
  */
 public abstract class ConfigFileManagerAccessor {
 
-    public static ConfigFileManagerAccessor DEFAULT;
+    private static volatile ConfigFileManagerAccessor accessor;
 
-    static {
+    public static void setDefault(ConfigFileManagerAccessor accessor) {
+        if (ConfigFileManagerAccessor.accessor != null) {
+            throw new IllegalStateException();
+        }
+        ConfigFileManagerAccessor.accessor = accessor;
+    }
+
+    public static ConfigFileManagerAccessor getDefault() {
+        if (accessor != null) {
+            return accessor;
+        }
         try {
             Class.forName(ConfigFileManager.class.getName(), true, ConfigFileManager.class.getClassLoader());
         } catch (ClassNotFoundException e) {
             throw new AssertionError(e);
         }
+        return accessor;
     }
 
     public abstract ConfigFileManager createConfigFileManager(ConfigFileManagerImplementation impl);

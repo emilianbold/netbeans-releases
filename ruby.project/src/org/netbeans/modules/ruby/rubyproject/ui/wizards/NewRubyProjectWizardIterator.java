@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -53,6 +53,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.rubyproject.RubyProjectGenerator;
+import org.netbeans.modules.ruby.rubyproject.Util;
 import org.netbeans.modules.ruby.rubyproject.ui.FoldersListSettings;
 import org.netbeans.modules.ruby.spi.project.support.rake.RakeProjectHelper;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
@@ -67,63 +68,78 @@ import org.openide.util.NbBundle;
  */
 public class NewRubyProjectWizardIterator implements WizardDescriptor.ProgressInstantiatingIterator {
 
-    static final int TYPE_APP = 0;
-    //static final int TYPE_LIB = 1;
-    static final int TYPE_EXT = 2;
+    static enum Type { APPLICATION, EXISTING; }
     
     static final String PROP_NAME_INDEX = "nameIndex";      //NOI18N
 
     private static final long serialVersionUID = 1L;
     
-    private int type;
+    private Type type;
     
-    /** Create a new wizard iterator. */
+    private transient int index;
+    private transient WizardDescriptor.Panel[] panels;
+    private transient WizardDescriptor wiz;
+    
     public NewRubyProjectWizardIterator() {
-        this(TYPE_APP);
+        this(Type.APPLICATION);
     }
     
-    public NewRubyProjectWizardIterator(int type) {
+    NewRubyProjectWizardIterator(Type type) {
         this.type = type;
     }
         
-//    public static NewRubyProjectWizardIterator library() {
-//        return new NewRubyProjectWizardIterator( TYPE_LIB );
-//    }
-    
-    public static NewRubyProjectWizardIterator existing () {
-        return new NewRubyProjectWizardIterator( TYPE_EXT );
+    public static NewRubyProjectWizardIterator existing() {
+        return new NewRubyProjectWizardIterator(Type.EXISTING);
     }
 
-    private WizardDescriptor.Panel[] createPanels () {
-        return this.type == TYPE_EXT ?
-            new WizardDescriptor.Panel[] {
-                new PanelConfigureProject( this.type ),
-                new PanelSourceFolders.Panel()
-            } 
-            :new WizardDescriptor.Panel[] {
-                new PanelConfigureProject( this.type )
-            };
+    private WizardDescriptor.Panel[] createPanels() {
+        WizardDescriptor.Panel[] result;
+        switch (this.type) {
+            case APPLICATION:
+                result = new WizardDescriptor.Panel[] {
+                    new PanelConfigureProject(this.type)
+                };
+                break;
+            case EXISTING:
+                result = new WizardDescriptor.Panel[] {
+                    new PanelConfigureProject(this.type),
+                    new PanelSourceFolders.Panel()
+                };
+                break;
+            default:
+                throw new IllegalStateException("unknown type: " + type);
+        }
+        return result;
     }
     
     private String[] createSteps() {
-        return this.type == TYPE_EXT ?
-            new String[] {                
-                NbBundle.getMessage(NewRubyProjectWizardIterator.class,"LAB_ConfigureProject"), 
-                NbBundle.getMessage(NewRubyProjectWizardIterator.class,"LAB_ConfigureSourceRoots"),
-            }
-            :new String[] {
-                NbBundle.getMessage(NewRubyProjectWizardIterator.class,"LAB_ConfigureProject"), 
-            };
+        String[] result;
+        switch (this.type) {
+            case APPLICATION:
+                result = new String[] {
+                    NbBundle.getMessage(NewRubyProjectWizardIterator.class,"LAB_ConfigureProject"), 
+                };
+                break;
+            case EXISTING:
+                result = new String[] {                
+                    NbBundle.getMessage(NewRubyProjectWizardIterator.class,"LAB_ConfigureProject"), 
+                    NbBundle.getMessage(NewRubyProjectWizardIterator.class,"LAB_ConfigureSourceRoots"),
+                };
+                break;
+            default:
+                throw new IllegalStateException("unknown type: " + type);
+        }
+        return result;
     }
     
     
-    public Set/*<FileObject>*/ instantiate () throws IOException {
+    public Set<FileObject> instantiate() throws IOException {
         assert false : "Cannot call this method if implements WizardDescriptor.ProgressInstantiatingIterator.";
         return null;
     }
-        
-    public Set/*<FileObject>*/ instantiate (ProgressHandle handle) throws IOException {
-        handle.start (4);
+
+    public Set<FileObject> instantiate(final ProgressHandle handle) throws IOException {
+        handle.start(4);
         //handle.progress (NbBundle.getMessage (NewRubyProjectWizardIterator.class, "LBL_NewRubyProjectWizardIterator_WizardProgress_ReadingProperties"));
         Set<FileObject> resultSet = new HashSet<FileObject>();
         File dirF = (File)wiz.getProperty("projdir");        //NOI18N
@@ -133,7 +149,7 @@ public class NewRubyProjectWizardIterator implements WizardDescriptor.ProgressIn
         String name = (String)wiz.getProperty("name");        //NOI18N
         handle.progress (NbBundle.getMessage (NewRubyProjectWizardIterator.class, "LBL_NewRubyProjectWizardIterator_WizardProgress_CreatingProject"), 1);
         RubyPlatform platform = (RubyPlatform) wiz.getProperty("platform"); // NOI18N
-        if (this.type == TYPE_EXT) {
+        if (this.type == Type.EXISTING) {
             File[] sourceFolders = (File[])wiz.getProperty("sourceRoot");        //NOI18N
             File[] testFolders = (File[])wiz.getProperty("testRoot");            //NOI18N
             RubyProjectGenerator.createProject(dirF, name, sourceFolders, testFolders, platform);
@@ -149,11 +165,6 @@ public class NewRubyProjectWizardIterator implements WizardDescriptor.ProgressIn
             String mainClass = (String) wiz.getProperty("mainClass"); // NOI18N
             RakeProjectHelper h = RubyProjectGenerator.createProject(dirF, name, mainClass, platform);
             handle.progress(2);
-            // BEGIN SEMPLICE MODIFICATIONS
-            // Update since format is customized
-            //mainClass = (String)wiz.getProperty("mainClass");
-            // END SEMPLICE MODIFICATIONS
-            
             if (mainClass != null && mainClass.length () > 0) {
                 try {
                     //String sourceRoot = "lib"; //(String)j2seProperties.get (RubyProjectProperties.SRC_DIR);
@@ -166,27 +177,21 @@ public class NewRubyProjectWizardIterator implements WizardDescriptor.ProgressIn
                     ErrorManager.getDefault().notify(x);
                 }
             }
-            // if ( type == TYPE_LIB ) {
-                // resultSet.add( h.getProjectDirectory ().getFileObject ("lib") );        //NOI18N 
-                // resultSet.add( h.getProjectDirectory() ); // Only expand the project directory
-            // }
         }
         FileObject dir = FileUtil.toFileObject(dirF);
         handle.progress (3);
 
         // Returning FileObject of project diretory. 
-        // Project will be open and set as main
         Integer index = (Integer) wiz.getProperty(PROP_NAME_INDEX);
         switch (this.type) {
-            case TYPE_APP:
+            case APPLICATION:
                 FoldersListSettings.getDefault().setNewApplicationCount(index.intValue());
                 break;
-//            case TYPE_LIB:
-//                FoldersListSettings.getDefault().setNewLibraryCount(index.intValue());
-//                break;
-            case TYPE_EXT:
+            case EXISTING:
                 FoldersListSettings.getDefault().setNewProjectCount(index.intValue());
                 break;
+            default:
+                throw new IllegalStateException("unknown type: " + type);
         }        
         resultSet.add (dir);
         handle.progress (NbBundle.getMessage (NewRubyProjectWizardIterator.class, "LBL_NewRubyProjectWizardIterator_WizardProgress_PreparingToOpen"), 4);
@@ -197,11 +202,6 @@ public class NewRubyProjectWizardIterator implements WizardDescriptor.ProgressIn
                         
         return resultSet;
     }
-    
-        
-    private transient int index;
-    private transient WizardDescriptor.Panel[] panels;
-    private transient WizardDescriptor wiz;
     
     public void initialize(WizardDescriptor wiz) {
         this.wiz = wiz;
@@ -220,9 +220,9 @@ public class NewRubyProjectWizardIterator implements WizardDescriptor.ProgressIn
             if (c instanceof JComponent) { // assume Swing components
                 JComponent jc = (JComponent)c;
                 // Step #.
-                jc.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(i)); // NOI18N
+                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, i); // NOI18N
                 // Step name (actually the whole list for reference).
-                jc.putClientProperty("WizardPanel_contentData", steps); // NOI18N
+                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps); // NOI18N
             }
         }
         //set the default values of the sourceRoot and the testRoot properties
@@ -236,7 +236,7 @@ public class NewRubyProjectWizardIterator implements WizardDescriptor.ProgressIn
             this.wiz.putProperty("name", null);          //NOI18N
             this.wiz.putProperty("mainClass", null);         //NOI18N
             this.wiz.putProperty("platform", null);         //NOI18N
-            if (this.type == TYPE_EXT) {
+            if (this.type == Type.EXISTING) {
                 this.wiz.putProperty("sourceRoot", null);    //NOI18N
                 this.wiz.putProperty("testRoot", null);      //NOI18N
             }
@@ -246,8 +246,7 @@ public class NewRubyProjectWizardIterator implements WizardDescriptor.ProgressIn
     }
     
     public String name() {
-        return MessageFormat.format (NbBundle.getMessage(NewRubyProjectWizardIterator.class,"LAB_IteratorName"),
-            new Object[] {new Integer (index + 1), new Integer (panels.length) });                                
+        return MessageFormat.format(NbBundle.getMessage(NewRubyProjectWizardIterator.class, "LAB_IteratorName"), index + 1, panels.length);
     }
     
     public boolean hasNext() {
@@ -276,15 +275,10 @@ public class NewRubyProjectWizardIterator implements WizardDescriptor.ProgressIn
     public final void addChangeListener(ChangeListener l) {}
     public final void removeChangeListener(ChangeListener l) {}
     
-    // helper methods, finds mainclass's FileObject
-    private FileObject getMainClassFO (FileObject sourcesRoot, String mainClass) {
-        // replace '.' with '/'
-//        mainClass = mainClass.replace ('.', '/'); // NOI18N
-//        
-//        // ignore unvalid mainClass ???
-//        
-//        return sourcesRoot.getFileObject (mainClass+ ".java"); // NOI18N
-        return sourcesRoot.getFileObject(mainClass);        
+    // Helper methods, finds mainclass's FileObject
+    private FileObject getMainClassFO(FileObject sourcesRoot, String mainClass) {
+        // currently the project generator always creates main class with .rb extension
+        return sourcesRoot.getFileObject(Util.stripExtension(mainClass, ".rb") + ".rb");
     }
 
     static String getPackageName (String displayName) {

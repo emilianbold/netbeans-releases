@@ -244,7 +244,7 @@ import org.netbeans.modules.cnd.modelimpl.textcache.UniqueNameCache;
 	put();
     }
     
-    public Collection<CsmOffsetableDeclaration> getDeclarationsRange(CharSequence from, CharSequence to) {
+    public Collection<CsmUID<CsmOffsetableDeclaration>> getUIDsRange(CharSequence from, CharSequence to) {
         List<CsmUID<CsmOffsetableDeclaration>> list = new ArrayList<CsmUID<CsmOffsetableDeclaration>>();
         from = CharSequenceKey.create(from);
         to = CharSequenceKey.create(to);
@@ -264,7 +264,11 @@ import org.netbeans.modules.cnd.modelimpl.textcache.UniqueNameCache;
         } finally {
             declarationsLock.readLock().unlock();
         }
-        return UIDCsmConverter.UIDsToDeclarations(list);
+        return list;
+    }
+    
+    public Collection<CsmOffsetableDeclaration> getDeclarationsRange(CharSequence from, CharSequence to) {
+        return UIDCsmConverter.UIDsToDeclarations(getUIDsRange(from, to));
     }
     
     public Collection<CsmFriend> findFriends(CsmOffsetableDeclaration decl){

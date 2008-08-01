@@ -41,19 +41,18 @@
 
 package org.netbeans.api.db.explorer;
 
-import java.lang.ref.WeakReference;
 import java.net.URL;
+import java.sql.Driver;
 import org.netbeans.modules.db.explorer.driver.JDBCDriverConvertor;
-import org.netbeans.modules.db.test.TestBase;
 import org.netbeans.modules.db.test.Util;
+import org.netbeans.modules.db.util.DBTestBase;
 import org.openide.loaders.DataObject;
 
 /**
  *
  * @author Andrei Badea
  */
-public class JDBCDriverManagerTest extends TestBase {
-
+public class JDBCDriverManagerTest extends DBTestBase {
     public JDBCDriverManagerTest(String testName) {
         super(testName);
     }
@@ -97,5 +96,13 @@ public class JDBCDriverManagerTest extends TestBase {
         /* Still failing, commenting out until 75204 is fixed
         assertSame(driver, JDBCDriverManager.getDefault().getDrivers("org.bar.BarDriver")[0]);
          */
+    }
+
+    public void testGetDriver() throws Exception {
+        JDBCDriver jdbcDriver = getJDBCDriver();
+        Driver driver = jdbcDriver.getDriver();
+
+        assertNotNull(driver);
+
     }
 }

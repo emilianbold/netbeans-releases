@@ -472,6 +472,9 @@ public class ConnectionWidget extends Widget {
      *            if false, then controlPoints argument is taken as a list of local locations
      */
     public void setControlPoints (Collection<Point> controlPoints, boolean sceneLocations) {
+        //quick return if possible
+        if (controlPoints == null) return ;
+        
         if (sceneLocations) {
             Point translation = this.convertLocalToScene (new Point ());
             ArrayList<Point> list = new ArrayList<Point> ();
@@ -480,6 +483,7 @@ public class ConnectionWidget extends Widget {
             this.controlPoints = list;
         } else
             this.controlPoints = new ArrayList<Point> (controlPoints);
+        
         this.controlPointsUm = Collections.unmodifiableList (this.controlPoints);
         routingRequired = false;
         revalidate ();
@@ -784,11 +788,21 @@ public class ConnectionWidget extends Widget {
 
         Point firstControlPoint = getFirstControlPoint ();
         Point lastControlPoint = getLastControlPoint ();
-        boolean isSourceCutDistance = Math.abs (sourceAnchorShape.getCutDistance ()) != 0.0;
-        boolean isTargetCutDistance = Math.abs (targetAnchorShape.getCutDistance ()) != 0.0;
-        double firstControlPointRotation = firstControlPoint != null  &&  (sourceAnchorShape.isLineOriented ()  ||  isSourceCutDistance) ? getSourceAnchorShapeRotation () : 0.0;
-        double lastControlPointRotation = lastControlPoint != null  &&  (targetAnchorShape.isLineOriented ()  || isTargetCutDistance) ? getTargetAnchorShapeRotation () : 0.0;
-
+                
+        //checking to see if we should draw line through the AnchorShape. If the 
+        //AnchorShape is hollow, the cutdistance will be true.
+        boolean isSourceCutDistance = sourceAnchorShape.getCutDistance () != 0.0;
+        boolean isTargetCutDistance = targetAnchorShape.getCutDistance () != 0.0;
+        
+        double firstControlPointRotation = 
+                firstControlPoint != null  &&  (sourceAnchorShape.isLineOriented ()  
+                ||  isSourceCutDistance) ? 
+                    getSourceAnchorShapeRotation () : 0.0;
+        double lastControlPointRotation = 
+                lastControlPoint != null  
+                &&  (targetAnchorShape.isLineOriented () || isTargetCutDistance) ? 
+                    getTargetAnchorShapeRotation () : 0.0;
+        
         List<Point> points;
         if ((isSourceCutDistance  ||  isTargetCutDistance)  &&  controlPoints.size () >= 2) {
             points = new ArrayList<Point> (controlPoints);

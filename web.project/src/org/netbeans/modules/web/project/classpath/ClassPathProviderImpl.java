@@ -48,6 +48,7 @@ import java.util.Map;
 import java.util.HashMap;
 
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
 import org.netbeans.modules.java.api.common.SourceRoots;
@@ -60,6 +61,7 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Mutex;
 import org.openide.util.WeakListeners;
 
 /**
@@ -100,7 +102,9 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
         SOURCE_RUNTIME,
         TEST_SOURCE_RUNTIME,
         BOOT,
-        PLATFORM }
+        PLATFORM,
+        PACKAGED, // #131785
+    }
     
     public ClassPathProviderImpl(AntProjectHelper helper, PropertyEvaluator evaluator, SourceRoots sourceRoots, SourceRoots testSourceRoots) {
         this.helper = helper;
@@ -112,16 +116,21 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
         evaluator.addPropertyChangeListener(WeakListeners.propertyChange(this, evaluator));
     }
 
-    private synchronized FileObject getDir(String propname) {
-        FileObject fo = (FileObject) this.dirCache.get (propname);
-        if (fo == null ||  !fo.isValid()) {
-            String prop = evaluator.getProperty(propname);
-            if (prop != null) {
-                fo = helper.resolveFileObject(prop);
-                this.dirCache.put (propname, fo);
-            }
-        }
-        return fo;
+    private FileObject getDir(final String propname) {
+        return ProjectManager.mutex().readAccess(new Mutex.Action<FileObject>() {
+            public FileObject run() {
+                synchronized (ClassPathProviderImpl.this) {
+                    FileObject fo = (FileObject) ClassPathProviderImpl.this.dirCache.get (propname);
+                    if (fo == null ||  !fo.isValid()) {
+                        String prop = evaluator.getProperty(propname);
+                        if (prop != null) {
+                            fo = helper.resolveFileObject(prop);
+                            ClassPathProviderImpl.this.dirCache.put (propname, fo);
+                        }
+                    }
+                    return fo;
+                }
+            }});
     }
     
     private FileObject[] getPrimarySrcPath() {
@@ -216,6 +225,21 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
         return null;
     }
     
+    // packaged classpath = compilation time classpath - J2EE platform classpath
+    private synchronized ClassPath getPackagedClasspath(FileType type) {        
+        if (type == FileType.SOURCE || type == FileType.CLASS || type == FileType.WEB_SOURCE) {
+            // treat all these types as source:
+            ClassPath cp = cache.get(ClassPathCache.PACKAGED);
+            if (cp == null) {
+                cp = ClassPathFactory.createClassPath(ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
+                    projectDirectory, evaluator, new String[] {"javac.classpath"})); // NOI18N
+                cache.put(ClassPathCache.PACKAGED, cp);
+            }
+            return cp;
+        }
+        return null;
+    }
+    
     private synchronized ClassPath getRunTimeClasspath(FileType type) {
         if (type == FileType.SOURCE || type == FileType.CLASS || 
             type == FileType.CLASS_IN_JAR || type == FileType.WEB_SOURCE)
@@ -253,7 +277,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
             ClassPath cp = cache.get(ClassPathCache.SOURCE);
             if (cp == null)
             {
-                cp = ClassPathFactory.createClassPath(new SourcePathImplementation(this.sourceRoots,helper));
+                cp = ClassPathFactory.createClassPath(new SourcePathImplementation(this.sourceRoots,helper, evaluator));
                 cache.put(ClassPathCache.SOURCE, cp);
             }
             return cp;
@@ -263,7 +287,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
             ClassPath cp = cache.get(ClassPathCache.TEST_SOURCE);
             if (cp == null)
             {
-                cp = ClassPathFactory.createClassPath(new SourcePathImplementation(this.testSourceRoots,helper));
+                cp = ClassPathFactory.createClassPath(new SourcePathImplementation(this.testSourceRoots,helper, evaluator));
                 cache.put(ClassPathCache.TEST_SOURCE, cp);
             }
             return cp;
@@ -275,7 +299,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
             {
                 cp = ClassPathSupport.createProxyClassPath(new ClassPath[] {
                         ClassPathFactory.createClassPath(new JspSourcePathImplementation(helper, evaluator)),
-                        ClassPathFactory.createClassPath(new SourcePathImplementation (this.sourceRoots, helper)),
+                        ClassPathFactory.createClassPath(new SourcePathImplementation (this.sourceRoots, helper, evaluator)),
                     });
                 cache.put(ClassPathCache.WEB_SOURCE, cp);
 
@@ -314,6 +338,8 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
             return getSourcepath(fileType);
         } else if (type.equals(ClassPath.BOOT)) {
             return getBootClassPath();
+        } else if (type.equals("classpath/packaged")) { // NOI18N
+            return getPackagedClasspath(fileType);
         } else {
             return null;
         }

@@ -42,8 +42,10 @@
 package org.netbeans.modules.spring.beans.model.impl;
 
 import java.util.List;
+import java.util.Set;
 import org.netbeans.modules.spring.api.beans.model.Location;
 import org.netbeans.modules.spring.api.beans.model.SpringBean;
+import org.netbeans.modules.spring.api.beans.model.SpringBeanProperty;
 
 /**
  *
@@ -57,6 +59,7 @@ public class ConfigFileSpringBean implements SpringBean {
     private final String parent;
     private final String factoryBean;
     private final String factoryMethod;
+    private final Set<SpringBeanProperty> properties;
     private final Location location;
 
     public ConfigFileSpringBean(
@@ -66,6 +69,7 @@ public class ConfigFileSpringBean implements SpringBean {
             String parent,
             String factoryBean,
             String factoryMethod,
+            Set<SpringBeanProperty> properties,
             Location location) {
         this.id = id;
         this.names = names;
@@ -73,6 +77,7 @@ public class ConfigFileSpringBean implements SpringBean {
         this.parent = parent;
         this.factoryBean = factoryBean;
         this.factoryMethod = factoryMethod;
+        this.properties = properties;
         this.location = location;
     }
 
@@ -102,5 +107,9 @@ public class ConfigFileSpringBean implements SpringBean {
 
     public Location getLocation() {
         return location;
+    }
+
+    public Set<SpringBeanProperty> getProperties() {
+        return properties;
     }
 }

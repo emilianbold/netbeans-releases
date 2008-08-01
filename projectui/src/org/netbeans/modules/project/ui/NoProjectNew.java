@@ -274,7 +274,7 @@ public class NoProjectNew extends javax.swing.JPanel implements  ActionListener,
     }
     
     private void createFile() {
-        if ( result != null ) {
+        if ( result != null && result.indexOf('\\') == -1 ) { // NOI18N
             
             if ( !targetFolder.getPrimaryFile().canWrite() ) {
                 return;
@@ -298,7 +298,6 @@ public class NoProjectNew extends javax.swing.JPanel implements  ActionListener,
             }
             
             if ( result != null ) {
-                
                 // handle new template in SystemFileSystem
                 DataObject rootDO = findTemplate ("/Templates"); // NOI18N
                 if (rootDO != null && dObj != null) {
@@ -310,7 +309,8 @@ public class NoProjectNew extends javax.swing.JPanel implements  ActionListener,
                         }
                     }
                 }
-                
+            }
+            if (dObj != null) {
                 ProjectUtilities.openAndSelectNewObject( dObj );
             }
         }        

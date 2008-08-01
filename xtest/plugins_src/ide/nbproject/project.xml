@@ -90,7 +90,7 @@
             <compilation-unit>
                 <package-root>test/unit/src</package-root>
                 <unit-tests/>
-                <classpath mode="compile">../../lib/junit.jar;../../lib/nbjunit-ide.jar;../../lib/nbjunit.jar;../../lib/xtest.jar;../../plugins/ide/lib/xtest-ide-main.jar;../../../nbbuild/netbeans/platform8/lib/org-openide-util.jar;../../../nbbuild/netbeans/platform8/modules/org-netbeans-api-progress.jar;../../../nbbuild/netbeans/ide9/modules/org-netbeans-modules-projectapi.jar;../../../nbbuild/netbeans/ide9/modules/org-netbeans-modules-projectui.jar</classpath>
+                <classpath mode="compile">../../lib/junit.jar;../../lib/nbjunit-ide.jar;../../lib/nbjunit.jar;../../lib/xtest.jar;../../plugins/ide/lib/xtest-ide-main.jar;../../../nbbuild/netbeans/platform9/lib/org-openide-util.jar;../../../nbbuild/netbeans/platform9/modules/org-netbeans-api-progress.jar;../../../nbbuild/netbeans/ide10/modules/org-netbeans-modules-projectapi.jar;../../../nbbuild/netbeans/ide10/modules/org-netbeans-modules-projectui.jar</classpath>
                 <source-level>1.4</source-level>
             </compilation-unit>
         </java-data>

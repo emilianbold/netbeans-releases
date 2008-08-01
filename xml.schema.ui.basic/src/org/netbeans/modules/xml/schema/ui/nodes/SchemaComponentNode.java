@@ -60,7 +60,6 @@ import javax.swing.Action;
 import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
 import org.netbeans.modules.xml.refactoring.spi.SharedUtils;
 
-//import org.netbeans.modules.xml.refactoring.actions.RefactorAction;
 import org.netbeans.modules.xml.refactoring.ui.ReferenceableProvider;
 import org.netbeans.modules.xml.schema.model.Annotation;
 import org.netbeans.modules.xml.schema.model.Documentation;
@@ -143,15 +142,10 @@ public abstract class SchemaComponentNode<T extends SchemaComponent>
         Highlighted, ReferenceableProvider, CountChildrenCookie,
         GetComponentCookie, GetSuperCookie, GotoCookie {
 
-    /**
-     *
-     *
-     */
     public SchemaComponentNode(SchemaUIContext context,
             SchemaComponentReference<T> reference, Children children) {
         this(context,reference,children,new InstanceContent());
     }
-    
     
     /**
      * Constructor HACK to allow creating of our own lookup
@@ -388,7 +382,7 @@ public abstract class SchemaComponentNode<T extends SchemaComponent>
     protected boolean isEditable() {
         SchemaModel model = getReference().get().getModel();
         return model != null && model == getContext().getModel() && 
-				XAMUtils.isWritable(model);
+                XAMUtils.isWritable(model);
     }
     
     /**
@@ -407,8 +401,8 @@ public abstract class SchemaComponentNode<T extends SchemaComponent>
         if (component instanceof Named) {
             String name=((Named)component).getName();
             // Automatically keep the name in sync for named schema components.
-			_setName(name);
-			if(name==null||name.equals("")) name = component.getPeer().getLocalName();
+            _setName(name);
+            if(name==null||name.equals("")) name = component.getPeer().getLocalName();
             setDisplayName(name);
         }
     }
@@ -521,11 +515,11 @@ public abstract class SchemaComponentNode<T extends SchemaComponent>
         return getReference().get().getComponentType();
     }
 
-	// implementation of get super cookie
-	public SchemaComponent getSuper()
-	{
-		return getSuperDefinition();
-	}
+    // implementation of get super cookie
+    public SchemaComponent getSuper()
+    {
+        return getSuperDefinition();
+    }
   
     
     ////////////////////////////////////////////////////////////////////////////
@@ -637,8 +631,8 @@ public abstract class SchemaComponentNode<T extends SchemaComponent>
      *
      */
     private void _setName(String value) {
-		// prevent NPE from explorermanager
-		if(value==null) value="";
+        // prevent NPE from explorermanager
+        if(value==null) value="";
         super.setName(value);
     }
     
@@ -649,28 +643,28 @@ public abstract class SchemaComponentNode<T extends SchemaComponent>
      */
     @Override
             public void setName(String value) {
-		NamedReferenceable ref = getReferenceable();
-		if(ref==null)
-		{
-			_setName(value);
-			if (supportsRename())
-			{
-				try
-				{
-					getReference().get().getModel().startTransaction();
-					Nameable n = (Nameable)getReference().get();
-					n.setName(value);
-				}
-				finally
-				{
-    				getReference().get().getModel().endTransaction();
-				}
-			}
-		}
-		else
-		{
+        NamedReferenceable ref = getReferenceable();
+        if(ref==null)
+        {
+            _setName(value);
+            if (supportsRename())
+            {
+                try
+                {
+                    getReference().get().getModel().startTransaction();
+                    Nameable n = (Nameable)getReference().get();
+                    n.setName(value);
+                }
+                finally
+                {
+                    getReference().get().getModel().endTransaction();
+                }
+            }
+        }
+        else
+        {
             SharedUtils.locallyRenameRefactor((Nameable)ref, value);
-		}
+        }
     }
     
     /**
@@ -888,60 +882,60 @@ public abstract class SchemaComponentNode<T extends SchemaComponent>
     
     public void childrenAdded(ComponentEvent evt) {
         if (isValid()) {
-			if(evt.getSource() == getReference().get())
-			{
-				((RefreshableChildren) getChildren()).refreshChildren();
-			}
-			if(evt.getSource() == getReference().get() ||
-					evt.getSource() == getReference().get().getAnnotation())
-			{
-				updateShortDescription();
-			}
+            if(evt.getSource() == getReference().get())
+            {
+                ((RefreshableChildren) getChildren()).refreshChildren();
+            }
+            if(evt.getSource() == getReference().get() ||
+                    evt.getSource() == getReference().get().getAnnotation())
+            {
+                updateShortDescription();
+            }
         }
     }
     
     public void childrenDeleted(ComponentEvent evt) {
         if (isValid()) {
-			if(evt.getSource() == getReference().get())
-			{
-				((RefreshableChildren) getChildren()).refreshChildren();
-			}
-			if(evt.getSource() == getReference().get() ||
-					evt.getSource() == getReference().get().getAnnotation())
-			{
-				updateShortDescription();
-			}
+            if(evt.getSource() == getReference().get())
+            {
+                ((RefreshableChildren) getChildren()).refreshChildren();
+            }
+            if(evt.getSource() == getReference().get() ||
+                    evt.getSource() == getReference().get().getAnnotation())
+            {
+                updateShortDescription();
+            }
         }
     }
     
     public void valueChanged(ComponentEvent evt) {
-		if (isValid())
-		{
-			T component = getReference().get();
-			if(evt.getSource() == component)
-			{
-				updateDisplayName();
-			}
-			Documentation d = null;
-			if(component instanceof Documentation)
-				d = (Documentation)component;
-			else if(component instanceof Annotation)
-			{
-				Annotation a = (Annotation)component;
-				if(!a.getDocumentationElements().isEmpty())
-					d = a.getDocumentationElements().iterator().next();
-			} 
-			else
-			{
-				Annotation a = component.getAnnotation();
-				if(a!=null && !a.getDocumentationElements().isEmpty())
-					d = a.getDocumentationElements().iterator().next();
-			}
-			if(evt.getSource()==d)
-			{
-				updateShortDescription();
-			}
-		}
+        if (isValid())
+        {
+            T component = getReference().get();
+            if(evt.getSource() == component)
+            {
+                updateDisplayName();
+            }
+            Documentation d = null;
+            if(component instanceof Documentation)
+                d = (Documentation)component;
+            else if(component instanceof Annotation)
+            {
+                Annotation a = (Annotation)component;
+                if(!a.getDocumentationElements().isEmpty())
+                    d = a.getDocumentationElements().iterator().next();
+            } 
+            else
+            {
+                Annotation a = component.getAnnotation();
+                if(a!=null && !a.getDocumentationElements().isEmpty())
+                    d = a.getDocumentationElements().iterator().next();
+            }
+            if(evt.getSource()==d)
+            {
+                updateShortDescription();
+            }
+        }
     }
     
     /**
@@ -1026,13 +1020,13 @@ public abstract class SchemaComponentNode<T extends SchemaComponent>
     public String getDisplayName() {
         String instanceName = getDefaultDisplayName();
         return instanceName.length()==0 ? instanceName : 
-	       instanceName + " " + "[" + getTypeDisplayName() + "]"; // NOI18N
+           instanceName + " " + "[" + getTypeDisplayName() + "]"; // NOI18N
     }
     
     public String getDefaultDisplayName() {
-	String instanceName = super.getDisplayName();
+    String instanceName = super.getDisplayName();
         return instanceName == null || instanceName.length() == 0
-	    ? "" : instanceName; 
+        ? "" : instanceName; 
     }
     
     public String getHtmlDisplayName() {

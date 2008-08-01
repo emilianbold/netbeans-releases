@@ -45,6 +45,11 @@ made subject to such option by the copyright holder.
     <folder name="Loaders">
         <folder name="text">
             <folder name="x-springconfig+xml">
+                <folder name="Factories">
+                    <file name="org-netbeans-modules-spring-beans-loader-SpringXMLConfigDataLoader.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.spring.beans.resources.Bundle"/>
+                    </file>
+                </folder>
                 <folder name="Actions">
                     <file name="org-openide-actions-OpenAction.instance">
                         <attr name="position" intvalue="100"/>
@@ -124,11 +129,6 @@ made subject to such option by the copyright holder.
             </file>
         </folder>
     </folder>
-    <folder name="org-netbeans-api-project-libraries">
-        <folder name="Libraries">
-            <file name="spring-framework-2.5.xml" url="spring-framework-2.5.xml"/>
-        </folder>
-    </folder>
     <folder name="Plugins">
         <folder name="XML">
             <folder name="UserCatalogs">
@@ -156,6 +156,7 @@ made subject to such option by the copyright holder.
     </folder>
     <folder name="Projects">
         <folder name="org-codehaus-mevenide-netbeans">
+         <!-- to be removed once maven modules are part of standard distro -->
             <folder name="Customizer">
                 <file name="org.netbeans.modules.spring.beans.ui.customizer.CustomizerCategoryProvider.instance">
                     <attr name="position" intvalue="278"/>
@@ -167,6 +168,19 @@ made subject to such option by the copyright holder.
                 </file>
             </folder>
         </folder>
+        <folder name="org-netbeans-modules-maven">
+            <folder name="Customizer">
+                <file name="org.netbeans.modules.spring.beans.ui.customizer.CustomizerCategoryProvider.instance">
+                    <attr name="position" intvalue="278"/>
+                </file>
+            </folder>
+            <folder name="Lookup">
+                <file name="org-netbeans-modules-spring-beans-ProjectLookupProvider.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.spring.beans.ProjectLookupProvider.createNonWeb"/>
+                </file>
+            </folder>
+        </folder>
+
         <folder name="org-netbeans-modules-j2ee-ejbjarproject">
             <folder name="Customizer">
                 <file name="org.netbeans.modules.spring.beans.ui.customizer.CustomizerCategoryProvider.instance">
@@ -211,6 +225,28 @@ made subject to such option by the copyright holder.
                     <file name="org-netbeans-modules-xml-text-navigator-XMLNavigatorPanel.instance"/>
                 </folder>
             </folder>
+        </folder>
+    </folder>
+    <folder name="Actions">
+        <folder name="Edit">
+            <file name="org-netbeans-modules-spring-beans-jumpto-type-GoToBean.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.spring.beans.jumpto.GoToBeanAction"/>
+            </file>            
+        </folder>
+    </folder>
+    <folder name="Keymaps">
+        <folder name="NetBeans">
+            <file name="OS-B.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-spring-beans-jumpto-type-GoToBean.instance"/>
+            </file>
+        </folder>
+    </folder>
+    <folder name="Menu">
+        <folder name="GoTo">
+            <file name="org-netbeans-modules-spring-beans-jumpto-type-GoToBean.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-spring-beans-jumpto-type-GoToBean.instance"/>
+                <attr name="position" intvalue="250"/>
+            </file>
         </folder>
     </folder>
 </filesystem>

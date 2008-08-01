@@ -40,13 +40,14 @@
  */
 package org.netbeans.modules.etl.ui.view;
 
+import java.util.Collections;
 import java.util.List;
 
 import javax.swing.JSplitPane;
 
 import org.netbeans.modules.etl.ui.ETLDataObject;
 import org.netbeans.modules.etl.ui.model.impl.ETLCollaborationModel;
-
+import org.netbeans.modules.sql.framework.model.SQLConstants;
 
 /**
  * @author Sanjeeth Duvuru
@@ -67,7 +68,21 @@ public class EditDBModelPanel extends JSplitPane {
         setDividerLocation(300);
         setLeftComponent(dbModelTreeView);
     }
-    
+
+    public EditDBModelPanel(ETLDataObject mObj, int type) {
+        ETLCollaborationModel collabModel = mObj.getModel();
+        List dbModelList = Collections.EMPTY_LIST;
+        if (type == SQLConstants.SOURCE_DBMODEL) {
+            dbModelList = collabModel.getSourceDatabaseModels();
+        } else if (type == SQLConstants.TARGET_DBMODEL) {
+            dbModelList = collabModel.getTargetDatabaseModels();
+        }
+        dbModelTreeView = new DBModelTreeView(dbModelList, this);
+        setOneTouchExpandable(true);
+        setDividerLocation(300);
+        setLeftComponent(dbModelTreeView);
+    }
+
     /** Creates a new instance of EditDBModelPanel */
     public EditDBModelPanel(ETLCollaborationModel collabModel) {
         List dbModelList = collabModel.getSourceDatabaseModels();

@@ -154,5 +154,26 @@ public abstract class OptionalDeploymentManagerFactory {
     public MessageDestinationDeployment getMessageDestinationDeployment(DeploymentManager dm) {
         return null;
     }
-    
+
+    /**
+     * Creates a <code>ServerInstanceDescriptor</code> for the given deployment manager
+     * or <code>null</code> if descriptor is not supported.
+     *
+     * @param dm the deployment manager
+     * @return instance descriptor or <code>null</code> if descriptor is not supported
+     * @since 1.46
+     */
+    public ServerInstanceDescriptor getServerInstanceDescriptor(DeploymentManager dm) {
+        return null;
+    }
+
+    /**
+     * Allows a plugin to perform post initialization action. When this method
+     * invoked infrastructure is initialized so it can register/query instances.
+     *
+     * @since 1.51
+     */
+    public void finishServerInitialization() throws ServerInitializationException {
+    }
+
 }

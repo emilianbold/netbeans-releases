@@ -50,10 +50,11 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.queries.CollocationQuery;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.NbModuleProjectGenerator;
 import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
@@ -205,13 +206,18 @@ public final class SuiteUtils {
         try {
             ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
                 public Void run() throws Exception {
-                    NbModuleProject[] modules = SuiteUtils.getDependentModules(suiteComponent);
-                    // remove all dependencies on the being removed suite component
-                    String cnb = suiteComponent.getCodeNameBase();
-                    for (int j = 0; j < modules.length; j++) {
-                        ProjectXMLManager pxm = new ProjectXMLManager(modules[j]);
-                        pxm.removeDependency(cnb);
-                        ProjectManager.getDefault().saveProject(modules[j]);
+                    try {
+                        NbModuleProject[] modules = SuiteUtils.getDependentModules(suiteComponent);
+                        // remove all dependencies on the being removed suite component
+                        String cnb = suiteComponent.getCodeNameBase();
+                        for (int j = 0; j < modules.length; j++) {
+                            ProjectXMLManager pxm = new ProjectXMLManager(modules[j]);
+                            pxm.removeDependency(cnb);
+                            ProjectManager.getDefault().saveProject(modules[j]);
+                        }
+                    } catch (IOException x) {
+                        Logger.getLogger(SuiteUtils.class.getName()).log(Level.INFO, null, x);
+                        // #137021: suite may have broken platform dependency, so just continue
                     }
                     // finally remove suite component itself
                     SuiteUtils.removeModuleFromSuite(suiteComponent);

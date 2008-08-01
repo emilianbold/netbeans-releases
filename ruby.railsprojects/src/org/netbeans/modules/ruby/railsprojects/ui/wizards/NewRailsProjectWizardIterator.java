@@ -81,12 +81,14 @@ public class NewRailsProjectWizardIterator implements WizardDescriptor.ProgressI
     static final String RAILS_DEVELOPMENT_DB = "railsDatabase.development"; // NOI18N
     static final String RAILS_PRODUCTION_DB = "railsDatabase.production"; // NOI18N
     static final String RAILS_TEST_DB = "railsDatabase.test"; // NOI18N
-    /** Wizard descriptor name for including Goldspike for WAR deployment */
-    static final String GOLDSPIKE_WN = "goldspike"; // NOI18N
+    /** Wizard descriptor name for including support for WAR deployment */
+    static final String WAR_SUPPORT = "warSupport"; //NOI18N
     /** Wizard descriptor name for the target Rails server */
     static final String SERVER_INSTANCE = "serverInstance"; //NOI18N
     /** Wizard descriptor name for the Ruby platform */
     static final String PLATFORM = "platform"; //NOI18N
+    /** Wizard descriptor name for the Rails version */
+    static final String RAILS_VERSION = "rails.version"; //NOI18N
     
     static final int TYPE_APP = 0;
     //static final int TYPE_LIB = 1;
@@ -156,7 +158,7 @@ public class NewRailsProjectWizardIterator implements WizardDescriptor.ProgressI
 
         RakeProjectHelper h = null;
         
-        Boolean deploy = (Boolean) wiz.getProperty(GOLDSPIKE_WN); // NOI18N
+        Boolean deploy = (Boolean) wiz.getProperty(WAR_SUPPORT); // NOI18N
         RubyInstance server = (RubyInstance) wiz.getProperty(SERVER_INSTANCE); // NOI18N
 
         RubyPlatform platform = (RubyPlatform) wiz.getProperty("platform"); // NOI18N
@@ -164,35 +166,16 @@ public class NewRailsProjectWizardIterator implements WizardDescriptor.ProgressI
         if (databaseConf == null) {
             databaseConf = RailsAdapterFactory.getDefaultAdapter();
         }
+        
+        String railsVersion = (String) wiz.getProperty(RAILS_VERSION);
         RailsProjectCreateData data = new RailsProjectCreateData(platform, dirF, name, type == TYPE_APP,
-                databaseConf, deploy, server.getServerUri());
+                databaseConf, deploy, server.getServerUri(), railsVersion);
         h = RailsProjectGenerator.createProject(data);
         handle.progress(2);
 
-//        if (mainClass != null && mainClass.length () > 0) {
-//            try {
-//                //String sourceRoot = "src"; //(String)j2seProperties.get (RailsProjectProperties.SRC_DIR);
-//                FileObject sourcesRoot = h.getProjectDirectory ().getFileObject ("src");        //NOI18N
-//                FileObject mainClassFo = getMainClassFO (sourcesRoot, mainClass);
-//                assert mainClassFo != null : "sourcesRoot: " + sourcesRoot + ", mainClass: " + mainClass;        //NOI18N
-//                // Returning FileObject of main class, will be called its preferred action
-//                resultSet.add (mainClassFo);
-//            } catch (Exception x) {
-//                ErrorManager.getDefault().notify(x);
-//            }
-//        }
         FileObject dir = FileUtil.toFileObject(dirF);
-//        if (type == TYPE_APP || type == TYPE_EXT) {
-//            createManifest(dir);
-//        }
         handle.progress (3);
 
-        // TODO - check for Java DB and if so configure it
-
-        // Returning FileObject of project diretory. 
-        // Project will be open and set as main
-//        Integer index = (Integer) wiz.getProperty(PROP_NAME_INDEX);
-//        FoldersListSettings.getDefault().setNewApplicationCount(index.intValue());
         resultSet.add (dir);
         handle.progress (NbBundle.getMessage (NewRailsProjectWizardIterator.class, "LBL_NewRailsProjectWizardIterator_WizardProgress_PreparingToOpen"), 4);
         dirF = (dirF != null) ? dirF.getParentFile() : null;
@@ -265,9 +248,9 @@ public class NewRailsProjectWizardIterator implements WizardDescriptor.ProgressI
             if (c instanceof JComponent) { // assume Swing components
                 JComponent jc = (JComponent)c;
                 // Step #.
-                jc.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(i)); // NOI18N
+                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer(i)); // NOI18N
                 // Step name (actually the whole list for reference).
-                jc.putClientProperty("WizardPanel_contentData", steps); // NOI18N
+                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps); // NOI18N
             }
         }
         //set the default values of the sourceRoot and the testRoot properties
@@ -313,17 +296,6 @@ public class NewRailsProjectWizardIterator implements WizardDescriptor.ProgressI
     public final void addChangeListener(ChangeListener l) {}
     public final void removeChangeListener(ChangeListener l) {}
     
-    // helper methods, finds mainclass's FileObject
-    private FileObject getMainClassFO (FileObject sourcesRoot, String mainClass) {
-        // replace '.' with '/'
-//        mainClass = mainClass.replace ('.', '/'); // NOI18N
-//        
-//        // ignore unvalid mainClass ???
-//        
-//        return sourcesRoot.getFileObject (mainClass+ ".java"); // NOI18N
-        return sourcesRoot.getFileObject(mainClass);        
-    }
-
     static String getPackageName (String displayName) {
         StringBuffer builder = new StringBuffer ();
         boolean firstLetter = true;
@@ -340,28 +312,5 @@ public class NewRailsProjectWizardIterator implements WizardDescriptor.ProgressI
         return builder.length() == 0 ? NbBundle.getMessage(NewRailsProjectWizardIterator.class,"TXT_DefaultPackageName") : builder.toString();
     }
     
-//    /**
-//     * Create a new application manifest file with minimal initial contents.
-//     * @param dir the directory to create it in
-//     * @throws IOException in case of problems
-//     */
-//    private static void createManifest(final FileObject dir) throws IOException {
-//        FileObject manifest = dir.createData(MANIFEST_FILE);
-//        FileLock lock = manifest.lock();
-//        try {
-//            OutputStream os = manifest.getOutputStream(lock);
-//            try {
-//                PrintWriter pw = new PrintWriter(os);
-//                pw.println("Manifest-Version: 1.0"); // NOI18N
-//                pw.println("X-COMMENT: Main-Class will be added automatically by build"); // NOI18N
-//                pw.println(); // safest to end in \n\n due to JRE parsing bug
-//                pw.flush();
-//            } finally {
-//                os.close();
-//            }
-//        } finally {
-//            lock.releaseLock();
-//        }
-//    }
 
 }

@@ -40,42 +40,93 @@
  */
 package org.netbeans.modules.php.dbgp;
 
+import java.util.concurrent.Semaphore;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerInfo;
 import org.netbeans.api.debugger.DebuggerManager;
-import org.netbeans.modules.php.dbgp.api.Debugger;
-import org.netbeans.modules.php.dbgp.api.SessionId;
-import org.netbeans.modules.php.dbgp.api.StartActionProvider;
-
+import org.netbeans.api.debugger.Session;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.php.project.api.PhpProjectUtils;
+import org.netbeans.modules.php.project.spi.XDebugStarter;
+import org.openide.filesystems.FileObject;
+import org.openide.util.RequestProcessor;
 
 /**
- * @author ads
+ * @author Radek Matous
  *
  */
-public class DebuggerImpl implements Debugger {
+public class DebuggerImpl implements XDebugStarter {
+    static String ID = "netbeans-PHP-DBGP-DebugInfo";// NOI18N
+    static String SESSION_ID = "netbeans-PHP-DBGP-Session";// NOI18N
+    static String ENGINE_ID = SESSION_ID + "/" + "PHP-Engine";// NOI18N
 
     /* (non-Javadoc)
      * @see org.netbeans.modules.php.dbgp.api.Debugger#debug()
      */
-    public void debug( SessionId id ) {
-        DebuggerInfo dInfo = DebuggerInfo.create( ID ,new Object[] {id });
-        
-        DebuggerEngine[] engines = 
-            DebuggerManager.getDebuggerManager().startDebugging(dInfo);
-        /*
-         * See StartActionProvider interface description about this code. 
-         */
-        String sessionName = null;
-        for (DebuggerEngine engine : engines) {
-            StartActionProvider provider = 
-                (StartActionProvider)engine.lookupFirst( null , 
-                        StartActionProvider.class );
-            if ( provider == null ){
-                continue;
+    public void start(Project project, Runnable run, FileObject startFile, boolean closeSession) {
+        assert startFile != null;
+        SessionId sessionId = getSessionId(project);
+        if (sessionId == null) {
+            sessionId = new SessionId(startFile);
+            DebuggerOptions options = new DebuggerOptions();
+            options.debugForFirstPageOnly = closeSession;
+            debug(sessionId, options);
+            RequestProcessor.getDefault().post(run);
+            long started = System.currentTimeMillis();
+            String serverFileUri = sessionId.waitServerFile(true);
+            if (serverFileUri == null) {
+                ConnectionErrMessage.showMe(((int) (System.currentTimeMillis() - started) / 1000));
+                return;
             }
-            provider.start( );
-            
         }
     }
 
+    public void stop() {
+        Session phpSession = getPhpSession();
+        if (phpSession != null) {
+            SessionProgress forSession = SessionProgress.forSession(phpSession);
+            if (forSession != null) {
+                forSession.cancel();
+            }
+        }
+    }
+
+    public boolean isAlreadyRunning() {
+        return getPhpSession() != null;
+    }
+
+    private Session getPhpSession() {
+        Session[] sessions = DebuggerManager.getDebuggerManager().getSessions();
+        for (Session session : sessions) {
+            SessionId sessionId = session.lookupFirst(null, SessionId.class);
+            if (sessionId != null) {
+                Project sessionProject = sessionId.getProject();
+                if (sessionProject != null && PhpProjectUtils.isPhpProject(sessionProject)) {
+                    return session;
+                }
+            }
+        }
+        return null;
+    }
+
+    private SessionId getSessionId(Project project) {
+        Session[] sessions = DebuggerManager.getDebuggerManager().getSessions();
+        for (Session session : sessions) {
+            SessionId sessionId = session.lookupFirst(null, SessionId.class);
+            if (sessionId != null) {
+                Project sessionProject = sessionId.getProject();
+                if (project.equals(sessionProject)) {
+                    return sessionId;
+                }
+            }
+        }
+        return null;
+    }
+
+    public Semaphore debug(SessionId id,DebuggerOptions options) {
+        DebugSession session = new DebugSession(options);
+        DebuggerInfo dInfo = DebuggerInfo.create(ID, new Object[]{id, session});
+        DebuggerEngine[] engines = DebuggerManager.getDebuggerManager().startDebugging(dInfo);
+        return StartActionProviderImpl.getInstance().start(session);
+    }    
 }

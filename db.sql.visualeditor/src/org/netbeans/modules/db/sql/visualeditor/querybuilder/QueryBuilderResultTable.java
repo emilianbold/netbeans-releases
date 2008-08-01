@@ -166,7 +166,7 @@ public class QueryBuilderResultTable extends JTable
             // Create a vector of column names, for headers
             String[] dbColumnNames = new String[numberOfColumns];
             for (int i = 1; i <= numberOfColumns; i++) {
-                dbColumnNames[i - 1] = rsmd.getColumnName(i);
+                dbColumnNames[i - 1] = rsmd.getColumnLabel(i);
             }
 
             // Set Column Headers; this only works with DefaultTableModel

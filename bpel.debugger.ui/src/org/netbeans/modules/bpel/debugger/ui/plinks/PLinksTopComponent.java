@@ -43,11 +43,13 @@ public class PLinksTopComponent extends TopComponent {
     public PLinksTopComponent() {
         setIcon(Utilities.loadImage((
                 PLinksNodeModel.PARTNER_LINK_ICON + ".gif"))); // NOI18N
+        // Remember the location of the component when closed.
+        putClientProperty("KeepNonPersistentTCInModelWhenClosed", Boolean.TRUE); // NOI18N
     }
     
     @Override
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(PLinksTopComponent.class);
+        return new HelpCtx("debug_windows_partner_links"); // NOI18N
     }
 
     @Override

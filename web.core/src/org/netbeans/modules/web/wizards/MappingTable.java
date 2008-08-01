@@ -51,9 +51,8 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
-import java.util.ArrayList;
 import java.util.Iterator;
-
+import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
@@ -61,12 +60,9 @@ import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.event.TableModelListener;  
-
 import org.openide.util.NbBundle;
 
 class MappingTable extends JTable {
-
-    private static final boolean debug = false; 
 
     // Handle resizing for larger fonts
     private boolean fontChanged = true;
@@ -74,11 +70,8 @@ class MappingTable extends JTable {
 
     private static final long serialVersionUID = 3482048644419079279L;
     
-    MappingTable(String filterName, ArrayList filterMappings) { 
-
+    MappingTable(String filterName, List<FilterMappingData> filterMappings) { 
 	super(); 
-	if(debug) log("::Constructor"); //NOI18N
-	if(debug) log("\tFilterName is " + filterName); //NOI18N
 	this.setModel(new MappingTableModel(filterName, filterMappings)); 
 
 	TableColumnModel tcm = this.getColumnModel();
@@ -95,7 +88,7 @@ class MappingTable extends JTable {
 	setIntercellSpacing(new Dimension(margin, margin));
     }
 
-    ArrayList getFilterMappings() { 
+    List<FilterMappingData> getFilterMappings() { 
 	return ((MappingTableModel)this.getModel()).getFilterMappings(); 
     }
 
@@ -140,8 +133,8 @@ class MappingTable extends JTable {
 	return;
     }
 
+    @Override
     public void setValueAt(Object o, int row, int col) {
-	if(debug) log("::setValueAt()"); //NOI18N
 	return; 
     } 
 
@@ -170,8 +163,8 @@ class MappingTable extends JTable {
 	}
     }
     
+    @Override
     public void setFont(Font f) {
-	if(debug) log("::setFont()"); //NOI18N
 	fontChanged = true;
 	super.setFont(f);
     }
@@ -179,19 +172,15 @@ class MappingTable extends JTable {
     /** 
      * When paint is first invoked, we set the rowheight based on the
      * size of the font. */
+    @Override
     public void paint(Graphics g) {
-	if(debug) log("::paint()"); //NOI18N
-
 	if (fontChanged) {
-	    
 	    fontChanged = false; 
 
 	    int height = 0; 
-	    if(debug) log("\tGetting font height"); //NOI18N
 	    FontMetrics fm = g.getFontMetrics(getFont());
 	    height = fm.getHeight() + margin; 
 	    if(height > rowHeight) rowHeight = height; 
-	    if(debug) log("\trow height is " + rowHeight); //NOI18N
 	    //triggers paint, just return afterwards
 	    this.setRowHeight(rowHeight);
 	    return;
@@ -199,36 +188,32 @@ class MappingTable extends JTable {
 	super.paint(g);
     }
 
-    private void log(String s) {
-	System.out.println("MappingTable" + s);  //NOI18N
-    }
-
-    class MappingTableModel extends AbstractTableModel { 
+    private class MappingTableModel extends AbstractTableModel { 
 
 	private final String[] colheaders = { 
 	    NbBundle.getMessage(MappingTable.class, "LBL_filter_name"),
 	    NbBundle.getMessage(MappingTable.class, "LBL_applies_to"),
 	};
 
-	private ArrayList filterMappings = null;
+	private List<FilterMappingData> filterMappings = null;
 	private String filterName; 
 	
         private static final long serialVersionUID = 2845252365404044474L;
         
-	MappingTableModel(String filterName, ArrayList filterMappings) { 
+	MappingTableModel(String filterName, List<FilterMappingData> filterMappings) { 
 	    this.filterName = filterName; 
 	    this.filterMappings = filterMappings;
 	}
 
-	ArrayList getFilterMappings() { 
+	List<FilterMappingData> getFilterMappings() { 
 	    return filterMappings; 
 	} 
 
 	void setFilterName(String name) { 
-	    Iterator i = filterMappings.iterator(); 
+	    Iterator<FilterMappingData> i = filterMappings.iterator(); 
 	    FilterMappingData fmd; 
 	    while(i.hasNext()) {
-		fmd = (FilterMappingData)(i.next()); 
+		fmd = i.next();
 		if(fmd.getName().equals(filterName))
 		    fmd.setName(name); 
 	    }
@@ -243,26 +228,29 @@ class MappingTable extends JTable {
 	    return filterMappings.size(); 
 	}
 
+        @Override
 	public String getColumnName(int col) {
 	    return colheaders[col];
 	}
 
 	public Object getValueAt(int row, int col) {
-	    FilterMappingData fmd = (FilterMappingData)(filterMappings.get(row)); 
+	    FilterMappingData fmd = filterMappings.get(row);
 	    if(col == 0) return fmd.getName(); 
 	    else return fmd.getPattern();
 	} 
 
+        @Override
 	public Class getColumnClass(int c) {
 	    return String.class; 
 	}
 
+        @Override
 	public boolean isCellEditable(int row, int col) { 
 	    return false; 
 	} 
     
+        @Override
 	public void setValueAt(Object value, int row, int col) {
-	    if(debug) log("::setValueAt()"); //NOI18N
 	    return;
 	} 
 
@@ -275,7 +263,7 @@ class MappingTable extends JTable {
 	}
 
 	FilterMappingData getRow(int row) { 
-	    return (FilterMappingData)(filterMappings.get(row));
+	    return filterMappings.get(row);
 	}
 	
 	void setRow(int row, FilterMappingData fmd) { 
@@ -283,7 +271,7 @@ class MappingTable extends JTable {
 	} 
 
 	void moveRowUp(int row) { 
-	    Object o = filterMappings.remove(row); 
+	    FilterMappingData o = filterMappings.remove(row); 
 	    filterMappings.add(row-1, o); 
 	}
 
@@ -291,9 +279,6 @@ class MappingTable extends JTable {
 	    filterMappings.remove(row); 
 	}
 
-	private void log(String s) { 
-	    System.out.println("MappingTableModel" + s); //NOI18N
-	} 
     } // MappingTableModel
 
 } // MappingTable

@@ -13,11 +13,12 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.PrintStream;
+import junit.framework.Test;
 import org.netbeans.jellytools.JellyTestCase;
-import org.netbeans.junit.NbTestSuite;
-import junit.textui.TestRunner;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.NbDialogOperator;
+import org.netbeans.jellytools.OutputOperator;
 import org.netbeans.jellytools.OutputTabOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
@@ -54,6 +55,7 @@ public class ExportDiffPatchTest extends JellyTestCase {
         super(name);
     }
     
+    @Override
     protected void setUp() throws Exception {        
         os_name = System.getProperty("os.name");
         //System.out.println(os_name);
@@ -69,16 +71,15 @@ public class ExportDiffPatchTest extends JellyTestCase {
         return unix;
     }
     
-    public static void main(String[] args) {
-        // TODO code application logic here
-        TestRunner.run(suite());
-    }
-    
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new ExportDiffPatchTest("invokeExportDiffPatch"));
-        return suite;
-    }
+    public static Test suite() {
+         return NbModuleSuite.create(
+                 NbModuleSuite.createConfiguration(ExportDiffPatchTest.class).addTest(
+                    "invokeExportDiffPatch"
+                 )
+                 .enableModules(".*")
+                 .clusters(".*")
+        );
+     }
     
     public void invokeExportDiffPatch() throws Exception {
         //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 30000);
@@ -88,6 +89,8 @@ public class ExportDiffPatchTest extends JellyTestCase {
             
             stream = new PrintStream(new File(getWorkDir(), getName() + ".log"));
             VersioningOperator vo = VersioningOperator.invoke();
+            OutputOperator.invoke();
+            TestKit.showStatusLabels();
             CheckoutWizardOperator co = CheckoutWizardOperator.invoke();
             RepositoryStepOperator rso = new RepositoryStepOperator();
             
@@ -150,16 +153,15 @@ public class ExportDiffPatchTest extends JellyTestCase {
             
             //node.select();
             
-            nbdialog = new NbDialogOperator("Export");
+            nbdialog = new NbDialogOperator("Export Diff");
             JButtonOperator btn = new JButtonOperator(nbdialog, "Export");
             JTextFieldOperator tf = new JTextFieldOperator(nbdialog, 0);
             String patchFile = "/tmp/patch" + System.currentTimeMillis() + ".patch";
             File file = new File(patchFile);
             tf.setText(file.getCanonicalFile().toString());
+            btn.push();
             oto = new OutputTabOperator("file:///tmp/repo");
             oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-            oto.clear();
-            btn.push();
             oto.waitText("Diff Patch finished");
             
             BufferedReader br = new BufferedReader(new FileReader(file));

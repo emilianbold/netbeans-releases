@@ -55,7 +55,6 @@ import org.netbeans.modules.mobility.end2end.util.ServiceNodeManager;
 import org.netbeans.modules.mobility.end2end.util.Util;
 import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientView;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Client;
-import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.*;
 import org.netbeans.modules.xml.multiview.Error;
 import org.netbeans.modules.xml.multiview.ui.SectionInnerPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionView;
@@ -80,6 +79,9 @@ import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.modules.mobility.e2e.classdata.ClassDataRegistry;
 import org.netbeans.modules.mobility.e2e.classdata.MethodParameter;
 import org.netbeans.modules.mobility.end2end.ui.treeview.MultiStateCheckBox;
+import org.netbeans.modules.websvc.jaxwsmodelapi.WSOperation;
+import org.netbeans.modules.websvc.jaxwsmodelapi.WSParameter;
+import org.netbeans.modules.websvc.jaxwsmodelapi.WSPort;
 
 
 /**
@@ -241,12 +243,12 @@ public class ServicesPanel extends SectionInnerPanel implements ExplorerManager.
                 rootNode = new FilterNode(rootNode, new FilterNode.Children(rootNode) {
                     protected Node[] createNodes(Node serviceNode) {
                         return new Node[] { new FilterNode(serviceNode, new FilterNode.Children(serviceNode) {
-                            String firstWsdlPortName = null;
+                            String firstWSPortName = null;
                             protected Node[] createNodes(Node portNode) {
-                                WsdlPort wsdlPort = portNode.getLookup().lookup( WsdlPort.class );
+                                WSPort wsdlPort = portNode.getLookup().lookup( WSPort.class );
                                 if (wsdlPort == null) return null;
-                                if (firstWsdlPortName == null) firstWsdlPortName = wsdlPort.getName();
-                                return portNode.getName().equals(port == null ? firstWsdlPortName : port.getName()) ? super.createNodes(portNode) : null;
+                                if (firstWSPortName == null) firstWSPortName = wsdlPort.getName();
+                                return portNode.getName().equals(port == null ? firstWSPortName : port.getName()) ? super.createNodes(portNode) : null;
                             }
                         })};
                     }
@@ -255,7 +257,7 @@ public class ServicesPanel extends SectionInnerPanel implements ExplorerManager.
                     boolean serviceValid = false;
                     for( Node portNode : serviceNode.getChildren().getNodes()) {
                         boolean portValid = false;
-                        WsdlPort wsdlPort = portNode.getLookup().lookup( WsdlPort.class );
+                        WSPort wsdlPort = portNode.getLookup().lookup( WSPort.class );
                         org.netbeans.modules.mobility.e2e.classdata.ClassData cd = registry.getClassData( wsdlPort.getJavaName());
                         HashSet<String> methodIDs = new HashSet();
                         if (cd != null) {
@@ -268,12 +270,12 @@ public class ServicesPanel extends SectionInnerPanel implements ExplorerManager.
                             }
                         }
                         for( Node operationNode : portNode.getChildren().getNodes()) {
-                            WsdlOperation wsdlOperation = operationNode.getLookup().lookup( WsdlOperation.class );
+                            WSOperation wsdlOperation = operationNode.getLookup().lookup( WSOperation.class );
                             boolean operationValid = false;
                             StringBuffer operationId = new StringBuffer();
                             if (wsdlOperation != null) {
                                 operationId.append(wsdlOperation.getJavaName());
-                                for (WsdlParameter par : wsdlOperation.getParameters()) {
+                                for (WSParameter par : wsdlOperation.getParameters()) {
                                     String pt = par.getTypeName();
                                     int i = pt.indexOf('<'); //cutting off any generics from the ID
                                     operationId.append(',').append(i > 0 ? pt.substring(0, i) : pt);
@@ -389,18 +391,18 @@ public class ServicesPanel extends SectionInnerPanel implements ExplorerManager.
             if (client != null) for(Node serviceNode : rootNode.getChildren().getNodes()) { //there is only one service node now!
                 final List<ClassData> classData = new ArrayList<ClassData>();
                 for(Node portNode : serviceNode.getChildren().getNodes()) {
-                    final WsdlPort port = portNode.getLookup().lookup(WsdlPort.class);
+                    final WSPort port = portNode.getLookup().lookup(WSPort.class);
                     final List<OperationData> methodData = new ArrayList<OperationData>();
                     if (port != null) for(Node operationNode : portNode.getChildren().getNodes()) {
                         final String operationName = operationNode.getName(); //name of the operation (selection)
                         if(MultiStateCheckBox.State.SELECTED == operationNode.getValue(ServiceNodeManager.NODE_SELECTION_ATTRIBUTE)) {
-                            WsdlOperation wsdlOp = operationNode.getLookup().lookup( WsdlOperation.class );
+                            WSOperation wsdlOp = operationNode.getLookup().lookup( WSOperation.class );
                             final OperationData md = new OperationData( operationName );
                             md.setMethodName( wsdlOp.getJavaName());
                             md.setReturnType( wsdlOp.getReturnTypeName());
-                            List<WsdlParameter> wsdlParams = wsdlOp.getParameters();
+                            List<WSParameter> wsdlParams = wsdlOp.getParameters();
                             List<TypeData> params = new ArrayList<TypeData>();
-                            for( WsdlParameter param : wsdlParams ) {
+                            for( WSParameter param : wsdlParams ) {
                                 params.add( new TypeData( param.getName(), param.getTypeName()));
                             }
                             md.setParameterTypes( params );

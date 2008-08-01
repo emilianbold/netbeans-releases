@@ -70,14 +70,15 @@ public class ServerActionsPreferences {
     }
     
     public Boolean getFileOverwrite(){
-        int value = getPreferences().getInt(FILE_OVERWRITE, FILE_OVERWRITE_ASK_ME);
+        /*int value = getPreferences().getInt(FILE_OVERWRITE, FILE_OVERWRITE_ASK_ME);
         if (value == FILE_OVERWRITE_NO){
             return new Boolean(false);
         } else if (value == FILE_OVERWRITE_YES){
             return new Boolean(true);
         } else {
             return null;
-        }
+        }*/
+        return true;
     }
     
     public void addPreferenceChangeListener(PreferenceChangeListener pcl){

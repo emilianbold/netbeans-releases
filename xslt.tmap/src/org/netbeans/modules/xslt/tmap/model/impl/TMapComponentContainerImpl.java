@@ -55,13 +55,10 @@ public abstract class TMapComponentContainerImpl
         removeChild(((TMapComponentAbstract)component).getComponentName(), 
                 component);
     }
-    
-    
-    
-    
-    
-    
-    
+
+    protected <T extends TMapComponent> T getChild(Class<T> type, int i) {
+        return super.getChildren(type).get(i);
+    }
     
     
     

@@ -51,6 +51,7 @@ public class AnnotateLine {
 
     private String  author;
     private String  revision;
+    private String  id;
     private String  file;
     private Date    date;
     private String  content;
@@ -112,6 +113,20 @@ public class AnnotateLine {
      */
     public void setRevision(String revision) {
         this.revision = revision;
+    }
+
+    /**
+     * Returns the changset id of this line.
+     */
+    public String getId() {
+        return id;
+    }
+
+    /**
+     * Sets the changeset id of this line.
+     */
+    public void setId(String id) {
+        this.id = id;
     }
 
     /**

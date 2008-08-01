@@ -40,7 +40,6 @@
 package org.netbeans.modules.javascript.editing;
 
 import org.netbeans.modules.gsf.api.ElementKind;
-import org.netbeans.modules.gsf.api.Index.SearchResult;
 import org.netbeans.modules.gsf.api.Modifier;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.gsf.api.ParserFile;
@@ -54,6 +53,7 @@ import java.util.Set;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.gsf.api.NameKind;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -68,6 +68,7 @@ import org.openide.util.Exceptions;
 public abstract class IndexedElement extends JsElement {
 
     protected ElementKind kind;
+    protected String fqn;
     protected String name;
     protected String in;
     protected JsIndex index;
@@ -81,7 +82,8 @@ public abstract class IndexedElement extends JsElement {
     protected boolean smart;
     protected boolean inherited = true;
 
-    IndexedElement(String name, String in, JsIndex index, String fileUrl, String attributes, int flags, ElementKind kind) {
+    IndexedElement(String fqn, String name, String in, JsIndex index, String fileUrl, String attributes, int flags, ElementKind kind) {
+        this.fqn = fqn;
         this.name = name;
         this.in = in;
         this.index = index;
@@ -91,22 +93,22 @@ public abstract class IndexedElement extends JsElement {
         this.kind = kind;
     }
 
-    static IndexedElement create(String attributes, String fileUrl, String name, String in, int attrIndex, JsIndex index, boolean createPackage) {
+    static IndexedElement create(String attributes, String fileUrl, String fqn, String name, String in, int attrIndex, JsIndex index, boolean createPackage) {
         int flags = IndexedElement.decode(attributes, attrIndex, 0);
         if (createPackage) {
-            IndexedPackage func = new IndexedPackage(name, in, index, fileUrl, attributes, flags, ElementKind.PACKAGE);
+            IndexedPackage func = new IndexedPackage(fqn, name, in, index, fileUrl, attributes, flags, ElementKind.PACKAGE);
             return func;
         }
         if ((flags & FUNCTION) != 0) {
             ElementKind kind =((flags & CONSTRUCTOR) != 0) ? ElementKind.CONSTRUCTOR : ElementKind.METHOD;
-            IndexedFunction func = new IndexedFunction(name, in, index, fileUrl, attributes, flags, kind);
+            IndexedFunction func = new IndexedFunction(fqn, name, in, index, fileUrl, attributes, flags, kind);
             return func;
         } else if ((flags & GLOBAL) != 0) {
             ElementKind kind = Character.isUpperCase(name.charAt(0)) ? ElementKind.CLASS : ElementKind.GLOBAL;
-            IndexedProperty property = new IndexedProperty(name, in, index, fileUrl, attributes, flags, kind);
+            IndexedProperty property = new IndexedProperty(fqn, name, in, index, fileUrl, attributes, flags, kind);
             return property;
         } else {
-            IndexedProperty property = new IndexedProperty(name, in, index, fileUrl, attributes, flags, ElementKind.PROPERTY);
+            IndexedProperty property = new IndexedProperty(fqn, name, in, index, fileUrl, attributes, flags, ElementKind.PROPERTY);
             return property;
         }
     }
@@ -135,17 +137,18 @@ public abstract class IndexedElement extends JsElement {
         }
         inEndIdx++;
         
+        String fqn = null; // Compute lazily
         int lastDot = elementName.lastIndexOf('.');
         if (name.length() < lastDot) {
             int nextDot = elementName.indexOf('.', name.length());
             if (nextDot != -1) {
                 String pkg = elementName.substring(0, nextDot);
-                IndexedPackage element = new IndexedPackage(pkg, null, index, fileUrl, signature, IndexedElement.decode(signature, inEndIdx, 0), ElementKind.PACKAGE);
+                IndexedPackage element = new IndexedPackage(null, pkg, fqn, index, fileUrl, signature, IndexedElement.decode(signature, inEndIdx, 0), ElementKind.PACKAGE);
                 return element;
             }
         }
         
-        IndexedElement element = IndexedElement.create(signature, fileUrl, elementName, funcIn, inEndIdx, index, createPackage);
+        IndexedElement element = IndexedElement.create(signature, fileUrl, fqn, elementName, funcIn, inEndIdx, index, createPackage);
         
         return element;
     }
@@ -169,17 +172,31 @@ public abstract class IndexedElement extends JsElement {
         return index;
     }
 
+    public String getFqn() {
+        if (fqn == null) {
+            if (in != null && in.length() > 0) {
+                fqn = in + "." + name;
+            } else {
+                fqn = name;
+            }
+        }
+        return fqn;
+    }
+
     @Override
     public String getName() {
         return name;
     }
-
 
     @Override
     public String getIn() {
         return in;
     }
     
+    void setKind(ElementKind kind) {
+        this.kind = kind;
+    }
+
     @Override
     public ElementKind getKind() {
         return kind;
@@ -188,7 +205,12 @@ public abstract class IndexedElement extends JsElement {
     @Override
     public Set<Modifier> getModifiers() {
         if (isStatic()) {
+            if (isPrivate()) {
+                return AstElement.STATIC_PRIVATE;
+            }
             return AstElement.STATIC;
+        } else if (isPrivate()) {
+            return AstElement.PRIVATE;
         }
         return Collections.emptySet();
     }
@@ -197,7 +219,7 @@ public abstract class IndexedElement extends JsElement {
         return fileUrl;
     }
 
-    public Document getDocument() throws IOException {
+    public Document getDocument() {
         if (document == null) {
             FileObject fo = getFileObject();
 
@@ -226,6 +248,15 @@ public abstract class IndexedElement extends JsElement {
                 // Don't try again
                 fileUrl = null;
             }
+//
+//            // Prefer sdoc files for doc-only items
+//            if (isDocOnly() && !fileUrl.endsWith(".sdoc")) { // NOI18N
+//                // This is probably a builtin library reference; correct the URL
+//                FileObject fo = JsIndexer.findScriptDocFor(fileUrl, fileObject);
+//                if (fo != null) {
+//                    fileObject = fo;
+//                }
+//            }
         }
 
         return fileObject;
@@ -248,6 +279,15 @@ public abstract class IndexedElement extends JsElement {
             int docOffset = IndexedElement.decode(attributes, docOffsetIndex,-1);
             return docOffset;
         }
+        return -1;
+    }
+    
+    protected int getNodeOffset() {
+        int docOffsetIndex = getAttributeSection(NODE_INDEX);
+        if (docOffsetIndex != -1) {
+            return IndexedElement.decode(attributes, docOffsetIndex, -1);
+        }        
+        
         return -1;
     }
     
@@ -294,9 +334,6 @@ public abstract class IndexedElement extends JsElement {
                 }
             } catch (BadLocationException ex) {
                 Exceptions.printStackTrace(ex);
-            } catch (IOException ioe) {
-                Exceptions.printStackTrace(ioe);
-                return null;
             }
         }
             
@@ -350,7 +387,46 @@ public abstract class IndexedElement extends JsElement {
     public boolean isInherited() {
         return inherited;
     }
+    
 
+    public IndexedElement findDocumentedSibling() {
+        if (!isDocumented()) {
+            String queryName = null;
+            String queryType = getFqn();
+            if (queryType.indexOf('.') == -1) {
+                queryName = queryType;
+                queryType = null;
+            }
+            Set<IndexedElement> elements = getIndex().getAllElements(queryName, queryType, NameKind.EXACT_NAME, JsIndex.ALL_SCOPE, null);
+            for (IndexedElement e : elements) {
+                if (e.isDocumented()) {
+                    return e;
+                }
+            }
+        }
+        
+        return null;
+    }
+
+    public IndexedElement findRealFileElement() {
+        if (isDocOnly()) {
+            String queryName = null;
+            String queryType = getFqn();
+            if (queryType.indexOf('.') == -1) {
+                queryName = queryType;
+                queryType = null;
+            }
+            Set<IndexedElement> elements = getIndex().getAllElements(queryName, queryType, NameKind.EXACT_NAME, JsIndex.ALL_SCOPE, null);
+            for (IndexedElement e : elements) {
+                if (!e.isDocOnly()) {
+                    return e;
+                }
+            }
+        }
+        
+        return null;
+    }
+    
     protected static final int NAME_INDEX = 0;
     protected static final int IN_INDEX = 1;
     protected static final int CASE_SENSITIVE_INDEX = 2;
@@ -388,6 +464,10 @@ public abstract class IndexedElement extends JsElement {
     public static final int CONSTRUCTOR = 1 << 7;
     /** This is a deprecated */
     public static final int DEPRECATED = 1 << 8;
+    /** This is a documentation-only definition */
+    public static final int DOC_ONLY = 1 << 9;
+    /** This is a constant/final */
+    public static final int FINAL = 1 << 10;
 
     /** Return a string (suitable for persistence) encoding the given flags */
     public static String encode(int flags) {
@@ -467,6 +547,10 @@ public abstract class IndexedElement extends JsElement {
     public boolean isNoDoc() {
         return (flags & NODOC) != 0;
     }
+
+    public boolean isFinal() {
+        return (flags & FINAL) != 0;
+    }
     
     public boolean isConstructor() {
         return (flags & CONSTRUCTOR) != 0;
@@ -476,14 +560,20 @@ public abstract class IndexedElement extends JsElement {
         return (flags & DEPRECATED) != 0;
     }
     
+    public boolean isDocOnly() {
+        return (flags & DOC_ONLY) != 0;
+    }
+
     public static String decodeFlags(int flags) {
         StringBuilder sb = new StringBuilder();
         if ((flags & DOCUMENTED) != 0) {
             sb.append("|DOCUMENTED");
         }
+        
         if ((flags & PRIVATE) != 0) {
             sb.append("|PRIVATE");
         }
+        
         if ((flags & CONSTRUCTOR) != 0) {
             sb.append("|CONSTRUCTOR");
         } else if ((flags & FUNCTION) != 0) {
@@ -493,14 +583,25 @@ public abstract class IndexedElement extends JsElement {
         } else {
             sb.append("|PROPERTY");
         }
+        
         if ((flags & STATIC) != 0) {
             sb.append("|STATIC");
         }
+
         if ((flags & NODOC) != 0) {
             sb.append("|NODOC");
         }
+
         if ((flags & DEPRECATED) != 0) {
             sb.append("|DEPRECATED");
+        }
+
+        if ((flags & DOC_ONLY) != 0) {
+            sb.append("|DOC_ONLY");
+        }
+
+        if ((flags & FINAL) != 0) {
+            sb.append("|FINAL");
         }
 
         if (sb.length() > 0) {
@@ -538,5 +639,32 @@ public abstract class IndexedElement extends JsElement {
 //        hash = 53 * hash + flags;
         hash = 53 * hash + getKind().hashCode();
         return hash;
+    }
+    
+    public String getOrigin() {
+        String filename = getFilenameUrl();
+        if (filename != null) {
+            int lastSlash = filename.lastIndexOf('/');
+            if (lastSlash == -1) {
+                return null;
+            }
+            lastSlash++;
+            if (filename.startsWith("stub_core", lastSlash)) { // NOI18N
+                return "Core JS";
+            } else if (filename.startsWith("stub_", lastSlash)) { // NOI18N
+                return "DOM";
+            } else if (filename.startsWith("jquery", lastSlash)) { // NOI18N
+                return "jQuery";
+            } else if (filename.startsWith("dojo", lastSlash)) { // NOI18N
+                return "dojo";
+            } else if (filename.startsWith("yui", lastSlash)) { // NOI18N
+                return "YUI";
+            }
+            // TODO: Map to sdocs somehow. Tricky because sometimes I get the source
+            // element rather than the sdoc when doing equals
+            //} else if (filename.endsWith("sdoc")) {
+        }
+
+        return null;
     }
 }

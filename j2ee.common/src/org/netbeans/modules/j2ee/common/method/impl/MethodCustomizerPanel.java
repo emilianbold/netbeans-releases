@@ -177,9 +177,11 @@ public final class MethodCustomizerPanel extends javax.swing.JPanel {
 
         parametersContainerPanel.setLayout(new java.awt.BorderLayout());
         exceptionAndParameterPane.addTab(org.openide.util.NbBundle.getMessage(MethodCustomizerPanel.class, "MethodCustomizerPanel.parametersContainerPanel.TabConstraints.tabTitle"), parametersContainerPanel); // NOI18N
+        parametersContainerPanel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MethodCustomizerPanel.class, "ACSD_ParametersTab")); // NOI18N
 
         exceptionsContainerPanel.setLayout(new java.awt.BorderLayout());
         exceptionAndParameterPane.addTab(org.openide.util.NbBundle.getMessage(MethodCustomizerPanel.class, "MethodCustomizerPanel.exceptionsPanel.TabConstraints.tabTitle"), exceptionsContainerPanel); // NOI18N
+        exceptionsContainerPanel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MethodCustomizerPanel.class, "ACSD_ExceptionsTab")); // NOI18N
 
         errorTextField.setBackground(java.awt.SystemColor.control);
         errorTextField.setEditable(false);
@@ -232,7 +234,7 @@ public final class MethodCustomizerPanel extends javax.swing.JPanel {
                 .add(remoteRadio)
                 .add(18, 18, 18)
                 .add(bothRadio)
-                .addContainerGap(174, Short.MAX_VALUE))
+                .addContainerGap(222, Short.MAX_VALUE))
         );
         interfacesPanelLayout.setVerticalGroup(
             interfacesPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -268,7 +270,7 @@ public final class MethodCustomizerPanel extends javax.swing.JPanel {
                 .add(oneRadioButton)
                 .add(18, 18, 18)
                 .add(manyRadioButton)
-                .addContainerGap(251, Short.MAX_VALUE))
+                .addContainerGap(291, Short.MAX_VALUE))
         );
         cardinalityPanelLayout.setVerticalGroup(
             cardinalityPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -278,6 +280,10 @@ public final class MethodCustomizerPanel extends javax.swing.JPanel {
                 .add(manyRadioButton))
         );
 
+        oneRadioButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MethodCustomizerPanel.class, "ACSD_OneRadioButton")); // NOI18N
+        manyRadioButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MethodCustomizerPanel.class, "ACSD_ManyRadioButton")); // NOI18N
+
+        ejbqlLabel.setLabelFor(ejbqlTextArea);
         org.openide.awt.Mnemonics.setLocalizedText(ejbqlLabel, org.openide.util.NbBundle.getMessage(MethodCustomizerPanel.class, "MethodCustomizerPanel.ejbqlLabel.text")); // NOI18N
 
         ejbqlScrollPane.setBorder(null);
@@ -291,6 +297,7 @@ public final class MethodCustomizerPanel extends javax.swing.JPanel {
             }
         });
         ejbqlScrollPane.setViewportView(ejbqlTextArea);
+        ejbqlTextArea.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MethodCustomizerPanel.class, "ACSD_EJB_QL")); // NOI18N
 
         org.jdesktop.layout.GroupLayout ejbqlPanelLayout = new org.jdesktop.layout.GroupLayout(ejbqlPanel);
         ejbqlPanel.setLayout(ejbqlPanelLayout);
@@ -298,7 +305,7 @@ public final class MethodCustomizerPanel extends javax.swing.JPanel {
             ejbqlPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(ejbqlPanelLayout.createSequentialGroup()
                 .add(ejbqlLabel)
-                .addContainerGap(461, Short.MAX_VALUE))
+                .addContainerGap(467, Short.MAX_VALUE))
             .add(ejbqlScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 504, Short.MAX_VALUE)
         );
         ejbqlPanelLayout.setVerticalGroup(
@@ -336,10 +343,10 @@ public final class MethodCustomizerPanel extends javax.swing.JPanel {
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                                .add(returnTypeTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 322, Short.MAX_VALUE)
+                                .add(returnTypeTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 351, Short.MAX_VALUE)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(jButton1))
-                            .add(nameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 415, Short.MAX_VALUE))))
+                            .add(nameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 436, Short.MAX_VALUE))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -366,8 +373,12 @@ public final class MethodCustomizerPanel extends javax.swing.JPanel {
                 .add(errorTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         );
 
+        exceptionAndParameterPane.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MethodCustomizerPanel.class, "ACSD_TabPane")); // NOI18N
+        errorTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(MethodCustomizerPanel.class, "ACSN_errorTextField")); // NOI18N
+        errorTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MethodCustomizerPanel.class, "ACSD_errorTextField")); // NOI18N
         returnTypeLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MethodCustomizerPanel.class, "ACSD_ReturnType")); // NOI18N
         jLabel1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MethodCustomizerPanel.class, "ACSD_Name")); // NOI18N
+        jButton1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MethodCustomizerPanel.class, "ACSD_MethodCustomizerPanel_Browse")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void nameTextFieldFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_nameTextFieldFocusGained

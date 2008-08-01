@@ -581,6 +581,26 @@ public class SerialDataConvertorTest extends NbTestCase {
         assertNull("There shouldn't be provided InstanceCookie for disabled module", ic);        
     }
 
+    /** If class name is mapped to an empty string in META-INF.netbeans/translate.names,
+     * InstanceCookie should not be created and instanceOf should return false. */
+    public void testRemovedClass137240() throws DataObjectNotFoundException {
+        FileObject RemovedClassFO = lfs.findResource("/Settings/org-netbeans-modules-settings-convertors-FooSettingRemovedClass.settings");
+        assertNotNull(RemovedClassFO);
+        DataObject ido = DataObject.find(RemovedClassFO);
+        InstanceCookie ic = ido.getCookie(InstanceCookie.class);
+        assertNull("InstanceCookie issued for removed class.", ic);
+        FileObject unknownSerialFO = lfs.findResource("/Settings/org-netbeans-modules-settings-convertors-FooSettingRemovedClassSerial.settings");
+        assertNotNull(unknownSerialFO);
+        ido = DataObject.find(unknownSerialFO);
+        InstanceCookie icSerial = ido.getCookie(InstanceCookie.class);
+        assertNull("InstanceCookie issued for removed class.", icSerial);
+        FileObject unknownInstanceOfFO = lfs.findResource("/Settings/org-netbeans-modules-settings-convertors-FooSettingRemovedClassInstanceOf.settings");
+        assertNotNull(unknownInstanceOfFO);
+        ido = DataObject.find(unknownInstanceOfFO);
+        InstanceCookie.Of icOf = ido.getCookie(InstanceCookie.Of.class);
+        assertFalse("instanceOf should not return true for removed class.", icOf.instanceOf(RemovedClass.class));
+    }
+
     public void testDeleteOfUnrecognizedSettingsFile () throws Exception {
         final FileObject corrupted = lfs.findResource("/Settings/org-netbeans-modules-settings-convertors-FooSettingUnrecognizedSettingsFile.settings");
         assertNotNull(corrupted);

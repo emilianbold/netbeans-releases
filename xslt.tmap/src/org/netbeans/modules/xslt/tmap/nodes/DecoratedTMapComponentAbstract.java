@@ -20,6 +20,7 @@
 package org.netbeans.modules.xslt.tmap.nodes;
 
 import java.awt.Image;
+import org.netbeans.modules.xslt.tmap.model.api.Nameable;
 import org.netbeans.modules.xslt.tmap.model.api.TMapComponent;
 
 /**
@@ -38,6 +39,16 @@ public abstract class DecoratedTMapComponentAbstract<T extends TMapComponent>
     }
 
     public String getName() {
+        T ref = getOriginal();
+        String name = null;
+        if (ref != null && ref instanceof Nameable) {
+            name = ((Nameable)ref).getName();
+        }
+        
+        if (name != null) {
+            return name;
+        }
+        
         NodeType type = NodeType.getNodeType(myOrig);
         return type != null ? type.getDisplayName(): "";
     }

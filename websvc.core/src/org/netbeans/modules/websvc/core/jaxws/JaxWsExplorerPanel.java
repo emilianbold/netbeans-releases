@@ -266,7 +266,7 @@ public class JaxWsExplorerPanel extends JPanel implements ExplorerManager.Provid
                 return cookie.getWsdlURL();
             } else {
                 // this is a hook for other services (Axis) to be accessible
-                String wsdlUrl = (String)serviceNode.getValue("wsdl_url"); //NOI18N
+                String wsdlUrl = (String)serviceNode.getValue("wsdl-url"); //NOI18N
                 if (wsdlUrl != null){
                     return wsdlUrl;
                 }

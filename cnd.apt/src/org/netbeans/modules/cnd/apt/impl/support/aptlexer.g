@@ -192,10 +192,11 @@ tokens {
     LITERAL___attribute__="__attribute__"; // NOI18N
     LITERAL_restrict="restrict"; // NOI18N
     LITERAL___restrict="__restrict"; // NOI18N
-    LITERAL___complex="__complex__"; // NOI18N
+    LITERAL___complex__="__complex__"; // NOI18N
     LITERAL___imag="__imag__"; // NOI18N
     LITERAL___real="__real__"; // NOI18N          
-    LITERAL___global="__global"; // NOI18N   
+    LITERAL___global="__global"; // NOI18N
+    LITERAL__Complex="_Complex"; // NOI18N
 
 	ASSIGNEQUAL;
 	COLON;
@@ -294,10 +295,9 @@ tokens {
 //        }
     }
 
-    // is not used any more, override createToken method instead
-    /*public void setTokenObjectClass(Class cl) {
-	tokenObjectClass = cl;
-    }*/
+    // overriden to avoid class loading
+    public void setTokenObjectClass(String cl) {
+    }
 
     // Used instead of setTokenObjectClass method to avoid reflection usage
     protected Token createToken(int type) {
@@ -483,7 +483,7 @@ tokens {
 
     public void consume() {
         super.consume();
-        if (inputState.guessing == 0) {
+        if (guessing == 0) {
             offset++;
         }
     }
@@ -675,7 +675,7 @@ Whitespace options {checkSkip=true;} :
 			// handle continuation lines
 		|	'\\' 
                         ( {$setType(BACK_SLASH);} |
-                            (	"\r\n"  // MS
+                            (	"\r\n" {offset--;} // MS
                             |	"\r"    // Mac
                             |	"\n"    // Unix 
                             )	{$setType(Token.SKIP); deferredNewline();}
@@ -761,7 +761,7 @@ DirectiveBody
 		( 
                         options{warnWhenFollowAmbig = false; }:
                         '\\'
-                        (	"\r\n"   // MS 
+                        (	"\r\n"  {offset--;} // MS 
 			|	"\r"     // MAC
 			|	"\n"     // Unix
 			)	{deferredNewline();}
@@ -792,7 +792,7 @@ protected STRING_LITERAL_BODY :
 		(       
                         '\\'                        
                         (   options{greedy=true;}:
-                            (	"\r\n" // MS 
+                            (	"\r\n" {offset--;} // MS 
                             |	"\r"     // MAC
                             |	"\n"     // Unix
                             ) {deferredNewline();}

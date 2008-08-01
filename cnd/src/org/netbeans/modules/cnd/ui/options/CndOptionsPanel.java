@@ -72,6 +72,9 @@ public final class CndOptionsPanel extends JPanel {
 	    // tabbedPane.setMnemonicAt(i, mnem);
 	}      
         
+        tabbedPane.getAccessibleContext().setAccessibleDescription(""); // NOI18N //Not sure we have anything meaningfull to put here
+        tabbedPane.getAccessibleContext().setAccessibleName(""); // NOI18N  //Not sure we have anything meaningfull to put here
+        
         setLayout(new BorderLayout());
         add(tabbedPane, BorderLayout.CENTER);        
     }

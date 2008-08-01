@@ -32,8 +32,9 @@ import java.io.IOException;
 import junit.framework.*;
 import junit.textui.TestRunner;
 import org.netbeans.api.project.Project;
+import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
 import org.netbeans.modules.j2ee.persistence.unit.PUDataObject;
 import org.netbeans.modules.web.project.WebProject;
@@ -46,7 +47,7 @@ import org.netbeans.test.j2ee.lib.TrimmingLineDiff;
  *
  * @author rroska
  */
-public class PersistenceUnitTest extends NbTestCase {
+public class PersistenceUnitTest extends J2eeTestCase {
 
     public PersistenceUnitTest(String test) {
         super(test);
@@ -76,11 +77,10 @@ public class PersistenceUnitTest extends NbTestCase {
     private NbTestCase nbtestcase;
 
     public static Test suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new PersistenceUnitTest("testOpenProject"));
-        suite.addTest(new PersistenceUnitTest("testPUProviders"));
-        suite.addTest(new PersistenceUnitTest("testPUDataSource"));
-        return suite;
+        NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(PersistenceUnitTest.class);
+        conf = addServerTests(conf,"testOpenProject","testPUProviders","testPUDataSource");
+        conf = conf.enableModules(".*").clusters(".*");
+        return NbModuleSuite.create(conf);
     }
 
     /** Use for execution inside IDE */

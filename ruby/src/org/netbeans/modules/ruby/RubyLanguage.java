@@ -42,39 +42,142 @@ package org.netbeans.modules.ruby;
 
 import java.util.Collection;
 import java.util.Collections;
-import org.netbeans.modules.gsf.api.GsfLanguage;
+import java.util.HashMap;
+import java.util.Map;
 import org.netbeans.api.lexer.Language;
+import org.netbeans.api.ruby.platform.RubyPlatform;
+import org.netbeans.modules.gsf.api.CodeCompletionHandler;
+import org.netbeans.modules.gsf.api.DeclarationFinder;
+import org.netbeans.modules.gsf.api.Formatter;
+import org.netbeans.modules.gsf.api.Indexer;
+import org.netbeans.modules.gsf.api.InstantRenamer;
+import org.netbeans.modules.gsf.api.KeystrokeHandler;
+import org.netbeans.modules.gsf.api.OccurrencesFinder;
+import org.netbeans.modules.gsf.api.Parser;
+import org.netbeans.modules.gsf.api.SemanticAnalyzer;
+import org.netbeans.modules.gsf.api.StructureScanner;
+import org.netbeans.modules.gsf.spi.DefaultLanguageConfig;
 import org.netbeans.modules.ruby.lexer.RubyTokenId;
-
-
-/*
- * Language/lexing configuration for Ruby
- *
- * @author Tor Norbye
- */
 import org.openide.filesystems.FileObject;
+
+
 /*
  * Language/lexing configuration for Ruby
  *
  * @author Tor Norbye
  */
-public class RubyLanguage implements GsfLanguage {
+/*
+ * Language/lexing configuration for Ruby
+ *
+ * @author Tor Norbye
+ */
+public class RubyLanguage extends DefaultLanguageConfig {
     public RubyLanguage() {
     }
 
+    @Override
     public String getLineCommentPrefix() {
         return RubyUtils.getLineCommentPrefix();
     }
 
+    @Override
     public boolean isIdentifierChar(char c) {
         return RubyUtils.isIdentifierChar(c);
     }
 
+    @Override
     public Language getLexerLanguage() {
         return RubyTokenId.language();
     }
 
+    @Override
+    public String getDisplayName() {
+        return "Ruby";
+    }
+
+    @Override
+    public String getPreferredExtension() {
+        return "rb"; // NOI18N
+    }
+
+    @Override
+    public Map<String,String> getSourceGroupNames() {
+        Map<String,String> sourceGroups = new HashMap<String,String>();
+        sourceGroups.put("RubyProject", "ruby"); // NOI18N
+        sourceGroups.put("WebProject", "ruby"); // NOI18N
+        sourceGroups.put("RailsProject", "ruby"); // NOI18N
+        
+        return sourceGroups;
+    }
+    
+    
+    @Override
     public Collection<FileObject> getCoreLibraries() {
-        return Collections.emptyList();
+        return Collections.singletonList(RubyPlatform.getRubyStubs());
+    }
+
+    @Override
+    public CodeCompletionHandler getCompletionHandler() {
+        return new RubyCodeCompleter();
+    }
+
+    @Override
+    public DeclarationFinder getDeclarationFinder() {
+        return new RubyDeclarationFinder();
+    }
+
+    @Override
+    public boolean hasFormatter() {
+        return true;
+    }
+
+    @Override
+    public Formatter getFormatter() {
+        return new RubyFormatter();
+    }
+
+    @Override
+    public Indexer getIndexer() {
+        return new RubyIndexer();
+    }
+
+    @Override
+    public InstantRenamer getInstantRenamer() {
+        return new RubyRenameHandler();
+    }
+
+    @Override
+    public KeystrokeHandler getKeystrokeHandler() {
+        return new RubyKeystrokeHandler();
+    }
+
+    @Override
+    public boolean hasOccurrencesFinder() {
+        return true;
+    }
+
+    @Override
+    public OccurrencesFinder getOccurrencesFinder() {
+        return new RubyOccurrencesFinder();
+    }
+
+    @Override
+    public Parser getParser() {
+        return new RubyParser();
+    }
+
+    @Override
+    public SemanticAnalyzer getSemanticAnalyzer() {
+        return new RubySemanticAnalyzer();
+    }
+
+    @Override
+    public boolean hasStructureScanner() {
+        return true;
+    }
+
+    @Override
+    public StructureScanner getStructureScanner() {
+        return new RubyStructureAnalyzer();
     }
 }

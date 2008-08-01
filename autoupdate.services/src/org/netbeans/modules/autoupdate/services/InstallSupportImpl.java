@@ -102,11 +102,6 @@ public class InstallSupportImpl {
     private boolean progressRunning = false;
     private static Logger err = Logger.getLogger (InstallSupportImpl.class.getName ());
     
-    public static final String UPDATE_DIR = "update"; // NOI18N
-    public static final String FILE_SEPARATOR = System.getProperty("file.separator");
-    public static final String DOWNLOAD_DIR = UPDATE_DIR + FILE_SEPARATOR + "download"; // NOI18N
-    public static final String NBM_EXTENTSION = ".nbm";
-    
     private static final String AUTOUPDATE_SERVICES_MODULE = "org.netbeans.modules.autoupdate.services"; // NOI18N
     
     private Map<UpdateElementImpl, File> element2Clusters = null;
@@ -274,6 +269,9 @@ public class InstallSupportImpl {
                     currentStep = STEP.INSTALLATION;
                 }
                 assert support.getContainer ().listInvalid ().isEmpty () : support + ".listInvalid().isEmpty() but " + support.getContainer ().listInvalid ();
+                
+                // do trust of so far untrusted certificates
+                addTrustedCertificates ();
 
                 affectedModuleImpls = new HashSet<ModuleUpdateElementImpl> ();
                 affectedFeatureImpls = new HashSet<FeatureUpdateElementImpl> ();
@@ -322,7 +320,7 @@ public class InstallSupportImpl {
                     URL source = moduleImpl.getInstallInfo ().getDistribution ();
                     err.log (Level.FINE, "Source URL for " + moduleImpl.getCodeName () + " is " + source);
                     
-                    boolean isNbmFile = source.getFile().toLowerCase(Locale.US).endsWith(NBM_EXTENTSION.toLowerCase(Locale.US));
+                    boolean isNbmFile = source.getFile().toLowerCase(Locale.US).endsWith(Utilities.NBM_EXTENTSION.toLowerCase(Locale.US));
                     
                     File dest = getDestination(targetCluster, moduleImpl.getCodeName(), isNbmFile);
                     assert dest != null : "Destination file exists for " + moduleImpl + " in " + targetCluster;
@@ -381,15 +379,18 @@ public class InstallSupportImpl {
                                 for (ModuleUpdateElementImpl impl : affectedModuleImpls) {
                                     int rerunWaitCount = 0;
                                     Module module = Utilities.toModule (impl.getCodeName(), impl.getSpecificationVersion ());
-                                    // XXX: consider again this
-                                    for (; rerunWaitCount < 100 && (module == null || !module.isEnabled()); rerunWaitCount++) {
+                                    for (; rerunWaitCount < 100 && module == null; rerunWaitCount++) {
                                         Thread.sleep(100);
                                         module = Utilities.toModule (impl.getCodeName(), impl.getSpecificationVersion ());
                                     }
                                     if (rerunWaitCount == 100) {
-                                        err.log (Level.INFO, "Overflow checks of installed module " + module);
+                                        err.log (Level.INFO, "Timeout waiting for loading module " + impl.getCodeName () + '/' + impl.getSpecificationVersion ());
                                         th.interrupt();
-                                        break;
+                                        afterInstall ();
+                                        downloadedFiles = null;
+                                        throw new OperationException (OperationException.ERROR_TYPE.INSTALL,
+                                                NbBundle.getMessage(InstallSupportImpl.class, "InstallSupportImpl_TurnOnTimeout", // NOI18N
+                                                impl.getUpdateElement ()));
                                     }
                                 }
                             } catch(InterruptedException ie) {
@@ -416,9 +417,13 @@ public class InstallSupportImpl {
         try {
             retval = getExecutionService ().submit (installCallable).get ();
         } catch(InterruptedException iex) {
-            Exceptions.printStackTrace(iex);
+            err.log (Level.INFO, iex.getLocalizedMessage (), iex);
         } catch(ExecutionException iex) {
-            Exceptions.printStackTrace(iex);
+            if (iex.getCause () instanceof OperationException) {
+                throw (OperationException) iex.getCause ();
+            } else {
+                err.log (Level.INFO, iex.getLocalizedMessage (), iex);
+            }
         } finally {
             if (! retval) {
                 getElement2Clusters ().clear ();
@@ -546,6 +551,26 @@ public class InstallSupportImpl {
         }
         return res;
     }
+    
+    private void addTrustedCertificates () {
+        // find untrusted so far
+        Collection<UpdateElementImpl> untrusted = new HashSet<UpdateElementImpl> (signed);
+        untrusted.removeAll (trusted);
+        if (untrusted.isEmpty ()) {
+            // all are trusted
+            return;
+        }
+        
+        // find corresponding certificates
+        Collection<Certificate> untrustedCertificates = new HashSet<Certificate> ();
+        for (UpdateElementImpl i : untrusted) {
+            untrustedCertificates.addAll (certs.get (i.getUpdateElement ()));
+        }
+        
+        if (! untrustedCertificates.isEmpty ()) {
+            Utilities.addCertificates (untrustedCertificates);
+        }
+    }
 
     public void doCancel () throws OperationException {
         synchronized(this) {
@@ -625,7 +650,7 @@ public class InstallSupportImpl {
         URL source = toUpdateImpl.getInstallInfo().getDistribution();
         err.log (Level.FINE, "Source URL for " + toUpdateImpl.getCodeName () + " is " + source);
         
-        boolean isNbmFile = source.getFile ().toLowerCase (Locale.US).endsWith (NBM_EXTENTSION.toLowerCase (Locale.US));
+        boolean isNbmFile = source.getFile ().toLowerCase (Locale.US).endsWith (Utilities.NBM_EXTENTSION.toLowerCase (Locale.US));
 
         File dest = getDestination (targetCluster, toUpdateImpl.getCodeName(), isNbmFile);
         
@@ -700,12 +725,12 @@ public class InstallSupportImpl {
     
     static File getDestination (File targetCluster, String codeName, boolean isNbmFile) {
         err.log (Level.FINE, "Target cluster for " + codeName + " is " + targetCluster);
-        File destDir = new File (targetCluster, DOWNLOAD_DIR);
+        File destDir = new File (targetCluster, Utilities.DOWNLOAD_DIR);
         if (! destDir.exists ()) {
             destDir.mkdirs ();
         }
         String fileName = codeName.replace ('.', '-');
-        File destFile = new File (destDir, fileName + (isNbmFile ? NBM_EXTENTSION : ""));
+        File destFile = new File (destDir, fileName + (isNbmFile ? Utilities.NBM_EXTENTSION : ""));
         err.log(Level.FINE, "Destination file for " + codeName + " is " + destFile);
         return destFile;
     }
@@ -785,6 +810,11 @@ public class InstallSupportImpl {
                 List<Certificate> trustedCerts = new ArrayList<Certificate> ();
                 UpdateElementImpl impl = Trampoline.API.impl(el);
                 for (KeyStore ks : Utilities.getKeyStore ()) {
+                    trustedCerts.addAll (getCertificates (ks));
+                }
+                // load user certificates
+                KeyStore ks = Utilities.loadKeyStore ();
+                if (ks != null) {
                     trustedCerts.addAll (getCertificates (ks));
                 }
                 if (trustedCerts.containsAll (nbmCerts)) {

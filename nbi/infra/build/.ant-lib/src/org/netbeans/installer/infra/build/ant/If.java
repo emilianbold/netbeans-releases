@@ -117,13 +117,9 @@ public class If extends Task implements TaskContainer {
      */
     public void execute() throws BuildException {
         if (getProject().getProperty(property) != null) {
-            if (value != null) {
-                if (getProject().getProperty(property).equals(value)) {
+            if (value == null || getProject().getProperty(property).equals(value)) {
                     executeChildren();
-                }
-            } else {
-                executeChildren();
-            }
+            }            
         }
     }
     

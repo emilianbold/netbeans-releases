@@ -45,7 +45,6 @@ made subject to such option by the copyright holder.
     <!-- Hide menu items that belong on Apple's app menu -->
    <folder name="Menu">
 
-        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
         <folder name="File">
             <file name="org-netbeans-core-actions-SystemExit.instance_hidden"/>
         </folder>

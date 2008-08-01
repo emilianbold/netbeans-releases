@@ -43,37 +43,37 @@ package org.netbeans.modules.gsf.api;
 
 /**
  * Encodes a type of the name kind used by
- * {@link ClassIndex#getDeclaredTypes} method.
+ * {@link Index#search}, {@link CodeCompletionContext#getNameKind()} etc.
  *
  */
 public enum NameKind {
     /**
-     * The name parameter of the {@link ClassIndex#getDeclaredTypes}
+     * The name parameter
      * is an exact simple name of the package or declared type.
      */
     EXACT_NAME,
     /**
-     * The name parameter of the {@link ClassIndex#getDeclaredTypes}
+     * The name parameter
      * is an case sensitive prefix of the package or declared type name.
      */
     PREFIX,
     /**
-     * The name parameter of the {@link ClassIndex#getDeclaredTypes} is
+     * The name parameter is
      * an case insensitive prefix of the declared type name.
      */
     CASE_INSENSITIVE_PREFIX,
     /**
-     * The name parameter of the {@link ClassIndex#getDeclaredTypes} is
+     * The name parameter is
      * an camel case of the declared type name.
      */
     CAMEL_CASE,
     /**
-     * The name parameter of the {@link ClassIndex#getDeclaredTypes} is
+     * The name parameter is
      * an regular expression of the declared type name.
      */
     REGEXP,
     /**
-     * The name parameter of the {@link ClassIndex#getDeclaredTypes} is
+     * The name parameter is
      * an case insensitive regular expression of the declared type name.
      */
     CASE_INSENSITIVE_REGEXP;

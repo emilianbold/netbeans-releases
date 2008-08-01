@@ -49,7 +49,7 @@ public class NewIcanproProjectWizardIterator
     
     private static final long serialVersionUID = 1L;
     
-    private WizardDescriptor.Panel[] createPanels() {
+    protected WizardDescriptor.Panel[] createPanels() {
         return new WizardDescriptor.Panel[] {
             new PanelConfigureProject(getDefaultName(), getDefaultTitle()),
             //need this after EA1
@@ -114,9 +114,9 @@ public class NewIcanproProjectWizardIterator
             if (c instanceof JComponent) { // assume Swing components
                 JComponent jc = (JComponent)c;
                 // Step #.
-                jc.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(i)); // NOI18N
+                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer(i)); // NOI18N
                 // Step name (actually the whole list for reference).
-                jc.putClientProperty("WizardPanel_contentData", steps); // NOI18N
+                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps); // NOI18N
             }
         }
     }

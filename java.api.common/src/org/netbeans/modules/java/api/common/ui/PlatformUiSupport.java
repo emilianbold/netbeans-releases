@@ -70,6 +70,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 import org.openide.util.WeakListeners;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 /**
@@ -178,11 +179,25 @@ public final class PlatformUiSupport {
                 case 0:
                     explicitPlatform = root.getOwnerDocument().createElementNS(
                             projectConfigurationNamespace, "explicit-platform"); //NOI18N
-                    NodeList sourceRootNodes = root.getElementsByTagNameNS(
-                            projectConfigurationNamespace, "source-roots"); //NOI18N
-                    assert sourceRootNodes.getLength() == 1 : "Broken project.xml file";
-
-                    root.insertBefore(explicitPlatform, sourceRootNodes.item(0));
+                    // insert node after <name> and optional <minimum-ant-version>
+                    NodeList nodes = root.getChildNodes();
+                    Node insertBeforeMe = null;
+                    for (int i=0; i<nodes.getLength(); i++) {
+                        Node n = nodes.item(i);
+                        if (n.getNodeType() != Node.ELEMENT_NODE) {
+                            continue; // ignore TEXT nodes etc.
+                        }
+                        if (!n.getNodeName().equals("name") &&  // NOI18N
+                            !n.getNodeName().equals("minimum-ant-version")) { // NOI18N
+                            insertBeforeMe = n;
+                            break;
+                        }
+                    }
+                    if (insertBeforeMe != null) {
+                        root.insertBefore(explicitPlatform, insertBeforeMe);
+                    } else {
+                        root.appendChild(explicitPlatform);
+                    }
                     changed = true;
                     break;
                 case 1:

@@ -521,6 +521,8 @@ public class UMLImportsUiSupport
                                        INamespace owner,
                                        IResultCell cell)
         {
+            if (owner == null)
+                return;
             Project referencedProject = ProjectUtil.findNetBeansProjectForModel(owner.getProject());
             Project referencingProject = ProjectUtil.findNetBeansProjectForModel(importingPackage.getProject());
             

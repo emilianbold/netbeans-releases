@@ -20,14 +20,13 @@
 package org.netbeans.modules.xml.xpath.ext.impl;
 
 import javax.xml.namespace.QName;
-import org.netbeans.modules.xml.xpath.ext.XPathSchemaContext;
+import org.netbeans.modules.xml.xpath.ext.schema.resolver.XPathSchemaContext;
 import org.netbeans.modules.xml.xpath.ext.XPathUtils;
 import org.netbeans.modules.xml.xpath.ext.XPathModel;
 import org.netbeans.modules.xml.xpath.ext.XPathVariableReference;
 import org.netbeans.modules.xml.xpath.ext.spi.VariableResolver;
 import org.netbeans.modules.xml.xpath.ext.visitor.XPathVisitor;
 import org.netbeans.modules.xml.schema.model.ReferenceableSchemaComponent;
-import org.netbeans.modules.xml.xpath.ext.spi.VariableSchemaContext;
 import org.netbeans.modules.xml.xpath.ext.spi.XPathVariable;
 
 /**
@@ -41,7 +40,7 @@ public class XPathVariableReferenceImpl extends XPathExpressionImpl
 
     // private Reference mVaribleReference;
     private QName mVariableQName;
-    private VariableSchemaContext mSchemaContext;
+    private XPathSchemaContext mSchemaContext;
     
     public XPathVariableReferenceImpl(XPathModel model, QName variableQName) {
         super(model);
@@ -99,13 +98,19 @@ public class XPathVariableReferenceImpl extends XPathExpressionImpl
         return XPathUtils.qNameObjectToString(mVariableQName);
     }
 
-    public VariableSchemaContext getSchemaContext() {
+    public XPathSchemaContext getSchemaContext() {
+        if (mSchemaContext == null) {
+            if (myModel.getRootExpression() != null) {
+                myModel.resolveExtReferences(false);
+            } else {
+                myModel.resolveExpressionExtReferences(this);
+            }
+        }
         return mSchemaContext;
     }
 
     public void setSchemaContext(XPathSchemaContext newContext) {
-        assert newContext instanceof VariableSchemaContext;
-        mSchemaContext = (VariableSchemaContext)newContext;
+        mSchemaContext = newContext;
     }
     
 }

@@ -45,7 +45,6 @@ import javax.swing.event.ChangeEvent;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.modules.compapp.projects.jbi.JbiProject;
 import org.netbeans.modules.compapp.projects.jbi.ui.actions.AddProjectAction;
-import org.netbeans.modules.compapp.projects.jbi.ui.actions.OpenEditorAction;
 import org.netbeans.modules.compapp.projects.jbi.ui.customizer.JbiProjectProperties;
 import org.netbeans.modules.compapp.test.ui.TestNode;
 
@@ -549,7 +548,7 @@ public class JbiLogicalViewProvider implements LogicalViewProvider {
             actions.add(SystemAction.get(FindAction.class));
             
             // honor 57874 contact
-            addFromLayers(actions, "Projects/Actions"); // NOI18N
+            actions.addAll(Utilities.actionsForPath("Projects/Actions")); // NOI18N
                         
             if (broken) {
                 actions.add(brokenLinksAction);
@@ -559,17 +558,6 @@ public class JbiLogicalViewProvider implements LogicalViewProvider {
             actions.add(CommonProjectActions.customizeProjectAction());
                         
             return actions.toArray(new Action[actions.size()]);            
-        }
-        
-        private void addFromLayers(List<Action> actions, String path) {
-            Lookup look = Lookups.forPath(path);
-            for (Object next : look.lookupAll(Object.class)) {
-                if (next instanceof Action) {
-                    actions.add((Action) next);
-                } else if (next instanceof JSeparator) {
-                    actions.add(null);
-                }
-            }
         }
         
         /**

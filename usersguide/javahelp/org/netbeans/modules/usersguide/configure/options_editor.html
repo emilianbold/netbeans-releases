@@ -1,6 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
- * Copyright � 2007 Sun Microsystems, Inc. 
+ * Copyright � 2008 Sun Microsystems, Inc. 
  * All rights reserved.
  * Use is subject to license terms.
 -->
@@ -43,13 +43,18 @@
             options for how to complete an expression.  
             <p>This property applies only to editor types that support code completion, such as Java, HTML, and JSP.</p></li>
             <li><b>Insert Single Proposals Automatically.</b> When selected, the code completion box does not appear when the IDE is aware of  
-            only one possible completion for the expression. The expression is completed automatically. </li>
+            only one possible completion for the expression. The expression is completed automatically, but
+            only if you invoke code completion explicitly, not if you simply type "." behind an identifier. </li>
             <li><b>Case Sensitive Code Completion.</b> If selected, the code completion box only displays results that match the case of the expression 
             that you are typing. </li>
             <li><b>Show Deprecated Members in Code Completion.</b> If selected, any deprecrated class elements that are available are shown 
             in the completion box. Deprecated members are struck through with a line to indicate that they are deprecated.</li>
             <li><b>Insert Closing Brackets Automatically.</b> When selected, the Source Editor generates the closing parenthesis, bracket, 
             brace, or quotation mark after you type the first one.</li>
+            <li><b>Auto Popup Documentation Window.</b> When selected, the documentation window appears
+             automatically, otherwise only if it is invoked explicitly (Ctrl-Shift-Space, by default).</li>
+            <li><b>Guess Filled Method Arguments.</b> Specifies whether the names of local variables and fields
+            with matching types are generated as the method call arguments, instead of parameter names.</li>
         </ul>
             
             <!--The code completion feature works by displaying a completion box that suggests possible ways of completing the expression that you are typing. 

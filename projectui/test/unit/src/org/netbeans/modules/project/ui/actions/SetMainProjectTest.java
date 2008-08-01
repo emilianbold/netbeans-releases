@@ -118,7 +118,7 @@ public class SetMainProjectTest extends NbTestCase {
         
         item = null;
         
-        assertEquals(2, menu.getItemCount());
+        assertEquals(4, menu.getItemCount());
         assertTrue(menu.isEnabled());
         
         WeakReference<?> menuRef = new WeakReference<Object>(menu);
@@ -134,17 +134,17 @@ public class SetMainProjectTest extends NbTestCase {
         
         OpenProjectList.getDefault().close(new Project[] {p1}, false);
         
-        assertEquals(1, menu.getItemCount());
+        assertEquals(3, menu.getItemCount());
         assertTrue(menu.isEnabled());
 
         OpenProjectList.getDefault().close(new Project[] {p2}, false);
         
-        assertEquals(0, menu.getItemCount());
+        assertEquals(2, menu.getItemCount());
         assertFalse(menu.isEnabled());
 
         OpenProjectList.getDefault().open(new Project[] {p1}, false);
         
-        assertEquals(1, menu.getItemCount());
+        assertEquals(3, menu.getItemCount());
         assertTrue(menu.isEnabled());
         
         menu = null;

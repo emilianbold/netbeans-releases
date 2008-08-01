@@ -47,9 +47,13 @@ import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.logging.Level;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -90,6 +94,8 @@ public class ClassPathProviderImplTest extends TestBase {
     private NbModuleProject copyOfMiscProject;
     private ProjectXMLManager copyOfMiscXMLManager;
     
+    private static final Logger LOG = Logger.getLogger(ClassPathProviderImplTest.class.getName());
+    
     protected @Override void setUp() throws Exception {
         super.setUp();
         copyOfSuite2 = copyFolder(resolveEEPFile("/suite2"));
@@ -104,11 +110,11 @@ public class ClassPathProviderImplTest extends TestBase {
     }
     
     private String urlForJar(String path) {
-        return Util.urlForJar(PropertyUtils.resolveFile(nbRootFile(), path)).toExternalForm();
+        return FileUtil.urlForArchiveOrDir(PropertyUtils.resolveFile(nbRootFile(), path)).toExternalForm();
     }
     
     private String urlForDir(String path) {
-        return Util.urlForDir(file(path)).toExternalForm();
+        return FileUtil.urlForArchiveOrDir(file(path)).toExternalForm();
     }
     
     private Set<String> urlsOfCp(ClassPath cp) {
@@ -119,10 +125,46 @@ public class ClassPathProviderImplTest extends TestBase {
         return s;
     }
     
+    /**
+     * Asserts when (sorted) sequences are not equal
+     * and prints CP entries.
+     */
+    private <T> void assertEquals(String msg, Iterable<T> expSeq, Iterable<T> actSeq) {
+        int i = 0, cnt = 0;
+        boolean dif = false;
+        Iterator<T> it1 = expSeq.iterator(), it2 = actSeq.iterator();
+        StringBuilder sb1 = new StringBuilder(), sb2 = new StringBuilder();
+        
+        while (it1.hasNext() || it2.hasNext()) {
+            T t1 = null, t2 = null;
+            if (it1.hasNext()) {
+                t1 = it1.next();
+                sb1.append("\t" + t1.toString() + "\n");
+            } else {
+                dif = true;
+            }
+            if (it2.hasNext()) {
+                t2 = it2.next();
+                sb2.append("\t" + t2.toString() + "\n");
+            } else {
+                dif = true;
+            }
+            if (!dif && !t1.equals(t2)) {
+                dif = true;
+            }
+            if (! dif) i++;
+            cnt++;
+        }
+        if (!dif) {
+            return;
+        }
+        String failMsg = String.format("Comparison failed: %1$s\nClasspaths differ at entry #%4$d.\nExpected:\n%2$sActual:\n%3$s",
+                msg, sb1, sb2, i);
+        fail(failMsg);
+    }
+    
     private static final Set<String> TESTLIBS = new HashSet<String>(Arrays.asList(
-        "junit.jar", "nbjunit.jar", "nbjunit-ide.jar", "insanelib.jar",
-        "org-netbeans-modules-nbjunit.jar",
-        "org-netbeans-modules-nbjunit-ide.jar"));
+        "junit.jar", "org-netbeans-modules-nbjunit.jar", "org-netbeans-insane.jar"));
     
     private Set<String> urlsOfCp4Tests(ClassPath cp) {
         Set<String> s = new TreeSet<String>();
@@ -171,7 +213,7 @@ public class ClassPathProviderImplTest extends TestBase {
         expectedRoots.add(urlForJar("nbbuild/netbeans/" + TestBase.CLUSTER_PLATFORM + "/modules/org-netbeans-api-progress.jar"));
         expectedRoots.add(urlForJar("nbbuild/netbeans/" + TestBase.CLUSTER_IDE + "/modules/org-netbeans-modules-projectapi.jar"));
         expectedRoots.add(urlForJar("nbbuild/netbeans/" + TestBase.CLUSTER_IDE + "/modules/org-netbeans-modules-projectuiapi.jar"));
-        assertEquals("right COMPILE classpath for o.apache.tools.ant.module/src", expectedRoots.toString(), urlsOfCp(cp).toString());
+        assertEquals("right COMPILE classpath for o.apache.tools.ant.module/src", expectedRoots, urlsOfCp(cp));
         cp = ClassPath.getClassPath(src, ClassPath.EXECUTE);
         assertNotNull("have an EXECUTE classpath", cp);
         // #48099: need to include build/classes here too
@@ -179,7 +221,8 @@ public class ClassPathProviderImplTest extends TestBase {
         // And #70206: transitive runtime deps too.
         expectedRoots.add(urlForJar("nbbuild/netbeans/" + TestBase.CLUSTER_PLATFORM + "/modules/org-netbeans-modules-queries.jar"));
         expectedRoots.add(urlForJar("nbbuild/netbeans/" + TestBase.CLUSTER_PLATFORM + "/modules/org-netbeans-modules-editor-mimelookup.jar"));
-        assertEquals("right EXECUTE classpath (COMPILE plus classes)", expectedRoots.toString(), urlsOfCp(cp).toString());
+        expectedRoots.add(urlForJar("nbbuild/netbeans/" + TestBase.CLUSTER_PLATFORM + "/modules/org-netbeans-swing-outline.jar"));
+        assertEquals("right EXECUTE classpath (COMPILE plus classes)", expectedRoots, urlsOfCp(cp));
         cp = ClassPath.getClassPath(src, ClassPath.SOURCE);
         assertNotNull("have a SOURCE classpath", cp);
         assertEquals("right SOURCE classpath", Collections.singleton(src), new HashSet<FileObject>(Arrays.asList(cp.getRoots())));
@@ -233,7 +276,7 @@ public class ClassPathProviderImplTest extends TestBase {
         expectedRoots.add(urlForJar("nbbuild/netbeans/" + TestBase.CLUSTER_PLATFORM + "/modules/org-openide-windows.jar"));
         expectedRoots.add(urlForJar("nbbuild/netbeans/" + TestBase.CLUSTER_PLATFORM + "/modules/org-openide-text.jar"));
         expectedRoots.add(urlForJar("java/parser/dist/java-parser.jar"));
-        assertEquals("right COMPILE classpath", expectedRoots.toString(), urlsOfCp(cp).toString());
+        assertEquals("right COMPILE classpath", expectedRoots, urlsOfCp(cp));
         assertTrue("#76341: EXECUTE classpath also has extension",
                 urlsOfCp(ClassPath.getClassPath(src, ClassPath.EXECUTE)).contains(urlForJar("java/parser/dist/java-parser.jar")));
     }
@@ -271,7 +314,7 @@ public class ClassPathProviderImplTest extends TestBase {
         expectedRoots.add(urlForJar("nbbuild/netbeans/" + TestBase.CLUSTER_PLATFORM + "/modules/org-netbeans-api-progress.jar"));
         expectedRoots.add(urlForJar("nbbuild/netbeans/" + TestBase.CLUSTER_IDE + "/modules/org-netbeans-modules-projectapi.jar"));
         expectedRoots.add(urlForJar("nbbuild/netbeans/" + TestBase.CLUSTER_IDE + "/modules/org-netbeans-modules-projectuiapi.jar"));
-        assertEquals("right COMPILE classpath for o.apache.tools.ant.module/src-bridge", expectedRoots.toString(), urlsOfCp(cp).toString());
+        assertEquals("right COMPILE classpath for o.apache.tools.ant.module/src-bridge", expectedRoots, urlsOfCp(cp));
         cp = ClassPath.getClassPath(srcbridge, ClassPath.EXECUTE);
         assertNotNull("have an EXECUTE classpath", cp);
         expectedRoots.add(urlForDir("o.apache.tools.ant.module/build/bridge-classes"));
@@ -342,12 +385,11 @@ public class ClassPathProviderImplTest extends TestBase {
         assertNotNull("have a COMPILE classpath", cp);
         Set<String> expectedRoots = new TreeSet<String>();
         expectedRoots.add(urlForJar(resolveEEPPath("/suite1/build/cluster/modules/org-netbeans-examples-modules-lib.jar")));
+        expectedRoots.add(urlForJar("nbbuild/netbeans/" + TestBase.CLUSTER_PLATFORM + "/modules/org-netbeans-libs-junit4.jar"));
         expectedRoots.add("junit.jar");
-        expectedRoots.add("nbjunit.jar");
-        expectedRoots.add("insanelib.jar");
+        expectedRoots.add("org-netbeans-insane.jar");
         expectedRoots.add("org-netbeans-modules-nbjunit.jar");
-        expectedRoots.add("org-netbeans-modules-nbjunit-ide.jar");
-        assertEquals("right COMPILE classpath", expectedRoots.toString(), urlsOfCp4Tests(cp).toString());
+        assertEquals("right COMPILE classpath", expectedRoots, urlsOfCp4Tests(cp));
         // Now test in suite3, where there is no source...
         src = resolveEEP("suite3/dummy-project/test/unit/src");
         cp = ClassPath.getClassPath(src, ClassPath.COMPILE);
@@ -358,10 +400,9 @@ public class ClassPathProviderImplTest extends TestBase {
         expectedRoots.add(urlForJar(resolveEEPPath("/suite3/nbplatform/random/modules/ext/stuff.jar")));
         expectedRoots.add("junit.jar");
         expectedRoots.add("nbjunit.jar");
-        expectedRoots.add("insanelib.jar");
         expectedRoots.add("org-netbeans-modules-nbjunit.jar");
         expectedRoots.add("org-netbeans-modules-nbjunit-ide.jar");
-        assertEquals("right COMPILE classpath", expectedRoots.toString(), urlsOfCp4Tests(cp).toString());
+        assertEquals("right COMPILE classpath", expectedRoots, urlsOfCp4Tests(cp));
         
         // test dependencies
         expectedRoots.clear();
@@ -399,7 +440,7 @@ public class ClassPathProviderImplTest extends TestBase {
         expectedRoots.add(urlForJar("jemmy/builds/jemmy.jar"));
         expectedRoots.add(urlForJar("jellytools/builds/jelly2-nb.jar"));
         // test.qa-functional.cp.extra currently empty
-        assertEquals("right COMPILE classpath", expectedRoots.toString(), urlsOfCp4Tests(cp).toString());
+        assertEquals("right COMPILE classpath", expectedRoots, urlsOfCp4Tests(cp));
         cp = ClassPath.getClassPath(qaftsrc, ClassPath.EXECUTE);
         assertNotNull("have an EXECUTE classpath", cp);
         expectedRoots.add(urlForDir("performance/build/test/qa-functional/classes"));
@@ -425,7 +466,7 @@ public class ClassPathProviderImplTest extends TestBase {
         expectedRoots.add(urlForJar("jellytools/builds/jelly2-nb.jar"));
         expectedRoots.add("org-netbeans-modules-nbjunit.jar");
         expectedRoots.add("org-netbeans-modules-nbjunit-ide.jar");
-        assertEquals("right COMPILE classpath", expectedRoots.toString(), urlsOfCp4Tests(cp).toString());
+        assertEquals("right COMPILE classpath", expectedRoots, urlsOfCp4Tests(cp));
         TestBase.TestPCL l = new TestBase.TestPCL();
         cp.addPropertyChangeListener(l);
         NbModuleProject p = (NbModuleProject) FileOwnerQuery.getOwner(qaftsrc);
@@ -436,7 +477,7 @@ public class ClassPathProviderImplTest extends TestBase {
         // do not save! just want to test change, not actually make it...
         assertTrue("got changes", l.changed.contains(ClassPath.PROP_ROOTS));
         expectedRoots.add(urlForJar("xtest/lib/xtest.jar"));
-        assertEquals("right COMPILE classpath after added to .extra", expectedRoots.toString(), urlsOfCp4Tests(cp).toString());
+        assertEquals("right COMPILE classpath after added to .extra", expectedRoots, urlsOfCp4Tests(cp));
     }
 
     /* XXX failing, but what was it supposed to be testing? I cannot decipher this. -jglick
@@ -540,7 +581,7 @@ public class ClassPathProviderImplTest extends TestBase {
     public void testExecuteClasspathChanges() throws Exception {
         ClassPath cp = ClassPath.getClassPath(copyOfMiscDir.getFileObject("src"), ClassPath.EXECUTE);
         Set<String> expectedRoots = new TreeSet<String>();
-        expectedRoots.add(Util.urlForDir(file(FileUtil.toFile(copyOfMiscDir), "build/classes")).toExternalForm());
+        expectedRoots.add(FileUtil.urlForArchiveOrDir(file(FileUtil.toFile(copyOfMiscDir), "build/classes")).toExternalForm());
         assertEquals("right initial EXECUTE classpath", expectedRoots, urlsOfCp(cp));
         TestBase.TestPCL l = new TestBase.TestPCL();
         cp.addPropertyChangeListener(l);
@@ -551,19 +592,19 @@ public class ClassPathProviderImplTest extends TestBase {
         expectedRoots.add(urlForJar("nbbuild/netbeans/" + TestBase.CLUSTER_PLATFORM + "/modules/org-openide-io.jar"));
         // #70206: transitive deps added too:
         expectedRoots.add(urlForJar("nbbuild/netbeans/" + TestBase.CLUSTER_PLATFORM + "/lib/org-openide-util.jar"));
-        assertEquals("right EXECUTE classpath after changing project.xml", expectedRoots.toString(), urlsOfCp(cp).toString());
+        assertEquals("right EXECUTE classpath after changing project.xml", expectedRoots, urlsOfCp(cp));
     }
     
     public void testUnitTestCompileClasspathChanges() throws Exception {
         ClassPath cp = ClassPath.getClassPath(copyOfMiscDir.getFileObject("test/unit/src"), ClassPath.COMPILE);
         Set<String> expectedRoots = new TreeSet<String>();
-        expectedRoots.add(Util.urlForJar(file(copyOfSuite2, "build/cluster/modules/org-netbeans-examples-modules-misc.jar")).toExternalForm());
+        expectedRoots.add(FileUtil.urlForArchiveOrDir(file(copyOfSuite2, "build/cluster/modules/org-netbeans-examples-modules-misc.jar")).toExternalForm());
         expectedRoots.add("junit.jar");
         expectedRoots.add("nbjunit.jar");
         expectedRoots.add("insanelib.jar");
         expectedRoots.add("org-netbeans-modules-nbjunit.jar");
         expectedRoots.add("org-netbeans-modules-nbjunit-ide.jar");
-        assertEquals("right initial COMPILE classpath", expectedRoots.toString(), urlsOfCp4Tests(cp).toString());
+        assertEquals("right initial COMPILE classpath", expectedRoots, urlsOfCp4Tests(cp));
         TestBase.TestPCL l = new TestBase.TestPCL();
         cp.addPropertyChangeListener(l);
         ModuleEntry ioEntry = copyOfMiscProject.getModuleList().getEntry("org.openide.io");
@@ -640,10 +681,10 @@ public class ClassPathProviderImplTest extends TestBase {
         expectedRoots.add(urlForJar("nbbuild/netbeans/" + TestBase.CLUSTER_PLATFORM + "/lib/org-openide-util.jar"));
         expectedRoots.add(urlForJar("nbbuild/netbeans/" + TestBase.CLUSTER_PLATFORM + "/modules/org-openide-windows.jar"));
         File lib = new File(jmfhome, "lib");
-        expectedRoots.add(Util.urlForJar(new File(lib, "jmf.jar")).toExternalForm());
-        expectedRoots.add(Util.urlForJar(new File(lib, "mediaplayer.jar")).toExternalForm());
+        expectedRoots.add(FileUtil.urlForArchiveOrDir(new File(lib, "jmf.jar")).toExternalForm());
+        expectedRoots.add(FileUtil.urlForArchiveOrDir(new File(lib, "mediaplayer.jar")).toExternalForm());
         assertEquals("right COMPILE classpath incl. absolute locations of JARs",
-            expectedRoots.toString(), urlsOfCp(cp).toString());
+            expectedRoots, urlsOfCp(cp));
     }
     
     private void assertClassPathsHaveTheSameResources(ClassPath actual, ClassPath expected) {
@@ -667,9 +708,9 @@ public class ClassPathProviderImplTest extends TestBase {
         // Dialogs API depends on Progress API
         expectedRoots.add(urlForJar("nbbuild/netbeans/" + TestBase.CLUSTER_PLATFORM + "/modules/org-netbeans-api-progress.jar"));
         // And the usual:
-        expectedRoots.add(Util.urlForDir(new File(p.getProjectDirectoryFile(), "build/classes")).toExternalForm());
+        expectedRoots.add(FileUtil.urlForArchiveOrDir(new File(p.getProjectDirectoryFile(), "build/classes")).toExternalForm());
         assertEquals("right EXECUTE classpath incl. transitive deps",
-            expectedRoots.toString(), urlsOfCp(cp).toString());
+            expectedRoots, urlsOfCp(cp));
     }
     
 }

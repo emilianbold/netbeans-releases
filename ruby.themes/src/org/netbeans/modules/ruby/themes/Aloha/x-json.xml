@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE fontscolors PUBLIC "-//NetBeans//DTD Editor Fonts and Colors settings 1.1//EN" "http://www.netbeans.org/dtds/EditorFontsColors-1_1.dtd">
+<fontscolors>
+    <fontcolor default="number" name="js_number"/>
+    <fontcolor default="keyword" name="js_keyword"/>
+    <fontcolor default="whitespace" name="js_whitespace"/>
+    <fontcolor default="separator" name="js_separator"/>
+    <fontcolor default="string" name="s_p">
+        <font style="bold"/>
+    </fontcolor>
+    <fontcolor name="js_operator"/>
+    <fontcolor default="string" name="js_string"/>
+    <fontcolor bgColor="ff2b2b2b" default="error" name="error" waveUnderlined="red"/>
+    <fontcolor default="string" name="s_string"/>
+</fontscolors>

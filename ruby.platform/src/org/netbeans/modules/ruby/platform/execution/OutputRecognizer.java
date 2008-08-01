@@ -75,6 +75,30 @@ public class OutputRecognizer {
     public interface RecognizedOutput {
         
     }
+    
+    /**
+     * Allows output recognizers to suppress output by specifically 
+     * defining what lines should be passed through for printing.
+     */
+    public static final class FilteredOutput implements RecognizedOutput {
+        
+        private final String[] linesToPrint;
+
+        /**
+         * Constructs a new FilteredOutput
+         * @param linesToPrint the lines that should be passed through for printing. 
+         */
+        public FilteredOutput(String... linesToPrint) {
+            this.linesToPrint = linesToPrint;
+        }
+
+        /**
+         * @return the lines that should be passed through for printing.
+         */
+        public String[] getLinesToPrint() {
+            return linesToPrint;
+        }
+    }
 
     public static final class FileLocation implements RecognizedOutput {
         public final String file;

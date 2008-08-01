@@ -1,17 +1,12 @@
 
 
 Document 0
-Delete:  source : <TESTURL>/action_controller.rb
-
-
-
-Document 1
-Indexed:
+Searchable Keys:
   class : Base
   class-ig : base
   fqn : ActionController::Base
 
-Not Indexed:
+Not Searchable Keys:
   attrs : |CLASS|
   in : ActionController
   includes : ActionController::Benchmarking,ActionController::Caching,ActionController::Components,ActionController::Cookies,ActionController::Dependencies,ActionController::Filters,ActionController::Flash,ActionController::Helpers,ActionController::Layout,ActionController::Macros::AutoComplete,ActionController::Macros::InPlaceEditing,ActionController::MimeResponds,ActionController::Pagination,ActionController::Rescue,ActionController::Scaffolding,ActionController::SessionManagement,ActionController::Streaming,ActionController::Verification

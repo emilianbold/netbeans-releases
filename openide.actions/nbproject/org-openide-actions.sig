@@ -1,5 +1,5 @@
 #API master signature file
-#Version 6.6.1
+#Version 6.7.0
 CLSS public static abstract org.netbeans.modules.openide.util.ActionsBridge$ActionRunnable
 cons public ActionRunnable(java.awt.event.ActionEvent,org.openide.util.actions.SystemAction,boolean)
 fld  public static final java.lang.String javax.swing.Action.ACCELERATOR_KEY

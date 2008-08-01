@@ -47,12 +47,9 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.server.ServerInstance;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.server.test.MockInstanceImplementation;
+import org.netbeans.modules.server.test.MockInstanceProvider;
 import org.netbeans.spi.server.ServerInstanceProvider;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
-import org.openide.modules.ModuleInfo;
-import org.openide.util.Lookup;
 
 /**
  *
@@ -67,50 +64,46 @@ public class ServerRegistryTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        Lookup.getDefault().lookup(ModuleInfo.class);
-
-        FileObject servers = Repository.getDefault().getDefaultFileSystem().getRoot()
-                .getFileObject(ServerRegistry.SERVERS_PATH);
-        FileObject testProvider = FileUtil.createData(servers, "TestProvider1.instance"); // NOI18N
-
-        testProvider.setAttribute("instanceOf", ServerInstanceProvider.class.getName()); // NOI18N
-        testProvider.setAttribute("instanceCreate", new TestInstanceProvider()); // NOI18N
+        MockInstanceProvider.registerInstanceProvider("Test.instance", new MockInstanceProvider()); // NOI18N
     }
 
     public void testEmptyProvider() throws IOException {
         assertEquals(1, ServerRegistry.getInstance().getProviders().size());
 
         ServerInstanceProvider provider = ServerRegistry.getInstance().getProviders().iterator().next();
-        assertTrue(provider instanceof TestInstanceProvider);
-        ((TestInstanceProvider) provider).clean();
+        assertTrue(provider instanceof MockInstanceProvider);
+        ((MockInstanceProvider) provider).clear();
         assertTrue(provider.getInstances().isEmpty());
     }
 
     @SuppressWarnings("unchecked")
     public void testInstanceProvider() throws IOException {
+
         assertEquals(1, ServerRegistry.getInstance().getProviders().size());
 
         ServerInstanceProvider provider = ServerRegistry.getInstance().getProviders().iterator().next();
-        assertTrue(provider instanceof TestInstanceProvider);
-        TestInstanceProvider testProvider = (TestInstanceProvider) provider;
-        testProvider.clean();
+        assertTrue(provider instanceof MockInstanceProvider);
+        MockInstanceProvider testProvider = (MockInstanceProvider) provider;
+        testProvider.clear();
 
-        TestInstance instance1 = TestInstance.createInstance(testProvider);
-        TestInstance instance2 = TestInstance.createInstance(testProvider);
+        MockInstanceImplementation instance1 = MockInstanceImplementation.createInstance(testProvider,
+                "Test server", "Test instance 1", true); // NOI18N
+        MockInstanceImplementation instance2 = MockInstanceImplementation.createInstance(testProvider,
+                "Test server", "Test instance 2", true); // NOI18N
 
         List<ServerInstance> step1 = new ArrayList<ServerInstance>();
-        Collections.addAll(step1, instance1.getCommonInstance());
+        Collections.addAll(step1, instance1.getServerInstance());
         List<ServerInstance> step2 = new ArrayList<ServerInstance>();
-        Collections.addAll(step2, instance1.getCommonInstance(), instance2.getCommonInstance());
+        Collections.addAll(step2, instance1.getServerInstance(), instance2.getServerInstance());
 
         InstanceListener listener = new InstanceListener(step1, step2,
                 step1, Collections.<ServerInstance>emptyList());
         ServerRegistry.getInstance().addChangeListener(listener);
 
-        testProvider.addInstance(instance1.getCommonInstance());
-        testProvider.addInstance(instance2.getCommonInstance());
-        testProvider.removeInstance(instance2.getCommonInstance());
-        testProvider.removeInstance(instance1.getCommonInstance());
+        testProvider.addInstance(instance1.getServerInstance());
+        testProvider.addInstance(instance2.getServerInstance());
+        testProvider.removeInstance(instance2.getServerInstance());
+        testProvider.removeInstance(instance1.getServerInstance());
     }
 
     private static class InstanceListener implements ChangeListener {

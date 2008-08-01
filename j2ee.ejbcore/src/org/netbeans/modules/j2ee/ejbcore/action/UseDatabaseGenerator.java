@@ -89,7 +89,7 @@ public final class UseDatabaseGenerator {
     public UseDatabaseGenerator() {
     }
 
-    public void generate(final FileObject fileObject, final ElementHandle<TypeElement> elementHandle, 
+    public void generate(final FileObject fileObject, String className,
                          final J2eeModuleProvider j2eeModuleProvider, final String datasourceReferenceName, 
                          final Datasource datasource, final boolean createServerResources, String serviceLocator) 
                          throws IOException, ConfigurationException {
@@ -98,7 +98,6 @@ public final class UseDatabaseGenerator {
         ServiceLocatorStrategy serviceLocatorStrategy = (serviceLocator == null) ? null : 
             ServiceLocatorStrategy.create(project, fileObject, serviceLocator);
         EnterpriseReferenceContainer erc = project.getLookup().lookup(EnterpriseReferenceContainer.class);
-        String className = elementHandle.getQualifiedName();
         if (Utils.isJavaEE5orHigher(project) && serviceLocatorStrategy == null &&
                 InjectionTargetQuery.isInjectionTarget(fileObject, className)) {
             boolean isStatic = InjectionTargetQuery.isStaticReferenceRequired(fileObject, className);
@@ -131,7 +130,7 @@ public final class UseDatabaseGenerator {
             bindDataSourceReference(j2eeModuleProvider, datasourceReferenceName, datasource);
         }
         else if (isEjbModule(module)) {
-            bindDataSourceReferenceForEjb(j2eeModuleProvider, datasourceReferenceName, datasource, fileObject, elementHandle);
+            bindDataSourceReferenceForEjb(j2eeModuleProvider, datasourceReferenceName, datasource, fileObject, className);
         }
         
         if (serviceLocator != null) {
@@ -147,7 +146,7 @@ public final class UseDatabaseGenerator {
     }
     
     private void bindDataSourceReferenceForEjb(J2eeModuleProvider j2eeModuleProvider, String dsRefName, Datasource datasource,
-            FileObject fileObject, final ElementHandle<TypeElement> elementHandle) throws ConfigurationException, IOException {
+            FileObject fileObject, final String className) throws ConfigurationException, IOException {
 
         final String[] ejbName = new String[1];
         final String[] ejbType = new String[1];
@@ -155,21 +154,25 @@ public final class UseDatabaseGenerator {
         MetadataModel<EjbJarMetadata> metadataModel = org.netbeans.modules.j2ee.api.ejbjar.EjbJar.getEjbJar(fileObject).getMetadataModel();
         metadataModel.runReadAction(new MetadataModelAction<EjbJarMetadata, Void>() {
             public Void run(EjbJarMetadata metadata) throws Exception {
-                Ejb ejb = metadata.findByEjbClass(elementHandle.getQualifiedName());
-                ejbName[0] = ejb.getEjbName();
-                if (ejb instanceof Session) {
-                    ejbType[0] = EnterpriseBeans.SESSION;
-                } else if (ejb instanceof MessageDriven) {
-                    ejbType[0] = EnterpriseBeans.MESSAGE_DRIVEN;
-                } else if (ejb instanceof Entity) {
-                    ejbType[0] = EnterpriseBeans.ENTITY;
+                Ejb ejb = metadata.findByEjbClass(className);
+                if (ejb != null) {
+                    ejbName[0] = ejb.getEjbName();
+                    if (ejb instanceof Session) {
+                        ejbType[0] = EnterpriseBeans.SESSION;
+                    } else if (ejb instanceof MessageDriven) {
+                        ejbType[0] = EnterpriseBeans.MESSAGE_DRIVEN;
+                    } else if (ejb instanceof Entity) {
+                        ejbType[0] = EnterpriseBeans.ENTITY;
+                    }
                 }
                 return null;
             }
         });
         
-        String dsJndiName = datasource.getJndiName();
-        j2eeModuleProvider.getConfigSupport().bindDatasourceReferenceForEjb(ejbName[0], ejbType[0], dsRefName, dsJndiName);
+        if (ejbName[0] != null && ejbType[0] != null) {
+            String dsJndiName = datasource.getJndiName();
+            j2eeModuleProvider.getConfigSupport().bindDatasourceReferenceForEjb(ejbName[0], ejbType[0], dsRefName, dsJndiName);
+        }
     }
     
     private boolean isWebOrAppClientModule(J2eeModule module) {

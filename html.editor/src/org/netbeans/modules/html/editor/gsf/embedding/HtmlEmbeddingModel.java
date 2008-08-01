@@ -44,26 +44,30 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import javax.swing.text.Document;
-import org.netbeans.modules.gsf.api.EmbeddingModel;
 import org.netbeans.modules.gsf.api.TranslatedSource;
 import org.netbeans.modules.editor.html.HTMLKit;
+import org.netbeans.modules.gsf.api.EditHistory;
+import org.netbeans.modules.gsf.api.IncrementalEmbeddingModel;
 
 
 /**
  *
  * @author Tor Norbye
  */
-public class HtmlEmbeddingModel implements EmbeddingModel {
+public class HtmlEmbeddingModel implements IncrementalEmbeddingModel {
 //    // Depend on RhtmlTokenId?
     static final String RHTML_MIME_TYPE = "application/x-httpd-eruby"; // NOI18N
     static final String JSP_MIME_TYPE = "text/x-jsp"; // NOI18N
     static final String JSP_TAG_MIME_TYPE = "text/x-tag"; // NOI18N
+    static final String PHP_TAG_MIME_TYPE = "text/x-php5"; // NOI18N
+    
     final Set<String> sourceMimeTypes = new HashSet<String>();
 
     public HtmlEmbeddingModel() {
         sourceMimeTypes.add(JSP_MIME_TYPE);
         sourceMimeTypes.add(RHTML_MIME_TYPE);
         sourceMimeTypes.add(JSP_TAG_MIME_TYPE);
+        sourceMimeTypes.add(PHP_TAG_MIME_TYPE);
     }
     
     public String getTargetMimeType() {
@@ -85,5 +89,7 @@ public class HtmlEmbeddingModel implements EmbeddingModel {
         return "HtmlEmbeddingModel(target=" + getTargetMimeType() + ",sources=" + getSourceMimeTypes() + ")";
     }
     
-    
+    public IncrementalEmbeddingModel.UpdateState update(EditHistory history, Collection<? extends TranslatedSource> previousTranslation) {
+        return ((HtmlTranslatedSource)previousTranslation.iterator().next()).incrementalUpdate(history);
+    }
 }

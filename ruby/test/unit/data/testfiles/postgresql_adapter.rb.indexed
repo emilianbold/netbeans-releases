@@ -1,17 +1,12 @@
 
 
 Document 0
-Delete:  source : <TESTURL>/postgresql_adapter.rb
-
-
-
-Document 1
-Indexed:
+Searchable Keys:
   class : ActiveRecord
   class-ig : activerecord
   fqn : ActiveRecord
   method : columns(table_name,name)
   method : indexes(table_name,name)
 
-Not Indexed:
+Not Searchable Keys:
   attrs : |DOCUMENTED|MODULE|;117

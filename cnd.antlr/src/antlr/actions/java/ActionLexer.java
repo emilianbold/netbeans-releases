@@ -105,10 +105,10 @@ public ActionLexer(Reader in) {
 	this(new CharBuffer(in));
 }
 public ActionLexer(InputBuffer ib) {
-	this(new LexerSharedInputState(ib));
+	this(new LexerSharedInputState(), ib);
 }
-public ActionLexer(LexerSharedInputState state) {
-	super(state);
+public ActionLexer(LexerSharedInputState state, InputBuffer ib) {
+	super(state, ib);
 	caseSensitiveLiterals = true;
 	setCaseSensitive(true);
 	literals = new Hashtable();

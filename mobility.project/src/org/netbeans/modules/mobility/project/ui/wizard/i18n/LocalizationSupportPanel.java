@@ -218,7 +218,7 @@ public final class LocalizationSupportPanel implements WizardDescriptor.Panel, C
             message = "ERR_File_InvalidClassName"; // NOI18N
          */
         if (templateWizard != null) {
-            templateWizard.putProperty("WizardPanel_errorMessage", message.toString()); //NOI18N
+            templateWizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, message.toString()); //NOI18N
         }
         return (message.length() == 0);
     }

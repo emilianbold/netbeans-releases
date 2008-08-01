@@ -347,6 +347,13 @@ public class ConfigureToolbarPanel extends javax.swing.JPanel implements Runnabl
     private javax.swing.JPanel palettePanel;
     // End of variables declaration//GEN-END:variables
 
+    @Override
+    public void addNotify() {
+        super.addNotify();
+        
+        checkSmallIcons.setSelected( ToolbarPool.getDefault().getPreferredIconSize() == 16 );
+    }
+    
     private static class FolderActionNode extends FilterNode {
         public FolderActionNode( Node original  ) {
             super( original, new MyChildren( original ) );
@@ -430,6 +437,10 @@ public class ConfigureToolbarPanel extends javax.swing.JPanel implements Runnabl
                             return false;
                         }
                     }
+                } catch( AssertionError aE ) {
+                    //hack: some action do not allow access outside
+                    //event queue - so let's ignore their assertions
+                    return false;
                 } catch( Throwable e ) {
                     Logger.getLogger(ConfigureToolbarPanel.class.getName()).log(Level.WARNING, null, e);
                 }

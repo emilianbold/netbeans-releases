@@ -20,6 +20,8 @@ package org.netbeans.modules.xml.xpath.ext.schema;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.modules.xml.schema.model.AnyAttribute;
+import org.netbeans.modules.xml.schema.model.AnyElement;
 import org.netbeans.modules.xml.schema.model.Schema;
 import org.netbeans.modules.xml.schema.model.Attribute;
 import org.netbeans.modules.xml.schema.model.ComplexType;
@@ -30,6 +32,7 @@ import org.netbeans.modules.xml.schema.model.GlobalType;
 import org.netbeans.modules.xml.schema.model.LocalType;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.schema.model.TypeContainer;
+import org.netbeans.modules.xml.xam.Named;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 
 /**
@@ -40,22 +43,41 @@ import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
  */
 public class FindAllChildrenSchemaVisitor extends AbstractSchemaSearchVisitor {
     
-    private boolean lookForElements;
-    private boolean lookForAttributes; 
+    private boolean mLookForElements;
+    private boolean mLookForAttributes; 
+    private boolean mSupportAny;
     
     private List<SchemaComponent> myFound = new ArrayList<SchemaComponent>();
+    private boolean mHasAny = false;
+    private boolean mHasAnyAttribute = false;
     
+    /**
+     * 
+     * @param lookForElements
+     * @param lookForAttributes
+     * @param supportAny indicates if it is necessary to add 
+     * AnyElement and AnyAttribute to result list. 
+     */
     public FindAllChildrenSchemaVisitor(boolean lookForElements, 
-            boolean lookForAttributes) {
+            boolean lookForAttributes, boolean supportAny) {
         super();
         assert lookForElements || lookForAttributes : "one of the flags has to be true"; // NOI18N
         //
-        this.lookForElements = lookForElements;
-        this.lookForAttributes = lookForAttributes;
+        mLookForElements = lookForElements;
+        mLookForAttributes = lookForAttributes;
+        mSupportAny = supportAny;
     }
     
     public List<SchemaComponent> getFound() {
         return myFound;
+    }
+    
+    public boolean hasAny() {
+        return mHasAny;
+    }
+    
+    public boolean hasAnyAttribute() {
+        return mHasAnyAttribute;
     }
     
     /**
@@ -99,19 +121,68 @@ public class FindAllChildrenSchemaVisitor extends AbstractSchemaSearchVisitor {
         }
     }
     
+    // ----------------------------------------------
+    
     protected void checkComponent(SchemaComponent sc) {
-        if (lookForElements && sc instanceof Element) {
+        if (mLookForElements && sc instanceof Element) {
             if (sc instanceof ElementReference) {
                 // Need to see deeper to the referenced element
                 return;
             }
-            myFound.add(sc);
+            addSchemaComponent(sc);
             return;
         }
-        if (lookForAttributes && sc instanceof Attribute) {
+        if (mLookForAttributes && sc instanceof Attribute) {
             // Element required here!
             myFound.add(sc);
             return;
         }
+        if (sc instanceof AnyElement) {
+            mHasAny = true;
+            if (mSupportAny) {
+                myFound.add(sc);
+            }
+        }
+        if (sc instanceof AnyAttribute) {
+            mHasAnyAttribute = true;
+            if (mSupportAny) {
+                myFound.add(sc);
+            }
+        }
+    }
+
+    private void addSchemaComponent(SchemaComponent element) {
+        if (!(element instanceof Named)) {
+            myFound.add(element);
+            return;
+        }
+
+        boolean flag = true;
+
+        for (SchemaComponent el : myFound) {
+            if (el instanceof Named) {
+                String name1 = ((Named) el).getName();
+                String name2 = ((Named) element).getName();
+                String nameSp1 = element.getModel().getEffectiveNamespace(element);
+                String nameSp2 = el.getModel().getEffectiveNamespace(el);
+
+                if (name1 != null && name1.equals(name2) &&
+                        equalsNemeSpase(nameSp1, nameSp2))
+                {
+                    //              myFound.remove(el);
+                    flag = false;
+                    break;
+                }
+            }
+        }
+
+        if (flag) {
+            myFound.add(element);
+        }
+    }
+
+    private boolean equalsNemeSpase(Object o1, Object o2) {
+        if (o1 == null || o2 == null) { return true; }
+        return o1.equals(o2);
     }
 }

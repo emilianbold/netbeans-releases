@@ -23,17 +23,15 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.lang.ref.WeakReference;
 import java.util.EventObject;
-import javax.swing.JTree;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import org.netbeans.modules.bpel.mapper.model.BpelMapperModelFactory;
 import org.netbeans.modules.bpel.mapper.model.GraphExpandProcessor;
 import org.netbeans.modules.bpel.mapper.tree.TreeExpandedState;
 import org.netbeans.modules.bpel.mapper.tree.TreeExpandedStateImpl;
-import org.netbeans.modules.bpel.mapper.tree.spi.MapperTcContext;
+import org.netbeans.modules.bpel.mapper.model.MapperTcContext;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.BpelModel;
-import org.netbeans.modules.bpel.model.api.events.ChangeEvent;
 import org.netbeans.modules.soa.mappercore.Mapper;
 import org.netbeans.modules.soa.mappercore.model.MapperModel;
 import org.netbeans.modules.xml.xam.Model.State;
@@ -134,11 +132,12 @@ public class DesignContextControllerImpl implements DesignContextController {
     }
     
     private synchronized Object getBpelModelUpdateSource() {
-        if (mBpelModelUpdateSourceRef != null) {
+        if (mBpelModelUpdateSourceRef == null) {
+            // Mapper is the default synchronization source
+            return mMapperTcContext.getMapper();
+        } else {
             return mBpelModelUpdateSourceRef.get();
         }
-        //
-        return null;
     }
     
     public synchronized BpelDesignContext getContext() {
@@ -242,8 +241,8 @@ public class DesignContextControllerImpl implements DesignContextController {
             // No need to resubscribe to another BPEL model here 
             // because of the same design context.
             //
-            MapperModel newMapperModel = new BpelMapperModelFactory().
-                    constructModel(mMapperTcContext, mContext);
+            MapperModel newMapperModel = new BpelMapperModelFactory(mMapperTcContext, 
+                mContext).constructModel();
             //
             // Save left tree state
             TreeExpandedState leftTreeState = null;
@@ -293,8 +292,8 @@ public class DesignContextControllerImpl implements DesignContextController {
                     setListenBpelModel(newContext.getBpelModel(), true);
                 }
                 //
-                MapperModel newMapperModel = new BpelMapperModelFactory().
-                        constructModel(mMapperTcContext, newContext);
+                MapperModel newMapperModel = new BpelMapperModelFactory(mMapperTcContext, 
+                    newContext).constructModel();
                 //
                 mContext = newContext;
                 setMapperModel(newMapperModel);

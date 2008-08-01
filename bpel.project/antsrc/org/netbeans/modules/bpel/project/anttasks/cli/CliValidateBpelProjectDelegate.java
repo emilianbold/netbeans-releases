@@ -41,9 +41,9 @@
 package org.netbeans.modules.bpel.project.anttasks.cli;
 
 import java.io.File;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
@@ -53,15 +53,10 @@ import org.netbeans.modules.bpel.project.CommandlineBpelProjectXmlCatalogProvide
 import org.netbeans.modules.bpel.project.anttasks.util.Util;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.Model;
-import org.netbeans.modules.xml.xam.spi.Validation;
-import org.netbeans.modules.xml.xam.spi.Validation.ValidationType;
 import org.netbeans.modules.xml.xam.spi.Validator;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
+import org.netbeans.modules.soa.validation.core.Controller;
 
-/**
- * Validates BPEL Module
- * @author Sreenivasan Genipudi
- */
 public class CliValidateBpelProjectDelegate extends Task {
     
     private String mSourceDirectory;
@@ -70,13 +65,11 @@ public class CliValidateBpelProjectDelegate extends Task {
     private String mBuildDependentProjectFilesDirectory;
     private File mSourceDir;
     private File mBuildDir;
-    private Map mBpelFileNamesToFileInBuildDir = new HashMap();
-    private boolean isFoundErrors = false;
-    private boolean mAllowBuildWithError = false;
+    private Map myFileNamesToFileInBuildDir = new HashMap();
+    private boolean myIsFoundErrors = false;
+    private boolean myAllowBuildWithError = false;
     
-    public CliValidateBpelProjectDelegate() {
-        // Does nothing
-    }
+    public CliValidateBpelProjectDelegate() {}
     
     public void setSourceDirectory(String srcDir) {
         this.mSourceDirectory = srcDir;
@@ -88,15 +81,15 @@ public class CliValidateBpelProjectDelegate extends Task {
     
     public void setRunValidation(String flag) {
         setAllowBuildWithError(flag);
-        mAllowBuildWithError = !mAllowBuildWithError;
+        myAllowBuildWithError = !myAllowBuildWithError;
     }
     
     public void setAllowBuildWithError(String flag) {
         if (flag != null) {
             if (flag.equals("false")) {
-                mAllowBuildWithError = false;
+                myAllowBuildWithError = false;
             } else if (flag.equals("true")) {
-                mAllowBuildWithError = true;
+                myAllowBuildWithError = true;
             }
         }
     }
@@ -113,7 +106,7 @@ public class CliValidateBpelProjectDelegate extends Task {
     }
     
     public boolean isFoundErrors() {
-        return this.isFoundErrors;
+        return myIsFoundErrors;
     }
     
     @Override
@@ -151,102 +144,58 @@ public class CliValidateBpelProjectDelegate extends Task {
     private void processBuildDir(File folder) {
         final File files[] = folder.listFiles(new Util.BpelFileFilter());
         
-        if (files == null) return; // no children
+        if (files == null) return;
         
         for (int i = 0; i < files.length; i++) {
             final File file = files[i];
             
             if (file.isFile()) {
-                this.mBpelFileNamesToFileInBuildDir.put(
-                        Util.getRelativePath(this.mBuildDir, file), 
-                        file);
+                this.myFileNamesToFileInBuildDir.put(Util.getRelativePath(this.mBuildDir, file), file);
             } else {
                 processBuildDir(file);
             }
         }
     }
     
+    private void validateFile(File file) throws BuildException {
+      try {
+        Model model = CliBpelCatalogModel.getDefault().getBPELModel(file.toURI());
+
+        if (new Controller(model).cliValidate(file)) {
+          myIsFoundErrors = true;
+        }
+      }
+      catch (Exception e) {
+        throw new BuildException(e);
+      }
+    }
+
+    private boolean isModified(File file) {
+        boolean modified = true;
+        String relativePath = Util.getRelativePath(this.mSourceDir, file);
+        File fileInBuildDir = (File) this.myFileNamesToFileInBuildDir.get(relativePath);
+
+        if (fileInBuildDir != null) {
+            if (fileInBuildDir.lastModified() == file.lastModified()) {
+                modified = false;
+            }
+        }
+        return modified;
+    }
+
     private void processSourceDir(File file) {
         if (file.isDirectory()) {
             final File[] children = file.listFiles(new Util.BpelFileFilter());
             
-            if (children == null) return; // no children
+            if (children == null) return;
             
             for (int i = 0; i < children.length; i++) {
                 processSourceDir(children[i]);
             }
         } else {
             if (isModified(file)) {
-                validate(file);
+                validateFile(file);
             }
         }
-    }
-    
-    private boolean isModified(File bpelFile) {
-        boolean modified = true;
-        String relativePath = Util.getRelativePath(this.mSourceDir, bpelFile);
-        File bpelFileInBuildDir = (File) this.mBpelFileNamesToFileInBuildDir.get(relativePath);
-
-        if (bpelFileInBuildDir != null) {
-            if (bpelFileInBuildDir.lastModified() == bpelFile.lastModified()) {
-                modified = false;
-            }
-        }
-        return modified;
-    }
-    
-    private void validate(File bpelFile) throws BuildException {
-        try {
-            BpelModel model = CliBpelCatalogModel.
-                    getDefault().getBPELModel(bpelFile.toURI());
-                    
-            Validation validation = new Validation();
-            validation.validate((Model) model, ValidationType.COMPLETE);
-            Collection col = validation.getValidationResult();
-            boolean isError = false;
-            
-            for (Iterator itr = col.iterator(); itr.hasNext();) {
-                ResultItem resultItem = (ResultItem) itr.next();
-                
-                if (!mAllowBuildWithError) {
-                    if (resultItem.getType() == Validator.ResultType.ERROR) {
-                        System.out.println(getValidationError(resultItem));
-                        System.out.println();
-                    }
-                }
-                
-                if (resultItem.getType() == Validator.ResultType.ERROR) {
-                    isError = true;
-                }
-            }
-
-            if (isError) {
-                this.isFoundErrors = true;
-            }
-        } catch (Throwable e) {
-            if (!mAllowBuildWithError) {
-                throw new BuildException(e);
-            }
-        }
-    }
-    
-    private String getValidationError(ResultItem resultItem) {
-        int lineNumber = 0;
-        int columnNumber = 0;
-        String errorDescription = resultItem.getDescription();
-        String msgType = resultItem.getType().name();
-        Component component = resultItem.getComponents();
-        File file = null;
-
-        if (component == null) {
-            columnNumber = resultItem.getColumnNumber();
-            lineNumber = resultItem.getLineNumber();
-            file = (File) resultItem.getModel().getModelSource().getLookup().lookup(File.class);
-        } else {
-            lineNumber = Util.getLineNumber(component);
-            columnNumber = Util.getColumnNumber(component);
-            file = (File) component.getModel().getModelSource().getLookup().lookup(File.class);
-        }
-        return Util.getError(file, columnNumber, lineNumber, errorDescription, msgType);
     }
 }

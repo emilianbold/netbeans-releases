@@ -40,6 +40,7 @@
  */
 
 package org.netbeans.modules.web.core.palette;
+
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import org.netbeans.spi.palette.DragAndDropHandler;
@@ -69,10 +70,12 @@ public class JSPDragAndDropHandler extends DragAndDropHandler {
         
     }
 
+    @Override
     public boolean canDrop(Lookup targetCategory, DataFlavor[] flavors, int dndAction) {
         return false;
     }
 
+    @Override
     public boolean doDrop(Lookup targetCategory, Transferable item, int dndAction, int dropIndex) {
         return false;
     }

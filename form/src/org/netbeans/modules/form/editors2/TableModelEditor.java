@@ -188,6 +188,9 @@ public class TableModelEditor implements PropertyEditor, XMLPropertyEditor,
     }
 
     public void paintValue (Graphics g, Rectangle rectangle) {
+        String msg = NbBundle.getMessage(TableModelEditor.class, "MSG_TableModel"); // NOI18N
+        FontMetrics fm = g.getFontMetrics();
+        g.drawString(msg, rectangle.x, rectangle.y + (rectangle.height - fm.getHeight())/2 + fm.getAscent());
     }
 
     public boolean supportsCustomEditor () {

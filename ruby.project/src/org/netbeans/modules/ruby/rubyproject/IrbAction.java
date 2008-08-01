@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -49,7 +49,6 @@ import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.ImageIcon;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.api.ruby.platform.RubyPlatformManager;
 import org.netbeans.modules.ruby.platform.RubyExecution;
@@ -58,11 +57,9 @@ import org.netbeans.modules.ruby.platform.execution.OutputRecognizer;
 import org.netbeans.modules.ruby.spi.project.support.rake.PropertyEvaluator;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.filesystems.FileUtil;
-import org.openide.nodes.Node;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
-import org.openide.windows.WindowManager;
 
 /**
  * Action which shows Irb component.
@@ -72,7 +69,7 @@ public class IrbAction extends AbstractAction {
     
     public IrbAction() {
         super(NbBundle.getMessage(IrbAction.class, "CTL_IrbAction"));
-        putValue(SMALL_ICON, new ImageIcon(Utilities.loadImage(IrbTopComponent.ICON_PATH, true)));
+        putValue(SMALL_ICON, new ImageIcon(ImageUtilities.loadImage(IrbTopComponent.ICON_PATH, true)));
     }
     
     private boolean runIrbConsole(Project project) {
@@ -97,9 +94,8 @@ public class IrbAction extends AbstractAction {
         additionalArgs.add("--simple-prompt"); // NOI18N
         additionalArgs.add("--noreadline"); // NOI18N
         
-        String displayName = NbBundle.getMessage(IrbAction.class, "CTL_IrbTopComponent");
+        String displayName = NbBundle.getMessage(IrbAction.class, "CTL_IrbTopComponentWithPlatform", platform.getLabel());
         
-        ExecutionDescriptor desc = null;
         boolean debug = false;
         File pwd = FileUtil.toFile(project.getProjectDirectory());
         
@@ -109,7 +105,7 @@ public class IrbAction extends AbstractAction {
         }
         OutputRecognizer[] extraRecognizers = new OutputRecognizer[] { new TestNotifier(true, true) };
         String target = irbPath;
-        desc = descProvider.getScriptDescriptor(pwd, null/*specFile?*/, target, displayName, project.getLookup(), debug, extraRecognizers);
+        ExecutionDescriptor desc = descProvider.getScriptDescriptor(pwd, null/*specFile?*/, target, displayName, project.getLookup(), debug, extraRecognizers);
 
         // Override args
         desc.additionalArgs(additionalArgs.toArray(new String[additionalArgs.size()]));
@@ -127,38 +123,12 @@ public class IrbAction extends AbstractAction {
             return;
         }
         
-        Node[] activatedNodes = WindowManager.getDefault().getRegistry().getActivatedNodes();
-        OpenProjects projects = OpenProjects.getDefault();
-
-        if (activatedNodes != null) {
-            Project p = null;
-            for (Node n : activatedNodes) {
-                p = n.getLookup().lookup(Project.class);
-                if (p != null) {
-                    break;
-                }
-            }
-            
-            if (p != null) {
-                boolean ok = runIrbConsole(p);
-                if (ok) {
-                    return;
-                }
-            }
+        RubyBaseProject project = Util.inferRubyProject();
+        if (project != null) {
+            runIrbConsole(project);
+        } else {
+            Toolkit.getDefaultToolkit().beep();
         }
         
-        Project project = projects.getMainProject();
-        if (project != null) {
-            if (runIrbConsole(project)) {
-                return;
-            }
-        }
-
-        for (Project p : projects.getOpenProjects()) {
-            if (runIrbConsole(p)) {
-                return;
-            }
-        }
-        Toolkit.getDefaultToolkit().beep();
     }
 }

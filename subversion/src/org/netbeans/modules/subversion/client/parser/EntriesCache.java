@@ -286,7 +286,7 @@ public class EntriesCache {
             nextLine = entriesReader.readLine();
  
             if(nextLine != null && attrIndex > entryFileAttributes.length - 1) {
-                Subversion.LOG.warning("Skipping attribute from position " + attrIndex + " in entry file " + entryFilePath);  // NOI18N
+                Subversion.LOG.fine("Skipping attribute from position " + attrIndex + " in entry file " + entryFilePath);  // NOI18N
                 for( ; nextLine != null && !DELIMITER.equals(nextLine); nextLine = entriesReader.readLine());
             }
             

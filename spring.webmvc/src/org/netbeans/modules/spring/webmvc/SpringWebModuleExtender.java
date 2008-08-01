@@ -68,7 +68,6 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.libraries.Library;
-import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.j2ee.core.api.support.SourceGroups;
 import org.netbeans.modules.j2ee.dd.api.common.CommonDDBean;
 import org.netbeans.modules.j2ee.dd.api.common.CreateCapability;
@@ -286,19 +285,21 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
             
             // CREATE WEB-INF/JSP FOLDER
             FileObject webInf = webModule.getWebInf();
-            FileObject jsp = webInf.createFolder("jsp");
-
+            FileObject jsp = FileUtil.createFolder(webInf, "jsp");
             // COPY TEMPLATE SPRING RESOURCES (JSP, XML, PROPERTIES)
             DataFolder webInfDO = DataFolder.findFolder(webInf);
-            copyResource("index.jsp", FileUtil.createData(jsp, "index.jsp")); // NOI18N
             final List<File> newFiles = new ArrayList<File>(2);
             FileObject configFile;
             configFile = createFromTemplate("applicationContext.xml", webInfDO, "applicationContext"); // NOI18N
             addFileToOpen(configFile);
             newFiles.add(FileUtil.toFile(configFile));
-            configFile = createFromTemplate("dispatcher-servlet.xml", webInfDO, getComponent().getDispatcherName() + "-servlet"); // NOI18N
+            String indexUrlMappingKey = SpringWebFrameworkUtils.replaceExtensionInTemplates("index.htm", dispatcherMapping); // NOI18N
+            Map<String, String> params = new HashMap<String, String>(1);
+            params.put("indexUrlKey", indexUrlMappingKey); // NOI18N
+            configFile = createFromTemplate("dispatcher-servlet.xml", webInfDO, getComponent().getDispatcherName() + "-servlet", params); // NOI18N
             addFileToOpen(configFile);
             newFiles.add(FileUtil.toFile(configFile));
+            addFileToOpen(createFromTemplate("index.jsp", DataFolder.findFolder(jsp), "index")); // NOI18N
 
             SpringScope scope = SpringScope.getSpringScope(configFile);
             if (scope != null) {
@@ -341,16 +342,17 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
             return filesToOpen;
         }
 
+        private FileObject createFromTemplate(String templateName, DataFolder targetDO, String fileName, Map<String, String> params) throws IOException {
+            FileObject templateFO = Repository.getDefault().getDefaultFileSystem().getRoot().getFileObject("SpringFramework/Templates/" + templateName);
+            DataObject templateDO = DataObject.find(templateFO);
+            return templateDO.createFromTemplate(targetDO, fileName, params).getPrimaryFile();
+        }
+        
         private FileObject createFromTemplate(String templateName, DataFolder targetDO, String fileName) throws IOException {
             FileObject templateFO = Repository.getDefault().getDefaultFileSystem().getRoot().getFileObject("SpringFramework/Templates/" + templateName);
             DataObject templateDO = DataObject.find(templateFO);
-            Map<String, Object> values = new HashMap<String, Object>();
-            // This is needed, because all XML files have a virtual charset that
-            // detects the encoding of the file, and createFromTemplate() uses the
-            // name of that charset (ALWAYS "UTF-8") as the encoding value.
-            values.put("encoding", FileEncodingQuery.getEncoding(targetDO.getPrimaryFile()).name()); // NOI18N
-            return templateDO.createFromTemplate(targetDO, fileName, values).getPrimaryFile();
-        }
+            return templateDO.createFromTemplate(targetDO, fileName).getPrimaryFile();
+        }                
 
         protected FileObject copyResource(String resourceName, FileObject target) throws UnsupportedEncodingException, IOException {
             InputStream in = getClass().getResourceAsStream("resources/templates/" + resourceName); // NOI18N
@@ -366,10 +368,7 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
                     }
                     if (resourceName.equals("redirect.jsp")) { // NOI18N
                         line = SpringWebFrameworkUtils.reviseRedirectJsp(line, dispatcherMapping);
-                    }
-                    if (resourceName.equals("index.jsp")) { // NOI18N
-                        line = SpringWebFrameworkUtils.getWelcomePageText();
-                    }
+                    }                 
                     buffer.append(line);
                     buffer.append(lineSeparator);
                     line = reader.readLine();

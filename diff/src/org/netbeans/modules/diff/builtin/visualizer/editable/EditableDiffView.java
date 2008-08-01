@@ -147,6 +147,9 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
     private boolean actionsEnabled;
     private DiffSplitPaneUI spui;
     
+    private Document baseDocument;
+    private Document modifiedDocument;
+    
     /**
      * The right pane is editable IFF editableCookie is not null.
      */ 
@@ -361,11 +364,22 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
         colorChanged = DiffModuleConfig.getDefault().getChangedColor();
     }
 
+    private void addDocumentListeners() {
+        if (baseDocument != null) baseDocument.addDocumentListener(this);
+        if (modifiedDocument != null) modifiedDocument.addDocumentListener(this);
+    }
+
+    private void removeDocumentListeners() {
+        if (baseDocument != null) baseDocument.removeDocumentListener(this);
+        if (modifiedDocument != null) modifiedDocument.removeDocumentListener(this);
+    }
+    
     public void ancestorAdded(AncestorEvent event) {
         DiffModuleConfig.getDefault().getPreferences().addPreferenceChangeListener(this);
         expandFolds();
         initGlobalSizes();
         addChangeListeners();
+        addDocumentListeners();
         refreshDiff(50);        
 
         if (editableCookie == null) return;
@@ -392,8 +406,8 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
 
     public void ancestorRemoved(AncestorEvent event) {
         DiffModuleConfig.getDefault().getPreferences().removePreferenceChangeListener(this);
+        removeDocumentListeners();
         if (editableCookie != null) {
-            editableDocument.removeDocumentListener(this);
             saveModifiedDocument();
             editableCookie.removePropertyChangeListener(this);
             if (editableCookie.getOpenedPanes() == null) {
@@ -764,6 +778,7 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
         if (kit == null) throw new IOException("Missing Editor Kit"); // NOI18N
 
         Document sdoc = getSourceDocument(ss);
+        baseDocument = sdoc;
         Document doc = sdoc != null ? sdoc : kit.createDefaultDocument();
         if (!(doc instanceof StyledDocument)) {
             doc = new DefaultStyledDocument(new StyleContext());
@@ -815,6 +830,7 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
         if (kit == null) throw new IOException("Missing Editor Kit"); // NOI18N
         
         Document sdoc = getSourceDocument(ss);
+        modifiedDocument = sdoc;
         if (sdoc != null && ss.isEditable()) {
             DataObject dao = (DataObject) sdoc.getProperty(Document.StreamDescriptionProperty);
             if (dao != null) {
@@ -904,6 +920,7 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
 
     public void setSourceTitle(JLabel label, String title) {
         label.setText(title);
+        label.setToolTipText(title);
         // Set the minimum size in 'x' direction to a low value, so that the splitter can be moved to corner locations
         label.setMinimumSize(new Dimension(3, label.getMinimumSize().height));
     }

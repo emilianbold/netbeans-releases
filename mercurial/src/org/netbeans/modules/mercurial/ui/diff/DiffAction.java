@@ -46,6 +46,7 @@ import org.netbeans.modules.versioning.util.Utils;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.io.File;
+import java.util.Set;
 
 import org.netbeans.modules.mercurial.FileInformation;
 import org.netbeans.modules.mercurial.FileStatusCache;
@@ -97,8 +98,10 @@ public class DiffAction extends ContextAction {
     }
     
     public boolean isEnabled() {
-        FileStatusCache cache = Mercurial.getInstance().getFileStatusCache();
-        return cache.containsFileOfStatus(context, FileInformation.STATUS_LOCAL_CHANGE);
+        Set<File> ctxFiles = context != null? context.getRootFiles(): null;
+        if(HgUtils.getRootFile(context) == null || ctxFiles == null || ctxFiles.size() == 0)
+            return false;
+        return true;
     } 
 
     public static void diff(VCSContext ctx, int type, String contextName) {

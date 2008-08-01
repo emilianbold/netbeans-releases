@@ -56,7 +56,11 @@ public class InputSchemaTree extends JTree {
     }
     
     public InputSchemaTree(IEPModel model, OperatorComponent component) {
-        super(new InputSchemaTreeModel(new DefaultMutableTreeNode("root"), model, component));
+        this(model, new InputSchemaTreeModel(new DefaultMutableTreeNode("root"), model, component));
+    }
+    
+    public InputSchemaTree(IEPModel model, TreeModel treeModel) {
+        super(treeModel);
         mDragAction = 1;
         mDragSource = DragSource.getDefaultDragSource();
         mDragSource.createDefaultDragGestureRecognizer(this, mDragAction, new MyDragGestureListener());

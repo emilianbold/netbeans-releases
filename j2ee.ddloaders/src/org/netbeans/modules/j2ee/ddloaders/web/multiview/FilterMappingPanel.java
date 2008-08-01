@@ -80,7 +80,12 @@ public class FilterMappingPanel extends javax.swing.JPanel {
 	}
         for (int i=0;i<filterNames.length;i++) filterNameCB.addItem(filterNames[i]);
         
-        // fill CB1 with servlet names
+        String filterName = fm.getFilterName();
+        if (filterName != null) {
+            filterNameCB.setSelectedItem(filterName);
+        }
+        
+        // fill CB2 with servlet names
 	if(servletNames == null || servletNames.length == 0) {
 	    servletNames = new String[1]; 
 	    servletNames[0] = NbBundle.getMessage(FilterMappingPanel.class,"LBL_no_servlets");
@@ -101,6 +106,7 @@ public class FilterMappingPanel extends javax.swing.JPanel {
 	    urlTF.setText(fm.getUrlPattern());
             servletNameCB.setEnabled(false);
         }
+        
         try {
             String[] dispTypes = fm.getDispatcher();
             for (int i=0;i<dispTypes.length;i++) {

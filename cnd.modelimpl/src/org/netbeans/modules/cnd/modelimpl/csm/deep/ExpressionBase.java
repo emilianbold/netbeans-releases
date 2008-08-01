@@ -76,6 +76,14 @@ public class ExpressionBase extends OffsetableBase implements CsmExpression {
 	}
     }
 
+    public ExpressionBase(int startOffset, int endOffset, CsmFile file, CsmExpression parent, CsmScope scope) {
+        super(file, startOffset, endOffset);
+        this.parent = parent;
+        if( scope != null ) {
+	    setScope(scope);
+	}
+    }
+
     public CsmExpression.Kind getKind() {
         return kind;
     }

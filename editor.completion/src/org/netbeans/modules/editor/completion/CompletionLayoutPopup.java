@@ -171,8 +171,11 @@ abstract class CompletionLayoutPopup implements FocusListener {
     
     final Dimension getPreferredSize() {
         JComponent comp = getContentComponent();
+
+        if (comp == null)
+            return new Dimension(0, 0);
         
-        int screenWidth = ScreenBoundsProvider.getScreenBounds(layout).width;
+        int screenWidth = ScreenBoundsProvider.getScreenBounds(getEditorComponent()).width;
         
         Dimension maxSize = new Dimension((int) (screenWidth *
                 ScreenBoundsProvider.MAX_COMPL_COVERAGE),
@@ -185,7 +188,7 @@ abstract class CompletionLayoutPopup implements FocusListener {
         if(gap > 0) maxSize.width += gap;
 
         setMaxSize(comp, maxSize);
-        return (comp == null) ? new Dimension(0,0) : comp.getPreferredSize();
+        return comp.getPreferredSize();
     }
     
     /** 
@@ -264,7 +267,7 @@ abstract class CompletionLayoutPopup implements FocusListener {
      * @return rectangle with absolute screen bounds of the popup.
      */
     private Rectangle findPopupBounds(Rectangle occupiedBounds, boolean aboveOccupiedBounds) {
-        Rectangle screen = ScreenBoundsProvider.getScreenBounds(layout);
+        Rectangle screen = ScreenBoundsProvider.getScreenBounds(getEditorComponent());
         Dimension prefSize = getPreferredSize();
         Rectangle popupBounds = new Rectangle();
         
@@ -368,7 +371,7 @@ abstract class CompletionLayoutPopup implements FocusListener {
     }
     
     boolean isMoreSpaceAbove(Rectangle bounds) {
-        Rectangle screen = ScreenBoundsProvider.getScreenBounds(layout);
+        Rectangle screen = ScreenBoundsProvider.getScreenBounds(getEditorComponent());
         int above = bounds.y - screen.y;
         int below = (screen.y + screen.height) - (bounds.y + bounds.height);
         return (above > below);
@@ -394,7 +397,7 @@ abstract class CompletionLayoutPopup implements FocusListener {
      *  on the requested side or false if not.
      */
     boolean isEnoughSpace(Rectangle occupiedBounds, boolean aboveOccupiedBounds) {
-        Rectangle screen = ScreenBoundsProvider.getScreenBounds(layout);
+        Rectangle screen = ScreenBoundsProvider.getScreenBounds(getEditorComponent());
         
         int freeHeight = aboveOccupiedBounds
             ? occupiedBounds.y - screen.y

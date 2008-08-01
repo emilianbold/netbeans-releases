@@ -67,3 +67,7 @@ H23
 INT main(INT argc, char**argv) {
     H2
 }
+
+#define X
+#define MACRO(x) "keyword.cc"
+#include MACRO(X)

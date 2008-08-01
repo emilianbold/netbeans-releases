@@ -43,6 +43,8 @@ package org.netbeans.modules.cnd.test;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.junit.Manager;
@@ -95,6 +97,8 @@ public abstract class BaseTestCase extends NbTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         
+        Logger.getLogger("org.netbeans.modules.editor.settings.storage.Utils").setLevel(Level.SEVERE);
+        System.setProperty("cnd.mode.unittest", "true");
         MockServices.setServices(MockMimeLookup.class);
         MimePath mimePath = MimePath.parse("text/x-c++"); // NOI18N
         MockMimeLookup.setInstances(mimePath, new CCKit());
@@ -173,10 +177,10 @@ public abstract class BaseTestCase extends NbTestCase {
                 // copy golden
                 File goldenDataFileCopy = new File(getWorkDir(), goldenFilename + ".golden"); // NOI18N
                 CndCoreTestUtils.copyToWorkDir(goldenFile, goldenDataFileCopy); 
-                fail("Files differ; check " + goldenDataFileCopy); // NOI18N
+                fail("Files differ; diff " +testFile.getAbsolutePath()+ " "+ goldenDataFileCopy); // NOI18N
             }             
         } catch (IOException ioe) {
-            fail("Could not obtain working direcory " + ioe); // NOI18N
+            fail("Error comparing files: " + ioe); // NOI18N
         }
     }    
     

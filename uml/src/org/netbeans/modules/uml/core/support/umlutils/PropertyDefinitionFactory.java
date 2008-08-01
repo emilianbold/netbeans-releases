@@ -78,6 +78,7 @@ public class PropertyDefinitionFactory implements IPropertyDefinitionFactory{
   private HashSet<String> m_NoDefinitionSet = new HashSet<String>();
   private Hashtable<String, Node> m_NodeMap = new Hashtable<String, Node>();
   private Hashtable<String, Node> m_NamedNodeMap = new Hashtable<String, Node>();
+  private Hashtable<Node, IPropertyDefinition> propDefinitions = new Hashtable<Node, IPropertyDefinition>();
 
   //typedef std::map < UINT, CComPtr< IFunction > > IDMap;
   private Hashtable m_IDMap = new Hashtable();
@@ -1299,11 +1300,16 @@ public class PropertyDefinitionFactory implements IPropertyDefinitionFactory{
     IPropertyDefinition def = null;
     if (pNode != null)
     {
-      Document doc = pNode.getDocument();
-      setXMLDocument(doc);
-      def = new PropertyDefinition();
-      setAttributes(pNode, def);
-      processSubDefinitions(pNode, def);
+        if (propDefinitions.get(pNode) == null) 
+        {
+            Document doc = pNode.getDocument();
+            setXMLDocument(doc);
+            def = new PropertyDefinition();
+            setAttributes(pNode, def);
+            processSubDefinitions(pNode, def);
+            propDefinitions.put(pNode, def);
+        }
+        return propDefinitions.get(pNode);
     }
     return def;
   }

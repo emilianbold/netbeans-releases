@@ -43,6 +43,7 @@ package org.netbeans.modules.websvc.wsitconf.spi;
 
 import javax.swing.undo.UndoManager;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.websvc.wsitmodelext.versioning.ConfigVersion;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 
 /**
@@ -78,13 +79,13 @@ public abstract class SecurityProfile {
      * Called when the profile is selected in the combo box.
      * @param component 
      */
-    public abstract void profileSelected(WSDLComponent component, boolean updateServiceURL);
+    public abstract void profileSelected(WSDLComponent component, boolean updateServiceURL, ConfigVersion configVersion);
 
     /**
      * Called when there's another profile selected, or security is disabled at all.
      * @param component 
      */ 
-    public abstract void profileDeselected(WSDLComponent component);
+    public abstract void profileDeselected(WSDLComponent component, ConfigVersion configVersion);
 
     /**
      * Should return true if the profile is supported for specific component in the wsdl

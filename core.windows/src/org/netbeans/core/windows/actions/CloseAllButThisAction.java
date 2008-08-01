@@ -55,6 +55,7 @@ import javax.swing.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.awt.event.KeyEvent;
+import org.netbeans.core.windows.Switches;
 
 
 /**
@@ -124,7 +125,7 @@ implements PropertyChangeListener, Runnable {
         }
         
         setEnabled(mode != null && mode.getKind() == Constants.MODE_KIND_EDITOR
-                    && areOtherDocs);
+                    && areOtherDocs && Switches.isEditorTopComponentClosingEnabled());
     }
     
     private TopComponent obtainTC () {

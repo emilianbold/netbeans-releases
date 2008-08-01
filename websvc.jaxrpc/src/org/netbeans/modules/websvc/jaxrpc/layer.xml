@@ -71,13 +71,9 @@ made subject to such option by the copyright holder.
     <folder name="Projects">
         <!-- Web Service References node in J2SE Project -->
         <folder name="org-netbeans-modules-java-j2seproject">
-            <!--
-            <folder name="Nodes">
-                <file name="org-netbeans-modules-websvc-jaxrpc-nodes-JaxRpcNodeFactory.instance">
-                    <attr name="position" intvalue="230"/>
-                </file>
+            <folder name="Lookup">
+                <file name="org.netbeans.modules.websvc.jaxrpc.project.JaxRpcLookupProvider.instance"/>
             </folder>
-            -->
             <folder name="Customizer">
                 <file name="Client.instance">
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.websvc.jaxrpc.project.customizer.JaxRpcCompositePanelProvider.createJaxRpcClients"/>
@@ -85,32 +81,28 @@ made subject to such option by the copyright holder.
                 </file>
             </folder>
         </folder>
-        <!--
         <folder name="org-netbeans-modules-web-project">
-            <folder name="Nodes">
-                <file name="org-netbeans-modules-websvc-jaxrpc-nodes-JaxRpcNodeFactory.instance">
-                    <attr name="position" intvalue="430"/>
-                </file>
-                <file name="org-netbeans-modules-websvc-jaxrpc-nodes-JaxRpcWebServiceNodeFactory.instance">
-                    <attr name="position" intvalue="300"/>
-                </file>    
+            <folder name="Lookup">
+                <file name="org.netbeans.modules.websvc.jaxrpc.project.JaxRpcLookupProvider.instance"/>
             </folder>
         </folder>
         <folder name="org-netbeans-modules-j2ee-ejbjarproject">
-            <folder name="Nodes">
-                <file name="org-netbeans-modules-websvc-jaxrpc-nodes-JaxRpcNodeFactory.instance">
-                    <attr name="position" intvalue="160"/>
-                </file>
-                <file name="org-netbeans-modules-websvc-jaxrpc-nodes-JaxRpcWebServiceNodeFactory.instance">
-                    <attr name="position" intvalue="150"/>
-                </file>
+            <folder name="Lookup">
+                <file name="org.netbeans.modules.websvc.jaxrpc.project.JaxRpcLookupProvider.instance"/>
             </folder>
         </folder>
-        -->
+        <folder name="org-netbeans-modules-j2ee-clientproject">
+            <folder name="Lookup">
+                <file name="org.netbeans.modules.websvc.jaxrpc.project.JaxRpcLookupProvider.instance"/>
+            </folder>
+        </folder>
     </folder>
     <folder name="Loaders">
         <folder name="text">
             <folder name="jaxrpc-config-1-1">
+                <folder name="Factories">
+                    <file name="org-netbeans-modules-websvc-wsdl-config-WsCompileConfigDataLoader.instance"/>
+                </folder>
                 <folder name="Actions">
                     <file name="org-openide-actions-EditAction.instance">
                         <attr name="position" intvalue="100"/>

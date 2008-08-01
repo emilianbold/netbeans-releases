@@ -25,12 +25,6 @@ import javax.swing.JTable;
 
 public interface JDBCTableColumnDisplayable {
 
-    /* font selection for column data in table body */
-    static final Font FONT_TABLE_COLUMNS = new Font("Dialog", Font.PLAIN, 12);
-
-    /* font selection for column headers in table body */
-    static final Font FONT_TABLE_HEADER = new Font("Dialog", Font.BOLD, 12);
-
     public JTable getColumnTable();
 
     public List getColumnTables();

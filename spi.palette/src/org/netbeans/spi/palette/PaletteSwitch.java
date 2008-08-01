@@ -46,7 +46,9 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -303,6 +305,12 @@ final class PaletteSwitch implements Runnable, LookupListener {
                     || TopComponent.Registry.PROP_OPENED.equals( evt.getPropertyName() )
                     || TopComponent.Registry.PROP_ACTIVATED.equals( evt.getPropertyName() ) ) {
 
+                    if( TopComponent.Registry.PROP_ACTIVATED.equals( evt.getPropertyName() )
+                        || TopComponent.Registry.PROP_OPENED.equals( evt.getPropertyName() ) ) {
+                        //listen to Lookup changes of showing editor windows
+                        watchOpenedEditors();
+                    }
+                    
                     if( TopComponent.Registry.PROP_ACTIVATED.equals( evt.getPropertyName() ) ) {
                         //switch lookup listener for the activated TC
                         switchLookupListener();
@@ -316,4 +324,42 @@ final class PaletteSwitch implements Runnable, LookupListener {
     public void resultChanged(LookupEvent ev) {
         run();
     }
+    
+    private Map<TopComponent, Lookup.Result> watchedLkpResults = new HashMap<TopComponent, Lookup.Result>(3);
+    
+    private void watchOpenedEditors() {
+        ArrayList<TopComponent> editorsToWatch = findShowingEditors();
+        ArrayList<TopComponent> toAddListeners = new ArrayList<TopComponent>( editorsToWatch );
+        toAddListeners.removeAll(watchedLkpResults.keySet());
+        
+        ArrayList<TopComponent> toRemoveListeners = new ArrayList<TopComponent>( watchedLkpResults.keySet() );
+        toRemoveListeners.removeAll(editorsToWatch);
+        
+        for( TopComponent tc : toRemoveListeners ) {
+            Lookup.Result res = watchedLkpResults.get(tc);
+            if( null != res ) {
+                res.removeLookupListener(this);
+                watchedLkpResults.remove(res);
+            }
+        }
+        
+        for( TopComponent tc : toAddListeners ) {
+            Lookup.Result res = tc.getLookup().lookup( new Lookup.Template<PaletteController>( PaletteController.class ) );
+            res.addLookupListener( this );
+            res.allItems();
+            watchedLkpResults.put( tc, res );
+        }
+    }
+    
+    private ArrayList<TopComponent> findShowingEditors() {
+        ArrayList<TopComponent> res = new ArrayList<TopComponent>( 3 );
+        WindowManager wm = WindowManager.getDefault();
+        for( TopComponent tc : TopComponent.getRegistry().getOpened() ) {
+            if( tc.isShowing() && wm.isEditorTopComponent(tc) )
+                res.add( tc );
+        }
+        return res;
+    }
+            
+            
 }

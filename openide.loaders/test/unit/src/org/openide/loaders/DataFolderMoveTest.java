@@ -76,7 +76,8 @@ public class DataFolderMoveTest extends LoggingTestCaseHid {
     private static final int FS_DEPTH = 4;
     private static final int TXT_SIZE = 20000;
     private static final int CYCLE = 4;
-    
+
+    @RandomlyFails
     public void testMoveFolders() throws Exception {
         
         // create directory structur description
@@ -170,6 +171,7 @@ public class DataFolderMoveTest extends LoggingTestCaseHid {
                     failed = testNodes(fsNodes[dest], false);
                 }
                 if (failed) {
+                    System.err.println("Failed, sleeping...");
                     try {
                         Thread.sleep(3000);
                     } 

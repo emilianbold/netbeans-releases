@@ -27,7 +27,7 @@
 					<tocitem text="Navigating in the BPEL Design View" target="orch_windows_editors_design_navig" />
 					<tocitem text="Switching Between Design and Source Views" target="orch_windows_editors_design_src_switch" />
 					<tocitem text="Cloning Document Views" target="orch_windows_editors_cloning" />
-					<tocitem text="Printing BPEL Diagrams and Source Files" target="org.netbeans.modules.print.impl.ui.Attribute" />
+					<tocitem text="Printing BPEL Diagrams and Source Files" target="orch_windows_editors_print" />
 					<tocitem text="Validating BPEL Processes " target="orch_design_validation" />
 					<tocitem text="Applying Filters To Diagram Elements" target="orch_design_apply_filters" />
 					<tocitem text="Using Find in the Design View" target="orch_design_find" />
@@ -50,6 +50,7 @@
 					<tocitem text="Working with Predicates" target="orch_mapper_predicates" />
 					<tocitem text="XPath Function Reference" target="orch_mapper_functions" />
 				</tocitem>
+				<tocitem text="Logging and Alerting" target="logging_about_logging" />
 			</tocitem>
 			<tocitem text="Working with BPEL Elements" expand="false">
 				<tocitem text="About BPEL Elements " target="orch_elements_about" />
@@ -64,7 +65,10 @@
 					<tocitem text="Empty" target="org.netbeans.modules.bpel.editors.api.nodes.NodeType.EMPTY" />
 					<tocitem text="Wait" target="org.netbeans.modules.bpel.editors.api.nodes.NodeType.WAIT" />
 					<tocitem text="Throw" target="org.netbeans.modules.bpel.editors.api.nodes.NodeType.THROW" />
+					<tocitem text="Rethrow" target="orch_elements_rethrow" />
 					<tocitem text="Exit" target="org.netbeans.modules.bpel.editors.api.nodes.NodeType.EXIT" />
+					<tocitem text="Compensate" target="orch_elements_compensate" />
+					<tocitem text="Compensate Scope" target="orch_elements_compensatescope" />
 				</tocitem>
 				<tocitem text="BPEL Designer Palette: Structured Activities" target="orch_elements_palette_struct_acts" expand="false">
 					<tocitem text="If" target="org.netbeans.modules.bpel.editors.api.nodes.NodeType.IF" />
@@ -84,6 +88,8 @@
 					<tocitem text="Adding On Alarm Elements" target="orch_elements_event_handler_onalarm" />
 					<tocitem text="Adding On Event Elements" target="org.netbeans.modules.bpel.properties.editors.OnEventCustomEditor" />
 				</tocitem>
+				<tocitem text="Adding Compensation Handlers" target="orch_elements_add_compensation_handler" />
+				<tocitem text="Adding Termination Handlers" target="orch_elements_add_termination_handler" />
 				<tocitem text="Working with Correlation Sets" expand="false">
 					<tocitem text="Understanding Correlation. Using the Correlation Wizard" target="orch_design_about_correlation" />
 					<tocitem text="Adding Correlation Sets Manually" target="orch_design_correlation_manually" />
@@ -106,10 +112,12 @@
 			<tocitem text="Debugging BPEL Processes" expand="false">
 				<tocitem text="About Debugging BPEL Processes" target="orch_debug_about" />
 				<tocitem text="BPEL Debugger Windows" target="orch_debug_windows" expand="false">
+					<tocitem text="BPEL Partner Links Window" target="debug_windows_partner_links" />
 					<tocitem text="BPEL Process Instances Window" target="org.netbeans.modules.bpel.debugger.ui.process.BpelProcessTopComponent" />
-					<tocitem text="BPEL Debugger: Sessions Window" target="orch_debug_windows_sessions" />
-					<tocitem text="BPEL Variables Window" target="org.netbeans.modules.bpel.debugger.ui.variable.BpelVariableTopComponent" />
 					<tocitem text="BPEL Process Execution Window" target="orch_debug_windows_exec" />
+					<tocitem text="BPEL Debugger: Sessions Window" target="orch_debug_windows_sessions" />
+					<tocitem text="Local Variables Window" target="org.netbeans.modules.bpel.debugger.ui.variable.BpelVariableTopComponent" />
+					<tocitem text="BPEL Debugger: Threads Window" target="debug_windows_threads" />
 				</tocitem>
 				<tocitem text="Starting and Finishing a BPEL Debugging Session" target="orch_debug_start_stop" />
 				<tocitem text="Using Breakpoints to Debug BPEL Processes" target="orch_debug_breakpoints" />
@@ -119,9 +127,4 @@
 			</tocitem>
 		</tocitem>
 	</tocitem>
-	<tocitem text="BPEL Designer: Adding Compensation Handlers" target="add_compensation_handler" />
-	<tocitem text="BPEL Designer: Adding Termination Handlers" target="add_termination_handler" />
-	<tocitem text="Compensate" target="compensate" />
-	<tocitem text="Compensate Scope" target="compensatescope" />
-	<tocitem text="Rethrow" target="rethrow" />
 </toc>

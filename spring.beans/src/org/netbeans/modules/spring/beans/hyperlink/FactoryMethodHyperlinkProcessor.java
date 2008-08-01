@@ -40,17 +40,17 @@
 package org.netbeans.modules.spring.beans.hyperlink;
 
 import java.io.IOException;
-import org.netbeans.modules.editor.NbEditorUtilities;
+import java.util.Map;
 import org.netbeans.modules.spring.api.Action;
 import org.netbeans.modules.spring.api.beans.model.SpringBean;
 import org.netbeans.modules.spring.api.beans.model.SpringBeans;
 import org.netbeans.modules.spring.api.beans.model.SpringConfigModel;
 import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils;
-import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils.Public;
-import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils.Static;
+import org.netbeans.modules.spring.java.JavaUtils;
+import org.netbeans.modules.spring.java.Public;
+import org.netbeans.modules.spring.java.Static;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
-import org.w3c.dom.Node;
 
 /**
  * Hyperlink Processor for factory-method attribute of a bean
@@ -60,8 +60,8 @@ import org.w3c.dom.Node;
 public class FactoryMethodHyperlinkProcessor extends HyperlinkProcessor {
 
     public void process(HyperlinkEnv env) {
-        Node tag = env.getCurrentTag();
-        SpringBean mergedBean = SpringXMLConfigEditorUtils.getMergedBean(tag, env.getDocument());
+        Map<String, String> beanAttributes = env.getBeanAttributes();
+        SpringBean mergedBean = SpringXMLConfigEditorUtils.getMergedBean(beanAttributes, env.getFileObject());
         if(mergedBean == null) {
             return;
         }
@@ -71,7 +71,7 @@ public class FactoryMethodHyperlinkProcessor extends HyperlinkProcessor {
         // if factory-bean has been defined, resolve it and get it's class name
         if(mergedBean.getFactoryBean() != null) { 
             final String factoryBeanName = mergedBean.getFactoryBean();
-            FileObject fo = NbEditorUtilities.getFileObject(env.getDocument());
+            FileObject fo = env.getFileObject();
             if(fo == null) {
                 return;
             }
@@ -97,7 +97,7 @@ public class FactoryMethodHyperlinkProcessor extends HyperlinkProcessor {
         
         if (className[0] != null) {
             String methodName = mergedBean.getFactoryMethod();
-            SpringXMLConfigEditorUtils.openMethodInEditor(env.getDocument(), className[0], methodName, -1,
+            JavaUtils.openMethodInEditor(env.getFileObject(), className[0], methodName, -1,
                     Public.DONT_CARE, staticFlag);
         }
     }

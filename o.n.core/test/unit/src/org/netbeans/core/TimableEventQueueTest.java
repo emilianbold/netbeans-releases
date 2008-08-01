@@ -48,6 +48,7 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.util.Exceptions;
 
 /**
@@ -81,11 +82,8 @@ public class TimableEventQueueTest extends NbTestCase {
         handler.records.clear();
     }
 
+    @RandomlyFails
     public void testDispatchEvent() throws Exception {
-        if (Boolean.getBoolean("ignore.random.failures")) {
-            return;
-        }
-
         class Slow implements Runnable {
             private int ok;
             public void run() {

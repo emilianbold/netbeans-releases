@@ -111,6 +111,10 @@ public class StringEditor extends PropertyEditorSupport
             textArea.setColumns(60);
             textArea.setRows(8);
             textArea.getDocument().addDocumentListener(this);
+            textArea.getAccessibleContext().setAccessibleName(
+                    NbBundle.getBundle(StringEditor.class).getString("ACSN_StringEditorTextArea")); //NOI18N
+            textArea.getAccessibleContext().setAccessibleDescription(
+                    NbBundle.getBundle(StringEditor.class).getString("ACSD_StringEditorTextArea")); //NOI18N
 
             JScrollPane scroll = new JScrollPane();
             scroll.setViewportView(textArea);

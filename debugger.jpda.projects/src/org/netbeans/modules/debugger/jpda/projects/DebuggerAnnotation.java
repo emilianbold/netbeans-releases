@@ -41,20 +41,22 @@
 
 package org.netbeans.modules.debugger.jpda.projects;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import org.netbeans.modules.editor.highlights.spi.Highlight;
-import org.netbeans.modules.editor.highlights.spi.Highlighter;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.Document;
+import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.spi.debugger.jpda.EditorContext;
+import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
 import org.openide.ErrorManager;
+import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.Annotatable;
 import org.openide.text.Annotation;
 import org.openide.text.Line;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.Lookups;
 
 
 /**
@@ -62,15 +64,17 @@ import org.openide.util.NbBundle;
  *
  * @author   Jan Jancura
  */
-public class DebuggerAnnotation extends Annotation {
+public class DebuggerAnnotation extends Annotation implements Lookup.Provider {
 
     private Line        line;
     private String      type;
+    private JPDAThread  thread;
 
 
-    DebuggerAnnotation (String type, Line line) {
+    DebuggerAnnotation (String type, Line line, JPDAThread thread) {
         this.type = type;
         this.line = line;
+        this.thread = thread;
         attach (line);
     }
     
@@ -80,9 +84,9 @@ public class DebuggerAnnotation extends Annotation {
         attach (linePart);
     }
     
-    DebuggerAnnotation (String type, Highlight highlight, FileObject fo) {
+    DebuggerAnnotation (String type, AttributeSet attrs, int start, int end, FileObject fo) {
         this.type = type;
-        attach (new HighlightAnnotatable(highlight, fo));
+        attach (new HighlightAnnotatable(attrs, start, end, fo));
     }
     
     public String getAnnotationType () {
@@ -94,26 +98,6 @@ public class DebuggerAnnotation extends Annotation {
     }
     
     public String getShortDescription () {
-        if (type.endsWith("_broken")) {
-            return NbBundle.getBundle (DebuggerAnnotation.class).getString 
-                ("TOOLTIP_BREAKPOINT_BROKEN"); // NOI18N
-        }
-        if (type == EditorContext.BREAKPOINT_ANNOTATION_TYPE)
-            return NbBundle.getBundle (DebuggerAnnotation.class).getString 
-                ("TOOLTIP_BREAKPOINT"); // NOI18N
-        else 
-        if (type == EditorContext.DISABLED_BREAKPOINT_ANNOTATION_TYPE)
-            return NbBundle.getBundle (DebuggerAnnotation.class).getString 
-                ("TOOLTIP_DISABLED_BREAKPOINT"); // NOI18N
-        else 
-        if (type == EditorContext.CONDITIONAL_BREAKPOINT_ANNOTATION_TYPE)
-            return NbBundle.getBundle (DebuggerAnnotation.class).getString 
-                ("TOOLTIP_CONDITIONAL_BREAKPOINT"); // NOI18N
-        else
-        if (type == EditorContext.DISABLED_CONDITIONAL_BREAKPOINT_ANNOTATION_TYPE)
-            return NbBundle.getBundle (DebuggerAnnotation.class).getString 
-                ("TOOLTIP_DISABLED_CONDITIONAL_BREAKPOINT"); // NOI18N
-        else
         if (type == EditorContext.CURRENT_LINE_ANNOTATION_TYPE)
             return NbBundle.getMessage 
                 (DebuggerAnnotation.class, "TOOLTIP_CURRENT_PC"); // NOI18N
@@ -124,32 +108,38 @@ public class DebuggerAnnotation extends Annotation {
         if (type == EditorContext.CALL_STACK_FRAME_ANNOTATION_TYPE)
             return NbBundle.getBundle (DebuggerAnnotation.class).getString 
                 ("TOOLTIP_CALLSITE"); // NOI18N
-        if (type == EditorContext.FIELD_BREAKPOINT_ANNOTATION_TYPE)
-            return NbBundle.getBundle (DebuggerAnnotation.class).getString 
-                ("TOOLTIP_FIELD_BREAKPOINT"); // NOI18N
-        if (type == EditorContext.DISABLED_FIELD_BREAKPOINT_ANNOTATION_TYPE)
-            return NbBundle.getBundle (DebuggerAnnotation.class).getString 
-                ("TOOLTIP_DISABLED_FIELD_BREAKPOINT"); // NOI18N
-        if (type == EditorContext.METHOD_BREAKPOINT_ANNOTATION_TYPE)
-            return NbBundle.getBundle (DebuggerAnnotation.class).getString 
-                ("TOOLTIP_METHOD_BREAKPOINT"); // NOI18N
-        if (type == EditorContext.DISABLED_METHOD_BREAKPOINT_ANNOTATION_TYPE)
-            return NbBundle.getBundle (DebuggerAnnotation.class).getString 
-                ("TOOLTIP_DISABLED_METHOD_BREAKPOINT"); // NOI18N
-        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, new IllegalStateException("Unknown breakpoint type '"+type+"'."));
+        if (type == EditorContext.OTHER_THREAD_ANNOTATION_TYPE) {
+            return NbBundle.getMessage(DebuggerAnnotation.class, "TOOLTIP_OTHER_THREAD", thread.getName());
+        }
+        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, new IllegalStateException("Unknown annotation type '"+type+"'."));
         return null;
+    }
+    
+    static synchronized OffsetsBag getHighlightsBag(Document doc) {
+        OffsetsBag bag = (OffsetsBag) doc.getProperty(DebuggerAnnotation.class);
+        if (bag == null) {
+            doc.putProperty(DebuggerAnnotation.class, bag = new OffsetsBag(doc, true));
+        }
+        return bag;
     }
     
     private static final class HighlightAnnotatable extends Annotatable {
         
-        private static Map highlightsByFiles = new HashMap();
+        private AttributeSet attrs;
+        private int start;
+        private int end;
+        private Document doc;
         
-        private Highlight highlight;
-        private FileObject fo;
-        
-        public HighlightAnnotatable(Highlight highlight, FileObject fo) {
-            this.highlight = highlight;
-            this.fo = fo;
+        public HighlightAnnotatable(AttributeSet attrs, int start, int end, FileObject fo) {
+            this.attrs = attrs;
+            this.start = start;
+            this.end = end;
+            try {
+                DataObject dobj = DataObject.find(fo);
+                EditorCookie ec = dobj.getCookie(EditorCookie.class);
+                doc = ec.getDocument();
+            } catch (DataObjectNotFoundException ex) {
+            }
         }
         
         public String getText() {
@@ -157,35 +147,27 @@ public class DebuggerAnnotation extends Annotation {
         }
 
         protected void addAnnotation(Annotation anno) {
-            Collection highlights;
-            synchronized (highlightsByFiles) {
-                highlights = (Collection) highlightsByFiles.get(fo);
-                if (highlights == null) {
-                    highlights = new HashSet();
-                    highlightsByFiles.put(fo, highlights);
-                }
-                highlights.add(highlight);
+            synchronized(DebuggerAnnotation.class) {
+                OffsetsBag bag = getHighlightsBag(doc);
+                bag.addHighlight(start, end, attrs);
             }
-            Highlighter.getDefault().setHighlights(fo, getClass().getName(), highlights);
         }
 
         protected void removeAnnotation(Annotation anno) {
-            Collection highlights;
-            synchronized (highlightsByFiles) {
-                highlights = (Collection) highlightsByFiles.get(fo);
-                if (highlights == null) {
-                    highlights = Collections.EMPTY_SET;
-                } else {
-                    highlights.remove(highlight);
-                    if (highlights.isEmpty()) {
-                        highlightsByFiles.remove(fo);
-                    }
-                }
+            synchronized(DebuggerAnnotation.class) {
+                OffsetsBag bag = getHighlightsBag(doc);
+                bag.removeHighlights(start, end, true);
             }
-            Highlighter.getDefault().setHighlights(fo, getClass().getName(), highlights);
         }
-        
 
+    }
+
+    public Lookup getLookup() {
+        if (thread == null) {
+            return Lookup.EMPTY;
+        } else {
+            return Lookups.singleton(thread);
+        }
     }
     
 }

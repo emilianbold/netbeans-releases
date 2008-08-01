@@ -58,10 +58,13 @@
 
         <localizing-bundle>org.netbeans.modules.websvc.saas.services.amazon.Bundle</localizing-bundle>
 
-        <group name="Amazon">
-        </group>
+        <group name="Amazon"/>
+        
+        <code-gen>
+            <artifacts targets="java,servlet,resource,jsp" profile="Templates/SaaSServices/apikey.properties"/>
+        </code-gen>
 
-        <authentication profile="SaaSServices/AmazonECS/profile.properties">
+        <authentication>
             <api-key id="AWSAccessKeyId"/>
         </authentication>
 

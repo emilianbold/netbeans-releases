@@ -158,8 +158,7 @@ public final class LibrariesNodeFactory implements NodeFactory {
                         new PreselectPropertiesAction(project, "Libraries", CustomizerLibraries.COMPILE), //NOI18N
                     },
                     ClassPathSupportCallbackImpl.ELEMENT_INCLUDED_LIBRARIES,
-                    cs,
-                    new String[]{ProjectProperties.JAVAC_CLASSPATH}
+                    cs
                 );
             } else if (key == TEST_LIBRARIES) {
                 return  new LibrariesNode(
@@ -185,8 +184,7 @@ public final class LibrariesNodeFactory implements NodeFactory {
                         new PreselectPropertiesAction(project, "Libraries", CustomizerLibraries.COMPILE_TESTS), //NOI18N
                     },
                     null,
-                    cs,
-                    null
+                    cs
                     );
             }
             assert false: "No node for key: " + key; // NOI18N

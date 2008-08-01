@@ -74,6 +74,8 @@ public final class ComposedTextHighlighting extends AbstractHighlightsContainer 
     private final AttributeSet highlightInverse;
     private final AttributeSet highlightUnderlined;
     
+    private boolean isComposingText = false;
+    
     public ComposedTextHighlighting(JTextComponent component, Document document, String mimeType) {
         // Prepare the highlight
         FontColorSettings fcs = MimeLookup.getLookup(MimePath.parse(mimeType)).lookup(FontColorSettings.class);
@@ -86,7 +88,7 @@ public final class ComposedTextHighlighting extends AbstractHighlightsContainer 
         // Create the highlights container
         this.bag = new OffsetsBag(document);
         this.bag.addHighlightsChangeListener(this);
-        
+
         // Start listening on the document
         this.document = document;
         this.document.addDocumentListener(WeakListeners.document(this, this.document));
@@ -118,7 +120,13 @@ public final class ComposedTextHighlighting extends AbstractHighlightsContainer 
         AttributedString composedText = getComposedTextAttribute(e);
         
         if (composedText != null) {
-            enableParsing(component, false);
+            if (!isComposingText) {
+                // we just started composing text, disable parsing
+                enableParsing(component, false);
+            }
+            
+            // set the flag
+            isComposingText = true;
             
             if (LOG.isLoggable(Level.FINE)) {
                 StringBuilder sb = new StringBuilder();
@@ -166,7 +174,12 @@ public final class ComposedTextHighlighting extends AbstractHighlightsContainer 
                 offset++;
             }
         } else {
-            enableParsing(component, true);
+            if (isComposingText) {
+                // we stopped composing text, turn the parser on again
+                enableParsing(component, true);
+            }
+            
+            isComposingText = false;
             bag.clear();
         }
     }

@@ -43,6 +43,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -61,11 +62,13 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.gsf.api.ElementKind;
+import org.netbeans.modules.gsf.api.annotations.CheckForNull;
+import org.netbeans.modules.gsf.api.annotations.NonNull;
 import org.netbeans.modules.javascript.editing.lexer.Call;
 import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -111,18 +114,45 @@ public class JsDeclarationFinder implements DeclarationFinder {
     }
 
     /** Locate the method declaration for the given method call */
+    @CheckForNull
     IndexedFunction findMethodDeclaration(CompilationInfo info, Node call, AstPath path, Set<IndexedFunction>[] alternativesHolder) {
-        String prefix = AstUtilities.getCallName(call, false);
         JsParseResult parseResult = AstUtilities.getParseResult(info);
-        JsIndex index = JsIndex.get(info.getIndex(JsMimeResolver.JAVASCRIPT_MIME_TYPE));
-        Set<IndexedElement> functions = index.getAllNames(prefix,
-                NameKind.EXACT_NAME, JsIndex.ALL_SCOPE, parseResult);
+        JsIndex index = JsIndex.get(info.getIndex(JsTokenId.JAVASCRIPT_MIME_TYPE));
+        Set<IndexedElement> functions = null;
 
-        IndexedElement candidate =
-            findBestElementMatch(info, /*name,*/ functions/*, (BaseDocument)info.getDocument(),
-                astOffset, lexOffset, path, closest, index*/);
-        if (candidate instanceof IndexedFunction) {
-            return (IndexedFunction)candidate;
+        String fqn = JsTypeAnalyzer.getCallFqn(info, call, true);
+        if (fqn != null) {
+            functions = index.getElementsByFqn(fqn, NameKind.EXACT_NAME, JsIndex.ALL_SCOPE, parseResult);
+            // Prefer methods/constructors
+            if (functions.size() > 0) {
+                Set<IndexedElement> filtered = new DuplicateElementSet(functions.size());
+                for (IndexedElement e : functions) {
+                    ElementKind kind = e.getKind();
+                    if (kind == ElementKind.METHOD || kind == ElementKind.CONSTRUCTOR) {
+                        filtered.add(e);
+                    }
+                }
+                if (filtered.size() > 0) {
+                    functions = filtered;
+                }
+            }
+        }
+        
+        if (functions == null || functions.size() == 0) {
+            String prefix = AstUtilities.getCallName(call, false);
+            if (prefix.length() > 0) {
+                functions = index.getAllNames(prefix,
+                        NameKind.EXACT_NAME, JsIndex.ALL_SCOPE, parseResult);
+            }
+        }
+
+        if (functions != null && functions.size() > 0) {
+            IndexedElement candidate =
+                findBestElementMatch(info, /*name,*/ functions,/* (BaseDocument)info.getDocument(),
+                    astOffset, lexOffset, path,*/ call, index);
+            if (candidate instanceof IndexedFunction) {
+                return (IndexedFunction)candidate;
+            }
         }
         return null;
     }
@@ -139,7 +169,7 @@ public class JsDeclarationFinder implements DeclarationFinder {
         }
 
         // TODO: Tokens.SUPER, Tokens.THIS, Tokens.SELF ...
-        if ((id == JsTokenId.IDENTIFIER) || (id == JsTokenId.GLOBAL_VAR) || (id == JsTokenId.CONSTANT)) {
+        if (id == JsTokenId.IDENTIFIER) {
             return new OffsetRange(ts.offset(), ts.offset() + token.length());
         }
         
@@ -186,13 +216,11 @@ public class JsDeclarationFinder implements DeclarationFinder {
 
     public DeclarationLocation findDeclaration(CompilationInfo info, int lexOffset) {
 
-        final Document document;
-        try {
-            document = info.getDocument();
-        } catch (Exception e) {
-            Exceptions.printStackTrace(e);
+        final Document document = info.getDocument();
+        if (document == null) {
             return DeclarationLocation.NONE;
         }
+
         final BaseDocument doc = (BaseDocument)document;
 
         JsParseResult parseResult = AstUtilities.getParseResult(info);
@@ -201,7 +229,7 @@ public class JsDeclarationFinder implements DeclarationFinder {
             Node root = parseResult.getRootNode();
             final int astOffset = AstUtilities.getAstOffset(info, lexOffset);
             if (astOffset == -1) {
-                return null;
+                return DeclarationLocation.NONE;
             }
             final TokenHierarchy<Document> th = TokenHierarchy.get(document);
 
@@ -241,12 +269,12 @@ public class JsDeclarationFinder implements DeclarationFinder {
 
             String prefix = new JsCodeCompletion().getPrefix(info, lexOffset, false);
             if (prefix != null) {
-                JsIndex index = JsIndex.get(info.getIndex(JsMimeResolver.JAVASCRIPT_MIME_TYPE));
+                JsIndex index = JsIndex.get(info.getIndex(JsTokenId.JAVASCRIPT_MIME_TYPE));
                 Set<IndexedElement> elements = index.getAllNames(prefix,
                         NameKind.EXACT_NAME, JsIndex.ALL_SCOPE, parseResult);
 
                 String name = null; // unused!
-                return getMethodDeclaration(info, name, elements, node, index, astOffset, lexOffset);
+                return getMethodDeclaration(info, name, elements, node, index/*, astOffset, lexOffset*/);
             }
         } finally {
             doc.readUnlock();
@@ -260,13 +288,13 @@ public class JsDeclarationFinder implements DeclarationFinder {
                 element);
     }
 
-
+    @NonNull
     DeclarationLocation findLinkedMethod(CompilationInfo info, String url) {
-        JsIndex index = JsIndex.get(info.getIndex(JsMimeResolver.JAVASCRIPT_MIME_TYPE));
+        JsIndex index = JsIndex.get(info.getIndex(JsTokenId.JAVASCRIPT_MIME_TYPE));
         JsParseResult parseResult = AstUtilities.getParseResult(info);
         Set<IndexedElement> elements = index.getAllNames(url,
                 NameKind.EXACT_NAME, JsIndex.ALL_SCOPE, parseResult);
-        IndexedElement function = findBestElementMatch(info, elements);
+        IndexedElement function = findBestElementMatch(info, elements, null, null);
         if (function != null) {
             return new DeclarationLocation(function.getFileObject(), 0, function);
         } else {
@@ -274,8 +302,67 @@ public class JsDeclarationFinder implements DeclarationFinder {
         }
     }
 
-    private IndexedElement findBestElementMatch(CompilationInfo info, /*String name,*/ Set<IndexedElement> elements/*,
-        BaseDocument doc, int astOffset, int lexOffset, AstPath path/ Node call, JsIndex index*/) {
+    private IndexedElement findBestElementMatch(CompilationInfo info, /*String name,*/ Set<IndexedElement> elements,/*
+        BaseDocument doc, int astOffset, int lexOffset, AstPath path*/ Node callNode, JsIndex index) {
+        Set<IndexedElement> candidates = new HashSet<IndexedElement>();
+        
+        // Prefer methods that match the given FQN. In other words, if I have say
+        // both widgetBase.setProps and bubble.setProps where bubble extends widgetBase,
+        // the inherited search will return both, but I want to prefer the derived one.
+        
+        // First prefer methods that have documentation
+        
+        
+        
+        // 1. First see if the reference is fully qualified. If so the job should
+        //   be easier: prune the result set down
+        // If I have the fqn, I can also call RubyIndex.getRDocLocation to pick the
+        // best candidate
+        if (callNode != null && (callNode.getType() == org.mozilla.javascript.Token.CALL ||
+                callNode.getType() == org.mozilla.javascript.Token.NEW)) {
+            // It's a call, so prefer method/constructor elements
+            String fqn = JsTypeAnalyzer.getCallFqn(info, callNode, true);
+            if (fqn != null && fqn.length() > 0 && fqn.indexOf('.') != -1) {
+                while ((fqn != null) && (fqn.length() > 0)) {
+                    for (IndexedElement method : elements) {
+                        if (fqn.equals(method.getIn()+"."+method.getName())) { // NOI18N
+                            candidates.add(method);
+                        }
+                    }
+
+                    // Check inherited methods; for example, if we've determined
+                    // that you're looking for Integer::foo, I should happily match
+                    // Numeric::foo.
+                    if (index != null && candidates.size() < elements.size()) {
+                        // Repeat looking in the superclass
+                        fqn = index.getExtends(fqn, JsIndex.ALL_SCOPE);
+                    } else {
+                        fqn = null;
+                    }
+                }
+            }
+        }
+
+        if (candidates.size() == 1) {
+            return candidates.iterator().next();
+        } else if (!candidates.isEmpty()) {
+            elements = candidates;
+        }
+        
+        // (2) Prefer matches in the same file as the reference
+        candidates = new HashSet<IndexedElement>();
+        FileObject fo = info.getFileObject();
+        for (IndexedElement element : elements) {
+            if (fo == element.getFileObject()) {
+                candidates.add(element);
+            }
+        }
+        if (candidates.size() == 1) {
+            return candidates.iterator().next();
+        } else if (!candidates.isEmpty()) {
+            elements = candidates;
+        }
+        
         // For now no good heuristics to pick a method.
         // Possible things to consider:
         // -- scope - whether the method is local
@@ -283,26 +370,35 @@ public class JsDeclarationFinder implements DeclarationFinder {
         // -- other methods called which can help disambiguate
         // -- documentation?
         if (elements.size() > 0) {
-            return elements.iterator().next();
+            IndexedElement e = elements.iterator().next();
+            IndexedElement r = e.findRealFileElement();
+            if (r != null) {
+                return r;
+            }
+            
+            return e;
         }
         
         return null;
     }
 
     private DeclarationLocation getMethodDeclaration(CompilationInfo info, String name, Set<IndexedElement> elements, 
-            /*AstPath path,*/ Node closest, JsIndex index, int astOffset, int lexOffset) {
+            /*AstPath path,*/ Node closest, JsIndex index/*, int astOffset, int lexOffset*/) {
 //        try {
             IndexedElement candidate =
-                findBestElementMatch(info, /*name,*/ elements/*, (BaseDocument)info.getDocument(),
-                    astOffset, lexOffset, path, closest, index*/);
+                findBestElementMatch(info, /*name,*/ elements,/* (BaseDocument)info.getDocument(),
+                    astOffset, lexOffset, path,*/ closest, index);
 
             if (candidate != null) {
                 boolean invalid = false;
-                if (candidate.getFilenameUrl() != null && candidate.getFilenameUrl().indexOf("jsstubs") != -1) {
+                if (candidate.getFilenameUrl() != null && candidate.getFilenameUrl().indexOf("jsstubs") != -1 &&
+                        // If it's in my sdocs.zip, I've gotta try to find the corresponding element
+                        candidate.getFilenameUrl().indexOf("sdocs.zip") == -1) {
                     invalid = true;
                 }
-                IndexedElement com = candidate;
-                Node node = AstUtilities.getForeignNode(com, null);
+                IndexedElement com = candidate; // TODO - let's not do foreign node computation here!! Not needed yet!
+                CompilationInfo[] infoRet = new CompilationInfo[1];
+                Node node = AstUtilities.getForeignNode(com, infoRet);
                 DeclarationLocation loc;
                 if (node == null) {
                     int offset = 0; // unknown - use top of the file
@@ -310,11 +406,17 @@ public class JsDeclarationFinder implements DeclarationFinder {
                     loc = new DeclarationLocation(candidate.getFileObject(),
                         offset, com);
                 } else {
+                    int astOffset = node.getSourceStart();
+                    int lexOffset = LexUtilities.getLexerOffset(infoRet[0], astOffset);
                     loc = new DeclarationLocation(com.getFile().getFileObject(),
-                       node.getSourceStart(), com);
+                       lexOffset, com);
                 }
                 if (invalid) {
-                    loc.setInvalidMessage(NbBundle.getMessage(JsDeclarationFinder.class, "InvalidJsMethod", candidate.getName()));
+                    if (candidate.isDocOnly()) {
+                        loc.setInvalidMessage(NbBundle.getMessage(JsDeclarationFinder.class, "NoSourceDocOnly", candidate.getName()));
+                    } else {
+                        loc.setInvalidMessage(NbBundle.getMessage(JsDeclarationFinder.class, "InvalidJsMethod", candidate.getName()));
+                    }
                 }
 
                 if (!CHOOSE_ONE_DECLARATION && elements.size() > 1) {
@@ -357,10 +459,8 @@ public class JsDeclarationFinder implements DeclarationFinder {
             if (cachedDisplayItem == null) {
                 formatter.reset();
 
-//                boolean nodoc = element.isNoDoc();
-//                boolean documented = element.isDocumented();
-boolean nodoc = false;
-boolean documented = false;
+                boolean nodoc = element.isNoDoc();
+                boolean documented = element.isDocumented();
                 if (isPreferred) {
                     formatter.emphasis(true);
                 } else if (nodoc) {
@@ -407,18 +507,18 @@ boolean documented = false;
                 if (url == null) {
                     // Deleted file?
                     // Just leave out the file name
-                } else if (url.indexOf("Jsstubs") != -1) {
-                    filename = NbBundle.getMessage(DeclarationFinder.class, "JsLib");
+                } else if (url.indexOf("jsstubs") != -1) {
+                    filename = NbBundle.getMessage(JsDeclarationFinder.class, "JsLib");
                     
-                    if (url.indexOf("/stub_") == -1) {
-                        // Not a stub file, such as ftools.rb
-                        // TODO - don't hardcode for version 0.2
-                        String stub = "Jsstubs/1.8.6-p110/";
-                        int stubStart = url.indexOf(stub);
-                        if (stubStart != -1) {
-                            filename = filename+": " + url.substring(stubStart);
-                        }
-                    }
+//                    if (url.indexOf("/stub_") == -1) {
+//                        // Not a stub file, such as ftools.rb
+//                        // TODO - don't hardcode for version 0.2
+//                        String stub = "jsstubs/1.8.6-p110/";
+//                        int stubStart = url.indexOf(stub);
+//                        if (stubStart != -1) {
+//                            filename = filename+": " + url.substring(stubStart);
+//                        }
+//                    }
                 } else {
                     FileObject fo = element.getFileObject();
                     if (fo != null) {
@@ -470,14 +570,44 @@ boolean documented = false;
         }
 
         public DeclarationLocation getLocation() {
-            Node node = AstUtilities.getForeignNode(element, null);
+            CompilationInfo[] infoRet = new CompilationInfo[1];
+            Node node = AstUtilities.getForeignNode(element, infoRet);
+            
+            DeclarationLocation loc = DeclarationLocation.NONE;
             if (node == null) {
-                return DeclarationLocation.NONE;
+                if (element instanceof IndexedElement) {
+                    FileObject fo = element.getFileObject();
+                    if (fo != null) {
+                        int astOffset = ((IndexedElement)element).getNodeOffset();
+                        int lexOffset = LexUtilities.getLexerOffset(infoRet[0], astOffset);
+                        if (lexOffset == -1) {
+                            lexOffset = 0;
+                        }
+                        loc = new DeclarationLocation(element.getFileObject(), lexOffset, element);
+                    }
+                }
+            } else {
+                int astOffset = node.getSourceStart();
+                int lexOffset = LexUtilities.getLexerOffset(infoRet[0], astOffset);
+                if (lexOffset == -1) {
+                    lexOffset = 0;
+                }
+                loc = new DeclarationLocation(element.getFileObject(),
+                    lexOffset, element);
             }
-            int offset = node.getSourceStart();
-            DeclarationLocation loc = new DeclarationLocation(element.getFileObject(),
-                offset, element);
 
+            if (loc != null) {
+                if (element.getFilenameUrl() != null && element.getFilenameUrl().indexOf("jsstubs") != -1 &&
+                        // If it's in my sdocs.zip, I've gotta try to find the corresponding element
+                        element.getFilenameUrl().indexOf("sdocs.zip") == -1) {
+                    if (element.isDocOnly()) {
+                        loc.setInvalidMessage(NbBundle.getMessage(JsDeclarationFinder.class, "NoSourceDocOnly", element.getName()));
+                    } else {
+                        loc.setInvalidMessage(NbBundle.getMessage(JsDeclarationFinder.class, "InvalidJsMethod", element.getName()));
+                    }
+                }
+            }
+            
             return loc;
         }
 
@@ -523,6 +653,4 @@ boolean documented = false;
             return cmp;
         }
     }
-    
-
 }

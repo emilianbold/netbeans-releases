@@ -44,11 +44,15 @@ package org.netbeans.modules.editor.bookmarks;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.StyledDocument;
 import org.openide.ErrorManager;
+import org.openide.cookies.LineCookie;
 import org.openide.text.Annotation;
 import java.text.MessageFormat;
 import javax.swing.text.Document;
 import javax.swing.text.Position;
 import org.netbeans.lib.editor.bookmarks.spi.BookmarkImplementation;
+import org.netbeans.modules.editor.NbEditorUtilities;
+import org.openide.loaders.DataObject;
+import org.openide.text.Line;
 import org.openide.text.NbDocument;
 import org.openide.util.NbBundle;
 
@@ -65,20 +69,15 @@ implements BookmarkImplementation {
 
     private final NbBookmarkManager manager;
     
-    private Position pos;
+    private Document document;
+    private Line line;
     
     NbBookmarkImplementation(NbBookmarkManager manager, int offset) {
         this.manager = manager;
-        Document doc = manager.getDocument();
-        try {
-            pos = doc.createPosition(offset);
-        } catch (BadLocationException e) {
-            ErrorManager.getDefault().notify(e);
-            pos = doc.getStartPosition();
-        }
-        if (doc instanceof StyledDocument) {
-            NbDocument.addAnnotation((StyledDocument)doc, pos, -1, this);
-        }
+        document = manager.getDocument();
+        line = NbEditorUtilities.getLine (document, offset, false);
+        if (line != null)
+            attach (line);
     }
     
     public String getAnnotationType() {
@@ -92,7 +91,8 @@ implements BookmarkImplementation {
     }
 
     public int getOffset() {
-        return pos.getOffset();
+        if (line == null) return 0;
+        return NbDocument.findLineOffset ((StyledDocument) document, line.getLineNumber());
     }
     
     public int getLineIndex() {

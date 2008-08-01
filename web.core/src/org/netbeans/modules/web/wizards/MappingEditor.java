@@ -42,23 +42,18 @@ package org.netbeans.modules.web.wizards;
 
 import java.awt.Color;
 import java.awt.Dialog;
-import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
-
 import javax.swing.ButtonGroup;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JTextField;
-
-import javax.swing.event.ChangeListener;
-
 import org.openide.DialogDisplayer; 
 import org.openide.NotifyDescriptor; 
 import org.openide.DialogDescriptor;
@@ -80,26 +75,21 @@ public class MappingEditor extends JPanel implements ActionListener {
     private JTextField mappingField; 
     private ToolTipCombo servletCombo; 
     private JCheckBox[] cb; 
-
-    private final static boolean debug = false; 
-
     private Dialog dialog; 
     private DialogDescriptor editDialog;
 
     private final static String URL = "URL"; 
     private final static String SERVLET = "SERVLET"; 
     private final static String SELECT_SERVLET = "SELECT"; 
-
     private static FilterMappingData fmd; 
     private static boolean haveNames = true; 
-    
     private static boolean OK = false; 
 
     private static final long serialVersionUID = 4947167720581796971L;
     
     /**  Creates new form MappingEditor */
     public MappingEditor(FilterMappingData fmd, String[] servletNames) { 
-	this.fmd = fmd;
+	MappingEditor.fmd = fmd;
     	this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(MappingEditor.class, "ACSD_filter_mappings_edit")); 
 	initComponents(servletNames); 
     }
@@ -116,9 +106,6 @@ public class MappingEditor extends JPanel implements ActionListener {
      * initialize the form.
      */
     private void initComponents(String[] names) {
-
-	if(debug) log("::initComponents()"); 
-
 	Insets insets = new Insets(4, 20, 4, 0);
 	Insets endInsets = new Insets(4, 20, 4, 60);
 
@@ -285,9 +272,7 @@ public class MappingEditor extends JPanel implements ActionListener {
     }
 
     public void showEditor() { 
-        
-	String title = NbBundle.getMessage(MappingEditor.class, 
-					   "TITLE_filter_mapping"); //NOI18N
+	String title = NbBundle.getMessage(MappingEditor.class, "TITLE_filter_mapping"); //NOI18N
 	editDialog = new DialogDescriptor(this, title, true, 
 					  DialogDescriptor.OK_CANCEL_OPTION,
 					  DialogDescriptor.CANCEL_OPTION,
@@ -297,13 +282,10 @@ public class MappingEditor extends JPanel implements ActionListener {
 
 	dialog = DialogDisplayer.getDefault().createDialog(editDialog);
 	dialog.pack();
-	dialog.show();
+	dialog.setVisible(true);
     }
 
     public void actionPerformed(ActionEvent evt) { 
-
-	if(debug) log("\tReceived action " + evt.getActionCommand());  //NOI18N
-
 	if(evt.getActionCommand() == URL) { 
 	    fmd.setType(FilterMappingData.Type.URL); 
 	    fmd.setPattern(mappingField.getText().trim());
@@ -329,7 +311,6 @@ public class MappingEditor extends JPanel implements ActionListener {
         
 	Object retValue = editDialog.getValue();
 	if(DialogDescriptor.CANCEL_OPTION.equals(retValue) || DialogDescriptor.CLOSED_OPTION.equals(retValue)) { 
-	    if(debug) log("\tCancel"); //NOI18N
 	    OK = false; 
 	    dialog.dispose();
 	    return; 
@@ -338,19 +319,16 @@ public class MappingEditor extends JPanel implements ActionListener {
 	if(fmd.getType() == FilterMappingData.Type.URL) { 
 	    fmd.setPattern(mappingField.getText().trim()); 
 	    if(fmd.getPattern().length() == 0) { 
-		notifyBadInput(NbBundle.getMessage(TableRowDialog.class, 
-						   "MSG_no_pattern")); 
+		notifyBadInput(NbBundle.getMessage(TableRowDialog.class, "MSG_no_pattern"));
 		return; 
 	    } 
 	}
 
-	int i=0; 
 	int num = 0; 
-	for(i=0; i<4; ++i) 
+	for(int i=0; i<4; ++i) 
 	    if(cb[i].isSelected()) num++; 
 	
-	FilterMappingData.Dispatcher[] d = 
-	    new FilterMappingData.Dispatcher[num]; 
+	FilterMappingData.Dispatcher[] d = new FilterMappingData.Dispatcher[num]; 
 	
 	num = 0; 
 	if(cb[0].isSelected()) { 
@@ -375,12 +353,9 @@ public class MappingEditor extends JPanel implements ActionListener {
     }
 
     private void notifyBadInput(String msg) { 
-
 	Object[] options = { NotifyDescriptor.OK_OPTION };
 	NotifyDescriptor badInputDialog = 
-	    new NotifyDescriptor(msg,
-				 NbBundle.getMessage(TableRowDialog.class, 
-						     "MSG_invalid_input"),
+	    new NotifyDescriptor(msg, NbBundle.getMessage(TableRowDialog.class, "MSG_invalid_input"),
 				 NotifyDescriptor.DEFAULT_OPTION,
 				 NotifyDescriptor.ERROR_MESSAGE,
 				 options,
@@ -388,8 +363,5 @@ public class MappingEditor extends JPanel implements ActionListener {
 	DialogDisplayer.getDefault().notify(badInputDialog);
     }
 
-    private void log(String s) { 
-	System.out.println("MappingEditor" + s); 
-    }
 }
 

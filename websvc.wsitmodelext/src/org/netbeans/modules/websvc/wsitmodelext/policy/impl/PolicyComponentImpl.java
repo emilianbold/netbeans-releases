@@ -41,9 +41,10 @@
 
 package org.netbeans.modules.websvc.wsitmodelext.policy.impl;
 
+import javax.xml.namespace.QName;
+import org.netbeans.modules.websvc.wsitmodelext.GenericComponentImpl;
 import org.netbeans.modules.websvc.wsitmodelext.policy.PolicyQName;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import org.netbeans.modules.xml.wsdl.model.spi.GenericExtensibilityElement;
 import org.netbeans.modules.xml.wsdl.model.visitor.WSDLVisitor;
 import org.w3c.dom.Element;
 
@@ -51,30 +52,27 @@ import org.w3c.dom.Element;
  *
  * @author MartinGrebac
  */
-public abstract class PolicyComponentImpl extends GenericExtensibilityElement {
+public abstract class PolicyComponentImpl extends GenericComponentImpl {
     
     /**
      * Creates a new instance of PolicyComponentImpl
      */
     public PolicyComponentImpl(WSDLModel model, Element e) {
         super(model, e);
+        QName qName = this.getQName();
+        cfgVersion = PolicyQName.getConfigVersion(qName);
     }
 
     @Override
-    public abstract void accept(WSDLVisitor visitor);
-    
-     @Override
-     protected String getNamespaceURI() {
-        return PolicyQName.POLICY_NS_URI;
-    }
-
-    @Override
-    public String getAttribute(String attribute) {
-        throw new UnsupportedOperationException();
+    public void accept(WSDLVisitor visitor) {
+        visitor.visit(this);
     }
     
     @Override
-    public void setAttribute(String attribute, String value) {
-        throw new UnsupportedOperationException();
-    }    
+    protected String getNamespaceURI() {
+        if (cfgVersion == null) {
+            return null;
+        }
+        return PolicyQName.getNamespaceUri(cfgVersion);
+    }
 }

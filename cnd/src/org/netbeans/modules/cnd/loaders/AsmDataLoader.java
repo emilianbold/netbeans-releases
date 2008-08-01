@@ -49,26 +49,23 @@ import org.openide.loaders.MultiDataObject;
 import org.openide.util.NbBundle;
 
 import org.netbeans.modules.cnd.MIMENames;
+import org.netbeans.modules.cnd.editor.filecreation.ExtensionsSettings;
 import org.openide.util.SharedClassObject;
 
 /**
  *
  * @author Alexander Simon
  */
-public class AsmDataLoader extends CndAbstractDataLoader{
+public class AsmDataLoader extends CndAbstractDataLoaderExt {
     
     private static AsmDataLoader instance;
 
     /** Serial version number */
     static final long serialVersionUID = 6801389470714975683L;
 
-    /** The suffix list for Asm primary files */
-    private static final String[] asmExtensions = { "s", "as", "asm" };	// NOI18N
-
     protected AsmDataLoader() {
 	super("org.netbeans.modules.cnd.loaders.AsmDataObject"); // NOI18N
         instance = this;
-        createExtentions(asmExtensions);
     }
 
     public static AsmDataLoader getInstance(){
@@ -91,5 +88,13 @@ public class AsmDataLoader extends CndAbstractDataLoader{
     protected MultiDataObject createMultiObject(FileObject primaryFile)
 		    throws DataObjectExistsException, IOException {
         return new AsmDataObject(primaryFile, this);
+    }
+
+    public String getDisplayNameForExtensionList() {
+	throw new UnsupportedOperationException();
+    }
+
+    public String getSettingsName() {
+        return ExtensionsSettings.ASM;
     }
 }

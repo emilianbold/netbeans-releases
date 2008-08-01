@@ -41,8 +41,6 @@
 
 package org.netbeans.modules.websvc.wsitconf.ui.service.profiles;
 
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
 import org.netbeans.modules.websvc.wsitconf.spi.SecurityProfile;
 import org.netbeans.modules.websvc.wsitconf.spi.features.SecureConversationFeature;
 import org.netbeans.modules.websvc.wsitconf.ui.ComboConstants;
@@ -59,29 +57,20 @@ import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
  *
  * @author  Martin Grebac
  */
-public class STSIssued extends javax.swing.JPanel {
+public class STSIssued extends ProfileBaseForm {
 
-    private boolean inSync = false;
-
-    private WSDLComponent comp;
-    private SecurityProfile secProfile = null;
-    
     /**
      * Creates new form STSIssued
      */
     public STSIssued(WSDLComponent comp, SecurityProfile secProfile) {
-        super();
+        super(comp, secProfile);
         initComponents();
-        this.comp = comp;
-        this.secProfile = secProfile;
 
         inSync = true;
-        layoutCombo.removeAllItems();
-        layoutCombo.addItem(ComboConstants.STRICT);
-        layoutCombo.addItem(ComboConstants.LAX);
-        layoutCombo.addItem(ComboConstants.LAXTSFIRST);
-        layoutCombo.addItem(ComboConstants.LAXTSLAST);
-        
+        fillLayoutCombo(layoutCombo);
+        fillAlgoSuiteCombo(algoSuiteCombo);
+        fillKeySize(keySizeCombo);
+
         tokenTypeCombo.removeAllItems();
         tokenTypeCombo.addItem(ComboConstants.ISSUED_TOKENTYPE_SAML10);
         tokenTypeCombo.addItem(ComboConstants.ISSUED_TOKENTYPE_SAML11);
@@ -90,36 +79,14 @@ public class STSIssued extends javax.swing.JPanel {
         keyTypeCombo.removeAllItems();
         keyTypeCombo.addItem(ComboConstants.ISSUED_KEYTYPE_SYMMETRIC);
         keyTypeCombo.addItem(ComboConstants.ISSUED_KEYTYPE_PUBLIC);
+        keyTypeCombo.addItem(ComboConstants.ISSUED_KEYTYPE_NOPROOF);
        
-        keySizeCombo.removeAllItems();
-        keySizeCombo.addItem(ComboConstants.ISSUED_KEYSIZE_128);
-        keySizeCombo.addItem(ComboConstants.ISSUED_KEYSIZE_192);
-        keySizeCombo.addItem(ComboConstants.ISSUED_KEYSIZE_256);
-
-        algoSuiteCombo.removeAllItems();
-        algoSuiteCombo.addItem(ComboConstants.BASIC256);
-        algoSuiteCombo.addItem(ComboConstants.BASIC192);
-        algoSuiteCombo.addItem(ComboConstants.BASIC128);
-        algoSuiteCombo.addItem(ComboConstants.TRIPLEDES);
-        algoSuiteCombo.addItem(ComboConstants.BASIC256RSA15);
-        algoSuiteCombo.addItem(ComboConstants.BASIC192RSA15);
-        algoSuiteCombo.addItem(ComboConstants.BASIC128RSA15);
-        algoSuiteCombo.addItem(ComboConstants.TRIPLEDESRSA15);
-        algoSuiteCombo.addItem(ComboConstants.BASIC256SHA256);
-        algoSuiteCombo.addItem(ComboConstants.BASIC192SHA256);
-        algoSuiteCombo.addItem(ComboConstants.BASIC128SHA256);
-        algoSuiteCombo.addItem(ComboConstants.TRIPLEDESSHA256);
-        algoSuiteCombo.addItem(ComboConstants.BASIC256SHA256RSA15);
-        algoSuiteCombo.addItem(ComboConstants.BASIC192SHA256RSA15);
-        algoSuiteCombo.addItem(ComboConstants.BASIC128SHA256RSA15);
-        algoSuiteCombo.addItem(ComboConstants.TRIPLEDESSHA256RSA15);
-        
         inSync = false;
         
         sync();
     }
 
-    private void sync() {
+    protected void sync() {
         inSync = true;
 
         WSDLComponent secBinding = null;
@@ -182,21 +149,24 @@ public class STSIssued extends javax.swing.JPanel {
             sync();
         }
 
+        SecurityPolicyModelHelper spmh = SecurityPolicyModelHelper.getInstance(cfgVersion);
+        SecurityTokensModelHelper stmh = SecurityTokensModelHelper.getInstance(cfgVersion);
+        AlgoSuiteModelHelper asmh = AlgoSuiteModelHelper.getInstance(cfgVersion);
         if (secConv) {
             WSDLComponent bootPolicy = SecurityTokensModelHelper.getTokenElement(protToken, BootstrapPolicy.class);
             secBinding = SecurityPolicyModelHelper.getSecurityBindingTypeElement(bootPolicy);
             Policy p = (Policy) secBinding.getParent();
             if (source.equals(derivedKeysChBox)) {
-                SecurityPolicyModelHelper.enableRequireDerivedKeys(protToken, derivedKeysChBox.isSelected());
+                spmh.enableRequireDerivedKeys(protToken, derivedKeysChBox.isSelected());
             }
             if (source.equals(reqSigConfChBox)) {
-                SecurityPolicyModelHelper.enableRequireSignatureConfirmation(
+                spmh.enableRequireSignatureConfirmation(
                         SecurityPolicyModelHelper.getWss11(p), reqSigConfChBox.isSelected());
             }
         } else {
             secBinding = SecurityPolicyModelHelper.getSecurityBindingTypeElement(comp);
             if (source.equals(reqSigConfChBox)) {
-                SecurityPolicyModelHelper.enableRequireSignatureConfirmation(SecurityPolicyModelHelper.getWss11(comp), reqSigConfChBox.isSelected());
+                spmh.enableRequireSignatureConfirmation(SecurityPolicyModelHelper.getWss11(comp), reqSigConfChBox.isSelected());
             }
         }
 
@@ -204,69 +174,53 @@ public class STSIssued extends javax.swing.JPanel {
         WSDLComponent token = SecurityTokensModelHelper.getTokenTypeElement(tokenKind);
 
         if (source.equals(tokenTypeCombo) || source.equals(keyTypeCombo) || source.equals(keySizeCombo)) {
-            SecurityTokensModelHelper.setIssuedTokenRSTAttributes(token, 
+            stmh.setIssuedTokenRSTAttributes(token, 
                     (String)tokenTypeCombo.getSelectedItem(), 
                     (String)keyTypeCombo.getSelectedItem(), 
                     (String)keySizeCombo.getSelectedItem());
         }
 
         if (source.equals(issuerAddressField) || source.equals(issuerMetadataField)) {
-            SecurityTokensModelHelper.setIssuedTokenAddressAttributes(token, 
+            stmh.setIssuedTokenAddressAttributes(token, 
                     issuerAddressField.getText(), 
                     issuerMetadataField.getText());
         }
         
         if (source.equals(encryptSignatureChBox)) {
-            SecurityPolicyModelHelper.enableEncryptSignature(secBinding, encryptSignatureChBox.isSelected());
+            spmh.enableEncryptSignature(secBinding, encryptSignatureChBox.isSelected());
             if (secConv) {
-                SecurityPolicyModelHelper.enableEncryptSignature(topSecBinding, encryptSignatureChBox.isSelected());
+                spmh.enableEncryptSignature(topSecBinding, encryptSignatureChBox.isSelected());
             }
         }
         if (source.equals(encryptOrderChBox)) {
-            SecurityPolicyModelHelper.enableEncryptBeforeSigning(secBinding, encryptOrderChBox.isSelected());
+            spmh.enableEncryptBeforeSigning(secBinding, encryptOrderChBox.isSelected());
             if (secConv) {
-                SecurityPolicyModelHelper.enableEncryptBeforeSigning(topSecBinding, encryptOrderChBox.isSelected());
+                spmh.enableEncryptBeforeSigning(topSecBinding, encryptOrderChBox.isSelected());
             }
         }
         if (source.equals(layoutCombo)) {
-            SecurityPolicyModelHelper.setLayout(secBinding, (String) layoutCombo.getSelectedItem());
+            spmh.setLayout(secBinding, (String) layoutCombo.getSelectedItem());
             if (secConv) {
-                SecurityPolicyModelHelper.setLayout(topSecBinding, (String) layoutCombo.getSelectedItem());
+                spmh.setLayout(topSecBinding, (String) layoutCombo.getSelectedItem());
             }
         }
         if (source.equals(algoSuiteCombo)) {
-            AlgoSuiteModelHelper.setAlgorithmSuite(secBinding, (String) algoSuiteCombo.getSelectedItem());
+            asmh.setAlgorithmSuite(secBinding, (String) algoSuiteCombo.getSelectedItem());
             if (secConv) {
-                AlgoSuiteModelHelper.setAlgorithmSuite(topSecBinding, (String) algoSuiteCombo.getSelectedItem());
+                asmh.setAlgorithmSuite(topSecBinding, (String) algoSuiteCombo.getSelectedItem());
             }
         }
         if (source.equals(reqDerivedKeys)) {
-            SecurityPolicyModelHelper.enableRequireDerivedKeys(token, reqDerivedKeys.isSelected());
+            spmh.enableRequireDerivedKeys(token, reqDerivedKeys.isSelected());
             return;
         }
         
         enableDisable();
     }
 
-    private void enableDisable() {
+    protected void enableDisable() {
         boolean secConvEnabled = secConvChBox.isSelected();
         derivedKeysChBox.setEnabled(secConvEnabled);
-    }
-    
-    private void setCombo(JComboBox combo, String item) {
-        if (item == null) {
-            combo.setSelectedIndex(0);
-        } else {
-            combo.setSelectedItem(item);
-        }
-    }
-
-    private void setChBox(JCheckBox chBox, Boolean enable) {
-        if (enable == null) {
-            chBox.setSelected(false);
-        } else {
-            chBox.setSelected(enable);
-        }
     }
     
     /** This method is called from within the constructor to

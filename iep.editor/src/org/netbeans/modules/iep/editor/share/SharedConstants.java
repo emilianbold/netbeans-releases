@@ -81,7 +81,9 @@ public interface SharedConstants {
     
     public static final String OP_CONTIGUOUS_ORDER = "ContiguousOrder";
     
+    public static final String OP_INVOKE_STREAM = "InvokeStream";
        
+    public static final String OP_EXTERNAL_TABLE_POLLING_STREAM = "ExternalTablePollingStream";
     // Sub TcgCompoent
     public static String METADATA_KEY = "Metadata";
     
@@ -109,6 +111,8 @@ public interface SharedConstants {
     public static String ID_KEY = "id";
     
     public static String INPUT_TYPE_KEY = "inputType";
+    
+    public static String IS_RELATION_INPUT_STATIC = "isRelationInputStatic";
     
     public static String INPUT_MAX_COUNT_KEY = "inputMaxCount";
     
@@ -176,6 +180,26 @@ public interface SharedConstants {
     
     public static String INCREMENT_UNIT_KEY = "incrementUnit";
 
+    //-----Invoke Stream properties --
+    public static String EXTERNAL_IEP_PROCESS_QUALIFIED_NAME = "externalIepProcessQualifiedName";
+    
+    public static String EXTERNAL_OPERATOR_NAME = "externalOperatorName";
+    
+    // ----- External Table Polling Stream operator
+    public static String POLLING_INTERVAL = "pollingInterval";
+    
+    public static String POLLING_INTERVAL_TIME_UNIT = "pollingIntervalTimeUnit";
+    
+    public static String POLLING_RECORD_SIZE = "pollingRecordSize";
+    
+    public static String POLLING_DATABASE_JNDI_NAME = "databaseJndiName";
+    
+    public static String POLLING_RECORD_IDENTIFIER_COLUMNS = "recordIdentifierColumns";
+    
+    public static String RECORD_IDENTIFIER_COLUMNS_SCHEMA = "recordIdentifierColumnsSchema";
+    
+    public static String POLLING_IS_DELETE_RECORDS = "isDeleteRecords";
+    
     //===================================================
     public static String IS_GLOBAL_KEY = "isGlobal"; 
     
@@ -250,30 +274,45 @@ public interface SharedConstants {
     public static SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSSZ");
     
     public static String[] SQL_TYPE_NAMES = new String[] {
-	//      SQL_TYPE_BIT,
-	//      SQL_TYPE_TINYINT,
-	//      SQL_TYPE_SMALLINT,
-	      SQL_TYPE_INTEGER,
-	      SQL_TYPE_BIGINT,
-	//     SQL_TYPE_REAL,
-	//      SQL_TYPE_FLOAT,
-	      SQL_TYPE_DOUBLE,
-	//      SQL_TYPE_DECIMAL,
-	//      SQL_TYPE_NUMERIC,
-	//      SQL_TYPE_CHAR,
-	      SQL_TYPE_VARCHAR,
-	//      SQL_TYPE_LONGVARCHAR,
-	      SQL_TYPE_DATE,
-	      SQL_TYPE_TIME,
-	      SQL_TYPE_TIMESTAMP,
-	//      SQL_TYPE_BINARY,
-	//      SQL_TYPE_VARBINARY,
-	//      SQL_TYPE_LONGVARBINARY,
-	//      SQL_TYPE_BLOB,
-	      SQL_TYPE_CLOB,
-	//      "ARRAY",
-	//      "REF",
-	//      "STRUCT",
+    //      SQL_TYPE_BIT,
+    //      SQL_TYPE_TINYINT,
+    //      SQL_TYPE_SMALLINT,
+          SQL_TYPE_INTEGER,
+          SQL_TYPE_BIGINT,
+    //     SQL_TYPE_REAL,
+    //      SQL_TYPE_FLOAT,
+          SQL_TYPE_DOUBLE,
+    //      SQL_TYPE_DECIMAL,
+    //      SQL_TYPE_NUMERIC,
+    //      SQL_TYPE_CHAR,
+          SQL_TYPE_VARCHAR,
+    //      SQL_TYPE_LONGVARCHAR,
+          SQL_TYPE_DATE,
+          SQL_TYPE_TIME,
+          SQL_TYPE_TIMESTAMP,
+    //      SQL_TYPE_BINARY,
+    //      SQL_TYPE_VARBINARY,
+    //      SQL_TYPE_LONGVARBINARY,
+    //      SQL_TYPE_BLOB,
+          SQL_TYPE_CLOB,
+    //      "ARRAY",
+    //      "REF",
+    //      "STRUCT",
   };
+  
+  //reserved column names  
+  public static final String COL_SEQID = "ems_seqid";
+  public static final String COL_TIMESTAMP = "ems_timestamp"; 
+  
+  
+  public static String[] RESERVED_COLUMN_NAMES = new String[] {
+      COL_SEQID,
+      COL_TIMESTAMP
+  };
+  
+  //default jndi name
+  public static final String DEFAULT_JNDINAME = "jdbc/iepseDerbyNonXA"; 
+  
+  
 }
     

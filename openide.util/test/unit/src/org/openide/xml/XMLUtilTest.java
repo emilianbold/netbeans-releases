@@ -47,7 +47,13 @@ import java.io.CharConversionException;
 import java.io.IOException;
 import java.io.StringReader;
 import java.lang.ref.WeakReference;
+import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamSource;
+import javax.xml.validation.Schema;
+import javax.xml.validation.SchemaFactory;
+import javax.xml.validation.Validator;
 import org.netbeans.junit.NbTestCase;
 import org.w3c.dom.CDATASection;
 import org.w3c.dom.Document;
@@ -153,6 +159,37 @@ public class XMLUtilTest extends NbTestCase {
             String data = "<!ELEMENT foo (x+)><!ELEMENT x EMPTY>";
             return new InputSource(new StringReader(data));
         }
+    }
+
+    public void testValidate() throws Exception {
+        Element r = XMLUtil.createDocument("root", "some://where", null, null).getDocumentElement();
+        r.setAttribute("hello", "there");
+        SchemaFactory f = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+        String xsd =
+                "<xsd:schema xmlns:xsd='http://www.w3.org/2001/XMLSchema' targetNamespace='some://where' xmlns='some://where' elementFormDefault='qualified'>\n" +
+                " <xsd:element name='root'>\n" +
+                "  <xsd:complexType>\n" +
+                "   <xsd:attribute name='hello' type='xsd:NMTOKEN' use='required'/>\n" +
+                "  </xsd:complexType>\n" +
+                " </xsd:element>\n" +
+                "</xsd:schema>\n";
+        Schema s = f.newSchema(new StreamSource(new StringReader(xsd)));
+        XMLUtil.validate(r, s);
+        r.setAttribute("goodbye", "now");
+        try {
+            XMLUtil.validate(r, s);
+            fail();
+        } catch (SAXException x) {/*OK*/}
+        // Make sure Java #6529766 is fixed (no longer any need for fixupNoNamespaceAttrs):
+        String xml = "<root xmlns='some://where'/>";
+        r = XMLUtil.parse(new InputSource(new StringReader(xml)), false, true, null, null).getDocumentElement();
+        r.setAttribute("hello", "there");
+        XMLUtil.validate(r, s);
+        r.setAttribute("goodbye", "now");
+        try {
+            XMLUtil.validate(r, s);
+            fail();
+        } catch (SAXException x) {/*OK*/}
     }
     
     public void testToAttributeValue() throws IOException {

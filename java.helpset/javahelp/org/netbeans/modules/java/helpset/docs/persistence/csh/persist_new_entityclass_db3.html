@@ -1,0 +1,55 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--       
+*     Copyright � 2008 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+-->
+<html>
+    <head>
+        <title>New Entity Classes from Database Wizard: Mapping Options</title>
+        <link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+    </head>
+    <body>
+        <h2>New Entity Classes from Database Wizard: Mapping Options</h2>
+        <p> <small><a href="#seealso">See Also</a></small></p>
+        <p>This wizard generates a set of entity classes from an existing database connection or schema. 
+        The IDE generates an entity class for each related table with persistent fields. 
+        The wizard takes you through the steps of choosing the database connection or schema, 
+        and then selecting the tables in the database that will be used to generate the entity classes.</p>
+        <p>You open the wizard by right-clicking a 
+        project node or subnode and choosing New &gt; Other, selecting the Persistence category and then selecting Entity Classes from Database.</p>
+        <p>In this page of the wizard you can set the following options for configuring
+        generated annotation elements:</p>
+        <ul>
+            <li><b>Association Fetch.</b> Select the fetch element to add to the relationship annotations.
+            You can select <tt>default</tt>, <tt>eager</tt> or <tt>lazy</tt>. 
+            When <tt>default</tt> is selected (<tt>default</tt> is selected by default),
+            no fetch element is added to the relationship annotations.</li>
+            <li><b>Collection Type.</b> Select the collection type for OneToMany and ManyToMany CMR fields. 
+            You can select <tt>java.util.Collection</tt>, <tt>java.util.List</tt> or <tt>java.util.Set</tt>. 
+            <tt>java.util.Collection</tt> is selected by default.</li>
+            <li><b>Fully Qualified Database Table Names.</b> When selected, <tt>catalog</tt> and <tt>schema</tt>
+            elements are added to the <tt>@Table</tt> annotation. 
+            This option is deselected by default.</li>
+            <li><b>Attributes for Regenerating Database Tables.</b> When selected, <tt>nullable</tt> (when it is false), 
+            <tt>length</tt> (for String type), <tt>precision</tt> and <tt>scale</tt> (for decimal type) are added 
+            to the <tt>@Column</tt> annotation. 
+            Unique constraints are also added to the <tt>@Table</tt> annotation when selected. 
+            This option is deselected by default.</li>
+        </ul>            
+            
+        
+        <p>When you click Finish, the IDE creates entity classes for each of the tables you specified in the wizard.</p>
+        
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="../general/persistence_about.html">About Java Persistence</a></dd>
+            <dd><a href="../general/persistence_fromdb.html">Generating Persistent Entity Classes from a Database</a></dd>
+            <dd><a href="../general/persistence_unit.html">Creating a Persistence Unit</a></dd>
+        </dl>
+        
+        <hr><font size=-2><a href="../../credits.html">Legal Notices</a></font>
+        
+        <table border="0" cellpadding="50">
+            <tr><td>&nbsp;</td></tr>
+    </table></body>
+</html>

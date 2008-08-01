@@ -24,7 +24,7 @@ import java.awt.event.KeyEvent;
 import javax.swing.KeyStroke;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.nodes.BpelNode;
-import org.netbeans.modules.bpel.editors.api.utils.Util;
+import org.netbeans.modules.bpel.editors.api.EditorUtil;
 import org.openide.loaders.DataNode;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
@@ -116,7 +116,7 @@ public class GoToDiagrammAction extends BpelNodeAction {
     }
 
     protected void performAction(BpelEntity[] bpelEntities) {
-        Util.goToDesign(bpelEntities[0]);
+        EditorUtil.goToDesign(bpelEntities[0]);
     }
 
     @Override

@@ -79,14 +79,17 @@ final class ProjectImportLocationPanel extends JPanel implements HelpCtx.Provide
     private String lastModuleLocation = null;
     
     private Object j2eeModuleType;
+    private boolean allowAlternativeBuildXml;
     
     /** Creates new form TestPanel */
     public ProjectImportLocationPanel (Object j2eeModuleType, String name, String title, 
-            ProjectImportLocationWizardPanel wizard, String nameFormatter, String importLabel) {
+            ProjectImportLocationWizardPanel wizard, String nameFormatter, String importLabel, boolean allowAlternativeBuildXml) {
         this.wizard = wizard;
         this.j2eeModuleType = j2eeModuleType;
         this.nameFormatter = nameFormatter;
+        this.allowAlternativeBuildXml = allowAlternativeBuildXml;
         initComponents ();
+        setAsMainCheckBox.setSelected(UserProjectSettings.getDefault().getSetAsMainProject(j2eeModuleType));
         jLabelSrcLocationDesc.setText(importLabel);
         currentLibrariesLocation = "."+File.separatorChar+"lib"; // NOI18N
         librariesLocation.setText(currentLibrariesLocation);
@@ -159,6 +162,7 @@ final class ProjectImportLocationPanel extends JPanel implements HelpCtx.Provide
 
         settings.putProperty(ProjectLocationWizardPanel.SET_AS_MAIN, setAsMainCheckBox.isSelected() ? Boolean.TRUE : Boolean.FALSE );
         settings.putProperty(ProjectLocationWizardPanel.SHARED_LIBRARIES, sharableProject.isSelected() ? librariesLocation.getText() : null);
+        UserProjectSettings.getDefault().setSetAsMainProject(setAsMainCheckBox.isSelected(), j2eeModuleType);
     }
 
     boolean valid (WizardDescriptor settings) {
@@ -170,7 +174,7 @@ final class ProjectImportLocationPanel extends JPanel implements HelpCtx.Provide
         File f = new File (sourceLocationPath);
         if (!f.isDirectory() || !f.canRead()) {
 	    String format = NbBundle.getMessage(ProjectImportLocationPanel.class, "MSG_IllegalSources"); //NOI18N
-	    wizardDescriptor.putProperty( "WizardPanel_errorMessage", MessageFormat.format(format, new Object[] {sourceLocationPath})); //NOI18N
+	    wizardDescriptor.putProperty( WizardDescriptor.PROP_ERROR_MESSAGE, MessageFormat.format(format, new Object[] {sourceLocationPath})); //NOI18N
             return false;
         }
 
@@ -180,7 +184,7 @@ final class ProjectImportLocationPanel extends JPanel implements HelpCtx.Provide
         f = new File(f, projectName);
         f = ProjectLocationPanel.getCanonicalFile(f);
         if(f == null || !projectName.equals(f.getName())) {
-            settings.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(ProjectImportLocationPanel.class, "MSG_ProvideProjectName"));
+            settings.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(ProjectImportLocationPanel.class, "MSG_ProvideProjectName"));
             return false; // Invalid project name
         }
 
@@ -225,6 +229,9 @@ final class ProjectImportLocationPanel extends JPanel implements HelpCtx.Provide
                 else if ("build".equals(childName)) {    //NOI18N
                     file = NbBundle.getMessage (ProjectImportLocationPanel.class,"TXT_BuildFolder");
                 }
+                else if ("build.xml".equals(childName) && !allowAlternativeBuildXml) {    //NOI18N
+                    file = NbBundle.getMessage(ProjectImportLocationPanel.class, "TXT_BuildXML");
+                }
 //                else if ("WEB-INF".equals(childName)) {    //NOI18N
 //                    file = NbBundle.getMessage (ImportLocationVisual.class,"TXT_WebInfFolder");
 //                }
@@ -236,14 +243,14 @@ final class ProjectImportLocationPanel extends JPanel implements HelpCtx.Provide
                 }
                 if (file != null) {
                     String format = NbBundle.getMessage (ProjectImportLocationPanel.class,"MSG_ProjectFolderInvalid");
-                    wizardDescriptor.putProperty( "WizardPanel_errorMessage", MessageFormat.format(format, new Object[] {file}));  //NOI18N
+                    wizardDescriptor.putProperty( WizardDescriptor.PROP_ERROR_MESSAGE, MessageFormat.format(format, new Object[] {file}));  //NOI18N
                     return false;
                 }
             }
         }
         if (j2eeModuleType == J2eeModule.CLIENT) {
             if (FileSearchUtility.guessJavaRoots(FileUtil.toFileObject(destFolder)) == null) {
-                wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(ProjectImportLocationPanel.class,"MSG_NoAppClientModule")); //NOI18N
+                wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(ProjectImportLocationPanel.class,"MSG_NoAppClientModule")); //NOI18N
                 return false; // No java project location
             }
         }
@@ -268,7 +275,7 @@ final class ProjectImportLocationPanel extends JPanel implements HelpCtx.Provide
     }
 
     private void setErrorMessage(String messageId) {
-        wizardDescriptor.putProperty( "WizardPanel_errorMessage",
+        wizardDescriptor.putProperty( WizardDescriptor.PROP_ERROR_MESSAGE,
                 messageId == null ? null : NbBundle.getMessage(ProjectImportLocationPanel.class, messageId));
     }
 
@@ -342,6 +349,7 @@ final class ProjectImportLocationPanel extends JPanel implements HelpCtx.Provide
             }
         });
 
+        librariesLabel.setLabelFor(librariesLocation);
         org.openide.awt.Mnemonics.setLocalizedText(librariesLabel, org.openide.util.NbBundle.getMessage(ProjectImportLocationPanel.class, "ProjectLocationPanel.librariesLabel.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(browseLibraries, org.openide.util.NbBundle.getMessage(ProjectImportLocationPanel.class, "PanelSharabilityVisual.browseLibraries.text")); // NOI18N
@@ -351,7 +359,6 @@ final class ProjectImportLocationPanel extends JPanel implements HelpCtx.Provide
             }
         });
 
-        setAsMainCheckBox.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(setAsMainCheckBox, org.openide.util.NbBundle.getMessage(ProjectImportLocationPanel.class, "LBL_NWP1_SetAsMain_CheckBox")); // NOI18N
         setAsMainCheckBox.setMargin(new java.awt.Insets(2, 0, 2, 2));
 
@@ -363,12 +370,12 @@ final class ProjectImportLocationPanel extends JPanel implements HelpCtx.Provide
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(jLabelSrcLocation)
                     .add(jLabelPrjLocation)
-                    .add(jLabelPrjName, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 71, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(jLabelPrjName, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, projectNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 353, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, moduleLocationTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 353, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, projectLocationTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 353, Short.MAX_VALUE))
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, projectNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 413, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, moduleLocationTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 413, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, projectLocationTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 413, Short.MAX_VALUE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, jButtonSrcLocation)
@@ -376,20 +383,20 @@ final class ProjectImportLocationPanel extends JPanel implements HelpCtx.Provide
             .add(layout.createSequentialGroup()
                 .add(jLabelPrjLocationDesc)
                 .addContainerGap())
-            .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 515, Short.MAX_VALUE)
+            .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 592, Short.MAX_VALUE)
             .add(layout.createSequentialGroup()
                 .add(sharableProject)
                 .addContainerGap(296, Short.MAX_VALUE))
             .add(layout.createSequentialGroup()
                 .add(librariesLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(librariesLocation, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 347, Short.MAX_VALUE)
+                .add(librariesLocation, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 403, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(browseLibraries))
             .add(layout.createSequentialGroup()
                 .add(setAsMainCheckBox)
                 .addContainerGap())
-            .add(jLabelSrcLocationDesc, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 515, Short.MAX_VALUE)
+            .add(jLabelSrcLocationDesc, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 592, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -425,11 +432,26 @@ final class ProjectImportLocationPanel extends JPanel implements HelpCtx.Provide
                 .add(52, 52, 52))
         );
 
-        moduleLocationTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectImportLocationPanel.class, "ACS_LBL_IW_ImportLocation_A11YDesc")); // NOI18N
-        jButtonSrcLocation.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectImportLocationPanel.class, "ACS_LBL_IW_ImportLocationBrowse_A11YDesc")); // NOI18N
-        projectNameTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectImportLocationPanel.class, "ACS_LBL_NWP1_ProjectName_A11YDesc")); // NOI18N
-        projectLocationTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectImportLocationPanel.class, "ACS_LBL_NPW1_ProjectLocation_A11YDesc")); // NOI18N
-        jButtonPrjLocation.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectImportLocationPanel.class, "ACS_LBL_NWP1_BrowseLocation_A11YDesc")); // NOI18N
+        jLabelSrcLocationDesc.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectImportLocationPanel.class, "ACSD_ProjectImportLocationPanel_NA")); // NOI18N
+        jLabelSrcLocation.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectImportLocationPanel.class, "ACSD_ProjectImportLocationPanel_NA")); // NOI18N
+        moduleLocationTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectImportLocationPanel.class, "ACSD_ProjectImportLocationPanel_NA")); // NOI18N
+        jButtonSrcLocation.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectImportLocationPanel.class, "ACSD_ProjectImportLocationPanel_NA")); // NOI18N
+        jLabelPrjLocationDesc.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectImportLocationPanel.class, "ACSD_ProjectImportLocationPanel_NA")); // NOI18N
+        jLabelPrjName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectImportLocationPanel.class, "ACSD_ProjectImportLocationPanel_NA")); // NOI18N
+        projectNameTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectImportLocationPanel.class, "ACSD_ProjectImportLocationPanel_NA")); // NOI18N
+        jLabelPrjLocation.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectImportLocationPanel.class, "ACSD_ProjectImportLocationPanel_NA")); // NOI18N
+        projectLocationTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectImportLocationPanel.class, "ACSD_ProjectImportLocationPanel_NA")); // NOI18N
+        jButtonPrjLocation.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectImportLocationPanel.class, "ACSD_ProjectImportLocationPanel_NA")); // NOI18N
+        jSeparator1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ProjectImportLocationPanel.class, "ACSD_ProjectImportLocationPanel_NA")); // NOI18N
+        jSeparator1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectImportLocationPanel.class, "ACSD_ProjectImportLocationPanel_NA")); // NOI18N
+        sharableProject.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectImportLocationPanel.class, "ACSD_ProjectImportLocationPanel_NA")); // NOI18N
+        librariesLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectImportLocationPanel.class, "ACSD_ProjectImportLocationPanel_NA")); // NOI18N
+        librariesLocation.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectImportLocationPanel.class, "ACSD_ProjectImportLocationPanel_NA")); // NOI18N
+        browseLibraries.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectImportLocationPanel.class, "ACSD_ProjectImportLocationPanel_NA")); // NOI18N
+        setAsMainCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectImportLocationPanel.class, "ACSD_ProjectImportLocationPanel_NA")); // NOI18N
+
+        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ProjectImportLocationPanel.class, "ACSD_ProjectImportLocationPanel_NA")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectImportLocationPanel.class, "ACSD_ProjectImportLocationPanel_NA")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButtonPrjLocationActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonPrjLocationActionPerformed
@@ -556,7 +578,23 @@ private void browseLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
      * @return the help context for this action
      */
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(ProjectImportLocationPanel.class);
+        return new HelpCtx(generateHelpID(ProjectImportLocationPanel.class, j2eeModuleType));
+    }
+    
+    static String generateHelpID(Class clazz, Object moduleType) {
+        if (moduleType == J2eeModule.CLIENT) {
+            return clazz.getName()+"_APPCLIENT"; // NOI18N
+        }
+        if (moduleType == J2eeModule.EJB) {
+            return clazz.getName()+"_EJB"; // NOI18N
+        }
+        if (moduleType == J2eeModule.EAR) {
+            return clazz.getName()+"_EAR"; // NOI18N
+        }
+        if (moduleType == J2eeModule.WAR) {
+            return clazz.getName()+"_WAR"; // NOI18N
+        }
+        throw new AssertionError("Unknown module type: "+moduleType); // NOI18N
     }
     
     private String validFreeProjectName (final File parentFolder, final String formater, final int index) {

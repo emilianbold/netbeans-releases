@@ -80,8 +80,8 @@ made subject to such option by the copyright holder.
 
     <!-- GSF colors - taken from ruby editor -->
     <!--"semantic" highlighting:-->
-    <fontcolor name="mod-parameter" foreColor="blue"/> 
-    <fontcolor name="mod-parameter-use" foreColor="blue"> 
+    <fontcolor name="mod-custom1" foreColor="blue"/> 
+    <fontcolor name="mod-custom2" foreColor="blue"> 
         <font style="italic" />
     </fontcolor>
     <fontcolor name="mod-method" foreColor="007c00" >

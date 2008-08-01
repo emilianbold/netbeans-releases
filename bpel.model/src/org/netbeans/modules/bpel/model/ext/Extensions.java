@@ -47,6 +47,7 @@ public interface Extensions {
     
     String TRANSACTION_EXT_URI = "http://www.sun.com/wsbpel/2.0/process/executable/SUNExtension/Transaction"; // NOI18N
     String TRACE_EXT_URI = "http://www.sun.com/wsbpel/2.0/process/executable/SUNExtension/Trace"; // NOI18N
+    String EDITOR_EXT_URI = "http://www.sun.com/wsbpel/2.0/process/executable/SUNExtension/Editor"; // NOI18N
     String ERROR_EXT_URI = "http://www.sun.com/wsbpel/2.0/process/executable/SUNExtension/ErrorHandling"; // NOI18N
     
 }

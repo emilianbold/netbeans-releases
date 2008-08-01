@@ -38,82 +38,67 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.options.editor;
 
-import java.awt.BorderLayout;
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.ArrayList;
+import java.beans.PropertyChangeSupport;
 import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JTabbedPane;
-import javax.swing.border.EmptyBorder;
+import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
 import org.netbeans.spi.options.OptionsPanelController;
-import org.openide.awt.Mnemonics;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
-import org.openide.util.LookupEvent;
-import org.openide.util.LookupListener;
-import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
 
-
 /**
- * Implementation of one panel in Options Dialog.
  *
- * @author Jan Jancura
+ * @author Jan Jancura, Dusan Balek
  */
-public class FolderBasedController extends OptionsPanelController {
+public final class FolderBasedController extends OptionsPanelController implements PropertyChangeListener {
+
+    private static final String OPTIONS_SUB_FOLDER = "optionsSubFolder"; //NOI18N
+    private static final String BASE_FOLDER = "OptionsDialog/Editor/"; //NOI18N
+
+    private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+    private final String folder;
+    private Lookup masterLookup;
+    private FolderBasedOptionPanel panel;
+    private Map<String, OptionsPanelController> mimeType2delegates;
     
-    private final Lookup.Result<? extends OptionsPanelController> lookupResult;
-    private final LookupListener lookupListener = new LookupListener() {
-        public void resultChanged(LookupEvent ev) {
-            rebuild();
-        }
-    };
-    private final HelpCtx helpCtx;
-    
-    private Collection<? extends OptionsPanelController> delegates;
-    private JComponent component;
-    
-    public FolderBasedController(String path, HelpCtx helpCtx) {
-        this.helpCtx = helpCtx;
-        
-        Lookup lookup = Lookups.forPath(path);
-        lookupResult = lookup.lookupResult(OptionsPanelController.class);
-        lookupResult.addLookupListener(WeakListeners.create(
-                LookupListener.class,
-                lookupListener,
-                lookupResult
-                ));
-        rebuild();
+    public static OptionsPanelController create(Map args) {
+        return new FolderBasedController((String)args.get(OPTIONS_SUB_FOLDER));
     }
+
+    private FolderBasedController(String subFolder) {
+        folder = subFolder != null ? BASE_FOLDER + subFolder : BASE_FOLDER;
+    }    
     
     public final void update() {
-        Collection<? extends OptionsPanelController> controllers = delegates;
+        Collection<? extends OptionsPanelController> controllers = mimeType2delegates.values();
         for(OptionsPanelController c : controllers) {
             c.update();
         }
     }
     
     public final void applyChanges() {
-        Collection<? extends OptionsPanelController> controllers = delegates;
+        Collection<? extends OptionsPanelController> controllers = mimeType2delegates.values();
         for(OptionsPanelController c : controllers) {
             c.applyChanges();
         }
     }
     
     public final void cancel() {
-        Collection<? extends OptionsPanelController> controllers = delegates;
+        Collection<? extends OptionsPanelController> controllers = mimeType2delegates.values();
         for(OptionsPanelController c : controllers) {
             c.cancel();
         }
     }
     
     public final boolean isValid() {
-        Collection<? extends OptionsPanelController> controllers = delegates;
+        Collection<? extends OptionsPanelController> controllers = mimeType2delegates.values();
         for(OptionsPanelController c : controllers) {
             if (!c.isValid()) {
                 return false;
@@ -123,7 +108,7 @@ public class FolderBasedController extends OptionsPanelController {
     }
     
     public final boolean isChanged() {
-        Collection<? extends OptionsPanelController> controllers = delegates;
+        Collection<? extends OptionsPanelController> controllers = mimeType2delegates.values();
         for(OptionsPanelController c : controllers) {
             if (c.isChanged()) {
                 return true;
@@ -133,69 +118,56 @@ public class FolderBasedController extends OptionsPanelController {
     }
     
     public final HelpCtx getHelpCtx() {
-        return helpCtx;
-    }
-    
-    public final JComponent getComponent(Lookup masterLookup) {
-        if (component == null) {
-            Collection<JComponent> panels = new ArrayList<JComponent>();
-            Collection<? extends OptionsPanelController> controllers = delegates;
-            
-            for(OptionsPanelController c : controllers) {
-                panels.add(c.getComponent(masterLookup));
-            }
-            
-            component = createComponent(panels);
-        }
-        
-        return component;
+        return null;
     }
 
-    protected JComponent createComponent(Collection<? extends JComponent> panels) {
-        return new TabbedPanel(panels);
-    }
-    
-    public final void addPropertyChangeListener(PropertyChangeListener l) {
-        Collection<? extends OptionsPanelController> controllers = delegates;
-        for(OptionsPanelController c : controllers) {
-            c.addPropertyChangeListener(l);
+    @Override
+    public synchronized JComponent getComponent(Lookup masterLookup) {
+        if (panel == null) {
+            this.masterLookup = masterLookup;
+            mimeType2delegates = lookupDelegates();
+            for (OptionsPanelController controller : mimeType2delegates.values())
+                controller.addPropertyChangeListener(this);
+            panel = new FolderBasedOptionPanel(this);
         }
+        return panel;
     }
     
-    public final void removePropertyChangeListener(PropertyChangeListener l) {
-        Collection<? extends OptionsPanelController> controllers = delegates;
-        for(OptionsPanelController c : controllers) {
-            c.removePropertyChangeListener(l);
-        }
+    @Override
+    public void addPropertyChangeListener(PropertyChangeListener l) {
+	pcs.addPropertyChangeListener(l);
     }
     
-    private void rebuild() {
-        this.delegates = lookupResult.allInstances();
-        this.component = null;
+    @Override
+    public void removePropertyChangeListener(PropertyChangeListener l) {
+	pcs.removePropertyChangeListener(l);
     }
-    
-    private static final class TabbedPanel extends JPanel {
         
-        private JTabbedPane tabbedPane = new JTabbedPane();
-        
-        public TabbedPanel(Collection<? extends JComponent> panels) {
-            JLabel label = new JLabel(); // Only for setting tab names
-            
-            for(JComponent p : panels) {
-                p.setBorder(new EmptyBorder(8, 8, 8, 8));
-                
-                String tabName = p.getName();
-                Mnemonics.setLocalizedText(label, tabName);
-                tabbedPane.addTab(label.getText(), p);
-                
-                int idx = Mnemonics.findMnemonicAmpersand(tabName);
-                if (idx != -1 && idx + 1 < tabName.length()) {
-                    tabbedPane.setMnemonicAt(tabbedPane.getTabCount() - 1, Character.toUpperCase(tabName.charAt(idx + 1)));
-                }
-            }
-            
-            setLayout(new BorderLayout());
-            add(tabbedPane, BorderLayout.CENTER);
+    @Override
+    public Lookup getLookup() {
+        return super.getLookup();
+    }
+    
+    Iterable<String> getMimeTypes() {
+        return mimeType2delegates.keySet();
+    }
+    
+    OptionsPanelController getController(String mimeType) {
+        return mimeType2delegates.get(mimeType);
+    }
+
+    private Map<String, OptionsPanelController> lookupDelegates() {
+        Map<String, OptionsPanelController> ret = new LinkedHashMap<String, OptionsPanelController>();
+        for (String mimeType : EditorSettings.getDefault().getAllMimeTypes()) {
+            Lookup l = Lookups.forPath(folder + mimeType);
+            OptionsPanelController controller = l.lookup(OptionsPanelController.class);
+            if (controller != null)
+                ret.put(mimeType, controller);
         }
-    } // End of TabbedPane class
+        return ret;
+    }
+
+    public void propertyChange(PropertyChangeEvent evt) {
+        pcs.firePropertyChange(evt);
+    }
 }

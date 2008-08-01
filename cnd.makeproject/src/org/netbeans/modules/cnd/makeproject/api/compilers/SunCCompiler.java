@@ -42,132 +42,34 @@
 package org.netbeans.modules.cnd.makeproject.api.compilers;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.List;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
-import org.netbeans.modules.cnd.makeproject.api.configurations.BasicCompilerConfiguration;
-import org.openide.DialogDisplayer;
+import org.netbeans.modules.cnd.api.compilers.ToolchainManager.CompilerDescriptor;
 import org.openide.ErrorManager;
-import org.openide.NotifyDescriptor;
-import org.openide.util.NbBundle;
 
 public class SunCCompiler extends SunCCCCompiler {
     private static final String compilerStderrCommand = " -xdryrun -E"; // NOI18N
     
-    private static final String[] DEVELOPMENT_MODE_OPTIONS = {
-        "",  // Fast Build // NOI18N
-        "-g", // Debug" // NOI18N
-        "-g -xO3 -xhwcprof", // Performance Debug" // NOI18N
-        "-xprofile=tcov -xinline=", // Test Coverage // NOI18N
-        "-g -xO2", // Dianosable Release // NOI18N
-        "-xO3 -xstrconst", // Release // NOI18N
-        "-xO5 -xipo=1 -xdepend -fsimple=1 -xlibmil -xlibmopt -xvector -xbuiltin -xalias_level=basic", // Performance Release // NOI18N
-    };
-    
-    private static final String[] WARNING_LEVEL_OPTIONS = {
-        "-w", // No Warnings // NOI18N
-        "", // Default // NOI18N
-        "+w", // More Warnings // NOI18N
-        "-errwarn=%all", // Convert Warnings to Errors // NOI18N
-    };
-    
-    private static final String[] MT_LEVEL_OPTIONS = {
-        "", // None // NOI18N
-        "-mt", // Safe // NOI18N
-        "-xautopar -xvector -xreduction -xloopinfo", // Automatic // NOI18N
-        "-xopenmp", // Open MP // NOI18N
-    };
-    
-    private static final String[] STANDARD_OPTIONS = {
-        "-xc99=none", // Old // NOI18N
-        "-xc99=none", // Legacy // NOI18N
-        "", // Default // NOI18N
-        "-xstrconst -xc99", // Modern // NOI18N
-    };
-    
-    private static final String[] LANGUAGE_EXT_OPTIONS = {
-        "-Xc", // None // NOI18N
-        "", // Default // NOI18N
-        "", // All // NOI18N
-    };
-    
     /** Creates a new instance of SunCCompiler */
-    public SunCCompiler(CompilerFlavor flavor, int kind, String name, String displayName, String path) {
-        super(flavor, kind, name, displayName, path);
+    public SunCCompiler(String hkey, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
+        super(hkey, flavor, kind, name, displayName, path);
     }
     
     @Override
     public SunCCompiler createCopy() {
-        SunCCompiler copy = new SunCCompiler(getFlavor(), getKind(), "", getDisplayName(), getPath());
+        SunCCompiler copy = new SunCCompiler(getHostKey(), getFlavor(), getKind(), "", getDisplayName(), getPath());
         copy.setName(getName());
         return copy;
     }
-    
+
     @Override
-    public String getDevelopmentModeOptions(int value) {
-        return DEVELOPMENT_MODE_OPTIONS[value];
+    public CompilerDescriptor getDescriptor() {
+        return getFlavor().getToolchainDescriptor().getC();
     }
     
     @Override
-    public String getWarningLevelOptions(int value) {
-        if (value < WARNING_LEVEL_OPTIONS.length)
-            return WARNING_LEVEL_OPTIONS[value];
-        else
-            return ""; // NOI18N
-    }
-    
-    @Override
-    public String getSixtyfourBitsOption(int value) {
-        if (getFlavor() == CompilerFlavor.Sun12) {
-            if (value == BasicCompilerConfiguration.BITS_DEFAULT)
-                return ""; // NOI18N
-            else if (value == BasicCompilerConfiguration.BITS_32)
-                return "-m32"; // NOI18N
-            else if (value == BasicCompilerConfiguration.BITS_64)
-                return "-m64"; // NOI18N
-            else
-                return ""; // NOI18N
-        } else {
-            if (value == BasicCompilerConfiguration.BITS_DEFAULT)
-                return ""; // NOI18N
-            else if (value == BasicCompilerConfiguration.BITS_32)
-                return ""; // NOI18N
-            else if (value == BasicCompilerConfiguration.BITS_64)
-                return "-xarch=generic64"; // NOI18N
-            else
-                return ""; // NOI18N
-        }
-    }
-    
-    @Override
-    public String getStripOption(boolean value) {
-        return value ? "-s" : ""; // NOI18N
-    }
-    
-    // To be overridden
-    @Override
-    public String getMTLevelOptions(int value) {
-        return MT_LEVEL_OPTIONS[value];
-    }
-    
-    // To be overridden
-    @Override
-    public String getStandardsEvolutionOptions(int value) {
-        return STANDARD_OPTIONS[value];
-    }
-    
-    // To be overridden
-    @Override
-    public String getLanguageExtOptions(int value) {
-        return LANGUAGE_EXT_OPTIONS[value];
-    }
-    
-    @Override
-    protected void parseCompilerOutput(InputStream is) {
-        BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+    protected void parseCompilerOutput(BufferedReader reader) {
+        
         try {
             String line;
             while ((line = reader.readLine()) != null) {
@@ -191,7 +93,6 @@ public class SunCCompiler extends SunCCCCompiler {
             // Adding "__STDC__=0". It's missing from dryrun output
             systemPreprocessorSymbolsList.add("__STDC__=0"); // NOI18N
             
-            is.close();
             reader.close();
         } catch (IOException ioe) {
             ErrorManager.getDefault().notify(ErrorManager.WARNING, ioe); // FIXUP
@@ -208,11 +109,6 @@ public class SunCCompiler extends SunCCCCompiler {
         }
     }
     
-    
-    @Override
-    protected String getDefaultPath() {
-        return "cc"; // NOI18N
-    }
     
     @Override
     protected String getCompilerStderrCommand() {

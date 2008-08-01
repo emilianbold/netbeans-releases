@@ -79,6 +79,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.ListIterator;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -130,18 +131,19 @@ public final class ElementUtilities {
 	if( element.getKind() == ElementKind.PACKAGE ) {
 	    throw new IllegalArgumentException();
 	}
+
+        element = element.getEnclosingElement();
 	
-        if (element.getEnclosingElement().getKind() == ElementKind.PACKAGE) {
+        if (element.getKind() == ElementKind.PACKAGE) {
             //element is a top level class, returning null according to the contract:
             return null;
         }
         
-	while( !(element.getEnclosingElement().getKind().isClass() || 
-	       element.getEnclosingElement().getKind().isInterface()) ) {
+	while(element != null && !(element.getKind().isClass() || element.getKind().isInterface())) {
 	    element = element.getEnclosingElement();
 	}
 	
-	return (TypeElement)element.getEnclosingElement(); // Wrong
+	return (TypeElement)element;
     }
     
     /**
@@ -240,20 +242,21 @@ public final class ElementUtilities {
             Elements elements = JavacElements.instance(ctx);
             switch (type.getKind()) {
                 case DECLARED:
-                    HashMap<CharSequence, ArrayList<Element>> hiders = new HashMap<CharSequence, ArrayList<Element>>();
-                    Types types = JavacTypes.instance(ctx);
-                    for (Element member : elements.getAllMembers((TypeElement)((DeclaredType)type).asElement())) {
+                    TypeElement te = (TypeElement)((DeclaredType)type).asElement();
+                    for (Element member : elements.getAllMembers(te)) {
                         if (acceptor == null || acceptor.accept(member, type)) {
-                            CharSequence name = member.getSimpleName();
-                            ArrayList<Element> h = hiders.get(name);
-                            if (!isHidden(member, h, types)) {
+                            if (!isHidden(member, members, elements))
                                 members.add(member);
-                                if (h == null) {
-                                    h = new ArrayList<Element>();
-                                    hiders.put(name, h);
-                                }
-                                h.add(member);
-                            }
+                        }
+                    }
+                    if (te.getKind().isClass()) {
+                        VarSymbol thisPseudoMember = new VarSymbol(Flags.FINAL | Flags.HASINIT, Name.Table.instance(ctx)._this, (ClassType)te.asType(), (ClassSymbol)te);
+                        if (acceptor == null || acceptor.accept(thisPseudoMember, type))
+                            members.add(thisPseudoMember);
+                        if (te.getSuperclass().getKind() == TypeKind.DECLARED) {
+                            VarSymbol superPseudoMember = new VarSymbol(Flags.FINAL | Flags.HASINIT, Name.Table.instance(ctx)._super, (ClassType)te.getSuperclass(), (ClassSymbol)te);
+                            if (acceptor == null || acceptor.accept(superPseudoMember, type))
+                                members.add(superPseudoMember);
                         }
                     }
                 case BOOLEAN:
@@ -464,6 +467,21 @@ public final class ElementUtilities {
         return false;
     }
     
+    private boolean isHidden(Element member, List<Element> members, Elements elements) {
+        for (ListIterator<Element> it = members.listIterator(); it.hasNext();) {
+            Element hider = it.next();
+            if (hider == member)
+                return true;
+            if (hider.getSimpleName() == member.getSimpleName()) {
+                if (elements.hides(hider, member))
+                    return true;
+                if (elements.hides(member, hider))
+                    it.remove();
+            }
+        }
+        return false;
+    }
+
     /**
      * Returns true if the element is declared (directly or indirectly) local
      * to a method or variable initializer.  Also true for fields of inner 

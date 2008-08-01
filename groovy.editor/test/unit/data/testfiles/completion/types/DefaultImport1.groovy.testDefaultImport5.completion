@@ -1,0 +1,5 @@
+Code completion result for source line:
+HttpU|         // java.net.HttpURLConnection
+(QueryType=COMPLETION, NameKind=PREFIX)
+------------------------------------
+CLASS      HttpURLConnection                          null

@@ -45,7 +45,6 @@ import java.beans.PropertyEditor;
 import java.beans.PropertyEditorSupport;
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Configuration;
 import org.openide.nodes.Node;
 
@@ -65,6 +64,7 @@ public class CompilerSetNodeProp extends Node.Property {
 	this.txt2 = txt2;
 	this.txt3 = txt3;
         oldname = configuration.getOption();
+        configuration.setCompilerSetNodeProp(this);
     }
     
     public String getOldname() {
@@ -95,7 +95,7 @@ public class CompilerSetNodeProp extends Node.Property {
     
     public void setValue(Object v) {
         configuration.setValue((String)v);
-}
+    }
     
     @Override
     public void restoreDefaultValue() {
@@ -120,12 +120,16 @@ public class CompilerSetNodeProp extends Node.Property {
         return true;
     }
 
-    @Override
-    public PropertyEditor getPropertyEditor() {
-	return new IntEditor();
+    public void repaint() {
+        ((CompilerSetEditor) getPropertyEditor()).repaint();
     }
 
-    private class IntEditor extends PropertyEditorSupport {
+    @Override
+    public PropertyEditor getPropertyEditor() {
+	return new CompilerSetEditor();
+    }
+
+    private class CompilerSetEditor extends PropertyEditorSupport {
         @Override
         public String getJavaInitializationString() {
             return getAsText();
@@ -145,11 +149,17 @@ public class CompilerSetNodeProp extends Node.Property {
         @Override
         public String[] getTags() {
             List<String> list = new ArrayList<String>();
-            if (CompilerSetManager.getDefault().getCompilerSet(getOldname()) == null) {
-                list.add(getOldname());
-            }
-            list.addAll(CompilerSetManager.getDefault().getCompilerSetNames());
+            // TODO: this works unpredictable on switching development hosts
+            // TODO: should be resolved later on
+//            if (configuration.getCompilerSetManager().getCompilerSet(getOldname()) == null) {
+//                list.add(getOldname());
+//            }
+            list.addAll(configuration.getCompilerSetManager().getCompilerSetNames());
             return (String[]) list.toArray(new String[list.size()]);
+        }
+        
+        public void repaint() {
+            firePropertyChange();
         }
     }
 }

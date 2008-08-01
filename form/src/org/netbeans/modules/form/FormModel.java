@@ -42,6 +42,9 @@
 package org.netbeans.modules.form;
 
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import javax.swing.event.UndoableEditEvent;
 import javax.swing.undo.*;
 
@@ -71,9 +74,10 @@ public class FormModel
         NB50, // form file verson 1.3
         NB60_PRE, // until NB 6.0 beta 1 (incl. 5.5 with 6.0 update), form file version 1.4
         NB60, // since NB 6.0 beta1, form file version 1.5
-        NB61 // since NB 6.1 milestone 2, for file version 1.6
+        NB61, // since NB 6.1 milestone 2, form file version 1.6
+        NB65 // since NB 6.5 milestone 1, form file version 1.7
     }
-    final static FormVersion LATEST_VERSION = FormVersion.NB61;
+    final static FormVersion LATEST_VERSION = FormVersion.NB65;
 
     private FormVersion currentVersionLevel;
     private FormVersion lastVersionLevel;
@@ -648,11 +652,19 @@ public class FormModel
         }
     }
 
+    private static boolean formModifiedLogged = false;
     public CompoundEdit endCompoundEdit(boolean commit) {
         if (compoundEdit != null) {
             t("ending compound edit: "+commit); // NOI18N
             compoundEdit.end();
             if (commit && undoRedoRecording && compoundEdit.isSignificant()) {
+                if (!formModifiedLogged) {
+                    Logger logger = Logger.getLogger("org.netbeans.ui.metrics.form"); // NOI18N
+                    LogRecord rec = new LogRecord(Level.INFO, "USG_FORM_MODIFIED"); // NOI18N
+                    rec.setLoggerName(logger.getName());
+                    logger.log(rec);
+                    formModifiedLogged = true;
+                }
                 getUndoRedoManager().undoableEditHappened(
                     new UndoableEditEvent(this, compoundEdit));
             }
@@ -1008,6 +1020,7 @@ public class FormModel
         return ev;
     }
 
+    private static boolean bindingModifiedLogged = false;
     public FormModelEvent fireBindingChanged(RADComponent metacomp,
                                              String path,
                                              String subProperty,
@@ -1021,6 +1034,13 @@ public class FormModel
         sendEvent(ev);
 
         if (undoRedoRecording && oldValue != newValue) {
+            if (!bindingModifiedLogged) {
+                Logger logger = Logger.getLogger("org.netbeans.ui.metrics.form"); // NOI18N
+                LogRecord rec = new LogRecord(Level.INFO, "USG_FORM_BINDING_MODIFIED"); // NOI18N
+                rec.setLoggerName(logger.getName());
+                logger.log(rec);
+                bindingModifiedLogged = true;
+            }
             addUndoableEdit(ev.getUndoableEdit());
         }
 

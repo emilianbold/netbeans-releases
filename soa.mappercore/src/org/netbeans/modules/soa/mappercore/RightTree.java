@@ -79,14 +79,13 @@ public class RightTree extends MapperPanel implements
     private JLabel childrenLabel;
     private RightTreeCellRenderer treeCellRenderer = new DefaultRightTreeCellRenderer();
     private ActionListener actionEscape;
-    private boolean printMode = false;
-    
+        
     RightTree(Mapper mapper) {
         super(mapper);
 
         // vlv: print
-        putClientProperty(java.awt.print.Printable.class, ""); // NOI18N
-        putClientProperty(java.lang.Integer.class, new Integer(2));
+        putClientProperty("print.printable", Boolean.TRUE); // NOI18N
+        putClientProperty("print.order", new Integer(2)); // NOI18N
         
         setBackground(Color.WHITE);
         setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
@@ -162,6 +161,8 @@ public class RightTree extends MapperPanel implements
         iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_CONTEXT_MENU, 0), "show-popupMenu");
         aMap.put("show-popupMenu", new ShowPopupMenuAction());
         
+        ViewTooltips.register(this);
+        
         getAccessibleContext().setAccessibleName(NbBundle
                 .getMessage(RightTree.class, "ACSN_RightTree")); // NOI18N
         getAccessibleContext().setAccessibleDescription(NbBundle
@@ -189,7 +190,7 @@ public class RightTree extends MapperPanel implements
 
     @Override
     public String getToolTipText(MouseEvent event) {
-        MapperModel model = getMapperModel();
+        MapperModel model = getMapper().getModel();
         MapperContext context = getMapper().getContext();
 
         if (model == null || context == null) {
@@ -275,9 +276,10 @@ public class RightTree extends MapperPanel implements
     
     @Override
     public void print(Graphics g) {
-        printMode = true;
+        Mapper mapper = getMapper();
+        mapper.setPrintMode(true);
         super.print(g);
-        printMode = false;
+        mapper.setPrintMode(false);
     }
 
     @Override
@@ -329,7 +331,7 @@ public class RightTree extends MapperPanel implements
         final boolean leaf = node.isLeaf();
         final boolean expanded = node.isExpanded();
 
-        if (node.isSelected() && !printMode) {
+        if (node.isSelected() && !mapper.getPrintMode()) {
             VerticalGradient gradient = (hasFocus())
                     ? Mapper.SELECTED_BACKGROUND_IN_FOCUS
                     : Mapper.SELECTED_BACKGROUND_NOT_IN_FOCUS;
@@ -448,28 +450,32 @@ public class RightTree extends MapperPanel implements
     private void paintNodeEdges(MapperNode node, Graphics2D g2, int y0,
             int width, int step) {
         Mapper mapper = getMapper();
-
+        SelectionModel selectionModel = getSelectionModel();
+        TreePath treePath = node.getTreePath();
+        
         final int contentHeight = node.getContentHeight();
         final int height = node.getHeight();
         final boolean leaf = node.isLeaf();
         final boolean expanded = node.isExpanded();
-
+        Color color = null;
+        
         Graph graph = node.getGraph();
 
-        boolean hasEdge = (graph != null && graph.hasOutgoingLinks());
+        boolean hasEdge = false;
+        boolean edgeIsSelected = false;
+        
         Link link = null;
-        for (int i = graph.getLinkCount() - 1; i >= 0; i--) {
-          if (graph.getLink(i).getTarget() instanceof Graph) {
-              link = graph.getLink(i);
-          }  
+        if (graph != null) {
+            link = graph.getOutgoingLink();
         }
         
         if (link != null) {
-            hasEdge = getCanvas().getRendererContext().paintLink(node.getTreePath(), link);
+            hasEdge = getCanvas().getRendererContext().paintLink(treePath, link);
+            edgeIsSelected = selectionModel.isSelected(treePath, link);
         }
         
         boolean hasChildEdges = false;
-
+        
         if (leaf) {
 
         } else if (expanded) {
@@ -490,31 +496,51 @@ public class RightTree extends MapperPanel implements
                 }
             }
         }
+        Stroke oldStroke = g2.getStroke();
 
+        if (!mapper.getPrintMode()) {
+            if (edgeIsSelected && node.isGraphExpanded()) {
+                color = MapperStyle.SELECTION_COLOR;
+                g2.setStroke(MapperStyle.SELECTION_STROKE);
+            } else if (selectionModel.isSelected(treePath)) {
+                color = MapperStyle.LINK_COLOR_SELECTED_NODE;
+            } else {
+                color = MapperStyle.LINK_COLOR_UNSELECTED_NODE;
+            }
+        } else {
+            color = MapperStyle.LINK_COLOR_UNSELECTED_NODE;
+        }
+        
         if (contentHeight < height) {
             if (hasEdge) {
                 int y = y0 + (contentHeight - 1) / 2;
                 int x = width - node.getIndent() - node.getLabelWidth();
-                paintEdge(g2, y, x, step, false);
+                paintEdge(g2, y, x, color, step, false);
             }
 
             if (hasChildEdges) {
+                if (selectionModel.isSelected(treePath) && !mapper.getPrintMode()) {
+                    color = MapperStyle.LINK_COLOR_SELECTED_NODE;
+                } else {
+                    color = MapperStyle.LINK_COLOR_UNSELECTED_NODE;
+                }
                 int y = y0 + contentHeight + (height - contentHeight - 1) / 2;
                 int x = width - node.getIndent() - childrenLabel.getPreferredSize().width - mapper.getTotalIndent();
-                paintEdge(g2, y, x, step, true);
+                paintEdge(g2, y, x, color, step, true);
             }
         } else {
             if (hasEdge || hasChildEdges) {
                 int y = y0 + (contentHeight - 1) / 2;
                 int x = width - node.getIndent() - node.getLabelWidth() - 1;
-                paintEdge(g2, y, x, step, hasChildEdges && !hasEdge);
+                paintEdge(g2, y, x, color, step, hasChildEdges && !hasEdge);
             }
         }
+        g2.setStroke(oldStroke);
     }
 
-    private void paintEdge(Graphics2D g2, int y, int x, int step, boolean dashed) {
+    private void paintEdge(Graphics2D g2, int y, int x, Color color,int step, boolean dashed) {
         int cx = x - step / 2;
-
+        g2.setColor(color);
         if (dashed) {
             Stroke oldStroke = g2.getStroke();
             g2.setStroke(Mapper.DASHED_STROKE);
@@ -524,7 +550,7 @@ public class RightTree extends MapperPanel implements
             g2.drawLine(0, y, cx, y);
         }
 
-        Link.paintTargetDecoration(g2, new Point(x, y), null, step);
+        Link.paintTargetDecoration(g2, new Point(x, y), color, step);
     }
 
     public void focusGained(FocusEvent e) {
@@ -1024,7 +1050,7 @@ public class RightTree extends MapperPanel implements
         public void actionPerformed(ActionEvent e) {
             RightTree tree = RightTree.this;
             MapperContext context = tree.getContext();
-            MapperModel model = tree.getMapperModel();
+            MapperModel model = tree.getMapper().getModel();
             if (context == null || model == null) { return; }
 
             TreePath treePath = tree.getSelectionModel().getSelectedPath();

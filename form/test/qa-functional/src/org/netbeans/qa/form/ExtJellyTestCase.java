@@ -77,13 +77,12 @@ import org.netbeans.jemmy.operators.Operator;
 public abstract class ExtJellyTestCase extends JellyTestCase {
 
     private static int MY_WAIT_MOMENT = 500;
-
-    private String _testProjectName = "SampleProject"; // NOI18N
+    public String _testProjectName = "SampleProject"; // NOI18N
     private String _testPackageName = "data"; // NOI18N
     public static String DELETE_OBJECT_CONFIRM = "Confirm Object Deletion"; // NOI18N
     /* Skip file (JFrame,Frame, JDialog, ...) delete in the end of each test */
     public Boolean DELETE_FILES = false;
-    
+
     public String getTestProjectName() {
         return _testProjectName;
     }
@@ -93,13 +92,13 @@ public abstract class ExtJellyTestCase extends JellyTestCase {
     }
 
     public void setTestProjectName(String newValue) {
-        _testProjectName = newValue; 
+        _testProjectName = newValue;
     }
 
     public void setTestPackageName(String newValue) {
         _testPackageName = newValue;
     }
-    
+
     /** Constructor required by JUnit */
     public ExtJellyTestCase(String testName) {
         super(testName);
@@ -139,11 +138,9 @@ public abstract class ExtJellyTestCase extends JellyTestCase {
         return createFile(project, packageName, category, fileType, name, null);
     }
 
-
     public String getTimeStamp() {
         return String.valueOf(new Date().getTime());
     }
-
 
     private String createFile(String project, String packageName, String category, String fileType, String name, String beanName) {
         NewFileWizardOperator nfwo = NewFileWizardOperator.invoke();
@@ -188,7 +185,6 @@ public abstract class ExtJellyTestCase extends JellyTestCase {
         return fileName;
     }
 
-
     /**
      * Removes file from actual project and actual test package
      */
@@ -225,6 +221,47 @@ public abstract class ExtJellyTestCase extends JellyTestCase {
     }
 
     /**
+     * Open default project
+     * @param projectName
+     */
+    public void openProject(String projectName) throws IOException {
+        this._testProjectName = projectName;
+
+        //File projectPath = new File(this.getDataDir() + "/projects/" + _testProjectName);
+
+        //Check if project is not already opened
+        ProjectsTabOperator pto = new ProjectsTabOperator().invoke();
+        int nodeCount = pto.tree().getChildCount(pto.tree().getRoot());
+
+        for (int i = 0; i < nodeCount; i++) {
+            String testNode = pto.tree().getChild(pto.tree().getRoot(), i).toString();
+
+            if (testNode.equals(_testProjectName)) {
+                log("Project " + _testProjectName + " has been already opened but should not be");
+                return;
+            }
+        }
+
+        //Open project
+        this.openDataProjects(projectName);
+        log("Project " + projectName + "was opened");
+
+        //Check if project was opened
+        pto.invoke();
+        nodeCount = pto.tree().getChildCount(pto.tree().getRoot());
+        for (int i = 0; i < nodeCount; i++) {
+            String str = pto.tree().getChild(pto.tree().getRoot(), i).toString();
+            if (str.equals(projectName)) {
+                log("Project " + _testProjectName + " is open. (Ok)");
+                return;
+            }
+        }
+        log("Project " + _testProjectName + " is not open, but should be!");
+        fail("Project is not open");
+
+    }
+
+    /**
      * Opens file into nb editor
      * @param fileName
      * @return node
@@ -248,7 +285,7 @@ public abstract class ExtJellyTestCase extends JellyTestCase {
             path += _testPackageName + "|"; // NOI18N
         }
         path += filePath;
-        
+
         //p(path);
         Node formnode = new Node(prn, path); // NOI18N
         formnode.setComparator(new Operator.DefaultStringComparator(true, false));
@@ -256,24 +293,24 @@ public abstract class ExtJellyTestCase extends JellyTestCase {
 
         if (openFileInEditor) {
             OpenAction openAction = new OpenAction();
-            openAction.perform(formnode);            
+            openAction.perform(formnode);
         }
 
         return formnode;
     }
-    
+
     public Node getProjectFileNode(String fileName) {
-        return getProjectFileNode(fileName, false,false);
+        return getProjectFileNode(fileName, false, false);
     }
-    
+
     public Node getProjectFileNode(String fileName, boolean containsFilePathPackage) {
         return getProjectFileNode(fileName, false, containsFilePathPackage);
     }
 
     public Node getProjectFileNode(String fileName, String packageName) {
-        return getProjectFileNode(packageName+"|"+fileName, false,true);
+        return getProjectFileNode(packageName + "|" + fileName, false, true);
     }
-    
+
     public String createBeanFormFile(String beanClassName) {
         return createFile(getTestProjectName(), getTestPackageName(), "Swing GUI Forms", "Bean Form", "MyBeanForm", beanClassName); // NOI18N
     }
@@ -311,7 +348,7 @@ public abstract class ExtJellyTestCase extends JellyTestCase {
         Action act = new Action(null, actionName);
         act.setComparator(new Operator.DefaultStringComparator(false, false));
         act.perform(node);
-        // p(actionName);
+    // p(actionName);
     }
 
     /**
@@ -323,7 +360,7 @@ public abstract class ExtJellyTestCase extends JellyTestCase {
         Action act = new ActionNoBlock(null, actionName);
         act.setComparator(new Operator.DefaultStringComparator(false, false));
         act.perform(node);
-        // p(actionName);
+    // p(actionName);
     }
 
     /**
@@ -336,7 +373,7 @@ public abstract class ExtJellyTestCase extends JellyTestCase {
             Action act = new Action(null, actionName);
             act.setComparator(comparator);
             act.perform(node);
-            // p(actionName);
+        // p(actionName);
         }
     }
 
@@ -417,7 +454,6 @@ public abstract class ExtJellyTestCase extends JellyTestCase {
         waitNoEvent(MY_WAIT_MOMENT);
     }
 
-
     /** Find msg string in file
      *
      * @result boolean
@@ -427,7 +463,7 @@ public abstract class ExtJellyTestCase extends JellyTestCase {
         return content.indexOf(msg) != -1;
     }
 
-/**
+    /**
      * Fetch the entire contents of a text file, and return it in a String.
      * This style of implementation does not throw Exceptions to the caller.
      *
@@ -476,12 +512,9 @@ public abstract class ExtJellyTestCase extends JellyTestCase {
      * @result full path to file (e.g /home/jirka/TestFrame.java)
      */
     public String getFilePathFromDataPackage(String fileName) {
-        return getDataDir().getAbsolutePath()
-                + File.separatorChar + getTestProjectName()
-                + File.separatorChar + "src" + File.separatorChar
-                + getTestPackageName() + File.separatorChar + fileName; // NOI18N
+        return getDataDir().getAbsolutePath() + File.separatorChar + getTestProjectName() + File.separatorChar + "src" + File.separatorChar + getTestPackageName() + File.separatorChar + fileName; // NOI18N
     }
-    
+
     /** Gets text value of jlabel component
      * @return String text 
      */
@@ -495,24 +528,42 @@ public abstract class ExtJellyTestCase extends JellyTestCase {
         NbDialogOperator dialogOp = new NbDialogOperator("[JLabel]");  // NOI18N
         Property prop = new Property(new PropertySheetOperator(dialogOp), "text");  // NOI18N
         String result = prop.getValue();
-        
+
         // close property dialog
-        new JButtonOperator(dialogOp,"Close").push();  // NOI18N
+        new JButtonOperator(dialogOp, "Close").push();  // NOI18N
         waitAMoment();
 
         return result;
     }
 
     public void createJDABasicProject() {
-        
-        new ActionNoBlock("File|New Project",null).perform(); // NOI18N
+
+        new ActionNoBlock("File|New Project", null).perform(); // NOI18N
 
         NewProjectWizardOperator op = new NewProjectWizardOperator();
         op.selectProject("Java Desktop Application"); // NOI18N
         op.next();
-        
+
         NbDialogOperator newJDAOp = new NbDialogOperator("New Desktop Application"); // NOI18N
         new JTextFieldOperator(newJDAOp, 3).typeText(getTestProjectName());
         new JButtonOperator(newJDAOp, "Finish").push(); // NOI18N
+    }
+    // Method for checking jdk version
+    public static String getJDKVersionCode() {
+        String specVersion = System.getProperty("java.version");
+
+        if (specVersion.startsWith("1.4")) {
+            return "jdk14";
+        }
+
+        if (specVersion.startsWith("1.5")) {
+            return "jdk15";
+        }
+
+        if (specVersion.startsWith("1.6")) {
+            return "jdk16";
+        }
+
+        throw new IllegalStateException("Specification version: " + specVersion + " not recognized.");
     }
 }

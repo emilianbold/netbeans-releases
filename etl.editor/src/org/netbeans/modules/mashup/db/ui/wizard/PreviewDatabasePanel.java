@@ -57,8 +57,10 @@ import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
 
 import com.sun.sql.framework.exception.BaseException;
+import java.io.File;
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.sql.framework.common.utils.DBExplorerUtil;
 import org.netbeans.modules.sql.framework.model.DBConnectionDefinition;
 
 /**
@@ -136,6 +138,7 @@ public class PreviewDatabasePanel extends AbstractWizardPanel implements
      * @see org.openide.WizardDescriptor.Panel#storeSettings
      */
     public void storeSettings(Object settings) {
+        String dbDir = null;
         if (settings instanceof WizardDescriptor) {
             WizardDescriptor wd = (WizardDescriptor) settings;
             
@@ -147,6 +150,7 @@ public class PreviewDatabasePanel extends AbstractWizardPanel implements
                     FlatfileDatabaseModel model = component.getModel();
                     DBConnectionDefinition def = model.getFlatfileDBConnectionDefinition(true);
                     conn = FlatfileDBConnectionFactory.getInstance().getConnection(def.getConnectionURL());
+                    dbDir = (DBExplorerUtil.parseConnUrl(def.getConnectionURL()))[1];
                     List tables = model.getTables();
                     Iterator it = tables.iterator();
                     while(it.hasNext()) {
@@ -173,6 +177,10 @@ public class PreviewDatabasePanel extends AbstractWizardPanel implements
                             stmt.execute("shutdown");
                             stmt.close();
                             conn.close();
+                            if(dbDir != null){
+                                File dbExplorerNeedRefresh = new File(dbDir + "/dbExplorerNeedRefresh");
+                                dbExplorerNeedRefresh.createNewFile();
+                            }
                         } catch (Exception ex) {
                             //ignore
                         }

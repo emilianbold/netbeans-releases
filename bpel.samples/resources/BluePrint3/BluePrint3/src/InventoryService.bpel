@@ -33,6 +33,8 @@
          xmlns:tns="http://www.seebeyond.com/eInsight/newuntitled"
          xmlns:bpws="http://docs.oasis-open.org/wsbpel/2.0/process/executable"
          xmlns="http://docs.oasis-open.org/wsbpel/2.0/process/executable"
+         xmlns:sxt="http://www.sun.com/wsbpel/2.0/process/executable/SUNExtension/Trace" 
+         xmlns:sxed="http://www.sun.com/wsbpel/2.0/process/executable/SUNExtension/Editor"
          xmlns:invs="http://manufacturing.org/wsdl/inventory/bp3"
          xmlns:invsh="http://manufacturing.org/xsd/inventory"
          xmlns:po="http://manufacturing.org/xsd/purchase">
@@ -54,14 +56,13 @@
                      partnerLinkType="invs:inventoryRequestingLT"
                      myRole="inventoryService"/>
     </partnerLinks>
+
     <variables>
-        <variable name="purchaseOrder"
-                  messageType="invs:POMessage"></variable>
-        <variable name="inventoryStatus"
-                  messageType="invs:InventoryMessage"></variable>
-        <variable name="inventoryService_Fault"
-                  messageType="invs:inventoryFault"></variable>
+        <variable name="purchaseOrder" messageType="invs:POMessage"></variable>
+        <variable name="inventoryStatus" messageType="invs:InventoryMessage"></variable>
+        <variable name="inventoryService_Fault" messageType="invs:inventoryFault"></variable>
     </variables>
+
     <sequence>
         <receive name="inventoryService"
                  partnerLink="inventorySevicePLink"

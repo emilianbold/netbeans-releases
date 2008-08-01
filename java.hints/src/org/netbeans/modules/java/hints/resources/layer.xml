@@ -3,7 +3,7 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
 
 
 The contents of this file are subject to the terms of either the GNU
@@ -27,7 +27,7 @@ your own identifying information:
 Contributor(s):
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
 Microsystems, Inc. All Rights Reserved.
 
 If you wish your version of this file to be governed by only the CDDL
@@ -45,6 +45,28 @@ made subject to such option by the copyright holder.
     <folder name="Editors">
         <folder name="text">
             <folder name="x-java">
+              <folder name="Actions">
+            <file name="org-netbeans-modules-java-hints-introduce-IntroduceVariableAction.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.introduce.IntroduceAction.createVariable"/>
+            </file>
+            <file name="org-netbeans-modules-java-hints-introduce-IntroduceConstantAction.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.introduce.IntroduceAction.createConstant"/>
+            </file>
+            <file name="org-netbeans-modules-java-hints-introduce-IntroduceFieldAction.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.introduce.IntroduceAction.createField"/>
+            </file>
+            <file name="org-netbeans-modules-java-hints-introduce-IntroduceMethodAction.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.introduce.IntroduceAction.createMethod"/>
+            </file>
+              </folder>
+                <folder name="Keybindings">
+                    <folder name="NetBeans">
+                        <folder name="Defaults">
+                            <file name="org-netbeans-modules-java-hints-keybindings.xml" url="keybindings.xml"/> 
+                        </folder>
+                    </folder>
+                </folder>
+                
                 <folder name="UpToDateStatusProvider">
                     <file name="org-netbeans-modules-java-hints-infrastructure-JavaUpToDateStateProviderFactory.instance"/>
                 </folder>
@@ -79,6 +101,18 @@ made subject to such option by the copyright holder.
                     <file name="org-netbeans-modules-java-hints-HideField.instance"/>
                     <file name="org-netbeans-modules-java-hints-HideFieldByVar.instance"/>
                     <file name="org-netbeans-modules-java-hints-StaticAccess.instance"/>
+                    <file name="org-netbeans-modules-java-hints-EqualsHint-getArrayEquals.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.EqualsHint.getArrayEquals"/>
+                    </file>
+                    <file name="org-netbeans-modules-java-hints-EqualsHint-getIncompatibleEquals.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.EqualsHint.getIncompatibleEquals"/>
+                    </file>
+                    <file name="org-netbeans-modules-java-hints-EqualsHint-getDelegate.instance">
+                        <attr name="nonGUI" boolvalue="true"/>
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.EqualsHint.getDelegate"/>
+                    </file>
+                    <file name="org-netbeans-modules-java-hints-EqualsMethodHint.instance"/>
+                    <file name="org-netbeans-modules-java-hints-SyncOnNonFinal.instance"/>
                 </folder>    
 
                 <folder name="errors">
@@ -224,32 +258,42 @@ made subject to such option by the copyright holder.
 
             <folder name="suggestions">
                 <file name="org-netbeans-modules-java-hints-ConvertAnonymousToInner.instance"/>
+                <file name="org-netbeans-modules-java-hints-FieldForUnusedParam.instance"/>
+                <file name="org-netbeans-modules-java-hints-DeclarationForInstanceOf.instance"/>
             </folder>
          </folder>
         
     </folder>
     
-    <folder name="org.netbeans.modules.java.source">
-      <folder name="options">
-          <file name="Hints.instance">
-              <attr name="instanceClass" stringvalue="org.netbeans.modules.java.hints.options.HintsAdvancedOption"/>
-          </file>
+    <folder name="OptionsDialog">
+      <folder name="Editor">
+          <folder name="Hints">
+              <attr name="position" intvalue="0"/>
+              <folder name="text">
+                  <folder name="x-java">
+                      <file name="JavaHints.instance">
+                          <attr name="instanceOf" stringvalue="org.netbeans.spi.options.OptionsPanelController"/>
+                          <attr name="instanceCreate" newvalue="org.netbeans.modules.java.hints.options.HintsOptionsPanelController"/>
+                      </file>
+                  </folder>
+              </folder>
+          </folder>
       </folder>
   </folder>
   
     <folder name="Actions">
         <folder name="Refactoring">
             <file name="org-netbeans-modules-java-hints-introduce-IntroduceVariableAction.instance">
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.introduce.IntroduceAction.createVariable"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.introduce.IntroduceAction.createMenuVariable"/>
             </file>
             <file name="org-netbeans-modules-java-hints-introduce-IntroduceConstantAction.instance">
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.introduce.IntroduceAction.createConstant"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.introduce.IntroduceAction.createMenuConstant"/>
             </file>
             <file name="org-netbeans-modules-java-hints-introduce-IntroduceFieldAction.instance">
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.introduce.IntroduceAction.createField"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.introduce.IntroduceAction.createMenuField"/>
             </file>
             <file name="org-netbeans-modules-java-hints-introduce-IntroduceMethodAction.instance">
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.introduce.IntroduceAction.createMethod"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.introduce.IntroduceAction.createMenuMethod"/>
             </file>
             <file name="org-netbeans-modules-java-hints-ConvertAnonymousToInnerAction.instance"/>
         </folder>
@@ -259,10 +303,6 @@ made subject to such option by the copyright holder.
             <file name="org-netbeans-modules-java-hints-ConvertAnonymousToInnerAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-java-hints-ConvertAnonymousToInnerAction.instance"/>
                 <attr name="position" intvalue="1050"/>
-            </file>
-            <file name="org-netbeans-modules-java-hints-introduce-separatorBefore.instance">
-                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                <attr name="position" intvalue="1300"/>
             </file>
             <file name="org-netbeans-modules-java-hints-introduce-IntroduceVariableAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-java-hints-introduce-IntroduceVariableAction.instance"/>
@@ -281,6 +321,6 @@ made subject to such option by the copyright holder.
                 <attr name="position" intvalue="1700"/>
             </file>            
             </folder>
-    </folder>
+    </folder>   
     
 </filesystem>

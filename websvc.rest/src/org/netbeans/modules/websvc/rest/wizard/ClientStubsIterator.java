@@ -92,15 +92,15 @@ public final class ClientStubsIterator implements WizardDescriptor.Instantiating
                 if (c instanceof JComponent) { // assume Swing components
                     JComponent jc = (JComponent) c;
                     // Sets step number of a component
-                    jc.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(i));
+                    jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer(i));
                     // Sets steps names for a panel
-                    jc.putClientProperty("WizardPanel_contentData", steps);
+                    jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps);
                     // Turn on subtitle creation on each step
-                    jc.putClientProperty("WizardPanel_autoWizardStyle", Boolean.TRUE);
+                    jc.putClientProperty(WizardDescriptor.PROP_AUTO_WIZARD_STYLE, Boolean.TRUE);
                     // Show steps on the left side with the image on the background
-                    jc.putClientProperty("WizardPanel_contentDisplayed", Boolean.TRUE);
+                    jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DISPLAYED, Boolean.TRUE);
                     // Turn on numbering of all steps
-                    jc.putClientProperty("WizardPanel_contentNumbered", Boolean.TRUE);
+                    jc.putClientProperty(WizardDescriptor.PROP_CONTENT_NUMBERED, Boolean.TRUE);
                 }
             }
         }
@@ -124,7 +124,7 @@ public final class ClientStubsIterator implements WizardDescriptor.Instantiating
             generatorTask = RequestProcessor.getDefault().create(new Runnable() {
                 public void run() {
                     ProgressHandle pHandle = dialog.getProgressHandle();
-                    pHandle.start();
+                    //pHandle.start();
                     
                     try {
                         if(isProjectSelected) {
@@ -138,7 +138,7 @@ public final class ClientStubsIterator implements WizardDescriptor.Instantiating
                         Exceptions.printStackTrace(iox);
                     } finally {
                         dialog.close();
-                        pHandle.finish();
+                        //pHandle.finish();
                     }
                 }
             });
@@ -199,7 +199,7 @@ public final class ClientStubsIterator implements WizardDescriptor.Instantiating
     // client code.
     private String[] createSteps() {
         String[] beforeSteps = null;
-        Object prop = wizard.getProperty("WizardPanel_contentData");
+        Object prop = wizard.getProperty(WizardDescriptor.PROP_CONTENT_DATA);
         if (prop != null && prop instanceof String[]) {
             beforeSteps = (String[]) prop;
         }

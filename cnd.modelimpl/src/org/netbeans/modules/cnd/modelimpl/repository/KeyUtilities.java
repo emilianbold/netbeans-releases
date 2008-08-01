@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.cnd.modelimpl.repository;
 
+import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
@@ -48,6 +49,7 @@ import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
+import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.repository.spi.Key;
 
 /**
@@ -124,6 +126,33 @@ public class KeyUtilities {
         return RepositoryUtils.getFileNameByIdSafe(unitId, fileId);
     }    
  
+    public static CsmDeclaration.Kind getKeyKind(Key key){
+        if (key instanceof OffsetableDeclarationKey) {
+            return Utils.getCsmDeclarationKind( ((OffsetableDeclarationKey)key).getKind() );
+        }
+        return null;
+    }
+
+    public static CharSequence getKeyName(Key key){
+        if (key instanceof OffsetableKey) {
+            return ((OffsetableKey)key).getName();
+        }
+        return null;
+    }
+
+    public static int getKeyStartOffset(Key key){
+        if (key instanceof OffsetableKey) {
+            return ((OffsetableKey)key).getStartOffset();
+        }
+        return -1;
+    }
+
+    public static int getKeyEndOffset(Key key){
+        if (key instanceof OffsetableKey) {
+            return ((OffsetableKey)key).getEndOffset();
+        }
+        return -1;
+    }
     
     // have to be public or UID factory does not work
 

@@ -513,32 +513,40 @@ No.
 -->
 <answer id="exec-component">
 Yes. Component can control its persistence and way how they are displayed in container.
-<api type="export" group="property" name="PersistenceType" category="deprecated">
-    Valid values are "Never", "OnlyOpened". Default is "" (empty string) and means always persistent.
-    "Never" means that TopComponent is not persistent at all. It lives only during IDE run.
-    "OnlyOpened" means that TopComponent is serialized only when it is opened. If it is closed
-    instance is lost.
-    Default behaviour is that TopComponent is serialized always regardless it is opened or
-    closed.
-    It is client property of TopComponent. Usage example: To disable persistence of TopComponent
-    use <code>putClientProperty("PersistenceType","Never");</code> in initialization code of TopComponent
-    eg. in constructor.
-    Usage of this client property is deprecated. Use API method <code>TopComponent.getPersistenceType()</code>
-    instead.
+<api type="export" group="property" name="KeepNonPersistentTCInModelWhenClosed" category="private">
+    Client property "KeepNonPersistentTCInModelWhenClosed" of TopComponent controls behavior of winsys
+    when TopComponent with persistence type "Never" or "OnlyOpened" is closed. As some TopComponent wants
+    to keep their position in winsys ie. be able to reopen at the same place and some TopComponent wants
+    to be removed from winsys model.
+    If property is not set nonpersistent TopComponent is removed from model when closed - it is original
+    behavior before fix of issue #101700.
+    If property is set (to Boolean.TRUE) then TopComponent is kept in model. It means that
+    client must explicitly set this client property to get behavior requested by issue #101700.
 </api>
-<api type="export" group="property" name="SlidingName" category="private">
-    Valid value is any String value representing displayable title of TopComponent in
-    sliding mode. Title is shown on buttons on sides of main window for TopComponents that
-    are currently hidden in sliding state. 
-    This property has no effect on regular display names of TopComponents which are shown in
-    captions of windows/tabs in the window system.
-    It is client property of TopComponent. Usage example: To provide different, preferably
-    shorter and non changing name for sliding title of your TopComponent subclass, 
-    use <code>putClientProperty("SlidingName","your sliding title");</code> in initialization code of TopComponent
-    eg. in constructor.
-    Note that in next releases usage of this client property will be removed and replaced 
-    by API, see issue #55955 in Issuezilla on www.netbeans.org.
+
+<api type="export" group="property" name="netbeans.winsys.tc.activate_at_startup" category="private">
+     Name of TopComponent's Boolean client property which instructs the window system to activate
+     the given TopComponent at startup time regardless which TopComponent was active at
+     shutdown time. So it's usuable for welcome screen-like behavior. 
+     If more than one TopComponent has this property set to Boolean.TRUE then
+     an arbitrary one will be selected and activated.
 </api>
+
+<api type="export" group="property" name="TopComponentAllowDockAnywhere" category="private">
+    Name of client property (of Boolean type) which says whether the TopComponent is allowed
+    to be docked anywhere (even crossing view-editor border).
+</api>
+
+
+<api type="export" group="property" name="netbeans.winsys.tc.keep_preferred_size_when_slided_in" category="stable">
+     Name of TopComponent's Boolean client property which forces the window system
+     to respect TopComponent's preferred size when it is slided-in from left/right/bottom 
+     sliding bar when set to Boolean.TRUE. Otherwise the slided-in TopComponent
+     will fill the entire width/length of the IDE window (the default behavior).
+     This switch is intended for tools/palette windows like e.g. color chooser, 
+     tool picker etc.
+</api>
+
 
 <!--<api group="property" name="NamingType" type="export" category="private">
     Valid values are "BothOnlyCompName", "SDIOnlyCompName", "MDIOnlyCompName". 
@@ -570,6 +578,73 @@ Yes. Component can control its persistence and way how they are displayed in con
                 will receive the keystroke.
             </p>
         </api>
+    
+    <api type="export" group="property" name="org.netbeans.core.windows.TopComponent.DragAndDrop.Enabled" category="stable">
+         Name of resource bundle property which disables the drag and drop of window
+         TopComponents when its value is set to <code>false</code>, the default value is <code>true</code>.
+         The property value can be adjusted by branding of <code>org.netbeans.core.windows</code> module.
+    </api>
+    
+    <api type="export" group="property" name="org.netbeans.core.windows.TopComponent.Undocking.Enabled" category="stable">
+         Name of resource bundle property which disables undocking of window
+         TopComponents when its value is set to <code>false</code>, the default value is <code>true</code>.
+         When this feature is disabled then there is no 'Undock' item in TopComponent popup menu
+         and 'Undock Window' action the main menu is disabled.
+         The property value can be adjusted by branding of <code>org.netbeans.core.windows</code> module.
+    </api>
+    
+    <api type="export" group="property" name="org.netbeans.core.windows.TopComponent.Sliding.Enabled" category="stable">
+         Name of resource bundle property which disables sliding of window
+         TopComponents when its value is set to <code>false</code>, the default value is <code>true</code>.
+         When this feature is disabled then there is no 'Minimize Window' item in TopComponent popup menu
+         and also the Minimize button in TopComponent's header is hidden.
+         The property value can be adjusted by branding of <code>org.netbeans.core.windows</code> module.
+    </api>
+    
+    <api type="export" group="property" name="org.netbeans.core.windows.TopComponent.Resizing.Enabled" category="stable">
+         Name of resource bundle property which disables resizing of window
+         TopComponents when its value is set to <code>false</code>, the default value is <code>true</code>.
+         When this feature is disabled then it is not possible to drag splitter bars
+         to change the size of TopComponents.
+         The property value can be adjusted by branding of <code>org.netbeans.core.windows</code> module.
+    </api>
+
+    <api type="export" group="property" name="org.netbeans.core.windows.View.TopComponent.Closing.Enabled" category="stable">
+         Name of resource bundle property which disables closing of view TopComponents (non-editor windows)
+         when its value is set to <code>false</code>, the default value is <code>true</code>.
+         When this feature is disabled then there is no 'Close Window' item in view's popup menu,
+         there is no close button in TopComponent's header and also 'Close Window' action in 
+         the main menu is disabled when a view TopComponent is activated.
+         The property value can be adjusted by branding of <code>org.netbeans.core.windows</code> module.
+    </api>
+
+    <api type="export" group="property" name="org.netbeans.core.windows.Editor.TopComponent.Closing.Enabled" category="stable">
+         Name of resource bundle property which disables closing of editor TopComponents (document windows)
+         when its value is set to <code>false</code>, the default value is <code>true</code>.
+         When this feature is disabled then there are no 'Close Window', 'Close All Documents' and 
+         'Close Other Documents' items in editor's popup menu,
+         there is no close button in editor's header and also Close actions in 
+         the main menu are disabled when an editor TopComponent is activated.
+         The property value can be adjusted by branding of <code>org.netbeans.core.windows</code> module.
+    </api>
+
+    <api type="export" group="property" name="org.netbeans.core.windows.TopComponent.Maximization.Enabled" category="stable">
+         Name of resource bundle property which disables maximization of TopComponents 
+         when its value is set to <code>false</code>, the default value is <code>true</code>.
+         When this feature is disabled then there is no 'Maximize Window' item 
+         in TopComponent's popup menu and also 'Maximize Window' action in 
+         the main menu is disabled.
+         The property value can be adjusted by branding of <code>org.netbeans.core.windows</code> module.
+    </api>
+
+    <api type="export" group="property" name="org.netbeans.core.windows.Splitter.Respect.MinimumSize.Enabled" category="stable">
+         Name of resource bundle property which forces splitter to ingore TopComponent 
+         minimum size when resizing when its value is set to <code>false</code>, 
+         the default value is <code>true</code>.
+         When this feature is enabled then the splitter bars will not move beyond
+         the minimum size of its TopComponents.
+         The property value can be adjusted by branding of <code>org.netbeans.core.windows</code> module.
+    </api>
 </answer>
 
 

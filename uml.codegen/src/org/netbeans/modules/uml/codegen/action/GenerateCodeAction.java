@@ -432,7 +432,7 @@ public class GenerateCodeAction extends CookieAction
                         return false;
                     }
                 }
-            } 
+            }         
         }
         
         else

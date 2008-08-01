@@ -57,16 +57,12 @@ public class RecursiveDepsTest extends NbTestCase {
     public RecursiveDepsTest(java.lang.String testName) {
         super(testName);
     }
-    
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        clearWorkDir();
     }
-    
-    public static Test suite() {
-        TestSuite suite = new NbTestSuite(RecursiveDepsTest.class);
-        return suite;
-    }
-    
     
     public void testDepsTest () throws Exception {
       // create test

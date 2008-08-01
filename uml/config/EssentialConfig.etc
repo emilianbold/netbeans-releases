@@ -88,7 +88,7 @@
 		<HiveElement name="DestroyLinkAction" id="org.netbeans.modules.uml.core.metamodel.common.commonactions.DestroyLinkAction"/>
 		<HiveElement name="DestroyObjectAction" id="org.netbeans.modules.uml.core.metamodel.common.commonactions.DestroyObjectAction"/>
 		<HiveElement name="Device" id="org.netbeans.modules.uml.core.metamodel.structure.Device"/>
-		<HiveElement name="Diagram" id="org.netbeans.modules.uml.ui.controls.drawingarea.UIDiagram"/>
+		<!--<HiveElement name="Diagram" id="org.netbeans.modules.uml.ui.controls.drawingarea.UIDiagram"/> -->
 		<HiveElement name="EdgePresentation" id="org.netbeans.modules.uml.ui.support.applicationmanager.EdgePresentation"/>
 		<HiveElement name="ElementImport" id="org.netbeans.modules.uml.core.metamodel.core.foundation.ElementImport"/>
 		<HiveElement name="Enumeration" id="org.netbeans.modules.uml.core.metamodel.core.constructs.Enumeration"/>
@@ -162,7 +162,7 @@
 		<HiveElement name="NestedLink" id="org.netbeans.modules.uml.ui.products.ad.applicationcore.NestedLinkPresentation"/>
 		<HiveElement name="Network" id="org.netbeans.modules.uml.core.metamodel.structure.Network"/>
 		<HiveElement name="Node" id="org.netbeans.modules.uml.core.metamodel.structure.Node"/>
-		<HiveElement name="NodePresentation" id="org.netbeans.modules.uml.ui.support.applicationmanager.NodePresentation"/>
+		<HiveElement name="NodePresentation" id="org.netbeans.modules.uml.core.metamodel.core.foundation.PresentationElement"/>
 		<HiveElement name="ObjectFlow" id="org.netbeans.modules.uml.core.metamodel.common.commonactivities.ObjectFlow"/>
 		<HiveElement name="Operation" id="org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.Operation" createTransitionID="org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.OperationTransitionElement"/>
 		<HiveElement name="OutputPin" id="org.netbeans.modules.uml.core.metamodel.basic.basicactions.OutputPin"/>
@@ -171,7 +171,7 @@
 		<HiveElement name="PackageImport" id="org.netbeans.modules.uml.core.metamodel.core.foundation.PackageImport"/>
 		<HiveElement name="Parameter" id="org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.Parameter" createTransitionID="org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.ParameterTransitionElement"/>
 		<HiveElement name="ParameterUsageNode" id="org.netbeans.modules.uml.core.metamodel.common.commonactivities.ParameterUsageNode"/>
-		<HiveElement name="ParameterableElement" id="org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.ClassifierTemplateParameter"/>
+		<HiveElement name="ParameterableElement" id="org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.ParameterableElement"/>
 		<HiveElement name="Part" id="org.netbeans.modules.uml.core.metamodel.infrastructure.Part"/>
 		<HiveElement name="PartDecomposition" id="org.netbeans.modules.uml.core.metamodel.dynamics.PartDecomposition"/>
 		<HiveElement name="PartFacade" id="org.netbeans.modules.uml.core.metamodel.core.constructs.PartFacade"/>

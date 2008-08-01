@@ -42,7 +42,7 @@ package org.netbeans.modules.j2ee.sun.ide.editors;
 
 import java.util.ResourceBundle;
 
-public class IsolationLevelEditor extends BooleanEditor {
+public class IsolationLevelEditor extends ChoiceEditor {
     String defaultChoice = ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/editors/Bundle").getString("LBL_driver_default");     //NOI18N
     private boolean isRuntime = false;
  

@@ -40,21 +40,26 @@
  */
 package org.netbeans.modules.gsf;
 
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.Action;
 import org.netbeans.modules.gsf.api.*;
-import org.netbeans.modules.gsf.api.Completable;
+import org.netbeans.modules.gsf.api.CodeCompletionHandler;
 import org.netbeans.modules.gsf.api.DeclarationFinder;
 import org.netbeans.modules.gsf.api.InstantRenamer;
 import org.netbeans.modules.gsf.api.Parser;
 import org.netbeans.modules.gsf.api.GsfLanguage;
 import org.netbeans.modules.gsf.api.annotations.CheckForNull;
 import org.netbeans.modules.gsf.api.annotations.NonNull;
-import org.netbeans.modules.gsf.api.BracketCompletion;
+import org.netbeans.modules.gsf.api.KeystrokeHandler;
 import org.netbeans.modules.gsf.api.Formatter;
 import org.netbeans.modules.gsf.api.Indexer;
 import org.netbeans.modules.gsf.api.StructureScanner;
 //import org.netbeans.spi.palette.PaletteController;
+import org.netbeans.modules.gsf.spi.DefaultLanguageConfig;
 import org.netbeans.modules.gsfret.editor.semantic.ColoringManager;
+import org.netbeans.modules.gsfret.hints.infrastructure.GsfHintsManager;
+import org.openide.filesystems.FileObject;
 
 
 /**
@@ -71,66 +76,98 @@ import org.netbeans.modules.gsfret.editor.semantic.ColoringManager;
  *
  * @author <a href="mailto:tor.norbye@sun.com">Tor Norbye</a>
  */
-public interface Language {
+public final class Language {
+    private ColoringManager coloringManager;
+    private String iconBase;
+    private String mime;
+    private Boolean useCustomEditorKit;
+    private List<Action> actions;
+    private GsfLanguage language;
+    private DefaultLanguageConfig languageConfig;
+    private Parser parser;
+    private CodeCompletionHandler completionProvider;
+    private InstantRenamer renamer;
+    private DeclarationFinder declarationFinder;
+    private Formatter formatter;
+    private KeystrokeHandler keystrokeHandler;
+    private Indexer indexer;
+    private StructureScanner structure;
+    private HintsProvider hintsProvider;
+    private GsfHintsManager hintsManager;
+    //private PaletteController palette;
+    private OccurrencesFinder occurrences;
+    private SemanticAnalyzer semantic;
+    private FileObject parserFile;
+    private FileObject languageFile;
+    private FileObject completionProviderFile;
+    private FileObject renamerFile;
+    private FileObject declarationFinderFile;
+    private FileObject formatterFile;
+    private FileObject keystrokeHandlerFile;
+    private FileObject indexerFile;
+    private FileObject structureFile;
+    private FileObject hintsProviderFile;
+    //private FileObject paletteFile;
+    private FileObject semanticFile;
+    private FileObject occurrencesFile;
+    
+    
+    /** Creates a new instance of DefaultLanguage */
+    public Language(String mime) {
+        this.mime = mime;
+    }
 
-    /** 
-     * HACK: Some language supports may want to use their own editor kit
-     * implementation (such as Schliemann) for some services. By returning
-     * true here (which can be done by registering "useCustomEditorKit" on the
-     * GsfPlugin folder for the mime type) GSF will not register its own editing
-     * services for this mime type.
-     * <p>
-     * If you set this flag, you may need to register additional services on your
-     * own. For example, if you still want GSF "Go To Declaration" functionality,
-     * you need to register the GsfHyperlinkProvider.
-     * The ruby/rhtml/ module provides an example of this.
-     * <p>
-     * NOTE: Code folding doesn't work until you enable code folding for your
-     * editor kit; see GsfEditorKitFactory's reference to CODE_FOLDING_ENABLE for
-     * an example.
-     */
-    boolean useCustomEditorKit();
+    /** For testing purposes only!*/
+    public Language(String iconBase, String mime, List<Action> actions,
+            GsfLanguage gsfLanguage, Parser parser, CodeCompletionHandler completionProvider, InstantRenamer renamer,
+            DeclarationFinder declarationFinder, Formatter formatter, KeystrokeHandler bracketCompletion, Indexer indexer,
+            StructureScanner structure, /*PaletteController*/Object palette, boolean useCustomEditorKit) {
+        this.iconBase = iconBase;
+        this.mime = mime;
+        this.actions = actions;
+        this.language = gsfLanguage;
+        this.parser = parser;
+        this.completionProvider = completionProvider;
+        this.renamer = renamer;
+        this.declarationFinder = declarationFinder;
+        this.formatter = formatter;
+        this.keystrokeHandler = bracketCompletion;
+        this.indexer = indexer;
+        this.structure = structure;
+//        this.palette = palette;
+        this.useCustomEditorKit = useCustomEditorKit;
+    }
 
+    public boolean useCustomEditorKit() {
+// This is done during initialization so we don't want to configure all the language configurations
+// at this point and cause a lot of class loading.        
+//        if (useCustomEditorKit == null) { // Lazy init
+//            getGsfLanguage(); // Also initializes languageConfig
+//            if (languageConfig != null) {
+//                useCustomEditorKit = languageConfig.isUsingCustomEditorKit();
+//            } else {
+//                useCustomEditorKit = Boolean.FALSE;
+//            }
+//        }
+        if (useCustomEditorKit == null) {
+            useCustomEditorKit = Boolean.FALSE;
+        }
+
+        return useCustomEditorKit;
+    }
+    
+    void setUseCustomEditorKit(boolean useCustomEditorKit) {
+        this.useCustomEditorKit = useCustomEditorKit;
+    }
+    
     /** Return the display-name (user visible, and localized) name of this language.
      * It should be brief (one or two words). For example "Java", "C++", "Groovy",
      * "Visual Basic", etc.
      */
     @NonNull
-    String getDisplayName();
-
-    /** Return the mime-type of this language. For example text/x-java.
-     */
-    @NonNull
-    String getMimeType();
-
-    /** Return the set of common file extensions used for source files in this
-     * type of language. It should not include the dot.
-     * For example, for Java it would be { "java" }. For C++ it might
-     * be { "cpp", "cc", "c++", "cxx" }. The first item in the array will be
-     * considered the "primary" extension that will be used when creating new
-     * files etc.
-     */
-    String[] getExtensions();
-
-    /** Return a scanner (lexical analyzer, tokenizer) for use with this language.
-     * @todo Clarify whether clients should cache instances of this or if it will
-     *  be called only once and management done by the IDE
-     */
-    @CheckForNull
-    GsfLanguage getGsfLanguage();
-
-    /** Return a parser for use with this language. A parser is optional (in which
-     * case getParser() may return null) but in that case a lot of functionality
-     * will be disabled for this language.
-     * @todo Clarify whether clients should cache instances of this or if it will
-     *  be called only once and management done by the IDE
-     */
-    @CheckForNull
-    Parser getParser();
-
-    /** Return Actions that will be provided in the editor context menu for this language.
-     */
-    Action[] getEditorActions();
+    public String getDisplayName() {
+        return getGsfLanguage().getDisplayName();
+    }
 
     /** Return an icon to be used for files of this language type.
      *  @see org.openide.util.Utilities#loadImage
@@ -143,38 +180,250 @@ public interface Language {
      * Example:  "com/foo/bar/javascript.gif"
      * @todo More documentation here, or revise API entirely
      */
-    String getIconBase();
+    public String getIconBase() {
+        return iconBase;
+    }
+
+    void setIconBase(String iconBase) {
+        this.iconBase = iconBase;
+    }
+
+    /** Return the mime-type of this language. For example text/x-java.
+     */
+    @NonNull
+    public String getMimeType() {
+        return mime;
+    }
+
+    void setMimeType(String mime) {
+        this.mime = mime;
+    }
+
+    /** Return Actions that will be provided in the editor context menu for this language.
+     */
+    public Action[] getEditorActions() {
+        if (actions != null) {
+            return actions.toArray(new Action[actions.size()]);
+        } else {
+            return new Action[0];
+        }
+    }
+
+    /** Return a language configuration object for this language.
+     */
+    @NonNull
+    public GsfLanguage getGsfLanguage() {
+        if (language == null && languageFile != null) {
+            // Lazily construct Language
+            language = (GsfLanguage)createInstance(languageFile);
+            if (language == null) {
+                // Don't keep trying
+                languageFile = null;
+            } else if (language instanceof DefaultLanguageConfig) {
+                languageConfig = (DefaultLanguageConfig)language;
+            }
+        }
+        return language;
+    }
+
+    //void setGsfLanguage(GsfLanguage scanner) {
+    //    this.language = language;
+    //}
+
+    void setGsfLanguageFile(FileObject languageFile) {
+        this.languageFile = languageFile;
+    }
+    
+    /** Return a parser for use with this language. A parser is optional (in which
+     * case getParser() may return null) but in that case a lot of functionality
+     * will be disabled for this language.
+     * @todo Clarify whether clients should cache instances of this or if it will
+     *  be called only once and management done by the IDE
+     */
+    @CheckForNull
+    public Parser getParser() {
+        if (parser == null) {
+            if (parserFile != null) {
+                // Lazily construct Parser
+                parser = (Parser)createInstance(parserFile);
+                if (parser == null) {
+                    // Don't keep trying
+                    parserFile = null;
+                }
+            } else {
+                getGsfLanguage(); // Also initializes languageConfig
+                if (languageConfig != null) {
+                    parser = languageConfig.getParser();
+                }
+            }
+        }
+        return parser;
+    }
+
+    void setParser(Parser parser) {
+        this.parser = parser;
+    }
+    
+    void setParserFile(FileObject parserFile) {
+        this.parserFile = parserFile;
+    }
+    
+    public void addAction(Action action) {
+        if (actions == null) {
+            actions = new ArrayList<Action>();
+        }
+        actions.add(action);
+    }
+    
+    // XXX This is crying out for generics!
+    private Object createInstance(FileObject file) {
+        return DataLoadersBridge.getDefault().createInstance(file);
+    }
+    
+    @Override
+    public String toString() {
+        return mime + ":" + getDisplayName();
+    }
 
     /**
      * Get a code completion handler, if any
      */
     @CheckForNull
-    Completable getCompletionProvider();
+    public CodeCompletionHandler getCompletionProvider() {
+        if (completionProvider == null) {
+            if (completionProviderFile != null) {
+                // Lazily construct completion provider
+                completionProvider = (CodeCompletionHandler)createInstance(completionProviderFile);
+                if (completionProvider == null) {
+                    // Don't keep trying
+                    completionProviderFile = null;
+                }
+            } else {
+                getGsfLanguage(); // Also initializes languageConfig
+                if (languageConfig != null) {
+                    completionProvider = languageConfig.getCompletionHandler();
+                }
+            }
+        }
+        return completionProvider;
+    }
+
+    void setCompletionProvider(CodeCompletionHandler completionProvider) {
+        this.completionProvider = completionProvider;
+    }
+    
+    void setCompletionProviderFile(FileObject completionProviderFile) {
+        this.completionProviderFile = completionProviderFile;
+    }
 
     /**
      * Get a rename helper, if any, for instant renaming
      */
     @CheckForNull
-    InstantRenamer getInstantRenamer();
+    public InstantRenamer getInstantRenamer() {
+        if (renamer == null) {
+            if (renamerFile != null) {
+                renamer = (InstantRenamer)createInstance(renamerFile);
+                if (renamer == null) {
+                    // Don't keep trying
+                    renamerFile = null;
+                }
+            } else {
+                getGsfLanguage(); // Also initializes languageConfig
+                if (languageConfig != null) {
+                    renamer = languageConfig.getInstantRenamer();
+                }
+            }
+        }
+        return renamer;
+    }
+
+    void setInstantRenamerFile(FileObject renamerFile) {
+        this.renamerFile = renamerFile;
+    }
 
     /**
      * Get a Declaration finder, if any, for resolving declarations for a given identifier
      */
     @CheckForNull
-    DeclarationFinder getDeclarationFinder();
-    
+    public DeclarationFinder getDeclarationFinder() {
+        if (declarationFinder == null) {
+            if (declarationFinderFile != null) {
+                declarationFinder = (DeclarationFinder)createInstance(declarationFinderFile);
+                if (declarationFinder == null) {
+                    // Don't keep trying
+                    declarationFinderFile = null;
+                }
+            } else {
+                getGsfLanguage(); // Also initializes languageConfig
+                if (languageConfig != null) {
+                    declarationFinder = languageConfig.getDeclarationFinder();
+                }
+            }
+        }
+        return declarationFinder;
+    }
+
+    void setDeclarationFinderFile(FileObject declarationFinderFile) {
+        this.declarationFinderFile = declarationFinderFile;
+    }
+
     /**
      * Get an Formatter, if any, for helping indent and reformat code
      */
     @CheckForNull
-    Formatter getFormatter();
+    public Formatter getFormatter() {
+        if (formatter == null) {
+            if (formatterFile != null) {
+                formatter = (Formatter)createInstance(formatterFile);
+                if (formatter == null) {
+                    // Don't keep trying
+                    formatterFile = null;
+                }
+            } else {
+                getGsfLanguage(); // Also initializes languageConfig
+                if (languageConfig != null) {
+                    formatter = languageConfig.getFormatter();
+                    if (formatter != null) {
+                        // You MUST return true from this method if you provide a formatter!
+                        assert languageConfig.hasFormatter();
+                    }
+                }
+            }
+        }
+        return formatter;
+    }
+
+    void setFormatterFile(FileObject formatterFile) {
+        this.formatterFile = formatterFile;
+    }
     
     /**
-     * Get a BracketCompletion helper, if any, for helping with bracket completion
+     * Get a KeystrokeHandler helper, if any, for helping with bracket completion
      */
     @CheckForNull
-    BracketCompletion getBracketCompletion();
-    
+    public KeystrokeHandler getBracketCompletion() {
+        if (keystrokeHandler == null) {
+            if (keystrokeHandlerFile != null) {
+                keystrokeHandler = (KeystrokeHandler)createInstance(keystrokeHandlerFile);
+                if (keystrokeHandler == null) {
+                    // Don't keep trying
+                    keystrokeHandlerFile = null;
+                }
+            } else {
+                getGsfLanguage(); // Also initializes languageConfig
+                if (languageConfig != null) {
+                    keystrokeHandler = languageConfig.getKeystrokeHandler();
+                }
+            }
+        }
+        return keystrokeHandler;
+    }
+
+    void setBracketCompletionFile(FileObject bracketCompletionFile) {
+        this.keystrokeHandlerFile = bracketCompletionFile;
+    }
+
     /**
      * Get an associated palette controller, if any
      */
@@ -187,36 +436,239 @@ public interface Language {
      * Get an associated indexer, if any
      */
     @CheckForNull
-    Indexer getIndexer();
-    
-    /**
-     * Get an associated hints provider, if any
-     */
-    @CheckForNull
-    HintsProvider getHintsProvider();
+    public Indexer getIndexer() {
+        if (indexer == null) {
+            if (indexerFile != null) {
+                indexer = (Indexer)createInstance(indexerFile);
+                if (indexer == null) {
+                    // Don't keep trying
+                    indexerFile = null;
+                }
+            } else {
+                getGsfLanguage(); // Also initializes languageConfig
+                if (languageConfig != null) {
+                    indexer = languageConfig.getIndexer();
+                }
+            }
+        }
+        return indexer;
+    }
+
+    void setIndexerFile(FileObject indexerFile) {
+        this.indexerFile = indexerFile;
+    }
 
     /**
      * Get a structure scanner which produces navigation/outline contents
      */
     @CheckForNull
-    StructureScanner getStructure();
+    public StructureScanner getStructure() {
+        if (structure == null) {
+            if (structureFile != null) {
+                structure = (StructureScanner)createInstance(structureFile);
+                if (structure == null) {
+                    // Don't keep trying
+                    structureFile = null;
+                }
+            } else {
+                getGsfLanguage(); // Also initializes languageConfig
+                if (languageConfig != null) {
+                    structure = languageConfig.getStructureScanner();
+                    if (structure != null) {
+                        // You MUST return true from this method if you provide a structure
+                        // scanner!
+                        assert languageConfig.hasStructureScanner();
+                    }
+                }
+            }
+        }
+        return structure;
+    }
+
+    void setStructureFile(FileObject structureFile) {
+        this.structureFile = structureFile;
+    }
+
+    /**
+     * Get an associated hints provider, if any
+     */
+    @CheckForNull
+    public HintsProvider getHintsProvider() {
+        if (hintsProvider == null) {
+            if (hintsProviderFile != null) {
+                hintsProvider = (HintsProvider)createInstance(hintsProviderFile);
+                if (hintsProvider == null) {
+                    // Don't keep trying
+                    hintsProviderFile = null;
+                }
+            } else {
+                getGsfLanguage(); // Also initializes languageConfig
+                if (languageConfig != null) {
+                    hintsProvider = languageConfig.getHintsProvider();
+                    if (hintsProvider != null) {
+                        // You MUST return true from this method if you provide a hints
+                        // provider
+                        assert languageConfig.hasHintsProvider();
+                    }
+                }
+            }
+            if (hintsProvider != null) {
+                hintsManager = new GsfHintsManager(getMimeType(), hintsProvider, this);
+            }
+        }
+        return hintsProvider;
+    }
     
+    @NonNull
+    public GsfHintsManager getHintsManager() {
+        if (hintsManager == null) {
+            if (hintsProvider == null) {
+                hintsProvider = getHintsProvider();
+            }
+            if (hintsProvider != null) {
+                hintsManager = new GsfHintsManager(getMimeType(), hintsProvider, this);
+            }
+        }
+        return hintsManager;
+    }
+
+    void setHintsProviderFile(FileObject hintsProviderFile) {
+        this.hintsProviderFile = hintsProviderFile;
+    }
+    
+//    public PaletteController getPalette() {
+//        if (palette == null && paletteFile != null) {
+//            palette = (PaletteController)createInstance(paletteFile);
+//            if (palette == null) {
+//                // Don't keep trying
+//                paletteFile = null;
+//            }
+//        }
+//        return palette;
+//    }
+//
+//    void setPaletteFile(FileObject paletteFile) {
+//        this.paletteFile = paletteFile;
+//    }
+
     /**
      * Return the coloring manager for this language
      */
     @NonNull
-    ColoringManager getColoringManager();
+    public ColoringManager getColoringManager() {
+        if (coloringManager == null) {
+            coloringManager = new ColoringManager(mime);
+        }
+
+        return coloringManager;
+    }
     
-    /**
-     * Return the semantic analyzer for this language
-     */
-    @NonNull
-    SemanticAnalyzer getSemanticAnalyzer();
+    public boolean hasStructureScanner() {
+        if (structureFile != null) {
+            return true;
+        } else {
+            // For performance reasons, we don't want to initialize this yet;
+            // navigators have to be installed early during startup for all languages,
+            // but we don't want to actually create the configuration objects
+            // (which can load a lot of state)
+//            getGsfLanguage();
+//            if (languageConfig != null) {
+//                return languageConfig.hasStructureScanner();
+//            }
+            return false;
+        }
+    }
+    
+    public boolean hasFormatter() {
+        if (formatterFile != null) {
+            return true;
+        } else {
+            getGsfLanguage();
+            if (languageConfig != null) {
+                return languageConfig.hasFormatter();
+            }
+            return false;
+        }
+    }
+
+    public boolean hasHints() {
+        if (hintsProviderFile != null) {
+            return true;
+        } else {
+            getGsfLanguage();
+            if (languageConfig != null) {
+                return languageConfig.hasHintsProvider();
+            }
+            return false;
+        }
+    }
     
     /**
      * Return the occurrences finder for this language
      */
     @NonNull
-    OccurrencesFinder getOccurrencesFinder();
+    public OccurrencesFinder getOccurrencesFinder() {
+        if (occurrences == null) {
+            if (occurrencesFile != null) {
+                occurrences = (OccurrencesFinder)createInstance(occurrencesFile);
+                if (occurrences == null) {
+                    // Don't keep trying
+                    occurrencesFile = null;
+                }
+            } else {
+                getGsfLanguage(); // Also initializes languageConfig
+                if (languageConfig != null) {
+                    occurrences = languageConfig.getOccurrencesFinder();
+                    if (occurrences != null) {
+                        // You MUST return true from this method if you provide a structure
+                        // scanner!
+                        assert languageConfig.hasOccurrencesFinder();
+                    }
+                }
+            }
+        }
+        return occurrences;
+    }
+
+    void setOccurrencesFinderFile(FileObject occurrencesFile) {
+        this.occurrencesFile = occurrencesFile;
+    }
     
+    public boolean hasOccurrencesFinder() {
+        if (occurrencesFile != null) {
+            return true;
+        } else {
+            getGsfLanguage();
+            if (languageConfig != null) {
+                return languageConfig.hasOccurrencesFinder();
+            }
+            return false;
+        }
+    }
+    
+    /**
+     * Return the semantic analyzer for this language
+     */
+    @NonNull
+    public SemanticAnalyzer getSemanticAnalyzer() {
+        if (semantic == null) {
+            if (semanticFile != null) {
+                semantic = (SemanticAnalyzer)createInstance(semanticFile);
+                if (semantic == null) {
+                    // Don't keep trying
+                    semanticFile = null;
+                }
+            } else {
+                getGsfLanguage(); // Also initializes languageConfig
+                if (languageConfig != null) {
+                    semantic = languageConfig.getSemanticAnalyzer();
+                }
+            }
+        }
+        return semantic;
+    }
+
+    void setSemanticAnalyzer(FileObject semanticFile) {
+        this.semanticFile = semanticFile;
+    }
 }

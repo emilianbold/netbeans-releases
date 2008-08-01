@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -42,6 +42,7 @@
 package org.netbeans.modules.java.j2seproject.ui.customizer;
 
 import javax.swing.JPanel;
+import org.netbeans.modules.java.j2seproject.J2SEProjectUtil;
 import org.openide.util.HelpCtx;
 
 public class CustomizerCompile extends JPanel implements HelpCtx.Provider {
@@ -49,6 +50,10 @@ public class CustomizerCompile extends JPanel implements HelpCtx.Provider {
     public CustomizerCompile( J2SEProjectProperties uiProperties ) {
         initComponents();
 
+        uiProperties.COMPILE_ON_SAVE_MODEL.setMnemonic(compileOnSave.getMnemonic());
+        compileOnSave.setModel(uiProperties.COMPILE_ON_SAVE_MODEL);
+        compileOnSave.setEnabled(J2SEProjectUtil.isCompileOnSaveSupported(uiProperties.getProject()));
+        
         uiProperties.JAVAC_DEPRECATION_MODEL.setMnemonic( deprecationCheckBox.getMnemonic() );
         deprecationCheckBox.setModel( uiProperties.JAVAC_DEPRECATION_MODEL );
 
@@ -69,6 +74,7 @@ public class CustomizerCompile extends JPanel implements HelpCtx.Provider {
     private void initComponents() {
 
         debugInfoCheckBox = new javax.swing.JCheckBox();
+        compileOnSave = new javax.swing.JCheckBox();
         deprecationCheckBox = new javax.swing.JCheckBox();
         doDependCheckBox = new javax.swing.JCheckBox();
         additionalJavacParamsLabel = new javax.swing.JLabel();
@@ -76,6 +82,8 @@ public class CustomizerCompile extends JPanel implements HelpCtx.Provider {
         additionalJavacParamsExample = new javax.swing.JLabel();
 
         org.openide.awt.Mnemonics.setLocalizedText(debugInfoCheckBox, org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "LBL_CustomizeCompile_Compiler_DebugInfo_JCheckBox")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(compileOnSave, org.openide.util.NbBundle.getBundle(CustomizerCompile.class).getString("CustomizerCompile.CompileOnSave")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(deprecationCheckBox, org.openide.util.NbBundle.getBundle(CustomizerCompile.class).getString("LBL_CustomizeCompile_Compiler_Deprecation_JCheckBox")); // NOI18N
 
@@ -92,6 +100,7 @@ public class CustomizerCompile extends JPanel implements HelpCtx.Provider {
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(compileOnSave)
                     .add(debugInfoCheckBox)
                     .add(deprecationCheckBox)
                     .add(doDependCheckBox)
@@ -106,6 +115,8 @@ public class CustomizerCompile extends JPanel implements HelpCtx.Provider {
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
+                .add(compileOnSave)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(debugInfoCheckBox)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(deprecationCheckBox)
@@ -117,7 +128,7 @@ public class CustomizerCompile extends JPanel implements HelpCtx.Provider {
                     .add(additionalJavacParamsField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(additionalJavacParamsExample)
-                .add(353, 353, 353))
+                .add(194, 194, 194))
         );
 
         debugInfoCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "ACSD_CustomizerCompile_jCheckBoxDebugInfo")); // NOI18N
@@ -130,6 +141,7 @@ public class CustomizerCompile extends JPanel implements HelpCtx.Provider {
     private javax.swing.JLabel additionalJavacParamsExample;
     private javax.swing.JTextField additionalJavacParamsField;
     private javax.swing.JLabel additionalJavacParamsLabel;
+    private javax.swing.JCheckBox compileOnSave;
     private javax.swing.JCheckBox debugInfoCheckBox;
     private javax.swing.JCheckBox deprecationCheckBox;
     private javax.swing.JCheckBox doDependCheckBox;

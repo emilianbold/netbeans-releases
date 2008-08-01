@@ -50,6 +50,7 @@ import java.io.IOException;
 import java.util.Collection;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
+import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 
 /**
  * Implements both CsmFunction and CsmFunctionDefinition -
@@ -60,10 +61,16 @@ public class FunctionDDImpl<T> extends FunctionImpl<T> implements CsmFunctionDef
     
     private final CsmCompoundStatement body;
 
-    public FunctionDDImpl(AST ast, CsmFile file, CsmScope scope) {
+    public FunctionDDImpl(AST ast, CsmFile file, CsmScope scope) throws AstRendererException {
         super(ast, file, scope, false);
         body = AstRenderer.findCompoundStatement(ast, getContainingFile(), this);
-        assert body != null : "null body in function definition, line " + getStartPosition().getLine() + ":" + file.getAbsolutePath();
+        boolean assertionCondition = body != null;
+        if (!assertionCondition) {
+            RepositoryUtils.hang(this);
+            throw new AstRendererException((FileImpl)file, getStartOffset(),
+                    "Null body in function definition."); // NOI18N
+            //assert assertionCondition : "null body in function definition, line " + getStartPosition().getLine() + ":" + file.getAbsolutePath();
+        }
         registerInProject();
     }
 
@@ -96,7 +103,11 @@ public class FunctionDDImpl<T> extends FunctionImpl<T> implements CsmFunctionDef
         }
         return this;
     }
-    
+
+    public boolean isPureDefinition() {
+        return false;
+    }
+
     private CsmFunction findDeclaration(CsmProject prj, String uname){
         CsmDeclaration decl = prj.findDeclaration(uname);
         if( decl != null && decl.getKind() == CsmDeclaration.Kind.FUNCTION ) {

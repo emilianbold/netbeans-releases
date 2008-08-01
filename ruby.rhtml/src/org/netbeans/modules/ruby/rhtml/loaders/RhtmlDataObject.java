@@ -62,10 +62,12 @@ public class RhtmlDataObject extends MultiDataObject
         //set.add(ViewSupport.class, this);
     }
     
+    @Override
     protected Node createNodeDelegate() {
         return new RhtmlDataNode(this, getLookup());
     }
     
+    @Override
     public Lookup getLookup() {
         return getCookieSet().getLookup();
     }

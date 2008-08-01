@@ -78,26 +78,26 @@ public class InterpDumb extends AbstractInterp {
 	    st_base.setAction((char) 7, st_base, act_beL);
 	}
 
-	protected static final class ACT_NOP implements Actor {
+	static final class ACT_NOP implements Actor {
 	    public String action(AbstractInterp ai, char c) {
 		return null;
 	    }
 	};
 
-	protected static final class ACT_PAUSE implements Actor {
+	static final class ACT_PAUSE implements Actor {
 	    public String action(AbstractInterp ai, char c) {
 		ai.ops.op_pause();
 		return null;
 	    }
 	};
 
-	protected static final class ACT_ERR implements Actor {
+	static final class ACT_ERR implements Actor {
 	    public String action(AbstractInterp ai, char c) {
 		return "ACT ERROR";	// NOI18N
 	    }
 	};
 
-	protected static final class ACT_REGULAR implements Actor {
+	static final class ACT_REGULAR implements Actor {
 	    public String action(AbstractInterp ai, char c) {
 		ai.ops.op_char(c);
 		return null;
@@ -105,14 +105,14 @@ public class InterpDumb extends AbstractInterp {
 	};
 
 
-	protected static final class ACT_CR implements Actor {
+	static final class ACT_CR implements Actor {
 	    public String action(AbstractInterp ai, char c) {
 		ai.ops.op_carriage_return();
 		return null;
 	    }
 	};
 
-	protected static final class ACT_LF implements Actor {
+	static final class ACT_LF implements Actor {
 	    public String action(AbstractInterp ai, char c) {
 		ai.ops.op_line_feed();
 		return null;
@@ -120,21 +120,21 @@ public class InterpDumb extends AbstractInterp {
 	};
 
 
-	protected static final class ACT_BS implements Actor {
+	static final class ACT_BS implements Actor {
 	    public String action(AbstractInterp ai, char c) {
 		ai.ops.op_back_space();
 		return null;
 	    }
 	};
 
-	protected static final class ACT_TAB implements Actor {
+	static final class ACT_TAB implements Actor {
 	    public String action(AbstractInterp ai, char c) {
 		ai.ops.op_tab();
 		return null;
 	    }
 	};
 
-	protected static final class ACT_BEL implements Actor {
+	static final class ACT_BEL implements Actor {
 	    public String action(AbstractInterp ai, char c) {
 		ai.ops.op_bel();
 		return null;

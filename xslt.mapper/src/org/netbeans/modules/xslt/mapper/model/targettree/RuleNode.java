@@ -25,7 +25,7 @@ import javax.swing.Action;
 import javax.swing.JMenu;
 import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
-import org.netbeans.modules.soa.ui.SoaUiUtil;
+import org.netbeans.modules.soa.ui.SoaUtil;
 import org.netbeans.modules.xml.axi.AXIComponent;
 import org.netbeans.modules.xslt.mapper.model.nodes.NodeFactory;
 import org.netbeans.modules.xslt.mapper.model.nodes.TreeNode;
@@ -92,8 +92,8 @@ public class RuleNode extends StylesheetNode {
     
     public String getName() {
         if (getType() == null) {
-            return SoaUiUtil.getFormattedHtmlString(true,
-                    new SoaUiUtil.TextChunk(toString(), SoaUiUtil.MISTAKE_RED));
+            return SoaUtil.getFormattedHtmlString(true,
+                    new SoaUtil.TextChunk(toString(), SoaUtil.MISTAKE_RED));
         } else {
             return toString();
         }

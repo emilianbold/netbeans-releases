@@ -168,10 +168,13 @@ public class AppClientProjectGenerator {
         appClient.setDisplayName(name);
         appClient.write(ddFile);
         
+        final String realServerLibraryName = configureServerLibrary(librariesDefinition,
+                serverInstanceID, projectDir, serverLibraryName != null);
+        
         final AntProjectHelper h = setupProject(projectDir, name,
                 DEFAULT_SRC_FOLDER, DEFAULT_TEST_FOLDER,
                 null, null, null, mainClass, j2eeLevel,
-                serverInstanceID, librariesDefinition, serverLibraryName);
+                serverInstanceID, librariesDefinition, realServerLibraryName);
         
         EditableProperties ep = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         ep.put(AppClientProjectProperties.SOURCE_ROOT, DEFAULT_SRC_FOLDER); //NOI18N
@@ -249,9 +252,14 @@ public class AppClientProjectGenerator {
             final File[] sourceFolders, final File[] testFolders, final File confFolder,
             final File libFolder, String j2eeLevel, final String serverInstanceID, String librariesDefinition, final String serverLibraryName) throws IOException {
         assert sourceFolders != null && testFolders != null: "Package roots can't be null";   //NOI18N
+        
+        final String realServerLibraryName = configureServerLibrary(librariesDefinition,
+                serverInstanceID, projectDir, serverLibraryName != null);
+        
         final AntProjectHelper h = setupProject(projectDir, name, null, null,
                 confFolder.getAbsolutePath(), (libFolder == null ? null : libFolder.getAbsolutePath()),
-                null, null, j2eeLevel, serverInstanceID, librariesDefinition, serverLibraryName);
+                null, null, j2eeLevel, serverInstanceID, librariesDefinition, realServerLibraryName);
+        
         final AppClientProject p = (AppClientProject) ProjectManager.getDefault().findProject(projectDir);
         final ReferenceHelper refHelper = p.getReferenceHelper();
         
@@ -357,13 +365,29 @@ public class AppClientProjectGenerator {
         if (rh.getProjectLibraryManager().getLibrary("junit_4") == null) { // NOI18N
             rh.copyLibrary(LibraryManager.getDefault().getLibrary("junit_4")); // NOI18N
         }
-
-        if (h.isSharableProject() && serverlibraryName != null  && SharabilityUtility.findSharedServerLibrary(
-                h.resolveFile(h.getLibrariesLocation()), serverlibraryName) == null) {
-
-            SharabilityUtility.createLibrary(
-                h.resolveFile(h.getLibrariesLocation()), serverlibraryName, serverInstanceId);
+        if (rh.getProjectLibraryManager().getLibrary("CopyLibs") == null) {
+            rh.copyLibrary(LibraryManager.getDefault().getLibrary("CopyLibs")); // NOI18N
         }
+    }
+    
+    private static String configureServerLibrary(final String librariesDefinition,
+            final String serverInstanceId, final FileObject projectDir, final boolean serverLibrary) {
+
+        String serverLibraryName = null;
+        if (librariesDefinition != null && serverLibrary) {
+            try {
+                serverLibraryName = ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<String>() {
+                    public String run() throws Exception {
+                        return SharabilityUtility.findOrCreateLibrary(
+                                PropertyUtils.resolveFile(FileUtil.toFile(projectDir), librariesDefinition),
+                                serverInstanceId).getName();
+                    }
+                });
+            } catch (MutexException ex) {
+                Exceptions.printStackTrace(ex.getException());
+            }
+        }
+        return serverLibraryName;
     }
     
     /**
@@ -399,7 +423,10 @@ public class AppClientProjectGenerator {
             String srcRoot, String testRoot, String configFiles, String libraries,
             String resources, String mainClass, String j2eeLevel,
             String serverInstanceID, String librariesDefinition, String serverLibraryName) throws IOException {
-        
+
+        Utils.logUI(NbBundle.getBundle(AppClientProjectGenerator.class), "UI_APP_PROJECT_CREATE_SHARABILITY", // NOI18N
+                new Object[]{Boolean.valueOf(librariesDefinition != null), Boolean.valueOf(serverLibraryName != null)});
+
         AntProjectHelper h = ProjectGenerator.createProject(dirFO, AppClientProjectType.TYPE, librariesDefinition);
         Element data = h.getPrimaryConfigurationData(true);
         Document doc = data.getOwnerDocument();

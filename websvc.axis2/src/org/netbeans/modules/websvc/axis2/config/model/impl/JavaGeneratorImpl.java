@@ -84,12 +84,12 @@ public class JavaGeneratorImpl extends Axis2ComponentImpl implements JavaGenerat
     
     public boolean isSEIAttr() {
         String sei = getAttribute(Axis2Attributes.attrName);
-        return (sei != null && "true".equals(sei) ? true:false);
+        return (sei != null && "true".equals(sei) ? true:false); // NOI18N
     }
 
     public void setSEIAttr(boolean sei) {
         if (sei) {
-            super.setAttribute(SEI_ATTR_PROP, Axis2Attributes.attrSEI, "true");
+            super.setAttribute(SEI_ATTR_PROP, Axis2Attributes.attrSEI, "true"); // NOI18N
         } else {
             super.setAttribute(SEI_ATTR_PROP, Axis2Attributes.attrSEI, null);
         }

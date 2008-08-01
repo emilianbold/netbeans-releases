@@ -124,7 +124,7 @@ class DiskMapTurboProvider implements TurboProvider {
         }
         return cachedValues;
     }
-
+    
     public boolean recognizesAttribute(String name) {
         return DiskMapTurboProvider.ATTR_STATUS_MAP.equals(name);
     }

@@ -42,7 +42,7 @@
 package org.netbeans.modules.ruby.hints;
 
 import java.util.List;
-import org.netbeans.modules.ruby.hints.HintTestBase;
+import org.netbeans.modules.ruby.hints.infrastructure.RubyAstRule;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -55,14 +55,22 @@ public class CamelCaseNamesTest extends HintTestBase {
         super(testName);
     }
 
+    private RubyAstRule createRule() {
+        return new CamelCaseNames();
+    }
+
+    public void testRegistered() throws Exception {
+        ensureRegistered(createRule());
+    }
+    
     public void testHint1() throws Exception {
-        findHints(this, new CamelCaseNames(), "testfiles/camelcasenames.rb", null);
+        checkHints(this, createRule(), "testfiles/camelcasenames.rb", null);
     }
     
     public void testCamelCase() throws Exception {
         List<FileObject> files = getBigSourceFiles();
         for (FileObject f : files) {
-            findHints(this, new CamelCaseNames(), f, null);
+            findHints(this, createRule(), f, null);
         }
     }
 }

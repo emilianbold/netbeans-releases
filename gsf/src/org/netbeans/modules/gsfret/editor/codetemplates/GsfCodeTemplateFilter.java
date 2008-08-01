@@ -46,7 +46,7 @@ import java.io.IOException;
 import java.util.Set;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.gsf.api.CancellableTask;
-import org.netbeans.modules.gsf.api.Completable;
+import org.netbeans.modules.gsf.api.CodeCompletionHandler;
 import org.netbeans.napi.gsfret.source.CompilationController;
 import org.netbeans.napi.gsfret.source.Phase;
 import org.netbeans.napi.gsfret.source.Source;
@@ -107,7 +107,7 @@ public class GsfCodeTemplateFilter implements CodeTemplateFilter, CancellableTas
     public synchronized void run(CompilationController controller) throws IOException {
         controller.toPhase(Phase.PARSED);
         
-        Completable completer = GsfCompletionProvider.getCompletable(controller,  startOffset);
+        CodeCompletionHandler completer = GsfCompletionProvider.getCompletable(controller,  startOffset);
             
         if (completer != null) {
             templates = completer.getApplicableTemplates(controller, startOffset, endOffset);

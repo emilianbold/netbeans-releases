@@ -58,18 +58,19 @@
 
         <localizing-bundle>org.netbeans.modules.websvc.saas.services.yahoo.Bundle</localizing-bundle>
 
-        <group name="Yahoo">
-        </group>
-
-        <authentication profile="SaaSServices/Yahoo/profile.properties">
-            <api-key id="dev_id"/>
+        <group name="Yahoo"/>
+        
+        <code-gen>
+            <artifacts targets="java,servlet,resource,jsp" profile="Templates/SaaSServices/apikey.properties"/>
+            <artifacts targets="php" profile="Templates/SaaSServices/apikey.php"/>
+        </code-gen>
+        
+        <authentication>
+            <api-key id="appid"/>
         </authentication>
 
     </saas-metadata>
 
-    <!--
-    <methods>
-        <method name="getTrafficData" href="#yahoo.trafficData"/>
-    </methods>
-    -->
+    <methods/>
+ 
 </saas-services>

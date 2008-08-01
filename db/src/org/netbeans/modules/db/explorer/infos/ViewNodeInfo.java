@@ -43,12 +43,17 @@ package org.netbeans.modules.db.explorer.infos;
 
 import java.io.IOException;
 import java.sql.ResultSet;
+import java.text.MessageFormat;
 import java.util.Vector;
 import org.netbeans.api.db.explorer.DatabaseException;
+import org.netbeans.lib.ddl.CommandNotSupportedException;
 import org.netbeans.lib.ddl.impl.AbstractCommand;
 import org.netbeans.lib.ddl.impl.DriverSpecification;
 import org.netbeans.lib.ddl.impl.Specification;
 import org.netbeans.modules.db.explorer.nodes.DatabaseNode;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.util.Exceptions;
 
 public class ViewNodeInfo extends DatabaseNodeInfo {
     static final long serialVersionUID =8370676447530973161L;
@@ -105,5 +110,34 @@ public class ViewNodeInfo extends DatabaseNodeInfo {
         } catch (Exception e) {
             throw new IOException(e.getMessage());
         }
+    }
+    
+    @Override
+    public void setName(String newname)
+    {
+        try {
+            Specification spec = (Specification)getSpecification();
+            AbstractCommand cmd = spec.createCommandRenameView(getName(), newname);
+            cmd.setObjectOwner((String)get(DatabaseNodeInfo.SCHEMA));
+            cmd.execute();
+            super.setName(newname);
+            put(DatabaseNode.TABLE, newname);
+            put(DatabaseNode.VIEW, newname);
+            notifyChange();
+        } catch (CommandNotSupportedException exc) {
+            String message = MessageFormat.format(bundle().
+                    getString("EXC_UnableToChangeName"), 
+                    new String[] {exc.getCommand()}); // NOI18N
+            DialogDisplayer.getDefault().notify(
+                    new NotifyDescriptor.Message(message, 
+                    NotifyDescriptor.ERROR_MESSAGE));
+        } catch (Exception e) {
+            Exceptions.printStackTrace(e);
+        }
+    }
+    
+    @Override
+    public String getShortDescription() {
+        return bundle().getString("ND_View"); //NOI18N
     }
 }

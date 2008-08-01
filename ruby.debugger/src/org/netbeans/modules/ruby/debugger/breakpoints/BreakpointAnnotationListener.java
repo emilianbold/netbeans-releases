@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -48,11 +48,14 @@ import java.util.Map;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
-import org.netbeans.modules.ruby.debugger.DebuggerAnnotation;
+import org.netbeans.modules.ruby.debugger.DebuggerBreakpointAnnotation;
 import org.openide.text.Annotation;
+import org.openide.text.AnnotationProvider;
+import org.openide.text.Line.Set;
+import org.openide.util.Lookup;
 
 public final class BreakpointAnnotationListener extends DebuggerManagerAdapter
-        implements PropertyChangeListener {
+        implements PropertyChangeListener, AnnotationProvider {
     
     private Map<Breakpoint, Annotation> breakpointToAnnotation
             = new HashMap<Breakpoint, Annotation>();
@@ -64,7 +67,7 @@ public final class BreakpointAnnotationListener extends DebuggerManagerAdapter
     
     @Override
     public void breakpointAdded(final Breakpoint b) {
-        if (!(b instanceof RubyBreakpoint)) return;
+        if (!(b instanceof RubyLineBreakpoint)) return;
         addAnnotation(b);
     }
     
@@ -84,9 +87,9 @@ public final class BreakpointAnnotationListener extends DebuggerManagerAdapter
     }
     
     private void addAnnotation(final Breakpoint b) {
-        Annotation debugAnnotation = new DebuggerAnnotation(
-                b.isEnabled() ? DebuggerAnnotation.BREAKPOINT_ANNOTATION_TYPE : DebuggerAnnotation.DISABLED_BREAKPOINT_ANNOTATION_TYPE,
-                ((RubyBreakpoint) b).getLine());
+        Annotation debugAnnotation = new DebuggerBreakpointAnnotation(
+                b.isEnabled() ? DebuggerBreakpointAnnotation.BREAKPOINT_ANNOTATION_TYPE : DebuggerBreakpointAnnotation.DISABLED_BREAKPOINT_ANNOTATION_TYPE,
+                ((RubyLineBreakpoint) b).getLine(), b);
         breakpointToAnnotation.put(b, debugAnnotation);
         b.addPropertyChangeListener(this);
     }
@@ -96,6 +99,10 @@ public final class BreakpointAnnotationListener extends DebuggerManagerAdapter
         if (annotation == null) return;
         annotation.detach();
         b.removePropertyChangeListener(this);
+    }
+
+    public void annotate(Set set, Lookup context) {
+        DebuggerManager.getDebuggerManager().getBreakpoints();
     }
     
 }

@@ -59,6 +59,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.java.source.parsing.CachingArchiveProvider;
 import org.netbeans.modules.java.source.usages.fcs.FileChangeSupport;
 import org.netbeans.modules.java.source.usages.fcs.FileChangeSupportEvent;
@@ -67,6 +68,7 @@ import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.Mutex.Action;
 import org.openide.util.WeakSet;
 
 /**
@@ -108,7 +110,17 @@ public class ClassPathRootsListener implements PropertyChangeListener {
         this.fileNormalizationFacility = new WeakHashMap<File, Reference<File>>();
     }
     
-    public synchronized void addClassPathRootsListener(ClassPath cp, boolean translate, ClassPathRootsChangedListener pcl) {
+    public void addClassPathRootsListener(final ClassPath cp, final boolean translate, final ClassPathRootsChangedListener pcl) {
+        //#133073:
+        ProjectManager.mutex().readAccess(new Action<Void>() {
+            public Void run() {
+                addClassPathRootsListenerImpl(cp, translate, pcl);
+                return null;
+            }
+        });
+    }
+    
+    private synchronized void addClassPathRootsListenerImpl(ClassPath cp, boolean translate, ClassPathRootsChangedListener pcl) {
         Collection<ClassPathRootsChangedListener> listeners = cp2Listeners.get(cp);
         
         if (listeners == null) {
@@ -243,7 +255,9 @@ public class ClassPathRootsListener implements PropertyChangeListener {
                     Reference<FileChangeSupportListener> ref = file2Listener.remove(r);
                     FileChangeSupportListener l = ref != null ? ref.get() : null;
                     
-                    FileChangeSupport.DEFAULT.removeListener(l, r);
+                    if (l != null) {
+                        FileChangeSupport.DEFAULT.removeListener(l, r);
+                    }
                     
                     file2ClassPaths.remove(r);
                 }

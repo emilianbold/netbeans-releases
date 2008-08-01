@@ -7,17 +7,11 @@
 package org.netbeans.modules.db.mysql.ui;
 
 import java.awt.Color;
-import java.awt.Dialog;
-import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.DocumentListener;
-import org.netbeans.api.db.explorer.DatabaseException;
-import org.netbeans.modules.db.mysql.MySQLOptions;
-import org.netbeans.modules.db.mysql.ServerInstance;
-import org.netbeans.modules.db.mysql.ServerNodeProvider;
-import org.netbeans.modules.db.mysql.Utils;
+import org.netbeans.modules.db.mysql.DatabaseServer;
+import org.netbeans.modules.db.mysql.impl.MySQLOptions;
 import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
 
 /**
@@ -73,7 +67,7 @@ public class BasePropertiesPanel extends javax.swing.JPanel {
     }
     
     /** Creates new form BasePropertiesPanel */
-    public BasePropertiesPanel(ServerInstance server) {
+    public BasePropertiesPanel(DatabaseServer server) {
         nbErrorForeground = UIManager.getColor("nb.errorForeground"); //NOI18N
         if (nbErrorForeground == null) {
             //nbErrorForeground = new Color(89, 79, 191); // RGB suggested by Bruce in #28466
@@ -156,18 +150,23 @@ public class BasePropertiesPanel extends javax.swing.JPanel {
         setAutoscrolls(true);
 
         jLabel1.setLabelFor(txtHost);
-        jLabel1.setText(org.openide.util.NbBundle.getMessage(BasePropertiesPanel.class, "BasePropertiesPanel.jLabel1.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(BasePropertiesPanel.class, "BasePropertiesPanel.jLabel1.text")); // NOI18N
 
         jLabel2.setLabelFor(txtPort);
-        jLabel2.setText(org.openide.util.NbBundle.getMessage(BasePropertiesPanel.class, "BasePropertiesPanel.jLabel2.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(BasePropertiesPanel.class, "BasePropertiesPanel.jLabel2.text")); // NOI18N
 
         jLabel3.setLabelFor(txtUser);
-        jLabel3.setText(org.openide.util.NbBundle.getMessage(BasePropertiesPanel.class, "BasePropertiesPanel.jLabel3.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(BasePropertiesPanel.class, "BasePropertiesPanel.jLabel3.text")); // NOI18N
 
         jLabel4.setLabelFor(txtPassword);
-        jLabel4.setText(org.openide.util.NbBundle.getMessage(BasePropertiesPanel.class, "BasePropertiesPanel.jLabel4.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel4, org.openide.util.NbBundle.getMessage(BasePropertiesPanel.class, "BasePropertiesPanel.jLabel4.text")); // NOI18N
 
-        chkSavePassword.setText(org.openide.util.NbBundle.getMessage(BasePropertiesPanel.class, "BasePropertiesPanel.chkSavePassword.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(chkSavePassword, org.openide.util.NbBundle.getMessage(BasePropertiesPanel.class, "BasePropertiesPanel.chkSavePassword.text")); // NOI18N
+        chkSavePassword.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                chkSavePasswordActionPerformed(evt);
+            }
+        });
 
         txtHost.setText(org.openide.util.NbBundle.getMessage(BasePropertiesPanel.class, "BasePropertiesPanel.txtHost.text")); // NOI18N
         txtHost.addActionListener(new java.awt.event.ActionListener() {
@@ -181,7 +180,7 @@ public class BasePropertiesPanel extends javax.swing.JPanel {
         txtUser.setText(org.openide.util.NbBundle.getMessage(BasePropertiesPanel.class, "BasePropertiesPanel.txtUser.text")); // NOI18N
 
         messageLabel.setForeground(new java.awt.Color(255, 0, 51));
-        messageLabel.setText(org.openide.util.NbBundle.getMessage(BasePropertiesPanel.class, "BasePropertiesPanel.messageLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(messageLabel, org.openide.util.NbBundle.getMessage(BasePropertiesPanel.class, "BasePropertiesPanel.messageLabel.text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -241,12 +240,21 @@ public class BasePropertiesPanel extends javax.swing.JPanel {
 
         layout.linkSize(new java.awt.Component[] {jLabel1, jLabel2, jLabel3, jLabel4, txtHost, txtPort, txtUser}, org.jdesktop.layout.GroupLayout.VERTICAL);
 
+        chkSavePassword.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BasePropertiesPanel.class, "BasePropertiesPanel.chkSavePassword.AccessibleContext.accessibleDescription")); // NOI18N
+        txtHost.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BasePropertiesPanel.class, "BasePropertiesPanel.txtHost.AccessibleContext.accessibleDescription")); // NOI18N
+        txtPort.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BasePropertiesPanel.class, "BasePropertiesPanel.txtPort.AccessibleContext.accessibleDescription")); // NOI18N
+        txtUser.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BasePropertiesPanel.class, "BasePropertiesPanel.txtUser.AccessibleContext.accessibleDescription")); // NOI18N
+        txtPassword.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BasePropertiesPanel.class, "BasePropertiesPanel.txtPassword.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
 
 private void txtHostActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtHostActionPerformed
 // TODO add your handling code here:
 }//GEN-LAST:event_txtHostActionPerformed
+
+private void chkSavePasswordActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_chkSavePasswordActionPerformed
+// TODO add your handling code here:
+}//GEN-LAST:event_chkSavePasswordActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

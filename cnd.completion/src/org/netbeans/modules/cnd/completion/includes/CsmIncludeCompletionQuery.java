@@ -29,6 +29,7 @@ package org.netbeans.modules.cnd.completion.includes;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -45,6 +46,8 @@ import org.openide.loaders.ExtensionList;
  * @author Vladimir Voskresensky
  */
 public class CsmIncludeCompletionQuery {
+    private static final Collection<String> EXCLUDED_DIR_NAMES = Arrays.asList(new String[] {
+        "CVS", ".hg", "nbproject", "SCCS", "SunWS_cache"}); // NOI18N
     private Map<String, CsmIncludeCompletionItem> results;
     private final CsmFile file;
     public CsmIncludeCompletionQuery(CsmFile file) {
@@ -130,9 +133,13 @@ public class CsmIncludeCompletionQuery {
     }
 
     private void addParentFolder(int substitutionOffset, String childSubDir, boolean system) {
-        CsmIncludeCompletionItem item = CsmIncludeCompletionItem.createItem(
-                substitutionOffset, "..", ".", childSubDir, system, false, true, false); // NOI18N
-        results.put("..", item);//NOI18N
+        // IZ#128044: Completion in #include should switch to 2-nd mode if there are no files in the list
+        // doesn't append ".." item for empty lists
+        if (!results.isEmpty()) {
+            CsmIncludeCompletionItem item = CsmIncludeCompletionItem.createItem(
+                    substitutionOffset, "..", ".", childSubDir, system, false, true, false); // NOI18N
+            results.put("..", item);//NOI18N
+        }
     }
 
     private Collection<String> getFileIncludes(CsmFile file, boolean system) {
@@ -170,7 +177,7 @@ public class CsmIncludeCompletionQuery {
         } else if (name.endsWith("~")) { // NOI18N
             return true;
         } else if (file.isDirectory()) {
-            if (name.equals("CVS") || name.equals("SCCS") || name.equals(".hg")) { // NOI8N // NOI18N
+            if (EXCLUDED_DIR_NAMES.contains(name)) {
                 return true;
             }
         }

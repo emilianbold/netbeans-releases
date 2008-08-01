@@ -42,14 +42,14 @@ made subject to such option by the copyright holder.
                       testproperties="${test.properties}">
             <replacement dir="${nb.root.test.prop}" name="nb.root.test.dir"/>
         </shorterpaths> 
-        <echo>out.test.prop= ${out.test.prop}</echo> 
+        <echo>out.test.prop= ${out.test.prop}</echo>
         <echo>extra.test.libs.prop= ${extra.test.libs.prop}</echo>
         
         <condition property="out.test.prop.ok" >
             <contains string="${out.test.prop}" substring="${nb.root.test.dir}/module.jar" />
         </condition>
         <condition property="extra.test.libs.ok" >
-            <contains string="${extra.test.libs.prop}" substring="${extra.test.libs}/extlib.jar" />
+            <contains string="${extra.test.libs.prop}" substring="$${extra.test.libs.dir}/extlib.jar" />
         </condition>
         
           <fail message="{out.test.prop.ok}" unless="out.test.prop.ok" />

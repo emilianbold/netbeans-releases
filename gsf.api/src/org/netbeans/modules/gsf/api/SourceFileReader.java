@@ -42,7 +42,7 @@
 package org.netbeans.modules.gsf.api;
 
 import java.io.IOException;
-import org.openide.filesystems.FileObject;
+import org.netbeans.modules.gsf.api.annotations.NonNull;
 
 /**
  * Implementations of this interface can read the contents of a FileObject.
@@ -56,12 +56,12 @@ public interface SourceFileReader {
      * Return a character sequence for the contents of the given file,
      * which could be on disk, or modified in an open document, etc.
      */
-    CharSequence read(ParserFile file) throws IOException;
+    @NonNull CharSequence read(@NonNull ParserFile file) throws IOException;
     
     /**
      * Return the last known caret offset of the given file, if it is being edited.
      * Return -1 if the file is not open, or if the caret offset is not currently
      * known.
      */
-    int getCaretOffset(ParserFile file);
+    int getCaretOffset(@NonNull ParserFile file);
 }

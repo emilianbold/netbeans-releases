@@ -38,12 +38,10 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.websvc.rest.wizard;
 
 import java.awt.Component;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -56,6 +54,7 @@ import javax.swing.DefaultListModel;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
@@ -76,7 +75,6 @@ import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-
 
 /**
  *
@@ -277,7 +275,7 @@ private void removeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
     EntityListModel destModel = (EntityListModel) listAvailable.getModel();
     for (Object entity : listSelected.getSelectedValues()) {
         sourceModel.removeElement((Entity) entity);
-        if (! destModel.contains(entity)) {
+        if (!destModel.contains(entity)) {
             destModel.addElement(entity);
         }
     }
@@ -297,7 +295,7 @@ private void removeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
         }
         for (EntityClassInfo e : closure) {
             sourceModel.removeElement(e.getEntity());
-            if (! destModel.contains(e.getEntity())) {
+            if (!destModel.contains(e.getEntity())) {
                 destModel.addElement(e.getEntity());
             }
         }
@@ -367,7 +365,9 @@ private void listSelectedValueChanged(javax.swing.event.ListSelectionEvent evt) 
         }
 
         if (persistenceUnit == null) {
-            persistenceUnit = EntitySelectionPanel.getPersistenceUnitName(settings, project);
+            if (EntitySelectionPanel.getPersistenceUnit(settings, project) != null) {
+                persistenceUnit = EntitySelectionPanel.getPersistenceUnit(settings, project).getName();
+            }
         }
 
         if (mappings == null) {
@@ -461,38 +461,44 @@ private void listSelectedValueChanged(javax.swing.event.ListSelectionEvent evt) 
                                 mappings = entitiesHelper.getResult();
                             } catch (ExecutionException ex) {
                                 Logger.getLogger(getClass().getName()).log(Level.ALL, "stateChanged", ex); //NOI18N
+
                                 throw new IllegalStateException(ex);
                             }
 
                             RequestProcessor.getDefault().post(new Runnable() {
+
                                 public void run() {
-                                    Map<String,Entity> entities = new HashMap<String,Entity>();
+                                    final Map<String, Entity> entities = new HashMap<String, Entity>();
                                     for (Entity e : RuntimeJpaEntity.getEntityFromClasspath(project)) {
                                         if (entities.get(e.getClass2()) == null) {
                                             entities.put(e.getClass2(), e);
                                         }
                                     }
 
-                                    removeElement(MSG_RETRIEVING);
-                                    
                                     for (Entity e : mappings.getEntity()) {
                                         if (entities.get(e.getClass2()) == null) {
                                             entities.put(e.getClass2(), e);
                                         }
                                     }
 
-                                    for (Map.Entry<String,Entity> entry : entities.entrySet()) {
-                                        addElement(entry.getValue());
-                                    }
-
-                                    updateButtons();
                                     builder = new EntityResourceModelBuilder(project, entities.values());
+
+                                    // Update the ListModel on the AWT thread.
+                                    SwingUtilities.invokeLater(new Runnable() {
+                                        public void run() {
+                                            removeElement(MSG_RETRIEVING);
+                                            for (Map.Entry<String, Entity> entry : entities.entrySet()) {
+                                                addElement(entry.getValue());
+                                            }
+                                            updateButtons();
+                                        }
+                                    });
                                 }
                             });
                         }
                         break;
                     default:
-                //Already displaying in available list.
+                    //Already displaying in available list.
                 }
             }
         }
@@ -537,7 +543,7 @@ private void listSelectedValueChanged(javax.swing.event.ListSelectionEvent evt) 
             return false;
         }
 
-        if (entitiesHelper.isReady() && (listAvailable.getModel().getSize()+listSelected.getModel().getSize()) == 0) {
+        if (entitiesHelper.isReady() && (listAvailable.getModel().getSize() + listSelected.getModel().getSize()) == 0) {
             AbstractPanel.setErrorMessage(wizard, "MSG_EntitySelectionPanel_NoEntities");
             return false;
         }
@@ -556,7 +562,6 @@ private void listSelectedValueChanged(javax.swing.event.ListSelectionEvent evt) 
         AbstractPanel.clearErrorMessage(wizard);
         return true;
     }
-
 
     private EntityResourceBeanModel getResourceModel() {
         if (resourceModel == null) {

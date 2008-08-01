@@ -6,11 +6,16 @@ package antlr;
  */
 
 import antlr.collections.AST;
+import antlr.collections.impl.BitSet;
 
 public class NoViableAltException extends RecognitionException {
-    public Token token;
-    public AST node;	// handles parsing and treeparsing
-
+    public Token token = null;
+    public AST node = null;	// handles parsing and treeparsing
+    private BitSet expected = null;
+    private String[] tokenNames;
+    
+    private static final boolean hideExpected = Boolean.getBoolean("antlr.exceptions.hideExpectedTokens");
+    
     public NoViableAltException(AST t) {
         super("NoViableAlt", "<AST>", t.getLine(), t.getColumn());
         node = t;
@@ -20,13 +25,45 @@ public class NoViableAltException extends RecognitionException {
         super("NoViableAlt", fileName_, t.getLine(), t.getColumn());
         token = t;
     }
+    
+    public NoViableAltException(Token t, String fileName_, BitSet expected, String[] tokenNames) {
+        this(t, fileName_);
+        this.expected = expected;
+        this.tokenNames = tokenNames;
+    }
 
+    public BitSet getExpected() {
+        return expected;
+    }
+    
     /**
      * Returns a clean error message (no line number/column information)
      */
+    @Override
     public String getMessage() {
         if (token != null) {
-            return "unexpected token: " + token.getText();
+            String res = "unexpected token: " + token.getText();
+            if (hideExpected) {
+                return res;
+            }
+            if (tokenNames != null) {
+                res += "(" + MismatchedTokenException.tokenName(tokenNames, token.getType()) + ")";
+            }
+            if (expected != null) {
+                res += ", expected one of ";
+                if (tokenNames != null) {
+                    StringBuilder sb = new StringBuilder();
+                    int[] elems = expected.toArray();
+                        for (int i = 0; i < elems.length; i++) {
+                            sb.append(", ");
+                            sb.append(MismatchedTokenException.tokenName(tokenNames, elems[i]));
+                    }
+                    res += sb;
+                } else {
+                    res += expected;
+                }
+            }
+            return res;
         }
 
         // must a tree parser error if token==null

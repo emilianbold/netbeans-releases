@@ -40,13 +40,11 @@
  */
 package org.netbeans.modules.java.editor.semantic;
 
-import java.awt.Font;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -56,15 +54,11 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.AttributeSet;
-import javax.swing.text.Document;
-import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.AttributesUtilities;
 import org.netbeans.api.editor.settings.EditorStyleConstants;
 import org.netbeans.api.editor.settings.FontColorSettings;
-import org.netbeans.editor.SettingsDefaults;
-import org.netbeans.spi.editor.highlighting.HighlightAttributeValue;
 import static org.netbeans.modules.java.editor.semantic.ColoringAttributes.*;
 
 /**

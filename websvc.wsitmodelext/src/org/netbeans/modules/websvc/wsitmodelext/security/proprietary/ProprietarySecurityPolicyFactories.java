@@ -51,6 +51,7 @@ import java.util.Collections;
 import java.util.Set;
 import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.impl.CallbackHandlerConfigurationImpl;
 import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.impl.CallbackHandlerImpl;
+import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.impl.KerberosConfigImpl;
 import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.impl.KeyStoreImpl;
 import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.impl.TrustStoreImpl;
 import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.impl.ValidatorConfigurationImpl;
@@ -63,22 +64,27 @@ public class ProprietarySecurityPolicyFactories {
         public Set<QName> getElementQNames() {
             return Collections.singleton(ProprietarySecurityPolicyQName.KEYSTORE.getQName());
         }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new KeyStoreImpl(context.getModel()));
-        }
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {
             return new KeyStoreImpl(context.getModel(), element);
         }
     }
 
+    public static class KerberosConfigFactory extends ElementFactory {
+        @Override
+        public Set<QName> getElementQNames() {
+            return Collections.singleton(ProprietarySecurityPolicyQName.KERBEROSCONFIG.getQName());
+        }
+        @Override
+        public WSDLComponent create(WSDLComponent context, Element element) {
+            return new KerberosConfigImpl(context.getModel(), element);
+        }
+    }
+    
     public static class ValidatorConfigurationFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
             return Collections.singleton(ProprietarySecurityPolicyQName.VALIDATORCONFIGURATION.getQName());
-        }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new ValidatorConfigurationImpl(context.getModel()));
         }
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {
@@ -91,9 +97,6 @@ public class ProprietarySecurityPolicyFactories {
         public Set<QName> getElementQNames() {
             return Collections.singleton(ProprietarySecurityPolicyQName.VALIDATOR.getQName());
         }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new ValidatorImpl(context.getModel()));
-        }
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {
             return new ValidatorImpl(context.getModel(), element);
@@ -104,9 +107,6 @@ public class ProprietarySecurityPolicyFactories {
         @Override
         public Set<QName> getElementQNames() {
             return Collections.singleton(ProprietarySecurityPolicyQName.TIMESTAMP.getQName());
-        }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new TimestampImpl(context.getModel()));
         }
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {
@@ -119,9 +119,6 @@ public class ProprietarySecurityPolicyFactories {
         public Set<QName> getElementQNames() {
             return Collections.singleton(ProprietarySecurityPolicyQName.TRUSTSTORE.getQName());
         }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new TrustStoreImpl(context.getModel()));
-        }
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {
             return new TrustStoreImpl(context.getModel(), element);
@@ -133,9 +130,6 @@ public class ProprietarySecurityPolicyFactories {
         public Set<QName> getElementQNames() {
             return Collections.singleton(ProprietarySecurityPolicyQName.CALLBACKHANDLER.getQName());
         }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new CallbackHandlerImpl(context.getModel()));
-        }
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {
             return new CallbackHandlerImpl(context.getModel(), element);
@@ -146,9 +140,6 @@ public class ProprietarySecurityPolicyFactories {
         @Override
         public Set<QName> getElementQNames() {
             return Collections.singleton(ProprietarySecurityPolicyQName.CALLBACKHANDLERCONFIGURATION.getQName());
-        }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new CallbackHandlerConfigurationImpl(context.getModel()));
         }
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {

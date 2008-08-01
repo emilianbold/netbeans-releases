@@ -35,11 +35,11 @@
 				<file title="DebuggerWindows.html"/>
 				<file title="DebuggingCorC++Project.html"/>
 				<file title="Environment.html"/>
-				<file title="EvaluatingCorC++Expression.html"/>
 				<file title="FinishingCorC++DebugSession.html"/>
 				<file title="Libraries.html"/>
 				<file title="LinkerOptions.html"/>
 				<file title="Projects.html"/>
+				<file title="ResolveBuildTools.html"/>
 				<file title="RunningCorC++Project.html"/>
 				<file title="RuntimeSearchDirectories.html"/>
 				<file title="SettingCorC++Breakpoint.html"/>
@@ -128,7 +128,6 @@
 				<file title="ejbjarProjectIcon.gif"/>
 				<file title="expand.gif"/>
 				<file title="Field.gif"/>
-				<file title="freeform-project.png"/>
 				<file title="j2seProject.gif"/>
 				<file title="LocalVariable.gif"/>
 				<file title="logical.png"/>
@@ -186,12 +185,11 @@
 				<file title="NewMakeWizardP5.html"/>
 				<file title="NewStaticLibWizard.html"/>
 				<file title="ProjectPropsArchiverGeneral.html"/>
-				<file title="ProjectPropsCommandLine.html"/>
+				<file title="ProjectPropsBuild.html"/>
 				<file title="ProjectPropsCompilerGeneral.html"/>
 				<file title="ProjectPropsDebugging.html"/>
 				<file title="ProjectPropsGeneral.html"/>
 				<file title="ProjectPropsLinkerGeneral.html"/>
-				<file title="ProjectPropsLinkerLibraries.html"/>
 				<file title="ProjectPropsMake.html"/>
 				<file title="ProjectPropsParser.html"/>
 				<file title="ProjectPropsRequired.html"/>
@@ -204,7 +202,6 @@
 			</directory>
 			<file title="cnd.hs"/>
 			<file title="cndTOC.xml"/>
-			<file title="index.xml"/>
 			<file title="map.xml"/>
 			<file title="stopwords.swd"/>
 		</directory>

@@ -268,6 +268,13 @@ public final class PropertyEditorEventHandler extends DesignPropertyEditor {
             Mnemonics.setLocalizedText(doNothingRadioButton, NbBundle.getMessage(PropertyEditorEventHandler.class, "LBL_NOTHING")); // NOI18N
             doNothingRadioButton.setSelected(!wasSelected);
             buttonGroup.add(doNothingRadioButton);
+            
+            doNothingRadioButton.getAccessibleContext().setAccessibleName( 
+                    NbBundle.getMessage(PropertyEditorEventHandler.class, 
+                            "ACSN_NOTHING")); // NOI18N
+            doNothingRadioButton.getAccessibleContext().setAccessibleDescription(
+                    NbBundle.getMessage(PropertyEditorEventHandler.class, 
+                            "ACSD_NOTHING")); // NOI18N
 
             constraints.insets = new Insets(12, 12, 6, 12);
             constraints.anchor = GridBagConstraints.NORTHWEST;

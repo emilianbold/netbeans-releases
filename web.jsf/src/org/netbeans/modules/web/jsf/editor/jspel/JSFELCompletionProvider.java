@@ -58,6 +58,7 @@ import org.openide.filesystems.FileObject;
 /**
  *
  * @author Petr Pisl
+ * @author Po-Ting Wu
  */
 public class JSFELCompletionProvider implements CompletionProvider{
     
@@ -97,18 +98,22 @@ public class JSFELCompletionProvider implements CompletionProvider{
 
                 switch (elExpr.parse(offset)){
                     case JSFELExpression.EL_START:
-                        List <ManagedBean>beans = JSFBeanCache.getBeans(wm);
+                        String replace = elExpr.getReplace();
+
                         // check managed beans
-                        for (ManagedBean bean : beans){
-                            if (bean.getManagedBeanName().startsWith(elExpr.getReplace())){
-                                complItems.add(new JSFResultItem.JSFBean(bean.getManagedBeanName(), bean.getManagedBeanClass()));
+                        List <ManagedBean>beans = JSFBeanCache.getBeans(wm);
+                        for (ManagedBean bean : beans) {
+                            String beanName = bean.getManagedBeanName();
+                            if ((beanName != null) && beanName.startsWith(replace)){
+                                complItems.add(new JSFResultItem.JSFBean(beanName, bean.getManagedBeanClass()));
                             }
                         }
                         // check bundles properties
                         List <ResourceBundle> bundles = elExpr.getJSFResourceBundles(wm);
                         for (ResourceBundle bundle : bundles) {
-                            if (bundle.getVar() != null && bundle.getVar().startsWith(elExpr.getReplace())) {
-                                complItems.add(new JSFResultItem.JSFResourceBundle(bundle.getVar(), bundle.getBaseName()));
+                            String var = bundle.getVar();
+                            if ((var != null) && var.startsWith(replace)) {
+                                complItems.add(new JSFResultItem.JSFResourceBundle(var, bundle.getBaseName()));
                             }
                         }
                         break;
@@ -119,7 +124,7 @@ public class JSFELCompletionProvider implements CompletionProvider{
                         complItems.addAll(items);
                         break;
                     case JSFELExpression.EL_JSF_RESOURCE_BUNDLE:
-                        List<CompletionItem> bitems = elExpr.getPropertyKeys(elExpr.bundle, elExpr.getReplace());
+                        List<CompletionItem> bitems = elExpr.getPropertyKeys(elExpr.bundleName, elExpr.getReplace());
                         complItems.addAll(bitems);
                         break;
                 }

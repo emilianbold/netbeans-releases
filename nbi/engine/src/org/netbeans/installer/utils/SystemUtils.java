@@ -38,52 +38,28 @@ package org.netbeans.installer.utils;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.StringReader;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.net.InetAddress;
-import java.net.ServerSocket;
-import java.net.UnknownHostException;
-import java.security.CodeSigner;
-import java.security.GeneralSecurityException;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateException;
-import java.security.cert.CertificateExpiredException;
-import java.security.cert.CertificateNotYetValidException;
-import java.security.cert.X509Certificate;
-import java.util.Collections;
-import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import org.netbeans.installer.utils.UiUtils.CertificateAcceptanceStatus;
 import org.netbeans.installer.utils.exceptions.NativeException;
 import org.netbeans.installer.utils.helper.ApplicationDescriptor;
 import org.netbeans.installer.utils.helper.EnvironmentScope;
 import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.helper.ExecutionResults;
 import org.netbeans.installer.utils.helper.FilesList;
-import org.netbeans.installer.utils.helper.FinishHandler;
 import org.netbeans.installer.utils.helper.Platform;
 import org.netbeans.installer.utils.system.shortcut.FileShortcut;
 import org.netbeans.installer.utils.system.shortcut.Shortcut;
 import org.netbeans.installer.utils.helper.ShortcutLocationType;
 import org.netbeans.installer.utils.progress.Progress;
 import org.netbeans.installer.utils.system.NativeUtils;
+import org.netbeans.installer.utils.system.NativeUtilsFactory;
 import org.netbeans.installer.utils.system.launchers.Launcher;
 import org.netbeans.installer.utils.system.launchers.LauncherFactory;
 import org.netbeans.installer.utils.system.launchers.LauncherProperties;
+import org.netbeans.installer.utils.system.resolver.StringResolverUtil;
 import org.netbeans.installer.utils.system.shortcut.LocationType;
 
 /**
@@ -98,181 +74,13 @@ public final class SystemUtils {
     
     private static NativeUtils nativeUtils;
     
-    private static KeyStore caStore;
-    private static KeyStore permanentTrustedStore;
-    private static KeyStore sessionTrustedStore;
-    private static KeyStore deniedStore;
-    
-    private static Platform currentPlatform;
-    
-    private static File localDirectory;
-    private static FinishHandler finishHandler;
-    
     // string resolution ////////////////////////////////////////////////////////////
     public static String resolveString(String string) {
         return resolveString(string, SystemUtils.class.getClassLoader());
     }
     
     public static String resolveString(String string, ClassLoader loader) {
-        String parsed = string;
-        
-        if (parsed == null) {
-            return null;
-        }
-        // N for Name
-        try {
-            parsed = parsed.replaceAll("(?<!\\\\)\\$N\\{install\\}", StringUtils.escapeRegExp(getDefaultApplicationsLocation().getAbsolutePath()));
-        } catch (NativeException e) {
-            ErrorManager.notifyError(ResourceUtils.getString(SystemUtils.class,
-                    ERROR_CANNOT_GET_DEFAULT_APPS_LOCATION_KEY), e);
-        }
-        
-        parsed = parsed.replaceAll("(?<!\\\\)\\$N\\{home\\}", StringUtils.escapeRegExp(getUserHomeDirectory().getAbsolutePath()));
-        parsed = parsed.replaceAll("(?<!\\\\)\\$N\\{temp\\}", StringUtils.escapeRegExp(getTempDirectory().getAbsolutePath()));
-        parsed = parsed.replaceAll("(?<!\\\\)\\$N\\{current\\}", StringUtils.escapeRegExp(getCurrentDirectory().getAbsolutePath()));
-        
-        Matcher matcher;
-        
-        // P for Properties
-        matcher = Pattern.compile("(?<!\\\\)\\$P\\{(.*?), (.*?)(?:, (.*?))?\\}").matcher(parsed);
-        while (matcher.find()) {
-            String basename        = matcher.group(1);
-            String key             = matcher.group(2);
-            String argumentsString = matcher.group(3);
-            
-            if (argumentsString == null) {
-                parsed = parsed.replace(matcher.group(), ResourceUtils.getString(basename, key, loader));
-            } else {
-                Object[] arguments = (Object[]) argumentsString.split(", ?");
-                
-                parsed = parsed.replace(matcher.group(), ResourceUtils.getString(basename, key, loader, arguments));
-            }
-        }
-        
-        // F for Field
-        matcher = Pattern.compile("(?<!\\\\)\\$F\\{((?:[a-zA-Z_][a-zA-Z_0-9]*\\.)+[a-zA-Z_][a-zA-Z_0-9]*)\\.([a-zA-Z_][a-zA-Z_0-9]*)\\}").matcher(parsed);
-        while (matcher.find()) {
-            String classname = matcher.group(1);
-            String fieldname = matcher.group(2);
-            
-            try {
-                Object object = loader.loadClass(classname).getField(fieldname).get(null);
-                if (object != null) {
-                    String value = object.toString();
-                    
-                    parsed = parsed.replace(matcher.group(), value);
-                }
-            } catch (IllegalArgumentException e) {
-                ErrorManager.notifyDebug(
-                        ResourceUtils.getString(SystemUtils.class,
-                        ERROR_CANNOT_PARSE_PATTERN_KEY, matcher.group()), e);
-            } catch (SecurityException e) {
-                ErrorManager.notifyDebug(
-                        ResourceUtils.getString(SystemUtils.class,
-                        ERROR_CANNOT_PARSE_PATTERN_KEY, matcher.group()), e);
-            } catch (ClassNotFoundException e) {
-                ErrorManager.notifyDebug(
-                        ResourceUtils.getString(SystemUtils.class,
-                        ERROR_CANNOT_PARSE_PATTERN_KEY, matcher.group()), e);
-            } catch (IllegalAccessException e) {
-                ErrorManager.notifyDebug(
-                        ResourceUtils.getString(SystemUtils.class,
-                        ERROR_CANNOT_PARSE_PATTERN_KEY, matcher.group()), e);
-            } catch (NoSuchFieldException e) {
-                ErrorManager.notifyDebug(
-                        ResourceUtils.getString(SystemUtils.class,
-                        ERROR_CANNOT_PARSE_PATTERN_KEY, matcher.group()), e);
-            }
-        }
-        
-        // M for Method
-        matcher = Pattern.compile("(?<!\\\\)\\$M\\{((?:[a-zA-Z_][a-zA-Z_0-9]*\\.)+[a-zA-Z_][a-zA-Z_0-9]*)\\.([a-zA-Z_][a-zA-Z_0-9]*)\\(\\)\\}").matcher(parsed);
-        while (matcher.find()) {
-            String classname = matcher.group(1);
-            String methodname = matcher.group(2);
-            
-            try {
-                Method method = loader.loadClass(classname).getMethod(methodname);
-                if (method != null) {
-                    Object object = method.invoke(null);
-                    
-                    if (object != null) {
-                        String value = object.toString();
-                        
-                        parsed = parsed.replace(matcher.group(), value);
-                    }
-                }
-            } catch (IllegalArgumentException e) {
-                ErrorManager.notifyDebug(ResourceUtils.getString(SystemUtils.class,
-                        ERROR_CANNOT_PARSE_PATTERN_KEY, matcher.group()), e);
-            } catch (SecurityException e) {
-                ErrorManager.notifyDebug(ResourceUtils.getString(SystemUtils.class,
-                        ERROR_CANNOT_PARSE_PATTERN_KEY, matcher.group()), e);
-            } catch (ClassNotFoundException e) {
-                ErrorManager.notifyDebug(ResourceUtils.getString(SystemUtils.class,
-                        ERROR_CANNOT_PARSE_PATTERN_KEY, matcher.group()), e);
-            } catch (IllegalAccessException e) {
-                ErrorManager.notifyDebug(ResourceUtils.getString(SystemUtils.class,
-                        ERROR_CANNOT_PARSE_PATTERN_KEY, matcher.group()), e);
-            } catch (NoSuchMethodException e) {
-                ErrorManager.notifyDebug(ResourceUtils.getString(SystemUtils.class,
-                        ERROR_CANNOT_PARSE_PATTERN_KEY, matcher.group()), e);
-            } catch (InvocationTargetException e) {
-                ErrorManager.notifyDebug(ResourceUtils.getString(SystemUtils.class,
-                        ERROR_CANNOT_PARSE_PATTERN_KEY, matcher.group()), e);
-            }
-        }
-        
-        // R for Resource
-        matcher = Pattern.compile("(?<!\\\\)\\$R\\{(.*?)\\}").matcher(parsed);
-        while (matcher.find()) {
-            String path = matcher.group(1);
-            
-            InputStream inputStream = null;
-            try {
-                inputStream  = ResourceUtils.getResource(path, loader);
-                parsed = parsed.replace(matcher.group(), StringUtils.readStream(inputStream));
-            } catch (IOException e) {
-                ErrorManager.notifyDebug(ResourceUtils.getString(SystemUtils.class,
-                        ERROR_CANNOT_PARSE_PATTERN_KEY, matcher.group()), e);
-            } finally {
-                if (inputStream != null) {
-                    try {
-                        inputStream.close();
-                    } catch (IOException e) {
-                        ErrorManager.notifyDebug("Cannot close input stream after reading resource: " + matcher.group(), e);
-                    }
-                }
-            }
-        }
-        
-        // S for System Property
-        matcher = Pattern.compile("(?<!\\\\)\\$S\\{(.*?)\\}").matcher(parsed);
-        while (matcher.find()) {
-            String name = matcher.group(1);
-            String value = System.getProperty(name);
-            
-            parsed = parsed.replace(matcher.group(), value);
-        }
-        
-        // E for Environment Variable
-        matcher = Pattern.compile("(?<!\\\\)\\$E\\{(.*?)\\}").matcher(parsed);
-        while (matcher.find()) {
-            try {
-                String name = matcher.group(1);
-                String value = getEnvironmentVariable(name);
-                
-                parsed = parsed.replace(matcher.group(), value);
-            } catch (NativeException e) {
-                ErrorManager.notifyDebug(ResourceUtils.getString(SystemUtils.class,
-                        ERROR_CANNOT_PARSE_PATTERN_KEY, matcher.group()), e);
-            }
-        }
-        
-        parsed.replace("\\$", "$");
-        parsed.replace("\\\\", "\\");
-        
-        return parsed;
+        return StringResolverUtil.resolve(string, loader);
     }
     
     public static File resolvePath(String string) {
@@ -331,8 +139,12 @@ public final class SystemUtils {
     }
     
     public static boolean isCurrentJava64Bit() {
-        return System.getProperty("os.arch").equals("amd64") ||
-                System.getProperty("os.arch").equals("sparcv9");
+        final String osArch = System.getProperty("os.arch");
+        return "64".equals(System.getProperty("sun.arch.data.model")) ||
+                osArch.equals("amd64") ||
+                osArch.equals("sparcv9") ||
+                osArch.equals("x86_64") ||
+                osArch.equals("ppc64");
     }
     
     public static File getPacker() {
@@ -467,63 +279,11 @@ public final class SystemUtils {
     }
     
     public static boolean isPortAvailable(int port, int... forbiddenPorts) {
-        // check whether the port is in the restricted list, if it is, there is no
-        // sense to check whether it is physically available
-        for (int forbidden: forbiddenPorts) {
-            if (port == forbidden) {
-                return false;
-            }
-        }
-        
-        // if the port is not in the allowed range - return false
-        if ((port < 0) && (port > 65535)) {
-            return false;
-        }
-        
-        // if the port is not in the restricted list, we'll try to open a server
-        // socket on it, if we fail, then someone is already listening on this port
-        // and it is occupied
-        ServerSocket socket = null;
-        try {
-            socket = new ServerSocket(port);
-            return true;
-        } catch (IOException e) {
-            return false;
-        } finally {
-            if (socket != null) {
-                try {
-                    socket.close();
-                } catch (IOException e) {
-                    ErrorManager.notifyError(
-                            "Could not close server socket on port " + port,
-                            e);
-                }
-            }
-        }
+        return NetworkUtils.isPortAvailable(port, forbiddenPorts);       
     }
     
     public static int getAvailablePort(int basePort, int... forbiddenPorts) {
-        // increment the port value until we find an available port or stumble into
-        // the upper bound
-        int port = basePort;
-        while ((port < 65535) && !isPortAvailable(port, forbiddenPorts)) {
-            port++;
-        }
-        
-        if (port == 65535) {
-            port = 0;
-            while ((port < basePort) && !isPortAvailable(port, forbiddenPorts)) {
-                port++;
-            }
-            
-            if (port == basePort) {
-                return -1;
-            } else {
-                return port;
-            }
-        } else {
-            return port;
-        }
+        return NetworkUtils.getAvailablePort(basePort, forbiddenPorts);        
     }
     
     public static boolean isDeletingAllowed(File file) {
@@ -694,7 +454,7 @@ public final class SystemUtils {
             launcher = LauncherFactory.newLauncher(props, platform);
             long start = System.currentTimeMillis();
             launcher.initialize();
-            launcher.create(progress);
+            launcher.create(prg);
             long seconds = System.currentTimeMillis() - start ;
             LogManager.unindent();
             LogManager.log("[launcher] Time : " + (seconds/1000) + "."+ (seconds%1000)+ " seconds");
@@ -725,267 +485,15 @@ public final class SystemUtils {
     }
     
     public static Platform getCurrentPlatform() {
-        if (currentPlatform == null) {
-            boolean is64bit = System.getProperty("os.arch").equals("amd64") ||
-                    System.getProperty("os.arch").equals("sparcv9");
-            
-            if (System.getProperty("os.name").contains("Windows")) {
-                currentPlatform =
-                        is64bit ? Platform.WINDOWS_X64 : Platform.WINDOWS_X86;
-            }
-            if (System.getProperty("os.name").contains("Linux")) {
-                currentPlatform =
-                        is64bit ? Platform.LINUX_X64 : Platform.LINUX_X86;
-            }
-            if (System.getProperty("os.name").contains("Mac OS X") &&
-                    System.getProperty("os.arch").contains("ppc")) {
-                currentPlatform = Platform.MACOSX_PPC;
-            }
-            if (System.getProperty("os.name").contains("Mac OS X") &&
-                    System.getProperty("os.arch").contains("i386")) {
-                currentPlatform = Platform.MACOSX_X86;
-            }
-            if (System.getProperty("os.name").contains("SunOS")) {
-                if(System.getProperty("os.arch").contains("sparc")) {
-                    currentPlatform = Platform.SOLARIS_SPARC;
-                } else {
-                    currentPlatform = Platform.SOLARIS_X86;
-                }
-            }
-        }
-        
-        return currentPlatform;
+        return getNativeUtils().getCurrentPlatform();        
     }
     
     public static String getHostName() {
-        try {
-            String hostName = InetAddress.getLocalHost().getHostName();
-            if (hostName != null) {
-                return hostName;
-            }
-        } catch (UnknownHostException e) {
-            LogManager.log(ErrorLevel.MESSAGE, e);
-        }
-        
-        return "localhost"; //NOI18N
+        return NetworkUtils.getHostName();        
     }
     
     public static List<File> getFileSystemRoots() throws IOException {
         return getNativeUtils().getFileSystemRoots();
-    }
-    
-    public static boolean isJarSignatureVeryfied(
-            final File file,
-            final String description) throws IOException, KeyStoreException, NoSuchAlgorithmException, CertificateException {
-        if (caStore == null) {
-            caStore = KeyStore.getInstance(KeyStore.getDefaultType());
-            caStore.load(new FileInputStream(new File(
-                    JAVA_HOME + "/lib/security/cacerts")), null);
-            
-            permanentTrustedStore = KeyStore.getInstance(KeyStore.getDefaultType());
-            permanentTrustedStore.load(null, null);
-            
-            sessionTrustedStore = KeyStore.getInstance(KeyStore.getDefaultType());
-            sessionTrustedStore.load(null, null);
-            
-            deniedStore = KeyStore.getInstance(KeyStore.getDefaultType());
-            deniedStore.load(null, null);
-        }
-        
-        final JarFile jar = new JarFile(file);
-        try {
-            // first we should fetch all certificates that are present in the jar
-            // file skipping duplicates
-            Certificate[] certificates = null;
-            CodeSigner[] codeSigners = null;
-            for (JarEntry entry: Collections.list(jar.entries())) {
-                readFully(jar.getInputStream(entry));
-                
-                certificates = entry.getCertificates();
-                codeSigners = entry.getCodeSigners();
-                
-                if (certificates != null) {
-                    break;
-                }
-            }
-            
-            // if there are no certificates -- we should pop up the dialog warning
-            // that the jar is not signed and ask the user whether he wants to
-            // accept this
-            if (certificates == null) {
-                // todo
-            }
-            
-            // check the permanent and session trusted stores
-            int chainStart = 0;
-            int chainEnd = 0;
-            int	chainNum = 0;
-            
-            // iterate over the certificate chains that are present in the
-            // certificate arrays
-            while (chainEnd < certificates.length) {
-                // determine the start and end of the current certificates chain
-                int i = chainStart;
-                while (i < certificates.length - 1) {
-                    final boolean isIssuer = isIssuerOf(
-                            (X509Certificate) certificates[i],
-                            (X509Certificate) certificates[i+1]);
-                    
-                    if ((certificates[i] instanceof X509Certificate)
-                    && (certificates[i+1] instanceof X509Certificate)
-                    && isIssuer) {
-                        i++;
-                    } else {
-                        break;
-                    }
-                }
-                chainEnd = i + 1;
-                
-                // if the denied certificates store contains the
-                if (containsCertificate(deniedStore, certificates[chainStart])) {
-                    return false;
-                } else if (containsCertificate(permanentTrustedStore, certificates[chainStart]) ||
-                        containsCertificate(sessionTrustedStore, certificates[chainStart])) {
-                    return true;
-                }
-                
-                chainStart = chainEnd;
-                chainNum++;
-            }
-            
-            // If we get here, no cert in chain has been stored in Session or Permanent store.
-            // If they are not in Deny store either, we have to pop up security dialog box
-            // for each signer's certificate one by one.
-            boolean rootCANotValid = false;
-            boolean timeNotValid = false;
-            
-            chainStart = 0;
-            chainEnd = 0;
-            chainNum = 0;
-            while (chainEnd < certificates.length) {
-                int i = chainStart;
-                
-                for (i = chainStart; i < certificates.length; i++) {
-                    X509Certificate currentCert = null;
-                    X509Certificate issuerCert = null;
-                    
-                    if (certificates[i] instanceof X509Certificate)
-                        currentCert = (X509Certificate) certificates[i];
-                    
-                    if ((i < certificates.length - 1) &&
-                            (certificates[i + 1] instanceof X509Certificate)) {
-                        issuerCert = (X509Certificate) certificates[i+1];
-                    } else {
-                        issuerCert = currentCert;
-                    }
-                    
-                    // check if the certificate is valid and has not expired
-                    try {
-                        currentCert.checkValidity();
-                    } catch (CertificateExpiredException e1) {
-                        timeNotValid = true;
-                    } catch (CertificateNotYetValidException e2) {
-                        timeNotValid = true;
-                    }
-                    
-                    if (isIssuerOf(currentCert, issuerCert)) {
-                        // check the current certificate's signature -- verify that
-                        // this issuer did indeed sign the certificate.
-                        try {
-                            currentCert.verify(issuerCert.getPublicKey());
-                        } catch (GeneralSecurityException e) {
-                            return false;
-                        }
-                    } else {
-                        break;
-                    }
-                }
-                chainEnd = (i < certificates.length) ? (i + 1) : i;
-                
-                // we need to verify if the certificate chain is signed by a CA
-                rootCANotValid = !verifyCertificate(caStore, certificates[chainEnd-1]);
-                
-                Date timestamp = null;
-                if (codeSigners[chainNum].getTimestamp() != null) {
-                    timestamp = codeSigners[chainNum].getTimestamp().getTimestamp();
-                }
-                
-                CertificateAcceptanceStatus status = UiUtils.showCertificateAcceptanceDialog(
-                        certificates,
-                        chainStart,
-                        chainEnd,
-                        rootCANotValid,
-                        timeNotValid,
-                        timestamp,
-                        description);
-                
-                
-                // If user Grant permission, just pass all security checks.
-                // If user Deny first signer, pop up security box for second signer certs
-                if (status == CertificateAcceptanceStatus.ACCEPT_PERMANENTLY) {
-                    addCertificate(permanentTrustedStore, certificates[chainStart]);
-                    return true;
-                } else if (status == CertificateAcceptanceStatus.ACCEPT_FOR_THIS_SESSION) {
-                    addCertificate(sessionTrustedStore, certificates[chainStart]);
-                    return true;
-                } else {
-                    addCertificate(deniedStore, certificates[chainStart]);
-                }
-                
-                chainStart = chainEnd;
-                chainNum++;
-            }
-            
-            return false;
-        } finally {
-            jar.close();
-        }
-    }
-    
-    private static void readFully(
-            final InputStream stream) throws IOException {
-        final byte[] buffer = new byte[BUFFER_SIZE];
-        while(stream.read(buffer) != -1) {
-            ; // do this!
-        }
-    }
-    
-    private static boolean isIssuerOf(
-            final X509Certificate certificate1,
-            final X509Certificate certificate2) {
-        return certificate1.getIssuerDN().equals(certificate2.getSubjectDN());
-    }
-    
-    private static boolean containsCertificate(
-            final KeyStore store,
-            final Certificate certificate) throws KeyStoreException {
-        return store.getCertificateAlias(certificate) != null;
-    }
-    
-    private static void addCertificate(
-            final KeyStore store,
-            final Certificate certificate) throws KeyStoreException {
-        if (store.getCertificateAlias(certificate) == null) {
-            store.setCertificateEntry(
-                    "alias" + new Random().nextLong(),
-                    certificate);
-        }
-    }
-    
-    private static boolean verifyCertificate(
-            final KeyStore store,
-            final Certificate certificate) throws KeyStoreException {
-        for (String alias: Collections.list(store.aliases())) {
-            try {
-                certificate.verify(store.getCertificate(alias).getPublicKey());
-                return true;
-            } catch (GeneralSecurityException e) {
-                // we must ignore this exception as it is VERY expected -- will
-                // happen N-1 times at least
-            }
-        }
-        
-        return false;
     }
     
     // platforms probes /////////////////////////////////////////////////////////////
@@ -1004,7 +512,9 @@ public final class SystemUtils {
     public static boolean isSolaris() {
         return getCurrentPlatform().isCompatibleWith(Platform.SOLARIS);
     }
-    
+    public static boolean isUnix() {
+        return getCurrentPlatform().isCompatibleWith(Platform.UNIX);
+    }
     // miscellanea //////////////////////////////////////////////////////////////////
     public static boolean intersects(
             final List<? extends Object> list1,
@@ -1060,7 +570,7 @@ public final class SystemUtils {
     // native accessor //////////////////////////////////////////////////////////////
     public static synchronized NativeUtils getNativeUtils() {
         if (nativeUtils == null) {
-            nativeUtils = NativeUtils.getInstance();
+            nativeUtils = NativeUtilsFactory.newNativeUtils();
         }
         return nativeUtils;
     }
@@ -1068,8 +578,6 @@ public final class SystemUtils {
     /////////////////////////////////////////////////////////////////////////////////
     // Constants
     public static final long MAX_EXECUTION_TIME = 600000;
-    
-    public static final int BUFFER_SIZE = 4096;
     
     public static final int MAX_DELAY = 50; // NOMAGI
     public static final int INITIAL_DELAY = 5; // NOMAGI
@@ -1085,9 +593,5 @@ public final class SystemUtils {
     public static final String USER_HOME = 
             System.getProperty("user.home");//NOI18N
     public static final String NO_SPACE_CHECK_PROPERTY = 
-            "no.space.check";//NOI18N
-    public static final String ERROR_CANNOT_PARSE_PATTERN_KEY =
-            "SU.error.cannot.parse.pattern";//NOI18N
-    public static final String ERROR_CANNOT_GET_DEFAULT_APPS_LOCATION_KEY =
-            "SU.error.cannot.get.default.apps.location";//NOI18N
+            "no.space.check";//NOI18N      
 }

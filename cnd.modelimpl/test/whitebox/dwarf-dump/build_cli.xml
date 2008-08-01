@@ -38,7 +38,7 @@ Contributor(s):
 
 <project name="DwarfDump" default="jar" basedir=".">
     <property name="project.dm-utils" value="../dm-utils"/>
-    <property name="project.DwarfDump" value="../../../../dwarfdump"/>
+    <property name="project.DwarfDump" value="../dwarf-dump"/>
 
     <property name="module-jar-name" value="DwarfDump.jar"/>
     <property name="src.dir" value="./src"/>
@@ -93,6 +93,7 @@ Contributor(s):
                         </src>
                         <classpath>
                                 <pathelement location="${project.dm-utils}/dist/dm-utils.jar"/>
+                                <pathelement location="../../../../nbbuild/netbeans/cnd2/modules/org-netbeans-modules-cnd-dwarfdump.jar"/>
                         </classpath>
                 </javac>
     </target>

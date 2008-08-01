@@ -43,6 +43,7 @@ package org.apache.tools.ant.module.bridge;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
@@ -381,7 +382,10 @@ public final class AntBridge {
                 cp.add(toolsJar);
             }
         }
-        // XXX consider adding ${user.home}/.ant/lib/*.jar (org.apache.tools.ant.launch.Launcher.USER_LIBDIR)
+        File[] standardExtensions = new File(new File(System.getProperty("user.home"), ".ant"), "lib").listFiles(new JarFilter());
+        if (standardExtensions != null) {
+            cp.addAll(Arrays.asList(standardExtensions));
+        }
         cp.addAll(AntSettings.getExtraClasspath());
         cp.addAll(AntSettings.getAutomaticExtraClasspath());
         // XXX note that systemClassLoader will include boot.jar, and perhaps anything else
@@ -404,7 +408,7 @@ public final class AntBridge {
             cp[i++] = it.next().toURI().toURL();
         }
         if (AntSettings.getAntHome() != null) {
-            ClassLoader parent = ClassLoader.getSystemClassLoader();
+            ClassLoader parent = Lookup.class.getClassLoader();
             if (err.isLoggable(ErrorManager.INFORMATIONAL)) {
                 List<URL> parentURLs;
                 if (parent instanceof URLClassLoader) {
@@ -665,6 +669,21 @@ public final class AntBridge {
                 return c;
             } else {
                 return super.loadClass(name, resolve);
+            }
+        }
+
+        @Override // #139048: work around JAXP #6723276
+        public InputStream getResourceAsStream(String name) {
+            if (name.equals("META-INF/services/javax.xml.stream.XMLInputFactory")) { // NOI18N
+                // StAX is different; defined and implemented in BEA-specific code with different
+                // search logic and an unusable fallback implementation.
+                return super.getResourceAsStream(name);
+            } else if (name.startsWith("META-INF/services/javax.xml.")) { // NOI18N
+                // For JAXP services defined and implemented in the JRE,
+                // this is the only workaround for JDK 5 & 6 to load the JRE's copy.
+                return new ByteArrayInputStream(new byte[0]);
+            } else {
+                return super.getResourceAsStream(name);
             }
         }
         

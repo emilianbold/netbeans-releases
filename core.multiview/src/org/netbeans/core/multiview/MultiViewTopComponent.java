@@ -143,9 +143,19 @@ public final class MultiViewTopComponent
     @Override
     public Action[] getActions() {
         //TEMP don't delegate to element's actions..
-        Action[] superActions = super.getActions();
+        Action[] superActions = superActions4Tests == null ? super.getActions() : superActions4Tests;
         Action[] acts = peer.peerGetActions(superActions);
         return acts;
+    }
+    
+    /** Just for unit tests, allows to set actions coming from
+     * underlying TopComponent. See MVTCTest.testFix_132948_MoreActionsOfSameClass
+     * for details. */
+    
+    private Action[] superActions4Tests = null;
+    
+    void setSuperActions (Action[] acts) {
+        superActions4Tests = acts;
     }
     
     public MultiViewHandlerDelegate getMultiViewHandlerDelegate() {

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -38,58 +38,62 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.test.j2ee.wizard;
 
 import junit.framework.Test;
-import junit.framework.TestSuite;
-import junit.textui.TestRunner;
-import org.netbeans.junit.NbTestCase;
+import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestSuite;
 
 /**
  *
  * @author jungi
  */
-public class WizardsJavaEE5Test extends NbTestCase {
-    
+public class WizardsJavaEE5Test extends J2eeTestCase {
+
     /** Creates a new instance of WizardsJavaEE5Test */
     public WizardsJavaEE5Test(String testName) {
         super(testName);
     }
-    
-    public static void main(java.lang.String[] args) {
-        TestRunner.run(suite());
-    }
-    
-    public static Test suite() {
-        TestSuite suite = new NbTestSuite();
-        
-        suite.addTest(new NewProjectWizardsTest("testDefaultNewEJBModWizard", "5"));
-        suite.addTest(new NewFileWizardsTest("testLocalSessionBean", "5"));
-        suite.addTest(new NewFileWizardsTest("testRemoteSessionBean", "5"));
-        suite.addTest(new NewFileWizardsTest("testLocalRemoteSessionBean", "5"));
-        suite.addTest(new NewFileWizardsTest("testLocalStatefulSessionBean", "5"));
-        suite.addTest(new NewFileWizardsTest("testRemoteStatefulSessionBean", "5"));
-        suite.addTest(new NewFileWizardsTest("testLocalRemoteStatefulSessionBean", "5"));
-        suite.addTest(new NewFileWizardsTest("testServiceLocatorInEjb", "5"));
-        suite.addTest(new NewFileWizardsTest("testCachingServiceLocatorInEjb", "5"));
-        suite.addTest(new NewFileWizardsTest("testQueueMdbBean", "5"));
-        suite.addTest(new NewFileWizardsTest("testTopicMdbBean", "5"));
-        suite.addTest(new NewFileWizardsTest("testPersistenceUnitInEjb", "5"));
-        suite.addTest(new NewFileWizardsTest("testEntityClassInEjb", "5"));
-        suite.addTest(new NewFileWizardsTest("testBuildDefaultNewEJBMod", "5"));
 
-        suite.addTest(new NewProjectWizardsTest("testDefaultNewWebModWizard", "5"));
-        suite.addTest(new NewFileWizardsTest("testServiceLocatorInWeb", "5"));
-        suite.addTest(new NewFileWizardsTest("testCachingServiceLocatorInWeb", "5"));
-        suite.addTest(new NewFileWizardsTest("testPersistenceUnitInWeb", "5"));
-        suite.addTest(new NewFileWizardsTest("testEntityClassInWeb", "5"));
-        suite.addTest(new NewFileWizardsTest("testBuildDefaultNewWebMod", "5"));
-        
-        suite.addTest(new NewProjectWizardsTest("testDefaultAppClientWizard", "5"));
-        suite.addTest(new NewProjectWizardsTest("testDefaultNewJ2eeAppWizard", "5"));
-        suite.addTest(new NewProjectWizardsTest("closeProjects", "5"));
-        return suite;
-    }    
+    public static Test suite() {
+        NbModuleSuite.Configuration conf = NbModuleSuite.emptyConfiguration();
+        addServerTests(Server.GLASSFISH, conf, new String[0]);//register server
+        conf = conf.enableModules(".*").clusters(".*");
+        return isRegistered(Server.GLASSFISH)
+                ? NbModuleSuite.create(conf.addTest(Suite.class))
+                : NbModuleSuite.create(conf.addTest(J2eeTestCase.class));
+    }
+
+    public static class Suite extends NbTestSuite {
+
+        public Suite() {
+            super();
+            addTest(new NewProjectWizardsTest("testDefaultNewEJBModWizard"));
+            addTest(new NewFileWizardsTest("testLocalSessionBean"));
+            addTest(new NewFileWizardsTest("testRemoteSessionBean"));
+            addTest(new NewFileWizardsTest("testLocalRemoteSessionBean"));
+            addTest(new NewFileWizardsTest("testLocalStatefulSessionBean"));
+            addTest(new NewFileWizardsTest("testRemoteStatefulSessionBean"));
+            addTest(new NewFileWizardsTest("testLocalRemoteStatefulSessionBean"));
+            addTest(new NewFileWizardsTest("testPersistenceUnitInEjb"));
+            addTest(new NewFileWizardsTest("testEntityClassInEjb"));
+            addTest(new NewFileWizardsTest("testQueueMdbBean"));
+            addTest(new NewFileWizardsTest("testTopicMdbBean"));
+            addTest(new NewFileWizardsTest("testServiceLocatorInEjb"));
+            addTest(new NewFileWizardsTest("testCachingServiceLocatorInEjb"));
+            addTest(new NewFileWizardsTest("testBuildDefaultNewEJBMod"));
+
+            addTest(new NewProjectWizardsTest("testDefaultNewWebModWizard"));
+            addTest(new NewFileWizardsTest("testServiceLocatorInWeb"));
+            addTest(new NewFileWizardsTest("testCachingServiceLocatorInWeb"));
+            addTest(new NewFileWizardsTest("testPersistenceUnitInWeb"));
+            addTest(new NewFileWizardsTest("testEntityClassInWeb"));
+            addTest(new NewFileWizardsTest("testBuildDefaultNewWebMod"));
+
+            addTest(new NewProjectWizardsTest("testDefaultAppClientWizard"));
+            addTest(new NewProjectWizardsTest("testDefaultNewJ2eeAppWizard"));
+            addTest(new NewProjectWizardsTest("closeProjects"));
+        }
+    }
 }

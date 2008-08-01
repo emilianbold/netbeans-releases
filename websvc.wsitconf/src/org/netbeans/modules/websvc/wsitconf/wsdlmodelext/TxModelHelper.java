@@ -61,15 +61,14 @@ public class TxModelHelper {
     /**
      * Creates a new instance of TxModelHelper
      */
-    public TxModelHelper() {
-    }
+    private TxModelHelper() { }
     
     private static ATAssertion getATAssertion(Policy p) {
-        return (ATAssertion) PolicyModelHelper.getTopLevelElement(p, ATAssertion.class);
+        return (ATAssertion) PolicyModelHelper.getTopLevelElement(p, ATAssertion.class,false);
     }
     
     private static ATAlwaysCapability getATAlwaysAssertion(Policy p) {
-        return (ATAlwaysCapability) PolicyModelHelper.getTopLevelElement(p, ATAlwaysCapability.class);
+        return (ATAlwaysCapability) PolicyModelHelper.getTopLevelElement(p, ATAlwaysCapability.class,false);
     }
 
     /** Tx Value should be one of ComboConstants.TX_*
@@ -120,7 +119,8 @@ public class TxModelHelper {
 
             // now add what is required
             WSDLComponentFactory wcf = model.getFactory();
-            All all = PolicyModelHelper.createPolicy(bop, false);
+            PolicyModelHelper pmh = PolicyModelHelper.getInstance(PolicyModelHelper.getConfigVersion(bop));
+            All all = pmh.createPolicy(bop, false);
             
             if ((ComboConstants.TX_NEVER.equals(txValue)) || 
                 (ComboConstants.TX_NOTSUPPORTED.equals(txValue))) {

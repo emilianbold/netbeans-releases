@@ -57,8 +57,6 @@ import static org.netbeans.modules.java.ui.FmtOptions.*;
  */
 public final class CodeStyle {
     
-    private static CodeStyle INSTANCE;
-
     static {
         FmtOptions.codeStyleProducer = new Producer();
     }
@@ -70,18 +68,7 @@ public final class CodeStyle {
     }
     
     public synchronized static CodeStyle getDefault(Project project) {
-        
-        if ( FmtOptions.codeStyleProducer == null ) {
-            FmtOptions.codeStyleProducer = new Producer();
-        }
-        
-        if (INSTANCE == null)
-            INSTANCE = create();
-        return INSTANCE;
-    }
-    
-    static CodeStyle create() {
-        return new CodeStyle(FmtOptions.getPreferences(FmtOptions.getCurrentProfileId()));
+        return FmtOptions.codeStyleProducer.create(FmtOptions.getPreferences(project));
     }
     
     // General tabs and indents ------------------------------------------------
@@ -95,7 +82,18 @@ public final class CodeStyle {
     }
 
     public int getIndentSize() {
-        return preferences.getInt(indentSize, getGlobalIndentSize());
+        int indentLevel = preferences.getInt(indentSize, getGlobalIndentSize());
+
+        if (indentLevel <= 0) {
+            boolean expandTabs = preferences.getBoolean(expandTabToSpaces, getGlobalExpandTabToSpaces());
+            if (expandTabs) {
+                indentLevel = preferences.getInt(spacesPerTab, getGlobalSpacesPerTab());
+            } else {
+                indentLevel = preferences.getInt(tabSize, getGlobalTabSize());
+            }
+        }
+        
+        return indentLevel;
     }
 
     public int getContinuationIndentSize() {
@@ -120,6 +118,10 @@ public final class CodeStyle {
 
     public int getRightMargin() {
         return preferences.getInt(rightMargin, getGlobalRightMargin());
+    }
+
+    public boolean addLeadingStarInComment() {
+        return preferences.getBoolean(addLeadingStarInComment, getDefaultAsBoolean(addLeadingStarInComment));
     }
 
     // Code generation ---------------------------------------------------------

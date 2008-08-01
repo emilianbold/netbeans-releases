@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.web.wizards;
 
-import java.awt.Dimension;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 
@@ -68,7 +67,7 @@ public class ListenerVisualPanel extends javax.swing.JPanel {
         // You must have turned on WizardDescriptor.WizardPanel_helpDisplayed
         // (see descriptor in standard iterator template for an example of this).
         try {
-            putClientProperty ("WizardPanel_helpURL", // NOI18N
+            putClientProperty (WizardDescriptor.PROP_HELP_URL, // NOI18N
                 new URL ("nbresloc:/org/netbeans/modules/web/wizards/ListenerPanelVisualHelp.html")); // NOI18N
         } catch (MalformedURLException mfue) {
             throw new IllegalStateException (mfue.toString ());
@@ -336,62 +335,50 @@ public class ListenerVisualPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void cb6ItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_cb6ItemStateChanged
-        // TODO add your handling code here:
         wizardPanel.fireChangeEvent();
     }//GEN-LAST:event_cb6ItemStateChanged
 
     private void cb5ItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_cb5ItemStateChanged
-        // TODO add your handling code here:
         wizardPanel.fireChangeEvent();
     }//GEN-LAST:event_cb5ItemStateChanged
 
     private void cb6FocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_cb6FocusGained
-        // TODO add your handling code here:
         description.setText(NbBundle.getMessage(ListenerVisualPanel.class,"TTT_requestAttrListener"));
     }//GEN-LAST:event_cb6FocusGained
 
     private void cb5FocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_cb5FocusGained
-        // TODO add your handling code here:
         description.setText(NbBundle.getMessage(ListenerVisualPanel.class,"TTT_requestListener"));
     }//GEN-LAST:event_cb5FocusGained
 
     private void cb4FocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_cb4FocusGained
-        // TODO add your handling code here:
         description.setText(NbBundle.getMessage(ListenerVisualPanel.class,"TTT_sessionAttrListener"));
     }//GEN-LAST:event_cb4FocusGained
 
     private void cb3FocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_cb3FocusGained
-        // TODO add your handling code here:
         description.setText(NbBundle.getMessage(ListenerVisualPanel.class,"TTT_sessionListener"));
     }//GEN-LAST:event_cb3FocusGained
 
     private void cb2FocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_cb2FocusGained
-        // TODO add your handling code here:
         description.setText(NbBundle.getMessage(ListenerVisualPanel.class,"TTT_contextAttrListener"));
     }//GEN-LAST:event_cb2FocusGained
 
     private void cb1FocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_cb1FocusGained
-        // TODO add your handling code here:
         description.setText(NbBundle.getMessage(ListenerVisualPanel.class,"TTT_contextListener"));
     }//GEN-LAST:event_cb1FocusGained
 
     private void cb3StateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_cb3StateChanged
-        // TODO add your handling code here:
         wizardPanel.fireChangeEvent();
     }//GEN-LAST:event_cb3StateChanged
 
     private void cb2StateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_cb2StateChanged
-        // TODO add your handling code here:
         wizardPanel.fireChangeEvent();
     }//GEN-LAST:event_cb2StateChanged
 
     private void cb1StateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_cb1StateChanged
-        // TODO add your handling code here:
         wizardPanel.fireChangeEvent();
     }//GEN-LAST:event_cb1StateChanged
 
     private void cb4StateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_cb4StateChanged
-        // TODO add your handling code here:
         wizardPanel.fireChangeEvent();
     }//GEN-LAST:event_cb4StateChanged
     

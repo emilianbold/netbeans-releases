@@ -51,6 +51,7 @@ import org.netbeans.modules.cnd.api.model.CsmFriend;
 import org.netbeans.modules.cnd.api.model.CsmFriendClass;
 import org.netbeans.modules.cnd.api.model.CsmFriendFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
+import org.netbeans.modules.cnd.api.model.CsmFunctionPointerType;
 import org.netbeans.modules.cnd.api.model.CsmIdentifiable;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmInheritance;
@@ -69,6 +70,7 @@ import org.netbeans.modules.cnd.api.model.CsmQualifiedNamedElement;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmScopeElement;
 import org.netbeans.modules.cnd.api.model.CsmTemplate;
+import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
 import org.netbeans.modules.cnd.api.model.CsmTemplateParameterType;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmUsingDeclaration;
@@ -77,6 +79,8 @@ import org.netbeans.modules.cnd.api.model.CsmValidable;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.deep.CsmDeclarationStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
+import org.netbeans.modules.cnd.api.model.deep.CsmGotoStatement;
+import org.netbeans.modules.cnd.api.model.deep.CsmLabel;
 import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
 
 
@@ -146,9 +150,17 @@ public class CsmKindUtilities {
     }
     
     public static boolean isTemplate(CsmObject obj) {
-        return (obj instanceof CsmTemplate);
+        return (obj instanceof CsmTemplate) && ((CsmTemplate)obj).isTemplate();
     }
     
+    public static boolean isTemplateParameter(CsmObject obj) {
+        return (obj instanceof CsmTemplateParameter);
+    }
+
+    public static boolean isFunctionPointerType(CsmObject obj) {
+        return (obj instanceof CsmFunctionPointerType);
+    }
+
     public static boolean isType(CsmObject obj) {
         if (obj instanceof CsmType) {
             return true;
@@ -188,7 +200,15 @@ public class CsmKindUtilities {
             return false;
         }          
     }
-    
+
+    public static boolean isGotoStatement(CsmObject obj) {
+        return (obj instanceof CsmGotoStatement);
+    }
+
+    public static boolean isLabel(CsmObject obj) {
+        return (obj instanceof CsmLabel);
+    }
+
     public static boolean isOffsetable(Object obj) {
         if (obj instanceof CsmOffsetable) {
             return true;
@@ -305,6 +325,10 @@ public class CsmKindUtilities {
             return false;
         }
     }   
+
+    public static boolean isParameter(CsmObject obj) {
+        return (obj instanceof CsmParameter);
+    }
 
     /*
      * checks if object is function operator

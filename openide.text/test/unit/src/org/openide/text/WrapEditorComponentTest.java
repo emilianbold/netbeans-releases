@@ -196,7 +196,12 @@ implements CloneableEditorSupport.Env {
             super(env, l);
         }
         
+        int cnt = 0;
         protected Component wrapEditorComponent(Component editorComponent) {
+            if (cnt++ > 0) {
+                fail("Two calls to wrap component");
+            }
+            
             JPanel panel = new JPanel(new BorderLayout());
             panel.setName(WRAPPER_NAME);
             panel.add(editorComponent, BorderLayout.CENTER);

@@ -36,9 +36,7 @@
              xmlns:plink="http://docs.oasis-open.org/wsbpel/2.0/plnktype"
              xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
              xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
-             xmlns:sns="http://manufacturing.org/xsd/purchase"
-             xmlns:bpws="http://docs.oasis-open.org/wsbpel/2.0/varprop">
-
+             xmlns:sns="http://manufacturing.org/xsd/purchase">
     <types>
         <xsd:schema targetNamespace="http://manufacturing.org/wsdl/purchase/bp4">
             <xsd:import schemaLocation="purchaseOrder.xsd" namespace="http://manufacturing.org/xsd/purchase"/>
@@ -48,7 +46,7 @@
     <message name="POMessage">
         <part name="purchaseOrder" element="sns:purchaseOrder"></part>
     </message>
-    
+
     <message name="orderFaultType">
         <part name="faultInfo" type="xsd:string"></part>
     </message>
@@ -60,7 +58,7 @@
             <fault name="cannotCompleteOrder" message="tns:orderFaultType"></fault>
         </operation>
     </portType>
-    
+
     <binding name="purchaseOrderBinding" type="tns:purchaseOrderPT">
         <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
         <operation name="sendPurchaseOrder">
@@ -76,20 +74,14 @@
             </fault>
         </operation>
     </binding>
-    
+
     <service name="purchaseOrderService">
         <port name="purchaseOrderPort" binding="tns:purchaseOrderBinding">
-            <soap:address location="http://localhost:18181/wsdl/purchase/PurchaseOrder/Servicelocation/bp4"/>
+            <soap:address location="http://localhost:${HttpDefaultPort}/wsdl/purchase/PurchaseOrder/Servicelocation/bp4"/>
         </port>
     </service>
-    
+
     <plink:partnerLinkType name="purchasingLT">
         <plink:role name="purchaseService" portType="tns:purchaseOrderPT"></plink:role>
     </plink:partnerLinkType>
-    
-    <bpws:property name="clrorla" type="xsd:int"/>
-    
-    <bpws:propertyAlias propertyName="tns:clrorla" messageType="tns:POMessage" part="purchaseOrder">
-        <bpws:query>/sns:purchaseOrder/sns:orderId</bpws:query>
-    </bpws:propertyAlias>
 </definitions>

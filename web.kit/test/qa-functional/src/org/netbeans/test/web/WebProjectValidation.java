@@ -50,10 +50,10 @@ import java.net.URLConnection;
 import javax.swing.JComboBox;
 import javax.swing.SwingUtilities;
 import javax.swing.tree.TreePath;
+import junit.framework.Test;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.EditorWindowOperator;
-import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.NewFileNameLocationStepOperator;
@@ -72,16 +72,17 @@ import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.NewWebProjectNameLocationStepOperator;
+import org.netbeans.jellytools.NewWebProjectServerSettingsStepOperator;
+import org.netbeans.jellytools.NewWebProjectSourcesStepOperator;
 import org.netbeans.jellytools.OptionsOperator;
 import org.netbeans.jellytools.OutputTabOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.RuntimeTabOperator;
 import org.netbeans.jellytools.actions.PropertiesAction;
+import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
 import org.netbeans.jellytools.modules.j2ee.nodes.J2eeServerNode;
 import org.netbeans.jellytools.modules.web.NavigatorOperator;
 import org.netbeans.jellytools.modules.web.nodes.WebPagesNode;
 import org.netbeans.jemmy.QueueTool;
-import org.netbeans.jemmy.Timeouts;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
@@ -91,18 +92,16 @@ import org.netbeans.jemmy.operators.JRadioButtonOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.jemmy.operators.Operator;
-import org.netbeans.jemmy.util.PNGEncoder;
-import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.Manager;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.ide.ProjectSupport;
-import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceCreationException;
-import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 
 /**
  */
-public class WebProjectValidation extends JellyTestCase {
+public class WebProjectValidation extends J2eeTestCase {
     protected static ProjectHelper phelper = new ProjectHelper() {
         public Node getSourceNode() {
             return new SourcePackagesNode(PROJECT_NAME);
@@ -110,7 +109,7 @@ public class WebProjectValidation extends JellyTestCase {
     };
     // location of sample project (parent of PROJECT_FOLDER)
     protected static final String PROJECT_LOCATION =
-            System.getProperty("xtest.data");
+            getProjectFolder().getAbsolutePath();
     // name of sample project
     protected static String PROJECT_NAME = "SampleProject"; // NOI18N
     // foloder of sample project
@@ -125,40 +124,32 @@ public class WebProjectValidation extends JellyTestCase {
     public WebProjectValidation(String name) {
         super(name);
     }
-    
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new WebProjectValidation("testPreconditions"));
-        suite.addTest(new WebProjectValidation("testNewWebProject"));
-        //suite.addTest(new WebProjectValidation("testRegisterTomcat"));
-        suite.addTest(new WebProjectValidation("testNewJSP"));
-        suite.addTest(new WebProjectValidation("testNewJSP2"));
-        suite.addTest(new WebProjectValidation("testJSPNavigator"));
-        suite.addTest(new WebProjectValidation("testNewServlet"));
-        suite.addTest(new WebProjectValidation("testNewServlet2"));
-        suite.addTest(new WebProjectValidation("testBuildProject"));
-        suite.addTest(new WebProjectValidation("testCompileAllJSP"));
-        suite.addTest(new WebProjectValidation("testCompileJSP"));
-        suite.addTest(new WebProjectValidation("testCleanProject"));
-        suite.addTest(new WebProjectValidation("testRunProject"));
-        suite.addTest(new WebProjectValidation("testRunJSP"));
-        suite.addTest(new WebProjectValidation("testViewServlet"));
-        suite.addTest(new WebProjectValidation("testRunServlet"));
-        suite.addTest(new WebProjectValidation("testCreateTLD"));
-        suite.addTest(new WebProjectValidation("testCreateTagHandler"));
-        suite.addTest(new WebProjectValidation("testRunTag"));
-        suite.addTest(new WebProjectValidation("testNewHTML"));
-        suite.addTest(new WebProjectValidation("testHTMLNavigator"));
-        suite.addTest(new WebProjectValidation("testRunHTML"));
-        suite.addTest(new WebProjectValidation("testNewSegment"));
-        suite.addTest(new WebProjectValidation("testNewDocument"));
-        suite.addTest(new WebProjectValidation("testStopServer"));
-        suite.addTest(new WebProjectValidation("testStartServer"));
-        suite.addTest(new WebProjectValidation("testBrowserSettings"));
-        suite.addTest(new WebProjectValidation("testFinish"));
-        return suite;
+
+    /** Need to be defined because of JUnit */
+    public WebProjectValidation() {
+        super(null);
     }
     
+    public static Test suite() {
+        NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(WebProjectValidation.class);
+        conf = addServerTests(J2eeTestCase.Server.TOMCAT, conf, 
+              "testPreconditions", "testNewWebProject", "testRegisterTomcat",
+              "testNewJSP", "testNewJSP2", "testNewServlet", "testNewServlet2",
+              "testCompileAllJSP", "testCompileJSP",
+              "testCleanAndBuildProject", "testRunProject", "testRunJSP", "testViewServlet",
+              "testCleanAndBuildProject", "testRunServlet", "testCreateTLD", "testCreateTagHandler", "testRunTag",
+              "testNewHTML", "testRunHTML", "testNewSegment", "testNewDocument",
+              "testStopServer", "testStartServer", "testBrowserSettings", "testFinish"
+               /*"testJSPNavigator", "testHTMLNavigator" */);
+        conf = conf.enableModules(".*").clusters(".*");
+        return NbModuleSuite.create(conf);
+    }
+
+    protected static File getProjectFolder() {
+        File dataDir = new WebProjectValidation().getDataDir();
+        return Manager.normalizeFile(dataDir);
+    }
+
     /** Use for execution inside IDE */
     public static void main(java.lang.String[] args) {
         // run whole suite
@@ -194,18 +185,7 @@ public class WebProjectValidation extends JellyTestCase {
     }
     
     public void testRegisterTomcat() {
-        // register Tomcat
-        String tomcatHome = System.getProperty("tomcat.home");
-        try {
-            InstanceProperties.createInstanceProperties("tomcat55:home="+tomcatHome+":base="+tomcatHome,
-                    "tomcat", "tomcat", "Testing Tomcat");
-        } catch(InstanceCreationException ice) {
-            fail(ice);
-        }
-        J2eeServerNode.invoke("Testing Tomcat");
-        RuntimeTabOperator.invoke();
-        sleep(30000);
-        
+        assertNotNull(getServerNode(Server.TOMCAT));
     }
     
     /** checks if the Server ports are not used */
@@ -221,6 +201,7 @@ public class WebProjectValidation extends JellyTestCase {
             connection.connect();
             fail("Connection to http://localhost:8025 established, but tomcat should not be running.");
         } catch (ConnectException e) {  }
+        initDisplayer();
     }
     
     /** Test creation of web project.
@@ -245,25 +226,41 @@ public class WebProjectValidation extends JellyTestCase {
         nameStep.txtProjectName().typeText(PROJECT_NAME);
         nameStep.txtProjectLocation().setText("");
         nameStep.txtProjectLocation().typeText(PROJECT_LOCATION);
-        nameStep.finish();
-        Timeouts timeouts = nameStep.getTimeouts().cloneThis();
-        nameStep.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 60000);
-        nameStep.waitClosed();
-        nameStep.setTimeouts(timeouts);
+        nameStep.next();
+        NewWebProjectServerSettingsStepOperator serverStep = new NewWebProjectServerSettingsStepOperator();
+        serverStep.cboServer().selectItem(0);
+        serverStep.selectJavaEEVersion(org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.j2ee.common.project.ui.Bundle", "J2EESpecLevel_14"));
+        serverStep.next();
+        NewWebProjectSourcesStepOperator frameworkStep =  new NewWebProjectSourcesStepOperator();
+        frameworkStep.finish();
         // wait for project creation
         sleep(5000);
         ProjectSupport.waitScanFinished();
-        EditorWindowOperator.getEditor("index.jsp");//NOI18N
-        ProjectSupport.waitScanFinished();
-        // XXX HACK
-        WebPagesNode webPages = new WebPagesNode(PROJECT_NAME);
-        new Node(webPages,"index.jsp");//NOI18N
-        new Node(webPages,"WEB-INF|web.xml");//NOI18N
-        new Node(webPages,"META-INF|context.xml");//NOI18N
-        ref(Util.dumpProjectView(PROJECT_NAME));
-        compareReferenceFiles();
+        verifyWebPagesNode("index.jsp");
+        verifyWebPagesNode("WEB-INF|web.xml");
+        verifyWebPagesNode("META-INF|context.xml");
     }
     
+    protected void verifyProjectNode(String nodePath) {
+        Node prjNode = ProjectsTabOperator.invoke().getProjectRootNode(PROJECT_NAME);
+        Node node = new Node(prjNode,nodePath);//NOI18N
+        assertTrue(node.isPresent());
+        node.select();
+    }
+
+    protected void verifySourcePackageNode(String nodePath){
+        SourcePackagesNode sourceNode = new SourcePackagesNode(PROJECT_NAME);
+        Node node = new Node(sourceNode, nodePath);
+        assertTrue(node.isPresent());
+        node.select();
+    }
+    
+    protected void verifyWebPagesNode(String nodePath) {
+        WebPagesNode webPages = new WebPagesNode(PROJECT_NAME);
+        Node node = new Node(webPages,nodePath);//NOI18N
+        assertTrue(node.isPresent());
+        node.select();
+    }
     /** Test new JSP wizard.
      * - open New File wizard from main menu (File|New File)
      * - select sample project as target
@@ -410,6 +407,13 @@ public class WebProjectValidation extends JellyTestCase {
         nfnlso.finish();
     }
     
+    public void testCleanAndBuildProject() {
+        Node rootNode = new ProjectsTabOperator().getProjectRootNode(PROJECT_NAME);
+        Util.cleanStatusBar();
+        new Action(null, "Clean and Build").perform(rootNode);
+        MainWindowOperator.getDefault().waitStatusText("Finished building");
+    }
+
     public void testBuildProject() {
         Node rootNode = new ProjectsTabOperator().getProjectRootNode(PROJECT_NAME);
         Util.cleanStatusBar();
@@ -427,11 +431,9 @@ public class WebProjectValidation extends JellyTestCase {
         new JCheckBoxOperator(properties,2).changeSelection(true);
         properties.ok();
         
-        testCleanProject();
+        testCleanAndBuildProject();
         logAndCloseOutputs();
-        testBuildProject();
-        logAndCloseOutputs();
-        testCleanProject();
+        testCleanAndBuildProject();
         logAndCloseOutputs();
         
         new Action(null,"Properties").perform(rootNode);
@@ -453,7 +455,7 @@ public class WebProjectValidation extends JellyTestCase {
     
     public void testCleanProject() {
         Node rootNode = new ProjectsTabOperator().getProjectRootNode(PROJECT_NAME);
-        Action clean = new Action(null,"Clean");
+        Action clean = new Action(null,"Clean and Build");
         // can clash with 'Clean and Build' action
         clean.setComparator(new Operator.DefaultStringComparator(true, true));
         Util.cleanStatusBar();
@@ -476,7 +478,7 @@ public class WebProjectValidation extends JellyTestCase {
         assertDisplayerContent("<title>SampleProject Index Page</title>");
         editor.deleteLine(12);
         editor.save();
-        editor.closeDiscardAll();
+        EditorOperator.closeDiscardAll();
     }
     
     public void testRunJSP() {
@@ -490,7 +492,7 @@ public class WebProjectValidation extends JellyTestCase {
         editor.insert("Running JSP\n",12,1);
            sleep(2000);
         editor.save();
-        new Action("Run|Run File|Run \"page2.jsp\"",null).perform();
+        new Action("Run|Run File",null).perform();
         waitBuildSuccessful();
         assertDisplayerContent("<title>Page 2</title>");
         editor.deleteLine(12);
@@ -510,9 +512,8 @@ public class WebProjectValidation extends JellyTestCase {
         editor.insert(runningViewServlet+"\n", 14, 1);
         editor.insert("<% " + jspCode + " %>\n" , 19, 9);
         sleep(5000);
-        PNGEncoder.captureScreen(getWorkDir().getAbsolutePath()+File.separator+"screen1.png");        
         editor.saveDocument();
-        new Action("Run|Run File|Run \"page2.jsp\"",null).perform();
+        new Action("Run|Run File",null).perform();
         waitBuildSuccessful();
         assertDisplayerContent("<title>Page 2</title>");
         new Node(rootNode,"Web Pages|page2.jsp").performPopupAction("View Servlet");
@@ -527,7 +528,6 @@ public class WebProjectValidation extends JellyTestCase {
         editor.deleteLine(19);
         sleep(5000);        
         editor.save();
-        PNGEncoder.captureScreen(getWorkDir().getAbsolutePath()+File.separator+"screen2.png");
         editor.close();
         servlet.close();
     }
@@ -543,13 +543,15 @@ public class WebProjectValidation extends JellyTestCase {
         editor.replace("            */", "");
         editor.replace("out.println(\"<title>Servlet Servlet1</title>\");",
                 "out.println(\"<title>Servlet with name=\"+request.getParameter(\"name\")+\"</title>\");");
-        new ActionNoBlock("Run|Run File|Run \"Servlet1.java\"",null).perform();
-        NbDialogOperator dialog = new NbDialogOperator("Set Servlet Execution Uri");
+        new ActionNoBlock("Run|Run File",null).perform();
+        NbDialogOperator dialog = new NbDialogOperator("Set Servlet Execution URI");
         JComboBoxOperator combo = new JComboBoxOperator(dialog);
         combo.setSelectedItem(combo.getSelectedItem()+"?name=Servlet1");
         dialog.ok();
         //waitBuildSuccessful();
         editor.close();
+        getServerNode(Server.ANY).waitFinished();
+        sleep(2000);
         assertDisplayerContent("<title>Servlet with name=Servlet1</title>");
     }
     
@@ -746,7 +748,7 @@ public class WebProjectValidation extends JellyTestCase {
         new Node(rootNode,"Web Pages|HTML.html").performPopupAction("Open");
         new EditorOperator("HTML.html").replace("<title></title>",
                 "<title>HTML Page</title>");
-        new Action("Run|Run File|Run \"HTML.html\"",null).perform();
+        new Action("Run|Run File",null).perform();
         //waitBuildSuccessful();
         new EditorOperator("HTML.html").close();
         assertDisplayerContent("<title>HTML Page</title>");
@@ -833,7 +835,7 @@ public class WebProjectValidation extends JellyTestCase {
     
     public void testFinish() {
         server.stop();
-        ProjectSupport.closeProject(PROJECT_NAME);
+        new ActionNoBlock(null, "Close").perform(new ProjectsTabOperator().getProjectRootNode(PROJECT_NAME));
     }
     
     //********************************************************
@@ -846,7 +848,7 @@ public class WebProjectValidation extends JellyTestCase {
         }
     }
     
-    private void logAndCloseOutputs() {
+    public void logAndCloseOutputs() {
         OutputTabOperator outputTab;
         long timeout = JemmyProperties.getCurrentTimeout("ComponentOperator.WaitComponentTimeout");
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
@@ -867,20 +869,20 @@ public class WebProjectValidation extends JellyTestCase {
         }
     }
     
-    private void waitBuildSuccessful() {
+    public void waitBuildSuccessful() {
         OutputTabOperator console = new OutputTabOperator(PROJECT_NAME);
         console.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 180000);
         console.waitText(BUILD_SUCCESSFUL);
     }
     
-    private void initDisplayer() {
+    public void initDisplayer() {
         if (urlDisplayer == null) {
             urlDisplayer = TestURLDisplayer.getInstance();
         }
         urlDisplayer.invalidateURL();
     }
     
-    private void assertDisplayerContent(String substr) {
+    public void assertDisplayerContent(String substr) {
         try {
             urlDisplayer.waitURL();
         } catch (InterruptedException ex) {
@@ -895,7 +897,7 @@ public class WebProjectValidation extends JellyTestCase {
         assertTrue("The '"+urlDisplayer.getURL()+"' page does not contain '"+substr+"'", contains);
     }
     
-    private void assertContains(String text, String value) {
+    public void assertContains(String text, String value) {
         assertTrue("Assertation failed, cannot find:\n"+value+"\nin the following text:\n"+text, text.contains(value));
     }
     

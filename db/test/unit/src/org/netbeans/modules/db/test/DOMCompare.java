@@ -122,6 +122,8 @@ public class DOMCompare {
                     if (!isWhitespace(node.getNodeValue())) {
                         break;
                     }
+                } else if(type == Node.CDATA_SECTION_NODE) {
+                    break;
                 } else {
                     System.out.println("Unsupported node type " + type);
                     return false;
@@ -137,6 +139,8 @@ public class DOMCompare {
                     if (!isWhitespace(node.getNodeValue())) {
                         break;
                     }
+                } else if(type == Node.CDATA_SECTION_NODE) {
+                    break;
                 } else {
                     System.out.println("Unsupported node type " + type);
                     return false;
@@ -156,6 +160,7 @@ public class DOMCompare {
                         }
                         break;
                     case Node.TEXT_NODE:
+                    case Node.CDATA_SECTION_NODE:
                         if (!compareStrings(ch1.item(i1).getNodeValue(), ch2.item(i2).getNodeValue())) {
                             System.out.println("Different text content '" + ch1.item(i1).getNodeValue() + "' and '" + ch2.item(i2).getNodeValue() + "'");
                             return false;

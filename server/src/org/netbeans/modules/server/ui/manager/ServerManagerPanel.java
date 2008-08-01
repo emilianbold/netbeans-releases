@@ -105,6 +105,7 @@ public class ServerManagerPanel extends javax.swing.JPanel implements PropertyCh
         setPreferredSize(MINIMUM_SIZE);
     }
 
+    @Override
     public void addNotify() {
         super.addNotify();
         expandServers(initialInstance);
@@ -195,8 +196,8 @@ public class ServerManagerPanel extends javax.swing.JPanel implements PropertyCh
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         customizerPanel.add(jLabel1, gridBagConstraints);
-        jLabel1.getAccessibleContext().setAccessibleName("null");
-        jLabel1.getAccessibleContext().setAccessibleDescription("null");
+        jLabel1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ServerManagerPanel.class, "ASCN_ServerName")); // NOI18N
+        jLabel1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServerManagerPanel.class, "ASCD_ServerName")); // NOI18N
 
         serverName.setEditable(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -206,8 +207,8 @@ public class ServerManagerPanel extends javax.swing.JPanel implements PropertyCh
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 0);
         customizerPanel.add(serverName, gridBagConstraints);
-        serverName.getAccessibleContext().setAccessibleName("null");
-        serverName.getAccessibleContext().setAccessibleDescription("null");
+        serverName.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ServerManagerPanel.class, "ASCN_ServerName")); // NOI18N
+        serverName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServerManagerPanel.class, "ASCD_ServerName")); // NOI18N
 
         jLabel2.setLabelFor(serverType);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel2, NbBundle.getMessage(ServerManagerPanel.class, "CTL_ServerType")); // NOI18N
@@ -215,8 +216,8 @@ public class ServerManagerPanel extends javax.swing.JPanel implements PropertyCh
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 12, 0);
         customizerPanel.add(jLabel2, gridBagConstraints);
-        jLabel2.getAccessibleContext().setAccessibleName("null");
-        jLabel2.getAccessibleContext().setAccessibleDescription("null");
+        jLabel2.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ServerManagerPanel.class, "ASCN_ServerType")); // NOI18N
+        jLabel2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServerManagerPanel.class, "ASCD_ServerType")); // NOI18N
 
         serverType.setEditable(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -226,8 +227,8 @@ public class ServerManagerPanel extends javax.swing.JPanel implements PropertyCh
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 12, 0);
         customizerPanel.add(serverType, gridBagConstraints);
-        serverType.getAccessibleContext().setAccessibleName("null");
-        serverType.getAccessibleContext().setAccessibleDescription("null");
+        serverType.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ServerManagerPanel.class, "ASCN_ServerType")); // NOI18N
+        serverType.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServerManagerPanel.class, "ASCD_ServerType")); // NOI18N
 
         clientPanel.setLayout(new java.awt.GridBagLayout());
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -279,78 +280,36 @@ public class ServerManagerPanel extends javax.swing.JPanel implements PropertyCh
                 .addContainerGap())
         );
 
-        serversView.getAccessibleContext().setAccessibleName("null");
-        serversView.getAccessibleContext().setAccessibleDescription("null");
-        addButton.getAccessibleContext().setAccessibleName("null");
-        addButton.getAccessibleContext().setAccessibleDescription("null");
-        removeButton.getAccessibleContext().setAccessibleName("null");
-        removeButton.getAccessibleContext().setAccessibleDescription("null");
-        serversLabel.getAccessibleContext().setAccessibleName("null");
-        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/server/ui/manager/Bundle"); // NOI18N
-        serversLabel.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_ServerList")); // NOI18N
+        serversView.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ServerManagerPanel.class, "ASCN_InstalledServers")); // NOI18N
+        serversView.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServerManagerPanel.class, "ASCD_InstalledServers")); // NOI18N
+        addButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ServerManagerPanel.class, "ASCN_AddServer")); // NOI18N
+        addButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServerManagerPanel.class, "ASCD_AddServer")); // NOI18N
+        removeButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ServerManagerPanel.class, "ASCN_Remove")); // NOI18N
+        removeButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServerManagerPanel.class, "ASCD_Remove")); // NOI18N
+        serversLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ServerManagerPanel.class, "ACSN_ServerList")); // NOI18N
+        serversLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServerManagerPanel.class, "ACSD_ServerList")); // NOI18N
 
-        getAccessibleContext().setAccessibleName("null");
-        getAccessibleContext().setAccessibleDescription("null");
+        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ServerManagerPanel.class, "ACSN_ServerManager")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServerManagerPanel.class, "ACSD_ServerManager")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void removeServer(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeServer
         Node[] nodes = getExplorerManager().getSelectedNodes();
-        //assert nodes.length != 1 : "Illegal number of selected nodes"; // NOI18N
-        LOGGER.log(Level.FINE, "----Remove");
 
         if (nodes[0] instanceof ServerNode) {
             ServerInstance serverInstance = ((ServerNode) nodes[0]).getServerInstance();
             if (serverInstance.isRemovable()) {
-                LOGGER.log(Level.FINE, "Removing node");
                 serverInstance.remove();
-                LOGGER.log(Level.FINE, "Node removed");
-                LOGGER.log(Level.FINE, "Calling refresh");
                 getChildren().refresh();
-//                new Thread() {
-//
-//                    @Override
-//                    public void run() {
-//                        try {
-//                            Thread.sleep(5000);
-//                        } catch (InterruptedException ex) {}
-//                        SwingUtilities.invokeLater(new Runnable() {
-//                            public void run() {
-//                                expandServers(null);
-//                            }
-//                        });
-
-//                    }
-//
-//                }.start();
-                //LOGGER.log(Level.FINE, "Refresh called");
-                LOGGER.log(Level.FINE, "Expanding servers");
                 expandServers(null);
-                //LOGGER.log(Level.FINE, "Servers expanded");
             }
         }
-        LOGGER.log(Level.FINE, "----Remove finish");
     }//GEN-LAST:event_removeServer
 
     private void addServer(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addServer
         final ServerInstance instance = AddServerInstanceWizard.showAddServerInstanceWizard();
         if (instance != null) {
             getChildren().refresh();
-//                new Thread() {
-//
-//                    @Override
-//                    public void run() {
-//                        try {
-//                            Thread.sleep(5000);
-//                        } catch (InterruptedException ex) {}
-//                        SwingUtilities.invokeLater(new Runnable() {
-//                            public void run() {
-//                                expandServers(instance);
-//                            }
-//                        });
-//
-//                    }
-//
-//                }.start();
             expandServers(instance);
         }
     }//GEN-LAST:event_addServer
@@ -432,38 +391,31 @@ public class ServerManagerPanel extends javax.swing.JPanel implements PropertyCh
     }
 
     private static void expandAllNodes(BeanTreeView btv, Node node, ExplorerManager mgr, ServerInstance servInst) {
-        //btv.expandNode(node);
-
         Children ch = node.getChildren();
-        //LOGGER.log(Level.FINE, "children: " + ch);
 
         // preselect node for the specified server instance
         if (servInst != null && ch == Children.LEAF && node instanceof ServerNode) {
             try {
-                //LOGGER.log(Level.FINE, "preselect server");
                 if (((ServerNode)node).getServerInstance() == servInst) {
                     mgr.setSelectedNodes(new Node[] {node});
                 }
             } catch (PropertyVetoException e) {
-                //Ignore it
-                e.printStackTrace();
+                // Ignore it
+                LOGGER.log(Level.FINE, null, e);
             }
         }
 
         // preselect first server
         if (servInst == null && ch == Children.LEAF && mgr.getSelectedNodes().length == 0) {
             try {
-                //LOGGER.log(Level.FINE, "preselect first");
                 mgr.setSelectedNodes(new Node[] {node});
             } catch (PropertyVetoException e) {
                 //Ignore it
-                e.printStackTrace();
+                LOGGER.log(Level.FINE, null, e);
             }
         }
         Node nodes[] = ch.getNodes( true );
-        //LOGGER.log(Level.FINE, "children nodes: " + nodes.length);
         for ( int i = 0; i < nodes.length; i++ ) {
-            //LOGGER.log(Level.FINE, "child node: " + nodes[i].getDisplayName());
             expandAllNodes( btv, nodes[i], mgr, servInst);
         }
     }

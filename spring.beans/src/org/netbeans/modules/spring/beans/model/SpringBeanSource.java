@@ -41,19 +41,14 @@
 
 package org.netbeans.modules.spring.beans.model;
 
-import java.util.List;
-import org.netbeans.modules.spring.api.beans.model.SpringBean;
+import org.netbeans.modules.spring.api.beans.model.FileSpringBeans;
 
 /**
  * A generic source of beans.
  *
  * @author Andrei Badea
  */
-public interface SpringBeanSource {
+public interface SpringBeanSource extends FileSpringBeans {
 
-    List<SpringBean> getBeans();
-
-    SpringBean findBeanByID(String id);
-
-    SpringBean findBeanByIDOrName(String name);
+    // XXX this interface should be removed and FileSpringBeans used instead.
 }

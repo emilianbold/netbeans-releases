@@ -147,6 +147,10 @@ public final class ZOrder {
         return list.toArray(new HighlightsLayer [list.size()]);
     }
 
+    /* package */ int getRack() {
+        return rack;
+    }
+    
     private static final Comparator<HighlightsLayer> COMPARATOR = new Comparator<HighlightsLayer>() {
         public int compare(HighlightsLayer layerA, HighlightsLayer layerB) {
             ZOrder zOrderA = layerA.getZOrder();

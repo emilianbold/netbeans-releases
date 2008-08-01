@@ -42,10 +42,8 @@
 package org.netbeans.modules.ruby.hints;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
-import org.netbeans.modules.ruby.hints.HintTestBase;
-import org.openide.filesystems.FileObject;
+import org.netbeans.modules.ruby.hints.infrastructure.RubyAstRule;
 
 /**
  *
@@ -57,12 +55,20 @@ public class AttributeIsLocalTest extends HintTestBase {
         super(testName);
     }
 
+    private RubyAstRule createRule() {
+        return new AttributeIsLocal();
+    }
+
+    public void testRegistered() throws Exception {
+        ensureRegistered(createRule());
+    }
+    
     public void testHint1() throws Exception {
-        findHints(this, new AttributeIsLocal(), "testfiles/localattributes.rb", null);
+        checkHints(this, createRule(), "testfiles/localattributes.rb", null);
     }
 
     public void testHint2() throws Exception {
-        findHints(this, new AttributeIsLocal(), "testfiles/localattributes2.rb", null);
+        checkHints(this, createRule(), "testfiles/localattributes2.rb", null);
     }
     
     public void testNoPositives() throws Exception {
@@ -71,6 +77,7 @@ public class AttributeIsLocalTest extends HintTestBase {
             Set<String> exceptions = new HashSet<String>();
             
             // Known exceptions
+            exceptions.add("options.rb");
             exceptions.add("platform.rb");
             exceptions.add("game.rb");
             exceptions.add("routing.rb");
@@ -88,8 +95,11 @@ public class AttributeIsLocalTest extends HintTestBase {
             exceptions.add("baseData.rb");
             exceptions.add("form_helper.rb");
             exceptions.add("url_helper_test.rb");
+            exceptions.add("migration.rb");
+            exceptions.add("route_set.rb");
+            exceptions.add("template_finder.rb");
         
-            assertNoJRubyMatches(new AttributeIsLocal(), exceptions);
+            assertNoJRubyMatches(createRule(), exceptions);
             
         } finally {
             parseErrorsOk = false;
@@ -98,6 +108,6 @@ public class AttributeIsLocalTest extends HintTestBase {
 
     public void testApplyFix() throws Exception {
         String caretLine = "b^ar = value";
-        applyHint(this, new AttributeIsLocal(),"testfiles/localattributes.rb", caretLine, "self.bar");
+        applyHint(this, createRule(),"testfiles/localattributes.rb", caretLine, "self.bar");
     }
 }

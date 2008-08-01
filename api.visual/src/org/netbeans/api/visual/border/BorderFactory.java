@@ -40,7 +40,9 @@
  */
 package org.netbeans.api.visual.border;
 
+import org.netbeans.api.visual.widget.ResourceTable;
 import org.netbeans.api.visual.widget.Scene;
+import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.visual.border.*;
 import org.netbeans.modules.visual.util.GeomUtil;
 
@@ -150,7 +152,33 @@ public final class BorderFactory {
     public static Border createLineBorder () {
         return BORDER_LINE;
     }
-
+    
+    /**
+     * Creates a line border with default style.
+     * 
+     * The instance can not be shared by multiple widgets.
+     * 
+     * @param property the property name
+     * @param associated the widget used to retrieve the resource table.
+     * @return the line border
+     */
+    public static Border createLineBorder (String property, Widget associated) {
+        return createLineBorder (1, property, associated);
+    }
+    
+    /**
+     * Creates a line border with default style.
+     * 
+     * The instance can be shared by multiple widgets.
+     * 
+     * @param property the property name
+     * @param table the resource table.
+     * @return the line border
+     */
+    public static Border createLineBorder (String property, ResourceTable table) {
+        return createLineBorder (1, property, table);
+    }
+    
     /**
      * Creates a line border with specific thickness. The line is still one pixel but the layout insets are calculated from thickness.
      * The instance can be shared by multiple widgets.
@@ -171,7 +199,42 @@ public final class BorderFactory {
     public static Border createLineBorder (int thickness, Color color) {
         return new LineBorder (thickness, thickness, thickness, thickness, color != null ? color : Color.BLACK);
     }
-
+ 
+    /**
+     * Creates a line border with specific thickness and color. The line is 
+     * still one pixel but the layout insets are calculated from thickness.
+     * The color is specified by a resource property that is retrieved from a   
+     * resource table.  The resource table is retrieved from the associated 
+     * widget.
+     * 
+     * The instance can not be shared by multiple widgets.
+     * @param thickness the border thickness
+     * @param property the property name
+     * @param associated the widget used to retrieve the resource table.
+     * @return the line border
+     */
+    public static Border createLineBorder (int thickness, String property, Widget associated) {
+        return new LineBorder (thickness, thickness, thickness, thickness, property, associated);
+    }
+    
+    /**
+     * Creates a line border with specific thickness and color. The line is 
+     * still one pixel but the layout insets are calculated from thickness.
+     * The color is specified by a resource property that is retrieved from a   
+     * resource table.  The resource table is retrieved from the associated 
+     * widget.
+     * 
+     * The instance can not be shared by multiple widgets.
+     * 
+     * @param thickness the border thickness
+     * @param property the property name
+     * @param table the resource table.
+     * @return the line border
+     */
+    public static Border createLineBorder (int thickness, String property, ResourceTable table) {
+        return new LineBorder (thickness, thickness, thickness, thickness, property, table);
+    }
+    
     /**
      * Creates a line border with specific insets and color. The line is still one pixel but the layout insets are specified.
      * The instance can be shared by multiple widgets.
@@ -185,7 +248,46 @@ public final class BorderFactory {
     public static Border createLineBorder (int top, int left, int bottom, int right, Color color) {
         return new LineBorder (top, left, bottom, right, color != null ? color : Color.BLACK);
     }
-
+    
+    /**
+     * Creates a line border with specific insets and color. The line is still 
+     * one pixel but the layout insets are specified.  The color is specified
+     * by a resource property that is retrieved from a resource table.  
+     * The resource table is retrieved from the associated widget.
+     * 
+     * The instance can not shared by multiple widgets.
+     * @param top the top inset
+     * @param left the left inset
+     * @param bottom the bottom inset
+     * @param right the right inset
+     * @param property the property name
+     * @param associated the widget used to retrieve the resource table.
+     * @return the line border
+     */
+    public static Border createLineBorder (int top, int left, int bottom, int right, 
+                                           String property, Widget associated) {
+        return new LineBorder (top, left, bottom, right, property, associated);
+    }
+    
+    /**
+     * Creates a line border with specific insets and color. The line is still 
+     * one pixel but the layout insets are specified.  The color is specified
+     * by a resource property that is retrieved from a resource table. 
+     * 
+     * The instance can not shared by multiple widgets.
+     * @param top the top inset
+     * @param left the left inset
+     * @param bottom the bottom inset
+     * @param right the right inset
+     * @param property the property name
+     * @param table the resource table.
+     * @return the line border
+     */
+    public static Border createLineBorder (int top, int left, int bottom, int right, 
+                                           String property, ResourceTable table) {
+        return new LineBorder (top, left, bottom, right, property, table);
+    }
+    
     /**
      * Creates a bevel border.
      * The instance can be shared by multiple widgets.
@@ -206,7 +308,39 @@ public final class BorderFactory {
     public static Border createBevelBorder (boolean raised, Color color) {
         return new BevelBorder (raised, color != null ? color : Color.GRAY);
     }
-
+    
+    /**
+     * Creates a bevel border.
+     * 
+     * The instance can not be shared by multiple widgets.
+     * @param raised if true, then it is a raised-bevel layout; if false, then 
+     * it is a lowered-bevel border
+     * @param property the property name
+     * @param table the resource table.
+     * @return the bevel border
+     */
+    public static Border createBevelBorder (boolean raised, 
+                                            String property, 
+                                            ResourceTable table) {
+        return new BevelBorder (raised, property, table);
+    }
+    
+    /**
+     * Creates a bevel border.
+     * 
+     * The instance can not be shared by multiple widgets.
+     * @param raised if true, then it is a raised-bevel layout; if false, then 
+     * it is a lowered-bevel border
+     * @param property the property name
+     * @param associated the widget used to retrieve the resource table.
+     * @return the bevel border
+     */
+    public static Border createBevelBorder (boolean raised, 
+                                            String property, 
+                                            Widget associated) {
+        return new BevelBorder (raised, property, associated);
+    }
+    
     /**
      * Creates an image layout. The border is painted using a supplied Image. The image is split into 3x3 regions defined by insets.
      * The middle regions are tiled for supplying variable width and height of border. Central region is not painted.
@@ -246,7 +380,47 @@ public final class BorderFactory {
     public static Border createRoundedBorder (int arcWidth, int arcHeight, Color fillColor, Color drawColor) {
         return createRoundedBorder (arcWidth, arcHeight, arcWidth, arcHeight, fillColor, drawColor);
     }
-
+    
+    /**
+     * Creates an rounded-rectangle border with a specified style. Insets are 
+     * calculated from arcWidth and arcHeight.
+     * 
+     * The instance can not be shared by multiple widgets.
+     * @param arcWidth the arc width
+     * @param arcHeight the arc height
+     * @param fillProperty the property name for the fill color
+     * @param drawProperty the property name for the draw color
+     * @param associated the widget used to retrieve the resource table.
+     * @return the rounded border
+     */
+    public static Border createRoundedBorder (int arcWidth, int arcHeight, 
+                                              String fillProperty,  String drawProperty,  
+                                              Widget associated) {
+        return createRoundedBorder (arcWidth, arcHeight, arcWidth, arcHeight, 
+                                    fillProperty, drawProperty,
+                                    associated);
+    }
+    
+    /**
+     * Creates an rounded-rectangle border with a specified style. Insets are 
+     * calculated from arcWidth and arcHeight.
+     * 
+     * The instance can not be shared by multiple widgets.
+     * @param arcWidth the arc width
+     * @param arcHeight the arc height
+     * @param fillProperty the property name for the fill color
+     * @param drawProperty the property name for the draw color
+     * @param table the resource table.
+     * @return the rounded border
+     */
+    public static Border createRoundedBorder (int arcWidth, int arcHeight, 
+                                              String fillProperty,  String drawProperty, 
+                                              ResourceTable table) {
+        return createRoundedBorder (arcWidth, arcHeight, arcWidth, arcHeight, 
+                                    fillProperty, drawProperty,
+                                    table);
+    }
+    
     /**
      * Creates an rounded-rectangle border with a specified style.
      * The instance can be shared by multiple widgets.
@@ -261,7 +435,49 @@ public final class BorderFactory {
     public static Border createRoundedBorder (int arcWidth, int arcHeight, int insetWidth, int insetHeight, Color fillColor, Color drawColor) {
         return new RoundedBorder (arcWidth, arcHeight, insetWidth, insetHeight, fillColor, drawColor);
     }
-
+    
+    /**
+     * Creates an rounded-rectangle border with a specified style.
+     * The instance can be shared by multiple widgets.
+     * @param arcWidth the arc width
+     * @param arcHeight the arc height
+     * @param insetWidth the inset width
+     * @param insetHeight the inset height
+     * @param fillProperty the property name for the fill color
+     * @param drawProperty the property name for the draw color
+     * @param table the resource table.
+     * @return the rounded border
+     */
+    public static Border createRoundedBorder (int arcWidth, int arcHeight, int insetWidth, int insetHeight, 
+                                              String fillProperty,  String drawProperty, 
+                                              ResourceTable table) 
+    {
+        return new RoundedBorder (arcWidth, arcHeight, insetWidth, insetHeight, 
+                                  fillProperty, drawProperty,
+                                  table);
+    }
+    
+    /**
+     * Creates an rounded-rectangle border with a specified style.
+     * The instance can be shared by multiple widgets.
+     * @param arcWidth the arc width
+     * @param arcHeight the arc height
+     * @param insetWidth the inset width
+     * @param insetHeight the inset height
+     * @param fillProperty the property name for the fill color
+     * @param drawProperty the property name for the draw color
+     * @param associated the widget used to retrieve the resource table.
+     * @return the rounded border
+     */
+    public static Border createRoundedBorder (int arcWidth, int arcHeight, int insetWidth, int insetHeight, 
+                                              String fillProperty,  String drawProperty,  
+                                              Widget associated)
+    {
+        return new RoundedBorder (arcWidth, arcHeight, insetWidth, insetHeight, 
+                                  fillProperty, drawProperty,
+                                  associated);
+    }
+    
     /**
      * Creates a resize border. Usually used as resizing handles for ResizeAction. It renders a bounding rectangle with 8-direction squares.
      * The instance can be shared by multiple widgets.
@@ -271,7 +487,33 @@ public final class BorderFactory {
     public static Border createResizeBorder (int thickness) {
         return createResizeBorder (thickness, null, false);
     }
-
+    
+    /**
+     * Creates a resize border. Usually used as resizing handles for ResizeAction. It renders a bounding rectangle with 8-direction squares.
+     * The instance can be shared by multiple widgets.
+     * @param thickness the thickness of the border
+     * @param property the property name for the border color
+     * @param associated the widget used to retrieve the resource table.
+     * @return the resize border
+     */
+    public static Border createResizeBorder (int thickness, String property,  
+                                              Widget assocaited) {
+        return createResizeBorder (thickness, property, assocaited, false);
+    }
+    
+    /**
+     * Creates a resize border. Usually used as resizing handles for ResizeAction. It renders a bounding rectangle with 8-direction squares.
+     * The instance can be shared by multiple widgets.
+     * @param thickness the thickness of the border
+     * @param drawProperty the property name for the border color
+     * @param table the resource table.
+     * @return the resize border
+     */
+    public static Border createResizeBorder (int thickness, String property,  
+                                             ResourceTable table) {
+        return createResizeBorder (thickness, property, table, false);
+    }
+    
     /**
      * Creates a resize border. Usually used as resizing handles for ResizeAction. It renders a bounding rectangle with 8-direction squares.
      * The instance can be shared by multiple widgets.
@@ -283,7 +525,35 @@ public final class BorderFactory {
     public static Border createResizeBorder (int thickness, Color color, boolean outer) {
         return new ResizeBorder (thickness, color != null ? color : Color.BLACK, outer);
     }
-
+    
+    /**
+     * Creates a resize border. Usually used as resizing handles for ResizeAction. It renders a bounding rectangle with 8-direction squares.
+     * The instance can be shared by multiple widgets.
+     * @param thickness the thickness of the border
+     * @param property the property name for the border color
+     * @param associated the widget used to retrieve the resource table.
+     * @param outer if true, then the rectangle encapsulate the squares too; if false, then the rectangle encapsulates the widget client area only
+     * @return the resize border
+     */
+    public static Border createResizeBorder (int thickness, String property,
+                                             Widget associated, boolean outer) {
+        return new ResizeBorder (thickness, property, associated, outer);
+    }
+    
+    /**
+     * Creates a resize border. Usually used as resizing handles for ResizeAction. It renders a bounding rectangle with 8-direction squares.
+     * The instance can be shared by multiple widgets.
+     * @param thickness the thickness of the border
+     * @param property the property name for the border color
+     * @param table the resource table.
+     * @param outer if true, then the rectangle encapsulate the squares too; if false, then the rectangle encapsulates the widget client area only
+     * @return the resize border
+     */
+    public static Border createResizeBorder (int thickness, String property,
+                                             ResourceTable table, boolean outer) {
+        return new ResizeBorder (thickness, property, table, outer);
+    }
+    
     /**
      * Creates a resize border rendered with dashed stroke.
      * The instance can be shared by multiple widgets.
@@ -295,7 +565,35 @@ public final class BorderFactory {
     public static Border createDashedBorder (Color color, int width, int height) {
         return createDashedBorder (color, width, height, false);
     }
-
+    
+    /**
+     * Creates a resize border rendered with dashed stroke.
+     * The instance can be shared by multiple widgets.
+     * @param property the property name for the border color
+     * @param associated the widget used to retrieve the resource table.
+     * @param width the inset width
+     * @param height the inset height
+     * @return the dashed border
+     */
+    public static Border createDashedBorder (String property, Widget associated,
+                                             int width, int height) {
+        return createDashedBorder (property, associated, width, height, false);
+    }
+    
+    /**
+     * Creates a resize border rendered with dashed stroke.
+     * The instance can be shared by multiple widgets.
+     * @param property the property name for the border color
+     * @param table the resource table.
+     * @param width the inset width
+     * @param height the inset height
+     * @return the dashed border
+     */
+    public static Border createDashedBorder (String property, ResourceTable table,
+                                             int width, int height) {
+        return createDashedBorder (property, table, width, height, false);
+    }
+    
     /**
      * Creates a resize border rendered with dashed stroke.
      * The instance can be shared by multiple widgets.
@@ -311,7 +609,40 @@ public final class BorderFactory {
         else
             return new DashedBorder (color != null ? color : Color.BLACK, width, height);
     }
-
+/**
+     * Creates a resize border rendered with dashed stroke.
+     * The instance can be shared by multiple widgets.
+     * @param color  the border color
+     * @param width  the inset width
+     * @param height the inset height
+     * @param squares the
+     * @return the dashed border
+     */
+    public static Border createDashedBorder (String property, Widget associated,
+                                             int width, int height, boolean squares) {
+        if (! squares)
+            return new FancyDashedBorder (property, associated, width, height);
+        else
+            return new DashedBorder (property, associated, width, height);
+    }
+    
+    /**
+     * Creates a resize border rendered with dashed stroke.
+     * The instance can be shared by multiple widgets.
+     * @param color  the border color
+     * @param width  the inset width
+     * @param height the inset height
+     * @param squares the
+     * @return the dashed border
+     */
+    public static Border createDashedBorder (String property, ResourceTable table,
+                                             int width, int height, boolean squares) {
+        if (! squares)
+            return new FancyDashedBorder (property, table, width, height);
+        else
+            return new DashedBorder (property, table, width, height);
+    }
+    
     /**
      * Creates a resize border rendered with fancy dashed stroke.
      * The instance can be shared by multiple widgets.

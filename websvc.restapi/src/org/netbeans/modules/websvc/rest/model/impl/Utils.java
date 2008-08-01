@@ -170,16 +170,11 @@ public class Utils {
         if (cpi != null) {
             FileObject fo = SourceUtils.getFile(ElementHandle.create(top), cpi);
             for (String d : getDiagnostics(fo)) {
-                if (d.contains(RestConstants.PATH) ||
-                    d.contains(RestConstants.PATH_ANNOTATION) ||
-                    d.contains(RestConstants.GET) ||
-                    d.contains(RestConstants.GET_ANNOTATION) ||
-                    d.contains(RestConstants.PUT) ||
-                    d.contains(RestConstants.PUT_ANNOTATION) ||
-                    d.contains(RestConstants.POST) ||
-                    d.contains(RestConstants.POST_ANNOTATION) ||
-                    d.contains(RestConstants.DELETE) ||
-                    d.contains(RestConstants.DELETE_ANNOTATION)) {
+                if (d.equals(RestConstants.PATH) ||
+                    d.equals(RestConstants.GET) ||
+                    d.equals(RestConstants.PUT) ||
+                    d.equals(RestConstants.POST) ||
+                    d.equals(RestConstants.DELETE)) {
                     return true;
                 }
             }

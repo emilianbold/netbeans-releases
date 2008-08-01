@@ -69,6 +69,7 @@ import org.netbeans.test.xml.schema.lib.types.ComponentCategories;
 import org.netbeans.test.xml.schema.lib.util.Helpers;
 import org.netbeans.test.xml.schema.lib.SchemaMultiView;
 
+import java.io.File;
 
 /**
  *
@@ -102,14 +103,17 @@ public abstract class PropertyVerifier extends TestSequence {
 //        MainWindowOperator.getDefault().maximize();
         
         System.setProperty("jelly.wait.no.event", "false");
-        
-        String strProjectsFolder = System.getProperty("xtest.data") + "/projects/" + PROJECT_NAME + "/src/qa/xmltools/samples";
+
+        //String strProjectsFolder = System.getProperty("xtest.data") + "/projects/" + PROJECT_NAME + "/src/qa/xmltools/samples";
+        String strProjectsFolder = System.getProperty( "nbjunit.workdir" ) + File.separator + ".." + File.separator + "data" + File.separator + PROJECT_NAME + File.separator + "src" + File.separator + "qa" + File.separator + "xmltools" + File.separator + "samples";
 //---
         m_builder.setFileName(strProjectsFolder + "/" + getSchemaName() + ".xsd");
         
         m_builder.setInitialLineNumber(getFirstLine());
         
         m_builder.build();
+
+        m_builder.print( );
         
 //---
         Helpers.closeTopComponentIfOpened("Navigator");
@@ -179,6 +183,7 @@ public abstract class PropertyVerifier extends TestSequence {
         }
         
         public void setup() {
+
             boolean bRows = false;
             int col = m_node.m_col + 1;
             
@@ -763,6 +768,7 @@ public abstract class PropertyVerifier extends TestSequence {
                 }
                 
                 public void execute() {
+
                     startTest();
                     
                     Property p = new Property(m_pso, m_strProperty);
@@ -917,4 +923,15 @@ public abstract class PropertyVerifier extends TestSequence {
         new OpenAction().performPopup(nodeXSD);
         waitNoEvent();
     }
+
+  public PropertyVerifier( String s )
+  {
+    super( s );
+  }
+
+  public PropertyVerifier( )
+  {
+    super( );
+  }
+
 }

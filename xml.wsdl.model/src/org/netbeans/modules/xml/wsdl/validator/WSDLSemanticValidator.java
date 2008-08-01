@@ -14,10 +14,6 @@ import org.netbeans.modules.xml.xam.spi.Validation.ValidationType;
 
 public class WSDLSemanticValidator implements Validator {
     
-    @SuppressWarnings("unchecked")
-    public static final ValidationResult EMPTY_RESULT = 
-        new ValidationResult( Collections.EMPTY_SET, Collections.EMPTY_SET);
-    
     public String getName() {
         return "WSDLSemanticValidator"; //NO I18N
     }
@@ -30,7 +26,7 @@ public class WSDLSemanticValidator implements Validator {
             if (validationType.equals(ValidationType.COMPLETE) ||
                     validationType.equals(ValidationType.PARTIAL)) {
                 if ( wsdlModel.getState() == Model.State.NOT_WELL_FORMED ){
-                    return EMPTY_RESULT;
+                    return null;
                 }
                  
                 WSDLSemanticsVisitor visitor = new WSDLSemanticsVisitor(this, validation, validatedModels);
@@ -41,7 +37,6 @@ public class WSDLSemanticValidator implements Validator {
                 
             }
         }
-        return EMPTY_RESULT;
+        return null;
     }
-    
 }

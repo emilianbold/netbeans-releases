@@ -43,7 +43,6 @@ package org.netbeans.modules.xml.schema.model.impl;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -149,12 +148,28 @@ public class SchemaModelImpl extends AbstractDocumentModel<SchemaComponent> impl
         
         T found = null;
         String targetNamespace = getSchema().getTargetNamespace();
-        if (targetNamespace != null && targetNamespace.equals(namespace) ||
-            targetNamespace == null && namespace == null) {
+        if ( targetNamespace != null && targetNamespace.equals(namespace) ||
+            targetNamespace == null && namespace == null ||
+            targetNamespace == null && refToMe instanceof Include) {
             found = findByNameAndType(localName, type);
+            
+            //Non-conservative approach to same namespace resolution.
+            //See http://www.netbeans.org/issues/show_bug.cgi?id=122836
+            if (found == null && refToMe == null) {
+                Collection<SchemaModelReference> modelRefs = getMegaIncludedModelsRefs();
+                for (SchemaModelReference r : modelRefs) {
+                    SchemaModelImpl sm = resolve(r);
+                    if (sm == null)
+                        continue;
+                    found = sm.resolve(namespace, localName, type, r, checked);
+                    if (found != null)
+                        break;
+                }
+            }            
         }
         
-        if (found == null && ! (refToMe instanceof Import)) {
+        if (found == null && (! (refToMe instanceof Import) 
+                    || ((Import)refToMe).getNamespace().equals(namespace))) {
             checked.add(this);
             
             Collection<SchemaModelReference> modelRefs = getSchemaModelReferences();
@@ -175,7 +190,7 @@ public class SchemaModelImpl extends AbstractDocumentModel<SchemaComponent> impl
                 }
             }
         }
-        
+                
         return found;
     }
     
@@ -193,6 +208,34 @@ public class SchemaModelImpl extends AbstractDocumentModel<SchemaComponent> impl
         refs.addAll(getSchema().getIncludes());
         refs.addAll(getSchema().getImports());
         return refs;
+    }
+    
+    /**
+     * See http://www.netbeans.org/issues/show_bug.cgi?id=122836
+     * B.xsd includes C and D. B uses types defined in  and C uses types defined
+     * in D. C & D do not know about each other.
+     * Returns all model references of the same namespace.
+     * Look for a mega model that includes this one. We may want to use all the
+     * includes from the mega model.
+     */
+    private Collection<SchemaModelReference> getMegaIncludedModelsRefs() {
+        Collection<SchemaModelReference> modelRefs = new ArrayList<SchemaModelReference>();
+        for(SchemaModel m: SchemaModelFactory.getDefault().getModels()) {
+            if(m == null || m.getSchema() == null || m == this)
+                continue;
+            //if this is one of the included schemas in some model then we must
+            //try to resolve in all the includes found.
+            Collection<Include> refs = m.getSchema().getIncludes();
+            for(SchemaModelReference ref: refs) {
+                SchemaModel sm = resolve(ref);
+                if(sm == this) {
+                    modelRefs.addAll(refs);
+                    break;
+                }
+            }            
+        }
+        
+        return modelRefs;        
     }
             
     public <T extends NamedReferenceable> T findByNameAndType(String localName, Class<T> type) {

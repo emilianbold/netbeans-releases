@@ -49,14 +49,13 @@ import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.awt.Mnemonics;
-import org.netbeans.modules.jmx.WizardConstants;
-import org.netbeans.modules.jmx.WizardHelpers;
-import org.netbeans.modules.jmx.GenericWizardPanel;
+import org.netbeans.modules.jmx.common.WizardConstants;
+import org.netbeans.modules.jmx.common.WizardHelpers;
+import org.netbeans.modules.jmx.common.GenericWizardPanel;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Modifier;
 import javax.swing.JTextField;
 import org.netbeans.api.java.source.JavaSource;
 import org.openide.filesystems.FileObject;
@@ -426,16 +425,16 @@ public class MBeanOptionsPanel extends javax.swing.JPanel
     // </editor-fold>//GEN-END:initComponents
 
     private void preRegisterParamJCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_preRegisterParamJCheckBoxActionPerformed
-        preRegParamSelected = preRegisterParamJCheckBox.isSelected();
+        preRegParamSelected = preRegisterParamJCheckBox.isSelected();//GEN-HEADEREND:event_preRegisterParamJCheckBoxActionPerformed
     }//GEN-LAST:event_preRegisterParamJCheckBoxActionPerformed
 
     private void mbeanRegistrationJCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mbeanRegistrationJCheckBoxActionPerformed
-        mbeanRegIntfSelected = mbeanRegistrationJCheckBox.isSelected();
+        mbeanRegIntfSelected = mbeanRegistrationJCheckBox.isSelected();//GEN-HEADEREND:event_mbeanRegistrationJCheckBoxActionPerformed
         preRegisterParamJCheckBox.setEnabled(mbeanRegIntfSelected);
     }//GEN-LAST:event_mbeanRegistrationJCheckBoxActionPerformed
 
     private void fromExistingClassJCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fromExistingClassJCheckBoxActionPerformed
-        //disable the components which the user can't choose
+        //disable the components which the user can't choose//GEN-HEADEREND:event_fromExistingClassJCheckBoxActionPerformed
         mbeanFromExistingClass = fromExistingClassJCheckBox.isSelected();
         
         mbeanTypeJLabel.setEnabled(!mbeanFromExistingClass);
@@ -453,19 +452,19 @@ public class MBeanOptionsPanel extends javax.swing.JPanel
     }//GEN-LAST:event_fromExistingClassJCheckBoxActionPerformed
 
     private void dynamicMBeanJRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dynamicMBeanJRadioButtonActionPerformed
-        wiz.storeSettings(wiz.templateWiz);
+        wiz.storeSettings(wiz.templateWiz);//GEN-HEADEREND:event_dynamicMBeanJRadioButtonActionPerformed
         wiz.readSettings(wiz.templateWiz);
         wiz.fireEvent();
     }//GEN-LAST:event_dynamicMBeanJRadioButtonActionPerformed
 
     private void extendedStandardMBeanJRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_extendedStandardMBeanJRadioButtonActionPerformed
-        wiz.storeSettings(wiz.templateWiz);
+        wiz.storeSettings(wiz.templateWiz);//GEN-HEADEREND:event_extendedStandardMBeanJRadioButtonActionPerformed
         wiz.readSettings(wiz.templateWiz);
         wiz.fireEvent();
     }//GEN-LAST:event_extendedStandardMBeanJRadioButtonActionPerformed
 
     private void standardMBeanJRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_standardMBeanJRadioButtonActionPerformed
-        wiz.storeSettings(wiz.templateWiz);
+        wiz.storeSettings(wiz.templateWiz);//GEN-HEADEREND:event_standardMBeanJRadioButtonActionPerformed
         wiz.readSettings(wiz.templateWiz);
         wiz.fireEvent();
     }//GEN-LAST:event_standardMBeanJRadioButtonActionPerformed
@@ -657,7 +656,7 @@ public class MBeanOptionsPanel extends javax.swing.JPanel
          */
         private void setErrorMsg(String message) {
             if (templateWiz != null) {
-                templateWiz.putProperty(WizardConstants.WIZARD_ERROR_MESSAGE, 
+                templateWiz.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, 
                         message);    //NOI18N
             }
         }

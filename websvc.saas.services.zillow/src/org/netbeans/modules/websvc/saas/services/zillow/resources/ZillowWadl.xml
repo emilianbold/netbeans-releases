@@ -1,18 +1,58 @@
 <?xml version="1.0" encoding="utf-8"?>
+
+<!--
+ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ 
+ Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ 
+ The contents of this file are subject to the terms of either the GNU
+ General Public License Version 2 only ("GPL") or the Common
+ Development and Distribution License("CDDL") (collectively, the
+ "License"). You may not use this file except in compliance with the
+ License. You can obtain a copy of the License at
+ http://www.netbeans.org/cddl-gplv2.html
+ or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ specific language governing permissions and limitations under the
+ License.  When distributing the software, include this License Header
+ Notice in each file and include the License file at
+ nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ particular file as subject to the "Classpath" exception as provided
+ by Sun in the GPL Version 2 section of the License file that
+ accompanied this code. If applicable, add the following below the
+ License Header, with the fields enclosed by brackets [] replaced by
+ your own identifying information:
+ "Portions Copyrighted [year] [name of copyright owner]"
+ 
+ Contributor(s):
+ 
+ The Original Software is NetBeans. The Initial Developer of the Original
+ Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ Microsystems, Inc. All Rights Reserved.
+ 
+ If you wish your version of this file to be governed by only the CDDL
+ or only the GPL Version 2, indicate your decision by adding
+ "[Contributor] elects to include this software in this distribution
+ under the [CDDL or GPL Version 2] license." If you do not indicate a
+ single choice of license, a recipient has the option to distribute
+ your version of this file under either the CDDL, the GPL Version 2 or
+ to extend the choice of license to its licensees as provided above.
+ However, if you add GPL Version 2 code and therefore, elected the GPL
+ Version 2 license, then the option applies only if the new code is
+ made subject to such option by the copyright holder.
+-->
+
 <application xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	     xmlns:xsd="http://www.w3.org/2001/XMLSchema"
 	     xsi:schemaLocation="http://research.sun.com/wadl/2006/10 
-                    ../../../../../../../../../../websvc.saas.api/src/org/netbeans/modules/websvc/saas/model/wadl20061109.xsd"
+                    https://wadl.dev.java.net/wadl20061109.xsd"
 	     xmlns="http://research.sun.com/wadl/2006/10"
-             xmlns:ZillowTypes="http://www.zillow.com/vstatic/2/static/xsd/ZillowTypes.xsd"
-             xmlns:Zestimate="http://www.zillow.com/vstatic/3/static/xsd/Zestimate.xsd"        
-             xmlns:Chart="http://www.zillow.com/vstatic/3/static/xsd/Chart.xsd"  
-             xmlns:RegionChart="http://www.zillow.com/vstatic/2/static/xsd/RegionChart.xsd"  
-             xmlns:Comps="http://www.zillow.com/vstatic/3/static/xsd/Comps.xsd"
-             xmlns:Demographics="http://www.zillow.com/static/xsd/Demographics.xsd"
-             xmlns:RegionChildren="http://www.zillow.com/static/xsd/RegionChildren.xsd"
-             xmlns:SearchResults="http://www.zillow.com/static/xsd/SearchResults.xsd">
-                 
+             xmlns:zestimate="urn:zillow:zestimate"        
+             xmlns:chart="urn:zillow:chart"  
+             xmlns:regionchart="urn:zillow:regionchart"   
+             xmlns:comps="urn:zillow:comps" 
+             xmlns:demographics="urn:zillow:demographics" 
+             xmlns:regionchildren="urn:zillow:regionchildren" 
+             xmlns:searchresults="urn:zillow:searchresults" >
     <grammars>
         <include href="Chart.xsd"/>
         <include href="Zestimate.xsd"/>
@@ -23,8 +63,7 @@
         <include href="RegionChildren.xsd"/>
         <include href="SearchResults.xsd"/>
     </grammars>
-
-    <resources base="http://www.zillow.com/webservice">	
+    <resources base="http://www.zillow.com/webservice">
         <resource path="GetChart.htm">
             <method name="GET" id="getChart">
                 <doc xml:lang="en">
@@ -43,16 +82,14 @@
                             request to Web services requires this ID. Go here to get yours: 
                             http://www.zillow.com/webservice/Registration.htm
                         </doc>
-                    </param>                    
-                    
+                    </param>
                     <param name="zpid" type="xsd:string" style="query" required="true">
                         <doc xml:lang="en">
                             The Zillow Property ID for the property, an integer value that
                             you can obtain by calling the GetSearchResults method.
                         </doc>
                     </param>
-                    
-                    <param name="unit-type" type="xsd:string" style="query" required="true">
+                    <param name="unit-type" type="xsd:string" style="query" required="true" default="dollar">
                         <doc xml:lang="en">
                             A string value of &quot;percent&quot; or &quot;dollar&quot;
                             that specifies whether to show the change as a percentage or
@@ -72,16 +109,13 @@
                     <param name="chartduration" type="xsd:string" style="query" required="false">
                         <doc xml:lang="en">
                             Optional. The period for which data is shown in the chart. Defaults to 1 year.
-                            Values can be "1year", "5years", or "10years". 
+                            Values can be "1year", "5years", or "10years".
                         </doc>
-                    </param>                    
+                    </param>
                 </request>
                 <response>
-                    <representation mediaType="text/xml">
-                        <param name="format" type="xsd:string" style="query" fixed="XML"/>
-                    </representation>	                  		
+                    <representation mediaType="text/xml" element="chart:chart"/>
                 </response>
-                
             </method>
         </resource>
         <resource path="GetComps.htm">
@@ -90,7 +124,7 @@
                     Returns a list of comparable recent sales for a property. The results include the address, 
                     the Zillow property ID, and the Zestimate for the comparable properties and 
                     the principal property. 
-                    API documentation : http://www.zillow.com/howto/api/GetComps.htm 
+                    API documentation : http://www.zillow.com/howto/api/GetComps.htm
                 </doc>
                 <request>
                     <param name="zws-id" type="xsd:string" style="query" required="true">
@@ -100,8 +134,7 @@
                             request to Web services requires this ID. Go here to get yours: 
                             http://www.zillow.com/webservice/Registration.htm
                         </doc>
-                    </param>                    
-                    
+                    </param>
                     <param name="zpid" type="xsd:string" style="query" required="true">
                         <doc xml:lang="en">
                             The Zillow Property ID for the property for which to
@@ -112,16 +145,13 @@
                         <doc xml:lang="en">
                             The number of comparable recent sales to obtain.
                         </doc>
-                    </param>                    
+                    </param>
                 </request>
                 <response>
-                    <representation mediaType="text/xml">
-                        <param name="format" type="xsd:string" style="query" fixed="XML"/>
-                    </representation>				                                 
+                    <representation mediaType="text/xml" element="comps:comps"/>
                 </response>
-                
             </method>
-        </resource> 
+        </resource>
         <resource path="GetDeepComps.htm">
             <method name="GET" id="getDeepComps">
                 <doc xml:lang="en">
@@ -130,8 +160,7 @@
                     for the comparable properties and the principal property, as well as
                     extensive property data for the comparable properties.
                     
-                    API documentation : http://www.zillow.com/howto/api/GetDeepComps.htm 
-                    
+                    API documentation : http://www.zillow.com/howto/api/GetDeepComps.htm
                 </doc>
                 <request>
                     <param name="zws-id" type="xsd:string" style="query" required="true">
@@ -141,8 +170,7 @@
                             request to Web services requires this ID. Go here to get yours: 
                             http://www.zillow.com/webservice/Registration.htm
                         </doc>
-                    </param>                    
-                    
+                    </param>
                     <param name="zpid" type="xsd:string" style="query" required="true">
                         <doc xml:lang="en">
                              The Zillow Property ID for the property, an integer value that
@@ -153,14 +181,11 @@
                         <doc xml:lang="en">
                             The number of comparable recent sales to obtain.
                         </doc>
-                    </param>                    
+                    </param>
                 </request>
                 <response>
-                    <representation mediaType="text/xml">
-                        <param name="format" type="xsd:string" style="query" fixed="XML"/>
-                    </representation>
+                    <representation mediaType="text/xml" element="comps:comps"/>
                 </response>
-                
             </method>
         </resource>
         <resource path="GetDeepSearchResults.htm">
@@ -174,7 +199,7 @@
                     also provides detailed property data like lot size, year built, bath/beds, last sale details,
                     and so on.
                     
-                    API documentation : http://www.zillow.com/howto/api/GetDeepSearchResults.htm 
+                    API documentation : http://www.zillow.com/howto/api/GetDeepSearchResults.htm
                 </doc>
                 <request>
                     <param name="zws-id" type="xsd:string" style="query" required="true">
@@ -184,8 +209,7 @@
                             request to Web services requires this ID. Go here to get yours: 
                             http://www.zillow.com/webservice/Registration.htm
                         </doc>
-                    </param>                    
-                    
+                    </param>
                     <param name="address" type="xsd:string" style="query" required="true">
                         <doc xml:lang="en">
                             The address of the property to search. This string 
@@ -199,86 +223,79 @@
                             that giving both city and state is required. Using
                             just one will not work.
                         </doc>
-                    </param>                     
+                    </param>
                 </request>
                 <response>
-                    <representation mediaType="text/xml">
-                        <param name="format" type="xsd:string" style="query" fixed="XML"/>
-                    </representation>
+                    <representation mediaType="text/xml" element="searchresults:searchresults"/>
                 </response>
-                
             </method>
-        </resource> 
+        </resource>
         <resource path="GetRegionChart.htm">
-        <method name="GET" id="getRegionChart">
-            <doc xml:lang="en">
+            <method name="GET" id="getRegionChart">
+                <doc xml:lang="en">
                 Returns a URL for an image file displaying historical Zestimates for a  
                 region specified by city, state, and/or zipcode. The chart can show  
                 percentage or dollar value change, and you can constrain the size of the image. 
                 The historical data can cover periods of 1, 5, or 10 years.                
                 
-                API documentation : http://www.zillow.com/howto/api/GetRegionChart.htm 
-            </doc>
-            <request>
-                <param name="zws-id" type="xsd:string" style="query" required="true">
-                    <doc xml:lang="en">
+                API documentation : http://www.zillow.com/howto/api/GetRegionChart.htm
+                </doc>
+                <request>
+                    <param name="zws-id" type="xsd:string" style="query" required="true">
+                        <doc xml:lang="en">
                             The Zillow Web Service Identifier. Each subscriber to Zillow Web
                             Services is uniquely identified by an ID sequence and every 
                             request to Web services requires this ID. Go here to get yours: 
                             http://www.zillow.com/webservice/Registration.htm
-                    </doc>
-                </param>                    
-                
-                <param name="unit-type" type="xsd:string" style="query" required="true">
-                    <doc xml:lang="en">
+                        </doc>
+                    </param>
+                    <param name="unit-type" type="xsd:string" style="query" required="true" default="dollar">
+                        <doc xml:lang="en">
                         A string value of &quot;percent&quot; or &quot;dollar&quot;
                         that specifies whether to show the change as a percentage or
                         a dollar value.
-                    </doc>
-                </param>
-                <param name="city" type="xsd:string" style="query" required="false">
-                    <doc xml:lang="en">
+                        </doc>
+                    </param>
+                    <param name="city" type="xsd:string" style="query" required="false">
+                        <doc xml:lang="en">
                         Optional. The name of a city.
-                    </doc>
-                </param>
-                <param name="state" type="xsd:string" style="query" required="false">
-                    <doc xml:lang="en">
+                        </doc>
+                    </param>
+                    <param name="state" type="xsd:string" style="query" required="false">
+                        <doc xml:lang="en">
                         Optional. The two-letter abbrivation of a state.
                         For a list of abbreviations,
                         see: http://en.wikipedia.org/wiki/State_codes
-                    </doc>
-                </param>
-                <param name="ZIP" type="xsd:string" style="query" required="false">
-                    <doc xml:lang="en">
+                        </doc>
+                    </param>
+                    <param name="ZIP" type="xsd:string" style="query" required="false">
+                        <doc xml:lang="en">
                         Optional. The 5-digit ZIP code.
-                    </doc>
-                </param>
-                
-                <param name="width" type="xsd:string" style="query" required="false">
-                    <doc xml:lang="en">
+                        </doc>
+                    </param>
+                    <param name="width" type="xsd:string" style="query" required="false">
+                        <doc xml:lang="en">
                         Optional. The width of the generated image, an integer from 200 to 600.
-                    </doc>
-                </param>
-                <param name="height" type="xsd:string" style="query" required="false">
-                    <doc xml:lang="en">
-                        Optional. The height of the generated image, an integer from 100 to 300.                    </doc>
-                </param>
-                <param name="Chartduration" type="xsd:string" style="query" required="false">
-                    <doc xml:lang="en">
+                        </doc>
+                    </param>
+                    <param name="height" type="xsd:string" style="query" required="false">
+                        <doc xml:lang="en">
+                        Optional. The height of the generated image, an integer from 100 to 300.
+                        </doc>
+                    </param>
+                    <param name="Chartduration" type="xsd:string" style="query" required="false">
+                        <doc xml:lang="en">
                         Optional. The period for which data is shown in the chart. Defaults to 1 year.
-                        Values can be "1year", "5years", or "10years". 
-                    </doc>
-                </param>                    
-            </request>
-            <response>
-                <representation mediaType="text/xml">
-                    <param name="format" type="xsd:string" style="query" fixed="XML"/>
-                </representation>				                  
-            </response>
-            
-        </method>
-    </resource>
-    <resource path="GetSearchResults.htm">
+                        Values can be "1year", "5years", or "10years".
+                        </doc>
+                    </param>
+                </request>
+                <response>
+                    <representation mediaType="text/xml" element="regionchart:regionchart"/>
+                </response>
+            </method>
+        </resource>
+        <resource path="GetSearchResults.htm">
             <method name="GET" id="getSearchResults">
                 <doc xml:lang="en"> 
                     Finds a property given an address. The returned intormation includes the address 
@@ -300,7 +317,7 @@
                     </param>
                     <param name="address" type="xsd:string" style="query" required="true">
                         <doc xml:lang="en">
-                            The address of the property to search for. This string should be URL encoded. 
+                            The address of the property to search for. This string should be URL encoded.
                         </doc>
                     </param>
                     <param name="citystatezip" type="xsd:string" style="query" required="true">
@@ -316,13 +333,10 @@
                     </param>
                 </request>
                 <response>
-                    <representation mediaType="text/xml">
-                        <param name="format" type="xsd:string" style="query" fixed="XML"/>
-                    </representation>				
+                    <representation mediaType="text/xml" element="searchresults:searchresults"/>
                 </response>
-                
             </method>
-        </resource>  
+        </resource>
         <resource path="GetZestimate.htm">
             <method name="GET" id="getZestimate">
                 <doc xml:lang="en">  
@@ -336,33 +350,30 @@
                     made for a property that has no Zestimate, an error code is returned 
                     (502 if a property is found, but there is no Zestimate).
                     
-                    API documentation:  http://www.zillow.com/howto/api/GetZestimate.htm  
+                    API documentation:  http://www.zillow.com/howto/api/GetZestimate.htm
                 </doc>
                 <request>
                     <param name="zws-id" type="xsd:string" style="query" required="true">
-                    <doc xml:lang="en">
+                        <doc xml:lang="en">
                             The Zillow Web Service Identifier. Each subscriber to Zillow Web
                             Services is uniquely identified by an ID sequence and every 
                             request to Web services requires this ID. Go here to get yours: 
                             http://www.zillow.com/webservice/Registration.htm
-                    </doc>
+                        </doc>
                     </param>
                     <param name="zpid" type="xsd:string" style="query" required="true">
-                    <doc xml:lang="en">
+                        <doc xml:lang="en">
                             The Zillow Property ID for the property, an integer value that
                             you can obtain by calling the GetSearchResults method.
-                    </doc>  
+                        </doc>
                     </param>
                 </request>
                 <response>
-                    <representation mediaType="text/xml">
-                        <param name="format" type="xsd:string" style="query" fixed="XML"/>
-                    </representation>										                   
+                    <representation mediaType="text/xml" element="zestimate:zestimate"/>
                 </response>
-                
             </method>
         </resource>
-		<resource path="GetDemographics.htm">
+        <resource path="GetDemographics.htm">
             <method name="GET" id="getDemographics">
                 <doc xml:lang="en">  
 					For a specified region, returns a set of demographic data which includes
@@ -374,47 +385,44 @@
 					state, city or neighborhood. The neighborhood parameter	can be omitted if demographic
 					data on a city is desired. The state and city parameter	are always required.
 					
-                    API documentation:  http://www.zillow.com/howto/api/GetDemographics.htm  
+                    API documentation:  http://www.zillow.com/howto/api/GetDemographics.htm
                 </doc>
                 <request>
                     <param name="zws-id" type="xsd:string" style="query" required="true">
-                    <doc xml:lang="en">
+                        <doc xml:lang="en">
                             The Zillow Web Service Identifier. Each subscriber to Zillow Web
                             Services is uniquely identified by an ID sequence and every 
                             request to Web services requires this ID. Go here to get yours: 
                             http://www.zillow.com/webservice/Registration.htm
-                    </doc>
+                        </doc>
                     </param>
                     <param name="rid" type="xsd:string" style="query" required="true">
-                    <doc xml:lang="en">
+                        <doc xml:lang="en">
 							The regionId of the region to retrieve data from.
-                    </doc>  
+                        </doc>
                     </param>
-					<param name="state" type="xsd:string" style="query" required="true">
-                    <doc xml:lang="en">
-                           The state of the region to retrieve data from. 
-                    </doc>  
+                    <param name="state" type="xsd:string" style="query" required="true">
+                        <doc xml:lang="en">
+                           The state of the region to retrieve data from.
+                        </doc>
                     </param>
-					<param name="city" type="xsd:string" style="query" required="true">
-                    <doc xml:lang="en">
+                    <param name="city" type="xsd:string" style="query" required="true">
+                        <doc xml:lang="en">
                             The city of the region to retrieve data from.
-                    </doc>  
+                        </doc>
                     </param>
-					<param name="neighborhood" type="xsd:string" style="query" required="false">
-                    <doc xml:lang="en">
+                    <param name="neighborhood" type="xsd:string" style="query" required="false">
+                        <doc xml:lang="en">
                             The neighborhood of the region to retrieve data from.
-                    </doc>  
+                        </doc>
                     </param>
                 </request>
                 <response>
-                    <representation mediaType="text/xml">
-                        <param name="format" type="xsd:string" style="query" fixed="XML"/>
-                    </representation>				
+                    <representation mediaType="text/xml" element="demographics:demographics"/>
                 </response>
-                
             </method>
-        </resource>		
-	    <resource path="GetRegionChildren.htm">
+        </resource>
+        <resource path="GetRegionChildren.htm">
             <method name="GET" id="getRegionChildren">
                 <doc xml:lang="en">  
 					For a specified region, returns a list of subregions which includes
@@ -426,56 +434,53 @@
 					are optional parameters unless they are the region to be specified.
 					An optional childtype parameter can also be specified to return subregions of a specific type.
 					
-                    API documentation:  http://www.zillow.com/howto/api/GetRegionChildren.htm  
+                    API documentation:  http://www.zillow.com/howto/api/GetRegionChildren.htm
                 </doc>
                 <request>
                     <param name="zws-id" type="xsd:string" style="query" required="true">
-                    <doc xml:lang="en">
+                        <doc xml:lang="en">
                             The Zillow Web Service Identifier. Each subscriber to Zillow Web
                             Services is uniquely identified by an ID sequence and every 
                             request to Web services requires this ID. Go here to get yours: 
                             http://www.zillow.com/webservice/Registration.htm
-                    </doc>
+                        </doc>
                     </param>
                     <param name="rid" type="xsd:string" style="query" required="true">
-                    <doc xml:lang="en">
+                        <doc xml:lang="en">
 							The regionId of the region to retrieve subregions from.
-                    </doc>  
+                        </doc>
                     </param>
-					<param name="country" type="xsd:string" style="query" required="false">
-                    <doc xml:lang="en">
-                           The country of the region to retrieve subregions from. 
-                    </doc>  
+                    <param name="country" type="xsd:string" style="query" required="false">
+                        <doc xml:lang="en">
+                           The country of the region to retrieve subregions from.
+                        </doc>
                     </param>
-					<param name="state" type="xsd:string" style="query" required="false">
-                    <doc xml:lang="en">
-                           The state of the region to retrieve subregions from. 
-                    </doc>  
+                    <param name="state" type="xsd:string" style="query" required="false">
+                        <doc xml:lang="en">
+                           The state of the region to retrieve subregions from.
+                        </doc>
                     </param>
-					<param name="county" type="xsd:string" style="query" required="false">
-                    <doc xml:lang="en">
+                    <param name="county" type="xsd:string" style="query" required="false">
+                        <doc xml:lang="en">
                             The county of the region to retrieve subregions from.
-                    </doc>  
+                        </doc>
                     </param>
-					<param name="city" type="xsd:string" style="query" required="false">
-                    <doc xml:lang="en">
+                    <param name="city" type="xsd:string" style="query" required="false">
+                        <doc xml:lang="en">
                             The city of the region to retrieve subregions from.
-                    </doc>  
+                        </doc>
                     </param>
-					<param name="childType" type="xsd:string" style="query" required="false">
-                    <doc xml:lang="en">
+                    <param name="childType" type="xsd:string" style="query" required="false">
+                        <doc xml:lang="en">
                             The type of subregions to retrieve (available types: state, county, city,
 							zipcode, and neighborhood).
-                    </doc>  
-                    </param>                    
+                        </doc>
+                    </param>
                 </request>
                 <response>
-                    <representation mediaType="text/xml">
-                        <param name="format" type="xsd:string" style="query" fixed="XML"/>
-                    </representation>
+                    <representation mediaType="text/xml" element="regionchildren:regionchildren"/>
                 </response>
-                
             </method>
-        </resource>				
-    </resources>     
+        </resource>
+    </resources>
 </application>

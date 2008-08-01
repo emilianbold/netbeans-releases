@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.cnd.api.model;
 
+import java.util.Map;
+
 /**
  * instantiation information 
  * i.e. A<int, double> aa;
@@ -59,9 +61,8 @@ public interface CsmInstantiation extends CsmObject {
     CsmOffsetableDeclaration getTemplateDeclaration();
     
     /**
-     * returns type object that was considered to be isntantiation
-     * i.e. A<int, double> from A<int, double> aa;
+     * returns mapping of template parameters to the types
      * @return
      */
-    CsmType getInstantiationType();
+    Map<CsmTemplateParameter, CsmType> getMapping();
 }

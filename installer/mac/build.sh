@@ -60,13 +60,15 @@ cd $progdir
 progdir=`pwd`
 
 dmgname=$basename
+# Remove build number from DMG name
+#dmgname=`echo "$dmgname" | sed "s/-[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]//g"`
 
 instrument_build() {
    DIR=$1
    $INSTRUMENT_SH $DIR $progdir/../../emma/emma_filter $progdir/../../emma/emma.jar
 #   mkdir $DIR/emma-lib
    chmod a+w $DIR/emma-lib
-   cp $progdir/../../emma/emma_filter $DIR/emma-lib/netbeans_coverage.ec
+   #cp $progdir/../../emma/emma_filter $DIR/emma-lib/netbeans_coverage.ec
    cp $progdir/../../emma/emma.jar $DIR/emma-lib/
    sed -i -e "s/^netbeans_default_options=/netbeans_default_options=\"--cp:p $\{NETBEANS_HOME\}\/emma-lib\/emma.jar -J-Demma.coverage.file=\$\{NETBEANS_HOME\}\/emma-lib\/netbeans_coverage.ec -J-Dnetbeans.security.nocheck=true/" $DIR/etc/netbeans.conf
 }
@@ -111,7 +113,11 @@ unzip -d $progdir/build $zipdir/$basename-javaee.zip
 # copy over GlassFish.pkg
 #mkdir -p $progdir build/pkg
 #rsync -a $progdir/glassfish/build/pkg/ $progdir/build/pkg/
+if [ -n "$INSTRUMENT_SH" ]; then
+    instrument_build $progdir/build/netbeans
+fi
 ant -f $progdir/build.xml -Ddmgname=_$dmgname-javaee-macosx.dmg -Dnb.dir=$progdir/build/netbeans -Dnetbeans.appname="$installdir" build-dmg  -Dglassfish_location="$GLASSFISH_LOCATION" -Dtomcat_location="$TOMCAT_LOCATION" -Dnetbeans_license_file="$progdir/licenses/NetBeans_6_Beta_1_WebAndJavaEE.txt"
+
 
 # all others
 
@@ -135,6 +141,10 @@ for pkg in javase ruby cpp php ; do
     ant -f $progdir/build.xml clean
     mkdir $progdir/build
     unzip -d $progdir/build $zipdir/$basename-$pkg.zip
+
+    if [ -n "$INSTRUMENT_SH" ]; then
+	instrument_build $progdir/build/netbeans
+    fi
     ant -f $progdir/build.xml -Ddmgname=_$dmgname-$dmg_postfix-macosx.dmg -Dnb.dir=$progdir/build/netbeans -Dnetbeans.appname="$installdir" build-dmg -Dnetbeans_license_file="$progdir/$license_file"
 done
 

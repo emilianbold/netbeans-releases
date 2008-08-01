@@ -47,11 +47,12 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 import org.netbeans.modules.cnd.discovery.api.ItemProperties;
+import org.netbeans.modules.cnd.discovery.api.DiscoveryUtils;
 import org.netbeans.modules.cnd.discovery.api.SourceFileProperties;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -78,7 +79,7 @@ public class LogReader {
     
     private void run() {
         if (TRACE) System.out.println("LogReader is run for " + fileName); //NOI18N
-
+        Pattern pattern = Pattern.compile(";|\\|\\||&&"); // ;, ||, && //NOI18N
         result = new ArrayList<SourceFileProperties>();
         File file = new File(fileName);
         if (file.exists() && file.canRead()){
@@ -96,11 +97,11 @@ public class LogReader {
                         if (oneMoreLine == null) {
                             break;
                         }
-                        line = line.substring(0, line.length()-2) + " " + oneMoreLine.trim(); //NOI18N
+                        line = line.substring(0, line.length() - 1) + " " + oneMoreLine.trim(); //NOI18N
                     }
                     line = trimBackApostropheCalls(line);
 
-                    String[] cmds = line.split(";|\\|\\||&&"); // ||, && //NOI18N
+                    String[] cmds = pattern.split(line);
                     for (int i = 0; i < cmds.length; i++) {
                         if (parseLine(cmds[i])){
                             nFoundFiles++;
@@ -167,11 +168,11 @@ public class LogReader {
         return false;
     }
     
-    private enum CompilerType {
+    /*package-local*/ enum CompilerType {
         CPP, C, UNKNOWN;
     };
     
-    private class LineInfo {
+    /*package-local*/ static class LineInfo {
         public String compileLine;
         public CompilerType compilerType = CompilerType.UNKNOWN;
         
@@ -188,7 +189,7 @@ public class LogReader {
     private static final String INVOKE_GNU_CC = "g++ "; //NOI18N
     private static final String MAKE_DELIMITER = ";"; //NOI18N
     
-    private LineInfo testCompilerInvocation(String line) {
+    /*package-local*/ static LineInfo testCompilerInvocation(String line) {
         LineInfo li = new LineInfo(line);
         int start = 0, end = -1;
 //        if (li.compilerType == CompilerType.UNKNOWN) {
@@ -200,6 +201,7 @@ public class LogReader {
 //        } 
         if (li.compilerType == CompilerType.UNKNOWN) {
             start = line.indexOf(INVOKE_GNU_C);
+            //TODO: can fail on gcc calls with -shared-libgcc
             if (start>=0) {
                 li.compilerType = CompilerType.C;
                 end = start + INVOKE_GNU_C.length();
@@ -282,7 +284,7 @@ public class LogReader {
        
        LineInfo li = testCompilerInvocation(line);
        if (li.compilerType != CompilerType.UNKNOWN) {
-           gatherLine(li.compileLine, li.compilerType == CompilerType.CPP);
+           gatherLine(li.compileLine, line.startsWith("+"), li.compilerType == CompilerType.CPP); // NOI18N
            return true;
        }
        return false;
@@ -307,173 +309,16 @@ public class LogReader {
         }
     }
     
-    private boolean gatherLine(String line, boolean isCPP) {
+    private boolean gatherLine(String line, boolean isScriptOutput, boolean isCPP) {
         // /set/c++/bin/5.9/intel-S2/prod/bin/CC -c -g -DHELLO=75 -Idist  main.cc -Qoption ccfe -prefix -Qoption ccfe .XAKABILBpivFlIc.
         // /opt/SUNWspro/bin/cc -xO3 -xarch=amd64 -Ui386 -U__i386 -Xa -xildoff -errtags=yes -errwarn=%all
         // -erroff=E_EMPTY_TRANSLATION_UNIT -erroff=E_STATEMENT_NOT_REACHED -xc99=%none -W0,-xglobalstatic
         // -D_ELF64 -DTEXT_DOMAIN="SUNW_OST_OSCMD" -D_TS_ERRNO -I/export/opensolaris/testws77/proto/root_i386/usr/include
         // -I/export/opensolaris/testws77/usr/src/uts/common/inet/ipf -I/export/opensolaris/testws77/usr/src/uts/common/inet/pfil
         // -DSUNDDI -DUSE_INET6 -DSOLARIS2=11 -I. -DIPFILTER_LOOKUP -DIPFILTER_LOG -c ../ipmon_l.c -o ipmon_l.o
-        List<String> list = DwarfSource.scanCommandLine(line);
-        boolean hasQuotes = false;
-        for(String s : list){
-            if (s.startsWith("\"")){  //NOI18N
-                hasQuotes = true;
-                break;
-            }
-        }
-        if (hasQuotes) {
-            List<String> newList = new ArrayList<String>();
-            for(int i = 0; i < list.size();) {
-                String s = list.get(i);
-                if (s.startsWith("-D") && i+1 < list.size() && list.get(i+1).startsWith("\"")){ // NOI18N
-                    String longString = null;
-                    for(int j = i+1; j < list.size() && list.get(j).startsWith("\""); j++){  //NOI18N
-                        if (longString != null) {
-                            longString += " " + list.get(j);  //NOI18N
-                        } else {
-                            longString = list.get(j);
-                        }
-                        i = j;
-                    }
-                    newList.add(s+"'"+longString+"'");  //NOI18N
-                } else {
-                    newList.add(s);
-                }
-                i++;
-            }
-            list = newList;
-        }
-        String what = null;
         List<String> userIncludes = new ArrayList<String>();
         Map<String, String> userMacros = new HashMap<String, String>();
-        Iterator<String> st = list.iterator();
-        String option = null;
-        if (st.hasNext()) {
-            option = st.next();
-            if (option.equals("+") && st.hasNext()) { // NOI18N
-                option = st.next();
-            }
-        }
-        while(st.hasNext()){
-            option = st.next();
-            if (option.startsWith("-D")){ // NOI18N
-                if (option.equals("-D") && st.hasNext()){  //NOI18N
-                    option = st.next();
-                }
-                String macro = option.substring(2);
-                int i = macro.indexOf('=');
-                if (i>0){
-                    String value = macro.substring(i+1).trim();
-                    if (value.length() >= 2 &&
-                       (value.charAt(0) == '\'' && value.charAt(value.length()-1) == '\'' || // NOI18N
-                        value.charAt(0) == '"' && value.charAt(value.length()-1) == '"' )) { // NOI18N
-                        value = value.substring(1,value.length()-1);
-                    }
-                    userMacros.put(PathCache.getString(macro.substring(0,i)), PathCache.getString(value));
-                } else {
-                    userMacros.put(PathCache.getString(macro), null);
-                }
-            } else if (option.startsWith("-I")){ // NOI18N
-                String path = option.substring(2);
-                if (path.length()==0 && st.hasNext()){
-                    path = st.next();
-                }
-                String include = PathCache.getString(path);
-                userIncludes.add(include);
-            } else if (option.startsWith("-isystem")){ // NOI18N
-                String path = option.substring(8);
-                if (path.length()==0 && st.hasNext()){
-                    path = st.next();
-                }
-                String include = PathCache.getString(path);
-                userIncludes.add(include);
-            } else if (option.startsWith("-Y")){ // NOI18N
-                String defaultSearchPath = option.substring(2);
-                if (defaultSearchPath.length()==0 && st.hasNext()){
-                    defaultSearchPath = st.next();
-                }
-                if (defaultSearchPath.startsWith("I,")){ // NOI18N
-                    defaultSearchPath = defaultSearchPath.substring(2);
-                    String include = PathCache.getString(defaultSearchPath);
-                    userIncludes.add(include);
-                }
-            } else if (option.equals("-K")){ // NOI18N
-                // Skip pic
-                if (st.hasNext()){
-                    st.next();
-                }
-            } else if (option.equals("-R")){ // NOI18N
-                // Skip runtime search path 
-                if (st.hasNext()){
-                    st.next();
-                }
-            } else if (option.equals("-l")){ // NOI18N
-                // Skip link with library
-                if (st.hasNext()){
-                    st.next();
-                }
-            } else if (option.equals("-L")){ // NOI18N
-                // Skip library search path
-                if (st.hasNext()){
-                    st.next();
-                }
-            } else if (option.equals("-M")){ // NOI18N
-                // Skip library search path
-                if (st.hasNext()){
-                    st.next();
-                }
-            } else if (option.equals("-h")){ // NOI18N
-                // Skip generated dynamic shared library
-                if (st.hasNext()){
-                    st.next();
-                }
-            } else if (option.equals("-o")){ // NOI18N
-                // Skip result
-                if (st.hasNext()){
-                    st.next();
-                }
-            // generation 2 of params
-            } else if (option.equals("-z")){ // NOI18N
-                // XXXX: what's this? All I know it has param
-                if (st.hasNext()){
-                    st.next();
-                }
-            } else if (option.equals("-MF")){ // NOI18N
-                // ignore dependency output file
-                if (st.hasNext()){
-                    st.next();
-                }
-            } else if (option.equals("-MT")){ // NOI18N
-                // once more fancy preprocessor option with parameter. Ignore.
-                if (st.hasNext()){
-                    st.next();
-                }
-            // end of generation 2    
-            } else if (option.equals("-fopenmp")){ // NOI18N
-                    userMacros.put("_OPENMP", null); // NOI18N
-            } else if (option.startsWith("-")){ // NOI18N
-                // Skip option
-            } else if (option.startsWith("ccfe")){ // NOI18N
-                // Skip option
-            } else if (option.startsWith(">")){ // NOI18N
-                // Skip redurect
-                break;
-            } else {
-                if (option.endsWith(".il") || option.endsWith(".o") || option.endsWith(".a") ||  //NOI18N
-                    option.endsWith(".so") || option.endsWith(".so.1")) {  //NOI18N
-                    continue;
-                }
-                if (what == null) {
-                    what = option;
-                } else {
-                    if (TRACE) {
-                        System.out.println("**** What is this ["+option + "] if previous was ["+ what + "]?"); //NOI18N
-                        System.out.println("*> "+line); //NOI18N
-                    }
-                }
-            }
-        }
+        String what = DiscoveryUtils.gatherComlilerLine(line, isScriptOutput, userIncludes, userMacros,null);
         if (what == null){
             return false;
         }
@@ -482,6 +327,18 @@ public class LogReader {
             file = what;
         } else {
             file = workingDir+"/"+what;  //NOI18N
+        }
+        List<String> userIncludesCached = new ArrayList<String>(userIncludes.size());
+        for(String s : userIncludes){
+            userIncludesCached.add(PathCache.getString(s));
+        }
+        Map<String, String> userMacrosCached = new HashMap<String, String>(userMacros.size());
+        for(Map.Entry<String,String> e : userMacros.entrySet()){
+            if (e.getValue() == null) {
+                userMacrosCached.put(PathCache.getString(e.getKey()), null);
+            } else {
+                userMacrosCached.put(PathCache.getString(e.getKey()), PathCache.getString(e.getValue()));
+            }
         }
         File f = new File(file);
         if (!f.exists() || !f.isFile()) {
@@ -517,7 +374,7 @@ public class LogReader {
         } else if (TRACE) {
             if (TRACE) System.err.println("**** Gotcha: " + file);
         }
-        result.add(new CommandLineSource(isCPP, workingDir, what, userIncludes, userMacros));
+        result.add(new CommandLineSource(isCPP, workingDir, what, userIncludesCached, userMacrosCached));
         return true;
     }
 
@@ -544,7 +401,7 @@ public class LogReader {
             sourceName = sourcePath;
             if (sourceName.startsWith("/")) { // NOI18N
                 fullName = sourceName;
-                sourceName = DwarfSource.getRelativePath(compilePath, sourceName);
+                sourceName = DiscoveryUtils.getRelativePath(compilePath, sourceName);
             } else {
                 fullName = compilePath+"/"+sourceName; //NOI18N
             }

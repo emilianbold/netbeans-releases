@@ -136,9 +136,9 @@ public class EntityClosure {
         readHelper.start();
     }
     
-    
     public void addAvaliableEntities(Set<String> entities) {
         availableEntities.addAll(entities);
+        availableEntities.removeAll(selectedEntities);
         changeSupport.fireChange();
     }
     

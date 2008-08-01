@@ -67,7 +67,8 @@ public class StepActionProvider extends GdbDebuggerActionProvider {
             ActionsManager.ACTION_STEP_INTO,
             ActionsManager.ACTION_STEP_OUT,
             ActionsManager.ACTION_STEP_OVER,
-            ActionsManager.ACTION_CONTINUE
+            ActionsManager.ACTION_CONTINUE,
+            ActionsManager.ACTION_RUN_TO_CURSOR
         }));
     
     /** 
@@ -121,7 +122,7 @@ public class StepActionProvider extends GdbDebuggerActionProvider {
                 }
                 if (action == ActionsManager.ACTION_STEP_OVER) {
                     if (Disassembly.isInDisasm()) {
-                        getDebugger().stepI();
+                        getDebugger().stepOverInstr();
                     } else {
                         getDebugger().stepOver();
                     }
@@ -129,6 +130,10 @@ public class StepActionProvider extends GdbDebuggerActionProvider {
                 }
                 if (action == ActionsManager.ACTION_CONTINUE) {
                     getDebugger().resume();
+                    return;
+                }
+                if (action == ActionsManager.ACTION_RUN_TO_CURSOR) {
+                    getDebugger().runToCursor();
                     return;
                 }
             }

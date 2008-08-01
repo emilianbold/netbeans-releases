@@ -95,7 +95,6 @@ import org.netbeans.modules.sql.framework.model.SQLDBTable;
 import org.netbeans.modules.sql.framework.model.SQLJoinOperator;
 import org.netbeans.modules.sql.framework.model.impl.RuntimeInputImpl;
 import org.netbeans.modules.sql.framework.model.impl.RuntimeOutputImpl;
-import org.netbeans.modules.sql.framework.model.impl.SQLJoinViewImpl;
 import org.netbeans.modules.sql.framework.model.utils.SQLObjectUtil;
 import org.netbeans.modules.sql.framework.ui.editor.property.impl.PropertyNode;
 import org.netbeans.modules.sql.framework.ui.editor.property.impl.TemplateFactory;
@@ -108,7 +107,6 @@ import org.netbeans.modules.sql.framework.ui.output.dataview.TargetTableDataPane
 import org.netbeans.modules.sql.framework.ui.view.property.RuntimeInputProperties;
 import org.netbeans.modules.sql.framework.ui.view.property.RuntimeOutputProperties;
 import org.netbeans.modules.sql.framework.ui.view.property.SQLCollaborationProperties;
-import org.netbeans.modules.sql.framework.ui.view.property.SQLJoinProperties;
 import org.netbeans.modules.sql.framework.ui.view.validation.SQLValidationView;
 import org.openide.awt.StatusDisplayer;
 import org.openide.nodes.Node;
@@ -439,6 +437,10 @@ public abstract class BasicTopView extends JPanel implements IGraphViewContainer
         }
 
         if (bean.getObjectType() == SQLConstants.SOURCE_TABLE) {
+            if (attr == null) {
+                template = "FFSourceTable";
+                return template;
+            }
             if (((String) attr.getAttributeValue()).equals("RSS")) {
                 template = "RSSSourceTable";
             } else if (((String) attr.getAttributeValue()).equalsIgnoreCase("WEB")) {
@@ -448,8 +450,14 @@ public abstract class BasicTopView extends JPanel implements IGraphViewContainer
             } else if (((String) attr.getAttributeValue()).equalsIgnoreCase("DELIMITED") ||
                     ((String) attr.getAttributeValue()).equalsIgnoreCase("FIXEDWIDTH")) {
                 template = "FFSourceTable";
+            } else {
+                template = "FFSourceTable";
             }
         } else if (bean.getObjectType() == SQLConstants.TARGET_TABLE) {
+            if (attr == null) {
+                template = "FFTargetTable";
+                return template;
+            }
             if (((String) attr.getAttributeValue()).equals("RSS")) {
                 template = "RSSTargetTable";
             } else if (((String) attr.getAttributeValue()).equalsIgnoreCase("WEB")) {
@@ -459,7 +467,10 @@ public abstract class BasicTopView extends JPanel implements IGraphViewContainer
             } else if (((String) attr.getAttributeValue()).equalsIgnoreCase("DELIMITED") ||
                     ((String) attr.getAttributeValue()).equalsIgnoreCase("FIXEDWIDTH")) {
                 template = "FFTargetTable";
+            } else {
+                template = "FFTargetTable";
             }
+
         }
         return template;
     }
@@ -481,7 +492,7 @@ public abstract class BasicTopView extends JPanel implements IGraphViewContainer
             if (bean.getObjectType() == SQLConstants.SOURCE_TABLE) {
                 SourceTableProperties srcTableBaen = new SourceTableProperties(this, (SQLBasicTableArea) gNode, (SourceTable) bean);
                 if (((SourceTable) bean).getParent().getConnectionDefinition().getDBType().equals(DBMetaDataFactory.AXION) ||
-                    ((SourceTable) bean).getParent().getConnectionDefinition().getDBType().equalsIgnoreCase("Internal")) {
+                        ((SourceTable) bean).getParent().getConnectionDefinition().getDBType().equalsIgnoreCase("Internal")) {
                     template = getTemplateName(bean);
                     pBean = new FFSourceTableProperties(srcTableBaen);
                 } else {
@@ -491,7 +502,7 @@ public abstract class BasicTopView extends JPanel implements IGraphViewContainer
             } else if (bean.getObjectType() == SQLConstants.TARGET_TABLE) {
                 TargetTableProperties trgtTableBaen = new TargetTableProperties(this, (SQLBasicTableArea) gNode, (TargetTable) bean);
                 if (((TargetTable) bean).getParent().getConnectionDefinition().getDBType().equals(DBMetaDataFactory.AXION) ||
-                    ((TargetTable) bean).getParent().getConnectionDefinition().getDBType().equalsIgnoreCase("Internal")) {    
+                        ((TargetTable) bean).getParent().getConnectionDefinition().getDBType().equalsIgnoreCase("Internal")) {
                     template = getTemplateName(bean);
                     pBean = new FFTargetTableProperties(trgtTableBaen);
                 } else {
@@ -504,9 +515,6 @@ public abstract class BasicTopView extends JPanel implements IGraphViewContainer
             } else if (bean.getObjectType() == SQLConstants.RUNTIME_OUTPUT) {
                 pBean = new RuntimeOutputProperties((RuntimeOutputImpl) bean, sqlModel.getSQLDefinition(), this);
                 template = "RuntimeOutput";
-            } else if (bean.getObjectType() == SQLConstants.JOIN_VIEW) {
-                pBean = new SQLJoinProperties(((SQLJoinViewImpl) bean).getRootJoin(), this);
-                template = "Join";
             }
         }
 
@@ -559,7 +567,7 @@ public abstract class BasicTopView extends JPanel implements IGraphViewContainer
         // Create a Dialog that defers decision-making on whether to close the dialog to
         // an ActionListener.
         DialogDescriptor dd = new DialogDescriptor(cView, title, true, NotifyDescriptor.OK_CANCEL_OPTION, null, null);
-        
+
         // Pushes closing logic to ActionListener impl
         dd.setClosingOptions(new Object[0]);
 

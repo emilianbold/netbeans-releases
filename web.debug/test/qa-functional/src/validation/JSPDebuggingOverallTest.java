@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -42,10 +42,9 @@ package validation;
 
 import java.io.File;
 import javax.swing.JDialog;
-import junit.textui.TestRunner;
+import junit.framework.Test;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.OutputTabOperator;
@@ -57,6 +56,7 @@ import org.netbeans.jellytools.modules.debugger.AttachDialogOperator;
 import org.netbeans.jellytools.modules.debugger.SessionsOperator;
 import org.netbeans.jellytools.modules.debugger.actions.ContinueAction;
 import org.netbeans.jellytools.modules.debugger.actions.DebugAction;
+import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
 import org.netbeans.jellytools.modules.j2ee.actions.RefreshAction;
 import org.netbeans.jellytools.modules.j2ee.actions.RestartAction;
 import org.netbeans.jellytools.modules.j2ee.actions.StartAction;
@@ -68,13 +68,12 @@ import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
-import org.netbeans.jemmy.Waiter;
 import org.netbeans.jemmy.operators.ContainerOperator;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JDialogOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
-import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.ide.ProjectSupport;
 
 /** Test of web application debugging. Manual test specification is here:
@@ -82,7 +81,7 @@ import org.netbeans.junit.ide.ProjectSupport;
  *
  * @author Jiri.Skrivanek@sun.com
  */
-public class JSPDebuggingOverallTest extends JellyTestCase {
+public class JSPDebuggingOverallTest extends J2eeTestCase {
     // status bar tracer used to wait for state
     private MainWindowOperator.StatusTextTracer stt;
     
@@ -90,27 +89,37 @@ public class JSPDebuggingOverallTest extends JellyTestCase {
         super(testName);
     }
     
-    public static void main(String[] args) {
-        TestRunner.run(suite());
-    }
-    
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new JSPDebuggingOverallTest("testOpenProjects"));
+    public static Test suite() {
         if(Utils.DEFAULT_SERVER.equals(Utils.TOMCAT)) {
-            suite.addTest(new JSPDebuggingOverallTest("testSetTomcatPort"));
+            return NbModuleSuite.create(addServerTests(NbModuleSuite.createConfiguration(JSPDebuggingOverallTest.class),
+                    "testOpenProjects",
+                    "testSetTomcatPort", /// <---
+                    "testRunProject",
+                    "testSetBreakpoint",
+                    "testDebugProject",
+                    "testDebugReload",
+                    "testAttachDebugger",
+                    "testDebugAfterBreakpoint",
+                    "testDebugAndStopServer",
+                    "testStartAnotherSession",
+                    "testJavaSession",
+                    "testStopServer"
+                    ).enableModules(".*").clusters(".*"));
+        } else {
+            return NbModuleSuite.create(addServerTests(NbModuleSuite.createConfiguration(JSPDebuggingOverallTest.class),
+                    "testOpenProjects",
+                    "testRunProject",
+                    "testSetBreakpoint",
+                    "testDebugProject",
+                    "testDebugReload",
+                    "testAttachDebugger",
+                    "testDebugAfterBreakpoint",
+                    "testDebugAndStopServer",
+                    "testStartAnotherSession",
+                    "testJavaSession",
+                    "testStopServer"
+                    ).enableModules(".*").clusters(".*"));
         }
-        suite.addTest(new JSPDebuggingOverallTest("testRunProject"));
-        suite.addTest(new JSPDebuggingOverallTest("testSetBreakpoint"));
-        suite.addTest(new JSPDebuggingOverallTest("testDebugProject"));
-        suite.addTest(new JSPDebuggingOverallTest("testDebugReload"));
-        suite.addTest(new JSPDebuggingOverallTest("testAttachDebugger"));
-        suite.addTest(new JSPDebuggingOverallTest("testDebugAfterBreakpoint"));
-        suite.addTest(new JSPDebuggingOverallTest("testDebugAndStopServer"));
-        suite.addTest(new JSPDebuggingOverallTest("testStartAnotherSession"));
-        suite.addTest(new JSPDebuggingOverallTest("testJavaSession"));
-        suite.addTest(new JSPDebuggingOverallTest("testStopServer"));
-        return suite;
     }
     
     /** Print test name and initialize status bar tracer. */
@@ -389,7 +398,8 @@ public class JSPDebuggingOverallTest extends JellyTestCase {
         new OpenAction().performAPI(pageNode);
         EditorOperator eoPage = new EditorOperator("simpleInclude.jsp"); // NOI18N
         final int lineJSP = Utils.setBreakpoint(eoPage, "incl/simpleInclude.jsp"); // NOI18N
-        new DebugAction().perform(pageNode);
+        // "Debug File"
+        new Action(null, new DebugAction().getPopupPath()).perform(pageNode);
         Utils.waitFinished(this, SAMPLE_WEB_PROJECT_NAME, "debug");
         Utils.reloadPage(SAMPLE_WEB_PROJECT_NAME+"/incl/simpleInclude.jsp");
         stt.waitText("simpleInclude.jsp:"+lineJSP); //NOI18N

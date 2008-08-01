@@ -1,0 +1,16 @@
+str
+si int
+sfoo() void
+sfoo2() void
+i1 int
+q str
+aliases() void
+f1() void
+innerNS3Func() void
+main(int argc, char** argv) int
+usingS1() void
+usingS1S2() void
+usingS2() void
+S1
+S2
+S3

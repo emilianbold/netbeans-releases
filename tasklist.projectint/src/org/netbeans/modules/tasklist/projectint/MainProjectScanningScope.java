@@ -75,7 +75,7 @@ public class MainProjectScanningScope extends TaskScanningScope
     private Collection<FileObject> editedFiles;
     
     private MainProjectScanningScope( String displayName, String description, Image icon ) {
-        super( displayName, description, icon, true );
+        super( displayName, description, icon );
     }
     
     /**

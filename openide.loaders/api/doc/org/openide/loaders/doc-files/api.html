@@ -313,16 +313,52 @@ etc.; and most further implementation of a module will be callbacks
 run in response to some aspect of the objects created here.
 
 <h4>Module installation</h4>
-
+<a name="register"></a>
 <p>First of all, you must be able to register your loader in the
-module so that NetBeans knows about it. To do so, you may use the
-Modules API to add a special
-
-<a href="@org-openide-modules@/org/openide/modules/doc-files/api.html#sec-loader">loader section</a>
-
-to your module.
-
-<p>Pay attention to whether this loader is potentially in conflict
+module so that NetBeans knows about it. The preferred way since version
+7.0 of <code>org.openide.loaders</code> module is to assign the loader
+to appropriate MIME type. If the 
+<a
+    href="@org-openide-filesystems@/org/openide/filesystems/FileObject.html">FileObject</a>
+of your interest returns for example <code>text/xml+acme</code> from its
+<a
+    href="@org-openide-filesystems@/org/openide/filesystems/FileObject.html#getMIMEType()">getMIMEType()</a>
+method, then you shall register its 
+<a href="../DataLoader.html">DataLoader</a> or other configured 
+<a href="../DataObject.Factory.html">DataObject.Factory</a> into layer file
+of your module:
+<pre>
+&lt;folder name="Loaders"&gt;
+  &lt;folder name="text"&gt;
+    &lt;folder name="xml+acme"&gt;
+      &lt;folder name="Factories"&gt;
+        &lt;file name="org-acme-pkg-AcmeLoader.instance"&gt;
+          &lt;attr name="position" intvalue="100"/&gt;
+        &lt;/file&gt;
+      &lt;/folder&gt;
+    &lt;/folder&gt;
+  &lt;/folder&gt;
+&lt;/folder&gt;
+</pre>
+Then the <code>AcmeLoader</code> will be consulted everytime the system needs
+to recognize file with <code>text/xml+acme</code> MIME type. Please refer 
+to <a href="@org-openide-filesystems@/org/openide/filesystems/doc-files/HOWTO-MIME.html">
+separate specification</a>
+document on information how to register a MIME type declaratively.
+<p>
+The recognition process for any file consults loaders registered in the 
+<a href="@org-openide-modules@/org/openide/modules/doc-files/api.html#sec-loader">
+old, deprecated</a> style first, then it checks folder
+<code>Loaders/mime/type/Factories</code> for all instances of 
+<a href="../DataObject.Factory.html">DataObject.Factory</a> which also includes
+instances of 
+all <a href="../DataLoader.html">DataLoader</a>s. If no appropriate loader
+is found, the scan continues among loaders registered as
+<code>Loaders/content/unknown/Factories</code>. At the end the recognition
+checks standard system loaders. In case of registration of multiple loaders in
+one folder you can specify their order by using the 
+<a href="@org-openide-modules@/org/openide/modules/doc-files/api.html#how-layer">
+position attributes</a>. Pay attention to whether this loader is potentially in conflict
 with other existing or probable loaders; if so, you should specify
 that it take higher or lower precedence than these others. (This would
 be necessary, e.g., if your loader recognized everything that another

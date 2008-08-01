@@ -1,29 +1,24 @@
 
 
 Document 0
-Delete:  source : <TESTURL>/twoclasses.rb
-
-
-
-Document 1
-Indexed:
+Searchable Keys:
   class : FooController
   class-ig : foocontroller
   extends : ApplicationController
   fqn : FooController
   method : myfunc
 
-Not Indexed:
+Not Searchable Keys:
   attrs : |CLASS|
 
 
-Document 2
-Indexed:
+Document 1
+Searchable Keys:
   class : MyTest
   class-ig : mytest
   fqn : MyTest
   method : mymethod
   method : myother
 
-Not Indexed:
+Not Searchable Keys:
   attrs : |CLASS|

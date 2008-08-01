@@ -4,7 +4,7 @@
 
  <editor_palette_item version="1.0">
      <body>
-         <![CDATA[ <circle cx="0" cy="0" r="50" fill="red" stroke="black" stroke-width="1"/>]]>
+         <![CDATA[ <circle transform="translate(%%COORDINATE_X%%,%%COORDINATE_Y%%)" cx="50" cy="50" r="50" fill="red" stroke="black" stroke-width="1"/>]]>
      </body>
      <icon16 urlvalue="org/netbeans/modules/mobility/svgcore/resources/palette/circle_16.png"/>
      <icon32 urlvalue="org/netbeans/modules/mobility/svgcore/resources/palette/circle_32.png"/>

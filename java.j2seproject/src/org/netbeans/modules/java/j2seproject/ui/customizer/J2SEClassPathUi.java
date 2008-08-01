@@ -50,10 +50,12 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -77,7 +79,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ant.FileChooser;
-import org.netbeans.api.project.libraries.LibrariesCustomizer;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryChooser;
 import org.netbeans.api.project.libraries.LibraryManager;
@@ -87,13 +88,13 @@ import org.netbeans.modules.java.j2seproject.classpath.ClassPathSupport.Item;
 import org.netbeans.modules.java.j2seproject.ui.FoldersListSettings;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.netbeans.spi.project.support.ant.ui.VariablesSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
-import org.openide.util.NbPreferences;
 import org.openide.util.Utilities;
 
 /** Classes containing code speciic for handling UI of J2SE project classpath 
@@ -200,7 +201,13 @@ public class J2SEClassPathUi {
                         return NbBundle.getMessage( J2SEClassPathUi.class, "LBL_MISSING_FILE", getFileRefName( item ) );
                     }
                     else {
-                        return item.getFilePath();
+                        if (item.getVariableBasedProperty() != null) {
+                            String s = item.getVariableBasedProperty();
+                            // convert "${var.XXX}/path" to "XXX/path"
+                            return s.substring(6, s.indexOf("}")) + s.substring(s.indexOf("}")+1); // NOI18N
+                        } else {
+                            return item.getFilePath();
+                        }
                     }
             }
             
@@ -274,7 +281,7 @@ public class J2SEClassPathUi {
                 case ClassPathSupport.Item.TYPE_JAR:
                     String path = item.getFilePath();
                     File f = new File(path);
-                    if (!f.isAbsolute()) {
+                    if (!f.isAbsolute() || item.getVariableBasedProperty() != null) {
                         f = PropertyUtils.resolveFile(FileUtil.toFile(projectFolder), path);
                         return f.getAbsolutePath();
                     }
@@ -432,7 +439,14 @@ public class J2SEClassPathUi {
             
             if ( source == addJar ) { 
                 // Let user search for the Jar file
-                FileChooser chooser = new FileChooser(project.getAntProjectHelper(), true);
+                FileChooser chooser;
+                if (project.getAntProjectHelper().isSharableProject()) {
+                    chooser = new FileChooser(project.getAntProjectHelper(), true);
+                } else {
+                    chooser = new FileChooser(FileUtil.toFile(project.getProjectDirectory()), null);
+                }
+                chooser.enableVariableBasedSelection(true);
+                chooser.setFileHidingEnabled(false);
                 FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
                 chooser.setFileSelectionMode( JFileChooser.FILES_AND_DIRECTORIES );
                 chooser.setMultiSelectionEnabled( true );
@@ -456,7 +470,7 @@ public class J2SEClassPathUi {
                         return;
                     }
 
-                    int[] newSelection = ClassPathUiSupport.addJarFiles( listModel, list.getSelectedIndices(), files  );
+                    int[] newSelection = ClassPathUiSupport.addJarFiles( listModel, list.getSelectedIndices(), files, chooser.getSelectedPathVariables());
                     list.setSelectedIndices( newSelection );
                     curDir = FileUtil.normalizeFile(chooser.getCurrentDirectory());
                     FoldersListSettings.getDefault().setLastUsedClassPathFolder(curDir);
@@ -490,7 +504,12 @@ public class J2SEClassPathUi {
                 }
                 
                 Set<Library> added = LibraryChooser.showDialog(manager,
-                        null, project.getReferenceHelper().getLibraryChooserImportHandler()); // XXX filter to j2se libs only?
+                        new LibraryChooser.Filter() {
+                            public boolean accept(Library library) {
+                                return "j2se".equals(library.getType());    //NOI18N
+                            }
+                        },
+                        project.getReferenceHelper().getLibraryChooserImportHandler());
                 if (added != null) {
                     Set<Library> includedLibraries = new HashSet<Library>();
                     for (int i=0; i< listModel.getSize(); i++) {

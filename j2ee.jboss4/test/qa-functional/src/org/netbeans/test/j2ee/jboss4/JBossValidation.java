@@ -45,32 +45,16 @@ package org.netbeans.test.j2ee.jboss4;
 import java.io.File;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.*;
-import org.netbeans.jellytools.nodes.JavaNode;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
-import org.netbeans.jemmy.operators.JFrameOperator;
 import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.ide.ProjectSupport;
-import org.netbeans.jellytools.actions.Action;
 import org.netbeans.test.j2ee.lib.Util;
 import org.netbeans.test.j2ee.lib.ProgressOperator;
 import java.awt.event.KeyEvent;
-import java.util.Hashtable;
-import java.util.Properties;
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.rmi.PortableRemoteObject;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.TopComponentOperator;
-import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
 import org.netbeans.jemmy.operators.*;
-import java.util.*;
-import org.netbeans.jemmy.operators.JMenuBarOperator;
-import org.netbeans.jemmy.*;
 import org.netbeans.test.j2ee.lib.ProgressOperator;
-import org.netbeans.jellytools.properties.PropertySheetOperator;
-import org.netbeans.jellytools.properties.Property;
 
 /**
  *

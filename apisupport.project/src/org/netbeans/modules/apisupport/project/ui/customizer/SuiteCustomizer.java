@@ -66,6 +66,7 @@ public final class SuiteCustomizer extends BasicCustomizer {
     public static final String APPLICATION = "Application"; // NOI18N
     public static final String APPLICATION_CREATE_STANDALONE_APPLICATION = "standaloneApp"; // NOI18N
     static final String SPLASH_SCREEN = "SplashScreen"; // NOI18N
+    static final String WINDOW_SYSTEM = "WindowSystem"; // NOI18N
     
     private final AntProjectHelper helper;
     private final PropertyEvaluator evaluator;

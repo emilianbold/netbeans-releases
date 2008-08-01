@@ -170,6 +170,17 @@ public class ColumnElement extends DBMemberElement {
         return SQLTypeUtil.isBlob(getType());
 	}
 	//end convenience methods
+        
+        /**
+         * Returns whether the column is an auto-increment column
+         * 
+         * @return true if the column is an auto-increment column; false otherwise,
+         * Also returns false if the underlying implementation does not provide
+         * that information.
+         */
+        public boolean isAutoIncrement() {
+            return getColumnImpl().isAutoIncrement();
+        }
 
 	/** Returns whether the column is nullable.
 	 * @return a flag representing whether the column is nullable
@@ -262,6 +273,8 @@ public class ColumnElement extends DBMemberElement {
 		 */
 		public int getType ();
 
+                public boolean isAutoIncrement();
+
 		/** Set the value type of the column.
 		* @param type the type
 		* @throws DBException if impossible
@@ -331,6 +344,9 @@ public class ColumnElement extends DBMemberElement {
 
 		/** Scale of column */
 		private Integer _scale;
+                
+                /** Whether column is auto-increment */
+                private boolean _autoIncrement;
 
         /** Default constructor.
          */
@@ -349,6 +365,7 @@ public class ColumnElement extends DBMemberElement {
 			_length = column.getLength();
 			_precision = column.getPrecision();
 			_scale = column.getScale();
+                        _autoIncrement = column.isAutoIncrement();
 		}
 
 		/** Type of the column.
@@ -442,5 +459,9 @@ public class ColumnElement extends DBMemberElement {
 			_scale = scale;
 			firePropertyChange (PROP_SCALE, old, scale);
 		}
+
+                public boolean isAutoIncrement() {
+                    return _autoIncrement;
+                }
 	}
 }

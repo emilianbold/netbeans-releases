@@ -48,10 +48,13 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import javax.swing.DefaultListModel;
+import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
 import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
 import org.netbeans.modules.j2ee.common.project.ui.ClassPathUiSupport;
 import org.netbeans.modules.j2ee.common.project.ui.EditMediator;
@@ -85,7 +88,10 @@ public final class CustomizerLibraries extends JPanel implements HelpCtx.Provide
                                jButtonMoveDown.getModel(),
                                jButtonEdit.getModel(),
                                uiProperties.SHARED_LIBRARIES_MODEL,
-                               null );
+                               null,
+                               new String[]{EjbProjectConstants.ARTIFACT_TYPE_J2EE_MODULE_IN_EAR_ARCHIVE, JavaProjectConstants.ARTIFACT_TYPE_JAR, JavaProjectConstants.ARTIFACT_TYPE_FOLDER},
+                               EditMediator.JAR_ZIP_FILTER, JFileChooser.FILES_AND_DIRECTORIES
+                               );
         librariesLocation.setDocument(uiProperties.SHARED_LIBRARIES_MODEL);
         testBroken();
         uiProperties.DEBUG_CLASSPATH_MODEL.addListDataListener( this );
@@ -246,7 +252,7 @@ public final class CustomizerLibraries extends JPanel implements HelpCtx.Provide
                     .add(layout.createSequentialGroup()
                         .add(sharedLibrariesLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(librariesLocation, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 289, Short.MAX_VALUE))
+                        .add(librariesLocation, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 301, Short.MAX_VALUE))
                     .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 382, Short.MAX_VALUE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
@@ -258,7 +264,7 @@ public final class CustomizerLibraries extends JPanel implements HelpCtx.Provide
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, jButtonRemove, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 119, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, jButtonMoveUp, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 119, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, jButtonMoveDown, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 119, Short.MAX_VALUE)))
-            .add(jLabelErrorMessage, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 507, Short.MAX_VALUE)
+            .add(jLabelErrorMessage, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 509, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -297,6 +303,8 @@ public final class CustomizerLibraries extends JPanel implements HelpCtx.Provide
             List<String> libs = new ArrayList<String>();
             List<String> jars = new ArrayList<String>();
             collectLibs(uiProperties.DEBUG_CLASSPATH_MODEL, libs, jars);
+            collectLibs(uiProperties.EAR_CONTENT_ADDITIONAL_MODEL.getDefaultListModel(), libs, jars);
+            libs.add("CopyLibs"); // NOI18N
             boolean result = SharableLibrariesUtils.showMakeSharableWizard(uiProperties.getProject().getAntProjectHelper(), uiProperties.getProject().getReferenceHelper(), libs, jars);
             if (result) {
                 isSharable = true;
@@ -323,12 +331,12 @@ public final class CustomizerLibraries extends JPanel implements HelpCtx.Provide
         for (int i = 0; i < model.size(); i++) {
             ClassPathSupport.Item item = (ClassPathSupport.Item) model.get(i);
             if (item.getType() == ClassPathSupport.Item.TYPE_LIBRARY) {
-                if (!item.isBroken()) {
+                if (!item.isBroken() && !libs.contains(item.getLibrary().getName())) {
                     libs.add(item.getLibrary().getName());
                 }
             }
             if (item.getType() == ClassPathSupport.Item.TYPE_JAR) {
-                if (item.getReference() != null) {
+                if (item.getReference() != null && item.getVariableBasedProperty() == null && !jarReferences.contains(item.getReference())) {
                     //TODO reference is null for not yet persisted items.
                     // there seems to be no way to generate a reference string without actually
                     // creating and writing the property..
@@ -343,7 +351,7 @@ public final class CustomizerLibraries extends JPanel implements HelpCtx.Provide
             ClassPathSupport.Item item = (ClassPathSupport.Item) model.get(i);
             if (item.getType() == ClassPathSupport.Item.TYPE_JAR) {
                 if (item.getReference() != null) {
-                    uiProperties.cs.updateJarReference(item);
+                    item.updateJarReference(uiProperties.getProject().getAntProjectHelper());
                 }
             }
         }

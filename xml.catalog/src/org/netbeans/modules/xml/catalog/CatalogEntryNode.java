@@ -163,8 +163,8 @@ final class CatalogEntryNode extends BeanNode implements EditCookie, Node.Cookie
                 if (sys == null) return null;
                                 
                 if (view == null) {                    
-                    URL url = new URL(sys);                    
-                    ViewEnv env = new ViewEnv(url);
+                    URL url = new URL(sys);                  
+                    ViewEnv env = new ViewEnv(getPublicID(), sys);
                     view = new ViewCookieImpl(env);
                 }
                 return view;                
@@ -268,8 +268,8 @@ final class CatalogEntryNode extends BeanNode implements EditCookie, Node.Cookie
         /** Serial Version UID */
         private static final long serialVersionUID =-5031004511063404433L;
         
-        ViewEnv (URL url) {
-            super(url);
+        ViewEnv (String publicId, String systemId) {
+            super(publicId, systemId);
         }
 
         public org.openide.windows.CloneableOpenSupport findCloneableOpenSupport() {

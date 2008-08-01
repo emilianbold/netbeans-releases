@@ -41,22 +41,25 @@
 
 package org.netbeans.modules.web.taglib;
 
+import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
-
 import org.openide.text.DataEditorSupport;
 import org.openide.text.NbDocument;
-
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileLock;
-import org.openide.cookies.*;
 import org.openide.nodes.Node.Cookie;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
-
 import org.netbeans.modules.xml.api.EncodingUtil;
+import org.openide.cookies.CloseCookie;
+import org.openide.cookies.EditCookie;
+import org.openide.cookies.EditorCookie;
+import org.openide.cookies.OpenCookie;
+import org.openide.cookies.PrintCookie;
+import org.openide.cookies.SaveCookie;
 /**
  * Text editor support that handles I/O encoding
  * @author  mkuchtiak
@@ -72,10 +75,12 @@ implements OpenCookie, EditCookie, EditorCookie.Observable, PrintCookie, CloseCo
             saveDocument();
         }
     };
+    
     /*
      * Save document using encoding declared in XML prolog if possible otherwise
      * at UTF-8 (in such case it updates the prolog).
      */
+    @Override
     public void saveDocument () throws java.io.IOException {
         final javax.swing.text.StyledDocument doc = getDocument();
         String defaultEncoding = "UTF-8"; // NOI18N
@@ -199,14 +204,12 @@ implements OpenCookie, EditCookie, EditorCookie.Observable, PrintCookie, CloseCo
             return false;
 
         addSaveCookie();
-
         return true;
     }
 
     /** Overrides superclass method. Adds removing of save cookie. */
     protected void notifyUnmodified () {
         super.notifyUnmodified();
-
         removeSaveCookie();
     }
 
@@ -274,6 +277,7 @@ implements OpenCookie, EditCookie, EditorCookie.Observable, PrintCookie, CloseCo
          * reference would not permit this environment to be serialized.
          * @return the editor support
          */
+        @Override
         public org.openide.windows.CloneableOpenSupport findCloneableOpenSupport () {
             return (TLDEditorSupport) getDataObject ().getCookie (TLDEditorSupport.class);
         }

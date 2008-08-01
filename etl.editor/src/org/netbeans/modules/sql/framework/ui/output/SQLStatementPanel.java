@@ -176,7 +176,7 @@ public class SQLStatementPanel extends JPanel implements IMessageView, ETLOutput
                 String nbBundle4 = mLoc.t("BUND368: Cannot evaluate SQL:{0}", sqlObj.getDisplayName());
                 sqlText = nbBundle4.substring(15);
                 mLogger.errorNoloc(mLoc.t("EDIT171: Cannot evaluate SQL for{0}", sqlObj.getDisplayName()), ex);
-                mLogger.errorNoloc(mLoc.t("EDIT177: Can't get contents for table{0}", (sqlObj != null) ? sqlObj.getDisplayName() : ""), ex);
+                mLogger.errorNoloc(mLoc.t("EDIT177: Cannot get contents for table{0}", (sqlObj != null) ? sqlObj.getDisplayName() : ""), ex);
 
             }
             return "";

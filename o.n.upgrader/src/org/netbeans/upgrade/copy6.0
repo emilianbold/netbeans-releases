@@ -50,7 +50,14 @@ include Services/org-netbeans-modules-debugger-Settings\.properties
 include Templates/Classes/.*
 include WebServices/websvc_ref.xml
 include Editors/.*
+exclude Editors/.*/Popup.*
+exclude Editors/.*/.*\.instance
+exclude Editors/.*/Settings\.settings
+exclude Editors/.*/macros.xml
 include Services/IndentEngine/.*
+#does not import C/C++ indent settings
+exclude Services/IndentEngine/org-netbeans-modules-cnd-editor-cplusplus-CCIndentEngine\.settings
+exclude Services/IndentEngine/org-netbeans-modules-cnd-editor-cplusplus-CIndentEngine\.settings
 include Keymaps/.*
 include Shortcuts/.*
 include Services/DiffProviders/.*
@@ -69,3 +76,5 @@ include Services/org-netbeans-modules-db-explorer-DatabaseOption\.settings
 include JSPPalette/.*
 include HTMLPalette/.*
 include J2EE/.*
+include org-netbeans-api-project-libraries/Libraries/.*\.xml
+exclude Services/org-netbeans-modules-beans-beans.settings

@@ -9,7 +9,10 @@
 
 package org.netbeans.modules.xml.xpath.ext;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import javax.xml.namespace.NamespaceContext;
 import javax.xml.namespace.QName;
 import org.netbeans.modules.xml.schema.model.ElementReference;
@@ -18,8 +21,19 @@ import org.netbeans.modules.xml.schema.model.GlobalAttribute;
 import org.netbeans.modules.xml.schema.model.GlobalElement;
 import org.netbeans.modules.xml.schema.model.LocalAttribute;
 import org.netbeans.modules.xml.schema.model.LocalElement;
+import org.netbeans.modules.xml.schema.model.Schema;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
+import org.netbeans.modules.xml.schema.model.SchemaModel;
+import org.netbeans.modules.xml.xpath.ext.schema.CachingSchemaSearchVisitor;
 import org.netbeans.modules.xml.xpath.ext.schema.FindAllChildrenSchemaVisitor;
+import org.netbeans.modules.xml.xpath.ext.schema.FindChildrenSchemaVisitor;
+import org.netbeans.modules.xml.xpath.ext.schema.resolver.SchemaCompHolder;
+import org.netbeans.modules.xml.xpath.ext.schema.resolver.XPathSchemaContext;
+import org.netbeans.modules.xml.xpath.ext.schema.resolver.XPathSchemaContext.SchemaCompPair;
+import org.netbeans.modules.xml.xpath.ext.spi.ExternalModelResolver;
+import org.netbeans.modules.xml.xpath.ext.spi.XPathCast;
+import org.netbeans.modules.xml.xpath.ext.spi.XPathCastResolver;
+import org.netbeans.modules.xml.xpath.ext.spi.XPathPseudoComp;
 
 /**
  * Utility class.
@@ -156,9 +170,232 @@ public class XPathUtils {
      */
     public static boolean hasSubcomponents(SchemaComponent sComp) {
         FindAllChildrenSchemaVisitor checker = 
-                new FindAllChildrenSchemaVisitor(true, true);
+                new FindAllChildrenSchemaVisitor(true, true, true);
         checker.lookForSubcomponents(sComp);
         List<SchemaComponent> found = checker.getFound();
         return found != null && !found.isEmpty();
+    }
+    
+    /**
+     * Constructs a list of SchemaCompPair objects. Each SchemaCompPair represents 
+     * a child Schema component of a parent. Parents are taken from the 
+     * specified parent SchemaContext. The context can contain several schema
+     * components. So children mean children of all possible parent components 
+     * in current context. 
+     * 
+     * Childrent can be real children schema components or pseudo components. 
+     * See XPathPseudoComp class.
+     * 
+     * @param xPathModel
+     * @param parentSContext
+     * @param lookForElements indicates if it necessary to add elements to 
+     * the result list.
+     * @param lookForAttributes indicates if it necessary to add attributes to 
+     * the result list.
+     * @param collectAny indicates if it necessary to add xsd:any or 
+     * xsd:anyAttribute to the result list. 
+     * @return result list
+     */
+    public static List<SchemaCompPair> findSubcomponents(
+            XPathModel xPathModel, XPathSchemaContext parentSContext, 
+            boolean lookForElements, boolean lookForAttributes, boolean collectAny) {
+        //
+        assert parentSContext != null;
+        ArrayList<SchemaCompPair> result = new ArrayList<SchemaCompPair>();
+        //
+        XPathCastResolver castResolver = xPathModel.getXPathCastResolver();
+        Set<SchemaCompPair> parentCompPairSet = parentSContext.getSchemaCompPairs(); 
+        //
+        boolean processPseudoComp = 
+                castResolver != null && parentCompPairSet.size() == 1;
+        //
+        for (SchemaCompPair parentCompPair : parentCompPairSet) {
+            SchemaCompHolder parentCompHolder = parentCompPair.getCompHolder();
+            //
+            FindAllChildrenSchemaVisitor visitor = 
+                    new FindAllChildrenSchemaVisitor(
+                    lookForElements, lookForAttributes, false);
+            visitor.lookForSubcomponents(parentCompHolder.getSchemaComponent());
+            //
+            List<SchemaComponent> foundComps = visitor.getFound();
+            for (SchemaComponent foundComp : foundComps) {
+                SchemaCompPair newPair = 
+                        new SchemaCompPair(foundComp, parentCompHolder);
+                result.add(newPair);
+            }
+            //
+            if (processPseudoComp) {
+                if (visitor.hasAny() || visitor.hasAnyAttribute()) {
+                    List<XPathPseudoComp> pcList = 
+                            castResolver.getPseudoCompList(parentSContext);
+                    for (XPathPseudoComp pseudoComp : pcList) {
+                        if (pseudoComp.isAttribute()) {
+                            if (lookForAttributes && visitor.hasAnyAttribute()) {
+                                SchemaCompHolder scHolder = 
+                                        SchemaCompHolder.Factory.construct(pseudoComp);
+                                SchemaCompPair newPair = 
+                                        new SchemaCompPair(scHolder, parentCompHolder);
+                                result.add(newPair);
+                            }
+                        } else {
+                            if (lookForElements && visitor.hasAny()) {
+                                SchemaCompHolder scHolder = 
+                                        SchemaCompHolder.Factory.construct(pseudoComp);
+                                SchemaCompPair newPair = 
+                                        new SchemaCompPair(scHolder, parentCompHolder);
+                                result.add(newPair);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        //
+        return result;
+    }
+    
+    /**
+     * Collects a list of SchemaCompHoder objects, which are global accessible.
+     * 
+     * @param xPathModel
+     * @param lookForElements indicates if it necessary to add elements to 
+     * the result list.
+     * @param lookForAttributes indicates if it necessary to add attributes to 
+     * the result list.
+     * @param collectAny indicates if it necessary to add xsd:any or 
+     * xsd:anyAttribute to the result list. 
+     * @return result list
+     */
+    public static List<SchemaComponent> findRootComponents(XPathModel xPathModel, 
+            boolean lookForElements, boolean lookForAttributes, boolean collectAny) {
+        //
+        ArrayList<SchemaComponent> result = new ArrayList<SchemaComponent>();
+        //
+        ExternalModelResolver exModelResolver = xPathModel.getExternalModelResolver();
+        //
+        if (exModelResolver != null) {
+            //
+            // Look for all available root elements (attributes) 
+            // in all available models
+            // Pseudo components can be only inside of another schema components, 
+            // So they can't be global. It doesn't necessary to look them here.
+            Collection<SchemaModel> sModels = exModelResolver.getVisibleModels();
+            for (SchemaModel sModel : sModels) {
+                Schema schema = sModel.getSchema();
+                FindAllChildrenSchemaVisitor visitor = 
+                        new FindAllChildrenSchemaVisitor(
+                        lookForElements, lookForAttributes, false);
+                visitor.lookForSubcomponents(schema);
+                //
+                List<SchemaComponent> foundComps = visitor.getFound();
+                result.addAll(foundComps);
+            }
+        }
+        //
+        return result;
+    }
+    
+    /**
+     * Returns the list of SchemaCompHolder components, which are children 
+     * of the specified parent schema component component (and context) 
+     * and have specified name and namespace. 
+     * Usually only one component has to be returned. 
+     * Not only real schema components can be childrent but also pseudo components, 
+     * which are result of casting xsd:any or xsd:anyAttribute. 
+     * 
+     * @param xPathModel
+     * @param parentContext
+     * @param parent 
+     * @param soughtName required name
+     * @param soughtNamespace required namespace
+     * @param isAttribute indicates if an attribute or element is required
+     * @param cachingVisitor force using the cacheing visitor if it specified. 
+     * It can be null. 
+     * @return
+     */
+    public static List<SchemaCompHolder> getChildren(
+            XPathModel xPathModel, XPathSchemaContext parentContext,
+            SchemaComponent parent, String soughtName, 
+            String soughtNamespace, boolean isAttribute, 
+            CachingSchemaSearchVisitor cachingVisitor) {
+        List<SchemaComponent> found = null;
+        boolean hasAny = false;
+        boolean hasAnyAttribute = false;
+        ArrayList<SchemaCompHolder> result = new ArrayList<SchemaCompHolder>();
+        //
+        if (cachingVisitor != null) {
+            cachingVisitor.lookForSubcomponent(parentContext,
+                    parent, soughtName, soughtNamespace, isAttribute);
+            found = cachingVisitor.getFound();
+            hasAny = cachingVisitor.hasAny();
+            hasAnyAttribute = cachingVisitor.hasAnyAttribute();
+        } else {
+            FindChildrenSchemaVisitor visitor = 
+                    new FindChildrenSchemaVisitor(parentContext, 
+                    soughtName, soughtNamespace, isAttribute);
+            visitor.lookForSubcomponent(parent);
+            found = visitor.getFound();
+            hasAny = visitor.hasAny();
+            hasAnyAttribute = visitor.hasAnyAttribute();
+        }
+        //
+        if (found == null || found.isEmpty()) {
+            //
+            // try looking for Pseudo Components here
+            XPathCastResolver castResolver = xPathModel.getXPathCastResolver();
+            if (castResolver != null) {
+                List<XPathPseudoComp> pcList = 
+                        castResolver.getPseudoCompList(parentContext);
+                if (pcList != null) {
+                    for (XPathPseudoComp pseudoComp : pcList) {
+                        if (!hasAnyAttribute && isAttribute) {
+                            // AnyAttribute isn't supported
+                            continue;
+                        }
+                        //
+                        if (!hasAny && !isAttribute) {
+                            // Any isn't supported
+                            continue;
+                        }
+                        //
+                        if (isAttribute != pseudoComp.isAttribute()) {
+                            continue;
+                        }
+                        //
+                        if (!(soughtName.equals(pseudoComp.getName()))) {
+                            // Different name
+                            continue;
+                        }
+                        if (!(soughtNamespace.equals(pseudoComp.getNamespace()))) {
+                            // different namespace
+                            continue;
+                        } 
+                        //
+                        SchemaCompHolder compHolder = 
+                                SchemaCompHolder.Factory.construct(pseudoComp);
+                        result.add(compHolder);
+                    }
+                }
+            }
+        } else {
+            convertToHolders(found, result);
+        }
+        //
+        return result;
+    }
+    
+    /**
+     * Converts the list of Schema components to the list of SC holders 
+     * @param scList
+     * @param target
+     */
+    private static void convertToHolders(List<SchemaComponent> scList, 
+            ArrayList<SchemaCompHolder> target) {
+        for (SchemaComponent sc : scList) {
+            SchemaCompHolder newHolder = SchemaCompHolder.Factory.construct(sc);
+            if (newHolder != null) {
+                target.add(newHolder);
+            }
+        }
     }
 }

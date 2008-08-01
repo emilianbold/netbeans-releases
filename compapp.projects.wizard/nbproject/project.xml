@@ -72,7 +72,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>6.5.1</specification-version>
+                        <specification-version>7.8</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -126,9 +126,9 @@
             </module-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.iep.editor</friend>
-                <package>org.netbeans.modules.compapp.projects.wizard</package>
                 <friend>com.sun.jbi.sapbc.sapwsdlgenerator</friend>
-           </friend-packages>
+                <package>org.netbeans.modules.compapp.projects.wizard</package>
+            </friend-packages>
         </data>
     </configuration>
 </project>

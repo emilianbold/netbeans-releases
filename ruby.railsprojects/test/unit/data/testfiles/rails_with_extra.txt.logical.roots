@@ -64,6 +64,7 @@ rootFiles:
   script
   selenium
   spec
+  test
   unit
   vendor
   views

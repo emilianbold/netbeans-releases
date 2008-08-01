@@ -154,11 +154,12 @@ public class CheckRenderer extends JPanel implements TreeCellRenderer {
         if (stringDisplayer != null) {
             stringDisplayer.setFont(getFont());
         }
-        Dimension d_check = check == null ? new Dimension(0, checkDim.height) : 
-            check.getPreferredSize();
-            
-        Dimension d_label = stringDisplayer != null ? 
-            stringDisplayer.getPreferredSize() : new Dimension(0,0);
+        Dimension d_check = check == null ? null: check.getPreferredSize();
+        d_check = d_check == null ? new Dimension(0, checkDim.height) : d_check;
+
+        Dimension d_label = stringDisplayer == null
+                ? null : stringDisplayer.getPreferredSize();
+        d_label = d_label == null ? new Dimension(0, 0) : d_label;
             
         return new Dimension(d_check.width  + d_label.width, (d_check.height < d_label.height ? d_label.height : d_check.height));
     }

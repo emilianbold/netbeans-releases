@@ -86,14 +86,24 @@ public final class PropertyEditorJavaString extends DesignPropertyEditor {
     protected WeakReference<DesignComponent> component;
     private TypeID typeID;
     private final CustomEditor customEditor;
+    private PropertyValue resetToDefaultValue;
 
     private PropertyEditorJavaString(TypeID typeID) {
         this.typeID = typeID;
         customEditor = new CustomEditor();
     }
+    
+    private PropertyEditorJavaString(TypeID typeID, PropertyValue resetToDefaultValue) {
+        this(typeID);
+        this.resetToDefaultValue = resetToDefaultValue;
+    }
 
     public static final PropertyEditorJavaString createInstance(TypeID typeID) {
         return new PropertyEditorJavaString(typeID);
+    }
+    
+    public static final PropertyEditorJavaString createInstance(TypeID typeID, PropertyValue resetTodefaultValue) {
+        return new PropertyEditorJavaString(typeID, resetTodefaultValue);
     }
 
     @Override
@@ -126,6 +136,11 @@ public final class PropertyEditorJavaString extends DesignPropertyEditor {
             return;
         }
         saveValue(text);
+    }
+
+    @Override
+    public Object getDefaultValue() {
+        return resetToDefaultValue;
     }
 
     private void saveValue(String text) {
@@ -194,6 +209,10 @@ public final class PropertyEditorJavaString extends DesignPropertyEditor {
             add(label, constraints);
 
             textPane = new JEditorPane();
+            
+            textPane.getAccessibleContext().setAccessibleName( getLabelName());
+            textPane.getAccessibleContext().setAccessibleDescription( getLabelName());
+            
             SwingUtilities.invokeLater(new Runnable() {
 
                 //otherwise we get: java.lang.AssertionError: BaseKit.install() incorrectly called from non-AWT thread.

@@ -41,12 +41,12 @@
 package org.netbeans.modules.xml;
 
 
+import org.netbeans.modules.xml.lib.Util;
 import org.openide.loaders.UniFileLoader;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.ExtensionList;
 import org.openide.filesystems.FileObject;
-import org.openide.actions.*;
 
 
 /** Data loader which recognizes .ent files - XML Entity documents.
@@ -71,6 +71,7 @@ public final class EntityDataLoader extends UniFileLoader {
 
     /** Does initialization. Initializes display name,
      * extension list and the actions. */
+    @Override
     protected void initialize () {
         super.initialize();
         
@@ -81,6 +82,7 @@ public final class EntityDataLoader extends UniFileLoader {
         setExtensions (ext);
     }
     
+    @Override
     protected String actionsContext() {
         return "Loaders/text/xml-external-parsed-entity/Actions/";
     }
@@ -88,8 +90,9 @@ public final class EntityDataLoader extends UniFileLoader {
     /**
      * Lazy init name.
      */
+    @Override
     protected String defaultDisplayName () {
-        return Util.THIS.getString ("PROP_EntityLoader_Name");
+        return Util.THIS.getString (EntityDataObject.class, "PROP_EntityLoader_Name");
     }
     
     /** Creates the right primary entry for given primary file.
@@ -97,6 +100,7 @@ public final class EntityDataLoader extends UniFileLoader {
      * @param primaryFile primary file recognized by this loader
      * @return primary entry for that file
      */
+    @Override
     protected MultiDataObject.Entry createPrimaryEntry (MultiDataObject obj, FileObject primaryFile) {
         return new XMLDataLoader.XMLFileEntry (obj, primaryFile);  //adds smart templating
     }

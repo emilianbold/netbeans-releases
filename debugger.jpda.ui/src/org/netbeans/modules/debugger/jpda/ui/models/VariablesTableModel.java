@@ -306,6 +306,14 @@ public class VariablesTableModel implements TableModel, Constants {
         if (m == null) {
             m = NbBundle.getMessage(VariablesTableModel.class, "MSG_NA");
         }
+        Throwable t = e.getTargetException();
+        if (t != null && t instanceof org.omg.CORBA.portable.ApplicationException) {
+            java.io.StringWriter s = new java.io.StringWriter();
+            java.io.PrintWriter p = new java.io.PrintWriter(s);
+            t.printStackTrace(p);
+            p.close();
+            m += " \n"+s.toString();
+        }
         return ">" + m + "<";
     }
 }

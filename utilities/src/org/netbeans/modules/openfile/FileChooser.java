@@ -83,14 +83,10 @@ class FileChooser extends JFileChooser {
         List<String> errorMsgs = null;
         for (int i = 0; i < selectedFiles.length; i++) {
             String msgPatternRef = null;
-            boolean isUNCPath = false;
             File file = selectedFiles[i];
 
             if (!file.exists()) {
                 msgPatternRef = "MSG_FileDoesNotExist";                 //NOI18N
-            } else if (OpenFile.isSpecifiedByUNCPath(file)) {
-                msgPatternRef = "MSG_FileSpecifiedByUNC";               //NOI18N
-                isUNCPath = true;
             } else if (file.isDirectory()) {
                 msgPatternRef = "MSG_FileIsADirectory";                 //NOI18N
             } else if (!file.isFile()) {
@@ -104,10 +100,7 @@ class FileChooser extends JFileChooser {
                 errorMsgs = new ArrayList<String>(selectedFiles.length - i);
             }
             errorMsgs.add(NbBundle.getMessage(FileChooser.class,
-                                              msgPatternRef,
-                                              isUNCPath
-                                                  ? getUNCPathToDisplay(file)
-                                                  : file.getName()));
+                                              msgPatternRef, file.getName()));
         }
         if (errorMsgs == null) {
             super.approveSelection();
@@ -123,40 +116,6 @@ class FileChooser extends JFileChooser {
         }
     }
 
-    /**
-     * Creates a file name to be displayed in an error message.
-     * If the file's full path is short, it is returned withouth any change.
-     * Otherwise part of the path is replaced with an ellipsis (...).
-     *
-     * @param  file  file whose name is to be displayed
-     * @return  path of the file
-     */
-    private static String getUNCPathToDisplay(File file) {
-        String name = file.getName();
-        String path = file.getPath();
-        String pathToCheck = path.substring(2,
-                                            path.length() - name.length() - 1);
-
-        final char sep = File.separatorChar;
-        int slashIndex = pathToCheck.indexOf(sep);
-        if (slashIndex != -1) {
-            slashIndex = pathToCheck.indexOf(sep, slashIndex + 1);
-            if ((slashIndex != -1) && (pathToCheck.indexOf(sep, slashIndex + 1)
-                                       != -1)) {
-
-                /* too many separators in the path - shorten with an ellipsis */
-                return new StringBuffer(slashIndex + name.length() + 7)
-                       .append(path.substring(0, 2 + slashIndex))
-                       .append(sep)
-                       .append("...")                                   //NOI18N
-                       .append(sep)
-                       .append(name)
-                       .toString();
-            }
-        }
-        return path;
-    }
-        
     /** File chooser filter that filters files by their names' suffixes. */
     private static class Filter extends FileFilter {
         

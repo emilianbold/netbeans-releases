@@ -1,12 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
-<!--
-    Document   : __NAME__
-    Created on : __DATE__, __TIME__
-    Author     : __USER__
-    Description:
-        Purpose of the document follows.
--->
+<#assign licenseFirst = "<!--">
+<#assign licensePrefix = "">
+<#assign licenseLast = "-->">
+<#include "../Licenses/license-${project.license}.txt">
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML Basic 1.0//EN"
                       "http://www.w3.org/TR/xhtml-basic/xhtml-basic10.dtd">

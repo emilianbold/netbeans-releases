@@ -131,15 +131,15 @@ public class SchemaTransformWizard implements WizardDescriptor.InstantiatingIter
                 if (c instanceof JComponent) { // assume Swing components
                     JComponent jc = (JComponent) c;
                     // Sets step number of a component
-                    jc.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(i));//NOI18n
+                    jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer(i));//NOI18n
                     // Sets steps names for a panel
-                    jc.putClientProperty("WizardPanel_contentData", steps);//NOI18n
+                    jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps);//NOI18n
                     // Turn on subtitle creation on each step
-                    jc.putClientProperty("WizardPanel_autoWizardStyle", Boolean.TRUE);//NOI18n
+                    jc.putClientProperty(WizardDescriptor.PROP_AUTO_WIZARD_STYLE, Boolean.TRUE);//NOI18n
                     // Show steps on the left side with the image on the background
-                    jc.putClientProperty("WizardPanel_contentDisplayed", Boolean.TRUE);//NOI18n
+                    jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DISPLAYED, Boolean.TRUE);//NOI18n
                     // Turn on numbering of all steps
-                    jc.putClientProperty("WizardPanel_contentNumbered", Boolean.TRUE);//NOI18n
+                    jc.putClientProperty(WizardDescriptor.PROP_CONTENT_NUMBERED, Boolean.TRUE);//NOI18n
                 }
             }
         }

@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.cnd.debugger.gdb.breakpoints;
 
-import org.netbeans.api.debugger.Session;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 
 /**
@@ -47,53 +46,14 @@ import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
  * @author eu155513
  */
 public class AddressBreakpointImpl extends BreakpointImpl {
-    private AddressBreakpoint  breakpoint;
-    private BreakpointsReader   reader;
     
-    public AddressBreakpointImpl(AddressBreakpoint breakpoint, BreakpointsReader reader,
-            GdbDebugger debugger, Session session) {
-        super(breakpoint, reader, debugger, session);
-        this.reader = reader;
-        this.breakpoint = breakpoint;
+    public AddressBreakpointImpl(AddressBreakpoint breakpoint, GdbDebugger debugger) {
+        super(breakpoint, debugger);
         set();
     }
 
     @Override
-    protected void setRequests() {
-        String st = getState();
-        if (getDebugger().getState().equals(GdbDebugger.STATE_RUNNING)) {
-            getDebugger().setSilentStop();
-            setRunWhenValidated(true);
-        }
-        
-        if (st.equals(BPSTATE_UNVALIDATED) || st.equals(BPSTATE_REVALIDATE)) {
-            if (st.equals(BPSTATE_REVALIDATE) && getBreakpointNumber() > 0) {
-                getDebugger().getGdbProxy().break_delete(getBreakpointNumber());
-            }
-            setState(BPSTATE_VALIDATION_PENDING);
-            String address = breakpoint.getAddress();
-            int token;
-            if (getBreakpoint().getSuspend() == GdbBreakpoint.SUSPEND_THREAD) {
-                token = getDebugger().getGdbProxy().break_insert(GdbBreakpoint.SUSPEND_THREAD,
-                        "*" + address, getBreakpoint().getThreadID()); // NOI18N
-            } else {
-                token = getDebugger().getGdbProxy().break_insert("*" + address); // NOI18N
-            }
-            getDebugger().addPendingBreakpoint(token, this);
-        } else {
-            if (st.equals(BPSTATE_DELETION_PENDING)) {
-                getDebugger().getGdbProxy().break_delete(getBreakpointNumber());
-	    } else if (st.equals(BPSTATE_VALIDATED)) {
-                if (breakpoint.isEnabled()) {
-                    getDebugger().getGdbProxy().break_enable(getBreakpointNumber());
-                } else {
-                    getDebugger().getGdbProxy().break_disable(getBreakpointNumber());
-                }
-            }
-            if (isRunWhenValidated()) {
-                getDebugger().setRunning();
-                setRunWhenValidated(false);
-            }
-        }
+    protected String getBreakpointCommand() {
+        return "*" + ((AddressBreakpoint)getBreakpoint()).getAddress(); // NOI18N
     }
 }

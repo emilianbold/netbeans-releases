@@ -51,6 +51,7 @@ import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.Servlet;
 import org.netbeans.modules.j2ee.dd.api.web.ServletMapping;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
+import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
@@ -67,12 +68,43 @@ import org.openide.util.Exceptions;
  * @author Nam Nguyen
  */
 public class WebProjectRestSupport extends RestSupport {
+
     public static final String J2EE_SERVER_INSTANCE = "j2ee.server.instance";
     public static final String DIRECTORY_DEPLOYMENT_SUPPORTED = "directory.deployment.supported"; // NOI18N
-    
+
+
     /** Creates a new instance of WebProjectRestSupport */
     public WebProjectRestSupport(Project project) {
         super(project);
+    }
+
+    @Override
+    public void upgrade() {
+        if (!isRestSupportOn()) {
+            return;
+        }
+        try {
+            addSwdpLibrary(new String[]{ClassPath.COMPILE, ClassPath.EXECUTE});
+
+            FileObject ddFO = getDeploymentDescriptor();
+            WebApp webApp = getWebApp();
+
+            if (webApp == null) {
+                return;
+            }
+
+            Servlet adaptorServlet = getRestServletAdaptor(webApp);
+            if (adaptorServlet != null) {
+                // Starting with jersey 0.8, the adaptor class is under 
+                // com.sun.jersey package instead of com.sun.we.rest package.
+                if (REST_SERVLET_ADAPTOR_CLASS_OLD.equals(adaptorServlet.getServletClass())) {
+                    adaptorServlet.setServletClass(this.getServletAdapterClass());
+                    webApp.write(ddFO);
+                }
+            }
+        } catch (IOException ioe) {
+            Exceptions.printStackTrace(ioe);
+        }
     }
 
     @Override
@@ -82,18 +114,18 @@ public class WebProjectRestSupport extends RestSupport {
 
     public void ensureRestDevelopmentReady() throws IOException {
         boolean needsRefresh = false;
-        if (! isRestSupportOn()) {
+        if (!isRestSupportOn()) {
             needsRefresh = true;
             setProjectProperty(REST_SUPPORT_ON, "true");
         }
-        
+
         extendBuildScripts();
 
-        if (ignorePlatformRestLibrary() || ! hasSwdpLibrary()) {
-            addSwdpLibrary(new String[] {
-                ClassPath.COMPILE,
-                ClassPath.EXECUTE
-            });
+        if (ignorePlatformRestLibrary() || !hasSwdpLibrary()) {
+            addSwdpLibrary(new String[]{
+                        ClassPath.COMPILE,
+                        ClassPath.EXECUTE
+                    });
         }
         addResourceConfigToWebApp();
         ProjectManager.getDefault().saveProject(getProject());
@@ -101,39 +133,42 @@ public class WebProjectRestSupport extends RestSupport {
             refreshRestServicesMetadataModel();
         }
     }
-    
+
     public void removeRestDevelopmentReadiness() throws IOException {
         removeResourceConfigFromWebApp();
         removeSwdpLibrary(new String[]{
-            ClassPath.COMPILE,
-            ClassPath.EXECUTE});
+                    ClassPath.COMPILE,
+                    ClassPath.EXECUTE
+                });
         setProjectProperty(REST_SUPPORT_ON, "false");
         ProjectManager.getDefault().saveProject(getProject());
     }
-    
+
     public boolean isReady() {
         return isRestSupportOn() && hasSwdpLibrary() && hasRestServletAdaptor();
     }
-    
+
     @Override
     public boolean hasSwdpLibrary() {
         J2eeModuleProvider j2eeModuleProvider = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
-        if (j2eeModuleProvider == null){
+        if (j2eeModuleProvider == null) {
             return false;
         }
-        
-        J2eePlatform platform  = Deployment.getDefault().getJ2eePlatform(j2eeModuleProvider.getServerInstanceID());
-        if (platform == null){
+
+        J2eePlatform platform = Deployment.getDefault().getJ2eePlatform(j2eeModuleProvider.getServerInstanceID());
+        if (platform == null) {
             return false;
         }
-        
+
         boolean hasRestBeansApi = false;
         boolean hasRestBeansImpl = false;
         for (File file : platform.getClasspathEntries()) {
             if (file.getName().equals(REST_API_JAR)) { //NOI18N
+
                 hasRestBeansApi = true;
             }
             if (file.getName().equals(REST_RI_JAR)) { //NOI18N
+
                 hasRestBeansImpl = true;
             }
             if (hasRestBeansApi && hasRestBeansImpl) {
@@ -142,11 +177,11 @@ public class WebProjectRestSupport extends RestSupport {
         }
         return false;
     }
-    
+
     private boolean hasRestServletAdaptor(WebApp webApp) {
         return getRestServletAdaptor(webApp) != null;
     }
-    
+
     private Servlet getRestServletAdaptor(WebApp webApp) {
         if (webApp != null) {
             for (Servlet s : webApp.getServlet()) {
@@ -158,7 +193,11 @@ public class WebProjectRestSupport extends RestSupport {
         return null;
     }
     
-    private ServletMapping getRestServletMapping(WebApp webApp) {
+    public static ServletMapping getRestServletMapping(Project project) throws IOException {
+        return getRestServletMapping(getWebApp(project));
+    }
+    
+    public static ServletMapping getRestServletMapping(WebApp webApp) {
         for (ServletMapping sm : webApp.getServletMapping()) {
             if (REST_SERVLET_ADAPTOR.equals(sm.getServletName())) {
                 return sm;
@@ -166,16 +205,16 @@ public class WebProjectRestSupport extends RestSupport {
         }
         return null;
     }
-    
+
     private boolean hasRestServletAdaptor() {
         try {
             return hasRestServletAdaptor(getWebApp());
-        } catch(IOException ioe) {
+        } catch (IOException ioe) {
             Exceptions.printStackTrace(ioe);
             return false;
         }
     }
-    
+
     private FileObject getDeploymentDescriptor() {
         WebModuleProvider wmp = project.getLookup().lookup(WebModuleProvider.class);
         if (wmp != null) {
@@ -183,7 +222,7 @@ public class WebProjectRestSupport extends RestSupport {
         }
         return null;
     }
-    
+
     private void addResourceConfigToWebApp() throws IOException {
         FileObject ddFO = getDeploymentDescriptor();
         WebApp webApp = getWebApp();
@@ -196,11 +235,12 @@ public class WebProjectRestSupport extends RestSupport {
             if (adaptorServlet == null) {
                 adaptorServlet = (Servlet) webApp.createBean("Servlet");
                 adaptorServlet.setServletName(REST_SERVLET_ADAPTOR);
-                adaptorServlet.setServletClass(REST_SERVLET_ADAPTOR_CLASS);
+                adaptorServlet.setServletClass(getServletAdapterClass());
                 adaptorServlet.setLoadOnStartup(BigInteger.valueOf(1));
                 webApp.addServlet(adaptorServlet);
                 needsSave = true;
             }
+
             ServletMapping sm = getRestServletMapping(webApp);
             if (sm == null) {
                 sm = (ServletMapping) webApp.createBean("ServletMapping");
@@ -212,13 +252,13 @@ public class WebProjectRestSupport extends RestSupport {
             if (needsSave) {
                 webApp.write(ddFO);
             }
-        } catch(IOException ioe) {
+        } catch (IOException ioe) {
             throw ioe;
-        } catch(ClassNotFoundException ex) {
+        } catch (ClassNotFoundException ex) {
             throw new IllegalArgumentException(ex);
         }
     }
-    
+
     private void removeResourceConfigFromWebApp() throws IOException {
         FileObject ddFO = getDeploymentDescriptor();
         WebApp webApp = getWebApp();
@@ -242,19 +282,61 @@ public class WebProjectRestSupport extends RestSupport {
     }
     
     private WebApp getWebApp() throws IOException {
-            WebModuleImplementation jp = (WebModuleImplementation) project.getLookup().lookup(WebModuleImplementation.class);
-            FileObject fo = jp.getDeploymentDescriptor();
-            if (fo != null) {
-                return DDProvider.getDefault().getDDRoot(fo);
-            }
-            return null;
+        return getWebApp(project);
     }
     
+    public static WebApp getWebApp(Project project) throws IOException {
+        FileObject fo = getWebXml(project);
+        if (fo != null) {
+            return DDProvider.getDefault().getDDRoot(fo);
+        }
+        return null;
+    }
+    
+    public FileObject getWebXml() {
+        return getWebXml(project);
+    }
+    
+    public static FileObject getWebXml(Project project) {
+        WebModuleImplementation jp = (WebModuleImplementation) project.getLookup().lookup(WebModuleImplementation.class);
+
+        return jp.getDeploymentDescriptor();
+    }
+
+    @Override
     public FileObject getPersistenceXml() {
         PersistenceScope ps = PersistenceScope.getPersistenceScope(getProject().getProjectDirectory());
         if (ps != null) {
             return ps.getPersistenceXml();
         }
+        return null;
+    }
+
+    public FileObject getApplicationContextXml() {
+        J2eeModuleProvider provider = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
+        FileObject[] fobjs = provider.getSourceRoots();
+
+        if (fobjs.length > 0) {
+            FileObject configRoot = fobjs[0];
+            FileObject webInf = configRoot.getFileObject("WEB-INF");        //NOI18N
+
+            if (webInf != null) {
+                return webInf.getFileObject("applicationContext", "xml");      //NOI18N
+            }
+        }
+
+        return null;
+    }
+
+    public Datasource getDatasource(String jndiName) {
+        J2eeModuleProvider provider = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
+
+        try {
+            return provider.getConfigSupport().findDatasource(jndiName);
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
         return null;
     }
 
@@ -267,6 +349,7 @@ public class WebProjectRestSupport extends RestSupport {
             if (sdi != null && mod != null) {
                 boolean cFD = Deployment.getDefault().canFileDeploy(instance, mod);
                 p.setProperty(DIRECTORY_DEPLOYMENT_SUPPORTED, String.valueOf(cFD)); // NOI18N
+
             }
         }
     }

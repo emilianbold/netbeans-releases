@@ -41,17 +41,16 @@
 
 package org.netbeans.modules.websvc.wsitmodelext.transport.impl;
 
+import org.netbeans.modules.websvc.wsitmodelext.GenericComponentImpl;
 import org.netbeans.modules.websvc.wsitmodelext.transport.TCPQName;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import org.netbeans.modules.xml.wsdl.model.spi.GenericExtensibilityElement;
-import org.netbeans.modules.xml.wsdl.model.visitor.WSDLVisitor;
 import org.w3c.dom.Element;
 
 /**
  *
  * @author MartinGrebac
  */
-public abstract class TCPComponentImpl extends GenericExtensibilityElement {
+public abstract class TCPComponentImpl extends GenericComponentImpl {
     
     /**
      * Creates a new instance of TCPComponentImpl
@@ -61,20 +60,7 @@ public abstract class TCPComponentImpl extends GenericExtensibilityElement {
     }
 
     @Override
-    public abstract void accept(WSDLVisitor visitor);
-    
-     @Override
-     protected String getNamespaceURI() {
+    protected String getNamespaceURI() {
         return TCPQName.TCP_NS_URI;
     }
-
-    @Override
-    public String getAttribute(String attribute) {
-        throw new UnsupportedOperationException();
-    }
-    
-    @Override
-    public void setAttribute(String attribute, String value) {
-        throw new UnsupportedOperationException();
-    }    
 }

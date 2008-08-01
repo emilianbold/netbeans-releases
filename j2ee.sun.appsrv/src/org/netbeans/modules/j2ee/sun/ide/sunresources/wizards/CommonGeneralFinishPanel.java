@@ -144,6 +144,7 @@ public class CommonGeneralFinishPanel extends  ResourceWizardPanel {
                         setErrorMsg(bundle.getString("Err_InvalidJndiName"));
                         return false;
                     }else if(! ResourceUtils.isLegalResourceName(jndiName)){
+                        setErrorMsg(bundle.getString("Err_InvalidJndiName"));
                         return false;
                     }else if(! ResourceUtils.isUniqueFileName(jndiName, this.helper.getData().getTargetFileObject(), __MAILResource)){
                         setErrorMsg(bundle.getString("Err_DuplFileJndiName"));
@@ -190,6 +191,10 @@ public class CommonGeneralFinishPanel extends  ResourceWizardPanel {
             FileObject resFolder = ResourceUtils.getResourceDirectory(this.helper.getData().getTargetFileObject());
             this.helper.getData().setTargetFileObject (resFolder);
             if(resFolder != null){
+                String resourceName = helper.getData().getString("jndi-name"); //NOI18N
+                if ((resourceName != null) && (!resourceName.equals(""))) {
+                    targetName = resourceName;
+                }
                 targetName = ResourceUtils.createUniqueFileName (targetName, resFolder, __MAILResource);
                 this.helper.getData ().setTargetFile (targetName);
                 if(component == null)

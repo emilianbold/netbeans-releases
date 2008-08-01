@@ -47,15 +47,15 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.Document;
 import org.netbeans.api.html.lexer.HTMLTokenId;
-import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenHierarchyEvent;
 import org.netbeans.api.lexer.TokenHierarchyListener;
-import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.gsf.api.EditHistory;
+import org.netbeans.modules.gsf.api.IncrementalEmbeddingModel;
 
 /**
  * Creates a CSS model from html source code. 
@@ -200,27 +200,28 @@ public class HtmlModel {
                         // <div id="${myid}"/> or <p>${"blabla"}<p>blabla2 are ok
                     }
                 }
+
+                //beginning of the html code
+                int sourceStart = ts.offset();
+                int generatedStart = buffer.length();
+
+                //reset ts to the beginning
+                ts.moveStart();
+
+                //copy the content
+                while (ts.moveNext()) {
+                    htmlToken = ts.token();
+                    buffer.append(htmlToken.text());
+                }
+
+                int sourceEnd = htmlToken.offset(th) + htmlToken.length();
+                int generatedEnd = buffer.length();
+
+                CodeBlockData blockData = new CodeBlockData(sourceStart, sourceEnd, generatedStart,
+                        generatedEnd);
+                codeBlocks.add(blockData);
+
             }
-
-            //beginning of the html code
-            int sourceStart = ts.offset();
-            int generatedStart = buffer.length();
-
-            //reset ts to the beginning
-            ts.moveStart();
-
-            //copy the content
-            while (ts.moveNext()) {
-                htmlToken = ts.token();
-                buffer.append(htmlToken.text());
-            }
-
-            int sourceEnd = htmlToken.offset(th) + htmlToken.length();
-            int generatedEnd = buffer.length();
-
-            CodeBlockData blockData = new CodeBlockData(sourceStart, sourceEnd, generatedStart,
-                    generatedEnd);
-            codeBlocks.add(blockData);
 
         }
 
@@ -287,22 +288,83 @@ public class HtmlModel {
     }
 
     private CodeBlockData getCodeBlockAtSourceOffset(int offset) {
-        for (CodeBlockData codeBlock : codeBlocks) {
-            if (codeBlock.sourceStart <= offset && codeBlock.sourceEnd >= offset) {
+            for(int i = 0; i < codeBlocks.size(); i++) {
+            CodeBlockData codeBlock = codeBlocks.get(i);
+            if (codeBlock.sourceStart <= offset && codeBlock.sourceEnd > offset) {
                 return codeBlock;
+            } else if(codeBlock.sourceEnd == offset) {
+                //test if there the following code blocks starts with the same offset
+                if(i < codeBlocks.size() - 1) {
+                    CodeBlockData next = codeBlocks.get(i+1);
+                    if(next.sourceStart == offset) {
+                        return next;
+                    } else {
+                        return codeBlock;
+                    }
+                } else {
+                    //the code block is last element, return it
+                    return codeBlock;
+                }
             }
         }
+
+        
         return null;
     }
 
     private CodeBlockData getCodeBlockAtGeneratedOffset(int offset) {
-        // TODO - binary search!! they are ordered!
-        for (CodeBlockData codeBlock : codeBlocks) {
-            if (codeBlock.generatedStart <= offset && codeBlock.generatedEnd >= offset) {
+        for(int i = 0; i < codeBlocks.size(); i++) {
+            CodeBlockData codeBlock = codeBlocks.get(i);
+            if (codeBlock.generatedStart <= offset && codeBlock.generatedEnd > offset) {
                 return codeBlock;
+            } else if(codeBlock.generatedEnd == offset) {
+                //test if there the following code blocks starts with the same offset
+                if(i < codeBlocks.size() - 1) {
+                    CodeBlockData next = codeBlocks.get(i+1);
+                    if(next.generatedStart == offset) {
+                        return next;
+                    } else {
+                        return codeBlock;
+                    }
+                } else {
+                    //the code block is last element, return it
+                    return codeBlock;
+                }
             }
         }
+        
         return null;
+    }
+
+    IncrementalEmbeddingModel.UpdateState incrementalUpdate(EditHistory history) {
+        // Clear cache
+        // prevLexOffset = prevAstOffset = 0;
+        prevLexOffset = history.convertOriginalToEdited(prevLexOffset);
+        
+        int offset = history.getStart();
+        int limit = history.getOriginalEnd();
+        int delta = history.getSizeDelta();
+
+        boolean codeOverlaps = false;
+        for (CodeBlockData codeBlock : codeBlocks) {
+            // Block not affected by move
+            if (codeBlock.sourceEnd <= offset) {
+                continue;
+            }
+            if (codeBlock.sourceStart >= limit) {
+                codeBlock.sourceStart += delta;
+                codeBlock.sourceEnd += delta;
+                continue;
+            }
+            if (codeBlock.sourceStart <= offset && codeBlock.sourceEnd >= limit) {
+                codeBlock.sourceEnd += delta;
+                codeOverlaps = true;
+                continue;
+            }
+            return IncrementalEmbeddingModel.UpdateState.FAILED;
+        }
+
+        return codeOverlaps ? IncrementalEmbeddingModel.UpdateState.UPDATED : IncrementalEmbeddingModel.UpdateState.COMPLETED;
     }
 
     private class CodeBlockData {
@@ -331,7 +393,7 @@ public class HtmlModel {
             //sb.append("=\"");
             //sb.append(rhtmlCode.substring(sourceStart, sourceEnd));
             //sb.append("\"");
-            sb.append(",\n  JAVASCRIPT(" + generatedStart + "," + generatedEnd + ")");
+            sb.append(",\n  HTML(" + generatedStart + "," + generatedEnd + ")");
             //sb.append("=\"");
             //sb.append(rubyCode.substring(generatedStart,generatedEnd));
             //sb.append("\"");

@@ -42,8 +42,8 @@
 package modeldump;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
-import java.util.List;
 import modelutils.FileCodeModel;
 import modelutils.FileCodeModelDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
@@ -51,16 +51,9 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable.Position;
 import org.netbeans.modules.cnd.api.model.CsmType;
-import org.netbeans.modules.cnd.modelimpl.csm.ClassForwardDeclarationImpl;
-import org.netbeans.modules.cnd.modelimpl.csm.ClassImpl;
-import org.netbeans.modules.cnd.modelimpl.csm.ConstructorDefinitionImpl;
-import org.netbeans.modules.cnd.modelimpl.csm.FieldImpl;
-import org.netbeans.modules.cnd.modelimpl.csm.FunctionDDImpl;
-import org.netbeans.modules.cnd.modelimpl.csm.FunctionDefinitionImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.FunctionImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.ParameterImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.TypedefImpl;
-import org.netbeans.modules.cnd.modelimpl.csm.UsingDirectiveImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.VariableImpl;
 //import org.openide.util.NotImplementedException;
 
@@ -75,10 +68,10 @@ public class FileCodeModelReader {
     }
     
     public FileCodeModel getModelFor(CsmFile file) {
-        String absolutePath = file.getAbsolutePath();
+        String absolutePath = file.getAbsolutePath().toString();
         ArrayList<FileCodeModelDeclaration> declarations = new ArrayList<FileCodeModelDeclaration>();
         
-        List declarationList = file.getDeclarations();
+        Collection declarationList = file.getDeclarations();
         for (Iterator<CsmDeclaration> i = declarationList.iterator(); i.hasNext();) {
             declarations.add(getFileCodeModelDeclaration(i.next()));
         }
@@ -100,7 +93,7 @@ public class FileCodeModelReader {
 
         if (declaration instanceof FunctionImpl) {
             FunctionImpl functionDeclaration = (FunctionImpl)declaration;
-            List<ParameterImpl> params = functionDeclaration.getParameters();
+            Collection<ParameterImpl> params = functionDeclaration.getParameters();
 
             StringBuffer paramsStr = new StringBuffer();
 
@@ -130,7 +123,7 @@ public class FileCodeModelReader {
             TypedefImpl typedefImpl = (TypedefImpl)declaration;
             declarationString = typedefImpl.getType().getText() + " " + typedefImpl.getQualifiedName().toString(); // NOI18N
         } else {
-            declarationString = declaration.getQualifiedName();
+            declarationString = declaration.getQualifiedName().toString();
         }
         
         result.setDeclarationString(declarationString);

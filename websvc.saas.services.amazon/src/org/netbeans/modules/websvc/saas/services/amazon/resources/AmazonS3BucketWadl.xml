@@ -40,14 +40,16 @@
  Version 2 license, then the option applies only if the new code is
  made subject to such option by the copyright holder.
 -->
-
 <application xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
              xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
              xsi:schemaLocation="http://research.sun.com/wadl/2006/10 
-             ../../../../../../../../../../websvc.saas.api/src/org/netbeans/modules/websvc/saas/model/wadl20061109.xsd"
-             xmlns="http://research.sun.com/wadl/2006/10">
-    
-    <grammars/>
+                https://wadl.dev.java.net/wadl20061109.xsd"
+             xmlns="http://research.sun.com/wadl/2006/10"
+             xmlns:bucket="urn:amazons3:amazons3bucket"
+     >
+    <grammars>
+        <include href="AmazonS3Bucket.xsd"/>
+    </grammars>
     <resources base="http://">
         <!--
             API documentation:
@@ -55,42 +57,64 @@
             http://developer.amazonwebservices.com/connect/kbcategory.jspa?categoryID=46
             
             This is a single WADL method for a all 3 methods of Amazon S3 services.
-        -->	
+        -->
         <resource path="{bucket}.s3.amazonaws.com" id="amazons3.bucket">
-            
             <param name="bucket" type="xsd:string" style="template" required="true"/>
-            
             <method name="GET" id="getBucket">
                 <request>
                     <param name="Authorization" type="xsd:string" style="header" required="true"/>
                 </request>
                 <response>
-                    <representation mediaType="application/xml"/>
+                    <representation mediaType="application/xml" element="bucket:ListBucketResult"/>
                 </response>
             </method>
-            
-            <method name="GET" id="getLocation">
+            <method name="PUT" id="createBucket">
                 <request>
                     <param name="Authorization" type="xsd:string" style="header" required="true"/>
-                    <param name="location" type="xsd:string" style="query" required="true"/>
+                    <!--param name="Content-Type" type="xsd:string" style="header" required="true"/-->
                 </request>
                 <response>
                     <representation mediaType="application/xml"/>
                 </response>
             </method>
-
-            <method name="PUT" id="setAcl">
+            <method name="DELETE" id="deleteBucket">
                 <request>
                     <param name="Authorization" type="xsd:string" style="header" required="true"/>
-                    <param name="acl" type="xsd:string" style="query" required="true"/>
+                </request>
+                <response>
+                    <representation mediaType="application/xml"/>
+                </response>
+            </method>
+            <method name="GET" id="getLocation">
+                <request>
+                    <param name="Authorization" type="xsd:string" style="header" required="true"/>
+                    <param fixed="" name="location" type="xsd:string" style="query" required="true"/>
+                </request>
+                <response>
+                    <representation mediaType="application/xml"/>
+                </response>
+            </method>
+            <method name="GET" id="getBucketAcl">
+                <request>
+                    <param name="Authorization" type="xsd:string" style="header" required="true"/>
+                    <param fixed="" name="acl" type="xsd:string" style="query" required="true"/>
+                </request>
+                <response>
+                    <representation mediaType="application/xml"/>
+                </response>
+            </method>
+            <method name="PUT" id="setBucketAcl">
+                <request>
+                    <param name="Authorization" type="xsd:string" style="header" required="true"/>
+                    <param fixed="" name="acl" type="xsd:string" style="query" required="true"/>
+                    <param fixed="text/plain" name="Content-Type" type="xsd:string" style="header" required="true"/>
                     <representation mediaType="text/plain"/>
                 </request>
                 <response>
                     <representation mediaType="*/*"/>
                 </response>
             </method>
-            
-            <resource path="{object}" id="amazons3.object">
+            <resource path="{object}/" id="amazons3.object">
                 <param name="object" type="xsd:string" style="template" required="true"/>
                 <method name="GET" id="getObject">
                     <request>
@@ -103,6 +127,7 @@
                 <method name="PUT" id="putObject">
                     <request>
                         <param name="Authorization" type="xsd:string" style="header" required="true"/>
+                        <param name="Content-Type" type="xsd:string" style="header" required="true"/>
                         <representation mediaType="*/*"/>
                     </request>
                     <response>
@@ -114,8 +139,27 @@
                         <param name="Authorization" type="xsd:string" style="header" required="true"/>
                     </request>
                 </method>
+                <method name="GET" id="getObjectAcl">
+                    <request>
+                        <param name="Authorization" type="xsd:string" style="header" required="true"/>
+                        <param fixed="" name="acl" type="xsd:string" style="query" required="true"/>
+                    </request>
+                    <response>
+                        <representation mediaType="application/xml"/>
+                    </response>
+                </method>
+                <method name="PUT" id="setObjectAcl">
+                    <request>
+                        <param name="Authorization" type="xsd:string" style="header" required="true"/>
+                        <param fixed="" name="acl" type="xsd:string" style="query" required="true"/>
+                        <param fixed="text/plain" name="Content-Type" type="xsd:string" style="header" required="true"/>
+                        <representation mediaType="text/plain"/>
+                    </request>
+                    <response>
+                        <representation mediaType="*/*"/>
+                    </response>
+                </method>
             </resource>
         </resource>
     </resources>
-    
 </application>

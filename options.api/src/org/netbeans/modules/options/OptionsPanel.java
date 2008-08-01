@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -58,10 +58,8 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
@@ -119,13 +117,13 @@ public class OptionsPanel extends JPanel {
     private String getCategoryID(String categoryID) {
         return categoryID == null ? CategoryModel.getInstance().getCurrentCategoryID() : categoryID;
     }
-        
-    void initCurrentCategory (final String categoryID) {                    
+
+    void initCurrentCategory (final String categoryID, final String subpath) {
         //generalpanel should be moved to core/options and then could be implemented better
         //generalpanel doesn't need lookup
         boolean isGeneralPanel = "General".equals(getCategoryID(categoryID));//NOI18N
         if (CategoryModel.getInstance().isLookupInitialized() || isGeneralPanel) {
-            setCurrentCategory(CategoryModel.getInstance().getCategory(getCategoryID(categoryID)));
+            setCurrentCategory(CategoryModel.getInstance().getCategory(getCategoryID(categoryID)), subpath);
             initActions();                        
         } else {
             RequestProcessor.getDefault().post(new Runnable() {
@@ -141,7 +139,7 @@ public class OptionsPanel extends JPanel {
                             final Cursor cursor = frame.getCursor();
                             frame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                             setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                            setCurrentCategory(CategoryModel.getInstance().getCategory(getCategoryID(categoryID)));
+                            setCurrentCategory(CategoryModel.getInstance().getCategory(getCategoryID(categoryID)), subpath);
                             initActions();
                             // reset cursor
                             frame.setCursor(cursor);
@@ -153,7 +151,7 @@ public class OptionsPanel extends JPanel {
         }
     }
     
-    private void setCurrentCategory (final CategoryModel.Category category) {
+    private void setCurrentCategory (final CategoryModel.Category category, String subpath) {
         CategoryModel.Category oldCategory = CategoryModel.getInstance().getCurrent();
         if (oldCategory != null) {
             (buttons.get(oldCategory.getID())).setNormal ();
@@ -162,17 +160,22 @@ public class OptionsPanel extends JPanel {
             (buttons.get(category.getID())).setSelected ();
         }
         
-        CategoryModel.getInstance().setCurrent(category);                
+        CategoryModel.getInstance().setCurrent(category);
         JComponent component = category.getComponent();                
         category.update(controllerListener, false);
         final Dimension size = component.getSize();
-        pOptions.add(component, category.getCategoryName());
+        if( component.getParent() == null || !pOptions.equals(component.getParent()) ) {
+            pOptions.add(component, category.getCategoryName());
+        }
         cLayout.show(pOptions, category.getCategoryName());
         checkSize (size);
         /*if (CategoryModel.getInstance().getCurrent() != null) {
             ((CategoryButton) buttons.get (CategoryModel.getInstance().getCurrentCategoryID())).requestFocus();
         } */       
         firePropertyChange ("buran" + OptionsPanelController.PROP_HELP_CTX, null, null);
+        if(subpath != null) {
+            category.setCurrentSubcategory(subpath);
+        }
     }
         
     HelpCtx getHelpCtx () {
@@ -213,7 +216,7 @@ public class OptionsPanel extends JPanel {
         pOptions.setLayout (cLayout);
         pOptions.setPreferredSize (getUserSize());
         JLabel label = new JLabel (loc ("CTL_Loading_Options"));
-        label.setHorizontalAlignment (label.CENTER);
+        label.setHorizontalAlignment (JLabel.CENTER);
         pOptions.add (label, label.getText());//NOI18N
 
         // icon view
@@ -276,9 +279,11 @@ public class OptionsPanel extends JPanel {
             CategoryModel.Category category = CategoryModel.getInstance().getCategory(names[i]);
             CategoryButton button = addButton (category);            
             Dimension d = button.getPreferredSize();
-            maxSize.setSize(Math.max(maxSize.getWidth(), d.getWidth()), 
-                    Math.max(maxSize.getHeight(), d.getHeight()));
-            
+            maxSize.width = Math.max(maxSize.width, d.width);
+            // #141121 - ignore big height which can appear for uknown reason
+            if(d.height < d.width*10) {
+                maxSize.height = Math.max(maxSize.height, d.height);
+            }
         }        
         it = buttons.values().iterator ();
         while (it.hasNext ()) {
@@ -380,7 +385,7 @@ public class OptionsPanel extends JPanel {
             this.category = category;
         }
         public void actionPerformed (ActionEvent e) {
-            setCurrentCategory (category);
+            setCurrentCategory (category, null);
         }
     }
         
@@ -388,20 +393,20 @@ public class OptionsPanel extends JPanel {
         public void actionPerformed(ActionEvent e) {
             CategoryModel.Category highlightedB = CategoryModel.getInstance().getCategory(CategoryModel.getInstance().getHighlitedCategoryID());            
             if (highlightedB != null) {
-                setCurrentCategory(highlightedB);
+                setCurrentCategory(highlightedB, null);
             }
         }
     }
     
     private class PreviousAction extends AbstractAction {
         public void actionPerformed (ActionEvent e) {
-            setCurrentCategory (CategoryModel.getInstance().getPreviousCategory());
+            setCurrentCategory (CategoryModel.getInstance().getPreviousCategory(), null);
         }
     }
     
     private class NextAction extends AbstractAction {
         public void actionPerformed (ActionEvent e) {            
-            setCurrentCategory (CategoryModel.getInstance().getNextCategory());
+            setCurrentCategory (CategoryModel.getInstance().getNextCategory(), null);
         }
     }
     
@@ -496,7 +501,7 @@ public class OptionsPanel extends JPanel {
 
         public void mouseReleased (MouseEvent e) {
             if (!category.isCurrent() && category.isHighlited() && CategoryModel.getInstance().getCurrent() != null) {
-                setCurrentCategory(category);
+                setCurrentCategory(category, null);
             }
         }
 

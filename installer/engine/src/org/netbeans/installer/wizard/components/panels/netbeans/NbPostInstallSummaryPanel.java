@@ -36,14 +36,22 @@
 
 package org.netbeans.installer.wizard.components.panels.netbeans;
 
+import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.LinkedList;
 import java.util.List;
+import javax.swing.border.LineBorder;
+import javax.swing.event.HyperlinkEvent;
+import javax.swing.event.HyperlinkListener;
+import javax.swing.event.HyperlinkEvent.EventType;
 import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.utils.FileUtils;
@@ -53,6 +61,7 @@ import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.helper.swing.NbiCheckBox;
 import org.netbeans.installer.utils.helper.swing.NbiPanel;
+import org.netbeans.installer.utils.helper.swing.NbiSeparator;
 import org.netbeans.installer.utils.helper.swing.NbiTextPane;
 import org.netbeans.installer.wizard.components.WizardPanel;
 import org.netbeans.installer.wizard.components.actions.netbeans.NbRegistrationAction;
@@ -155,8 +164,16 @@ public class NbPostInstallSummaryPanel extends WizardPanel {
         private NbiTextPane messagePaneNetBeans;
         private NbiTextPane messagePaneRegistration;                                 
         private NbiCheckBox checkBoxRegistration;                                    
+        private NbiPanel registrationPanel;
         private NbiPanel spacer;
+        private NbiTextPane messagePaneMySQL;
 
+        private NbiCheckBox metricsCheckbox;
+        private NbiTextPane metricsInfo;
+        private NbiTextPane metricsList;
+        private NbiPanel metricsPanel;
+        private NbiSeparator separator;
+        
         public NbPostInstallSummaryPanelSwingUi(
                 final NbPostInstallSummaryPanel component,
                 final SwingContainer container) {
@@ -246,6 +263,41 @@ public class NbPostInstallSummaryPanel extends WizardPanel {
             products.addAll(registry.getProducts(INSTALLED_SUCCESSFULLY));
             products.addAll(registry.getProducts(INSTALLED_WITH_WARNINGS));
             
+            messagePaneMySQL.setContentType(DEFAULT_MESSAGE_MYSQL_CONTENT_TYPE);
+            messagePaneMySQL.setText("");
+            messagePaneMySQL.setVisible(false);
+            for (Product product : products) {
+                if (product.getUid().equals("mysql")) {
+                    messagePaneMySQL.setText(
+                            StringUtils.format(SystemUtils.isWindows() ? 
+                                DEFAULT_MYSQL_MESSAGE_WINDOWS : 
+                                DEFAULT_MYSQL_MESSAGE_UNIX,
+                            product.getInstallationLocation()));
+                    messagePaneMySQL.setVisible(true);
+                    messagePaneMySQL.addHyperlinkListener(new HyperlinkListener() {
+
+                        public void hyperlinkUpdate(HyperlinkEvent hlevt) {
+                            if (EventType.ACTIVATED == hlevt.getEventType()) {
+                                final URL url = hlevt.getURL();
+                                if (url != null) {
+                                    try {
+                                        NbRegistrationAction.openBrowser(url.toURI());
+                                    } catch (IOException e) {
+                                        LogManager.log(e);
+                                    } catch (URISyntaxException e) {
+                                        LogManager.log(e);
+                                    }
+                                }
+                            }
+                        }
+                    });
+                    break;
+                }
+            }
+            
+            
+            
+            
             messagePaneNetBeans.setContentType(DEFAULT_MESSAGE_NETBEANS_CONTENT_TYPE);
             messagePaneNetBeans.setText("");
             boolean nbInstalled = false;
@@ -280,9 +332,11 @@ public class NbPostInstallSummaryPanel extends WizardPanel {
                     NbRegistrationAction.getUnixBrowser() != null);    // on unix we can found it in some predefined locations
             
             if (!registrationEnabled) {
-                messagePaneRegistration.setVisible(false);
-                checkBoxRegistration.setVisible(false);
-                spacer.setVisible(false);
+                //separator.setVisible(false);
+                //messagePaneRegistration.setVisible(false);
+                //checkBoxRegistration.setVisible(false);
+                //spacer.setVisible(false);
+                registrationPanel.setVisible(false);
                 checkBoxRegistration.setSelected(false);
                 System.setProperty(ALLOW_SERVICETAG_REGISTRATION_PROPERTY, "" + false);
             } else {
@@ -314,6 +368,16 @@ public class NbPostInstallSummaryPanel extends WizardPanel {
                 messagePaneNetBeans.setVisible(false);
             }
 
+            if(nbInstalled) {                
+                metricsList.setContentType(DEFAULT_MESSAGE_METRICS_LIST_CONTENT_TYPE);
+                metricsList.setText(DEFAULT_MESSAGE_METRICS_LIST);
+                metricsInfo.setContentType(DEFAULT_MESSAGE_METRICS_TEXT_CONTENT_TYPE);
+                metricsInfo.setText(DEFAULT_MESSAGE_METRICS_TEXT);
+                metricsCheckbox.setText(DEFAULT_MESSAGE_METRICS_CHECKBOX);
+                metricsCheckbox.doClick();
+            } else {
+                metricsPanel.setVisible(false);
+            }
             products.clear();
             
             products.addAll(registry.getProducts(UNINSTALLED_SUCCESSFULLY));
@@ -344,7 +408,65 @@ public class NbPostInstallSummaryPanel extends WizardPanel {
             // messagePaneNetBeans ///////////////////////////////////////////////////
             messagePaneNetBeans = new NbiTextPane();
 
-            // messagePaneRegistration
+            
+            metricsPanel = new NbiPanel();
+            
+            metricsCheckbox = new NbiCheckBox();
+            
+            metricsList = new NbiTextPane();
+            
+            metricsInfo = new NbiTextPane();
+            
+            metricsCheckbox.addActionListener(new ActionListener() {
+
+                public void actionPerformed(ActionEvent e) {
+                    System.setProperty(ENABLE_NETBEANS_METRICS_PROPERTY,
+                            "" + metricsCheckbox.isSelected());
+                }
+            });
+            metricsInfo.addHyperlinkListener(new HyperlinkListener() {
+                public void hyperlinkUpdate(HyperlinkEvent hlevt) {
+                    if (EventType.ACTIVATED == hlevt.getEventType()) {
+                        final URL url = hlevt.getURL();
+                        if (url != null) {
+                            try {
+                                NbRegistrationAction.openBrowser(url.toURI());
+                            } catch (IOException e) {
+                                LogManager.log(e);
+                            } catch (URISyntaxException e) {
+                                LogManager.log(e);
+                            }
+                        }
+                    }
+                }
+            });
+            metricsPanel.add(metricsCheckbox, new GridBagConstraints(
+                    0, 0, // x, y
+                    1, 1, // width, height
+                    1.0, 1.0, // weight-x, weight-y
+                    GridBagConstraints.PAGE_START, // anchor
+                    GridBagConstraints.HORIZONTAL, // fill
+                    new Insets(0, 11, 0, 11), // padding
+                    0, 0));                           // padx, pady - ???
+           
+            metricsPanel.add(metricsList, new GridBagConstraints(
+                    0, 1, // x, y
+                    1, 1, // width, height
+                    1.0, 1.0, // weight-x, weight-y
+                    GridBagConstraints.PAGE_START, // anchor
+                    GridBagConstraints.HORIZONTAL, // fill
+                    new Insets(0, 7, 0, 11), // padding
+                    0, 0));                           // padx, pady - ???
+            metricsPanel.add(metricsInfo, new GridBagConstraints(
+                    0, 2, // x, y
+                    1, 1, // width, height
+                    1.0, 1.0, // weight-x, weight-y
+                    GridBagConstraints.PAGE_START, // anchor
+                    GridBagConstraints.HORIZONTAL, // fill
+                    new Insets(0, 29, 0, 11), // padding
+                    0, 0));                           // padx, pady - ???
+            
+            // messagePaneRegistration            
             messagePaneRegistration = new NbiTextPane();
 
             //checkBoxRegistration
@@ -356,17 +478,47 @@ public class NbPostInstallSummaryPanel extends WizardPanel {
                             "" + checkBoxRegistration.isSelected());
                 }
             });
+            separator = new NbiSeparator();
+            
+            registrationPanel = new NbiPanel();
+            
+            registrationPanel.add(separator, new GridBagConstraints(
+                    0, 0, // x, y
+                    1, 1, // width, height
+                    1.0, 1.0, // weight-x, weight-y
+                    GridBagConstraints.CENTER, // anchor
+                    GridBagConstraints.HORIZONTAL, // fill
+                    new Insets(0, 11, 0, 11), // padding
+                    0, 0));                           // padx, pady - ???
+            
+            registrationPanel.add(checkBoxRegistration, new GridBagConstraints(
+                    0, 1, // x, y
+                    1, 1, // width, height
+                    1.0, 1.0, // weight-x, weight-y
+                    GridBagConstraints.PAGE_START, // anchor
+                    GridBagConstraints.HORIZONTAL, // fill
+                    new Insets(11, 11, 0, 11), // padding
+                    0, 0));                           // padx, pady - ???
+            registrationPanel.add(messagePaneRegistration, new GridBagConstraints(
+                    0, 2, // x, y
+                    1, 1, // width, height
+                    1.0, 1.0, // weight-x, weight-y
+                    GridBagConstraints.PAGE_START, // anchor
+                    GridBagConstraints.HORIZONTAL, // fill
+                    new Insets(0, 11, 0, 11), // padding
+                    0, 0));                           // padx, pady - ???
 
             // spacer
             spacer = new NbiPanel();
-            
+
+            messagePaneMySQL = new NbiTextPane();
             // this /////////////////////////////////////////////////////////////////
             add(messagePaneInstall, new GridBagConstraints(
                     0, 0,                             // x, y
                     1, 1,                             // width, height
                     1.0, 0.0,                         // weight-x, weight-y
                     GridBagConstraints.PAGE_START,    // anchor
-                    GridBagConstraints.BOTH,          // fill
+                    GridBagConstraints.HORIZONTAL,          // fill
                     new Insets(11, 11, 0, 11),        // padding
                     0, 0));                           // padx, pady - ???
             add(messagePaneUninstall, new GridBagConstraints(
@@ -377,38 +529,52 @@ public class NbPostInstallSummaryPanel extends WizardPanel {
                     GridBagConstraints.BOTH,          // fill
                     new Insets(11, 11, 0, 11),        // padding
                     0, 0));                           // padx, pady - ???
-            add(messagePaneNetBeans, new GridBagConstraints(
+            add(messagePaneMySQL, new GridBagConstraints(
                     0, 2,                             // x, y
+                    1, 1,                             // width, height
+                    1.0, 0.0,                         // weight-x, weight-y
+                    GridBagConstraints.PAGE_START,    // anchor
+                    GridBagConstraints.HORIZONTAL,          // fill
+                    new Insets(11, 11, 0, 11),        // padding
+                    0, 0));                           // padx, pady - ???
+
+            add(messagePaneNetBeans, new GridBagConstraints(
+                    0, 3,                             // x, y
                     1, 1,                             // width, height
                     1.0, 1.0,                         // weight-x, weight-y
                     GridBagConstraints.PAGE_START,    // anchor
-                    GridBagConstraints.BOTH,          // fill
-                    new Insets(11, 11, 11, 11),       // padding
+                    GridBagConstraints.HORIZONTAL,          // fill
+                    new Insets(11, 11, 0, 11),       // padding
                     0, 0));                           // padx, pady - ???
-            add(messagePaneRegistration, new GridBagConstraints(
-                    0, 3, // x, y
-                    1, 1, // width, height
-                    1.0, 1.0, // weight-x, weight-y
-                    GridBagConstraints.PAGE_START, // anchor
-                    GridBagConstraints.HORIZONTAL, // fill
-                    new Insets(11, 11, 11, 11), // padding
-                    0, 0));                           // padx, pady - ???
-            add(checkBoxRegistration, new GridBagConstraints(
-                    0, 4, // x, y
-                    1, 1, // width, height
-                    1.0, 1.0, // weight-x, weight-y
-                    GridBagConstraints.PAGE_START, // anchor
-                    GridBagConstraints.HORIZONTAL, // fill
-                    new Insets(0, 11, 11, 11), // padding
-                    0, 0));                           // padx, pady - ???
+            
+            add(metricsPanel, new GridBagConstraints(
+                    0, 4,                             // x, y
+                    1, 1,                             // width, height
+                    1.0, 1.0,                         // weight-x, weight-y
+                    GridBagConstraints.PAGE_START,    // anchor
+                    GridBagConstraints.HORIZONTAL,          // fill
+                    new Insets(11, 0, 0, 0),       // padding
+                    0, 0));              
+            
+            
+            add(registrationPanel, new GridBagConstraints(
+                    0, 5,                             // x, y
+                    1, 1,                             // width, height
+                    1.0, 1.0,                         // weight-x, weight-y
+                    GridBagConstraints.PAGE_START,    // anchor
+                    GridBagConstraints.HORIZONTAL,          // fill
+                    new Insets(11, 0, 0, 0),       // padding
+                    0, 0));  
+            
             add(spacer, new GridBagConstraints(
-                    0, 5, // x, y
+                    0, 6, // x, y
                     1, 1, // width, height
                     1.0, 10.0, // weight-x, weight-y
                     GridBagConstraints.CENTER, // anchor
                     GridBagConstraints.BOTH, // fill
-                    new Insets(0, 11, 0, 11), // padding
+                    new Insets(0, 0, 0, 0), // padding
                     0, 0));                           // padx, pady - ???
+            
             if (container instanceof SwingFrameContainer) {
                 final SwingFrameContainer sfc = (SwingFrameContainer) container;
                 sfc.addWindowListener(new WindowAdapter() {
@@ -512,6 +678,9 @@ public class NbPostInstallSummaryPanel extends WizardPanel {
     public static final String DEFAULT_MESSAGE_NETBEANS_CONTENT_TYPE = 
             ResourceUtils.getString(NbPostInstallSummaryPanel.class,
             "NPoISP.message.netbeans.content.type"); // NOI18N
+    public static final String DEFAULT_MESSAGE_MYSQL_CONTENT_TYPE =
+            ResourceUtils.getString(NbPostInstallSummaryPanel.class,
+            "NPoISP.message.mysql.content.type"); // NOI18N
     public static final String DEFAULT_MESSAGE_REGISTRATION_TEXT =
             ResourceUtils.getString(NbPostInstallSummaryPanel.class,
             "NPoISP.message.registration.text"); // NOI18N
@@ -536,8 +705,31 @@ public class NbPostInstallSummaryPanel extends WizardPanel {
     public static final String DEFAULT_MESSAGE_REGISTRATION_CONTENT_TYPE =
             ResourceUtils.getString(NbPostInstallSummaryPanel.class,
             "NPoISP.message.registration.content.type");//NOI18N    
+    public static final String DEFAULT_MESSAGE_METRICS_TEXT_CONTENT_TYPE =
+            ResourceUtils.getString(NbPostInstallSummaryPanel.class,
+            "NPoISP.message.metrics.text.content.type");//NOI18N    
+    public static final String DEFAULT_MESSAGE_METRICS_LIST_CONTENT_TYPE =
+            ResourceUtils.getString(NbPostInstallSummaryPanel.class,
+            "NPoISP.message.metrics.list.content.type");//NOI18N    
+    public static final String DEFAULT_MESSAGE_METRICS_TEXT =
+            ResourceUtils.getString(NbPostInstallSummaryPanel.class,
+            "NPoISP.message.metrics.text");//NOI18N    
+    public static final String DEFAULT_MESSAGE_METRICS_LIST =
+            ResourceUtils.getString(NbPostInstallSummaryPanel.class,
+            "NPoISP.message.metrics.list");//NOI18N    
+    public static final String DEFAULT_MESSAGE_METRICS_CHECKBOX =
+            ResourceUtils.getString(NbPostInstallSummaryPanel.class,
+            "NPoISP.message.metrics.checkbox");//NOI18N    
     public static final String ALLOW_SERVICETAG_REGISTRATION_PROPERTY =
             "servicetag.allow.register";
+    public static final String ENABLE_NETBEANS_METRICS_PROPERTY =
+            "enable.netbeans.metrics";
+    public static final String DEFAULT_MYSQL_MESSAGE_WINDOWS = 
+            ResourceUtils.getString(NbPostInstallSummaryPanel.class,            
+	    "NPoISP.message.using.mysql.windows");
+    public static final String DEFAULT_MYSQL_MESSAGE_UNIX = 
+            ResourceUtils.getString(NbPostInstallSummaryPanel.class,
+            "NPoISP.message.using.mysql.unix");
 
     public static final String DEFAULT_TITLE = ResourceUtils.getString(
             NbPostInstallSummaryPanel.class,

@@ -53,6 +53,7 @@ import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.netbeans.modules.compapp.projects.jbi.JbiProject;
+import org.netbeans.modules.compapp.projects.jbi.jeese.actions.AppVerifierAction;
 import org.netbeans.modules.compapp.projects.jbi.jeese.actions.DeleteJavaEEModuleAction;
 import org.netbeans.modules.compapp.projects.jbi.jeese.actions.JavaEEModulePropertiesAction;
 import org.netbeans.modules.compapp.projects.jbi.jeese.actions.ServerResourcesAction;
@@ -109,7 +110,8 @@ public class JavaEEModuleNode extends AbstractNode {
             null,
             SystemAction.get( JavaEEModulePropertiesAction.class),
             null,
-            SystemAction.get(ServerResourcesAction.class)
+            SystemAction.get(AppVerifierAction.class),
+            //SystemAction.get(ServerResourcesAction.class)
         };
     }
     

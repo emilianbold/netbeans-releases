@@ -70,6 +70,7 @@ public class ProxyFileManager implements JavaFileManager {
     private final JavaFileManager bootPath;
     private final JavaFileManager classPath;
     private final JavaFileManager sourcePath;
+    private final MemoryFileManager memoryFileManager;
     private final JavaFileManager outputhPath;       
     
     private JavaFileObject lastInfered;
@@ -79,15 +80,23 @@ public class ProxyFileManager implements JavaFileManager {
     
     /** Creates a new instance of ProxyFileManager */
     public ProxyFileManager(JavaFileManager bootPath, JavaFileManager classPath, JavaFileManager sourcePath, JavaFileManager outputhPath) {
+        this (bootPath, classPath, sourcePath, outputhPath, null);
+    }
+    
+    /** Creates a new instance of ProxyFileManager */
+    public ProxyFileManager(JavaFileManager bootPath, JavaFileManager classPath, JavaFileManager sourcePath, JavaFileManager outputhPath,
+            final MemoryFileManager memoryFileManager) {
         assert bootPath != null;
         assert classPath != null;
+        assert memoryFileManager == null || sourcePath != null;
         this.bootPath = bootPath;
         this.classPath = classPath;
         this.sourcePath = sourcePath;
+        this.memoryFileManager = memoryFileManager;
         this.outputhPath = outputhPath;
     }
     
-    private JavaFileManager[] getFileManager (Location location) {
+    private JavaFileManager[] getFileManager (final Location location) {
         if (location == StandardLocation.CLASS_PATH) {            
             return this.outputhPath == null ? 
                 new JavaFileManager[] {this.classPath} :
@@ -97,28 +106,52 @@ public class ProxyFileManager implements JavaFileManager {
             return new JavaFileManager[] {this.bootPath};
         }
         else if (location == StandardLocation.SOURCE_PATH && this.sourcePath != null) {
-            return new JavaFileManager[] {this.sourcePath};
+            if (this.memoryFileManager != null) {
+                return new JavaFileManager[] {
+                    this.sourcePath,
+                    this.memoryFileManager
+                };
+            }
+            else {
+                return new JavaFileManager[] {this.sourcePath};
+            }                        
         }
         else if (location == StandardLocation.CLASS_OUTPUT && this.outputhPath != null) {
             return new JavaFileManager[] {this.outputhPath};
         }
         else if (location == ALL) {
-            return this.outputhPath == null ?
-                new JavaFileManager[] {
-                    this.sourcePath,
-                    this.bootPath,
-                    this.classPath
-                }:
-                new JavaFileManager[] {
-                    this.sourcePath,
-                    this.bootPath,
-                    this.classPath,
-                    this.outputhPath
-                };
+            if (this.memoryFileManager != null) {
+                return this.outputhPath == null ?
+                    new JavaFileManager[] {
+                        this.sourcePath,
+                        this.memoryFileManager,
+                        this.bootPath,
+                        this.classPath
+                    }:
+                    new JavaFileManager[] {
+                        this.sourcePath,
+                        this.memoryFileManager,
+                        this.bootPath,
+                        this.classPath,
+                        this.outputhPath
+                    };
+            }
+            else {
+                return this.outputhPath == null ?
+                    new JavaFileManager[] {
+                        this.sourcePath,
+                        this.bootPath,
+                        this.classPath
+                    }:
+                    new JavaFileManager[] {
+                        this.sourcePath,
+                        this.bootPath,
+                        this.classPath,
+                        this.outputhPath
+                    };
+            }
         }
-        else {
-            return new JavaFileManager[0];
-        }
+        return new JavaFileManager[0];        
     }   
     
     private JavaFileManager[] getAllFileManagers () {
@@ -198,6 +231,12 @@ public class ProxyFileManager implements JavaFileManager {
     }
     
     public boolean handleOption (String current, Iterator<String> remains) {
+        for (JavaFileManager m : getFileManager(ALL)) {
+            if (m.handleOption(current, remains)) {
+                return true;
+            }
+        }
+        
         return false;
     }
 
@@ -240,18 +279,14 @@ public class ProxyFileManager implements JavaFileManager {
         }
         String result;
         //If instanceof FileObject.Base no need to delegate it
-        if (javaFileObject instanceof FileObjects.Base) {
-            final FileObjects.Base base = (FileObjects.Base) javaFileObject;
-            final StringBuilder sb = new StringBuilder ();
-            sb.append (base.getPackage());
-            if (sb.length()>0) {
-                sb.append('.'); //NOI18N
+        if (javaFileObject instanceof FileObjects.InferableJavaFileObject) {
+            final FileObjects.InferableJavaFileObject ifo = (FileObjects.InferableJavaFileObject) javaFileObject;
+            result = ifo.inferBinaryName();
+            if (result != null) {
+                this.lastInfered = javaFileObject;            
+                this.lastInferedResult = result;
+                return result;
             }
-            sb.append(base.getNameWithoutExtension());
-            result = sb.toString();
-            this.lastInfered = javaFileObject;
-            this.lastInferedResult = result;
-            return result;
         }
         //Ask delegates to infer the binary name
         JavaFileManager[] fms = getFileManager (location);

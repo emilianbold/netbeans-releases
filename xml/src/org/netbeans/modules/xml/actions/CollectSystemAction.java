@@ -46,6 +46,7 @@ import java.util.*;
 
 import javax.swing.JMenuItem;
 
+import org.netbeans.modules.xml.lib.Util;
 import org.openide.awt.JInlineMenu;
 import org.openide.windows.TopComponent.Registry;
 import org.openide.windows.WindowManager;

@@ -504,14 +504,14 @@ public class CCFormatSupport extends ExtFormatSupport {
      *  the given token.
      */
     public TokenItem findStatementStart(TokenItem token) {
-        TokenItem t = findStatementStart(token, true);
+        TokenItem t = findStatementStart(token, false);
         // preprocessor tokens are not important (bug#22570)
         while (t != null && isPreprocessorLine(t)) {
             TokenItem current = t.getPrevious();
             if (current == null) {
                 return null;
             }
-            t = findStatementStart(current, true);
+            t = findStatementStart(current, false);
         }
         return t;
     }
@@ -636,7 +636,14 @@ public class CCFormatSupport extends ExtFormatSupport {
                 case CCTokenContext.ELSE_ID:
                     // Find the corresponding 'if'
                     TokenItem ifss = findIf(t);
-                    return (ifss != null) ? findStatementStart(ifss, outermost) : t;
+                    if (ifss != null) {
+                        if (!outermost) {
+                            return ifss;
+                        } else {
+                            return findStatementStart(ifss, outermost);
+                        }
+                    }
+                    return t;
 
                 case CCTokenContext.DO_ID:
                 case CCTokenContext.FOR_ID:
@@ -696,6 +703,14 @@ public class CCFormatSupport extends ExtFormatSupport {
         return i;
     }
 
+    private int getRightIndentSwitch(){
+        int i = getShiftWidth();
+        if (isHalfIndentNewlineBeforeBrace()){
+            return i/2;
+        }
+        return i;
+    }
+
     private int getRightIndentDeclaration(){
         int i = getShiftWidth();
         if (isHalfIndentNewlineBeforeBraceDeclaration()){
@@ -732,8 +747,17 @@ public class CCFormatSupport extends ExtFormatSupport {
                             case CCTokenContext.IF_ID:
                             case CCTokenContext.WHILE_ID:
                             case CCTokenContext.ELSE_ID:
+                            case CCTokenContext.TRY_ID:
+                            case CCTokenContext.ASM_ID:
+                            case CCTokenContext.CATCH_ID:
                                 indent = getTokenIndent(stmt);
                                 if (isHalfIndentNewlineBeforeBrace()){
+                                    indent += getShiftWidth()/2;
+                                }
+                                break;
+                            case CCTokenContext.SWITCH_ID:
+                                indent = getTokenIndent(stmt);
+                                if (isHalfIndentNewlineBeforeBraceSwitch()){
                                     indent += getShiftWidth()/2;
                                 }
                                 break;
@@ -791,8 +815,12 @@ public class CCFormatSupport extends ExtFormatSupport {
                             case CCTokenContext.TRY_ID:
                             case CCTokenContext.ASM_ID:
                             case CCTokenContext.CATCH_ID:
-                            case CCTokenContext.SWITCH_ID:
                                 if (isHalfIndentNewlineBeforeBrace()){
+                                    indent += getShiftWidth()/2;
+                                }
+                                break;
+                            case CCTokenContext.SWITCH_ID:
+                                if (isHalfIndentNewlineBeforeBraceSwitch()){
                                     indent += getShiftWidth()/2;
                                 }
                                 break;
@@ -809,7 +837,7 @@ public class CCFormatSupport extends ExtFormatSupport {
                         indent = getTokenIndent(swss);
                         if (indentCasesFromSwitch()) {
                             indent += getShiftWidth();
-                        } else if (isHalfIndentNewlineBeforeBrace()) {
+                        } else if (isHalfIndentNewlineBeforeBraceSwitch()) {
                             indent += getShiftWidth()/2;
                         }
                     }
@@ -905,7 +933,7 @@ public class CCFormatSupport extends ExtFormatSupport {
                                 if (id == CCTokenContext.QUESTION_ID) {
                                     indent = getTokenIndent(ttt) + getShiftWidth();
                                 } else if (id == CCTokenContext.CASE_ID || id == CCTokenContext.DEFAULT_ID){
-                                    indent = getTokenIndent(ttt) + getRightIndent();
+                                    indent = getTokenIndent(ttt) + getRightIndentSwitch();
                                 } else {
                                     indent = getTokenIndent(t);// + getShiftWidth();
                                 }
@@ -938,6 +966,11 @@ public class CCFormatSupport extends ExtFormatSupport {
                                     // Indent one level
                                     indent = getTokenIndent(rpmt) + getRightIndent();
                                     break;
+                                case CCTokenContext.IDENTIFIER_ID:
+                                    if (token != null && token.getTokenID().getNumericID() == CCTokenContext.IDENTIFIER_ID) {
+                                        indent = getTokenIndent(t);
+                                    }
+                                    break;
                                 }
                             }
                         }
@@ -946,13 +979,21 @@ public class CCFormatSupport extends ExtFormatSupport {
                         }
                         break;
 
+                    case CCTokenContext.IDENTIFIER_ID:
+                        if (token != null && token.getTokenID().getNumericID() == CCTokenContext.IDENTIFIER_ID) {
+                            indent = getTokenIndent(t);
+                            break;
+                        }
+                        indent = computeStatementIndent(t);
+                        break;
+                        
                     case CCTokenContext.COMMA_ID:
                         if (isEnumComma(t)) {
                             indent = getTokenIndent(t);
                             break;
                         }
-                        // else continue to default
-                        //nobreak
+                        indent = computeStatementIndent(t);
+                        break;
                     default:
                         indent = computeStatementIndent(t);
                         break;
@@ -1127,7 +1168,7 @@ public class CCFormatSupport extends ExtFormatSupport {
         return true;
     }
     
-    public FormatTokenPosition indentLine(FormatTokenPosition pos) {
+    public FormatTokenPosition indentLine(FormatTokenPosition pos, boolean ignoreInComment) {
         int indent = 0; // Desired indent
 
         // Get the first non-whitespace position on the line
@@ -1139,44 +1180,52 @@ public class CCFormatSupport extends ExtFormatSupport {
                     return pos;
                 }
             } else if (isComment(firstNWS)) { // comment is first on the line
-                if (isMultiLineComment(firstNWS) && firstNWS.getOffset() != 0) {
-                    
-                    // Indent the inner lines of the multi-line comment by one
-                    indent = getLineIndent(getPosition(firstNWS.getToken(), 0), true) + 1;
+                if (ignoreInComment) {
+                    return pos;
+                } else {
+                    if (isMultiLineComment(firstNWS) && firstNWS.getOffset() != 0) {
 
-                    // If the line is inside multi-line comment and doesn't contain '*'
-                    if (!isIndentOnly()) {
-                        if (getChar(firstNWS) != '*') {
-                            if (isCCDocComment(firstNWS.getToken())) {
-                                if (getFormatLeadingStarInComment()) {
-                                    insertString(firstNWS, "* "); // NOI18N
-                                }
-                            } else {
-                                // For non-java-doc not because it can be commented code
-                                indent = getLineIndent(pos, true);
-                            }
-                        }
-                    } else {
-                        if (getChar(firstNWS) != '*') { // e.g. not for '*/'
-                            if (isCCDocComment(firstNWS.getToken())) {
-                                if (getFormatLeadingStarInComment()) {
-                                    insertString(firstNWS, "* "); // NOI18N
-                                    setIndentShift(2);
+                        // Indent the inner lines of the multi-line comment by one
+                        indent = getLineIndent(getPosition(firstNWS.getToken(), 0), true) + 1;
+
+                        // If the line is inside multi-line comment and doesn't contain '*'
+                        if (isIndentOnly()) {
+                            if (getChar(firstNWS) != '*') { // e.g. not for '*/'
+                                if (isCCDocComment(firstNWS.getToken())) {
+                                    if (getFormatLeadingStarInComment()) {
+                                        insertString(firstNWS, "* "); // NOI18N
+                                        setIndentShift(2);
+                                    }
                                 }
                             }
-                        }
-                    }
-                } else if (!isMultiLineComment(firstNWS)) { // line-comment
-                    indent = firstNWS.equals(findLineStart(firstNWS)) ? getLineIndent(firstNWS, true) : findIndent(firstNWS.getToken());
-                } else { // multi-line comment
-                    if (isCCDocComment(firstNWS.getToken())) {
-                        indent = findIndent(firstNWS.getToken());
-                    } else {
-                        // check whether the multiline comment isn't finished on the same line (see issue 12821)
-                        if (firstNWS.getToken().getImage().indexOf('\n') == -1) {
-                            indent = findIndent(firstNWS.getToken());
                         } else {
-                            indent = getLineIndent(firstNWS, true);
+                            if (getChar(firstNWS) != '*') {
+                                if (isCCDocComment(firstNWS.getToken())) {
+                                    if (getFormatLeadingStarInComment()) {
+                                        insertString(firstNWS, "* "); // NOI18N
+                                    }
+                                } else {
+                                    // For non-java-doc not because it can be commented code
+                                    indent = getLineIndent(pos, true);
+                                }
+                            }
+                        }
+                    } else if (!isMultiLineComment(firstNWS)) { // line-comment
+                        indent = firstNWS.equals(findLineStart(firstNWS)) ? getLineIndent(firstNWS, true) : findIndent(firstNWS.getToken());
+                    } else { // multi-line comment
+                        if (isIndentOnly() && firstNWS.getOffset() != 0) {
+                            return pos;
+                        } else {
+                            if (isCCDocComment(firstNWS.getToken())) {
+                                indent = findIndent(firstNWS.getToken());
+                            } else {
+                                // check whether the multiline comment isn't finished on the same line (see issue 12821)
+                                if (firstNWS.getToken().getImage().indexOf('\n') == -1) {
+                                    indent = findIndent(firstNWS.getToken());
+                                } else {
+                                    indent = getLineIndent(firstNWS, true);
+                                }
+                            }
                         }
                     }
                 }
@@ -1385,11 +1434,15 @@ public class CCFormatSupport extends ExtFormatSupport {
             }
             token = itm;
         }
-        if (token != null && tokenEquals(token, CCTokenContext.IDENTIFIER, tokenContextPath)) {
+        if (token != null && 
+            (tokenEquals(token, CCTokenContext.IDENTIFIER, tokenContextPath) ||
+             tokenEquals(token, CCTokenContext.DOT, tokenContextPath))) {
             TokenItem itm = findImportantToken(token, null, true, true);
             if (itm != null && tokenEquals(itm, CCTokenContext.LBRACE, tokenContextPath)) {
                 TokenItem startItem = findStatementStart(itm);
                 if (startItem != null && findToken(startItem, itm, CCTokenContext.ENUM, tokenContextPath, null, false) != null)
+                    return true;
+                if (startItem != null && findToken(startItem, itm, CCTokenContext.EQ, tokenContextPath, null, false) != null)
                     return true;
             }
         }
@@ -1419,6 +1472,14 @@ public class CCFormatSupport extends ExtFormatSupport {
 
     public boolean isHalfIndentNewlineBeforeBrace() {
         return getCodeStyle().getFormatNewlineBeforeBrace() == CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED;
+    }
+
+    public boolean getFormatNewlineBeforeBraceSwitch() {
+        return getCodeStyle().getFormatNewLineBeforeBraceSwitch() != CodeStyle.BracePlacement.SAME_LINE;
+    }
+
+    public boolean isHalfIndentNewlineBeforeBraceSwitch() {
+        return getCodeStyle().getFormatNewLineBeforeBraceSwitch() == CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED;
     }
 
     public boolean getFormatNewlineBeforeBraceDeclaration() {

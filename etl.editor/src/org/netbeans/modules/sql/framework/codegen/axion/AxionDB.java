@@ -25,7 +25,6 @@ import org.netbeans.modules.sql.framework.codegen.SQLOperatorFactory;
 import org.netbeans.modules.sql.framework.codegen.Statements;
 import org.netbeans.modules.sql.framework.codegen.TypeGenerator;
 import org.netbeans.modules.sql.framework.codegen.base.BaseDB;
-import org.netbeans.modules.sql.framework.codegen.base.BaseGeneratorFactory;
 
 
 /**
@@ -46,6 +45,7 @@ public class AxionDB extends BaseDB {
     private AxionPipelineStatements pipelineStatements;
     private boolean columnsAreCaseSensitive = false;
     
+    @Override
     public String getEscapedName(String name) {
         StringBuilder escapedName = new StringBuilder(50);
 
@@ -56,6 +56,7 @@ public class AxionDB extends BaseDB {
         return escapedName.toString();
     }
 
+    @Override
     public String getUnescapedName(String name) {
         if (name.startsWith(START_ESCAPE_CHAR)) {
             name = name.substring(START_ESCAPE_CHAR.length());
@@ -68,18 +69,22 @@ public class AxionDB extends BaseDB {
         return name.toUpperCase();
     }
 
+    @Override
     public Statements createStatements() {
         return new AxionStatements(this);
     }
 
+    @Override
     public AbstractGeneratorFactory createGeneratorFactory() {
-        return new BaseGeneratorFactory(this);
+        return new AxionGeneratorFactory(this);
     }
 
+    @Override
     public TypeGenerator createTypeGenerator() {
         return new AxionTypeGenerator();
     }
 
+    @Override
     protected Map loadTemplates() {
         super.loadTemplates();
 
@@ -94,6 +99,7 @@ public class AxionDB extends BaseDB {
      * 
      * @return SQLOperatorFactory
      */
+    @Override
     public SQLOperatorFactory getOperatorFactory() {
         if (factory == null) {
             factory = new SQLOperatorFactory(AXION_OPERATOR_DEFINITION_FILE, super.getOperatorFactory());
@@ -112,6 +118,7 @@ public class AxionDB extends BaseDB {
         this.columnsAreCaseSensitive = caseSensitive;
     }
 
+    @Override
     public int getDBType(){
         return AXIONDB;
     }

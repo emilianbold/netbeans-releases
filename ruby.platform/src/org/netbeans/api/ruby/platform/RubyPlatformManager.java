@@ -38,6 +38,7 @@
  */
 package org.netbeans.api.ruby.platform;
 
+import java.awt.EventQueue;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.beans.VetoableChangeSupport;
@@ -47,10 +48,12 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.StringReader;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -59,6 +62,7 @@ import java.util.logging.Logger;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.ruby.platform.RubyPlatform.Info;
 import org.netbeans.modules.ruby.platform.RubyExecution;
+import org.netbeans.modules.ruby.platform.RubyPreferences;
 import org.netbeans.modules.ruby.platform.Util;
 import org.netbeans.modules.ruby.platform.execution.ExecutionService;
 import org.netbeans.modules.ruby.spi.project.support.rake.EditableProperties;
@@ -66,8 +70,10 @@ import org.netbeans.modules.ruby.spi.project.support.rake.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
+import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.io.ReaderInputStream;
 
@@ -78,7 +84,7 @@ public final class RubyPlatformManager {
     
     public static final boolean PREINDEXING = Boolean.getBoolean("gsf.preindexing");
     
-    private static final String[] RUBY_EXECUTABLE_NAMES = { "ruby", "jruby" }; // NOI18N
+    private static final String[] RUBY_EXECUTABLE_NAMES = { "ruby", "jruby", "rubinius" }; // NOI18N
     
     /** For unit tests. */
     static Properties TEST_RUBY_PROPS;
@@ -90,11 +96,12 @@ public final class RubyPlatformManager {
     private static final Logger LOGGER = Logger.getLogger(RubyPlatformManager.class.getName());
     
     private static Set<RubyPlatform> platforms;
+    
     /**
      * Change support for notifying of platform changes, using vetoable for 
      * making it possible to prevent removing of a used platform.
      */
-    private static final VetoableChangeSupport vetoableChangeSupport = new VetoableChangeSupport(RubyPlatformManager.class);
+    private static final VetoableChangeSupport VETOABLE_CHANGE_SUPPORT = new VetoableChangeSupport(RubyPlatformManager.class);
 
     private RubyPlatformManager() {
         // static methods only
@@ -116,7 +123,11 @@ public final class RubyPlatformManager {
         return new HashSet<RubyPlatform>(getPlatformsInternal());
     }
 
-    public static void performPlatformDetection() {
+    /**
+     * Try to detect Ruby platforms available on the system. Might be slow. Do
+     * not call from thread like EDT.
+     */
+    public synchronized static void performPlatformDetection() {
         if (PREINDEXING) {
             return;
         }
@@ -142,13 +153,13 @@ public final class RubyPlatformManager {
                 LOGGER.log(Level.WARNING, e.getLocalizedMessage(), e);
             }
         }
-        Util.setFirstPlatformTouch(false);
+        RubyPreferences.setFirstPlatformTouch(false);
         
     }
 
     private static void firePlatformsChanged() {
         try {
-            vetoableChangeSupport.fireVetoableChange("platforms", null, null); //NOI18N
+            VETOABLE_CHANGE_SUPPORT.fireVetoableChange("platforms", null, null); //NOI18N
         } catch (PropertyVetoException ex) {
             // do nothing, vetoing not implemented yet
         }
@@ -210,6 +221,7 @@ public final class RubyPlatformManager {
                 p = Collections.emptyMap();
             }
             boolean foundDefault = false;
+            final List<String> skipped = new ArrayList<String>();
             for (Map.Entry<String, String> entry : p.entrySet()) {
                 String key = entry.getKey();
                 if (key.startsWith(PLATFORM_PREFIX) && key.endsWith(PLATFORM_INTEPRETER)) {
@@ -217,9 +229,22 @@ public final class RubyPlatformManager {
                             key.length() - PLATFORM_INTEPRETER.length());
                     String idDot = id + '.';
                     Properties props = new Properties();
+                    String libDir = p.get(PLATFORM_PREFIX + idDot + Info.RUBY_LIB_DIR);
                     String kind = p.get(PLATFORM_PREFIX + idDot + Info.RUBY_KIND);
+                    String interpreterPath = entry.getValue();
                     if (kind == null) { // not supporting old 6.0 platform, skip
+                        skipped.add(interpreterPath);
                         continue;
+                    }
+                    if (libDir != null) { // NOI18N
+                        props.put(Info.RUBY_LIB_DIR, libDir);
+                    } else {
+                        // Rubinius libDir is not detected by script
+                        if (!"Rubinius".equals(kind)) { // NOI18N
+                            LOGGER.warning("no libDir for platform: " + interpreterPath); // NOI18N
+                            skipped.add(interpreterPath);
+                            continue;
+                        }
                     }
                     props.put(Info.RUBY_KIND, kind);
                     props.put(Info.RUBY_VERSION, p.get(PLATFORM_PREFIX + idDot + Info.RUBY_VERSION));
@@ -240,7 +265,6 @@ public final class RubyPlatformManager {
                         props.put(Info.GEM_PATH, p.get(PLATFORM_PREFIX + idDot + Info.GEM_PATH));
                         props.put(Info.GEM_VERSION, p.get(PLATFORM_PREFIX + idDot + Info.GEM_VERSION));
                     }
-                    String interpreterPath = entry.getValue();
                     Info info = new Info(props);
                     platforms.add(new RubyPlatform(id, interpreterPath, info));
                     foundDefault |= id.equals(PLATFORM_ID_DEFAULT);
@@ -252,6 +276,17 @@ public final class RubyPlatformManager {
                     platforms.add(new RubyPlatform(PLATFORM_ID_DEFAULT, loc, Info.forDefaultPlatform()));
                 }
             }
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    for (String interpreter : skipped) {
+                        try {
+                            addPlatform(new File(interpreter));
+                        } catch (IOException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+                }
+            });
             LOGGER.fine("RubyPlatform initial list: " + platforms);
         }
 
@@ -294,11 +329,28 @@ public final class RubyPlatformManager {
         return null;
     }
     
-    public static synchronized RubyPlatform getPlatformByPath(String path) {
+    static synchronized RubyPlatform getPlatformByPath(String path) {
         return getPlatformByFile(new File(path));
     }
 
+    /**
+     * Adds platform to the current platform list. Checks whether such platform
+     * is already present.
+     * 
+     * @param interpreter interpreter to be added
+     * @return <tt>null</tt>, if the given <tt>interpreter</tt> is not valid
+     *         Ruby interpreter. If the platform is already present, returns it.
+     *         Otherwise new platform instance is returned.
+     * @throws java.io.IOException
+     */
     public static RubyPlatform addPlatform(final File interpreter) throws IOException {
+        if (!interpreter.isFile()) {
+            return null;
+        }
+        RubyPlatform plaf = getPlatformByFile(interpreter);
+        if (plaf != null) {
+            return plaf;
+        }
         final Info info = computeInfo(interpreter);
         if (info == null) {
             return null;
@@ -324,7 +376,7 @@ public final class RubyPlatformManager {
         } catch (MutexException e) {
             throw (IOException) e.getException();
         }
-        RubyPlatform plaf = new RubyPlatform(id, interpreter.getAbsolutePath(), info);
+        plaf = new RubyPlatform(id, interpreter.getAbsolutePath(), info);
         synchronized (RubyPlatform.class) {
             getPlatformsInternal().add(plaf);
         }
@@ -381,6 +433,7 @@ public final class RubyPlatformManager {
         props.remove(PLATFORM_PREFIX + idDot + Info.RUBY_RELEASE_DATE);
 //                    props.remove(PLATFORM_PREFIX + idDot + Info.RUBY_EXECUTABLE);
         props.remove(PLATFORM_PREFIX + idDot + Info.RUBY_PLATFORM);
+        props.remove(PLATFORM_PREFIX + idDot + Info.RUBY_LIB_DIR);
         props.remove(PLATFORM_PREFIX + idDot + Info.GEM_HOME);
         props.remove(PLATFORM_PREFIX + idDot + Info.GEM_PATH);
         props.remove(PLATFORM_PREFIX + idDot + Info.GEM_VERSION);
@@ -405,6 +458,9 @@ public final class RubyPlatformManager {
         props.setProperty(PLATFORM_PREFIX + idDot + Info.RUBY_RELEASE_DATE, info.getReleaseDate());
 //                    props.setProperty(PLATFORM_PREFIX + idDot + Info.RUBY_EXECUTABLE, info.getExecutable());
         props.setProperty(PLATFORM_PREFIX + idDot + Info.RUBY_PLATFORM, info.getPlatform());
+        if (!info.isRubinius()) {
+            props.setProperty(PLATFORM_PREFIX + idDot + Info.RUBY_LIB_DIR, info.getLibDir());
+        }
         if (info.getGemHome() != null) {
             props.setProperty(PLATFORM_PREFIX + idDot + Info.GEM_HOME, info.getGemHome());
             props.setProperty(PLATFORM_PREFIX + idDot + Info.GEM_PATH, info.getGemPath());
@@ -424,8 +480,17 @@ public final class RubyPlatformManager {
         return getPlatformsInternal().iterator();
     }
 
-    private static Info computeInfo(final File interpreter) {
-        if (TEST_RUBY_PROPS != null) { // tests
+    /**
+     * Might take longer time when detecting e.g. JRuby platform. So do not run
+     * from within EDT and similar threads.
+     *
+     * @param interpreter representing Ruby platform
+     * @return information about the platform or <tt>null</tt> if
+     *         <tt>interpreter</tt> is not recognized as platform
+     */
+    static Info computeInfo(final File interpreter) {
+        assert !EventQueue.isDispatchThread() : "computeInfo should not be run from EDT";
+        if (TEST_RUBY_PROPS != null && !RubyPlatformManager.getDefaultPlatform().getInterpreterFile().equals(interpreter)) { // tests
             return new Info(TEST_RUBY_PROPS);
         }
         Info info = null;
@@ -442,10 +507,34 @@ public final class RubyPlatformManager {
             pb.environment().remove("JRUBY_HOME"); // NOI18N
             pb.environment().put("JAVA_HOME", RubyExecution.getJavaHome()); // NOI18N
             ExecutionService.logProcess(pb);
-            Process proc = pb.start();
+            final Process proc = pb.start();
             // FIXME: set timeout
-            proc.waitFor();
-            if (proc.exitValue() == 0) {
+            Thread gatherer = new Thread(new Runnable() {
+                public void run() {
+                    try {
+                        proc.waitFor();
+                    } catch (InterruptedException e) {
+                        LOGGER.log(Level.SEVERE, e.getLocalizedMessage(), e);
+                    }
+                }
+            }, "Ruby Platform Gatherer"); // NOI18N
+            gatherer.start();
+            try {
+                gatherer.join(30000); // 30s timeout for platform_info.rb
+            } catch (InterruptedException e) {
+                LOGGER.log(Level.SEVERE, e.getLocalizedMessage(), e);
+                return null;
+            }
+            int exitValue;
+            try {
+                exitValue = proc.exitValue();
+            } catch (IllegalThreadStateException e) {
+                // process is still running
+                LOGGER.warning("Detection of platform timeouted");
+                proc.destroy();
+                return null;
+            }
+            if (exitValue == 0) {
                 Properties props = new Properties();
                 if (LOGGER.isLoggable(Level.FINEST)) {
                     String stdout = Util.readAsString(proc.getInputStream());
@@ -467,18 +556,16 @@ public final class RubyPlatformManager {
             }
         } catch (IOException e) {
             LOGGER.log(Level.INFO, "Not a ruby platform: " + interpreter.getAbsolutePath()); // NOI18N
-        } catch (InterruptedException e) {
-            LOGGER.log(Level.SEVERE, e.getLocalizedMessage(), e);
         }
         return info;
     }
     
     public static void addVetoableChangeListener(VetoableChangeListener listener) {
-        vetoableChangeSupport.addVetoableChangeListener(listener);
+        VETOABLE_CHANGE_SUPPORT.addVetoableChangeListener(listener);
     }
     
     public static void removeVetoableChangeListener(VetoableChangeListener listener) {
-        vetoableChangeSupport.removeVetoableChangeListener(listener);
+        VETOABLE_CHANGE_SUPPORT.removeVetoableChangeListener(listener);
     }
 
 }

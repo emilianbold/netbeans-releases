@@ -22,18 +22,22 @@ package org.netbeans.modules.iep.model.impl;
 import javax.xml.namespace.QName;
 import org.netbeans.modules.iep.model.Component;
 import org.netbeans.modules.iep.model.Documentation;
+import org.netbeans.modules.iep.model.ExternalTablePollingStreamOperatorComponent;
 import org.netbeans.modules.iep.model.IEPComponent;
 import org.netbeans.modules.iep.model.IEPComponentFactory;
 import org.netbeans.modules.iep.model.IEPModel;
 import org.netbeans.modules.iep.model.Import;
 import org.netbeans.modules.iep.model.InputOperatorComponent;
+import org.netbeans.modules.iep.model.InvokeStreamOperatorComponent;
 import org.netbeans.modules.iep.model.LinkComponent;
 import org.netbeans.modules.iep.model.OperatorComponent;
 import org.netbeans.modules.iep.model.OutputOperatorComponent;
 import org.netbeans.modules.iep.model.Property;
+import org.netbeans.modules.iep.model.ReplayStreamOperatorComponent;
 import org.netbeans.modules.iep.model.SchemaAttribute;
 import org.netbeans.modules.iep.model.SchemaComponent;
 
+import org.netbeans.modules.iep.model.TableInputOperatorComponent;
 import org.w3c.dom.Element;
 
 /**
@@ -42,48 +46,64 @@ import org.w3c.dom.Element;
  */
 public class IEPComponentFactoryImpl implements IEPComponentFactory {
 
-	private IEPModel model;
+    private IEPModel model;
 
-	/** Creates a new instance of IEPComponentFactoryImpl */
-	public IEPComponentFactoryImpl(IEPModel model) {
-		this.model = model;
-	}
+    /** Creates a new instance of IEPComponentFactoryImpl */
+    public IEPComponentFactoryImpl(IEPModel model) {
+        this.model = model;
+    }
 
-	public IEPComponent create(Element element, IEPComponent context) {
+    public IEPComponent create(Element element, IEPComponent context) {
 
-		return context.createChild(element);
-	}
+        return context.createChild(element);
+    }
 
-	public IEPComponent create(IEPComponent parent, QName qName) {
-		String q = qName.getPrefix();
-		if (q == null || q.length() == 0) {
-			q = qName.getLocalPart();
-		} else {
-			q = q + ":" + qName.getLocalPart();
-		}
-		Element element = model.getDocument().createElementNS(
-				qName.getNamespaceURI(), q);
-		return parent.createChild(element);
-	}
+    public IEPComponent create(IEPComponent parent, QName qName) {
+        String q = qName.getPrefix();
+        if (q == null || q.length() == 0) {
+            q = qName.getLocalPart();
+        } else {
+            q = q + ":" + qName.getLocalPart();
+        }
+        Element element = model.getDocument().createElementNS(
+                qName.getNamespaceURI(), q);
+        return parent.createChild(element);
+    }
 
     public Component createComponent(IEPModel model) {
         return new ComponentImpl(model);
     }
 
     public OperatorComponent createOperator(IEPModel model) {
-    	return new OperatorComponentImpl(model);
+        return new OperatorComponentImpl(model);
     }
     
     public InputOperatorComponent createInputOperator(IEPModel model) {
-    	return new InputOperatorComponentImpl(model);
+        return new InputOperatorComponentImpl(model);
     }
     
     public OutputOperatorComponent createOutputOperator(IEPModel model) {
-    	return new OutputOperatorComponentImpl(model);
+        return new OutputOperatorComponentImpl(model);
+    }
+
+    public TableInputOperatorComponent createTableInputOperator(IEPModel model) {
+        return new TableInputOperatorComponentImpl(model);
+    }
+    
+    public InvokeStreamOperatorComponent createInvokeStreamOperator(IEPModel model) {
+        return new InvokeStreamOperatorComponentImpl(model);
+    }
+    
+    public ExternalTablePollingStreamOperatorComponent createExternalTablePollingStreamOperator(IEPModel model) {
+        return new ExternalTablePollingStreamOperatorComponentImpl(model);
+    }
+    
+    public ReplayStreamOperatorComponent createReplayStreamOperatorComponent(IEPModel model) {
+        return new ReplayStreamOperatorComponentImpl(model);
     }
     
     public LinkComponent createLink(IEPModel model) {
-    	return new LinkComponentImpl(model);
+        return new LinkComponentImpl(model);
     }
     
     public Property createProperty(IEPModel model) {
@@ -106,5 +126,5 @@ public class IEPComponentFactoryImpl implements IEPComponentFactory {
     public Documentation createDocumentation(IEPModel model) {
             return new DocumentationImpl(model);
     }
-	
+    
 }

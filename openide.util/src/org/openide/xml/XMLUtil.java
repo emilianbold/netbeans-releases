@@ -49,6 +49,7 @@ import java.util.HashSet;
 import java.util.Set;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.FactoryConfigurationError;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParserFactory;
 import javax.xml.transform.OutputKeys;
@@ -59,6 +60,8 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
+import javax.xml.validation.Schema;
+import javax.xml.validation.Validator;
 import org.openide.util.Lookup;
 import org.w3c.dom.CDATASection;
 import org.w3c.dom.DOMException;
@@ -73,6 +76,7 @@ import org.xml.sax.EntityResolver;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 import org.xml.sax.XMLReader;
 
 /**
@@ -300,7 +304,7 @@ public final class XMLUtil extends Object {
      * @throws SAXException is thrown if a parser error occurs
      * @throws FactoryConfigurationError Application developers should never need to directly catch errors of this type.
      *
-     * @return document representing given input, or null if a parsing error occurs
+     * @return document representing given input
      */
     public static Document parse(
         InputSource input, boolean validate, boolean namespaceAware, ErrorHandler errorHandler,
@@ -455,7 +459,49 @@ public final class XMLUtil extends Object {
             collectCDATASections(children.item(i), cdataQNames);
         }
     }
-    
+
+    /**
+     * Check whether a DOM tree is valid according to a schema.
+     * Example of usage:
+     * <pre>
+     * Element fragment = ...;
+     * SchemaFactory f = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+     * Schema s = f.newSchema(This.class.getResource("something.xsd"));
+     * try {
+     *     XMLUtil.validate(fragment, s);
+     *     // valid
+     * } catch (SAXException x) {
+     *     // invalid
+     * }
+     * </pre>
+     * @param data a DOM tree
+     * @param schema a parsed schema
+     * @throws SAXException if validation failed
+     * @since org.openide.util 7.17
+     */
+    public static void validate(Element data, Schema schema) throws SAXException {
+        Validator v = schema.newValidator();
+        final SAXException[] error = {null};
+        v.setErrorHandler(new ErrorHandler() {
+            public void warning(SAXParseException x) throws SAXException {}
+            public void error(SAXParseException x) throws SAXException {
+                // Just rethrowing it is bad because it will also print it to stderr.
+                error[0] = x;
+            }
+            public void fatalError(SAXParseException x) throws SAXException {
+                error[0] = x;
+            }
+        });
+        try {
+            v.validate(new DOMSource(data));
+        } catch (IOException x) {
+            assert false : x;
+        }
+        if (error[0] != null) {
+            throw error[0];
+        }
+    }
+
     /**
      * Escape passed string as XML attibute value
      * (<code>&lt;</code>, <code>&amp;</code>, <code>'</code> and <code>"</code>

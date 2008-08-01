@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.websvc.wsitconf.wsdlmodelext;
 
+import org.netbeans.modules.websvc.wsitmodelext.versioning.ConfigVersion;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -68,13 +69,20 @@ import org.netbeans.modules.websvc.jaxwsruntimemodel.JavaWsdlMapper;
 import org.netbeans.modules.websvc.wsitconf.util.UndoManagerHolder;
 import org.netbeans.modules.websvc.wsitconf.WSITEditor;
 import org.netbeans.modules.websvc.wsitconf.api.DesignerListenerProvider;
+import org.netbeans.modules.websvc.wsitconf.ui.security.listmodels.ServiceProviderElement;
 import org.netbeans.modules.websvc.wsitconf.util.AbstractTask;
 import org.netbeans.modules.websvc.wsitconf.util.SourceUtils;
 import org.netbeans.modules.websvc.wsitconf.util.Util;
 import org.netbeans.modules.websvc.wsitmodelext.policy.Policy;
 import org.netbeans.modules.websvc.wsitmodelext.policy.PolicyReference;
+import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.service.STSConfiguration;
+import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.service.ServiceProvider;
 import org.netbeans.modules.xml.retriever.catalog.Utilities;
 import org.netbeans.modules.xml.wsdl.model.Binding;
+import org.netbeans.modules.xml.wsdl.model.BindingFault;
+import org.netbeans.modules.xml.wsdl.model.BindingInput;
+import org.netbeans.modules.xml.wsdl.model.BindingOperation;
+import org.netbeans.modules.xml.wsdl.model.BindingOutput;
 import org.netbeans.modules.xml.wsdl.model.Definitions;
 import org.netbeans.modules.xml.wsdl.model.Import;
 import org.netbeans.modules.xml.wsdl.model.Message;
@@ -698,4 +706,120 @@ public class WSITModelSupport {
         }
         return null;
     }
+
+    static void moveCurrentConfig(Binding b, ConfigVersion currentCfgVersion, ConfigVersion targetCfgVersion,
+                                  Project project) {
+        if (b == null) return;
+        
+        // First store the values
+
+        // Transport
+        boolean mtom = TransportModelHelper.isMtomEnabled(b);
+        boolean tcp = TransportModelHelper.isTCPEnabled(b);
+        boolean fi = TransportModelHelper.isFIEnabled(b);
+        
+        // RM
+        RMModelHelper currentRMH = RMModelHelper.getInstance(currentCfgVersion);
+        boolean rm = currentRMH.isRMEnabled(b);
+        boolean ordered = currentRMH.isOrderedEnabled(b);
+        boolean flowControl = RMModelHelper.isFlowControl(b);
+        RMSequenceBinding seqBinding = RMSequenceBinding.getValue(currentCfgVersion, b);
+        RMDeliveryAssurance assurance = RMDeliveryAssurance.getValue(currentCfgVersion, b);
+        String bufSize = RMModelHelper.getMaxReceiveBufferSize(b);
+        String inactTimeout = currentRMH.getInactivityTimeout(b);
+
+        // Security
+        String profile = ProfilesModelHelper.getSecurityProfile(b);
+        boolean security = SecurityPolicyModelHelper.isSecurityEnabled(b);
+        boolean serviceDefaultsUsed = ProfilesModelHelper.isServiceDefaultSetupUsed(profile, b, project);
+        
+        // STS
+        boolean sts = ProprietarySecurityPolicyModelHelper.isSTSEnabled(b);
+        List<ServiceProviderElement> sProviderElems = new ArrayList();
+        String issuer = null;
+        String contract = null;
+        String lifetime = null;
+        boolean encKey = false;
+        boolean encToken = false;
+        if (sts) {
+            STSConfiguration stsConfig = ProprietarySecurityPolicyModelHelper.getSTSConfiguration(b);
+            List<ServiceProvider> sProviders = ProprietarySecurityPolicyModelHelper.getSTSServiceProviders(stsConfig);
+            for (ServiceProvider sP : sProviders) {
+                String spCertAlias = ProprietarySecurityPolicyModelHelper.getSPCertAlias(sP);
+                String spKeyType = ProprietarySecurityPolicyModelHelper.getSPKeyType(sP);
+                String spTokenType = ProprietarySecurityPolicyModelHelper.getSPTokenType(sP);
+                String endpoint = sP.getEndpoint();
+                ServiceProviderElement sElem = new ServiceProviderElement(endpoint, spCertAlias, spTokenType, spKeyType);
+                sProviderElems.add(sElem);
+            }
+            issuer = ProprietarySecurityPolicyModelHelper.getSTSIssuer(b);
+            lifetime = ProprietarySecurityPolicyModelHelper.getSTSLifeTime(b);
+            contract = ProprietarySecurityPolicyModelHelper.getSTSContractClass(b);
+            encKey = ProprietarySecurityPolicyModelHelper.getSTSEncryptKey(b);
+            encToken = ProprietarySecurityPolicyModelHelper.getSTSEncryptToken(b);
+        }
+        
+        PolicyModelHelper.removePolicyForElement(b);
+        
+        for (BindingOperation bo : b.getBindingOperations()) {
+            BindingInput bi = bo.getBindingInput();
+            BindingOutput bout = bo.getBindingOutput();
+            PolicyModelHelper.removePolicyForElement(bo);
+            PolicyModelHelper.removePolicyForElement(bi);
+            PolicyModelHelper.removePolicyForElement(bout);
+            for (BindingFault bf : bo.getBindingFaults()) {
+                PolicyModelHelper.removePolicyForElement(bf);
+            }
+        }
+
+        // --------------------
+        
+        PolicyModelHelper.getInstance(targetCfgVersion).createPolicy(b, true);
+        
+        // Then apply them with the new values
+
+        // Transport
+        TransportModelHelper.enableMtom(b, mtom);
+        TransportModelHelper.enableFI(b, fi);
+        TransportModelHelper.enableTCP(b, tcp);
+        
+        // RM
+        if (rm) {
+            RMModelHelper targetRMH = RMModelHelper.getInstance(targetCfgVersion);
+            targetRMH.enableRM(b, true);
+            if (flowControl) targetRMH.enableFlowControl(b, flowControl);
+            if (ordered) targetRMH.enableOrdered(b, ordered);
+            if (bufSize != null) RMModelHelper.setMaxReceiveBufferSize(b, bufSize);
+            if (inactTimeout != null) targetRMH.setInactivityTimeout(b, inactTimeout);
+            if (seqBinding != null) seqBinding.set(targetCfgVersion, b);
+            if (assurance != null) assurance.set(targetCfgVersion, b);
+        }
+        
+        // Security
+        if (security) {
+            ProfilesModelHelper.getInstance(targetCfgVersion).setSecurityProfile(b, profile, null, false);
+            if (serviceDefaultsUsed) {
+                ProfilesModelHelper.setServiceDefaults(profile, b, project);
+            }
+        }
+        
+        // STS 
+        if (sts) {
+            ProprietarySecurityPolicyModelHelper psmh = ProprietarySecurityPolicyModelHelper.getInstance(targetCfgVersion);
+            psmh.enableSTS(b, sts);
+            ProprietarySecurityPolicyModelHelper.setSTSIssuer(b, issuer);
+            ProprietarySecurityPolicyModelHelper.setSTSContractClass(b, contract);
+            ProprietarySecurityPolicyModelHelper.setSTSLifeTime(b, lifetime);
+            ProprietarySecurityPolicyModelHelper.setSTSEncryptKey(b, encKey);
+            ProprietarySecurityPolicyModelHelper.setSTSEncryptToken(b, encToken);
+            STSConfiguration stsConfig = ProprietarySecurityPolicyModelHelper.getSTSConfiguration(b);
+            for (ServiceProviderElement spe : sProviderElems) {
+                ProprietarySecurityPolicyModelHelper.addSTSServiceProvider(stsConfig, spe, targetCfgVersion);
+            }
+        }
+
+        PolicyModelHelper.getInstance(targetCfgVersion).createPolicy(b, true); // this is needed so that the values are not lost
+        
+    }
+    
 }

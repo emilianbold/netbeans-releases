@@ -41,14 +41,14 @@
 
 package org.netbeans.modules.editor.java;
 
-import java.util.Map;
-import org.netbeans.editor.Settings;
-import org.netbeans.editor.SettingsNames;
-import org.netbeans.editor.ext.ExtSettingsNames;
-import org.netbeans.editor.ext.ExtSettingsDefaults;
-import org.netbeans.editor.ext.java.JavaSettingsDefaults;
-import org.netbeans.editor.ext.java.JavaSettingsNames;
-import org.netbeans.modules.java.editor.options.JavaOptions;
+import java.util.Arrays;
+import java.util.List;
+import org.netbeans.editor.Acceptor;
+import org.netbeans.editor.AcceptorFactory;
+import org.netbeans.editor.TokenContext;
+import org.netbeans.editor.ext.java.JavaLayerTokenContext;
+import org.netbeans.editor.ext.java.JavaTokenContext;
+import org.openide.text.IndentEngine;
 
 /**
 * Nb settings for Java.
@@ -57,40 +57,39 @@ import org.netbeans.modules.java.editor.options.JavaOptions;
 * @version 1.00
 */
 
-public class NbJavaSettingsInitializer extends Settings.AbstractInitializer {
+public final class NbJavaSettingsInitializer {
 
-    public static final String NAME = "nb-java-settings-initializer"; // NOI18N
-
-    public NbJavaSettingsInitializer() {
-        super(NAME);
+    public static Acceptor getAbbrevResetAcceptor() {
+        return AcceptorFactory.NON_JAVA_IDENTIFIER;
+    }
+    public static Acceptor getIdentifierAcceptor() {
+        return AcceptorFactory.JAVA_IDENTIFIER;
+    }
+    public static Acceptor getIndentHotCharsAcceptor() {
+        return indentHotCharsAcceptor;
+    }
+    public static List getTokenContextList() {
+        return Arrays.asList(new TokenContext[] {
+            JavaTokenContext.context,
+            JavaLayerTokenContext.context
+        });
+    }
+    public static IndentEngine getIndentEngine() {
+        return new JavaIndentEngine();
+    }
+    
+    private NbJavaSettingsInitializer() {
     }
 
-    /** Update map filled with the settings.
-    * @param kitClass kit class for which the settings are being updated.
-    *   It is always non-null value.
-    * @param settingsMap map holding [setting-name, setting-value] pairs.
-    *   The map can be empty if this is the first initializer
-    *   that updates it or if no previous initializers updated it.
-    */
-    public void updateSettingsMap(Class kitClass, Map settingsMap) {
-
-        if (kitClass == JavaKit.class) {
-//            settingsMap.put(ExtSettingsNames.UPDATE_PD_AFTER_MOUNTING,
-  //                          ExtSettingsDefaults.defaultUpdatePDAfterMounting);
-
-            settingsMap.put(ExtSettingsNames.SHOW_DEPRECATED_MEMBERS,
-                            ExtSettingsDefaults.defaultShowDeprecatedMembers);
-            settingsMap.put(JavaOptions.GUESS_METHOD_ARGUMENTS_PROP,
-                            Boolean.TRUE);
-            
-            settingsMap.put(SettingsNames.CODE_FOLDING_ENABLE, JavaSettingsDefaults.defaultCodeFoldingEnable);
-            settingsMap.put(JavaSettingsNames.CODE_FOLDING_COLLAPSE_METHOD, JavaSettingsDefaults.defaultCodeFoldingCollapseMethod);
-            settingsMap.put(JavaSettingsNames.CODE_FOLDING_COLLAPSE_INNERCLASS, JavaSettingsDefaults.defaultCodeFoldingCollapseInnerClass);
-            settingsMap.put(JavaSettingsNames.CODE_FOLDING_COLLAPSE_IMPORT, JavaSettingsDefaults.defaultCodeFoldingCollapseImport);
-            settingsMap.put(JavaSettingsNames.CODE_FOLDING_COLLAPSE_JAVADOC, JavaSettingsDefaults.defaultCodeFoldingCollapseJavadoc);
-            settingsMap.put(JavaSettingsNames.CODE_FOLDING_COLLAPSE_INITIAL_COMMENT, JavaSettingsDefaults.defaultCodeFoldingCollapseInitialComment);
-            
+    private static final Acceptor indentHotCharsAcceptor = new Acceptor() {
+        public boolean accept(char ch) {
+            switch (ch) {
+                case '{': //NOI18N
+                case '}': //NOI18N
+                    return true;
+            }
+            return false;
         }
-
-    }
+    };
+    
 }

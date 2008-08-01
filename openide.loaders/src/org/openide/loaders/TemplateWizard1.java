@@ -52,6 +52,7 @@ import javax.swing.border.EtchedBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.tree.TreeSelectionModel;
+import org.openide.WizardDescriptor;
 import org.openide.awt.HtmlBrowser;
 import org.openide.awt.Mnemonics;
 import org.openide.explorer.ExplorerManager;
@@ -76,10 +77,10 @@ final class TemplateWizard1 extends javax.swing.JPanel implements DataFilter,
     ExplorerManager.Provider, java.beans.PropertyChangeListener, AsyncGUIJob {
     /** See org.openide.WizardDescriptor.PROP_CONTENT_SELECTED_INDEX
      */
-    private static final String PROP_CONTENT_SELECTED_INDEX = "WizardPanel_contentSelectedIndex"; // NOI18N
+    private static final String PROP_CONTENT_SELECTED_INDEX = WizardDescriptor.PROP_CONTENT_SELECTED_INDEX; // NOI18N
     /** See org.openide.WizardDescriptor.PROP_CONTENT_DATA
      */
-    private static final String PROP_CONTENT_DATA = "WizardPanel_contentData"; // NOI18N
+    private static final String PROP_CONTENT_DATA = WizardDescriptor.PROP_CONTENT_DATA; // NOI18N
     /** listener to changes in the wizard */
     private ChangeListener listener;
     /** selected template */

@@ -39,13 +39,6 @@
 
 package org.netbeans.modules.javascript.editing;
 
-import java.util.HashMap;
-import java.util.Map;
-import javax.swing.text.Document;
-import org.netbeans.modules.gsf.api.ColoringAttributes;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.OffsetRange;
-
 /**
  *
  * @author tor
@@ -54,49 +47,8 @@ public class JsSemanticAnalyzerTest extends JsTestBase {
     
     public JsSemanticAnalyzerTest(String testName) {
         super(testName);
-    }            
-
-
-    private String annotate(Document doc, Map<OffsetRange, ColoringAttributes> highlights) throws Exception {
-        StringBuilder sb = new StringBuilder();
-        String text = doc.getText(0, doc.getLength());
-        Map<Integer, OffsetRange> starts = new HashMap<Integer, OffsetRange>(100);
-        Map<Integer, OffsetRange> ends = new HashMap<Integer, OffsetRange>(100);
-        for (OffsetRange range : highlights.keySet()) {
-            starts.put(range.getStart(), range);
-            ends.put(range.getEnd(), range);
-        }
-
-        for (int i = 0; i < text.length(); i++) {
-            if (starts.containsKey(i)) {
-                sb.append("|>");
-                OffsetRange range = starts.get(i);
-                ColoringAttributes ca = highlights.get(range);
-                if (ca != null) {
-                    sb.append(ca.name());
-                    sb.append(':');
-                }
-            }
-            if (ends.containsKey(i)) {
-                sb.append("<|");
-            }
-            sb.append(text.charAt(i));
-        }
-
-        return sb.toString();
-    }
-
-    private void checkSemantic(String relFilePath) throws Exception {
-        JsSemanticAnalyzer analyzer = new JsSemanticAnalyzer();
-        CompilationInfo info = getInfo(relFilePath);
-        analyzer.run(info);
-        Map<OffsetRange, ColoringAttributes> highlights = analyzer.getHighlights();
-
-        String annotatedSource = annotate(info.getDocument(), highlights);
-
-        assertDescriptionMatches(relFilePath, annotatedSource, false, ".semantic");
-    }
-
+    }           
+    
     public void testSemantic1() throws Exception {
         checkSemantic("testfiles/semantic1.js");
     }
@@ -123,5 +75,33 @@ public class JsSemanticAnalyzerTest extends JsTestBase {
 
     public void testSemantic7() throws Exception {
         checkSemantic("testfiles/semantic7.js");
+    }
+
+    public void testSemantic8() throws Exception {
+        checkSemantic("testfiles/semantic8.js", "new^");
+    }
+
+    public void testSemanticE4x() throws Exception {
+        checkSemantic("testfiles/e4x.js", "order^");
+    }
+
+    public void testSemanticE4x2() throws Exception {
+        checkSemantic("testfiles/e4x2.js", "order^");
+    }
+
+    public void testSemanticTryCatch() throws Exception {
+        checkSemantic("testfiles/tryblocks.js");
+    }
+
+    public void testSemanticPrototype() throws Exception {
+        checkSemantic("testfiles/prototype.js");
+    }
+
+    public void testSemanticPrototypeNew() throws Exception {
+        checkSemantic("testfiles/prototype-new.js");
+    }
+
+    public void testDebuggerKeyword() throws Exception {
+        checkSemantic("testfiles/debugger.js");
     }
 }

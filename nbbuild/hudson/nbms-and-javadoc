@@ -1,0 +1,26 @@
+#!/bin/sh
+
+ANT_OPTS='-Xmx512m -XX:MaxPermSize=128m'
+export ANT_OPTS
+
+if [ -d contrib/.hg ] ; then
+    hg -R contrib pull -u
+else
+    hg clone http://hg.netbeans.org/main/contrib contrib
+fi
+
+hg --config extensions.purge= clean --all || exit
+hg -R contrib --config extensions.purge= clean --all || exit
+
+mydir=`cd $(dirname $0); pwd`
+keystore=$mydir/../../../../NBstore
+storepass=`cat $mydir/../../../../storepass`
+# XXX could use <subant-junit> to prevent compilation error in one module from stopping others
+# (though neither <repeat> in build-clusters nor <nbmerge> in build-one-cluster nor <for-each> in build-nbms use <subant>)
+ant -emacs -Dbuildnum=$BUILD_TAG -Dcluster.config=experimental -Dmoduleconfig=daily-alpha-nbms -Dkeystore=$keystore -Dstorepass=$storepass build-nozip build-nbms || exit
+ant -Dtest.config=commit -Dcontinue.after.failing.tests=true -f o.n.core/build.xml test
+ant -v -f $mydir/build-update-descriptor.xml || exit
+# XXX could use <subant-junit> here too (again uses <for-each>)
+ant -Djnlp.codebase=http://deadlock.netbeans.org/hudson/job/nbms-and-javadoc/lastSuccessfulBuild/artifact/nbbuild/build/jnlp/ -Djnlp.signjar.keystore=$keystore -Djnlp.signjar.alias=nb_ide -Djnlp.signjar.password=$storepass build-jnlp || exit
+ant index-layer-paths
+ant clean-untracked-files

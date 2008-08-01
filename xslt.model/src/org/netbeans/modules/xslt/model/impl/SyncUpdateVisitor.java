@@ -55,6 +55,10 @@ import org.netbeans.modules.xslt.model.Variable;
 import org.netbeans.modules.xslt.model.When;
 import org.netbeans.modules.xslt.model.XslComponent;
 import org.netbeans.modules.xslt.model.XslVisitor;
+import org.netbeans.modules.xslt.model.TypeSpec;
+import org.netbeans.modules.xslt.model.UseAttributesSetsSpec;
+import org.netbeans.modules.xslt.model.UseCharacterMapsSpec;
+import org.netbeans.modules.xslt.model.WithParam;
 
 
 /**
@@ -366,6 +370,11 @@ class SyncUpdateVisitor implements ComponentUpdater<XslComponent>, XslVisitor
         updateChildInSequenceConstructor(impt);
     }
     
+    public void visit(TypeSpec typeSpec) {}
+    public void visit(UseAttributesSetsSpec useAttributesSetsSpec) {}
+    public void visit(UseCharacterMapsSpec useCharacterMapsSpec) {}
+    public void visit(WithParam withParam) {}
+
     private void updateStylesheetChild( StylesheetChild child ) {
         assert getParent() instanceof Stylesheet;
         if ( isAdd() ) {

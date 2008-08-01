@@ -48,6 +48,7 @@ package org.netbeans.modules.mobility.editor;
 import java.util.regex.Pattern;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.StyleConstants;
+import javax.swing.text.StyledDocument;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.settings.EditorStyleConstants;
 import org.netbeans.api.editor.settings.FontColorSettings;
@@ -65,7 +66,6 @@ import org.netbeans.mobility.antext.preprocessor.PPToken;
 import org.netbeans.mobility.antext.preprocessor.PreprocessorException;
 import org.netbeans.modules.mobility.project.J2MEProjectUtils;
 import org.netbeans.modules.mobility.project.TextSwitcher;
-import org.netbeans.modules.mobility.project.preprocessor.PPDocumentSource;
 import org.netbeans.modules.mobility.project.ProjectConfigurationsHelper;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
@@ -88,9 +88,11 @@ import java.awt.event.ActionListener;
 import java.util.*;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.editor.java.JavaDocument;
+import org.netbeans.modules.editor.java.JavaKit;
 import org.netbeans.modules.mobility.editor.hints.DisableHint;
 import org.netbeans.modules.mobility.editor.hints.InlineIncludeHint;
 import org.netbeans.modules.mobility.editor.hints.ReplaceOldSyntaxHint;
+import org.netbeans.modules.mobility.project.bridge.J2MEProjectUtilitiesProvider;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.Fix;
@@ -152,9 +154,14 @@ public class J2MEEditorDocument extends JavaDocument {
         LR.addLookupListener(LL);
         LL.resultChanged(null);
     }
-    
+
+    @Deprecated
     public J2MEEditorDocument(Class kitClass) {
-        super(kitClass);
+        this(JavaKit.JAVA_MIME_TYPE);       
+    }
+    
+    public J2MEEditorDocument(String mimeType){
+        super(mimeType);
         if (LL == null) initColoring();
         cbl = new ConfigurationBlocksLayer();
         this.addLayer(cbl, 1200);
@@ -209,7 +216,9 @@ public class J2MEEditorDocument extends JavaDocument {
                 final HashMap<String,String> activeIdentifiers=new HashMap<String,String>(configHelper.getActiveAbilities());
                 activeIdentifiers.put(configHelper.getActiveConfiguration().getDisplayName(),null);
                 try {
-                    final CommentingPreProcessor cpp = new CommentingPreProcessor(new PPDocumentSource(doc), null, activeIdentifiers);
+                    J2MEProjectUtilitiesProvider utilProvider = Lookup.getDefault().lookup(J2MEProjectUtilitiesProvider.class);
+                    if (utilProvider == null) return; //we do not run in full NetBeans, but this should not happen here (no editor)
+                    final CommentingPreProcessor cpp = new CommentingPreProcessor(utilProvider.createPPDocumentSource((StyledDocument) doc), null, activeIdentifiers);
                     cpp.run();
                     ((J2MEEditorDocument)doc).setLineList(cpp.getLines());
                 } catch (PreprocessorException e) {

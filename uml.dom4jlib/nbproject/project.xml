@@ -45,36 +45,13 @@ made subject to such option by the copyright holder.
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
             <code-name-base>org.netbeans.modules.uml.dom4jlib</code-name-base>
             <module-dependencies/>
-            <class-path-extension>
-                <runtime-relative-path>ext/dom4j/relaxngDatatype.jar</runtime-relative-path>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/dom4j/saxpath.jar</runtime-relative-path>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/dom4j/Tidy.jar</runtime-relative-path>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/dom4j/msv.jar</runtime-relative-path>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/dom4j/jaxen.jar</runtime-relative-path>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/dom4j/xsdlib.jar</runtime-relative-path>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/dom4j/PullParser2.jar</runtime-relative-path>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/dom4j/org-dom4j.jar</runtime-relative-path>
-            </class-path-extension>
             <friend-packages>
                 <friend>org.netbeans.modules.uml</friend>
                 <friend>org.netbeans.modules.uml.codegen</friend>
                 <friend>org.netbeans.modules.uml.designpattern</friend>
                 <friend>org.netbeans.modules.uml.integration</friend>
                 <friend>org.netbeans.modules.uml.kit</friend>
+                <friend>org.netbeans.modules.uml.drawingarea</friend>
                 <friend>org.netbeans.modules.uml.palette</friend>
                 <friend>org.netbeans.modules.uml.parser.java</friend>
                 <friend>org.netbeans.modules.uml.project</friend>
@@ -182,6 +159,30 @@ made subject to such option by the copyright holder.
                 <package>org.xml.sax.ext</package>
                 <package>org.xml.sax.helpers</package>
             </friend-packages>
+            <class-path-extension>
+                <runtime-relative-path>ext/dom4j/relaxngDatatype.jar</runtime-relative-path>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/dom4j/saxpath.jar</runtime-relative-path>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/dom4j/Tidy.jar</runtime-relative-path>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/dom4j/msv.jar</runtime-relative-path>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/dom4j/jaxen.jar</runtime-relative-path>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/dom4j/xsdlib.jar</runtime-relative-path>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/dom4j/PullParser2.jar</runtime-relative-path>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/dom4j/org-dom4j.jar</runtime-relative-path>
+            </class-path-extension>
         </data>
     </configuration>
 </project>

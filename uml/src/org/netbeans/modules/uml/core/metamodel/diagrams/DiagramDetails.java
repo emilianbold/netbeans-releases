@@ -42,11 +42,9 @@
 package org.netbeans.modules.uml.core.metamodel.diagrams;
 
 import java.util.ArrayList;
-
+import java.util.Date;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamespace;
-import org.netbeans.modules.uml.ui.controls.drawingarea.ModelElementXMIIDPair;
-import org.netbeans.modules.uml.ui.support.diagramsupport.DiagramTypesManager;
-import org.netbeans.modules.uml.ui.support.diagramsupport.IDiagramTypesManager;
+import org.netbeans.modules.uml.ui.support.diagramsupport.IDiagramTypesManager; 
 
 
 /**
@@ -55,237 +53,296 @@ import org.netbeans.modules.uml.ui.support.diagramsupport.IDiagramTypesManager;
  */
 public class DiagramDetails implements IDiagramKind
 {
-	private String     m_Name            = "";
-	private int        m_DiagramType     = 0;
-	private String     m_DiagramTypeName = "";
-	private String     m_NamespaceXMIID  = "";
-	private String     m_DiagramAlias    = "";
-	private String     m_DiagramXMIID    = "";
-	private String     m_ToplevelXMIID   = "";
-	private INamespace m_Namespace       = null;
-   private ArrayList < String > m_AssociatedDiagrams = null;
-   private ArrayList < ModelElementXMIIDPair > m_AssociatedElements = null;
-   private long        m_DateModified    = 0;
-      
-   /**
-    * Retrieves the name of the diagram.
-    * 
-    * @return The name.
-    */
-   public String getDiagramAlias()
-   {
-      return m_DiagramAlias;
-   }
+    private String mFileName = null;
+    private String mDiagramName = "";
+    private int mDiagramType = 0;
+    private String mDiagramTypeName = "";
+    private String mNamespaceXMIID = "";
+    //private String mDiagramAlias = "";
+    private String mDiagramXMIID = "";
+    private String mProjectXMIID = "";
+    private String mToplevelXMIID = "";
+    private String mZoom = null;
+    private INamespace mNamespace = null;
+    private ArrayList<String> mAssociatedDiagrams = null;
+    private ArrayList<ModelElementXMIIDPair> mAssociatedElements = null;
+    private Date mDateModified = null;
 
-	/**
-	 * Sets the name of the diagram.
-	 * @param value The name.
-	 */
-	public void setDiagramAlias(String value)
-	{
-		m_DiagramAlias = value;
-	}
-		
-   /**
-    * Returns the type of the daigram.  The valid values for 
-    * the daigram type is specified in the interface IDiagramKind.
-    * 
-    * @return The diagram type.
-    * @see org.netbeans.modules.uml.core.metamodel.diagrams.IDiagramKind
-    */
-   public int getDiagramType()
-   {
-   	return m_DiagramType;
-   }
-   
-	/**
-	 * Sets the type of the daigram.  The valid values for 
-    * the daigram type is specified in the interface IDiagramKind.
-    * 
-	 * @param vlue The diagram type.
-	 * @see org.netbeans.modules.uml.core.metamodel.diagrams.IDiagramKind
-	 */
-	public void setDiagramType(int value)
-	{
-		m_DiagramType = value;
-	}
-   /**
-    * Gets the name of the diagram.
-    * 
-    * @return The name of the diagrm
-    */
-   public String getName()
-   {
-      return m_Name;
-   }
+//    /**
+//     * Retrieves the name of the diagram.
+//     *
+//     * @return The name.
+//     */
+//    public String getDiagramAlias()
+//    {
+//        return mDiagramAlias;
+//    }
+//
+//    /**
+//     * Sets the name of the diagram.
+//     * @param value The name.
+//     */
+//    public void setDiagramAlias(String value)
+//    {
+//        mDiagramAlias = value;
+//    }
 
-   /**
-    * Sets the name of the diagram.
-    * 
-    * @parm value The name of the diagrm
-    */
-   public void setName(String value)
-   {
-      m_Name = value;
-   }
+    /**
+     * Gets the name of the diagram.
+     *
+     * @return The name of the diagrm
+     */
+    public String getDiagramName() 
+    {
+        return mDiagramName;
+    }
 
-   /**
-    * Retrieves the XMI ID for of the namespace that contains the diagram.
-    * 
-    * @return The id.
-    */
-   public String getNamespaceXMIID()
-   {
-      String retVal = m_NamespaceXMIID;
+    
+    /**
+     * Sets the name of the diagram.
+     *
+     * @parm value The name of the diagrm
+     */
+    public void setDiagramName(String diagramName) 
+    {
+        mDiagramName = diagramName;
+    }
 
-      if((retVal.length() <= 0) && (m_Namespace != null))
-      {
-         retVal = m_Namespace.getXMIID();
-      }
-      
-      return retVal;
-   }
+    /**
+     * Returns the type of the daigram.  The valid values for
+     * the daigram type is specified in the interface IDiagramKind.
+     *
+     * @return The diagram type.
+     * @see org.netbeans.modules.uml.core.metamodel.diagrams.IDiagramKind
+     */
+    public int getDiagramType()
+    {
+        return mDiagramType;
+    }
 
-   /**
-    * Sets the XMI ID for of the namespace that contains the diagram.
-    * 
-    * @param value
-    */
-   public void setNamespaceXMIID(String value)
-   {
-      m_NamespaceXMIID = value;
-   }
-   
-   /**
-    * Retrieves the diagrams XMI ID.
-    * 
-    * @return the id.
-    */
-   public String getDiagramXMIID()
-   {
-      return m_DiagramXMIID;
-   }
+    /**
+     * Sets the type of the daigram.  The valid values for
+     * the daigram type is specified in the interface IDiagramKind.
+     *
+     * @param vlue The diagram type.
+     * @see org.netbeans.modules.uml.core.metamodel.diagrams.IDiagramKind
+     */
+    public void setDiagramType(int value)
+    {
+        mDiagramType = value;
+    }
 
-   /**
-    * Sets the diagrams XMIID.
-    * 
-    * @param value the id.
-    */
-   public void setDiagramXMIID(String value)
-   {
-      m_DiagramXMIID = value;
-   }
 
-   /**
-    * Retrieves the XMI ID of the top level component.
-    * 
-    * @return the ID.
-    */
-   public String getToplevelXMIID()
-   {
-      return m_ToplevelXMIID;
-   }
+    /**
+     * Retrieves the XMI ID for of the namespace that contains the diagram.
+     *
+     * @return The id.
+     */
+    public String getDiagramNamespaceXMIID()
+    {
+        String retVal = mNamespaceXMIID;
 
-   /**
-    * Sets the XMI ID of the top level component
-    * @param valuethe ID.
-    */
-   public void setToplevelXMIID(String value)
-   {
-      m_ToplevelXMIID = value;
-   }
+        if ((retVal.length() <= 0) && (mNamespace != null))
+        {
+            retVal = mNamespace.getXMIID();
+        }
 
-   /**
-    * Retrieves the type name of the diagram.
-    * 
-    * @return The diagram type.
-    */
-   public String getDiagramTypeName()
-   {
-      return m_DiagramTypeName;
-   }
+        return retVal;
+    }
 
-   /**
-    * Sets the type name of the diagram.
-    * 
-    * @param value The diagram type.
-    */
-   public void setDiagramTypeName(String value)
-   {
-      m_DiagramTypeName = value;
-      
-      IDiagramTypesManager manager = DiagramTypesManager.instance();
-      setDiagramType(manager.getDiagramKind(value));
-   }
+    /**
+     * Sets the XMI ID for of the namespace that contains the diagram.
+     *
+     * @param value
+     */
+    public void setDiagramNamespaceXMIID(String value)
+    {
+        mNamespaceXMIID = value;
+    }
 
-   /**
-    * @param space
-    */
-   public void setNamespace(INamespace space)
-   {
-      m_Namespace = space;
-   }
+    /**
+     * Retrieves the diagrams XMI ID.
+     *
+     * @return the id.
+     */
+    public String getDiagramXMIID()
+    {
+        return mDiagramXMIID;
+    }
 
-   /**
-    * @param space
-    */
-   public INamespace getNamespace()
-   {
-      return m_Namespace;
-   }
-   
-   /**
-    * @param object
-    */
-   public void setAssociatedDiagrams(ArrayList < String > diagrams)
-   {
-      m_AssociatedDiagrams = diagrams;
-      
-   }
+    /**
+     * Sets the diagrams XMIID.
+     *
+     * @param value the id.
+     */
+    public void setDiagramXMIID(String value)
+    {
+        mDiagramXMIID = value;
+    }
 
-   /**
-    * @param object
-    */
-   public ArrayList < String > getAssociatedDiagrams()
-   {
-      return m_AssociatedDiagrams;   
-   }
-      
-   /**
-    * @param object
-    */
-   public void setAssociatedElements(ArrayList < ModelElementXMIIDPair > elements)
-   {
-      m_AssociatedElements = elements;
-      
-   }
-   
-   /**
-    * @param object
-    */
-   public ArrayList < ModelElementXMIIDPair > getAssociatedElements()
-   {
-      return m_AssociatedElements;
-   
-   }
-   /**
-    * Retrieves the file date that was used to retrieve the diagram details.
-    * 
-    * @return The last date modified.
-    */
-   public long getDateModified()
-   {
-      return m_DateModified;
-   }
+    /**
+     * Retrieves the XMI ID of the project that contains the diagram.
+     *
+     * @return the ID.
+     */
+    public String getDiagramProjectXMIID()
+    {
+        return mProjectXMIID;
+    }
 
-   /**
-    * Sets the file date that was used to retrieve the diagram details.
-    * 
-    * @param value The file date.
-    */
-   public void setDateModified(long value)
-   {
-      m_DateModified = value;
-   }
+    /**
+     * Set the XMI ID of the project that contains the diagram.
+     * 
+     * @param valuethe ID.
+     */
+    public void setDiagramProjectXMIID(String value)
+    {
+        mProjectXMIID = value;
+    }
+    
+    /**
+     * Retrieves the XMI ID of the top level component.
+     *
+     * @return the ID.
+     */
+    public String getToplevelXMIID()
+    {
+        return mToplevelXMIID;
+    }
 
+    /**
+     * Sets the XMI ID of the top level component
+     * @param valuethe ID.
+     */
+    public void setToplevelXMIID(String value)
+    {
+        mToplevelXMIID = value;
+    }
+
+    /**
+     * Retrieves the type name of the diagram.
+     *
+     * @return The diagram type.
+     */
+    public String getDiagramTypeName()
+    {
+        return mDiagramTypeName;
+    }
+
+    /**
+     * Sets the type name of the diagram.
+     *
+     * @param value The diagram type.
+     */
+    public void setDiagramTypeName(String value)
+    {
+        mDiagramTypeName = value;
+
+        IDiagramTypesManager manager = DiagramTypesManager.instance();
+        setDiagramType(manager.getDiagramKind(value));
+    }
+
+    /**
+     * @param space
+     */
+    public void setNamespace(INamespace space)
+    {
+        mNamespace = space;
+    }
+
+    /**
+     * @param space
+     */
+    public INamespace getNamespace()
+    {
+        return mNamespace;
+    }
+
+    /**
+     * @param object
+     */
+    public void setAssociatedElements(ArrayList<ModelElementXMIIDPair> elements)
+    {
+        mAssociatedElements = elements;
+    }
+
+    /**
+     * @param object
+     */
+    public ArrayList<ModelElementXMIIDPair> getAssociatedElements()
+    {
+        return mAssociatedElements;
+    }
+
+    /**
+     * Retrieves the diagram zoom level
+     *
+     * @return The last date modified.
+     */
+    public String getZoom() {
+        return mZoom;
+    }
+
+    /**
+     * Sets the diagram zoom level
+     *
+     * @param value The file date.
+     */
+    public void setZoom(String zoom) {
+        mZoom = zoom;
+    }
+    
+    /**
+     * Retrieves the diagram file name that was used to retrieve the diagram details.
+     *
+     * @return The last date modified.
+     */
+    public String getDiagramFileName() {
+        return mFileName;
+    }
+
+    /**
+     * Sets the file name that was used to retrieve the diagram details.
+     *
+     * @param value The file date.
+     */
+    public void setDiagramFileName(String fileName) {
+        mFileName = fileName;
+    }
+    
+    /**
+     * Retrieves the file date that was used to retrieve the diagram details.
+     *
+     * @return The last date modified.
+     */
+    public Date getDateModified()
+    {
+        return mDateModified;
+    }
+
+    /**
+     * Sets the file date that was used to retrieve the diagram details.
+     *
+     * @param value The file date.
+     */
+    public void setDateModified(Date value)
+    {
+        mDateModified = value;
+    }
+    
+    /**
+     * @param object
+     */
+    public void setAssociatedDiagrams(ArrayList<String> diagrams)
+    {
+        mAssociatedDiagrams = diagrams;
+    }
+
+    /**
+     * @param object
+     */
+    public ArrayList<String> getAssociatedDiagrams()
+    {
+        return mAssociatedDiagrams;
+    }
 }

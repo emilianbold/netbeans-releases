@@ -66,6 +66,13 @@ public class GoToPreviousDisplayableElement implements PropertyEditorEventHandle
     public GoToPreviousDisplayableElement() {
         radioButton = new JRadioButton();
         Mnemonics.setLocalizedText(radioButton, NbBundle.getMessage(GoToPreviousDisplayableElement.class, "LBL_PREV_DISPL")); // NOI18N
+        
+        radioButton.getAccessibleContext().setAccessibleName( 
+                NbBundle.getMessage(GoToPreviousDisplayableElement.class, 
+                        "ACSN_PREV_DISPL")); // NOI18N
+        radioButton.getAccessibleContext().setAccessibleDescription(
+                NbBundle.getMessage(GoToPreviousDisplayableElement.class, 
+                        "ACSD_PREV_DISPL")); // NOI18N
     }
     
     public void createEventHandler(DesignComponent eventSource) {

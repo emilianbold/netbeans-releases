@@ -69,7 +69,6 @@ import org.netbeans.modules.uml.core.coreapplication.CoreProductInitEventsAdapte
 import org.netbeans.modules.uml.core.coreapplication.ICoreProduct;
 import org.netbeans.modules.uml.core.eventframework.IEventContext;
 import org.netbeans.modules.uml.core.metamodel.common.commonstatemachines.IRegion;
-import org.netbeans.modules.uml.core.metamodel.core.constructs.IEnumeration;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.ElementLifeTimeEventsAdapter;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.ElementModifiedEventsAdapter;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.EventContextManager;
@@ -117,7 +116,6 @@ import org.netbeans.modules.uml.core.support.umlutils.ETList;
 import org.netbeans.modules.uml.core.support.umlutils.ETArrayList;
 import org.netbeans.modules.uml.core.support.umlutils.IDataFormatter;
 import org.netbeans.modules.uml.core.workspacemanagement.IWorkspace;
-import org.netbeans.modules.uml.ui.controls.drawingarea.IUIDiagram;
 import org.netbeans.modules.uml.ui.controls.filter.IFilterDialog;
 import org.netbeans.modules.uml.ui.controls.filter.ProjectTreeFilterDialogEventsAdapter;
 import org.netbeans.modules.uml.ui.controls.projecttree.IProjectTreeControl;
@@ -143,7 +141,6 @@ import org.netbeans.modules.uml.ui.support.ProductHelper;
 import org.netbeans.modules.uml.ui.support.QuestionResponse;
 import org.netbeans.modules.uml.ui.support.UIFactory;
 import org.netbeans.modules.uml.ui.support.BatchProcessRunnable;
-import org.netbeans.modules.uml.ui.support.diagramsupport.DiagramTypesManager;
 import org.netbeans.modules.uml.ui.support.diagramsupport.IDiagramTypesManager;
 import org.netbeans.modules.uml.ui.support.diagramsupport.IProxyDiagramManager;
 import org.netbeans.modules.uml.ui.support.diagramsupport.ProxyDiagramManager;
@@ -155,10 +152,6 @@ import org.netbeans.modules.uml.ui.support.projecttreesupport.ITreeFolder;
 import org.netbeans.modules.uml.ui.support.projecttreesupport.ITreeItem;
 import org.netbeans.modules.uml.ui.support.projecttreesupport.ITreeRelElement;
 import org.netbeans.modules.uml.ui.support.projecttreesupport.ProjectTreeBuilderImpl;
-import org.netbeans.modules.uml.ui.support.viewfactorysupport.MetaModelHelper;
-import org.netbeans.modules.uml.ui.swing.drawingarea.DrawingAreaEventsAdapter;
-import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaControl;
-import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaPropertyKind;
 import org.netbeans.modules.uml.ui.swing.projecttree.ISwingProjectTreeModel;
 import org.netbeans.modules.uml.ui.swing.projecttree.JProjectTree;
 import org.netbeans.modules.uml.ui.swing.projecttree.ProjectTreeResources;
@@ -166,9 +159,20 @@ import org.dom4j.Document;
 import org.dom4j.Element;
 import org.dom4j.Node;
 import org.netbeans.modules.uml.common.Util;
-import org.netbeans.modules.uml.ui.swing.drawingarea.DiagramEngine;
+import org.netbeans.modules.uml.core.metamodel.common.commonactivities.IActivityGroup;
+import org.netbeans.modules.uml.core.metamodel.common.commonactivities.IActivityNode;
+import org.netbeans.modules.uml.core.metamodel.core.constructs.IEnumeration;
+import org.netbeans.modules.uml.core.metamodel.diagrams.DiagramTypesManager;
+import org.netbeans.modules.uml.ui.controls.newdialog.NewElementUI;
+import org.netbeans.modules.uml.ui.support.MetaModelHelper;
+import org.netbeans.modules.uml.ui.support.diagramsupport.DiagramAreaEnumerations;
+import org.netbeans.modules.uml.ui.support.diagramsupport.DrawingAreaEventsAdapter;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -185,7 +189,7 @@ public class ADProjectTreeEngine
 {
    private static final Logger logger =
     Logger.getLogger("uml.ui.products.ad.projecttreedefaultengine.ADProjectTreeEngine");
-   
+
    /** Allow Drag Movement with in the tree. */
    public final static int     MRK_ALLOW_MOVE                        = 0;
 
@@ -475,7 +479,7 @@ public class ADProjectTreeEngine
       else if(getTreeModel() != null)
       {
           IElement owner = elementToAdd.getOwner();
-          if( m_TreeBuilder.isExcluded(elementToAdd) == false)
+          if(owner!=null && m_TreeBuilder.isExcluded(elementToAdd) == false)//sometimes addNewlyCreatedElements is callled  in invoke later(after going out of container) when owner was removed directly before
           {
           
               ETList < ITreeItem > ownerNodes = getOwnerNodes(elementToAdd);
@@ -503,11 +507,38 @@ public class ADProjectTreeEngine
    protected ETList < ITreeItem >  getOwnerNodes(IElement element)
    {
       ETList < ITreeItem > retVal = null;
-
-      if((element != null) && (element.getOwner() != null))
+      
+      if(element != null)
       {
-         IElement owner = element.getOwner();
-         retVal = getTreeModel().findNodes(owner);
+          IElement owner =  element.getOwner(); 
+          retVal = getTreeModel().findNodes(owner);
+          
+          //Activity nodes are possibly displayed under owning Activity namespace
+          // and under an activity group
+          if ( element instanceof IActivityNode) 
+          {
+              // check if this activity node belongs to any activity group
+              ETList<IActivityGroup> groups = ((IActivityNode)element).getGroups();
+              
+              // for each group, find the corresponding tree item.
+              if ( groups != null && groups.size() > 0)
+              {
+                  ETList <ITreeItem> groupItems = new ETArrayList<ITreeItem>();
+                  for (IActivityGroup aGroup : groups)
+                  {
+                      ETList <ITreeItem> items = getTreeModel().findNodes(aGroup);
+                      if (items != null && items.size() > 0)
+                      {
+                          groupItems.addThese(items);
+                      }
+                  }
+                  // add the groupItems to the list of owners.
+                  if (groupItems != null && groupItems.size() > 0)
+                  {
+                      retVal.addThese(groupItems);
+                  }
+              }
+          }
 
          if((retVal == null) || ((retVal != null) && (retVal.size() <= 0)))
          {
@@ -517,7 +548,6 @@ public class ADProjectTreeEngine
             }
          }
       }
-
       return retVal;
    }
 
@@ -598,7 +628,7 @@ public class ADProjectTreeEngine
                   }
               }
               else
-              {
+              {                   
                   // The C++ version first checks if changed Item is actually an
                   // IElement instance.  However, since INamedElement extends IElement
                   // I do not have to worry about that.
@@ -648,7 +678,6 @@ public class ADProjectTreeEngine
                           {
                               elementsToRefresh.add(enumeration);
                           }
-                          
                       }
                       
                       else
@@ -662,7 +691,7 @@ public class ADProjectTreeEngine
               }
               
               // Go over the list of elements finding them in the tree and verifying
-              // they are correctly displayingtheir children.
+              // they are correctly displaying their children.
               updateTree(elementsToRefresh, paths);
           }
       }
@@ -755,7 +784,7 @@ public class ADProjectTreeEngine
                  }
              }
          }
-      }
+        }
    }
 
   
@@ -1720,25 +1749,26 @@ public class ADProjectTreeEngine
    // or .etlp file.  We need to look in the open diagrams
 	private boolean doubleCheckIsValidDiagram(String location)
 	{
+            // TODO: meteora
 		boolean retVal = false;
-		IProduct product = ProductHelper.getProduct();
-		if(product != null)
-		{
-		   IDiagram diagram = product.getDiagram(location);
-		   if(diagram != null && diagram instanceof IUIDiagram) 
-		   {
-		   		IUIDiagram pDia = (IUIDiagram)diagram;
-		   		IDrawingAreaControl control = pDia.getDrawingArea();
-		   		if (control != null)
-		   		{
-		   			String drawKind = control.getDiagramKind2();
-		   			if (drawKind != null && drawKind.length() > 0)
-		   			{
-		   				retVal = true;
-		   			}
-		   		}
-		   }
-		}
+//		IProduct product = ProductHelper.getProduct();
+//		if(product != null)
+//		{
+//		   IDiagram diagram = product.getDiagram(location);
+//		   if(diagram != null && diagram instanceof IUIDiagram) 
+//		   {
+//		   		IUIDiagram pDia = (IUIDiagram)diagram;
+//		   		IDrawingAreaControl control = pDia.getDrawingArea();
+//		   		if (control != null)
+//		   		{
+//		   			String drawKind = control.getDiagramKind2();
+//		   			if (drawKind != null && drawKind.length() > 0)
+//		   			{
+//		   				retVal = true;
+//		   			}
+//		   		}
+//		   }
+//		}
 		return retVal;
 	}
 
@@ -2217,21 +2247,19 @@ public class ADProjectTreeEngine
     {
         IProxyDiagramManager manager = ProxyDiagramManager.instance();
         ETList<IProxyDiagram> diagrams = manager.getDiagramsInProject(project);
-
+        String diagramName = null;
         if (diagrams != null)
         {
             for (int index = 0; index < diagrams.size(); index++)
             {
                 IProxyDiagram curDiagram = diagrams.get(index);
                 String location = curDiagram.getFilename();
-
+                
                 ProjectTreeNodeFactory factory = getNodeFactory();
                 if ((location.length() > 0) && (factory != null))
                 {
-                    //addDiagram(parent, new ProjectTreeDiagramNode(curDiagram));
+                    diagramName = diagrams.get(index).getNameWithAlias();
                     ITreeDiagram newItem = factory.createDiagramNode(curDiagram);
-                    String diagramName = diagrams.get(index).getNameWithAlias();
-                    logger.fine("*** addAllDiagramsInProjec: diagramNameWithAlias = "+ diagramName);
                     if ( diagramName != null && diagramName.trim().length() > 0)
                     {
                         newItem.setDisplayedName(diagramName, false);
@@ -2421,10 +2449,11 @@ public class ADProjectTreeEngine
 
          if(dropTarget.getModelElement() != null)
          {
-            if((isCopy == true) && (data.isAllElementsFeatures() == false))
-            {
-               isCopy = false;
-            }
+             // allow multi elements dnd
+//            if((isCopy == true) && (data.isAllElementsFeatures() == false))
+//            {
+//               isCopy = false;
+//            }
 
             IElement dropTargetElement = dropTarget.getModelElement();
 
@@ -2708,7 +2737,7 @@ public class ADProjectTreeEngine
 			   {
 				   DialogDisplayer.getDefault().notify(
 						new NotifyDescriptor.Message(NbBundle.getMessage(
-							DiagramEngine.class, "IDS_NAMESPACECOLLISION")));
+							NewElementUI.class, "IDS_NAMESPACECOLLISION")));
 				   return testImports;
 
 			   }
@@ -3009,7 +3038,7 @@ public class ADProjectTreeEngine
       {
          if (element instanceof IDiagram)
          {
-            IDiagram diagram = (IDiagram)element; 
+            IDiagram diagram = (IDiagram)element;
             retVal = diagram.getNameWithAlias();
          }
          else
@@ -3101,23 +3130,22 @@ public class ADProjectTreeEngine
     */
    protected void notifyElementChanged(final IElement element)
    {
-       if (element != null)
-       {
-          SwingUtilities.invokeLater(new Runnable()
-          {
-              public void run()
-              {
-                  String formattedValue = getFormattedString(element);
-                  //logger.fine("*** notifyElementChanged(IElement): name=" + formattedValue);
-                  IProjectTreeModel model = getTreeModel();
-                  if (model != null && formattedValue.trim().length() > 0)
-                  {
-                      ETList<ITreeItem> items = model.findNodes(element);
-                      notifyElementChanged(items, formattedValue);
-                  }
-              }
-          });
-       }
+      if(element != null)
+      {
+         SwingUtilities.invokeLater(new Runnable()
+         {
+             public void run()
+             {
+                 String formattedValue = getFormattedString(element);
+                 IProjectTreeModel model = getTreeModel();
+                 if(model != null && formattedValue.trim().length() > 0)
+                 {
+                    ETList < ITreeItem > items = model.findNodes(element);
+                    notifyElementChanged(items, formattedValue);
+                 }
+             }
+         });
+      }
    }
 
    /**
@@ -3131,9 +3159,8 @@ public class ADProjectTreeEngine
       if(element != null)
       {
          String formattedValue = element.getNameWithAlias();
-         //logger.fine( "*** notifyElementChanged(IProxyDiagram): diagramName=" + formattedValue);
          IProjectTreeModel model = getTreeModel();
-         if(model != null)
+         if(model != null && formattedValue.trim().length() > 0)
          {
             ETList < ITreeItem > items = model.findDiagramNodes(element.getFilename());
             notifyElementChanged(items, formattedValue);
@@ -3171,57 +3198,56 @@ public class ADProjectTreeEngine
     * the proxy diagram and the namespace that contains the daigram.
     *
     * @param diagramLocation The location of the diagram.
-    */  
+    */
    public void addDiagramNode(String diagramLocation)
    {
       if ((diagramLocation != null) && (diagramLocation.length() > 0))
       {
+         ITreeDiagram diagramNode = null;
          IProxyDiagramManager manager = ProxyDiagramManager.instance();
          IProxyDiagram proxy = manager.getDiagram(diagramLocation);
-         ProjectTreeNodeFactory factory = getNodeFactory();
          
+         ProjectTreeNodeFactory factory = getNodeFactory();
          if ((proxy != null) && (factory != null))
-         {  
-            ITreeDiagram node = null;
-            IProject project = proxy.getProject();
-            IElement namespace = proxy.getNamespace();
+         {            
             IProjectTreeModel treeModel = getTreeModel();
             String diagramName = proxy.getNameWithAlias();
+            IProject project = proxy.getProject();
+            long diagramSortPriority = m_TreeBuilder.getSortPriority(proxy.getDiagramKindName());
             
             // 1st, add the diagram node under Diagrams root node if the node 
             // exists and has been initialized (expanded)
             ITreeItem diagramsRootNode = treeModel.getDiagramsRootNode(project);
-            if (diagramsRootNode != null) 
+            if (diagramsRootNode != null)
             {
-                node = factory.createDiagramNode(proxy);
-                node.setDisplayedName(diagramName, false);
-                node.setName(diagramName);
-                node.setSortPriority(m_TreeBuilder.getSortPriority(proxy.getDiagramKindName()));
-                addDiagram(diagramsRootNode, node);
+                diagramNode = factory.createDiagramNode(proxy);
+                diagramNode.setDisplayedName(diagramName);
+                diagramNode.setName(diagramName);
+                diagramNode.setSortPriority(diagramSortPriority);
+                addDiagram(diagramsRootNode, diagramNode);
             }
             
             // 2nd, add the diagram node under its namespace if the namespace 
             // has been initialized (i.e. expanded)
+            diagramNode = factory.createDiagramNode(proxy);
+            diagramNode.setDisplayedName(diagramName);
+            diagramNode.setName(diagramName);
+            diagramNode.setSortPriority(diagramSortPriority);
+            IElement namespace = proxy.getNamespace();
+            
             if (namespace != null)
             {
                ETList<ITreeItem> items = treeModel.findNodes(namespace);
-               if (items != null && items.size() > 0)
+			   
+               for (Iterator < ITreeItem > iter = items.iterator();
+                    iter.hasNext();)
                {
-                   node = factory.createDiagramNode(proxy);
-                   node.setDisplayedName(diagramName);
-                   node.setName(diagramName);
-                   node.setSortPriority(m_TreeBuilder.getSortPriority(proxy.getDiagramKindName()));
-                   
-                   for (Iterator < ITreeItem > iter = items.iterator();
-                        iter.hasNext();)
-                   {
-                      ITreeItem curItem = iter.next();
-                      if (curItem.isInitalized())
-                      {
-                         addDiagram(curItem, node);
-                         treeModel.sortChildren(curItem);
-                      }
-                   }
+                  ITreeItem curItem = iter.next();
+                  if (curItem.isInitalized())
+                  {
+                     addDiagram(curItem, diagramNode);
+                     treeModel.sortChildren(curItem);
+                  }
                }
             }
          }
@@ -3264,7 +3290,7 @@ public class ADProjectTreeEngine
    				int count = items.size();
    				if (count > 0)
    				{
-   					String diaKind = pParentDiagram.getDiagramKind2();
+   					String diaKind = pParentDiagram.getDiagramKindAsString();
    					String diaType = getDiagramIcon(diaKind, true, isOpen, false);
    					for (int i=0; i<count; i++)
    					{
@@ -3443,8 +3469,9 @@ public class ADProjectTreeEngine
 			 String desc = pItem.getDescription();
 			 if (desc != null && desc.length() > 0)
 			 {
-				 // If we've got a .etld file then we've got a diagram
-				 if (StringUtilities.hasExtension(desc, FileExtensions.DIAGRAM_LAYOUT_EXT))
+				 // If we've got a .diagram or .etld file then we've got a diagram
+				 if (StringUtilities.hasExtension(desc, FileExtensions.DIAGRAM_LAYOUT_EXT) ||
+                    StringUtilities.hasExtension(desc, FileExtensions.DIAGRAM_TS_LAYOUT_EXT))
 				 {
 					 IProductDiagramManager diaMgr = product.getDiagramManager();
 					 if (diaMgr != null)
@@ -3988,19 +4015,27 @@ public class ADProjectTreeEngine
 
    public class EngineDrawingAreaSink extends DrawingAreaEventsAdapter
    {
-       public void onDrawingAreaPostCreated(IDrawingAreaControl pDiagramControl,
-               IResultCell cell)
+       public void onDrawingAreaPostCreated(DataObject diagramDataObject,
+                                            IResultCell cell)
        {
-           if(pDiagramControl != null)
+           if(diagramDataObject != null)
            {
-               final IDrawingAreaControl control = pDiagramControl;
-               SwingUtilities.invokeLater(new Runnable()
+               try
                {
-                   public void run()
+                   FileObject fo = diagramDataObject.getPrimaryFile();
+                   final String filename =  FileUtil.toFile(fo).getCanonicalPath();
+                   SwingUtilities.invokeLater(new Runnable()
                    {
-                       addDiagramNode(control.getFilename());
-                   }
-               });
+                       public void run()
+                       {
+                           addDiagramNode(filename);
+                       }
+                   });
+               }
+               catch(Exception e)
+               {
+                   Exceptions.printStackTrace(e);
+               }
            }
        }
 
@@ -4040,19 +4075,16 @@ public class ADProjectTreeEngine
                                                   int nPropertyKindChanged,
                                                   IResultCell cell)
       {
-//         if((nPropertyKindChanged == IDrawingAreaPropertyKind.DAPK_NAMESPACE) ||
-//            (nPropertyKindChanged == IDrawingAreaPropertyKind.DAPK_NAME))
-         if(nPropertyKindChanged == IDrawingAreaPropertyKind.DAPK_NAME)
+         if(nPropertyKindChanged == DiagramAreaEnumerations.DAPK_NAME)
          {
             notifyElementChanged(pProxyDiagram);
          }
-         else if(nPropertyKindChanged == IDrawingAreaPropertyKind.DAPK_NAMESPACE)
+         else if(nPropertyKindChanged == DiagramAreaEnumerations.DAPK_NAMESPACE)
          {
-             // Fixed P2 IZ=125889
              // The name space of the diagram has been changed,, so delete the diagram
              // under its current namespace and and later add the diagram to the new namespace.
              IProjectTreeModel model = getTreeModel();
-             ETList < ITreeItem > items = model.findDiagramNodes(pProxyDiagram.getFilename());    
+             ETList < ITreeItem > items = model.findDiagramNodes(pProxyDiagram.getFilename()); 
              for(ITreeItem item : items)
              {
                 model.removeNodeFromParent(item);
@@ -4060,35 +4092,11 @@ public class ADProjectTreeEngine
              
              SwingUtilities.invokeLater(new Runnable()
              {
-
                  public void run()
                  {
                      addDiagramNode(pProxyDiagram.getFilename());
                  }
              });
-             
-//             ETList < ITreeItem > owner = model.findNodes(pProxyDiagram.getNamespace()); 
-//             if(owner != null)
-//             {                 
-//                 
-////                 // This should never be more than one but you can never know.
-////                 for(ITreeItem item : items)
-////                 {
-//////                    ITreeDiagram diagram = model.getNodeFactory().createDiagramNode(pProxyDiagram);
-//////                    getTreeModel().addItem(item, diagram);
-//////                    diagram.setParentItem(item);
-////                     ITreeDiagram newItem = getNodeFactory().createDiagramNode(pProxyDiagram);
-////                     newItem.setDisplayedName(pProxyDiagram.getNameWithAlias());
-////					 // cvc - CR#6265213   
-////					 // the tree node's and the diagram's name was constantly 
-////					 //  being reset to the diagram type name ???
-////					 // newItem.setName(diagrams.get(index).getDiagramKindName());
-////                     newItem.setName(pProxyDiagram.getNameWithAlias());
-////                     newItem.setSortPriority(m_TreeBuilder.getSortPriority(pProxyDiagram.getDiagramKindName()));
-////                     //setTreeItemParent(newItem, parent);
-////                     getTreeModel().addItem(item, newItem);
-////                 }
-//             }
          }
       }
 

@@ -43,6 +43,8 @@ package org.netbeans.modules.swingapp;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import javax.swing.JComponent;
@@ -89,9 +91,10 @@ public class ProjectCustomizerProvider implements ProjectCustomizer.CompositeCat
             cat = ProjectCustomizer.Category.create(CAT_NAME,
                     NbBundle.getMessage(ProjectCustomizerProvider.class, "CTL_ProjectCustomizerCategoryTitle"), // NOI18N
                     null, (ProjectCustomizer.Category[])null);
-            cat.setOkButtonListener(new SaveListener(project));
-            // we need the save listener even if the panel is not created
-            // (to get the possibly changed common application properties)
+            J2SEPropertyEvaluator propEval = project.getLookup().lookup(J2SEPropertyEvaluator.class);
+            if (propEval != null) {
+                propEval.evaluator().addPropertyChangeListener(new ApplicationPropertyChangeListener(project));
+            }
         } else {
             cat = null;
         }
@@ -100,21 +103,73 @@ public class ProjectCustomizerProvider implements ProjectCustomizer.CompositeCat
 
     public JComponent createComponent(Category category, Lookup context) {
         ProjectCustomizerPanel panel = new ProjectCustomizerPanel();
-        ((SaveListener)category.getOkButtonListener()).panel = panel;
-
         Project project = context.lookup(Project.class);
+        SaveListener listener = new SaveListener(project);
+        listener.panel = panel;
+        category.setOkButtonListener(listener);
+
         if (ProjectCustomizerPanel.fileChooserDir == null) {
             File projDir = FileUtil.toFile(project.getProjectDirectory());
             ProjectCustomizerPanel.fileChooserDir = projDir.getPath();
         }
         DesignResourceMap resMap = ResourceUtils.getAppDesignResourceMap(project);
-        panel.setVendorId(resMap.getString(KEY_VENDOR_ID));
-        panel.setApplicationId(resMap.getString(KEY_APP_ID));
-        panel.setLookAndFeel(resMap.getString(KEY_LOOK_AND_FEEL));        
+        if (resMap != null) { // Issue 134831
+            panel.setVendorId(resMap.getString(KEY_VENDOR_ID));
+            panel.setApplicationId(resMap.getString(KEY_APP_ID));
+            panel.setLookAndFeel(resMap.getString(KEY_LOOK_AND_FEEL));        
+        } else {
+            panel.setReadOnly();
+        }
         return panel;
     }
 
+    static void storeValue(String key, String value, DesignResourceMap resMap) {
+        ResourceValueImpl resValue = resMap.getResourceValue(key, String.class);
+        if (resValue != null) {
+            if (value != null) {
+                resValue.setValue(value);
+                resValue.setStringValue(value);
+                resMap.addResourceValue(resValue);
+            } else {
+                resMap.removeResourceValue(resValue);
+            }
+        } else if (value != null) {
+            resValue = new ResourceValueImpl(key, String.class,
+                    value, null, value,
+                    false, DesignResourceMap.APP_LEVEL, null);
+            resMap.addResourceValue(resValue);
+        }
+    }
+
     // -----
+
+    // read properties from the common Application category panel
+    // and store them to the application properties file
+    private static class ApplicationPropertyChangeListener implements PropertyChangeListener {
+        private Project project;
+
+        ApplicationPropertyChangeListener(Project project) {
+            this.project = project;
+        }
+
+        public void propertyChange(PropertyChangeEvent evt) {
+            String propName = evt.getPropertyName();
+            for (String[] propNames : APP_PROPERTIES) {
+                if (propNames[0].equals(propName)) {
+                    J2SEPropertyEvaluator propEval = project.getLookup().lookup(J2SEPropertyEvaluator.class);
+                    PropertyEvaluator props = propEval.evaluator();
+                    if (props != null) {
+                        DesignResourceMap resMap = ResourceUtils.getAppDesignResourceMap(project);
+                        if (resMap == null) return;
+                        String value = props.getProperty(propNames[0]);
+                        storeValue(propNames[1], value, resMap);
+                        resMap.save();
+                    }
+                }
+            }
+        }
+
+    }
 
     private static class SaveListener implements ActionListener, Runnable {
 
@@ -131,16 +186,10 @@ public class ProjectCustomizerProvider implements ProjectCustomizer.CompositeCat
 
         public void run() {
             DesignResourceMap resMap = ResourceUtils.getAppDesignResourceMap(project);
-            // read properties from the common Application category panel
-            // and store them to the application properties file
-            J2SEPropertyEvaluator propEval = project.getLookup().lookup(J2SEPropertyEvaluator.class);
-            if (propEval != null) {
-                PropertyEvaluator props = propEval.evaluator();
-                for (String[] propNames : APP_PROPERTIES) {
-                    String value = props.getProperty(propNames[0]);
-                    storeValue(propNames[1], value, resMap);
-                }
+            if (resMap == null) {
+                return; // Issue 134831
             }
+
             // store app framework specific properties
             if (panel != null) {
                 storeValue(KEY_VENDOR_ID, panel.getVendorId(), resMap);
@@ -160,25 +209,7 @@ public class ProjectCustomizerProvider implements ProjectCustomizer.CompositeCat
                     }
                 }
             }
-            resMap.save();
         }
 
-        private static void storeValue(String key, String value, DesignResourceMap resMap) {
-            ResourceValueImpl resValue = resMap.getResourceValue(key, String.class);
-            if (resValue != null) {
-                if (value != null) {
-                    resValue.setValue(value);
-                    resValue.setStringValue(value);
-                    resMap.addResourceValue(resValue);
-                } else {
-                    resMap.removeResourceValue(resValue);
-                }
-            } else if (value != null) {
-                resValue = new ResourceValueImpl(key, String.class,
-                        value, null, value,
-                        false, DesignResourceMap.APP_LEVEL, null);
-                resMap.addResourceValue(resValue);
-            }
-        }
     }
 }

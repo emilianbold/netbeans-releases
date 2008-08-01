@@ -67,20 +67,16 @@ import org.netbeans.modules.uml.ui.controls.projecttree.IProjectTreeItem;
 import org.netbeans.modules.uml.ui.support.contextmenusupport.IProductContextMenu;
 import org.netbeans.modules.uml.ui.support.contextmenusupport.IProductContextMenuItem;
 import org.netbeans.modules.uml.ui.support.contextmenusupport.IProductContextMenuSelectionHandler;
-import org.netbeans.modules.uml.ui.support.viewfactorysupport.IToolTipData;
-import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaContextMenuEventsSink;
-import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaControl;
-import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaDropContext;
-import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaEventsSink;
 
 /**
  * @author sumitabhk
  *
  */
+// TODO: meteora
 public class CatalogEventSink implements IProjectTreeEventsSink,
-										IDrawingAreaContextMenuEventsSink,
+//										IDrawingAreaContextMenuEventsSink,
 										IProductContextMenuSelectionHandler,
-										IDrawingAreaEventsSink,
+//										IDrawingAreaEventsSink,
 										IProjectEventsSink,
 										IWorkspaceEventsSink,
 										IWSProjectEventsSink,
@@ -115,15 +111,18 @@ public class CatalogEventSink implements IProjectTreeEventsSink,
 	 */
 	public void onBeforeEdit(IProjectTreeControl pParentControl, IProjectTreeItem pItem, IProjectTreeEditVerify pVerify, IResultCell cell)
 	{
-		// since we are listening for the design pattern catalog,
-		// we only want to respond to events being sent by the design center tree
-		// so we do this check so that we don't respond to the project tree events
+            // since we are listening for the design pattern catalog,
+            // we only want to respond to events being sent by the design center tree
+            // so we do this check so that we don't respond to the project tree events
+            if (pParentControl != null) 
+            {
 		String sMgrName = pParentControl.getConfigMgrName();
 		if (sMgrName.equals("DesignCenter"))
 		{
 			 // Forward to the parent if interested.
 			 m_Parent.onBeforeEdit(pParentControl, pItem, pVerify);
 		}
+            }
 	}
 
 	/* (non-Javadoc)
@@ -159,15 +158,18 @@ public class CatalogEventSink implements IProjectTreeEventsSink,
 	 */
 	public void onBeginDrag(IProjectTreeControl pParentControl, IProjectTreeItem[] pItem, IProjectTreeDragVerify pVerify, IResultCell cell)
 	{
-		// since we are listening for the design pattern catalog,
-		// we only want to respond to events being sent by the design center tree
-		// so we do this check so that we don't respond to the project tree events
+            // since we are listening for the design pattern catalog,
+            // we only want to respond to events being sent by the design center tree
+            // so we do this check so that we don't respond to the project tree events
+            if (pParentControl != null) 
+            {
 		String sMgrName = pParentControl.getConfigMgrName();
 		if (sMgrName.equals("DesignCenter"))
 		{
 			 // Forward to the parent if interested.
 			 m_Parent.onBeginDrag(pParentControl, pItem, pVerify);
 		}
+            }
 	}
 
 	/* (non-Javadoc)
@@ -235,16 +237,16 @@ public class CatalogEventSink implements IProjectTreeEventsSink,
 	/* (non-Javadoc)
 	 * @see org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaEventsSink#onDrawingAreaPreCreated(org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaControl, org.netbeans.modules.uml.core.support.umlsupport.IResultCell)
 	 */
-	public void onDrawingAreaPreCreated(IDrawingAreaControl pDiagramControl, IResultCell cell)
-	{
-	}
-
-	/* (non-Javadoc)
-	 * @see org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaEventsSink#onDrawingAreaPostCreated(org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaControl, org.netbeans.modules.uml.core.support.umlsupport.IResultCell)
-	 */
-	public void onDrawingAreaPostCreated(IDrawingAreaControl pDiagramControl, IResultCell cell)
-	{
-	}
+//	public void onDrawingAreaPreCreated(IDrawingAreaControl pDiagramControl, IResultCell cell)
+//	{
+//	}
+//
+//	/* (non-Javadoc)
+//	 * @see org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaEventsSink#onDrawingAreaPostCreated(org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaControl, org.netbeans.modules.uml.core.support.umlsupport.IResultCell)
+//	 */
+//	public void onDrawingAreaPostCreated(IDrawingAreaControl pDiagramControl, IResultCell cell)
+//	{
+//	}
 
 	/* (non-Javadoc)
 	 * @see org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaEventsSink#onDrawingAreaOpened(org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram, org.netbeans.modules.uml.core.support.umlsupport.IResultCell)
@@ -298,9 +300,9 @@ public class CatalogEventSink implements IProjectTreeEventsSink,
 	/* (non-Javadoc)
 	 * @see org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaEventsSink#onDrawingAreaTooltipPreDisplay(org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram, org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement, org.netbeans.modules.uml.ui.support.viewfactorysupport.IToolTipData, org.netbeans.modules.uml.core.support.umlsupport.IResultCell)
 	 */
-	public void onDrawingAreaTooltipPreDisplay(IDiagram pParentDiagram, IPresentationElement pPE, IToolTipData pTooltip, IResultCell cell)
-	{
-	}
+//	public void onDrawingAreaTooltipPreDisplay(IDiagram pParentDiagram, IPresentationElement pPE, IToolTipData pTooltip, IResultCell cell)
+//	{
+//	}
 
 	/* (non-Javadoc)
 	 * @see org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaEventsSink#onDrawingAreaActivated(org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram, org.netbeans.modules.uml.core.support.umlsupport.IResultCell)
@@ -312,20 +314,20 @@ public class CatalogEventSink implements IProjectTreeEventsSink,
 	/* (non-Javadoc)
 	 * @see org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaEventsSink#onDrawingAreaPreDrop(org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram, org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaDropContext, org.netbeans.modules.uml.core.support.umlsupport.IResultCell)
 	 */
-	public void onDrawingAreaPreDrop(IDiagram pParentDiagram, IDrawingAreaDropContext pContext, IResultCell cell)
-	{
-		if (m_Parent != null)
-		{
-			m_Parent.onDrawingAreaPreDrop(pParentDiagram, pContext, cell);
-		}
-	}
-
-	/* (non-Javadoc)
-	 * @see org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaEventsSink#onDrawingAreaPostDrop(org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram, org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaDropContext, org.netbeans.modules.uml.core.support.umlsupport.IResultCell)
-	 */
-	public void onDrawingAreaPostDrop(IDiagram pParentDiagram, IDrawingAreaDropContext pContext, IResultCell cell)
-	{
-	}
+//	public void onDrawingAreaPreDrop(IDiagram pParentDiagram, IDrawingAreaDropContext pContext, IResultCell cell)
+//	{
+//		if (m_Parent != null)
+//		{
+//			m_Parent.onDrawingAreaPreDrop(pParentDiagram, pContext, cell);
+//		}
+//	}
+//
+//	/* (non-Javadoc)
+//	 * @see org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaEventsSink#onDrawingAreaPostDrop(org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram, org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaDropContext, org.netbeans.modules.uml.core.support.umlsupport.IResultCell)
+//	 */
+//	public void onDrawingAreaPostDrop(IDiagram pParentDiagram, IDrawingAreaDropContext pContext, IResultCell cell)
+//	{
+//	}
 
 	/* (non-Javadoc)
 	 * @see org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaEventsSink#onDrawingAreaPreFileRemoved(java.lang.String, org.netbeans.modules.uml.core.support.umlsupport.IResultCell)

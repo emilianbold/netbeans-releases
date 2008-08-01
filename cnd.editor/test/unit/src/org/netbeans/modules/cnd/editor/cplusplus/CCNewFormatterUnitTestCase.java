@@ -1479,6 +1479,9 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
         EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
                 put(EditorOptions.newLineBeforeBrace, 
                 CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                put(EditorOptions.newLineBeforeBraceSwitch, 
+                CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
         setLoadDocumentText(
                 "int main(int i)\n" +
                 "{\n" +
@@ -1573,6 +1576,208 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
                 "}\n");
     }
 
+    public void testSwitchFormatting3HalfSQL() {
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.newLineElse, true);
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                put(EditorOptions.newLineBeforeBrace, 
+                CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                put(EditorOptions.newLineBeforeBraceSwitch, 
+                CodeStyle.BracePlacement.SAME_LINE.name());
+        setLoadDocumentText(
+                "int main(int i)\n" +
+                "{\n" +
+                "    switch (i) {\n" +
+                "        case 1:\n" +
+                "        return 1;\n" +
+                "        case 4 :\n" +
+                "                   if (true)return;\n" +
+                "                   else {break;}\n" +
+                "        break;\n" +
+                "        case 14 :\n" +
+                "        {\n" +
+                "        i++;\n" +
+                "        }\n" +
+                "        case 6:\n" +
+                "        return;\n" +
+                "    default:\n" +
+                "        break;\n" +
+                "    }\n" +
+                "    if (i != 8)\n" +
+                "        switch (i) {\n" +
+                "        case 1:\n" +
+                "        return 1;\n" +
+                "        case 2:\n" +
+                "        break;\n" +
+                "        case 4 :\n" +
+                "                i++;\n" +
+                "           case 6:\n" +
+                "               switch (i * 2) {\n" +
+                "            case 10:\n" +
+                "                   if (true)return;\n" +
+                "                   else {break;}\n" +
+                "       case 12:\n" +
+                "                {\n" +
+                "                break;\n" +
+                "                }\n" +
+                "        }\n" +
+                "     default :\n" +
+                "            break;\n" +
+                "     }\n" +
+                "}\n");
+        reformat();
+        assertDocumentText("Incorrect formatting for macro define with paren",
+                "int main(int i)\n" +
+                "{\n" +
+                "    switch (i) {\n" +
+                "        case 1:\n" +
+                "            return 1;\n" +
+                "        case 4:\n" +
+                "            if (true)return;\n" +
+                "            else\n" +
+                "              {\n" +
+                "                break;\n" +
+                "              }\n" +
+                "            break;\n" +
+                "        case 14:\n" +
+                "        {\n" +
+                "            i++;\n" +
+                "        }\n" +
+                "        case 6:\n" +
+                "            return;\n" +
+                "        default:\n" +
+                "            break;\n" +
+                "    }\n" +
+                "    if (i != 8)\n" +
+                "      switch (i) {\n" +
+                "          case 1:\n" +
+                "              return 1;\n" +
+                "          case 2:\n" +
+                "              break;\n" +
+                "          case 4:\n" +
+                "              i++;\n" +
+                "          case 6:\n" +
+                "              switch (i * 2) {\n" +
+                "                  case 10:\n" +
+                "                      if (true)return;\n" +
+                "                      else\n" +
+                "                        {\n" +
+                "                          break;\n" +
+                "                        }\n" +
+                "                  case 12:\n" +
+                "                  {\n" +
+                "                      break;\n" +
+                "                  }\n" +
+                "              }\n" +
+                "          default:\n" +
+                "              break;\n" +
+                "      }\n" +
+                "}\n");
+    }
+
+    public void testSwitchFormatting3SQL() {
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.indentCasesFromSwitch, false);
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                put(EditorOptions.newLineBeforeBrace, 
+                CodeStyle.BracePlacement.NEW_LINE.name());
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                put(EditorOptions.newLineBeforeBraceSwitch, 
+                CodeStyle.BracePlacement.SAME_LINE.name());
+        setLoadDocumentText(
+                "int main(int i)\n" +
+                "{\n" +
+                "    switch (i) {\n" +
+                "        case 1:\n" +
+                "        return 1;\n" +
+                "        case 4 :\n" +
+                "                   if (true)return;\n" +
+                "                   else {break;}\n" +
+                "        break;\n" +
+                "        case 14 :\n" +
+                "        {\n" +
+                "        i++;\n" +
+                "        }\n" +
+                "        case 6:\n" +
+                "        return;\n" +
+                "    default:\n" +
+                "        break;\n" +
+                "    }\n" +
+                "    if (i != 8)\n" +
+                "        switch (i) {\n" +
+                "        case 1:\n" +
+                "        return 1;\n" +
+                "        case 2:\n" +
+                "        break;\n" +
+                "        case 4 :\n" +
+                "                i++;\n" +
+                "           case 6:\n" +
+                "               switch (i * 2) {\n" +
+                "            case 10:\n" +
+                "                   if (true)return;\n" +
+                "                   else {break;}\n" +
+                "       case 12:\n" +
+                "                {\n" +
+                "                break;\n" +
+                "                }\n" +
+                "        }\n" +
+                "     default :\n" +
+                "            break;\n" +
+                "     }\n" +
+                "}\n");
+        reformat();
+        assertDocumentText("Incorrect formatting for macro define with paren",
+                "int main(int i)\n" +
+                "{\n" +
+                "    switch (i) {\n" +
+                "    case 1:\n" +
+                "        return 1;\n" +
+                "    case 4:\n" +
+                "        if (true)return;\n" +
+                "        else\n" +
+                "        {\n" +
+                "            break;\n" +
+                "        }\n" +
+                "        break;\n" +
+                "    case 14:\n" +
+                "    {\n" +
+                "        i++;\n" +
+                "    }\n" +
+                "    case 6:\n" +
+                "        return;\n" +
+                "    default:\n" +
+                "        break;\n" +
+                "    }\n" +
+                "    if (i != 8)\n" +
+                "        switch (i) {\n" +
+                "        case 1:\n" +
+                "            return 1;\n" +
+                "        case 2:\n" +
+                "            break;\n" +
+                "        case 4:\n" +
+                "            i++;\n" +
+                "        case 6:\n" +
+                "            switch (i * 2) {\n" +
+                "            case 10:\n" +
+                "                if (true)return;\n" +
+                "                else\n" +
+                "                {\n" +
+                "                    break;\n" +
+                "                }\n" +
+                "            case 12:\n" +
+                "            {\n" +
+                "                break;\n" +
+                "            }\n" +
+                "            }\n" +
+                "        default:\n" +
+                "            break;\n" +
+                "        }\n" +
+                "}\n");
+    }
+
     public void testSwitchFormatting4() {
         setDefaultsOptions();
         EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
@@ -1652,6 +1857,9 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
                 putBoolean(EditorOptions.newLineElse, true);
         EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
                 put(EditorOptions.newLineBeforeBrace, 
+                CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                put(EditorOptions.newLineBeforeBraceSwitch, 
                 CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
         setLoadDocumentText(
                 "int main(int i)\n" +
@@ -2015,6 +2223,9 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
         EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
                 put(EditorOptions.newLineBeforeBrace, 
                 CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                put(EditorOptions.newLineBeforeBraceSwitch, 
+                CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
         setLoadDocumentText(
             "int foo() {\n" +
             "     switch (optid) {\n" +
@@ -2064,6 +2275,9 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
                 putBoolean(EditorOptions.newLineElse, true);
         EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
                 put(EditorOptions.newLineBeforeBrace, 
+                CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                put(EditorOptions.newLineBeforeBraceSwitch, 
                 CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
         setLoadDocumentText(
             "int foo() {\n" +
@@ -2750,6 +2964,7 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
             "    s->depth[node] = (uch)((s->depth[n] >= s->depth[m] ? s->depth[n] : s->depth[m])+1);\n" +
             "    for (i = 0; i<n; i++) return;\n" +
             "    match[1].end = match[0].end+s_length;\n" +
+            "    return(0);\n" +
             "}\n"
             );
         reformat();
@@ -2757,12 +2972,13 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
             "int foo()\n" +
             "{\n" +
             "    bmove_upp(dst + rest + new_length, dst + tot_length, rest);\n" +
-            "    if (len <= 0 || len >= (int) sizeof(buf) || buf[sizeof(buf) - 1] != 0) return 0;\n" +
+            "    if (len <= 0 || len >= (int) sizeof (buf) || buf[sizeof (buf) - 1] != 0) return 0;\n" +
             "    lmask = (1U << state->lenbits) - 1;\n" +
             "    len = BITS(4) + 8;\n" +
             "    s->depth[node] = (uch) ((s->depth[n] >= s->depth[m] ? s->depth[n] : s->depth[m]) + 1);\n" +
             "    for (i = 0; i < n; i++) return;\n" +
             "    match[1].end = match[0].end + s_length;\n" +
+            "    return (0);\n" +
             "}\n"
         );
     }
@@ -2831,7 +3047,7 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
             "    if (strm->zalloc == ( alloc_func ) 0) return;\n" +
             "    stream.zalloc = ( alloc_func ) 0;\n" +
             "    put_short(s, ( ush ) len);\n" +
-            "    put_short(s, ( ush )~len);\n" +
+            "    put_short(s, ( ush ) ~len);\n" +
             "}\n"
         );
     }
@@ -2970,7 +3186,7 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
                 "    int number;\n" +
                 "    char** cc;\n" +
                 "\n" +
-                "    ClassA() : cc({ \"A\", \"B\", \"C\", \"D\"}), number(2)\n" +
+                "    ClassA() : cc({\"A\", \"B\", \"C\", \"D\"}), number(2)\n" +
                 "    {\n" +
                 "    }\n" +
                 "} FAR ct_data;\n"
@@ -3006,7 +3222,7 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
                 "    int number;\n" +
                 "    char** cc;\n" +
                 "\n" +
-                "    ClassA() : cc({ \"A\", \"B\", \"C\", \"D\" }), number(2)\n" +
+                "    ClassA() : cc({\"A\", \"B\", \"C\", \"D\"}), number(2)\n" +
                 "    {\n" +
                 "    }\n" +
                 "} FAR ct_data;\n" +
@@ -3629,4 +3845,773 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
                 "    for (cnt = 0; domain->successor[cnt] != NULL; ++cnt);\n" +
                 "}\n");
     }
+
+    public void testIZ130538() {
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.alignMultilineCallArgs, true);
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.alignMultilineMethodParams, true);
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.spaceBeforeMethodCallParen, true);
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.spaceBeforeMethodDeclParen, true);
+        setLoadDocumentText(
+                "int foooooooo(char* a,\n" +
+                " class B* b)\n" +
+                "{\n" +
+                "    foo(a,\n" +
+                "   b);\n" +
+                "}\n");
+        reformat();
+        assertDocumentText("Incorrect formating IZ#130538",
+                "int foooooooo (char* a,\n" +
+                "               class B* b)\n" +
+                "{\n" +
+                "    foo (a,\n" +
+                "         b);\n" +
+                "}\n");
+    }
+
+    //IZ#130544:Multiline alignment works wrongly with complex expressions
+    //IZ#130690:IDE cann't align multi-line expression on '('
+    public void testAlignOtherParen() {
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.alignMultilineParen, true);
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.alignMultilineIfCondition, true);
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.alignMultilineCallArgs, true);
+        setLoadDocumentText(
+            "int foo()\n" +
+            "{\n" +
+            "    v = (rup->ru_utime.tv_sec * 1000 + rup->ru_utime.tv_usec / 1000\n" +
+            "     + rup->ru_stime.tv_sec * 1000 + rup->ru_stime.tv_usec / 1000);\n" +
+            "    if ((inmode[j] == VOIDmode\n" +
+            "            && (GET_MODE_SIZE (outmode[j]) > GET_MODE_SIZE (inmode[j])))\n" +
+            "            ? outmode[j] : inmode[j]) a++;\n" +
+            "  while ((opt = getopt_long(argc, argv, OPTION_STRING,\n" +
+            "       options, NULL)) != -1)\n" +
+            "    a++;\n" +
+            "}\n"
+            );
+        reformat();
+        assertDocumentText("Incorrect spaces in binary operators",
+            "int foo()\n" +
+            "{\n" +
+            "    v = (rup->ru_utime.tv_sec * 1000 + rup->ru_utime.tv_usec / 1000\n" +
+            "         + rup->ru_stime.tv_sec * 1000 + rup->ru_stime.tv_usec / 1000);\n" +
+            "    if ((inmode[j] == VOIDmode\n" +
+            "         && (GET_MODE_SIZE(outmode[j]) > GET_MODE_SIZE(inmode[j])))\n" +
+            "        ? outmode[j] : inmode[j]) a++;\n" +
+            "    while ((opt = getopt_long(argc, argv, OPTION_STRING,\n" +
+            "                              options, NULL)) != -1)\n" +
+            "        a++;\n" +
+            "}\n"
+        );
+    }
+
+    //IZ#130525:Formatter should move the name of the function in column one
+    public void testNewLineFunctionDefinitionName() {
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.newLineFunctionDefinitionName, true);
+        setLoadDocumentText(
+            "static char *concat (char *s1, char *s2)\n" +
+            "{\n" +
+            "  int i;\n" +
+            "   int j;\n" +
+            "}\n"
+            );
+        reformat();
+        assertDocumentText("Formatter should move the name of the function in column one",
+            "static char *\n" +
+            "concat(char *s1, char *s2)\n" +
+            "{\n" +
+            "    int i;\n" +
+            "    int j;\n" +
+            "}\n"
+            );
+    }
+
+    //IZ#130898:'Spaces around ternary operators' is not working
+    public void testSpacesAroundTernary() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+            "static char *concat (char *s1, char *s2)\n" +
+            "{\n" +
+            "  int i=0;\n" +
+            "  i=(i==1)?1:2;\n" +
+            "  return (0);\n" +
+            "}\n"
+            );
+        reformat();
+        assertDocumentText("\'Spaces around ternary operators\' is not working",
+            "static char *concat(char *s1, char *s2)\n" +
+            "{\n" +
+            "    int i = 0;\n" +
+            "    i = (i == 1) ? 1 : 2;\n" +
+            "    return (0);\n" +
+            "}\n"
+            );
+    }
+
+    //IZ#130900:'Spaces around Operators|Unary Operators' doesn't work in some cases
+    public void testSpaceAroundUnaryOperator() {
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.spaceAroundUnaryOps, true);
+        setLoadDocumentText(
+            "int main(int argc, char** argv)\n" +
+            "{\n" +
+            "    int i = 0;\n" +
+            "    i = -i;\n" +
+            "    i = (-i);\n" +
+            "    return (0);\n" +
+            "}\n"
+            );
+        reformat();
+        assertDocumentText("Incorrect spaces in unary operators",
+            "int main(int argc, char** argv)\n" +
+            "{\n" +
+            "    int i = 0;\n" +
+            "    i = - i;\n" +
+            "    i = (- i);\n" +
+            "    return (0);\n" +
+            "}\n"
+            );
+    }
+
+    //IZ#130901:'Blank Lines|After Class Header' text field works wrongly
+    public void testNewLinesAterClassHeader() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+            "class A\n" +
+            "{\n" +
+            "public:\n" +
+            "\n" +
+            "    A()\n" +
+            "    {\n" +
+            "    }\n" +
+            "}\n"
+            );
+        reformat();
+        assertDocumentText("Blank Lines \'After Class Header\' text field works wrongly",
+            "class A\n" +
+            "{\n" +
+            "public:\n" +
+            "\n" +
+            "    A()\n" +
+            "    {\n" +
+            "    }\n" +
+            "}\n"
+            );
+    }
+    public void testNewLinesAterClassHeader2() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+            "class A\n" +
+            "{\n" +
+            "\n" +
+            "public:\n" +
+            "\n" +
+            "    A()\n" +
+            "    {\n" +
+            "    }\n" +
+            "}\n"
+            );
+        reformat();
+        assertDocumentText("Blank Lines \'After Class Header\' text field works wrongly",
+            "class A\n" +
+            "{\n" +
+            "public:\n" +
+            "\n" +
+            "    A()\n" +
+            "    {\n" +
+            "    }\n" +
+            "}\n"
+            );
+    }
+
+    public void testNewLinesAterClassHeader3() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+            "class A\n" +
+            "{\n" +
+            "\n" +
+            "\n" +
+            "public:\n" +
+            "\n" +
+            "    A()\n" +
+            "    {\n" +
+            "    }\n" +
+            "}\n"
+            );
+        reformat();
+        assertDocumentText("Blank Lines \'After Class Header\' text field works wrongly",
+            "class A\n" +
+            "{\n" +
+            "public:\n" +
+            "\n" +
+            "    A()\n" +
+            "    {\n" +
+            "    }\n" +
+            "}\n"
+            );
+    }
+
+    public void testNewLinesAterClassHeader4() {
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putInt(EditorOptions.blankLinesAfterClassHeader, 1);
+        setLoadDocumentText(
+            "class A\n" +
+            "{\n" +
+            "\n" +
+            "\n" +
+            "public:\n" +
+            "\n" +
+            "    A()\n" +
+            "    {\n" +
+            "    }\n" +
+            "}\n"
+            );
+        reformat();
+        assertDocumentText("Blank Lines \'After Class Header\' text field works wrongly",
+            "class A\n" +
+            "{\n" +
+            "\n" +
+            "public:\n" +
+            "\n" +
+            "    A()\n" +
+            "    {\n" +
+            "    }\n" +
+            "}\n"
+            );
+    }
+
+    //IZ#130916:'Multiline Alignment|Array Initializer' checkbox works wrongly
+    public void testMultilineArrayAlignment() {
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.alignMultilineArrayInit, true);
+        setLoadDocumentText(
+            "        int array[10] ={1, 2, 3, 4,\n" +
+            "    5, 6, 7, 8, 9\n" +
+            "};\n"
+            );
+        reformat();
+        assertDocumentText("\'Multiline Alignment|Array Initializer\' checkbox works wrongly",
+            "int array[10] = {1, 2, 3, 4,\n" +
+            "                 5, 6, 7, 8, 9\n" +
+            "};\n"
+            );
+    }
+
+    //IZ#131038:GNU style: reformat works wrongly with destructors
+    public void testGnuStuleNewLineName() {
+        setDefaultsOptions("GNU");
+        setLoadDocumentText(
+                "locale::~locale() throw()\n" +
+                "{ _M_impl->_M_remove_reference(); }\n"
+                );
+        reformat();
+        assertDocumentText("Incorrect formatting GNU new line name",
+                "locale::~locale () throw ()\n" +
+                "{\n" +
+                "  _M_impl->_M_remove_reference ();\n" +
+                "}\n"
+                );
+    }
+
+    //IZ#131043:GNU style: reformat works wrongly with function names
+    public void testGnuStuleNewLineName2() {
+        setDefaultsOptions("GNU");
+        setLoadDocumentText(
+                "void\n" +
+                "__num_base::_S_format_float(const ios_base& __io, char* __fptr, char __mod)\n" +
+                "{\n" +
+                "return;\n" +
+                "}\n"
+                );
+        reformat();
+        assertDocumentText("Incorrect formatting GNU new line name",
+                "void\n" +
+                "__num_base::_S_format_float (const ios_base& __io, char* __fptr, char __mod)\n" +
+                "{\n" +
+                "  return;\n" +
+                "}\n"
+                );
+    }
+    
+    //IZ#131059:GNU style: Multiline alignment works wrongly
+    public void testGnuStuleNewLineName3() {
+        setDefaultsOptions("GNU");
+        setLoadDocumentText(
+                "int f(int a1, int a2,\n" +
+                "      int a3) {\n" +
+                "}\n"
+                );
+        reformat();
+        assertDocumentText("Incorrect formatting GNU new line name",
+                "int\n" +
+                "f (int a1, int a2,\n" +
+                "   int a3) { }\n" 
+                );
+    }
+
+    public void testGnuStuleNewLineName4() {
+        setDefaultsOptions("GNU");
+        setLoadDocumentText(
+                "Db::Db (DbEnv *env, u_int32_t flags)\n" +
+                ": imp_ (0)\n" +
+                ", env_ (env)\n" +
+                "{\n" +
+                "}\n"
+                );
+        reformat();
+        assertDocumentText("Incorrect formatting GNU new line name",
+                "Db::Db (DbEnv *env, u_int32_t flags)\n" +
+                ": imp_ (0)\n" +
+                ", env_ (env) { }\n" 
+                );
+    }
+
+    public void testGnuStuleNewLineName5() {
+        setDefaultsOptions("GNU");
+        setLoadDocumentText(
+                "tree decl_shadowed_for_var_lookup (tree from)\n" +
+                "{\n" +
+                "  return NULL_TREE;\n" +
+                "}\n"
+                );
+        reformat();
+        assertDocumentText("Incorrect formatting GNU new line name",
+                "tree\n" +
+                "decl_shadowed_for_var_lookup (tree from)\n" +
+                "{\n" +
+                "  return NULL_TREE;\n" +
+                "}\n"
+                );
+    }
+
+    public void testGnuStuleNewLineName6() {
+        setDefaultsOptions("GNU");
+        setLoadDocumentText(
+                "B::tree A::\n" +
+                "decl_shadowed_for_var_lookup (tree from)\n" +
+                "{\n" +
+                "  return NULL_TREE;\n" +
+                "}\n"
+                );
+        reformat();
+        assertDocumentText("Incorrect formatting GNU new line name",
+                "B::tree\n" +
+                "A::decl_shadowed_for_var_lookup (tree from)\n" +
+                "{\n" +
+                "  return NULL_TREE;\n" +
+                "}\n"
+                );
+    }
+    
+    //IZ#131158:"Spaces Within Parenthesis|Braces" checkbox works wrongly
+    public void testSpaceWithinBraces() {
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.spaceWithinBraces, true);
+        setLoadDocumentText(
+                "int a[] = {1,(1+2),(2+ 3)};\n" +
+                "int b[] = {  1,(1+2),(2+ 3)  };\n" +
+                "int c[] = {  1,(1+2),(2+ 3)  \n" +
+                "};\n"
+                );
+        reformat();
+        assertDocumentText("Incorrect formatting array init",
+                "int a[] = { 1, (1 + 2), (2 + 3) };\n" +
+                "int b[] = { 1, (1 + 2), (2 + 3) };\n" +
+                "int c[] = { 1, (1 + 2), (2 + 3)\n" +
+                "};\n"
+                );
+    }
+
+    public void testSpaceWithinBraces2() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+                "int a[] = {1,(1+2),(2+ 3)};\n" +
+                "int b[] = {  1,(1+2),(2+ 3)  };\n" +
+                "int c[] = {  1,(1+2),(2+ 3)  \n" +
+                "};\n"
+                );
+        reformat();
+        assertDocumentText("Incorrect formatting array init",
+                "int a[] = {1, (1 + 2), (2 + 3)};\n" +
+                "int b[] = {1, (1 + 2), (2 + 3)};\n" +
+                "int c[] = {1, (1 + 2), (2 + 3)\n" +
+                "};\n"
+                );
+    }
+
+    public void testFunctionNameInNamespace() {
+        setDefaultsOptions("GNU");
+        setLoadDocumentText(
+                "namespace {\n" +
+                "void outCustomersList() {\n" +
+                "return;\n" +
+                "}\n" +
+                "}\n"
+                );
+        reformat();
+        assertDocumentText("Incorrect formatting GNU new line name",
+                "namespace\n" +
+                "{\n" +
+                "\n" +
+                "  void\n" +
+                "  outCustomersList ()\n" +
+                "  {\n" +
+                "    return;\n" +
+                "  }\n" +
+                "}\n"
+                );
+    }
+
+    // IZ#131286:Nondeterministic behavior of formatter
+    public void testIZ131286() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+                "int\n" +
+                "foo() {\n" +
+                "    s = (teststruct_t){\n" +
+                "        .a = 1,\n" +
+                "        .b = 2,\n" +
+                "        .c = 3,\n" +
+                "    };\n" +
+                "}\n"
+                );
+        reformat();
+        assertDocumentText("Nondeterministic behavior of formatter",
+                "int\n" +
+                "foo()\n" +
+                "{\n" +
+                "    s = (teststruct_t){\n" +
+                "        .a = 1,\n" +
+                "        .b = 2,\n" +
+                "        .c = 3,\n" +
+                "    };\n" +
+                "}\n"
+                );
+    }
+    
+    // IZ#123656:Indenting behavior seems odd
+    public void testIZ123656() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+                "int\n" +
+                "foo() {\n" +
+                "a\n" +
+                "b\n" +
+                "i=0;\n" +
+                "}\n"
+                );
+        reformat();
+        assertDocumentText("Indenting behavior seems odd",
+                "int\n" +
+                "foo()\n" +
+                "{\n" +
+                "    a\n" +
+                "    b\n" +
+                "    i = 0;\n" +
+                "}\n"
+                );
+    }
+
+    // IZ#123656:Indenting behavior seems odd
+    public void testIZ123656_2() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+                "int\n" +
+                "foo() {\n" +
+                "a()\n" +
+                "b\n" +
+                "i=0;\n" +
+                "}\n"
+                );
+        reformat();
+        assertDocumentText("Indenting behavior seems odd",
+                "int\n" +
+                "foo()\n" +
+                "{\n" +
+                "    a()\n" +
+                "    b\n" +
+                "    i = 0;\n" +
+                "}\n"
+                );
+    }
+
+    // IZ#123656:Indenting behavior seems odd
+    public void testIZ123656_3() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+            " C_MODE_START\n" +
+            "#    include <decimal.h>\n" +
+            "        C_MODE_END\n" +
+            "\n" +
+            "#    define DECIMAL_LONGLONG_DIGITS 22\n" +
+            "\n" +
+            "\n" +
+            "        /* maximum length of buffer in our big digits (uint32) */\n" +
+            "#    define DECIMAL_BUFF_LENGTH 9\n" +
+            "        /*\n" +
+            "        point on the border of our big digits))\n" +
+            "*/\n" +
+            "#    define DECIMAL_MAX_PRECISION ((DECIMAL_BUFF_LENGTH * 9) - 8*2)\n" +
+            "\n"
+            );
+        reformat();
+        assertDocumentText("Incorrect identing case after preprocessor",
+            "C_MODE_START\n" +
+            "#include <decimal.h>\n" +
+            "C_MODE_END\n" +
+            "\n" +
+            "#define DECIMAL_LONGLONG_DIGITS 22\n" +
+            "\n" +
+            "\n" +
+            "/* maximum length of buffer in our big digits (uint32) */\n" +
+            "#define DECIMAL_BUFF_LENGTH 9\n" +
+            "/*\n" +
+            "point on the border of our big digits))\n" +
+            " */\n" +
+            "#define DECIMAL_MAX_PRECISION ((DECIMAL_BUFF_LENGTH * 9) - 8*2)\n" +
+            "\n"
+        );
+    }
+
+    public void testIdentMultyConstructor5() {
+        setDefaultsOptions("MySQL");
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.alignMultilineParen, true);
+        setLoadDocumentText(
+            "Query_log_event::Query_log_event(THD* thd_arg, const char* query_arg,\n" + 
+            "				 ulong query_length, bool using_trans,\n" +
+            "				 bool suppress_use)\n" +
+              ":Log_event(thd_arg,\n" +
+            "	     ((thd_arg->tmp_table_used ? LOG_EVENT_THREAD_SPECIFIC_F : 0)\n" +
+            "	      || (suppress_use          ? LOG_EVENT_SUPPRESS_USE_F    : 0)),\n" +
+            "	     using_trans),\n" +
+            "   data_buf(0), query(query_arg), catalog(thd_arg->catalog),\n" +
+            "   db(thd_arg->db), q_len((uint32) query_length),\n" +
+            "   error_code((thd_arg->killed != THD::NOT_KILLED) ?\n" +
+            "              ((thd_arg->system_thread & SYSTEM_THREAD_DELAYED_INSERT) ?\n" +
+            "               0 : thd->killed_errno()) : thd_arg->net.last_errno),\n" +
+            "   thread_id(thd_arg->thread_id),\n" +
+            "   /* save the original thread id; we already know the server id */\n" +
+            "   slave_proxy_id(thd_arg->variables.pseudo_thread_id),\n" +
+            "   flags2_inited(1), sql_mode_inited(1), charset_inited(1),\n" +
+            "   sql_mode(thd_arg->variables.sql_mode),\n" +
+            "   auto_increment_increment(thd_arg->variables.auto_increment_increment),\n" +
+            "   auto_increment_offset(thd_arg->variables.auto_increment_offset)\n" +
+            "{\n" +
+            "    time_t end_time;\n" +
+            "}\n"
+            );
+        reformat();
+        assertDocumentText("Incorrect identing multyline constructor",
+            "Query_log_event::Query_log_event(THD* thd_arg, const char* query_arg,\n" + 
+            "                                 ulong query_length, bool using_trans,\n" +
+            "                                 bool suppress_use)\n" +
+            ": Log_event(thd_arg,\n" +
+            "            ((thd_arg->tmp_table_used ? LOG_EVENT_THREAD_SPECIFIC_F : 0)\n" +
+            "             | (suppress_use ? LOG_EVENT_SUPPRESS_USE_F : 0)),\n" +
+            "            using_trans),\n" +
+            "data_buf(0), query(query_arg), catalog(thd_arg->catalog),\n" +
+            "db(thd_arg->db), q_len((uint32) query_length),\n" +
+            "error_code((thd_arg->killed != THD::NOT_KILLED) ?\n" +
+            "           ((thd_arg->system_thread & SYSTEM_THREAD_DELAYED_INSERT) ?\n" +
+            "            0 : thd->killed_errno()) : thd_arg->net.last_errno),\n" +
+            "thread_id(thd_arg->thread_id),\n" +
+            "/* save the original thread id; we already know the server id */\n" +
+            "slave_proxy_id(thd_arg->variables.pseudo_thread_id),\n" +
+            "flags2_inited(1), sql_mode_inited(1), charset_inited(1),\n" +
+            "sql_mode(thd_arg->variables.sql_mode),\n" +
+            "auto_increment_increment(thd_arg->variables.auto_increment_increment),\n" +
+            "auto_increment_offset(thd_arg->variables.auto_increment_offset)\n" +
+            "{\n" +
+            "  time_t end_time;\n" +
+            "}\n"
+        );
+    }
+
+    // IZ#131379:GNU style: formatter works wrong with functions if it returns struct
+    public void testIZ131379() {
+        setDefaultsOptions("GNU");
+        setLoadDocumentText(
+                "tree\n" +
+                "decl_shadowed_for_var_lookup (tree from)\n" +
+                "{\n" +
+                "  return NULL_TREE;\n" +
+                "}\n" +
+                "\n" +
+                "void\n" +
+                "decl_shadowed_for_var_insert (tree from, tree to)\n" +
+                "{\n" +
+                "  return;\n" +
+                "}\n" +
+                "\n"
+                );
+        reformat();
+        assertDocumentText("Indenting behavior seems odd",
+                "tree\n" +
+                "decl_shadowed_for_var_lookup (tree from)\n" +
+                "{\n" +
+                "  return NULL_TREE;\n" +
+                "}\n" +
+                "\n" +
+                "void\n" +
+                "decl_shadowed_for_var_insert (tree from, tree to)\n" +
+                "{\n" +
+                "  return;\n" +
+                "}\n" +
+                "\n"
+                );
+    }
+
+    // IZ#130509:Formatter should ignore empty function body
+    public void testIZ130509() {
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.ignoreEmptyFunctionBody, true);
+        setLoadDocumentText(
+                "int foo0() { \n" +
+                "  }\n" +
+                "int foo1() { } \n" +
+                "int foo2()\n" +
+                " { } \n" +
+                "int foo3(){}\n" +
+                "int foo4(){\n" +
+                "}\n" +
+                "int foo5() { //\n" +
+                "}\n"
+                );
+        reformat();
+        assertDocumentText("Formatter should ignore empty function body",
+                "int foo0() { }\n" +
+                "\n" +
+                "int foo1() { }\n" +
+                "\n" +
+                "int foo2() { }\n" +
+                "\n" +
+                "int foo3() { }\n" +
+                "\n" +
+                "int foo4() { }\n" +
+                "\n" +
+                "int foo5() { //\n" +
+                "}\n"
+                );
+    }
+
+    // IZ#130509:NPE on formatting unbalanced braces
+    // Correct test case when macro will be taken into account
+    public void testIZ135015() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+                "#define FOR(n) for (int i = 0; i < n; i++) {\n" +
+                "\n" +
+                "int g() {\n" +
+                "    FOR(2)\n" +
+                "        foo();\n" +
+                "    }\n" +
+                "}\n"
+                );
+        reformat();
+        assertDocumentText("IZ#130509:NPE on formatting unbalanced braces",
+                "#define FOR(n) for (int i = 0; i < n; i++) {\n" +
+                "\n" +
+                "int g()\n" +
+                "{\n" +
+                "    FOR(2)\n" +
+                "    foo();\n" +
+                "}\n" +
+                "}\n"
+                );
+    }
+    
+    // IZ#135205:'Spaces Before Keywords|else' option works wrongly in some cases
+    public void testIZ135205() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+                "int main() {\n" +
+                "    int i = 0;\n" +
+                "    if (1) {\n" +
+                "        i = 2;\n" +
+                "    }else {\n" +
+                "        i = 3;\n" +
+                "    }\n" +
+                "}\n"
+                );
+        reformat();
+        assertDocumentText("IZ#135205:'Spaces Before Keywords|else' option works wrongly in some cases",
+                "int main()\n" +
+                "{\n" +
+                "    int i = 0;\n" +
+                "    if (1) {\n" +
+                "        i = 2;\n" +
+                "    } else {\n" +
+                "        i = 3;\n" +
+                "    }\n" +
+                "}\n"
+                );
+    }
+    
+    // IZ#131721:Comment moves on new line after reformat
+    public void testIZ131721() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+                "char seek_scrbuf[SEEKBUFSIZE]; /* buffer for seeking */\n" +
+                "int cf_debug; /* non-zero enables debug prints */\n" +
+                "void *\n" +
+                "cf_alloc(void *opaque, unsigned int items, unsigned int size)\n" +
+                "{\n" +
+                "    return (ptr);\n" +
+                "}\n"
+                );
+        reformat();
+        assertDocumentText("IZ#131721:Comment moves on new line after reformat",
+                "char seek_scrbuf[SEEKBUFSIZE]; /* buffer for seeking */\n" +
+                "int cf_debug; /* non-zero enables debug prints */\n" +
+                "\n" +
+                "void *\n" +
+                "cf_alloc(void *opaque, unsigned int items, unsigned int size)\n" +
+                "{\n" +
+                "    return (ptr);\n" +
+                "}\n"
+                );
+    }
+
+    public void testTypecast() {
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.spaceWithinTypeCastParens, true);
+        setLoadDocumentText(
+                "int i = (int)'a';\n"+
+                "void *\n" +
+                "foo(void *ptr)\n" +
+                "{\n" +
+                "    ptr = *(long*)ptr +(int)ptr+ (struct A*)ptr;\n" +
+                "    return(int)(ptr);\n" +
+                "}\n"
+                );
+        reformat();
+        assertDocumentText("Wrong type cast fotmatting",
+                "int i = ( int ) 'a';\n"+
+                "\n" +
+                "void *\n" +
+                "foo(void *ptr)\n" +
+                "{\n" +
+                "    ptr = *( long* ) ptr + ( int ) ptr + ( struct A* ) ptr;\n" +
+                "    return ( int ) (ptr);\n" +
+                "}\n"
+                );
+    }
+
+    
 }

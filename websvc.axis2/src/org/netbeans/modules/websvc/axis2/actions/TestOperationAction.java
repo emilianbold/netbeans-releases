@@ -40,6 +40,8 @@
  */
 package org.netbeans.modules.websvc.axis2.actions;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.List;
 import java.util.prefs.Preferences;
 import org.netbeans.modules.websvc.axis2.AxisUtils;
@@ -81,7 +83,7 @@ public class TestOperationAction extends NodeAction  {
         OperationInfo operationInfo = activatedNodes[0].getLookup().lookup(OperationInfo.class);
         Service service = activatedNodes[0].getLookup().lookup(Service.class);
         Preferences prefs = AxisUtils.getPreferences();
-        String axisUrl = prefs.get("AXIS_URL", "").trim();
+        String axisUrl = prefs.get("AXIS_URL", "").trim(); // NOI18N
         if (axisUrl.length() > 0) {
             // open tester page in browser
             AxisUtils.openInBrowser(getOperationQueryString(axisUrl, service, operationInfo));
@@ -101,7 +103,13 @@ public class TestOperationAction extends NodeAction  {
             buf.append(paramNames.get(i)+"="+getSampleValue(paramTypes.get(i))); //NOI18N
         }
         String queries = buf.toString();
-        return axisUrl+"/services/"+service.getNameAttr()+"/"+operation.getOperationName()+(queries.length() == 0 ? "":"?"+queries); //NOI18N
+        String serviceName = service.getNameAttr();
+        String operationName = operation.getOperationName();
+        try {
+            serviceName = URLEncoder.encode(serviceName, "UTF-8"); //NOI18N
+            operationName = URLEncoder.encode(operationName, "UTF-8"); //NOI18N
+        } catch (UnsupportedEncodingException ex) {}
+        return axisUrl+"/services/"+serviceName+"/"+operationName+(queries.length() == 0 ? "":"?"+queries); //NOI18N
     }
     
     private String getSampleValue(String paramType) {

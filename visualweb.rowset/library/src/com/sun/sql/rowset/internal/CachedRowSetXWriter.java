@@ -361,6 +361,7 @@ public class CachedRowSetXWriter implements TransactionalWriter, Serializable {
         for(int i =1; i <= iColCount; i++) {
             rsmdResolv.setColumnType(i, rsmdWrite.getColumnType(i));
             rsmdResolv.setColumnName(i, rsmdWrite.getColumnName(i));
+            rsmdResolv.setColumnLabel(i, rsmdWrite.getColumnLabel(i)); 
             rsmdResolv.setNullable(i, ResultSetMetaData.columnNullableUnknown);
             rsmdResolv.setColumnClassName(i, rsmdWrite.getColumnClassName(i));
             /*

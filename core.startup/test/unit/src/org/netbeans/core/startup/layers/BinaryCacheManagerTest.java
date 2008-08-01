@@ -58,6 +58,8 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.MultiFileSystem;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 /** Test layer cache manager.
  * @author Jesse Glick
  * @see "#20628"
@@ -108,6 +110,22 @@ implements CacheManagerTestBaseHid.ManagerFactory {
     //
     // new test methods
     //
+    
+    /** Test issue 140061 - need to update ParsingLayerCacheManager when increasing version of DTD Filesystem.*/
+    public void testDTD1_2() throws SAXException, IOException {
+        BinaryCacheManager m = new BinaryCacheManager();
+        List<URL> urls = new ArrayList<URL>(Arrays.asList(BinaryCacheManagerTest.class.getResource("data/layer1.2.xml")));
+        try {
+            store(m, urls);
+        } catch(Exception e) {
+            e.printStackTrace();
+            fail("DTD Filesystem 1.2 not resolved");
+        }
+        String pubid = "-//NetBeans//DTD Filesystem 1.2//EN";
+        String sysid = "http://www.netbeans.org/dtds/filesystem-1_2.dtd";
+        InputSource is = m.resolveEntity(pubid, sysid);
+        assertNotNull("DTD Filesystem 1.2 not resolved.", is);
+    }
     
     public void testFastReplacement() throws Exception {
         clearWorkDir();

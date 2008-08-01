@@ -67,7 +67,7 @@ public class NewScriptIterator implements TemplateWizard.Iterator {
     panels = createPanels(project);
 
     // Creating steps.
-    Object prop = wiz.getProperty("WizardPanel_contentData"); // NOI18N
+    Object prop = wiz.getProperty(WizardDescriptor.PROP_CONTENT_DATA); // NOI18N
     String[] beforeSteps = null;
     if (prop != null && prop instanceof String[]) {
       beforeSteps = (String[]) prop;
@@ -86,9 +86,9 @@ public class NewScriptIterator implements TemplateWizard.Iterator {
         // assume Swing components
         JComponent jc = (JComponent) c;
         // Step #.
-        jc.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(i)); // NOI18N
+        jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer(i)); // NOI18N
         // Step name (actually the whole list for reference).
-        jc.putClientProperty("WizardPanel_contentData", steps); // NOI18N
+        jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps); // NOI18N
       }
     }
   }

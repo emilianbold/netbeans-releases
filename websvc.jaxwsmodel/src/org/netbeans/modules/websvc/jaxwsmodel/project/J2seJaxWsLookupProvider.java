@@ -89,10 +89,13 @@ public class J2seJaxWsLookupProvider implements LookupProvider {
                     if (ext != null) {
                         FileObject jaxws_build = prj.getProjectDirectory().getFileObject(TransformerUtils.JAXWS_BUILD_XML_PATH);
                         try {
-                            if (jaxws_build==null && jaxWsModel.getClients().length>0) {
-                                // generate nbproject/jaxws-build.xml
-                                // add jaxws extension
-                                addJaxWsExtension(prj, JAX_WS_STYLESHEET_RESOURCE, ext);
+                            AntBuildExtender.Extension extension = ext.getExtension(JAXWS_EXTENSION);
+                            if (jaxws_build==null || extension == null) {
+                                if (jaxWsModel.getClients().length > 0) {
+                                    // generate nbproject/jaxws-build.xml
+                                    // add jaxws extension
+                                    addJaxWsExtension(prj, JAX_WS_STYLESHEET_RESOURCE, ext);
+                                }
                             } else if (jaxWsModel.getClients().length==0) {
                                 // remove nbproject/jaxws-build.xml
                                 // remove the jaxws extension
@@ -207,10 +210,14 @@ public class J2seJaxWsLookupProvider implements LookupProvider {
     private void removeJaxWsExtension(
                         Project prj,
                         FileObject jaxws_build, 
-                        AntBuildExtender ext) throws IOException {
+                        final AntBuildExtender ext) throws IOException {
         AntBuildExtender.Extension extension = ext.getExtension(JAXWS_EXTENSION);
         if (extension!=null) {
-            ext.removeExtension(JAXWS_EXTENSION);
+            ProjectManager.mutex().writeAccess(new Runnable() {
+                public void run() {
+                    ext.removeExtension(JAXWS_EXTENSION);
+                }
+            });
             ProjectManager.getDefault().saveProject(prj);
         }
         if (jaxws_build!=null) {

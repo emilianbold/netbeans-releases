@@ -388,4 +388,8 @@ public class DemoMapperModel extends DefaultTreeModel implements MapperModel {
     public boolean canEditInplace(VertexItem vItem) {
         return true;
     }
+
+    public void delete(TreePath currentTreePath, GraphSubset graphGroup) {
+        return;
+    }
 }

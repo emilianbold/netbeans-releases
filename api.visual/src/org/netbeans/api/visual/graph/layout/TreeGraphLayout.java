@@ -51,7 +51,7 @@ import java.util.*;
  *
  * @author David Kaspar
  */
-public class TreeGraphLayout<N, E> {
+public class TreeGraphLayout<N, E> extends GraphLayout {
 
     private GraphScene<N, E> scene;
     private int originX;
@@ -199,6 +199,27 @@ public class TreeGraphLayout<N, E> {
             for (Node child : children)
                 child.upload (result);
         }
+    }
+    
+    @Override
+    protected void performGraphLayout(UniversalGraph graph) {
+        Collection<N> allNodes = scene.getNodes ();
+        ArrayList<N> rootNodes = new ArrayList<N>() ;
+        for (N node: allNodes) {
+            Collection<E> inputEdges = scene.findNodeEdges(node, false, true) ;
+            if (inputEdges==null || inputEdges.size()==0) {
+                rootNodes.add(node);
+            }
+        }
+        
+        for (N rootNode: rootNodes) {
+            this.layout(rootNode);
+        }
+    }
+
+    @Override
+    protected void performNodesLayout(UniversalGraph graph, Collection nodes) {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
 }

@@ -409,7 +409,7 @@ public final class PersistenceManager implements PropertyChangeListener {
     }
     
     // XXX helper method
-    public boolean isTopComponentPersistentWhenClosed(TopComponent tc) {
+    public static boolean isTopComponentPersistentWhenClosed(TopComponent tc) {
         int persistenceType = persistenceType(tc);
         if (persistenceType == TopComponent.PERSISTENCE_ALWAYS) {
             return true;
@@ -534,6 +534,8 @@ public final class PersistenceManager implements PropertyChangeListener {
                         id2TopComponentMap.put(stringId, new TopComponentReference(tc,stringId));
                         if (persistenceType(tc) == TopComponent.PERSISTENCE_ONLY_OPENED) {
                             topComponentPersistentOnlyOpenedID.add(stringId);
+                        } else if (persistenceType(tc) == TopComponent.PERSISTENCE_NEVER) {
+                            topComponentNonPersistentID.add(stringId);
                         }
                         dataobjectToTopComponentMap.put(dob, stringId);
                     }

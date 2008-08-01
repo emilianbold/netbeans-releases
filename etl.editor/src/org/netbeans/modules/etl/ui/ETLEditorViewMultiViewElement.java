@@ -41,11 +41,6 @@ package org.netbeans.modules.etl.ui;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.dnd.DropTarget;
-import java.awt.dnd.DropTargetDragEvent;
-import java.awt.dnd.DropTargetDropEvent;
-import java.awt.dnd.DropTargetEvent;
-import java.awt.dnd.DropTargetListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.Externalizable;
@@ -56,7 +51,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import javax.swing.Action;
-import javax.swing.JSeparator;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.Document;
@@ -73,17 +67,14 @@ import org.netbeans.modules.etl.model.ETLDefinition;
 import org.netbeans.modules.etl.ui.palette.PaletteSupport;
 import org.netbeans.modules.sql.framework.model.utils.SQLObjectUtil;
 import org.netbeans.modules.etl.ui.view.ETLCollaborationTopPanel;
-import org.netbeans.modules.sql.framework.ui.graph.impl.GraphView;
 import org.netbeans.spi.palette.PaletteController;
-import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
-import org.openide.NotifyDescriptor;
 import org.openide.awt.StatusDisplayer;
 import org.openide.awt.UndoRedo;
 import org.openide.cookies.SaveCookie;
 import org.openide.nodes.Node;
-import org.openide.text.ActiveEditorDrop;
 import org.openide.util.Lookup;
+import org.openide.util.Utilities;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.Lookups;
@@ -157,12 +148,15 @@ public class ETLEditorViewMultiViewElement extends CloneableTopComponent
         });
         setActivatedNodes(new Node[]{getETLDataObject().getNodeDelegate()});
     }
+    PaletteController controller;
 
     private Lookup createAssociateLookup() throws IOException {
         //
         // see http://www.netbeans.org/issues/show_bug.cgi?id=67257
         //
-        final PaletteController controller = createPalette();
+        if (null == controller) {
+            controller = createPalette();
+        }
         nodesHack = new InstanceContent();
         nodesHack.add(controller);
         /*controller.addPropertyChangeListener( new PropertyChangeListener() {
@@ -209,7 +203,7 @@ public class ETLEditorViewMultiViewElement extends CloneableTopComponent
     }
 
     private PaletteController createPalette() throws IOException {
-        PaletteController controller = PaletteSupport.createPalette(topPanel);
+        PaletteController controller = new PaletteSupport().createPalette(topPanel);
         return controller;
     }
 
@@ -271,10 +265,10 @@ public class ETLEditorViewMultiViewElement extends CloneableTopComponent
         }
         getETLDataObject().createNodeDelegate();
         DataObjectProvider.activeDataObject = dataObject;
-        GraphView graphView = (GraphView) this.topPanel.getGraphView();
+        /*GraphView graphView = (GraphView) this.topPanel.getGraphView();
         if (null != graphView) {
             graphView.setObserved(graphView);
-        }
+        }*/
     }
 
     @Override
@@ -432,22 +426,10 @@ public class ETLEditorViewMultiViewElement extends CloneableTopComponent
         for (Action action : super.getActions()) {            
             actionsList.add(action);
         }
-        actionsList.add(addFromLayers());
+        actionsList.addAll(Utilities.actionsForPath("Projects/Actions"));
         Action[] actions = new Action[actionsList.size()];
         actionsList.toArray(actions);
         return actions;
     }
 
-    private Action addFromLayers() {
-        Action action = null;
-        Lookup look = Lookups.forPath("Projects/Actions");
-        for (Object next : look.lookupAll(Object.class)) {
-            if (next instanceof Action) {
-                action = (Action) next;
-            } else if (next instanceof JSeparator) {
-                action = null;
-            }
-        }
-        return action;
-    }
 }

@@ -58,8 +58,7 @@ public class SpringXMLConfigCompletionProvider implements CompletionProvider {
 
     public CompletionTask createTask(int queryType, JTextComponent component) {
         if ((queryType & COMPLETION_QUERY_TYPE) == COMPLETION_QUERY_TYPE) {
-            return new AsyncCompletionTask(new SpringXMLConfigCompletionQuery(queryType,
-                    component.getSelectionStart()), component);
+            return new AsyncCompletionTask(new SpringXMLConfigCompletionQuery(queryType), component);
         }
 
         return null;
@@ -69,19 +68,14 @@ public class SpringXMLConfigCompletionProvider implements CompletionProvider {
         return 0; // XXX: Return something more specific
     }
 
-    /**
-     * XXX: To take care of filter() and canFilter() methods to shortcircuit calls to query
-     * every time user types a key with completion open
-     */
     private static class SpringXMLConfigCompletionQuery extends AsyncCompletionQuery {
-
-        private int queryType;
-        private int caretOffset;
+        
+        private final int queryType;
         private JTextComponent component;
+        private volatile Completor completor;
 
-        public SpringXMLConfigCompletionQuery(int queryType, int caretOffset) {
+        public SpringXMLConfigCompletionQuery(int queryType) {
             this.queryType = queryType;
-            this.caretOffset = caretOffset;
         }
 
         @Override
@@ -97,27 +91,59 @@ public class SpringXMLConfigCompletionProvider implements CompletionProvider {
         
         @Override
         protected void query(CompletionResultSet resultSet, Document doc, int caretOffset) {
-            this.caretOffset = caretOffset;
-
-            CompletionContext context = new CompletionContext(doc, caretOffset);
+            CompletionContext context = new CompletionContext(doc, caretOffset, queryType);
             if (context.getCompletionType() == CompletionType.NONE) {
                 resultSet.finish();
                 return;
             }
 
-            switch (context.getCompletionType()) {
-                case ATTRIBUTE_VALUE:
-                    CompletionManager.getDefault().completeAttributeValues(resultSet, context);
-                    break;
-                case ATTRIBUTE:
-                    CompletionManager.getDefault().completeAttributes(resultSet, context);
-                    break;
-                case TAG:
-                    CompletionManager.getDefault().completeElements(resultSet, context);
-                    break;
+            completor = CompletorRegistry.getDefault().getCompletor(context);
+            if(completor != null) {
+                SpringCompletionResult springCompletionResult = completor.complete(context);
+                populateResultSet(resultSet, springCompletionResult);
             }
 
             resultSet.finish();
+        }
+
+        @Override
+        protected boolean canFilter(JTextComponent component) {
+            if(completor == null) {
+                return false;
+            }
+            
+            boolean retVal = completor.canFilter(new CompletionContext(component.getDocument(), 
+                    component.getCaretPosition(), queryType));
+            if(!retVal) {
+                completor.cancel();
+        }
+
+            return retVal;
+        }
+
+        @Override
+        protected void filter(CompletionResultSet resultSet) {
+            CompletionContext context = new CompletionContext(component.getDocument(), 
+                    component.getCaretPosition(), queryType);
+            SpringCompletionResult springCompletionResult = completor.filter(context);
+            populateResultSet(resultSet, springCompletionResult);
+            resultSet.finish();
+        }
+        
+        private void populateResultSet(CompletionResultSet resultSet, SpringCompletionResult springCompletionResult) {
+            if(springCompletionResult == SpringCompletionResult.NONE) {
+                return;
+            }
+            
+            resultSet.addAllItems(springCompletionResult.getItems());
+            if (completor.getAnchorOffset() != -1) {
+                resultSet.setAnchorOffset(completor.getAnchorOffset());
+            }
+            
+            if(springCompletionResult.hasAdditionalItems()) {
+                resultSet.setHasAdditionalItems(true);
+                resultSet.setHasAdditionalItemsText(springCompletionResult.getAdditionalItemsText());
+            }
         }
     }
 }

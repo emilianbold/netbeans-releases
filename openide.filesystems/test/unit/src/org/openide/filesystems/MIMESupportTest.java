@@ -45,6 +45,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.PrintStream;
 import java.lang.ref.WeakReference;
 import java.util.Date;
 import java.util.Enumeration;
@@ -196,6 +197,55 @@ public class MIMESupportTest extends NbTestCase {
         }
     }
     
+    public void testDeclarativeMIMEResolvers() throws Exception {
+        FileObject resolver = FileUtil.createData(Repository.getDefault().getDefaultFileSystem().getRoot(), "Services/MIMEResolver/r.xml");
+        resolver.setAttribute("position", 2);
+        OutputStream os = resolver.getOutputStream();
+        PrintStream ps = new PrintStream(os);
+        ps.println("<!DOCTYPE MIME-resolver PUBLIC '-//NetBeans//DTD MIME Resolver 1.0//EN' 'http://www.netbeans.org/dtds/mime-resolver-1_0.dtd'>");
+        ps.println("<MIME-resolver>");
+        ps.println(" <file>");
+        ps.println("  <ext name='foo'/>");
+        ps.println("  <resolver mime='text/x-foo'/>");
+        ps.println(" </file>");
+        ps.println("</MIME-resolver>");
+        os.close();
+        FileObject foo = FileUtil.createMemoryFileSystem().getRoot().createData("x.foo");
+        assertEquals("text/x-foo", foo.getMIMEType());
+        // Test changing a resolver:
+        os = resolver.getOutputStream();
+        ps = new PrintStream(os);
+        ps.println("<!DOCTYPE MIME-resolver PUBLIC '-//NetBeans//DTD MIME Resolver 1.0//EN' 'http://www.netbeans.org/dtds/mime-resolver-1_0.dtd'>");
+        ps.println("<MIME-resolver>");
+        ps.println(" <file>");
+        ps.println("  <ext name='foo'/>");
+        ps.println("  <resolver mime='text/x-foo2'/>");
+        ps.println(" </file>");
+        ps.println("</MIME-resolver>");
+        os.close();
+        foo = FileUtil.createMemoryFileSystem().getRoot().createData("x2.foo");
+        assertEquals("text/x-foo2", foo.getMIMEType());
+        // Test adding a resolver:
+        resolver = FileUtil.createData(Repository.getDefault().getDefaultFileSystem().getRoot(), "Services/MIMEResolver/r2.xml");
+        resolver.setAttribute("position", 1);
+        os = resolver.getOutputStream();
+        ps = new PrintStream(os);
+        ps.println("<!DOCTYPE MIME-resolver PUBLIC '-//NetBeans//DTD MIME Resolver 1.0//EN' 'http://www.netbeans.org/dtds/mime-resolver-1_0.dtd'>");
+        ps.println("<MIME-resolver>");
+        ps.println(" <file>");
+        ps.println("  <ext name='foo'/>");
+        ps.println("  <resolver mime='text/x-foo3'/>");
+        ps.println(" </file>");
+        ps.println("</MIME-resolver>");
+        os.close();
+        foo = FileUtil.createMemoryFileSystem().getRoot().createData("x3.foo");
+        assertEquals("text/x-foo3", foo.getMIMEType());
+        // Test removing a resolver:
+        resolver.delete();
+        foo = FileUtil.createMemoryFileSystem().getRoot().createData("x4.foo");
+        assertEquals("text/x-foo2", foo.getMIMEType());
+    }
+
     public static class TestLookup extends ProxyLookup {
         public TestLookup() {
             super();

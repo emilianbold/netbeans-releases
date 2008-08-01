@@ -46,6 +46,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.Action;
+import javax.swing.JPanel;
 import javax.swing.JSeparator;
 import org.netbeans.spi.editor.mimelookup.InstanceProvider;
 import org.openide.cookies.InstanceCookie;
@@ -59,14 +60,21 @@ import org.openide.util.actions.SystemAction;
  * @author Martin Roskanin
  */
 public class PopupActions implements InstanceProvider{
+    static final Object LOCK = new JPanel().getTreeLock();
 
     List ordered;
 
     public PopupActions(){
+        synchronized (LOCK) {
+            // just try to hold a lock
+        }
     }
 
     public PopupActions(List ordered){
         this.ordered = ordered;
+        synchronized (LOCK) {
+            // just try to hold a lock
+        }
     }
 
     public List getPopupActions(){

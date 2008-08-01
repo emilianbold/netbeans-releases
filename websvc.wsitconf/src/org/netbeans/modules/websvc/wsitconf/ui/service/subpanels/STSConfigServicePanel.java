@@ -50,6 +50,7 @@ import javax.swing.text.NumberFormatter;
 import org.jdesktop.layout.GroupLayout;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.wsitconf.ui.ClassDialog;
+import org.netbeans.modules.websvc.wsitmodelext.versioning.ConfigVersion;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.ProprietarySecurityPolicyModelHelper;
 import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.service.STSConfiguration;
 import org.netbeans.modules.xml.wsdl.model.Binding;
@@ -67,12 +68,15 @@ public class STSConfigServicePanel extends JPanel {
     
     private DefaultFormatterFactory lifeTimeDff = null;
     
+    private ConfigVersion cfgVersion = null;
+    
     /**
      * Creates new form STSConfigServicePanel
      */
-    public STSConfigServicePanel( Project p, Binding binding) {
+    public STSConfigServicePanel( Project p, Binding binding, ConfigVersion cfgVersion) {
         this.project = p;
         this.binding = binding;
+        this.cfgVersion = cfgVersion;
 
         lifeTimeDff = new DefaultFormatterFactory();
         NumberFormat lifetimeFormat = NumberFormat.getIntegerInstance();
@@ -94,7 +98,7 @@ public class STSConfigServicePanel extends JPanel {
         if (stsConfig == null) {
             stsConfig = ProprietarySecurityPolicyModelHelper.createSTSConfiguration(binding);
         }
-        serviceProvidersPanel = new ServiceProvidersTablePanel(tablemodel, stsConfig);
+        serviceProvidersPanel = new ServiceProvidersTablePanel(tablemodel, stsConfig, cfgVersion);
         ((ServiceProvidersTablePanel)serviceProvidersPanel).populateModel();
         inSync = false;
 
@@ -108,7 +112,8 @@ public class STSConfigServicePanel extends JPanel {
         String lifeTime = ProprietarySecurityPolicyModelHelper.getSTSLifeTime(binding);
         if (lifeTime == null) { // no setup exists yet - set the default
             setLifeTime(ProprietarySecurityPolicyModelHelper.DEFAULT_LIFETIME);
-            ProprietarySecurityPolicyModelHelper.setSTSLifeTime(binding, ProprietarySecurityPolicyModelHelper.DEFAULT_LIFETIME);
+            ProprietarySecurityPolicyModelHelper.setSTSLifeTime(binding, 
+                    ProprietarySecurityPolicyModelHelper.DEFAULT_LIFETIME);
         } else {
             setLifeTime(lifeTime);
         } 
@@ -127,7 +132,8 @@ public class STSConfigServicePanel extends JPanel {
         String cclass = ProprietarySecurityPolicyModelHelper.getSTSContractClass(binding);
         if (cclass == null) { // no setup exists yet - set the default
             setContractClass(ProprietarySecurityPolicyModelHelper.DEFAULT_CONTRACT_CLASS);
-            ProprietarySecurityPolicyModelHelper.setSTSContractClass(binding, ProprietarySecurityPolicyModelHelper.DEFAULT_CONTRACT_CLASS);
+            ProprietarySecurityPolicyModelHelper.setSTSContractClass(binding, 
+                    ProprietarySecurityPolicyModelHelper.DEFAULT_CONTRACT_CLASS);
         } else {
             setContractClass(cclass);
         } 
@@ -372,11 +378,11 @@ public class STSConfigServicePanel extends JPanel {
 }//GEN-LAST:event_lifeTimeTextFieldKeyReleased
 
     private void encryptTokenChBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_encryptTokenChBoxActionPerformed
-        ProprietarySecurityPolicyModelHelper.setSTSEncryptKey(binding, encryptTokenChBox.isSelected());
+        ProprietarySecurityPolicyModelHelper.setSTSEncryptToken(binding, encryptTokenChBox.isSelected());
     }//GEN-LAST:event_encryptTokenChBoxActionPerformed
 
     private void encryptKeyChBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_encryptKeyChBoxActionPerformed
-        ProprietarySecurityPolicyModelHelper.setSTSEncryptToken(binding, encryptKeyChBox.isSelected());
+        ProprietarySecurityPolicyModelHelper.setSTSEncryptKey(binding, encryptKeyChBox.isSelected());
     }//GEN-LAST:event_encryptKeyChBoxActionPerformed
 
     private void contractTextFieldKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_contractTextFieldKeyReleased

@@ -77,7 +77,7 @@ public class StorageTest extends TestCase {
         assertTrue (storage.isClosed());
         
         String test = "Hello world";
-        storage.write(ByteBuffer.wrap(test.getBytes()), true);
+        storage.write(ByteBuffer.wrap(test.getBytes()));
         
         assertFalse (storage.isClosed());
         
@@ -96,7 +96,7 @@ public class StorageTest extends TestCase {
         ByteBuffer buf = storage.getWriteBuffer(AbstractLines.toByteIndex(s.length()));
         buf.asCharBuffer().put(s);
         buf.position (buf.position() + AbstractLines.toByteIndex(s.length()));
-        int result = storage.write(buf, true);
+        int result = storage.write(buf);
         storage.flush();
         return result;
     }

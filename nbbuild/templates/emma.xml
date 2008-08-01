@@ -26,7 +26,7 @@ your own identifying information:
 Contributor(s):
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
 Microsystems, Inc. All Rights Reserved.
 
 If you wish your version of this file to be governed by only the CDDL
@@ -40,6 +40,8 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
+
+<!-- XXX rewrite to not be specific to XTest -->
 
 <!--
 TODO:
@@ -59,11 +61,6 @@ TODO:
     <property name="xtest.workdir" location="work"/>
     <property name="emma.dir" location="${xtest.home}/external"/>
     
-    <path id="emma.lib">
-        <pathelement location="${emma.dir}/emma.jar"/>
-        <pathelement location="${emma.dir}/emma_ant.jar"/>
-    </path>
-    
     <property name="coverage.dir" location="coverage"/>
     <property name="coverage.filter" location="coverage.filter"/>
     <property name="coverage.properties" location="coverage.properties"/>
@@ -76,12 +73,41 @@ TODO:
     </condition>
     
     <available file="../nbproject/project.properties" property="do.we.need.to.process.properties.file.for.coverage"/>
-    
-    <target name="define-emma-tasks" >
-        <ant dir="${emma.dir}" target="emma" />
+
+    <target name="define-emma-tasks" depends="emma-download">
+        <path id="emma.lib">
+            <pathelement location="${emma.dir}/emma.jar"/>
+            <pathelement location="${emma.dir}/emma_ant.jar"/>
+        </path>
         <taskdef resource="emma_ant.properties" classpathref="emma.lib"/>
     </target>
+
+    <target name="emma-download" depends="emma-check-jars,setup-proxy" unless="skip-download-emma">
+        <property name="emma.version" value="2.0.5312"/>
+        <echo message="Going to download emma. If it fails download it from http://emma.sf.net/ (and unpack into ${basedir}) or invoke with -Dproxy.host='host' -Dproxy.port='port'" />
+        <mkdir dir="${emma.dir}"/>
+        <get src="http://ibiblio.org/maven/emma/jars/emma-2.0.5312.jar" dest="${emma.dir}/emma.jar"/> 
+        <get src="http://ibiblio.org/maven/emma/jars/emma_ant-2.0.5312.jar" dest="${emma.dir}/emma_ant.jar"/>
+    </target>
+
+    <target name="emma-check-jars">
+        <condition property="skip-download-emma" >
+            <and>
+                <available file="${emma.dir}/emma_ant.jar" />
+                <available file="${emma.dir}/emma.jar" />
+            </and>
+        </condition>
+    </target>
     
+    <target name="setup-proxy" if="proxy.host" >
+        <setproxy proxyhost="${proxy.host}" proxyport="${proxy.port}" />
+    </target>
+
+    <target name="emma-clean">
+        <delete file="${emma.dir}/emma.jar" />
+        <delete file="${emma.dir}/emma_ant.jar" />
+    </target>
+
     <target name="load-coverage-properties" depends="define-emma-tasks" if="available.coverage.properties">
         <property file="${coverage.properties}"/>
     </target>
@@ -182,7 +208,7 @@ TODO:
     <target name="emma-build-backup" if="nb_all" unless="emma.disable.backup">
         <echo>Creating backup for ${netbeans.dest.dir} because some jars are instrumented.</echo>
         <echo>It can be ignored by setting property emma.disable.backup.</echo>
-        <property name="backup.netbeans.dest.dir" location="${nb_all}/build/emma-backup"/>
+        <property name="backup.netbeans.dest.dir" location="${nb_all}/nbbuild/build/emma-backup"/>
         <mkdir dir="${backup.netbeans.dest.dir}"/>
         <copy  todir="${backup.netbeans.dest.dir}" >
             <fileset dir="${netbeans.dest.dir}" />

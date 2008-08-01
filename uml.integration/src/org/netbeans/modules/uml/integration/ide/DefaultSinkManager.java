@@ -48,9 +48,7 @@
  */
 package org.netbeans.modules.uml.integration.ide;
 
-import org.netbeans.modules.uml.core.eventframework.EventDispatchNameKeeper;
 import org.netbeans.modules.uml.core.eventframework.IEventDispatchController;
-import org.netbeans.modules.uml.core.eventframework.IEventDispatcher;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.ElementLifeTimeEventDispatcher;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElementLifeTimeEventDispatcher;
 import org.netbeans.modules.uml.core.roundtripframework.IRoundTripAttributeEventsSink;
@@ -60,17 +58,15 @@ import org.netbeans.modules.uml.core.roundtripframework.IRoundTripEnumLiteralEve
 import org.netbeans.modules.uml.core.roundtripframework.IRoundTripController;
 import org.netbeans.modules.uml.core.roundtripframework.IRoundTripEventDispatcher;
 import org.netbeans.modules.uml.core.roundtripframework.IRoundTripRelationEventsSink;
-import org.netbeans.modules.uml.core.support.umlmessagingcore.IMessengerEventsSink;
 import org.netbeans.modules.uml.core.support.umlmessagingcore.IUMLMessagingEventDispatcher;
 import org.netbeans.modules.uml.core.support.umlsupport.Log;
 import org.netbeans.modules.uml.core.workspacemanagement.IWSProjectEventsSink;
 import org.netbeans.modules.uml.core.workspacemanagement.IWorkspaceEventDispatcher;
 import org.netbeans.modules.uml.core.workspacemanagement.IWorkspaceEventsSink;
-import org.netbeans.modules.uml.ui.controls.drawingarea.DrawingAreaEventDispatcherImpl;
-import org.netbeans.modules.uml.ui.controls.drawingarea.IDrawingAreaEventDispatcher;
 import org.netbeans.modules.uml.ui.controls.projecttree.IProjectTreeContextMenuEventsSink;
 import org.netbeans.modules.uml.ui.controls.projecttree.IProjectTreeEventDispatcher;
 import org.netbeans.modules.uml.ui.support.DispatchHelper;
+import org.netbeans.modules.uml.ui.support.diagramsupport.IDrawingAreaEventDispatcher;
 
 /**
  *  Manages the sinks (listeners) attached to the running Describe instance.

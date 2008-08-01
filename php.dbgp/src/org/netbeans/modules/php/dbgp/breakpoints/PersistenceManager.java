@@ -45,6 +45,7 @@ import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
 import java.util.List;
 
+import java.util.logging.Logger;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
@@ -59,7 +60,7 @@ import org.netbeans.api.debugger.Properties;
  * @author ads
  */
 public class PersistenceManager extends  DebuggerManagerAdapter {
-
+    public static final Logger LOGGER = Logger.getLogger(PersistenceManager.class.getName());
     private static final String DEBUGGER = "debugger";      // NOI18N
     private static final String PHP_DBGP = "PHP-DBGP";      // NOI18N
 
@@ -67,7 +68,17 @@ public class PersistenceManager extends  DebuggerManagerAdapter {
     public Breakpoint[] initBreakpoints() {
         Properties p = Properties.getDefault().getProperties(DEBUGGER).
             getProperties(DebuggerManager.PROP_BREAKPOINTS);
-        return (Breakpoint[]) p.getArray( PHP_DBGP ,new Breakpoint [0]);
+        Breakpoint[] breakpoints = (Breakpoint[]) p.getArray( PHP_DBGP ,new Breakpoint [0]);
+        List<Breakpoint> validBreakpoints = new ArrayList<Breakpoint>();
+        for (Breakpoint breakpoint : breakpoints) {
+            if (breakpoint != null) {
+                breakpoint.addPropertyChangeListener(this);
+                validBreakpoints.add(breakpoint);
+            } else {
+                LOGGER.warning("null stored in the array obtained from \"" + PHP_DBGP + "\" property"); // TODO: why?
+            }
+        }
+        return validBreakpoints.toArray(new Breakpoint[validBreakpoints.size()]);
     }
 
     @Override

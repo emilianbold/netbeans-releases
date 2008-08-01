@@ -417,13 +417,14 @@ public class JavadocUtilities {
         return null;
     }
     
-    public static ParamTag findParamTag(CompilationInfo javac, MethodDoc doc, String paramName, boolean inherited) {
+    public static ParamTag findParamTag(CompilationInfo javac, MethodDoc doc, String paramName, boolean isTypeParam, boolean inherited) {
         ExecutableElement overrider = (ExecutableElement) javac.getElementUtilities().elementFor(doc);
         TypeElement overriderClass = (TypeElement) overrider.getEnclosingElement();
         TypeElement class2query = null;
         Set<TypeElement> exclude = null;
         while (doc != null) {
-            for (ParamTag paramTag : doc.paramTags()) {
+            ParamTag[] paramTags = isTypeParam ? doc.typeParamTags() : doc.paramTags();
+            for (ParamTag paramTag : paramTags) {
                 if (paramName.equals(paramTag.parameterName())) {
                     return paramTag;
                 }

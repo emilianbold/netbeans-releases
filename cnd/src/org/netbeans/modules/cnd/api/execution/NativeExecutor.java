@@ -49,7 +49,8 @@ import java.io.PrintWriter;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
-import org.netbeans.modules.cnd.execution.NativeExecution;
+import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.execution.OutputWindowWriter;
 import org.openide.ErrorManager;
 import org.openide.awt.StatusDisplayer;
@@ -72,15 +73,59 @@ public class NativeExecutor implements Runnable {
     private String rcfile;
     private boolean parseOutputForErrors;
     private boolean showInput;
+    private NativeExecution nativeExecution;
+    private String host;
     
+    /** @deprecated This variable was added for an obsolete module... */
     private boolean showHeader = true;
+    
+    /** @deprecated This variable was added for an obsolete module... */
     private boolean showFooter = true;
     
     /** I/O class for writing output to a build tab */
     private InputOutput io;
     private PrintWriter out;
     
+    /**
+     * The real constructor. This class is used to manage native execution, but run and build.
+     */
+    public NativeExecutor(
+	    String host,
+            String runDir,
+            String executable,
+            String arguments,
+            String[] envp,
+            String tabName,
+            String actionName,
+            boolean parseOutputForErrors,
+            boolean showInput) {
+        this.host = host;
+        this.runDir = runDir;
+        this.executable = executable;
+        this.arguments = arguments;
+        this.envp = envp;
+        this.tabName = tabName;
+        this.actionName = actionName;
+        this.parseOutputForErrors = parseOutputForErrors;
+        this.showInput = showInput;
+    }
+    
     /** targets may be null to indicate default target */
+    @Deprecated
+    public NativeExecutor(
+            String runDir,
+            String executable,
+            String arguments,
+            String[] envp,
+            String tabName,
+            String actionName,
+            boolean parseOutputForErrors,
+            boolean showInput) {
+        this(CompilerSetManager.LOCALHOST, runDir, executable, arguments, envp, tabName, actionName, parseOutputForErrors, showInput);
+    }
+    
+    /** targets may be null to indicate default target */
+    @Deprecated
     public NativeExecutor(
             String runDir,
             String executable,
@@ -92,40 +137,12 @@ public class NativeExecutor implements Runnable {
         this(runDir, executable, arguments, envp, tabName, actionName, parseOutputForErrors, false);
     }
     
-    /** targets may be null to indicate default target */
-    public NativeExecutor(
-            String runDir,
-            String executable,
-            String arguments,
-            String[] envp,
-            String tabName,
-            String actionName,
-            boolean parseOutputForErrors,
-            boolean showInput) {
-        //this.pae = pae;
-        this.runDir = runDir;
-        this.executable = executable;
-        this.arguments = arguments;
-        this.envp = envp;
-        this.tabName = tabName;
-        this.actionName = actionName;
-        this.parseOutputForErrors = parseOutputForErrors;
-        this.showInput = showInput;
-    }
-    
-    public NativeExecutor(
-            String runDir,
-            String executable,
-            String arguments,
-            String[] envp,
-            String tabName,
-            String actionName,
-            boolean parseOutputForErrors,
-            boolean showInput,
-            boolean showHeader,
-            boolean showFooter ) {
+    /**
+     * @deprecated Added for an obsolete Mobility module and (I think) no longer used
+     */
+    public NativeExecutor(String runDir, String executable, String arguments, String[] envp, String tabName,
+            String actionName, boolean parseOutputForErrors, boolean showInput, boolean showHeader, boolean showFooter ) {
         this( runDir, executable, arguments, envp, tabName, actionName, parseOutputForErrors, showInput );
-        
         this.showHeader = showHeader;
         this.showFooter = showFooter;
     }
@@ -137,6 +154,11 @@ public class NativeExecutor implements Runnable {
     
     /** Start it going. */
     public ExecutorTask execute(InputOutput io) throws IOException {
+        return execute(io, null); 
+    }
+    
+    /** Start it going. */
+    public ExecutorTask execute(InputOutput io, String host) throws IOException {
         final ExecutorTask task;
         synchronized (this) {
             // OutputWindow
@@ -151,6 +173,14 @@ public class NativeExecutor implements Runnable {
     
     private InputOutput getTab(String tabName) {
         return IOProvider.getDefault().getIO(tabName, true);
+    }
+    
+    public InputOutput getTab() {
+        return io;
+    }
+    
+    public String getTabeName() {
+        return tabName;
     }
     
     public void setExitValueOverride(String rcfile) {
@@ -178,7 +208,8 @@ public class NativeExecutor implements Runnable {
         
         try {
             // Execute the selected command
-            rc = new NativeExecution().executeCommand(
+            nativeExecution = NativeExecution.getDefault(host).getNativeExecution();
+            rc = nativeExecution.executeCommand(
                     runDirFile,
                     executable,
                     arguments,
@@ -236,10 +267,17 @@ public class NativeExecutor implements Runnable {
         out.close();
     }
     
+    public void stop() {
+        nativeExecution.stop();
+    }
+    
     private void executionStarted() {
         if( showHeader ) {
+            String runDirToShow = CompilerSetManager.LOCALHOST.equals(host) ?
+                runDir : HostInfoProvider.getDefault().getMapper(host).getRemotePath(runDir);
+            
             String preText = MessageFormat.format(getString("PRETEXT"),
-		    new Object[] {exePlusArgsQuoted(executable, arguments), runDir});
+		    new Object[] {exePlusArgsQuoted(executable, arguments), runDirToShow});
             out.println(preText);
             out.println("");
         }

@@ -54,6 +54,7 @@ import java.io.OutputStream;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.MissingResourceException;
+import javax.imageio.IIOException;
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
@@ -71,11 +72,11 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.mobility.project.J2MEProject;
 import org.netbeans.modules.mobility.project.ProjectConfigurationsHelper;
 import org.netbeans.modules.mobility.svgcore.SVGDataObject;
-import org.netbeans.modules.mobility.svgcore.composer.SceneManager;
 import org.netbeans.spi.project.ProjectConfiguration;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.w3c.dom.svg.SVGSVGElement;
 
@@ -286,12 +287,12 @@ public class AnimationRasterizer {
         return filenameRoot;
     }
     
-    public static void export(final SVGDataObject dObj, final Params params) throws MissingResourceException {
+    public static void export(final SVGDataObject dObj, final Params params) throws MissingResourceException, IOException, BadLocationException {
         FileObject fo = dObj.getPrimaryFile();
         export(dObj, params, fo.getParent());
     }
         
-    public static FileObject export(final SVGDataObject dObj, final Params params, final FileObject directory) throws MissingResourceException {
+    public static FileObject export(final SVGDataObject dObj, final Params params, final FileObject directory) throws MissingResourceException, IOException, BadLocationException {
         final ProgressHandle handle = ProgressHandleFactory.createHandle( getMessage("TITLE_AnimationExportProgress")); //NOI18N
         FileObject file = null;
         try {               
@@ -325,9 +326,7 @@ public class AnimationRasterizer {
                     handle.progress(++stepsDone);
                 }
              }
-             directory.refresh(false);
-        } catch (Exception ex) {
-            SceneManager.error("Image export failed.", ex); //NOI18N            
+             directory.refresh(false);          
         } finally {
             handle.finish();
         }
@@ -393,12 +392,17 @@ public class AnimationRasterizer {
         return new PreviewInfo(  img, params.getImageType().toString(), buff.size());
     }
     
-    private static BufferedImage createBuffer(int w, int h, boolean isTransparent) {
-        return new BufferedImage(w, h, isTransparent ? BufferedImage.TYPE_INT_ARGB : BufferedImage.TYPE_INT_RGB);        
+    private static BufferedImage createBuffer(int w, int h, boolean isTransparent) throws IIOException {
+        try {
+            return new BufferedImage(w, h, isTransparent ? BufferedImage.TYPE_INT_ARGB : BufferedImage.TYPE_INT_RGB);        
+        } catch( Throwable e) {
+            System.err.println("Not enough memory");
+            throw new IIOException("Not enough memory", e);
+        }
     }
 
     public static BufferedImage rasterizeFrame( BufferedImage buffer, int xOffset,
-            SVGImage svgImage, Params params, float time) {
+            SVGImage svgImage, Params params, float time) throws IIOException {
         int w = params.getImageWidth();
         int h = params.getImageHeight();
         
@@ -442,7 +446,7 @@ public class AnimationRasterizer {
         return buffer;
     }
 
-    private static BufferedImage rasterizeFramesInSingleImage(SVGImage svgImage, Params params) {
+    private static BufferedImage rasterizeFramesInSingleImage(SVGImage svgImage, Params params) throws IIOException {
         int frameNum = params.getNumberFrames();
         int w        = params.getImageWidth();
         int h        = params.getImageHeight();
@@ -460,7 +464,12 @@ public class AnimationRasterizer {
         
         if (params.isInSingleImage()) {
             BufferedImage img = rasterizeFramesInSingleImage( svgImage, params);
-            FileObject fo = dir.createData(createFileName(filenameRoot, params, -1, -1));
+            String name = createFileName(filenameRoot, params, -1, -1);
+            FileObject fo  = dir.getFileObject(name);
+            if (fo != null){
+                fo.delete();
+            }
+            fo = dir.createData(name);
             
             writeImageToFile( img, fo, params);
             file = fo;

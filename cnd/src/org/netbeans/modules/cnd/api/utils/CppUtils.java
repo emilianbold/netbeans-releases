@@ -178,44 +178,44 @@ public class CppUtils {
         return cygwinBase;
     }
     
-    public static String getMinGWBase() {
-        if (mingwBase == null) {
-            File file = new File("C:/Windows/System32/reg.exe"); // NOI18N
-
-            if (file.exists()) {
-                List<String> list = new ArrayList<String>();
-                list.add(file.getAbsolutePath());
-                list.add("query"); // NOI18N
-                list.add("hklm\\software\\microsoft\\windows\\currentversion\\uninstall\\MinGW"); // NOI18N
-                ProcessBuilder pb = new ProcessBuilder(list);
-                pb.redirectErrorStream(true);
-                try {
-                    Process process = pb.start();
-                    BufferedReader br = new BufferedReader(new InputStreamReader(process.getInputStream()));
-                    String line;
-                    while ((line = br.readLine()) != null) {
-                        line = line.trim();
-                        if (line.startsWith("InstallLocation")) { // NOI18N
-                            int pos = line.lastIndexOf('\t');
-                            if (pos != -1 && pos < line.length()) {
-                                mingwBase = line.substring(pos + 1);
-                            }
-                        }
-                    }
-                } catch (Exception ex) {
-                }
-            }
-            if (mingwBase == null) {
-                for (String dir : Path.getPath()) {
-                    if (dir.toLowerCase().endsWith("\\mingw\\bin")) { // NOI18N
-                        mingwBase = dir.substring(0, dir.length() - 4);
-                        break;
-                    }
-                }
-            }
-        }
-        return mingwBase;
-    }
+//    public static String getMinGWBase() {
+//        if (mingwBase == null) {
+//            File file = new File("C:/Windows/System32/reg.exe"); // NOI18N
+//
+//            if (file.exists()) {
+//                List<String> list = new ArrayList<String>();
+//                list.add(file.getAbsolutePath());
+//                list.add("query"); // NOI18N
+//                list.add("hklm\\software\\microsoft\\windows\\currentversion\\uninstall\\MinGW"); // NOI18N
+//                ProcessBuilder pb = new ProcessBuilder(list);
+//                pb.redirectErrorStream(true);
+//                try {
+//                    Process process = pb.start();
+//                    BufferedReader br = new BufferedReader(new InputStreamReader(process.getInputStream()));
+//                    String line;
+//                    while ((line = br.readLine()) != null) {
+//                        line = line.trim();
+//                        if (line.startsWith("InstallLocation")) { // NOI18N
+//                            int pos = line.lastIndexOf('\t');
+//                            if (pos != -1 && pos < line.length()) {
+//                                mingwBase = line.substring(pos + 1);
+//                            }
+//                        }
+//                    }
+//                } catch (Exception ex) {
+//                }
+//            }
+//            if (mingwBase == null) {
+//                for (String dir : Path.getPath()) {
+//                    if (dir.toLowerCase().endsWith("\\mingw\\bin")) { // NOI18N
+//                        mingwBase = dir.substring(0, dir.length() - 4);
+//                        break;
+//                    }
+//                }
+//            }
+//        }
+//        return mingwBase;
+//    }
     
     public static String getMSysBase() {
         if (msysBase == null) {
@@ -235,9 +235,9 @@ public class CppUtils {
                     while ((line = br.readLine()) != null) {
                         line = line.trim();
                         if (line.startsWith("Inno Setup: App Path")) { // NOI18N
-                            int pos = line.lastIndexOf('\t');
+                            int pos = line.lastIndexOf(':');
                             if (pos != -1 && pos < line.length()) {
-                                msysBase = line.substring(pos + 1);
+                                msysBase = line.substring(pos - 1);
                             }
                         }
                     }

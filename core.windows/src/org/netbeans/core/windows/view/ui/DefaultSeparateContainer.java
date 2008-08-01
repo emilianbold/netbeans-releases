@@ -95,7 +95,7 @@ public final class DefaultSeparateContainer extends AbstractModeContainer {
         Window w = getModeUIWindow();
         ((RootPaneContainer) w).getContentPane().add(tabbedHandler.getComponent());
         w.setBounds(bounds);
-    }
+            }
     
     public void requestAttention (TopComponent tc) {
         //not implemented
@@ -170,6 +170,7 @@ public final class DefaultSeparateContainer extends AbstractModeContainer {
             // To be able to activate on mouse click.
             enableEvents(java.awt.AWTEvent.MOUSE_EVENT_MASK);
             modeBase = new SharedModeUIBaseImpl(abstractModeContainer, view, this);
+            setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         }
 
         public ModeView getModeView() {
@@ -275,6 +276,7 @@ public final class DefaultSeparateContainer extends AbstractModeContainer {
                     snapper.cursorMoved();
                 }
             });
+            setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
         }
         
         private void snapWindow() {
@@ -413,6 +415,10 @@ public final class DefaultSeparateContainer extends AbstractModeContainer {
             w.addWindowListener(new WindowAdapter() {
                 @Override
                 public void windowClosing(WindowEvent evt) {
+                    for( TopComponent tc : modeView.getTopComponents() ) {
+                        if( !tc.close() )
+                            return;
+                    }
                     modeView.getController().userClosingMode(modeView);
                     ZOrderManager.getInstance().detachWindow((RootPaneContainer)window);
                 }

@@ -42,6 +42,7 @@
 package org.netbeans.jellytools.actions;
 
 import java.awt.event.KeyEvent;
+import java.io.IOException;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import junit.textui.TestRunner;
@@ -61,7 +62,14 @@ import org.netbeans.junit.NbTestSuite;
  * @author Jiri.Skrivanek@sun.com
  */
 public class ActionNoBlockTest extends JellyTestCase {
-    
+
+    public static String[] tests = {
+        "testPerformMenu",
+        "testPerformPopupOnNodes",
+        "testPerformPopupOnComponent",
+        "testPerformAPI",
+        "testPerformShortcut"
+    };
     /** constructor required by JUnit
      * @param testName method name to be used as testcase
      */
@@ -72,6 +80,7 @@ public class ActionNoBlockTest extends JellyTestCase {
     /** method used for explicit testsuite definition
      */
     public static Test suite() {
+        /*
         TestSuite suite = new NbTestSuite();
         suite.addTest(new ActionNoBlockTest("testPerformMenu"));
         suite.addTest(new ActionNoBlockTest("testPerformPopupOnNodes"));
@@ -79,6 +88,12 @@ public class ActionNoBlockTest extends JellyTestCase {
         suite.addTest(new ActionNoBlockTest("testPerformAPI"));
         suite.addTest(new ActionNoBlockTest("testPerformShortcut"));
         return suite;
+         */
+        return createModuleTest(ActionNoBlockTest.class, tests);
+    }
+    
+    public void setUp() throws IOException {
+        openDataProjects("SampleProject");
     }
     
     /** Use for internal test execution inside IDE
@@ -92,7 +107,7 @@ public class ActionNoBlockTest extends JellyTestCase {
      */
     public void testPerformMenu() {
         /** File|New Project..." main menu path. */
-        String menuPath = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/File")
+        String menuPath = Bundle.getStringTrimmed("org.netbeans.core.ui.resources.Bundle", "Menu/File")
                           + "|"
                           + Bundle.getStringTrimmed("org.netbeans.modules.project.ui.actions.Bundle", "LBL_NewProjectAction_Name");
 

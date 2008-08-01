@@ -45,11 +45,9 @@ import org.netbeans.modules.websvc.wsitmodelext.rm.RMAssertion;
 import org.netbeans.modules.websvc.wsitmodelext.policy.All;
 import org.netbeans.modules.websvc.wsitmodelext.policy.ExactlyOne;
 import org.netbeans.modules.websvc.wsitmodelext.policy.Policy;
-import org.netbeans.modules.websvc.wsitmodelext.policy.PolicyQName;
 import org.netbeans.modules.websvc.wsitmodelext.policy.PolicyReference;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import org.netbeans.modules.xml.wsdl.model.visitor.WSDLVisitor;
 import org.w3c.dom.Element;
 
 import java.util.Collections;
@@ -67,15 +65,6 @@ public class ExactlyOneImpl extends PolicyComponentImpl implements ExactlyOne {
         super(model, e);
     }
     
-    public ExactlyOneImpl(WSDLModel model){
-        this(model, createPrefixedElement(PolicyQName.EXACTLYONE.getQName(), model));
-    }
-
-    @Override
-    public void accept(WSDLVisitor visitor) {
-        visitor.visit(this);
-    }
-
     public void setAll(All all) {
         java.util.List<Class<? extends WSDLComponent>> classes = Collections.emptyList();
         setChild(All.class, ALL_PROPERTY, all, classes);

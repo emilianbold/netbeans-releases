@@ -41,10 +41,7 @@
 
 package org.netbeans.modules.cnd.debugger.gdb;
 
-import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
-import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.net.MalformedURLException;
 import java.util.HashMap;
@@ -55,31 +52,26 @@ import java.util.Set;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.text.Caret;
 import javax.swing.text.StyledDocument;
 import javax.swing.JEditorPane;
-import javax.swing.SwingUtilities;
 
-import org.openide.ErrorManager;
-import org.openide.cookies.EditorCookie;
+import org.netbeans.modules.cnd.MIMENames;
 import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
-import org.openide.loaders.DataShadow;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.nodes.Node;
 import org.openide.text.Line;
 import org.openide.text.NbDocument;
-import org.openide.util.Lookup;
-import org.openide.util.LookupEvent;
-import org.openide.util.LookupListener;
 import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.URLMapper;
 
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.DebuggerAnnotation;
+import org.netbeans.modules.cnd.debugger.gdb.breakpoints.DebuggerBreakpointAnnotation;
+import org.netbeans.modules.cnd.debugger.gdb.breakpoints.GdbBreakpoint;
 import org.netbeans.modules.cnd.loaders.CppEditorSupport.CppEditorComponent;
+import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
+import org.openide.text.Annotation;
 
 /**
  *
@@ -89,35 +81,12 @@ public class EditorContextImpl extends EditorContext {
     
     private static String fronting = System.getProperty("netbeans.debugger.fronting"); // NOI18N
     
-    private PropertyChangeSupport   pcs;
     private ChangeListener          changedFilesListener;
     private Map                     timeStampToRegistry = new HashMap();
     private Set                     modifiedDataObjects;
-    private PropertyChangeListener  editorObservableListener;
 
-    private Lookup.Result resDataObject;
-    private Lookup.Result resEditorCookie;
-    private Lookup.Result resNode;
-
-    private Object currentLock = new Object();
-    private String currentURL = null;
-    private EditorCookie currentEditorCookie = null;
     private Logger log = Logger.getLogger("gdb.logger"); // NOI18N
     
-    {
-        pcs = new PropertyChangeSupport(this);
-
-        resDataObject = Utilities.actionsGlobalContext().lookup(new Lookup.Template(DataObject.class));
-        resDataObject.addLookupListener(new EditorLookupListener(DataObject.class));
-
-        resEditorCookie = Utilities.actionsGlobalContext().lookup(new Lookup.Template(EditorCookie.class));
-        resEditorCookie.addLookupListener(new EditorLookupListener(EditorCookie.class));
-
-        resNode = Utilities.actionsGlobalContext().lookup(new Lookup.Template(Node.class));
-        resNode.addLookupListener(new EditorLookupListener(Node.class));
-
-    }
-
     
     /**
      * Shows source with given url on given line number.
@@ -188,11 +157,21 @@ public class EditorContextImpl extends EditorContext {
     }
     
     public Object annotate(DataObject dobj, int lineNumber, String annotationType, Object timeStamp) {
+        GdbBreakpoint b = null;
+        if (timeStamp instanceof GdbBreakpoint) {
+            b = (GdbBreakpoint) timeStamp;
+            timeStamp = null;
+        }
         Line l =  getLine(dobj, lineNumber, timeStamp);
         if (l == null) {
             return null;
         }
-        DebuggerAnnotation annotation = new DebuggerAnnotation(annotationType, l);
+        Annotation annotation;
+        if (b == null) {
+            annotation = new DebuggerAnnotation(annotationType, l);
+        } else {
+            annotation = new DebuggerBreakpointAnnotation(annotationType, l, b);
+        }
         return annotation;
     }
 
@@ -246,24 +225,7 @@ public class EditorContextImpl extends EditorContext {
      * @return number of line currently selected in editor or <code>-1</code>
      */
     public int getCurrentLineNumber() {
-        EditorCookie e = getCurrentEditorCookie();
-        if (e == null) {
-            return -1;
-        }
-        JEditorPane ep = getCurrentEditor();
-        if (ep == null) {
-            return -1;
-        }
-        StyledDocument d = e.getDocument();
-        if (d == null) {
-            return -1;
-        }
-        Caret caret = ep.getCaret();
-        if (caret == null) {
-            return -1;
-        }
-        int ln = NbDocument.findLineNumber(d, caret.getDot());
-        return ln + 1;
+        return EditorContextDispatcher.getDefault().getCurrentLineNumber();
     }
 
     /**
@@ -272,24 +234,7 @@ public class EditorContextImpl extends EditorContext {
      * @return number of line most recently selected in editor or <code>-1</code>
      */
     public int getMostRecentLineNumber() {
-        EditorCookie e = getMostRecentEditorCookie();
-        if (e == null) {
-            return -1;
-        }
-        JEditorPane ep = getMostRecentEditor();
-        if (ep == null) {
-            return -1;
-        }
-        StyledDocument d = e.getDocument();
-        if (d == null) {
-            return -1;
-        }
-        Caret caret = ep.getCaret();
-        if (caret == null) {
-            return -1;
-        }
-        int ln = NbDocument.findLineNumber(d, caret.getDot());
-        return ln + 1;
+        return EditorContextDispatcher.getDefault().getMostRecentLineNumber();
     }
     
     /**
@@ -298,32 +243,12 @@ public class EditorContextImpl extends EditorContext {
      * @return URL of source currently selected in editor or empty string
      */
     public String getCurrentURL() {
-        synchronized (currentLock) {
-            if (currentURL == null || currentURL.length() == 0) {
-                DataObject[] nodes = (DataObject[]) resDataObject.allInstances().toArray(new DataObject[0]);
-
-                if (nodes.length != 1) {
-                    currentURL = digForIt();
-                } else {
-                    DataObject dobj = nodes[0];
-                    if (dobj instanceof DataShadow) {
-                        dobj = ((DataShadow) dobj).getOriginal();
-                    }
-
-                    try {
-                        currentURL = dobj.getPrimaryFile().getURL().toString();
-                    } catch (FileStateInvalidException ex) {
-                        currentURL = "";
-                    }
-                }
-                if (Utilities.isWindows()) {
-                    // We need consistent because sometimes we compare to URLs...
-                    currentURL = currentURL.replace("\\", "/"); // NOI18N
-                }
-            }
-
-            return currentURL;
+        String currentURL = EditorContextDispatcher.getDefault().getCurrentURLAsString();
+        if (Utilities.isWindows()) {
+            // We need consistent because sometimes we compare to URLs...
+            currentURL = currentURL.replace("\\", "/"); // NOI18N
         }
+        return currentURL;
     }
     
     /** Look in all open C/C++ files and find the one showing. Return its URL */
@@ -355,24 +280,12 @@ public class EditorContextImpl extends EditorContext {
      *  @return url in string form
      */
     public String getMostRecentURL() {
-	String url = getCurrentURL();
-	
-	if (url.length() == 0) {
-	    Node[] nodes = TopComponent.getRegistry().getActivatedNodes();
-	    if (nodes != null) {
-		for (int i = 0; i < nodes.length; i++) {
-		    DataObject dobj = (DataObject) nodes[i].getCookie(DataObject.class);
-		    if (dobj != null) {
-			try {
-			    url = dobj.getPrimaryFile().getURL().toExternalForm();
-			    break;
-			} catch (FileStateInvalidException ex) {
-			}
-		    }
-		}
-	    }
-	}
-	return url;
+        String currentURL = EditorContextDispatcher.getDefault().getMostRecentURLAsString();
+        if (Utilities.isWindows()) {
+            // We need consistent because sometimes we compare to URLs...
+            currentURL = currentURL.replace("\\", "/"); // NOI18N
+        }
+        return currentURL;
     }
 
     /**
@@ -390,15 +303,11 @@ public class EditorContextImpl extends EditorContext {
      * @return function name currently selected in editor or empty string
      */
     public String getSelectedFunctionName() {
-        EditorCookie e = getCurrentEditorCookie();
-        if (e == null) {
-            return "";  // NOI18N
-        }
         JEditorPane ep = getCurrentEditor();
         if (ep == null) {
             return "";  // NOI18N
         }
-        StyledDocument doc = e.getDocument();
+        StyledDocument doc = (StyledDocument) ep.getDocument();
         if (doc == null) {
             return "";  // NOI18N
         }
@@ -499,33 +408,19 @@ public class EditorContextImpl extends EditorContext {
      * @return The MIME type of the current file
      */
     public String getCurrentMIMEType() {
-        synchronized (currentLock) {
-            DataObject[] nodes = (DataObject[]) resDataObject.allInstances().toArray(new DataObject[0]);
-
-            if (nodes.length != 1) {
-                return ""; // NOI18N
-            }
-
-            DataObject dobj = nodes[0];
-            if (dobj instanceof DataShadow) {
-                dobj = ((DataShadow) dobj).getOriginal();
-            }
-
-            FileObject fo = dobj.getPrimaryFile();
-
-            return fo != null ? fo.getMIMEType() : ""; // NOI18N
-        }
+        FileObject fo = EditorContextDispatcher.getDefault().getCurrentFile();
+        return fo != null ? fo.getMIMEType() : ""; // NOI18N
     }
     
     public DataObject getCurrentDataObject() {
-        synchronized (currentLock) {
-            DataObject[] nodes = (DataObject[]) resDataObject.allInstances().toArray(new DataObject[0]);
-
-            if (nodes.length != 1) {
-                return null;
-            }
-
-            return nodes[0];
+        FileObject fo = EditorContextDispatcher.getDefault().getCurrentFile();
+        if (fo == null) {
+            return null;
+        }
+        try {
+            return DataObject.find(fo);
+        } catch (DataObjectNotFoundException donfex) {
+            return null;
         }
     }
     
@@ -535,27 +430,8 @@ public class EditorContextImpl extends EditorContext {
      * @return The MIME type of the most recent selected file
      */
     public String getMostRecentMIMEType() {
-	String mime = getCurrentMIMEType();
-        
-	if (mime.length() == 0) {
-	    Node[] nodes = TopComponent.getRegistry().getActivatedNodes();
-	    if (nodes != null) {
-		for (int i = 0; i < nodes.length; i++) {
-		    DataObject dobj = (DataObject) nodes[i].getCookie(DataObject.class);
-		    if (dobj != null) {
-			if (dobj instanceof DataShadow) {
-			    dobj = ((DataShadow) dobj).getOriginal();
-			}
-                        FileObject fo = dobj.getPrimaryFile();
-                        if (fo != null) {
-                            mime = fo.getMIMEType();
-                            break;
-                        }
-		    }
-		}
-	    }
-	}
-	return mime;
+        FileObject fo = EditorContextDispatcher.getDefault().getMostRecentFile();
+        return fo != null ? fo.getMIMEType() : ""; // NOI18N
     }
     
     /**
@@ -564,7 +440,9 @@ public class EditorContextImpl extends EditorContext {
      * @param l the listener to add
      */
     public void addPropertyChangeListener(PropertyChangeListener l) {
-        pcs.addPropertyChangeListener(l);
+        EditorContextDispatcher.getDefault().addPropertyChangeListener(MIMENames.C_MIME_TYPE, l);
+        EditorContextDispatcher.getDefault().addPropertyChangeListener(MIMENames.CPLUSPLUS_MIME_TYPE, l);
+        EditorContextDispatcher.getDefault().addPropertyChangeListener("text/x-asm", l);
     }
     
     /**
@@ -573,123 +451,13 @@ public class EditorContextImpl extends EditorContext {
      * @param l the listener to remove
      */
     public void removePropertyChangeListener(PropertyChangeListener l) {
-        pcs.removePropertyChangeListener(l);
-    }
-    
-    /**
-     * Adds a property change listener.
-     *
-     * @param propertyName the name of property
-     * @param l the listener to add
-     */
-    public void addPropertyChangeListener(String propertyName, PropertyChangeListener l) {
-        pcs.addPropertyChangeListener(propertyName, l);
-    }
-    
-    /**
-     * Removes a property change listener.
-     *
-     * @param propertyName the name of property
-     * @param l the listener to remove
-     */
-    public void removePropertyChangeListener(String propertyName, PropertyChangeListener l) {
-        pcs.removePropertyChangeListener(propertyName, l);
+        EditorContextDispatcher.getDefault().removePropertyChangeListener(l);
     }
     
     private JEditorPane getCurrentEditor() {
-        EditorCookie e = getCurrentEditorCookie();
-        if (e == null){
-            return null;
-        }
-        JEditorPane[] op = getOpenedPanes(e);
-        // We listen on open panes if e implements EditorCookie.Observable
-        if ((op == null) || (op.length < 1)) {
-            return null;
-        }
-        return op [0];
+        return EditorContextDispatcher.getDefault().getCurrentEditor();
     }
     
-    private JEditorPane getMostRecentEditor() {
-        EditorCookie e = getMostRecentEditorCookie();
-        if (e == null){
-            return null;
-        }
-        JEditorPane[] op = getOpenedPanes(e);
-        // We listen on open panes if e implements EditorCookie.Observable
-        if ((op == null) || (op.length < 1)) {
-            return null;
-        }
-        return op [0];
-    }
-    
-    /**
-     * In NB6 JEditorPane.getOpenedPanes() must be called from the event dispatch
-     * thread. Ensure its correct now.
-     */
-    public static JEditorPane[] getOpenedPanes(final EditorCookie e) {
-	if (SwingUtilities.isEventDispatchThread()) {
-	    return e.getOpenedPanes();
-	} else {
-	    final JEditorPane[][] pane = new JEditorPane[1][1];
-            try {
-                SwingUtilities.invokeAndWait(new Runnable() {
-                    public void run() {
-                        pane[0] = e.getOpenedPanes();
-                    }
-                });
-            } catch (InvocationTargetException ex) {
-                ErrorManager.getDefault().notify(ex.getTargetException());
-            } catch (InterruptedException ex) {
-                ErrorManager.getDefault().notify(ex);
-            }
-	    return pane[0];
-	}
-    }
-
-    
-    private EditorCookie getCurrentEditorCookie() {
-        synchronized (currentLock) {
-            if (currentEditorCookie == null) {
-                TopComponent tc = TopComponent.getRegistry().getActivated();
-                if (tc != null) {
-                    currentEditorCookie = (EditorCookie) tc.getLookup().lookup(EditorCookie.class);
-                }
-                // Listen on open panes if currentEditorCookie implements EditorCookie.Observable
-                if (currentEditorCookie instanceof EditorCookie.Observable) {
-                    if (editorObservableListener == null) {
-                        editorObservableListener = new EditorLookupListener(EditorCookie.Observable.class);
-                    }
-                    ((EditorCookie.Observable) currentEditorCookie).addPropertyChangeListener(editorObservableListener);
-                }
-            }
-            return currentEditorCookie;
-        }
-    }
-    
-    private EditorCookie getMostRecentEditorCookie() {
-	EditorCookie ec = getCurrentEditorCookie();
-	
-	if (ec == null) {
-	    Node[] nodes = TopComponent.getRegistry().getActivatedNodes();
-	    if (nodes != null) {
-		for (int i = 0; i < nodes.length; i++) {
-		    ec = (EditorCookie) nodes[i].getCookie(EditorCookie.class);
-		    if (ec != null) {
-			System.err.println("Got it!"); // NOI18N
-		    }
-		}
-	    }
-//	    // Listen on open panes if currentEditorCookie implements EditorCookie.Observable
-//	    if (currentEditorCookie instanceof EditorCookie.Observable) {
-//		if (editorObservableListener == null) {
-//		    editorObservableListener = new EditorLookupListener(EditorCookie.Observable.class);
-//		}
-//		((EditorCookie.Observable) currentEditorCookie).addPropertyChangeListener(editorObservableListener);
-//	    }
-	}
-	return ec;
-    }
-
     private Line.Set getLineSet(DataObject dataObject, Object timeStamp) {
         if (dataObject == null) {
             return null;
@@ -793,45 +561,4 @@ public class EditorContextImpl extends EditorContext {
         }
     }
     
-    private class EditorLookupListener extends Object implements LookupListener, PropertyChangeListener {
-        
-        private Class type;
-        
-        public EditorLookupListener(Class type) {
-            this.type = type;
-        }
-        
-        public void resultChanged(LookupEvent ev) {
-            if (type == DataObject.class) {
-                synchronized (currentLock) {
-                    currentURL = null;
-                    if (currentEditorCookie instanceof EditorCookie.Observable) {
-                        ((EditorCookie.Observable) currentEditorCookie).
-                                removePropertyChangeListener(editorObservableListener);
-                    }
-                    currentEditorCookie = null;
-                }
-                pcs.firePropertyChange(TopComponent.Registry.PROP_CURRENT_NODES, null, null);
-            } else if (type == EditorCookie.class) {
-                synchronized (currentLock) {
-                    currentURL = null;
-                    if (currentEditorCookie instanceof EditorCookie.Observable) {
-                        ((EditorCookie.Observable) currentEditorCookie).
-                                removePropertyChangeListener(editorObservableListener);
-                    }
-                    currentEditorCookie = null;
-                }
-                pcs.firePropertyChange(TopComponent.Registry.PROP_CURRENT_NODES, null, null);
-            } else if (type == Node.class) {
-                pcs.firePropertyChange (TopComponent.Registry.PROP_CURRENT_NODES, null, null);
-            }
-        }
-        
-        public void propertyChange(PropertyChangeEvent evt) {
-            if (evt.getPropertyName().equals(EditorCookie.Observable.PROP_OPENED_PANES)) {
-                pcs.firePropertyChange(EditorCookie.Observable.PROP_OPENED_PANES, null, null);
-            }
-        }
-        
-    }
 }

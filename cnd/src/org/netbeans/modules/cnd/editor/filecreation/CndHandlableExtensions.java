@@ -44,12 +44,10 @@ import org.openide.loaders.ExtensionList;
 /**
  * Marker for DataLoaders what their files extensions would be handled by cnd
  *
- * @author sg155630
+ * @author Sergey Grinev
  */
 public interface CndHandlableExtensions {
     ExtensionList getDefaultExtensionList();
-    String getDefaultDefaultExtension();
     String getSettingsName();
     String getDisplayNameForExtensionList();
-    //FileEntry.Format getFormat();
 }

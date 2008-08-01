@@ -8,8 +8,6 @@ package antlr.collections.impl;
 import java.util.Hashtable;
 import java.util.Enumeration;
 
-import antlr.collections.impl.Vector;
-
 /**
  * A simple indexed vector: a normal vector except that you must
  * specify a key when adding an element.  This allows fast lookup

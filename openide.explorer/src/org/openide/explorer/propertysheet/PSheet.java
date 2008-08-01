@@ -698,7 +698,10 @@ class PSheet extends JPanel implements MouseListener {
         pane.setResizeWeight(1);
         pane.setDividerLocation(0.80f);
         pane.setBorder(BorderFactory.createEmptyBorder());
-        pane.setUI(PropUtils.createSplitPaneUI());
+        //Do not install our custom split pane UI on Nimbus L&F
+        if (!"Nimbus".equals(UIManager.getLookAndFeel().getID())) {
+            pane.setUI(PropUtils.createSplitPaneUI());
+        }
 
         // #52188: default F6 behaviour doesn't make to much sense in NB 
         // property sheet and blocks NetBeans default F6

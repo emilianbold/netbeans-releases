@@ -186,7 +186,7 @@ public class StringArrayEditor implements XMLPropertyEditor,
     }
 
     public Component getCustomEditor () {
-        return new StringArrayCustomEditor (this);
+        return new StringArrayCustomEditor(this);
     }
 
     public void addPropertyChangeListener (PropertyChangeListener propertyChangeListener) {

@@ -169,7 +169,11 @@ public class RDocFormatterTest extends RubyTestBase {
         
         instance.appendLine("#   class EliteGenerator < Rails::Generator::Base");
         
-        assertEquals("<pre style=\"color:#000000;\">\n  class EliteGenerator &lt; Rails::Generator::Base\n</pre>\n", instance.toHtml());
+        assertEquals("<pre style=\"color:#000000;\">\n  <span style=\"color:#0000e6;\">class</span> <span" +
+                " style=\"color:#000000;font-style:italic;\">EliteGenerator</span> <span style=\"\">&lt;</s" +
+                "pan> <span style=\"color:#000000;font-style:italic;\">Rails</span><span style=\"\">::</s" +
+                "pan><span style=\"color:#000000;font-style:italic;\">Generator</span><span style=\"\">::</" +
+                "span><span style=\"color:#000000;font-style:italic;\">Base</span><br></pre>\n", instance.toHtml());
     }
 
     public void testNoEscape() {
@@ -232,12 +236,11 @@ public class RDocFormatterTest extends RubyTestBase {
         instance.appendLine("#\n");
         instance.appendLine("#\n");
         
-        // TODO - no formatting here because the font+color lookup isn't working at test time
-        String expected = 
+        String expected =
 "<pre>\n" +
 "File.<b>basename</b>(file_name [, suffix] ) -> base_name\n" +
 "<br></pre>\n" +
-"<hr>\n" +                
+"<hr>\n" +
 "#\n" +
 " #\n" +
 " Returns the last component of the filename given in <i>file_name</i>,\n" +
@@ -247,13 +250,10 @@ public class RDocFormatterTest extends RubyTestBase {
 " it is removed.\n" +
 " #\n" +
 " <pre style=\"color:#000000;\">\n" +
-"   File.basename(\"/home/gumby/work/ruby.rb\")          #=> \"ruby.rb\"\n" +
-"\n" +
-"   File.basename(\"/home/gumby/work/ruby.rb\", \".rb\")   #=> \"ruby\"\n" +
-"\n" +
-"</pre>\n" +
+"   <span style=\"color:#000000;font-style:italic;\">File</span><span style=\"\">.</span><span style=\"\">basename</span><span style=\"\">(</span><span style=\"color:#ce7b00;\">\"</span><span style=\"color:#ce7b00\"><span style=\"color:#ce7b00;\">/home/gumby/work/ruby.rb</span></span><span style=\"color:#ce7b00;\">\"</span><span style=\"\">)</span>          <span style=\"color:#969696\"><span style=\"color:#969696;\">#=> \"ruby.rb\"<br></span></span><br>   <span style=\"color:#000000;font-style:italic;\">File</span><span style=\"\">.</span><span style=\"\">basename</span><span style=\"\">(</span><span style=\"color:#ce7b00;\">\"</span><span style=\"color:#ce7b00\"><span style=\"color:#ce7b00;\">/home/gumby/work/ruby.rb</span></span><span style=\"color:#ce7b00;\">\"</span><span style=\"\">,</span> <span style=\"color:#ce7b00;\">\"</span><span style=\"color:#ce7b00\"><span style=\"color:#ce7b00;\">.rb</span></span><span style=\"color:#ce7b00;\">\"</span><span style=\"\">)</span>   <span style=\"color:#969696\"><span style=\"color:#969696;\">#=> \"ruby\"<br></span></span><br></pre>\n" +
 "#\n" +
 " #\n ";
+
         String html = instance.toHtml();
                 
         assertEquals(expected, html);

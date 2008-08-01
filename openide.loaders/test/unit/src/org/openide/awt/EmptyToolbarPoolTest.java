@@ -44,8 +44,10 @@ package org.openide.awt;
 import java.util.logging.Level;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
+import org.openide.util.test.MockLookup;
 
 /** Mostly to test the correct behaviour of AWTTask.waitFinished.
  *
@@ -71,6 +73,7 @@ public class EmptyToolbarPoolTest extends NbTestCase {
     
     @Override
     protected void setUp() throws Exception {
+        MockLookup.setInstances(new Repository(FileUtil.createMemoryFileSystem()));
         FileObject root = Repository.getDefault ().getDefaultFileSystem ().getRoot ();
         toolbars = root.getFileObject("Toolbars");
         assertNull("Not created yet", toolbars);

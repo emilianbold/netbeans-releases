@@ -124,6 +124,15 @@ public final class DocPositions {
         resolve();
         return blockSectionStart;
     }
+    
+    List<? extends Tag> getTags() {
+        resolve();
+        List<Tag> tags = new ArrayList<Tag>(sortedTags.size());
+        for (TagEntry entry : sortedTags) {
+            tags.add(entry.tag());
+        }
+        return tags;
+    }
 
     private void resolve() {
         if (this.positions != null) {
@@ -142,13 +151,15 @@ public final class DocPositions {
             Token<JavadocTokenId> token = null;
             Token<JavadocTokenId> prev = null;
             jdts.moveStart();
+            boolean isFirstLineWS = true;
             while (jdts.moveNext()) {
                 prev = token;
                 token = jdts.token();
                 if (token.id() == JavadocTokenId.TAG) {
-                    if (prev == null) {
-                        // fist token in javadoc
+                    if (prev == null || isFirstLineWS) {
+                        // first token or first after white spaces in javadoc
                         // block tag
+                        isFirstLineWS = false;
                         addBlockTag(token, jdts.offset());
                     } else if (prev.id() == JavadocTokenId.OTHER_TEXT) {
                         if (JavadocCompletionUtils.isLineBreak(prev)/*BR*/) {
@@ -161,6 +172,11 @@ public final class DocPositions {
                             token = jdts.token();
                         }
                     }
+                } else if (isFirstLineWS && token.id() == JavadocTokenId.OTHER_TEXT && JavadocCompletionUtils.isFirstWhiteSpaceAtFirstLine(token)) {
+                    // javadoc content starts with white spaces on first line behind /**
+                    // continue
+                } else {
+                    isFirstLineWS = false;
                 }
             }
             if (token != null) {

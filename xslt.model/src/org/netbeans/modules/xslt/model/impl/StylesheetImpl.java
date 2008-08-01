@@ -34,10 +34,8 @@ import org.netbeans.modules.xslt.model.enums.Annotaions;
 import org.netbeans.modules.xslt.model.enums.DefaultValidation;
 import org.w3c.dom.Element;
 
-
 /**
  * @author ads
- *
  */
 class StylesheetImpl extends XslComponentImpl implements Stylesheet {
 
@@ -53,9 +51,20 @@ class StylesheetImpl extends XslComponentImpl implements Stylesheet {
      * @see org.netbeans.modules.xslt.model.impl.XslComponentImpl#accept(org.netbeans.modules.xslt.model.XslVisitor)
      */
     @Override
-    public void accept( XslVisitor visitor )
+    public void accept(XslVisitor visitor)
     {
-        visitor.visit( this );
+        visitor.visit(this);
+        acceptChildren(visitor, this, ""); // NOI18N
+    }
+
+    private void acceptChildren(XslVisitor visitor, XslComponent component, String indent) {
+        List<XslComponent> children = component.getChildren();
+
+        for (XslComponent child : children) {
+//System.out.println("see: " + indent + child.getClass().getName());
+            child.accept(visitor);
+            acceptChildren(visitor, child, "    "); // NOI18N
+        }
     }
 
     /* (non-Javadoc)

@@ -61,7 +61,6 @@ import org.openide.util.Enumerations;
 
 
 /** For debugging only (used by the AST Viewer */
-@SuppressWarnings("unchecked")
 class AstNodeAdapter implements ParserResult.AstTreeNode {
     private static final boolean HIDE_NEWLINE_NODES = false;
     private final Node node;
@@ -154,16 +153,25 @@ class AstNodeAdapter implements ParserResult.AstTreeNode {
         return Enumerations.array(children);
     }
 
+    @Override
     public String toString() {
+        if (node == Node.INVALID_POSITION) {
+            return "INVALID_POSITION";
+        }
+
         StringBuilder sb = new StringBuilder();
 
         sb.append("<html>");
         sb.append(node.toString());
         sb.append("<i>");
         sb.append(" (");
-        sb.append(getStartOffset());
-        sb.append("-");
-        sb.append(getEndOffset());
+        if (node.isInvisible()) {
+            sb.append("INVISIBLE");
+        } else {
+            sb.append(getStartOffset());
+            sb.append("-");
+            sb.append(getEndOffset());
+        }
         sb.append(") ");
         sb.append("</i>");
 
@@ -213,7 +221,12 @@ class AstNodeAdapter implements ParserResult.AstTreeNode {
     }
 
     public int getStartOffset() {
-        if (node.getPosition() != null) {
+        if (node.isInvisible()) {
+            return -1;
+        }
+        if (node == Node.INVALID_POSITION) {
+            return -1;
+        } else if (node.getPosition() != null) {
             return node.getPosition().getStartOffset();
         } else {
             return -1;
@@ -221,7 +234,12 @@ class AstNodeAdapter implements ParserResult.AstTreeNode {
     }
 
     public int getEndOffset() {
-        if (node.getPosition() != null) {
+        if (node.isInvisible()) {
+            return -1;
+        }
+        if (node == Node.INVALID_POSITION) {
+            return -1;
+        } else if (node.getPosition() != null) {
             return node.getPosition().getEndOffset();
         } else {
             return -1;

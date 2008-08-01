@@ -43,6 +43,7 @@ package org.openide.loaders;
 
 import org.openide.filesystems.*;
 import java.beans.*;
+import java.lang.ref.WeakReference;
 import org.netbeans.junit.*;
 
 /** Test the complexity of deleting N files in a folder without recognized
@@ -71,7 +72,7 @@ public class DataFolderSlowDeletionTest extends LoggingTestCaseHid {
      * 10-fold increase of the paratemer
      */
     public static NbTestSuite suite () {
-        return NbTestSuite.linearSpeedSuite(DataFolderSlowDeletionTest.class, 2, 3);
+        return NbTestSuite.linearSpeedSuite(DataFolderSlowDeletionTest.class, 2, 5);
     }
     
     /**
@@ -97,7 +98,17 @@ public class DataFolderSlowDeletionTest extends LoggingTestCaseHid {
         df = DataFolder.findFolder (folder);
         do0 = DataObject.find(children[0]);
     }
-    
+
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown();
+        WeakReference<?> ref = new WeakReference<Object>(folder);
+        folder = null;
+        children = null;
+        df = null;
+        do0 = null;
+        assertGC("Cleanup before next test", ref);
+    }
     
     
     /**

@@ -48,11 +48,9 @@ import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.ProjectUtils;
-
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.loaders.TemplateWizard;
-
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.SourceGroup;
@@ -91,7 +89,7 @@ public class ListenerPanel implements WizardDescriptor.Panel {
             WebModule wm=null;
             String j2eeVersion = WebModule.J2EE_14_LEVEL;
             if (groups!=null && groups.length>0) {
-                wm = WebModule.getWebModule(groups[0].getRootFolder());;
+                wm = WebModule.getWebModule(groups[0].getRootFolder());
             }
             if (wm!=null) {
                 j2eeVersion=wm.getJ2eePlatformVersion();
@@ -105,31 +103,20 @@ public class ListenerPanel implements WizardDescriptor.Panel {
         //return new HelpCtx(ListenerPanel.class);
         return HelpCtx.DEFAULT_HELP;
     }
-    /*
-    public boolean isValid() {
-        // If it is always OK to press Next or Finish, then:
-        return true;
-        // If it depends on some condition (form filled out...), then:
-        // return someCondition ();
-        // and when this condition changes (last form field filled in...) then:
-        // fireChangeEvent ();
-        // and uncomment the complicated stuff below.
-    }
-    */
+    
     public boolean isValid() {
 	if(isListenerSelected()) { 
-	    wizard.putProperty("WizardPanel_errorMessage", ""); //NOI18N
+	    wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, ""); //NOI18N
 	    return true;
 	}
-	wizard.putProperty("WizardPanel_errorMessage", //NOI18N
+	wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, //NOI18N
             org.openide.util.NbBundle.getMessage(ListenerPanel.class,"MSG_noListenerSelected")); 
 	return false; 
     } 
     
-    //public final void addChangeListener(ChangeListener l) {}
-    //public final void removeChangeListener(ChangeListener l) {}
-
-    private final Set listeners = new HashSet (1); // Set<ChangeListener>
+    // FIXME: use org.openide.util.ChangeSupport for ChangeListeners
+    private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
+    
     public final void addChangeListener (ChangeListener l) {
         synchronized (listeners) {
             listeners.add (l);
@@ -141,13 +128,13 @@ public class ListenerPanel implements WizardDescriptor.Panel {
         }
     }
     protected final void fireChangeEvent () {
-        Iterator it;
+        Iterator<ChangeListener> it;
         synchronized (listeners) {
-            it = new HashSet (listeners).iterator ();
+            it = new HashSet<ChangeListener>(listeners).iterator ();
         }
         ChangeEvent ev = new ChangeEvent (this);
         while (it.hasNext ()) {
-            ((ChangeListener) it.next ()).stateChanged (ev);
+            it.next().stateChanged(ev);
         }
     }
 

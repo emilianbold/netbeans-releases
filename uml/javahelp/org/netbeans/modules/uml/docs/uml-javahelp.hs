@@ -4,7 +4,7 @@
                          "http://java.sun.com/products/javahelp/helpset_2_0.dtd">
 
 <!--
-*     Copyright (c) 2006 Sun Microsystems, Inc. All rights reserved.
+*     Copyright (c) 2008 Sun Microsystems, Inc. All rights reserved.
 *     Use is subject to license terms.
 -->
 

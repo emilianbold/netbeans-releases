@@ -104,9 +104,7 @@ made subject to such option by the copyright holder.
     </folder>
     <folder name="Templates">
         <folder name="Project">
-            
-            <folder name="J2ME">
-                
+            <folder name="J2ME">                
                 <attr name="position" intvalue="500"/>
                 <file name="emptyCDC">
                     <attr name="position" intvalue="500"/>
@@ -190,8 +188,8 @@ made subject to such option by the copyright holder.
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/resources/AWTXlet.html"/>
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator"/>         
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2me.cdc.project.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/javax/swing/beaninfo/images/JPanelColor16.gif"/>
-                <attr name="SystemFileSystem.icon32" urlvalue="nbresloc:/javax/swing/beaninfo/images/JPanelColor32.gif"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/resources/panel_16.png"/>
+                <attr name="SystemFileSystem.icon32" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/resources/panel_32.png"/>
                 <attr name="CDC" boolvalue="true"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="templateCategory" stringvalue="CDC/AWT"/>
@@ -207,8 +205,8 @@ made subject to such option by the copyright holder.
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/resources/AGUIXlet.html"/>
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator"/>         
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2me.cdc.project.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/javax/swing/beaninfo/images/JPanelColor16.gif"/>
-                <attr name="SystemFileSystem.icon32" urlvalue="nbresloc:/javax/swing/beaninfo/images/JPanelColor32.gif"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/resources/panel_16.png"/>
+                <attr name="SystemFileSystem.icon32" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/resources/panel_32.png"/>
                 <attr name="CDC" boolvalue="true"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="templateCategory" stringvalue="CDC/AGUI"/>
@@ -224,8 +222,8 @@ made subject to such option by the copyright holder.
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/resources/JFrame.html"/>
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator"/>         
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2me.cdc.project.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/javax/swing/beaninfo/images/JFrameColor16.gif"/>
-                <attr name="SystemFileSystem.icon32" urlvalue="nbresloc:/javax/swing/beaninfo/images/JFrameColor32.gif"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/resources/frame_16.png"/>
+                <attr name="SystemFileSystem.icon32" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/resources/frame_32.png"/>
                 <attr name="CDC" boolvalue="true"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="templateCategory" stringvalue="CDC/NSIcom"/>
@@ -251,72 +249,76 @@ made subject to such option by the copyright holder.
     <folder name="org-netbeans-api-project-libraries">
         <folder name="Libraries">
             <file name="cdc-ant-utils.xml" url="Utils.xml"/>
-        </folder>
+        </folder>x  
     </folder>
-<!--    
      <folder name="Loaders">
         <folder name="image">
             <folder name="mbm">
+                <folder name="Factories">
+                    <file name="org-netbeans-modules-j2me-cdc-project-mbm-MBMDataLoader.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2me.cdc.project.Bundle"/>
+                        <attr name="position" intvalue="90049"/>
+                    </file>
+                </folder>
                 <folder name="Actions">
                     <file name="OpenAction.instance">
                         <attr name="instanceClass" stringvalue="org.openide.actions.OpenAction"/>
+                        <attr name="position" intvalue="100"/>
                     </file>
-                    <attr boolvalue="true" name="OpenAction.instance/FileSystemAction.instance"/>
                     <file name="FileSystemAction.instance">
                         <attr name="instanceClass" stringvalue="org.openide.actions.FileSystemAction"/>
+                        <attr name="position" intvalue="200"/>
                     </file>
-                    <attr boolvalue="true" name="FileSystemAction.instance/Separator0.instance"/>
                     <file name="Separator0.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="300"/>
                     </file>
-                    <attr boolvalue="true" name="Separator0.instance/CutAction.instance"/>
                     <file name="CutAction.instance">
                         <attr name="instanceClass" stringvalue="org.openide.actions.CutAction"/>
+                        <attr name="position" intvalue="400"/>
                     </file>
-                    <attr boolvalue="true" name="CutAction.instance/CopyAction.instance"/>
                     <file name="CopyAction.instance">
                         <attr name="instanceClass" stringvalue="org.openide.actions.CopyAction"/>
+                        <attr name="position" intvalue="500"/>
                     </file>
-                    <attr boolvalue="true" name="CopyAction.instance/PasteAction.instance"/>
                     <file name="PasteAction.instance">
                         <attr name="instanceClass" stringvalue="org.openide.actions.PasteAction"/>
+                        <attr name="position" intvalue="600"/>
                     </file>
-                    <attr boolvalue="true" name="PasteAction.instance/Separator1.instance"/>
                     <file name="Separator1.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="700"/>
                     </file>
-                    <attr boolvalue="true" name="Separator1.instance/DeleteAction.instance"/>
                     <file name="DeleteAction.instance">
                         <attr name="instanceClass" stringvalue="org.openide.actions.DeleteAction"/>
+                        <attr name="position" intvalue="800"/>
                     </file>
-                    <attr boolvalue="true" name="DeleteAction.instance/RenameAction.instance"/>
                     <file name="RenameAction.instance">
                         <attr name="instanceClass" stringvalue="org.openide.actions.RenameAction"/>
+                        <attr name="position" intvalue="900"/>
                     </file>
-                    <attr boolvalue="true" name="RenameAction.instance/Separator2.instance"/>
                     <file name="Separator2.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1000"/>
                     </file>
-                    <attr boolvalue="true" name="Separator2.instance/SaveAsTemplateAction.instance"/>
                     <file name="SaveAsTemplateAction.instance">
                         <attr name="instanceClass" stringvalue="org.openide.actions.SaveAsTemplateAction"/>
+                        <attr name="position" intvalue="1100"/>
                     </file>
-                    <attr boolvalue="true" name="SaveAsTemplateAction.instance/Separator3.instance"/>
                     <file name="Separator3.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1200"/>
                     </file>
-                    <attr boolvalue="true" name="Separator3.instance/ToolsAction.instance"/>
                     <file name="ToolsAction.instance">
                         <attr name="instanceClass" stringvalue="org.openide.actions.ToolsAction"/>
+                        <attr name="position" intvalue="1300"/>
                     </file>
-                    <attr boolvalue="true" name="ToolsAction.instance/PropertiesAction.instance"/>
                     <file name="PropertiesAction.instance">
                         <attr name="instanceClass" stringvalue="org.openide.actions.PropertiesAction"/>
+                        <attr name="position" intvalue="1400"/>
                     </file>
-                </folder>
+                </folder>                
             </folder>
         </folder>
-    </folder>
- -->
-
+     </folder>
 </filesystem>

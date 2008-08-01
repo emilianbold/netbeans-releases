@@ -60,16 +60,17 @@
 
         <group name="WeatherBug">
         </group>
-
-        <authentication profile="SaaSServices/WeatherBug/profile.properties">
+        
+        <code-gen>
+            <artifacts targets="java,servlet,resource,jsp" profile="Templates/SaaSServices/apikey.properties"/>
+            <artifacts targets="php" profile="Templates/SaaSServices/apikey.php"/>
+        </code-gen>
+        
+        <authentication>
             <api-key id="ACode"/>
         </authentication>
 
     </saas-metadata>
-
-    <!--
-    <methods>
-        <method name="liveWeatherRSS" href="#WeatherBug.LiveWeatherRSS"/>
-    </methods>
-    -->
+    
+    <methods/>
 </saas-services>

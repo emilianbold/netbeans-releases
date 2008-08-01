@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,37 +31,36 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.ws.qaf.rest;
 
-import junit.framework.TestSuite;
-import junit.textui.TestRunner;
+import junit.framework.Test;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JListOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
-import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.ide.ProjectSupport;
 
 /**
  * Test jMaki client stub.
- * 
+ *
  * Running of this test suite can be influenced by following system properties:
  * "plugins.jmaki.skip=true"
  *    - skipping this suite and related preparation steps (un/installing of the jMaki plugin)
  * "plugins.jmaki.nbm=/path/to/jmaki.nbm"
  *    - where to find jmaki.nbm (default is to download nbm from:
- *      https://ajax.dev.java.net/files/documents/3115/86078/org-netbeans-modules-sun-jmaki.nbm)
- * 
+ *      https://ajax.dev.java.net/files/documents/3115/90944/org-netbeans-modules-sun-jmaki.nbm)
+ *
  * @author lukas
  */
-public class JMakiTest extends CStubsTSuite {
+public class JMakiTest extends CStubsTest {
 
     public JMakiTest(String name) {
         super(name);
@@ -97,6 +96,9 @@ public class JMakiTest extends CStubsTSuite {
         createStubs("FromEntities"); //NOI18N
     }
 
+    /**
+     * Dummy test for the case when we know that jMaki related tests will not run
+     */
     public void testJMakiTestsSkipped() {
         //nothing to do
     }
@@ -127,23 +129,17 @@ public class JMakiTest extends CStubsTSuite {
     /**
      * Creates suite from particular test cases. You can define order of testcases here.
      */
-    public static TestSuite suite() {
-        TestSuite suite = new NbTestSuite();
+    public static Test suite() {
         if (!Boolean.getBoolean("plugins.jmaki.skip")) { //NOI18N
-            suite.addTest(new JMakiTest("testCreateStubs")); //NOI18N
-            suite.addTest(new JMakiTest("testFromWADL")); //NOI18N
-            suite.addTest(new JMakiTest("testCloseProject")); //NOI18N
+            return NbModuleSuite.create(addServerTests(NbModuleSuite.createConfiguration(JMakiTest.class),
+                    "testCreateStubs",
+                    "testFromWADL",
+                    "testCloseProject"
+                    ).enableModules(".*").clusters(".*"));
         } else {
-            suite.addTest(new JMakiTest("testJMakiTestsSkipped"));
+            return NbModuleSuite.create(addServerTests(NbModuleSuite.createConfiguration(JMakiTest.class),
+                    "testJMakiTestsSkipped"
+                    ).enableModules(".*").clusters(".*"));
         }
-        return suite;
-    }
-
-    /**
-     * Method allowing test execution directly from the IDE.
-     */
-    public static void main(java.lang.String[] args) {
-        // run whole suite
-        TestRunner.run(suite());
     }
 }

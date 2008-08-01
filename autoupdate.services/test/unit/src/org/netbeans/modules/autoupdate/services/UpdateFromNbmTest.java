@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -46,6 +46,7 @@ import java.net.URL;
 import java.util.List;
 import org.netbeans.api.autoupdate.InstallSupport;
 import org.netbeans.api.autoupdate.OperationContainer;
+import org.netbeans.api.autoupdate.OperationException;
 import org.netbeans.api.autoupdate.OperationSupport.Restarter;
 import org.netbeans.api.autoupdate.TestUtils;
 import org.netbeans.api.autoupdate.TestUtils.CustomItemsProvider;
@@ -141,7 +142,17 @@ public class UpdateFromNbmTest extends OperationsTestImpl {
         InstallSupport.Installer i = support.doValidate(v, null);
         assertNotNull(i);
         //assertNotNull(support.getCertificate(i, upEl));
-        Restarter r = support.doInstall(i, null);
+        Restarter r = null;
+        try {
+            r = support.doInstall(i, null);
+        } catch (OperationException ex) {
+            if (OperationException.ERROR_TYPE.INSTALL == ex.getErrorType ()) {
+                // can ingore
+                // module system cannot load the module either
+            } else {
+                fail (ex.toString ());
+            }
+        }
         assertNotNull ("Install update " + engine1_2 + " needs restart.", r);
         support.doRestartLater (r);
         

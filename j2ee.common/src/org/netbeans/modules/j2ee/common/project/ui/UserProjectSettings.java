@@ -44,6 +44,7 @@ package org.netbeans.modules.j2ee.common.project.ui;
 import java.io.File;
 import java.util.prefs.Preferences;
 
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
@@ -79,6 +80,8 @@ public final class UserProjectSettings {
     
     private static final String LAST_USED_IMPORT_LOCATION = "lastUsedImportLocation"; // NOI18N
 
+    private static final String SET_AS_MAIN_PROJECT = "setAsMainProject"; // NOI18N
+    
     public static UserProjectSettings getDefault () {
         return INSTANCE;
     }
@@ -203,4 +206,14 @@ public final class UserProjectSettings {
         else
             return new File(path);
     }
+    
+    public void setSetAsMainProject(boolean setAsMain, Object j2eeModuleType) {
+        getPreferences().putBoolean(SET_AS_MAIN_PROJECT+"-"+j2eeModuleType.toString(), setAsMain); // NOI18N
+    }
+
+    public boolean getSetAsMainProject(Object j2eeModuleType) {
+        return  getPreferences().getBoolean(SET_AS_MAIN_PROJECT+"-"+j2eeModuleType.toString(), 
+                j2eeModuleType == J2eeModule.EJB ? false : true);
+    }
+    
 }

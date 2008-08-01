@@ -59,6 +59,8 @@ public class SaveNotifierYesNo
 {
     private static  SaveNotifierYesNo instance = null;
     public final static Object SAVE_ALWAYS_OPTION = new Integer(9999);
+    public final static int SAVE_DISCARD_CANCEL = 0;
+    public final static int SAVE_CANCEL = 1;
     
     public static SaveNotifierYesNo getDefault()
     {
@@ -76,8 +78,18 @@ public class SaveNotifierYesNo
     }
     
     public Object displayNotifier(
+            String dialogTitle, String message, int buttonType) 
+    {
+        DialogManager dmgr = new DialogManager(dialogTitle, message, buttonType);
+        dmgr.prompt();
+        
+        return dmgr.getResult();
+    }
+    
+    public Object displayNotifier(
             String dialogTitle, String saveType, String saveName) 
     {
+        // create a default save-discard-cancel dialog with a default message
         DialogManager dmgr = new DialogManager(dialogTitle, saveType, saveName);
         dmgr.prompt();
         
@@ -99,37 +111,51 @@ public class SaveNotifierYesNo
             DialogDescriptor.YES_OPTION
         };
         
+         public DialogManager(
+            String dialogTitle, String saveType, String saveName) {
+             
+            this(dialogTitle,
+                    NbBundle.getMessage(SaveNotifierYesNo.class, 
+                    "LBL_SaveNotifierYesNoDialog_Question", saveType, saveName),
+                    SaveNotifierYesNo.SAVE_DISCARD_CANCEL);
+         }
+        
         public DialogManager(
-            String dialogTitle, String saveType, String saveName) 
+            String dialogTitle, String message, int buttonType)
         {
-            
-            JButton discardButton = new JButton(NbBundle.getMessage(
-                SaveNotifierYesNo.class, "LBL_DiscardButton")); // NOI18N
-            
-            discardButton.setActionCommand(NbBundle.getMessage(
-                    SaveNotifierYesNo.class, "LBL_DiscardButton")); // NOI18N
-            
-            Mnemonics.setLocalizedText(
-                    discardButton, NbBundle.getMessage(
-                        SaveNotifierYesNo.class, "LBL_DiscardButton")); // NOI18N
-
             JButton saveButton = new JButton(NbBundle.getMessage(
                 SaveNotifierYesNo.class, "LBL_SaveButton")); // NOI18N
             
             saveButton.setActionCommand(NbBundle.getMessage(
                     SaveNotifierYesNo.class, "LBL_SaveButton")); // NOI18N
 
-            Object[] buttonOptions =
+            Object buttonOptions[] = {
+                saveButton, 
+                DialogDescriptor.CANCEL_OPTION };
+            
+            
+            if (buttonType == SaveNotifierYesNo.SAVE_DISCARD_CANCEL)
             {
-                saveButton,discardButton,
-                DialogDescriptor.CANCEL_OPTION
+                JButton discardButton = new JButton(NbBundle.getMessage(
+                SaveNotifierYesNo.class, "LBL_DiscardButton")); // NOI18N
+            
+                discardButton.setActionCommand(NbBundle.getMessage(
+                    SaveNotifierYesNo.class, "LBL_DiscardButton")); // NOI18N
+            
+                Mnemonics.setLocalizedText(
+                    discardButton, NbBundle.getMessage(
+                        SaveNotifierYesNo.class, "LBL_DiscardButton")); // NOI18N
                 
+                Object buttons[] = {
+                    saveButton, 
+                    discardButton,
+                    DialogDescriptor.CANCEL_OPTION };
                 
-            };
+                buttonOptions = buttons;
+            }
             
             dialogDesc = new DialogDescriptor(
-                NbBundle.getMessage(SaveNotifierYesNo.class, 
-                    "LBL_SaveNotifierYesNoDialog_Question", saveType, saveName), // NOI18N
+                message,  // message to display
                 dialogTitle, // title
                 true, // modal?
                 buttonOptions,
@@ -162,9 +188,6 @@ public class SaveNotifierYesNo
             {
                 result = DialogDescriptor.NO_OPTION;
             }
-            
-            
-            
             else // Cancel or 'x' box close
                 result = DialogDescriptor.CANCEL_OPTION;
             

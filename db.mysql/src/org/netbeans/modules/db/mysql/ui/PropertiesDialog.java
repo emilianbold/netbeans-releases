@@ -44,9 +44,9 @@ import java.util.logging.Logger;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.SwingUtilities;
-import org.netbeans.modules.db.mysql.ServerInstance;
-import org.netbeans.modules.db.mysql.ServerNodeProvider;
-import org.netbeans.modules.db.mysql.Utils;
+import org.netbeans.modules.db.mysql.DatabaseServer;
+import org.netbeans.modules.db.mysql.impl.ServerNodeProvider;
+import org.netbeans.modules.db.mysql.util.Utils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.HelpCtx;
@@ -57,16 +57,17 @@ import org.openide.util.NbBundle;
  * @author David
  */
 public class PropertiesDialog  {
-    private static Logger LOGGER = Logger.getLogger(PropertiesDialog.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(PropertiesDialog.class.getName());
+    private static final String HELP_CTX = PropertiesDialog.class.getName();
     
     public enum Tab { BASIC, ADMIN };
     
     private final JTabbedPane tabbedPane;
     private final BasePropertiesPanel basePanel;
     private final AdminPropertiesPanel adminPanel;
-    private final ServerInstance server;
+    private final DatabaseServer server;
 
-    public PropertiesDialog(ServerInstance server) {
+    public PropertiesDialog(DatabaseServer server) {
         this.server = server;
         
         basePanel = new BasePropertiesPanel(server);
@@ -132,7 +133,7 @@ public class PropertiesDialog  {
         DialogDescriptor descriptor = new DialogDescriptor(
                 tabbedPane, 
                 getMessage("PropertiesDialog.Title"));
-        descriptor.setHelpCtx(new HelpCtx("MySQL properties"));
+        descriptor.setHelpCtx(new HelpCtx(HELP_CTX));
         
         basePanel.setDialogDescriptor(descriptor);
         adminPanel.setDialogDescriptor(descriptor);
@@ -176,9 +177,11 @@ public class PropertiesDialog  {
 
         ServerNodeProvider provider = ServerNodeProvider.getDefault();
         if ( ! provider.isRegistered() ) {
+            // setRegistered will connect the server
             provider.setRegistered(true);
+            
         } else if ( needsReconnect ) {
-            server.connectAsync();
+            server.reconnectAsync();
         }
     }
 

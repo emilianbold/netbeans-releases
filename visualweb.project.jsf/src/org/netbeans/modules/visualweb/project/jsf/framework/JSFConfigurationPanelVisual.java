@@ -604,7 +604,15 @@ private void jtFolderKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_
     }
     // </RAVE>
 
-    private boolean isPatternValid(String pattern){
+    private static final char[] INVALID_PATTERN_CHARS = {'%', '+'}; // NOI18N
+
+    private boolean isPatternValid(String pattern) {
+        for (char c : INVALID_PATTERN_CHARS) {
+            if (pattern.indexOf(c) != -1) {
+                return false;
+            }
+        }
+        
         if (pattern.startsWith("*.")){
             String p = pattern.substring(2);
             if (p.indexOf('.') == -1 && p.indexOf('*') == -1

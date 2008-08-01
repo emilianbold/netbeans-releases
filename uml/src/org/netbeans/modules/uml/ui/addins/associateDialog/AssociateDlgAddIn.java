@@ -57,11 +57,9 @@ import org.netbeans.modules.uml.core.support.umlsupport.FileSysManip;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
 import org.netbeans.modules.uml.ui.controls.projecttree.IProjectTreeControl;
 import org.netbeans.modules.uml.ui.controls.projecttree.IProjectTreeItem;
-import org.netbeans.modules.uml.ui.products.ad.application.ApplicationView;
 import org.netbeans.modules.uml.ui.products.ad.application.IMenuManager;
 import org.netbeans.modules.uml.ui.products.ad.application.action.ContextMenuActionClass;
 import org.netbeans.modules.uml.ui.products.ad.application.action.IETContextMenuHandler;
-import org.netbeans.modules.uml.ui.products.ad.drawEngineManagers.LabelManager;
 import org.netbeans.modules.uml.ui.support.DispatchHelper;
 import org.netbeans.modules.uml.ui.support.ProductHelper;
 import org.netbeans.modules.uml.ui.support.applicationmanager.IProduct;
@@ -70,7 +68,7 @@ import org.netbeans.modules.uml.ui.support.finddialog.FindResults;
 import org.netbeans.modules.uml.ui.support.finddialog.IFindResults;
 import org.netbeans.modules.uml.ui.support.projecttreesupport.ITreeFolder;
 import org.netbeans.modules.uml.ui.support.projecttreesupport.ITreeItem;
-import com.tomsawyer.drawing.TSLabel;
+import org.openide.util.NbBundle;
 
 /**
  * @author jingmingm
@@ -132,11 +130,14 @@ public class AssociateDlgAddIn implements IETContextMenuHandler
     protected void addAssociateMenuItem(IMenuManager pContextMenu)
     {
         // Fix W6157:  Do not add the menu item if the item is a label
-        Object cpItemClickedOn = pContextMenu.getContextObject();
-        if( !(cpItemClickedOn instanceof TSLabel))
-        {
-            pContextMenu.add(createMenuAction(LabelManager.loadString("IDS_POPUP_ASSOCIATE"), "MBK_ASSOCIATEDLG_ASSOCIATEWITH"));
-        }
+        //		Object cpItemClickedOn = pContextMenu.getContextObject();
+//		if( !(cpItemClickedOn instanceof TSLabel))
+//		{
+//			pContextMenu.add(createMenuAction(LabelManager.loadString("IDS_POPUP_ASSOCIATE"), "MBK_ASSOCIATEDLG_ASSOCIATEWITH"));
+//		}
+                pContextMenu.add(createMenuAction(NbBundle.getMessage(
+                                AssociateDlg.class, "IDS_POPUP_ASSOCIATE"),
+                                "MBK_ASSOCIATEDLG_ASSOCIATEWITH"));
     }
     
     public ContextMenuActionClass createMenuAction(String text, String menuID)

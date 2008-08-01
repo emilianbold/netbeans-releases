@@ -41,9 +41,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -53,7 +55,14 @@ import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.SystemUtils;
+import org.netbeans.installer.utils.XMLUtils;
+import org.netbeans.installer.utils.exceptions.XMLException;
 import org.netbeans.installer.utils.helper.FilesList;
+import org.netbeans.installer.utils.helper.ErrorLevel;
+import org.netbeans.installer.wizard.components.panels.netbeans.NbWelcomePanel;
+import org.netbeans.installer.wizard.components.panels.netbeans.NbWelcomePanel.BundleType;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 /**
  *
@@ -107,7 +116,7 @@ public class NetBeansUtils {
         
         File productid = new File(nbCluster, PRODUCT_ID);
         
-        return FileUtils.writeFile(productid, NB_IDE_ID);
+        return FileUtils.writeFile(productid, getNetBeansId());
     }
     
     public static FilesList addPackId(File nbLocation, String packId) throws IOException {
@@ -117,7 +126,7 @@ public class NetBeansUtils {
         
         final String id;
         if (!productid.exists()) {
-            id = NB_IDE_ID;
+            id = getNetBeansId();
         } else {
             id = FileUtils.readFile(productid).trim();
         }
@@ -154,7 +163,7 @@ public class NetBeansUtils {
         
         String id;
         if (!productid.exists()) {
-            id = NB_IDE_ID;
+            id = getNetBeansId();
         } else {
             id = FileUtils.readFile(productid).trim();
         }
@@ -198,6 +207,34 @@ public class NetBeansUtils {
         
         if (license_accepted.exists()) {
             FileUtils.deleteFile(license_accepted);
+        }
+    }
+    
+    public static FilesList setUsageStatistics(File nbLocation, boolean enabled) throws IOException {
+        File file = new File(getNbCluster(nbLocation), CORE_PROPERTIES);
+        String prop = USAGE_STATISTICS_ENABLED_PROPERTY + "=" + enabled;
+        if (!file.exists()) {
+            return FileUtils.writeFile(file,
+                    prop);
+        } else {
+            List<String> list = FileUtils.readStringList(file);
+            boolean exist = false;
+            for (int i = 0; i < list.size(); i++) {
+                String s = list.get(i);
+                if (s.startsWith(USAGE_STATISTICS_ENABLED_PROPERTY)) {
+                    exist = true;
+                    if (!s.endsWith("" + enabled)) {
+                        list.remove(i);
+                        list.add(prop);
+                    }
+                    break;
+                }
+            }
+            if (!exist) {
+                list.add(prop);
+            }
+            FileUtils.writeStringList(file, list);
+            return new FilesList();
         }
     }
     
@@ -514,8 +551,7 @@ public class NetBeansUtils {
         
         File netbeansclusters = new File(nbLocation, NETBEANS_CLUSTERS);
         List<String> list = FileUtils.readStringList(netbeansclusters);
-        List<String> clusters = new ArrayList <String> ();
-        
+                
         File platformCluster = null;
         
         for(String s : list) {
@@ -566,6 +602,79 @@ public class NetBeansUtils {
             "-cp", classpath,
             UPDATER_FRAMENAME, "--nosplash"});
     }
+    public static final boolean setModuleStatus(File nbLocation, String clusterName, String moduleName, boolean enable) {        
+        LogManager.log(ErrorLevel.DEBUG,
+                ((enable) ? "... enabling" : "disabling") +
+                " module " + moduleName + 
+                " in cluster " + clusterName + 
+                " at " + nbLocation);
+        final File configFile = getConfigFile(nbLocation, clusterName, moduleName);
+        if (FileUtils.exists(configFile)) {
+            Document doc = null;
+            try {
+                doc = XMLUtils.loadXMLDocument(configFile);
+            } catch (XMLException e) {
+                LogManager.log("Cannot load config file", e);
+            }
+            if (doc != null) {
+                for (Element element : XMLUtils.getChildren(doc.getDocumentElement(), "param")) {
+                    if (element.getAttribute("name").equals("enabled")) {
+                        if (element.getTextContent().equals(Boolean.toString(!enable))) {
+                            element.setTextContent(Boolean.toString(enable));
+                            try {
+                                XMLUtils.saveXMLDocument(doc, configFile);
+                                LogManager.log(ErrorLevel.MESSAGE, "... module status changed");
+                                return true;
+                            } catch (XMLException e) {
+                                LogManager.log("... Cannot save config file", e);
+                            }
+                        } else {
+                            LogManager.log(ErrorLevel.MESSAGE, "... module is already set to requested status");
+                            return true;
+                        }
+                        break;
+                    }
+                }
+            }
+            LogManager.log(ErrorLevel.MESSAGE,"... module status did not changed");
+        } else {
+            LogManager.log(ErrorLevel.MESSAGE,"... module config file does not exist at " + configFile);
+        }
+        return false;
+    }
+    
+    public static final Boolean getModuleStatus(File nbLocation, String clusterName, String moduleName) {        
+        LogManager.log(ErrorLevel.DEBUG, 
+                "... getting status of module " + moduleName + 
+                " in cluster " + clusterName + 
+                " at " + nbLocation);
+        final File configFile = getConfigFile(nbLocation, clusterName, moduleName);
+        
+        if (FileUtils.exists(configFile)) {
+            Document doc = null;
+            try {
+                doc = XMLUtils.loadXMLDocument(configFile);
+            } catch (XMLException e) {
+                LogManager.log("Cannot load config file", e);
+            }
+            if (doc != null) {
+                for (Element element : XMLUtils.getChildren(doc.getDocumentElement(), "param")) {
+                    if (element.getAttribute("name").equals("enabled")) {
+                         return new Boolean(element.getTextContent());
+                }
+                }
+            }
+            LogManager.log(ErrorLevel.MESSAGE,"... cannot get module status");
+        } else {
+            LogManager.log(ErrorLevel.MESSAGE,"... module config file does not exist");
+        }
+        return null;
+    }
+    
+    private static File getConfigFile(File nbLocation, String clusterName, String moduleName) {
+        File cluster = new File (nbLocation, clusterName);
+        return new File(cluster, "config" + File.separator + "Modules" + File.separator + moduleName + ".xml");
+    }
     
     // private //////////////////////////////////////////////////////////////////////
     private static long getJavaMemorySize(String string) {
@@ -607,7 +716,11 @@ public class NetBeansUtils {
             }
         }
     }
-    
+    private static String getNetBeansId() {
+        return BundleType.getType(
+                System.getProperty(NbWelcomePanel.WELCOME_PAGE_TYPE_PROPERTY)).
+                getNetBeansBundleId();
+    }
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
     private NetBeansUtils() {
@@ -624,7 +737,10 @@ public class NetBeansUtils {
             "config/productid"; // NOI18N
     public static final String LICENSE_ACCEPTED =
             "var/license_accepted"; // NOI18N
-    
+    public static final String CORE_PROPERTIES =
+            "config/Preferences/org/netbeans/core.properties";
+    public static final String USAGE_STATISTICS_ENABLED_PROPERTY = 
+            "usageStatisticsEnabled";//NOI18N
     public static final String DIGITS_PATTERN =
             "[0-9]+"; // NOI18N
     public static final String CLUSTER_NUMBER_PATTERN =

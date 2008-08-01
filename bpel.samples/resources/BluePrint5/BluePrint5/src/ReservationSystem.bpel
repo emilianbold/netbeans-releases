@@ -35,6 +35,8 @@
          xmlns:ns0="http://localhost/BluePrint5/Reservation"
          xmlns:ns1="http://localhost/BluePrint5/AirLineReservation"
          xmlns="http://docs.oasis-open.org/wsbpel/2.0/process/executable"
+         xmlns:sxt="http://www.sun.com/wsbpel/2.0/process/executable/SUNExtension/Trace" 
+         xmlns:sxed="http://www.sun.com/wsbpel/2.0/process/executable/SUNExtension/Editor"
          xmlns:ns3="http://localhost/BluePrint5/HotelReservation"
          xmlns:ns2="http://localhost/BluePrint5/CarReservation"
          xmlns:rsrv="http://ReservationSystem.org/xsd/reserve">
@@ -60,32 +62,18 @@
             importType="http://www.w3.org/2001/XMLSchema"></import>
     
     <partnerLinks>
-        <partnerLink name="reservationPLink"
-                     partnerLinkType="ns0:reservationPLinkType"
-                     myRole="reservationServicing"/>
-        <partnerLink name="airlineReservation"
-                     partnerLinkType="ns1:AirlineReservationPLinkType"
-                     partnerRole="reservingRole"/>
-        <partnerLink name="airlineStatus"
-                     partnerLinkType="ns1:AirLineReservStatusPLinkType"
-                     myRole="statusReceivingRole"/>
-        <partnerLink name="carReservationPLink"
-                     partnerLinkType="ns2:CarReservationPLinkType"
-                     partnerRole="reservingRole"/>
-        <partnerLink name="carReservationStatusPLink"
-                     partnerLinkType="ns2:CarReservStatusPLinkType"
-                     myRole="statusReceivingRole"/>
-        <partnerLink name="hoteReservationPLink"
-                     partnerLinkType="ns3:HotelReservationPLinkType"
-                     partnerRole="reservingRole"/>
-        <partnerLink name="hotelReservationStatusPLink"
-                     partnerLinkType="ns3:HotelReservStatusPLinkType"
-                     myRole="statusReceivingRole"/>
+        <partnerLink name="reservationPLink" partnerLinkType="ns0:reservationPLinkType" myRole="reservationServicing"/>
+        <partnerLink name="airlineReservation" partnerLinkType="ns1:AirlineReservationPLinkType" partnerRole="reservingRole"/>
+        <partnerLink name="airlineStatus" partnerLinkType="ns1:AirLineReservStatusPLinkType" myRole="statusReceivingRole"/>
+        <partnerLink name="carReservationPLink" partnerLinkType="ns2:CarReservationPLinkType" partnerRole="reservingRole"/>
+        <partnerLink name="carReservationStatusPLink" partnerLinkType="ns2:CarReservStatusPLinkType" myRole="statusReceivingRole"/>
+        <partnerLink name="hoteReservationPLink" partnerLinkType="ns3:HotelReservationPLinkType" partnerRole="reservingRole"/>
+        <partnerLink name="hotelReservationStatusPLink" partnerLinkType="ns3:HotelReservStatusPLinkType" myRole="statusReceivingRole"/>
     </partnerLinks>
+
     <variables>
         <variable name="reserve" messageType="ns0:reserveMesg"></variable>
         <variable name="reservationStatus" messageType="ns0:reservationStatus"></variable>
-        <variable name="reservationFault" messageType="ns0:reservationFailed"></variable>
         <variable name="reserveAirlineVar" messageType="ns1:AirlineReservation"></variable>
         <variable name="airlineStatusVar" messageType="ns1:AirlineReservationStatus"></variable>
         <variable name="reserveCarVar" messageType="ns2:CarReservation"></variable>
@@ -157,7 +145,6 @@
                     operation="reserveHotel"
                     inputVariable="reserveHotelVar"></invoke>
         </flow>
-
         <flow name="Flow">
             <pick name="receiveHotelStatus">
                 <onMessage partnerLink="hotelReservationStatusPLink"
@@ -187,7 +174,6 @@
                     </assign>
                 </onAlarm>
             </pick>
-        
             <pick name="receiveCarStatus">
                 <onMessage partnerLink="carReservationStatusPLink"
                            portType="ns2:CarStatusPortType"

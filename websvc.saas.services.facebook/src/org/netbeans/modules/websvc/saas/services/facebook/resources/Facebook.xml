@@ -56,43 +56,49 @@
     <saas-metadata>
         <localizing-bundle>org.netbeans.modules.websvc.saas.services.facebook.Bundle</localizing-bundle>
         <group name="Facebook"/>
-
-        <authentication profile="SaaSServices/Facebook/profile.properties">
+        <code-gen>
+            <artifacts targets="java,servlet,resource,jsp" profile="Templates/SaaSServices/sessionkey.properties">
+                <artifact id="FacebookAuthenticatorDesktop" type="template"
+                    url="Templates/SaaSServices/FacebookAuthenticatorDesktop.java"/>
+                <artifact id="FacebookAuthenticator" type="template"
+                    url="Templates/SaaSServices/FacebookAuthenticator.java"/>
+                <artifact id="FacebookAuthenticatorLogin" type="template"
+                    url="Templates/SaaSServices/FacebookLogin.java"/>
+                <artifact id="FacebookAuthenticatorCallback" type="template"
+                    url="Templates/SaaSServices/FacebookCallback.java"/>
+            </artifacts>
+            <artifacts targets="php" profile="Templates/SaaSServices/sessionkey.php">
+                <artifact id="FacebookAuthenticatorDesktop" type="template"
+                    url="Templates/SaaSServices/FacebookAuthenticatorDesktop.php"/>
+                <artifact id="FacebookAuthenticator" type="template"
+                    url="Templates/SaaSServices/FacebookAuthenticator.php"/>
+                <artifact id="FacebookAuthenticatorLogin" type="template"
+                    url="Templates/SaaSServices/FacebookLogin.php"/>
+                <artifact id="FacebookAuthenticatorCallback" type="template"
+                    url="Templates/SaaSServices/FacebookCallback.php"/>
+            </artifacts>
+        </code-gen>
+        <authentication>
             <session-key api-id="api_key" session-id="session_key" sig-id="sig">
                 <sign id="sig">
                     <params>
-                        <param name="method" type="string" required="true"/>
-                        <param name="v" type="string" required="true" default="1.0"/>
+                        <param name="call_id" type="time" required="true"/>
                         <param id="api_key={api_key}" name="api_key" type="string" required="true"/>
                         <param id="session_key={session_key}" name="session_key" type="string" required="true"/>
                     </params>
                 </sign>
-                <login>
-                    <sign id="sig">
-                        <params>
-                            <param name="method" type="string" required="true"/>
-                            <param name="v" type="string" required="true" default="1.0"/>
-                            <param name="api_key" type="string" required="true"/>
-                            <param id="auth_token={auth_token}" name="auth_token" type="string" required="true"/>
-                        </params>
-                    </sign>
-                    <method id="sessionKey={session_key},secret={secret}" name="login" href="#facebook.auth_getSession"/>
-                </login>
-                <token id="auth_token">
-                    <sign id="sig">
-                        <params>
-                            <param name="method" type="string" required="true"/>
-                            <param name="v" type="string" required="true" default="1.0"/>
-                            <param name="api_key" type="string" required="true"/>
-                        </params>
-                    </sign>
-                    <method id="auth_token={auth_createToken_response}" name="getToken" href="#facebook.auth_createToken"/>
-                    <prompt>
-                        <desktop url="http://www.facebook.com/login.php?api_key={apiKey}&amp;v={v}&amp;auth_token={auth_token}"/>
-                        <web url="http://www.facebook.com/login.php?api_key={apiKey}&amp;v={v:1.0}"/>
-                    </prompt>
-                </token>
-                <logout/>
+                <authenticator>
+                    <use-templates>
+                        <desktop>
+                            <template type="auth" href="FacebookAuthenticatorDesktop"/>
+                        </desktop>
+                        <web>
+                            <template type="auth" href="FacebookAuthenticator"/>
+                            <template type="login" href="FacebookAuthenticatorLogin"/>
+                            <template type="callback" href="FacebookAuthenticatorCallback"/>
+                        </web>
+                    </use-templates>
+                </authenticator>
             </session-key>
         </authentication>
         

@@ -22,22 +22,14 @@ import org.netbeans.modules.xml.axi.AXIComponent;
 import org.netbeans.modules.xslt.model.XslModel;
 
 /**
- *
  * @author Alexey
  */
 public interface MapperContext {
     
-//    T getTransformDesc();
-    
     XslModel getXSLModel();
-    
     AXIComponent getTargetType();
-    
     AXIComponent getSourceType();
-
     void addMapperContextChangeListener(MapperContextChangeListener listener);
-    
     void removeMapperContextChangeListener(MapperContextChangeListener listener);
-    
     String getValidationMessage();
 }

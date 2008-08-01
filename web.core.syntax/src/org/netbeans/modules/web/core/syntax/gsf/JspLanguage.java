@@ -40,15 +40,13 @@
  */
 package org.netbeans.modules.web.core.syntax.gsf;
 
-
-import java.util.Collection;
-import java.util.Collections;
 import org.netbeans.api.jsp.lexer.JspTokenId;
 import org.netbeans.api.lexer.Language;
-import org.netbeans.modules.gsf.api.GsfLanguage;
-import org.openide.filesystems.FileObject;
+import org.netbeans.modules.gsf.api.Parser;
+import org.netbeans.modules.gsf.api.StructureScanner;
+import org.netbeans.modules.gsf.spi.DefaultLanguageConfig;
 
-public class JspLanguage implements GsfLanguage {
+public class JspLanguage extends DefaultLanguageConfig {
     
     //XXX no line comment in jsp!
     private static final String LINE_COMMENT_PREFIX = "<%--";
@@ -56,19 +54,51 @@ public class JspLanguage implements GsfLanguage {
     public JspLanguage() {
     }
 
+    @Override
     public Language getLexerLanguage() {
         return JspTokenId.language();
     }
 
+    @Override
     public String getLineCommentPrefix() {
         return LINE_COMMENT_PREFIX;
     }
 
+    @Override
     public boolean isIdentifierChar(char c) {
         return Character.isLetter(c);
     }
 
-    public Collection<FileObject> getCoreLibraries() {
-        return Collections.emptyList();
+    @Override
+    public String getDisplayName() {
+        return "JSP";
+    }
+
+    @Override
+    public String getPreferredExtension() {
+        return "jsp"; // NOI18N
+    }
+
+    @Override
+    public boolean isUsingCustomEditorKit() {
+        return true;
+    }
+
+    // Service Registrations
+    
+    @Override
+    public Parser getParser() {
+        // we need the parser and the StructureScanner to enable navigator of embedded languages
+        return new JspGSFParser();
+    }
+
+    @Override
+    public boolean hasStructureScanner() {
+        return true;
+    }
+
+    @Override
+    public StructureScanner getStructureScanner() {
+        return new JspStructureScanner();
     }
 }

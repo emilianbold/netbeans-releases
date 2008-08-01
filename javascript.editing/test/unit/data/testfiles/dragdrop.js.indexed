@@ -1,18 +1,13 @@
 
 
 Document 0
-Delete:  source : <TESTURL>/dragdrop.js
-
-
-
-Document 1
-Indexed:
-  base : _cacheobservercallbacks;Draggables;_cacheObserverCallbacks;|FUNCTION|;;0;;;void;
-  base : _constructindex;Sortable;_constructIndex;|DOCUMENTED|FUNCTION|;node;0;6794;;;
-  base : _findchildrenelement;Sortable;_findChildrenElement;|DOCUMENTED|FUNCTION|;element,containerTag;0;63db;;;
-  base : _findrootelement;Sortable;_findRootElement;|FUNCTION|;element;0;;;;
-  base : _getwindowscroll;Draggable;_getWindowScroll;|FUNCTION|;w;0;;;;
-  base : _tree;Sortable;_tree;|FUNCTION|;element,options,parent;0;;;;
+Searchable Keys:
+  base : _cacheobservercallbacks;Draggables;_cacheObserverCallbacks;|PRIVATE|FUNCTION|;;0;;;void;
+  base : _constructindex;Sortable;_constructIndex;|DOCUMENTED|PRIVATE|FUNCTION|;node;0;6794;;;
+  base : _findchildrenelement;Sortable;_findChildrenElement;|DOCUMENTED|PRIVATE|FUNCTION|;element,containerTag;0;63db;;;
+  base : _findrootelement;Sortable;_findRootElement;|PRIVATE|FUNCTION|;element;0;;;;
+  base : _getwindowscroll;Draggable;_getWindowScroll;|PRIVATE|FUNCTION|;w;0;;;;
+  base : _tree;Sortable;_tree;|PRIVATE|FUNCTION|;element,options,parent;0;;;;
   base : activate;Draggables;activate;|FUNCTION|;draggable;0;;;void;
   base : activate;Droppables;activate;|FUNCTION|;drop;0;;;void;
   base : add;Droppables;add;|FUNCTION|;element;0;;;void;
@@ -160,7 +155,7 @@ Indexed:
   fqn : child.parent;;child.parent;|PROPERTY|;;0;;;;
   fqn : child.position;;child.position;|PROPERTY|;;0;;;;
   fqn : deepest;;deepest;|GLOBAL|;;0;;;;
-  fqn : draggable._getwindowscroll;;Draggable._getWindowScroll;|FUNCTION|;w;0;;;;
+  fqn : draggable._getwindowscroll;;Draggable._getWindowScroll;|PRIVATE|FUNCTION|;w;0;;;;
   fqn : draggable.currentdelta;;Draggable.currentDelta;|FUNCTION|;;0;;;Array;
   fqn : draggable.delta;;Draggable.delta;|DOCUMENTED|PROPERTY|;;0;1da0;;;
   fqn : draggable.destroy;;Draggable.destroy;|FUNCTION|;;0;;;void;
@@ -182,7 +177,7 @@ Indexed:
   fqn : draggable.updatedrag;;Draggable.updateDrag;|FUNCTION|;event,pointer;0;;;void;
   fqn : draggable;;Draggable;|CONSTRUCTOR|;;0;;;;
   fqn : draggable;;Draggable;|DOCUMENTED|PROPERTY|;;0;17fa;;;
-  fqn : draggables._cacheobservercallbacks;;Draggables._cacheObserverCallbacks;|FUNCTION|;;0;;;void;
+  fqn : draggables._cacheobservercallbacks;;Draggables._cacheObserverCallbacks;|PRIVATE|FUNCTION|;;0;;;void;
   fqn : draggables.activate;;Draggables.activate;|FUNCTION|;draggable;0;;;void;
   fqn : draggables.addobserver;;Draggables.addObserver;|FUNCTION|;observer;0;;;void;
   fqn : draggables.deactivate;;Draggables.deactivate;|FUNCTION|;;0;;;void;
@@ -270,10 +265,10 @@ Indexed:
   fqn : root.id;;root.id;|PROPERTY|;;0;;;;
   fqn : root.parent;;root.parent;|PROPERTY|;;0;;;;
   fqn : root.position;;root.position;|PROPERTY|;;0;;;Number;
-  fqn : sortable._constructindex;;Sortable._constructIndex;|DOCUMENTED|FUNCTION|;node;0;6794;;;
-  fqn : sortable._findchildrenelement;;Sortable._findChildrenElement;|DOCUMENTED|FUNCTION|;element,containerTag;0;63db;;;
-  fqn : sortable._findrootelement;;Sortable._findRootElement;|FUNCTION|;element;0;;;;
-  fqn : sortable._tree;;Sortable._tree;|FUNCTION|;element,options,parent;0;;;;
+  fqn : sortable._constructindex;;Sortable._constructIndex;|DOCUMENTED|PRIVATE|FUNCTION|;node;0;6794;;;
+  fqn : sortable._findchildrenelement;;Sortable._findChildrenElement;|DOCUMENTED|PRIVATE|FUNCTION|;element,containerTag;0;63db;;;
+  fqn : sortable._findrootelement;;Sortable._findRootElement;|PRIVATE|FUNCTION|;element;0;;;;
+  fqn : sortable._tree;;Sortable._tree;|PRIVATE|FUNCTION|;element,options,parent;0;;;;
   fqn : sortable.create;;Sortable.create;|FUNCTION|;element;0;;;void;
   fqn : sortable.destroy;;Sortable.destroy;|FUNCTION|;element;0;;;void;
   fqn : sortable.findelements;;Sortable.findElements;|DOCUMENTED|FUNCTION|;element,options;0;520c;;;
@@ -298,4 +293,4 @@ Indexed:
   fqn : sortableobserver;;SortableObserver;|CONSTRUCTOR|;;0;;;;
   fqn : sortableobserver;;SortableObserver;|DOCUMENTED|PROPERTY|;;0;3fa1;;;
 
-Not Indexed:
+Not Searchable Keys:

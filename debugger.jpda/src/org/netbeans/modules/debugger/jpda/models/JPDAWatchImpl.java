@@ -100,6 +100,14 @@ class JPDAWatchImpl extends AbstractVariable implements JPDAWatch {
         this.exceptionDescription = exception.getLocalizedMessage ();
         if (exceptionDescription == null)
             exceptionDescription = exception.getMessage ();
+        Throwable t = exception.getCause();
+        if (t != null && t instanceof org.omg.CORBA.portable.ApplicationException) {
+            java.io.StringWriter s = new java.io.StringWriter();
+            java.io.PrintWriter p = new java.io.PrintWriter(s);
+            t.printStackTrace(p);
+            p.close();
+            exceptionDescription += " \n"+s.toString();
+        }
         this.nodeRef = new java.lang.ref.WeakReference<Object>(node);
     }
     
@@ -197,6 +205,8 @@ class JPDAWatchImpl extends AbstractVariable implements JPDAWatch {
                     throw new InvalidExpressionException (ex);
                 } catch (ClassNotLoadedException ex) {
                     throw new InvalidExpressionException (ex);
+                } catch (IllegalArgumentException iaex) {
+                    throw new InvalidExpressionException (iaex);
                 }
             } else {
                 throw new InvalidExpressionException (
@@ -213,12 +223,14 @@ class JPDAWatchImpl extends AbstractVariable implements JPDAWatch {
                 throw new InvalidExpressionException (ex);
             } catch (ClassNotLoadedException ex) {
                 throw new InvalidExpressionException (ex);
+            } catch (IllegalArgumentException iaex) {
+                throw new InvalidExpressionException (iaex);
             }
         }
     }
     
     public String getToStringValue() throws InvalidExpressionException {
-        return AbstractObjectVariable.getToStringValue(getInnerValue(), getDebugger());
+        return AbstractObjectVariable.getToStringValue(getInnerValue(), getDebugger(), 0);
     }
     
     void setException (String exceptionDescription) {

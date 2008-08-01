@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.xml.schema;
 
 import org.openide.filesystems.*;
@@ -66,7 +65,7 @@ public class SchemaDataLoader extends UniFileLoader {
     }
     
     protected String actionsContext() {
-	return "Loaders/text/x-schema+xml/Actions/";
+    return "Loaders/text/x-schema+xml/Actions/";
     }
     
     /** Does initialization. Initializes display name,

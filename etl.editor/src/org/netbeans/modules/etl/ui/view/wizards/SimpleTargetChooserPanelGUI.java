@@ -49,6 +49,8 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
     private static final java.awt.Dimension PREF_DIM = new java.awt.Dimension(500, 340);
     String nbBundle20 = mLoc.t("BUND089: new");
     String nbBundle28 = mLoc.t("BUND090: Browse...");
+    String nbBundle30 = mLoc.t("BUND867: Collaboration");
+    private String NEW_FILE_NAME = nbBundle30.substring(15); // NOI18N
     private final String NEW_FILE_PREFIX = nbBundle20.substring(15); // NOI18N
     private final ListCellRenderer CELL_RENDERER = new GroupCellRenderer();
     private Project project;
@@ -150,7 +152,7 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
         /*folderTextField.setText(
             getRelativeNativeName(preselectedGroup.getRootFolder(), preselectedFolder)
         );*/
-        folderTextField.setText("collaborations");
+        folderTextField.setText("Collaborations");
 
         String ext = (template == null) ? "" : template.getExt(); // NOI18N
         expectedExtension = (ext.length() == 0) ? "" : ("." + ext); // NOI18N
@@ -169,7 +171,14 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
         putClientProperty("NewEtlWizard_Title", displayName); // NOI18N
 
         if (template != null) {
-            documentNameTextField.setText(NEW_FILE_PREFIX + template.getName());
+            int i = 0;
+            String str = null;
+            while (fileExists) {
+                ++i;
+                str = NEW_FILE_PREFIX + template.getName() + i;
+                boolean value = existFileName(getTargetGroup().getRootFolder(), str);
+            }            
+            documentNameTextField.setText(str);
             documentNameTextField.selectAll();
         }
         String nbBundle2 = mLoc.t("BUND092: Folder Name:");
@@ -223,6 +232,23 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
              nbBundle13.substring(15).charAt(0)
             ); // NOI18N
         }
+    }
+    
+    private boolean fileExists = true;
+
+    private boolean existFileName(FileObject targetFolder, String relFileName) {
+        File fileForTargetFolder = FileUtil.toFile(targetFolder);
+        if (fileForTargetFolder.exists()) {
+            File f = new File(fileForTargetFolder + File.separator + getTargetFolder(), relFileName+".etl");            
+            if (f.exists()) {
+                fileExists = true;
+            } else {
+                fileExists = false;
+            }
+        } else {
+            fileExists = targetFolder.getFileObject(relFileName) != null;
+        }
+        return fileExists;
     }
 
     /**
@@ -323,7 +349,9 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
         locationComboBox = new javax.swing.JComboBox();
         jLabel2 = new javax.swing.JLabel();
         folderTextField = new javax.swing.JTextField();
+        folderTextField.setEditable(false);
         browseButton = new javax.swing.JButton();
+        browseButton.setEnabled(false);
         browseButton.setMnemonic(nbBundle28.substring(15).charAt(0));
         browseButton.getAccessibleContext().setAccessibleName(nbBundle28.substring(15));
         jLabel4 = new javax.swing.JLabel();

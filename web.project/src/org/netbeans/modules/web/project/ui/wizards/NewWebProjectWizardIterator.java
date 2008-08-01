@@ -50,9 +50,6 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
-import java.util.logging.Level;
-import java.util.logging.LogRecord;
-import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
@@ -79,7 +76,9 @@ import org.netbeans.modules.web.project.WebProject;
 import org.netbeans.modules.web.project.api.WebProjectCreateData;
 import org.netbeans.modules.web.project.api.WebProjectUtilities;
 import org.netbeans.modules.j2ee.common.project.ui.UserProjectSettings;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.web.project.Utils;
 import org.netbeans.spi.java.project.support.ui.SharableLibrariesUtils;
 
 /**
@@ -89,8 +88,6 @@ import org.netbeans.spi.java.project.support.ui.SharableLibrariesUtils;
 public class NewWebProjectWizardIterator implements WizardDescriptor.ProgressInstantiatingIterator {
     
     private static final long serialVersionUID = 1L;
-    
-    static final String UI_LOGGER_NAME = "org.netbeans.ui.web.project"; //NOI18N
 
     /** Create a new wizard iterator. */
     public NewWebProjectWizardIterator() {}
@@ -192,9 +189,6 @@ public class NewWebProjectWizardIterator implements WizardDescriptor.ProgressIns
         
         handle.progress(NbBundle.getMessage(NewWebProjectWizardIterator.class, "LBL_NewWebProjectWizardIterator_WizardProgress_PreparingToOpen"), 4);
 
-        LogRecord logRecord = new LogRecord(Level.INFO, "UI_WEB_PROJECT_CREATE");  //NOI18N
-        logRecord.setLoggerName(UI_LOGGER_NAME);                   //NOI18N
-        logRecord.setResourceBundle(NbBundle.getBundle(NewWebProjectWizardIterator.class));
         
         List <String> selectedFrameworkNames = (List<String>) wiz.getProperty(WizardProperties.FRAMEWORK_NAMES);
         int frameworkCount = (selectedFrameworkNames != null) ? selectedFrameworkNames.size() : 0;
@@ -210,8 +204,33 @@ public class NewWebProjectWizardIterator implements WizardDescriptor.ProgressIns
             }
         }
         
-        logRecord.setParameters(parameters);
-        Logger.getLogger(UI_LOGGER_NAME).log(logRecord);
+        Utils.logUI(NbBundle.getBundle(NewWebProjectWizardIterator.class),
+                "UI_WEB_PROJECT_CREATE", parameters); // NOI18N
+
+        Object[] parameters2 = new Object[5];
+        parameters2[0] = ""; // NOI18N
+        try {
+            if (servInstID != null) {
+                parameters2[0] = Deployment.getDefault().getServerInstance(servInstID).getServerDisplayName();
+            }
+        }
+        catch (InstanceRemovedException ire) {
+            // ignore
+        }
+        parameters2[1] = createData.getJavaEEVersion();
+        parameters2[2] = createData.getSourceLevel();
+        parameters2[3] = createData.getSourceStructure();
+        StringBuffer sb = new StringBuffer(50);
+        if (selectedFrameworkNames != null) {
+            for (int i = 0; i < selectedFrameworkNames.size(); i++) {
+                sb.append(selectedFrameworkNames.get(i));
+                if ((i + 1) < selectedFrameworkNames.size()) {
+                    sb.append("|"); // NOI18N
+                }
+            }
+        }
+        parameters2[4] = sb;
+        Utils.logUsage(NewWebProjectWizardIterator.class, "USG_PROJECT_CREATE_WEB", parameters2); // NOI18N
         
         // Returning set of FileObject of project diretory. 
         // Project will be open and set as main
@@ -237,7 +256,7 @@ public class NewWebProjectWizardIterator implements WizardDescriptor.ProgressIns
                 new ProjectServerWizardPanel(J2eeModule.WAR, 
                         NbBundle.getMessage(NewWebProjectWizardIterator.class, "LBL_NWP1_ProjectServer"),
                         NbBundle.getMessage(NewWebProjectWizardIterator.class, "TXT_NewWebApp"),
-                        true, false, true, false, true),
+                        true, false, true, false, false, true),
 		new PanelSupportedFrameworks()
 	    };
 	else
@@ -250,7 +269,7 @@ public class NewWebProjectWizardIterator implements WizardDescriptor.ProgressIns
                 new ProjectServerWizardPanel(J2eeModule.WAR, 
                         NbBundle.getMessage(NewWebProjectWizardIterator.class, "LBL_NWP1_ProjectServer"),
                         NbBundle.getMessage(NewWebProjectWizardIterator.class, "TXT_NewWebApp"),
-                        true, false, true, false, true),
+                        true, false, true, false, false, true),
 	    };
         panelsCount = panels.length;
         
@@ -261,9 +280,9 @@ public class NewWebProjectWizardIterator implements WizardDescriptor.ProgressIns
             if (c instanceof JComponent) { // assume Swing components
                 JComponent jc = (JComponent)c;
                 // Step #.
-                jc.putClientProperty("WizardPanel_contentSelectedIndex", Integer.valueOf(i)); // NOI18N
+                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, Integer.valueOf(i)); // NOI18N
                 // Step name (actually the whole list for reference).
-                jc.putClientProperty("WizardPanel_contentData", steps); // NOI18N
+                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps); // NOI18N
             }
         }
     }

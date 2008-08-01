@@ -60,8 +60,6 @@ public class ActionCopyPasteTest extends NbTestCase {
 
     ToolbarFolderNode toolbar1;
     ToolbarFolderNode toolbar2;
-    MenuFolderNode menu1;
-    MenuFolderNode menu2;
     DataObject actionToPaste;
     
     public ActionCopyPasteTest(String testName) {
@@ -76,14 +74,9 @@ public class ActionCopyPasteTest extends NbTestCase {
         toolbar1 = new ToolbarFolderNode( createFolder( "Toolbars", "tb1" ) );
         toolbar2 = new ToolbarFolderNode( createFolder( "Toolbars", "tb2" ) );
 
-        menu1 = new MenuFolderNode( createFolder( "Menu", "menu1" ) );
-        menu2 = new MenuFolderNode( createFolder( "Menu", "menu2" ) );
-        
         createChildren( toolbar1.getDataObject().getPrimaryFile(), new Class[] { ActionA1.class, ActionA2.class } );
-        createChildren( menu1.getDataObject().getPrimaryFile(), new Class[] { ActionA1.class, ActionA2.class } );
 
         createChildren( toolbar2.getDataObject().getPrimaryFile(), new Class[] { ActionB1.class, ActionB2.class } );
-        createChildren( menu2.getDataObject().getPrimaryFile(), new Class[] { ActionB1.class, ActionB2.class } );
         
     }
 
@@ -104,14 +97,8 @@ public class ActionCopyPasteTest extends NbTestCase {
         types = toolbar2.getPasteTypes( t );
         assertTrue( "Pasting to a different folder is ok.", types.length > 0 );
         
-        types = menu1.getPasteTypes( t );
-        assertEquals( "Cannot paste an action if the menu already contains it.", 0, types.length );
-        
-        types = menu2.getPasteTypes( t );
-        assertTrue( "Pasting to a different menu is ok.", types.length > 0 );
-
         //check copy & paste for menu folders
-        folderChildren = ((DataFolder)menu1.getDataObject()).getChildren();
+        folderChildren = ((DataFolder)toolbar1.getDataObject()).getChildren();
         child1 = folderChildren[0];
         t = child1.getNodeDelegate().clipboardCopy();
 
@@ -120,12 +107,6 @@ public class ActionCopyPasteTest extends NbTestCase {
         
         types = toolbar2.getPasteTypes( t );
         assertTrue( "Pasting to a different folder is ok.", types.length > 0 );
-        
-        types = menu1.getPasteTypes( t );
-        assertEquals( "Cannot paste an action if the menu already contains it.", 0, types.length );
-        
-        types = menu2.getPasteTypes( t );
-        assertTrue( "Pasting to a different menu is ok.", types.length > 0 );
     }
     
     DataFolder createFolder( String parent, String folderName ) throws Exception {

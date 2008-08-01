@@ -37,7 +37,7 @@
 package org.netbeans.installer.utils.system;
 
 import org.netbeans.installer.utils.SystemUtils;
-import static org.netbeans.installer.utils.helper.Platform.*;
+import org.netbeans.installer.utils.helper.Platform;
 /**
  *
  * @author Kirill Sorokin
@@ -81,5 +81,12 @@ public class SolarisNativeUtils extends UnixNativeUtils {
         
         loadNativeLibrary(library);
         initializeForbiddenFiles(FORBIDDEN_DELETING_FILES_SOLARIS);
+    }
+    @Override
+    protected Platform getPlatform() {        
+        final String osArch = System.getProperty("os.arch");
+        return osArch.contains("sparc") ? 
+            Platform.SOLARIS_SPARC : 
+            Platform.SOLARIS_X86;        
     }
 }

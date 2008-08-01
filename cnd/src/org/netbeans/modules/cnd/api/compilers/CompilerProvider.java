@@ -49,6 +49,6 @@ import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
  */
 public abstract class CompilerProvider {
     
-    public abstract Tool createCompiler(CompilerFlavor flavor, int kind, String name, String displayName, String path);
+    public abstract Tool createCompiler(String hkey, CompilerFlavor flavor, int kind, String name, String displayName, String path);
         
 }

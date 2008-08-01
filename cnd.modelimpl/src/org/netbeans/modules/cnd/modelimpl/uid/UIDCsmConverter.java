@@ -43,6 +43,7 @@ package org.netbeans.modules.cnd.modelimpl.uid;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
@@ -54,6 +55,7 @@ import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmUID;
+import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 
@@ -129,7 +131,11 @@ public class UIDCsmConverter {
         Collection<T> out = UIDsToList(uids, false);
         return out;
     }
-    
+
+    public static <T extends CsmDeclaration> Iterator<T> UIDsToDeclarationsFiltered(Collection<CsmUID<T>> uids, CsmFilter filter) {
+        return new LazyCsmCollection<T, T>(new ArrayList<CsmUID<T>>(uids), true).iterator(filter);
+    }
+
     public static <T extends CsmDeclaration> Collection<T> UIDsToDeclarationsUnsafe(Collection<CsmUID<T>> uids) {
         Collection<T> out = UIDsToList(uids, true);
         return out;
@@ -139,15 +145,23 @@ public class UIDCsmConverter {
         Collection<T> out = UIDsToList(uids, false);
         return out;
     }
+
+    public static <T extends CsmMacro> Iterator<T> UIDsToMacros(Collection<CsmUID<T>> uids, CsmFilter filter) {
+        return new LazyCsmCollection<T, T>(new ArrayList<CsmUID<T>>(uids), true).iterator(filter);
+    }
     
     public static <T extends CsmInclude> Collection<T> UIDsToIncludes(Collection<CsmUID<T>> uids) {
         Collection<T> out = UIDsToList(uids, false);
         return out;
     }
+
+    public static <T extends CsmInclude> Iterator<T> UIDsToIncludes(Collection<CsmUID<T>> uids, CsmFilter filter) {
+        return new LazyCsmCollection<T, T>(new ArrayList<CsmUID<T>>(uids), true).iterator(filter);
+    }
     
     private static <T extends CsmIdentifiable> Collection<T> UIDsToList(Collection<CsmUID<T>> uids, boolean allowNullsAndSkip) {
         allowNullsAndSkip |= TraceFlags.SAFE_UID_ACCESS;
-        return new LazyCsmCollection<T>(new ArrayList<CsmUID<T>>(uids), allowNullsAndSkip);
+        return new LazyCsmCollection<T, T>(new ArrayList<CsmUID<T>>(uids), allowNullsAndSkip);
 //        List<T> out = new ArrayList<T>(uids.size());
 //        for (CsmUID<T> uid : uids) {
 //            assert uid != null;
@@ -158,6 +172,10 @@ public class UIDCsmConverter {
 //            }
 //        }
 //        return out;
+    }
+
+    public static <T extends CsmIdentifiable> Iterator<T> UIDsToDeclarations(Collection<CsmUID<T>> nonSharedCollection, CsmFilter filter) {
+        return new LazyCsmCollection<T, T>(nonSharedCollection, true).iterator(filter);
     }
     
     public static <T extends CsmIdentifiable> T UIDtoIdentifiable(CsmUID<T> uid) {
@@ -179,10 +197,12 @@ public class UIDCsmConverter {
         return project == null ? null : project.getUID();
     }  
 
+    @SuppressWarnings("unchecked")
     public static <T extends CsmDeclaration> CsmUID<T> declarationToUID(T decl) {
         return decl == null ? null : decl.getUID();
     }
 
+    @SuppressWarnings("unchecked")
     public static CsmUID<CsmScope> scopeToUID(CsmScope scope) {
         return scope == null ? null : ((CsmIdentifiable)scope).getUID();
     }

@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.bpel.mapper.tree.search;
 
+import org.netbeans.modules.soa.ui.tree.impl.SimpleFinder;
 import org.netbeans.modules.bpel.mapper.logging.tree.AlertItem;
 import org.netbeans.modules.bpel.mapper.logging.tree.LogAlertType;
 import org.netbeans.modules.bpel.mapper.logging.tree.LogItem;

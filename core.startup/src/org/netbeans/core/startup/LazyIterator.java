@@ -50,14 +50,14 @@ import org.openide.util.Lookup;
  *
  * @author Petr Nejedly
  */
-class LazyIterator implements Iterator<Class> {
-    Class first;
-    Class step;
-    Class<?> template;
-    Object skip;
-    Iterator delegate;
+class LazyIterator<T> implements Iterator<Class<? extends T>> {
+    Class<? extends T> first;
+    Class<? extends T> step;
+    Class<T> template;
+    Class<? extends T> skip;
+    Iterator<? extends Lookup.Item<? extends T>> delegate;
 
-    LazyIterator(Class first, Class template, Class skip) {
+    LazyIterator(Class<? extends T> first, Class<T> template, Class<? extends T> skip) {
         assert first != null;
 
         this.first = first;
@@ -76,16 +76,16 @@ class LazyIterator implements Iterator<Class> {
 
         // prepare next step
         while (delegate.hasNext() && step == null) {
-            Class next = ((Lookup.Item)delegate.next()).getType();
+            Class<? extends T> next = delegate.next().getType();
             if (next != skip) step = next;
         }
 
         return step != null;
     }
 
-    public Class next() {
+    public Class<? extends T> next() {
         if (first != null) {
-            Class ret = first;
+            Class<? extends T> ret = first;
             first = null;
             return ret;
         }
@@ -94,21 +94,21 @@ class LazyIterator implements Iterator<Class> {
 
         // check next step
         if (step != null) {
-            Class ret = step;
+            Class<? extends T> ret = step;
             step = null;
             return ret;
         }
 
         // return directly next without storing
         while (delegate.hasNext()) {
-            Class next = ((Lookup.Item)delegate.next()).getType();
+            Class<? extends T> next = delegate.next().getType();
             if (next != skip) return next;
         }
 
         throw new NoSuchElementException();
     }
 
-    private Iterator prepareDelegate() {
+    private Iterator<? extends Lookup.Item<? extends T>> prepareDelegate() {
         return Lookup.getDefault().lookupResult(template).allItems().iterator();
     }
 

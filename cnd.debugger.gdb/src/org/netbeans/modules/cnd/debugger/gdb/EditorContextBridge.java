@@ -103,7 +103,7 @@ public class EditorContextBridge {
         if (fullname != null) {
             File file = new File(fullname);
 	    if (file.exists()) {
-                FileObject fo = FileUtil.toFileObject(file);
+                FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(file));
                 if (fo != null) {
                     try {
                         return getContext().showSource(DataObject.find(fo), csf.getLineNumber(), null);
@@ -200,7 +200,7 @@ public class EditorContextBridge {
         if (fullname != null) {
             File file = new File(fullname);
 	    if (file.exists()) {
-                FileObject fo = FileUtil.toFileObject(file);
+                FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(file));
                 if (fo != null) {
                     try {
                         return getContext().annotate(DataObject.find(fo), csf.getLineNumber(), annotationType, null);
@@ -435,7 +435,7 @@ public class EditorContextBridge {
                              EditorContext.DISABLED_ADDRESS_BREAKPOINT_ANNOTATION_TYPE;
             }
             try {
-                return annotate(DataObject.find(Disassembly.getFileObject()), lineNumber, annotationType, null);
+                return annotate(DataObject.find(Disassembly.getFileObject()), lineNumber, annotationType, b);
             } catch (DataObjectNotFoundException doe) {
                 doe.printStackTrace();
                 return null;
@@ -450,7 +450,7 @@ public class EditorContextBridge {
             }
         }
 
-        return annotate(url, lineNumber, annotationType, null);
+        return annotate(url, lineNumber, annotationType, b);
     }
 
     public static String getRelativePath(String className) {
@@ -616,15 +616,6 @@ public class EditorContextBridge {
             cp2.removePropertyChangeListener(l);
         }
         
-        public void addPropertyChangeListener(String propertyName, PropertyChangeListener l) {
-            cp1.addPropertyChangeListener(propertyName, l);
-            cp2.addPropertyChangeListener(propertyName, l);
-        }
-        
-        public void removePropertyChangeListener(String propertyName, PropertyChangeListener l) {
-            cp1.removePropertyChangeListener(propertyName, l);
-            cp2.removePropertyChangeListener(propertyName, l);
-        }
     }
     
     private static class CompoundAnnotation {

@@ -50,6 +50,7 @@ import java.io.IOException;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -87,7 +88,6 @@ import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
-import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.project.ant.FileChooser;
 import org.netbeans.api.project.libraries.LibraryChooser;
 import org.netbeans.api.project.libraries.LibraryManager;
@@ -649,8 +649,13 @@ final class LibrariesNode extends AbstractNode {
             final J2SEProjectClassPathModifier cpMod = project.getProjectClassPathModifier();
             assert cpMod != null;
             Set<Library> added = LibraryChooser.showDialog(
-                    project.getReferenceHelper().getProjectLibraryManager(), null, 
-                    project.getReferenceHelper().getLibraryChooserImportHandler()); // XXX restrict to j2se libs only?
+                    project.getReferenceHelper().getProjectLibraryManager(),
+                    new LibraryChooser.Filter() {
+                        public boolean accept(Library library) {
+                            return "j2se".equals(library.getType());    //NOI18N
+                        }
+                    }, 
+                    project.getReferenceHelper().getLibraryChooserImportHandler());
             if (added != null) {
                 final String propName = cpProvider.getPropertyName(projectSourcesArtifact, ClassPath.COMPILE);
                 addLibraries(added.toArray(new Library[added.size()]),cpMod,propName);
@@ -712,7 +717,14 @@ final class LibrariesNode extends AbstractNode {
             assert cpProvider != null;
             final J2SEProjectClassPathModifier cpMod = project.getProjectClassPathModifier();
             assert cpMod != null;
-            FileChooser chooser = new FileChooser(project.getAntProjectHelper(), true);
+            FileChooser chooser;
+            if (project.getAntProjectHelper().isSharableProject()) {
+                chooser = new FileChooser(project.getAntProjectHelper(), true);
+            } else {
+                chooser = new FileChooser(FileUtil.toFile(project.getProjectDirectory()), null);
+            }
+            chooser.enableVariableBasedSelection(true);
+            chooser.setFileHidingEnabled(false);
             FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
             chooser.setFileSelectionMode( JFileChooser.FILES_AND_DIRECTORIES );
             chooser.setMultiSelectionEnabled( true );
@@ -735,14 +747,14 @@ final class LibrariesNode extends AbstractNode {
                     return;
                 }
                 final String propName = cpProvider.getPropertyName(projectSourcesArtifact, ClassPath.COMPILE);
-                addJarFiles(files, fileFilter , FileUtil.toFile(project.getProjectDirectory()),
+                addJarFiles(files, chooser.getSelectedPathVariables(), fileFilter , FileUtil.toFile(project.getProjectDirectory()),
                         cpMod, propName);
                 curDir = FileUtil.normalizeFile(chooser.getCurrentDirectory());
                 FoldersListSettings.getDefault().setLastUsedClassPathFolder(curDir);
             }
         }
 
-        private void addJarFiles (final String[] files, final FileFilter fileFilter,
+        private void addJarFiles (final String[] files, final String[] pathBasedVariables, final FileFilter fileFilter,
                 final File base, final J2SEProjectClassPathModifier cpMod, final String propName) {
             assert files != null;
             assert fileFilter != null;
@@ -753,10 +765,37 @@ final class LibrariesNode extends AbstractNode {
                     //Check if the file is acceted by the FileFilter,
                     //user may enter the name of non displayed file into JFileChooser
                     File fl = PropertyUtils.resolveFile(base, files[i]);
-                    if (fileFilter.accept(fl)) {
-                        URL u = LibrariesSupport.convertFilePathToURL(files[i]);
-                        u = FileUtil.getArchiveRoot(u);
-                        cpMod.handleRoots(new URL[]{u}, propName, J2SEProjectClassPathModifier.ADD, false);
+                    FileObject fo = FileUtil.toFileObject(fl);
+                    assert fo != null : fl;
+                    if (fo != null && fileFilter.accept(fl)) {
+                        URI u;
+                        boolean isArchiveFile = FileUtil.isArchiveFile(fo);
+                        if (pathBasedVariables == null) {
+                            u = LibrariesSupport.convertFilePathToURI(files[i]);
+                        } else {
+                            try {
+                                String path = pathBasedVariables[i];
+                                // append slash before creating relative URI:
+                                if (!isArchiveFile && !path.endsWith("/")) { // NOI18N
+                                    path += "/"; // NOI18N
+                                }
+                                // create relative URI
+                                u = new URI(null, null, path, null);
+                            } catch (URISyntaxException ex) {
+                                Exceptions.printStackTrace(ex);
+                                u = LibrariesSupport.convertFilePathToURI(files[i]);
+                            }
+                        }
+                        if (isArchiveFile) {
+                            u = LibrariesSupport.getArchiveRoot(u);
+                        } else if (!u.toString().endsWith("/")) { // NOI18N
+                            try {
+                                u = new URI(u.toString() + "/"); // NOI18N
+                            } catch (URISyntaxException ex) {
+                                throw new AssertionError(ex);
+                            }
+                        }
+                        cpMod.handleRoots(new URI[]{u}, propName, J2SEProjectClassPathModifier.ADD, false);
                     }
                 } catch (IOException ioe) {
                     ErrorManager.getDefault().notify(ioe);

@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -47,17 +47,21 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import javax.swing.JComponent;
 import javax.swing.border.Border;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
+import org.netbeans.api.options.OptionsDisplayer;
+import org.netbeans.modules.options.OptionsPanelControllerAccessor;
 import org.netbeans.modules.options.ui.TabbedPanelModel;
 import org.netbeans.spi.options.AdvancedOption;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
+import org.openide.util.Lookup.Item;
 import org.openide.util.Lookup.Result;
 import org.openide.util.LookupListener;
 import org.openide.util.lookup.Lookups;
@@ -69,37 +73,78 @@ import org.openide.util.lookup.ProxyLookup;
  */
 public final class Model extends TabbedPanelModel {
     
-    private Map<String,AdvancedOption> categoryToOption = new HashMap<String,AdvancedOption>();
+    private Map<String,String> idToCategory = new HashMap<String,String>();
+    private Map<String,AdvancedOption> categoryToOption = new LinkedHashMap<String,AdvancedOption>();
     private Map<String, JComponent> categoryToPanel = new HashMap<String, JComponent> ();
     private Map<String, OptionsPanelController> categoryToController = new HashMap<String, OptionsPanelController>();
     private Lookup masterLookup;
     private LookupListener lkpListener;
     private Result<AdvancedOption> lkpResult;
+    private String subpath;
+    private PropertyChangeListener propertyChangeListener;
 
-    public Model(LookupListener listener) {
+    /**
+     * @param subpath path to folder under OptionsDialog folder containing 
+     * instances of AdvancedOption class. Path is composed from registration 
+     * names divided by slash.
+     */
+    public Model(String subpath, LookupListener listener) {
+        this.subpath = subpath;
         this.lkpListener = listener;
     }
-
     
     public List getCategories () {
         init ();
         List<String> l = new ArrayList<String>(categoryToOption.keySet ());
-        Collections.sort(l, Collator.getInstance());
+        // Sort Miscellaneous (aka Advanced) subcategories. Order of other categories
+        // can be defined in layer by position attribute.
+        if(OptionsDisplayer.ADVANCED.equals(subpath)) {
+            Collections.sort(l, Collator.getInstance());
+        }
         return l;
     }
     
+    /** Returns list of IDs in this model. 
+     * @return list of IDs in this model
+     */
+    public List<String> getIDs() {
+        init();
+        return new ArrayList<String>(idToCategory.keySet());
+    }
+
     public String getToolTip (String category) {
         AdvancedOption option = categoryToOption.get (category);
         return option.getTooltip ();
     }
     
+    /** Returns display name for given categoryID.
+     * @param categoryID ID of category as defined in layer xml
+     * @return display name of given category
+     */
+    public String getDisplayName(String categoryID) {
+        AdvancedOption option = categoryToOption.get(idToCategory.get(categoryID));
+        return option.getDisplayName();
+    }
+
+    /** Returns controller for given categoryID.
+     * @param categoryID ID of category as defined in layer xml
+     * @return controller of given category
+     */
+    public OptionsPanelController getController(String categoryID) {
+        return categoryToController.get(getDisplayName(categoryID));
+    }
+
     public JComponent getPanel (String category) {
         init ();
         JComponent panel = categoryToPanel.get (category);        
         if (panel != null) return panel;
         AdvancedOption option = categoryToOption.get (category);
-        OptionsPanelController controller = new DelegatingController(option.create ());
-        categoryToController.put (category, controller);
+        OptionsPanelController controller = categoryToController.get(category);
+        if (controller==null) {
+            controller = new DelegatingController(option.create ());
+            categoryToController.put (category, controller);
+        }
+        controller.addPropertyChangeListener(propertyChangeListener);
         panel = controller.getComponent (masterLookup);
         categoryToPanel.put (category, panel);
         Border b = panel.getBorder ();
@@ -152,7 +197,20 @@ public final class Model extends TabbedPanelModel {
                 return true;
         return false;
     }
-    
+
+    void addPropertyChangeListener(PropertyChangeListener listener) {
+        propertyChangeListener = listener;
+        for(OptionsPanelController controller : categoryToController.values()) {
+            controller.addPropertyChangeListener(listener);
+        }
+    }
+
+    void removePropertyChangeListener(PropertyChangeListener listener) {
+        for(OptionsPanelController controller : categoryToController.values()) {
+            controller.removePropertyChangeListener(listener);
+        }
+    }
+
     Lookup getLookup () {
         List<Lookup> lookups = new ArrayList<Lookup> ();
         Iterator<OptionsPanelController> it = categoryToController.values ().iterator ();
@@ -182,15 +240,18 @@ public final class Model extends TabbedPanelModel {
         if (initialized) return;
         initialized = true;
         
-        Lookup lookup = Lookups.forPath("OptionsDialog/Advanced"); // NOI18N
+        String path = "OptionsDialog/"+subpath; // NOI18N
+        Lookup lookup = Lookups.forPath(path);
         lkpResult = lookup.lookup(new Lookup.Template<AdvancedOption>(AdvancedOption.class));
         lkpResult.addLookupListener(lkpListener);
         lkpListener = null;
-        Iterator<? extends AdvancedOption> it = lkpResult.
-                allInstances ().iterator ();
-        while (it.hasNext ()) {
-            AdvancedOption option = it.next ();
-            categoryToOption.put (option.getDisplayName (), option);
+        for(Item<AdvancedOption> item : lkpResult.allItems()) {
+            // don't lookup in subfolders
+            if(item.getId().substring(0, item.getId().lastIndexOf('/')).equals(path)) {  // NOI18N
+                AdvancedOption option = item.getInstance();
+                categoryToOption.put(option.getDisplayName(), option);
+                idToCategory.put(item.getId().substring(path.length()+1), item.getInstance().getDisplayName());
+            }
         }
     }
     
@@ -233,6 +294,11 @@ public final class Model extends TabbedPanelModel {
             return delegate.getComponent(masterLookup);
         }
 
+        @Override
+        public void setCurrentSubcategory(String subpath) {
+            OptionsPanelControllerAccessor.getDefault().setCurrentSubcategory(delegate, subpath);
+        }
+        
         public HelpCtx getHelpCtx() {
             return delegate.getHelpCtx();
         }
@@ -243,7 +309,7 @@ public final class Model extends TabbedPanelModel {
 
         public void removePropertyChangeListener(PropertyChangeListener l) {
             delegate.removePropertyChangeListener(l);
-        }        
+        }
     }            
 }
 

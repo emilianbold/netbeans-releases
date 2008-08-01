@@ -43,13 +43,14 @@ package org.netbeans.modules.web.core;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.web.api.webmodule.WebFrameworks;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.core.jsploader.JspCompileUtil;
 import org.netbeans.modules.web.spi.webmodule.WebFrameworkProvider;
-
-import org.openide.filesystems.*;
 import org.netbeans.modules.web.spi.webmodule.RequestParametersQueryImplementation;
+import org.openide.filesystems.FileObject;
 
 /** Static methods for execution parameters.
 *
@@ -57,6 +58,7 @@ import org.netbeans.modules.web.spi.webmodule.RequestParametersQueryImplementati
 */
 public class WebExecSupport implements RequestParametersQueryImplementation {
 
+    private static final Logger LOG = Logger.getLogger(WebExecSupport.class.getName());
     public static final String EA_REQPARAMS = "NetBeansAttrReqParams"; // NOI18N
 
     /* Sets execution query string for the associated entry.
@@ -79,7 +81,7 @@ public class WebExecSupport implements RequestParametersQueryImplementation {
                 return qStr;
             }
         } catch (Exception ex) {
-            // null pointer or IOException
+            LOG.log(Level.FINE, "error", ex);
         }
         return ""; // NOI18N
     }

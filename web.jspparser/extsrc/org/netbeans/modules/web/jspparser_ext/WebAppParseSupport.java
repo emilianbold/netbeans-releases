@@ -43,12 +43,14 @@ package org.netbeans.modules.web.jspparser_ext;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -56,19 +58,19 @@ import java.net.URLConnection;
 import java.security.AllPermission;
 import java.security.CodeSource;
 import java.security.PermissionCollection;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import javax.servlet.ServletContext;
 import javax.servlet.jsp.tagext.TagLibraryInfo;
 import org.netbeans.modules.web.api.webmodule.WebModule;
@@ -94,6 +96,7 @@ import org.netbeans.modules.web.jspparser.ContextUtil;
 import org.netbeans.modules.web.jspparser.JspParserImpl;
 import org.netbeans.modules.web.jspparser.ParserServletContext;
 import org.netbeans.modules.web.jspparser.WebAppParseProxy;
+import org.openide.ErrorManager;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileRenameEvent;
@@ -131,7 +134,6 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
     
     static final Logger LOG = Logger.getLogger(WebAppParseSupport.class.getName());
     private static final JspParserAPI.JspOpenInfo DEFAULT_JSP_OPEN_INFO = new JspParserAPI.JspOpenInfo(false, "8859_1"); // NOI18N
-    private static final Pattern RE_PATTERN_COMMONS_LOGGING = Pattern.compile(".*commons-logging.*\\.jar.*"); // NOI18N
     
     final JspParserImpl jspParser;
     // #85817
@@ -145,9 +147,10 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
     ServletContext editorContext;
     ServletContext diskContext;
     private JspRuntimeContext rctxt;
-    private URLClassLoader waClassLoader;
-    URLClassLoader waContextClassLoader;
-    
+
+    private URL[] loadingURLs;
+    private URL[] tomcatURLs;
+
     // @GuardedBy(this)
     /**
      * The library mappings are cashed here.
@@ -206,16 +209,23 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
         reinitCachesTask.schedule(INITIAL_CACHES_DELAY);
     }
     
-    public JspParserAPI.JspOpenInfo getJspOpenInfo(FileObject jspFile, boolean useEditor
-            /*, URLClassLoader waClassLoader*/) {
+    public JspParserAPI.JspOpenInfo getJspOpenInfo(FileObject jspFile, boolean useEditor) {
         // PENDING - do caching for individual JSPs
         //  in fact should not be needed - see FastOpenInfoParser.java
+        checkReinitCachesTask();
         JspCompilationContext ctxt = createCompilationContext(jspFile, useEditor);
-        ExtractPageData epd = new ExtractPageData(ctxt);
         try {
-            return new JspParserAPI.JspOpenInfo(epd.isXMLSyntax(), epd.getEncoding());
-        } catch (Exception e) {
-            LOG.fine(e.getMessage());
+            ExtractPageData epd = new ExtractPageData(ctxt);
+            try {
+                return new JspParserAPI.JspOpenInfo(epd.isXMLSyntax(), epd.getEncoding());
+            } catch (Exception e) {
+                LOG.fine(e.getMessage());
+            }
+        } finally {
+            ClassLoader loader = ctxt.getClassLoader();
+            if (loader instanceof ParserClassLoader) {
+                ((ParserClassLoader) loader).close();
+            }
         }
         return DEFAULT_JSP_OPEN_INFO;
     }
@@ -248,18 +258,21 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
         rctxt = null;
         // try null, but test with tag files
         //new JspRuntimeContext(context, options);
-        createClassLoaders();
+        createClassloadingTables();
         if (LOG.isLoggable(Level.FINE)) {
             LOG.fine("JSP parser " + (firstTime ? "" : "re") + "initialized in " + (System.currentTimeMillis() - start) + " ms");
         }
     }
     
+    // #134455 (see #67017 and #128360 as well)
+    // commenting for NB 6.5M1, let's see whether some issues caused by this change will happen or whether this code can be removed
     private boolean isUnexpectedLibrary(URL url) {
-        Matcher m = RE_PATTERN_COMMONS_LOGGING.matcher(url.getFile());
-        return m.matches();
+        return false;
+//        Matcher m = RE_PATTERN_COMMONS_LOGGING.matcher(url.getFile());
+//        return m.matches();
     }
     
-    private void createClassLoaders() {
+    private void createClassloadingTables() {
         Map<URL, URL> tomcatTable = new Hashtable<URL, URL>();
         Map<URL, URL> loadingTable = new Hashtable<URL, URL>();
         URL helpurl;
@@ -301,11 +314,8 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
             }
         }
         
-        URL[] loadingURLs = loadingTable.values().toArray(new URL[0]);
-        URL[] tomcatURLs = tomcatTable.values().toArray(new URL[0]);
-        
-        waClassLoader = new ParserClassLoader(loadingURLs, tomcatURLs, getClass().getClassLoader());
-        waContextClassLoader = new ParserClassLoader(loadingURLs, tomcatURLs, getClass().getClassLoader());
+        loadingURLs = loadingTable.values().toArray(new URL[loadingTable.size()]);
+        tomcatURLs = tomcatTable.values().toArray(new URL[tomcatTable.size()]);
     }
 
     // #127379
@@ -404,9 +414,21 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
     public JspParserAPI.ParseResult analyzePage(FileObject jspFile, /*String compilationURI, */
             int errorReportingMode) {
         // PENDING - do caching for individual JSPs
+        checkReinitCachesTask();
         JspCompilationContext ctxt = createCompilationContext(jspFile, true);
-        
-        return callTomcatParser(jspFile, ctxt, waContextClassLoader, errorReportingMode);
+        try {
+            ParserClassLoader classLoader = createClassLoader();
+            try {
+                return callTomcatParser(jspFile, ctxt, classLoader, errorReportingMode);
+            } finally {
+                classLoader.close();
+            }
+        } finally {
+            ClassLoader loader = ctxt.getClassLoader();
+            if (loader instanceof ParserClassLoader) {
+                ((ParserClassLoader) loader).close();
+            }
+        }
     }
     
     /**
@@ -420,11 +442,7 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
         // useEditor not needed, both caches are the same
         // we have to clear all the caches when the class path is not current or the taglibmap is not initialized yet
 
-        // process sliding task
-        if (!reinitCachesTask.isFinished()) {
-            reinitCachesTask.cancel();
-            reinitCaches();
-        }
+        checkReinitCachesTask();
         // XXX return deep copy (not needed now, only jsp editor uses it)
         return new HashMap<String, String[]>(mappings);
     }
@@ -438,7 +456,8 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
         if (cpCurrent.get() != 0L) {
             reinitOptions();
         }
-        return waClassLoader;
+        // TODO classloader is leaking out - no chance to close it
+        return createClassLoader();
     }
 
     public class RRef {
@@ -501,9 +520,15 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
         } catch (InterruptedException e) {
             JspParserAPI.ErrorDescriptor error = constructErrorDescriptor(e, wmRoot, jspFile);
             return new JspParserAPI.ParseResult(new JspParserAPI.ErrorDescriptor[] {error});
+        } finally {
+
         }
     }
-    
+
+    private synchronized ParserClassLoader createClassLoader() {
+        return new ParserClassLoader(loadingURLs, tomcatURLs, WebAppParseSupport.class.getClassLoader());
+    }
+
     private static JspParserAPI.ErrorDescriptor constructErrorDescriptor(Throwable e, FileObject wmRoot,
             FileObject jspPage) {
         JspParserAPI.ErrorDescriptor error = null;
@@ -529,26 +554,19 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
             Throwable ex) throws IOException {
         
         // PENDING: maybe we should check all nested exceptions
-        StringBuilder allStack = new StringBuilder();
         Throwable last = ex;
-        allStack.append(ContextUtil.getThrowableMessage(ex, true));
         while (ex instanceof JasperException) {
             last = ex;
             ex = ((JasperException) ex).getRootCause();
             if (ex != null) {
-                //ErrorManager.getDefault().annotate(last, ex);
-                last.initCause(ex);
-                allStack.append(ContextUtil.getThrowableMessage(ex, true));
+                ErrorManager.getDefault().annotate(last, ex);
             }
         }
-        
+
         if (ex == null) {
             ex = last;
         }
-        
-/*System.out.println("--------STACK------");
-System.out.println(allStack.toString());
-System.out.println("--------ENDSTACK------");        */
+
         // now it can be JasperException, which starts with error location description
         String m1 = ex.getMessage();
         if (m1 == null) {
@@ -650,24 +668,28 @@ System.out.println("--------ENDSTACK------");        */
             }
 
             Thread compThread = new WebAppParseSupport.InitTldLocationCacheThread(lc);
-            compThread.setContextClassLoader(waContextClassLoader);
-            long start = 0;
-            if (LOG.isLoggable(Level.FINE)) {
-                start = System.currentTimeMillis();
-                LOG.fine("InitTldLocationCacheThread start");
-            }
-            compThread.start();
-
+            ParserClassLoader classLoader = createClassLoader();
             try {
-                compThread.join();
+                compThread.setContextClassLoader(classLoader);
+                long start = 0;
                 if (LOG.isLoggable(Level.FINE)) {
-                    long end = System.currentTimeMillis();
-                    LOG.fine("InitTldLocationCacheThread finished in " + (end - start) + " ms");
+                    start = System.currentTimeMillis();
+                    LOG.fine("InitTldLocationCacheThread start");
                 }
-            } catch (InterruptedException e) {
-                LOG.log(Level.INFO, null, e);
-            }
+                compThread.start();
 
+                try {
+                    compThread.join();
+                    if (LOG.isLoggable(Level.FINE)) {
+                        long end = System.currentTimeMillis();
+                        LOG.fine("InitTldLocationCacheThread finished in " + (end - start) + " ms");
+                    }
+                } catch (InterruptedException e) {
+                    LOG.log(Level.INFO, null, e);
+                }
+            } finally {
+                classLoader.close();
+            }
             // obtain the current mappings after parsing
             tmpMappings = (Map<String, String[]>) mappingsField.get(lc);
 
@@ -716,6 +738,14 @@ System.out.println("--------ENDSTACK------");        */
             }
         }
         return returnMap;
+    }
+
+    private synchronized void checkReinitCachesTask() {
+        // process sliding task
+        if (!reinitCachesTask.isFinished()) {
+            reinitCachesTask.cancel();
+            reinitCaches();
+        }
     }
 
     void reinitCaches() {
@@ -786,13 +816,15 @@ System.out.println("--------ENDSTACK------");        */
          * locking (just due to commons logging).
          */
         private static final String LOGGING_CONFIG = "commons-logging.properties"; // NOI18N
-
         private static final String SERVICES_FOLDER = "META-INF/services/"; // NOI18N
-
         private static final Set<String> FORBIDDEN_PACKAGES = new HashSet<String>();
+        // suppress annoying warning
+        private static final List<String> LOG4J_CONFIGS = Arrays.asList("log4j.properties", "log4j.xml");
 
         static {
-            Collections.addAll(FORBIDDEN_PACKAGES, "org.apache.log4j", "org.apache.commons.logging"); // NOI18N
+            // #134455 (see #67017 and #128360 as well)
+            // commenting for NB 6.5M1, let's see whether some issues caused by this change will happen or whether this code can be removed
+            //Collections.addAll(FORBIDDEN_PACKAGES, "org.apache.log4j", "org.apache.commons.logging"); // NOI18N
         }
 
         private final URL[] tomcatURLs;
@@ -828,6 +860,9 @@ System.out.println("--------ENDSTACK------");        */
 
         @Override
         public URL getResource(String name) {
+            if (LOG4J_CONFIGS.contains(name)) {
+                return null;
+            }
             URL url;
             if (parent != null) {
                 url = parent.getResource(name);
@@ -839,6 +874,16 @@ System.out.println("--------ENDSTACK------");        */
 
         @Override
         public InputStream getResourceAsStream(String name) {
+            // #139257 - see http://hg.netbeans.org/main/rev/8e2336205ff3
+            if (name.equals("META-INF/services/javax.xml.stream.XMLInputFactory")) { // NOI18N
+                // StAX is different; defined and implemented in BEA-specific code with different
+                // search logic and an unusable fallback implementation.
+                //return super.getResourceAsStream(name); // noop here, in jsp parser
+            } else if (name.startsWith("META-INF/services/javax.xml.")) { // NOI18N
+                // For JAXP services defined and implemented in the JRE,
+                // this is the only workaround for JDK 5 & 6 to load the JRE's copy.
+                return new ByteArrayInputStream(new byte[0]);
+            }
             URL url = getResource(name);
             try {
                 if (url != null) {
@@ -899,6 +944,21 @@ System.out.println("--------ENDSTACK------");        */
             sb.append(", parent : "); // NOI18N
             sb.append(getParent().toString());
             return sb.toString();
+        }
+
+        public void close() {
+             try {
+                Class clazz = Class.forName("sun.misc.ClassLoaderUtil");
+                if (clazz != null) {
+                    Method m = clazz.getMethod("releaseLoader",
+                                               URLClassLoader.class);
+                    if (m != null) {
+                        m.invoke(null, this);
+                    }
+                }
+            } catch (Exception e) {
+                LOG.log(Level.FINE, null, e);
+            }
         }
     }
 
@@ -961,6 +1021,11 @@ System.out.println("--------ENDSTACK------");        */
                         || (FileUtil.isParentOf(webInf, fo))) {
                     LOG.fine("File " + fo + " has changed, reinitCaches() called");
                     // our file => process caches
+                    // #133702
+                    if (fo.getNameExt().equals("web.xml")) {
+                        // clear JspConfig cache as well
+                        cpCurrent.incrementAndGet();
+                    }
                     reinitCachesTask.schedule(REINIT_CACHES_DELAY);
                 }
             }

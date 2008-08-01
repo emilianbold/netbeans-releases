@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -43,17 +43,16 @@
 package org.netbeans.modules.i18n.wizard;
 
 
+import java.awt.CardLayout;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dialog;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
+import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.EventObject;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.HashSet;
@@ -80,11 +79,13 @@ import org.netbeans.modules.i18n.PropertyPanel;
 
 import org.openide.DialogDescriptor;
 import org.openide.NotifyDescriptor;
+import org.openide.WizardValidationException;
 import org.openide.loaders.DataObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.WizardDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.WizardDescriptor.AsynchronousValidatingPanel;
 
 
 /**
@@ -125,8 +126,6 @@ final class HardStringWizardPanel extends JPanel {
         
         initTable();
 
-        setComboModel(sourceMap);
-        
         initAccessibility();
     }
 
@@ -430,10 +429,11 @@ final class HardStringWizardPanel extends JPanel {
                 case COLUMN_INDEX_HARDSTRING: return;
                 case COLUMN_INDEX_CUSTOM:
                     I18nString otherValue = (I18nString) getValueAt(rowIndex, COLUMN_INDEX_KEY);
-                    if (!((I18nString) value).getKey().equals("")) 
+                    if (!((I18nString) value).getKey().equals("")) {
                         setValueAt(Boolean.TRUE, rowIndex, COLUMN_INDEX_CHECK);
-                    else 
+                    } else {
                         setValueAt(Boolean.FALSE, rowIndex, COLUMN_INDEX_CHECK);
+                    }
                     break;
                 case COLUMN_INDEX_CHECK : 
                     if (value instanceof Boolean) {
@@ -539,7 +539,7 @@ final class HardStringWizardPanel extends JPanel {
                     I18nString clone = (I18nString) i18nString.clone();
                     panel.setI18nString(i18nString);
 
-                    String title = Util.getString("PROP_cust_dialog_name");
+                    String title = Util.getString("PROP_cust_dialog_name"); //NOI18N
                     DialogDescriptor dd = new DialogDescriptor(panel, title);
                     dd.setModal(true);
                     dd.setOptionType(DialogDescriptor.DEFAULT_OPTION);
@@ -615,43 +615,39 @@ final class HardStringWizardPanel extends JPanel {
      * @see I18nWizardDescriptorPanel
      * @see org.openide.WizardDescriptor.Panel*/
     public static class Panel extends I18nWizardDescriptor.Panel 
-                              implements WizardDescriptor.FinishablePanel<I18nWizardDescriptor.Settings>,
-                                         I18nWizardDescriptor.ProgressMonitor {
+                              implements WizardDescriptor.FinishablePanel<I18nWizardDescriptor.Settings>, 
+                                         AsynchronousValidatingPanel<I18nWizardDescriptor.Settings> {
+
+        private static final String CARD_GUI = "gui";                   //NOI18N
+        private static final String CARD_MSG = "msg";                   //NOI18N
+        private static final String CARD_REPLACING = "replacing";       //NOI18N
 
         /** Empty label component. */
-        private final JLabel emptyLabel;
+        private JLabel emptyLabel;
         
         /** HardString panel component cache. */
         private transient HardStringWizardPanel hardStringPanel;
                 
+        /** Indicates whether this panel is used in i18n test wizard or not. */
+        private volatile boolean hasFoundStrings;
+        /** */
+        private volatile ProgressWizardPanel progressPanel;
+
         public Panel() {
-            emptyLabel = new JLabel(NbBundle.getBundle(HardStringWizardPanel.class).getString("TXT_NoHardstrings"));
-            emptyLabel.setHorizontalAlignment(JLabel.CENTER);
-            emptyLabel.setVerticalAlignment(JLabel.CENTER);
         }
 
 
         /** Gets component to display. Implements superclass abstract method. 
          * @return this instance */
         protected Component createComponent() {
-            JPanel panel = new JPanel();
+            JPanel panel = new JPanel(new CardLayout());
             
-            panel.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(HardStringWizardPanel.class).getString("ACS_HardStringWizardPanel"));            
+            panel.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(HardStringWizardPanel.class).getString("ACS_HardStringWizardPanel"));//NOI18N
             
-            Integer index;
-            
-            index = new Integer(3);
-            
-            panel.putClientProperty("WizardPanel_contentSelectedIndex", index); // NOI18N
-            panel.setName(NbBundle.getBundle(HardStringWizardPanel.class).getString("TXT_ModifyStrings"));
+            panel.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, Integer.valueOf(3));
+            panel.setName(NbBundle.getBundle(HardStringWizardPanel.class).getString("TXT_ModifyStrings"));//NOI18N
             panel.setPreferredSize(I18nWizardDescriptor.PREFERRED_DIMENSION);        
-            panel.setLayout(new GridBagLayout());
-            GridBagConstraints constraints = new GridBagConstraints();
-            constraints.weightx = 1.0;
-            constraints.weighty = 1.0;
-            constraints.fill = GridBagConstraints.BOTH;
-            panel.add(getUI(), constraints);
-            
+
             return panel;
         }
 
@@ -673,25 +669,15 @@ final class HardStringWizardPanel extends JPanel {
 	    super.readSettings(settings);
             getUI().setSourceMap(getMap());
 
+            hasFoundStrings = foundStrings(getMap());
+
             JPanel panel = (JPanel)getComponent();
-            if (foundStrings(getMap())) {
-                if (panel.isAncestorOf(emptyLabel)) {
-                    panel.remove(emptyLabel);
-                    GridBagConstraints constraints = new GridBagConstraints();
-                    constraints.weightx = 1.0;
-                    constraints.weighty = 1.0;
-                    constraints.fill = GridBagConstraints.BOTH;
-                    panel.add(getUI(), constraints);
-                }
+            if (hasFoundStrings) {
+                panel.add(getUI(), CARD_GUI);
+                ((CardLayout) panel.getLayout()).show(panel, CARD_GUI);
             } else {
-                if (panel.isAncestorOf(getUI())) {
-                    panel.remove(getUI());
-                    GridBagConstraints constraints = new GridBagConstraints();
-                    constraints.weightx = 1.0;
-                    constraints.weighty = 1.0;
-                    constraints.fill = GridBagConstraints.BOTH;
-                    panel.add(emptyLabel, constraints);
-                }
+                panel.add(getMessageComp(), CARD_MSG);
+                ((CardLayout) panel.getLayout()).show(panel, CARD_MSG);
             }
         }
 
@@ -703,29 +689,34 @@ final class HardStringWizardPanel extends JPanel {
 	    getMap().clear();
             getMap().putAll(getUI().getSourceMap());
         }
-        
-        /** Searches hard coded strings in sources and puts found hard coded string - i18n string pairs
-         * into settings. Implements <code>ProgressMonitor</code> interface method. */
-        public void doLongTimeChanges() {
+
+        /** */
+        public void prepareValidation() {
+            assert EventQueue.isDispatchThread();
             // do this only if there's anything to do
-            if (foundStrings(getMap())) {       
-                // Replace panel.
-                final ProgressWizardPanel progressPanel = new ProgressWizardPanel(true);
+            if (hasFoundStrings) {       
+                if (progressPanel == null) {
+                    progressPanel = new ProgressWizardPanel(true);
+                }
+
                 progressPanel.setMainText(
                         NbBundle.getMessage(
                                 HardStringWizardPanel.class,
                                 "LBL_Internationalizing"));             //NOI18N
                 progressPanel.setMainProgress(0);
 
-                ((Container) getComponent()).remove(getUI());
-                GridBagConstraints constraints = new GridBagConstraints();
-                constraints.weightx = 1.0;
-                constraints.weighty = 1.0;
-                constraints.fill = GridBagConstraints.BOTH;
-                ((Container) getComponent()).add(progressPanel, constraints);
-                ((JComponent) getComponent()).revalidate();
-                getComponent().repaint();
+                Container container = (Container) getComponent();
+                container.add(progressPanel, CARD_REPLACING);
+                ((CardLayout) container.getLayout()).show(container, CARD_REPLACING);
+            }
+        }
 
+        /** Searches hard coded strings in sources and puts found hard coded string - i18n string pairs
+         * into settings. Implements <code>ProgressMonitor</code> interface method. */
+        public void validate() throws WizardValidationException {
+            assert !EventQueue.isDispatchThread();
+            // do this only if there's anything to do
+            if (hasFoundStrings) {       
                 // Do replacement job here.
                 Map<DataObject,SourceData> sourceMap = getUI().getSourceMap();
 
@@ -786,9 +777,6 @@ final class HardStringWizardPanel extends JPanel {
             } // if (foundStrings(getMap()))
         }
         
-        /** Implements <code>ProgressMonitor</code> interface method. Does nothing. */
-        public void reset() {}
-        
         /** Indicates if there were found some hardcoded strings in any of selected sources. 
          * @return true if at least one hard coded string was found. */
         private static boolean foundStrings(Map<DataObject,SourceData> sourceMap) {
@@ -812,5 +800,14 @@ final class HardStringWizardPanel extends JPanel {
             return hardStringPanel;
         }
         
+        private JComponent getMessageComp() {
+            if (emptyLabel == null) {
+                emptyLabel = new JLabel(NbBundle.getMessage(getClass(), "TXT_NoHardstrings"));
+                emptyLabel.setHorizontalAlignment(JLabel.CENTER);
+                emptyLabel.setVerticalAlignment(JLabel.CENTER);
+            }
+            return emptyLabel;
+        }
+
     } // End of nested Panel class.
 }

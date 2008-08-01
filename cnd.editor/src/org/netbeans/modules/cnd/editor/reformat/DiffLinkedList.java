@@ -50,8 +50,8 @@ import org.netbeans.modules.cnd.editor.reformat.Reformatter.Diff;
 /*package local*/ class DiffLinkedList {
     private LinkedList<Diff> storage = new LinkedList<Diff>();
     
-    /*package local*/ Diff addFirst(int start, int end, int newLines, int spaces){
-        Diff diff = new Diff(start, end, newLines, spaces);
+    /*package local*/ Diff addFirst(int start, int end, int newLines, int spaces, boolean isIndent){
+        Diff diff = new Diff(start, end, newLines, spaces, isIndent);
         storage.add(getIndex(start, end), diff);
         return diff;
     }
@@ -62,6 +62,10 @@ import org.netbeans.modules.cnd.editor.reformat.Reformatter.Diff;
         while(it.hasNext()) {
             Diff diff = it.next();
             if (diff.getStartOffset()<=start) {
+                if (diff.getStartOffset() == start &&
+                    diff.getEndOffset() == end) {
+                    it.remove();
+                }
                 break;
             }
             res++;

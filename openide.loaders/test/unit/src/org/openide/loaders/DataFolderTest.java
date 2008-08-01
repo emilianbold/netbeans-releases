@@ -704,5 +704,16 @@ public class DataFolderTest extends LoggingTestCaseHid {
         }
         TestUtilHid.destroyLocalFileSystem(getName());
     }
-    
+
+    public void testRenameRoot() throws DataObjectNotFoundException, IOException {
+        FileObject root = FileUtil.createMemoryFileSystem().getRoot();
+        DataObject obj = DataObject.find(root);
+        try {
+            obj.rename("Ahoj");
+            fail("Rename of root of filesystem shall fail with IOException");
+        } catch (IOException ex) {
+            // cannot rename root of a filesystem, is OK
+        }
+        
+    }
 }

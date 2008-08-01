@@ -1,0 +1,4 @@
+References in file quote_nosyshdr/memory.cc
+[2829-2829] const char* Memory::<b>GetType</b>() const {
+References in file quote_nosyshdr/memory.h
+[2396-2396] virtual const char* <b>GetType</b>() const;

@@ -79,6 +79,7 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import javax.swing.text.BadLocationException;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.ClassIndex.NameKind;
 import org.netbeans.junit.NbTestCase;
@@ -1280,77 +1281,81 @@ public class JavaSourceTest extends NbTestCase {
             final ClassPath bootPath = createBootPath ();
             final ClassPath compilePath = createCompilePath ();        
             final ClassPath sourcePath = createSourcePath ();
-            
-            
-            ClassLoader l = JavaSourceTest.class.getClassLoader();
-            Lkp.DEFAULT.setLookupsWrapper(
-                Lookups.metaInfServices(l),
-                Lookups.singleton(l),
-                Lookups.singleton(new ClassPathProvider() {
-                public ClassPath findClassPath(FileObject file, String type) {
-                    if (ClassPath.BOOT == type) {
-                        return bootPath;
+            final GlobalPathRegistry regs = GlobalPathRegistry.getDefault();
+            regs.register(ClassPath.SOURCE, new ClassPath[]{sourcePath});
+            try {
+                ClassLoader l = JavaSourceTest.class.getClassLoader();
+                Lkp.DEFAULT.setLookupsWrapper(
+                    Lookups.metaInfServices(l),
+                    Lookups.singleton(l),
+                    Lookups.singleton(new ClassPathProvider() {
+                    public ClassPath findClassPath(FileObject file, String type) {
+                        if (ClassPath.BOOT == type) {
+                            return bootPath;
+                        }
+
+                        if (ClassPath.SOURCE == type) {
+                            return sourcePath;
+                        }
+
+                        if (ClassPath.COMPILE == type) {
+                            return compilePath;
+                        }                    
+                        return null;
+                    }            
+                }));
+
+
+                JavaSource js = JavaSource.create(ClasspathInfo.create(bootPath, compilePath, sourcePath), test);
+                CountDownLatch rl = RepositoryUpdater.getDefault().scheduleCompilationAndWait(sourcePath.getRoots()[0], sourcePath.getRoots()[0]);
+                rl.await();
+                DataObject dobj = DataObject.find(test);
+                EditorCookie ec = (EditorCookie) dobj.getCookie(EditorCookie.class);                        
+                final StyledDocument doc = ec.openDocument();
+                doc.putProperty(Language.class, JavaTokenId.language());
+                TokenHierarchy h = TokenHierarchy.get(doc);
+                TokenSequence ts = h.tokenSequence(JavaTokenId.language());
+                Thread.sleep(500);  //It may happen that the js is invalidated before the dispatch of task is done and the test of timers may fail        
+
+                final CountDownLatch[] ready = new CountDownLatch[]{new CountDownLatch(1)};
+                final CountDownLatch[] end = new CountDownLatch[]{new CountDownLatch (1)};
+                final Object[] result = new Object[1];
+
+                CancellableTask<CompilationInfo> task = new CancellableTask<CompilationInfo>() {
+
+                    public void cancel() {                
                     }
 
-                    if (ClassPath.SOURCE == type) {
-                        return sourcePath;
+                    public void run(CompilationInfo p) throws Exception {
+                        ready[0].countDown();
+                        ClassIndex index = p.getClasspathInfo().getClassIndex();
+                        result[0] = index.getPackageNames("javax", true, EnumSet.allOf(ClassIndex.SearchScope.class));                    
+                        end[0].countDown();
                     }
 
-                    if (ClassPath.COMPILE == type) {
-                        return compilePath;
-                    }                    
-                    return null;
-                }            
-            }));
-            
-            
-            JavaSource js = JavaSource.create(ClasspathInfo.create(bootPath, compilePath, sourcePath), test);
-            CountDownLatch rl = RepositoryUpdater.getDefault().scheduleCompilationAndWait(sourcePath.getRoots()[0], sourcePath.getRoots()[0]);
-            rl.await();
-            DataObject dobj = DataObject.find(test);
-            EditorCookie ec = (EditorCookie) dobj.getCookie(EditorCookie.class);                        
-            final StyledDocument doc = ec.openDocument();
-            doc.putProperty(Language.class, JavaTokenId.language());
-            TokenHierarchy h = TokenHierarchy.get(doc);
-            TokenSequence ts = h.tokenSequence(JavaTokenId.language());
-            Thread.sleep(500);  //It may happen that the js is invalidated before the dispatch of task is done and the test of timers may fail        
-
-            final CountDownLatch[] ready = new CountDownLatch[]{new CountDownLatch(1)};
-            final CountDownLatch[] end = new CountDownLatch[]{new CountDownLatch (1)};
-            final Object[] result = new Object[1];
-            
-            CancellableTask<CompilationInfo> task = new CancellableTask<CompilationInfo>() {
-                
-                public void cancel() {                
-                }
-
-                public void run(CompilationInfo p) throws Exception {
-                    ready[0].countDown();
-                    ClassIndex index = p.getClasspathInfo().getClassIndex();
-                    result[0] = index.getPackageNames("javax", true, EnumSet.allOf(ClassIndex.SearchScope.class));                    
-                    end[0].countDown();
-                }
-
-            };
-            js.addPhaseCompletionTask (task,Phase.PARSED, Priority.HIGH);
-            assertTrue(ready[0].await(5, TimeUnit.SECONDS));
-            NbDocument.runAtomic (doc,
-                new Runnable () {
-                    public void run () {                        
-                        try {
-                            String text = doc.getText(0,doc.getLength());
-                            int index = text.indexOf(REPLACE_PATTERN);
-                            assertTrue (index != -1);
-                            doc.remove(index,REPLACE_PATTERN.length());
-                            doc.insertString(index,"System.out.println();",null);
-                        } catch (BadLocationException ble) {
-                            ble.printStackTrace(System.out);
-                        }                 
-                    }
-            });               
-            assertTrue(end[0].await(5, TimeUnit.SECONDS));
-            assertNull(result[0]);
-            js.removePhaseCompletionTask (task);
+                };
+                js.addPhaseCompletionTask (task,Phase.PARSED, Priority.HIGH);
+                assertTrue(ready[0].await(5, TimeUnit.SECONDS));
+                NbDocument.runAtomic (doc,
+                    new Runnable () {
+                        public void run () {                        
+                            try {
+                                String text = doc.getText(0,doc.getLength());
+                                int index = text.indexOf(REPLACE_PATTERN);
+                                assertTrue (index != -1);
+                                doc.remove(index,REPLACE_PATTERN.length());
+                                doc.insertString(index,"System.out.println();",null);
+                            } catch (BadLocationException ble) {
+                                ble.printStackTrace(System.out);
+                            }                 
+                        }
+                });               
+                assertTrue(end[0].await(5, TimeUnit.SECONDS));
+                assertNull(result[0]);
+                js.removePhaseCompletionTask (task);
+            } finally {
+                regs.unregister(ClassPath.SOURCE, new ClassPath[]{sourcePath});
+            }
         } finally {
             PersistentClassIndex.setIndexFactory(null);
         }
@@ -1728,10 +1733,10 @@ public class JavaSourceTest extends NbTestCase {
             return null;
         }
 
-        public void store(Map<Pair<String,String>, List<String>> refs, Set<Pair<String,String>> toDelete) throws IOException {            
+        public void store(Map<Pair<String,String>, Object[]> refs, Set<Pair<String,String>> toDelete) throws IOException {            
         }
 
-        public void store(Map<Pair<String,String>, List<String>> refs, List<Pair<String,String>> topLevels) throws IOException {            
+        public void store(Map<Pair<String,String>, Object[]> refs, List<Pair<String,String>> topLevels) throws IOException {            
         }
 
         public boolean isUpToDate(String resourceName, long timeStamp) throws IOException {
@@ -1752,6 +1757,11 @@ public class JavaSourceTest extends NbTestCase {
                 }
                 Thread.sleep(100);
             }
+        }
+
+        @Override
+        public <T> void getDeclaredElements(String ident, NameKind kind, ResultConvertor<T> convertor, Map<T, Set<String>> result) throws IOException, InterruptedException {
+            await();
         }
         
     }

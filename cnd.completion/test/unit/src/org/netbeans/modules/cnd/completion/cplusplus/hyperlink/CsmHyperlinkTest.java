@@ -58,6 +58,7 @@ public class CsmHyperlinkTest extends BaseTestSuite {
         this.addTestSuite(NamespacesHyperlinkTestCase.class);
         this.addTestSuite(BasicHyperlinkTestCase.class);
         this.addTestSuite(UnnamedEnumTestCase.class);
+        this.addTestSuite(LibrariesContentHyperlinkTestCase.class);
     }
 
     public static Test suite() {

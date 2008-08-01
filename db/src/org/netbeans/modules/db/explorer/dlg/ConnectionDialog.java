@@ -42,11 +42,13 @@
 package org.netbeans.modules.db.explorer.dlg;
 
 import java.awt.Dialog;
+import java.awt.Window;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ResourceBundle;
 
+import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 
@@ -54,7 +56,6 @@ import javax.swing.event.ChangeListener;
 
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -122,7 +123,7 @@ public class ConnectionDialog {
         tabs.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_ConnectDialogA11yDesc"));
 
         descriptor = new DialogDescriptor(tabs, dlgTitle, true, DialogDescriptor.OK_CANCEL_OPTION, 
-                     DialogDescriptor.CANCEL_OPTION, DialogDescriptor.DEFAULT_ALIGN, helpCtx, actionListener);
+                     DialogDescriptor.OK_OPTION, DialogDescriptor.DEFAULT_ALIGN, helpCtx, actionListener);
         // inbuilt close of the dialog is only after CANCEL button click
         // after OK button is dialog closed by hand
         Object [] closingOptions = {DialogDescriptor.CANCEL_OPTION};
@@ -133,6 +134,10 @@ public class ConnectionDialog {
         // to the password text field
         basePane.initializeFocus();
         dialog.setVisible(false);
+    }
+    
+    public Window getWindow() {
+        return dialog;
     }
     
     public void close() {

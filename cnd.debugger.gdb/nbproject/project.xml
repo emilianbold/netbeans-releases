@@ -74,7 +74,7 @@
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>2.8.1</specification-version>
+                        <specification-version>2.13</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -167,10 +167,7 @@
                     </run-dependency>
                 </dependency>
             </module-dependencies>
-            <public-packages>
-                <package>org.netbeans.modules.cnd.debugger.gdb</package>
-                <package>org.netbeans.modules.cnd.debugger.gdb.disassembly</package>
-            </public-packages>
+            <public-packages/>
         </data>
     </configuration>
 </project>

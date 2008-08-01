@@ -55,13 +55,14 @@ import java.util.logging.Level;
  * @author Maros Sandor
  */
 class FileStatusProvider extends VCSAnnotator {
+    private static final int INCLUDE_STATUS = FileInformation.STATUS_VERSIONED_UPTODATE | FileInformation.STATUS_LOCAL_CHANGE | FileInformation.STATUS_NOTVERSIONED_EXCLUDED;
     
     private boolean shutdown; 
 
     public String annotateName(String name, VCSContext context) {
         if (shutdown) return null;
         try {
-            return Subversion.getInstance().getAnnotator().annotateNameHtml(name, context, FileInformation.STATUS_VERSIONED_UPTODATE | FileInformation.STATUS_LOCAL_CHANGE | FileInformation.STATUS_NOTVERSIONED_EXCLUDED);
+            return Subversion.getInstance().getAnnotator().annotateNameHtml(name, context, INCLUDE_STATUS);
         } catch (Exception e) {
             Subversion.LOG.log(Level.SEVERE, e.getMessage(), e);            
             return name;
@@ -71,7 +72,7 @@ class FileStatusProvider extends VCSAnnotator {
     public Image annotateIcon(Image icon, VCSContext context) {
         if (shutdown) return null;
         try {
-            return Subversion.getInstance().getAnnotator().annotateIcon(icon, context);
+            return Subversion.getInstance().getAnnotator().annotateIcon(icon, context, INCLUDE_STATUS);
         } catch (Exception e) {
             Subversion.LOG.log(Level.SEVERE, e.getMessage(), e);
             return icon;

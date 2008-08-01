@@ -117,8 +117,7 @@ if [ ! -z "$netbeans_extraclusters" ] ; then
 fi
 
 heap_size () {
-    mem=840
-    cms_options=" -J-XX:+UseConcMarkSweepGC -J-XX:+CMSClassUnloadingEnabled -J-XX:+CMSPermGenSweepingEnabled"
+    mem=640
     case "`uname`" in
         Linux*)
         mem=`cat /proc/meminfo | grep MemTotal | tr -d [:space:][:alpha:]:`
@@ -130,19 +129,15 @@ heap_size () {
     Darwin*)
         mem=`/usr/sbin/sysctl hw.memsize | tr -d [:alpha:][:space:].:`
         mem=`expr $mem / 1048576`
-        cms_options=""
         ;;
         *) 
         ;;
     esac
-    mem=`expr \( $mem - 200 \) / 5`
+    mem=`expr $mem / 5`
     if [ $mem -gt 512 ] ; then
         mem=512
     elif [ $mem -lt 96 ] ; then
         mem=96
-    fi
-    if [ $mem -lt 256 ] ; then
-        cms_options=""
     fi
     max_heap_size=$mem
     return 0
@@ -185,7 +180,7 @@ case "`uname`" in
             --jdkhome '"$netbeans_jdkhome"' \
             -J-Dcom.apple.mrj.application.apple.menu.about.name=NetBeans \
             -J-Xdock:name=NetBeans \
-            '"-J-Xdock:icon=$progdir/../nb6.1/netbeans.icns"' \
+            '"-J-Xdock:icon=$progdir/../nb6.5/netbeans.icns"' \
             --branding nb \
             --clusters '"$netbeans_clusters"' \
             -J-Dnetbeans.importclass=org.netbeans.upgrade.AutoUpgrade \

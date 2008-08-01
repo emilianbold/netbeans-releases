@@ -46,7 +46,6 @@ import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
-import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import java.awt.Dialog;
@@ -60,12 +59,9 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
-import javax.annotation.processing.ProcessingEnvironment;
-import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.ArrayType;
-import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.swing.text.BadLocationException;
@@ -80,12 +76,9 @@ import org.netbeans.modules.xml.tools.java.generator.ParsletBindings.Entry;
 import org.xml.sax.*;
 
 import org.openide.*;
-import org.openide.nodes.*;
 import org.openide.cookies.*;
 import org.openide.filesystems.*;
-import org.openide.filesystems.FileSystem; // override java.io.FileSystem
 import org.openide.loaders.*;
-import org.openide.util.MapFormat;
 import org.openide.xml.*;
 
 import org.netbeans.modules.xml.DTDDataObject;
@@ -180,7 +173,7 @@ public final class SAXGeneratorSupport implements XMLGenerateCookie {
 
     // input fields - these control generation process
 
-    private DataObject DO;  //model DataObject
+    private DTDDataObject DO;  //model DataObject
     private TreeDTDRoot dtd;    //model DTD
 
     private ElementBindings elementMapping = new ElementBindings();  //model mapping
@@ -190,17 +183,11 @@ public final class SAXGeneratorSupport implements XMLGenerateCookie {
 
     private SAXGeneratorModel model;  //holds strategy
 
- //   private final MapFormat generator;
-
-
-    // init
-
-
     public SAXGeneratorSupport (DTDDataObject DO) {
         this (DO, null);
     }
 
-    public SAXGeneratorSupport (DataObject DO, TreeDTDRoot dtd) {
+    public SAXGeneratorSupport (DTDDataObject DO, TreeDTDRoot dtd) {
         if (DO == null) throw new IllegalArgumentException("null"); // NOI18N
         this.DO = DO;
         this.dtd = dtd;
@@ -222,27 +209,23 @@ public final class SAXGeneratorSupport implements XMLGenerateCookie {
             }
 
             FileObject primFile = DO.getPrimaryFile();
-
             String rawName = primFile.getName();
             String name = rawName.substring(0,1).toUpperCase() + rawName.substring(1);
 
             final FileObject folder = primFile.getParent();
-         //   final String packageName = Util.findJavaPackage(folder);
+            final String packageName = GenerationUtils.findJavaPackage(folder);
 
-            // prepare inital model
-
+            // prepare initial model
             elementMapping.clear();
             parsletsMap.clear();
-
             initMappings();
 
-            model = new SAXGeneratorModel(
-                name, new ElementDeclarations (dtd.getElementDeclarations().iterator()),
-                elementMapping, parsletsMap
+            model = new SAXGeneratorModel(FileUtil.toFile(folder), name,
+                    new ElementDeclarations (dtd.getElementDeclarations().iterator()),
+                elementMapping, parsletsMap, packageName
             );
 
             // load previous settings
-
             loadPrevious(folder);
 
             // initialize wizard panels
@@ -264,12 +247,12 @@ public final class SAXGeneratorSupport implements XMLGenerateCookie {
             WizardDescriptor descriptor = new WizardDescriptor(panels, model);
 
             descriptor.setTitle(NbBundle.getMessage (SAXGeneratorSupport.class, "SAXGeneratorSupport.title"));
-            descriptor.putProperty("WizardPanel_contentDisplayed", Boolean.TRUE); // NOI18N
-            descriptor.putProperty("WizardPanel_helpDisplayed", Boolean.TRUE); // NOI18N
-            descriptor.putProperty("WizardPanel_contentNumbered", Boolean.TRUE); // NOI18N
-            descriptor.putProperty("WizardPanel_autoWizardStyle", Boolean.TRUE); // NOI18N
-            descriptor.putProperty("WizardPanel_leftDimension", new Dimension(500,400)); // NOI18N
-            descriptor.putProperty("WizardPanel_contentData", new String[] { // NOI18N
+            descriptor.putProperty(WizardDescriptor.PROP_CONTENT_DISPLAYED, Boolean.TRUE); // NOI18N
+            descriptor.putProperty(WizardDescriptor.PROP_HELP_DISPLAYED, Boolean.TRUE); // NOI18N
+            descriptor.putProperty(WizardDescriptor.PROP_CONTENT_NUMBERED, Boolean.TRUE); // NOI18N
+            descriptor.putProperty(WizardDescriptor.PROP_AUTO_WIZARD_STYLE, Boolean.TRUE); // NOI18N
+            descriptor.putProperty(WizardDescriptor.PROP_LEFT_DIMENSION, new Dimension(500,400)); // NOI18N
+            descriptor.putProperty(WizardDescriptor.PROP_CONTENT_DATA, new String[] { // NOI18N
                 NbBundle.getMessage (SAXGeneratorSupport.class, "SAXGeneratorVersionPanel.step"),
                 NbBundle.getMessage (SAXGeneratorSupport.class, "SAXGeneratorMethodPanel.step"),
                 NbBundle.getMessage (SAXGeneratorSupport.class, "SAXGeneratorParsletPanel.step"),
@@ -283,7 +266,7 @@ public final class SAXGeneratorSupport implements XMLGenerateCookie {
             // launch the wizard
 
             Dialog dlg = DialogDisplayer.getDefault().createDialog(descriptor);
-            dlg.show();
+            dlg.setVisible(true);
 
             if ( ( descriptor.CANCEL_OPTION.equals (descriptor.getValue()) ) ||
                  ( descriptor.CLOSED_OPTION.equals (descriptor.getValue()) ) ) {
@@ -555,8 +538,7 @@ public final class SAXGeneratorSupport implements XMLGenerateCookie {
                             var = make.Variable(mods, "parslet", tree, null);
                             varTree.add(var);
                         }
-                        modifiedClass = genUtils.addClassFields(modifiedClass, varTree);
-                        
+                        modifiedClass = genUtils.addClassFields(modifiedClass, varTree);                        
                         
                          //add Constructor
                         mods = make.Modifiers(EnumSet.of(Modifier.PUBLIC));
@@ -636,19 +618,16 @@ public final class SAXGeneratorSupport implements XMLGenerateCookie {
      * Generate ClassElement representing interface to a handler.
      */
     private void generateInterface(FileObject clazz)  throws IOException{
-        JavaSource targetSource = JavaSource.forFileObject(clazz);
-            
+        JavaSource targetSource = JavaSource.forFileObject(clazz);            
         CancellableTask task = new CancellableTask() {
 
             public void cancel() {
             }
-
                
             public void run(Object parameter) throws Exception {
                 WorkingCopy workingCopy = (WorkingCopy)parameter;
                 workingCopy.toPhase(Phase.RESOLVED);
                 ClassTree javaClass = SourceUtils.getPublicTopLevelTree(workingCopy);
-                    
                 if (javaClass!=null) {
                     TreeMaker make = workingCopy.getTreeMaker();
                     GenerationUtils genUtils = GenerationUtils.newInstance(workingCopy);
@@ -670,7 +649,6 @@ public final class SAXGeneratorSupport implements XMLGenerateCookie {
                         String methodName ;
                         final String handler = next.getType();
                         MethodTree method;
-                        TypeElement type;
                         ExpressionTree tree =genUtils.makeQualIdent(getSAXAttributes());
                         List varTree = new ArrayList();
                         VariableTree var;
@@ -728,14 +706,10 @@ public final class SAXGeneratorSupport implements XMLGenerateCookie {
                                 make.addComment(method, comment, true);
                                 modifiedClass = make.addClassMember(modifiedClass, method);
                             }
-
-
                        }
                         
                        if (next.CONTAINER.equals(handler) || next.MIXED.equals(handler)) {
- 
                            // start method
-
                           methodName = START_PREFIX + next.getMethod();
                           var = make.Variable(mods, "meta", tree, null);
                           varTree = new ArrayList();
@@ -746,8 +720,7 @@ public final class SAXGeneratorSupport implements XMLGenerateCookie {
                               comment = Comment.create(Comment.Style.JAVADOC, -2, -2, -2, commentText);
                               make.addComment(method, comment, true);
                               modifiedClass = make.addClassMember(modifiedClass, method);
-                          }
-                   
+                          }                   
                           // end method
 
                           methodName = END_PREFIX + next.getMethod();
@@ -767,7 +740,6 @@ public final class SAXGeneratorSupport implements XMLGenerateCookie {
        
            };
            targetSource.runModificationTask(task).commit();
-
     }
 
     /**
@@ -781,7 +753,6 @@ public final class SAXGeneratorSupport implements XMLGenerateCookie {
 
             public void cancel() {
             }
-
                
             public void run(Object parameter) throws Exception {
                 WorkingCopy workingCopy = (WorkingCopy)parameter;
@@ -791,8 +762,11 @@ public final class SAXGeneratorSupport implements XMLGenerateCookie {
                 if (javaClass!=null) {
                     TreeMaker make = workingCopy.getTreeMaker();
                     GenerationUtils genUtils = GenerationUtils.newInstance(workingCopy);
-                    ClassTree modifiedClass   = genUtils.addImplementsClause(javaClass, model.getHandler());
-                    
+                    String pkg = model.getJavaPackage();
+                    String className =  (pkg == null || pkg.equals("")) ? model.getHandler() :
+                        pkg + "." + model.getHandler();
+                    ClassTree modifiedClass   = genUtils.addImplementsClause(
+                            javaClass, className);                    
                      //add private class fields
                         List varTree = new ArrayList();
                         ModifiersTree mods = make.Modifiers(EnumSet.of(Modifier.PUBLIC, Modifier.FINAL, Modifier.STATIC));
@@ -806,8 +780,7 @@ public final class SAXGeneratorSupport implements XMLGenerateCookie {
                         Iterator it = model.getElementBindings().values().iterator();
                         while (it.hasNext()) {
                             ElementBindings.Entry next = (ElementBindings.Entry) it.next();
-                        
-                        
+                                                
                             // create a method according mapping table:
                             // public void $name($type data, $SAXattrs meta) throws SAXException;
                             String methodName ;
@@ -2058,9 +2031,9 @@ public final class SAXGeneratorSupport implements XMLGenerateCookie {
 	if (dtd == null) {
         TreeDocumentRoot result;
 
-        TreeEditorCookie cake = (TreeEditorCookie) ((DTDDataObject)DO).getCookie(TreeEditorCookie.class);
+        TreeEditorCookie cake = (TreeEditorCookie)DO.getCookie(TreeEditorCookie.class);
         if (cake != null) {
-            result = cake.openDocumentRoot();
+           result = cake.openDocumentRoot();
         } else {
             throw new TreeException("DTDDataObject:INTERNAL ERROR"); // NOI18N
         }

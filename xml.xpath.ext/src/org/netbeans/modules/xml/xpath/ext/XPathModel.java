@@ -21,9 +21,11 @@ package org.netbeans.modules.xml.xpath.ext;
 
 import javax.xml.namespace.NamespaceContext;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
+import org.netbeans.modules.xml.xpath.ext.schema.CachingSchemaSearchVisitor;
 import org.netbeans.modules.xml.xpath.ext.spi.ExtensionFunctionResolver;
 import org.netbeans.modules.xml.xpath.ext.spi.ExternalModelResolver;
 import org.netbeans.modules.xml.xpath.ext.spi.VariableResolver;
+import org.netbeans.modules.xml.xpath.ext.spi.XPathCastResolver;
 import org.netbeans.modules.xml.xpath.ext.spi.validation.XPathValidationContext;
 
 /**
@@ -85,7 +87,6 @@ public interface XPathModel extends XPathSchemaContextHolder {
      * the first thread.
      */ 
     void resolveExtReferences(boolean again);
-    
     
     /**
      * This method does almost the same as the resolveExtReferences but 
@@ -159,6 +160,24 @@ public interface XPathModel extends XPathSchemaContextHolder {
     ExtensionFunctionResolver getExtensionFunctionResolver();
     
     void setExtensionFunctionResolver(ExtensionFunctionResolver extFuncResolver);
+
+    /**
+     * The cast resolver provides the model with information about 
+     * available type casts. The model can use it while resolving 
+     * location paths. 
+     */
+    XPathCastResolver getXPathCastResolver();
+    
+    void setXPathCastResolver(XPathCastResolver xpathCastResolver);
         
     SchemaComponent getLastSchemaComponent();
+    
+    /**
+     * It is intended for performance optimisation. 
+     * The assigned visitor caching the schema models. 
+     * And it allows resolving inter schema references much faster.
+     *  
+     * @param visitor
+     */
+    void setCachingSchemaSearchVisitor(CachingSchemaSearchVisitor visitor);
 }

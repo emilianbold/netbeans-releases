@@ -47,12 +47,11 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.SyntaxSupport;
 import org.netbeans.editor.TokenItem;
 import org.netbeans.modules.xml.text.api.XMLDefaultTokenContext;
-import org.netbeans.modules.xml.text.syntax.XMLKit;
 import org.netbeans.modules.xml.text.syntax.XMLSyntaxSupport;
 import org.netbeans.editor.Utilities;
-import org.netbeans.editor.ext.ExtEditorUI;
 import org.netbeans.editor.ext.ExtSyntaxSupport;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionQuery;
@@ -75,9 +74,11 @@ public class XMLCompletionProvider implements CompletionProvider {
     }
     
     public int getAutoQueryTypes(JTextComponent component, String typedText) {
-        int type = ((XMLSyntaxSupport)Utilities.getDocument(component).
-                getSyntaxSupport()).checkCompletion(component, typedText, false);
+        SyntaxSupport support = Utilities.getDocument(component).getSyntaxSupport();
+        if( (support == null) || !(support instanceof XMLSyntaxSupport))
+            return 0;
         
+        int type = ((XMLSyntaxSupport)support).checkCompletion(component, typedText, false);
         if(type == ExtSyntaxSupport.COMPLETION_POPUP)
             return COMPLETION_QUERY_TYPE;
         
@@ -94,6 +95,7 @@ public class XMLCompletionProvider implements CompletionProvider {
     
     static class Query extends AsyncCompletionQuery {
         
+        private static final XMLCompletionQuery QUERY = new XMLCompletionQuery();
         private JTextComponent component;
         
         @Override
@@ -102,14 +104,22 @@ public class XMLCompletionProvider implements CompletionProvider {
         }
         
         protected boolean doQuery(CompletionResultSet resultSet, Document doc, int caretOffset) {
-            XMLCompletionQuery.XMLCompletionResult res = queryImpl(component, caretOffset);
-            if(res != null) {
-                List/*<CompletionItem>*/ results = res.getData();
-                resultSet.addAllItems(results);
-                resultSet.setTitle(res.getTitle());
-                resultSet.setAnchorOffset(res.getSubstituteOffset());
-                return results.size() == 0;
+            if (ENABLED) {
+                XMLSyntaxSupport support = (XMLSyntaxSupport)Utilities.getSyntaxSupport(component);
+                if (support != null) {
+                    XMLCompletionQuery.XMLCompletionResult res = 
+                        (XMLCompletionQuery.XMLCompletionResult) QUERY.query(component, caretOffset, support);
+                    
+                    if(res != null) {
+                        List/*<CompletionItem>*/ results = res.getData();
+                        resultSet.addAllItems(results);
+                        resultSet.setTitle(res.getTitle());
+                        resultSet.setAnchorOffset(res.getSubstituteOffset());
+                        return results.size() == 0;
+                    }
+                }
             }
+            
             return true;
         }
         
@@ -124,19 +134,20 @@ public class XMLCompletionProvider implements CompletionProvider {
         
     }
     
-    private static XMLCompletionQuery.XMLCompletionResult queryImpl(JTextComponent component, int offset) {
-        if (!ENABLED) return null;
-        
-        Class kitClass = Utilities.getKitClass(component);
-        if (kitClass != null) {
-            ExtEditorUI eeui = (ExtEditorUI)Utilities.getEditorUI(component);
-            org.netbeans.editor.ext.Completion compl = ((XMLKit)Utilities.getKit(component)).createCompletionForProvider(eeui);
-            XMLSyntaxSupport support = (XMLSyntaxSupport)Utilities.getSyntaxSupport(component);
-            return (XMLCompletionQuery.XMLCompletionResult)compl.getQuery().query(component, offset, support);
-        }
-        
-        return null;
-    }
+// XXX: remove dependency on the old org.netbeans.editor.ext.Completion & co.
+//    private static XMLCompletionQuery.XMLCompletionResult queryImpl(JTextComponent component, int offset) {
+//        if (!ENABLED) return null;
+//        
+//        Class kitClass = Utilities.getKitClass(component);
+//        if (kitClass != null) {
+//            ExtEditorUI eeui = (ExtEditorUI)Utilities.getEditorUI(component);
+//            org.netbeans.editor.ext.Completion compl = ((XMLKit)Utilities.getKit(component)).createCompletionForProvider(eeui);
+//            XMLSyntaxSupport support = (XMLSyntaxSupport)Utilities.getSyntaxSupport(component);
+//            return (XMLCompletionQuery.XMLCompletionResult)compl.getQuery().query(component, offset, support);
+//        }
+//        
+//        return null;
+//    }
     
     private static void checkHideCompletion(BaseDocument doc, int caretOffset) {
         //test whether we are just in text and eventually close the opened completion

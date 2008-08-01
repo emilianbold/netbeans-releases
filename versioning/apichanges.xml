@@ -108,6 +108,39 @@ is the proper place.
         
         <change>
             <api name="versioning_spi"/>
+            <summary>Added getCollocationQueryImplementation() method to VersioningSystem</summary>
+            <version major="1" minor="8"/>
+            <date day="27" month="6" year="2008"/>
+            <author login="msandor"/>
+            <compatibility addition="yes"/>
+            <description>
+                Every Versioning system should provide a CollocationQueryImplementation. This API change has two purposes:
+                1. It makes it clear and explicit that implementors of a VersioningSystem should provide the query. It would be possible for them
+                to just implement and register their own CollocationQueryImplementation but they could easily forget to do that.
+                2. There will be only one registered CQI (Versioning manager) that will delegate the query to the appropriate
+                versioning system which will speed things up.
+            </description>
+            <class package="org.netbeans.modules.versioning.spi" name="VersioningSystem"/>
+            <issue number="137822"/>
+        </change>
+
+        <change>
+            <api name="versioning_spi"/>
+            <summary>Added isMutable() method to VCSInterceptor</summary>
+            <version major="1" minor="7"/>
+            <date day="30" month="3" year="2008"/>
+            <author login="msandor"/>
+            <compatibility addition="yes"/>
+            <description>
+                This new method provides ability to override default File.canWrite() query for versioning systems that
+                keep files read-only on disk and are able to make them read-write on demand in the interceptor (eg. in doDelete()).
+            </description>
+            <class package="org.netbeans.modules.versioning.spi" name="VCSInterceptor"/>
+            <issue number="130044"/>
+        </change>
+
+        <change>
+            <api name="versioning_spi"/>
             <summary>Added getFiles() method to VCSContext</summary>
             <version major="1" minor="6"/>
             <date day="25" month="1" year="2008"/>

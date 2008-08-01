@@ -31,11 +31,11 @@ public final class TestRunAction extends GraphAction {
         this.putValue(Action.SMALL_ICON, new ImageIcon(runIconUrl));
 
         //action tooltip
-        String nbBundle2 = mLoc.t("BUND036: Run Collaboration (Shift-N)");
+        String nbBundle2 = mLoc.t("BUND036: Run Collaboration (Alt+Shift+N)");
         this.putValue(Action.SHORT_DESCRIPTION,nbBundle2.substring(15));
 
         // Acceleratot Shift-N
-        this.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke('N', InputEvent.SHIFT_DOWN_MASK));
+        this.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke('N', InputEvent.SHIFT_DOWN_MASK+InputEvent.ALT_MASK));
     }
 
     public void actionPerformed(ActionEvent ev) {

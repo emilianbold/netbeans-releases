@@ -83,6 +83,8 @@ public interface Command extends Runnable {
      * @return true if this action should automatically be performed asynchronously
      */
     boolean asynchronous();
+    
+    boolean isSaveRequired();
         
     void setActionFiles( FileObject[] files );
 

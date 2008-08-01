@@ -144,6 +144,12 @@ made subject to such option by the copyright holder.
         <file name="D-R.shadow">
             <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-api-ui-RenameAction.instance"/>
         </file>
+        <file name="D-M.shadow">
+            <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-api-ui-MoveAction.instance"/>
+        </file>
+        <file name="O-DELETE.shadow">
+            <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-api-ui-SafeDeleteAction.instance"/>
+        </file>
       
     </folder>
 
@@ -151,10 +157,10 @@ made subject to such option by the copyright holder.
         <folder name="Modes">
             <folder name="output">
                 <file name="find-usages.wstcref" url="find-usages.wstcref">
-                    <attr name="position" intvalue="1100"/>
+                    <attr name="position" intvalue="2200"/>
                 </file>
                 <file name="refactoring-preview.wstcref" url="refactoring-preview.wstcref">
-                    <attr name="position" intvalue="1500"/>
+                    <attr name="position" intvalue="2100"/>
                 </file>
             </folder>
         </folder>

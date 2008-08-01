@@ -20,9 +20,7 @@ import com.sun.sql.framework.exception.DBSQLException;
 import org.netbeans.modules.sql.framework.model.SQLDBTable;
 import org.netbeans.modules.sql.framework.model.SourceTable;
 import org.netbeans.modules.sql.framework.model.TargetTable;
-import org.netbeans.modules.sql.framework.model.visitors.SQLDBSynchronizationVisitor;
 import java.awt.event.ActionEvent;
-import java.awt.event.InputEvent;
 import java.net.URL;
 import java.util.ArrayList;
 import javax.swing.Action;
@@ -30,10 +28,8 @@ import java.util.Iterator;
 import java.util.List;
 import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
-import javax.swing.KeyStroke;
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
-import org.netbeans.modules.etl.ui.DataObjectProvider;
 import org.netbeans.modules.sql.framework.model.SQLJoinView;
 import org.openide.util.Exceptions;
 import org.netbeans.modules.sql.framework.ui.view.graph.MetaTableModel;
@@ -67,10 +63,9 @@ public class RefreshMetadataAction extends GraphAction {
         this.putValue(Action.SMALL_ICON, new ImageIcon(synchroniseImgUrl));
 
         //action tooltip
-        String nbBundle2 = mLoc.t("BUND025: Refresh Metadata (Shift-R)");
+        String nbBundle2 = mLoc.t("BUND025: Refresh Metadata ");
         this.putValue(Action.SHORT_DESCRIPTION,nbBundle2.substring(15));
         // Acceleratot Shift-R
-        this.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke('R', InputEvent.SHIFT_DOWN_MASK));
     }
 
     /**

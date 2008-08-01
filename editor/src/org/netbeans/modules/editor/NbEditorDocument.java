@@ -49,11 +49,8 @@ import java.util.HashMap;
 import java.text.AttributedCharacterIterator;
 import javax.swing.text.AttributeSet;
 import javax.swing.JEditorPane;
-import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.GuardedDocument;
 import org.netbeans.editor.PrintContainer;
-import org.netbeans.editor.Settings;
-import org.netbeans.editor.SettingsChangeEvent;
 import org.netbeans.editor.Utilities;
 import org.openide.text.NbDocument;
 import org.openide.text.AttributedCharacters;
@@ -65,12 +62,15 @@ import java.util.Dictionary;
 import java.util.Map;
 import java.util.WeakHashMap;
 import javax.swing.JToolBar;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import org.netbeans.editor.BaseDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.editor.AnnotationDesc;
+import org.netbeans.modules.editor.impl.ComplexValueSettingsFactory;
+import org.netbeans.modules.editor.indent.api.IndentUtils;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 
 /**
 * BaseDocument extension managing the readonly blocks of text
@@ -83,11 +83,6 @@ public class NbEditorDocument extends GuardedDocument
 implements NbDocument.PositionBiasable, NbDocument.WriteLockable,
 NbDocument.Printable, NbDocument.CustomEditor, NbDocument.CustomToolbar, NbDocument.Annotatable {
 
-    /** Mime type of the document. The name of this property corresponds
-     * to the property that is filled in the document by CloneableEditorSupport.
-     */
-    public static final String MIME_TYPE_PROP = "mimeType"; // NOI18N
-
     /** Indent engine for the given kitClass. */
     public static final String INDENT_ENGINE = "indentEngine"; // NOI18N
 
@@ -97,8 +92,30 @@ NbDocument.Printable, NbDocument.CustomEditor, NbDocument.CustomToolbar, NbDocum
     // #39718 hotfix
     private WeakHashMap annoBlackList;
 
+    /**
+     * Creates a new document.
+     * 
+     * @deprecated Use of editor kit's implementation classes is deprecated
+     *   in favor of mime types.
+     */
     public NbEditorDocument(Class kitClass) {
         super(kitClass);
+        init();
+    }
+    
+    /**
+     * Creates a new document.
+     * 
+     * @param mimeType The mime type for the new document.
+     * 
+     * @since 1.18
+     */
+    public NbEditorDocument(String mimeType) {
+        super(mimeType);
+        init();
+    }
+    
+    private void init() {
         addStyleToLayerMapping(NbDocument.BREAKPOINT_STYLE_NAME,
                                NbDocument.BREAKPOINT_STYLE_NAME + "Layer:10"); // NOI18N
         addStyleToLayerMapping(NbDocument.ERROR_STYLE_NAME,
@@ -109,36 +126,25 @@ NbDocument.Printable, NbDocument.CustomEditor, NbDocument.CustomToolbar, NbDocum
         
         annoMap = new HashMap(20);
         annoBlackList = new WeakHashMap();
-    }
-
-    public void settingsChange(SettingsChangeEvent evt) {
-        super.settingsChange(evt);
-
-        // Check whether the mimeType is set
-        Object o = getProperty(MIME_TYPE_PROP);
-        if (!(o instanceof String)) {
-            BaseKit kit = BaseKit.getKit(getKitClass());
-            putProperty(MIME_TYPE_PROP, kit.getContentType());
-        }
 
         // Fill in the indentEngine property
-        putProperty(INDENT_ENGINE,
-            new BaseDocument.PropertyEvaluator() {
-
-                private Object cached;
-
-                public Object getValue() {
-                    if (cached == null) {
-                        cached = Settings.getValue(getKitClass(), INDENT_ENGINE);
-                    }
-                    
-                    return cached;
-                }
+        putProperty(INDENT_ENGINE, new BaseDocument.PropertyEvaluator() {
+            public Object getValue() {
+                MimePath mimePath = MimePath.parse((String) getProperty(MIME_TYPE_PROP));
+                return ComplexValueSettingsFactory.getIndentEngine(mimePath);
             }
-        );
+        });
     }
 
-    public void setCharacterAttributes(int offset, int length, AttributeSet s,
+    public @Override int getShiftWidth() {
+        return IndentUtils.indentLevelSize(this);
+    }
+
+    public @Override int getTabSize() {
+        return IndentUtils.tabSize(this);
+    }
+
+    public @Override void setCharacterAttributes(int offset, int length, AttributeSet s,
                                        boolean replace) {
         if (s != null) {
             Object val = s.getAttribute(NbDocument.GUARDED);
@@ -261,31 +267,20 @@ NbDocument.Printable, NbDocument.CustomEditor, NbDocument.CustomToolbar, NbDocum
         return annoMap;
     }
 
-    void addStreamDescriptionChangeListener(ChangeListener l) {
-        listenerList.add(ChangeListener.class, l);
-    }
-    
-    void removeStreamDescriptionChangeListener(ChangeListener l) {
-        listenerList.remove(ChangeListener.class, l);
-    }
-    
-    private void fireStreamDescriptionChange() {
-        ChangeEvent evt = new ChangeEvent(this);
-        Object[] listeners = listenerList.getListenerList();
-        for (int i = listeners.length - 2; i >= 0; i -= 2) {
-            if (listeners[i] == ChangeListener.class) {
-                ((ChangeListener)listeners[i + 1]).stateChanged(evt);
-            }
-        }
-    }
-
-    protected Dictionary createDocumentProperties(Dictionary origDocumentProperties) {
+    protected @Override Dictionary createDocumentProperties(Dictionary origDocumentProperties) {
         return new LazyPropertyMap(origDocumentProperties) {
-            public Object put(Object key, Object value) {
+            public @Override Object put(Object key, Object value) {
                 Object origValue = super.put(key, value);
                 if (Document.StreamDescriptionProperty.equals(key)) {
-                    if (origValue == null || !origValue.equals(value)) {
-                        fireStreamDescriptionChange();
+                    assert value != null;
+                    
+                    if (origValue == null) {
+                        // XXX: workaround for #137528, touches project settings
+                        IndentUtils.indentLevelSize(NbEditorDocument.this);
+                    } else {
+                        // this property should only ever be set once. even if it
+                        // is set more times it must never be set to a different value
+                        assert origValue.equals(value);
                     }
                 }
                 
@@ -297,7 +292,7 @@ NbDocument.Printable, NbDocument.CustomEditor, NbDocument.CustomToolbar, NbDocum
     /** Implementation of AnnotationDesc, which delegate to Annotation instance
      * defined in org.openide.text package.
      */
-    static class AnnotationDescDelegate extends AnnotationDesc {
+    static class AnnotationDescDelegate extends AnnotationDesc implements Lookup.Provider {
         
         private Annotation delegate;
         private PropertyChangeListener l;
@@ -316,11 +311,13 @@ NbDocument.Printable, NbDocument.CustomEditor, NbDocument.CustomToolbar, NbDocum
             // forward property changes to AnnotationDesc property changes
             l = new PropertyChangeListener() {
                 public void propertyChange (PropertyChangeEvent evt) {
-                    if (evt.getPropertyName() == Annotation.PROP_SHORT_DESCRIPTION)
+                    if (evt.getPropertyName() == null || Annotation.PROP_SHORT_DESCRIPTION.equals(evt.getPropertyName())) {
                         firePropertyChange(AnnotationDesc.PROP_SHORT_DESCRIPTION, null, null);
-                    if (evt.getPropertyName() == Annotation.PROP_MOVE_TO_FRONT)
+                    }
+                    if (evt.getPropertyName() == null || Annotation.PROP_MOVE_TO_FRONT.equals(evt.getPropertyName())) {
                         firePropertyChange(AnnotationDesc.PROP_MOVE_TO_FRONT, null, null);
-                    if (evt.getPropertyName() == Annotation.PROP_ANNOTATION_TYPE) {
+                    }
+                    if (evt.getPropertyName() == null || Annotation.PROP_ANNOTATION_TYPE.equals(evt.getPropertyName())) {
                         updateAnnotationType();
                         firePropertyChange(AnnotationDesc.PROP_ANNOTATION_TYPE, null, null);
                     }
@@ -328,7 +325,7 @@ NbDocument.Printable, NbDocument.CustomEditor, NbDocument.CustomToolbar, NbDocum
             };
             delegate.addPropertyChangeListener(l);
         }
-        
+
         public String getAnnotationType() {
             return delegate.getAnnotationType();
         }
@@ -352,9 +349,12 @@ NbDocument.Printable, NbDocument.CustomEditor, NbDocument.CustomToolbar, NbDocum
                 return 0;
             }
         }
+
+        public Lookup getLookup() {
+            return Lookups.singleton(delegate);
+        }
         
     }
-    
     
     class NbPrintContainer extends AttributedCharacters implements PrintContainer {
 

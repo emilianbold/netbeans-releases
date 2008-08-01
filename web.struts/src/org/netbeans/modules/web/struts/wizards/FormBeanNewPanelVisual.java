@@ -139,12 +139,12 @@ public class FormBeanNewPanelVisual extends javax.swing.JPanel implements HelpCt
         String configFile = (String) jComboBoxConfigFile.getSelectedItem();
         
         if (superclass == null || superclass.trim().equals("")){
-            wizardDescriptor.putProperty("WizardPanel_errorMessage",
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
                     NbBundle.getMessage(FormBeanNewPanelVisual.class, "MSG_NoSuperClassSelected"));
         }
         if (configFile == null || configFile.trim().equals("")){
             // Should dislpay only warning. We should allow to create bean outside module. #68034
-            wizardDescriptor.putProperty("WizardPanel_errorMessage",
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
                     NbBundle.getMessage(FormBeanNewPanelVisual.class, "MSG_NoConfFileSelectedForBean"));
         }
         return true;

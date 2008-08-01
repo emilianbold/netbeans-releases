@@ -252,7 +252,7 @@ public class ResourceSupport {
         }
 
         if (prevValue instanceof I18nValue) {
-            if (getI18nService() != null) {
+            if (!isEditorSwitchingValue(newValue) && getI18nService() != null) {
                 newValue = i18nService.changeValue((I18nValue)prevValue, value.toString());
             }
         }
@@ -289,6 +289,17 @@ public class ResourceSupport {
                                                   value,
                                                   getStringValue(property, value),
                                                   getSourceFile());
+            }
+            if ((newPrEd == null) && !(property.getCurrentEditor() instanceof ResourceWrapperEditor)) {
+                PropertyEditor propEd = property.getPropertyEditor();
+                if (propEd instanceof FormPropertyEditor) {
+                    FormPropertyEditor formPropEd = (FormPropertyEditor)propEd;
+                    for (PropertyEditor newPropEd : formPropEd.getAllEditors()) {
+                        if (newPropEd instanceof ResourceWrapperEditor) {
+                            return new FormProperty.ValueWithEditor(resValue, newPropEd);
+                        }
+                    }
+                }
             }
             newValue = newPrEd != null ? new FormProperty.ValueWithEditor(resValue, newPrEd) : resValue;
         }
@@ -443,7 +454,7 @@ public class ResourceSupport {
                             resourceService.update(resValue, null, getSourceFile(), designLocale);
                         }
                         addDroppedValue(prop, value); // it will keep data from all locales
-                        // (there is no other way to remember this data for undo)
+                            // (there is no other way to remember this data for undo)
                     }
                     catch (Exception ex) {
                         ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
@@ -469,7 +480,7 @@ public class ResourceSupport {
     public static void componentRenamed(RADComponent metacomp, String oldName, String newName) {
         ResourceSupport support = getResourceSupport(metacomp);
         if (support.isAutoMode()) {
-            support.renameDefaultKeysForComponent(metacomp, null, null, oldName, newName);
+            support.renameDefaultKeysForComponent(metacomp, null, null, oldName, newName, false);
         }
 
         // hack: 'name' property needs special treatment
@@ -490,22 +501,26 @@ public class ResourceSupport {
         }
     }
 
-    public static void formRenamed(FormModel formModel, String oldName) {
-        ResourceSupport support = FormEditor.getResourceSupport(formModel);
-        if (support.getAutoMode() == AUTO_I18N) { // [in other auto modes the keys don't include class name]
-            support.renameDefaultKeys(oldName);
-        }
-    }
-
-    private void renameDefaultKeys(String oldFormName) {
+    /**
+     * Renames all default keys used by the form to match the current (new) form
+     * name. Called in a situation when the form is already renamed but still
+     * using the keys with the previous name. The form is still using the same
+     * properties file.
+     * @param oldFormName the old name of the form - to determine the default
+     *        keys
+     * @param copy if true, the keys with old name will be kept and new keys
+     *        create (copied)
+     */
+    private void renameDefaultKeys(String oldFormName, boolean copy) {
         for (RADComponent metacomp : formModel.getAllComponents()) {
-            renameDefaultKeysForComponent(metacomp, oldFormName, getSrcDataObject().getName(), null, null);
+            renameDefaultKeysForComponent(metacomp, oldFormName, getSrcDataObject().getName(), null, null, copy);
         }
     }
 
     private void renameDefaultKeysForComponent(RADComponent metacomp,
             String oldFormName, String newFormName,
-            String oldCompName, String newCompName)
+            String oldCompName, String newCompName,
+            boolean copy)
     {
         if (oldFormName == null) {
             oldFormName = getSrcDataObject().getName();
@@ -558,18 +573,26 @@ public class ResourceSupport {
             prop.setChangeFiring(false); // suppress firing - update is not done the usual way
             try {
                 if (i18nValue != null) {
-                    I18nValue oldI18nValue = i18nValue;
-                    I18nValue newI18nValue = i18nService.changeKey(oldI18nValue, newKey);
+                    if (copy) {
+                        // copy takes all data incl. localized
+                        i18nValue = i18nService.copy(i18nValue);
+                    }
+                    I18nValue newI18nValue = i18nService.changeKey(i18nValue, newKey);
+                    if (copy) {
+                        // passing null as old value will not change the existing
+                        // value in the properties file but add a new one
+                        i18nValue = null;
+                    }
                     prop.setValue(newI18nValue);
-                    i18nService.update(oldI18nValue, newI18nValue,
+                    i18nService.update(i18nValue, newI18nValue,
                                        getSrcDataObject(), getI18nBundleName(), designLocale,
                                        true);
                 }
                 else if (resValue != null) {
-                    ResourceValue oldResValue = resValue;
-                    ResourceValue newResValue = resourceService.changeKey(oldResValue, newKey);
+                    ResourceValue newResValue = resourceService.changeKey(resValue, newKey);
                     prop.setValue(newResValue);
-                    resourceService.update(oldResValue, newResValue, getSourceFile(), designLocale);
+                    resourceService.update(copy ? null : resValue, newResValue,
+                                           getSourceFile(), designLocale);
                 }
             }
             catch (Exception ex) {
@@ -579,20 +602,86 @@ public class ResourceSupport {
         }
     }
 
-    public static void formMoved(FormModel formModel, FileObject oldFolder) {
+    /**
+     * Called to adjust the automatically managed resources (auto-i18n) after the
+     * form was renamed, moved or copied. Note that the app framework support
+     * does it's own update, nothing needs to be done here for app resources.
+     * This method works with assumption that the form itself has been already
+     * moved, but still using the old i18n data - which needs to be
+     * changed/moved now.
+     * @param formModel FormModel representing the changing form
+     * @param oldFolder
+     * @param oldName
+     * @param copy if true, a copy is created, so original resources must be
+     *        left intact and just copied
+     */
+    public static void formMoved(FormModel formModel, FileObject oldFolder, String oldFormName, boolean copy) {
         ResourceSupport support = FormEditor.getResourceSupport(formModel);
-        if (support.getAutoMode() == AUTO_I18N) { // [in other auto modes the entire properties file is moved]
-            support.moveFormI18n(oldFolder);
+        if (support.getAutoMode() == AUTO_I18N) {
+            if (oldFolder == null) { // form renamed or copied within the same package
+                support.renameDefaultKeys(oldFormName, copy);
+            } else { // form moved or copied into another package
+                support.moveFormI18n(oldFormName, oldFolder, copy);
+            }
         }
     }
 
-    private void moveFormI18n(FileObject oldFolder) {
+    /**
+     * Moves auto-i18n resources into another package - to follow an already
+     * moved form. 
+     * @param oldFolder
+     * @param copy if true, it is a copy operation rather than move (original
+     *        resources left intact)
+     */
+    private void moveFormI18n(String oldFormName, FileObject oldFolder, boolean copy) {
+        assert getAutoMode() == AUTO_I18N;
         String oldPkg = getPkgResourceName(oldFolder);
         String newPkg = getPkgResourceName(getSourceFile());
         String newBundle = getI18nBundleName();
         String oldBundle = oldPkg + newBundle.substring(newPkg.length());
-        switchFormToPlainValues(oldBundle);
-        switchFormToResources();
+        if (oldFormName == null) {
+            oldFormName = getSrcDataObject().getName();
+        }
+
+        for (RADComponent metacomp : formModel.getAllComponents()) {
+            for (FormProperty prop : getComponentResourceProperties(metacomp, VALID_RESOURCE_VALUE, false)) {
+                try {
+                    Object value = prop.getValue();
+                    if (value instanceof I18nValue) {
+                        I18nValue i18nValue = (I18nValue) value;
+                        String oldKey = getDefaultKey(oldFormName, getPropertyPath(prop, metacomp.getName()), AUTO_I18N);
+                        if (isAutoKey(i18nValue.getKey(), oldKey)) {
+                            boolean fire = prop.isChangeFiring();
+                            prop.setChangeFiring(false); // suppress firing and converting
+                            try {
+                                if (copy) { // create a copy
+                                    i18nValue = i18nService.copy(i18nValue);
+                                } else { // remove from original properties file
+                                    i18nService.update(i18nValue, null,
+                                                       getSrcDataObject(),
+                                                       oldBundle,
+                                                       null, true);
+                                }
+                                String newKey = getDefaultKey(prop, AUTO_I18N);
+                                if (!newKey.equals(oldKey)) { // change key for new form name
+                                    i18nValue = i18nService.changeKey(i18nValue, newKey);
+                                }
+                                // add new value to the properties file
+                                i18nService.update(null, i18nValue,
+                                                   getSrcDataObject(), getI18nBundleName(),
+                                                   null, true);
+                                prop.setValue(i18nValue);
+                            } finally {
+                                prop.setChangeFiring(fire);
+                            }
+                        }
+                    }
+                } catch (Exception ex) { // should not happen
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                }
+            }
+        }
+
         // TODO: probably should also copy the manually set values (not just
         // move as in case of auto-i18n) - definitely if moving between projects
     }
@@ -1438,7 +1527,6 @@ public class ResourceSupport {
         String bundleName = formModel.getSettings().getFormBundle();
         if (bundleName == null) {
             if (defaultI18nBundle == null) {
-                FileObject file = getSourceFile();
                 defaultI18nBundle = composeBundleName(getPkgResourceName(getSourceFile()),
                                                       DEFAULT_BUNDLE_NAME);
                 // [we could also search for another properties file in the package
@@ -1476,6 +1564,24 @@ public class ResourceSupport {
                || value instanceof java.awt.Font
                || value instanceof org.netbeans.modules.form.editors.IconEditor.NbImageIcon
                || value instanceof java.awt.Color;
+    }
+
+    /**
+     * Does the value means the user wants to explicitly switch from i18n editor
+     * to basic editor? See issue 130136.
+     * @param value the value being set to property
+     * @return true if the property editor should be switched to the basic editor
+     *         of the property - instead of trying to update existing i18n value
+     */
+    private boolean isEditorSwitchingValue(Object value) {
+        if (value instanceof FormProperty.ValueWithEditor) {
+            //    && !isI18nAutoMode() - maybe in auto mode we should keep i18n?
+            FormProperty.ValueWithEditor vwe = (FormProperty.ValueWithEditor) value;
+            if (vwe.getEditorSetByUser()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

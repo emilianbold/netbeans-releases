@@ -1,4 +1,4 @@
-'"cpu.h"', tokenID=user-include, offset=2153 [44:10/2153-44:17/2160]
+'"cpu.h"', tokenID=preprocessor_user_include, offset=2153 [44:10/2153-44:17/2160]
 --OWNER:
     INCLUDE "cpu.h" [44:1/2144-44:17/2160]
 --RESOLVED TO:
@@ -78,13 +78,13 @@
 ==============================================================
 'metric', tokenID=identifier, offset=2555 [58:9/2555-58:15/2561]
 --OWNER:
-    VARIABLE metric [58:5/2551-58:35/2581] ReferencesTestCase/cpu.cc  TYPE: int TEXT=int  [58:5/2551-58:8/2554]  INIT: text='100'  SCOPE: Stmt  [57:34/2545-71:2/2781]
+    VARIABLE metric [58:5/2551-58:35/2581] ReferencesTestCase/cpu.cc  TYPE: int TEXT=int  [58:5/2551-58:8/2554]  INIT: text='100 * GetUnits()'  SCOPE: Stmt  [57:34/2545-71:2/2781]
 --RESOLVED TO:
-    VARIABLE metric [58:5/2551-58:35/2581] ReferencesTestCase/cpu.cc  TYPE: int TEXT=int  [58:5/2551-58:8/2554]  INIT: text='100'  SCOPE: Stmt  [57:34/2545-71:2/2781]
+    VARIABLE metric [58:5/2551-58:35/2581] ReferencesTestCase/cpu.cc  TYPE: int TEXT=int  [58:5/2551-58:8/2554]  INIT: text='100 * GetUnits()'  SCOPE: Stmt  [57:34/2545-71:2/2781]
 ==============================================================
 'GetUnits', tokenID=identifier, offset=2570 [58:24/2570-58:32/2578]
 --OWNER:
-    VARIABLE metric [58:5/2551-58:35/2581] ReferencesTestCase/cpu.cc  TYPE: int TEXT=int  [58:5/2551-58:8/2554]  INIT: text='100'  SCOPE: Stmt  [57:34/2545-71:2/2781]
+    VARIABLE metric [58:5/2551-58:35/2581] ReferencesTestCase/cpu.cc  TYPE: int TEXT=int  [58:5/2551-58:8/2554]  INIT: text='100 * GetUnits()'  SCOPE: Stmt  [57:34/2545-71:2/2781]
 --RESOLVED TO:
     FUNCTION GetUnits() const  [75:5/2975-75:26/2996] ReferencesTestCase/module.h
 ==============================================================
@@ -104,7 +104,7 @@
 --OWNER:
     STMT EXPRESSION text='metric += 100'
 --RESOLVED TO:
-    VARIABLE metric [58:5/2551-58:35/2581] ReferencesTestCase/cpu.cc  TYPE: int TEXT=int  [58:5/2551-58:8/2554]  INIT: text='100'  SCOPE: Stmt  [57:34/2545-71:2/2781]
+    VARIABLE metric [58:5/2551-58:35/2581] ReferencesTestCase/cpu.cc  TYPE: int TEXT=int  [58:5/2551-58:8/2554]  INIT: text='100 * GetUnits()'  SCOPE: Stmt  [57:34/2545-71:2/2781]
 ==============================================================
 'HIGH', tokenID=identifier, offset=2691 [65:14/2691-65:18/2695]
 --OWNER:
@@ -116,7 +116,7 @@
 --OWNER:
     STMT EXPRESSION text='metric += 400'
 --RESOLVED TO:
-    VARIABLE metric [58:5/2551-58:35/2581] ReferencesTestCase/cpu.cc  TYPE: int TEXT=int  [58:5/2551-58:8/2554]  INIT: text='100'  SCOPE: Stmt  [57:34/2545-71:2/2781]
+    VARIABLE metric [58:5/2551-58:35/2581] ReferencesTestCase/cpu.cc  TYPE: int TEXT=int  [58:5/2551-58:8/2554]  INIT: text='100 * GetUnits()'  SCOPE: Stmt  [57:34/2545-71:2/2781]
 ==============================================================
 'SetSupportMetric', tokenID=identifier, offset=2754 [70:5/2754-70:21/2770]
 --OWNER:
@@ -128,7 +128,7 @@
 --OWNER:
     STMT EXPRESSION text='SetSupportMetric(metric)'
 --RESOLVED TO:
-    VARIABLE metric [58:5/2551-58:35/2581] ReferencesTestCase/cpu.cc  TYPE: int TEXT=int  [58:5/2551-58:8/2554]  INIT: text='100'  SCOPE: Stmt  [57:34/2545-71:2/2781]
+    VARIABLE metric [58:5/2551-58:35/2581] ReferencesTestCase/cpu.cc  TYPE: int TEXT=int  [58:5/2551-58:8/2554]  INIT: text='100 * GetUnits()'  SCOPE: Stmt  [57:34/2545-71:2/2781]
 ==============================================================
 'Cpu', tokenID=identifier, offset=2795 [73:13/2795-73:16/2798]
 --OWNER:

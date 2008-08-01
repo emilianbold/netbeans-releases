@@ -55,7 +55,7 @@ public class FilePathCellRenderer extends DefaultTableCellRenderer {
     private static final int VISIBLE_START_CHARS = 0;
 
     private String computeFitText(String text) {
-        if (text.length() <= VISIBLE_START_CHARS + 3) return text;
+        if (text == null || text.length() <= VISIBLE_START_CHARS + 3) return text;
 
         FontMetrics fm = getFontMetrics(getFont());
         int width = getSize().width;

@@ -42,15 +42,12 @@
 package org.netbeans.modules.xml.validation;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.xml.validation.ui.ValidationOutputWindow;
 import org.netbeans.modules.xml.xam.Model;
-import org.netbeans.modules.xml.xam.Model.State;
 import org.netbeans.modules.xml.xam.spi.Validation;
 import org.netbeans.modules.xml.xam.spi.Validation.ValidationType;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
-import org.openide.util.NbBundle;
 
 /**
  *
@@ -58,7 +55,9 @@ import org.openide.util.NbBundle;
  */
 public class ValidationOutputWindowController {
     
-    /** Creates a new instance of ValidationOutputWindowController */
+    /**
+     * Creates a new instance of ValidationOutputWindowController
+     */
     public ValidationOutputWindowController() {
     }
     

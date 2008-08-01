@@ -79,10 +79,10 @@ public class BasicProjectInfoWizardPanel implements WizardDescriptor.Panel, Chan
         getComponent();
         String error = component.getError();
         if (error != null) {
-            wizardDescriptor.putProperty( "WizardPanel_errorMessage", error); // NOI18N
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, error);
             return false;
         }
-        wizardDescriptor.putProperty( "WizardPanel_errorMessage", ""); // NOI18N
+        wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, ""); // NOI18N
         return true;
     }
     

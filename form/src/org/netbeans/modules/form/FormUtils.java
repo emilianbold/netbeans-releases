@@ -42,7 +42,6 @@
 package org.netbeans.modules.form;
 
 import java.awt.*;
-import java.awt.event.KeyEvent;
 import java.beans.*;
 import java.io.*;
 import java.util.*;
@@ -50,19 +49,15 @@ import java.lang.reflect.*;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.Action;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListModel;
 import javax.swing.JComponent;
-import javax.swing.KeyStroke;
 import javax.swing.ListModel;
 import javax.swing.border.TitledBorder;
+import javax.swing.event.TreeModelListener;
 import javax.swing.plaf.ComponentUI;
-import javax.swing.text.Keymap;
-import javax.swing.undo.UndoManager;
+import javax.swing.tree.DefaultTreeModel;
 import org.netbeans.api.java.source.ui.DialogBinding;
-import org.netbeans.editor.ActionFactory;
-import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.EditorUI;
 import org.netbeans.editor.ext.ExtCaret;
 
@@ -203,7 +198,8 @@ public class FormUtils
                 "characterAttributes", PROP_HIDDEN,
                 "paragraphAttributes", PROP_HIDDEN },
         { "javax.swing.JTree", CLASS_AND_SUBCLASSES,
-                "border", PROP_PREFERRED },
+                "border", PROP_PREFERRED,
+                "model", PROP_PREFERRED },
         { "javax.swing.JTree", CLASS_EXACTLY,
                 "editing", PROP_HIDDEN,
                 "editingPath", PROP_HIDDEN,
@@ -532,6 +528,18 @@ public class FormUtils
             }
             return newComboModel;
         }
+        if (o.getClass() == DefaultTreeModel.class) {
+            DefaultTreeModel model = (DefaultTreeModel)o;
+            TreeModelListener[] listeners = model.getTreeModelListeners();
+            for (TreeModelListener listener : listeners) {
+                model.removeTreeModelListener(listener);
+            }
+            Object clone = cloneBeanInstance(o, null, formModel);
+            for (TreeModelListener listener : listeners) {
+                model.addTreeModelListener(listener);
+            }
+            return clone;
+        }
         // for TableModel we use TableModelEditor.NbTableModel which takes care of its serialization
 
         if (o instanceof Serializable) {
@@ -847,7 +855,7 @@ public class FormUtils
     {
         while (props.hasNext()) {
             RADProperty prop = props.next();
-            if (!prop.isChanged() || !prop.canWriteToTarget()) {
+            if (!prop.isChanged() || (!prop.canWriteToTarget() && !(prop instanceof RADComponent.ButtonGroupProperty))) {
                 continue;
             }
 
@@ -928,29 +936,33 @@ public class FormUtils
     }
 
     public static void setupTextUndoRedo(javax.swing.text.JTextComponent editor) {
-        // don't use global undo/redo actions, register basic ones
-        KeyStroke[] undoKeys = new KeyStroke[] { KeyStroke.getKeyStroke(KeyEvent.VK_UNDO, 0),
-                                                 KeyStroke.getKeyStroke(KeyEvent.VK_Z, 130) };
-        KeyStroke[] redoKeys = new KeyStroke[] { KeyStroke.getKeyStroke(KeyEvent.VK_AGAIN, 0),
-                                                 KeyStroke.getKeyStroke(KeyEvent.VK_Y, 130) };
-        Keymap keymap = editor.getKeymap();
-        Action undoAction = new ActionFactory.UndoAction();
-        for (KeyStroke k : undoKeys) {
-            keymap.removeKeyStrokeBinding(k);
-            keymap.addActionForKeyStroke(k, undoAction);
-        }
-        Action redoAction = new ActionFactory.RedoAction();
-        for (KeyStroke k : redoKeys) {
-            keymap.removeKeyStrokeBinding(k);
-            keymap.addActionForKeyStroke(k, redoAction);
-        }
-        Object currentUM = editor.getDocument().getProperty(BaseDocument.UNDO_MANAGER_PROP);
-        if (currentUM instanceof UndoManager) {
-            editor.getDocument().removeUndoableEditListener((UndoManager)currentUM);
-        }
-        UndoManager um = new UndoManager();
-        editor.getDocument().addUndoableEditListener(um);
-        editor.getDocument().putProperty(BaseDocument.UNDO_MANAGER_PROP, um);
+        // #118038
+        // The following code was disabled because there was no corresponding restoring
+        // of the undo/redo actions that this code overrides.
+        // The editor was extended to have default handling of undo/redo for standalone editor panes.
+//         don't use global undo/redo actions, register basic ones
+//        KeyStroke[] undoKeys = new KeyStroke[] { KeyStroke.getKeyStroke(KeyEvent.VK_UNDO, 0),
+//                                                 KeyStroke.getKeyStroke(KeyEvent.VK_Z, 130) };
+//        KeyStroke[] redoKeys = new KeyStroke[] { KeyStroke.getKeyStroke(KeyEvent.VK_AGAIN, 0),
+//                                                 KeyStroke.getKeyStroke(KeyEvent.VK_Y, 130) };
+//        Keymap keymap = editor.getKeymap();
+//        Action undoAction = new ActionFactory.UndoAction();
+//        for (KeyStroke k : undoKeys) {
+//            keymap.removeKeyStrokeBinding(k);
+//            keymap.addActionForKeyStroke(k, undoAction);
+//        }
+//        Action redoAction = new ActionFactory.RedoAction();
+//        for (KeyStroke k : redoKeys) {
+//            keymap.removeKeyStrokeBinding(k);
+//            keymap.addActionForKeyStroke(k, redoAction);
+//        }
+//        Object currentUM = editor.getDocument().getProperty(BaseDocument.UNDO_MANAGER_PROP);
+//        if (currentUM instanceof UndoManager) {
+//            editor.getDocument().removeUndoableEditListener((UndoManager)currentUM);
+//        }
+//        UndoManager um = new UndoManager();
+//        editor.getDocument().addUndoableEditListener(um);
+//        editor.getDocument().putProperty(BaseDocument.UNDO_MANAGER_PROP, um);
     }
 
     // ---------

@@ -1,103 +1,690 @@
 <?xml version="1.0" encoding="utf-8"?>
+
+<!--
+ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ 
+ Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ 
+ The contents of this file are subject to the terms of either the GNU
+ General Public License Version 2 only ("GPL") or the Common
+ Development and Distribution License("CDDL") (collectively, the
+ "License"). You may not use this file except in compliance with the
+ License. You can obtain a copy of the License at
+ http://www.netbeans.org/cddl-gplv2.html
+ or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ specific language governing permissions and limitations under the
+ License.  When distributing the software, include this License Header
+ Notice in each file and include the License file at
+ nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ particular file as subject to the "Classpath" exception as provided
+ by Sun in the GPL Version 2 section of the License file that
+ accompanied this code. If applicable, add the following below the
+ License Header, with the fields enclosed by brackets [] replaced by
+ your own identifying information:
+ "Portions Copyrighted [year] [name of copyright owner]"
+ 
+ Contributor(s):
+ 
+ The Original Software is NetBeans. The Initial Developer of the Original
+ Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ Microsystems, Inc. All Rights Reserved.
+ 
+ If you wish your version of this file to be governed by only the CDDL
+ or only the GPL Version 2, indicate your decision by adding
+ "[Contributor] elects to include this software in this distribution
+ under the [CDDL or GPL Version 2] license." If you do not indicate a
+ single choice of license, a recipient has the option to distribute
+ your version of this file under either the CDDL, the GPL Version 2 or
+ to extend the choice of license to its licensees as provided above.
+ However, if you add GPL Version 2 code and therefore, elected the GPL
+ Version 2 license, then the option applies only if the new code is
+ made subject to such option by the copyright holder.
+-->
+
 <application xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	     xmlns:xsd="http://www.w3.org/2001/XMLSchema"
 	     xsi:schemaLocation="http://research.sun.com/wadl/2006/10 
-                    ../../../../../../../../../../websvc.saas.api/src/org/netbeans/modules/websvc/saas/model/wadl20061109.xsd"
-	     xmlns="http://research.sun.com/wadl/2006/10">
-    <grammars/>    
+                    https://wadl.dev.java.net/wadl20061109.xsd"
+	     xmlns="http://research.sun.com/wadl/2006/10"
+             xmlns:z="urn:zvents:zventsresponse" >
+    <grammars>
+        <include href="ZventsResponse.xsd"/>
+    </grammars>
     <resources base="http://www.zvents.com/rest">
-        <resource path="search">
-            <method name="GET" id="searchGet">
-                <doc xml:lang="en">
-                    Search for events based on the type indicated in the &quot;what&quot; parameter.
-                    API documentation :  http://corporate.zvents.com/developers/documentation/search.html  
-                </doc>
+        <resource path="event">
+            <method name="GET" id="getEvent">
                 <request>
-                    <param name="key" type="xsd:string" required="true" style="query">
-                    </param>
-                    <param name="what" type="xsd:string" required="false" style="query">
-                        <doc xml:lang="en">
-                            A string indicating the type of event, such as &quot;parade&quot;
-                            or &quot;dancing&quot;.
-                        </doc>
-                    </param>
-                    <param name="where" type="xsd:string" required="false" style="query">
-                        <doc xml:lang="en">
-                            A string describing a location around which the search results will be 
-                            restricted. (e.g., san francisco, ca or 94131). You can also specify a 
-                            location using a longitude/latitude coordinate pair using the notation -74.0:BY:40.9
-                        </doc>
-                    </param>
-                    <param name="when" type="xsd:string" required="false" style="query">
-                        <doc xml:lang="en">
-                            A string specifying a date range for the search (e.g., today, this week, next week, 
-                            friday, etc.). Explicit date ranges can be specified by separating two dates with the word 
-                            "to" (e.g., monday to thursday, 10/30/2007 to 11/4/2007). Leave this string blank to search all future events.
-                        </doc>
-                    </param>
-                    <param name="radius" type="xsd:string" required="false" style="query">
-                        <doc xml:lang="en">
-                            The number of miles around the location (specified in the where field) to search. 
-                            If this field is left blank, a default radius is supplied. The default raidus varies 
-                            according to the location specified in the where field.
-                        </doc>
-                    </param>
-                    <param name="limit" type="xsd:string" required="false" style="query">
-                        <doc xml:lang="en">
-                            The maximum number of matching events to return. The default is 10 and maximum is 25.
-                        </doc>
-                    </param>
-                    <param name="offset" type="xsd:string" required="false" style="query">
-                        <doc xml:lang="en">
-                            The number of events to skip from the beginning of the search results. 
-                            If a search matches 1000 events, returning 25 events starting at offset 100 will
-                            return event numbers 100-125 that match the search..
-                        </doc>
-                    </param>
-                    <param name="trim" type="xsd:string" required="false" style="query">
-                        <doc xml:lang="en">
-                            Set to 1 if repeating events should be trimmed from the search results. 
-                            Set to 0 to return repeating events. If the trim option is enabled, only 1 
-                            event will be returned from each repeating series that matches the search. 
-                            The number of events within the series that match the search is returned in the
-                            series_count response parameter. Defaults to 1.
-                        </doc>
-                    </param>
-                    <param name="sort" type="xsd:string" required="false" style="query">
-                        <doc xml:lang="en">
-                           Set to 1 to sort search results by time. Set to 0 to sort search results by relevance. Defaults to 0.
-                        </doc>
-                    </param>
-                    <param name="cat" type="xsd:string" required="false" style="query">
-                        <doc xml:lang="en">
-                            Restrict your search to items that belong to a specific category. 
-                            You must provide a category identifier which can be determined using the categories API call.
-                        </doc>
-                    </param>
-                    <param name="catex" type="xsd:string" required="false" style="query">
-                        <doc xml:lang="en">
-                            Exclude items from a specific category from the search. 
-                            You must provide a category identifier which can be determined using the categories API call.
-                        </doc>
-                    </param>
-                    <param name="cc" type="xsd:string" required="false" style="query">
-                        <doc xml:lang="en">
-                            Set to 1 to include category information in the search results. This will 
-                            give you the list of categories within the search result set. You can search 
-                            within a specific category using the cat option. Defaults to 0.
-                        </doc>
-                    </param>
-                    <param name="rec" type="xsd:string" required="false" style="query">
-                        <doc xml:lang="en">
-                           Set to 1 to include a list of events within the same repeat series that 
-                           occur within the time range of the search. Defaults to 0.
-                        </doc>
-                    </param>		
+                    <param name="key" type="xsd:string" required="true" style="query"/>
+                    <param name="id" type="xsd:integer" required="true" style="query"/>
+                    <param name="rec" type="xsd:integer" required="false" style="query"/>
                 </request>
                 <response>
+                    <representation mediaType="text/xml" element="z:rsp"/>
+                </response>
+            </method>
+        </resource>
+        <resource path="event_new">
+            <method name="POST" id="newEvent">
+                <request>
+                    <param name="key" type="xsd:string" required="true" style="query"/>
+                    <param name="name" type="xsd:string" required="true" style="query"/>
+                    <param name="description" type="xsd:string" required="false" style="query"/>
+                    <param name="venue_id" type="xsd:integer" required="true" style="query"/>
+                    <param name="starttime" type="xsd:integer" required="true" style="query"/>
+                    <param name="endtime" type="xsd:integer" required="false" style="query"/>
+                    <param name="url" type="xsd:string" required="false" style="query"/>
+                    <param name="price" type="xsd:string" required="false" style="query"/>
+                </request>
+                <response>
+                    <representation mediaType="text/xml" element="z:rsp"/>
+                </response>
+            </method>
+        </resource>
+        <resource path="event_update">
+            <method name="POST" id="updateEvent">
+                <request>
+                    <param name="key" type="xsd:string" required="true" style="query"/>
+                    <param name="id" type="xsd:integer" required="true" style="query"/>
+                    <param name="name" type="xsd:string" required="true" style="query"/>
+                    <param name="description" type="xsd:string" required="false" style="query"/>
+                    <param name="venue_id" type="xsd:integer" required="true" style="query"/>
+                    <param name="starttime" type="xsd:integer" required="true" style="query"/>
+                    <param name="endtime" type="xsd:integer" required="false" style="query"/>
+                    <param name="url" type="xsd:string" required="false" style="query"/>
+                    <param name="price" type="xsd:string" required="false" style="query"/>
+                </request>
+                <response>
+                    <representation mediaType="text/xml" element="z:rsp"/>
+                </response>
+            </method>
+        </resource>
+        <resource path="event_cancel">
+            <method name="POST" id="cancelEvent">
+                <request>
+                    <param name="key" type="xsd:string" required="true" style="query"/>
+                    <param name="id" type="xsd:integer" required="true" style="query"/>
+                    <param name="message" type="xsd:string" required="false" style="query"/>
+                </request>
+                <response>
+                    <representation mediaType="text/xml" element="z:rsp"/>
+                </response>
+            </method>
+        </resource>
+        <resource path="event_delete">
+            <method name="POST" id="deleteEvent">
+                <request>
+                    <param name="key" type="xsd:string" required="true" style="query"/>
+                    <param name="id" type="xsd:integer" required="true" style="query"/>
+                    <param name="message" type="xsd:string" required="false" style="query"/>
+                </request>
+                <response>
+                    <representation mediaType="text/xml" element="z:rsp"/>
+                </response>
+            </method>
+        </resource>
+        <resource path="event_tags">
+            <method name="GET" id="getEventTags">
+                <request>
+                    <param name="key" type="xsd:string" required="true" style="query"/>
+                    <param name="id" type="xsd:integer" required="true" style="query"/>
+                </request>
+                <response>
+                    <representation mediaType="text/xml" element="z:rsp"/>
+                </response>
+            </method>
+        </resource>
+        <resource path="event_categories">
+            <method name="GET" id="getEventCategories">
+                <request>
+                    <param name="key" type="xsd:string" required="true" style="query"/>
+                    <param name="id" type="xsd:integer" required="true" style="query"/>
+                </request>
+                <response>
+                    <representation mediaType="text/xml" element="z:rsp"/>
+                </response>
+            </method>
+        </resource>
+        <resource path="event_groups">
+            <method name="GET" id="getEventGroups">
+                <request>
+                    <param name="key" type="xsd:string" required="true" style="query"/>
+                    <param name="id" type="xsd:integer" required="true" style="query"/>
+                </request>
+                <response>
+                    <representation mediaType="text/xml" element="z:rsp"/>
+                </response>
+            </method>
+        </resource>
+        <resource path="event_add_tags">
+            <method name="POST" id="addEventTags">
+                <request>
+                    <param name="key" type="xsd:string" required="true" style="query"/>
+                    <param name="id" type="xsd:integer" required="true" style="query"/>
+                    <param name="tag" type="xsd:string" required="true" style="query"/>
+                </request>
+                <response>
+                    <representation mediaType="text/xml" element="z:rsp"/>
+                </response>
+            </method>
+        </resource>
+        <resource path="event_remove_tags">
+            <method name="POST" id="removeEventTags">
+                <request>
+                    <param name="key" type="xsd:string" required="true" style="query"/>
+                    <param name="id" type="xsd:integer" required="true" style="query"/>
+                    <param name="tag" type="xsd:string" required="true" style="query"/>
+                </request>
+                <response>
+                    <representation mediaType="text/xml" element="z:rsp"/>
+                </response>
+            </method>
+        </resource>
+        <resource path="search">
+            <method name="GET" id="searchEvents">
+                <request>
+                    <param name="key" type="xsd:string" required="true" style="query"/>
+                    <param name="what" type="xsd:string" required="false" style="query"/>
+                    <param name="where" type="xsd:string" required="false" style="query"/>
+                    <param name="when" type="xsd:string" required="false" style="query"/>
+                    <param name="radius" type="xsd:float" required="false" style="query"/>
+                    <param name="limit" type="xsd:integer" required="false" style="query"/>
+                    <param name="offset" type="xsd:integer" required="false" style="query"/>
+                    <param name="trim" type="xsd:integer" required="false" style="query"/>
+                    <param name="sort" type="xsd:integer" required="false" style="query"/>
+                    <param name="cat" type="xsd:integer" required="false" style="query"/>
+                    <param name="catex" type="xsd:integer" required="false" style="query"/>
+                    <param name="rec" type="xsd:integer" required="false" style="query"/>
+                </request>
+                <response>
+                    <representation mediaType="text/xml" element="z:rsp"/>
+                </response>
+            </method>
+        </resource>
+        <resource path="search_for_venues">
+            <method name="GET" id="searchVenues">
+                <doc xml:lang="en">
+                    Search for venues based on the type indicated in the &quot;what&quot; parameter.
+                    API documentation :  http://corporate.zvents.com/developers/documentation/search.html
+                </doc>
+                <request>
+                    <param name="key" type="xsd:string" required="true" style="query"/>
+                    <param name="what" type="xsd:string" required="false" style="query"/>
+                    <param name="where" type="xsd:string" required="false" style="query"/>
+                    <param name="radius" type="xsd:float" required="false" style="query"/>
+                    <param name="limit" type="xsd:integer" required="false" style="query"/>
+                    <param name="offset" type="xsd:integer" required="false" style="query"/>
+                    <param name="vt" type="xsd:integer" required="false" style="query"/>
+                </request>
+                <response>
+                    <representation mediaType="text/xml" element="z:rsp"/>
+                </response>
+            </method>
+        </resource>
+        <resource path="search_within_group">
+            <method name="GET" id="searchWithinGroup">
+                <doc xml:lang="en">
+                    Search for venues based on the type indicated in the &quot;what&quot; parameter.
+                    API documentation :  http://corporate.zvents.com/developers/documentation/search.html
+                </doc>
+                <request>
+                    <param name="key" type="xsd:string" required="true" style="query"/>
+                    <param name="id" type="xsd:integer" required="true" style="query"/>
+                    <param name="what" type="xsd:string" required="false" style="query"/>
+                    <param name="where" type="xsd:string" required="false" style="query"/>
+                    <param name="when" type="xsd:string" required="false" style="query"/>
+                    <param name="radius" type="xsd:float" required="false" style="query"/>
+                    <param name="limit" type="xsd:integer" required="false" style="query"/>
+                    <param name="offset" type="xsd:integer" required="false" style="query"/>
+                    <param name="trim" type="xsd:integer" required="false" style="query"/>
+                    <param name="sort" type="xsd:integer" required="false" style="query"/>
+                    <param name="cat" type="xsd:integer" required="false" style="query"/>
+                    <param name="catex" type="xsd:integer" required="false" style="query"/>
+                    <param name="rec" type="xsd:integer" required="false" style="query"/>
+                </request>
+                <response>
+                    <representation mediaType="text/xml" element="z:rsp"/>
+                </response>
+            </method>
+        </resource>
+        <resource path="categories">
+            <method name="GET" id="getCategories">
+                <request>
+                    <param name="key" type="xsd:string" required="true" style="query"/>
+                </request>
+                <response>
+                    <representation mediaType="text/xml" element="z:rsp"/>
+                </response>
+            </method>
+        </resource>
+        <resource path="venue_types">
+            <method name="GET" id="getVenueCategories">
+                <request>
+                    <param name="key" type="xsd:string" required="true" style="query"/>
+                </request>
+                <response>
+                    <representation mediaType="text/xml" element="z:rsp"/>
+                </response>
+            </method>
+        </resource>
+        <resource path="venue">
+            <method name="GET" id="getVenue">
+                <request>
+                    <param name="key" type="xsd:string" required="true" style="query"/>
+                    <param name="id" type="xsd:integer" required="true" style="query"/>
+                </request>
+                <response>
+                    <representation mediaType="text/xml" element="z:rsp"/>
+                </response>
+            </method>
+        </resource>
+        <resource path="venue_new">
+            <method name="POST" id="newVenue">
+                <request>
+                    <param name="key" type="xsd:string" required="true" style="query"/>
+                    <param name="name" type="xsd:string" required="true" style="query"/>
+                    <param name="description" type="xsd:string" required="false" style="query"/>
+                    <param name="url" type="xsd:string" required="true" style="query"/>
+                    <param name="phone" type="xsd:string" required="false" style="query"/>
+                    <param name="address" type="xsd:string" required="false" style="query"/>
+                    <param name="city" type="xsd:string" required="false" style="query"/>
+                    <param name="state" type="xsd:string" required="false" style="query"/>
+                    <param name="country" type="xsd:string" required="false" style="query"/>
+                    <param name="zipcode" type="xsd:string" required="false" style="query"/>
+                    <param name="timezone" type="xsd:string" required="false" style="query"/>
+                    <param name="latitude" type="xsd:float" required="false" style="query"/>
+                    <param name="longitude" type="xsd:float" required="false" style="query"/>
+                </request>
+                <response>
+                    <representation mediaType="text/xml" element="z:rsp"/>
+                </response>
+            </method>
+        </resource>
+        <resource path="venue_update">
+            <method name="POST" id="updateVenue">
+                <request>
+                    <param name="key" type="xsd:string" required="true" style="query"/>
+                    <param name="id" type="xsd:integer" required="true" style="query"/>
+                    <param name="name" type="xsd:string" required="false" style="query"/>
+                    <param name="description" type="xsd:string" required="false" style="query"/>
+                    <param name="url" type="xsd:string" required="true" style="query"/>
+                    <param name="phone" type="xsd:string" required="false" style="query"/>
+                    <param name="address" type="xsd:string" required="false" style="query"/>
+                    <param name="city" type="xsd:string" required="false" style="query"/>
+                    <param name="state" type="xsd:string" required="false" style="query"/>
+                    <param name="country" type="xsd:string" required="false" style="query"/>
+                    <param name="zipcode" type="xsd:string" required="false" style="query"/>
+                    <param name="timezone" type="xsd:string" required="false" style="query"/>
+                    <param name="latitude" type="xsd:float" required="false" style="query"/>
+                    <param name="longitude" type="xsd:float" required="false" style="query"/>
+                </request>
+                <response>
+                    <representation mediaType="text/xml" element="z:rsp"/>
+                </response>
+            </method>
+        </resource>
+        <resource path="venue_events">
+            <method name="GET" id="getVenueEvents">
+                <request>
+                    <param name="key" type="xsd:string" required="true" style="query"/>
+                    <param name="id" type="xsd:integer" required="true" style="query"/>
+                    <param name="limit" type="xsd:integer" required="false" style="query"/>
+                    <param name="offset" type="xsd:integer" required="false" style="query"/>
+                    <param name="sd" type="xsd:string" required="false" style="query"/>
+                    <param name="ed" type="xsd:integer" required="false" style="query"/>
+                    <param name="st" type="xsd:string" required="false" style="query"/>
+                    <param name="et" type="xsd:integer" required="false" style="query"/>
+                </request>
+                <response>
+                    <representation mediaType="text/xml" element="z:rsp"/>
+                </response>
+            </method>
+        </resource>
+        <resource path="venue_delete">
+            <method name="POST" id="deleteVenue">
+                <request>
+                    <param name="key" type="xsd:string" required="true" style="query"/>
+                    <param name="id" type="xsd:integer" required="true" style="query"/>
+                </request>
+                <response>
+                    <representation mediaType="text/xml" element="z:rsp"/>
+                </response>
+            </method>
+        </resource>
+        <resource path="venue_tags">
+            <method name="GET" id="getVenueTags">
+                <request>
+                    <param name="key" type="xsd:string" required="true" style="query"/>
+                    <param name="id" type="xsd:integer" required="true" style="query"/>
+                </request>
+                <response>
+                    <representation mediaType="text/xml" element="z:rsp"/>
+                </response>
+            </method>
+        </resource>
+        <resource path="group">
+            <method name="GET" id="getGroup">
+                <request>
+                    <param name="key" type="xsd:string" required="true" style="query"/>
+                    <param name="id" type="xsd:integer" required="true" style="query"/>
+                </request>
+                <response>
+                    <representation mediaType="text/xml" element="z:rsp"/>
+                </response>
+            </method>
+        </resource>
+        <resource path="group_new">
+            <method name="POST" id="newGroup">
+                <request>
+                    <param name="key" type="xsd:string" required="true" style="query"/>
+                    <param name="name" type="xsd:string" required="true" style="query"/>
+                    <param name="description" type="xsd:string" required="false" style="query"/>
+                    <param name="url" type="xsd:string" required="true" style="query"/>
+                    <param name="private" type="xsd:boolean" required="false" style="query"/>
+                    <param name="restrict_event_addition" type="xsd:integer" required="false" style="query"/>
+                </request>
+                <response>
+                    <representation mediaType="text/xml" element="z:rsp"/>
+                </response>
+            </method>
+        </resource>
+        <resource path="group_update">
+            <method name="POST" id="updateGroup">
+                <request>
+                    <param name="key" type="xsd:string" required="true" style="query"/>
+                    <param name="id" type="xsd:integer" required="true" style="query"/>
+                    <param name="name" type="xsd:string" required="false" style="query"/>
+                    <param name="description" type="xsd:string" required="false" style="query"/>
+                    <param name="url" type="xsd:string" required="true" style="query"/>
+                    <param name="private" type="xsd:boolean" required="false" style="query"/>
+                    <param name="restrict_event_addition" type="xsd:integer" required="false" style="query"/>
+                </request>
+                <response>
+                    <representation mediaType="text/xml" element="z:rsp"/>
+                </response>
+            </method>
+        </resource>
+        <resource path="event_delete">
+            <method name="POST" id="deleteGroup">
+                <request>
+                    <param name="key" type="xsd:string" required="true" style="query"/>
+                    <param name="id" type="xsd:integer" required="true" style="query"/>
+                </request>
+                <response>
+                    <representation mediaType="text/xml" element="z:rsp"/>
+                </response>
+            </method>
+        </resource>
+        <resource path="group_events">
+            <method name="GET" id="getGroupEvents">
+                <request>
+                    <param name="key" type="xsd:string" required="true" style="query"/>
+                    <param name="id" type="xsd:integer" required="true" style="query"/>
+                    <param name="limit" type="xsd:integer" required="false" style="query"/>
+                    <param name="offset" type="xsd:integer" required="false" style="query"/>
+                    <param name="sd" type="xsd:string" required="false" style="query"/>
+                    <param name="ed" type="xsd:integer" required="false" style="query"/>
+                    <param name="st" type="xsd:string" required="false" style="query"/>
+                    <param name="et" type="xsd:integer" required="false" style="query"/>
+                </request>
+                <response>
+                    <representation mediaType="text/xml" element="z:rsp"/>
+                </response>
+            </method>
+        </resource>
+        <resource path="group_tags">
+            <method name="GET" id="getGroupTags">
+                <request>
+                    <param name="key" type="xsd:string" required="true" style="query"/>
+                    <param name="id" type="xsd:integer" required="true" style="query"/>
+                </request>
+                <response>
+                    <representation mediaType="text/xml" element="z:rsp"/>
+                </response>
+            </method>
+        </resource>
+        <resource path="group_add_event">
+            <method name="POST" id="addGroupEvent">
+                <request>
+                    <param name="key" type="xsd:string" required="true" style="query"/>
+                    <param name="id" type="xsd:integer" required="true" style="query"/>
+                    <param name="eid" type="xsd:integer" required="true" style="query"/>
+                </request>
+                <response>
+                    <representation mediaType="text/xml" element="z:rsp"/>
+                </response>
+            </method>
+        </resource>
+        <resource path="group_remove_event">
+            <method name="POST" id="removeGroupEvent">
+                <request>
+                    <param name="key" type="xsd:string" required="true" style="query"/>
+                    <param name="id" type="xsd:integer" required="true" style="query"/>
+                    <param name="eid" type="xsd:integer" required="true" style="query"/>
+                </request>
+                <response>
+                    <representation mediaType="text/xml" element="z:rsp"/>
+                </response>
+            </method>
+        </resource>
+        <resource path="group_childgroups">
+            <method name="get" id="getChildGroups">
+                <request>
+                    <param name="key" type="xsd:string" required="true" style="query"/>
+                    <param name="id" type="xsd:integer" required="true" style="query"/>
+                </request>
+                <response>
+                    <representation mediaType="text/xml" element="z:rsp"/>
+                </response>
+            </method>
+        </resource>
+        <resource path="group_parent_groups">
+            <method name="GET" id="getParentGroups">
+                <request>
+                    <param name="key" type="xsd:string" required="true" style="query"/>
+                    <param name="id" type="xsd:integer" required="true" style="query"/>
+                </request>
+                <response>
+                    <representation mediaType="text/xml" element="z:rsp"/>
+                </response>
+            </method>
+        </resource>
+        <resource path="group_add_parentgroup">
+            <method name="POST" id="addParentGroup">
+                <request>
+                    <param name="key" type="xsd:string" required="true" style="query"/>
+                    <param name="id" type="xsd:integer" required="true" style="query"/>
+                    <param name="pgid" type="xsd:integer" required="true" style="query"/>
+                </request>
+                <response>
+                    <representation mediaType="text/xml" element="z:rsp"/>
+                </response>
+            </method>
+        </resource>
+        <resource path="group_remove_parentgroup">
+            <method name="POST" id="removeParentGroup">
+                <request>
+                    <param name="key" type="xsd:string" required="true" style="query"/>
+                    <param name="id" type="xsd:integer" required="true" style="query"/>
+                    <param name="pgid" type="xsd:integer" required="true" style="query"/>
+                </request>
+                <response>
+                    <representation mediaType="text/xml" element="z:rsp"/>
+                </response>
+            </method>
+        </resource>
+        <resource path="group_venues">
+            <method name="GET" id="getGroupVenues">
+                <request>
+                    <param name="key" type="xsd:string" required="true" style="query"/>
+                    <param name="id" type="xsd:integer" required="true" style="query"/>
+                </request>
+                <response>
+                    <representation mediaType="text/xml" element="z:rsp"/>
+                </response>
+            </method>
+        </resource>
+        <resource path="group_add_venue">
+            <method name="POST" id="addGroupVenue">
+                <request>
+                    <param name="key" type="xsd:string" required="true" style="query"/>
+                    <param name="id" type="xsd:integer" required="true" style="query"/>
+                    <param name="vid" type="xsd:integer" required="true" style="query"/>
+                </request>
+                <response>
+                    <representation mediaType="text/xml" element="z:rsp"/>
+                </response>
+            </method>
+        </resource>
+        <resource path="group_remove_venue">
+            <method name="POST" id="removeGroupVenue">
+                <request>
+                    <param name="key" type="xsd:string" required="true" style="query"/>
+                    <param name="id" type="xsd:integer" required="true" style="query"/>
+                    <param name="vid" type="xsd:integer" required="false" style="query"/>
+                </request>
+                <response>
+                    <representation mediaType="text/xml" element="z:rsp"/>
+                </response>
+            </method>
+        </resource>
+        <resource path="user">
+            <method name="GET" id="getUser">
+                <request>
+                    <param name="key" type="xsd:string" required="true" style="query"/>
+                    <param name="id" type="xsd:string" required="true" style="query"/>
+                </request>
+                <response>
+                    <representation mediaType="text/xml" element="z:rsp"/>
+                </response>
+            </method>
+        </resource>
+        <resource path="user_by_login">
+            <method name="GET" id="getUserByLogin">
+                <request>
+                    <param name="key" type="xsd:string" required="true" style="query"/>
+                    <param name="name" type="xsd:string" required="true" style="query"/>
+                </request>
+                <response>
+                    <representation mediaType="text/xml" element="z:rsp"/>
+                </response>
+            </method>
+        </resource>
+        <resource path="user_events">
+            <method name="GET" id="getUserEvents">
+                <request>
+                    <param name="key" type="xsd:string" required="true" style="query"/>
+                    <param name="id" type="xsd:string" required="true" style="query"/>
+                    <param name="limit" type="xsd:integer" required="false" style="query"/>
+                    <param name="offset" type="xsd:integer" required="false" style="query"/>
+                    <param name="sd" type="xsd:string" required="false" style="query"/>
+                    <param name="ed" type="xsd:integer" required="false" style="query"/>
+                    <param name="st" type="xsd:string" required="false" style="query"/>
+                    <param name="et" type="xsd:integer" required="false" style="query"/>
+                </request>
+                <response>
+                    <representation mediaType="text/xml" element="z:rsp"/>
+                </response>
+            </method>
+        </resource>
+        <resource path="user_add_event">
+            <method name="POST" id="addUserEvent">
+                <request>
+                    <param name="key" type="xsd:string" required="true" style="query"/>
+                    <param name="id" type="xsd:integer" required="true" style="query"/>
+                </request>
+                <response>
+                    <representation mediaType="text/xml" element="z:rsp"/>
+                </response>
+            </method>
+        </resource>
+        <resource path="user_remove_event">
+            <method name="POST" id="removeUserEvent">
+                <request>
+                    <param name="key" type="xsd:string" required="true" style="query"/>
+                    <param name="id" type="xsd:integer" required="true" style="query"/>
+                </request>
+                <response>
+                    <representation mediaType="text/xml" element="z:rsp"/>
+                </response>
+            </method>
+        </resource>
+        <resource path="user_created_events">
+            <method name="GET" id="getUserCreatedEvents">
+                <request>
+                    <param name="key" type="xsd:string" required="true" style="query"/>
+                    <param name="id" type="xsd:string" required="true" style="query"/>
+                    <param name="limit" type="xsd:integer" required="false" style="query"/>
+                    <param name="offset" type="xsd:integer" required="false" style="query"/>
+                    <param name="sd" type="xsd:string" required="false" style="query"/>
+                    <param name="ed" type="xsd:integer" required="false" style="query"/>
+                    <param name="st" type="xsd:string" required="false" style="query"/>
+                    <param name="et" type="xsd:integer" required="false" style="query"/>
+                </request>
+                <response>
+                    <representation mediaType="text/xml" element="z:rsp"/>
+                </response>
+            </method>
+        </resource>
+        <resource path="user_contacts">
+            <method name="GET" id="getUserContacts">
+                <request>
+                    <param name="key" type="xsd:string" required="true" style="query"/>
+                    <param name="id" type="xsd:string" required="true" style="query"/>
+                </request>
+                <response>
+                    <representation mediaType="text/xml" element="z:rsp"/>
+                </response>
+            </method>
+        </resource>
+        <resource path="user_groups">
+            <method name="GET" id="getUserGroups">
+                <request>
+                    <param name="key" type="xsd:string" required="true" style="query"/>
+                    <param name="id" type="xsd:string" required="true" style="query"/>
+                </request>
+                <response>
+                    <representation mediaType="text/xml" element="z:rsp"/>
+                </response>
+            </method>
+        </resource>
+        <resource path="tag">
+            <method name="GET" id="getTag">
+                <request>
+                    <param name="key" type="xsd:string" required="true" style="query"/>
+                    <param name="id" type="xsd:integer" required="true" style="query"/>
+                </request>
+                <response>
+                    <representation mediaType="text/xml" element="z:rsp"/>
+                </response>
+            </method>
+        </resource>
+        <resource path="tag_by_name">
+            <method name="GET" id="getTagByName">
+                <request>
+                    <param name="key" type="xsd:string" required="true" style="query"/>
+                    <param name="name" type="xsd:string" required="true" style="query"/>
+                </request>
+                <response>
+                    <representation mediaType="text/xml" element="z:rsp"/>
+                </response>
+            </method>
+        </resource>
+        <resource path="tag_events">
+            <method name="GET" id="getTagEvents">
+                <request>
+                    <param name="key" type="xsd:string" required="true" style="query"/>
+                    <param name="id" type="xsd:integer" required="true" style="query"/>
+                    <param name="limit" type="xsd:integer" required="false" style="query"/>
+                    <param name="offset" type="xsd:integer" required="false" style="query"/>
+                    <param name="sd" type="xsd:string" required="false" style="query"/>
+                    <param name="ed" type="xsd:integer" required="false" style="query"/>
+                    <param name="st" type="xsd:string" required="false" style="query"/>
+                    <param name="et" type="xsd:integer" required="false" style="query"/>
+                </request>
+                <response>
+                    <representation mediaType="text/xml" element="z:rsp"/>
                 </response>
             </method>
         </resource>
     </resources>
-
 </application>

@@ -41,42 +41,29 @@
 
 package org.netbeans.modules.debugger.jpda.projects;
 
-import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import java.util.Collections;
 import java.util.Set;
-import javax.swing.AbstractAction;
-import javax.swing.Action;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.debugger.ActionsManager;
 
 
-import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerEngine;
-
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
 
-import org.netbeans.api.debugger.DebuggerManagerListener;
-import org.netbeans.spi.debugger.ContextProvider;
-import org.netbeans.api.debugger.Session;
-import org.netbeans.api.debugger.Watch;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
-
 import org.netbeans.api.debugger.jpda.LineBreakpoint;
-import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
-import org.netbeans.spi.debugger.ActionsProvider;
-import org.netbeans.spi.debugger.ActionsProviderListener;
 import org.netbeans.spi.debugger.ActionsProviderSupport;
 import org.netbeans.spi.debugger.jpda.EditorContext;
+import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.ErrorManager;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.util.RequestProcessor;
-
-import org.openide.windows.TopComponent;
+import org.openide.util.WeakListeners;
 
 
 /**
@@ -85,15 +72,16 @@ import org.openide.windows.TopComponent;
 */
 public class RunToCursorActionProvider extends ActionsProviderSupport {
     
-    private EditorContext       editor;
-    private LineBreakpoint      breakpoint;
+    private EditorContextDispatcher editorContext;
+    private LineBreakpoint          breakpoint;
     
     {
-        editor = DebuggerManager.getDebuggerManager().lookupFirst(null, EditorContext.class);
+        editorContext = EditorContextDispatcher.getDefault();
         
         Listener listener = new Listener ();
         MainProjectManager.getDefault ().addPropertyChangeListener (listener);
-        TopComponent.getRegistry ().addPropertyChangeListener (listener);
+        editorContext.addPropertyChangeListener("text/x-java",
+                WeakListeners.propertyChange(listener, editorContext));
         DebuggerManager.getDebuggerManager ().addDebuggerListener (
             DebuggerManager.PROP_DEBUGGER_ENGINES,
             listener
@@ -121,8 +109,8 @@ public class RunToCursorActionProvider extends ActionsProviderSupport {
         // 1) set breakpoint
         removeBreakpoint ();
         createBreakpoint (LineBreakpoint.create (
-            editor.getCurrentURL (),
-            editor.getCurrentLineNumber ()
+            editorContext.getCurrentURLAsString(),
+            editorContext.getCurrentLineNumber ()
         ));
         
         // 2) start debugging of project
@@ -131,8 +119,8 @@ public class RunToCursorActionProvider extends ActionsProviderSupport {
     
     public void postAction(Object action, final Runnable actionPerformedNotifier) {
         final LineBreakpoint newBreakpoint = LineBreakpoint.create (
-            editor.getCurrentURL (),
-            editor.getCurrentLineNumber ()
+            editorContext.getCurrentURLAsString(),
+            editorContext.getCurrentLineNumber ()
         );
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
@@ -167,8 +155,9 @@ public class RunToCursorActionProvider extends ActionsProviderSupport {
     }
     
     private boolean shouldBeEnabled () {
-        if (editor.getCurrentLineNumber () < 0) return false;
-        if (!editor.getCurrentURL ().endsWith (".java")) return false;
+        if (editorContext.getCurrentLineNumber () < 0) return false;
+        FileObject fo = editorContext.getCurrentFile();
+        if (fo == null || !fo.hasExt("java")) return false;
         
         // check if current project supports this action
         Project p = MainProjectManager.getDefault ().getMainProject ();

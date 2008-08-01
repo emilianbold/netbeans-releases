@@ -43,21 +43,16 @@ package org.netbeans.modules.db.explorer.infos;
 
 import java.sql.*;
 import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
-import org.openide.nodes.Node;
 
-import org.netbeans.lib.ddl.*;
 import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.lib.ddl.impl.*;
-import org.netbeans.modules.db.explorer.DatabaseNodeChildren;
-import org.netbeans.modules.db.explorer.infos.*;
 import org.netbeans.modules.db.explorer.nodes.*;
 
 public class ForeignKeyNodeInfo extends TableNodeInfo {
     static final long serialVersionUID =-8633867970381524742L;
 
+    @Override
     public void initChildren(Vector children) throws DatabaseException {
         try {
             String table = (String)get(DatabaseNode.TABLE);
@@ -76,7 +71,7 @@ public class ForeignKeyNodeInfo extends TableNodeInfo {
 
                             if (info != null) {
                                 String tempTName = (String) rset.get(new Integer(3));
-                                tempTName = (tempTName == "") ? "" : tempTName + "."; // NOI18N
+                                tempTName = tempTName.equals("") ? "" : tempTName + "."; // NOI18N
                                 info.setName(info.getName() + " -> " + tempTName + ((String) rset.get(new Integer(4)))); // NOI18N
                                 children.add(info);
                             } else
@@ -91,34 +86,9 @@ public class ForeignKeyNodeInfo extends TableNodeInfo {
         }
     }
 
-    public void refreshChildren() throws DatabaseException
-    {
-        // create list (infos)
-        Vector charr = new Vector();
-        put(DatabaseNodeInfo.CHILDREN, charr);
-        initChildren(charr);
-        
-        // create sub-tree (by infos)
-        try {
-
-            Node[] subTreeNodes = new Node[charr.size()];
-
-            // current sub-tree
-            DatabaseNodeChildren children = (DatabaseNodeChildren)getNode().getChildren();
-
-            // remove current sub-tree
-            children.remove(children.getNodes());
-
-            // build refreshed sub-tree
-            for(int i=0; i<charr.size(); i++)
-                subTreeNodes[i] = children.createNode((DatabaseNodeInfo)charr.elementAt(i));
-
-            // add built sub-tree
-            children.add(subTreeNodes);
-
-        } catch (Exception ex) {
-            Logger.getLogger("global").log(Level.INFO, null, ex);
-        }
+    @Override
+    public String getShortDescription() {
+        return bundle().getString("ND_ForeignKey"); //NOI18N
     }
 
 }

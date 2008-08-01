@@ -137,6 +137,7 @@ public class SourceMultiViewElement extends CloneableEditor
             }
         };
         myLookup = Lookups.fixed(showCookie);
+        
     }
     
     public JComponent getToolbarRepresentation() {
@@ -154,6 +155,7 @@ public class SourceMultiViewElement extends CloneableEditor
         return this;
     }
     
+    @Override
     public void updateName() {
         super.updateName();
         //update html displayname of the main multiview component
@@ -211,6 +213,7 @@ public class SourceMultiViewElement extends CloneableEditor
         setActivatedNodes(new Node[] {});
     }
     
+    @Override
     public void open() {
         if (multiViewCallback != null) {
             multiViewCallback.requestVisible();

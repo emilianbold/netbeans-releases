@@ -171,6 +171,8 @@ public class ASPanel extends DestinationPanel {
                 DEFAULT_ERROR_HTTP_EQUALS_ADMIN);
         setProperty(ERROR_HTTPS_EQUALS_ADMIN_PROPERTY,
                 DEFAULT_ERROR_HTTPS_EQUALS_ADMIN);
+        setProperty(ERROR_UNC_PATH_UNSUPPORTED_PROPERTY,
+                DEFAULT_ERROR_UNC_PATH_UNSUPPORTED);
         
         setProperty(WARNING_PORT_IN_USE_PROPERTY,
                 DEFAULT_WARNING_PORT_IN_USE);
@@ -639,7 +641,12 @@ public class ASPanel extends DestinationPanel {
                             f.getAbsolutePath());
                 }
             }
-            
+            //#137248: Glassfish installation failed while using UNC paths
+            if(SystemUtils.isWindows() && FileUtils.isUNCPath(f.getAbsolutePath())) {
+                return StringUtils.format(
+                        component.getProperty(ERROR_UNC_PATH_UNSUPPORTED_PROPERTY),
+                        f.getAbsolutePath());
+            }
             return null;
         }
         
@@ -1227,6 +1234,8 @@ public class ASPanel extends DestinationPanel {
             "error.http.equals.admin"; // NOI18N
     public static final String ERROR_HTTPS_EQUALS_ADMIN_PROPERTY =
             "error.https.equals.admin"; // NOI18N
+    public static final String ERROR_UNC_PATH_UNSUPPORTED_PROPERTY =
+            "error.unc.path.unsupported"; // NOI18N
     
     public static final String WARNING_PORT_IN_USE_PROPERTY =
             "warning.port.in.use"; // NOI18N
@@ -1299,6 +1308,9 @@ public class ASPanel extends DestinationPanel {
     public static final String DEFAULT_ERROR_HTTPS_EQUALS_ADMIN =
             ResourceUtils.getString(ASPanel.class,
             "AS.error.https.equals.admin"); // NOI18N
+    public static final String DEFAULT_ERROR_UNC_PATH_UNSUPPORTED =
+            ResourceUtils.getString(ASPanel.class,
+            "AS.error.unc.path.unsupported"); // NOI18N
     
     public static final String DEFAULT_WARNING_PORT_IN_USE =
             ResourceUtils.getString(ASPanel.class,

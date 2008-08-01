@@ -1,12 +1,7 @@
 
 
 Document 0
-Delete:  source : <TESTURL>/action_web_service.rb
+Searchable Keys:
 
-
-
-Document 1
-Indexed:
-
-Not Indexed:
+Not Searchable Keys:
   requires : action_controller,action_web_service/api,action_web_service/base,action_web_service/casting,action_web_service/client,action_web_service/container,action_web_service/dispatcher,action_web_service/invocation,action_web_service/protocol,action_web_service/scaffolding,action_web_service/struct,action_web_service/support/class_inheritable_options,action_web_service/support/signature_types,active_record,active_support,rubygems

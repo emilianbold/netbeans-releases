@@ -48,6 +48,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.mozilla.javascript.FunctionNode;
 import org.mozilla.javascript.Node;
 import org.mozilla.javascript.Token;
 
@@ -235,14 +236,64 @@ public class VariableVisitor implements ParseTreeVisitor {
             return null;
         }
 
+        /**
+         * Look through this scope chain, and when you find the scope corresponding
+         * to the given old function node, replace it with the new scope chain.
+         */
+        private void replace(FunctionNode oldFunction, FunctionNode newFunction, ScopeChain newScopeChain) {
+            Scope oldScope = findScope(oldFunction);
+            if (oldScope != null) {
+                Scope newScope = newScopeChain.findScope(newFunction);
+                if (newScope != null) {
+                    Scope parentScope = oldScope.parent;
+                    if (parentScope != null) {
+                        parentScope.nested.remove(oldScope);
+                        parentScope.nested.add(newScope);
+                        newScope.parent = parentScope;
+                    }
+                    int index = scopes.indexOf(oldScope);
+                    if (index != -1) {
+                        scopes.set(index, newScope);
+                    }
+                    index = roots.indexOf(newScope);
+                    if (index != -1) {
+                        roots.set(index, newScope);
+                    }
+                }
+            }
+        }
+
         @Override
         public String toString() {
             return "ScopeChain:" + roots;
         }
-    }
+   }
 
     public VariableVisitor() {
         //scopes.add(new Scope()); // Default scope - not necessary, root should be a SCRIPTNODE
+    }
+
+    /**
+     * Adjust this VariableVisitor for the given incremental parse info
+     */
+    void incrementalEdits(JsParseResult.IncrementalParse parseInfo) {
+        // Locate the scope with the given function
+
+        // TODO: update the scope chain, find the right
+
+        Node function = parseInfo.newFunction;
+        path = new AstPath();
+        ScopeChain oldScopes = scopes;
+        scopes = new ScopeChain();
+        new ParseTreeWalker(this).walk(function);
+
+        // Now place the new scope chain into the old scope chain, and
+
+        // Adding a new method in this function can change readaccess in outer scopes!!!
+        oldScopes.replace(parseInfo.oldFunction, parseInfo.newFunction, scopes);
+
+        scopes = oldScopes;
+
     }
 
     private Node getParent() {
@@ -315,7 +366,7 @@ public class VariableVisitor implements ParseTreeVisitor {
                         // Local
                         scope.locals.add(node.getString());
                     }
-                } else if (type == Token.CATCH_SCOPE) {
+                } else if (type == Token.CATCH) {
                     // It's a local variable defintion, or a variable in the catch clause
                     Scope scope = scopes.getCurrent();
                     scope.locals.add(node.getString());
@@ -331,7 +382,7 @@ public class VariableVisitor implements ParseTreeVisitor {
                     // A variable read
                     Scope scope = scopes.getCurrent();
                     String str = node.getString();
-                    if (!str.equals("undefined")) {
+                    if (!str.equals("undefined") && !str.equals("arguments") && !str.equals("debugger")) { // NOI18N
                         scope.readVars.add(str);
                     }
                 }

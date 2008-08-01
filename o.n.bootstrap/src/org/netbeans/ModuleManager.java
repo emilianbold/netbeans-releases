@@ -50,7 +50,6 @@ import java.security.CodeSource;
 import java.security.PermissionCollection;
 import java.security.Permissions;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -422,44 +421,15 @@ public final class ModuleManager {
     private static final class SystemClassLoader extends JarClassLoader {
 
         private final PermissionCollection allPermissions;
-        private final StringBuffer debugme;
         private boolean empty = true;
+        int size;
 
         public SystemClassLoader(List<File> files, ClassLoader[] parents, Set<Module> modules) throws IllegalArgumentException {
             super(files, parents, false);
             allPermissions = new Permissions();
             allPermissions.add(new AllPermission());
             allPermissions.setReadOnly();
-            debugme = new StringBuffer(100 + 50 * modules.size());
-            debugme.append("SystemClassLoader["); // NOI18N
-            for (File file : files) {
-                if (empty) {
-                    empty = false;
-                } else {
-                    debugme.append(','); // NOI18N
-                }
-                debugme.append(file.getAbsolutePath());
-            }
-            record(modules);
-            debugme.append(']'); // NOI18N
-        }
-
-        private void record(Collection<Module> modules) {
-	    for (Module m: modules) {
-                if (empty) {
-                    empty = false;
-                } else {
-                    debugme.append(','); // NOI18N
-                }
-                debugme.append(m.getCodeNameBase());
-            }
-        }
-
-        public void append(ClassLoader[] ls, List<Module> modules) throws IllegalArgumentException {
-            super.append(ls);
-            debugme.deleteCharAt(debugme.length() - 1);
-            record(modules);
-            debugme.append(']'); // NOI18N
+            size = modules.size();
         }
 
         protected @Override void finalize() throws Throwable {
@@ -468,10 +438,7 @@ public final class ModuleManager {
         }
 
         public @Override String toString() {
-            if (debugme == null) {
-                return "SystemClassLoader";
-            }
-            return debugme.toString();
+            return "SystemClassLoader[" + size + " modules]";
         }
 
         /** Provide all permissions for any code loaded from the files list
@@ -928,7 +895,8 @@ public final class ModuleManager {
                         }
                     }
                 }
-                classLoader.append((nueclassloaders.toArray(new ClassLoader[nueclassloaders.size()])), toEnable);
+                classLoader.append((nueclassloaders.toArray(new ClassLoader[nueclassloaders.size()])));
+                classLoader.size += toEnable.size();
             } else {
                 Util.err.fine("enable: no class loader yet, not appending");
             }

@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,13 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * Contributor(s):
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -41,39 +41,36 @@
 
 package customerdb.service;
 
-import javax.persistence.EntityManagerFactory;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
 import javax.persistence.EntityManager;
-import javax.persistence.EntityTransaction;
-import javax.persistence.Persistence;
-import javax.persistence.Query;
+import javax.transaction.UserTransaction;
 
 /**
  * Utility class for dealing with persistence.
  *
- * @author nam
+ * @author PeterLiu
  */
 public class PersistenceService {
     private static String DEFAULT_PU = "CustomerDBPU";
     
     private static ThreadLocal<PersistenceService> instance = new ThreadLocal<PersistenceService>() {
+        @Override
         protected PersistenceService initialValue() {
-            return new PersistenceService(DEFAULT_PU);
+            return new PersistenceService();
         }
     };
     
-    private EntityManagerFactory emf;
     private EntityManager em;
     
-    private PersistenceService(String puName) {
+    private UserTransaction utx;
+    
+    private PersistenceService() {
         try {
-            this.emf = Persistence.createEntityManagerFactory(puName);
-            this.em = emf.createEntityManager();
-        } catch (RuntimeException ex) {
-            if (emf != null) {
-                emf.close();
-            }
-            
-            throw ex;
+            this.em = (EntityManager) new InitialContext().lookup("java:comp/env/persistence/" + DEFAULT_PU);
+            this.utx = (UserTransaction) new InitialContext().lookup("java:comp/UserTransaction");
+        } catch (NamingException ex) {
+            throw new RuntimeException(ex);
         }
     }
     
@@ -86,88 +83,29 @@ public class PersistenceService {
         return instance.get();
     }
     
+    
     private static void removeInstance() {
         instance.remove();
     }
     
     /**
-     * Refreshes the state of the given entity from the database.
+     * Returns an instance of EntityManager.
      *
-     * @param entity the entity to refresh
+     * @return an instance of EntityManager
      */
-    public void refreshEntity(Object entity) {
-        em.refresh(entity);
-    }
-    
-    /**
-     * Merges the state of the given entity into the current persistence context.
-     *
-     * @param entity the entity to merge
-     * @return the merged entity
-     */
-    public <T> T mergeEntity(T entity) {
-        return (T) em.merge(entity);
-    }
-    
-    /**
-     * Makes the given entity managed and persistent.
-     *
-     * @param entity the entity to persist
-     */
-    public void persistEntity(Object entity) {
-        em.persist(entity);
-    }
-    
-    /**
-     * Removes the entity instance.
-     *
-     * @param entity the entity to remove
-     */
-    public void removeEntity(Object entity) {
-        em.remove(entity);
-    }
-    
-    /**
-     * Resolves the given entity to the actual entity instance in the current persistence context.
-     *
-     * @param entity the entity to resolve
-     * @return the resolved entity
-     */
-    public <T> T resolveEntity(T entity) {
-        entity = mergeEntity(entity);
-        em.refresh(entity);
-        
-        return entity;
-    }
-    
-    /**
-     * Returns an instance of Query for executing a named query.
-     *
-     * @param query the named query
-     * @return an instance of Query
-     */
-    public Query createNamedQuery(String query) {
-        return em.createNamedQuery(query);
-    }
-    
-    /**
-     * Returns an instance of Query for executing a query.
-     *
-     * @param query the query string
-     * @return an instance of Query
-     */
-    public Query createQuery(String query) {
-        return em.createQuery(query);
+    public EntityManager getEntityManager() {
+        return em;
     }
     
     /**
      * Begins a resource transaction.
      */
     public void beginTx() {
-        EntityTransaction tx = em.getTransaction();
-        
-        if (!tx.isActive()) {
-            tx.begin();
+        try {
+            utx.begin();
+            em.joinTransaction();
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
         }
     }
     
@@ -175,10 +113,10 @@ public class PersistenceService {
      * Commits a resource transaction.
      */
     public void commitTx() {
-        EntityTransaction tx = em.getTransaction();
-        
-        if (tx.isActive()) {
-            tx.commit();
+        try {
+            utx.commit();
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
         }
     }
     
@@ -186,10 +124,10 @@ public class PersistenceService {
      * Rolls back a resource transaction.
      */
     public void rollbackTx() {
-        EntityTransaction tx = em.getTransaction();
-        
-        if (tx.isActive()) {
-            tx.rollback();
+        try {
+            utx.rollback();
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
         }
     }
     
@@ -197,15 +135,6 @@ public class PersistenceService {
      * Closes this instance.
      */
     public void close() {
-        if (em != null && em.isOpen()) {
-            rollbackTx();
-            em.close();
-        }
-        
-        if (emf != null && emf.isOpen()) {
-            emf.close();
-        }
-        
         removeInstance();
     }
 }

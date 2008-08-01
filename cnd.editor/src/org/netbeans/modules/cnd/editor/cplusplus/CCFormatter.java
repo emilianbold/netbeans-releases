@@ -117,6 +117,17 @@ public class CCFormatter extends ExtFormatter {
             } catch (BadLocationException e) {
             }
         }
+        if (ret == null && typedText != null &&
+            typedText.length() == 1 && Character.isLetter(typedText.charAt(0))) {
+            try {
+                int fnw = Utilities.getRowFirstNonWhite(doc, dotPos);
+                if (checkCase(doc, fnw, typedText+"\n") || // NOI18N
+                    dotPos == doc.getLength() && checkCase(doc, fnw, typedText)) { // NOI18N
+                    ret = new int[]{fnw, fnw + 1};
+                }
+            } catch (BadLocationException e) {
+            }
+        }
         return ret;
     }
 
@@ -169,6 +180,8 @@ public class CCFormatter extends ExtFormatter {
         }
     }
 
+    public static final String IGNORE_IN_COMMENTS_MODE = "IgnoreInCommentMode"; //NOI18N
+    
     public class CCLayer extends AbstractFormatLayer {
         private CodeStyle.Language language;
 
@@ -189,14 +202,16 @@ public class CCFormatter extends ExtFormatter {
                 FormatTokenPosition pos = ccfs.getFormatStartPosition();
 
                 if (ccfs.isIndentOnly()) {  // create indentation only
-                    ccfs.indentLine(pos);
+                    Boolean ignoreInCommentsMode = (Boolean) fw.getDocument().getProperty(IGNORE_IN_COMMENTS_MODE);
+
+                    ccfs.indentLine(pos, Boolean.TRUE == ignoreInCommentsMode);
 
                 } else { // regular formatting
 
                     while (pos != null) {
 
                         // Indent the current line
-                        ccfs.indentLine(pos);
+                        ccfs.indentLine(pos, false);
 
                         // Format the line by additional rules
                         formatLine(ccfs, pos);
@@ -303,7 +318,7 @@ public class CCFormatter extends ExtFormatter {
                             ccfs.getValidWhitespaceTokenContextPath(), "\n"); // NOI18N
                     ccfs.removeLineEndWhitespace(imp);
                     // reindent newly created line
-                    ccfs.indentLine(elsePos);
+                    ccfs.indentLine(elsePos, false);
                 }
             }
         }
@@ -423,7 +438,7 @@ public class CCFormatter extends ExtFormatter {
                                                 ccfs.getValidWhitespaceTokenContextPath(), "\n"); // NOI18N
                                         ccfs.removeLineEndWhitespace(imp);
                                         // bug fix: 10225 - reindent newly created line
-                                        ccfs.indentLine(lbracePos);
+                                        ccfs.indentLine(lbracePos, false);
                                         token = imp.getToken();
                                     }
                                 } else {
@@ -464,8 +479,9 @@ public class CCFormatter extends ExtFormatter {
                         case CCTokenContext.IF_ID:
                         case CCTokenContext.FOR_ID:
                         case CCTokenContext.WHILE_ID:
-                        case CCTokenContext.SWITCH_ID:
                             return ccfs.getFormatNewlineBeforeBrace();
+                        case CCTokenContext.SWITCH_ID:
+                            return ccfs.getFormatNewlineBeforeBraceSwitch();
                     }
                 }
             }

@@ -56,20 +56,37 @@ public final class TestUtilities {
     /** Creates a new instance of TestUtilities */
     private TestUtilities() {
     }
+
+    // no delay
     
     public static FileObject createFile(String path) throws IOException {
-        return createFO(path, false, null);
+        return createFO(path, false, null, 0);
     }
     
     public static FileObject createFile(String path, String contents) throws IOException {
-        return createFO(path, false, contents);
+        return createFO(path, false, contents, 0);
     }
     
     public static FileObject createFolder(String path) throws IOException {
-        return createFO(path, true, null);
+        return createFO(path, true, null, 0);
+    }
+
+    // delay
+    
+    public static FileObject createFile(String path, long delay) throws IOException {
+        return createFO(path, false, null, delay);
     }
     
-    private static FileObject createFO(final String path, final boolean folder, final String contents) throws IOException {
+    public static FileObject createFile(String path, String contents, long delay) throws IOException {
+        return createFO(path, false, contents, delay);
+    }
+    
+    public static FileObject createFolder(String path, long delay) throws IOException {
+        return createFO(path, true, null, delay);
+    }
+    
+    
+    private static FileObject createFO(final String path, final boolean folder, final String contents, long delay) throws IOException {
         Repository rp = Repository.getDefault();
         final FileSystem sfs = rp == null ? null : rp.getDefaultFileSystem();
         
@@ -113,10 +130,22 @@ public final class TestUtilities {
             }
         });
         
+        if (delay > 0) {
+            try {
+                Thread.sleep(delay);
+            } catch (InterruptedException ie) {
+                // ignore
+            }
+        }
+        
         return createdFo[0];
     }
 
     public static void delete(String path) throws IOException {
+        delete(path, 0);
+    }
+    
+    public static void delete(String path, long delay) throws IOException {
         Repository rp = Repository.getDefault();
         FileSystem sfs = rp == null ? null : rp.getDefaultFileSystem();
         
@@ -127,6 +156,14 @@ public final class TestUtilities {
         FileObject fo = sfs.findResource(path);
         if (fo != null) {
             fo.delete();
+        }
+        
+        if (delay > 0) {
+            try {
+                Thread.sleep(delay);
+            } catch (InterruptedException ie) {
+                // ignore
+            }
         }
     }
     

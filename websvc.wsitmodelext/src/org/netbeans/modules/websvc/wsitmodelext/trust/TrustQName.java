@@ -43,6 +43,7 @@ package org.netbeans.modules.websvc.wsitmodelext.trust;
 import javax.xml.namespace.QName;
 import java.util.HashSet;
 import java.util.Set;
+import org.netbeans.modules.websvc.wsitmodelext.versioning.ConfigVersion;
 
 /**
  *
@@ -54,29 +55,45 @@ public enum TrustQName {
     KEYSIZE(createTrustQName("KeySize"));                     //NOI18N
 
     public static final String TRUST_NS_URI = "http://schemas.xmlsoap.org/ws/2005/02/trust";    //NOI18N
+    public static final String TRUST_12_NS_URI = "http://docs.oasis-open.org/ws-sx/ws-trust/200512";    //NOI18N
+
     public static final String TRUST_NS_PREFIX = "t";                                       //NOI18N
     
-    public static QName createTrustQName(String localName){
+    static QName createTrustQName(String localName){
         return new QName(TRUST_NS_URI, localName, TRUST_NS_PREFIX);
     }
-    
+
     TrustQName(QName name) {
         qName = name;
     }
-    
-    public QName getQName(){
-        return qName;
+
+    public QName getQName(ConfigVersion cfgVersion) {
+        return new QName(getNamespaceUri(cfgVersion), qName.getLocalPart(), qName.getPrefix());
     }
-    private static Set<QName> qnames = null;
-    public static Set<QName> getQNames() {
-        if (qnames == null) {
-            qnames = new HashSet<QName>();
-            for (TrustQName wq : values()) {
-                qnames.add(wq.getQName());
+
+    public static String getNamespaceUri(ConfigVersion cfgVersion) {
+        switch (cfgVersion) {
+            case CONFIG_1_0 : return TRUST_NS_URI;
+            case CONFIG_1_3 : return TRUST_12_NS_URI;
+        }
+        return null;
+    }
+
+    public static ConfigVersion getConfigVersion(QName q) {
+        for (ConfigVersion cfgVersion : ConfigVersion.values()) {
+            if (getQNames(cfgVersion).contains(q)) {
+                return cfgVersion;
             }
+        }
+        return null;
+    }
+
+    public static Set<QName> getQNames(ConfigVersion cfgVersion) {
+        Set<QName> qnames = new HashSet<QName>();
+        for (TrustQName wq : values()) {
+            qnames.add(wq.getQName(cfgVersion));
         }
         return qnames;
     }
     private final QName qName;
-
 }

@@ -57,7 +57,9 @@ made subject to such option by the copyright holder.
     </target>
     
     <target name="javadoc-zip-init">
-        <ant dir="library" target="javadoc-zip" inheritAll="false"/>
+        <ant dir="library" target="javadoc-zip" inheritAll="false">
+            <property name="no.javadoc.preview" value="true"/>
+        </ant>
     </target>
 
     <target name="netbeans-extra" depends="init">

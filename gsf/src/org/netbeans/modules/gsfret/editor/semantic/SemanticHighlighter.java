@@ -40,28 +40,29 @@
  */
 package org.netbeans.modules.gsfret.editor.semantic;
 
-import java.io.IOException;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
-import org.netbeans.modules.gsf.api.OffsetRange;
-import org.netbeans.modules.gsf.api.ColoringAttributes;
-import org.netbeans.modules.gsf.api.SemanticAnalyzer;
-import org.netbeans.napi.gsfret.source.CompilationInfo;
-import org.netbeans.modules.editor.highlights.spi.Highlight;
-import org.netbeans.modules.editor.highlights.spi.Highlighter;
 import org.netbeans.modules.gsf.Language;
 import org.netbeans.modules.gsf.LanguageRegistry;
+import org.netbeans.modules.gsf.api.ColoringAttributes;
+import org.netbeans.napi.gsfret.source.CompilationInfo;
+import org.netbeans.modules.gsf.api.ColoringAttributes.Coloring;
+import org.netbeans.modules.gsf.api.DataLoadersBridge;
+import org.netbeans.modules.gsf.api.EditHistory;
+import org.netbeans.modules.gsf.api.OffsetRange;
+import org.netbeans.modules.gsf.api.ParserResult;
+import org.netbeans.modules.gsf.api.SemanticAnalyzer;
 import org.openide.ErrorManager;
-import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
 
 
 /**
@@ -83,18 +84,7 @@ public class SemanticHighlighter extends ScanningCancellableTask<CompilationInfo
     }
 
     public Document getDocument() {
-        try {
-            DataObject d = DataObject.find(file);
-            EditorCookie ec = (EditorCookie) d.getCookie(EditorCookie.class);
-            
-            if (ec == null)
-                return null;
-            
-            return ec.getDocument();
-        } catch (IOException e) {
-            Logger.global.log(Level.INFO, "SemanticHighlighter: Cannot find DataObject for file: " + FileUtil.getFileDisplayName(file), e);
-            return null;
-        }
+        return DataLoadersBridge.getDefault().getDocument(file);
     }
     
     public @Override void run(CompilationInfo info) {
@@ -107,31 +97,140 @@ public class SemanticHighlighter extends ScanningCancellableTask<CompilationInfo
             return;
         }
 
-        Set<Highlight> highlights = process(info, doc);
-        
-        if (isCancelled())
-            return;
-        
-        Highlighter.getDefault().setHighlights(file, "semantic", highlights);
-        OccurrencesMarkProvider.get(doc).setSematic(highlights);
+        process(info, doc/*, ERROR_DESCRIPTION_SETTER*/);
     }
     
 
-    Set<Highlight> process(CompilationInfo info, final Document doc) {
-        if (isCancelled())
-            return Collections.emptySet();
+    boolean process(CompilationInfo info, final Document doc/*, ErrorDescriptionSetter setter*/) {
+        final SortedSet<SequenceElement> newColoring = new TreeSet<SequenceElement>();
+
+        
+        if (isCancelled()) {
+            return true;
+        }
+
+        //final Map<OffsetRange, Coloring> oldColors = GsfSemanticLayer.getLayer(SemanticHighlighter.class, doc).getColorings();
+        //final Set<OffsetRange> removedTokens = new HashSet<OffsetRange>(oldColors.keySet());
+        //final Set<OffsetRange> addedTokens = new HashSet<OffsetRange>();
+        //if (isCancelled()) {
+        //    return true;
+        //}
         
         long start = System.currentTimeMillis();        
-        Set<Highlight> result = new HashSet();
-
         Set<String> mimeTypes = info.getEmbeddedMimeTypes();
+
+        // Attempt to do less work in embedded scenarios: Only recompute hints for regions
+        // that have changed
         LanguageRegistry registry = LanguageRegistry.getInstance();
+        SortedSet<SequenceElement> colorings = GsfSemanticLayer.getLayer(SemanticHighlighter.class, doc).getColorings();
+        if (mimeTypes.size() > 1 && info.hasUnchangedResults() && colorings.size() > 0) {
+
+            // Sort elements into buckets per language
+            Map<Language,List<SequenceElement>> elements = new HashMap<Language,List<SequenceElement>>();
+            List<SequenceElement> prevList = null;
+            Language prevLanguage = null;
+            for (SequenceElement element : colorings) {
+                List<SequenceElement> list;
+                if (element.language == prevLanguage) {
+                    list = prevList;
+                } else {
+                    list = elements.get(element.language);
+                    if (list == null) {
+                        list = new ArrayList<SequenceElement>();
+                        elements.put(element.language, list);
+                        prevLanguage = element.language;
+                        prevList = list;
+                    }
+                }
+                list.add(element);
+            }
+
+            // Recompute lists for languages that have changed
+            EditHistory history = info.getHistory();
+            int offset = history.getStart();
+            for (String mimeType : mimeTypes) {
+                if (isCancelled()) {
+                    return true;
+                }
+                Language language = registry.getLanguageByMimeType(mimeType);
+                if (language == null) {
+                    continue;
+                }
+
+                // Unchanged result?
+                ParserResult result = info.getEmbeddedResult(mimeType, 0);
+                if (result != null && result.getUpdateState().isUnchanged()) {
+
+                    // This section was not edited in the last parse tree,
+                    // so just grab the previous elements, and use them
+                    // (after tweaking the offsets)
+                    List<SequenceElement> list = elements.get(language);
+
+                    if (list != null) {
+                        for (SequenceElement element : list) {
+                            if (element.language == language) {
+                                OffsetRange range = element.range;
+                                if (range.getStart() > offset) {
+                                    element.range = new OffsetRange(history.convertOriginalToEdited(range.getStart()),
+                                            history.convertOriginalToEdited(range.getEnd()));
+                                }
+                                newColoring.add(element);
+                            }
+                        }
+                    }
+
+                    continue;
+                } else {
+                    // We need to recompute the semantic highlights for this language
+                    ColoringManager manager = language.getColoringManager();
+                    SemanticAnalyzer task = language.getSemanticAnalyzer();
+                    if (task != null) {
+                        // Allow language plugins to do their own analysis too
+                        try {
+                            task.run(info);
+                        } catch (Exception ex) {
+                            ErrorManager.getDefault().notify(ex);
+                        }
+
+                        if (isCancelled()) {
+                            task.cancel();
+                            return true;
+                        }
+
+                        Map<OffsetRange,Set<ColoringAttributes>> highlights = task.getHighlights();
+                        if (highlights != null) {
+                            for (OffsetRange range : highlights.keySet()) {
+
+                                Set<ColoringAttributes> colors = highlights.get(range);
+                                if (colors == null) {
+                                    continue;
+                                }
+
+                                Coloring c = manager.getColoring(colors);
+
+                                //newColoring.put(range, c);
+                                newColoring.add(new SequenceElement(language, range, c));
+                            }
+                        }
+                    }
+                }
+            }
+                
+            GsfSemanticLayer.getLayer(SemanticHighlighter.class, doc).setColorings(newColoring/*, addedTokens, removedTokens*/);
+            return true;
+        }
         
         for (String mimeType : mimeTypes) {
+            if (isCancelled()) {
+                return true;
+            }
+
+            long startTime = System.currentTimeMillis();
             Language language = registry.getLanguageByMimeType(mimeType);
             if (language == null) {
                 continue;
             }
+            ColoringManager manager = language.getColoringManager();
             SemanticAnalyzer task = language.getSemanticAnalyzer();
             if (task != null) {
                 // Allow language plugins to do their own analysis too
@@ -143,33 +242,43 @@ public class SemanticHighlighter extends ScanningCancellableTask<CompilationInfo
 
                 if (isCancelled()) {
                     task.cancel();
-                    return Collections.emptySet();
+                    return true;
                 }
 
-                Map<OffsetRange,ColoringAttributes> highlights = task.getHighlights();
+                Map<OffsetRange,Set<ColoringAttributes>> highlights = task.getHighlights();
                 if (highlights != null) {
-
                     for (OffsetRange range : highlights.keySet()) {
-                        if (isCancelled())
-                            return result;
 
-                        ColoringAttributes colors = highlights.get(range);
+                        Set<ColoringAttributes> colors = highlights.get(range);
                         if (colors == null) {
                             continue;
                         }
-                        Collection<ColoringAttributes> c = Collections.singletonList(colors);
-                        Highlight h = Utilities.createHighlight(language, doc, range.getStart(), range.getEnd(), c, null);
+                        
+                        Coloring c = manager.getColoring(colors);
 
-                        if (h != null) {
-                            result.add(h);
-                        }
+                        //newColoring.put(range, c);
+                        newColoring.add(new SequenceElement(language, range, c));
+
+                        //if (!removedTokens.remove(range)) {
+                        //    addedTokens.add(range);
+                        //}
                     }
                 }
             }
+            long endTime = System.currentTimeMillis();
+            Logger.getLogger("TIMER").log(Level.FINE, "Semantic (" + mimeType + ")",
+                    new Object[] {info.getFileObject(), endTime - startTime});
         }
+
+        SwingUtilities.invokeLater(new Runnable () {
+            public void run() {
+                GsfSemanticLayer.getLayer(SemanticHighlighter.class, doc).setColorings(newColoring/*, addedTokens, removedTokens*/);
+            }                
+        });            
         
-        //TimesCollector.getDefault().reportTime(((DataObject) doc.getProperty(Document.StreamDescriptionProperty)).getPrimaryFile(), "semantic", "Semantic", (System.currentTimeMillis() - start));
-        
-        return result;
+//        Logger.getLogger("TIMER").log(Level.FINE, "Semantic",
+//            new Object[] {((DataObject) doc.getProperty(Document.StreamDescriptionProperty)).getPrimaryFile(), System.currentTimeMillis() - start});
+
+        return false;
     }
 }

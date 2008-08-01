@@ -49,8 +49,6 @@ import java.io.ObjectOutput;
 import javax.swing.JComponent;
 import org.netbeans.spi.viewmodel.Models;
 
-import org.netbeans.modules.debugger.ui.Utils;
-
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
@@ -69,6 +67,7 @@ public class View extends TopComponent implements org.openide.util.HelpCtx.Provi
     public static final String SESSIONS_VIEW_NAME = "SessionsView";
     public static final String THREADS_VIEW_NAME = "ThreadsView";
     public static final String WATCHES_VIEW_NAME = "WatchesView";
+    public static final String SOURCES_VIEW_NAME = "SourcesView";
     
     private transient JComponent tree;
     private transient ViewModelListener viewModelListener;
@@ -81,6 +80,8 @@ public class View extends TopComponent implements org.openide.util.HelpCtx.Provi
     private View (String icon, String name, String helpID, String propertiesHelpID,
                   String displayNameResource, String toolTipResource) {
         setIcon (Utilities.loadImage (icon));
+        // Remember the location of the component when closed.
+        putClientProperty("KeepNonPersistentTCInModelWhenClosed", Boolean.TRUE); // NOI18N
         this.name = name;
         this.helpID = helpID;
         this.propertiesHelpID = propertiesHelpID;
@@ -280,6 +281,20 @@ public class View extends TopComponent implements org.openide.util.HelpCtx.Provi
         );
     }
     
+    /** Creates the view. Call from the module layer only!
+     * @deprecated Do not call.
+     */
+    public static synchronized TopComponent getSourcesView() {
+        return new View(
+            "org/netbeans/modules/debugger/resources/sourcesView/sources_16.png",
+            SOURCES_VIEW_NAME,
+            "NetbeansDebuggerSourcesNode",
+            null,
+            "CTL_Sources_view",
+            "CTL_Sources_view_tooltip"
+        );
+    }
+
     private static TopComponent getView(String viewName) {
         if (viewName.equals(BREAKPOINTS_VIEW_NAME)) {
             return getBreakpointsView();
@@ -298,6 +313,9 @@ public class View extends TopComponent implements org.openide.util.HelpCtx.Provi
         }
         if (viewName.equals(WATCHES_VIEW_NAME)) {
             return getWatchesView();
+        }
+        if (viewName.equals(SOURCES_VIEW_NAME)) {
+            return getSourcesView();
         }
         throw new IllegalArgumentException(viewName);
     }

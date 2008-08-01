@@ -13,7 +13,7 @@ parser code {:
 	
         private ErrorStrategy defaultStrategy = new DefaultErrorStrategy();;
         private ErrorStrategy errorStrategy = defaultStrategy;
-        
+
         private ParserErrorHandler errorHandler = null;
 
         public void setErrorHandler (ParserErrorHandler handler) {
@@ -85,14 +85,11 @@ parser code {:
      * @param cur_token the current lookahead Symbol.
      */
     public void syntax_error(java_cup.runtime.Symbol cur_token) {
-        //System.out.println("syntax_error:"+cur_token);
-        //super.syntax_error(cur_token,info);
-        //int state = ((ASTPHP5Symbols) stack.peek()).parse_state;
-        //short[] rowOfProbe = action_tab[state];
-        //getParserClient().handleSyntaxError(cur_token.sym, (String)cur_token.value, rowOfProbe, cur_token.left, cur_token.right, getCurrentLine());    
-        System.out.println ("syntax_error ......... [" + cur_token.left + ", " + cur_token.right + "]-" + cur_token.value );
+        java_cup.runtime.Symbol symbol = (java_cup.runtime.Symbol)stack.peek();
+        int state = symbol.parse_state;
+        short[] rowOfProbe = action_tab[state];
         if (errorHandler != null) {
-            errorHandler.handleError(ParserErrorHandler.Type.SYNTAX_ERROR, "Syntax Error", cur_token.left, cur_token.right, cur_token);
+            errorHandler.handleError(ParserErrorHandler.Type.SYNTAX_ERROR, rowOfProbe, cur_token, symbol);
         }
      }
 
@@ -105,10 +102,8 @@ parser code {:
      */
 
     public void report_fatal_error(String message, Object info) throws Exception {
-        System.out.println("report_fatal_error:"+cur_token);
-        //super.report_fatal_error(message,info);
         if (errorHandler != null) {
-            errorHandler.handleError(ParserErrorHandler.Type.FATAL_PARSER_ERROR, "Syntax Error", cur_token.left, cur_token.right, info);
+            errorHandler.handleError(ParserErrorHandler.Type.FATAL_PARSER_ERROR, null, cur_token, null);
         }
     }
 
@@ -223,6 +218,7 @@ terminal T_OPEN_PARENTHESE,T_CLOSE_PARENTHESE;
 terminal T_NEKUDOTAIM;
 terminal T_DOLLAR;
 terminal T_QUATE,T_BACKQUATE;
+terminal T_START_NOWDOC, T_END_NOWDOC;
 
 /* Non terminals */
 
@@ -368,9 +364,9 @@ precedence right T_STATIC, T_ABSTRACT, T_FINAL, T_PRIVATE, T_PROTECTED, T_PUBLIC
 thestart ::=
 top_statement_list:statementList
 {:
-	//PhpAstLexer5 phpAstLexer5 = (PhpAstLexer5) parser.getScanner();
-	//List commentList = phpAstLexer5.getCommentList();
-	Program program = new Program(statementListleft, statementListright, /*parser.ast,*/ statementList/*, commentList*/);
+	ASTPHP5Scanner phpAstLexer5 = (ASTPHP5Scanner) parser.getScanner();
+	List commentList = phpAstLexer5.getCommentList();
+	Program program = new Program(statementListleft, statementListright, /*parser.ast,*/ statementList, commentList);
 	RESULT = program; 
 :}
 ;
@@ -2083,6 +2079,12 @@ T_LNUMBER:scalar
 {:
 	Scalar s = new Scalar(scalarleft, scalarright, /*parser.ast,*/ "__FUNCTION__", Scalar.Type.SYSTEM);
 	RESULT = s;
+:}
+
+| T_START_NOWDOC:start T_ENCAPSED_AND_WHITESPACE:scalar T_END_NOWDOC:end	
+{:
+        Scalar s = new Scalar(startleft, endright, scalar, Scalar.Type.STRING);
+        RESULT = s;
 :}
 ;
 

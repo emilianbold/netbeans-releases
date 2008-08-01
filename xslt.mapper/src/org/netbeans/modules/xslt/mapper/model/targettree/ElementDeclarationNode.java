@@ -26,7 +26,7 @@ import javax.swing.Action;
 import javax.swing.JMenu;
 import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
-import org.netbeans.modules.soa.ui.SoaUiUtil;
+import org.netbeans.modules.soa.ui.SoaUtil;
 import org.netbeans.modules.soa.ui.TooltipTextProvider;
 import org.netbeans.modules.soa.ui.axinodes.AxiomUtils;
 import org.netbeans.modules.soa.ui.axinodes.NodeType;
@@ -161,7 +161,7 @@ public class ElementDeclarationNode extends DeclarationNode implements TooltipTe
         } else if (axiComponent instanceof org.netbeans.modules.xml.axi.Element) {
             return getName();
         } else {
-            return SoaUiUtil.getFormattedHtmlString(true, new SoaUiUtil.TextChunk(getName(), SoaUiUtil.MISTAKE_RED));
+            return SoaUtil.getFormattedHtmlString(true, new SoaUtil.TextChunk(getName(), SoaUtil.MISTAKE_RED));
         }
     }
 
@@ -170,7 +170,7 @@ public class ElementDeclarationNode extends DeclarationNode implements TooltipTe
         if (axiComponent instanceof org.netbeans.modules.xml.axi.Element) {
             return AxiomUtils.getElementTooltip((org.netbeans.modules.xml.axi.Element) axiComponent);
         } else {
-            return SoaUiUtil.getFormattedHtmlString(true, new SoaUiUtil.TextChunk(toString(), SoaUiUtil.MISTAKE_RED));
+            return SoaUtil.getFormattedHtmlString(true, new SoaUtil.TextChunk(toString(), SoaUtil.MISTAKE_RED));
         }
     }
 

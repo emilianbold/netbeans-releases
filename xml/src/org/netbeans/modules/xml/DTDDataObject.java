@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.xml;
 
-import org.netbeans.modules.xml.api.XmlFileEncodingQueryImpl;
 import org.openide.filesystems.*;
 import org.openide.loaders.*;
 import org.openide.cookies.*;
@@ -49,16 +48,12 @@ import org.openide.util.*;
 import org.openide.util.actions.*;
 import org.openide.nodes.*;
 import org.openide.windows.CloneableOpenSupport;
-
 import org.netbeans.modules.xml.text.TextEditorSupport;
 import org.netbeans.modules.xml.sync.*;
 import org.netbeans.modules.xml.cookies.*;
-
+import org.netbeans.modules.xml.lib.Util;
 import org.netbeans.modules.xml.text.syntax.DTDKit;
-import org.xml.sax.*;
-
 import org.netbeans.spi.xml.cookies.*;
-import org.openide.util.lookup.Lookups;
 import org.xml.sax.InputSource;
 
 /** 
@@ -78,11 +73,6 @@ public final class DTDDataObject extends MultiDataObject implements XMLDataObjec
     /** Cookie Manager */
     private final DataObjectCookieManager cookieManager;
 
-    
-    //
-    // init
-    //
-
     public DTDDataObject (final FileObject obj, final UniFileLoader loader) throws DataObjectExistsException {
         super (obj, loader);
                 
@@ -100,23 +90,14 @@ public final class DTDDataObject extends MultiDataObject implements XMLDataObjec
         new CookieManager (this, set, DTDCookieFactoryCreator.class);
     }
 
-//     // from XMLDataObjectLook
-//     public void updateTextDocument () {
-//         EditorCookie es = (EditorCookie)getCookie (EditorCookie.class);
-//         if (es != null) {
-//             es.close();
-//         }
-//     }
+    @Override
     public final Lookup getLookup() {
-        return Lookups.fixed(new Object[]{
-            super.getLookup(),
-            this,
-            XmlFileEncodingQueryImpl.singleton()});
+        return getCookieSet().getLookup();
     }
-
 
     /**
      */
+    @Override
     protected Node createNodeDelegate () {
         if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("--> DTDDataObject.createNodeDelegate: this = " + this);
 
@@ -145,6 +126,7 @@ public final class DTDDataObject extends MultiDataObject implements XMLDataObjec
 
 
     /** Synchronize and delegate to super. */
+    @Override
     public Node.Cookie getCookie(Class klass) {
 
         Node.Cookie cake = null;
@@ -172,6 +154,7 @@ public final class DTDDataObject extends MultiDataObject implements XMLDataObjec
     }
     
 
+    @Override
     public HelpCtx getHelpCtx() {
         //return new HelpCtx(DTDDataObject.class);
         return HelpCtx.DEFAULT_HELP;
@@ -193,9 +176,11 @@ public final class DTDDataObject extends MultiDataObject implements XMLDataObjec
 
             setDefaultAction (SystemAction.get (EditAction.class));
             setIconBase ("org/netbeans/modules/xml/resources/dtdObject"); // NOI18N
-            setShortDescription (Util.THIS.getString ("PROP_DTDDataNode_description"));
+            setShortDescription (Util.THIS.getString (DTDDataObject.class,
+                    "PROP_DTDDataNode_description"));
         }
 
+        @Override
         public HelpCtx getHelpCtx() {
             //return new HelpCtx(DTDDataObject.class);
             return HelpCtx.DEFAULT_HELP;

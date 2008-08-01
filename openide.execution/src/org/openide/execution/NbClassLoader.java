@@ -117,15 +117,11 @@ public class NbClassLoader extends URLClassLoader {
      */
     static ThreadLocal<Boolean> f = new ThreadLocal<Boolean>();
     public NbClassLoader(FileObject[] roots, ClassLoader parent, InputOutput io) throws FileStateInvalidException {
-        this(roots, parent, io, new AtomicBoolean());
-    }
-    
-    private NbClassLoader(FileObject[] roots, ClassLoader parent, InputOutput io, AtomicBoolean isFast) throws FileStateInvalidException {
-        super(translate(createRootURLs(roots), isFast), parent);
-        fast = isFast.get();
+        super(createRootURLs(roots), parent);
+        fast = canOptimize(getURLs());
         inout = io;
     }
-
+        
     /** Create a new class loader retrieving classes from the core IDE as well as specified file systems.
      * @param fileSystems file systems to load classes from
      * @deprecated Misuses classpath.
@@ -295,27 +291,23 @@ public class NbClassLoader extends URLClassLoader {
         return urls;
     }
     
-    private static URL[] translate (URL[] urls, AtomicBoolean isFast) {
-        assert urls != null;
-        isFast.set(false);
-        final URL[] res = new URL[urls.length];
-        for (int i=0; i<res.length; i++) {
+    private static boolean canOptimize (URL[] urls) {
+        assert urls != null;        
+        for (int i=0; i<urls.length; i++) {
             URL url = urls[i];
             URL au = FileUtil.getArchiveFile(url);
             if (au != null) {
-                if (!url.toExternalForm().endsWith("!/")) { //NOI8N
+                if (!url.toExternalForm().endsWith("!/")) { //NOI18N
                     //Nested path - not supported fast mode 
-                    return urls;
+                    return false;
                 }
                 url = au;
             }
             if (!"file".equals(url.getProtocol())) {        //NOI18N
                 //Not file - not supported fast mode
-                return urls;
-            }
-            res[i] = url;
-        }
-        isFast.set(true);
-        return res;
+                return false;
+            }            
+        }        
+        return true;
     }
 }

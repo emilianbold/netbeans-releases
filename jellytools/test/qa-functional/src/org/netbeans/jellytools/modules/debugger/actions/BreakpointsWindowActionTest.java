@@ -64,9 +64,12 @@ public class BreakpointsWindowActionTest extends JellyTestCase {
     /** method used for explicit testsuite definition
      */
     public static Test suite() {
+        /*
         TestSuite suite = new NbTestSuite();
         suite.addTest(new BreakpointsWindowActionTest("testPerformMenu"));
         return suite;
+         */
+        return createModuleTest(BreakpointsWindowActionTest.class, "testPerformMenu");
     }
     
     /** Test performMenu() method. */

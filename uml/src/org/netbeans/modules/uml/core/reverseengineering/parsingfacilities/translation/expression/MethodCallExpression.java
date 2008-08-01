@@ -472,19 +472,8 @@ public void stateComplete(String stateName)
       {
          String value = m_pArgumentStart.getValue();
          retVal += value;
-      }
-      
-      // Now process the arguments.
-      int max = getExpressionCount();
-      for(int index = 0; index < max; index++)
-      {
-         IExpressionProxy proxy = getExpression(index);
-         if(proxy != null)
-         {
-            retVal += proxy.toString();
-         }
-      }
-      
+      }      
+      retVal += super.toString();
       if(m_pArgumentEnd != null)
       {
          String value =  m_pArgumentEnd.getValue();

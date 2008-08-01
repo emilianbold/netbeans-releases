@@ -81,7 +81,7 @@ public class Deadlock60917Test extends NbTestCase {
     }
     
 
-    
+    @RandomlyFails
     public void testWhatHappensWhenALoaderBecomesInvalidAndFileIsOpened() throws Exception {
         final ForgetableLoader l = (ForgetableLoader)DataLoader.getLoader(ForgetableLoader.class);
 		FileSystem lfs = TestUtilHid.createLocalFileSystem(getWorkDir(), new String[] {
@@ -164,7 +164,8 @@ public class Deadlock60917Test extends NbTestCase {
 		assertEquals("Three of them: " + Arrays.asList(awt.arr), 1, awt.arr.length);
 		assertEquals("Still remains the same old object: ", our, awt.arr[0]);
     }
-    
+
+    @RandomlyFails
     public void testWhatHappenUnderLock () throws Exception {
         org.openide.nodes.Children.MUTEX.readAccess (new org.openide.util.Mutex.ExceptionAction () {
             public Object run () throws Exception {

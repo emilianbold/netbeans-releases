@@ -531,7 +531,7 @@ interface DrawGraphics {
             drawTextLimitLine = ctx.getEditorUI().textLimitLineVisible;
             textLimitWidth = ctx.getEditorUI().textLimitWidth();
             defaultSpaceWidth = ctx.getEditorUI().defaultSpaceWidth;
-            textLimitLineColor = ctx.getEditorUI().textLimitLineColor;
+            textLimitLineColor = ctx.getEditorUI().getTextLimitLineColor();
             absoluteX = ctx.getEditorUI().getTextMargin().left;
             maxWidth = ctx.getEditorUI().getExtentBounds().width;
         }

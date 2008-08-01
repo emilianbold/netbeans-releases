@@ -8,7 +8,7 @@ class Foo2 < Foo1
   # Can't mark args thought to be unused as unused
   # if we have a super call without args (which will
   # actually pass them)
-  def |>METHOD:mymethod<| |>PARAMETER:args1<|, |>PARAMETER:args2<|, |>PARAMETER:args3<| = {}<|
+  def |>METHOD:mymethod<| |>PARAMETER:args1<|, |>PARAMETER:args2<|, |>PARAMETER:args3<| = {}
     super
     |>METHOD:puts<| "Hello"
     |>METHOD:puts<| |>PARAMETER:args2<|
@@ -16,7 +16,7 @@ class Foo2 < Foo1
 end
 
 class Foo3 < Foo1
-  def |>METHOD:mymethod<| |>UNUSED:args1<|, |>PARAMETER:args2<|, |>UNUSED:args3<| = {}<|
+  def |>METHOD:mymethod<| |>UNUSED:args1<|, |>PARAMETER:args2<|, |>UNUSED:args3<| = {}
     super 1, 2, 3
     |>METHOD:puts<| "Hello"
     |>METHOD:puts<| |>PARAMETER:args2<|

@@ -21,7 +21,7 @@ package org.netbeans.modules.bpel.nodes.actions;
 
 import org.netbeans.modules.bpel.nodes.actions.BpelNodeAction;
 import org.netbeans.modules.bpel.editors.api.nodes.actions.ActionType;
-import org.netbeans.modules.bpel.editors.api.utils.Util;
+import org.netbeans.modules.bpel.editors.api.EditorUtil;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.VariableDeclaration;
 import org.netbeans.modules.bpel.model.api.references.SchemaReference;
@@ -59,7 +59,7 @@ public class GoToTypeSourceAction extends BpelNodeAction {
             return;
         }
         
-        Util.goToDocumentComponentSource(getVariableType(variable));
+        EditorUtil.goToDocumentComponentSource(getVariableType(variable));
     }
    
    
@@ -104,7 +104,7 @@ public class GoToTypeSourceAction extends BpelNodeAction {
         
         BpelEntity entity = entities[0];
         if (entity instanceof VariableDeclaration) {
-            return Util.canGoToDocumentComponentSource(getVariableType(
+            return EditorUtil.canGoToDocumentComponentSource(getVariableType(
                     (VariableDeclaration) entity));
         }
         

@@ -523,7 +523,7 @@ final class AbstractFileObject extends AbstractFolder {
                 testLock(lock);
 
                 if (isData()) {
-                    if (ext != null) {
+                    if (ext != null && ext.trim().length() > 0) {
                         name = name + EXT_SEP + ext;
                     }
                 }

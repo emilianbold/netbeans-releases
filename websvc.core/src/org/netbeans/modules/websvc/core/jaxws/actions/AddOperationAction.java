@@ -40,10 +40,7 @@
  */
 package org.netbeans.modules.websvc.core.jaxws.actions;
 
-import org.netbeans.modules.websvc.api.jaxws.project.WSUtils;
-import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.core.AddOperationCookie;
-import org.netbeans.modules.websvc.core.WebServiceActionProvider;
 import org.netbeans.modules.websvc.core.WebServiceActionProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.util.HelpCtx;
@@ -66,25 +63,11 @@ public class AddOperationAction extends NodeAction  {
     }
     
     protected boolean enable(Node[] activatedNodes) {
-        return activatedNodes.length == 1 &&
-                // Retouche
-                //( activatedNodes[0].getLookup().lookup(ClassMember.class) != null || JMIUtils.getClassMemberFromNode(activatedNodes[0])!=null ) &&
-                //JMIUtils.getJavaClassFromNode(activatedNodes[0]) != null &&
-                !isFromWSDL(activatedNodes[0]);
-    }
-
-    private boolean isFromWSDL(Node node) {
-        Service service = (Service)node.getLookup().lookup(Service.class);
-        if (service!=null) return (service.getWsdlUrl()!=null);
-        return false;
+        return activatedNodes.length == 1;
     }
     
     protected void performAction(Node[] activatedNodes) {
 
-        if (activatedNodes.length != 1) {
-            return;
-        }
-        
         FileObject implClassFo = activatedNodes[0].getLookup().lookup(FileObject.class);
         if (implClassFo!=null) {
             AddOperationCookie addOperationCookie = WebServiceActionProvider.getAddOperationAction(implClassFo);

@@ -49,15 +49,14 @@ import java.util.List;
 import java.util.Set;
 import javax.swing.Action;
 import javax.swing.Icon;
+import org.netbeans.modules.gsf.GsfHtmlFormatter;
 import org.netbeans.modules.gsf.api.ElementHandle;
 import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.modules.gsf.api.Modifier;
 import org.netbeans.modules.gsf.api.StructureItem;
-import org.netbeans.modules.gsf.api.StructureItem;
 import org.netbeans.modules.gsfret.navigation.actions.OpenAction;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Utilities;
@@ -89,6 +88,7 @@ public class ElementNode extends AbstractNode {
     private StructureItem description;
     private ClassMemberPanelUI ui;
     private FileObject fileObject; // For the root description
+    private static NavigatorFormatter FORMATTER = new NavigatorFormatter();
            
     /** Creates a new instance of TreeNode */
     public ElementNode( StructureItem description, ClassMemberPanelUI ui, FileObject fileObject) {
@@ -125,7 +125,8 @@ public class ElementNode extends AbstractNode {
             
     @Override
     public String getHtmlDisplayName() {
-        return description.getHtml();
+        FORMATTER.reset();
+        return description.getHtml(FORMATTER);
     }
     
     @Override
@@ -239,9 +240,13 @@ public class ElementNode extends AbstractNode {
                         
         StructureItem oldDescription = description; // Remember old description        
         description = newDescription; // set new descrioption to the new node
-        if ( oldDescription.getHtml() != null && !oldDescription.getHtml().equals(description.getHtml())) {
+        FORMATTER.reset();
+        String oldHtml = oldDescription.getHtml(FORMATTER);
+        FORMATTER.reset();
+        String descHtml = description.getHtml(FORMATTER);
+        if ( oldHtml != null && !oldHtml.equals(descHtml)) {
             // Different headers => we need to fire displayname change
-            fireDisplayNameChange(oldDescription.getHtml(), description.getHtml());
+            fireDisplayNameChange(oldHtml, descHtml);
         }
         if( oldDescription.getModifiers() != null &&  !oldDescription.getModifiers().equals(newDescription.getModifiers())) {
             fireIconChange();
@@ -421,8 +426,12 @@ public class ElementNode extends AbstractNode {
         public java.lang.String getDisplayName() {
             return "Please Wait...";
         }
-        
     }
     
-    
+    private static class NavigatorFormatter extends GsfHtmlFormatter {
+        @Override
+        public void name(ElementKind kind, boolean start) {
+            // No special formatting for names
+        }
+    }
 }

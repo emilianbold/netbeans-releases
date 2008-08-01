@@ -71,6 +71,7 @@ public class MonitorAction extends CallableSystemAction {
     }
     
     public String getName () {
+        // When changed, update also mf-layer.xml, where are the properties duplicated because of Actions.alwaysEnabled()
 	return NbBundle.getBundle(MonitorAction.class).getString("MON_HTTP_Transaction_13");
     }
   
@@ -79,6 +80,7 @@ public class MonitorAction extends CallableSystemAction {
     }
 
     protected String iconResource () {
+        // When changed, update also mf-layer.xml, where are the properties duplicated because of Actions.alwaysEnabled()
 	return "org/netbeans/modules/web/monitor/client/icons/menuitem.gif"; //NOI18N
 
     }

@@ -41,7 +41,10 @@
 package org.netbeans.modules.visual.border;
 
 import org.netbeans.api.visual.border.Border;
-
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import org.netbeans.api.visual.widget.ResourceTable;
+import org.netbeans.api.visual.widget.Widget;
 import java.awt.*;
 
 /**
@@ -51,12 +54,31 @@ public final class BevelBorder implements Border {
 
     private boolean raised;
     private Color color;
+    private ResourceTableListener listener = null;
 
     public BevelBorder (boolean raised, Color color) {
         this.raised = raised;
         this.color = color;
     }
-
+    
+    public BevelBorder(boolean raised, String property, Widget associated)
+    {
+        this(raised, property, associated.getResourceTable());
+    }
+    
+    public BevelBorder (boolean raised, String property, ResourceTable table) {
+        this.raised = raised;
+        
+        Object value = table.getProperty(property);
+        if(value instanceof Color)
+        {
+            this.color = (Color)value;
+        }
+        
+        listener = new ResourceTableListener();
+        table.addPropertyChangeListener(property, listener);
+    }
+    
     public Insets getInsets () {
         return new Insets (2, 2, 2, 2);
     }
@@ -90,5 +112,12 @@ public final class BevelBorder implements Border {
     public boolean isOpaque () {
         return true;
     }
-
+    
+    public class ResourceTableListener implements PropertyChangeListener
+    {
+        public void propertyChange(PropertyChangeEvent event)
+        {
+            color = (Color)event.getNewValue();
+        }
+    }
 }

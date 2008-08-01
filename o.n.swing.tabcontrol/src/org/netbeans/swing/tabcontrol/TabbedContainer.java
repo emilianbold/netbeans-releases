@@ -292,6 +292,9 @@ public class TabbedContainer extends JComponent implements Accessible {
     
     /** Winsys info needed for tab control or null if not available */
     private WinsysInfoForTabbed winsysInfo = null;
+    
+    /** Winsys info needed for tab control or null if not available */
+    private WinsysInfoForTabbedContainer containerWinsysInfo = null;
 
     @Deprecated
     private LocationInformer locationInformer = null;
@@ -333,10 +336,18 @@ public class TabbedContainer extends JComponent implements Accessible {
     }
         
     /**
+     * Deprecated, please use constructor with WinsysInfoForTabbed instead.
+     */
+    @Deprecated
+    public TabbedContainer(TabDataModel model, int type, WinsysInfoForTabbed winsysInfo) {
+        this( model, type, WinsysInfoForTabbedContainer.getDefault( winsysInfo ) );
+    }
+        
+    /**
      * Create a new pane with the specified model, displayer type and extra
      * information from winsys
      */
-    public TabbedContainer(TabDataModel model, int type, WinsysInfoForTabbed winsysInfo) {
+    public TabbedContainer(TabDataModel model, int type, WinsysInfoForTabbedContainer winsysInfo) {
         switch (type) {
             case TYPE_VIEW:
             case TYPE_EDITOR:
@@ -352,6 +363,7 @@ public class TabbedContainer extends JComponent implements Accessible {
         this.model = model;
         this.type = Boolean.getBoolean("nb.tabcontrol.alltoolbar") ? TYPE_TOOLBAR : type;
         this.winsysInfo = winsysInfo;
+        this.containerWinsysInfo = winsysInfo;
         initialized = true;
         updateUI();
         //A few borders and such will check this
@@ -791,10 +803,15 @@ public class TabbedContainer extends JComponent implements Accessible {
         return locationInformer;
     }
     
+    @Deprecated
     public WinsysInfoForTabbed getWinsysInfo() {
         return winsysInfo;
     }
 
+    public WinsysInfoForTabbedContainer getContainerWinsysInfo() {
+        return containerWinsysInfo;
+    }
+    
     static {
         //Support for experimenting with different content policies in NetBeans
         String s = System.getProperty("nb.tabcontrol.contentpolicy"); //NOI18N

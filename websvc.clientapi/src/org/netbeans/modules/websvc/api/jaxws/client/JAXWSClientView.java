@@ -62,7 +62,7 @@ public final class JAXWSClientView {
 
 	private JAXWSClientViewImpl impl;
 	private static final Lookup.Result implementations =
-		Lookup.getDefault().lookup(new Lookup.Template(JAXWSClientViewProvider.class));
+		Lookup.getDefault().lookupResult(JAXWSClientViewProvider.class);
 
 	static  {
 		JAXWSClientViewAccessor.DEFAULT = new JAXWSClientViewAccessor() {

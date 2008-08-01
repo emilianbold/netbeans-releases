@@ -11,9 +11,9 @@
  * http://www.netbeans.org/cddl-gplv2.html
  * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
  * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
+ * License. When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
  * particular file as subject to the "Classpath" exception as provided
  * by Sun in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -50,7 +50,7 @@ import javax.swing.JRadioButton;
 
 import javax.swing.JTextArea;
 import org.netbeans.api.project.Project;
-import static org.netbeans.modules.soa.ui.util.UI.*;
+import static org.netbeans.modules.xml.ui.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -93,7 +93,7 @@ final class PanelStartup<T> extends Panel<T> {
 
     // (o) Request-Reply Service
     c.gridy++;
-    c.insets = new Insets(SMALL_INSET, 0, 0, 0);
+    c.insets = new Insets(LARGE_SIZE, 0, 0, 0);
     myTransformation = createRadioButton(i18n("LBL_Service"), i18n("TLT_Service")); // NOI18N
     myTransformation.getAccessibleContext().setAccessibleDescription(i18n("ACSD_LBL_Service"));
     panel.add(myTransformation, c);
@@ -102,14 +102,14 @@ final class PanelStartup<T> extends Panel<T> {
     // text
     c.gridy++;
     c.insets = new Insets(
-      SMALL_INSET, MEDIUM_INSET + SMALL_INSET + TINY_INSET, TINY_INSET, 0);
+      LARGE_SIZE, HUGE_SIZE + LARGE_SIZE + TINY_SIZE, TINY_SIZE, 0);
     JTextArea serviceText = createTextArea(TEXT_WIDTH, i18n("LBL_Service_Text"));
     a11y(serviceText, "ACSN_LBL_Service_Text", "ACSD_LBL_Service_Text");
     panel.add(serviceText,c);//NOI18N
 
     // (o) Proxy Service
     c.gridy++;
-    c.insets = new Insets(SMALL_INSET, 0, 0, 0);
+    c.insets = new Insets(LARGE_SIZE, 0, 0, 0);
     myProxy = createRadioButton(i18n("LBL_Bridge"), i18n("TLT_Bridge")); // NOI18N
     myProxy.getAccessibleContext().setAccessibleDescription(i18n("ACSD_LBL_Bridge"));
     panel.add(myProxy, c);
@@ -120,7 +120,7 @@ final class PanelStartup<T> extends Panel<T> {
     // text
     c.gridy++;
     c.insets = new Insets(
-      SMALL_INSET, MEDIUM_INSET + SMALL_INSET + TINY_INSET, TINY_INSET, 0);
+      LARGE_SIZE, HUGE_SIZE + LARGE_SIZE + TINY_SIZE, TINY_SIZE, 0);
     JTextArea bridgeText = createTextArea(TEXT_WIDTH, i18n("LBL_Bridge_Text"));
     a11y(bridgeText, "ACSN_LBL_Bridge_Text", "ACSD_LBL_Bridge_Text");
     panel.add(bridgeText, c); // NOI18N

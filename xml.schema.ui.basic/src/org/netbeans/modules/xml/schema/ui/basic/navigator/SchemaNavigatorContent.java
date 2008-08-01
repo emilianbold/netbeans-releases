@@ -42,7 +42,6 @@
 package org.netbeans.modules.xml.schema.ui.basic.navigator;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
@@ -51,9 +50,7 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 import javax.swing.JTree;
-import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
 import org.netbeans.modules.xml.schema.ui.basic.SchemaModelCookie;
@@ -67,10 +64,10 @@ import org.openide.explorer.ExplorerManager;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
 import org.openide.windows.TopComponent;
 import org.netbeans.modules.xml.text.navigator.base.AbstractXMLNavigatorContent;
+import org.openide.util.RequestProcessor;
 
 /**
  * XML Schema Navigator component containing a tree of schema components.
@@ -180,14 +177,22 @@ public class SchemaNavigatorContent extends AbstractXMLNavigatorContent  impleme
      */
     public void navigate(final DataObject dobj) {
         showWaitPanel();
-        SwingUtilities.invokeLater(new Runnable() {
+        
+        //get the model and create the new UI on background
+        RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
-                SchemaModel model = getSchemaModel(dobj);
-                if (model == null || model.getState() != SchemaModel.State.VALID) {
-                    showError(AbstractXMLNavigatorContent.ERROR_NO_DATA_AVAILABLE);
-                } else {
-                    show(model);
-                }
+                //find the model in RPT
+                final SchemaModel model = getSchemaModel(dobj);
+                //finally update the UI in EDT
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        if (model == null || model.getState() != SchemaModel.State.VALID) {
+                            showError(AbstractXMLNavigatorContent.ERROR_NO_DATA_AVAILABLE);
+                        } else {
+                            show(model);
+                        }
+                    }
+                });
             }
         });
     }

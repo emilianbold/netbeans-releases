@@ -75,36 +75,25 @@ public class SvnWcParser {
      */ 
     public ISVNStatus[] getStatus(File path, boolean descend, boolean getAll) throws LocalSubversionException {        
         List<ISVNStatus> l = getStatus(path, descend);
-//        List<ISVNStatus> ret = new ArrayList<ISVNStatus>(l.size());        
-//        for(ISVNStatus status : l) {
-//            if(!getAll) {
-//                    if(!status.getRepositoryTextStatus().equals(SVNStatusKind.NORMAL)) { // XXX does this mean !getAll
-//                       ret.add(status);
-//                    }     
-//            } else {
-//                ret.add(status);
-//            }
-//        }
         return l.toArray(new ISVNStatus[l.size()]);
     }
 
     private List<ISVNStatus> getStatus(File path, boolean descend) throws LocalSubversionException {
-        List<ISVNStatus> ret = new ArrayList<ISVNStatus>(20);
-                        
+        List<ISVNStatus> ret = new ArrayList<ISVNStatus>(20);                        
+        ret.add(getSingleStatus(path));
+        
         File[] children = path.listFiles();
         if(children != null && children.length > 0) {        
             for (int i = 0; i < children.length; i++) {
-                if(!SvnUtils.isPartOfSubversionMetadata(children[i]) && 
-                   !Subversion.getInstance().isAdministrative(path)) 
-                {
-                    ret.add(getSingleStatus(children[i]));            
+                if(!SvnUtils.isPartOfSubversionMetadata(children[i]) && !SvnUtils.isAdministrative(path)) {                                       
                     if(descend && children[i].isDirectory()) {                
                         ret.addAll(getStatus(children[i], descend));                
-                    }                    
+                    } else {
+                        ret.add(getSingleStatus(children[i]));  // 
+                    }                   
                 }
             }        
-        }
-        ret.add(getSingleStatus(path));
+        }        
         return ret;
     }    
 
@@ -114,9 +103,11 @@ public class SvnWcParser {
 
         try {
             WorkingCopyDetails wcDetails = getWCDetails(file);
-            if (wcDetails.isHandled()) {
-
-                if (wcDetails.propertiesExist()) {
+            if (wcDetails.isHandled()) {               
+                if (wcDetails.propertiesExist() ||                    // we either have some properties,
+                    (wcDetails.getBasePropertiesFile() != null &&     // or there were some 
+                     wcDetails.getBasePropertiesFile().exists()))    
+                {
                     finalPropStatus = SVNStatusKind.NORMAL.toString();
                     //See if props have been modified
                     if (wcDetails.propertiesModified()) {

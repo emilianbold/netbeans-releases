@@ -45,11 +45,10 @@ package org.netbeans.modules.i18n.form;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 import java.util.ResourceBundle;
 import java.util.TreeSet;
 import java.util.logging.Level;
@@ -74,6 +73,7 @@ import org.netbeans.modules.i18n.HardCodedString;
 import org.netbeans.modules.i18n.I18nString;
 import org.netbeans.modules.i18n.I18nSupport;
 import org.netbeans.modules.i18n.InfoPanel;
+import org.netbeans.modules.i18n.java.JavaI18nFinder;
 import org.netbeans.modules.i18n.java.JavaI18nString;
 import org.netbeans.modules.i18n.java.JavaI18nSupport;
 
@@ -83,6 +83,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
+import org.openide.nodes.Node.PropertySet;
 import org.openide.util.NbBundle;
 
 
@@ -248,6 +249,77 @@ public class FormI18nSupport extends JavaI18nSupport {
         }
         
     } // end of ValidFormProperty inner class
+
+    /**
+     * Iterator over form properties of a component.
+     * Form properties are defined as properties from property sets named
+     * &quot;properties&quot;, &quot;properties2&quot;,
+     * &quot;accessibility&quot; and &quot;layout&quot;.
+     * 
+     * @author  Marian Petras
+     */
+    static final class FormPropertiesIterator implements Iterator<Node.Property> {
+
+        private final RADComponent comp;
+
+        private boolean ready = false;
+        private Node.PropertySet[] propSets;
+        private int propSetIndex = -1;
+        private Node.Property[] properties;
+        private int propIndex = -1;
+        private boolean first = true;
+        private boolean exhausted = false;
+
+        FormPropertiesIterator(RADComponent comp) {
+            this.comp = comp;
+        }
+        
+        public boolean hasNext() {
+            if (!ready) {
+                if (first || (++propIndex == properties.length)) {
+                    if (first) {
+                        propSets = comp.getProperties();
+                        first = false;
+                    }
+                    while (++propSetIndex != propSets.length) {
+                        Node.PropertySet propSet;
+                        if (isFormPropSet(propSet = propSets[propSetIndex])
+                                && ((properties = propSet.getProperties()).length != 0)) {
+                            propIndex = 0;
+                            break;
+                        }
+                    }
+                    if (propSetIndex == propSets.length) {
+                        exhausted = true;
+                    }
+                }
+                ready = true;
+            }
+            return !exhausted;
+        }
+
+        private static boolean isFormPropSet(PropertySet propertySet) {
+            String propSetName = propertySet.getName();
+            return RAD_PROPERTIES.equals(propSetName)
+                   || RAD_PROPERTIES2.equals(propSetName)
+                   || RAD_LAYOUT.equals(propSetName)
+                   || RAD_ACCESSIBILITY.equals(propSetName);
+        }
+
+        public Node.Property next() {
+            if (!hasNext()) {
+                throw new NoSuchElementException();
+            }
+
+            ready = false;
+            return properties[propIndex];
+        }
+
+        public void remove() {
+            throw new UnsupportedOperationException();
+        }
+
+    }
     
     /** Helper inner class for formProperties variable in enclosing class.
      * Provides sorting of ValidPropertyComparator classes with intenetion to get the order of
@@ -262,7 +334,7 @@ public class FormI18nSupport extends JavaI18nSupport {
      * 4) than (for init block only) in case of set-method-properties. The property is less which has less index in
      *   array returned by method getAllProperties on component.
      * */
-    private static class ValidFormPropertyComparator implements Comparator {
+    private static class ValidFormPropertyComparator implements Comparator<ValidFormProperty> {
         
         private static final String CREATION_CODE_PRE    = "creationCodePre"; // NOI18N
         private static final String CREATION_CODE_CUSTOM = "creationCodeCustom"; // NOI18N
@@ -282,10 +354,13 @@ public class FormI18nSupport extends JavaI18nSupport {
         
         
         /** Compares two <code>ValidFormPropertiesObjects</code>. */
-        public int compare(Object o1, Object o2) {
+        public int compare(ValidFormProperty p1, ValidFormProperty p2) {
+            Node.Property prop1 = p1.getProperty();
+            Node.Property prop2 = p2.getProperty();
+
             // 1st stage
-            String propName1 = ((ValidFormProperty)o1).getProperty().getName();
-            String propName2 = ((ValidFormProperty)o2).getProperty().getName();
+            String propName1 = prop1.getName();
+            String propName2 = prop2.getName();
             
             boolean isInCreation1 = false;
             boolean isInCreation2 = false;
@@ -302,116 +377,97 @@ public class FormI18nSupport extends JavaI18nSupport {
                 isInCreation2 = true;
             }
             
-            if(isInCreation1 != isInCreation2)
+            if(isInCreation1 != isInCreation2) {
                 return isInCreation1 ? -1 : 1; // end of 1st stage
+            } // end of 1st stage
                 
-                // 2nd stage
-                RADComponent comp1 = formModel.findRADComponent(((ValidFormProperty)o1).getRADComponentName());
-                RADComponent comp2 = formModel.findRADComponent(((ValidFormProperty)o2).getRADComponentName());
-                
-                int index1 = -1;
-                int index2 = -1;
-                
-                if(!comp1.equals(comp2)) {
-                    Iterator it = formModel.getOrderedComponentList().iterator();
-                    while (it.hasNext()) {
-                        RADComponent comp = (RADComponent) it.next();
-                        if (comp == comp1) {
-                            return -1;
-                        }
-                        if (comp == comp2) {
-                            return 1;
-                        }
+            // 2nd stage
+            RADComponent comp1 = formModel.findRADComponent(p1.getRADComponentName());
+            RADComponent comp2 = formModel.findRADComponent(p2.getRADComponentName());
+            
+            int index1 = -1;
+            int index2 = -1;
+            
+            if (!comp1.equals(comp2)) {
+                for (RADComponent comp : formModel.getOrderedComponentList()) {
+                    if (comp == comp1) {
+                        return -1;
                     }
-                    assert false;
-                    return 0;
-                } // end of 2nd stage
-                
-                // 3rd stage
-                if(isInCreation1) {
-                    // 3a) stage
-                    index1 = -1;
-                    index2 = -1;
-                    
-                    if (propName1.equals(CREATION_CODE_PRE)) {
-                        index1 = 0;
-                    } else if (propName1.equals(CREATION_CODE_CUSTOM)) {
-                        index1 = 1;
-                    } else if (propName1.equals(CREATION_CODE_POST)) {
-                        index1 = 2;
-                    }
-                    
-                    if (propName2.equals(CREATION_CODE_PRE)) {
-                        index2 = 0;
-                    } else if (propName2.equals(CREATION_CODE_CUSTOM)) {
-                        index2 = 1;
-                    } else if (propName2.equals(CREATION_CODE_POST)) {
-                        index2 = 2;
-                    }
-                    
-                    return index1 - index2; // end of 3a) stage
-                } else {
-                    // 3b) stage
-                    index1 = -1;
-                    index2 = -1;
-                    
-                    if (propName1.equals(INIT_CODE_PRE)) {
-                        index1 = 0;
-                    } else if (propName1.equals(INIT_CODE_POST)) {
-                        index1 = 2;
-                    } else {
-                        index1 = 1; // is one of set-method property
-                    }
-                    
-                    if (propName2.equals(INIT_CODE_PRE)) {
-                        index2 = 0;
-                    } else if (propName2.equals(INIT_CODE_POST)) {
-                        index2 = 2;
-                    } else {
-                        index2 = 1; // is one of set-method property
-                    }
-                    
-                    if ((index1 != 1) || (index2 != 1)) {
-                        return index1 - index2; // end of 3b) stage
-                    }
-                } // end of 3rd stage
-                
-                // 4th stage
-                Node.PropertySet[] propSets = comp1.getProperties();
-                Object[] properties = new Node.Property[0];
-                
-                ArrayList aList = new ArrayList();
-                for(int i=0; i<propSets.length; i++) {
-                    if(RAD_PROPERTIES.equals(propSets[i].getName())
-                            || RAD_PROPERTIES2.equals(propSets[i].getName())
-                            || RAD_LAYOUT.equals(propSets[i].getName())
-                            || RAD_ACCESSIBILITY.equals(propSets[i].getName())) {
-                        aList.addAll(Arrays.asList(propSets[i].getProperties()));
+                    if (comp == comp2) {
+                        return 1;
                     }
                 }
-                properties = aList.toArray();
-                
+                assert false;
+                return 0;
+            } // end of 2nd stage
+            
+            // 3rd stage
+            if (isInCreation1) {
+                // 3a) stage
                 index1 = -1;
                 index2 = -1;
                 
-                Node.Property prop1 = ((ValidFormProperty)o1).getProperty();
-                Node.Property prop2 = ((ValidFormProperty)o2).getProperty();
-                
-                for(int i=0; i<properties.length; i++) {
-                    if (prop1.equals(properties[i])) {
-                        index1 = i;
-                    }
-                    
-                    if (prop2.equals(properties[i])) {
-                        index2 = i;
-                    }
-                    
-                    if ((index1 != -1) && (index2 != -1)) {
-                        break;
-                    }
+                if (propName1.equals(CREATION_CODE_PRE)) {
+                    index1 = 0;
+                } else if (propName1.equals(CREATION_CODE_CUSTOM)) {
+                    index1 = 1;
+                } else if (propName1.equals(CREATION_CODE_POST)) {
+                    index1 = 2;
                 }
                 
-                return index1 - index2; // end of 4th stage
+                if (propName2.equals(CREATION_CODE_PRE)) {
+                    index2 = 0;
+                } else if (propName2.equals(CREATION_CODE_CUSTOM)) {
+                    index2 = 1;
+                } else if (propName2.equals(CREATION_CODE_POST)) {
+                    index2 = 2;
+                }
+                
+                return index1 - index2; // end of 3a) stage
+            } else {
+                // 3b) stage
+                index1 = -1;
+                index2 = -1;
+                
+                if (propName1.equals(INIT_CODE_PRE)) {
+                    index1 = 0;
+                } else if (propName1.equals(INIT_CODE_POST)) {
+                    index1 = 2;
+                } else {
+                    index1 = 1; // is one of set-method property
+                }
+                
+                if (propName2.equals(INIT_CODE_PRE)) {
+                    index2 = 0;
+                } else if (propName2.equals(INIT_CODE_POST)) {
+                    index2 = 2;
+                } else {
+                    index2 = 1; // is one of set-method property
+                }
+                
+                if ((index1 != 1) || (index2 != 1)) {
+                    return index1 - index2; // end of 3b) stage
+                }
+            } // end of 3rd stage
+            
+            // 4th stage
+            index1 = -1;
+            index2 = -1;
+            Iterator<Node.Property> it = new FormPropertiesIterator(comp1);
+            for (int propIndex = 0; it.hasNext(); propIndex++) {
+                Node.Property property = it.next();
+                if (prop1.equals(property)) {
+                    index1 = propIndex;
+                }
+                if (prop2.equals(property)) {
+                    index2 = propIndex;
+                }
+                if ((index1 != -1) && (index2 != -1)) {
+                    break;
+                }
+            }
+            return index1 - index2; // end of 4th stage
+
         } // end of compare method
    
     } // End of ValidFormPropertyCompoarator inner class.
@@ -429,7 +485,7 @@ public class FormI18nSupport extends JavaI18nSupport {
         private String propertyName = ""; // NOI18N
 
         /** Collection for holding properties of form and their components, if search is in form performed. */
-        private TreeSet formProperties;
+        private TreeSet<ValidFormProperty> formProperties;
 
         /** Found valid form property from last search. */
         private ValidFormProperty lastFoundProp;
@@ -474,7 +530,8 @@ public class FormI18nSupport extends JavaI18nSupport {
          * @return True if sorted collection was created. */
         private synchronized boolean createFormProperties() {
             // creates new collection
-            formProperties = new TreeSet(new ValidFormPropertyComparator((FormDataObject)sourceDataObject));
+            formProperties = new TreeSet<ValidFormProperty>(
+                    new ValidFormPropertyComparator((FormDataObject) sourceDataObject));
             updateFormProperties();
 
             return true;
@@ -487,58 +544,45 @@ public class FormI18nSupport extends JavaI18nSupport {
             }
 
             // All components in current FormDataObject.
-            Collection c = ((FormDataObject) sourceDataObject).getFormEditor()
-                           .getFormModel().getAllComponents();
-            Iterator it = c.iterator();
+            Collection<RADComponent> c
+                    = ((FormDataObject) sourceDataObject).getFormEditor()
+                      .getFormModel().getAllComponents();
 
             // search thru all RADComponents in the form
-            while(it.hasNext()) {
-                RADComponent radComponent = (RADComponent)it.next();
-                Node.PropertySet[] propSets = radComponent.getProperties();
+            for (RADComponent radComponent : c) {
 
-                // go thru properties sets
-                for(int i=0; i<propSets.length; i++) {
-                    String setName = propSets[i].getName();
-                    // go just thru these property sets
-                    if (false == (RAD_PROPERTIES.equals(setName) || RAD_PROPERTIES2.equals(setName)
-                    || RAD_ACCESSIBILITY.equals(setName) || RAD_LAYOUT.equals(setName))) {
+                Iterator<Node.Property> it = new FormPropertiesIterator(radComponent);
+                while (it.hasNext()) {
+                    Node.Property property = it.next();
+
+                    // skip hidden and unchanged properties
+                    if (property.isHidden()
+                            || !(property instanceof FormProperty)
+                            || !((FormProperty)property).isChanged()) {
                         continue;
                     }
-                    Node.Property[] properties = propSets[i].getProperties();
 
-                    // go thru properties in sets
-                    for(int j=0; j<properties.length; j++) {
-                        Node.Property property = properties[j];
+                    // get value
+                    Object value;
+                    try {
+                        value = property.getValue();
+                    } catch(IllegalAccessException iae) {
+                        continue; // next property
+                    } catch(InvocationTargetException ite) {
+                        continue; // next property
+                    }
 
-                        // skip hidden and unchanged properties
-                        if (property.isHidden()
-                                || !(property instanceof FormProperty)
-                                || !((FormProperty)property).isChanged()) {
-                            continue;
-                        }
-
-                        // get value
-                        Object value;
-                        try {
-                            value = property.getValue();
-                        } catch(IllegalAccessException iae) {
-                            continue; // next property
-                        } catch(InvocationTargetException ite) {
-                            continue; // next property
-                        }
-
-                        // Property have to be a non-null value and have "value type" of String (don't confuse with the type of object referred by value variable!!)
-                        // or value be RADconnectiondesignValue and be type of TYPE_VALUE or TYPE_CODE
-                        if(value != null && (property.getValueType().equals(String.class)
-                            || (value instanceof RADConnectionDesignValue
-                                &&  ( ((RADConnectionDesignValue)value).getType() == RADConnectionDesignValue.TYPE_VALUE
-                                    || ((RADConnectionDesignValue)value).getType() == RADConnectionDesignValue.TYPE_CODE) 
-                                ) )
-                            ) {
-                            // Actually add the property to the list.
-                            // Note: add only ValidFormProperty instances
-                            formProperties.add(new ValidFormProperty(radComponent.getName(), property));
-                        }
+                    // Property have to be a non-null value and have "value type" of String (don't confuse with the type of object referred by value variable!!)
+                    // or value be RADconnectiondesignValue and be type of TYPE_VALUE or TYPE_CODE
+                    if(value != null && (property.getValueType().equals(String.class)
+                        || (value instanceof RADConnectionDesignValue
+                            &&  ( ((RADConnectionDesignValue)value).getType() == RADConnectionDesignValue.TYPE_VALUE
+                                || ((RADConnectionDesignValue)value).getType() == RADConnectionDesignValue.TYPE_CODE) 
+                            ) )
+                        ) {
+                        // Actually add the property to the list.
+                        // Note: add only ValidFormProperty instances
+                        formProperties.add(new ValidFormProperty(radComponent.getName(), property));
                     }
                 }
             }
@@ -608,18 +652,25 @@ public class FormI18nSupport extends JavaI18nSupport {
             // Node property.
             Node.Property nodeProperty = null;
 
-            Iterator it;
+            Iterator<ValidFormProperty> it;
 
             if (lastFoundProp != null) {
                 validProp = lastFoundProp;
                 it = formProperties.tailSet(lastFoundProp).iterator();
+                /*
+                 * In the first cycle of the following do-while loop, value
+                 * of 'lastFoundProp' will be used, not the one from
+                 * the iterator. So make sure the property following
+                 * 'lastFoundProp' is used in the next cycle:
+                 */
+                it.next();
             } else {
                 it = formProperties.iterator();
             }
 
             do {
                 if (validProp == null && it.hasNext()) {
-                    validProp = (ValidFormProperty) it.next();
+                    validProp = it.next();
                 }
                 if (validProp == null) {
                     break;
@@ -666,8 +717,9 @@ public class FormI18nSupport extends JavaI18nSupport {
                                 // is type of VALUE
                                 string = connectionValue.getValue();
 
-                            if(indexOfNonI18nString(string, hardString, validProp.getSkip()) != -1)
-                                found = true;
+                                if (indexOfNonI18nString(string, hardString, validProp.getSkip()) != -1) {
+                                    found = true;
+                                }
                             } else if (connectionValue.getType() == RADConnectionDesignValue.TYPE_CODE) {
                                 // is type of TYPE_CODE
                                 string = connectionValue.getCode();
@@ -820,7 +872,7 @@ public class FormI18nSupport extends JavaI18nSupport {
          */
         private synchronized boolean isInGuardedSection(final Position startPos,
                                                         final Position endPos) {
-            EditorCookie editor = (EditorCookie) sourceDataObject.getCookie(EditorCookie.class);
+            EditorCookie editor = sourceDataObject.getCookie(EditorCookie.class);
             StyledDocument doc = null;
             GuardedSectionManager guards = null;
             if (editor != null) {
@@ -888,7 +940,7 @@ public class FormI18nSupport extends JavaI18nSupport {
                String replaceString = javaI18nString.getReplaceString();
 
                // Remember position offset before change of guarded block
-               int lastPos = ((FormI18nFinder)finder).getLastPosition().getOffset();
+               int lastPos = finder.getLastPosition().getOffset();
 
                int pos = formHcString.getEndPosition().getOffset();
 
@@ -980,7 +1032,7 @@ public class FormI18nSupport extends JavaI18nSupport {
                             ((AbstractDocument)document).readLock();
                        }
                        try {
-                           ((FormI18nFinder)finder).setLastPosition(document.createPosition(lastP));                   
+                           finder.setLastPosition(document.createPosition(lastP));                   
                        } catch (BadLocationException ble) {
                            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ble);
                        } finally {

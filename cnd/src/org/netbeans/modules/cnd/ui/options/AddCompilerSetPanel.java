@@ -42,7 +42,6 @@ package org.netbeans.modules.cnd.ui.options;
 
 import java.awt.Dimension;
 import java.io.File;
-import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JFileChooser;
 import javax.swing.event.DocumentEvent;
@@ -69,10 +68,12 @@ public class AddCompilerSetPanel extends javax.swing.JPanel implements DocumentL
         initComponents();
         this.csm = csm;
         
-        List<CompilerFlavor> list = CompilerFlavor.getFlavors();
+        List<CompilerFlavor> list = CompilerFlavor.getFlavors(csm.getPlatform());
         for (CompilerFlavor cf : list) {
             cbFamily.addItem(cf);
         }
+        // add unknown as well
+        cbFamily.addItem(CompilerFlavor.getUnknown(csm.getPlatform()));
         tfName.setText(""); // NOI18N
         taInfo.setBackground(getBackground());
         validateData();
@@ -94,13 +95,12 @@ public class AddCompilerSetPanel extends javax.swing.JPanel implements DocumentL
     
     private void updateDataBaseDir() {
         File dirFile = new File(tfBaseDirectory.getText());
-        ArrayList<String> list = new ArrayList<String>();
-        if (new File(dirFile, "cc").exists()) // NOI18N
-            list.add("cc"); // NOI18N
-        if (new File(dirFile, "gcc").exists()) // NOI18N
-            list.add("gcc"); // NOI18N
-        CompilerSet.CompilerFlavor flavor = CompilerSet.getCompilerSetFlavor(dirFile.getAbsolutePath(), (String[])list.toArray(new String[list.size()]));
-        cbFamily.setSelectedItem(flavor);
+        List<CompilerFlavor> flavors = CompilerSet.getCompilerSetFlavor(dirFile.getAbsolutePath(), csm.getPlatform());
+        if (flavors.size() > 0) {
+            cbFamily.setSelectedItem(flavors.get(0));
+        } else {
+            cbFamily.setSelectedItem(CompilerFlavor.getUnknown(csm.getPlatform()));
+        }
         updateDataFamily();
         if (!dialogDescriptor.isValid()) {
             tfName.setText("");

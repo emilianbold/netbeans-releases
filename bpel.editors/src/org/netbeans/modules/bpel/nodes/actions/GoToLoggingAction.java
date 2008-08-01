@@ -20,7 +20,7 @@ package org.netbeans.modules.bpel.nodes.actions;
 
 import org.netbeans.modules.bpel.nodes.actions.BpelNodeAction;
 import org.netbeans.modules.bpel.editors.api.nodes.actions.ActionType;
-import org.netbeans.modules.bpel.editors.api.utils.Util;
+import org.netbeans.modules.bpel.editors.api.EditorUtil;
 import org.netbeans.modules.bpel.mapper.logging.multiview.LoggingDesignContextFactory;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.ExtensibleElements;
@@ -125,7 +125,7 @@ public class GoToLoggingAction extends BpelNodeAction {
     }
 
     protected void performAction(BpelEntity[] bpelEntities) {
-        Util.goToLoggingAlerting(bpelEntities[0]);
+        EditorUtil.goToLoggingAlerting(bpelEntities[0]);
     }
 
 

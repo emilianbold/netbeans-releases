@@ -94,40 +94,31 @@ public abstract class XMLUtils {
         FileOutputStream output = null;
         
         for (int i = 0; i < MAXIMUM_SAVE_ATTEMPTS; i++) {
-            LogManager.log("... attempt " + (i + 1));
-            try {
-                LogManager.log("... opening output stream");                
-                output = new FileOutputStream(file);
-                LogManager.log("... saving XML to output stream");
-                saveXMLDocument(document, output);
-                LogManager.log("... saving XML to output stream done");
+            try {                
+                output = new FileOutputStream(file);                
+                saveXMLDocument(document, output);                
                 // check the size of the resulting file -- sometimes it just happens
                 // to be empty, we need to resave then; if we fail to save for
                 // several times (MAXIMUM_SAVE_ATTEMPTS) -- fail with an
                 // XMLException
             } catch (IOException e) {
                 LogManager.log("... can`t save XML, an exception caught", e);
+                LogManager.logExit("... document not saved");
                 throw new XMLException("Cannot save XML document", e);
             } finally {
-                LogManager.log("... closing output stream if necessary");
                 if (output != null) {
                     try {
                         output.close();
                         output = null;
                     } catch (IOException e) {
                         ErrorManager.notifyDebug("Could not close the stream", e);
-                    } 
-                    LogManager.log("... output stream is closed now");
-                } else {
-                    LogManager.log("... no need to do that");
+                    }
                 }
             }
-            LogManager.log("... checking file length");
             if (file.length() > 0) {
-                LogManager.logExit("... file length is more that 0 so exit");
+                LogManager.logExit("... document saved");
                 return;
-            }
-            LogManager.log("... file length is zero so go to next cycle");
+            }            
         }
         LogManager.logExit("... throwing XML exception since xml file could not be saved for several attemps");
         throw new XMLException("Cannot save XML document after " +
@@ -140,33 +131,24 @@ public abstract class XMLUtils {
             final Document document,
             final OutputStream output) throws XMLException {
         try {
-	    LogManager.logEntry("... saving XML to output stream started");
-            final Source source = new DOMSource(
+	    final Source source = new DOMSource(
                     document);
-	    LogManager.log("... DOMSource created");
-            final Result result = new StreamResult(
+	    final Result result = new StreamResult(
                     output);
-	    LogManager.log("... StreamResult created");
-            final Source xslt = new StreamSource(
+	    final Source xslt = new StreamSource(
                     FileProxy.getInstance().getFile(XSLT_REFORMAT_URI,true));
-	    LogManager.log("... XSLT loaded");
-            TransformerFactory tf = TransformerFactory.
+	    TransformerFactory tf = TransformerFactory.
                     newInstance();
-            LogManager.log("... transformer factory created");
             final Transformer transformer = tf.
                     newTransformer(xslt);
-            LogManager.log("... transformer created from xslt");
-            transformer.transform(source, result);
-	    LogManager.log("... transformation done");
+            transformer.transform(source, result);	    
         } catch (DownloadException e) {
             throw new XMLException("Cannot save XML document", e);
         } catch (TransformerConfigurationException e) {
             throw new XMLException("Cannot save XML document", e);
         } catch (TransformerException e) {
             throw new XMLException("Cannot save XML document", e);
-        } finally {
-	    LogManager.logExit("... saving XML to output stream ended (finally)");
-        }
+        } 
     }
     
     public static Document loadXMLDocument(

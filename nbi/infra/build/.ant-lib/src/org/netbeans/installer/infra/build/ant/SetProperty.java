@@ -36,11 +36,9 @@
 
 package org.netbeans.installer.infra.build.ant;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Stack;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
+import org.netbeans.installer.infra.build.ant.utils.Utils;
 
 /**
  * This class is an ant task which is capable of setting a property value basing on
@@ -48,8 +46,7 @@ import org.apache.tools.ant.Task;
  *
  * @author Kirill Sorokin
  */
-public class SetProperty extends Task {
-     private List <String> resolving;
+public class SetProperty extends Task {     
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
     /**
@@ -102,77 +99,15 @@ public class SetProperty extends Task {
      * evaluated and set as the value of the target property. Otherwise the literal
      * string value is used.
      */
-    public void execute() {
-        resolving = new ArrayList <String> ();
+    public void execute() {        
         final Project project = getProject();
-        final String string = (source != null) ? project.getProperty(source): value;
-        final String resolved = resolveString(string);
+        final String string = (source != null) ? 
+            project.getProperty(Utils.resolveProperty(source, project)) : 
+            value;
+        final String resolved = Utils.resolveProperty(string, project);
         log("Setting " + property + " to " + resolved);
         project.setProperty(property, resolved);
     }
     
-    private String resolveString(final String string) {
-        if(string==null || string.equals("")) {
-            return string;
-        }        
-        StringBuilder result = new StringBuilder(string.length());
-        StringBuilder buffer = null;
-        Stack <StringBuilder> started = new Stack <StringBuilder> ();
-        boolean inside = false;
-        
-        for (int i = 0; i < string.length(); i++) {
-            char c = string.charAt(i);
-            switch (c) {
-                case '$':
-                    if (i + 1 < string.length() && string.charAt(i + 1) == '{') {
-                        if (inside) {
-                            started.push(buffer);
-                        }
-                        i++;
-                        inside = true;
-                        buffer = new StringBuilder();
-                    } else {
-                        (inside ? buffer : result).append("$");
-                    }
-                    break;
-                case '}':
-                    if (inside) {
-                        final String propName = buffer.toString();
-                        String propValue;
-                        
-                        if(resolving.contains(propName)) {                            
-                            propValue = null;
-                        } else {
-                            resolving.add(propName);
-                            propValue = resolveString(getProject().getProperty(propName));
-                            resolving.remove(propName);
-                        }
-                        final String resolved = propValue != null ? propValue : "${" + propName + "}";
-                        if (!started.empty()) {
-                            buffer = started.pop().append(resolved);
-                        } else {
-                            result.append(resolved);
-                            inside = false;
-                        }
-                    } else {
-                        result.append(c);
-                    }
-                    break;
-                default:
-                    (inside ? buffer : result).append(c);
-            }
-        }
-        
-        if (inside) {
-            do {
-                if (!started.empty()) {
-                    buffer = started.pop().append("${").append(buffer);
-                } else {
-                    result.append("${").append(buffer);
-                    buffer = null;
-                }
-            } while (buffer != null);
-        }
-        return result.toString();
-    }
+    
 }

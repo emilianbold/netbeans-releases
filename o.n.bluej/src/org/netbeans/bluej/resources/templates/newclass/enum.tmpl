@@ -1,0 +1,21 @@
+<#assign licenseFirst = "/*">
+<#assign licensePrefix = " * ">
+<#assign licenseLast = " */">
+<#include "../Licenses/license-${project.license}.txt">
+
+<#if package?? && package != "">
+package ${package};
+
+</#if>
+/**
+ * Enumeration class ${name} - write a description of the enum class here
+ * 
+ * @author ${user}
+ * @version (version number or date here)
+ */
+public enum ${name} {
+	monday, tuesday, wednesday, thursday, friday, saturday, sunday
+}
+
+
+

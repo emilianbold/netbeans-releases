@@ -66,8 +66,11 @@ public class SQLMapReader {
 			String sqlfile = attrMap.getNamedItem(SQLMapEntry.SQL_FILE_TAG).getNodeValue();
             String wsdlfile = attrMap.getNamedItem(SQLMapEntry.WSDL_FILE_TAG).getNodeValue();
 			String type = attrMap.getNamedItem(SQLMapEntry.TYPE_TAG).getNodeValue();
+			String displayName = attrMap.getNamedItem(SQLMapEntry.DISPLAYNAME_TAG).getNodeValue();
+			String processName = attrMap.getNamedItem(SQLMapEntry.PROCESSNAME_TAG).getNodeValue();
+			String filePath = attrMap.getNamedItem(SQLMapEntry.FILEPATH_TAG).getNodeValue();
 
-			SQLMapEntry e = new SQLMapEntry(partnerlink, portType, operation, sqlfile, wsdlfile, type);
+			SQLMapEntry e = new SQLMapEntry(partnerlink, portType, operation, sqlfile, wsdlfile, type, displayName, processName, filePath);
 			etlmapEntryList.add(e);
 
 		}
@@ -95,8 +98,11 @@ public class SQLMapReader {
 			String sqlfile = attrMap.getNamedItem(SQLMapEntry.SQL_FILE_TAG).getNodeValue();
             String wsdlfile = attrMap.getNamedItem(SQLMapEntry.WSDL_FILE_TAG).getNodeValue();
 			String type = attrMap.getNamedItem(SQLMapEntry.TYPE_TAG).getNodeValue();
+			String displayName = attrMap.getNamedItem(SQLMapEntry.DISPLAYNAME_TAG).getNodeValue();
+			String processName = attrMap.getNamedItem(SQLMapEntry.PROCESSNAME_TAG).getNodeValue();
+			String filePath = attrMap.getNamedItem(SQLMapEntry.FILEPATH_TAG).getNodeValue();
 
-			SQLMapEntry e = new SQLMapEntry(partnerlink, portType, operation, sqlfile, wsdlfile, type);
+			SQLMapEntry e = new SQLMapEntry(partnerlink, portType, operation, sqlfile, wsdlfile, type, displayName, processName, filePath);
 			etlmapEntryList.add(e);
 
 		}

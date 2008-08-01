@@ -1,5 +1,5 @@
 #API master signature file
-#Version 1.5.1
+#Version 1.8.0
 CLSS public static abstract interface org.netbeans.lib.editor.codetemplates.spi.CodeTemplateFilter$Factory
 meth public abstract org.netbeans.lib.editor.codetemplates.spi.CodeTemplateFilter org.netbeans.lib.editor.codetemplates.spi.CodeTemplateFilter$Factory.createFilter(javax.swing.text.JTextComponent,int)
 supr null

@@ -55,10 +55,10 @@ import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.project.NativeFileItem.Language;
 import org.netbeans.modules.cnd.discovery.api.Configuration;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryProvider;
-import org.netbeans.modules.cnd.discovery.api.ItemProperties;
 import org.netbeans.modules.cnd.discovery.api.ProjectProperties;
 import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
-import org.netbeans.modules.cnd.discovery.api.ProjectUtil;
+import org.netbeans.modules.cnd.discovery.api.DiscoveryUtils;
+import org.netbeans.modules.cnd.discovery.api.ProjectImpl;
 import org.netbeans.modules.cnd.discovery.api.ProviderProperty;
 import org.netbeans.modules.cnd.discovery.api.SourceFileProperties;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BooleanConfiguration;
@@ -185,7 +185,7 @@ public class AnalyzeModel implements DiscoveryProvider {
             return;
         }
         if (d.isDirectory()){
-            if (ProjectUtil.ignoreFolder(d)){
+            if (DiscoveryUtils.ignoreFolder(d)){
                 return;
             }
             String path = d.getAbsolutePath();
@@ -235,38 +235,9 @@ public class AnalyzeModel implements DiscoveryProvider {
         }
         
         public List<ProjectProperties> getProjectConfiguration() {
-            return divideByLanguage(getSourcesConfiguration());
+            return ProjectImpl.divideByLanguage(getSourcesConfiguration());
         }
-        
-        protected List<ProjectProperties> divideByLanguage(List<SourceFileProperties> sources){
-            ModelProject cProp = null;
-            ModelProject cppProp = null;
-            for (SourceFileProperties source : sources) {
-                ItemProperties.LanguageKind lang = source.getLanguageKind();
-                ModelProject current = null;
-                if (lang == ItemProperties.LanguageKind.C){
-                    if (cProp == null) {
-                        cProp = new ModelProject(lang);
-                    }
-                    current = cProp;
-                } else {
-                    if (cppProp == null) {
-                        cppProp = new ModelProject(lang);
-                    }
-                    current = cppProp;
-                }
-                current.update(source);
-            }
-            List<ProjectProperties> languages = new ArrayList<ProjectProperties>();
-            if (cProp != null) {
-                languages.add(cProp);
-            }
-            if (cppProp != null) {
-                languages.add(cppProp);
-            }
-            return languages;
-        }
-        
+       
         public List<Configuration> getDependencies() {
             return null;
         }

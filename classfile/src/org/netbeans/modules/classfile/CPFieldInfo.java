@@ -58,6 +58,7 @@ public final class CPFieldInfo extends CPFieldMethodInfo {
         super(pool, iClass, iNameAndType);
     }
 
+    @Override
     public final int getTag() {
 	return ConstantPool.CONSTANT_FieldRef;
     }

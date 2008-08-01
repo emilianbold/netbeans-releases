@@ -170,7 +170,7 @@ public class ShellView extends FrameView {
         Collection<_detailClass_> _detailEntityInitial_s = _masterEntityInitial_.get_joinCollectionCapital_();
         if (_detailEntityInitial_s == null) {
             _detailEntityInitial_s = new LinkedList<_detailClass_>();
-            _masterEntityInitial_.set_joinCollectionCapital_(_detailEntityInitial_s);
+            _masterEntityInitial_.set_joinCollectionCapital_((List)_detailEntityInitial_s);
         }
         _detailClass_ _detailEntityInitial_ = new _detailClass_();
         entityManager.persist(_detailEntityInitial_);

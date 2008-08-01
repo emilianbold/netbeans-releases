@@ -44,6 +44,7 @@ import java.io.File;
 import java.util.Set;
 import java.util.logging.Level;
 import org.netbeans.modules.mercurial.Mercurial;
+import org.netbeans.modules.mercurial.config.HgConfigFiles;
 import org.netbeans.modules.versioning.spi.VCSContext;
 
 /**
@@ -96,7 +97,7 @@ public class HgRepositoryContextCache {
             return pullDefault;
         }else{
             root = getRoot(ctx);
-            pullDefault = HgCommand.getPullDefault(root);
+            pullDefault = new HgConfigFiles(root).getDefaultPull(true);
             pullCtxRootFiles = ctx.getRootFiles();
             return pullDefault;
         }
@@ -115,7 +116,7 @@ public class HgRepositoryContextCache {
             return pushDefault;
         }else{
             root = getRoot(ctx);
-            pushDefault = HgCommand.getPushDefault(root);
+            pushDefault = new HgConfigFiles(root).getDefaultPush(true);
             pushCtxRootFiles = ctx.getRootFiles();
             return pushDefault;
         }

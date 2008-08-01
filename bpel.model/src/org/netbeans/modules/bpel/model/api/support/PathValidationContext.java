@@ -55,25 +55,18 @@ public class PathValidationContext implements XPathValidationContext {
     private transient SchemaModel contextModel;
     private transient SchemaComponent contextComponent;
     
-    public PathValidationContext(XPathModel xPathModel, 
-            Validator validator, ValidationVisitor vVisitor, 
-            BpelEntity activity, ContentElement contentElement) {
-        myXPathModel = xPathModel;
+    public PathValidationContext(Validator validator, ValidationVisitor vVisitor, ContentElement contentElement) {
         myValidator = validator;
         myVVisitor = vVisitor;
-        myBpelContextActivity = activity;
         myXpathContentElement = contentElement;
     }
     
     public XPathModel getXPathModel() {
         return myXPathModel;
     }
-    
-    /**
-     * Returns the BPEL Activity to which the validation is applied.
-     */
-    public BpelEntity getBpelContextActivity() {
-        return myBpelContextActivity;
+
+    public void setXPathModel(XPathModel model) {
+        myXPathModel = model;
     }
     
     /**
@@ -117,7 +110,7 @@ public class PathValidationContext implements XPathValidationContext {
         return myValidator;
     }
 
-    public ValidationVisitor getVVisitor() {
+    private ValidationVisitor getVVisitor() {
         return myVVisitor;
     }
 
@@ -180,26 +173,7 @@ public class PathValidationContext implements XPathValidationContext {
                 getValidator(),
                 resultType,
                 (BpelEntity)ce, 
-                // myContext.getBpelContextActivity(),
                 str);
         getVVisitor().getResultItems().add(resultItem);
     }
-
-    public boolean isSchemaImported(String soughtNamspace) {
-        assert soughtNamspace != null;
-        //
-        BpelModel model = getBpelContextActivity().getBpelModel();
-        if (model.getState() == State.VALID) {
-            for (Import anImport : model.getProcess().getImports()) {
-                if (Import.SCHEMA_IMPORT_TYPE.equals(anImport.getImportType())) {
-                    if (soughtNamspace.equals(anImport.getNamespace())) {
-                        return true;
-                    }
-                }
-            }
-        }
-        //
-        return false;
-    }
-    
 }

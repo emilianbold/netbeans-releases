@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -55,11 +55,13 @@ import org.openide.modules.ModuleInfo;
 
 /**
  *
- * @author Radek Matous
+ * @author Radek Matous, Jiri Rechtacek
  */
 public final class OperationContainerImpl<Support> {
     private OperationContainer<Support> container;
+    private boolean upToDate = false;
     private OperationContainerImpl () {}
+    private static final Logger LOGGER = Logger.getLogger (OperationContainerImpl.class.getName ());    
     private List<OperationInfo<Support>> operations = new ArrayList<OperationInfo<Support>>();
     private Collection<OperationInfo<Support>> affectedEagers = new HashSet<OperationInfo<Support>> ();
     public static OperationContainerImpl<InstallSupport> createForInstall () {
@@ -95,7 +97,7 @@ public final class OperationContainerImpl<Support> {
     public static OperationContainerImpl<OperationSupport> createForUninstallNativeComponent () {
         return new OperationContainerImpl<OperationSupport> (OperationType.CUSTOM_INSTALL);
     }
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked"})
     public OperationInfo<Support> add (UpdateUnit updateUnit, UpdateElement updateElement) throws IllegalArgumentException {
         OperationInfo<Support> retval = null;
         boolean isValid = isValid (updateUnit, updateElement);
@@ -103,7 +105,7 @@ public final class OperationContainerImpl<Support> {
             throw new IllegalArgumentException ("Invalid " + updateElement.getCodeName () + " for operation " + type);
         }
         if (UpdateUnitFactory.getDefault().isScheduledForRestart (updateElement)) {
-            Logger.getLogger(this.getClass ().getName ()).log (Level.INFO, updateElement + " is scheduled for restart IDE.");
+            LOGGER.log (Level.INFO, updateElement + " is scheduled for restart IDE.");
             throw new IllegalArgumentException (updateElement + " is scheduled for restart IDE.");
         }
         if (isValid) {
@@ -134,6 +136,7 @@ public final class OperationContainerImpl<Support> {
         synchronized(this) {
             if (!contains (updateUnit, updateElement)) {
                 retval = Trampoline.API.createOperationInfo (new OperationInfoImpl<Support> (updateUnit, updateElement));
+                upToDate = false;
                 operations.add (retval);
             }
         }
@@ -182,8 +185,12 @@ public final class OperationContainerImpl<Support> {
     }
     
     synchronized public List<OperationInfo<Support>> listAllWithPossibleEager () {
+        if (upToDate) {
+            return new ArrayList<OperationInfo<Support>>(operations);
+        }
         // handle eager modules
-        if (type == OperationType.INSTALL) {
+        if (type == OperationType.INSTALL || type == OperationType.UPDATE) {
+        //if (type == OperationType.INSTALL) {
             Collection<UpdateElement> all = new HashSet<UpdateElement> ();
             for (OperationInfo<?> i : operations) {
                 all.add (i.getUpdateElement ());
@@ -197,6 +204,7 @@ public final class OperationContainerImpl<Support> {
                 Set<ModuleInfo> installed = new HashSet<ModuleInfo> (InstalledModuleProvider.getInstalledModules ().values ());
                 Set<UpdateElement> reqs = Utilities.findRequiredModules (mi.getDependencies (), installed);
                 if (! reqs.isEmpty() && all.containsAll (reqs) && ! all.contains (eagerEl)) {
+                    // adds affectedEager into list of elements for the operation
                     OperationInfo<Support> i = add (eagerEl.getUpdateUnit (), eagerEl);
                     if (i != null) {
                         affectedEagers.add (i);
@@ -204,6 +212,21 @@ public final class OperationContainerImpl<Support> {
                 }
             }
         }
+        if (LOGGER.isLoggable (Level.FINE)) {
+            LOGGER.log (Level.FINE, "== do listAllWithPossibleEager for " + type + " operation ==");
+            for (OperationInfo info : operations) {
+                LOGGER.log (Level.FINE, "--> " + info.getUpdateElement ());
+            }
+            if (affectedEagers != null) {
+                LOGGER.log (Level.FINE, "   == includes affected eagers for " + type + " operation ==");
+                for (OperationInfo eagerInfo : affectedEagers) {
+                    LOGGER.log (Level.FINE, "   --> " + eagerInfo.getUpdateElement ());
+                }
+                LOGGER.log (Level.FINE, "   == done eagers. ==");
+            }
+            LOGGER.log (Level.FINE, "== done. ==");
+        }
+        upToDate = true;
         return new ArrayList<OperationInfo<Support>>(operations);
     }
     
@@ -254,6 +277,7 @@ public final class OperationContainerImpl<Support> {
     
     public synchronized void remove (OperationInfo op) {
         synchronized(this) {
+            upToDate = false;
             operations.remove (op);
             operations.removeAll (affectedEagers);
             affectedEagers.clear ();
@@ -261,6 +285,7 @@ public final class OperationContainerImpl<Support> {
     }
     public synchronized void removeAll () {
         synchronized(this) {
+            upToDate = false;
             operations.clear ();
             affectedEagers.clear ();
         }

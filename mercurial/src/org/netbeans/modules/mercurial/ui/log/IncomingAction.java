@@ -43,6 +43,7 @@ package org.netbeans.modules.mercurial.ui.log;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.versioning.spi.VCSContext;
+import org.netbeans.modules.mercurial.ui.actions.ContextAction;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import org.openide.util.NbBundle;
@@ -53,7 +54,7 @@ import org.openide.util.NbBundle;
  * 
  * @author John Rice
  */
-public class IncomingAction extends AbstractAction {
+public class IncomingAction extends ContextAction {
     
     private final VCSContext context;
     
@@ -62,10 +63,10 @@ public class IncomingAction extends AbstractAction {
         putValue(Action.NAME, name);
     }
     
-    public void actionPerformed(ActionEvent e) {
-        if(!Mercurial.getInstance().isGoodVersionAndNotify()) return;
+    public void performAction(ActionEvent e) {
         SearchHistoryAction.openIncoming(context,
-                NbBundle.getMessage(IncomingAction.class, "MSG_Incoming_TabTitle", org.netbeans.modules.versioning.util.Utils.getContextDisplayName(context)));
+                NbBundle.getMessage(IncomingAction.class, "MSG_Incoming_TabTitle", 
+                HgUtils.getRootFile(context).getName()));    
     }
         
     public boolean isEnabled() {

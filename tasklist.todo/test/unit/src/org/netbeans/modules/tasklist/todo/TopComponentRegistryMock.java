@@ -84,12 +84,8 @@ public class TopComponentRegistryMock implements TopComponent.Registry {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public void addPropertyChangeListener(PropertyChangeListener l) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
+    public void addPropertyChangeListener(PropertyChangeListener l) {}
 
-    public void removePropertyChangeListener(PropertyChangeListener l) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
+    public void removePropertyChangeListener(PropertyChangeListener l) {}
 
 }

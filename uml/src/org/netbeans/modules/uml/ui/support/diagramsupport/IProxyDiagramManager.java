@@ -44,6 +44,7 @@ package org.netbeans.modules.uml.ui.support.diagramsupport;
 
 import org.netbeans.modules.uml.common.generics.ETPairT;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IVersionableElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamespace;
 import org.netbeans.modules.uml.core.metamodel.diagrams.DiagramDetails;
@@ -55,6 +56,15 @@ import org.netbeans.modules.uml.core.support.umlutils.ETList;
 
 public interface IProxyDiagramManager
 {
+
+        /**
+         * Notifies the diagram to refresh the node graphical object that 
+         * is associated with the presentation element.
+         * 
+         * @param presentation The presentation element that needs to be refreshed.
+         */
+        public void refresh(IPresentationElement presentation,boolean resizetocontent);
+        
 	/**
 	 * This verifies that the diagram name is correct (ie no bad filename 
 	 * characters like %*&(...) and returns the corrected one if not.

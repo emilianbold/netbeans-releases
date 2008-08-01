@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -49,10 +49,8 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.modules.junit.output.antutils.FileSetScanner.AntPattern.PatternPartType;
-import org.netbeans.modules.junit.output.antutils.FileUtils;
 
 /**
  *
@@ -147,6 +145,13 @@ class FileSetScanner {
             final Collection<PatternTest> patternTests) {
         
         final File[] children = directory.listFiles();
+        if (children == null) {
+            /*
+             * it means that 'directory' does not really point to a directory
+             * - see also bug #130365
+             */
+            return;
+        }
         for (File child : children) {
             final boolean isFile = child.isFile();
             final boolean isDir = child.isDirectory();
@@ -615,6 +620,14 @@ class FileSetScanner {
                    && (object.getClass() == AntPattern.class)
                    && Arrays.equals(patternParts,
                                     ((AntPattern) object).patternParts);
+        }
+        @Override
+        public int hashCode() {
+            int hash = 131;
+            for (int i = 0; i < patternParts.length; i++) {
+                hash += patternParts[i].hashCode() << i;
+            }
+            return hash;
         }
         @Override
         public String toString() {

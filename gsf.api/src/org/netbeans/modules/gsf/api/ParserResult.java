@@ -45,6 +45,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.tree.TreeNode;
+import org.netbeans.modules.gsf.api.annotations.CheckForNull;
 import org.netbeans.modules.gsf.api.annotations.NonNull;
 
 
@@ -59,44 +60,49 @@ import org.netbeans.modules.gsf.api.annotations.NonNull;
  * @author Tor Norbye
  */
 public abstract class ParserResult {
-    protected final ParserFile file;
-    private List<Error> errors;
-    private Parser parser;
-//    protected EmbeddingModel model;
-    protected TranslatedSource translatedSource;
-    private String mimeType;
-    private CompilationInfo info;
-    
+    @NonNull protected final ParserFile file;
+    @CheckForNull private List<Error> errors;
+    @NonNull private Parser parser;
+    @CheckForNull protected TranslatedSource translatedSource;
+    @NonNull private String mimeType;
+    @NonNull private CompilationInfo info;
+    @NonNull protected UpdateState updateState = UpdateState.NOT_SUPPORTED;
+
     /** Creates a new instance of ParserResult */
-    public ParserResult(Parser parser, ParserFile file, String mimeType) {
+    public ParserResult(@NonNull Parser parser, @NonNull ParserFile file, @NonNull String mimeType) {
         this.parser = parser;
         this.file = file;
         this.mimeType = mimeType;
     }
 
+    @NonNull
     public String getMimeType() {
         return mimeType;
     }
 
+    @NonNull
     public Parser getParser() {
         return parser;
     }
 
     // TODO - don't expose this
-    public void setTranslatedSource(TranslatedSource translatedSource) {
+    public void setTranslatedSource(@NonNull TranslatedSource translatedSource) {
         this.translatedSource = translatedSource;
     }
 
+    @CheckForNull
     public TranslatedSource getTranslatedSource() {
         return translatedSource;
     }
     
     /**
-     * Returns the errors in the file represented by the {@link Source}.
+     * Returns the errors in the file represented by the {@link CompilationInfo}
+     * for one particular mime type.
      *
-     *
+     * @todo Rename to getErrors()
      * @return an list of {@link Error}
      */
+    @NonNull
     public List<Error> getDiagnostics() {
         if (errors == null) {
             return Collections.emptyList();
@@ -135,6 +141,7 @@ public abstract class ParserResult {
     }
 
     /** AST tree - optional; for debugging only */
+    @CheckForNull
     public abstract AstTreeNode getAst();
 
     // XXX Make top level, and document debugging purpose.
@@ -145,15 +152,70 @@ public abstract class ParserResult {
         public int getEndOffset();
     }
     
+    @NonNull
     public ParserFile getFile() {
         return file;
     }
 
+    @NonNull
     public CompilationInfo getInfo() {
         return info;
     }
 
-    public void setInfo(CompilationInfo info) {
+    public void setInfo(@NonNull CompilationInfo info) {
         this.info = info;
     }
+
+    @NonNull
+    public UpdateState getUpdateState() {
+        return updateState;
+    }
+
+    public void setUpdateState(@NonNull UpdateState updateState) {
+        this.updateState = updateState;
+    }
+
+    /**
+     * This enum constant represents various states of incremental updating support.
+     * Services can either indicate that they don't support incremental updating, or
+     * report various stages of incremental support.
+     *
+     * @author Tor Norbye
+     */
+    public enum UpdateState {
+        /**
+         * This parser does not support incremental parsing
+         */
+        NOT_SUPPORTED,
+
+        /**
+         * Incremental update supported but failed for some reason or other.
+         * A separate full parse request should be submitted.
+         */
+        FAILED,
+
+        /**
+         * Incremental update performed, and there was NO change from the previous result.
+         * This means that the abstract syntax tree is identical (including source
+         * offsets) to the previous one.
+         */
+        NO_CHANGE,
+
+        /**
+         * Incremental update performed, and there was no semantic change from the previous
+         * result. This means that the shape and meaning of the abstract syntax tree is identical,
+         * but source offsets may have changed. This would be the case if the user edited
+         * a comment or source whitespace for example.
+         */
+        NO_SEMANTIC_CHANGE,
+
+        /**
+         * Incremental update supported, and completed.
+         */
+        UPDATED;
+
+        public boolean isUnchanged() {
+            return this == NO_CHANGE || this == NO_SEMANTIC_CHANGE;
+        }
+    };
 }

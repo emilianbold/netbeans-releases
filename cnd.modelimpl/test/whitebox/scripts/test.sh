@@ -87,10 +87,15 @@ help() {
 
 set_defaults() {
     DWARF_TEST_CONFIG_PATH=${DWARF_TEST_CONFIG_PATH:-"/tmp"}
+    #DWARF_TEST_PATH="/export/home/nk220367/main/cnd.modelimpl/test/whitebox"}
+    DWARF_TEST_INSTALL="/export/home/nk220367/main/cnd.modelimpl/test/whitebox"
+    DWARF_TEST_NB_INSTALL="/opt/netbeans"
+    DWARF_TEST_CND_INSTALL="/opt/netbeans/cnd2"
+
     DWARF_TEST_PATH=${DWARF_TEST_PATH:-${BIN_DIR}}
-    DWARF_TEST_INSTALL="${DWARF_TEST_INSTALL:-${DWARF_TEST_PATH}/install}"
-    DWARF_TEST_NB_INSTALL="${DWARF_TEST_NB_INSTALL:-${DWARF_TEST_PATH}/latest-netbeans}"
-    DWARF_TEST_CND_INSTALL="${DWARF_TEST_CND_INSTALL:-${DWARF_TEST_PATH}/latest-cnd}"
+    #DWARF_TEST_INSTALL="${DWARF_TEST_INSTALL:-${DWARF_TEST_PATH}/install}"
+    #DWARF_TEST_NB_INSTALL="${DWARF_TEST_NB_INSTALL:-${DWARF_TEST_PATH}/latest-netbeans}"
+    #DWARF_TEST_CND_INSTALL="${DWARF_TEST_CND_INSTALL:-${DWARF_TEST_PATH}/latest-cnd}"
     DWARF_TEST_PROJECT_DIR=${DWARF_TEST_PROJECT_DIR:-${CURR_DIR}}
     PROJECT=`basename ${DWARF_TEST_PROJECT_DIR}`
     DWARF_TEST_TEMP=${DWARF_TEST_TEMP:-"/tmp/${PROJECT}"}
@@ -200,48 +205,79 @@ parse_params() {
 
 }
 
-# classpath() {
-# 
-#     #### setting DWARF_TEST_CND_INSTALL (its default depends on parameters)
-#     if [ -z ${DWARF_TEST_CND_INSTALL} ]; then
-#         DWARF_TEST_CND_INSTALL=${DWARF_TEST_NB_INSTALL}/cnd1
-#     fi
-# 
-#     platform=`cd ${DWARF_TEST_NB_INSTALL}; find . -name org-openide-util.jar | sed 's/\.\/\(.*\)\/lib.*/\1/'`
-#     ide=`cd ${DWARF_TEST_NB_INSTALL}; find . -name org-netbeans-modules-projectuiapi.jar | sed 's/\.\/\(.*\)\/modules.*/\1/'`
-# 
-#     export DWARF_TEST_CLASSPATH=""
-# 
-#     DWARF_TEST_CLASSPATH="${DWARF_TEST_INSTALL}/jawa-dwarf-dump.jar"
-#     DWARF_TEST_CLASSPATH="${DWARF_TEST_CLASSPATH}:${DWARF_TEST_INSTALL}/model-test.jar"
-#     DWARF_TEST_CLASSPATH="${DWARF_TEST_CLASSPATH}:${DWARF_TEST_INSTALL}/swing-layout-1.0.jar"	
-# 
-#     DWARF_TEST_CLASSPATH="${DWARF_TEST_CLASSPATH}:${DWARF_TEST_NB_INSTALL}/${platform}/lib/org-openide-util.jar"
-#     DWARF_TEST_CLASSPATH="${DWARF_TEST_CLASSPATH}:${DWARF_TEST_NB_INSTALL}/${platform}/modules/org-openide-nodes.jar"
-#     DWARF_TEST_CLASSPATH="${DWARF_TEST_CLASSPATH}:${DWARF_TEST_NB_INSTALL}/${platform}/core/org-openide-filesystems.jar"
-#     DWARF_TEST_CLASSPATH="${DWARF_TEST_CLASSPATH}:${DWARF_TEST_NB_INSTALL}/${ide}/modules/org-netbeans-modules-projectuiapi.jar"
-#     DWARF_TEST_CLASSPATH="${DWARF_TEST_CLASSPATH}:${DWARF_TEST_NB_INSTALL}/${ide}/modules/org-netbeans-modules-projectapi.jar"
-#     DWARF_TEST_CLASSPATH="${DWARF_TEST_CLASSPATH}:${DWARF_TEST_NB_INSTALL}/${platform}/modules/org-openide-dialogs.jar"
-#     DWARF_TEST_CLASSPATH="${DWARF_TEST_CLASSPATH}:${DWARF_TEST_NB_INSTALL}/${platform}/modules/org-openide-loaders.jar"
-#     DWARF_TEST_CLASSPATH="${DWARF_TEST_CLASSPATH}:${DWARF_TEST_NB_INSTALL}/${platform}/lib/org-openide-modules.jar"
-# 
-#     DWARF_TEST_CLASSPATH="${DWARF_TEST_CLASSPATH}:${DWARF_TEST_CND_INSTALL}/modules/org-netbeans-modules-cnd.jar"
-#     DWARF_TEST_CLASSPATH="${DWARF_TEST_CLASSPATH}:${DWARF_TEST_CND_INSTALL}/modules/org-netbeans-modules-cnd-makeproject.jar"
-#     DWARF_TEST_CLASSPATH="${DWARF_TEST_CLASSPATH}:${DWARF_TEST_CND_INSTALL}/modules/org-netbeans-modules-cnd-api-model.jar"
-#     DWARF_TEST_CLASSPATH="${DWARF_TEST_CLASSPATH}:${DWARF_TEST_CND_INSTALL}/modules/org-netbeans-modules-cnd-modelimpl.jar"
-#     DWARF_TEST_CLASSPATH="${DWARF_TEST_CLASSPATH}:${DWARF_TEST_CND_INSTALL}/modules/org-netbeans-modules-cnd-antlr.jar"
-# 
-#     status=0
-#     for F in `echo ${DWARF_TEST_CLASSPATH} | awk -F: '{ for( i=1; i<=NF; i++ ) print $i }'`; do
-#         if [ ! -r ${F} ]; then
-#             echo "File ${F} doesn't exist"
-#             status=1
-#         fi
-#     done
-#     if [ ${status} != 0 ]; then
-#         return
-#     fi
-# }
+ classpath() {
+ 
+     #### setting DWARF_TEST_CND_INSTALL (its default depends on parameters)
+     if [ -z ${DWARF_TEST_CND_INSTALL} ]; then
+         DWARF_TEST_CND_INSTALL=${DWARF_TEST_NB_INSTALL}/cnd1
+     fi
+ 
+     platform=`cd ${DWARF_TEST_NB_INSTALL}; find . -name org-openide-util.jar | sed 's/\.\/\(.*\)\/lib.*/\1/'`
+     ide=`cd ${DWARF_TEST_NB_INSTALL}; find . -name org-netbeans-modules-projectuiapi.jar | sed 's/\.\/\(.*\)\/modules.*/\1/'`
+ 
+     export DWARF_TEST_CLASSPATH=""
+ 
+     #DWARF_TEST_CLASSPATH="${DWARF_TEST_INSTALL}/jawa-dwarf-dump.jar"
+     #DWARF_TEST_CLASSPATH="${DWARF_TEST_CLASSPATH}:${DWARF_TEST_INSTALL}/model-test.jar"
+     #DWARF_TEST_CLASSPATH="${DWARF_TEST_CLASSPATH}:${DWARF_TEST_INSTALL}/swing-layout-1.0.jar"	
+
+     DWARF_TEST_CLASSPATH="${DWARF_TEST_INSTALL}/dwarf-vs-model/dist/Dwarf-vs-Model.jar"
+     DWARF_TEST_CLASSPATH="${DWARF_TEST_CLASSPATH}:${DWARF_TEST_INSTALL}/model-dump/dist/ModelDump.jar"
+     DWARF_TEST_CLASSPATH="${DWARF_TEST_CLASSPATH}:${DWARF_TEST_INSTALL}/dm-utils/dist/dm-utils.jar"
+ 
+     #DWARF_TEST_CLASSPATH="${DWARF_TEST_CLASSPATH}:${DWARF_TEST_NB_INSTALL}/${platform}/lib/org-openide-util.jar"
+     #DWARF_TEST_CLASSPATH="${DWARF_TEST_CLASSPATH}:${DWARF_TEST_NB_INSTALL}/${platform}/modules/org-openide-nodes.jar"
+     #DWARF_TEST_CLASSPATH="${DWARF_TEST_CLASSPATH}:${DWARF_TEST_NB_INSTALL}/${platform}/core/org-openide-filesystems.jar"
+     #DWARF_TEST_CLASSPATH="${DWARF_TEST_CLASSPATH}:${DWARF_TEST_NB_INSTALL}/${ide}/modules/org-netbeans-modules-projectuiapi.jar"
+     #DWARF_TEST_CLASSPATH="${DWARF_TEST_CLASSPATH}:${DWARF_TEST_NB_INSTALL}/${ide}/modules/org-netbeans-modules-projectapi.jar"
+     DWARF_TEST_CLASSPATH="${DWARF_TEST_CLASSPATH}:${DWARF_TEST_NB_INSTALL}/${platform}/modules/org-openide-dialogs.jar"
+     #DWARF_TEST_CLASSPATH="${DWARF_TEST_CLASSPATH}:${DWARF_TEST_NB_INSTALL}/${platform}/modules/org-openide-loaders.jar"
+     #DWARF_TEST_CLASSPATH="${DWARF_TEST_CLASSPATH}:${DWARF_TEST_NB_INSTALL}/${platform}/lib/org-openide-modules.jar"
+ 
+     #DWARF_TEST_CLASSPATH="${DWARF_TEST_CLASSPATH}:${DWARF_TEST_CND_INSTALL}/modules/org-netbeans-modules-cnd.jar"
+     #DWARF_TEST_CLASSPATH="${DWARF_TEST_CLASSPATH}:${DWARF_TEST_CND_INSTALL}/modules/org-netbeans-modules-cnd-makeproject.jar"
+     #DWARF_TEST_CLASSPATH="${DWARF_TEST_CLASSPATH}:${DWARF_TEST_CND_INSTALL}/modules/org-netbeans-modules-cnd-api-model.jar"
+     #DWARF_TEST_CLASSPATH="${DWARF_TEST_CLASSPATH}:${DWARF_TEST_CND_INSTALL}/modules/org-netbeans-modules-cnd-modelimpl.jar"
+     #DWARF_TEST_CLASSPATH="${DWARF_TEST_CLASSPATH}:${DWARF_TEST_CND_INSTALL}/modules/org-netbeans-modules-cnd-antlr.jar"
+ 
+     DWARF_TEST_CLASSPATH="${DWARF_TEST_CLASSPATH}:${DWARF_TEST_CND_INSTALL}/modules/org-netbeans-modules-cnd-dwarfdump.jar"
+     DWARF_TEST_CLASSPATH="${DWARF_TEST_CLASSPATH}:${DWARF_TEST_CND_INSTALL}/modules/org-netbeans-modules-cnd-api-model.jar"
+     DWARF_TEST_CLASSPATH="${DWARF_TEST_CLASSPATH}:${DWARF_TEST_CND_INSTALL}/modules/org-netbeans-modules-cnd-modelimpl.jar"
+     DWARF_TEST_CLASSPATH="${DWARF_TEST_CLASSPATH}:${DWARF_TEST_CND_INSTALL}/modules/org-netbeans-modules-cnd-antlr.jar"
+     DWARF_TEST_CLASSPATH="${DWARF_TEST_CLASSPATH}:${DWARF_TEST_CND_INSTALL}/modules/org-netbeans-modules-cnd-makeproject.jar"
+     DWARF_TEST_CLASSPATH="${DWARF_TEST_CLASSPATH}:${DWARF_TEST_CND_INSTALL}/modules/org-netbeans-modules-cnd-apt.jar"
+     DWARF_TEST_CLASSPATH="${DWARF_TEST_CLASSPATH}:${DWARF_TEST_CND_INSTALL}/modules/org-netbeans-modules-cnd.jar"
+     DWARF_TEST_CLASSPATH="${DWARF_TEST_CLASSPATH}:${DWARF_TEST_CND_INSTALL}/modules/org-netbeans-modules-cnd-repository.jar"
+     DWARF_TEST_CLASSPATH="${DWARF_TEST_CLASSPATH}:${DWARF_TEST_CND_INSTALL}/modules/org-netbeans-modules-cnd-repository-api.jar"
+     DWARF_TEST_CLASSPATH="${DWARF_TEST_CLASSPATH}:${DWARF_TEST_CND_INSTALL}/modules/org-netbeans-modules-cnd-api-project.jar"
+     DWARF_TEST_CLASSPATH="${DWARF_TEST_CLASSPATH}:${DWARF_TEST_CND_INSTALL}/modules/org-netbeans-modules-cnd-utils.jar"
+     
+     DWARF_TEST_CLASSPATH="${DWARF_TEST_CLASSPATH}:${DWARF_TEST_NB_INSTALL}/${platform}/modules/org-openide-nodes.jar"            
+     DWARF_TEST_CLASSPATH="${DWARF_TEST_CLASSPATH}:${DWARF_TEST_NB_INSTALL}/${platform}/modules/org-openide-loaders.jar"
+     DWARF_TEST_CLASSPATH="${DWARF_TEST_CLASSPATH}:${DWARF_TEST_NB_INSTALL}/${platform}/modules/org-netbeans-api-progress.jar"
+     DWARF_TEST_CLASSPATH="${DWARF_TEST_CLASSPATH}:${DWARF_TEST_NB_INSTALL}/${platform}/modules/org-netbeans-modules-queries.jar"
+
+     DWARF_TEST_CLASSPATH="${DWARF_TEST_CLASSPATH}:${DWARF_TEST_NB_INSTALL}/${platform}/core/core.jar"
+     DWARF_TEST_CLASSPATH="${DWARF_TEST_CLASSPATH}:${DWARF_TEST_NB_INSTALL}/${platform}/core/org-openide-filesystems.jar"
+
+     DWARF_TEST_CLASSPATH="${DWARF_TEST_CLASSPATH}:${DWARF_TEST_NB_INSTALL}/${platform}/lib/org-openide-util.jar"           
+     DWARF_TEST_CLASSPATH="${DWARF_TEST_CLASSPATH}:${DWARF_TEST_NB_INSTALL}/${platform}/lib/org-openide-modules.jar"
+     DWARF_TEST_CLASSPATH="${DWARF_TEST_CLASSPATH}:${DWARF_TEST_NB_INSTALL}/${platform}/lib/boot.jar"
+
+     DWARF_TEST_CLASSPATH="${DWARF_TEST_CLASSPATH}:${DWARF_TEST_NB_INSTALL}/${ide}/modules/org-netbeans-modules-projectuiapi.jar"
+     DWARF_TEST_CLASSPATH="${DWARF_TEST_CLASSPATH}:${DWARF_TEST_NB_INSTALL}/${ide}/modules/org-netbeans-modules-projectapi.jar"
+
+     status=0
+     for F in `echo ${DWARF_TEST_CLASSPATH} | awk -F: '{ for( i=1; i<=NF; i++ ) print $i }'`; do
+         if [ ! -r ${F} ]; then
+             echo "File ${F} doesn't exist"
+             status=1
+         fi
+     done
+     if [ ${status} != 0 ]; then
+         return
+     fi
+ }
 
 make_paths_absolute() {
     #### changing paths (excepr for PROJECT_DIR) with absolute ones
@@ -343,11 +379,11 @@ check_params_and_go() {
 	    return
 	fi
 
-# 	#### setting and checking classpath 
-# 	classpath
-# 	if [ ${status} != 0 ]; then
-# 	    return
-# 	fi
+ 	#### setting and checking classpath 
+ 	classpath
+ 	if [ ${status} != 0 ]; then
+ 	    return
+ 	fi
 
     	export DWARF_ADDITIONAL_JVM_OPT 
     fi
@@ -402,7 +438,8 @@ check_params_and_go() {
         gmake clean 2>&1 | tee -a $DWARF_LOG
         gmake all   2>&1 | tee -a $DWARF_LOG
         
-        ${DWARF_TEST_PATH}/countfiles.sh -d `dirname ${DWARF_TEST_CONFIG_PATH}` -p ${PROJECT} > ${DWARF_TEST_CONFIG_PREFIX}.fno
+        #bash ${DWARF_TEST_PATH}/countfiles.sh -d `dirname ${DWARF_TEST_CONFIG_PATH}` -p ${PROJECT} > ${DWARF_TEST_CONFIG_PREFIX}.fno
+        ${DWARF_TEST_PATH}/countfiles.sh -d ${DWARF_TEST_CONFIG_PATH} -p ${PROJECT} > ${DWARF_TEST_CONFIG_PREFIX}.fno
     fi
     popd > /dev/null
 

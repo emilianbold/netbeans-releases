@@ -67,6 +67,10 @@ import org.openide.util.lookup.AbstractLookup;
  */
 public class CookieActionTest extends NbTestCase {
     
+    static {
+        NodeActionsInfraHid.install();
+    }
+
     public CookieActionTest(String name) {
         super(name);
     }
@@ -97,48 +101,48 @@ public class CookieActionTest extends NbTestCase {
     public void testBasicUsage() throws Exception {
         try {
             // Check enablement logic.
-            ActionsInfraHid.WaitPCL l = new ActionsInfraHid.WaitPCL(NodeAction.PROP_ENABLED);
+            NodeActionsInfraHid.WaitPCL l = new NodeActionsInfraHid.WaitPCL(NodeAction.PROP_ENABLED);
             a1.addPropertyChangeListener(l);
             assertFalse(a1.isEnabled());
-            ActionsInfraHid.setCurrentNodes(new Node[] {n1});
+            NodeActionsInfraHid.setCurrentNodes(new Node[] {n1});
             assertTrue(l.changed());
             l.gotit = 0;
             assertTrue(a1.isEnabled());
-            ActionsInfraHid.setCurrentNodes(new Node[] {n1, n2});
+            NodeActionsInfraHid.setCurrentNodes(new Node[] {n1, n2});
             assertTrue(l.changed());
             l.gotit = 0;
             assertFalse(a1.isEnabled());
-            ActionsInfraHid.setCurrentNodes(new Node[] {n2});
+            NodeActionsInfraHid.setCurrentNodes(new Node[] {n2});
             assertTrue(l.changed());
             l.gotit = 0;
             assertTrue(a1.isEnabled());
-            ActionsInfraHid.setCurrentNodes(new Node[] {n3});
+            NodeActionsInfraHid.setCurrentNodes(new Node[] {n3});
             assertTrue(l.changed());
             l.gotit = 0;
             assertFalse(a1.isEnabled());
-            ActionsInfraHid.setCurrentNodes(new Node[] {n3});
+            NodeActionsInfraHid.setCurrentNodes(new Node[] {n3});
             if (!l.changed()) {
                 Thread.sleep(1000);
             }
             l.gotit = 0;
             assertFalse(a1.isEnabled());
-            ActionsInfraHid.setCurrentNodes(new Node[] {n1});
+            NodeActionsInfraHid.setCurrentNodes(new Node[] {n1});
             assertTrue(l.changed());
             l.gotit = 0;
             assertTrue(a1.isEnabled());
-            ActionsInfraHid.setCurrentNodes(new Node[] {n1});
+            NodeActionsInfraHid.setCurrentNodes(new Node[] {n1});
             if (!l.changed()) {
                 Thread.sleep(1000);
             }
             l.gotit = 0;
             assertTrue(a1.isEnabled());
-            ActionsInfraHid.setCurrentNodes(new Node[] {n1, n2});
+            NodeActionsInfraHid.setCurrentNodes(new Node[] {n1, n2});
             assertTrue(l.changed());
             l.gotit = 0;
             assertFalse(a1.isEnabled());
         } finally {
-            ActionsInfraHid.setCurrentNodes(new Node[0]);
-            ActionsInfraHid.setCurrentNodes(null);
+            NodeActionsInfraHid.setCurrentNodes(new Node[0]);
+            NodeActionsInfraHid.setCurrentNodes(null);
         }
     }
     
@@ -149,12 +153,12 @@ public class CookieActionTest extends NbTestCase {
     
     /** Make sure it works to change the cookies on a selected node. */
     public void testChangeCookiesOnNodes() throws Exception {
-        ActionsInfraHid.WaitPCL l = new ActionsInfraHid.WaitPCL(NodeAction.PROP_ENABLED);
+        NodeActionsInfraHid.WaitPCL l = new NodeActionsInfraHid.WaitPCL(NodeAction.PROP_ENABLED);
         try {
             assertFalse(a1.isEnabled());
             assertTrue(n1.getCookie(OpenCookie.class) != null);
             a1.addPropertyChangeListener(l);
-            ActionsInfraHid.setCurrentNodes(new Node[] {n1});
+            NodeActionsInfraHid.setCurrentNodes(new Node[] {n1});
             assertTrue("Received PROP_ENABLED on SimpleCookieAction after changing nodes", l.changed());
             l.gotit = 0;
             assertTrue(a1.isEnabled());
@@ -162,7 +166,7 @@ public class CookieActionTest extends NbTestCase {
             assertTrue(l.changed());
             l.gotit = 0;
             assertFalse(a1.isEnabled());
-            ActionsInfraHid.setCurrentNodes(null);
+            NodeActionsInfraHid.setCurrentNodes(null);
             if (!l.changed()) {
                 Thread.sleep(1000);
             }
@@ -173,7 +177,7 @@ public class CookieActionTest extends NbTestCase {
             l.gotit = 0;
             assertTrue(a1.isEnabled());
             n2.setHasCookie(false);
-            ActionsInfraHid.setCurrentNodes(new Node[] {n2});
+            NodeActionsInfraHid.setCurrentNodes(new Node[] {n2});
             assertTrue(l.changed());
             l.gotit = 0;
             assertFalse(a1.isEnabled());
@@ -187,7 +191,7 @@ public class CookieActionTest extends NbTestCase {
             assertFalse(a1.isEnabled());
             n2.setHasCookie(true);
             assertTrue(a1.isEnabled());
-            ActionsInfraHid.setCurrentNodes(new Node[] {n1});
+            NodeActionsInfraHid.setCurrentNodes(new Node[] {n1});
             assertTrue(a1.isEnabled());
             Thread.sleep(1000);
             assertTrue(a1.isEnabled());
@@ -196,8 +200,8 @@ public class CookieActionTest extends NbTestCase {
             assertFalse(a1.isEnabled());
         } finally {
             a1.removePropertyChangeListener(l);
-            ActionsInfraHid.setCurrentNodes(new Node[0]);
-            ActionsInfraHid.setCurrentNodes(null);
+            NodeActionsInfraHid.setCurrentNodes(new Node[0]);
+            NodeActionsInfraHid.setCurrentNodes(null);
             n1.setHasCookie(true);
             n2.setHasCookie(true);
         }

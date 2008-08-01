@@ -57,7 +57,7 @@ import org.openide.util.NbBundle;
  */
 public final class NbRepository extends Repository {
     /** name of system folder to be located in the USER_DIR and HOME_DIR */
-    static final String SYSTEM_FOLDER = "config"; // NOI18N
+    static final String CONFIG_FOLDER = "config"; // NOI18N
 
     /**
      * Create a repository based on the normal system file system.
@@ -105,14 +105,14 @@ public final class NbRepository extends Repository {
                 doExit (3);
             }
 
-            h = new File (homeDirFile, SYSTEM_FOLDER);
+            h = new File (homeDirFile, CONFIG_FOLDER);
             
             // #27151: may also be additional install dirs
             String nbdirs = System.getProperty("netbeans.dirs");
             if (nbdirs != null) {
                 StringTokenizer tok = new StringTokenizer(nbdirs, File.pathSeparator);
                 while (tok.hasMoreTokens()) {
-                    File f = new File(tok.nextToken(), SYSTEM_FOLDER);
+                    File f = new File(tok.nextToken(), CONFIG_FOLDER);
                     if (f.isDirectory()) {
                         extradirs.add(f);
                     }
@@ -130,7 +130,7 @@ public final class NbRepository extends Repository {
                 System.err.println (NbBundle.getMessage(NbRepository.class, "CTL_Netbeanshome3"));
                 doExit (5);
             }
-            u = new File (userDirFile, SYSTEM_FOLDER);
+            u = new File (userDirFile, CONFIG_FOLDER);
         }
 
         Exception exc;

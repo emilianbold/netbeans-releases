@@ -41,12 +41,9 @@
 
 package org.netbeans.core.ui;
 
-import java.awt.Color;
 import java.awt.Cursor;
-import java.awt.Font;
 import java.awt.Window;
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -55,11 +52,7 @@ import java.io.StringWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.MessageFormat;
-import java.util.Enumeration;
-import java.util.HashSet;
 import java.util.Locale;
-import java.util.Set;
-import java.util.StringTokenizer;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JPanel;
@@ -70,11 +63,8 @@ import org.netbeans.core.actions.HTMLViewAction;
 import org.openide.awt.HtmlBrowser;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
-import org.openide.util.Enumerations;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 public class ProductInformationPanel extends JPanel implements HyperlinkListener {
 
@@ -88,6 +78,7 @@ public class ProductInformationPanel extends JPanel implements HyperlinkListener
         description.setText(org.openide.util.NbBundle.getMessage(ProductInformationPanel.class, 
                 "LBL_Description", new Object[] {getProductVersionValue(), getJavaValue(), getVMValue(), 
                 getOperatingSystemValue(), getEncodingValue(), getSystemLocaleValue(), getUserDirValue()}));
+        description.setCaretPosition(0); // so that text is not scrolled down
         description.addHyperlinkListener(this);
         copyright.addHyperlinkListener(this);
         copyright.setBackground(getBackground());
@@ -134,6 +125,7 @@ public class ProductInformationPanel extends JPanel implements HyperlinkListener
         copyright.setContentType("text/html");
         copyright.setEditable(false);
         copyright.setText(getCopyrightText());
+        copyright.setCaretPosition(0); // so that text is not scrolled down
         copyright.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 copyrightMouseClicked(evt);
@@ -216,43 +208,6 @@ private void jLabel1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:eve
         }
     }
     
-    private void updateLabelFont (javax.swing.JComponent label, Color color) {
-        updateLabelFont(label, 0, 0, color);
-    }
-
-    private void updateLabelFont (javax.swing.JComponent label, int style, Color color) {
-        updateLabelFont(label, style, 0, color);
-    }
-
-    private void updateLabelFont (javax.swing.JComponent label, int style, int plusSize, Color color) {
-        Font font = label.getFont();
-        if(style != 0) {
-            // don't use deriveFont() - see #49973 for details
-            if (Utilities.isMac()) {
-                font = new Font(label.getFont().getName(), Font.BOLD, label.getFont().getSize());
-            } else {
-                font = label.getFont().deriveFont(Font.BOLD);
-            }
-            label.setFont(font);
-        }
-        if(plusSize != 0f) {
-            // don't use deriveFont() - see #49973 for details
-            font = new Font(font.getName(), font.getStyle(), font.getSize() + plusSize);
-            label.setFont(font);
-        }
-        if(color != null) {
-            label.setForeground(color);
-        }
-    }
-
-    private ImageIcon getIcon () {
-        return new ImageIcon(Utilities.loadImage("org/netbeans/core/startup/frame48.gif", true));
-    }
-
-    private String getProductInformationTitle () {
-        return NbBundle.getMessage(ProductInformationPanel.class, "LBL_ProductInformation");
-    }
-
     public static String getProductVersionValue () {
         return MessageFormat.format(
             NbBundle.getBundle("org.netbeans.core.startup.Bundle").getString("currentVersion"),
@@ -274,58 +229,9 @@ private void jLabel1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:eve
         return System.getProperty("java.vm.name", "unknown") + " " + System.getProperty("java.vm.version", "");
     }
 
-    private String getVendorValue () {
-        return System.getProperty("java.vendor", "unknown");
-    }
-
-    private String getJavaHomeValue () {
-        return System.getProperty("java.home", "unknown");
-    }
-
     public static String getSystemLocaleValue () {
         String branding;
         return Locale.getDefault().toString() + ((branding = NbBundle.getBranding()) == null ? "" : (" (" + branding + ")")); // NOI18N
-    }
-
-    private String getHomeDirValue () {
-        return System.getProperty("user.home", "unknown");
-    }
-
-    private String getCurrentDirValue () {
-        return System.getProperty("user.dir", "unknown");
-    }
-
-    private String getIDEInstallValue () {
-        String nbhome = System.getProperty("netbeans.home");
-        String nbdirs = System.getProperty("netbeans.dirs");
-        
-        Enumeration<Object> more;
-        if (nbdirs != null) {
-            more = new StringTokenizer(nbdirs, File.pathSeparator);
-        } else {
-            more = Enumerations.empty();
-        }
-            
-        Enumeration<Object> all = Enumerations.concat(Enumerations.singleton(nbhome), more);
-        
-        Set<File> files = new HashSet<File>();
-        StringBuilder sb = new StringBuilder ();
-        String prefix = "";
-        while (all.hasMoreElements ()) {
-            String s = (String)all.nextElement ();
-            if (s == null) {
-                continue;
-            }
-            File f = FileUtil.normalizeFile(new File(s));
-            if (files.add (f)) {
-                // new file
-                sb.append (prefix);
-                sb.append(f.getAbsolutePath());
-                prefix = "\n";
-            }
-        }
-        
-        return sb.toString ();
     }
 
     private String getUserDirValue () {

@@ -44,7 +44,7 @@ CONSOLE="-J-Dnetbeans.logger.console=true"
 DBGPORT=${DBGPORT-5858}
 USERDIR="--userdir /tmp/${USER}/cnd-userdir"
 PARSERRORS="-J-Dparser.report.errors=true"
-
+DEBUG="-J-Xdebug -J-Djava.compiler=NONE -J-Xrunjdwp:transport=dt_socket,server=y"
 PRG=$0
 
 while [ -h "$PRG" ]; do
@@ -74,13 +74,12 @@ do
 		shift
                 JAVA=$1/bin/java
                 ;;
-        --cnd)
-		shift
-                echo "Using CND from $1"
-                CNDDIST=$1
-                ;;
 	--nocon|--noconsole)
 		CONSOLE=""
+		;;
+	--nodebug|-nodebug)
+		echo "Debug mode OFF"
+		DEBUG=""
 		;;
 	--sdebug|-sdebug)
 		echo "wait to attach debugger on port ${DBGPORT}"
@@ -131,16 +130,9 @@ else
 	fi
 fi
 
-DEFAULT_CND="${DEFAULT_NB}/cnd2"
-CNDDIST="${CNDDIST-${DEFAULT_CND}}"
-
-if [ -z "${CNDDIST}" ]; then
-	echo "Please specify CNDDIST environment variable; it should point to CND installation"
-        exit 1;
+if [ -n "${DEBUG}" ]; then
+    DEBUG="${DEBUG},suspend=${SUSPEND},address=${DBGPORT}"
 fi
-
-#DEBUG_PROFILE=""
-DEBUG="-J-Xdebug -J-Djava.compiler=NONE -J-Xrunjdwp:transport=dt_socket,server=y,suspend=${SUSPEND},address=${DBGPORT}"
 
 DEFS="-J-Dnetbeans.system_http_proxy=webcache:8080"
 DEFS="${DEFS} ${CONSOLE}"
@@ -151,11 +143,9 @@ DEFS="${DEFS} -J-Dparser.report.include.failures=true"
 DEFS="${DEFS} -J-Dsun.java2d.pmoffscreen=false"
 DEFS="${DEFS} -J-Dtest.xref.action=true"
 DEFS="${DEFS} -J-Dcnd.classview.sys-includes=true"
+DEFS="${DEFS} -J-Dcnd.callgraph.showgraph=true"
 ##DEFS="${DEFS} -J-Dcnd.parser.queue.trace=true"
 ##DEFS="${DEFS} -J-Dcnd.modelimpl.parser.threads=2"
 ##DEFS="${DEFS} -J-Dcnd.modelimpl.no.reparse.include=true"
-
-#netbeans_extraclusters="${CNDDIST}"
-#export netbeans_extraclusters
 
 ${NBDIST}/bin/netbeans -J-ea -J-server ${USERDIR} ${DEBUG} ${PROFILE} ${DEFS} ${PARAMS}

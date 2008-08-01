@@ -1,0 +1,5 @@
+Code completion result for source line:
+longField.MAX|
+(QueryType=COMPLETION, NameKind=PREFIX)
+------------------------------------
+FIELD      MAX_VALUE                                  long

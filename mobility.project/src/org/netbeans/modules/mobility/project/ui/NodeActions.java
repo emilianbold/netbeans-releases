@@ -947,12 +947,12 @@ static class RemoveConfigurationAction extends ContextAction
 
         //Set active in case we are deleting active
         if (project.getConfigurationHelper().getActiveConfiguration().equals(conf)) try {
-            project.getConfigurationHelper().setActiveConfiguration(project.getConfigurationHelper().getDefaultConfiguration());
-        } catch (IllegalArgumentException ex) {
-            ErrorManager.getDefault().notify(ex);
-        } catch (IOException ex) {
-            ErrorManager.getDefault().notify(ex);
-        } 
+                project.getConfigurationHelper().setActiveConfiguration(project.getConfigurationHelper().getDefaultConfiguration());
+            } catch (IllegalArgumentException ex) {
+                ErrorManager.getDefault().notify(ex);
+            } catch (IOException ex) {
+                ErrorManager.getDefault().notify(ex);
+            } 
 
         j2meProperties.setConfigurations(list.toArray(new ProjectConfiguration[list.size()]));
 

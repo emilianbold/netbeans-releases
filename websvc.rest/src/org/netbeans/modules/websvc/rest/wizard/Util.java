@@ -54,6 +54,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
@@ -174,8 +175,8 @@ public class Util {
         return null;
     }
     
-    static final String WIZARD_PANEL_CONTENT_DATA = "WizardPanel_contentData"; // NOI18N
-    static final String WIZARD_PANEL_CONTENT_SELECTED_INDEX = "WizardPanel_contentSelectedIndex"; //NOI18N;
+    static final String WIZARD_PANEL_CONTENT_DATA = WizardDescriptor.PROP_CONTENT_DATA; // NOI18N
+    static final String WIZARD_PANEL_CONTENT_SELECTED_INDEX = WizardDescriptor.PROP_CONTENT_SELECTED_INDEX; //NOI18N;
     
     public static void mergeSteps(WizardDescriptor wizard, WizardDescriptor.Panel[] panels, String[] steps) {
         Object prop = wizard.getProperty(WIZARD_PANEL_CONTENT_DATA);
@@ -272,34 +273,24 @@ public class Util {
         return deriveResourceClassName(Inflector.getInstance().pluralize((resourceName)));
     }
     
-    public static String singularize(String name) {
-        // get around inflector bug:  'address' -> 'addres'
-        if (name.endsWith("ss")) {
-            String plural = Inflector.getInstance().pluralize(name);
-            if (! name.equals(plural)) {
-                return name;
-            }
-        }
-        return Inflector.getInstance().singularize(name);
-    }
-    
+//    public static String singularize(String name) {
+//        // get around inflector bug:  'address' -> 'addres'
+//        if (name.endsWith("ss")) {
+//            String plural = Inflector.getInstance().pluralize(name);
+//            if (! name.equals(plural)) {
+//                return name;
+//            }
+//        }
+//        return Inflector.getInstance().singularize(name);
+//    }
+//    
     public static String pluralize(String name) {
-        return Inflector.getInstance().pluralize(singularize(name));
-    }
-    
-    public static String getPluralName(EntityResourceBean bean) {
-        if (bean.isContainer()) {
-            return bean.getName();
+        String pluralName = Inflector.getInstance().pluralize(name);
+        
+        if (name.equals(pluralName)) {
+            return name + "Collection";         //NOI18N
         } else {
-            return pluralize(bean.getName());
-        }
-    }
-    
-    public static String getSingularName(EntityResourceBean bean) {
-        if (bean.isContainer()) {
-            return singularize(bean.getName());
-        } else {
-            return bean.getName();
+            return pluralName;
         }
     }
 
@@ -404,5 +395,13 @@ public class Util {
             }
         }
         return true;
+    }
+    
+    public static ClasspathInfo getClasspathInfo(Project p) {
+        FileObject fileObject = p.getProjectDirectory();
+        return ClasspathInfo.create(
+                ClassPath.getClassPath(fileObject, ClassPath.BOOT), // JDK classes
+                ClassPath.getClassPath(fileObject, ClassPath.COMPILE), // classpath from dependent projects and libraries
+                ClassPath.getClassPath(fileObject, ClassPath.SOURCE)); // source classpath
     }
 }

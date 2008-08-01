@@ -41,17 +41,17 @@ Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
 <application xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-  xmlns:yn="urn:yahoo:yn"
+  xmlns:yn="urn:yahoo:newssearchresponse"
   xmlns:ya="urn:yahoo:api"
   xmlns:html="http://www.w3.org/1999/xhtml"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
   xmlns="http://research.sun.com/wadl/2006/10"
   xsi:schemaLocation="http://research.sun.com/wadl/2006/10 
-     ../../../../../../../../../../websvc.saas.api/src/org/netbeans/modules/websvc/saas/model/wadl20061109.xsd"
+     https://wadl.dev.java.net/wadl20061109.xsd"
   >
     <grammars>
         <include href="NewsSearchResponse.xsd"/>
-        <include href="NewsSearchError.xsd"/>
+        <!--<include href="NewsSearchError.xsd"/>-->
     </grammars>
     <resources base="http://api.search.yahoo.com/NewsSearchService/V1/">
         <resource path="newsSearch">
@@ -122,8 +122,8 @@ made subject to such option by the copyright holder.
                     <representation mediaType="application/xml" element="yn:ResultSet">
                         <doc xml:lang="en" title="A list of news items matching the query"/>
                     </representation>
-                    <fault id="SearchError" status="400" mediaType="application/xml"
-        element="ya:Error"/>
+                    <!--<fault id="SearchError" status="400" mediaType="application/xml"
+        element="ya:Error"/>-->
                 </response>
             </method>
         </resource>

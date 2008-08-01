@@ -234,7 +234,7 @@ public class RubyTypeSearcher implements TypeSearcher {
                 initProjectInfo();
             }
             //if (isLibrary) {
-            //    return new ImageIcon(org.openide.util.Utilities.loadImage(RUBY_KEYWORD));
+            //    return new ImageIcon(org.openide.util.ImageUtilities.loadImage(RUBY_KEYWORD));
             //}
             //return helper.getIcon(element);
             return helper.getIcon(element);
@@ -259,7 +259,7 @@ public class RubyTypeSearcher implements TypeSearcher {
                 if (p != null) {
                     RubyPlatform platform = RubyPlatform.platformFor(p);
                     if (platform != null) {
-                        String lib = platform.getLib();
+                        String lib = platform.getLibDir();
                         if (lib != null && f.getPath().startsWith(lib)) {
                             projectName = "Ruby Library";
                             isLibrary = true;
@@ -284,7 +284,7 @@ public class RubyTypeSearcher implements TypeSearcher {
                 initProjectInfo();
             }
             if (isLibrary) {
-                return new ImageIcon(org.openide.util.Utilities.loadImage(RUBY_KEYWORD));
+                return new ImageIcon(org.openide.util.ImageUtilities.loadImage(RUBY_KEYWORD));
             }
             return projectIcon;
         }

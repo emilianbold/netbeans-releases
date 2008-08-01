@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -40,152 +40,89 @@
  */
 package gui.ruby.debugger;
 
-import org.openide.util.Exceptions;
-import org.openide.util.Utilities;
-import java.io.File;
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.Set;
-import java.util.TreeSet;
-import javax.swing.JTextField;
+import org.netbeans.jemmy.Waitable;
+import org.netbeans.jemmy.Waiter;
 import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jellytools.OptionsOperator;
-import org.netbeans.jellytools.TopComponentOperator;
-import org.netbeans.jellytools.TreeTableOperator;
-import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.modules.debugger.actions.ToggleBreakpointAction;
-import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jemmy.TimeoutExpiredException;
-import org.netbeans.jemmy.operators.JLabelOperator;
-import org.netbeans.jemmy.operators.JTableOperator;
-import org.netbeans.jemmy.operators.JTextFieldOperator;
 
 /**
  * Utils for testing debugger
- * @author Tomas.Musil@sun.com
+ * @author Tomas Musil, Jiri Skrivanek
  */
 public final class Util {
-    
-    //collection of static methods
-    private Util(){}
 
-    static void waitForDebuggingActions() {
-        Action a = new Action("Run|Step Over", null);
-        while (!a.isEnabled()) {
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException ex) {
-                Exceptions.printStackTrace(ex);
-                Thread.interrupted();
-                throw new RuntimeException(ex);
-            }
-        }
+    /** Collection of static methods. */
+    private Util() {
     }
-    
-    static String detectNativeRuby() {
-        String rubyPath = null;
-        String path = System.getenv("PATH"); // NOI18N
-        if (path == null) {
-            path = System.getenv("Path"); // NOI18N
-        }
-        if (path != null) {
-            final Set<String> rubies = new TreeSet<String>();
-            Set<String> dirs = new TreeSet<String>(Arrays.asList(path.split(File.pathSeparator)));
-            for (String dir : dirs) {
-                File f = null;
-                if (Utilities.isWindows()) {
-                    f = new File(dir, "ruby.exe");//NOI18N
+
+    /** Sets breakpoint in editor on line with specified text.
+     * @param eo EditorOperator instance where to set breakpoint
+     * @param text text to find for setting breakpoint
+     * @return line number where breakpoint was set (starts from 1)
+     */
+    public static int setBreakpoint(EditorOperator eo, String text) throws Exception {
+        eo.select(text); // NOI18N
+
+        final int line = eo.getLineNumber();
+        // toggle breakpoint via pop-up menu
+        new ToggleBreakpointAction().perform(eo.txtEditorPane());
+        // wait breakpoint established
+        new Waiter(new Waitable() {
+
+            public Object actionProduced(Object editorOper) {
+                Object[] annotations = ((EditorOperator) editorOper).getAnnotations(line);
+                for (int i = 0; i < annotations.length; i++) {
+                    if ("Breakpoint".equals(EditorOperator.getAnnotationType(annotations[i]))) { // NOI18N
+                        return Boolean.TRUE;
+                    }
+                }
+                return null;
+            }
+
+            public String getDescription() {
+                return ("Wait breakpoint established on line " + line); // NOI18N
+
+            }
+        }).waitAction(eo);
+        return line;
+    }
+
+    /** Waits debugger stopped and green annotation is in editor.
+     * @param eo EditorOperator instance
+     * @return line number where breakpoint was reached (starts from 1)
+     */
+    public static int waitStopped(EditorOperator eo) throws Exception {
+        return waitStopped(eo, 0);
+    }
+
+    /** Waits debugger stopped and green annotation is in editor.
+     * @param eo EditorOperator instance
+     * @param lineNumber line number where to wait for annotation (starts at 1)
+     * @return line number where breakpoint was reached (starts at 1)
+     */
+    public static int waitStopped(EditorOperator eo, final int lineNumber) throws Exception {
+        // wait breakpoint reached
+        new Waiter(new Waitable() {
+            public Object actionProduced(Object editorOper) {
+                Object[] annotations;
+                if (lineNumber > 0) {
+                    annotations = ((EditorOperator) editorOper).getAnnotations(lineNumber);
                 } else {
-                    f = new File(dir, "ruby"); // NOI18N
-                    // Don't include /usr/bin/ruby on the Mac - it's no good
-                    if (Utilities.isMac() && "/usr/bin/ruby".equals(f.getPath())) {
-                            continue;
+                    annotations = ((EditorOperator) editorOper).getAnnotations();
+                }
+                for (int i = 0; i < annotations.length; i++) {
+                    if ("CurrentPC".equals(EditorOperator.getAnnotationType(annotations[i]))) { // NOI18N
+                        return Boolean.TRUE;
                     }
                 }
-                if (f.exists()) {
-                    try {
-                        rubies.add(f.getCanonicalPath());
-                    } catch (IOException e) {
-                        rubies.add(f.getPath());
-                    }
-                }
+                return null;
             }
-            
-            if(!rubies.isEmpty()) rubyPath = (String) rubies.toArray()[0]; //use first ruby on $PATH
-        }
-    return rubyPath;
-    }
-    
-    static void setRuby(String rubyPath) {
-        OptionsOperator optionsOper = OptionsOperator.invoke();
-        optionsOper.selectCategory("Ruby"); //NOI18N
-//        try{
-//            String chooseRubyTitle = Bundle.getString("org.netbeans.api.ruby.platform.Bundle", "ChooseRuby");
-//            new NbDialogOperator(chooseRubyTitle).closeByButton();
-//        } catch (TimeoutExpiredException exc) {
-//            // never mind
-//        }
-        JLabelOperator jloRI = new JLabelOperator(optionsOper, "Ruby Interpreter:");//NOI18N
-        new JTextFieldOperator((JTextField)jloRI.getLabelFor()).setText(rubyPath);
-        optionsOper.ok();
-    }
 
-    static boolean isLocalVariablePresent(String variableName) {
-        TopComponentOperator lvo = new TopComponentOperator("Local Variables");//NOI18N
-        JTableOperator lvtableOp = new JTableOperator(lvo);
-        TreeTableOperator tto = new TreeTableOperator((javax.swing.JTable) lvtableOp.getSource());
+            public String getDescription() {
+                return ("Wait debugger stopped and green annotation in editor."); // NOI18N
 
-        try {
-            Node varNode = new Node(tto.tree(), variableName);
-        } catch (TimeoutExpiredException timeoutExpiredException) {
-            return false;
-        }
-        return true;
-    }
-    
-    static boolean isOpenedEditorTab(String sourceName){
-        try {
-        EditorOperator eo = new EditorOperator(sourceName);
-        } catch (TimeoutExpiredException timeoutExpiredException) {
-            return false;
-        }
-        return true;
-
-    }
-    
-    static int getCallStackSize() {
-        TopComponentOperator callStackOp = new TopComponentOperator("Call Stack");//NOI18N
-        JTableOperator tableOp = new JTableOperator(callStackOp);
-        return tableOp.getRowCount();
-    }
-
-    
-    static void putBreakpointToLine(EditorOperator eo, int lineNumber) {
-        eo.setCaretPositionToLine(lineNumber);
-        new ToggleBreakpointAction().perform();
-    }
-
-    static void invokeDebugMainProject() {
-        new Action("Run|Debug Main Project", null).perform();//NOI18N
-    }
-
-    static void invokeFinishDebuggerSession() {
-        new Action("Run|Finish Debugger Session", null).perform();//NOI18N
-    }
-    
-    static void invokeStepOver(){
-        new Action("Run|Step Over", null).perform();//NOI18N
-    }
-    
-    static void invokeStepInto(){
-        new Action("Run|Step Into", null).perform();//NOI18N
-    }
-
-    static void invokeStepOut(){
-        new Action("Run|Step Out", null).perform();//NOI18N
-    }
-
-    static void invokeContinue() {
-        new Action("Run|Continue", null).perform();//NOI18N
+            }
+        }).waitAction(eo);
+        return eo.getLineNumber();
     }
 }

@@ -17,7 +17,11 @@
     <fontcolor name="keyword" default="keyword" />
     <fontcolor name="identifier" default="identifier" />
     <fontcolor name="string" default="string" />
-
+    <fontcolor name="operator" default="operator"/>
+    <fontcolor name="separator" default="separator"/>
+    <fontcolor name="constant" default="constant">
+        <font style="italic"/>
+    </fontcolor>
     <fontcolor name="PHP_VARIABLE" foreColor="6d3206"/>
         
     <fontcolor name="PHP_STRING" default="identifier">
@@ -74,15 +78,17 @@
     <fontcolor name="mod-class" >
         <font style="bold" />
     </fontcolor>
-    <fontcolor name="mod-interface" />
+<!--currently not used:-->
+<!--    <fontcolor name="mod-interface" />
     <fontcolor name="mod-annotation-type" />
-    <fontcolor name="mod-enum" />
+    <fontcolor name="mod-enum" /> -->
     <fontcolor name="mod-deprecated" strikeThrough="404040" />
     <fontcolor name="mod-static" >
         <font style="italic" />
     </fontcolor>
     <fontcolor name="mod-private" />
-    <fontcolor name="mod-package-private" />
+<!--currently not used:-->
+<!--    <fontcolor name="mod-package-private" /> -->
     <fontcolor name="mod-protected" />
     <fontcolor name="mod-public" />
 

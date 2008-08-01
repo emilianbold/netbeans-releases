@@ -185,7 +185,8 @@ final public class GridBagCustomizer extends JPanel implements Customizer
         };
 
         designPanel.setLayout(new GridBagLayout());
-        designPanel.setBackground((java.awt.Color) javax.swing.UIManager.getDefaults().get("desktop")); // NOI18N
+        Color bgColor = UIManager.getColor(Utilities.isMac() ? "Desktop.background" : "desktop"); // NOI18N
+        designPanel.setBackground(bgColor);
         GridBagConstraints con = new GridBagConstraints();
         con.anchor = GridBagConstraints.CENTER;
         con.fill = GridBagConstraints.NONE;
@@ -221,7 +222,7 @@ final public class GridBagCustomizer extends JPanel implements Customizer
         designLayeredPane.add(designPanel, JLayeredPane.DEFAULT_LAYER);
         designPanel.setBounds(20, 20, designPanel.getPreferredSize().width, designPanel.getPreferredSize().height);
         designLayeredPane.setOpaque(true);
-        designLayeredPane.setBackground((java.awt.Color) javax.swing.UIManager.getDefaults().get("desktop")); // NOI18N
+        designLayeredPane.setBackground(bgColor);
 
         designScrollPane.setViewportView(designLayeredPane);
         

@@ -11,9 +11,9 @@
  * http://www.netbeans.org/cddl-gplv2.html
  * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
  * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
+ * License. When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
  * particular file as subject to the "Classpath" exception as provided
  * by Sun in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
@@ -40,37 +40,30 @@
  */
 package org.netbeans.modules.bpel.validation.reference;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import org.netbeans.modules.bpel.model.api.BpelContainer;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
-import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.bpel.model.api.ContentElement;
+import org.netbeans.modules.bpel.model.api.Import;
 import org.netbeans.modules.bpel.model.api.Process;
 import org.netbeans.modules.bpel.model.api.Variable;
 import org.netbeans.modules.bpel.model.api.VariableDeclaration;
 import org.netbeans.modules.bpel.model.api.VariableDeclarationScope;
-import org.netbeans.modules.bpel.model.api.references.BpelReference;
 import org.netbeans.modules.bpel.model.api.references.MappedReference;
 import org.netbeans.modules.bpel.model.api.references.ReferenceCollection;
-import org.netbeans.modules.bpel.model.api.references.SchemaReference;
-import org.netbeans.modules.bpel.model.api.references.WSDLReference;
 import org.netbeans.modules.bpel.model.api.support.ExpressionUpdater;
-import org.netbeans.modules.xml.xam.Component;
+import org.netbeans.modules.bpel.model.api.support.ImportHelper;
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.Reference;
 import org.netbeans.modules.xml.xam.Referenceable;
-import org.netbeans.modules.xml.xam.dom.Attribute;
-import org.netbeans.modules.xml.xam.spi.ValidationResult;
-import org.netbeans.modules.xml.xam.spi.Validation;
-import org.netbeans.modules.xml.xam.spi.Validation.ValidationType;
 import org.netbeans.modules.bpel.validation.core.BpelValidator;
-import static org.netbeans.modules.soa.ui.util.UI.*;
+import org.netbeans.modules.bpel.model.api.support.SimpleBpelModelVisitor;
+import org.netbeans.modules.bpel.model.api.support.SimpleBpelModelVisitorAdaptor;
+import static org.netbeans.modules.xml.ui.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -79,8 +72,35 @@ import static org.netbeans.modules.soa.ui.util.UI.*;
 public final class Validator extends BpelValidator {
 
   @Override
+  protected SimpleBpelModelVisitor getVisitor() { return new SimpleBpelModelVisitorAdaptor() {
+
+  @Override
   public void visit(Process process) {
     processEntity(process);
+  }
+
+  @Override
+  public void visit(Import imp) {
+    Model model = getModel(imp);
+
+    if (model == null) {
+      addError("FIX_Not_Well_Formed_Import", imp); // NOI18N
+      return;
+    }
+    if (isComplete()) {
+//out();
+//out("Vadlidate model: " + model);
+      validate(model);
+    }
+  }
+ 
+  private Model getModel(Import imp) {
+    Model model = ImportHelper.getWsdlModel(imp, false);
+
+    if (model != null) {
+      return model;
+    }
+    return ImportHelper.getSchemaModel(imp, false);
   }
 
   private void processEntity(BpelEntity entity) {
@@ -108,16 +128,16 @@ public final class Validator extends BpelValidator {
     StringBuilder builder = new StringBuilder();
 
     for (String string : set) {
-      builder.append( string );
+      builder.append(string);
       builder.append(", "); // NOI18N
     }
     String key;
 
     if (set.size() > 1) {
-      key = "FIX_Variables";
+      key = "FIX_Variables"; // NOI18N
     }
     else {
-      key = "FIX_Variable";
+      key = "FIX_Variable"; // NOI18N
     }
     addError(key, entity, builder.substring(0, builder.length()-2), expression.trim());
   }
@@ -147,7 +167,7 @@ public final class Validator extends BpelValidator {
       if (list != null) {
           for (Variable variable : list) {
               String name = variable.getVariableName();
-              set.remove( name );
+              set.remove(name);
           }
       }
       if (entity instanceof VariableDeclarationScope) {
@@ -162,7 +182,7 @@ public final class Validator extends BpelValidator {
       }
   }
 
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings("unchecked") // NOI18N
   private void checkReferenceCollection(BpelEntity entity) {
     if ( !(entity instanceof ReferenceCollection)) {
       return;
@@ -180,7 +200,8 @@ public final class Validator extends BpelValidator {
       String tag = entity.getPeer().getLocalName();
       String attr = ((MappedReference) reference).getAttribute().getName();
 
-      addQuickFix("FIX_Reference", entity, tag, attr, QuickFix.get(entity, (Reference<Referenceable>) reference));
+      addQuickFix("FIX_SA00010", entity, tag, attr, QuickFix.get(entity, (Reference<Referenceable>) reference)); // NOI18N
     }
   }
-}
+
+};}}

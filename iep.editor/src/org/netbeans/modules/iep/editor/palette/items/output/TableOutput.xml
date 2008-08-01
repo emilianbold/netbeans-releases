@@ -24,8 +24,8 @@
     
     <!--<icon16 urlvalue="images/tableOutputx16.png" />
     <icon32 urlvalue="images/tableOutputx32.png" />-->
-    <icon16 urlvalue="images/icons32x32/tableOutputx32.png" />
-    <icon32 urlvalue="images/icons32x32/tableOutputx32.png" />
+    <icon16 urlvalue="images/new/icons32x32/tableOutputx32.png" />
+    <icon32 urlvalue="images/new/icons32x32/tableOutputx32.png" />
     <description localizing-bundle="org.netbeans.modules.iep.editor.palette.items.output.Bundle"
                display-name-key="NAME_html-TableOutput"
                tooltip-key="HINT_html-TableOutput" />

@@ -44,8 +44,6 @@
 package org.netbeans.modules.uml.ui.support.visitors;
 
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
-import org.netbeans.modules.uml.ui.support.viewfactorysupport.IETGraphObject;
-import org.netbeans.modules.uml.ui.support.viewfactorysupport.TypeConversions;
 
 /**
  * @author KevinM
@@ -71,20 +69,21 @@ public class ETXMIIDEqualsVisitor implements IETGraphObjectVisitor
    /* (non-Javadoc)
     * @see org.netbeans.modules.uml.ui.support.visitors.IETGraphObjectVisitor#visit(org.netbeans.modules.uml.ui.support.viewfactorysupport.IETGraphObject)
     */
-   public boolean visit(IETGraphObject object)
-   {
-		IPresentationElement pEle = TypeConversions.getPresentationElement(object);
- 		if (pEle != null)
- 		{
- 			String eleXMIID = pEle.getXMIID();
-			if (eleXMIID != null && eleXMIID.equals(xmiid))
-			{
-				m_foundElement = pEle;
-				return false;
-			}
- 		}
- 		return true;
-   }
+        // TODO: meteora
+//   public boolean visit(IETGraphObject object)
+//   {
+//		IPresentationElement pEle = TypeConversions.getPresentationElement(object);
+// 		if (pEle != null)
+// 		{
+// 			String eleXMIID = pEle.getXMIID();
+//			if (eleXMIID != null && eleXMIID.equals(xmiid))
+//			{
+//				m_foundElement = pEle;
+//				return false;
+//			}
+// 		}
+// 		return true;
+//   }
  
  	public IPresentationElement getFoundPresentation()
  	{

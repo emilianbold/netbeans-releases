@@ -42,8 +42,6 @@ package org.netbeans.modules.gsf;
 
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -53,9 +51,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.RandomAccess;
-import org.netbeans.api.lexer.Token;
-import org.netbeans.api.lexer.TokenId;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.gsf.api.EmbeddingModel;
 import org.netbeans.modules.gsf.api.GsfLanguage;
 import org.netbeans.modules.gsf.api.annotations.CheckForNull;
@@ -70,7 +67,6 @@ import org.netbeans.modules.gsfpath.spi.classpath.ClassPathImplementation;
 import org.netbeans.modules.gsfpath.spi.classpath.PathResourceImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.FileSystem.AtomicAction;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.util.Exceptions;
@@ -85,26 +81,25 @@ import org.openide.util.Lookup;
 public class LanguageRegistry implements Iterable<Language> {
 
     private static LanguageRegistry instance;
-    private static final String DISPLAY_NAME = "displayName";
-    private static final String ICON_BASE = "iconBase";
-    private static final String EXTENSIONS = "extensions";
-    private static final String LANGUAGE = "language.instance";
-    private static final String PARSER = "parser.instance";
-    private static final String COMPLETION = "completion.instance";
-    private static final String RENAMER = "renamer.instance";
-    private static final String FORMATTER = "formatter.instance";
-    private static final String BRACKET_COMPLETION = "bracket.instance";
-    private static final String DECLARATION_FINDER = "declarationfinder.instance";
-    private static final String INDEXER = "indexer.instance";
-    private static final String PALETTE = "palette.instance";
-    private static final String STRUCTURE = "structure.instance";
-    private static final String HINTS = "hints.instance";
-    private static final String SEMANTIC = "semantic.instance";
-    private static final String OCCURRENCES = "occurrences.instance";
+    private static final String ICON_BASE = "iconBase"; // NOI18N
+    private static final String LANGUAGE = "language.instance"; // NOI18N
+    private static final String PARSER = "parser.instance"; // NOI18N
+    private static final String COMPLETION = "completion.instance"; // NOI18N
+    private static final String RENAMER = "renamer.instance"; // NOI18N
+    private static final String FORMATTER = "formatter.instance"; // NOI18N
+    private static final String BRACKET_COMPLETION = "bracket.instance"; // NOI18N
+    private static final String DECLARATION_FINDER = "declarationfinder.instance"; // NOI18N
+    private static final String INDEXER = "indexer.instance"; // NOI18N
+    //private static final String PALETTE = "palette.instance"; // NOI18N
+    private static final String STRUCTURE = "structure.instance"; // NOI18N
+    private static final String HINTS = "hints.instance"; // NOI18N
+    private static final String SEMANTIC = "semantic.instance"; // NOI18N
+    private static final String OCCURRENCES = "occurrences.instance"; // NOI18N
 
     /** Location in the system file system where languages are registered */
-    private static final String FOLDER = "GsfPlugins";
+    private static final String FOLDER = "GsfPlugins"; // NOI18N
     private List<Language> languages;
+    private Map<String,Language> mimeToLanguage;
     private boolean languagesInitialized;
     private Collection<? extends EmbeddingModel> embeddingModels;
 
@@ -122,6 +117,13 @@ public class LanguageRegistry implements Iterable<Language> {
         }
 
         this.languages = newLanguages;
+        
+        mimeToLanguage = new HashMap<String,Language>(2*languages.size());
+        for (Language language : languages) {
+            String mimeType = language.getMimeType();
+            assert mimeType.equals(mimeType.toLowerCase()) : mimeType;
+            mimeToLanguage.put( mimeType,language);
+        }
     }
 
     public static synchronized LanguageRegistry getInstance() {
@@ -133,46 +135,15 @@ public class LanguageRegistry implements Iterable<Language> {
     }
 
     /**
-     * Return a language implementation that corresponds to the given file extension,
-     * or null if no such language is supported
-     */
-    public Language getLanguageByExtension(@NonNull String extension) {
-        extension = extension.toLowerCase();
-
-        // TODO - create a map if this is slow
-        for (Language language : this) {
-            String[] extensions = language.getExtensions();
-
-            for (int i = 0; i < extensions.length; i++) {
-                if (extension.equals(extensions[i])) {
-                    return language;
-                }
-            }
-        }
-
-        return null;
-    }
-
-    /**
      * Return a language implementation that corresponds to the given mimeType,
      * or null if no such language is supported
      */
     public Language getLanguageByMimeType(@NonNull String mimeType) {
-        if (languages == null) {
+        if (mimeToLanguage == null) {
             return null;
         }
 
-        assert mimeType.equals(mimeType.toLowerCase()) : mimeType;
-        assert languages instanceof RandomAccess;
-
-        for (int i = 0, n = languages.size(); i < n; i++) {
-            Language language = languages.get(i);
-            if (language.getMimeType().equals(mimeType)) {
-                return language;
-            }
-        }
-
-        return null;
+        return mimeToLanguage.get(mimeType);
     }
 
     @CheckForNull
@@ -359,6 +330,20 @@ public class LanguageRegistry implements Iterable<Language> {
 
         doc.readLock(); // Read-lock due to Token hierarchy use
         try {
+            // TODO - I should only do this for languages which CAN have it
+            /*
+     at org.netbeans.lib.lexer.inc.IncTokenList.reinit(IncTokenList.java:113)
+        at org.netbeans.lib.lexer.TokenHierarchyOperation.setActiveImpl(TokenHierarchyOperation.java:257)
+        at org.netbeans.lib.lexer.TokenHierarchyOperation.isActiveImpl(TokenHierarchyOperation.java:308)
+        at org.netbeans.lib.lexer.TokenHierarchyOperation.tokenSequence(TokenHierarchyOperation.java:344)
+        at org.netbeans.lib.lexer.TokenHierarchyOperation.tokenSequence(TokenHierarchyOperation.java:338)
+        at org.netbeans.api.lexer.TokenHierarchy.tokenSequence(TokenHierarchy.java:183)
+        at org.netbeans.modules.gsf.LanguageRegistry.getEmbeddedLanguages(LanguageRegistry.java:336)
+        at org.netbeans.modules.gsfret.hints.infrastructure.SuggestionsTask.getHintsProviderLanguage(SuggestionsTask.java:70)
+        at org.netbeans.modules.gsfret.hints.infrastructure.SuggestionsTask.run(SuggestionsTask.java:94)
+        at org.netbeans.modules.gsfret.hints.infrastructure.SuggestionsTask.run(SuggestionsTask.java:63)
+[catch] at org.netbeans.napi.gsfret.source.Source$CompilationJob.run(Source.java:1272)             * 
+             */
             TokenSequence ts = TokenHierarchy.get(doc).tokenSequence();
             if (ts != null) {
                 addLanguages(result, ts, offset);
@@ -369,7 +354,7 @@ public class LanguageRegistry implements Iterable<Language> {
 
         String mimeType = (String) doc.getProperty("mimeType"); // NOI18N
         if (mimeType != null) {
-            Language language = LanguageRegistry.getInstance().getLanguageByMimeType(mimeType);
+            Language language = getLanguageByMimeType(mimeType);
             if (language != null && (result.size() == 0 || result.get(result.size()-1) != language))  {
                 result.add(language);
             }
@@ -386,14 +371,17 @@ public class LanguageRegistry implements Iterable<Language> {
         if (mimeType == null) {
             return false;
         }
-        for (Language language : this) {
-            if (mimeType.equals(language.getMimeType())) {
-                return true;
-            }
-        }
-
-        return false;
+        
+        return getLanguageByMimeType(mimeType) != null;
     }
+    
+    //private void listCustomEditorKits() {
+    //    for (Language language : this) {
+    //        if (language.useCustomEditorKit()) {
+    //            System.out.println(language.getDisplayName());
+    //        }
+    //    }
+    //}
     
     public String getLanguagesDisplayName() {
         StringBuilder sb = new StringBuilder();
@@ -430,6 +418,15 @@ public class LanguageRegistry implements Iterable<Language> {
     private synchronized void initialize() {
         if (languages == null) {
             readSfs();
+            
+            if (languages != null) {
+                mimeToLanguage = new HashMap<String,Language>(2*languages.size());
+                for (Language language : languages) {
+                    String mimeType = language.getMimeType();
+                    assert mimeType.equals(mimeType.toLowerCase()) : mimeType;
+                    mimeToLanguage.put( mimeType,language);
+                }
+            }
 
             initializeLanguages();
         }
@@ -505,32 +502,9 @@ public class LanguageRegistry implements Iterable<Language> {
             for (int j = 0; j < innerChildren.length; j++) {
                 FileObject mimeFile = innerChildren[j];
 
-                String mime = mimePrefixFile.getName() + "/" + mimeFile.getName();
-                DefaultLanguage language = new DefaultLanguage(mime);
+                String mime = mimePrefixFile.getName() + "/" + mimeFile.getName(); // NOI18N
+                Language language = new Language(mime);
                 languages.add(language);
-
-                String displayName = (String)mimeFile.getAttribute(DISPLAY_NAME);
-
-                /*
-                public String getLanguageName (String mimeType) {
-                if (!mimeTypeToName.containsKey (mimeType)) {
-                FileSystem fs = Repository.getDefault ().getDefaultFileSystem ();
-                FileObject fo = fs.findResource ("Editors/" + mimeType);
-                if (fo == null) return "???";
-                String bundleName = (String) fo.getAttribute ("SystemFileSystem.localizingBundle");
-                String name = mimeType;
-                if (bundleName != null)
-                try {
-                name = NbBundle.getBundle (bundleName).getString (mimeType);
-                } catch (MissingResourceException ex) {}
-                mimeTypeToName.put (mimeType, name);
-                }
-                return (String) mimeTypeToName.get (mimeType);
-                }
-                 */
-                if ((displayName != null) && (displayName.length() > 0)) {
-                    language.setDisplayName(displayName);
-                }
 
                 Boolean useCustomEditorKit = (Boolean)mimeFile.getAttribute("useCustomEditorKit"); // NOI18N
                 if (useCustomEditorKit != null && useCustomEditorKit.booleanValue()) {
@@ -538,7 +512,7 @@ public class LanguageRegistry implements Iterable<Language> {
                 }
                 
                 // Try to obtain icon from (new) IDE location for icons per mime type:
-                FileObject loaderMimeFile = sfs.findResource("Loaders/" + mime);
+                FileObject loaderMimeFile = sfs.findResource("Loaders/" + mime); // NOI18N
 
                 if (loaderMimeFile != null) {
                     String iconBase = (String)loaderMimeFile.getAttribute(ICON_BASE);
@@ -547,101 +521,43 @@ public class LanguageRegistry implements Iterable<Language> {
                         language.setIconBase(iconBase);
                     }
                 }
-
-                //Local icon registration in the Languages/ folder
-                //String iconBase = (String)mimeFile.getAttribute(ICON_BASE);
-                //
-                //if ((iconBase != null) && (iconBase.length() > 0)) {
-                //    language.setIconBase(iconBase);
-                //}
-                // Look for extensions, scanners, parsers, etc.
-                FileObject extensionsDir = mimeFile.getFileObject(EXTENSIONS, null);
-
-                if ((extensionsDir != null) && extensionsDir.isFolder()) {
-                    FileObject[] extensionFiles = extensionsDir.getChildren();
-
-                    for (int k = 0; k < extensionFiles.length; k++) {
-                        String extension = extensionFiles[k].getName();
-                        language.addExtension(extension);
+                
+                boolean foundConfig = false;
+                for (FileObject fo : mimeFile.getChildren()) {
+                    String name = fo.getNameExt();
+                    if (LANGUAGE.equals(name)) {
+                        foundConfig = true;
+                        language.setGsfLanguageFile(fo);
+                    } else if (HINTS.equals(name)) {
+                        language.setHintsProviderFile(fo);
+                    } else if (STRUCTURE.equals(name)) {
+                        language.setStructureFile(fo);
+                    } else if (PARSER.equals(name)) {
+                        language.setParserFile(fo);
+                    } else if (COMPLETION.equals(name)) {
+                        language.setCompletionProviderFile(fo);
+                    } else if (RENAMER.equals(name)) {
+                        language.setInstantRenamerFile(fo);
+                    } else if (FORMATTER.equals(name)) {
+                        language.setFormatterFile(fo);
+                    } else if (DECLARATION_FINDER.equals(name)) {
+                        language.setDeclarationFinderFile(fo);
+                    } else if (BRACKET_COMPLETION.equals(name)) {
+                        language.setBracketCompletionFile(fo);
+                    } else if (INDEXER.equals(name)) {
+                        language.setIndexerFile(fo);
+                    //} else if (PALETTE.equals(name)) {
+                    //    language.setPaletteFile(fo);
+                    } else if (SEMANTIC.equals(name)) {
+                        language.setSemanticAnalyzer(fo);
+                    } else if (OCCURRENCES.equals(name)) {
+                        language.setOccurrencesFinderFile(fo);
                     }
                 }
 
-                FileObject languageFile = mimeFile.getFileObject(LANGUAGE, null);
-
-                if (languageFile != null) {
-                    language.setGsfLanguageFile(languageFile);
-                }
-
-                FileObject parserFile = mimeFile.getFileObject(PARSER, null);
-
-                if (parserFile != null) {
-                    language.setParserFile(parserFile);
-                }
-
-                FileObject completionFile = mimeFile.getFileObject(COMPLETION, null);
-
-                if (completionFile != null) {
-                    language.setCompletionProviderFile(completionFile);
-                }
-
-                FileObject renamerFile = mimeFile.getFileObject(RENAMER, null);
-
-                if (renamerFile != null) {
-                    language.setInstantRenamerFile(renamerFile);
-                }
-
-                FileObject formatterFile = mimeFile.getFileObject(FORMATTER, null);
-
-                if (formatterFile != null) {
-                    language.setFormatterFile(formatterFile);
-                }
-
-                FileObject finderFile = mimeFile.getFileObject(DECLARATION_FINDER, null);
-
-                if (finderFile != null) {
-                    language.setDeclarationFinderFile(finderFile);
-                }
-
-                FileObject bracketFile = mimeFile.getFileObject(BRACKET_COMPLETION, null);
-
-                if (bracketFile != null) {
-                    language.setBracketCompletionFile(bracketFile);
-                }
-
-                FileObject indexerFile = mimeFile.getFileObject(INDEXER, null);
-
-                if (indexerFile != null) {
-                    language.setIndexerFile(indexerFile);
-                }
-
-                FileObject structureFile = mimeFile.getFileObject(STRUCTURE, null);
-
-                if (structureFile != null) {
-                    language.setStructureFile(structureFile);
-                }
-
-                FileObject hintsFile = mimeFile.getFileObject(HINTS, null);
-
-                if (hintsFile != null) {
-                    language.setHintsProviderFile(hintsFile);
-                }
-
-                FileObject paletteFile = mimeFile.getFileObject(PALETTE, null);
-
-                if (paletteFile != null) {
-                    language.setPaletteFile(paletteFile);
-                }
-                
-                FileObject semanticFile = mimeFile.getFileObject(SEMANTIC, null);
-
-                if (semanticFile != null) {
-                    language.setSemanticAnalyzer(semanticFile);
-                }
-                
-                FileObject occurrencesFile = mimeFile.getFileObject(OCCURRENCES, null);
-
-                if (occurrencesFile != null) {
-                    language.setOccurrencesFinderFile(occurrencesFile);
+                if (!foundConfig) {
+                    // Emit warning
+                    Logger.getLogger(getClass().getName()).log(Level.WARNING, "No GSF language registered for mime type " + mime);
                 }
             }
         }
@@ -658,21 +574,32 @@ public class LanguageRegistry implements Iterable<Language> {
         // I can't call language.getStructure() here - it causes initialization
         // of the language objects too early (before registry is populated),
         // so just check if we potentially have a structure scanner
-        if (((DefaultLanguage)language).hasStructureScanner()) {
-            String navFileName = "Navigator/Panels/" + language.getMimeType() + "/org-netbeans-modules-gsfret-navigation-ClassMemberPanel.instance";
+        if (language.hasStructureScanner()) {
+            String navFileName = "Navigator/Panels/" + language.getMimeType() + "/org-netbeans-modules-gsfret-navigation-ClassMemberPanel.instance"; // NOI18N
 
             FileObject fo = fs.findResource(navFileName);
 
             if (fo == null) {
                 try {
                     FileUtil.createData(fs.getRoot(), navFileName);
+
+                    if (language.getMimeType().equals("text/x-json")) { // NOI18N
+                        FileObject old = fs.findResource("Navigator/Panels/text/x-json/org-netbeans-modules-languages-features-LanguagesNavigator.instance");
+                        if (old != null) {
+                            try {
+                                old.delete();
+                            } catch (IOException ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
+                        }
+                    }
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
                 }
             }
         } else {
             // Remove obsolete panel file
-            String navFileName = "Navigator/Panels/" + language.getMimeType() + "/org-netbeans-modules-gsfret-navigation-ClassMemberPanel.instance";
+            String navFileName = "Navigator/Panels/" + language.getMimeType() + "/org-netbeans-modules-gsfret-navigation-ClassMemberPanel.instance"; // NOI18N
 
             FileObject old = fs.findResource(navFileName);
 
@@ -685,7 +612,7 @@ public class LanguageRegistry implements Iterable<Language> {
             }
         }
         
-        String oldNavFileName = "Navigator/Panels/" + language.getMimeType() + "/org-netbeans-modules-retouche-navigation-ClassMemberPanel.instance";
+        String oldNavFileName = "Navigator/Panels/" + language.getMimeType() + "/org-netbeans-modules-retouche-navigation-ClassMemberPanel.instance"; // NOI18N
         // Delete the old navigator description - I have moved the class name
         FileObject old = fs.findResource(oldNavFileName);
 
@@ -711,34 +638,16 @@ public class LanguageRegistry implements Iterable<Language> {
      */
     void initializeLanguageForEditor(Language l) {
         FileSystem fs = Repository.getDefault().getDefaultFileSystem();
-        final FileObject root = fs.findResource("Editors/" + l.getMimeType()); // NOI18N
-        if (root.getFileObject("Settings.settings") == null) {
-            // NOI18N
+        String mimeType = l.getMimeType();
+        final FileObject root = fs.findResource("Editors/" + mimeType); // NOI18N
+
+        // Clean up the settings files
+        FileObject settings = root.getFileObject("Settings.settings"); // NOI18N
+        if (settings != null) {
             try {
-                fs.runAtomicAction(new AtomicAction() {
-
-                    public void run() {
-                        try {
-                            InputStream is = getClass().getClassLoader().getResourceAsStream("org/netbeans/modules/gsf/GsfOptions.settings"); // NOI18N
-                            try {
-                                FileObject fo = root.createData("Settings.settings"); // NOI18N
-                                OutputStream os = fo.getOutputStream();
-
-                                try {
-                                    FileUtil.copy(is, os);
-                                } finally {
-                                    os.close();
-                                }
-                            } finally {
-                                is.close();
-                            }
-                        } catch (IOException ex) {
-                            Exceptions.printStackTrace(ex);
-                        }
-                    }
-                });
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
+                settings.delete();
+            } catch (IOException ioe) {
+                Exceptions.printStackTrace(ioe);
             }
         }
 
@@ -751,6 +660,51 @@ public class LanguageRegistry implements Iterable<Language> {
                 FileUtil.createData(root, "SideBar/org-netbeans-modules-editor-gsfret-GsfCodeFoldingSideBarFactory.instance").setAttribute("position", 1200);
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
+            }
+        }
+
+        // YAML cleanup: Was a Schliemann editor in 6.0/6.1/6.5dev so may have to delete its persistent system files
+        if (mimeType.equals("text/x-yaml") || mimeType.equals("text/x-json")) { // NOI18N
+            FileObject f = root.getFileObject("Popup/generate-fold-popup"); // NOI18N
+            if (f != null) {
+                try {
+                    f.delete();
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+
+                f = root.getFileObject("ToolTips/org-netbeans-modules-languages-features-ToolTipAnnotation.instance"); // NOI18N
+                if (f != null) {
+                    try {
+                        f.delete();
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+                f = root.getFileObject("Popup/org-netbeans-modules-languages-features-GoToDeclarationAction.instance"); // NOI18N
+                if (f != null) {
+                    try {
+                        f.delete();
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+                f = root.getFileObject("UpToDateStatusProvider/org-netbeans-modules-languages-features-UpToDateStatusProviderFactoryImpl.instance"); // NOI18N
+                if (f != null) {
+                    try {
+                        f.delete();
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+                f = root.getFileObject("run_script.instance"); // NOI18N
+                if (f != null) {
+                    try {
+                        f.delete();
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
             }
         }
 
@@ -935,6 +889,15 @@ public class LanguageRegistry implements Iterable<Language> {
         }
         }
          */
+        
+        // Highlighting layers
+        if (root.getFileObject("org-netbeans-modules-gsfret-editor-semantic-HighlightsLayerFactoryImpl.instance") == null) {
+            try {
+                FileObject fo = FileUtil.createData(root, "org-netbeans-modules-gsfret-editor-semantic-HighlightsLayerFactoryImpl.instance");
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
 
         // Code completion
         String completionProviders = "CompletionProviders";
@@ -964,8 +927,8 @@ public class LanguageRegistry implements Iterable<Language> {
                     completion.createData(provider);
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
-                }
-                
+        }
+
             }
             if (checkUserdirUpgrade) {
                 // Delete old name present up to and including beta2
@@ -1035,7 +998,22 @@ public class LanguageRegistry implements Iterable<Language> {
                 }
             }
         }
+        
+        // Glyph gutter actions
+        // No longer necessary as of changeset cb8074b378e9
+        //if (l.hasHints()) {
+        //    FileObject gf = root.getFileObject("GlyphGutterActions/org-netbeans-modules-editor-hints-FixAction.instance");
+        //    if (gf == null) {
+        //        try {
+        //            FileObject fo = FileUtil.createData(root, "GlyphGutterActions/org-netbeans-modules-editor-hints-FixAction.instance");
+        //            fo.setAttribute("position", 200);
+        //        } catch (IOException ex) {
+        //            Exceptions.printStackTrace(ex);
+        //        }
+        //    }
+        //}
 
+        
         // Temporarily disabled; each language does it instead
         //initializeColoring(l);
     }

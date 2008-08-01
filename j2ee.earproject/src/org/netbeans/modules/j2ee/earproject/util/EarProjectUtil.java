@@ -40,10 +40,16 @@
  */
 package org.netbeans.modules.j2ee.earproject.util;
 
+import java.util.ResourceBundle;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.earproject.EarProject;
 import org.netbeans.modules.j2ee.spi.ejbjar.EarImplementation;
+import org.openide.util.NbBundle;
+import org.openide.util.Parameters;
 
 /**
  * Common utilities for Enterprise project.
@@ -51,6 +57,9 @@ import org.netbeans.modules.j2ee.spi.ejbjar.EarImplementation;
  * @author Tomas Mysik
  */
 public final class EarProjectUtil {
+    
+    private static final Logger UI_LOGGER = Logger.getLogger("org.netbeans.ui.j2ee.earproject"); // NOI18N
+    private static final Logger USG_LOGGER = Logger.getLogger("org.netbeans.ui.metrics.j2ee.earproject"); // NOI18N    
 
     private EarProjectUtil() {}
 
@@ -115,4 +124,44 @@ public final class EarProjectUtil {
     public static boolean hasLength(String str) {
         return str != null && str.length() > 0;
     }
+    
+    /**
+     * Logs the UI gesture.
+     *
+     * @param bundle resource bundle to use for message
+     * @param message message key
+     * @param params message parameters, may be <code>null</code>
+     */
+    public static void logUI(ResourceBundle bundle,String message, Object[] params) {
+        Parameters.notNull("message", message);
+        Parameters.notNull("bundle", bundle);
+
+        LogRecord logRecord = new LogRecord(Level.INFO, message);
+        logRecord.setLoggerName(UI_LOGGER.getName());
+        logRecord.setResourceBundle(bundle);
+        if (params != null) {
+            logRecord.setParameters(params);
+        }
+        UI_LOGGER.log(logRecord);
+    }    
+    
+    /**
+     * Logs feature usage.
+     *
+     * @param srcClass source class
+     * @param message message key
+     * @param params message parameters, may be <code>null</code>
+     */
+    public static void logUsage(Class srcClass, String message, Object[] params) {
+        Parameters.notNull("message", message);
+
+        LogRecord logRecord = new LogRecord(Level.INFO, message);
+        logRecord.setLoggerName(USG_LOGGER.getName());
+        logRecord.setResourceBundle(NbBundle.getBundle(srcClass));
+        logRecord.setResourceBundleName(srcClass.getPackage().getName() + ".Bundle"); // NOI18N
+        if (params != null) {
+            logRecord.setParameters(params);
+        }
+        USG_LOGGER.log(logRecord);
+    }        
 }

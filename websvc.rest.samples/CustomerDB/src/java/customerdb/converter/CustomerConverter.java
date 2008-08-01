@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,13 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * Contributor(s):
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -47,17 +47,21 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlAttribute;
+import javax.ws.rs.core.UriBuilder;
+import javax.persistence.EntityManager;
+import customerdb.DiscountCode;
 
 
 /**
  *
- * @author nam
+ * @author PeterLiu
  */
 
 @XmlRootElement(name = "customer")
 public class CustomerConverter {
     private Customer entity;
     private URI uri;
+    private int expandLevel;
     
     /** Creates a new instance of CustomerConverter */
     public CustomerConverter() {
@@ -69,10 +73,23 @@ public class CustomerConverter {
      *
      * @param entity associated entity
      * @param uri associated uri
+     * @param expandLevel indicates the number of levels the entity graph should be expanded@param isUriExtendable indicates whether the uri can be extended
      */
-    public CustomerConverter(Customer entity, URI uri) {
+    public CustomerConverter(Customer entity, URI uri, int expandLevel, boolean isUriExtendable) {
         this.entity = entity;
-        this.uri = uri;
+        this.uri = (isUriExtendable) ? UriBuilder.fromUri(uri).path(entity.getCustomerId() + "/").build() : uri;
+        this.expandLevel = expandLevel;
+    }
+
+    /**
+     * Creates a new instance of CustomerConverter.
+     *
+     * @param entity associated entity
+     * @param uri associated uri
+     * @param expandLevel indicates the number of levels the entity graph should be expanded
+     */
+    public CustomerConverter(Customer entity, URI uri, int expandLevel) {
+        this(entity, uri, expandLevel, false);
     }
 
     /**
@@ -82,7 +99,7 @@ public class CustomerConverter {
      */
     @XmlElement
     public Integer getCustomerId() {
-        return entity.getCustomerId();
+        return (expandLevel > 0) ? entity.getCustomerId() : null;
     }
 
     /**
@@ -101,7 +118,7 @@ public class CustomerConverter {
      */
     @XmlElement
     public String getZip() {
-        return entity.getZip();
+        return (expandLevel > 0) ? entity.getZip() : null;
     }
 
     /**
@@ -120,7 +137,7 @@ public class CustomerConverter {
      */
     @XmlElement
     public String getName() {
-        return entity.getName();
+        return (expandLevel > 0) ? entity.getName() : null;
     }
 
     /**
@@ -139,7 +156,7 @@ public class CustomerConverter {
      */
     @XmlElement
     public String getAddressline1() {
-        return entity.getAddressline1();
+        return (expandLevel > 0) ? entity.getAddressline1() : null;
     }
 
     /**
@@ -158,7 +175,7 @@ public class CustomerConverter {
      */
     @XmlElement
     public String getAddressline2() {
-        return entity.getAddressline2();
+        return (expandLevel > 0) ? entity.getAddressline2() : null;
     }
 
     /**
@@ -177,7 +194,7 @@ public class CustomerConverter {
      */
     @XmlElement
     public String getCity() {
-        return entity.getCity();
+        return (expandLevel > 0) ? entity.getCity() : null;
     }
 
     /**
@@ -196,7 +213,7 @@ public class CustomerConverter {
      */
     @XmlElement
     public String getState() {
-        return entity.getState();
+        return (expandLevel > 0) ? entity.getState() : null;
     }
 
     /**
@@ -215,7 +232,7 @@ public class CustomerConverter {
      */
     @XmlElement
     public String getPhone() {
-        return entity.getPhone();
+        return (expandLevel > 0) ? entity.getPhone() : null;
     }
 
     /**
@@ -234,7 +251,7 @@ public class CustomerConverter {
      */
     @XmlElement
     public String getFax() {
-        return entity.getFax();
+        return (expandLevel > 0) ? entity.getFax() : null;
     }
 
     /**
@@ -253,7 +270,7 @@ public class CustomerConverter {
      */
     @XmlElement
     public String getEmail() {
-        return entity.getEmail();
+        return (expandLevel > 0) ? entity.getEmail() : null;
     }
 
     /**
@@ -272,7 +289,7 @@ public class CustomerConverter {
      */
     @XmlElement
     public Integer getCreditLimit() {
-        return entity.getCreditLimit();
+        return (expandLevel > 0) ? entity.getCreditLimit() : null;
     }
 
     /**
@@ -289,10 +306,12 @@ public class CustomerConverter {
      *
      * @return value for discountCode
      */
-    @XmlElement(name = "discountCodeRef")
-    public DiscountCodeRefConverter getDiscountCode() {
-        if (entity.getDiscountCode() != null) {
-            return new DiscountCodeRefConverter(entity.getDiscountCode(), uri.resolve("discountCode/"), false);
+    @XmlElement
+    public DiscountCodeConverter getDiscountCode() {
+        if (expandLevel > 0) {
+            if (entity.getDiscountCode() != null) {
+                return new DiscountCodeConverter(entity.getDiscountCode(), uri.resolve("discountCode/"), expandLevel - 1, false);
+            }
         }
         return null;
     }
@@ -302,10 +321,8 @@ public class CustomerConverter {
      *
      * @param value the value to set
      */
-    public void setDiscountCode(DiscountCodeRefConverter value) {
-        if (value != null) {
-            entity.setDiscountCode(value.getEntity());
-        }
+    public void setDiscountCode(DiscountCodeConverter value) {
+        entity.setDiscountCode((value != null) ? value.getEntity() : null);
     }
 
     /**
@@ -313,9 +330,17 @@ public class CustomerConverter {
      *
      * @return the uri
      */
-    @XmlAttribute(name = "uri")
-    public URI getResourceUri() {
+    @XmlAttribute
+    public URI getUri() {
         return uri;
+    }
+
+    /**
+     * Sets the URI for this reference converter.
+     *
+     */
+    public void setUri(URI uri) {
+        this.uri = uri;
     }
 
     /**
@@ -325,15 +350,25 @@ public class CustomerConverter {
      */
     @XmlTransient
     public Customer getEntity() {
+        if (entity.getCustomerId() == null) {
+            CustomerConverter converter = UriResolver.getInstance().resolve(CustomerConverter.class, uri);
+            if (converter != null) {
+                entity = converter.getEntity();
+            }
+        }
         return entity;
     }
 
     /**
-     * Sets the Customer entity.
+     * Returns the resolved Customer entity.
      *
-     * @param entity to set
+     * @return an resolved entity
      */
-    public void setEntity(Customer entity) {
-        this.entity = entity;
+    public Customer resolveEntity(EntityManager em) {
+        DiscountCode discountCode = entity.getDiscountCode();
+        if (discountCode != null) {
+            entity.setDiscountCode(em.getReference(DiscountCode.class, discountCode.getDiscountCode()));
+        }
+        return entity;
     }
 }

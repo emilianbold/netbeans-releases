@@ -126,7 +126,7 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
         boolean enabled = ProviderUtil.isValidServerInstanceOrNone(project);
 
         if (enabled) {
-            boolean withDatasources = Util.isSupportedJavaEEVersion(project) || Util.isEjb21Module(project);
+            boolean withDatasources = Util.isContainerManaged(project) || Util.isEjb21Module(project);
             if (withDatasources) {
                 initializeWithDatasources();
             } else {
@@ -818,6 +818,12 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
         private boolean cmp;
 
         boolean waitingForScan;
+        
+        private String title;
+        
+        public WizardPanel(String wizardTitle) {
+            title = wizardTitle;
+        }
 
         public DatabaseTablesPanel getComponent() {
             if (component == null) {
@@ -845,6 +851,8 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
 
         public void readSettings(WizardDescriptor settings) {
             wizardDescriptor = settings;
+            wizardDescriptor.putProperty("NewFileWizard_Title", title); // NOI18N
+            
             if (!componentInitialized) {
                 componentInitialized = true;
 
@@ -905,24 +913,19 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
         }
 
         public void storeSettings(WizardDescriptor settings) {
-            WizardDescriptor wiz = settings;
-            Object buttonPressed = wiz.getValue();
-            if (buttonPressed.equals(WizardDescriptor.NEXT_OPTION) ||
-                    buttonPressed.equals(WizardDescriptor.FINISH_OPTION)) {
-                RelatedCMPHelper helper = RelatedCMPWizard.getHelper(wizardDescriptor);
+            RelatedCMPHelper helper = RelatedCMPWizard.getHelper(wizardDescriptor);
 
-                SchemaElement sourceSchemaElement = getComponent().getSourceSchemaElement();
-                DatabaseConnection dbconn = getComponent().getDatabaseConnection();
-                FileObject dbschemaFile = getComponent().getDBSchemaFile();
-                String datasourceName = getComponent().getDatasourceName();
+            SchemaElement sourceSchemaElement = getComponent().getSourceSchemaElement();
+            DatabaseConnection dbconn = getComponent().getDatabaseConnection();
+            FileObject dbschemaFile = getComponent().getDBSchemaFile();
+            String datasourceName = getComponent().getDatasourceName();
 
-                if (dbschemaFile != null) {
-                    helper.setTableSource(sourceSchemaElement, dbschemaFile);
-                } else {
-                    helper.setTableSource(sourceSchemaElement, dbconn, datasourceName);
-                }
-                helper.setTableClosure(getComponent().getTableClosure());
+            if (dbschemaFile != null) {
+                helper.setTableSource(sourceSchemaElement, dbschemaFile);
+            } else {
+                helper.setTableSource(sourceSchemaElement, dbconn, datasourceName);
             }
+            helper.setTableClosure(getComponent().getTableClosure());
         }
 
         public void stateChanged(ChangeEvent event) {
@@ -930,7 +933,7 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
         }
 
         private void setErrorMessage(String errorMessage) {
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", errorMessage); // NOI18N
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, errorMessage); // NOI18N
         }
     }
 }

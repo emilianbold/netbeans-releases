@@ -325,6 +325,8 @@ public class SQLObjectUtil {
 
     public static SourceColumn createRuntimeInput(SQLDBTable sTable, SQLDefinition sqlDefn) throws BaseException {
         SQLDBModel dbModel = (SQLDBModel) sTable.getParent();
+        if (dbModel.getETLDBConnectionDefinition().getDBType().equals(DBMetaDataFactory.AXION) ||
+            dbModel.getETLDBConnectionDefinition().getDBType().equalsIgnoreCase("Internal")) {
             // set the flatfile location name for this table
             sTable.setFlatFileLocationRuntimeInputName(generateFFRuntimeInputName(FILE_LOC, sTable));
             RuntimeDatabaseModel rtDBModel = getOrCreateRuntimeModel(sqlDefn);
@@ -341,6 +343,7 @@ public class SQLObjectUtil {
                 rtInput.addColumn(arg);
                 return arg;
             }
+        }
         return null;
     }
 
@@ -359,19 +362,14 @@ public class SQLObjectUtil {
     }
 
     public static SourceColumn createRuntimeInputArg(SQLDBTable sTable,
-            String ffArgName, DBConnectionDefinition connDef) throws BaseException {
+            String ffArgName, DBConnectionDefinition connDef) {
         SourceColumn srcColumn = SQLModelObjectFactory.getInstance().createSourceColumn(
                 ffArgName, java.sql.Types.VARCHAR, 0, 0, true);
         srcColumn.setEditable(false); // the name is not editable
         srcColumn.setVisible(false); // the column is not visible in canvas
-         SQLDBModel dbModel = (SQLDBModel) sTable.getParent();
-        // set default value if not flatfile
-        if (dbModel.getETLDBConnectionDefinition().getDBType().equals(DBMetaDataFactory.AXION) ||
-            dbModel.getETLDBConnectionDefinition().getDBType().equalsIgnoreCase("Internal")){
+
+        // set default value
         srcColumn.setDefaultValue(getFileNameFromDB(sTable, connDef));
-        }else{
-             srcColumn.setDefaultValue("RUNTIME_INPUT");
-                 }
         return srcColumn;
     }
 

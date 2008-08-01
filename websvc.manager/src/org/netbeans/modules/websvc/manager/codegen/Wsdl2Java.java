@@ -92,7 +92,8 @@ public class Wsdl2Java {
     private static final String CATALOG = "catalog.file";
     
     // TODO generate this dynamically instead of using a hardcoded value
-    private static final String ENDORSED_REF = "modules/ext/jaxws21/api/jaxws-api.jar";
+    private static final String JAXB_ENDORSED_REF = "modules/ext/jaxb/api/jaxb-api.jar";
+    private static final String JAXWS_ENDORSED_REF = "modules/ext/jaxws21/api/jaxws-api.jar";
     
     private final String userDir = System.getProperty("netbeans.user");
     
@@ -127,8 +128,9 @@ public class Wsdl2Java {
             properties.put(WSDL_FILE_NAME_PROP, wsdlUrl);
             properties.put(PACKAGE_NAME, packageName == null ? "" : packageName);
             
-            File endorsedDir = InstalledFileLocator.getDefault().locate(ENDORSED_REF, null, true).getParentFile();
-            properties.put(JAXWS_ENDORSED_DIR, endorsedDir.getAbsolutePath());
+            File jaxbEndorsedDir = InstalledFileLocator.getDefault().locate(JAXB_ENDORSED_REF, null, true).getParentFile();
+            File jaxwsEndorsedDir = InstalledFileLocator.getDefault().locate(JAXWS_ENDORSED_REF, null, true).getParentFile();
+            properties.put(JAXWS_ENDORSED_DIR, jaxbEndorsedDir.getAbsolutePath()+":"+jaxwsEndorsedDir.getAbsolutePath());
             
             // set the catalog file for wsimport
             properties.put(CATALOG, catalogFile.getAbsolutePath());

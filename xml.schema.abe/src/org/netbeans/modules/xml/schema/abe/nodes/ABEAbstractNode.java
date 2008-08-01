@@ -64,6 +64,7 @@ import org.netbeans.modules.xml.schema.abe.UIUtilities;
 import org.netbeans.modules.xml.schema.abe.action.ShowDesignAction;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
+import org.netbeans.modules.xml.schema.ui.basic.DesignGotoType;
 import org.netbeans.modules.xml.schema.ui.basic.SchemaGotoType;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.Nameable;
@@ -169,6 +170,14 @@ public abstract class ABEAbstractNode extends AbstractNode
             doLookup = Lookups.exclude(doLookup, new Class[]{Node.class});
         }
         
+        //issue 141220.
+        Lookup compLookup = Lookup.EMPTY;
+        try {
+            compLookup = component.getModel().getSchemaModel().getModelSource().getLookup();
+        } catch (Exception ex) {
+            //ignore
+        }
+        
         return new ProxyLookup(new Lookup[]{
             // schemamodel lookup
             // exclude the DataObject here because the DataObject for the
@@ -177,7 +186,7 @@ public abstract class ABEAbstractNode extends AbstractNode
             // DataObjects in the lookup and this may cause a problem with
             // save cookies, etc.
             Lookups.exclude(
-                    component.getModel().getSchemaModel().getModelSource().getLookup(),
+                    compLookup,
                     new Class[] {DataObject.class}
             ),
             // axi component
@@ -263,6 +272,7 @@ public abstract class ABEAbstractNode extends AbstractNode
     private static final GotoType[] GOTO_TYPES = new GotoType[] {
         new SourceGotoType(),
         new SchemaGotoType(),
+        new DesignGotoType(),        
     };
     
     
@@ -305,6 +315,8 @@ public abstract class ABEAbstractNode extends AbstractNode
     }
     
     private void setAXIComponent(AXIComponent axiComponent) {
+        if(axiComponent == null || axiComponent.getModel() == null)
+            return;
         this.axiComponent = axiComponent;
         axiComponent.getModel().addPropertyChangeListener(
                 WeakListeners.propertyChange(this, axiComponent.getModel())

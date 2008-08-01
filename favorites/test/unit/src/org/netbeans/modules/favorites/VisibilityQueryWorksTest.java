@@ -47,7 +47,6 @@ import java.util.Arrays;
 import java.util.Date;
 import javax.swing.event.ChangeListener;
 import junit.framework.AssertionFailedError;
-import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.spi.queries.VisibilityQueryImplementation;
 import org.openide.ErrorManager;
@@ -60,6 +59,7 @@ import org.openide.loaders.DataShadow;
 import org.openide.nodes.Node;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Lookup;
+import org.openide.util.test.MockLookup;
 
 public class VisibilityQueryWorksTest extends NbTestCase {
     private FileObject hiddenFO;
@@ -99,8 +99,9 @@ public class VisibilityQueryWorksTest extends NbTestCase {
     protected void setUp () throws Exception {
         clearWorkDir();
 
-        MockServices.setServices(new Class[] {ErrManager.class, VQI.class});
-        ((VQI) Lookup.getDefault().lookup(VQI.class)).init();
+        VQI vqi = new VQI();
+        vqi.init();
+        MockLookup.setInstances(vqi, new ErrManager(), new Repository(FileUtil.createMemoryFileSystem()));
 
         ErrManager.log = getLog();
         err = ErrorManager.getDefault().getInstance("TEST-" + getName() + "");
@@ -253,7 +254,7 @@ public class VisibilityQueryWorksTest extends NbTestCase {
         return null;
     }
     
-    public static final class VQI implements VisibilityQueryImplementation {
+    private static final class VQI implements VisibilityQueryImplementation {
         
         public void init() {
             showAll = false;
@@ -286,7 +287,7 @@ public class VisibilityQueryWorksTest extends NbTestCase {
     //
     // Logging support
     //
-    public static final class ErrManager extends ErrorManager {
+    private static final class ErrManager extends ErrorManager {
         public static final StringBuffer messages = new StringBuffer ();
         
         private String prefix;

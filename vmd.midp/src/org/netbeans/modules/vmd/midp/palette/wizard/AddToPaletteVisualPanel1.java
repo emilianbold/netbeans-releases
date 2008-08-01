@@ -54,12 +54,13 @@ import org.openide.util.NbBundle;
  */
 public final class AddToPaletteVisualPanel1 extends JPanel {
 
+    private static final String MSG_NO_PROJECTS = "MSG_ERR_NoOpenedProjects"; // NOI18N 
+    
     private AddToPaletteWizardPanel1 wizardPanel;
 
     public AddToPaletteVisualPanel1 (AddToPaletteWizardPanel1 wizardPanel) {
         this.wizardPanel = wizardPanel;
         initComponents();
-        projectCombo.setRenderer (new ProjectListCellRenderer ());
     }
 
     public String getName() {
@@ -67,26 +68,54 @@ public final class AddToPaletteVisualPanel1 extends JPanel {
     }
 
     public Project getActiveProject () {
-        return (Project) projectCombo.getSelectedItem();
+        Object item = projectCombo.getSelectedItem();
+        if (item instanceof Project){
+            return (Project)item;
+        }
+        return null;
+    }
+
+    public int getProjectsCount () {
+        if (projectCombo.getItemAt(0).equals(MSG_NO_PROJECTS)){
+            return 0;
+        }
+        return projectCombo.getItemCount();
     }
 
     public void reload (Project project) {
         Project[] projects = OpenProjects.getDefault ().getOpenProjects ();
         Vector projectsVector = new Vector ();
-        for (Project prj : projects)
-            if (MidpProjectPropertiesSupport.isMobileProject (prj))
-                projectsVector.add (prj);
-        projectCombo.setModel (new DefaultComboBoxModel (projectsVector));
-        if (project == null) {
-            Project prj = OpenProjects.getDefault ().getMainProject ();
-            if (MidpProjectPropertiesSupport.isMobileProject (prj))
-                project = prj;
+        for (Project prj : projects) {
+            if (MidpProjectPropertiesSupport.isMobileProject(prj)) {
+                projectsVector.add(prj);
+            }
         }
-        if (project == null  &&  projects.length > 0)
-            project = projects[0];
-        projectCombo.setSelectedItem (project);
+        if(projectsVector.size() == 0){
+            projectsVector.add(getMessage(MSG_NO_PROJECTS));
+            projectCombo.setEnabled( false );
+            projectCombo.setRenderer(new DefaultListCellRenderer());
+            projectCombo.setModel(new DefaultComboBoxModel(projectsVector));
+        } else {
+            projectCombo.setEnabled( true );
+            projectCombo.setRenderer (new ProjectListCellRenderer ());
+            projectCombo.setModel(new DefaultComboBoxModel(projectsVector));
+            setProjectSelection(projects, project);
+        }
     }
 
+    private void setProjectSelection(Project[] openedProjects, Project project){
+            if (project == null) {
+                Project prj = OpenProjects.getDefault().getMainProject();
+                if (MidpProjectPropertiesSupport.isMobileProject(prj)) {
+                    project = prj;
+                }
+            }
+            if (project == null && openedProjects.length > 0) {
+                project = openedProjects[0];
+            }
+            projectCombo.setSelectedItem(project);
+    }
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -157,5 +186,9 @@ private void projectComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
 
     }
 
+    private static String getMessage(String key) {
+        return NbBundle.getMessage(AddToPaletteVisualPanel1.class, key);
+    }
+    
 }
 

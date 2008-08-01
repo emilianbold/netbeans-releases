@@ -79,29 +79,30 @@ public class Dependency extends DirectedRelationship
         try
         {
             if (!reEnt.isBlocking())
-            {    
-              	RelationshipEventsHelper help = new RelationshipEventsHelper(this);
-              	if (help.firePreEndModified("supplier", null, elem))
-              	{
-              		setSingleElementAndConnect(elem, "supplier",
-        												new IBackPointer<INamedElement>() 
-        												{
-        													public void execute(INamedElement obj) 
-        													{
-        													    obj.addSupplierDependency(Dependency.this);
-        													}
-        												},
-        												new IBackPointer<INamedElement>() 
-        												{
-        													public void execute(INamedElement obj) 
-        													{
-        														obj.removeSupplierDependency(Dependency.this);
-        													}
-        												}
-        	  								);
-        
-              		help.fireEndModified();
-              	}
+            {
+                RelationshipEventsHelper help = new RelationshipEventsHelper(this);
+                if (help.firePreEndModified("supplier", null, elem))
+                {
+                    setSingleElementAndConnect(elem, "supplier",
+                                               new IBackPointer<INamedElement>()
+                                               {
+
+                                                   public void execute(INamedElement obj)
+                                                   {
+                                                       obj.addSupplierDependency(Dependency.this);
+                                                   }
+                                               },
+                                               new IBackPointer<INamedElement>()
+                                               {
+
+                                                   public void execute(INamedElement obj)
+                                                   {
+                                                       obj.removeSupplierDependency(Dependency.this);
+                                                   }
+                                               });
+
+                    help.fireEndModified();
+                }
             }
         }
         finally

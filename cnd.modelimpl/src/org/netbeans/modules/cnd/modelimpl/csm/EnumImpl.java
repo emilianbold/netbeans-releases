@@ -70,7 +70,7 @@ public class EnumImpl extends ClassEnumBase<CsmEnum>  implements CsmEnum, CsmMem
 	super.init(scope, ast);
         RepositoryUtils.hang(this); // "hang" now and then "put" in "register()"
         initEnumeratorList(ast);
-        register(scope);
+        register(scope, true);
     }
     
     public static EnumImpl create(AST ast, CsmScope scope, CsmFile file) {

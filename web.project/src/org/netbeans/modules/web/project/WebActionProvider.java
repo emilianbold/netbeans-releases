@@ -44,6 +44,7 @@ import java.io.IOException;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -91,6 +92,8 @@ import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.modules.web.api.webmodule.RequestParametersQuery;
+import org.netbeans.modules.web.client.tools.api.WebClientToolsProjectUtils;
+import org.netbeans.modules.web.client.tools.api.WebClientToolsSessionStarterService;
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
 import org.netbeans.modules.web.jsps.parserapi.JspParserFactory;
 import org.netbeans.modules.web.project.ui.ServletUriPanel;
@@ -138,6 +141,7 @@ class WebActionProvider implements ActionProvider {
         COMMAND_MOVE,
         COMMAND_RENAME
     };
+
     // Project
     WebProject project;
     // Ant project helper of the project
@@ -379,6 +383,9 @@ class WebActionProvider implements ActionProvider {
         // DEBUG-SINGLE
         } else if (command.equals(COMMAND_DEBUG_SINGLE)) {
             setDirectoryDeploymentProperty(p);
+            
+            setJavaScriptDebuggerProperties(p);
+                        
             FileObject[] files = findTestSources(context, false);
             if (files != null) {
                 targetNames = setupDebugTestSingle(p, files);
@@ -514,6 +521,8 @@ class WebActionProvider implements ActionProvider {
                 return null;
             }
 
+            setJavaScriptDebuggerProperties(p);
+            
             WebServicesClientSupport wscs = WebServicesClientSupport.getWebServicesClientSupport(project.getProjectDirectory());
             if (wscs != null) { //project contains ws reference
                 List serviceClients = wscs.getServiceClients();
@@ -706,6 +715,21 @@ class WebActionProvider implements ActionProvider {
         return targetNames;
     }
 
+    private void setJavaScriptDebuggerProperties(Properties p) {       
+        if (!WebClientToolsSessionStarterService.isAvailable()) {
+            // If JavaScript debugger is not available, set to server debugging only
+            p.setProperty("debug.client", "false"); // NOI18N
+            p.setProperty("debug.server", "true"); // NOI18N
+
+        } else {
+            boolean debugServer = WebClientToolsProjectUtils.getServerDebugProperty(project);
+            boolean debugClient = WebClientToolsProjectUtils.getClientDebugProperty(project);
+
+            p.setProperty("debug.client", String.valueOf(debugClient)); // NOI18N
+            p.setProperty("debug.server", String.valueOf(debugServer)); // NOI18N
+        }
+    }
+
     private String[] setupTestSingle(Properties p, FileObject[] files) {
         FileObject[] testSrcPath = project.getTestSourceRoots().getRoots();
         FileObject root = getRoot(testSrcPath, files[0]);
@@ -875,6 +899,15 @@ class WebActionProvider implements ActionProvider {
     public boolean isActionEnabled(String command, Lookup context) {
         FileObject buildXml = findBuildXml();
         if (buildXml == null || !buildXml.isValid()) {
+            return false;
+        }
+
+        boolean cos = Boolean.parseBoolean((String) project.getWebProjectProperties().get(WebProjectProperties.DEPLOY_ON_SAVE));
+        // build or compile source file (JSP compilation allowed)
+        if (cos && (COMMAND_BUILD.equals(command)
+                || (COMMAND_COMPILE_SINGLE.equals(command)
+                    && (findJavaSourcesAndPackages(context, project.getSourceRoots().getRoots()) != null || findJavaSourcesAndPackages(context, project.getTestSourceRoots().getRoots()) != null)))) {
+
             return false;
         }
 
@@ -1361,4 +1394,5 @@ class WebActionProvider implements ActionProvider {
         }
         return foundWebServiceAnnotation[0];
     }
+
 }

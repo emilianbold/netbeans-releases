@@ -52,8 +52,12 @@ import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.Collator;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -64,6 +68,7 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.ListCellRenderer;
+import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.ruby.platform.RubyPlatform;
@@ -76,6 +81,7 @@ import org.netbeans.modules.ruby.railsprojects.server.ServerRegistry;
 import org.netbeans.modules.ruby.railsprojects.server.spi.RubyInstance;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -84,6 +90,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
     
     private RailsProject project;
     private String originalEncoding;
+    private boolean notified;
     
     private JTextField[] data;
     private JLabel[] dataLabels;
@@ -91,6 +98,8 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
     private Map<String/*|null*/,Map<String,String/*|null*/>/*|null*/> configs;
     RailsProjectProperties uiProperties;
     private PlatformChangeListener platformListener;
+    
+    private static final Logger LOGGER = Logger.getLogger(CustomizerRun.class.getName());
     
     public CustomizerRun( RailsProjectProperties uiProperties ) {
         this.uiProperties = uiProperties;
@@ -188,6 +197,17 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         this.encoding.setModel(new EncodingModel(this.originalEncoding));
         this.encoding.setRenderer(new EncodingRenderer());
         
+        final String lafid  = UIManager.getLookAndFeel().getID();
+        if (!"Aqua".equals(lafid)) { //NOI18N
+            this.encoding.putClientProperty("JComboBox.isTableCellEditor", Boolean.TRUE);    //NOI18N
+            this.encoding.addItemListener(new java.awt.event.ItemListener() {
+
+                public void itemStateChanged(java.awt.event.ItemEvent e) {
+                    javax.swing.JComboBox combo = (javax.swing.JComboBox) e.getSource();
+                    combo.setPopupVisible(false);
+                }
+            });
+        }
 
         this.encoding.addActionListener(new ActionListener () {
             public void actionPerformed(ActionEvent arg0) {
@@ -216,7 +236,18 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
     
     private void initRailsEnvCombo() {
         //XXX: may need to make dependent on the server combo when the V3 plugin is available
-        railsEnvCombo.setModel(new DefaultComboBoxModel(new String[]{"development", "production", "test"})); //NOI18N
+        // search for environments in config/environments
+        List<String> environments = new ArrayList<String>();
+        FileObject envFolder = project.getProjectDirectory().getFileObject("config/environments"); //NOI18N
+        if (envFolder != null) {
+            for (FileObject each : envFolder.getChildren()) {
+                if (!each.isFolder() && "rb".equals(each.getExt())) { //NOI18N
+                    environments.add(each.getName());
+                }
+            }
+        }
+        Collections.sort(environments);
+        railsEnvCombo.setModel(new DefaultComboBoxModel(environments.toArray(new String[environments.size()]))); //NOI18N
         String definedEnv = project.evaluator().getProperty(RailsProjectProperties.RAILS_ENV);
         if (definedEnv != null && !"".equals(definedEnv.trim())) {
             railsEnvCombo.setSelectedItem(definedEnv);
@@ -253,6 +284,12 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         } else {
             encName = originalEncoding;
         }
+        if (!notified && encName != null && !encName.equals(originalEncoding)) {
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                    NbBundle.getMessage(CustomizerRun.class, "MSG_EncodingWarning"), NotifyDescriptor.WARNING_MESSAGE));
+            notified = true;
+        }
+
         this.uiProperties.putAdditionalProperty(RailsProjectProperties.SOURCE_ENCODING, encName);
     }
 

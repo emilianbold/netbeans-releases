@@ -192,6 +192,13 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
     }
 
     @Override
+    public void addNotify() {
+        super.addNotify();
+        jScrollPane1.setViewportView(description);
+        jLabel3.setLabelFor(description);
+    }
+    
+    @Override
     public void removeNotify() {
         super.removeNotify();
         jScrollPane1.setViewportView(null);

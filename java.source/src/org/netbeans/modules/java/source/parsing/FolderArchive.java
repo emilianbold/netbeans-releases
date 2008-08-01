@@ -56,7 +56,6 @@ import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Utilities;
 
 /**
  *
@@ -65,6 +64,7 @@ import org.openide.util.Utilities;
 public class FolderArchive implements Archive {
 
     private static final Logger LOG = Logger.getLogger(FolderArchive.class.getName());
+    private static final boolean normalize = Boolean.getBoolean("FolderArchive.normalize"); //NOI18N
     
     final File root;
     final Charset encoding;
@@ -94,11 +94,11 @@ public class FolderArchive implements Archive {
         }
         if (entry == null || entry.includes(folderName)) {
             File folder = new File (this.root, folderName.replace('/', File.separatorChar));      //NOI18N
-            //Issue: #126392
-            //Normalization is slow
-            //the problem when File ("A/").listFiles()[0].equals(new File("a/").listFiles[0]) returns
-            //false seems to be only on Mac.
-            if (Utilities.isMac()) {
+            //Issue: #126392 on Mac
+            //The problem when File ("A/").listFiles()[0].equals(new File("a/").listFiles[0]) returns false
+            //Normalization is slow - turn on this workaround only for users which require it.
+            //The problem only happens in case when there is file with wrong case in import.
+            if (normalize) {
                 folder = FileUtil.normalizeFile(folder);
             }
             if (folder.canRead()) {

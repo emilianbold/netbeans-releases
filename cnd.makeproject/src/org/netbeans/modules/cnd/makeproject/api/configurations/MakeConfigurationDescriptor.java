@@ -44,6 +44,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -66,6 +67,7 @@ import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.makeproject.configurations.ConfigurationMakefileWriter;
 import org.netbeans.modules.cnd.makeproject.configurations.ConfigurationXMLWriter;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.loaders.HDataLoader;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.makeproject.MakeProjectType;
 import org.netbeans.modules.cnd.makeproject.MakeSources;
@@ -494,6 +496,18 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         this.sourceEncoding = sourceEncoding;
     }
 
+    public Collection<String> getAdditionalExtensions() {
+        return Collections.<String>emptyList();
+    }
+
+    public void addAdditionalExtensions(Collection<String> headerFileExtensions) {
+        // TODO see http://www.netbeans.org/issues/show_bug.cgi?id=127150
+        // 1. store additional header extensions in the project properties.
+        // 2. add project open hook that guarantee the extensions in the HDataLoader extensions.
+        // Next line was moved from discovery.
+        HDataLoader.getInstance().addExtensions(headerFileExtensions);
+    }
+
     private class SaveRunnable implements Runnable {
 
         public boolean ret = false;
@@ -638,6 +652,12 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
 
         return subProjects;
     }
+    
+    public void addSourceRootRaw(String path) {
+        synchronized(sourceRoots) {
+            sourceRoots.add(path);
+        }
+    }
 
     /*
      * Add a new root.
@@ -704,12 +724,10 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
     /*
      * Return real list
      */
-    public List<String> getSourceRootsRaw() {
-        synchronized (sourceRoots) {
-            return sourceRoots;
-        }
+    private List<String> getSourceRootsRaw() {
+        return sourceRoots;
     }
-
+    
     public void setSourceRoots(List list) {
         synchronized (sourceRoots) {
             sourceRoots = list;

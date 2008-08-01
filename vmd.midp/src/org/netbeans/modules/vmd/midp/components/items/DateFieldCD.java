@@ -61,6 +61,7 @@ import org.netbeans.modules.vmd.midp.screen.display.DateFieldDisplayPresenter;
 import org.openide.util.NbBundle;
 
 import java.util.*;
+import org.netbeans.modules.vmd.midp.codegen.MidpDatabindingCodeSupport;
 
 /**
  *
@@ -106,13 +107,17 @@ public class DateFieldCD extends ComponentDescriptor {
     @Override
     protected void gatherPresenters (ArrayList<Presenter> presenters) {
         DocumentSupport.removePresentersOfClass (presenters, ScreenDisplayPresenter.class);
+        presenters.addAll(MidpDatabindingCodeSupport.createDatabindingPresenters(PROP_DATE
+                                                                                 ,"getDate()" //NOI18N
+                                                                                 , TYPEID
+                                                                                 , MidpDatabindingCodeSupport.FeatureType.DateField_FEATURE_DATETIME));
         super.gatherPresenters (presenters);
     }
 
     private static DefaultPropertiesPresenter createPropertiesPresenter() {
         return new DefaultPropertiesPresenter()
             .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_PROPERTIES)
-                .addProperty(NbBundle.getMessage(DateFieldCD.class, "DISP_DateField_Date"), "dd.mm.yyyy hh:mm:ss", PropertyEditorDate.createInstance(), PROP_DATE) // NOI18N
+                .addProperty(NbBundle.getMessage(DateFieldCD.class, "DISP_DateField_Date"), "dd.mm.yyyy hh:mm:ss", PropertyEditorDate.createInstanceWithDatabinding(), PROP_DATE) // NOI18N
                 .addProperty(NbBundle.getMessage(DateFieldCD.class, "DISP_DateField_Time_Zone"), PropertyEditorTimeZone.createInstance(), PROP_TIME_ZONE) // NOI18N
                 .addProperty(NbBundle.getMessage(DateFieldCD.class, "DISP_DateField_Input_Mode"), // NOI18N
                     PropertyEditorComboBox.createInstance(getInputModeValues(), TYPEID,

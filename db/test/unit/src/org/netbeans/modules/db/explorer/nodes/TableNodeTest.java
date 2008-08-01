@@ -71,11 +71,10 @@ public class TableNodeTest extends TestBase {
         DatabaseConnection dbconn = DatabaseConnection.create(driver, "url", "user", "schema", "pwd", false);
         ConnectionManager.getDefault().addConnection(dbconn);
 
-        TableNode tableNode = new TableNode();
         ConnectionNodeInfo connNodeInfo = (ConnectionNodeInfo)DatabaseNodeInfo.createNodeInfo(null, DatabaseNodeInfo.CONNECTION);
         connNodeInfo.setDatabaseConnection(ConnectionList.getDefault().getConnections()[0]);
         DatabaseNodeInfo tableNodeInfo = DatabaseNodeInfo.createNodeInfo(connNodeInfo, DatabaseNode.TABLE);
-        tableNode.setInfo(tableNodeInfo);
+        TableNode tableNode = new TableNode(tableNodeInfo);
 
         assertTrue(tableNode.canCopy());
 

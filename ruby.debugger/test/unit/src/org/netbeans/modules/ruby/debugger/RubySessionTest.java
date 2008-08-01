@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -43,7 +43,7 @@ package org.netbeans.modules.ruby.debugger;
 
 import java.io.File;
 import org.netbeans.api.debugger.ActionsManager;
-import org.netbeans.modules.ruby.debugger.breakpoints.RubyBreakpoint;
+import org.netbeans.modules.ruby.debugger.breakpoints.RubyLineBreakpoint;
 import org.netbeans.modules.ruby.debugger.breakpoints.RubyBreakpointManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -69,7 +69,7 @@ public final class RubySessionTest extends TestBase {
             RubySession session = Util.getCurrentSession();
             assertEquals("a variable", 1, session.getVariables().length);
             doContinue();
-            p.waitFor();
+            waitFor(p);
         }
     }
     
@@ -84,7 +84,7 @@ public final class RubySessionTest extends TestBase {
             };
             File testF = createScript(testContent);
             FileObject testFO = FileUtil.toFileObject(testF);
-            RubyBreakpoint bp3 = addBreakpoint(testFO, 3);
+            RubyLineBreakpoint bp3 = addBreakpoint(testFO, 3);
             Process p = startDebugging(testF);
             RubySession session = Util.getCurrentSession();
             assertTrue("session suspended", session.isSessionSuspended());
@@ -95,7 +95,7 @@ public final class RubySessionTest extends TestBase {
             Thread.sleep(1000);
             assertEquals("a variable", 0, session.getVariables().length);
             doAction(ActionsManager.ACTION_KILL);
-            p.waitFor();
+            waitFor(p);
         }
     }
     
@@ -112,7 +112,7 @@ public final class RubySessionTest extends TestBase {
             RubyThreadInfo ti = session.getThreadInfos()[0];
             session.switchThread(ti.getId(), null);
             doAction(ActionsManager.ACTION_KILL);
-            p.waitFor();
+            waitFor(p);
         }
     }
 
@@ -128,7 +128,7 @@ public final class RubySessionTest extends TestBase {
         assertNotNull("test.rb relative resolved", session.resolveAbsolutePath(testF.getName()));
         assertNotNull("test.rb absolute resolved", session.resolveAbsolutePath(testF.getAbsolutePath()));
         doContinue();
-        p.waitFor();
+        waitFor(p);
     }
 
     public void testSynchronization() throws Exception { // #111088
@@ -159,12 +159,12 @@ public final class RubySessionTest extends TestBase {
         };
         File testF = createScript(testContent);
         FileObject testFO = FileUtil.toFileObject(testF);
-        RubyBreakpoint bp = addBreakpoint(testFO, 10);
+        RubyLineBreakpoint bp = addBreakpoint(testFO, 10);
         Process p = startDebugging(testF);
         doContinue();
         RubyBreakpointManager.removeBreakpoint(bp);
         doContinue();
-        p.waitFor();
+        waitFor(p);
     }
     
     public void testRunTo() throws Exception {
@@ -193,7 +193,7 @@ public final class RubySessionTest extends TestBase {
             });
             assertTrue("session suspended", session.isSessionSuspended());
             doContinue();
-            p.waitFor();
+            waitFor(p);
         }
     }
 }

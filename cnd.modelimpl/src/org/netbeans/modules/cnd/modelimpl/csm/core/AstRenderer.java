@@ -50,7 +50,9 @@ import org.netbeans.modules.cnd.api.model.deep.*;
 import org.netbeans.modules.cnd.utils.cache.TextCache;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 
+import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.csm.*;
+import org.netbeans.modules.cnd.modelimpl.csm.AstRendererException;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.*;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
@@ -111,34 +113,49 @@ public class AstRenderer {
                 case CPPTokenTypes.CSM_FUNCTION_RET_FUN_DECLARATION:
                 case CPPTokenTypes.CSM_FUNCTION_TEMPLATE_DECLARATION:
                 case CPPTokenTypes.CSM_USER_TYPE_CAST:
-                    FunctionImpl fi = new FunctionImpl(token, file, currentNamespace);
-                    container.addDeclaration(fi);
-                    if (!fi.isStatic()) {
-                        currentNamespace.addDeclaration(fi);
+                    try {
+                        FunctionImpl fi = new FunctionImpl(token, file, currentNamespace);
+                        container.addDeclaration(fi);
+                        if (NamespaceImpl.isNamespaceScope(fi)) {
+                            currentNamespace.addDeclaration(fi);
+                        }
+                    } catch (AstRendererException e) {
+                        DiagnosticExceptoins.register(e);
                     }
                     break;
                 case CPPTokenTypes.CSM_CTOR_DEFINITION:
                 case CPPTokenTypes.CSM_CTOR_TEMPLATE_DEFINITION:
-                    container.addDeclaration(new ConstructorDefinitionImpl(token, file, null));
+                    try {
+                        container.addDeclaration(new ConstructorDefinitionImpl(token, file, null));
+                    } catch (AstRendererException e) {
+                        DiagnosticExceptoins.register(e);
+                    }
                     break;
                 case CPPTokenTypes.CSM_DTOR_DEFINITION:
                 case CPPTokenTypes.CSM_DTOR_TEMPLATE_DEFINITION:
-                    container.addDeclaration(new DestructorDefinitionImpl(token, file));
+                    try {
+                        container.addDeclaration(new DestructorDefinitionImpl(token, file));
+                    } catch (AstRendererException e) {
+                        DiagnosticExceptoins.register(e);
+                    }
                     break;
                 case CPPTokenTypes.CSM_FUNCTION_RET_FUN_DEFINITION:
                 case CPPTokenTypes.CSM_FUNCTION_DEFINITION:
                 case CPPTokenTypes.CSM_FUNCTION_TEMPLATE_DEFINITION:
 		case CPPTokenTypes.CSM_USER_TYPE_CAST_DEFINITION:
-                    if( isMemberDefinition(token) ) {
-                        container.addDeclaration(new FunctionDefinitionImpl(token, file, null));
-                    }
-                    else {
-                        FunctionDDImpl fddi = new FunctionDDImpl(token, file, currentNamespace);
-			//fddi.setScope(currentNamespace);
-                        container.addDeclaration(fddi);
-                        if (!fddi.isStatic()) {
-                            currentNamespace.addDeclaration(fddi);
+                    try {
+                        if( isMemberDefinition(token) ) {
+                            container.addDeclaration(new FunctionDefinitionImpl(token, file, null));
+                        } else {
+                            FunctionDDImpl fddi = new FunctionDDImpl(token, file, currentNamespace);
+                            //fddi.setScope(currentNamespace);
+                            container.addDeclaration(fddi);
+                            if (NamespaceImpl.isNamespaceScope(fddi)) {
+                                currentNamespace.addDeclaration(fddi);
+                            }
                         }
+                    } catch (AstRendererException e) {
+                        DiagnosticExceptoins.register(e);
                     }
                     break;
                 case CPPTokenTypes.CSM_TEMPLATE_EXPLICIT_SPECIALIZATION:
@@ -148,39 +165,55 @@ public class AstRenderer {
                         addTypedefs(renderTypedef(token, spec, currentNamespace), currentNamespace, container);
                     }
                     else {
-			if( isMemberDefinition(token) ) {
-			    // this is a template method specialization declaration (without a definition)
-			    container.addDeclaration(new FunctionImplEx(token, file, null));
-			}
-			else {
-			    FunctionImpl funct = new FunctionImpl(token, file, currentNamespace);
-			    container.addDeclaration(funct);
-                            if (!funct.isStatic()) {
-                                currentNamespace.addDeclaration(funct);
+                        try {
+                            if( isMemberDefinition(token) ) {
+                                // this is a template method specialization declaration (without a definition)
+                                container.addDeclaration(new FunctionImplEx(token, file, null));
                             }
-			}
+                            else {
+                                FunctionImpl funct = new FunctionImpl(token, file, currentNamespace);
+                                container.addDeclaration(funct);
+                                if (NamespaceImpl.isNamespaceScope(funct)) {
+                                    currentNamespace.addDeclaration(funct);
+                                }
+                            }
+                        } catch (AstRendererException e) {
+                            DiagnosticExceptoins.register(e);
+                        }
                     }
                     break; 
                 case CPPTokenTypes.CSM_TEMPLATE_FUNCTION_DEFINITION_EXPLICIT_SPECIALIZATION:
-                    if( isMemberDefinition(token) ) {
-                        container.addDeclaration(new FunctionDefinitionImpl(token, file, null));
-                    } else {
-                        FunctionDDImpl fddit = new FunctionDDImpl(token, file, currentNamespace);
-                        container.addDeclaration(fddit);
-                        if (!fddit.isStatic()) {
-                            currentNamespace.addDeclaration(fddit);
+                    try {
+                        if( isMemberDefinition(token) ) {
+                            container.addDeclaration(new FunctionDefinitionImpl(token, file, null));
+                        } else {
+                            FunctionDDImpl fddit = new FunctionDDImpl(token, file, currentNamespace);
+                            container.addDeclaration(fddit);
+                            if (NamespaceImpl.isNamespaceScope(fddit)) {
+                                currentNamespace.addDeclaration(fddit);
+                            }
                         }
+                    } catch (AstRendererException e) {
+                        DiagnosticExceptoins.register(e);
                     }
                     break;
                 case CPPTokenTypes.CSM_NAMESPACE_ALIAS:
                     container.addDeclaration(new NamespaceAliasImpl(token, file));
                     break;
                 case CPPTokenTypes.CSM_USING_DIRECTIVE:
-                    container.addDeclaration(new UsingDirectiveImpl(token, file));
+                {
+                    UsingDirectiveImpl using = new UsingDirectiveImpl(token, file);
+                    container.addDeclaration(using);
+                    currentNamespace.addDeclaration(using);
                     break;
+                }
                 case CPPTokenTypes.CSM_USING_DECLARATION:
-                    container.addDeclaration(new UsingDeclarationImpl(token, file));
+                {
+                    UsingDeclarationImpl using = new UsingDeclarationImpl(token, file, currentNamespace);
+                    container.addDeclaration(using);
+                    currentNamespace.addDeclaration(using);
                     break;
+                }
                 case CPPTokenTypes.CSM_TEMPL_FWD_CL_OR_STAT_MEM:
                     if (renderForwardClassDeclaration(token, currentNamespace, container, file)){
                         break;
@@ -393,9 +426,11 @@ public class AstRenderer {
     private boolean renderLinkageSpec(AST ast, FileImpl file, NamespaceImpl currentNamespace, MutableDeclarationsContainer container) {
         if( ast != null ) {
             AST token = ast.getFirstChild();
-            if( token.getType() == CPPTokenTypes.CSM_LINKAGE_SPECIFICATION ) {
-                render(token, currentNamespace, container);
-                return true;
+            if (token != null) {
+                if (token.getType() == CPPTokenTypes.CSM_LINKAGE_SPECIFICATION) {
+                    render(token, currentNamespace, container);
+                    return true;
+                }
             }
         }
         return false;
@@ -571,84 +606,86 @@ public class AstRenderer {
         List<CsmTypedef> results = new ArrayList<CsmTypedef>();
         if( ast != null ) {
             AST firstChild = ast.getFirstChild();
-            if( firstChild.getType() == CPPTokenTypes.LITERAL_typedef ) {
-                //return createTypedef(ast, file, container);
+            if (firstChild != null) {
+                if (firstChild.getType() == CPPTokenTypes.LITERAL_typedef) {
+                    //return createTypedef(ast, file, container);
 
-                AST classifier = null;
-                int arrayDepth = 0;
-                AST nameToken = null;
-                AST ptrOperator = null;
-                String name = "";
-                
-                EnumImpl ei = null;
-                    
-                for( AST curr = ast.getFirstChild(); curr != null; curr = curr.getNextSibling() ) {
-                    switch( curr.getType() ) {
-                        case CPPTokenTypes.CSM_TYPE_COMPOUND:
-                        case CPPTokenTypes.CSM_TYPE_BUILTIN:
-                            classifier = curr;
-                            break;
-                        case CPPTokenTypes.LITERAL_enum:
-                            if( AstUtil.findSiblingOfType(curr, CPPTokenTypes.RCURLY) != null ) {
-                                if( container instanceof CsmScope) {
-                                    ei = EnumImpl.create(curr, (CsmScope) container, file);
-                                    if( container instanceof  MutableDeclarationsContainer )
-                                    ((MutableDeclarationsContainer) container).addDeclaration(ei);
+                    AST classifier = null;
+                    int arrayDepth = 0;
+                    AST nameToken = null;
+                    AST ptrOperator = null;
+                    String name = "";
+
+                    EnumImpl ei = null;
+
+                    for (AST curr = ast.getFirstChild(); curr != null; curr = curr.getNextSibling()) {
+                        switch (curr.getType()) {
+                            case CPPTokenTypes.CSM_TYPE_COMPOUND:
+                            case CPPTokenTypes.CSM_TYPE_BUILTIN:
+                                classifier = curr;
+                                break;
+                            case CPPTokenTypes.LITERAL_enum:
+                                if (AstUtil.findSiblingOfType(curr, CPPTokenTypes.RCURLY) != null) {
+                                    if (container instanceof CsmScope) {
+                                        ei = EnumImpl.create(curr, (CsmScope) container, file);
+                                        if (container instanceof MutableDeclarationsContainer) {
+                                            ((MutableDeclarationsContainer) container).addDeclaration(ei);
+                                        }
+                                    }
+                                    break;
+                                }
+                            // else fall through!
+                            case CPPTokenTypes.LITERAL_struct:
+                            case CPPTokenTypes.LITERAL_union:
+                            case CPPTokenTypes.LITERAL_class:
+                                AST next = curr.getNextSibling();
+                                if (next != null && next.getType() == CPPTokenTypes.CSM_QUALIFIED_ID) {
+                                    classifier = next;
                                 }
                                 break;
-                            }
-                            // else fall through!
-                        case CPPTokenTypes.LITERAL_struct:
-                        case CPPTokenTypes.LITERAL_union:
-                        case CPPTokenTypes.LITERAL_class:
-                            AST next = curr.getNextSibling();
-                            if( next != null && next.getType() == CPPTokenTypes.CSM_QUALIFIED_ID ) {
-                                classifier = next;
-                            }
-                            break;
-                        case CPPTokenTypes.CSM_PTR_OPERATOR:
-                            // store only 1-st one - the others (if any) follows,
-                            // so it's TypeImpl.createType() responsibility to process them all
-                            if( ptrOperator == null ) {
-                                ptrOperator = curr;
-                            }
-                            break;
-                        case CPPTokenTypes.CSM_QUALIFIED_ID:    
-                            // now token corresponds the name, since the case "struct S" is processed before
-                            nameToken = curr;
-                            name = AstUtil.findId(nameToken);
-                            break;
-                        case CPPTokenTypes.LSQUARE:
-                            arrayDepth++;
-                            break;
-                        case CPPTokenTypes.COMMA:
-                        case CPPTokenTypes.SEMICOLON:
-                            TypeImpl typeImpl = null;
-                            if( classifier != null ) {
-                                typeImpl = TypeFactory.createType(classifier, file, ptrOperator, arrayDepth);
-                            }
-                            else if( ei != null ) {
-                                typeImpl = TypeFactory.createType(ei, ptrOperator, arrayDepth, ast, file);
-                            }
-                            if( typeImpl != null) {
-                                CsmTypedef typedef = createTypedef(ast/*nameToken*/, file, container, typeImpl, name);
-                                if( typedef != null ) {
-                                    if (ei != null && ei.getName().length()==0){
-                                        ((TypedefImpl)typedef).setTypeUnnamed();
-                                    }
-                                    results.add(typedef);
-                                    if (classifier instanceof ClassEnumBase) {
-                                        ((ClassEnumBase)classifier).addEnclosingTypedef(typedef);
-                                    } else if (ei instanceof ClassEnumBase){
-                                        ((ClassEnumBase)ei).addEnclosingTypedef(typedef);
+                            case CPPTokenTypes.CSM_PTR_OPERATOR:
+                                // store only 1-st one - the others (if any) follows,
+                                // so it's TypeImpl.createType() responsibility to process them all
+                                if (ptrOperator == null) {
+                                    ptrOperator = curr;
+                                }
+                                break;
+                            case CPPTokenTypes.CSM_QUALIFIED_ID:
+                                // now token corresponds the name, since the case "struct S" is processed before
+                                nameToken = curr;
+                                name = AstUtil.findId(nameToken);
+                                break;
+                            case CPPTokenTypes.LSQUARE:
+                                arrayDepth++;
+                                break;
+                            case CPPTokenTypes.COMMA:
+                            case CPPTokenTypes.SEMICOLON:
+                                TypeImpl typeImpl = null;
+                                if (classifier != null) {
+                                    typeImpl = TypeFactory.createType(classifier, file, ptrOperator, arrayDepth);
+                                } else if (ei != null) {
+                                    typeImpl = TypeFactory.createType(ei, ptrOperator, arrayDepth, ast, file);
+                                }
+                                if (typeImpl != null) {
+                                    CsmTypedef typedef = createTypedef(ast/*nameToken*/, file, container, typeImpl, name);
+                                    if (typedef != null) {
+                                        if (ei != null && ei.getName().length() == 0) {
+                                            ((TypedefImpl) typedef).setTypeUnnamed();
+                                        }
+                                        results.add(typedef);
+                                        if (classifier instanceof ClassEnumBase) {
+                                            ((ClassEnumBase) classifier).addEnclosingTypedef(typedef);
+                                        } else if (ei instanceof ClassEnumBase) {
+                                            ((ClassEnumBase) ei).addEnclosingTypedef(typedef);
+                                        }
                                     }
                                 }
-                            }
-                            ptrOperator = null;
-                            name = "";
-                            nameToken = null;
-                            arrayDepth = 0;
-                            break;
+                                ptrOperator = null;
+                                name = "";
+                                nameToken = null;
+                                arrayDepth = 0;
+                                break;
+                        }
                     }
                 }
             }
@@ -728,9 +765,13 @@ public class AstRenderer {
                         //static variable definition
                     } else {
                         //method forward declaratin
-                        FunctionImpl ftdecl = new FunctionImpl(ast, file, currentNamespace);
-                        if( container != null ) {
-                            container.addDeclaration(ftdecl);
+                        try {
+                            FunctionImpl ftdecl = new FunctionImpl(ast, file, currentNamespace);
+                            if( container != null ) {
+                                container.addDeclaration(ftdecl);
+                            }
+                        } catch (AstRendererException e) {
+                            DiagnosticExceptoins.register(e);
                         }
                         return true;
                     }
@@ -754,7 +795,8 @@ public class AstRenderer {
 //                            namePart.getType() == CPPTokenTypes.COMMA) ) {
 //			new Exception("Unexpected token type " + namePart).printStackTrace(System.err);
 //		    }
-                    if (namePart.getType() == CPPTokenTypes.CSM_TYPE_BUILTIN) {
+                    if (namePart.getType() == CPPTokenTypes.CSM_TYPE_BUILTIN ||
+                        namePart.getType() == CPPTokenTypes.CSM_TYPE_COMPOUND) {
                         AST builtInType = namePart.getFirstChild();
                         sb.append(builtInType != null ? builtInType.getText() : "");
                     } else {
@@ -876,7 +918,7 @@ public class AstRenderer {
     }
     
     public static boolean isQualifier(int tokenType) {
-        return isCVQualifier(tokenType) || isStorageClassSpecifier(tokenType);
+        return isCVQualifier(tokenType) || isStorageClassSpecifier(tokenType) || (tokenType == CPPTokenTypes.LITERAL_typename);
     }
     
     public static boolean isCVQualifier(int tokenType) {
@@ -1081,7 +1123,7 @@ public class AstRenderer {
     
     protected VariableImpl createVariable(AST offsetAst, CsmFile file, CsmType type, String name, boolean _static, 
 	    MutableDeclarationsContainer container1, MutableDeclarationsContainer container2, CsmScope scope) {
-	
+	type = TemplateUtils.checkTemplateType(type, scope);
         VariableImpl var = new VariableImpl(offsetAst, file, type, name, scope, (container1 != null) || (container2 != null));
         var.setStatic(_static);
         return var;
@@ -1192,11 +1234,19 @@ public class AstRenderer {
                 container.addDeclaration(new NamespaceAliasImpl(token, file));
                 return true;
             case CPPTokenTypes.CSM_USING_DIRECTIVE:
-                container.addDeclaration(new UsingDirectiveImpl(token, file));
+            {
+                UsingDirectiveImpl using = new UsingDirectiveImpl(token, file);
+                container.addDeclaration(using);
+                currentNamespace.addDeclaration(using);
                 return true;
+            }
             case CPPTokenTypes.CSM_USING_DECLARATION:
-                container.addDeclaration(new UsingDeclarationImpl(token, file));
+            {
+                UsingDeclarationImpl using = new UsingDeclarationImpl(token, file, currentNamespace);
+                container.addDeclaration(using);
+                currentNamespace.addDeclaration(using);
                 return true;
+            }
         }
         return false;
     }

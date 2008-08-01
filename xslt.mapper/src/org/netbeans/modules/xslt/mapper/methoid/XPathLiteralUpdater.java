@@ -112,11 +112,10 @@ public class XPathLiteralUpdater extends AbstractLiteralUpdater {
     
     private boolean isValidStringLiteral(String literal) {
         // by this point, string is quoted
-        // now we validate that the string follows xpath 1.0 spec
+        // now we check that the string follows xpath 1.0 spec
         // - josh
         QuotedString quotedString = getQuotedString(literal);
         return quotedString.quote.isQuotingValid(quotedString.string);
-        
     }
     
     private QuotedString getQuotedString(String literal) {

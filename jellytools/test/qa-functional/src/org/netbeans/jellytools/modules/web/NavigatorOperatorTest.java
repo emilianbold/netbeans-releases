@@ -65,14 +65,18 @@ public class NavigatorOperatorTest extends JellyTestCase {
      * @return  created suite
      */
     public static Test suite() {
+        /*
         TestSuite suite = new NbTestSuite();
         suite.addTest(new NewWebProjectTest("createSampleWebProject"));
         suite.addTest(new NavigatorOperatorTest("testOperator"));
         return suite;
+         */
+        return createModuleTest(NavigatorOperatorTest.class, "testOperator");
     }
     
-    public void setUp() {
+    public void setUp() throws Exception {
         System.out.println("### "+getName()+" ###");
+        new NewWebProjectTest("").createSampleWebProject();
     }
     
     /** Invokes and verifies the dialog. */

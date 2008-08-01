@@ -7,13 +7,11 @@
 package org.netbeans.modules.xml.wizard;
 
 import java.io.File;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.Iterator;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.SpinnerModel;
 import javax.swing.SpinnerNumberModel;
-import org.openide.WizardDescriptor;
+import org.netbeans.modules.xml.lib.Util;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
@@ -26,24 +24,27 @@ import org.openide.util.NbBundle;
 public class XMLContentPanel extends AbstractPanel {
     private DefaultComboBoxModel rootModel;
     private boolean visible= false;
+    SchemaParser.SchemaInfo schemaInfo;
     
     /** Creates new form XMLContentPanel */
     public XMLContentPanel() {
         initComponents(); 
+        initAccessibility();
     }
-    
+        
     public XMLContentPanel(boolean value) {
-        visible = value;
+        this.visible = value;
         initComponents(); 
         initAccessibility();
-        
     }
 
     private void initAccessibility() {
         Util util = Util.THIS;
         getAccessibleContext().setAccessibleDescription(titleLabel.getText());
-        attributes.setMnemonic(util.getChar("XMLContentPanel.attributes.mne"));
-        elements.setMnemonic(util.getChar("XMLContentPanel.elements.mne"));
+        attributes.setMnemonic(util.getChar(
+                XMLContentPanel.class, "XMLContentPanel.attributes.mne"));
+        elements.setMnemonic(util.getChar(
+                XMLContentPanel.class, "XMLContentPanel.elements.mne"));
         
     }
      
@@ -262,27 +263,38 @@ public class XMLContentPanel extends AbstractPanel {
         rootModel = new DefaultComboBoxModel();
         rootElementComboBox.setModel(rootModel);       
         
-        File f = new File(model.getPrimarySchema());
-        if(f == null )
+        if(getSchemaInfo() == null)
             return;
-        //for http based xsd files
-        //this combo box in this panel is pnly visible for files
-        //on disk, so ignore http based xsd files
-       if( !f.exists() ) {
-           return;
-        } 
-        FileObject fobj = FileUtil.toFileObject(f);
-        SchemaParser.SchemaInfo  info = Util.getRootElements(fobj);
         
-        if(info == null || info.roots.size() ==0){
-            //no root elements
+        if(schemaInfo.roots.size() ==0){
+            //TODO: should have some error message
+            //String errMsg =  NbBundle.getMessage(XMLContentPanel.class, "MSG_XMLContentPanel_No_Root");
+            //templateWizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, errMsg);
             return;
         }
-        Iterator it = info.roots.iterator();
+        Iterator it = schemaInfo.roots.iterator();
             while (it.hasNext()) {
                  String next = (String) it.next();
                  rootModel.addElement(next);
             }    
+    }
+    
+    private SchemaParser.SchemaInfo getSchemaInfo() {
+        if(schemaInfo != null)
+            return schemaInfo;
+        
+        File f = new File(model.getPrimarySchema());
+        if(f == null )
+            return null;
+        //for http based xsd files
+        //this combo box in this panel is pnly visible for files
+        //on disk, so ignore http based xsd files
+       if( !f.exists() ) {
+           return null;
+        } 
+        FileObject fobj = FileUtil.toFileObject(f);
+        schemaInfo = Util.getRootElements(fobj);
+        return schemaInfo;
     }
 
     @Override
@@ -294,6 +306,22 @@ public class XMLContentPanel extends AbstractPanel {
     public String getName() {
         return NbBundle.getMessage(XMLContentPanel.class, "PROP_xml_content_panel_name");//noi18n
     }
+    
+    public boolean isPanelValid() {
+        //valid if root selected in previous panel
+        if(model.getRoot() != null)
+            return true;
+        
+        if(getSchemaInfo() == null)
+            return false;
+        
+        if(schemaInfo.roots.size() == 0){
+            //no root elements
+            return false;
+        }
+        
+        return true;
+    }    
     
     SpinnerModel occurencesModel;
     SpinnerModel depthModel;

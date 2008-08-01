@@ -78,8 +78,10 @@ public class WSDLCompletionModelProvider extends CompletionModelProvider {
      */    
     @Override
     public List<CompletionModel> getModels(CompletionContext context) {
+        String ext = (context != null && context.getPrimaryFile() != null) ? context.getPrimaryFile().getExt() : null;
+        
         //check the ext is wsdl
-        if (!context.getPrimaryFile().getExt().equals("wsdl")) {
+        if (ext != null && !ext.equals("wsdl")) {
             return null;
         }
         List<CompletionModel> models = new ArrayList<CompletionModel>();

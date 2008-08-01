@@ -44,20 +44,18 @@ package org.netbeans.modules.spring.api.beans;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
+import java.util.Set;
+import java.util.TreeSet;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.spring.api.beans.model.SpringConfigModel;
 import org.netbeans.modules.spring.beans.ProjectSpringScopeProvider;
+import org.netbeans.modules.spring.beans.SpringConfigModelAccessor;
 import org.netbeans.modules.spring.beans.SpringScopeAccessor;
-import org.openide.filesystems.FileChangeAdapter;
-import org.openide.filesystems.FileEvent;
+import org.netbeans.modules.spring.beans.model.SpringConfigFileModelManager;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Parameters;
 
@@ -77,33 +75,23 @@ public final class SpringScope {
     // (which calls back into this class).
 
     private final ConfigFileManager configFileManager;
-    private Listener listener;
-
-    final Map<ConfigFileGroup, SpringConfigModel> group2Model = new HashMap<ConfigFileGroup, SpringConfigModel>();
-    final Map<FileObject, SpringConfigModel> file2Model = new HashMap<FileObject, SpringConfigModel>();
+    private final SpringConfigFileModelManager fileModelManager = new SpringConfigFileModelManager();
 
     static {
-        SpringScopeAccessor.DEFAULT = new SpringScopeAccessor() {
+        SpringScopeAccessor.setDefault(new SpringScopeAccessor() {
             @Override
             public SpringScope createSpringScope(ConfigFileManager configFileManager) {
-                SpringScope scope = new SpringScope(configFileManager);
-                scope.initialize();
-                return scope;
+                return new SpringScope(configFileManager);
             }
             @Override
             public SpringConfigModel getConfigModel(SpringScope scope, FileObject fo) {
                 return scope.getConfigModel(fo);
             }
-        };
+        });
     }
 
     private SpringScope(ConfigFileManager configFileManager) {
         this.configFileManager = configFileManager;
-    }
-
-    private void initialize() {
-        listener = new Listener();
-        configFileManager.addChangeListener(listener);
     }
 
     /**
@@ -135,24 +123,36 @@ public final class SpringScope {
     }
 
     /**
-     * Returns the a list of all known models for all known configuration
-     * files.
+     * Returns the a list of Spring config models for all known configuration
+     * file groups as well as for all files not contained in a group.
      *
      * @return the list of models; never null.
      */
-    public List<SpringConfigModel> getAllFilesConfigModels() {
-        List<File> files = getConfigFileManager().getConfigFiles();
-        List<SpringConfigModel> result = new ArrayList<SpringConfigModel>(files.size());
-        for (File file : files) {
-            FileObject fo = FileUtil.toFileObject(file);
-            if (fo == null) {
-                continue;
+    public List<SpringConfigModel> getAllConfigModels() {
+        final List<ConfigFileGroup> groups = new ArrayList<ConfigFileGroup>();
+        final List<File> files = new ArrayList<File>();
+        // Avoid race conditions.
+        configFileManager.mutex().readAccess(new Runnable() {
+            public void run() {
+                groups.addAll(configFileManager.getConfigFileGroups());
+                files.addAll(configFileManager.getConfigFiles());
             }
-            SpringConfigModel model = getFileConfigModel(fo);
-            if (model == null) {
-                continue;
-            }
-            result.add(model);
+        });
+        List<SpringConfigModel> result = new ArrayList<SpringConfigModel>(groups.size());
+        Set<File> modelFiles = new HashSet<File>(groups.size() * 2);
+        // Create models for all config groups, and then for all known config files
+        // not included in a group.
+        for (ConfigFileGroup group : groups) {
+            result.add(SpringConfigModelAccessor.getDefault().createSpringConfigModel(fileModelManager, group));
+            modelFiles.addAll(group.getFiles());
+        }
+        // Using a TreeSet here in order to give deterministic results.
+        Set<File> nonModelFiles = new TreeSet<File>(files);
+        nonModelFiles.removeAll(modelFiles);
+        for (File file : nonModelFiles) {
+            ConfigFileGroup singleFileGroup = ConfigFileGroup.create(Collections.singletonList(file));
+            result.add(SpringConfigModelAccessor.getDefault().createSpringConfigModel(fileModelManager, singleFileGroup));
+
         }
         return Collections.unmodifiableList(result);
     }
@@ -175,89 +175,25 @@ public final class SpringScope {
         if (model != null) {
             return model;
         }
-        // Otherwise will need to return a single-file model.
+        // Otherwise return a single-file model.
         return getFileConfigModel(configFO);
     }
 
     private SpringConfigModel getGroupConfigModel(File configFile) {
         for (ConfigFileGroup group : configFileManager.getConfigFileGroups()) {
             if (group.containsFile(configFile)) {
-                return getGroupConfigModel(group);
+                return SpringConfigModelAccessor.getDefault().createSpringConfigModel(fileModelManager, group);
             }
         }
         return null;
     }
 
-    private SpringConfigModel getGroupConfigModel(ConfigFileGroup group) {
-        SpringConfigModel model;
-        synchronized (this) {
-            model = group2Model.get(group);
-            if (model == null) {
-                model = new SpringConfigModel(group);
-                group2Model.put(group, model);
-            }
-        }
-        return model;
-    }
-
-    private synchronized SpringConfigModel getFileConfigModel(FileObject configFO) {
-        SpringConfigModel model = file2Model.get(configFO);
-        if (model != null) {
-            return model;
-        }
+    private SpringConfigModel getFileConfigModel(FileObject configFO) {
         File configFile = FileUtil.toFile(configFO);
-        if (configFile == null) {
-            // The file is not valid.
-            return null;
+        if (configFile != null) {
+            ConfigFileGroup singleFileGroup = ConfigFileGroup.create(Collections.singletonList(configFile));
+            return SpringConfigModelAccessor.getDefault().createSpringConfigModel(fileModelManager, singleFileGroup);
         }
-        ConfigFileGroup singleFileGroup = ConfigFileGroup.create(Collections.singletonList(configFile));
-        model = new SpringConfigModel(singleFileGroup);
-        file2Model.put(configFO, model);
-
-        // We need to avoid the race condition between checking if the file is valid
-        // and adding the listener.
-        configFO.addFileChangeListener(listener);
-        if (!configFO.isValid()) {
-            file2Model.remove(configFO);
-            configFO.removeFileChangeListener(listener);
-            return null;
-        }
-        return model;
-    }
-
-    private synchronized void notifyFileDeleted(FileObject file) {
-        file2Model.remove(file);
-        file.removeFileChangeListener(listener);
-    }
-
-    /**
-     * Called by ConfigFileManager when the config file groups change.
-     */
-    synchronized void notifyConfigFileManagerChanged() {
-        group2Model.clear();
-        file2Model.clear();
-    }
-
-    /**
-     * Listens on the deletion of config files from which file models
-     * were created.
-     */
-    private final class Listener extends FileChangeAdapter implements ChangeListener {
-
-        @Override
-        public void fileDeleted(FileEvent fe) {
-            notifyFileDeleted(fe.getFile());
-        }
-
-        // XXX perhaps only notify when the file is not a Spring config file
-        // anymore (MIME type changed, etc.).
-        @Override
-        public void fileRenamed(FileRenameEvent fe) {
-            notifyFileDeleted(fe.getFile());
-        }
-
-        public void stateChanged(ChangeEvent e) {
-            notifyConfigFileManagerChanged();
-        }
+        return null;
     }
 }

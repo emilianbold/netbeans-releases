@@ -50,7 +50,6 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.EventListenerList;
 import org.netbeans.modules.gsfpath.api.classpath.ClassPath;
-import org.netbeans.modules.gsfpath.api.platform.JavaPlatformManager;
 import org.netbeans.modules.gsf.Language;
 import org.netbeans.modules.gsf.LanguageRegistry;
 import org.netbeans.modules.gsfret.source.CacheClassPath;
@@ -157,7 +156,8 @@ public final class ClasspathInfo {
         ClassPath bootPath = ClassPath.getClassPath(fo, ClassPath.BOOT);
         if (bootPath == null) {
             //javac requires at least java.lang
-            bootPath = JavaPlatformManager.getDefault().getDefaultPlatform().getBootstrapLibraries();
+            //bootPath = JavaPlatformManager.getDefault().getDefaultPlatform().getBootstrapLibraries();
+            bootPath = EMPTY_PATH;
         }
         ClassPath compilePath = ClassPath.getClassPath(fo, ClassPath.COMPILE);
         if (compilePath == null) {

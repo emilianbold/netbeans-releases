@@ -102,11 +102,11 @@ public class CopyFinderTest extends NbTestCase {
     }
     
     public void testSimple11() throws Exception {
-        performTest("package test; public class Test {public void test() {int[] i = new int[]; i = new int[]; i = new int[1];}}", 85 - 22, 94 - 22, 100 - 22, 109 - 22);
+        performTest("package test; public class Test {public void test() {int[] i = new int[0]; i = new int[0]; i = new int[1];}}", 85 - 22, 95 - 22, 101 - 22, 111 - 22);
     }
     
     public void testSimple12() throws Exception {
-        performTest("package test; public class Test {public void test() {int[] i = new int[1]; i = new int[1]; i = new int[];}}", 85 - 22, 95 - 22, 101 - 22, 111 - 22);
+        performTest("package test; public class Test {public void test() {int[] i = new int[1]; i = new int[1]; i = new int[0];}}", 85 - 22, 95 - 22, 101 - 22, 111 - 22);
     }
     
     public void testSimple13() throws Exception {

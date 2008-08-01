@@ -18,14 +18,14 @@ public class LexerSharedInputState {
     protected int line = 1;
     protected int tokenStartColumn = 1;
     protected int tokenStartLine = 1;
-    protected InputBuffer input;
+    //protected final InputBuffer input;
 
     /** What file (if known) caused the problem? */
     protected String filename;
 
-    public int guessing = 0;
+    //public int guessing = 0;
     
-    public LexerSharedInputState(InputBuffer inbuf) {
+    /*public LexerSharedInputState(InputBuffer inbuf) {
         input = inbuf;
     }
 
@@ -39,11 +39,11 @@ public class LexerSharedInputState {
 
     public String getFilename() {
         return filename;
-    }
+    }*/
 
-    public InputBuffer getInput() {
+    /*public InputBuffer getInput() {
         return input;
-    }
+    }*/
     
     public int getLine()
     {

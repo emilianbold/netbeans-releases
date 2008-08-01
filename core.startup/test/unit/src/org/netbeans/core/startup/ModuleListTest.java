@@ -46,15 +46,12 @@ import org.netbeans.Module;
 import org.netbeans.ModuleManager;
 import org.netbeans.junit.*;
 import java.util.*;
-import org.openide.util.*;
 import org.openide.modules.*;
 import java.io.*;
-import java.net.URI;
 import java.util.logging.Level;
 import org.netbeans.Stamps;
 import org.openide.filesystems.*;
-import org.openide.util.lookup.Lookups;
-import org.openide.util.lookup.ProxyLookup;
+import org.openide.util.test.MockLookup;
 
 /** Test the functions of the module list, i.e. finding modules on
  * disk and installing them, and writing out state as needed.
@@ -62,26 +59,15 @@ import org.openide.util.lookup.ProxyLookup;
  */
 public class ModuleListTest extends SetupHid {
     
-    static {
-        System.setProperty("org.openide.util.Lookup", L.class.getName());
-    }
     private File ud;
-    public static final class L extends ProxyLookup {
-        public L() {
-            super(new Lookup[] {
-                Lookups.singleton(new IFL()),
-            });
-        }
-    }
     
-    private static final File JARS = new File(URI.create(ModuleListTest.class.getResource("jars").toExternalForm()));
     private static final String PREFIX = "wherever/";
     
-    private static final class IFL extends InstalledFileLocator {
+    private final class IFL extends InstalledFileLocator {
         public IFL() {}
         public File locate(String relativePath, String codeNameBase, boolean localized) {
             if (relativePath.startsWith(PREFIX)) {
-                File f = new File(JARS, relativePath.substring(PREFIX.length()).replace('/', File.separatorChar));
+                File f = new File(jars, relativePath.substring(PREFIX.length()).replace('/', File.separatorChar));
                 if (f.exists()) {
                     return f;
                 }
@@ -100,8 +86,9 @@ public class ModuleListTest extends SetupHid {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        clearWorkDir();
-        
+
+        MockLookup.setInstances(new IFL());
+
         ud = new File(getWorkDir(), "ud");
         ud.mkdirs();
         System.setProperty("netbeans.user", ud.getPath());
@@ -120,7 +107,7 @@ public class ModuleListTest extends SetupHid {
     }
     
     private Module makeModule(String jarName) throws Exception {
-        File f = new File(JARS, jarName);
+        File f = new File(jars, jarName);
         Module m = mgr.create(f, new ModuleHistory(PREFIX + jarName), false, false, false);
         return m;
     }
@@ -155,8 +142,8 @@ public class ModuleListTest extends SetupHid {
             foo = xml[1];
             bar = xml[0];
         }
-        assertFile(FileUtil.toFile(foo), new File(JARS, "org-foo.xml"));
-        assertFile(FileUtil.toFile(bar), new File(JARS, "org-bar.xml"));
+        assertFile(FileUtil.toFile(foo), new File(data, "org-foo.xml"));
+        assertFile(FileUtil.toFile(bar), new File(data, "org-bar.xml"));
         // Checking that changes in memory will rewrite XML:
         LoggedFileListener listener = new LoggedFileListener();
         modulesfolder.addFileChangeListener(listener);
@@ -173,15 +160,15 @@ public class ModuleListTest extends SetupHid {
         // We expect it to have marked both as disabled now:
         listener.waitForChange("Modules/org-foo.xml");
         listener.waitForChange("Modules/org-bar.xml");
-        assertFile(new File(JARS, "org-foo_disabled.xml"), FileUtil.toFile(foo));
-        assertFile(new File(JARS, "org-bar_disabled.xml"), FileUtil.toFile(bar));
+        assertFile(new File(data, "org-foo_disabled.xml"), FileUtil.toFile(foo));
+        assertFile(new File(data, "org-bar_disabled.xml"), FileUtil.toFile(bar));
         // Check that changes in disk are parsed and applied (#13921)
         LoggedPCListener listener2 = new LoggedPCListener();
         Module m1 = mgr.get("org.foo");
         m1.addPropertyChangeListener(listener2);
-        copy(new File(JARS, "org-foo.xml"), foo);
+        copy(new File(data, "org-foo.xml"), foo);
         /* Does not seem to refresh reliably enough:
-        copy(new File(JARS, "org-foo.xml"), FileUtil.toFile(foo));
+        copy(new File(data, "org-foo.xml"), FileUtil.toFile(foo));
         foo.refresh();
          */
         // The change ought to be noticed by filesystems, picked up by
@@ -259,7 +246,7 @@ public class ModuleListTest extends SetupHid {
             public void run() throws IOException {
                 // XXX this will require that there be an appropriate InstalledFileLocator in Lookup
                 FileObject fooxml = modulesfolder.createData("org-foo", "xml");
-                copy(new File(JARS, "org-foo.xml"), fooxml);
+                copy(new File(data, "org-foo.xml"), fooxml);
             }
         });
         assertTrue("PROP_MODULES fired", listener.waitForChange(mgr, ModuleManager.PROP_MODULES));

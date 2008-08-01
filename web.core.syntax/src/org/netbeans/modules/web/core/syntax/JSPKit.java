@@ -50,7 +50,7 @@ import org.netbeans.modules.editor.gsfret.InstantRenameAction;
 import org.netbeans.modules.gsf.Language;
 import org.netbeans.modules.gsf.LanguageRegistry;
 import org.netbeans.modules.gsf.SelectCodeElementAction;
-import org.netbeans.modules.gsf.api.BracketCompletion;
+import org.netbeans.modules.gsf.api.KeystrokeHandler;
 import org.netbeans.modules.html.editor.coloring.EmbeddingUpdater;
 import org.netbeans.modules.web.core.syntax.deprecated.Jsp11Syntax;
 import org.netbeans.modules.web.core.syntax.deprecated.ELDrawLayerFactory;
@@ -73,7 +73,6 @@ import org.openide.util.Exceptions;
 import org.openide.util.WeakListeners;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
-import org.netbeans.editor.ext.java.JavaDrawLayerFactory;
 import org.netbeans.editor.ext.html.HTMLSyntax;
 import org.netbeans.modules.editor.java.JavaKit;
 import org.netbeans.modules.web.core.syntax.spi.JSPColoringData;
@@ -88,7 +87,6 @@ import org.netbeans.editor.ext.html.parser.SyntaxParser;
 import org.netbeans.modules.editor.indent.api.Reformat;
 import org.netbeans.modules.web.core.syntax.formatting.JSPLexerFormatter;
 import org.netbeans.spi.lexer.MutableTextInput;
-import org.openide.util.RequestProcessor;
 
 /**
  * Editor kit implementation for JSP content type
@@ -288,8 +286,6 @@ public class JSPKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
     }
 
     protected void initDocument(BaseDocument doc) {
-        doc.addLayer(new JavaDrawLayerFactory.JavaLayer(),
-                JavaDrawLayerFactory.JAVA_LAYER_VISIBILITY);
         doc.addLayer(new ELDrawLayerFactory.ELLayer(),
                 ELDrawLayerFactory.EL_LAYER_VISIBILITY);
         
@@ -297,7 +293,6 @@ public class JSPKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
         LanguagePath jspLP = LanguagePath.get(JspTokenId.language());
         LanguagePath htmlLP = LanguagePath.get(jspLP, HTMLTokenId.language());
         
-        doc.getDocumentProperties().put(NbEditorDocument.MIME_TYPE_PROP, "text/x-java"); //NOI18N
         SyntaxParser.get(doc, htmlLP).addSyntaxParserListener(new EmbeddingUpdater(doc));
         //initialize JSP embedding updater
         //just a prototype - better disable it for 6.0
@@ -334,7 +329,7 @@ public class JSPKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
         return new org.openide.util.HelpCtx(JSPKit.class);
     }
     
-    static BracketCompletion getBracketCompletion(Document doc, int offset) {
+    static KeystrokeHandler getBracketCompletion(Document doc, int offset) {
         BaseDocument baseDoc = (BaseDocument) doc;
         List<Language> list = LanguageRegistry.getInstance().getEmbeddedLanguages(baseDoc, offset);
         for (Language l : list) {
@@ -384,7 +379,7 @@ public class JSPKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
         @Override
         protected Object beforeBreak(JTextComponent target, BaseDocument doc, Caret caret) {
             if (completionSettingEnabled()) {
-                BracketCompletion bracketCompletion = getBracketCompletion(doc, caret.getDot());
+                KeystrokeHandler bracketCompletion = getBracketCompletion(doc, caret.getDot());
 
                 if (bracketCompletion != null) {
                     try {
@@ -461,7 +456,7 @@ public class JSPKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
                 boolean overwrite) throws BadLocationException {
             
             if (completionSettingEnabled()) {
-                BracketCompletion bracketCompletion = getBracketCompletion(doc, dotPos);
+                KeystrokeHandler bracketCompletion = getBracketCompletion(doc, dotPos);
 
                 if (bracketCompletion != null) {
                     // TODO - check if we're in a comment etc. and if so, do nothing
@@ -493,7 +488,7 @@ public class JSPKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
                 BaseDocument doc = (BaseDocument) document;
 
                 if (completionSettingEnabled()) {
-                    BracketCompletion bracketCompletion = getBracketCompletion(doc, dotPos);
+                    KeystrokeHandler bracketCompletion = getBracketCompletion(doc, dotPos);
 
                     if (bracketCompletion != null) {
                         try {
@@ -586,7 +581,7 @@ public class JSPKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
                 if (javaTokenSequence != null){
                     JavaKit jkit = (JavaKit)getKit(JavaKit.class);
                     if (jkit!=null){
-                        Action action = jkit.getActionByName(DefaultEditorKit.deletePrevCharAction);
+                        Action action = jkit.getActionByName(nextChar ? DefaultEditorKit.deleteNextCharAction : DefaultEditorKit.deletePrevCharAction);
                         if (action != null && action instanceof JavaKit.JavaDeleteCharAction){
                             ((JavaKit.JavaDeleteCharAction)action).actionPerformed(e, target);
                             return;
@@ -600,7 +595,7 @@ public class JSPKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
         
          protected void charBackspaced(BaseDocument doc, int dotPos, Caret caret, char ch) throws BadLocationException {
               if (completionSettingEnabled()) {
-                BracketCompletion bracketCompletion = getBracketCompletion(doc, dotPos);
+                KeystrokeHandler bracketCompletion = getBracketCompletion(doc, dotPos);
 
                 if (bracketCompletion != null) {
                     boolean success = bracketCompletion.charBackspaced(doc, dotPos, currentTarget, ch);

@@ -49,6 +49,7 @@ import org.openide.loaders.MultiDataObject;
 import org.openide.util.NbBundle;
 import org.openide.util.SharedClassObject;
 import org.netbeans.modules.cnd.MIMENames;
+import org.netbeans.modules.cnd.editor.filecreation.ExtensionsSettings;
 import org.openide.loaders.ExtensionList;
 
 /**
@@ -62,13 +63,10 @@ public class CDataLoader extends CndAbstractDataLoaderExt {
     /** Serial version number */
     static final long serialVersionUID = 6801389470714975685L;
 
-    /** The suffix list for C primary files */
-    private static final String[] cExtensions = { "c", "i", "m" }; // NOI18N
-
     protected CDataLoader() {
 	super("org.netbeans.modules.cnd.loaders.CDataObject"); // NOI18N
         instance = this;
-        createExtentions(cExtensions);
+        //createExtentions(cExtensions);
     }
 
     public static CDataLoader getInstance(){
@@ -92,15 +90,13 @@ public class CDataLoader extends CndAbstractDataLoaderExt {
         return new CDataObject(primaryFile, this);
     }
 
-    public ExtensionList getDefaultExtensionList() {
-        return arrayToExtensionList(cExtensions);
-    }
-
+    // CndHandlableExtensions
+    
     public String getDisplayNameForExtensionList() {
 	return NbBundle.getMessage(CDataLoader.class, "CDataLoader_Name_ForExtList"); // NOI18N
     }
 
-    public String getDefaultDefaultExtension() {
-        return cExtensions[0];
+    public String getSettingsName() {
+        return ExtensionsSettings.C_FILE;  
     }
 }

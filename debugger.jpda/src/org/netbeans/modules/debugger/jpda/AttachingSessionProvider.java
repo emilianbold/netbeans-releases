@@ -72,6 +72,8 @@ public class AttachingSessionProvider extends SessionProvider {
         }
         if (sadic.getHostName () != null)
             return sadic.getHostName () + ":" + sadic.getPortNumber ();
+        if (sadic.getProcessID() != null)
+            return "pid:" + sadic.getProcessID(); // NOI18N
         return LaunchingSessionProvider.findUnique 
             (sadic.getSharedMemoryName ());
     };

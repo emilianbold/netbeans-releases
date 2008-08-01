@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -82,8 +82,9 @@ public final class SourceRoots {
     public static final String PROP_ROOT_PROPERTIES = "rootProperties";    //NOI18N
     public static final String PROP_ROOTS = "roots";   //NOI18N
 
-    public static final String DEFAULT_SOURCE_LABEL = NbBundle.getMessage(SourceRoots.class, "NAME_src.dir");
-    public static final String DEFAULT_TEST_LABEL = NbBundle.getMessage(SourceRoots.class, "NAME_test.src.dir");
+    public static final String DEFAULT_SOURCE_LABEL = NbBundle.getMessage(SourceRoots.class, "SourceRoots.source.files");
+    public static final String DEFAULT_TEST_LABEL = NbBundle.getMessage(SourceRoots.class, "SourceRoots.test.files");
+    public static final String DEFAULT_SPEC_LABEL = NbBundle.getMessage(SourceRoots.class, "SourceRoots.spec.files");
 
     private final UpdateHelper helper;
     private final PropertyEvaluator evaluator;
@@ -329,52 +330,51 @@ public final class SourceRoots {
      * @param propName the name of property the root is stored in
      * @return the label to be displayed
      */
-    public String getRootDisplayName (String rootName, String propName) {
-        if (rootName == null || rootName.length() ==0) {
+    public String getRootDisplayName(String rootName, String propName) {
+        if (rootName == null || rootName.length() == 0) {
             //If the prop is src.dir use the default name
             if (isTest && RubyProjectGenerator.DEFAULT_TEST_SRC_NAME.equals(propName)) {    //NOI18N
                 rootName = DEFAULT_TEST_LABEL;
-            }
-            else if (!isTest && RubyProjectGenerator.DEFAULT_SRC_NAME.equals(propName)) {   //NOI18N
+            } else if (isTest && RubyProjectGenerator.DEFAULT_SPEC_SRC_NAME.equals(propName)) {    //NOI18N
+                rootName = DEFAULT_SPEC_LABEL;
+            } else if (!isTest && RubyProjectGenerator.DEFAULT_SRC_NAME.equals(propName)) {   //NOI18N
                 rootName = DEFAULT_SOURCE_LABEL;
-            }
-            else {
-                //If the name is not given, it should be either a relative path in the project dir
-                //or absolute path when the root is not under the project dir
+            } else {
+                // If the name is not given, it should be either a relative path
+                // in the project dir or absolute path when the root is not
+                // under the project dir.
                 String propValue = evaluator.getProperty(propName);
                 File sourceRoot = propValue == null ? null : helper.getRakeProjectHelper().resolveFile(propValue);
-                rootName = createInitialDisplayName(sourceRoot);                
+                rootName = createInitialDisplayName(sourceRoot);
             }
         }
         return rootName;
     }
     
     /**
-     * Creates initial display name of source/test root
+     * Creates initial display name of source root (lib/test/spec).
      * @param sourceRoot the source root
      * @return the label to be displayed
      */
-    public String createInitialDisplayName (File sourceRoot) {
+    public String createInitialDisplayName(File sourceRoot) {
         String rootName;
         if (sourceRoot != null) {
-        String srPath = sourceRoot.getAbsolutePath();
-        String pdPath = projectDir.getAbsolutePath() + File.separatorChar;
-        if (srPath.startsWith(pdPath)) {
-            rootName = srPath.substring(pdPath.length());
-        }
-        else {
-            rootName = sourceRoot.getAbsolutePath();
-        }
-        }
-        else {
+            String srPath = sourceRoot.getAbsolutePath();
+            String pdPath = projectDir.getAbsolutePath() + File.separatorChar;
+            if (srPath.startsWith(pdPath)) {
+                rootName = srPath.substring(pdPath.length());
+            } else {
+                rootName = sourceRoot.getAbsolutePath();
+            }
+        } else {
             rootName = isTest ? DEFAULT_TEST_LABEL : DEFAULT_SOURCE_LABEL;
         }
         return rootName;
     }
     
     /** 
-     * Returns true if this SourceRoots instance represents source roots belonging to
-     * the tests compilation unit.
+     * Returns true if this SourceRoots instance represents source roots
+     * belonging to the tests unit.
      * @return boolean
      */
     public boolean isTest () {

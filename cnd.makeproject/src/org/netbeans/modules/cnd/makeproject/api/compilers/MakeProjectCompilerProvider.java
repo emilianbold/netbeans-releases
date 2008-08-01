@@ -61,34 +61,34 @@ public class MakeProjectCompilerProvider extends CompilerProvider {
      * this method. We can also add others, if desired. This was mainly a proof-of-concept that tool creation
      * could be deferred to makeproject.
      */
-    public Tool createCompiler(CompilerFlavor flavor, int kind, String name, String displayName, String path) {
-        if (flavor.isSunCompiler()) {
+    public Tool createCompiler(String hkey, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
+        if (flavor.isSunStudioCompiler()) {
             if (kind == Tool.CCompiler) {
-                return new SunCCompiler(flavor, kind, name, displayName, path);
+                return new SunCCompiler(hkey, flavor, kind, name, displayName, path);
             } else if (kind == Tool.CCCompiler) {
-                return new SunCCCompiler(flavor, kind, name, displayName, path);
+                return new SunCCCompiler(hkey, flavor, kind, name, displayName, path);
             } else if (kind == Tool.FortranCompiler) {
-                return new SunFortranCompiler(flavor, kind, name, displayName, path);
+                return new SunFortranCompiler(hkey, flavor, kind, name, displayName, path);
             } else if (kind == Tool.MakeTool) {
-                return new SunMaketool(flavor, name, displayName, path);
+                return new SunMaketool(hkey, flavor, name, displayName, path);
             } else if (kind == Tool.DebuggerTool) {
-                return new SunDebuggerTool(flavor, name, displayName, path);
+                return new SunDebuggerTool(hkey, flavor, name, displayName, path);
             }
         } else /* if (flavor.isGnuCompiler()) */ { // Assume GNU (makeproject system doesn't handle Unknown)
             if (kind == Tool.CCompiler) {
-                return new GNUCCompiler(flavor, kind, name, displayName, path);
+                return new GNUCCompiler(hkey, flavor, kind, name, displayName, path);
             } else if (kind == Tool.CCCompiler) {
-                return new GNUCCCompiler(flavor, kind, name, displayName, path);
+                return new GNUCCCompiler(hkey, flavor, kind, name, displayName, path);
             } else if (kind == Tool.FortranCompiler) {
-                return new GNUFortranCompiler(flavor, kind, name, displayName, path);
+                return new GNUFortranCompiler(hkey, flavor, kind, name, displayName, path);
             } else if (kind == Tool.MakeTool) {
-                return new GNUMaketool(flavor, name, displayName, path);
+                return new GNUMaketool(hkey, flavor, name, displayName, path);
             } else if (kind == Tool.DebuggerTool) {
-                return new GNUDebuggerTool(flavor, name, displayName, path);
+                return new GNUDebuggerTool(hkey, flavor, name, displayName, path);
             }
         }
         if (kind == Tool.CustomTool) {
-            return new CustomTool();
+            return new CustomTool(hkey);
         }
         throw new IllegalArgumentException(NbBundle.getMessage(MakeProjectCompilerProvider.class, 
                 "ERR_UnrecognizedCompilerType")); // NOI18N

@@ -66,6 +66,7 @@ import org.openide.util.NbBundle;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
+import org.w3c.dom.Node;
 
 import static org.netbeans.modules.compapp.projects.jbi.CasaConstants.*;
 
@@ -79,8 +80,14 @@ public class CasaHelper {
     public static String CASA_EXT = ".casa";  // NOI18N 
     private static String WSDL_EXT = ".wsdl";  // NOI18N 
     private static String LOCK_FILE_PREFIX = ".LCK";  // NOI18N 
-    private static String LOCK_FILE_SUFFIX = "~";  // NOI18N 
-            
+    private static String LOCK_FILE_SUFFIX = "~";  // NOI18N
+
+    // WSIT Callback Java project support
+    private static final String CASA_NAMESPACE_URI = "http://java.sun.com/xml/ns/casa";  // NOI18N
+    private static final String WSIT_CALLBACK_ELEMENT = "WsitCallback";   // NOI18N
+    private static final String WSIT_CALLBACK_PROJECT = "CallbackProject";   // NOI18N
+
+
     private static final Logger LOG = Logger.getLogger("org.netbeans.modules.compapp.projects.jbi.CasaHelper");
     
     /**
@@ -291,6 +298,15 @@ public class CasaHelper {
             NodeList seSUs = sus.getElementsByTagName(
                     CasaConstants.CASA_SERVICE_ENGINE_SERVICE_UNIT_ELEM_NAME);
             
+            List<Element> internalSESUs = new ArrayList<Element>();
+            for (int i = 0; i < seSUs.getLength(); i++) {
+                Element seSU = (Element) seSUs.item(i);
+                String isInternal = seSU.getAttribute(CasaConstants.CASA_INTERNAL_ATTR_NAME);
+                if (isInternal == null || "true".equalsIgnoreCase(isInternal)) {
+                    internalSESUs.add(seSU);
+                }
+            }
+            
             @SuppressWarnings("unchecked")
             List<VisualClassPathItem> newContentList = 
                     (List) properties.get(JbiProjectProperties.JBI_CONTENT_ADDITIONAL);
@@ -304,15 +320,13 @@ public class CasaHelper {
             }
             
             List<String> sesuUnitNameList = new ArrayList<String>();
-            for (int i = 0; i < seSUs.getLength(); i++) {
-                Element seSU = (Element) seSUs.item(i);
+            for (Element seSU : internalSESUs) {
                 String unitName = seSU.getAttribute(CasaConstants.CASA_UNIT_NAME_ATTR_NAME);
                 sesuUnitNameList.add(unitName);
             }
 
             // Remove deleted service units from casa
-            for (int i = 0; i < seSUs.getLength(); i++) {
-                Element seSU = (Element) seSUs.item(i);
+            for (Element seSU : internalSESUs) {
                 String projName = seSU.getAttribute(CasaConstants.CASA_UNIT_NAME_ATTR_NAME);
                 if (!newProjectNameList.contains(projName)) {
                     sus.removeChild(seSU);
@@ -362,6 +376,56 @@ public class CasaHelper {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    /**
+     * Get the list of WSIT callback handler Java Projects
+     *
+     * @param project the compapp project
+     * @return the list of WSIT callback handler Java Projects
+     */
+    public static  List<String> getWsitCallbackProjects(JbiProject project) {
+        List<String> projs = new ArrayList<String>();
+
+        FileObject casaFO = CasaHelper.getCasaFileObject(project, true);
+        if (casaFO == null) {
+            return projs;
+        }
+
+        try {
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            factory.setNamespaceAware(true);
+            factory.setValidating(false);
+            DocumentBuilder builder = factory.newDocumentBuilder();
+            Document casaDocument = builder.parse(casaFO.getInputStream());
+
+            NodeList casaPorts = casaDocument.getElementsByTagName(CASA_PORT_ELEM_NAME);
+
+            for (int i = 0; i < casaPorts.getLength(); i++) {
+                Element casaPort = (Element) casaPorts.item(i);
+                NodeList pNodes = casaPort.getChildNodes();
+                for (int k = 0; k < pNodes.getLength(); k++) {
+                    if (pNodes.item(k) instanceof Element) {
+                        Element pNode = (Element) pNodes.item(k);
+                        String ns = pNode.getNamespaceURI();
+                        // todo: Assume non CASA elemeents are extensions...
+                        if (!CASA_NAMESPACE_URI.equals(ns)) {
+                            // get attributes..
+                            if (pNode.getLocalName().equals(WSIT_CALLBACK_ELEMENT)) {
+                                String projLoc = pNode.getAttribute(WSIT_CALLBACK_PROJECT);
+                                projs.add(projLoc);
+                            }
+                        }
+                    }
+                }
+
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return projs;
     }
     
     /**

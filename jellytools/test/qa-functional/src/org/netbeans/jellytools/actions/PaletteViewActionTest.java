@@ -67,9 +67,12 @@ public class PaletteViewActionTest extends JellyTestCase {
     /** method used for explicit testsuite definition
      */
     public static Test suite() {
+        /*
         TestSuite suite = new NbTestSuite();
         suite.addTest(new PaletteViewActionTest("testPerformMenu"));
         return suite;
+         */
+        return createModuleTest(PaletteViewActionTest.class, "testPerformMenu");
     }
     
     /** Test performMenu */

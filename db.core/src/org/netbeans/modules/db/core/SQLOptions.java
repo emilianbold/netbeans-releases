@@ -53,6 +53,9 @@ public class SQLOptions  {
     private static SQLOptions INSTANCE = new SQLOptions();
     private static final String PROP_FETCH_STEP = "fetchStep"; // NOI18N
     private static final int DEFAULT_FETCH_STEP = 200;
+    private static final String PROP_MAX_ROWS = "maxRows";
+    private static final int DEFAULT_MAX_ROWS = 200000;
+
 
     public static SQLOptions getDefault() {
         return INSTANCE;
@@ -72,5 +75,14 @@ public class SQLOptions  {
     
     public void setFetchStep(int value) {
         getPreferences().putInt(PROP_FETCH_STEP, value);
-    }    
+    }   
+    
+    public int getMaxRows() {
+        return getPreferences().getInt(PROP_MAX_ROWS, DEFAULT_MAX_ROWS);
+    }
+    
+    public void setMaxRows(int rows) {
+        getPreferences().putInt(PROP_MAX_ROWS, rows);
+    }
+
 }

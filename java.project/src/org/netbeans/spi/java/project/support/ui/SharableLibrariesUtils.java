@@ -45,17 +45,21 @@ import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
+import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ant.FileChooser;
@@ -105,7 +109,9 @@ public final class SharableLibrariesUtils {
      * @return true if last created project was created sharable, false if not.
      */
     public static boolean isLastProjectSharable() {
-        return NbPreferences.root().node("org.netbeans.modules.java.project.share").getBoolean(PROP_LAST_SHARABLE, false); //NOI18N
+        return NbPreferences.forModule(SharableLibrariesUtils.class).getBoolean(PROP_LAST_SHARABLE,
+                // For compatibility with incorrect old location:
+                NbPreferences.root().node("org.netbeans.modules.java.project.share").getBoolean(PROP_LAST_SHARABLE, false)); // NOI18N
     }
     /**
      * Setter for boolean value representing the state of library sharability of the last created project.
@@ -114,11 +120,9 @@ public final class SharableLibrariesUtils {
      * @param sharable
      */
     public static void setLastProjectSharable(boolean sharable) {
-        NbPreferences.root().node("org.netbeans.modules.java.project.share").putBoolean(PROP_LAST_SHARABLE, sharable); //NOI18N
+        NbPreferences.forModule(SharableLibrariesUtils.class).putBoolean(PROP_LAST_SHARABLE, sharable);
     }
 
-    
-    
     /**
      * File chooser implementation for browsing for shared library location.
      * @param current
@@ -133,6 +137,8 @@ public final class SharableLibrariesUtils {
         }
         lib = FileUtil.normalizeFile(lib);
         FileChooser chooser = new FileChooser(projectLocation, null);
+        // for now variable based paths are disabled for reference to libraries folder
+        // can be revisit if it is needed
         chooser.setCurrentDirectory(lib);
         chooser.setFileSelectionMode( JFileChooser.DIRECTORIES_ONLY );
         chooser.setDialogTitle(NbBundle.getMessage(SharableLibrariesUtils.class,"LBL_Browse_Libraries_Title"));
@@ -163,7 +169,7 @@ public final class SharableLibrariesUtils {
      */
     public static boolean showMakeSharableWizard(final AntProjectHelper helper, ReferenceHelper ref, List<String> libraryNames, List<String> jarReferences) {
 
-        final WizardDescriptor wizardDescriptor = new WizardDescriptor(getPanels());
+        final WizardDescriptor wizardDescriptor = new WizardDescriptor(new CopyIterator(helper));
         // {0} will be replaced by WizardDesriptor.Panel.getComponent().getName()
         wizardDescriptor.setTitleFormat(new MessageFormat("{0}"));
         wizardDescriptor.setTitle(NbBundle.getMessage(SharableLibrariesUtils.class, "TIT_MakeSharableWizard")); 
@@ -175,55 +181,91 @@ public final class SharableLibrariesUtils {
         dialog.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SharableLibrariesUtils.class, "ACSD_MakeSharableWizard"));
         dialog.setVisible(true);
         dialog.toFront();
-        boolean cancelled = wizardDescriptor.getValue() != WizardDescriptor.FINISH_OPTION;
-        if (!cancelled) {
-            final String loc = (String) wizardDescriptor.getProperty(PROP_LOCATION);
-            assert loc != null;
-            try {
-                // create libraries property file if it does not exist:
-                File f = new File(loc);
-                if (!f.isAbsolute()) {
-                    f = new File(FileUtil.toFile(helper.getProjectDirectory()), loc);
-                }
-                f = FileUtil.normalizeFile(f);
-                if (!f.exists()) {
-                    FileUtil.createData(f);
-                }
+        return wizardDescriptor.getValue() == WizardDescriptor.FINISH_OPTION;
+    }
 
-                try {
-                    ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
-
-                        public Object run() throws IOException {
-                            try {
-                                helper.getProjectDirectory().getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
-                                    public void run() throws IOException {
-                                        helper.setLibrariesLocation(loc);
-
-                                        // TODO or make just runnables?
-                                        List<Action> actions = (List<Action>) wizardDescriptor.getProperty(PROP_ACTIONS);
-                                        for (Action act : actions) {
-                                            act.actionPerformed(null);
-                                        }
-                                        ProjectManager.getDefault().saveProject(FileOwnerQuery.getOwner(helper.getProjectDirectory()));
-                                    }
-                                });
-                            } catch (IllegalArgumentException ex) {
-                                Exceptions.printStackTrace(ex);
-                            }
-
-                            return null;
-                        }
-                    });
-                } catch (MutexException ex) {
-                    throw (IOException) ex.getException();
-                }
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
+    private static void execute(final WizardDescriptor wizardDescriptor, final AntProjectHelper helper, final ProgressHandle handle) {
+        
+        final String loc = (String) wizardDescriptor.getProperty(PROP_LOCATION);
+        final List<Action> actions = (List<Action>) wizardDescriptor.getProperty(PROP_ACTIONS);
+        assert loc != null;
+        handle.start(Math.max(1, actions.size() + 1));
+        try {
+            // create libraries property file if it does not exist:
+            File f = new File(loc);
+            if (!f.isAbsolute()) {
+                f = new File(FileUtil.toFile(helper.getProjectDirectory()), loc);
+            }
+            f = FileUtil.normalizeFile(f);
+            if (!f.exists()) {
+                FileUtil.createData(f);
             }
 
+            try {
+                ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
 
+                    public Object run() throws IOException {
+                        try {
+                            helper.getProjectDirectory().getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
+
+                                public void run() throws IOException {
+                                    helper.setLibrariesLocation(loc);
+                                    int count = 1;
+                                    // TODO or make just runnables?
+                                    for (Action act : actions) {
+                                        handle.progress(count);
+                                        count = count + 1;
+                                        act.actionPerformed(null);
+                                    }
+                                    ProjectManager.getDefault().saveProject(FileOwnerQuery.getOwner(helper.getProjectDirectory()));
+                                }
+                            });
+                        } catch (IllegalArgumentException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                        return null;
+                    }
+                });
+            } catch (MutexException ex) {
+                throw (IOException) ex.getException();
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        } finally {
+            handle.finish();
         }
-        return !cancelled;
+    }
+    
+    private static class CopyIterator extends WizardDescriptor.ArrayIterator<WizardDescriptor> implements WizardDescriptor.ProgressInstantiatingIterator<WizardDescriptor> {
+        private AntProjectHelper helper;
+        private WizardDescriptor desc;
+
+        private CopyIterator(AntProjectHelper helper) {
+            this.helper = helper;
+            
+        }
+
+        public Set instantiate(ProgressHandle handle) throws IOException {
+            execute(desc, helper, handle);
+            return Collections.EMPTY_SET;
+        }
+
+        public Set instantiate() throws IOException {
+            throw new UnsupportedOperationException("Not supported");
+        }
+
+        public void initialize(WizardDescriptor wizard) {
+            this.desc = wizard;
+        }
+
+        public void uninitialize(WizardDescriptor wizard) {
+            this.desc = wizard;
+        }
+        
+        public WizardDescriptor.Panel<WizardDescriptor>[] initializePanels() {
+            return getPanels();
+        }
+        
     }
 
     /**
@@ -245,15 +287,15 @@ public final class SharableLibrariesUtils {
             if (c instanceof JComponent) { // assume Swing components
                 JComponent jc = (JComponent) c;
                 // Sets step number of a component
-                jc.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(i));
+                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer(i));
                 // Sets steps names for a panel
-                jc.putClientProperty("WizardPanel_contentData", steps);
+                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps);
                 // Turn on subtitle creation on each step
-                jc.putClientProperty("WizardPanel_autoWizardStyle", Boolean.TRUE);
+                jc.putClientProperty(WizardDescriptor.PROP_AUTO_WIZARD_STYLE, Boolean.TRUE);
                 // Show steps on the left side with the image on the background
-                jc.putClientProperty("WizardPanel_contentDisplayed", Boolean.TRUE);
+                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DISPLAYED, Boolean.TRUE);
                 // Turn on numbering of all steps
-                jc.putClientProperty("WizardPanel_contentNumbered", Boolean.TRUE);
+                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_NUMBERED, Boolean.TRUE);
             }
         }
         return panels;
@@ -281,6 +323,10 @@ public final class SharableLibrariesUtils {
                 FileUtil.refreshFor(directory);
             }
             FileObject dir = FileUtil.toFileObject(directory);
+            if (!absFile.exists()) {
+                //#131535 is a broken reference probably, ignore.
+                return;
+            }
             updateReference(absFile, reference, true, dir);
             //now process source reference
             String source = reference.replace("${file.reference", "${source.reference"); //NOI18N
@@ -393,51 +439,51 @@ public final class SharableLibrariesUtils {
             File mainPropertiesFile = helper.resolveFile(loc);
             try {
                 LibraryManager man = LibraryManager.forLocation(mainPropertiesFile.toURI().toURL());
-                Map<String, List<URL>> volumes = new HashMap<String, List<URL>>();
+                Map<String, List<URI>> volumes = new HashMap<String, List<URI>>();
                 LibraryTypeProvider provider = LibrariesSupport.getLibraryTypeProvider(library.getType());
                 assert provider != null;
                 for (String volume : provider.getSupportedVolumeTypes()) {
                     List<URL> urls = library.getContent(volume);
-                    List<URL> newurls = new ArrayList<URL>();
+                    List<URI> newurls = new ArrayList<URI>();
                     for (URL url : urls) {
                         String jarFolder = null;
-                        boolean isArchive = false;
                         if ("jar".equals(url.getProtocol())) { // NOI18N
-                            jarFolder = getJarFolder(url);
+                            jarFolder = getJarFolder(URI.create(url.toExternalForm()));
                             url = FileUtil.getArchiveFile(url);
-                            isArchive = true;
                         }
                         FileObject fo = URLMapper.findFileObject(url);
 
+                        URI uri;
                         if (fo != null) {
                             if (keepRelativeLocations) {
                                 File path = FileUtil.toFile(fo);
                                 String str = PropertyUtils.relativizeFile(mainPropertiesFile.getParentFile(), path);
                                 if (str == null) {
                                     // the relative path cannot be established, different drives?
-                                    url = fo.getURL();
+                                    uri = path.toURI();
                                 } else {
-                                    url = LibrariesSupport.convertFilePathToURL(str);
+                                    uri = LibrariesSupport.convertFilePathToURI(str);
                                 }
                             } else {
-                                url = fo.getURL();
+                                File path = FileUtil.toFile(fo);
+                                uri = path.toURI();
                             }
-                            if (isArchive) {
-                                url = FileUtil.getArchiveRoot(url);
+                            if (FileUtil.isArchiveFile(fo)) {
+                                uri = appendJarFolder(uri, jarFolder);
                             }
-                            if (jarFolder != null) {
-                                 url = appendJarFolder(url, jarFolder);
+                            newurls.add(uri);
+                        } else {
+                            try {
+                                newurls.add(url.toURI());
+                            } catch (URISyntaxException ex) {
+                                Exceptions.printStackTrace(ex);
                             }
-                            
                         }
-                        
-
-                        newurls.add(url);
                     }
                     volumes.put(volume, newurls);
                 }
                 
-                man.createLibrary(library.getType(), library.getName(), volumes);
+                man.createURILibrary(library.getType(), library.getName(), volumes);
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
@@ -468,24 +514,25 @@ public final class SharableLibrariesUtils {
 
     
     
-    /** for jar url this method returns path wihtin jar or null*/
-    private static String getJarFolder(URL url) {
-        assert "jar".equals(url.getProtocol()) : url;
-        String u = url.toExternalForm();
+    private static String getJarFolder(URI uri) {
+        String u = uri.toString();
         int index = u.indexOf("!/"); //NOI18N
         if (index != -1 && index + 2 < u.length()) {
-            return u.substring(index + 2);
+            return u.substring(index+2);
         }
         return null;
     }
-
-    /** append path to given jar root url */
-    private static URL appendJarFolder(URL u, String jarFolder) {
-        assert "jar".equals(u.getProtocol()) && u.toExternalForm().endsWith("!/") : u;
+    
+    /** append path to given jar root uri */
+    private static URI appendJarFolder(URI u, String jarFolder) {
         try {
-            return new URL(u + jarFolder.replace('\\', '/')); //NOI18N
-        } catch (MalformedURLException e) {
+            if (u.isAbsolute()) {
+                return new URI("jar:" + u.toString() + "!/" + (jarFolder == null ? "" : jarFolder.replace('\\', '/'))); // NOI18N
+            } else {
+                return new URI(u.toString() + "!/" + (jarFolder == null ? "" : jarFolder.replace('\\', '/'))); // NOI18N
+            }
+        } catch (URISyntaxException e) {
             throw new AssertionError(e);
         }
-    }         
+    }
 }

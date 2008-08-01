@@ -43,8 +43,6 @@ package org.netbeans.modules.cnd.folding;
 
 import java.io.*;
 import java.util.*;
-import antlr.*;
-import antlr.debug.misc.*;
 import antlr.TokenStreamException;
 import antlr.Token;
 import antlr.TokenStream;
@@ -52,7 +50,6 @@ import antlr.RecognitionException;
 import antlr.NoViableAltException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.editor.parser.CppFoldRecord;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.support.APTBuilder;
@@ -103,23 +100,6 @@ import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
         out.addAll(walkerFolds);
         out.addAll(parserFolders);
         return out;
-    }
-    
-    public static void main(String[] args) {
-        try {
-            String fileName = "/export/home/jec/projects/antlr/test/freeway/maniac.cc";  // NOI18N
-            TokenStream lexer = APTTokenStreamBuilder.buildTokenStream(fileName, new BufferedInputStream(new FileInputStream(fileName), APTTraceFlags.BUF_SIZE));
-            APTFoldingParser parser = getParser(fileName, lexer);
-            parser.translation_unit();
-            
-            CommonAST t = (CommonAST)parser.getAST();
-            ASTFrame frame = new ASTFrame("AST JTree Example", t);  // NOI18N
-            frame.setVisible(true);
-
-        } catch(Exception e) {
-            System.err.println("exception: "+e);  // NOI18N
-            e.printStackTrace();
-        }
     }
     
     private static APTFoldingParser getParser(String name, TokenStream lexer) {

@@ -41,33 +41,40 @@
 
 package org.netbeans.modules.db.explorer.infos;
 
-import java.sql.Connection;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.*;
 import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.db.explorer.ConnectionListener;
 import org.openide.filesystems.*;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 
 import org.netbeans.lib.ddl.*;
 import org.netbeans.api.db.explorer.DatabaseException;
+import org.netbeans.lib.ddl.impl.SpecificationFactory;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
-import org.netbeans.modules.db.explorer.DatabaseNodeChildren;
 import org.netbeans.modules.db.explorer.ConnectionList;
+import org.netbeans.modules.db.explorer.DatabaseOption;
 import org.netbeans.modules.db.explorer.DbActionLoaderSupport;
 import org.netbeans.modules.db.explorer.DbNodeLoader;
 import org.netbeans.modules.db.explorer.DbNodeLoaderSupport;
 import org.netbeans.modules.db.explorer.nodes.*;
 import org.openide.nodes.Node;
+import org.openide.options.SystemOption;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 public class RootNodeInfo extends DatabaseNodeInfo implements 
         ConnectionOwnerOperations, ChangeListener  {
     static final long serialVersionUID =-8079386805046070315L;
     
     static RootNodeInfo rootInfo = null;
+    
+    private static DatabaseOption option = null;
     
     private Collection<DbNodeLoader> nodeLoaders;
     
@@ -80,9 +87,66 @@ public class RootNodeInfo extends DatabaseNodeInfo implements
         }
         return rootInfo;
     }  
+    
+    public RootNodeInfo() {  
+        try {
+            SpecificationFactory sfactory = new SpecificationFactory();
+            if ( sfactory == null ) {
+                throw new Exception(
+                        bundle().getString("EXC_NoSpecificationFactory"));
+            }
+            
+            setSpecificationFactory(new SpecificationFactory());
+            
+            ConnectionList.getDefault().addConnectionListener(new ConnectionListener() {
+                public void connectionsChanged() {
+                    stateChanged(new ChangeEvent(this));
+                }
+            });
+            
+            //initialization listener for debug mode
+            initDebugListening();
+        } catch (Exception e) {
+            Exceptions.printStackTrace(e);
+        }
+
+    }
+    
+        /**
+     * Connects the debug property in sfactory and debugMode property in DBExplorer module's option.
+     */
+    private void initDebugListening() {
+        final DatabaseSpecificationFactory sfactory = getSpecificationFactory();
+        
+        if ( option == null || sfactory == null ) {
+            return;
+        }
+        
+        option.addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent e) {
+                if (e.getPropertyName() == null) {
+                    sfactory.setDebugMode(option.getDebugMode());
+                    return;
+                }
+                if (e.getPropertyName().equals(DatabaseOption.PROP_DEBUG_MODE))
+                    sfactory.setDebugMode(((Boolean) e.getNewValue()).booleanValue());
+            }
+        });
+        sfactory.setDebugMode(option.getDebugMode());
+    }
+    
+    public static synchronized DatabaseOption getOption() {
+        if (option == null)
+            option = (DatabaseOption)SystemOption.findObject(DatabaseOption.class, true);
+
+        return option;
+    }
+
+
+
     public void initChildren(Vector children) throws DatabaseException {
         try {
-            children.addAll(getRegisteredNodes());
+            children.addAll(getRegisteredNodeInfos());
             
             DatabaseConnection[] cinfos = ConnectionList.getDefault().getConnections();
             for (int i = 0; i < cinfos.length; i++) {
@@ -107,23 +171,25 @@ public class RootNodeInfo extends DatabaseNodeInfo implements
         }
     }
 
-    private synchronized List<Node> getRegisteredNodes() {
+    private List<RegisteredNodeInfo> getRegisteredNodeInfos() {
         boolean registerListener = false;
         if ( nodeLoaders == null ) {
             nodeLoaders = DbNodeLoaderSupport.getLoaders();
             registerListener = true;
         }
         
-        ArrayList<Node> nodes = new ArrayList<Node>();
-        
+        ArrayList<RegisteredNodeInfo> infos = new ArrayList<RegisteredNodeInfo>();
+                
         for ( DbNodeLoader loader : nodeLoaders ) {
             if ( registerListener ) {
                 loader.addChangeListener(this);
             }
-            nodes.addAll(loader.getAllNodes());
+            for ( Node node: loader.getAllNodes() ) {
+                infos.add(new RegisteredNodeInfo(this, node));
+            }
         }    
         
-        return nodes;
+        return infos;
     }
 
     @Override
@@ -157,49 +223,22 @@ public class RootNodeInfo extends DatabaseNodeInfo implements
         ninfo.setSchema(dbconn.getSchema());
         ninfo.setName(dbconn.getName());
         ninfo.setDatabaseConnection(dbconn);
+        if (dbconn.getConnection() != null) {
+            ninfo.connect(dbconn);
+        }
         return ninfo;
     }
-    
-    @Override
-    public void refreshChildren() throws DatabaseException {
-        // refresh action is empty
-    }
-    
-    private void updateRegisteredNodes() throws DatabaseException {
-        getChildren();
         
-        final DatabaseNodeChildren children = 
-                (DatabaseNodeChildren)getNode().getChildren();
-        
-        Node[] nodes = children.getNodes();
-        
-        final List<Node> newNodes = getRegisteredNodes();
-        
-        for (Node node : nodes ) {
-            if ( ! (node instanceof DatabaseNode) ) {
-                // Remove the old registered nodes
-                children.removeSubNode(node);
-            }
-        }
-        
-        for ( Node node : newNodes ) {
-            // Add the new registered nodes
-            children.addSubNode(node);
-        }        
-    }
-    
     public void addConnectionNoConnect(DatabaseConnection dbconn) throws DatabaseException {
-        getChildren(); // force restore
-        
-        if (ConnectionList.getDefault().contains(dbconn)) {
-            return;
-        }
+        synchronized (ConnectionList.getDefault()) {
+            if (ConnectionList.getDefault().contains(dbconn)) {
+                return;
+            }
 
-        DatabaseNode node = getNode();
-        DatabaseNodeChildren children = (DatabaseNodeChildren) node.getChildren();
-        ConnectionNodeInfo ninfo = createConnectionNodeInfo(dbconn);
-        ConnectionList.getDefault().add(dbconn);
-        children.createSubnode(ninfo, true);
+            ConnectionNodeInfo ninfo = createConnectionNodeInfo(dbconn);
+            ConnectionList.getDefault().add(dbconn);
+        }
+        notifyChange();
     }
     
     public void removeConnection(DatabaseConnection dbconn) throws DatabaseException {
@@ -207,22 +246,27 @@ public class RootNodeInfo extends DatabaseNodeInfo implements
             throw new NullPointerException();
         }
         
-        DatabaseNode node = getNode();
-        DatabaseNodeChildren children = (DatabaseNodeChildren)node.getChildren();
-        Node[] nodes = children.getNodes();
+        Vector<DatabaseNodeInfo> children = getChildren();
+        DatabaseNodeInfo toRemove = null;
         
-        for ( Node childNode : nodes ) {
-            if ( childNode instanceof ConnectionNode ) {
-                ConnectionNode connNode = (ConnectionNode)childNode;
-                if ( connNode.getInfo().getDatabaseConnection().equals(dbconn)) {
-                    connNode.deleteNode();
+        for ( DatabaseNodeInfo child : children ) {
+            if ( child instanceof ConnectionNodeInfo ) {
+                ConnectionNodeInfo ninfo = (ConnectionNodeInfo)child;
+                if ( ninfo.getDatabaseConnection().equals(dbconn)) {
+                    toRemove = ninfo;
                 }
                 
                 dbconn.disconnect();
             }
         }
         
+        if ( toRemove != null ) {
+            removeChild(toRemove, false);
+        }
+        
         ConnectionList.getDefault().remove(dbconn);
+        
+        notifyChange();
     }
     
     public void addConnection(DBConnection cinfo) throws DatabaseException {
@@ -232,33 +276,48 @@ public class RootNodeInfo extends DatabaseNodeInfo implements
         if (ConnectionList.getDefault().contains(dbconn)) {
             throw new DatabaseException(bundle().getString("EXC_ConnectionAlreadyExists"));
         }
-
-        DatabaseNode node = getNode();
-        DatabaseNodeChildren children = (DatabaseNodeChildren) node.getChildren();
-        
-        // the nodes have to be initialized too, otherwise the node created 
-        // for the new connection will not be added and the connection
-        // will be lost when the nodes are eventually initialized
-        children.getNodes(true); 
         
         ConnectionNodeInfo ninfo = createConnectionNodeInfo(dbconn);
+        addChild(ninfo);
+
         ConnectionList.getDefault().add(dbconn);
-        DatabaseNode cnode = children.createSubnode(ninfo, true);
         
         if (((DatabaseConnection) dbconn).getConnection() == null)
-            ((ConnectionNodeInfo) cnode.getInfo()).connect();
+            ninfo.connect();
         else
-            ((ConnectionNodeInfo) cnode.getInfo()).connect(dbconn);
+            ninfo.connect(dbconn);
+        
+        notifyChange();
     }
 
     public void stateChanged(ChangeEvent evt) {
         // One of the node loader's underlying nodes have changed, so let's
         // do a refresh of our nodes
         try {
-            updateRegisteredNodes();
+            refreshChildren();
         } catch ( DatabaseException dbe ) {
             Exceptions.printStackTrace(dbe);
         }
+    } 
+    
+    @Override
+    public void refreshChildren() throws DatabaseException {
+        super.refreshChildren();
+        
+        // Now re-add the driver node
+        addChild(createNodeInfo(this, DatabaseNode.DRIVER_LIST));
     }
+
+    
+    @Override
+    public String getDisplayName() {
+         return bundle().getString("NDN_Databases"); //NOI18N
+    }
+    
+    @Override
+    public String getShortDescription() {
+        return bundle().getString("ND_Root"); //NOI18N
+    }
+
 
 }

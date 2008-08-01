@@ -781,14 +781,12 @@ implements CloneableEditorSupport.Env {
         }
     }
     
-    public static final class Lkp extends org.openide.util.lookup.AbstractLookup {
+    public static final class Lkp extends org.openide.util.lookup.ProxyLookup {
         public Lkp() {
-            this(new org.openide.util.lookup.InstanceContent());
-        }
-        
-        private Lkp(org.openide.util.lookup.InstanceContent ic) {
-            super(ic);
-            ic.add(new ErrManager());
+            super(
+                Lookups.singleton(new ErrManager()),
+                Lookups.metaInfServices(Lkp.class.getClassLoader())
+            );
         }
     }
 

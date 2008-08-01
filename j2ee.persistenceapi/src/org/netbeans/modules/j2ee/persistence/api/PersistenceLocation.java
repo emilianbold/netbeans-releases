@@ -76,9 +76,11 @@ public final class PersistenceLocation {
      * Creates the default persistence location in the given project.
      *
      * @param  project the project.
-     * @return the persistence location; never null.
+     * @return the persistence location or null if the location could not have been
+     *         created (for example, because the implementor could not determine
+     *         a proper location).
      * @throws IOException if the persistence location could not be created
-     *         or the project did not have an implementation of 
+     *         or the project did not have an implementation of
      *         PersistenceLocationProvider in its lookup.
      */
     public static FileObject createLocation(Project project) throws IOException {

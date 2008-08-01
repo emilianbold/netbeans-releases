@@ -47,7 +47,7 @@ import org.netbeans.jellytools.Bundle;
  * @see Action
  * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a> */
 public class ProjectViewAction extends Action {
-    private static final String projectMenu = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/Window")
+    private static final String projectMenu = Bundle.getStringTrimmed("org.netbeans.core.windows.resources.Bundle", "Menu/Window")
                                            + "|"
                                            + Bundle.getStringTrimmed("org.netbeans.modules.project.ui.Bundle", "LBL_ProjectsLogicalTabAction_Name");
 

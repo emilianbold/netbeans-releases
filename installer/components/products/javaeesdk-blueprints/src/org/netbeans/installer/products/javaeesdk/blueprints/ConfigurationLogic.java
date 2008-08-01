@@ -59,11 +59,6 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
 	    FileProxy.RESOURCE_SCHEME_PREFIX + 
             "org/netbeans/installer/products/javaeesdk/blueprints/wizard.xml"; // NOI18N
     
-    private static final String GLASSFISH_UID =
-            "glassfish"; // NOI18N
-    private static final String APPSERVER_UID =
-            "sjsas"; // NOI18N
-    
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
     private List<WizardComponent> wizardComponents;

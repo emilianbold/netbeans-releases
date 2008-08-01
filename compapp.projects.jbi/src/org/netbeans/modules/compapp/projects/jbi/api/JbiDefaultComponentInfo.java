@@ -42,9 +42,14 @@
 package org.netbeans.modules.compapp.projects.jbi.api;
 
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.event.ChangeListener;
 import org.netbeans.modules.compapp.javaee.util.ProjectUtil;
 import org.netbeans.api.project.Project;
 
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
 
@@ -60,13 +65,22 @@ import org.netbeans.modules.sun.manager.jbi.management.model.JBIComponentStatus;
 
 import org.netbeans.modules.xml.wsdl.model.ExtensibilityElement;
 import org.netbeans.modules.xml.wsdl.model.Port;
+import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileSystem;
+import org.openide.util.ChangeSupport;
+import org.openide.util.RequestProcessor;
 
 
 /**
- * DOCUMENT ME!
- *
- * @author 
+ * 
+ * This class creats a model that provides the jbi component information and the
+ * associated wsdl extension plugin information. It reads the layer filesystem 
+ * and creates the model. Also, it listens for the changes in the layer filesyste
+ * correpsonding to the jbi component folders and reloads the model and notifies
+ * the change to the listeners of this model using ChangeListner interface.
+ * 
+ * @author ???
+ * @author chikkala
  * @version 
  */
 public class JbiDefaultComponentInfo {
@@ -128,7 +142,13 @@ public class JbiDefaultComponentInfo {
     public static final String WSDLEDITOR_NAME = "WSDLEditor"; // NOI18N
     public static final String WSDL_ICON_NAME = "SystemFileSystem.icon"; // NOI18N
 
+    private static Logger sLogger = Logger.getLogger(JbiDefaultComponentInfo.class.getName());
+    
     private static JbiDefaultComponentInfo singleton = null;
+    /** change listner support */
+    private static ChangeSupport changeSupport = null;
+    /** listener for monitoring layer fs changes */
+    private static LayerFSChangeListener lfsListener = null;
     
     // a list of SE and BCs known at design time
     private List<JBIComponentStatus> componentList = new ArrayList<JBIComponentStatus>();
@@ -145,7 +165,38 @@ public class JbiDefaultComponentInfo {
 
     private JbiDefaultComponentInfo() {
     }
-    
+    /** 
+     * Initializes the class and loads the data from the layer filesystem. This can be
+     * used to initialize this object after creation or to reload the data when the 
+     * layer filesystem changes.
+     */
+    protected void init() {
+        
+        componentList = new ArrayList<JBIComponentStatus>();
+        componentMap = new HashMap<String, JBIComponentStatus>();
+        bcIconMap = new HashMap<String, URL>();
+        bindingInfoHash = new HashMap<String, JbiBindingInfo>();
+        bindingInfoList = new ArrayList<JbiBindingInfo>();
+        
+        try {
+            FileSystem fileSystem = Repository.getDefault().getDefaultFileSystem();
+
+            // load new container first
+            FileObject wsdlEditorFolderFO = fileSystem.findResource(WSDLEDITOR_NAME);
+            loadJbiDefaultComponentInfoForSDLEditor(wsdlEditorFolderFO);
+
+            // load new container first
+            FileObject compFolderFO = fileSystem.findResource(COMP_RESOURCE_NAME);
+            loadJbiDefaultComponentInfoFromFileObject(compFolderFO);
+
+            // backward compatibility
+            FileObject sbCompFolderFO = fileSystem.findResource(SB_COMP_RESOURCE_NAME);
+            loadJbiDefaultComponentInfoFromFileObject(sbCompFolderFO);
+
+        } catch (Exception ex) {
+            sLogger.log(Level.FINE, ex.getMessage(), ex);
+        }        
+    }
     /**
      * Factory method for the default component list object
      *
@@ -155,30 +206,18 @@ public class JbiDefaultComponentInfo {
         if (singleton == null) {
             try {
                 singleton = new JbiDefaultComponentInfo();
-                
-                FileSystem fileSystem = Repository.getDefault().getDefaultFileSystem();
-               
-                // load new container first
-                FileObject fo = fileSystem.findResource(WSDLEDITOR_NAME);
-                loadJbiDefaultComponentInfoForSDLEditor(fo);
-
-                // load new container first
-                fo = fileSystem.findResource(COMP_RESOURCE_NAME);
-                loadJbiDefaultComponentInfoFromFileObject(fo);
-                
-                // backward compatibility
-                fo = fileSystem.findResource(SB_COMP_RESOURCE_NAME);
-                loadJbiDefaultComponentInfoFromFileObject(fo);
-
+                singleton.init(); // don't fire change event until change support is initialized.
+                changeSupport = new ChangeSupport(singleton);
+                lfsListener = new LayerFSChangeListener();
             } catch (Exception ex) {
                 // failed... return withopt changing the selector content.
                 ex.printStackTrace();
             }
-        }
-        
+        }       
         return singleton;
     }
 
+    
     private static void loadJbiDefaultComponentInfoForSDLEditor(FileObject fo) { // Register Binding Component Icon: WSDLEditor/Binding/{FileBinding, ...}
         if (fo != null) {
             DataFolder df = DataFolder.findFolder(fo);
@@ -186,7 +225,7 @@ public class JbiDefaultComponentInfo {
 
             for (int i = 0; i < bs.length; i++) {
                 String name = bs[i].getName();
-                if (name.equalsIgnoreCase("binding")) {
+                if (name.equalsIgnoreCase("binding")) { //NOI18N
                     DataObject[] ms = DataFolder.findFolder(bs[i].getPrimaryFile()).getChildren();
                     for (int j = 0; j < ms.length; j++) {
                         String bname = ms[j].getName().toLowerCase(); // e.x., filebinding
@@ -288,7 +327,43 @@ public class JbiDefaultComponentInfo {
             singleton.bindingInfoList.add(biinfo);
         }
     }
-
+    /**
+     * reloads the model from the layer filesystem and notifies the change listeners
+     * of this model about the change.
+     */
+    public void reload() {
+        sLogger.fine("in reloading JbiDefaultComponentInfo......"); //NOI18N
+        init();
+        // fire change event until change support is initialized.
+        if ( changeSupport != null ) {
+            fireChangeEvent();
+        }
+    }
+    /**
+     * add change listener
+     * @param listener
+     */
+    public void addChangeListener (ChangeListener listener) {
+        // remove the listener if it is previously added
+        changeSupport.removeChangeListener(listener);
+        // add it now. 
+        changeSupport.addChangeListener(listener);
+    }
+    /**
+     * removes the change listener
+     * @param listener
+     */
+    public void removeChangeListener (ChangeListener listener) {
+        sLogger.fine("removing the jbi def comp info change listener..."); //NOI18N
+        changeSupport.removeChangeListener(listener);
+    }
+    /**
+     * fires the change event 
+     */
+    protected void fireChangeEvent() {
+        changeSupport.fireChange();        
+    }
+    
     /**
      * getter for the default component list
      *
@@ -386,5 +461,89 @@ public class JbiDefaultComponentInfo {
             }
         }
         return null;
+    }
+    /**
+     * This class provides the implementation that can be used to monitor
+     * the layer filesytem chagnes correpsonding to the jbi component folder
+     * and reload the JbiDefaultComponent model.
+     */
+    private static class LayerFSChangeListener {
+
+        private FileChangeListener mFileChangeListener = null;
+        private RequestProcessor mReqProcessor = null;
+        private Runnable mRunnable;
+        /**
+         * constructor
+         */
+        public LayerFSChangeListener() {
+            initRequestProcessor();
+            initFileChangeAdapter();
+            registerFileChangeListener();
+        }
+        /**
+         * creates a request processor that will reload the model in a separate thread.
+         */
+        private void initRequestProcessor() {
+            if (mReqProcessor == null) {
+                mReqProcessor = new RequestProcessor("NewJbiPluginInstalled", 1); //NOI18N
+                mRunnable = new Runnable() {
+
+                    public void run() {
+                        sLogger.fine("Running NewJbiPluginInstalled RequestProcessor"); //NOI18N
+                        if ( singleton != null ) {
+                            singleton.reload();
+                        }
+                    }
+                };
+            }
+        }
+        /**
+         * initializes the file change lisnter implementation for the layer
+         * filesystem
+         */
+        private void initFileChangeAdapter() {
+            if ( mFileChangeListener != null) {
+                sLogger.fine("Layer FS FileChangeListener already created"); //NOI18N
+                return;
+            }
+            mFileChangeListener = new FileChangeAdapter() {
+
+                @Override
+                public void fileFolderCreated(FileEvent fe) {
+                    onFileFolderCreated(fe);
+                }
+            };
+        }
+        /**
+         * reloads the model on a change in the jbi component folders
+         * @param fe
+         */
+        private void onFileFolderCreated(FileEvent fe) {
+            boolean refresh = false;
+            FileObject fo = fe.getFile();
+            FileObject parentFO = fo.getParent();
+            String parentPath = null;
+            if (parentFO != null) {
+                parentPath = parentFO.getNameExt();
+            }
+            if (COMP_RESOURCE_NAME.equals(parentPath) ||
+                    SB_COMP_RESOURCE_NAME.equals(parentPath)) {
+                refresh = true;
+            }
+            if (refresh) {
+                int timeToWait = 5000;
+                sLogger.fine("in LayerFS file folder created. post reload. " + fe.getFile().getNameExt()); //NOI18N
+                mReqProcessor.post(mRunnable, timeToWait);
+            }
+        }
+        /**
+         * registers the file change listener on the layer filesystem.
+         */
+        private void registerFileChangeListener() {
+            FileSystem fileSystem = Repository.getDefault().getDefaultFileSystem();
+            // listen on filesystem for changes to the jbi component folder
+            //TODO: use weak listener
+            fileSystem.addFileChangeListener(mFileChangeListener);
+        }
     }
 }

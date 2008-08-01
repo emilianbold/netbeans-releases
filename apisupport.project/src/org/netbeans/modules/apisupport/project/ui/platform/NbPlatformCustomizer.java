@@ -333,11 +333,11 @@ public final class NbPlatformCustomizer extends JPanel {
     private void initPanel(BasicWizardPanel panel, WizardDescriptor wd, int i) {
         panel.setSettings(wd);
         JComponent jc = (JComponent) panel.getComponent();
-        jc.putClientProperty("WizardPanel_autoWizardStyle", Boolean.TRUE); // NOI18N
-        jc.putClientProperty("WizardPanel_contentDisplayed", Boolean.TRUE); // NOI18N
-        jc.putClientProperty("WizardPanel_contentNumbered", Boolean.TRUE); // NOI18N
-        jc.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(i)); // NOI18N
-        jc.putClientProperty("WizardPanel_contentData", new String[] { // NOI18N
+        jc.putClientProperty(WizardDescriptor.PROP_AUTO_WIZARD_STYLE, Boolean.TRUE); // NOI18N
+        jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DISPLAYED, Boolean.TRUE); // NOI18N
+        jc.putClientProperty(WizardDescriptor.PROP_CONTENT_NUMBERED, Boolean.TRUE); // NOI18N
+        jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer(i)); // NOI18N
+        jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, new String[] { // NOI18N
             CHOOSER_STEP, INFO_STEP
         });
     }

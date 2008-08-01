@@ -51,6 +51,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.util.*;
 
@@ -366,7 +367,7 @@ public final class CsmInheritanceUtilities {
         for (Iterator it = base.iterator(); it.hasNext();) {
             CsmInheritance curInh = (CsmInheritance) it.next();
             List<CsmInheritance> curInhRes = new ArrayList<CsmInheritance>();
-            if (findInheritanceChain(curInh.getCsmClass(), parent, curInhRes, handledClasses)) {
+            if (findInheritanceChain(getCsmClass(curInh), parent, curInhRes, handledClasses)) {
                 bestChain = curInhRes;
                 bestInh = curInh;
                 // TODO: comment as above
@@ -383,13 +384,22 @@ public final class CsmInheritanceUtilities {
         return false;
     }
 
+    public static CsmClass getCsmClass(CsmInheritance inh) {
+        CsmClassifier classifier = inh.getClassifier();
+        classifier = CsmBaseUtilities.getOriginalClassifier(classifier);
+        if (CsmKindUtilities.isClass(classifier)) {
+            return (CsmClass)classifier;
+        }
+        return null;
+    }
+
     private static CsmInheritance findDirectInheritance(CsmClass child, CsmClass parent) {
         assert (parent != null);
         Collection base = child.getBaseClasses();
         if (base != null && base.size() > 0) {
             for (Iterator it = base.iterator(); it.hasNext();) {
                 CsmInheritance curInh = (CsmInheritance) it.next();
-                if (curInh.getCsmClass() == parent) {
+                if (getCsmClass(curInh) == parent) {
                     return curInh;
                 }
             }

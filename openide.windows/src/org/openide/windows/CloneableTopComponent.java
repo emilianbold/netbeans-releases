@@ -41,6 +41,8 @@
 
 package org.openide.windows;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
@@ -54,6 +56,7 @@ import java.util.Iterator;
 import java.util.Set;
 import org.openide.util.NbBundle;
 import org.openide.util.io.NbMarshalledObject;
+import org.openide.util.WeakListeners;
 
 /** A top component which may be cloned.
 * Typically cloning is harmless, i.e. the data contents (if any)
@@ -86,6 +89,12 @@ public abstract class CloneableTopComponent extends TopComponent implements Exte
 
     /** reference with list of components */
     private Ref ref;
+    
+    /** flag that is true for last activated CloneableTopComponent
+     * in its sisters list
+     * Fix for IZ#124647 - method selection in navigator focuses to wrong window 
+     */
+    private boolean isLastActivated;
 
     /** Create a cloneable top component.
     */
@@ -235,6 +244,18 @@ public abstract class CloneableTopComponent extends TopComponent implements Exte
 
         oo.writeObject(ref);
     }
+    
+    private boolean isLastActive(){
+        return isLastActivated;
+    }
+    
+    private void setLastActivated(){
+        isLastActivated = true;
+    }
+    
+    private void unsetLastActivated(){
+        isLastActivated = false;
+    }
 
     /** Keeps track of a group of sister clones.
     * <P>
@@ -252,10 +273,36 @@ public abstract class CloneableTopComponent extends TopComponent implements Exte
 
         /** Set of registered components. */
         private transient /*final*/ Set<CloneableTopComponent> componentSet = new HashSet<CloneableTopComponent>(7);
+        
+        private transient PropertyChangeListener myComponentSetListener;
 
         /** Default constructor for creating empty reference.
         */
         protected Ref() {
+            // Fix for IZ#124647 - method selection in navigator focuses to wrong window
+            myComponentSetListener = new PropertyChangeListener(){
+
+                public void propertyChange( PropertyChangeEvent evt ) {
+                    Object activated = evt.getNewValue();
+                    Object deactivated = evt.getOldValue();
+                    boolean activatedInSet = false;
+                    synchronized (LOCK) {
+                        activatedInSet = componentSet.contains( activated )
+                        && componentSet.contains( deactivated );
+                    }
+                    if ( activatedInSet ){
+                        ((CloneableTopComponent)activated).setLastActivated();
+                        ((CloneableTopComponent)deactivated).unsetLastActivated();
+                    }
+                    
+                }
+                
+            };
+            PropertyChangeListener listener = WeakListeners.propertyChange( 
+                        myComponentSetListener , 
+                        WindowManager.getDefault().getRegistry());
+            WindowManager.getDefault().getRegistry().addPropertyChangeListener( 
+                    listener );
         }
 
         /** Constructor.
@@ -315,13 +362,15 @@ public abstract class CloneableTopComponent extends TopComponent implements Exte
                     return (CloneableTopComponent) activated;
                 }
 
-                Iterator<CloneableTopComponent> it = componentSet.iterator();
-
-                if (it.hasNext()) {
-                    return it.next();
-                } else {
-                    return null;
+                //Fix for IZ#124647 - method selection in navigator focuses to wrong window
+                CloneableTopComponent result =null;
+                for( CloneableTopComponent comp : componentSet ){
+                    result = comp;
+                    if ( comp.isLastActive() ){
+                        break;
+                    }
                 }
+                return result;
             }
         }
 
@@ -376,4 +425,5 @@ public abstract class CloneableTopComponent extends TopComponent implements Exte
         }
     }
      // end of Ref
+    
 }

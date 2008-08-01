@@ -40,6 +40,8 @@
  */
 
 
+
+
 package org.netbeans.modules.uml.ui.support.archivesupport;
 
 import java.io.IOException;
@@ -52,6 +54,7 @@ import org.dom4j.Element;
 import org.dom4j.Node;
 
 import org.netbeans.modules.uml.common.generics.ETPairT;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.UMLXMLManip;
 import org.netbeans.modules.uml.core.support.umlsupport.XMLManip;
 import org.netbeans.modules.uml.core.support.umlutils.ETArrayList;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
@@ -124,13 +127,12 @@ public class ProductArchiveImpl implements IProductArchive
                     setArchiveFilename(sFilename);
                     if ((m_Document != null) && (m_Loaded))
                     {
-                            retVal = XMLManip.savePretty(m_Document, m_ArchiveFilename);
+                            XMLManip.savePretty(m_Document, m_ArchiveFilename);
+                            retVal = true;
                     }
                 }
 		return retVal;
 	}
-        
-        
 
 	/**
 	 * Temporarily loads the xml file sFilename and populates our list of archive elements.
@@ -706,4 +708,23 @@ public class ProductArchiveImpl implements IProductArchive
       return element != null &&
            element.getAttribute(IProductArchiveDefinitions.TABLE_ENTRY_DELETED) != null;
    }
+   
+      public IProductArchiveElement getDiagramElement(String sID)
+    {
+        if (m_Document != null && m_Loaded && sID != null && sID.length() > 0)
+        {
+            Element root = m_Document.getRootElement();
+            if (root != null)
+            {
+                String query = ".//" + sID;
+                Node foundNode = XMLManip.selectSingleNode(root, query);
+                if (foundNode instanceof Element)
+                {
+                    return new ProductArchiveElementImpl((Element) foundNode);
+                }
+            }
+        }
+        return null;
+    }
+
 }

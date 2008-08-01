@@ -61,13 +61,11 @@ import java.util.Map;
 import java.util.Set;
 import javax.swing.DefaultListModel;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
 import javax.swing.ListModel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.filechooser.FileFilter;
-import javax.swing.filechooser.FileSystemView;
 import javax.swing.filechooser.FileView;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -505,12 +503,13 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
         }
 
         FileUtil.preventFileChooserSymlinkTraversal(chooser, currDir);
-        chooser.setFileView( new ProjectFileView( chooser.getFileSystemView() ) );
+        new ProjectFileView(chooser);
 
         return chooser;
 
     }
 
+    @Override
     public void removeNotify() { // #72006
         super.removeNotify();
         if (modelUpdater != null) { // #101286 - might be already null
@@ -525,16 +524,19 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
 
     private static class ProjectFileChooser extends JFileChooser {
 
+        @Override
         public void approveSelection() {
-            File dir = FileUtil.normalizeFile(getSelectedFile());
+            File selectedFile = getSelectedFile();
+            if (selectedFile != null) {
+                File dir = FileUtil.normalizeFile(selectedFile);
 
-            if ( isProjectDir( dir ) && getProject( dir ) != null ) {
-                super.approveSelection();
+                if ( isProjectDir( dir ) && getProject( dir ) != null ) {
+                    super.approveSelection();
+                }
+                else {
+                    setCurrentDirectory( dir );
+                }
             }
-            else {
-                setCurrentDirectory( dir );
-            }
-
         }
 
 
@@ -563,19 +565,19 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
 
     }
 
-    private static class ProjectFileView extends FileView {
+    private static class ProjectFileView extends FileView implements Runnable {
 
-        private static final Icon BADGE = new ImageIcon(Utilities.loadImage("org/netbeans/modules/project/ui/resources/projectBadge.gif")); // NOI18N
-        private static final Icon EMPTY = new ImageIcon(Utilities.loadImage("org/netbeans/modules/project/ui/resources/empty.gif")); // NOI18N
+        private final JFileChooser chooser;
+        private final Map<File,Icon> knownProjectIcons = new HashMap<File,Icon>();
+        private final RequestProcessor.Task task = RequestProcessor.getDefault().create(this);
+        private File lookingForIcon;
 
-        private FileSystemView fsv;
-        private Icon lastOriginal;
-        private Icon lastMerged;
-
-        public ProjectFileView( FileSystemView fsv ) {
-            this.fsv = fsv;
+        public ProjectFileView(JFileChooser chooser) {
+            this.chooser = chooser;
+            chooser.setFileView(this);
         }
 
+        @Override
         public Icon getIcon(File _f) {
             if (!_f.exists()) {
                 // Can happen when a file was deleted on disk while project
@@ -584,62 +586,37 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
                 return null;
             }
             File f = FileUtil.normalizeFile(_f);
-            Icon original = fsv.getSystemIcon(f);
-            if (original == null) {
-                // L&F (e.g. GTK) did not specify any icon.
-                original = EMPTY;
-            }
             if ( isProjectDir( f ) ) {
-                if ( original.equals( lastOriginal ) ) {
-                    return lastMerged;
+                synchronized (this) {
+                    Icon icon = knownProjectIcons.get(f);
+                    if (icon != null) {
+                        return icon;
+                    } else if (lookingForIcon == null) {
+                        lookingForIcon = f;
+                        task.schedule(100);
+                        // Only calculate one at a time.
+                        // When the view refreshes, the next unknown icon
+                        // should trigger the task to be reloaded.
+                    }
                 }
-                lastOriginal = original;
-                lastMerged = new MergedIcon(original, BADGE, -1, -1);
-                return lastMerged;
             }
-            else {
-                return original;
-            }
+            return chooser.getFileSystemView().getSystemIcon(f);
         }
 
-
-    }
-
-    private static class MergedIcon implements Icon {
-
-        private Icon icon1;
-        private Icon icon2;
-        private int xMerge;
-        private int yMerge;
-
-        MergedIcon( Icon icon1, Icon icon2, int xMerge, int yMerge ) {
-
-            this.icon1 = icon1;
-            this.icon2 = icon2;
-
-            if ( xMerge == -1 ) {
-                xMerge = icon1.getIconWidth() - icon2.getIconWidth();
+        public void run() {
+            Project p = OpenProjectList.fileToProject(lookingForIcon);
+            Icon icon;
+            if (p != null) {
+                icon = ProjectUtils.getInformation(p).getIcon();
+            } else {
+                // Could also badge with an error icon:
+                icon = chooser.getFileSystemView().getSystemIcon(lookingForIcon);
             }
-
-            if ( yMerge == -1 ) {
-                yMerge = icon1.getIconHeight() - icon2.getIconHeight();
+            synchronized (this) {
+                knownProjectIcons.put(lookingForIcon, icon);
+                lookingForIcon = null;
             }
-
-            this.xMerge = xMerge;
-            this.yMerge = yMerge;
-        }
-
-        public int getIconHeight() {
-            return Math.max( icon1.getIconHeight(), yMerge + icon2.getIconHeight() );
-        }
-
-        public int getIconWidth() {
-            return Math.max( icon1.getIconWidth(), yMerge + icon2.getIconWidth() );
-        }
-
-        public void paintIcon(java.awt.Component c, java.awt.Graphics g, int x, int y) {
-            icon1.paintIcon( c, g, x, y );
-            icon2.paintIcon( c, g, x + xMerge, y + yMerge );
+            chooser.repaint();
         }
 
     }

@@ -190,9 +190,29 @@ public class StreamTerm extends Term {
 	public void run() {
 	    Trampoline tramp = new Trampoline();
 
+            // A note on catching IOExceptions:
+            //
+            // In general a close of the fd's writing to 'reader' should
+            // generate an EOF and cause 'read' to return -1.
+            // However, in practice we get miscellaneous bizarre behaviour:
+            // - On linux, with non-packet ptys, we get an
+            //   "IOException: Input/output" error ultimately from an EIO
+            //   returned by read(2).
+            //   I suspect this to be a linux bug which hasn't become visible
+            //   because single-threaded termulators like xterm on konsole
+            //   use poll/select and after detecting an exiting child just
+            //   remove the fd from poll and close it etc. I.e. they don't depend 
+            //   on read seeing on EOF.
+            // At least one java based termulator I've seen also doesn't
+            // bother with -1 and silently handles IOException as here.
+
 	    try {
 		while(true) {
-		    int nread = reader.read(buf, 0, BUFSZ);
+		    int nread = -1;
+                    try {
+                        nread = reader.read(buf, 0, BUFSZ);
+                    } catch (IOException x) {
+                    }
 		    if (nread == -1) {
 			// This happens if someone closes the input stream,
 			// say the master end of the pty.

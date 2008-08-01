@@ -58,28 +58,36 @@ import org.netbeans.modules.cnd.classview.resources.I18n;
 public class GoToDeclarationAction extends AbstractAction {
     
     private final CsmOffsetable csmObject;
+    private boolean more;
     
     public GoToDeclarationAction(CsmOffsetable csmObject) {
+        this(csmObject, false);
+    }
+
+    public GoToDeclarationAction(CsmOffsetable csmObject, boolean more) {
         this.csmObject = csmObject;
+        this.more = more;
         putValue(Action.NAME, I18n.getMessage("LBL_GoToDeclaration")); //NOI18N
     }
     
     public void actionPerformed(ActionEvent e) {
         CsmOffsetable target = csmObject;
-        if (CsmKindUtilities.isFunctionDeclaration((CsmObject)csmObject)){
-            CsmFunctionDefinition def = ((CsmFunction)csmObject).getDefinition();
-            if (def != null){
-                target = def;
-            } else {
-                CsmReference ref = CsmFunctionDefinitionResolver.getDefault().getFunctionDefinition((CsmFunction)csmObject);
-                if (ref != null){
-                    target = ref;
+        if (!more) {
+            if (CsmKindUtilities.isFunctionDeclaration((CsmObject)csmObject)){
+                CsmFunctionDefinition def = ((CsmFunction)csmObject).getDefinition();
+                if (def != null){
+                    target = def;
+                } else {
+                    CsmReference ref = CsmFunctionDefinitionResolver.getDefault().getFunctionDefinition((CsmFunction)csmObject);
+                    if (ref != null){
+                        target = ref;
+                    }
                 }
-            }
-        } else if(CsmKindUtilities.isVariableDeclaration((CsmObject)csmObject)){
-            CsmVariableDefinition def = ((CsmVariable)csmObject).getDefinition();
-            if (def != null){
-                target = def;
+            } else if(CsmKindUtilities.isVariableDeclaration((CsmObject)csmObject)){
+                CsmVariableDefinition def = ((CsmVariable)csmObject).getDefinition();
+                if (def != null){
+                    target = def;
+                }
             }
         }
         CsmUtilities.openSource(target);

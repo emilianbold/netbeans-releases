@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<palette_item version="1.0">
+  <element name="Permission" />
+  <icon16 urlvalue="nbres:/org/netbeans/modules/uml/resources/images/permission.png" />
+  <icon32 urlvalue="nbres:/org/netbeans/modules/uml/resources/images/permission-32.png" />
+
+  <description localizing-bundle="org.netbeans.modules.uml.diagrams.resources.context.Bundle"
+               display-name-key="NAME_Permission" 
+               tooltip-key="HINT_Permission" />
+</palette_item>

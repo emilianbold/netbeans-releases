@@ -82,6 +82,7 @@ public class CsmWhereUsedQueryPluginTestCaseBase extends RefactoringBaseTestCase
 
     public CsmWhereUsedQueryPluginTestCaseBase(String testName) {
         super(testName);
+        System.setProperty("cnd.test.skip.coloring", "true");
     }  
 
     protected void performWhereUsed(String source, int line, int column, Map params) throws Exception {

@@ -41,13 +41,16 @@
 
 package org.netbeans.modules.web.wizards;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 import java.util.StringTokenizer;
-
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import org.openide.util.NbBundle;
-
 import org.netbeans.modules.j2ee.dd.api.common.InitParam;
 import org.netbeans.modules.j2ee.dd.api.web.Filter;
 import org.netbeans.modules.j2ee.dd.api.web.FilterMapping;
@@ -63,6 +66,7 @@ import org.netbeans.modules.j2ee.dd.api.web.ServletMapping;
  */
 class ServletData extends DeployData { 
 
+    private static final Logger LOG = Logger.getLogger(ServletData.class.getName());
     private static final Pattern VALID_URI_PATTERN = Pattern.compile("[-_.!~*'();/?:@&=+$,a-zA-Z0-9]+"); // NOI18N
 
     private String errorMessage = null; 
@@ -70,11 +74,11 @@ class ServletData extends DeployData {
     // These are URL mappings - they're used by both Servlets and Filters
     private String[] urlMappings = null; 
     // These are mappings to servlet names - used by Filters only
-    private ArrayList filterMappings = null; 
+    private List<FilterMappingData> filterMappings = null; 
     private String[][] initparams = null; 
     private boolean paramOK = true; 
+    private String duplicitParam = null;
     private FileType fileType = null; 
-    private static final boolean debug = false;
     private boolean addToDD=true;
 
     ServletData(FileType fileType) {
@@ -102,47 +106,41 @@ class ServletData extends DeployData {
 	    try { 
 		names[i] = ss[i].getServletName(); 
 	    }
-	    catch(Exception e) { 
+	    catch(Exception e) {
+                LOG.log(Level.FINE, "error", e);
 		names[i] = ""; 
 	    } 
 	}
 	return names; 
     } 
 
-    java.util.List getUrlPatterns () {
+    private List<String> getUrlPatterns () {
 	if(webApp == null) { 
-	    if(debug) log("\tNo web app, return null"); //NOI18N
-	    return new ArrayList(); 
+	    return new ArrayList<String>();
 	}
         ServletMapping[] maps = webApp.getServletMapping();
-        java.util.List l = new ArrayList();
+        List<String> l = new ArrayList<String>();
         for (int i=0;i<maps.length;i++) {
             l.add(maps[i].getUrlPattern());
         }
         return l;
     }
     
-    ArrayList getFilterMappings() { 
-
-	if(debug) log("::getFilterMappings()"); //NOI18N
+    List<FilterMappingData> getFilterMappings() { 
 	if(webApp == null) { 
-	    if(debug) log("\tNo web app, return null"); //NOI18N
-	    return new ArrayList(); 
+	    return Collections.emptyList();
 	} 
 	if(filterMappings != null) { 
-	    if(debug) log("\tFilter mappings already exist"); //NOI18N
 	    return filterMappings; 
 	}
 
-	if(debug) log("\tCreating the filter mapping list"); //NOI18N
+	LOG.finer("Creating the filter mapping list"); //NOI18N
 	FilterMapping[] fm = webApp.getFilterMapping();
-	if(debug) { 
-	    log("\tOrder of mappings according to DD APIs"); //NOI18N
-	    for(int i=0; i<fm.length; ++i) 
-		log("\tServlet name: " + fm[i].getFilterName()); //NOI18N
-	}
+        LOG.finer("Order of mappings according to DD APIs"); //NOI18N
+        for(int i=0; i<fm.length; ++i) 
+            LOG.finer("Servlet name: " + fm[i].getFilterName()); //NOI18N
 
-	filterMappings = new ArrayList(); 
+	filterMappings = new ArrayList<FilterMappingData>(); 
 	filterMappings.add(new FilterMappingData(getName())); 
 
 	String string; 
@@ -171,6 +169,7 @@ class ServletData extends DeployData {
 		}
 	    }
 	    catch(Exception ex) { 
+                LOG.log(Level.FINE, "error", ex);
 		// Not supported
 		filterMappings.add(fmd); 
 		continue; 
@@ -180,10 +179,8 @@ class ServletData extends DeployData {
 		d = fm[i].getDispatcher(); 
 	    }
 	    catch(Exception ex) { 
-		if(debug) { 
-		    log(ex.toString()); 
-		    ex.printStackTrace(); 
-		}
+                LOG.log(Level.FINE, "error", ex);
+                
 		// PENDING ... 
 		// Servlet 2.3
 	    } 
@@ -194,7 +191,7 @@ class ServletData extends DeployData {
 		dispatchList = new FilterMappingData.Dispatcher[d.length];
 		for(int j=0; j<d.length; ++j) { 
 		    dispatchList[j] = FilterMappingData.Dispatcher.findDispatcher(d[j]); 
-		    if(debug) log("\tDispatch: " + dispatchList[j]);//NOI18N
+		    LOG.finer("Dispatch: " + dispatchList[j]);//NOI18N
 		}
 	    } 
 	    fmd.setDispatcher(dispatchList); 
@@ -203,25 +200,19 @@ class ServletData extends DeployData {
 	return filterMappings; 
     } 
 
-    void setFilterMappings(ArrayList fmds) { 
-	if(debug) log("::setFilterMappings()"); 
+    void setFilterMappings(List<FilterMappingData> fmds) {
 	filterMappings = fmds; 
     }
 	
-    void updateFilterMappings(String oldName, String newName) { 
-	if(debug) 
-	    log("::updateFilterMappings("+oldName+", " + newName + "),"); //NOI18N
-	Iterator i = getFilterMappings().iterator(); 
-	// No web app
-	if(i == null) return; 
-	FilterMappingData fmd; 
+    private void updateFilterMappings(String oldName, String newName) { 
+	Iterator<FilterMappingData> i = getFilterMappings().iterator();
 	while(i.hasNext()) { 
-	    fmd = (FilterMappingData)i.next();
+	    FilterMappingData fmd = i.next();
 	    if(fmd.getName().equals(oldName)) fmd.setName(newName); 
 	}
     } 
 
-    boolean isNameUnique() { 
+    private boolean isNameUnique() { 
 	if(webApp == null) return true; 
 	Servlet[] ss = webApp.getServlet();
 	for (int i=0; i<ss.length; i++) {
@@ -284,7 +275,6 @@ class ServletData extends DeployData {
     
 
     String getUrlMappingsAsString() { 
-
 	if(urlMappings == null || urlMappings.length == 0 ) return ""; //NOI18N
 	StringBuffer buf = new StringBuffer(); 
 	int index = 0; 
@@ -299,15 +289,12 @@ class ServletData extends DeployData {
     } 
 
     void parseUrlMappingString(String raw) { 
-
 	urlMappings = null; 
 	StringTokenizer st = new StringTokenizer(raw, ",");
-	ArrayList list = new ArrayList(); 
-	String mapping; 
-	String[] names = getServletNames(); 
+	List<String> list = new ArrayList<String>(); 
 
 	while(st.hasMoreTokens()) { 
-	    mapping = st.nextToken().trim(); 
+	    String mapping = st.nextToken().trim(); 
 	    if(mapping.length() == 0) 
 		continue; 
 	    list.add(mapping); 
@@ -322,44 +309,26 @@ class ServletData extends DeployData {
 	return initparams; 
     } 
 
-    void setInitParams(String[][] initparams, boolean paramOK) { 
+    void setInitParams(String[][] initparams, boolean paramOK, String duplicitParam) { 
 	this.initparams = initparams; 
 	this.paramOK = paramOK; 
+        this.duplicitParam = duplicitParam;
     } 
-
-    int getNumInitParams() { 
-	if(initparams == null) return 0; 
-	return initparams.length; 
-    } 
-
-    boolean isParamOK() { 
-	return paramOK; 
-    } 
-
-    void setParamOK(boolean paramOK) { 
-	this.paramOK = paramOK; 
-    } 
-
 
     boolean isValid() {
-	if(debug) log("::isValid()"); //NOI18N
 	errorMessage = new String(); 
 	if(webApp == null) return true;
         if (!isAddToDD()) return true;
 
 	if(getName().length() == 0) {
-	    errorMessage = NbBundle.getMessage(ServletData.class, 
-					       "MSG_no_name"); 
+	    errorMessage = NbBundle.getMessage(ServletData.class, "MSG_no_name"); 
 	    return false; 
 	} 
 
 	if(!isNameUnique()) { 
-	    errorMessage = NbBundle.getMessage(ServletData.class, 
-					       "MSG_name_unique"); 
+	    errorMessage = NbBundle.getMessage(ServletData.class, "MSG_name_unique"); 
 	    return false; 
 	} 
-
-	if(debug) log("\tname is fine"); //NOI18N
 
 	if(fileType == FileType.SERVLET) { 
 	    if(!checkMappingsForServlet()) return false; 
@@ -369,26 +338,26 @@ class ServletData extends DeployData {
 	    if(!checkMappingsForFilter()) return false; 
 	}
 	
-	if(!isParamOK()) { 
-	    errorMessage = NbBundle.getMessage(ServletData.class, 
-					       "MSG_invalid_param"); 
+	if(!paramOK) {
+	    errorMessage = NbBundle.getMessage(ServletData.class, "MSG_invalid_param"); 
 	    return false; 
 	}
 
-	if(debug) log("\tparams are fine"); //NOI18N
+	if(duplicitParam != null) {
+	    errorMessage = NbBundle.getMessage(ServletData.class, "MSG_duplicit_param", duplicitParam);
+	    return false;
+	}
+        
 	return true; 
     }
 
 
-    boolean checkMappingsForServlet() { 
-
+    private boolean checkMappingsForServlet() { 
 	errorMessage = new String();
         String[] mappings = getUrlMappings();
 	if(mappings == null || mappings.length == 0) { 
-
-	    if(debug) log("\tNo URL mappings"); //NOI18N
-	    errorMessage = NbBundle.getMessage(ServletData.class, 
-					       "MSG_no_mapping"); 
+	    LOG.finer("No URL mappings"); //NOI18N
+	    errorMessage = NbBundle.getMessage(ServletData.class, "MSG_no_mapping"); 
 	    return false; 
 	}
         for (int i=0;i<mappings.length;i++) {
@@ -398,72 +367,64 @@ class ServletData extends DeployData {
                 return false; 
             }
         }
-	if(debug) log("\tmappings are fine"); //NOI18N
 	return true; 
     }
     
-    boolean checkServletDuplicitMappings() { 
+    private boolean checkServletDuplicitMappings() { 
 	errorMessage = new String(); 
         String[] newMappings = getUrlMappings();
-        java.util.List urlPatterns = getUrlPatterns();
+        List<String> urlPatterns = getUrlPatterns();
         for (int i=0;i<newMappings.length;i++) {
-            Iterator it = urlPatterns.iterator();
+            Iterator<String> it = urlPatterns.iterator();
             while(it.hasNext()) {
-                String urlPattern = (String)it.next();
+                String urlPattern = it.next();
                 if (newMappings[i].equals(urlPattern)) {
-                    if(debug) log("\tDuplicit URL mappings"); //NOI18N
-                    errorMessage = NbBundle.getMessage(ServletData.class, 
-                                                       "MSG_url_pattern_unique"); 
+                    LOG.finer("Duplicit URL mappings"); //NOI18N
+                    errorMessage = NbBundle.getMessage(ServletData.class, "MSG_url_pattern_unique"); 
                     return false;
                 }
             }
             // new Url Patterns need to be compare to each other 
             urlPatterns.add(newMappings[i]);
         }
-	if(debug) log("\tmappings- duplicity - is fine"); //NOI18N
 	return true; 
     }
 
-    boolean checkMappingsForFilter() { 
+    private boolean checkMappingsForFilter() { 
 	errorMessage = new String(); 
 	if(filterMappings == null || filterMappings.size() == 0) { 
- 	    if(debug) log("\tNo mappings"); //NOI18N
-	    errorMessage =  NbBundle.getMessage(ServletData.class, 
-						"MSG_no_mapping"); 
+ 	    LOG.finer("No mappings"); //NOI18N
+	    errorMessage =  NbBundle.getMessage(ServletData.class, "MSG_no_mapping"); 
 	    return false; 
 	}
-	Iterator i = getFilterMappings().iterator(); 
+	Iterator<FilterMappingData> i = getFilterMappings().iterator(); 
 	boolean found = false; 
-	FilterMappingData fmd; 
 	while(i.hasNext()) { 
-	    fmd = (FilterMappingData)(i.next()); 
+	    FilterMappingData fmd = i.next();
 	    if(fmd.getName().equals(getName())) { 
 		found = true; 
 		break;
 	    }
 	}
 	if(!found) {
-	    errorMessage = NbBundle.getMessage(ServletData.class, 
-					       "MSG_no_mapping"); 
+	    errorMessage = NbBundle.getMessage(ServletData.class, "MSG_no_mapping"); 
 	    return false; 
 	}
 	return true; 
     } 
 
     void createDDEntries() { 
-	if(debug) log("::createDDEntries()");
 	if(webApp == null) return; 
-	if(debug) log("\t...adding"); 
 
 	if(fileType == FileType.SERVLET) { 
 	    boolean added = addServlet(); 
 	    if(added) { 
 		addUrlMappings(); 
-		if(debug) log("\t...writing changes"); 
 		try {
 		    writeChanges();
-		} catch (java.io.IOException ex) {
-                    if (debug) ex.printStackTrace();
+		}
+                catch (IOException ex) {
+                    LOG.log(Level.FINE, "error", ex);
 		}
 	    }
 	} 
@@ -471,11 +432,11 @@ class ServletData extends DeployData {
 	    boolean added = addFilter(); 
 	    if(added) { 
 		addFilterMappings(); 
-		if(debug) log("\t...writing changes"); 
 		try {
 		    writeChanges();
-                } catch (java.io.IOException ex) {
-                    if (debug) ex.printStackTrace();
+                }
+                catch (IOException ex) {
+                    LOG.log(Level.FINE, "error", ex);
 		}
 	    }
 	} 
@@ -483,17 +444,13 @@ class ServletData extends DeployData {
 
 
     private boolean addServlet() { 
-
-	if(debug) log("::addServlet()"); //NOI18N
 	if(webApp == null) return false; 
 	Servlet s; 
 	try { 
 	    s = (Servlet)webApp.createBean("Servlet"); //NOI18N
-	    if(debug) log("\tCreated servlet"); //NOI18N
 	} 
-	
 	catch(ClassNotFoundException cnfe) {
-	    if(debug) cnfe.printStackTrace(); 
+            LOG.log(Level.FINE, "servlet creation error", cnfe);
 	    return false; 
 	} 
 
@@ -501,20 +458,14 @@ class ServletData extends DeployData {
 	s.setServletClass(className); 
 
 	int numInitParams = getInitParams().length; 
-
-	if(debug) 
-	    log("\tnum params " + String.valueOf(numInitParams));//NOI18N
-
-
 	for(int i=0; i<numInitParams; ++i) { 
 	    InitParam param; 
 	    try { 
 		param = (InitParam)s.createBean("InitParam"); //NOI18N
-		if(debug) log("\tCreated initparam"); //NOI18N
 	    } 
 
 	    catch(ClassNotFoundException cnfe) { 
-		if(debug) cnfe.printStackTrace(); 
+                LOG.log(Level.FINE, "servlet init parameter creation error", cnfe);
 		continue; 
 	    } 
 
@@ -523,26 +474,19 @@ class ServletData extends DeployData {
 	    s.addInitParam(param); 
 	} 
 
-	if(debug) 
-	    log("\tnum params " + String.valueOf(s.sizeInitParam())); //NOI18N
-
 	webApp.addServlet(s);
 	return true; 
     }
 
 
     private boolean addFilter() { 
-
-	if(debug) log("::addFilter()"); //NOI18N
 	if(webApp == null) return false; 
 	Filter f; 
 	try { 
 	    f = (Filter)webApp.createBean("Filter"); //NOI18N
-	    if(debug) log("\tCreated filter"); //NOI18N
 	} 
-
 	catch(ClassNotFoundException cnfe) {
-	    if(debug) cnfe.printStackTrace(); 
+            LOG.log(Level.FINE, "filter creation error", cnfe);
 	    return false; 
 	} 
 
@@ -550,20 +494,14 @@ class ServletData extends DeployData {
 	f.setFilterClass(className); 
 
 	int numInitParams = getInitParams().length; 
-
-	if(debug) 
-	    log("\tnum params " + String.valueOf(numInitParams));//NOI18N
-
-
 	for(int i=0; i<numInitParams; ++i) { 
 	    InitParam param; 
 	    try { 
 		param = (InitParam)f.createBean("InitParam"); //NOI18N
-		if(debug) log("\tCreated initparam"); //NOI18N
 	    } 
 
 	    catch(ClassNotFoundException cnfe) { 
-		if(debug) cnfe.printStackTrace(); 
+                LOG.log(Level.FINE, "filter init parameter creation error", cnfe);
 		continue; 
 	    } 
 
@@ -572,16 +510,12 @@ class ServletData extends DeployData {
 	    f.addInitParam(param); 
 	} 
 
-	if(debug) 
-	    log("\tnum params " + String.valueOf(f.sizeInitParam())); //NOI18N
-
 	webApp.addFilter(f);
 	return true; 
     }
 
 
     private void addUrlMappings() { 
-
 	if(webApp == null) return; 
 	int numMappings = getUrlMappings().length; 
 	for(int i=0; i<numMappings; ++i) { 
@@ -590,6 +524,7 @@ class ServletData extends DeployData {
 		m = (ServletMapping)webApp.createBean("ServletMapping"); //NOI18N
 	    } 
 	    catch(ClassNotFoundException cnfe) { 
+                LOG.log(Level.FINE, "error", cnfe);
 		return; 
 	    } 
 	    m.setServletName(name); 
@@ -599,60 +534,51 @@ class ServletData extends DeployData {
     }
 
     private void addFilterMappings() { 
-
-	if(debug) log("::addFilterMappings()"); 
 	if(webApp == null) return; 
 
 	// filterMappings cannot be null, or of size zero
 	int numFilterMappings = filterMappings.size(); 
-	Iterator iterator = filterMappings.iterator();
+	Iterator<FilterMappingData> iterator = filterMappings.iterator();
 
 	FilterMapping[] fm = new FilterMapping[numFilterMappings]; 
 
-	FilterMappingData fmd; 
 	for(int i=0; i<numFilterMappings; ++i) { 
-
-	    fmd = (FilterMappingData)(iterator.next()); 
+	    FilterMappingData fmd = iterator.next();
 
 	    try { 
 		fm[i] = (FilterMapping)webApp.createBean("FilterMapping"); //NOI18N
-		if(debug) log("\tCreated filter mapping"); //NOI18N
 	    } 
 	    catch(ClassNotFoundException cnfe) { 
+                LOG.log(Level.FINE, "filter mapping creation error", cnfe);
 		return; 
 	    } 
 
 	    fm[i].setFilterName(fmd.getName()); 
-	    if(debug) log("\tFilter name: " + fmd.getName()); //NOI18N
 	    if(fmd.getType() == FilterMappingData.Type.URL) { 
 		fm[i].setUrlPattern(fmd.getPattern()); 
-		if(debug) log("URL pattern " + fmd.getPattern()); //NOI18N
 	    } 
 	    else {
 		fm[i].setServletName(fmd.getPattern()); 
-		if(debug) log("Servlet pattern " + fmd.getPattern()); //NOI18N
 	    }
 
 	    int length = fmd.getDispatcher().length; 
 	    if(length == 0) { 
-		if(debug) log("\tNo dispatcher, continue"); //NOI18N
+		LOG.finer("No dispatcher, continue"); //NOI18N
 		continue; 
 	    }
 
 	    String[] s = new String[length]; 
 	    FilterMappingData.Dispatcher[] d = fmd.getDispatcher(); 
 	    for(int j=0; j<length; ++j) { 
-		if(debug) log("\tDispatcher: " + d[j].toString()); //NOI18N
 		s[j] = d[j].toString(); 
 	    }
 	    try { 
 		fm[i].setDispatcher(s); 
 	    }
 	    catch(Exception e) {
-		if(debug) log("\tFailed to set dispatcher"); //NOI18N
+                LOG.log(Level.FINE, "Failed to set dispatcher", e);
 		// do nothing, wrong version
 	    }
-	    if(debug) log(fm[i].toString()); 
 	}
 	webApp.setFilterMapping(fm);
     }
@@ -670,10 +596,6 @@ class ServletData extends DeployData {
 	return errorMessage; 
     } 
 
-    void log(String s) { 
-	System.out.println("ServletData" + s); 
-    }
-    
     private String checkServletMappig(String uri) {
         if (!uri.matches("[\\*/].*")) { //NOI18N
             return NbBundle.getMessage(ServletData.class,"MSG_WrongUriStart");
@@ -711,5 +633,6 @@ class ServletData extends DeployData {
     private static boolean isRFC2396URI(String uri) {
         return VALID_URI_PATTERN.matcher(uri).matches();
     }
+    
 }
 

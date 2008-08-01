@@ -103,6 +103,23 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
     <changes>
     
+        <change id="revive-copylib-task">
+            <api name="j2ee-utilities"/>
+            <summary></summary>
+            <version major="1" minor="26"/>
+            <date day="27" month="6" year="2008"/>
+            <author login="dkonecny"/>
+            <compatibility binary="incompatible" source="incompatible" semantic="incompatible"/>
+            <description>
+                <p>
+                    Removal of support for generating  libs.XXX.classpath.libfile.XXX properties
+                    and keeping them up to date. It was replaced with <copylibs> Ant task.
+                    All friend API clients updated.
+                </p>
+            </description>
+            <issue number="134642"/>
+        </change>
+        
         <change id="ProjectTypeRefactorings">
             <api name="j2ee-utilities"/>
             <summary></summary>

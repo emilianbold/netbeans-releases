@@ -27,6 +27,7 @@
  */
 package org.netbeans.modules.cnd.apt.impl.support;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -40,12 +41,17 @@ class PathsCollectionIterator implements Iterator<String> {
     private final List<String> col2;
     private int startIndex;
     
-    public PathsCollectionIterator(List<String> col1, List<String> col2) {
-        this(col1, col2, 0);
-    }
-    
-    public PathsCollectionIterator(List<String> col1, List<String> col2, int startIndex) {
-        this.col1 = col1;
+    public PathsCollectionIterator(List<String> col1, List<String> col2, int startIndex, String baseFolder) {
+        if (baseFolder != null && col1.contains(baseFolder)) {
+            this.col1 = new ArrayList<String>(col1.size());
+            for(String p : col1){
+                if (!baseFolder.equals(p)) {
+                    this.col1.add(p);
+                }
+            }
+        } else {
+            this.col1 = col1;
+        }
         this.col2 = col2;
         this.startIndex = startIndex;
     }

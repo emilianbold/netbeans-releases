@@ -69,6 +69,7 @@
                 <package>org.netbeans.modules.xml.xpath.ext.metadata</package>
                 <package>org.netbeans.modules.xml.xpath.ext.metadata.impl.images</package>
                 <package>org.netbeans.modules.xml.xpath.ext.schema</package>
+                <package>org.netbeans.modules.xml.xpath.ext.schema.resolver</package>
                 <package>org.netbeans.modules.xml.xpath.ext.spi</package>
                 <package>org.netbeans.modules.xml.xpath.ext.spi.validation</package>
                 <package>org.netbeans.modules.xml.xpath.ext.visitor</package>

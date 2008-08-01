@@ -39,7 +39,11 @@
 
 package org.netbeans.modules.javascript.editing;
 
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.Set;
 import org.netbeans.modules.gsf.api.ElementKind;
+import org.netbeans.modules.gsf.api.Modifier;
 
 /**
  *
@@ -47,8 +51,8 @@ import org.netbeans.modules.gsf.api.ElementKind;
  */
 public class IndexedPackage extends IndexedElement {
     
-    IndexedPackage(String name, String in, JsIndex index, String fileUrl, String attributes, int flags, ElementKind kind) {
-        super(name, in, index, fileUrl, attributes, flags, kind);
+    IndexedPackage(String fqn, String name, String in, JsIndex index, String fileUrl, String attributes, int flags, ElementKind kind) {
+        super(fqn, name, in, index, fileUrl, attributes, flags, kind);
     }
     
     @Override
@@ -74,5 +78,65 @@ public class IndexedPackage extends IndexedElement {
     @Override
     public String getType() {
         return null;
+    }
+    
+    @Override
+    public Set<Modifier> getModifiers() {
+        return Collections.emptySet();
+    }
+
+    @Override
+    public boolean isDeprecated() {
+        return false;
+    }
+
+    @Override
+    public boolean isConstructor() {
+        return false;
+    }
+
+    @Override
+    public boolean isNoDoc() {
+        return false;
+    }
+
+    @Override
+    public boolean isStatic() {
+        return false;
+    }
+    
+    @Override
+    public boolean isPrivate() {
+        return false;
+    }
+    
+    @Override
+    public boolean isDocumented() {
+        return false;
+    }
+    
+    @Override
+    public boolean isPublic() {
+        return true;
+    }
+
+    @Override
+    public boolean isFunction() {
+        return false;
+    }
+
+    @Override
+    public boolean isFinal() {
+        return false;
+    }
+    
+    @Override
+    public boolean isDocOnly() {
+        return false;
+    }
+    
+    @Override
+    public EnumSet<BrowserVersion> getCompatibility() {
+        return BrowserVersion.ALL;
     }
 }

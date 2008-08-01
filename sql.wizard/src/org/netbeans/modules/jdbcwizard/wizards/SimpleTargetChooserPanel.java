@@ -196,7 +196,7 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.FinishablePanel
         // template.getExt ());
         final String errorMessage = canUseFileName(this.gui.getTargetGroup().getRootFolder(), this.gui.getTargetFolder(),
                 this.gui.getTargetName(), template.getExt());
-        this.wizard.putProperty("WizardPanel_errorMessage", errorMessage); // NOI18N
+        this.wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, errorMessage); // NOI18N
 
         return errorMessage == null;
     }
@@ -260,7 +260,7 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.FinishablePanel
             this.wizard.putProperty("NewDtelWizard_Title", substitute); // NOI18N
         }
 
-        this.wizard.putProperty("WizardPanel_contentData", new String[] { // NOI18N
+        this.wizard.putProperty(WizardDescriptor.PROP_CONTENT_DATA, new String[] { // NOI18N
 
                         NbBundle.getBundle(SimpleTargetChooserPanel.class).getString("LBL_TemplatesPanel_Name"), // NOI18N
                         NbBundle.getBundle(SimpleTargetChooserPanel.class).getString(

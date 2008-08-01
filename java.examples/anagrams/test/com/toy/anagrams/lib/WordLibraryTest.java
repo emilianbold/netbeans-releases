@@ -38,18 +38,25 @@ import junit.framework.TestCase;
  * Test of the functionality of {@link WordLibrary}.
  */
 public class WordLibraryTest extends TestCase {
+    WordLibrary wordLibrary;
 
     public WordLibraryTest(String testName) {
         super(testName);
     }
 
+    protected void setUp() throws Exception {
+        wordLibrary = WordLibrary.getDefault();
+    }
+    
+    
+
     /**
      * Test of {@link WordLibrary#isCorrect}.
      */
     public void testIsCorrect() {
-        for (int i = 0; i < WordLibrary.getSize(); i++) {
-            String clearWord = WordLibrary.getWord(i);
-            String scrambledWord = WordLibrary.getScrambledWord(i);
+        for (int i = 0; i < wordLibrary.getSize(); i++) {
+            String clearWord = wordLibrary.getWord(i);
+            String scrambledWord = wordLibrary.getScrambledWord(i);
             assertTrue("Scrambled word \"" + scrambledWord +
                        "\" at index: " + i +
                        " does not represent the word \"" + clearWord + "\"",

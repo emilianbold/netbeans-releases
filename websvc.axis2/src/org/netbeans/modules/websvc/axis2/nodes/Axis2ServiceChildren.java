@@ -87,7 +87,8 @@ public class Axis2ServiceChildren extends Children.Keys<OperationInfo> {
     
     @Override
     protected void addNotify() {
-        assert(getImplClass() != null);
+        getImplClass();
+        assert(implClass != null);
         if (fcl == null) {
             fcl = new FileChangeAdapter() {
                 @Override
@@ -102,7 +103,8 @@ public class Axis2ServiceChildren extends Children.Keys<OperationInfo> {
     
     @Override
     protected void removeNotify() {
-        assert(getImplClass() != null);
+        getImplClass();
+        assert(implClass != null);
         if (fcl != null) {
             implClass.removeFileChangeListener(fcl);
             fcl = null;

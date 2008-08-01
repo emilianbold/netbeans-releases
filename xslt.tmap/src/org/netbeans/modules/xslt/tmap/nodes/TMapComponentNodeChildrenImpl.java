@@ -22,6 +22,7 @@ package org.netbeans.modules.xslt.tmap.nodes;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.ArrayList;
 import org.netbeans.modules.xslt.tmap.model.api.TMapComponent;
 import org.openide.util.Lookup;
 
@@ -42,6 +43,8 @@ public class TMapComponentNodeChildrenImpl  extends TMapComponentNodeChildren<TM
             return Collections.EMPTY_LIST;
         }
         
+        List<TMapComponent> keys = new ArrayList<TMapComponent>();
+
         List<TMapComponent> childs  = component.getChildren();
         return childs != null && childs.size() > 0 
                 ? childs 

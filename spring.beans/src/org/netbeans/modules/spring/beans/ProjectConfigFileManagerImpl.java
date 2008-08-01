@@ -52,6 +52,7 @@ import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.spring.api.beans.ConfigFileGroup;
 import org.netbeans.modules.spring.util.ConfigFiles;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
@@ -89,10 +90,7 @@ public class ProjectConfigFileManagerImpl implements ConfigFileManagerImplementa
 
     public ProjectConfigFileManagerImpl(Project project) {
         this.project = project;
-        auxConfig = project.getLookup().lookup(AuxiliaryConfiguration.class);
-        if (auxConfig == null) {
-            throw new IllegalStateException("Project " + project + " does not have an AuxiliaryConfiguration in its lookup");
-        }
+        auxConfig = ProjectUtils.getAuxiliaryConfiguration(project);
     }
 
     /**

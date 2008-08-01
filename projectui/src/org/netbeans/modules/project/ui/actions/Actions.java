@@ -298,8 +298,8 @@ public class Actions implements ActionsFactory {
     }
     
     // Main Project actions ----------------------------------------------------
-    
-    
+
+
     public static Action buildMainProject() {
         Action a = new MainProjectAction (
             ActionProvider.COMMAND_BUILD, 

@@ -71,5 +71,10 @@ class BasePosition implements Position {
     void setMark(MultiMark mark) {
         this.mark = mark;
     }
+    
+    @Override
+    public String toString() {
+        return super.toString() + " offset=" + getOffset(); // NOI18N
+    }
 
 }

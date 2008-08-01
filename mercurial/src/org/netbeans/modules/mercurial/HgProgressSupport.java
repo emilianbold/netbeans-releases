@@ -41,9 +41,13 @@
 
 package org.netbeans.modules.mercurial;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.text.DateFormat;
 import java.util.Date;
 import java.util.logging.Level;
+import javax.swing.JComponent;
+import javax.swing.JButton;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.openide.util.Cancellable;
@@ -67,6 +71,20 @@ public abstract class HgProgressSupport implements Runnable, Cancellable {
     private String repositoryRoot;
     private RequestProcessor.Task task;
     
+    public HgProgressSupport() {
+    }
+
+    public HgProgressSupport(String displayName, JButton cancel) {
+        this.displayName = displayName;
+        if(cancel != null) {
+            cancel.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    cancel();
+                }
+            });
+        }
+    }
+    
     public RequestProcessor.Task start(RequestProcessor rp, String repositoryRoot, String displayName) {
         setDisplayName(displayName);
         this.repositoryRoot = repositoryRoot;
@@ -79,6 +97,16 @@ public abstract class HgProgressSupport implements Runnable, Cancellable {
             }
         });
         return task;
+    }
+
+    public RequestProcessor.Task start(RequestProcessor rp) {
+        startProgress();
+        task = rp.post(this);
+        return task;
+    }
+
+    public JComponent getProgressComponent() {
+        return ProgressHandleFactory.createProgressComponent(getProgressHandle());
     }
 
     public void setRepositoryRoot(String repositoryRoot) {

@@ -1,15 +1,11 @@
 package org.netbeans.modules.apisupport.project.ui.wizard.glf;
 
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
+import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardPanel;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 
 
-public class GLFTemplateWizardPanel2 implements WizardDescriptor.Panel {
+public class GLFTemplateWizardPanel2 extends BasicWizardPanel {
     
     private GLFTemplateWizardIterator iterator;
     /**
@@ -19,6 +15,7 @@ public class GLFTemplateWizardPanel2 implements WizardDescriptor.Panel {
     private GLFTemplateVisualPanel2 component;
     
     GLFTemplateWizardPanel2 (GLFTemplateWizardIterator iterator) {
+        super(iterator.getWizardDescriptor());
         this.iterator = iterator;
     }
     
@@ -29,61 +26,26 @@ public class GLFTemplateWizardPanel2 implements WizardDescriptor.Panel {
     public GLFTemplateVisualPanel2 getComponent () {
         if (component == null) {
             component = new GLFTemplateVisualPanel2 (this);
+            component.addPropertyChangeListener(this);
         }
         return component;
     }
     
     public HelpCtx getHelp () {
         // Show no Help button for this panel:
-        return HelpCtx.DEFAULT_HELP;
         // If you have context help:
-        // return new HelpCtx(SampleWizardPanel1.class);
-    }
-    
-    private boolean valid = true;
-    
-    public boolean isValid () {
-        return valid;
-    }
-    
-    void setValid (boolean valid) {
-        if (this.valid == valid) return;
-        this.valid = valid;
-        fireChangeEvent();
-    }
-    
-    private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1); // or can use ChangeSupport in NB 6.0
-    
-    public final void addChangeListener(ChangeListener l) {
-        synchronized (listeners) {
-            listeners.add(l);
-        }
-    }
-    
-    public final void removeChangeListener(ChangeListener l) {
-        synchronized (listeners) {
-            listeners.remove(l);
-        }
-    }
-    
-    protected final void fireChangeEvent() {
-        Iterator<ChangeListener> it;
-        synchronized (listeners) {
-            it = new HashSet<ChangeListener>(listeners).iterator();
-        }
-        ChangeEvent ev = new ChangeEvent(this);
-        while (it.hasNext()) {
-            it.next().stateChanged(ev);
-        }
+         return new HelpCtx(GLFTemplateWizardPanel2.class);
     }
     
     // You can use a settings object to keep track of state. Normally the
     // settings object will be the WizardDescriptor, so you can use
     // WizardDescriptor.getProperty & putProperty to store information entered
     // by the user.
-    public void readSettings (Object settings) {}
-    public void storeSettings (Object settings) {}
-    
+    public void readSettings (WizardDescriptor settings) {
+        // ensures error message is set correctly when user presses Back and Next buttons
+        if (component != null)
+            component.update();
+    }
     String getMimeType () {
         return component.getMimeType ();
     }

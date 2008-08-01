@@ -42,8 +42,8 @@ class Ape
   end
 
   # Args: APP URI, username/password, preferred entry/media collections
-  def |>METHOD:check<|(|>PARAMETER:uri<|, |>PARAMETER:username<|=nil<|, |>PARAMETER:password<|=nil<|,
-      |>PARAMETER:requested_e_coll<| = nil<|, |>PARAMETER:requested_m_coll<| = nil<|)
+  def |>METHOD:check<|(|>PARAMETER:uri<|, |>PARAMETER:username<|=nil, |>PARAMETER:password<|=nil,
+      |>PARAMETER:requested_e_coll<| = nil, |>PARAMETER:requested_m_coll<| = nil)
 
     # Google athent weirdness
     @authent = Authent.new(|>PARAMETER:username<|, |>PARAMETER:password<|)
@@ -56,7 +56,7 @@ class Ape
     end
   end
 
-  def |>METHOD:might_fail<|(|>PARAMETER:uri<|, |>PARAMETER:requested_e_coll<| = nil<|, |>PARAMETER:requested_m_coll<| = nil<|)
+  def |>METHOD:might_fail<|(|>PARAMETER:uri<|, |>PARAMETER:requested_e_coll<| = nil, |>PARAMETER:requested_m_coll<| = nil)
 
     |>METHOD:info<| "TESTING: Service document and collections."
     name = 'Retrieval of Service Document'
@@ -592,7 +592,7 @@ class Ape
   #
 
   # Fetch a feed and look up an entry by ID in it
-  def |>METHOD:find_entry<|(|>PARAMETER:feed_uri<|, |>PARAMETER:name<|, |>PARAMETER:id<|, |>PARAMETER:report<|=false<|)
+  def |>METHOD:find_entry<|(|>PARAMETER:feed_uri<|, |>PARAMETER:name<|, |>PARAMETER:id<|, |>PARAMETER:report<|=false)
     entries = Feed.read(|>PARAMETER:feed_uri<|, |>PARAMETER:name<|, self, |>PARAMETER:report<|)
     entries.each do |from_feed|
       return from_feed if |>PARAMETER:id<| == from_feed.child_content('id')
@@ -607,7 +607,7 @@ class Ape
   end
 
   # Get a resource, optionally check its content-type
-  def |>METHOD:check_resource<|(|>PARAMETER:uri<|, |>PARAMETER:name<|, |>PARAMETER:content_type<|, |>PARAMETER:report<|=true<|)
+  def |>METHOD:check_resource<|(|>PARAMETER:uri<|, |>PARAMETER:name<|, |>PARAMETER:content_type<|, |>PARAMETER:report<|=true)
     resource = Getter.new(|>PARAMETER:uri<|, @authent)
 
     # * Check the URI
@@ -651,7 +651,7 @@ class Ape
     end
   end
 
-  def |>METHOD:warning<|(|>PARAMETER:message<|, |>PARAMETER:crumb_key<|=nil<|)
+  def |>METHOD:warning<|(|>PARAMETER:message<|, |>PARAMETER:crumb_key<|=nil)
     if @dialogs
       |>METHOD:step<| "D#{|>PARAMETER:crumb_key<|}" if |>PARAMETER:crumb_key<|
       |>METHOD:show_crumbs<|(|>PARAMETER:crumb_key<|) if |>PARAMETER:crumb_key<| && @@debugging
@@ -659,7 +659,7 @@ class Ape
     |>METHOD:step<| "W" + |>PARAMETER:message<|
   end
 
-  def |>METHOD:error<|(|>PARAMETER:message<|, |>PARAMETER:crumb_key<|=nil<|)
+  def |>METHOD:error<|(|>PARAMETER:message<|, |>PARAMETER:crumb_key<|=nil)
     if @dialogs
       |>METHOD:step<| "D#{|>PARAMETER:crumb_key<|}" if |>PARAMETER:crumb_key<|
       |>METHOD:show_crumbs<|(|>PARAMETER:crumb_key<|) if |>PARAMETER:crumb_key<| && @@debugging
@@ -667,7 +667,7 @@ class Ape
     |>METHOD:step<| "E" + |>PARAMETER:message<|
   end
 
-  def |>METHOD:good<|(|>PARAMETER:message<|, |>PARAMETER:crumb_key<|=nil<|)
+  def |>METHOD:good<|(|>PARAMETER:message<|, |>PARAMETER:crumb_key<|=nil)
     if @dialogs
       |>METHOD:step<| "D#{|>PARAMETER:crumb_key<|}" if |>PARAMETER:crumb_key<|
       |>METHOD:show_crumbs<|(|>PARAMETER:crumb_key<|) if |>PARAMETER:crumb_key<| && @@debugging

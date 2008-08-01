@@ -74,7 +74,7 @@ public class MIMENames {
     public static final String YACC_MIME_TYPE = "text/x-yacc"; //NOI18N
 
     /** SPARC Assembly files */
-    public static final String ASM_MIME_TYPE = "text/x-sparc-asm"; //NOI18N
+    public static final String ASM_MIME_TYPE = "text/x-asm"; //NOI18N
 
     /** ELF Executable files */
     public static final String ELF_EXE_MIME_TYPE = "application/x-executable+elf"; //NOI18N

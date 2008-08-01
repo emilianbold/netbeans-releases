@@ -48,8 +48,11 @@ import antlr.collections.AST;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import org.netbeans.modules.cnd.api.model.services.CsmSelect;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
+import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 
@@ -62,14 +65,20 @@ public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmF
     
     private final CsmCompoundStatement body;
     
-    public FunctionDefinitionImpl(AST ast, CsmFile file, CsmScope scope) {
+    public FunctionDefinitionImpl(AST ast, CsmFile file, CsmScope scope) throws AstRendererException {
         this(ast, file, scope, true);
     }
     
-    protected  FunctionDefinitionImpl(AST ast, CsmFile file, CsmScope scope, boolean register) {
+    protected  FunctionDefinitionImpl(AST ast, CsmFile file, CsmScope scope, boolean register) throws AstRendererException {
         super(ast, file, scope, false);
         body = AstRenderer.findCompoundStatement(ast, getContainingFile(), this);
-        assert body != null : "null body in function definition, line " + getStartPosition().getLine() + ":" + file.getAbsolutePath();
+        boolean assertionCondition = body != null;
+        if (!assertionCondition) {
+            RepositoryUtils.hang(this);
+            throw new AstRendererException((FileImpl)file, getStartOffset(),
+                    "Null body in function definition."); // NOI18N
+            //assert body != null : "null body in function definition, line " + getStartPosition().getLine() + ":" + file.getAbsolutePath();
+        }
         if (register) {
             registerInProject();
         }
@@ -80,6 +89,7 @@ public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmF
         return body;
     }
 
+    @Override
     public CsmFunction getDeclaration() {
         return getDeclaration(null);
     }
@@ -111,23 +121,28 @@ public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmF
 	if( def == null ) {
 	    CsmObject owner = findOwner(parent);
 	    if( owner instanceof CsmClass ) {
-		def = findByName(((CsmClass) owner).getMembers(), getName());
+		Iterator it = CsmSelect.getDefault().getClassMembers((CsmClass)owner, 
+                        CsmSelect.getDefault().getFilterBuilder().createNameFilter(getName().toString(), true, true, false));
+		def = findByName(it,getName());
 	    }
 	    else if( owner instanceof CsmNamespace ) {
-		def = findByName(((CsmNamespace) owner).getDeclarations(), getName());
+                Iterator<CsmOffsetableDeclaration> it = CsmSelect.getDefault().getDeclarations(((CsmNamespace) owner),
+                          CsmSelect.getDefault().getFilterBuilder().createNameFilter(getName().toString(),true, true, false));
+		def = findByName(it,getName());
 	    }
 	}
         return (CsmFunction) def;
     }
     
-    private static CsmFunction findByName(Collection/*CsmDeclaration*/ declarations, CharSequence name) {
-	for (Iterator it = declarations.iterator(); it.hasNext();) {
-	    CsmDeclaration decl = (CsmDeclaration) it.next();
-	    if( decl.getName().equals(name) ) {
-		if( decl instanceof  CsmFunction ) { // paranoja
-		    return (CsmFunction) decl;
+    private static CsmFunction findByName(Iterator declarations, CharSequence name) {
+	for (Iterator it = declarations; it.hasNext();) {
+            Object o = it.next();
+            if (CsmKindUtilities.isCsmObject(o) && CsmKindUtilities.isFunction((CsmObject) o)){
+                CsmFunction decl = (CsmFunction) o;
+                if( decl.getName().equals(name) ) {
+		    return decl;
 		}
-	    }	
+            }
 	}
 	return null;
     }
@@ -162,7 +177,7 @@ public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmF
     public CsmFunctionDefinition getDefinition() {
         return this;
     }
-  
+
     ////////////////////////////////////////////////////////////////////////////
     // iml of SelfPersistent
     

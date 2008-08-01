@@ -219,9 +219,9 @@ public final class PMFWizard implements WizardDescriptor.InstantiatingIterator, 
             if (c instanceof JComponent) { // assume Swing components
                 JComponent jc = (JComponent)c;
                 // Step #.
-                jc.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(i)); // NOI18N
+                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer(i)); // NOI18N
                 // Step name (actually the whole list for reference).
-                jc.putClientProperty("WizardPanel_contentData", steps); // NOI18N
+                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps); // NOI18N
             }
         }
     }
@@ -353,8 +353,8 @@ public final class PMFWizard implements WizardDescriptor.InstantiatingIterator, 
                     Component c = panels[i].getComponent();
                     if (c instanceof JComponent) {
                         JComponent jc = (JComponent)c;
-                        jc.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(i)); // NOI18N
-                        jc.putClientProperty("WizardPanel_contentData", steps); // NOI18N
+                        jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer(i)); // NOI18N
+                        jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps); // NOI18N
                     }
                 }
             }else if((!addSteps) && (tempPanels != null) ){
@@ -380,8 +380,8 @@ public final class PMFWizard implements WizardDescriptor.InstantiatingIterator, 
                     Component c = panels[i].getComponent();
                     if (c instanceof JComponent) {
                         JComponent jc = (JComponent)c;
-                        jc.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(i)); // NOI18N
-                        jc.putClientProperty("WizardPanel_contentData", steps); // NOI18N
+                        jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer(i)); // NOI18N
+                        jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps); // NOI18N
                     }
                 }
                 

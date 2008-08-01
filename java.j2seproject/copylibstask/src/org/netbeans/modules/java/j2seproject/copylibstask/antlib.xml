@@ -42,4 +42,5 @@ made subject to such option by the copyright holder.
 -->
 <antlib>
     <taskdef name="copylibs" classname="org.netbeans.modules.java.j2seproject.copylibstask.CopyLibs"/>
+    <taskdef name="copyfiles" classname="org.netbeans.modules.java.j2seproject.copylibstask.CopyFiles"/>
 </antlib>

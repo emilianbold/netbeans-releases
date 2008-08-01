@@ -1,0 +1,146 @@
+<xsl:comment>bdj-build-image</xsl:comment>
+
+    <target name="-pre-bdj-build-perm-file" if="bdj-platform.trigger"/>
+    <target name="-do-bdj-build-perm-file" if="bdj-platform.trigger">
+        <fail message="Main class is not set!">
+            <condition>
+                <equals arg1="${{main.class}}" arg2="" trim="true"/>
+            </condition>
+        </fail>
+        <property name="bdj.tmp.dir" value="${{build.dir}}/bdj" />
+        <property name="bluray.bdjoxml.file" value="${{bdj.tmp.dir}}/bdjo00000.xml"/>
+        <property name="bluray.bdjo.file" value="${{bdj.tmp.dir}}/00000.bdjo"/>
+        <mkdir dir="${{bdj.tmp.dir}}"/>
+        <taskdef name="buildbdjperm" classname="org.netbeans.modules.j2me.cdc.project.bdj.BdjBuildPermTask" classpath="${{libs.bdj-ant-utils.classpath}}"/>
+        <buildbdjperm jarFile="${{dist.dir}}/${{dist.jar}}" xletClass="${{main.class}}" orgId="${{bdj.organization.id}}" appId="${{bdj.application.id}}" fileAccess="${{bdj.file.access}}" appLifecycle="${{bdj.application.lifecycle}}" serviceSelect="${{bdj.service.selection}}" prefRead="${{bdj.user.preferences.read}}" prefWrite="${{bdj.user.preferences.write}}" networkPerm="${{bdj.network.permissions}}" />
+    </target>
+    <target name="-post-bdj-build-perm-file" if="bdj-platform.trigger"/>
+    <target name="-bdj-build-perm-file" if="bdj-platform.trigger" depends="-pre-bdj-build-perm-file, -do-bdj-build-perm-file, -post-bdj-build-perm-file"/>
+
+    <target name="-pre-bdj-generate-certificate" if="bdj-platform.trigger"/>
+    <target name="-do-bdj-generate-certificate" if="bdj-platform.trigger">
+        <java classpath="${{libs.bdj-ant-utils.classpath}}" classname="net.java.bd.tools.security.BDCertGenerator" dir="${{bdj.tmp.dir}}" fork="true">
+            <arg value="-root"/>
+            <arg value="${{bdj.organization.id}}"/>
+        </java>
+        <java classpath="${{libs.bdj-ant-utils.classpath}}" classname="net.java.bd.tools.security.BDCertGenerator" dir="${{bdj.tmp.dir}}" fork="true">
+            <arg value="-app"/>
+            <arg value="${{bdj.organization.id}}"/>
+        </java>
+    </target>
+    <target name="-post-bdj-generate-certificate" if="bdj-platform.trigger"/>
+    <target name="-bdj-generate-certificate" if="bdj-platform.trigger" depends="-bdj-build-perm-file, -pre-bdj-generate-certificate, -do-bdj-generate-certificate, -post-bdj-generate-certificate"/>
+
+    <target name="-pre-bdj-prepare-jar" if="bdj-platform.trigger"/>
+    <target name="-do-bdj-prepare-jar" if="bdj-platform.trigger">
+        <copy file="${{dist.dir}}/${{dist.jar}}" tofile="${{bdj.tmp.dir}}/00000.jar" />
+    </target>    
+    <target name="-post-bdj-prepare-jar" if="bdj-platform.trigger"/>
+    <target name="-bdj-prepare-jar" depends="-bdj-generate-certificate, -pre-bdj-prepare-jar, -do-bdj-prepare-jar, -post-bdj-prepare-jar" if="bdj-platform.trigger"/>
+
+    <target name="-pre-bdj-sign-jar" if="bdj-platform.trigger"/>
+    <target name="-do-bdj-sign-jar" if="bdj-platform.trigger">
+        <property name="java.home.parent" location="${{java.home}}/.."/>
+        <condition property="nbjdk.home" value="${{java.home.parent}}">
+            <available file="${{java.home.parent}}/lib/tools.jar" type="file"/>
+        </condition>
+        <fail unless="nbjdk.home">Can not find tools.jar</fail>
+        <java classpath="${{libs.bdj-ant-utils.classpath}}:${{java.home.parent}}/lib/tools.jar" classname="net.java.bd.tools.security.BDSigner" dir="${{bdj.tmp.dir}}" fork="true">
+            <arg value="00000.jar"/>
+        </java>
+    </target>    
+    <target name="-post-bdj-sign-jar" if="bdj-platform.trigger"/>
+    <target name="-bdj-sign-jar" depends="-bdj-prepare-jar, -pre-bdj-sign-jar, -do-bdj-sign-jar, -post-bdj-sign-jar" if="bdj-platform.trigger"/>
+
+    <target name="-pre-bdj-generate-bdjo-xml" if="bdj-platform.trigger"/>
+    <target name="-do-bdj-generate-bdjo-xml" if="bdj-platform.trigger">
+        <taskdef name="buildbdjo" classname="org.netbeans.modules.j2me.cdc.project.bdj.BdjBuildBdjo" classpath="${{libs.bdj-ant-utils.classpath}}"/>
+        <buildbdjo bdjoFile="${{bluray.bdjoxml.file}}" orgId="${{bdj.organization.id}}" appId="${{bdj.application.id}}" mainClass="${{main.class}}" />
+    </target>
+    <target name="-post-bdj-generate-bdjo-xml" depends="-bdj-sign-jar" if="bdj-platform.trigger"/>
+    <target name="-bdj-generate-bdjo-xml" depends="-bdj-sign-jar, -pre-bdj-generate-bdjo-xml, -do-bdj-generate-bdjo-xml, -post-bdj-generate-bdjo-xml" if="bdj-platform.trigger"/>
+
+    <target name="-pre-bdj-generate-bdjo" if="bdj-platform.trigger"/>
+    <target name="-do-bdj-generate-bdjo" if="bdj-platform.trigger">
+        <java classpath="${{libs.bdj-ant-utils.classpath}}" classname="net.java.bd.tools.bdjo.Converter" fork="true">
+            <arg value="${{bluray.bdjoxml.file}}"/>
+            <arg value="${{bluray.bdjo.file}}"/>
+        </java>        
+    </target>
+    <target name="-post-bdj-generate-bdjo" if="bdj-platform.trigger"/>
+    <target name="-bdj-generate-bdjo" depends="-bdj-generate-bdjo-xml, -pre-bdj-generate-bdjo, -do-bdj-generate-bdjo, -post-bdj-generate-bdjo" if="bdj-platform.trigger"/>
+
+    <target name="-pre-bdj-build-bdmv" if="bdj-platform.trigger"/>
+    <target name="-do-bdj-build-bdmv" if="bdj-platform.trigger">
+        <property name="bluray.bdmv.index.file" value="${{bdj.tmp.dir}}/index.bdmv"/>
+        <property name="bluray.bdmv.movieobject.file" value="${{bdj.tmp.dir}}/MovieObject.bdmv"/>
+        <taskdef name="buildbdmv" classname="org.netbeans.modules.j2me.cdc.project.bdj.BdjBuildBdmv" classpath="${{libs.bdj-ant-utils.classpath}}"/>
+        <buildbdmv file="${{bluray.bdmv.index.file}}" type="index" />
+        <buildbdmv file="${{bluray.bdmv.movieobject.file}}" type="movie" />
+    </target>
+    <target name="-post-bdj-build-bdmv" if="bdj-platform.trigger"/>
+    <target name="-bdj-build-bdmv" depends="-bdj-generate-bdjo, -pre-bdj-build-bdmv, -do-bdj-build-bdmv, -post-bdj-build-bdmv" if="bdj-platform.trigger"/>
+
+    <target name="-pre-bdj-build-bdjo-image" if="bdj-platform.trigger"/>
+    <target name="-do-bdj-build-bdjo-image" if="bdj-platform.trigger">
+        <property name="bdj.deployment.bdmv.dir" value="${{bdj.deployment.dir}}/BDMV"/>
+        <property name="bdj.deployment.bdmv.backup.dir" value="${{bdj.deployment.bdmv.dir}}/BACKUP"/>
+        <property name="bdj.deployment.certificate.dir" value="${{bdj.deployment.dir}}/CERTIFICATE"/>
+        <property name="bdj.deployment.certificate.backup.dir" value="${{bdj.deployment.certificate.dir}}/BACKUP"/>
+
+        <mkdir dir="${{bdj.deployment.bdmv.dir}}"/>
+        <mkdir dir="${{bdj.deployment.bdmv.dir}}/AUXDATA"/>
+        <mkdir dir="${{bdj.deployment.bdmv.dir}}/BDJO"/>
+        <mkdir dir="${{bdj.deployment.bdmv.dir}}/CLIPINF"/>
+        <mkdir dir="${{bdj.deployment.bdmv.dir}}/JAR"/>
+        <mkdir dir="${{bdj.deployment.bdmv.dir}}/META"/>
+        <mkdir dir="${{bdj.deployment.bdmv.dir}}/PLAYLIST"/>
+        <mkdir dir="${{bdj.deployment.bdmv.dir}}/STREAM"/>
+
+        <mkdir dir="${{bdj.deployment.bdmv.backup.dir}}"/>
+        <mkdir dir="${{bdj.deployment.bdmv.backup.dir}}/BDJO"/>
+        <mkdir dir="${{bdj.deployment.bdmv.backup.dir}}/CLIPINF"/>
+        <mkdir dir="${{bdj.deployment.bdmv.backup.dir}}/JAR"/>
+        <mkdir dir="${{bdj.deployment.bdmv.backup.dir}}/PLAYLIST"/>
+
+        <copy todir="${{bdj.deployment.bdmv.dir}}" file="${{bluray.bdmv.index.file}}"/>
+        <copy todir="${{bdj.deployment.bdmv.dir}}" file="${{bluray.bdmv.movieobject.file}}"/>
+        <copy todir="${{bdj.deployment.bdmv.backup.dir}}" file="${{bluray.bdmv.index.file}}"/>
+        <copy todir="${{bdj.deployment.bdmv.backup.dir}}" file="${{bluray.bdmv.movieobject.file}}"/>
+
+        <copy todir="${{bdj.deployment.bdmv.dir}}/JAR">
+            <fileset dir="${{bdj.tmp.dir}}">
+                <include name="*.jar"/>
+            </fileset>
+        </copy>
+        <copy todir="${{bdj.deployment.bdmv.dir}}/BDJO">
+            <fileset dir="${{bdj.tmp.dir}}">
+                <include name="*.bdjo"/>
+            </fileset>
+        </copy>
+        <copy todir="${{bdj.deployment.bdmv.backup.dir}}/BDJO">
+            <fileset dir="${{bdj.tmp.dir}}">
+                <include name="*.bdjo"/>
+            </fileset>
+        </copy>
+
+        <mkdir dir="${{bdj.deployment.certificate.dir}}"/>
+        <mkdir dir="${{bdj.deployment.certificate.backup.dir}}"/>
+
+        <copy todir="${{bdj.deployment.certificate.dir}}">
+            <fileset dir="${{bdj.tmp.dir}}">
+                <include name="app.discroot.crt"/>
+                <!--<include name="id.bdmv"/>-->
+            </fileset>
+        </copy>
+        <copy todir="${{bdj.deployment.certificate.backup.dir}}">
+            <fileset dir="${{bdj.tmp.dir}}">
+                <include name="app.discroot.crt"/>
+                <!--<include name="id.bdmv"/>-->
+            </fileset>
+        </copy>
+    </target>    
+    <target name="-post-bdj-build-bdjo-image" if="bdj-platform.trigger"/>
+    <target name="-bdj-build-bdjo-image" depends="-bdj-build-bdmv, -pre-bdj-build-bdjo-image, -do-bdj-build-bdjo-image, -post-bdj-build-bdjo-image" if="bdj-platform.trigger"/>
+
+    <target name="bdj-build-image" depends="-bdj-build-perm-file, -bdj-generate-certificate, -bdj-prepare-jar, -bdj-sign-jar, -bdj-generate-bdjo-xml, -bdj-generate-bdjo, -bdj-build-bdmv, -bdj-build-bdjo-image" if="bdj-platform.trigger"/>

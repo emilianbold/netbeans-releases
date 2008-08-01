@@ -41,6 +41,7 @@
 
 package org.netbeans.jellytools.actions;
 
+import java.io.IOException;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import junit.textui.TestRunner;
@@ -66,10 +67,19 @@ public class CleanProjectActionTest extends JellyTestCase {
     /** method used for explicit testsuite definition
      */
     public static Test suite() {
+        /*
         TestSuite suite = new NbTestSuite();
         suite.addTest(new CleanProjectActionTest("testPerformPopup"));
         return suite;
+         */
+        return createModuleTest(CleanProjectActionTest.class, "testPerformPopup");
     }
+
+    @Override
+    protected void setUp() throws IOException {
+        openDataProjects("SampleProject");
+    }
+    
     
     /** Use for internal test execution inside IDE
      * @param args command line arguments

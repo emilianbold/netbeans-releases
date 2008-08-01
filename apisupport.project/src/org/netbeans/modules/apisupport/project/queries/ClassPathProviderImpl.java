@@ -103,11 +103,11 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
             return boot;
         }
         FileObject srcDir = project.getSourceDirectory();
-        FileObject testSrcDir = project.getTestSourceDirectory();
-        FileObject funcTestSrcDir = project.getFunctionalTestSourceDirectory();        
+        FileObject testSrcDir = project.getTestSourceDirectory("unit");
+        FileObject funcTestSrcDir = project.getTestSourceDirectory("qa-functional");
         File dir = project.getClassesDirectory();
         FileObject classesDir = dir == null ? null : FileUtil.toFileObject(FileUtil.normalizeFile(dir));
-        dir = project.getTestClassesDirectory();
+        dir = project.getTestClassesDirectory("unit");
         FileObject testClassesDir = dir == null ? null : FileUtil.toFileObject(FileUtil.normalizeFile(dir));
         File moduleJar = project.getModuleJarLocation();
         if (srcDir != null && (FileUtil.isParentOf(srcDir, file) || file == srcDir)) {
@@ -131,15 +131,16 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
             }
         } else if (testSrcDir != null && (FileUtil.isParentOf(testSrcDir, file) || file == testSrcDir)) {
             // Unit tests.
+            // XXX refactor to use project.supportedTestTypes
             if (type.equals(ClassPath.COMPILE)) {
                 if (testCompile == null) {
-                    testCompile = ClassPathFactory.createClassPath(createTestCompileClasspath());
+                    testCompile = ClassPathFactory.createClassPath(createTestCompileClasspath("unit"));
                     Util.err.log("compile-time classpath for tests in " + project + ": " + testCompile);
                 }
                 return testCompile;
             } else if (type.equals(ClassPath.EXECUTE)) {
                 if (testExecute == null) {
-                    testExecute = ClassPathFactory.createClassPath(createTestExecuteClasspath());
+                    testExecute = ClassPathFactory.createClassPath(createTestExecuteClasspath("unit"));
                     Util.err.log("runtime classpath for tests in " + project + ": " + testExecute);
                 }
                 return testExecute;
@@ -159,13 +160,13 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
             } else if (type.equals(ClassPath.COMPILE)) {
                 // See #42331.
                 if (funcTestCompile == null) {
-                    funcTestCompile = ClassPathFactory.createClassPath(createFuncTestCompileClasspath());
+                    funcTestCompile = ClassPathFactory.createClassPath(createTestCompileClasspath("qa-functional"));
                     Util.err.log("compile-time classpath for func tests in " + project + ": " + funcTestCompile);
                 }
                 return funcTestCompile;
             } else if (type.equals(ClassPath.EXECUTE)) {
                 if (funcTestExecute == null) {
-                    funcTestExecute = ClassPathFactory.createClassPath(createFuncTestExecuteClasspath());
+                    funcTestExecute = ClassPathFactory.createClassPath(createTestExecuteClasspath("qa-functional"));
                 }
                 return funcTestExecute;
             }
@@ -184,7 +185,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
         } else if (testClassesDir != null && (testClassesDir.equals(file) || FileUtil.isParentOf(testClassesDir,file))) {
             if (ClassPath.EXECUTE.equals(type)) {
                 if (testExecute == null) {
-                    testExecute = ClassPathFactory.createClassPath(createTestExecuteClasspath());
+                    testExecute = ClassPathFactory.createClassPath(createTestExecuteClasspath("unit"));
                     Util.err.log("runtime classpath for tests in " + project + ": " + testExecute);
                 }
                 return testExecute;
@@ -194,7 +195,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
                 file.equals(FileUtil.getArchiveRoot(FileUtil.getArchiveFile(file)))) {
             if (ClassPath.EXECUTE.equals(type)) {
                 List<PathResourceImplementation> roots = new ArrayList<PathResourceImplementation>();
-                roots.add(ClassPathSupport.createResource(Util.urlForJar(moduleJar)));
+                roots.add(ClassPathSupport.createResource(FileUtil.urlForArchiveOrDir(moduleJar)));
                 roots.addAll(createCompileClasspath().getResources());
                 return ClassPathSupport.createClassPath (roots);
             }
@@ -233,27 +234,21 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
     
     private void addPathFromProjectEvaluated(List<PathResourceImplementation> entries, String path) {
         if (path != null) {
-            String[] pieces = PropertyUtils.tokenizePath(path);
-            for (int i = 0; i < pieces.length; i++) {
-                entries.add(ClassPathSupport.createResource(Util.urlForDirOrJar(project.getHelper().resolveFile(pieces[i]))));
+            for (String piece : PropertyUtils.tokenizePath(path)) {
+                URL url = FileUtil.urlForArchiveOrDir(project.getHelper().resolveFile(piece));
+                if (url != null) { // #135292
+                    entries.add(ClassPathSupport.createResource(url));
+                }
             }
         }
     }
     
-    private ClassPathImplementation createTestCompileClasspath() {
-        return createPathFromProperty("test.unit.cp"); // NOI18N
+    private ClassPathImplementation createTestCompileClasspath(String testType) {
+        return createPathFromProperty("test." + testType + ".cp"); // NOI18N
     }
     
-    private ClassPathImplementation createTestExecuteClasspath() {
-        return createPathFromProperty("test.unit.run.cp"); // NOI18N
-    }
-    
-    private ClassPathImplementation createFuncTestCompileClasspath() {
-        return createPathFromProperty("test.qa-functional.cp"); // NOI18N
-    }
-    
-    private ClassPathImplementation createFuncTestExecuteClasspath() {
-        return createPathFromProperty("test.qa-functional.run.cp"); // NOI18N
+    private ClassPathImplementation createTestExecuteClasspath(String testType) {
+        return createPathFromProperty("test." + testType + ".run.cp"); // NOI18N
     }
     
     private ClassPathImplementation createExecuteClasspath() {
@@ -352,11 +347,12 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
             if (srcDir != null) {
                 paths.add(findClassPath(srcDir, ClassPath.COMPILE));
             }
-            FileObject testSrcDir = project.getTestSourceDirectory();
+            // XXX refactor to use project.supportedTestTypes
+            FileObject testSrcDir = project.getTestSourceDirectory("unit");
             if (testSrcDir != null) {
                 paths.add(findClassPath(testSrcDir, ClassPath.COMPILE));
             }
-            FileObject funcTestSrcDir = project.getFunctionalTestSourceDirectory();
+            FileObject funcTestSrcDir = project.getTestSourceDirectory("qa-functional");
             if (funcTestSrcDir != null) {
                 paths.add(findClassPath(funcTestSrcDir, ClassPath.COMPILE));
             }
@@ -367,11 +363,11 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
             if (srcDir != null) {
                 paths.add(findClassPath(srcDir, ClassPath.EXECUTE));
             }
-            FileObject testSrcDir = project.getTestSourceDirectory();
+            FileObject testSrcDir = project.getTestSourceDirectory("unit");
             if (testSrcDir != null) {
                 paths.add(findClassPath(testSrcDir, ClassPath.EXECUTE));
             }
-            FileObject funcTestSrcDir = project.getFunctionalTestSourceDirectory();
+            FileObject funcTestSrcDir = project.getTestSourceDirectory("qa-functional");
             if (funcTestSrcDir != null) {
                 paths.add(findClassPath(funcTestSrcDir, ClassPath.EXECUTE));
             }
@@ -382,11 +378,11 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
             if (srcDir != null) {
                 paths.add(findClassPath(srcDir, ClassPath.SOURCE));
             }
-            FileObject testSrcDir = project.getTestSourceDirectory();
+            FileObject testSrcDir = project.getTestSourceDirectory("unit");
             if (testSrcDir != null) {
                 paths.add(findClassPath(testSrcDir, ClassPath.SOURCE));
             }
-            FileObject funcTestSrcDir = project.getFunctionalTestSourceDirectory();
+            FileObject funcTestSrcDir = project.getTestSourceDirectory("qa-functional");
             if (funcTestSrcDir != null) {
                 paths.add(findClassPath(funcTestSrcDir, ClassPath.SOURCE));
             }

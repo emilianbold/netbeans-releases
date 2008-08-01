@@ -28,7 +28,7 @@
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="browseButton" min="-2" max="-2" attributes="0"/>
                           </Group>
-                          <Component id="jLabel1" alignment="0" pref="391" max="32767" attributes="0"/>
+                          <Component id="jLabel1" alignment="0" pref="394" max="32767" attributes="0"/>
                           <Component id="exportHintLabel" alignment="0" min="-2" max="-2" attributes="1"/>
                       </Group>
                   </Group>
@@ -36,11 +36,11 @@
                       <EmptySpace min="-2" pref="34" max="-2" attributes="0"/>
                       <Component id="revisionsLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="revisionsComboBox" pref="224" max="32767" attributes="1"/>
+                      <Component id="revisionsComboBox" pref="253" max="32767" attributes="1"/>
                   </Group>
                   <Group type="102" alignment="1" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="changesetPanel1" pref="391" max="32767" attributes="0"/>
+                      <Component id="changesetPanel1" pref="394" max="32767" attributes="0"/>
                   </Group>
               </Group>
               <EmptySpace max="-2" attributes="0"/>

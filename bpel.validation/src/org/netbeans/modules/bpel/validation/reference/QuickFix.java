@@ -11,9 +11,9 @@
  * http://www.netbeans.org/cddl-gplv2.html
  * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
  * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
+ * License. When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
  * particular file as subject to the "Classpath" exception as provided
  * by Sun in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
@@ -40,10 +40,14 @@
  */
 package org.netbeans.modules.bpel.validation.reference;
 
+import java.util.LinkedList;
 import java.util.List;
+import org.netbeans.modules.xml.xam.Named;
 import org.netbeans.modules.xml.xam.Reference;
 import org.netbeans.modules.xml.xam.Referenceable;
 
+import org.netbeans.modules.soa.validation.core.QuickFix.Adapter;
+import org.netbeans.modules.soa.validation.util.SetUtil;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.bpel.model.api.NamedElement;
@@ -53,15 +57,15 @@ import org.netbeans.modules.bpel.model.api.VariableContainer;
 import org.netbeans.modules.bpel.model.api.VariableDeclaration;
 import org.netbeans.modules.bpel.model.api.VariableReference;
 import org.netbeans.modules.bpel.model.api.references.ReferenceCollection;
-import org.netbeans.modules.bpel.validation.core.QuickFix.Adapter;
-import org.netbeans.modules.bpel.validation.core.Util;
-import static org.netbeans.modules.soa.ui.util.UI.*;
+import static org.netbeans.modules.xml.ui.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
  * @version 2007.12.06
  */
-class QuickFix {
+final class QuickFix {
+
+  private QuickFix() {}
 
   static Adapter get(BpelEntity entity, Reference<Referenceable> reference) {
 //out();
@@ -70,47 +74,31 @@ class QuickFix {
     if (reference.getType().isAssignableFrom(VariableDeclaration.class)) {
       if (entity instanceof VariableReference) {
 //out("  VAR");
-        return new SET_VARIABLE((VariableReference) entity, reference.getRefString());
+        return new SetVariable((VariableReference) entity, reference.getRefString());
       }
     }
 //out("  null");
     return null;
   }
 
-  // ----------------------------------------
-  static class SET_VARIABLE extends Adapter {
+  // -----------------------------------------------
+  private static class SetVariable extends Adapter {
   
-    SET_VARIABLE(VariableReference reference, String name) {
+    SetVariable(VariableReference reference, String name) {
       myReference = reference;
       myName = name;
     }
 
-    public boolean canFix() {
-      myVariables = getAppropriateVariables();
+    @Override
+    public String doFix() {
+      Variable [] variables = getAppropriateVariables();
 
-      if (myVariables == null) {
-        return false;
+      if (variables == null) {
+        return null;
       }
-      if (myVariables.length == 0) {
-        return false;
-      }
-      if (myVariables.length != 1) { // todo r
-        return false;
-      }
-      return true;
-    }
-
-    public void doFix() {
-      Variable variable = myVariables [0];
-
-      myDescription = i18n(QuickFix.class, "QUICK_FIX_Change_varibale_name", variable.getName()); // NOI18N
-
-      myReference.setVariable(
-        ((ReferenceCollection) myReference).createReference(variable, VariableDeclaration.class));
-    }
-
-    public String getDescription() {
-      return myDescription; 
+      Variable variable = variables [0];
+      myReference.setVariable(((ReferenceCollection) myReference).createReference(variable, VariableDeclaration.class));
+      return i18n(QuickFix.class, "QUICK_FIX_Change_varibale_name", variable.getName()); // NOI18N
     }
 
     private Variable [] getAppropriateVariables() {
@@ -134,7 +122,11 @@ class QuickFix {
       if (variables == null) {
         return null;
       }
-      List<NamedElement> named = Util.getAppropriate(variables, myName);
+      List<Named> named = SetUtil.getAppropriate(toList(variables), myName);
+
+      if (named.size() == 0) {
+        return null;
+      }
       Variable [] appropriate = new Variable [named.size()];
 
       for (int i=0; i < named.size(); i++) {
@@ -143,9 +135,16 @@ class QuickFix {
       return appropriate;
     }
 
+    private List<Named> toList(Variable [] elements) {
+      List<Named> list = new LinkedList<Named>();
+
+      for (NamedElement element : elements) {
+        list.add(element);
+      }
+      return list;
+    }
+
     private String myName;
-    private String myDescription;
-    private Variable [] myVariables;
     private VariableReference myReference;
   }
 }

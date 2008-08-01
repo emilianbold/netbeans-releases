@@ -72,19 +72,37 @@ made subject to such option by the copyright holder.
     <folder name="WelcomePage">
         <folder name="GettingStartedLinks">
 
-            <file name="quickstart.url" url="nbresloc:/org/netbeans/modules/welcome/resources/quickstart.url">
+            <file name="quickstart_java.url" url="nbresloc:/org/netbeans/modules/welcome/resources/quickstart_java.url">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.welcome.resources.Bundle"/>
                 <attr name="position" intvalue="100"/>
                 <attr name="imageKey" stringvalue="IMG_QuickStart"/>
             </file>
 
-            <file name="whatsnew.url" url="nbresloc:/org/netbeans/modules/welcome/resources/whatsnew.url">
+            <file name="quickstart_ruby.url" url="nbresloc:/org/netbeans/modules/welcome/resources/quickstart_ruby.url">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.welcome.resources.Bundle"/>
+                <attr name="position" intvalue="101"/>
+                <attr name="imageKey" stringvalue="IMG_QuickStart"/>
+            </file>
+
+            <file name="quickstart_cnd.url" url="nbresloc:/org/netbeans/modules/welcome/resources/quickstart_cnd.url">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.welcome.resources.Bundle"/>
+                <attr name="position" intvalue="102"/>
+                <attr name="imageKey" stringvalue="IMG_QuickStart"/>
+            </file>
+
+            <file name="quickstart_php.url" url="nbresloc:/org/netbeans/modules/welcome/resources/quickstart_php.url">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.welcome.resources.Bundle"/>
+                <attr name="position" intvalue="103"/>
+                <attr name="imageKey" stringvalue="IMG_QuickStart"/>
+            </file>
+
+            <file name="whatsnew_default.url" url="nbresloc:/org/netbeans/modules/welcome/resources/whatsnew.url">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.welcome.resources.Bundle"/>
                 <attr name="position" intvalue="300"/>
                 <attr name="imageKey" stringvalue="IMG_WhatsNew"/>
             </file>
 
-            <file name="tour.url" url="nbresloc:/org/netbeans/modules/welcome/resources/tour.url">
+            <file name="tour_default.url" url="nbresloc:/org/netbeans/modules/welcome/resources/tour.url">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.welcome.resources.Bundle"/>
                 <attr name="position" intvalue="400"/>
                 <attr name="imageKey" stringvalue="IMG_Tour"/>
@@ -131,6 +149,11 @@ made subject to such option by the copyright holder.
             <file name="uml.url" url="nbresloc:/org/netbeans/modules/welcome/resources/learn_uml.url">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.welcome.resources.Bundle"/>
                 <attr name="position" intvalue="900"/>
+            </file>
+            
+            <file name="php.url" url="nbresloc:/org/netbeans/modules/welcome/resources/learn_php.url">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.welcome.resources.Bundle"/>
+                <attr name="position" intvalue="1000"/>
             </file>
 
         </folder>

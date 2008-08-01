@@ -44,14 +44,12 @@ package org.netbeans.modules.web.core;
 import java.io.IOException;
 import org.netbeans.modules.web.core.jsploader.JspLoader;
 import org.netbeans.modules.web.core.jsploader.JspDataObject;
-
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.CookieAction;
 import org.openide.nodes.Node;
 import org.openide.loaders.DataObject;
 import org.openide.NotifyDescriptor;
-
 import org.openide.DialogDisplayer;
 import org.openide.util.Exceptions;
 
@@ -98,6 +96,7 @@ public class EditQueryStringAction extends CookieAction {
         return MODE_EXACTLY_ONE;
     }
 
+    @Override
     protected boolean enable (Node[] activatedNodes){
         if (activatedNodes.length == 0) {
             return false;

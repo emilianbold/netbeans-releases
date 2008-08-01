@@ -59,8 +59,41 @@
         
         <group name="Delicious"/>
         
-        <authentication profile="SaaSServices/Delicious/profile.properties">
-            <http-basic/>
+        <code-gen>
+            <artifacts targets="java,servlet,resource,jsp" profile="Templates/SaaSServices/httpbasic.properties">
+                <artifact id="HttpBasicAuthenticatorDesktop" type="template"
+                    url="Templates/SaaSServices/HttpBasicAuthenticatorDesktop.java"/>
+                <artifact id="HttpBasicAuthenticator" type="template"
+                    url="Templates/SaaSServices/HttpBasicAuthenticator.java"/>
+                <artifact id="HttpBasicAuthenticatorLogin" type="template"
+                    url="Templates/SaaSServices/HttpBasicLogin.java"/>
+                <artifact id="HttpBasicAuthenticatorCallback" type="template"
+                    url="Templates/SaaSServices/HttpBasicCallback.java"/>
+            </artifacts>
+            <artifacts targets="php" profile="Templates/SaaSServices/httpbasic.php">
+                <artifact id="HttpBasicAuthenticator" type="template"
+                    url="Templates/SaaSServices/HttpBasicAuthenticator.php"/>
+                <artifact id="HttpBasicAuthenticatorLogin" type="template"
+                    url="Templates/SaaSServices/HttpBasicLogin.php"/>
+                <artifact id="HttpBasicAuthenticatorCallback" type="template"
+                    url="Templates/SaaSServices/HttpBasicCallback.php"/>
+            </artifacts>
+        </code-gen>
+        <authentication>
+            <http-basic username="username" password="password">
+                <authenticator>
+                    <use-templates>
+                        <desktop>
+                            <template type="auth" href="HttpBasicAuthenticatorDesktop"/>
+                        </desktop>
+                        <web>
+                            <template type="auth" href="HttpBasicAuthenticator"/>
+                            <template type="login" href="HttpBasicAuthenticatorLogin"/>
+                            <template type="callback" href="HttpBasicAuthenticatorCallback"/>
+                        </web>
+                    </use-templates>
+                </authenticator>
+            </http-basic>
         </authentication>
         
     </saas-metadata>

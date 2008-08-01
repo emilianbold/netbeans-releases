@@ -44,7 +44,7 @@ import org.netbeans.modules.bpel.design.DesignView;
 import org.netbeans.modules.bpel.design.DiagramView;
 import org.netbeans.modules.bpel.design.model.patterns.Pattern;
 
-public class TabToNextComponentAction extends DesignModeAction {
+public class TabToNextComponentAction extends DesignViewAction {
 
     private static final long serialVersionUID = 1L;
     private boolean forward;
@@ -57,27 +57,35 @@ public class TabToNextComponentAction extends DesignModeAction {
     public void actionPerformed(ActionEvent e) {
         
         DesignView view = getDesignView();
-        Pattern nextPattern = getNextPattern();
-        if (view.isDesignMode()) {
-            if (nextPattern != null) {
-                view.getSelectionModel().setSelectedPattern(nextPattern);
+        if (view.getCopyPasteHandler().isActive()) {
+            view.getCopyPasteHandler().tabNextPlaceholder(forward);
+        } else {
+            
+            Pattern next = view.getSelectionModel().getSelectedPattern();
+            
+
+            
+            while (true){
+                next = getNextPattern(next);
+                if(next == null){
+                    break;
+                }
+                if(next.isSelectable()){
+                    break;
+                }
+            }
+            
+            if (next != null) {
+                view.getSelectionModel().setSelectedPattern(next);
                 view.scrollSelectedToView();
             }
-//        } else {
-//            PlaceHolder nextPh = getPlaceHolderIterator().next();
-//            if (nextPh != null) {
-//                getPhSelectionModel().setSelectedPlaceHolder(nextPh);
-//                scrollPlaceHolderToView(nextPh);
-//                repaint();
-//            }
-//        }
+        }
     }
-}
 
-    private Pattern getNextPattern() {
+    private Pattern getNextPattern(Pattern current) {
         DesignView view = getDesignView();
     
-        Pattern current = view.getSelectionModel().getSelectedPattern();
+       
         if (current == null){
             return null;
         }
@@ -138,5 +146,4 @@ public class TabToNextComponentAction extends DesignModeAction {
         }
         return null;
     }
-
 }

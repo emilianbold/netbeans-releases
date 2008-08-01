@@ -1,5 +1,5 @@
 #API master signature file
-#Version 1.10.1
+#Version 1.11.0
 CLSS public final org.netbeans.api.progress.ProgressHandle
 meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
 meth protected void java.lang.Object.finalize() throws java.lang.Throwable

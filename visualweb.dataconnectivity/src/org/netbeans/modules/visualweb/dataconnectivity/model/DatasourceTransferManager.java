@@ -93,7 +93,9 @@ public class DatasourceTransferManager implements DesignTimeTransferDataCreator{
     public static String rowSetClassName = "com.sun.sql.rowset.CachedRowSetXImpl";
     private static final Logger LOGGER = 
             Logger.getLogger(DatasourceTransferManager.class.getName());
-
+    
+    private static final String UNDERSCORE = "_";  // NOI18N
+    private static final String SLASH = "/";  // NOI18N
     
     public DisplayItem getDisplayItem(Transferable transferable) {
         Object transferData = null;
@@ -156,6 +158,7 @@ public class DatasourceTransferManager implements DesignTimeTransferDataCreator{
             dbConnection = connection;
             jdbcDriver = driver;
         }
+        @Override
         public Result beansCreatedSetup(DesignBean[] designBeans) {
             DesignBean designBean = designBeans[0];
             
@@ -178,25 +181,28 @@ public class DatasourceTransferManager implements DesignTimeTransferDataCreator{
             String password = dbConnection.getPassword();
             String schema = dbConnection.getSchema();
             
-            if (schema.equals("")) {
-                if (databaseProductName.equals("MySQL") && url.lastIndexOf("?") == -1)
-                    dsName = url.substring(url.lastIndexOf("/") + 1, url.length()) + "_" + databaseProductName;
-                else if (databaseProductName.contains("/")) {
-                    int slashLoc = databaseProductName.indexOf("/");
+            if (schema.equals("")) { // NOI18N
+                if (databaseProductName.equals("MySQL") && url.lastIndexOf("?") == -1) // NOI18N
+                    dsName = url.substring(url.lastIndexOf(SLASH) + 1, url.length()) + UNDERSCORE + databaseProductName; 
+                else if (databaseProductName.contains("Firebird")) { // NOI18N
+                    dsName = getTableName() + UNDERSCORE + "Firebird"; // NOI18N
+                }
+                else if (databaseProductName.contains(SLASH)) { 
+                    int slashLoc = databaseProductName.indexOf(SLASH); 
                     String prefix = databaseProductName.substring(0, slashLoc);
                     String suffix = databaseProductName.substring(slashLoc+1);                   
-                    dsName = prefix + "_" + suffix;
-                } else if (databaseProductName.equals("MySQL")) {
-                    dsName = url.substring(url.lastIndexOf("/") + 1, url.lastIndexOf("?")) + "_" + databaseProductName;
+                    dsName = prefix + UNDERSCORE + suffix;
+                } else if (databaseProductName.equals("MySQL")) { // NOI18N
+                    dsName = url.substring(url.lastIndexOf(SLASH) + 1, url.lastIndexOf("?")) + UNDERSCORE + databaseProductName; // NOI18N
                 } else
-                    dsName = getTableName() + "_" + databaseProductName;
-            } else if (databaseProductName.contains("/")) {
-                int slashLoc = databaseProductName.indexOf("/");
+                    dsName = getTableName() + UNDERSCORE + databaseProductName; 
+            } else if (databaseProductName.contains(SLASH)) { 
+                int slashLoc = databaseProductName.indexOf(SLASH); 
                 String prefix = databaseProductName.substring(0, slashLoc);
                 String suffix = databaseProductName.substring(slashLoc+1);
-                dsName = prefix + "_" + suffix;
+                dsName = prefix + UNDERSCORE + suffix; 
             } else {
-                dsName = dbConnection.getSchema() + "_" + databaseProductName;
+                dsName = dbConnection.getSchema() + UNDERSCORE + databaseProductName;
             }
             
             // Check if target server supports data source creation.  If not then cancel drop

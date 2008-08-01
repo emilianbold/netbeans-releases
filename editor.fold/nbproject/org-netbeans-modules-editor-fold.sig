@@ -1,5 +1,5 @@
 #API master signature file
-#Version 1.6.1
+#Version 1.8
 CLSS public final org.netbeans.api.editor.fold.Fold
 meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
 meth protected void java.lang.Object.finalize() throws java.lang.Throwable
@@ -187,6 +187,7 @@ meth public boolean org.netbeans.spi.editor.fold.FoldOperation.isBlocked(org.net
 meth public boolean org.netbeans.spi.editor.fold.FoldOperation.isEndDamaged(org.netbeans.api.editor.fold.Fold)
 meth public boolean org.netbeans.spi.editor.fold.FoldOperation.isReleased()
 meth public boolean org.netbeans.spi.editor.fold.FoldOperation.isStartDamaged(org.netbeans.api.editor.fold.Fold)
+meth public boolean org.netbeans.spi.editor.fold.FoldOperation.owns(org.netbeans.api.editor.fold.Fold)
 meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
 meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
 meth public java.lang.Object org.netbeans.spi.editor.fold.FoldOperation.getExtraInfo(org.netbeans.api.editor.fold.Fold)

@@ -41,17 +41,9 @@
 
 package org.netbeans.modules.javascript.editing;
 
-import java.io.IOException;
-import java.util.Collections;
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.ElementKind;
-import org.netbeans.modules.gsf.api.Index;
 import org.netbeans.modules.gsf.api.IndexDocument;
-import org.netbeans.modules.gsf.api.IndexDocumentFactory;
 
 /**
  * @author Tor Norbye
@@ -60,34 +52,10 @@ public class JsIndexerTest extends JsTestBase {
     
     public JsIndexerTest(String testName) {
         super(testName);
-        initializeRegistry();
     }
 
     @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-    }
-
-    @Override
-    protected void tearDown() throws Exception {
-        super.tearDown();
-    }
-
-   private String sortCommaList(String s) {
-        String[] items = s.split(",");
-        Arrays.sort(items);
-        StringBuilder sb = new StringBuilder();
-        for (String item : items) {
-            if (sb.length() > 0) {
-                sb.append(",");
-            }
-            sb.append(item);
-        }
-
-        return sb.toString();
-    }
-    
-    private String prettyPrintValue(String key, String value) {
+    public String prettyPrintValue(String key, String value) {
         if (value == null) {
             return value;
         }
@@ -111,159 +79,7 @@ public class JsIndexerTest extends JsTestBase {
         return value;
     }
 
-    public String prettyPrint(String fileUrl, List<IndexDocument> documents, String localUrl) throws IOException {
-        List<String> nonEmptyDocuments = new ArrayList<String>();
-        List<String> emptyDocuments = new ArrayList<String>();
-
-        StringBuilder sb = new StringBuilder();
-        sb.append("Delete:");
-        sb.append("  ");
-        sb.append("source");
-        sb.append(" : ");
-        sb.append(fileUrl);
-        sb.append("\n");
-        sb.append("\n");  
-        nonEmptyDocuments.add(sb.toString());
-        
-
-        if (documents != null) {
-            for (IndexDocument d : documents) {
-                IndexDocumentImpl doc = (IndexDocumentImpl)d;
-
-                sb = new StringBuilder();
-                sb.append("Indexed:");
-                sb.append("\n");
-                List<String> strings = new ArrayList<String>();
-
-                List<String> keys = doc.indexedKeys;
-                List<String> values = doc.indexedValues;
-                for (int i = 0, n = keys.size(); i < n; i++) {
-                    String key = keys.get(i);
-                    String value = values.get(i);
-                    strings.add(key + " : " + prettyPrintValue(key, value));
-                }
-                Collections.sort(strings);
-                for (String string : strings) {
-                    sb.append("  ");
-                    sb.append(string);
-                    sb.append("\n");
-                }
-
-                sb.append("\n");
-                sb.append("Not Indexed:");
-                sb.append("\n");
-                strings = new ArrayList<String>();
-                keys = doc.unindexedKeys;
-                values = doc.unindexedValues;
-                for (int i = 0, n = keys.size(); i < n; i++) {
-                    String key = keys.get(i);
-                    String value = prettyPrintValue(key, values.get(i));
-                    if (value.indexOf(',') != -1) {
-                        value = sortCommaList(value);
-                    }
-                    strings.add(key + " : " + value);
-                }
-
-                Collections.sort(strings);
-                for (String string : strings) {
-                    sb.append("  ");
-                    sb.append(string);
-                    sb.append("\n");
-                }
-
-                String s = sb.toString();
-                if (doc.indexedKeys.size() == 0 && doc.unindexedKeys.size() == 0) {
-                    emptyDocuments.add(s);
-                } else {
-                    nonEmptyDocuments.add(s);
-                }
-            }
-        }
-
-        Collections.sort(emptyDocuments);
-        Collections.sort(nonEmptyDocuments);
-        sb = new StringBuilder();
-        int documentNumber = 0;
-        for (String s : emptyDocuments) {
-            sb.append("\n\nDocument ");
-            sb.append(Integer.toString(documentNumber++));
-            sb.append("\n");
-            sb.append(s);
-        }
-
-        for (String s : nonEmptyDocuments) {
-            sb.append("\n\nDocument ");
-            sb.append(Integer.toString(documentNumber++));
-            sb.append("\n");
-            sb.append(s);
-        }
-
-
-        return sb.toString().replace(localUrl, "<TESTURL>");
-    }
-        
-        
-    private class IndexDocumentImpl implements IndexDocument {
-        private Index index;
-        private List<String> indexedKeys = new ArrayList<String>();
-        private List<String> indexedValues = new ArrayList<String>();
-        private List<String> unindexedKeys = new ArrayList<String>();
-        private List<String> unindexedValues = new ArrayList<String>();
-
-        IndexDocumentImpl(Index index) {
-            this.index = index;
-        }
-        
-        public void addPair(String key, String value, boolean indexed) {
-            if (indexed) {
-                indexedKeys.add(key);
-                indexedValues.add(value);
-            } else {
-                unindexedKeys.add(key);
-                unindexedValues.add(value);
-            }
-        }
-    }
-
-    private class IndexDocumentFactoryImpl implements IndexDocumentFactory {
-        Index index;
-        IndexDocumentFactoryImpl(Index index) {
-            this.index = index;
-        }
-
-        public IndexDocument createDocument(int initialPairs) {
-            return new IndexDocumentImpl(index);
-        }
-    }
-    
-    private List<IndexDocument> indexFile(String relFilePath) throws Exception {
-        CompilationInfo info = getInfo(relFilePath);
-        JsParseResult rpr = AstUtilities.getParseResult(info);
-
-        JsIndexer indexer = new JsIndexer();
-        JsIndex.setClusterUrl("file:/bogus"); // No translation
-        IndexDocumentFactory factory = new IndexDocumentFactoryImpl(info.getIndex(JsMimeResolver.JAVASCRIPT_MIME_TYPE));
-        List<IndexDocument> result = indexer.index(rpr, factory);
-        
-        return result;
-    }
-    
-    private void checkIndexer(String relFilePath) throws Exception {
-        File jsFile = new File(getDataDir(), relFilePath);
-        String fileUrl = jsFile.toURI().toURL().toExternalForm();
-        String localUrl = fileUrl;
-        int index = localUrl.lastIndexOf('/');
-        if (index != -1) {
-            localUrl = localUrl.substring(0, index);
-        }
-        
-        List<IndexDocument> result = indexFile(relFilePath);
-        String annotatedSource = prettyPrint(fileUrl, result, localUrl);
-
-        assertDescriptionMatches(relFilePath, annotatedSource, false, ".indexed");
-    }
-    
-    private IndexedElement findElement(List<IndexDocument> documents, String key, String valuePrefix, JsIndex index) {
+    protected IndexedElement findElement(List<IndexDocument> documents, String key, String valuePrefix, JsIndex index) {
         for (IndexDocument document : documents) {
             IndexDocumentImpl doc = (IndexDocumentImpl)document;
             for (int i = 0, n = doc.indexedKeys.size(); i < n; i++) {
@@ -280,10 +96,80 @@ public class JsIndexerTest extends JsTestBase {
         return null;
     }
     
+    public void testIsIndexable1() throws Exception {
+        checkIsIndexable("testfiles/indexable/lib.js", true);
+    }
+    
+    public void testIsIndexable2() throws Exception {
+        checkIsIndexable("testfiles/indexable/data.json", false);
+    }
+    
+    public void testIsIndexable3() throws Exception {
+        checkIsIndexable("testfiles/indexable/ext-all-debug.js", true);
+        checkIsIndexable("testfiles/indexable/ext-all.js", false);
+    }
+    
+    public void testIsIndexable4() throws Exception {
+        checkIsIndexable("testfiles/indexable/yui.js", false);
+        checkIsIndexable("testfiles/indexable/yui-min.js", false);
+        checkIsIndexable("testfiles/indexable/yui-debug.js", true);
+    }
+    
+    public void testIsIndexable5() throws Exception {
+        checkIsIndexable("testfiles/indexable/index.html", true);
+        checkIsIndexable("testfiles/indexable/servlet.jsp", true);
+        checkIsIndexable("testfiles/indexable/view2.php", true);
+        checkIsIndexable("testfiles/indexable/view3.rhtml", true);
+    }
+    
+    public void testIsIndexable6() throws Exception {
+        checkIsIndexable("testfiles/indexable/dojo.js", false);
+        checkIsIndexable("testfiles/indexable/dojo.uncompressed.js", true);
+    }
+    
+    public void testIsIndexable7() throws Exception {
+        checkIsIndexable("testfiles/indexable/foo.js", true);
+        checkIsIndexable("testfiles/indexable/foo.min.js", false);
+    }
+    
+    public void testIsIndexable8() throws Exception {
+        checkIsIndexable("testfiles/indexable/doc.sdoc", true);
+    }
+    
+    public void testIsIndexableDeletedFiles() throws Exception {
+        // isIndexable should return true for files that have been deleted as well
+        
+        checkIsIndexable("testfiles/indexable/lib.js", true);
+    }
+    
+    public void testIsIndexableEverythingSdoc1() throws Exception {
+        checkIsIndexable("testfiles/indexable/sdoconly/everything.sdoc", true);
+    }
+
+    public void testIsIndexableEverythingSdoc2() throws Exception {
+        checkIsIndexable("testfiles/indexable/sdoconly/foo.js", false);
+    }
+    
+    // Not yet hooked up
+    //public void testIsIndexable9() throws Exception {
+    //    checkIsIndexable("testfiles/indexable/view.erb", true);
+    //}
+    
+    public void testQueryPath() throws Exception {
+        JsIndexer indexer = new JsIndexer();
+        assertTrue(indexer.acceptQueryPath("/foo/bar/baz"));
+        assertFalse(indexer.acceptQueryPath("/foo/jruby/lib/ruby/gems/1.8/gems"));
+        assertFalse(indexer.acceptQueryPath("/foo/netbeans/ruby2/rubystubs/0.2"));
+    }
+    
     public void testIndex0() throws Exception {
         checkIndexer("testfiles/prototype.js");
     }
 
+    public void testIndexPrototypeNew() throws Exception {
+        checkIndexer("testfiles/prototype-new.js");
+    }
+    
     public void testIndex1() throws Exception {
         checkIndexer("testfiles/SpryEffects.js");
     }
@@ -293,7 +179,7 @@ public class JsIndexerTest extends JsTestBase {
     }
 
     public void testIndex3() throws Exception {
-        checkIndexer("testfiles/dojo.js.uncompressed.js");
+        checkIndexer("testfiles/orig-dojo.js.uncompressed.js");
     }
 
     public void testSimple() throws Exception {
@@ -311,7 +197,8 @@ public class JsIndexerTest extends JsTestBase {
     public void testRestore1() throws Exception {
         List<IndexDocument> docs = indexFile("testfiles/stub_dom_Window.js");
         assertTrue(docs.size() > 0);
-        JsIndex index = JsIndex.get(((IndexDocumentImpl)docs.get(0)).index);
+        initializeRegistry();
+        JsIndex index = JsIndex.get(getInfo("testfiles/stub_dom_Window.js").getIndex(getPreferredMimeType()));
         IndexedElement element = findElement(docs, JsIndexer.FIELD_FQN, "window.opendialog", index);
         assertNotNull(element);
         assertEquals("Window.openDialog", element.getName());
@@ -326,7 +213,8 @@ public class JsIndexerTest extends JsTestBase {
 
     public void testRestore2() throws Exception {
         List<IndexDocument> docs = indexFile("testfiles/stub_dom_Window.js");
-        JsIndex index = JsIndex.get(((IndexDocumentImpl)docs.get(0)).index);
+        initializeRegistry();
+        JsIndex index = JsIndex.get(getInfo("testfiles/stub_dom_Window.js").getIndex(getPreferredMimeType()));
         IndexedElement element = findElement(docs, JsIndexer.FIELD_BASE, "opendialog", index);
         assertNotNull(element);
         assertEquals("openDialog", element.getName());
@@ -341,8 +229,10 @@ public class JsIndexerTest extends JsTestBase {
     }
 
     public void testRestore3() throws Exception {
-        List<IndexDocument> docs = indexFile("testfiles/stub_dom_Window.js");
-        JsIndex index = JsIndex.get(((IndexDocumentImpl)docs.get(0)).index);
+        String name = "testfiles/stub_dom_Window.js";
+        List<IndexDocument> docs = indexFile(name);
+        initializeRegistry();
+        JsIndex index = JsIndex.get(getInfo(name).getIndex(getPreferredMimeType()));
         IndexedElement element = findElement(docs, JsIndexer.FIELD_BASE, "opendialog", index);
         assertNotNull(element);
         assertEquals("openDialog", element.getName());
@@ -358,15 +248,18 @@ public class JsIndexerTest extends JsTestBase {
 
     public void testRestore4() throws Exception {
         List<IndexDocument> docs = indexFile("testfiles/simple.js");
-        JsIndex index = JsIndex.get(((IndexDocumentImpl)docs.get(0)).index);
+        initializeRegistry();
+        JsIndex index = JsIndex.get(getInfo("testfiles/stub_dom_Window.js").getIndex(getPreferredMimeType()));
         IndexedElement element = findElement(docs, JsIndexer.FIELD_FQN, "donal", index);
         assertNotNull(element);
         assertEquals("DonaldDuck", element.getName());
     }
 
     public void testRestore5() throws Exception {
-        List<IndexDocument> docs = indexFile("testfiles/simple.js");
-        JsIndex index = JsIndex.get(((IndexDocumentImpl)docs.get(0)).index);
+        String name = "testfiles/simple.js";
+        List<IndexDocument> docs = indexFile(name);
+        initializeRegistry();
+        JsIndex index = JsIndex.get(getInfo(name).getIndex(getPreferredMimeType()));
         IndexedElement element = findElement(docs, JsIndexer.FIELD_FQN, "donaldduck.m", index);
         assertNotNull(element);
         // TODO - transfer logic from JsIndex.getFqn logic into IndexElement.create
@@ -375,8 +268,10 @@ public class JsIndexerTest extends JsTestBase {
     }
 
     public void testRestore6() throws Exception {
-        List<IndexDocument> docs = indexFile("testfiles/simple.js");
-        JsIndex index = JsIndex.get(((IndexDocumentImpl)docs.get(0)).index);
+        String name = "testfiles/simple.js";
+        List<IndexDocument> docs = indexFile(name);
+        initializeRegistry();
+        JsIndex index = JsIndex.get(getInfo(name).getIndex(getPreferredMimeType()));
         IndexedElement element = findElement(docs, JsIndexer.FIELD_FQN, "donaldduck.mickey.b", index);
         assertNotNull(element);
         // TODO - transfer logic from JsIndex.getFqn logic into IndexElement.create
@@ -385,8 +280,10 @@ public class JsIndexerTest extends JsTestBase {
     }
 
     public void testRestore7() throws Exception {
-        List<IndexDocument> docs = indexFile("testfiles/dojo.js.uncompressed.js");
-        JsIndex index = JsIndex.get(((IndexDocumentImpl)docs.get(0)).index);
+        String name = "testfiles/orig-dojo.js.uncompressed.js";
+        List<IndexDocument> docs = indexFile(name);
+        initializeRegistry();
+        JsIndex index = JsIndex.get(getInfo(name).getIndex(getPreferredMimeType()));
         IndexedElement element = findElement(docs, JsIndexer.FIELD_FQN, "dojo.deferred", index);
         assertNotNull(element);
         // TODO - transfer logic from JsIndex.getFqn logic into IndexElement.create
@@ -440,5 +337,45 @@ public class JsIndexerTest extends JsTestBase {
 
     public void testReturnTypes() throws Exception {
         checkIndexer("testfiles/returntypes.js");
+    }
+
+    public void testScriptDoc() throws Exception {
+        checkIndexer("testfiles/jquery.sdoc");
+    }
+
+    public void testScriptDoc2() throws Exception {
+        checkIndexer("testfiles/yui.sdoc");
+    }
+
+    public void testTwoNames() throws Exception {
+        checkIndexer("testfiles/two-names.js");
+    }
+
+    public void testWoodStock() throws Exception {
+        checkIndexer("testfiles/woodstock.sdoc");
+    }
+
+    public void testWoodStock2() throws Exception {
+        checkIndexer("testfiles/woodstock2.js");
+    }
+
+    public void testWoodStock3() throws Exception {
+        checkIndexer("testfiles/woodstock-body.js");
+    }
+
+    public void testDojoExtend() throws Exception {
+        checkIndexer("testfiles/dnd.js");
+    }
+
+    public void testClassProps() throws Exception {
+        checkIndexer("testfiles/classprops.js");
+    }
+
+    public void testWebui() throws Exception {
+        checkIndexer("testfiles/bubble.js");
+    }
+
+    public void testXHR() throws Exception {
+        checkIndexer("testfiles/stub_dom_XMLHttpRequest.js");
     }
 }

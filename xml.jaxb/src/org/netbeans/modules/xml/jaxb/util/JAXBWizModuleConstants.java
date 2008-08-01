@@ -41,6 +41,8 @@
 
 package org.netbeans.modules.xml.jaxb.util;
 
+import org.openide.WizardDescriptor;
+
 /**
  *
  * @author gpatil
@@ -50,10 +52,10 @@ public class JAXBWizModuleConstants {
     public static final String LAST_BROWSED_BINDING_DIR = "last.browsed.binding.dir" ; //NOI18N
     public static final String LAST_BROWSED_CATALOG_DIR = "last.browsed.catalog.dir" ; //NOI18N
     
-    public static final String WIZ_ERROR_MSG = "WizardPanel_errorMessage" ; //NOI18N
-    public static final String WIZ_STYLE_AUTO = "WizardPanel_autoWizardStyle"; //NOI18N
-    public static final String WIZ_CONTENT_DISPLAYED = "WizardPanel_contentDisplayed" ; //NOI18N
-    public static final String WIZ_CONTENT_NUMBERED = "WizardPanel_contentNumbered"; //I18N
+    public static final String WIZ_ERROR_MSG = WizardDescriptor.PROP_ERROR_MESSAGE ; //NOI18N
+    public static final String WIZ_STYLE_AUTO = WizardDescriptor.PROP_AUTO_WIZARD_STYLE; //NOI18N
+    public static final String WIZ_CONTENT_DISPLAYED = WizardDescriptor.PROP_CONTENT_DISPLAYED ; //NOI18N
+    public static final String WIZ_CONTENT_NUMBERED = WizardDescriptor.PROP_CONTENT_NUMBERED; //I18N
     
     public static final String JAXB_SCHEMA_TYPE_XML_SCHEMA = "-xmlschema" ; //NOI18N
     public static final String JAXB_SCHEMA_TYPE_RELAX_NG = "-relaxng" ; //NOI18N

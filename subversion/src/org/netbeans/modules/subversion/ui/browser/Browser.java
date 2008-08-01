@@ -178,18 +178,20 @@ public class Browser implements VetoableChangeListener, BrowserClient, TreeExpan
         // get the nodes first
         Node[] nodes = getExplorerManager().getSelectedNodes();
         
-        // clean up - however the dialog was closed, we always cancel all running tasks 
+        // clean up - even if the dialog was closed, we always cancel all running tasks
         cancel();  
         
         if(nodes.length == 0) {
             return EMPTY_ROOT;
         }
         
-        RepositoryFile[] ret = new RepositoryFile[nodes.length];
+        List<RepositoryFile> ret = new ArrayList<RepositoryFile>(nodes.length);
         for (int i = 0; i < nodes.length; i++) {
-            ret[i] = ((RepositoryPathNode) nodes[i]).getEntry().getRepositoryFile();
+            if(nodes[i] instanceof RepositoryPathNode) {
+                ret.add(((RepositoryPathNode) nodes[i]).getEntry().getRepositoryFile());
+            }
         }                        
-        return ret;
+        return ret.toArray(new RepositoryFile[ret.size()]);
     }    
     
     private boolean show() {

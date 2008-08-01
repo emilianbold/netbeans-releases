@@ -39,14 +39,16 @@
 
 package org.netbeans.modules.cnd.gotodeclaration.element.providers;
 
+import java.util.Iterator;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
+import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
+import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.gotodeclaration.element.spi.ElementProvider;
-import org.netbeans.modules.cnd.gotodeclaration.util.NameMatcher;
 import org.openide.util.NbBundle;
 
 /**
@@ -65,51 +67,44 @@ public class FuncVarElementProvider extends BaseProvider implements ElementProvi
             return NbBundle.getMessage(FuncVarElementProvider.class, "FUNCVAR_PROVIDER_DISPLAY_NAME"); // NOI18N
         }
 
-        protected void processProject(CsmProject project, ResultSet result, NameMatcher comparator) {
+        protected void processProject(CsmProject project, ResultSet result, CsmSelect.CsmFilter filter) {
             if( TRACE ) System.err.printf("FuncVarElementProvider.processProject %s\n", project.getName());
-            processNamespace(project.getGlobalNamespace(), result, comparator);
+            processNamespace(project.getGlobalNamespace(), result, filter);
         }
 
-        private void processNamespace(CsmNamespace nsp, ResultSet result, NameMatcher comparator) {
+        private void processNamespace(CsmNamespace nsp, ResultSet result, CsmSelect.CsmFilter filter) {
             if( TRACE ) System.err.printf("processNamespace %s\n", nsp.getQualifiedName());
-            for( CsmDeclaration declaration : nsp.getDeclarations() ) {
+            Iterator<CsmOffsetableDeclaration> iter  = CsmSelect.getDefault().getDeclarations(nsp, filter);
+            while( iter.hasNext() ) {
                 if( isCancelled() ) {
                     return;
                 }
-                processDeclaration(declaration, result, comparator);
+                processDeclaration(iter.next(), result);
             }
             for( CsmNamespace child : nsp.getNestedNamespaces() ) {
                 if( isCancelled() ) {
                     return;
                 }
-                processNamespace(child, result, comparator);
+                processNamespace(child, result, filter);
             }
         }
 
-        private void processDeclaration(CsmDeclaration decl, ResultSet result, NameMatcher comparator) {
+        private void processDeclaration(CsmDeclaration decl, ResultSet result) {
+            CsmFunctionDefinition fdef = null;
             switch (decl.getKind()) {
                 case FUNCTION_DEFINITION:
-                    if( comparator.matches(decl.getName().toString()) ) {
-                        CsmFunctionDefinition fdef = (CsmFunctionDefinition) decl;
-    //		    CsmFunction fdecl = fdef.getDeclaration();
-    //		    if( fdecl == null || fdecl == fdef) {
-                            result.add(new FunctionElementDescriptor(fdef));
-    //		    }
-                    }
+                    fdef = (CsmFunctionDefinition) decl;
+                    result.add(new FunctionElementDescriptor(fdef));
                     break;
                 case FUNCTION:
-                    if( comparator.matches(decl.getName().toString()) ) {
-                        CsmFunction fdecl = (CsmFunction) decl;
-                        CsmFunctionDefinition fdef = fdecl.getDefinition();
-                        if( fdef == null || fdef.equals(fdecl) ) {
-                            result.add(new FunctionElementDescriptor((CsmFunction) decl));
-                        }
+                    CsmFunction fdecl = (CsmFunction) decl;
+                    fdef = fdecl.getDefinition();
+                    if( fdef == null || fdef.equals(fdecl) ) {
+                        result.add(new FunctionElementDescriptor((CsmFunction) decl));
                     }
                     break;
                 case VARIABLE:
-                    if( comparator.matches(decl.getName().toString()) ) {
-                        result.add(new VariableElementDescriptor((CsmVariable) decl));
-                    }
+                    result.add(new VariableElementDescriptor((CsmVariable) decl));
                     break;
                 case CLASS:
                 case UNION:

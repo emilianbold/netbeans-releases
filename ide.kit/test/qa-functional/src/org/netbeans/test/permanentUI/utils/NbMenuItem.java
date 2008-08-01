@@ -49,8 +49,8 @@ import javax.swing.JRadioButtonMenuItem;
  */
 public class NbMenuItem implements Comparable {
 
-    private String name;
-    private char mnemo;
+    private String name = "NONE";
+    private char mnemo = 0;
     private String accelerator = null;
     private boolean enabled = false;
     private boolean radiobutton = false;
@@ -98,7 +98,7 @@ public class NbMenuItem implements Comparable {
     }
 
     public void setMnemo(char mnemo) {
-        this.mnemo = mnemo;
+        this.mnemo = Character.toUpperCase(mnemo); //all the mnemonic returned by JMenuItem.getMnemonic() are upper case
     }
 
     public String getAccelerator() {
@@ -187,7 +187,7 @@ public class NbMenuItem implements Comparable {
             } else {
                 if (Character.toUpperCase(this.getMnemo()) != Character.toUpperCase(obj.getMnemo()) ) {//TODO: for unknown reason the AbstarctButton.getMnemonic() returns always capital letter
 //                if (this.getMnemo() != obj.getMnemo()) {//TODO: for unknown reason the AbstarctButton.getMnemonic() returns always capital letter
-                    text += ", MNEMONICS 2are NOT same [" + this.getMnemo() + "] != [" + obj.getMnemo() + "]";
+                    text += ", MNEMONICS are NOT same [" + this.getMnemo() + "] != [" + obj.getMnemo() + "]";
                 }
                 if ((this.getSubmenu () != null) != (obj.getSubmenu () != null)) { //do they both have submenus?
                     text += ", " + (this.getSubmenu () != null ? obj.getName() : this.getName()) + " has NO SUBMENU";

@@ -21,6 +21,7 @@ package org.netbeans.spi.project.libraries;
 
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.net.URI;
 import java.net.URL;
 import java.util.List;
 import java.util.Map;
@@ -33,7 +34,7 @@ import java.util.Set;
  * @param L the type of library created by this provider
  * @since org.netbeans.modules.project.libraries/1 1.15
  */
-public interface ArealLibraryProvider<A extends LibraryStorageArea, L extends LibraryImplementation> {
+public interface ArealLibraryProvider<A extends LibraryStorageArea, L extends LibraryImplementation2> {
 
     /**
      * Property to fire when {@link #getOpenAreas} might have changed.
@@ -112,7 +113,7 @@ public interface ArealLibraryProvider<A extends LibraryStorageArea, L extends Li
      * @param contents initial volume contents (keys must be contained in the appropriate {@link LibraryTypeProvider#getSupportedVolumeTypes})
      * @return a new library with matching type, name, area, and contents
      * @throws IOException if an error occurs creating the library definition     */
-    L createLibrary(String type, String name, A area, Map<String,List<URL>> contents) throws IOException;
+    L createLibrary(String type, String name, A area, Map<String,List<URI>> contents) throws IOException;
 
     /**
      * Deletes an existing library.

@@ -27,6 +27,8 @@ import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.xml.transform.Source;
+import org.netbeans.modules.soa.validation.core.Controller;
+import org.netbeans.modules.xml.api.XmlFileEncodingQueryImpl;
 import org.netbeans.modules.xslt.tmap.model.api.TMapModel;
 import org.netbeans.modules.xslt.tmap.multiview.TMapMultiViewSupport;
 import org.netbeans.spi.xml.cookies.DataObjectAdapters;
@@ -59,8 +61,6 @@ public class TMapDataObject extends MultiDataObject {
     private transient TMapDataEditorSupport myDataEditorSupport;
     private transient AtomicReference<Lookup> myLookup = 
         new AtomicReference<Lookup>();
-    private transient AtomicReference<InstanceContent> myServices = 
-        new AtomicReference<InstanceContent>();
     private transient AtomicBoolean isLookupInit = new AtomicBoolean( false );
     
     public TMapDataObject(FileObject pf, TMapDataLoader loader) throws DataObjectExistsException, IOException {
@@ -69,11 +69,6 @@ public class TMapDataObject extends MultiDataObject {
         
         CookieSet cookies = getCookieSet();
         cookies.add( getEditorSupport() );
-        
-        // add check and validate cookies
-//        InputSource is = DataObjectAdapters.inputSource (this);
-//        cookies.add(new CheckXMLSupport (is));
-//        cookies.add(new ValidateXSLSupport (is));
         
         // add xsl transform support
         Source source = DataObjectAdapters.source(this);
@@ -112,21 +107,25 @@ public class TMapDataObject extends MultiDataObject {
         return new HelpCtx(TMapDataObject.class);
     }
     
+    public void addSaveCookie(SaveCookie cookie){
+        getCookieSet().add(cookie);
+    }
+
+    public void removeSaveCookie(){
+        Node.Cookie cookie = getCookie(SaveCookie.class);
+        if (cookie != null) {
+            getCookieSet().remove(cookie);
+        }
+    }
+
     @Override
     public void setModified( boolean modified )
     {
         super.setModified(modified);
         if (modified) {
             getCookieSet().add(getSaveCookie());
-            if ( isLookupInit.get() ) {
-                myServices.get().add(getSaveCookie());
-            }
-        }
-        else {
+        } else {
             getCookieSet().remove(getSaveCookie());
-            if ( isLookupInit.get() ) {
-                myServices.get().remove( getSaveCookie());
-            }
         }
     }
     
@@ -165,22 +164,31 @@ public class TMapDataObject extends MultiDataObject {
 
             list.add(Lookups.fixed( new Object[]{
                     super.getLookup(), 
-                    this
-                    }));
+                    this,
+                    getEditorSupport(),
+                    XmlFileEncodingQueryImpl.singleton()
+                }));
+
+            list.add(getCookieSet().getLookup());
 
             // add lazy initialization
-            InstanceContent.Convertor<Class, Object> conv =
-                    new InstanceContent.Convertor<Class, Object>() {
-                
+            InstanceContent.Convertor<Class, Object> conv = new InstanceContent.Convertor<Class, Object>() {
+                private AtomicReference<Controller> valControllerRef = new AtomicReference<Controller>();
+
                 public Object convert(Class obj) {
                     if (obj == TMapModel.class) {
                         return getEditorSupport().getTMapModel();
                     }
+                    if (obj == Controller.class) {
+                        valControllerRef.compareAndSet(null, new Controller(getEditorSupport().getTMapModel()));
+                        return valControllerRef.get();
+                    }
+
+
 
                     if (obj == TMapDataEditorSupport.class) {
                         return getEditorSupport();
                     }
-                    
                     return null;
                 }
 
@@ -196,28 +204,11 @@ public class TMapDataObject extends MultiDataObject {
                     return obj.getName();
                 }
             };
-            
             list.add(Lookups.fixed(
-                    new Class[] {TMapModel.class, TMapDataEditorSupport.class}
-                    , conv));
-            //
-                    
-            //
-            // WARNING
-            // CANNOT add Lookups.singleton(getNodeDelegate()) or will stack
-            // overflow
-            // WARNING
-            //
+                    new Class[] { TMapModel.class,
+                    Controller.class,
 
-
-            /* 
-             * Services are used for push/pop SaveCookie in lookup. This allow to work
-             * "Save" action on diagram.
-             */ 
-            myServices.compareAndSet( null, new InstanceContent() );
-            myServices.get().add( new Empty() );                      // FIX for #IZ78702
-            list.add(new AbstractLookup(myServices.get()));
-
+                    TMapDataEditorSupport.class}, conv));
             lookup = new ProxyLookup(list.toArray(new Lookup[list.size()]));
 
             myLookup.compareAndSet(null, lookup);
@@ -344,7 +335,4 @@ public class TMapDataObject extends MultiDataObject {
 
     }
     
-    private static class Empty {
-        
-    }
 }

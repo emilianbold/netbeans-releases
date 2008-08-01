@@ -27,43 +27,30 @@
  */
 package org.netbeans.modules.javascript.hints;
 
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.prefs.Preferences;
-import javax.swing.Action;
 import javax.swing.JComponent;
-import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
 import org.mozilla.javascript.Node;
 import org.mozilla.javascript.Token;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
-import org.netbeans.modules.javascript.editing.AstPath;
+import org.netbeans.modules.gsf.api.Hint;
+import org.netbeans.modules.gsf.api.EditList;
+import org.netbeans.modules.gsf.api.HintFix;
+import org.netbeans.modules.gsf.api.HintSeverity;
+import org.netbeans.modules.gsf.api.PreviewableFix;
+import org.netbeans.modules.gsf.api.RuleContext;
 import org.netbeans.modules.javascript.editing.AstUtilities;
-import org.netbeans.modules.javascript.editing.JsUtils;
-import org.netbeans.modules.javascript.hints.spi.AstRule;
-import org.netbeans.modules.javascript.hints.spi.Description;
-import org.netbeans.modules.javascript.hints.spi.EditList;
-import org.netbeans.modules.javascript.hints.spi.Fix;
-import org.netbeans.modules.javascript.hints.spi.HintSeverity;
-import org.netbeans.modules.javascript.hints.spi.PreviewableFix;
-import org.netbeans.modules.javascript.hints.spi.RuleContext;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
-import org.openide.cookies.EditorCookie;
-import org.openide.cookies.EditorCookie;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
+import org.netbeans.modules.javascript.hints.infrastructure.JsAstRule;
+import org.netbeans.modules.javascript.hints.infrastructure.JsRuleContext;
 import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.lookup.AbstractLookup;
-import org.openide.util.lookup.InstanceContent;
 
 /**
  * JavaScript can contain unicode, but not all browsers support it.
@@ -71,26 +58,19 @@ import org.openide.util.lookup.InstanceContent;
  * 
  * @author Tor Norbye
  */
-public class UnicodeConvert implements AstRule {
+public class UnicodeConvert extends JsAstRule {
     public UnicodeConvert() {
     }
 
-    public boolean appliesTo(CompilationInfo info) {
+    public boolean appliesTo(RuleContext context) {
         return true;
     }
 
     public Set<Integer> getKinds() {
-        Set<Integer> integers = new HashSet<Integer>();
-        // XXX root
-//        integers.add(-1);
-//        integers.add(NodeTypes.LOCALASGNNODE);
-//        integers.add(NodeTypes.DEFNNODE);
-//        integers.add(NodeTypes.DEFSNODE);
-        integers.add(Token.STRING);
-        return integers;
+        return Collections.singleton(Token.STRING);
     }
     
-    public void run(RuleContext context, List<Description> result) {
+    public void run(JsRuleContext context, List<Hint> result) {
         CompilationInfo info = context.compilationInfo;
         Node node = context.node;
         
@@ -104,9 +84,11 @@ public class UnicodeConvert implements AstRule {
                     return;
                 }
                 try {
-                    Document doc = info.getDocument();
-                    if (lexOffset < doc.getLength()-i-1) {
-                        char d = doc.getText(lexOffset+i, 1).charAt(0);
+                    BaseDocument doc = context.doc;
+                    lexOffset++; // Skip the "
+                    lexOffset += i; // Jump to the bad character
+                    if (lexOffset < doc.getLength()) {
+                        char d = doc.getText(lexOffset, 1).charAt(0);
                         if (d != c) {
                             // Didn't find the actual unicode char there;
                             // it's probably already in \\u form
@@ -115,45 +97,17 @@ public class UnicodeConvert implements AstRule {
                     }
                 } catch (BadLocationException ex) {
                     Exceptions.printStackTrace(ex);
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
                 }
-//                lexOffset++; // Skip " ?
-                lexOffset += i;
                 
                 OffsetRange range = new OffsetRange(lexOffset, lexOffset+1);
-                List<Fix> fixList = new ArrayList<Fix>();
-                fixList.add(new ConvertFix(info, lexOffset, c));
-                    String displayName = getDisplayName();
-                    Description desc = new Description(this, displayName, info.getFileObject(), range, fixList, 1500);
-                    result.add(desc);
+                List<HintFix> fixList = new ArrayList<HintFix>();
+                fixList.add(new ConvertFix(context, lexOffset, c));
+                fixList.add(new MoreInfoFix("unicodeconvert")); // NOI18N
+                String displayName = getDisplayName();
+                Hint desc = new Hint(this, displayName, info.getFileObject(), range, fixList, 1500);
+                result.add(desc);
             }
         }
-        
-//        Node node = context.node;
-//
-//        String name = ((INameNode)node).getName();
-//
-//        for (int i = 0; i < name.length(); i++) {
-//            if (Character.isUpperCase(name.charAt(i))) {
-//                String key =  node.nodeId == NodeTypes.LOCALASGNNODE ? "InvalidLocalName" : "InvalidMethodName"; // NOI18N
-//                String displayName = NbBundle.getMessage(UnicodeConvert.class, key);
-//                OffsetRange range = AstUtilities.getNameRange(node);
-//                range = LexUtilities.getLexerOffsets(info, range);
-//                if (range != OffsetRange.NONE) {
-//                    List<Fix> fixList = new ArrayList<Fix>(2);
-//                    Node root = AstUtilities.getRoot(info);
-//                    AstPath childPath = new AstPath(root, node); // TODO - make a simple clone method to clone AstPath path
-//                    if (node.nodeId == NodeTypes.LOCALASGNNODE) {
-//                        fixList.add(new RenameFix(info, childPath, RubyUtils.camelToUnderlinedName(name)));
-//                    }
-//                    fixList.add(new RenameFix(info, childPath, null));
-//                    Description desc = new Description(this, displayName, info.getFileObject(), range, fixList, 1500);
-//                    result.add(desc);
-//                }
-//                return;
-//            }
-//        }
     }
 
     public String getId() {
@@ -186,12 +140,12 @@ public class UnicodeConvert implements AstRule {
     
     private static class ConvertFix implements PreviewableFix {
 
-        private CompilationInfo info;
-        private int lexOffset;
-        private char c;
+        private final JsRuleContext context;
+        private final int lexOffset;
+        private final char c;
 
-        ConvertFix(CompilationInfo info, int offset, char c) {
-            this.info = info;
+        ConvertFix(JsRuleContext context, int offset, char c) {
+            this.context = context;
             this.lexOffset = offset;
             this.c = c;
         }
@@ -213,7 +167,7 @@ public class UnicodeConvert implements AstRule {
         }
 
         public EditList getEditList() throws Exception {
-            BaseDocument doc = (BaseDocument) info.getDocument();
+            BaseDocument doc = context.doc;
             EditList edits = new EditList(doc);
             edits.replace(lexOffset, 1, getConverted(), false, 0);
             

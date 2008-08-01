@@ -20,13 +20,6 @@ int method(char* text, int number)
 #else
 #define C2
 #endif
-    }
-    else if (text[0] == 0) {
-        text = "empty";
-    }
-    else {
-        number++;
-    }
     label:
     switch(number) {
         case 1:
@@ -35,6 +28,13 @@ int method(char* text, int number)
             return 20;
         default:
             return -1;
+    }
+    }
+    else if (text[0] == 0) {
+        text = "empty";
+    }
+    else {
+        number++;
     }
 }
 

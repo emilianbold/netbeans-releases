@@ -113,7 +113,7 @@ public abstract class CsmVirtualInfoQuery {
                 }
             }
             for(CsmInheritance inh : cls.getBaseClasses()){
-                if (processClass(sig, inh.getCsmClass(), antilLoop)){
+                if (processClass(sig, CsmInheritanceUtilities.getCsmClass(inh), antilLoop)){
                     return true;
                 }
             }
@@ -133,7 +133,7 @@ public abstract class CsmVirtualInfoQuery {
                     next = null;
                     if (base != null) {
                         for(CsmInheritance inh : base.getBaseClasses()){
-                            CsmMethod m = processMethod(sig, inh.getCsmClass(), antilLoop);
+                            CsmMethod m = processMethod(sig, CsmInheritanceUtilities.getCsmClass(inh), antilLoop);
                             if (m != null) {
                                 next = m;
                                 break;
@@ -163,7 +163,7 @@ public abstract class CsmVirtualInfoQuery {
                 }
             }
             for(CsmInheritance inh : cls.getBaseClasses()){
-                CsmMethod met = processMethod(sig, inh.getCsmClass(), antilLoop);
+                CsmMethod met = processMethod(sig, CsmInheritanceUtilities.getCsmClass(inh), antilLoop);
                 if (met != null) {
                     return met;
                 }

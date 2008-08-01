@@ -138,6 +138,18 @@ public class AntLoggerTest extends NbTestCase {
             importing + ":4#main",
         }), LOGGER.getTargetsStarted());
     }
+
+    public void testLocationOfImportedTasks() throws Exception { // #104103
+        LOGGER.interestedInSessionFlag = true;
+        LOGGER.interestedInAllScriptsFlag = true;
+        LOGGER.interestingTargets = AntLogger.ALL_TARGETS;
+        LOGGER.interestingTasks = AntLogger.ALL_TASKS;
+        LOGGER.interestingLogLevels = new int[] {AntEvent.LOG_DEBUG};
+        run(testdirFO.getFileObject("importing.xml"));
+        // Interesting because WhichResource uses Project.log rather than Task.log:
+        // getProject().log("using system classpath: " + classpath, Project.MSG_DEBUG);
+        assertEquals(new File(testdir, "imported.xml") + ":6", LOGGER.importedTaskLocation);
+    }
     
     public void testTaskdef() throws Exception {
         LOGGER.interestedInSessionFlag = true;
@@ -223,6 +235,7 @@ public class AntLoggerTest extends NbTestCase {
         private boolean antEventDetailsOK;
         private String referenceValue;
         private boolean hasReference;
+        private String importedTaskLocation;
         
         public TestLogger() {}
         
@@ -240,6 +253,7 @@ public class AntLoggerTest extends NbTestCase {
             antEventDetailsOK = false;
             referenceValue = null;
             hasReference = false;
+            importedTaskLocation = null;
             halt = false;
         }
         
@@ -303,6 +317,9 @@ public class AntLoggerTest extends NbTestCase {
                 toadd = taskname + ":" + toadd;
             }
             messages.add(toadd);
+            if ("whichresource".equals(event.getTaskName())) {
+                importedTaskLocation = event.getScriptLocation() + ":" + event.getLine();
+            }
         }
 
         @Override
@@ -318,7 +335,7 @@ public class AntLoggerTest extends NbTestCase {
             antEventDetailsOK |=
                     "echo".equals(event.getTaskName()) &&
                     "meaningless".equals(event.getTaskStructure().getText()) &&
-                    "info".equals(event.getTaskStructure().getAttribute("level")) &&
+                    "info".equals(event.getTaskStructure().getAttribute("Level")) &&
                     event.getPropertyNames().contains("propname") &&
                     "propval".equals(event.getProperty("propname"));
             if (halt && event.getTaskName().equals("touch")) {

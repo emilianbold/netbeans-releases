@@ -1,3 +1,7 @@
 <?xml version="1.0"?>
+<#assign licenseFirst = "<!--">
+<#assign licensePrefix = "">
+<#assign licenseLast = "-->">
+<#include "../Licenses/license-${project.license}.txt">
 
 <root/>

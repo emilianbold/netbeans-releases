@@ -41,15 +41,13 @@
 
 package org.netbeans.modules.options.generaleditor;
 
-import java.lang.reflect.Method;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 import java.util.prefs.Preferences;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
-import org.netbeans.api.editor.mimelookup.MimePath;
-import org.netbeans.editor.SettingsNames;
-import org.netbeans.modules.editor.options.BaseOptions;
+import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
 import org.openide.util.Lookup;
 import org.openide.util.NbPreferences;
@@ -60,27 +58,27 @@ public class Model {
     // code folding options
 
     boolean isShowCodeFolding () {
-        return getFoldingParameter (SettingsNames.CODE_FOLDING_ENABLE, true);
+        return getParameter (SimpleValueNames.CODE_FOLDING_ENABLE, true);
     }
 
     boolean isFoldImports () {
-        return getFoldingParameter ("code-folding-collapse-import", false);
+        return getParameter("code-folding-collapse-import", false); //NOI18N
     }
     
     boolean isFoldInitialComment () {
-        return getFoldingParameter ("code-folding-collapse-initial-comment", false);
+        return getParameter("code-folding-collapse-initial-comment", false); //NOI18N
     }
     
     boolean isFoldInnerClasses () {
-        return getFoldingParameter ("code-folding-collapse-innerclass", false);
+        return getParameter("code-folding-collapse-innerclass", false); //NOI18N
     }
     
     boolean isFoldJavaDocComments () {
-        return getFoldingParameter ("code-folding-collapse-javadoc", false);
+        return getParameter ("code-folding-collapse-javadoc", false); //NOI18N
     }
     
     boolean isFoldMethods () {
-        return getFoldingParameter ("code-folding-collapse-method", false);
+        return getParameter("code-folding-collapse-method", false); //NOI18N
     }
     
     void setFoldingOptions (
@@ -93,40 +91,14 @@ public class Model {
     ) {
         Set<String> mimeTypes = EditorSettings.getDefault().getAllMimeTypes();
         for(String mimeType : mimeTypes) {
-            BaseOptions baseOptions = getOptions(mimeType);
+            Preferences prefs = MimeLookup.getLookup(mimeType).lookup(Preferences.class);
             
-            if (baseOptions == null) {
-                continue;
-            }
-            
-            Map<String, Boolean> m = baseOptions.getCodeFoldingProps ();
-
-            m.put (
-                SettingsNames.CODE_FOLDING_ENABLE,
-                Boolean.valueOf (showCodeFolding)
-            );
-            m.put (
-                "code-folding-collapse-import",
-                Boolean.valueOf (foldImports)
-            );
-            m.put (
-                "code-folding-collapse-initial-comment",
-                Boolean.valueOf (foldInitialComent)
-            );
-            m.put (
-                "code-folding-collapse-innerclass",
-                Boolean.valueOf (foldInnerClasses)
-            );
-            m.put (
-                "code-folding-collapse-javadoc",
-                Boolean.valueOf (foldJavaDoc)
-            );
-            m.put (
-                "code-folding-collapse-method",
-                Boolean.valueOf (foldMethods)
-            );
-            
-            baseOptions.setCodeFoldingProps (m);
+            prefs.putBoolean(SimpleValueNames.CODE_FOLDING_ENABLE, Boolean.valueOf(showCodeFolding));
+            prefs.putBoolean("code-folding-collapse-import", foldImports); //NOI18N
+            prefs.putBoolean("code-folding-collapse-initial-comment", foldInitialComent); //NOI18N
+            prefs.putBoolean("code-folding-collapse-innerclass", foldInnerClasses); //NOI18N
+            prefs.putBoolean("code-folding-collapse-javadoc", foldJavaDoc); //NOI18N
+            prefs.putBoolean("code-folding-collapse-method", foldMethods); //NOI18N
         }
     }
     
@@ -134,31 +106,31 @@ public class Model {
     // code completion options 
     
     boolean isPairCharacterCompletion () {
-        return getParameter ("getPairCharactersCompletion", true);
+        return getParameter("pair-characters-completion", true); //NOI18N
     }
     
     boolean isCompletionAutoPopup () {
-        return getParameter ("getCompletionAutoPopup", true);
+        return getParameter(SimpleValueNames.COMPLETION_AUTO_POPUP, true);
     }
     
     boolean isDocumentationAutoPopup () {
-        return getParameter ("getJavaDocAutoPopup", true);
+        return getParameter(SimpleValueNames.JAVADOC_AUTO_POPUP, true);
     }
     
     boolean isShowDeprecatedMembers () {
-        return getParameter ("getShowDeprecatedMembers", true);
+        return getParameter(SimpleValueNames.SHOW_DEPRECATED_MEMBERS, true);
     }
     
     boolean isCompletionInstantSubstitution () {
-        return getParameter ("getCompletionInstantSubstitution", true);
+        return getParameter(SimpleValueNames.COMPLETION_INSTANT_SUBSTITUTION, true);
     }
     
     boolean isCompletionCaseSensitive () {
-        return getParameter ("getCompletionCaseSensitive", true);
+        return getParameter(SimpleValueNames.COMPLETION_CASE_SENSITIVE, true);
     }
 
     boolean isGuessMethodArguments () {
-        return getParameter ("getGuessMethodArguments", true);
+        return getParameter("guessMethodArguments", true); //NOI18N
     }
     
     void setCompletionOptions (
@@ -170,92 +142,17 @@ public class Model {
         boolean completionCaseSensitive,
         boolean guessMethodArguments
     ) {
-        Set mimeTypes = EditorSettings.getDefault().getMimeTypes();
-        for(Iterator i = mimeTypes.iterator(); i.hasNext(); ) {
-            String mimeType = (String) i.next();
-            BaseOptions baseOptions = getOptions(mimeType);
+        Set<String> mimeTypes = EditorSettings.getDefault().getMimeTypes();
+        for(String mimeType : mimeTypes) {
+            Preferences prefs = MimeLookup.getLookup(mimeType).lookup(Preferences.class);
 
-            if (baseOptions == null) {
-                continue;
-            }
-            
-            try {
-                Method method = baseOptions.getClass ().getMethod (
-                    "setPairCharactersCompletion",
-                    new Class [] {Boolean.TYPE}
-                );
-                method.invoke (
-                    baseOptions, 
-                    new Object [] {Boolean.valueOf (pairCharacterCompletion)}
-                );
-            } catch (Exception ex) {
-            }
-            try {
-                Method method = baseOptions.getClass ().getMethod (
-                    "setCompletionAutoPopup",
-                    new Class [] {Boolean.TYPE}
-                );
-                method.invoke (
-                    baseOptions, 
-                    new Object [] {Boolean.valueOf (completionAutoPopup)}
-                );
-            } catch (Exception ex) {
-            }
-            try {
-                Method method = baseOptions.getClass ().getMethod (
-                    "setJavaDocAutoPopup",
-                    new Class [] {Boolean.TYPE}
-                );
-                method.invoke (
-                    baseOptions, 
-                    new Object [] {Boolean.valueOf (documentationAutoPopup)}
-                );
-            } catch (Exception ex) {
-            }
-            try {
-                Method method = baseOptions.getClass ().getMethod (
-                    "setShowDeprecatedMembers",
-                    new Class [] {Boolean.TYPE}
-                );
-                method.invoke (
-                    baseOptions, 
-                    new Object [] {Boolean.valueOf (showDeprecatedMembers)}
-                );
-            } catch (Exception ex) {
-            }
-            try {
-                Method method = baseOptions.getClass ().getMethod (
-                    "setCompletionInstantSubstitution",
-                    new Class [] {Boolean.TYPE}
-                );
-                method.invoke (
-                    baseOptions, 
-                    new Object [] {Boolean.valueOf (completionInstantSubstitution)}
-                );
-            } catch (Exception ex) {
-            }
-            try {
-                Method method = baseOptions.getClass ().getMethod (
-                    "setCompletionCaseSensitive",
-                    new Class [] {Boolean.TYPE}
-                );
-                method.invoke (
-                    baseOptions, 
-                    new Object [] {Boolean.valueOf (completionCaseSensitive)}
-                );
-            } catch (Exception ex) {
-            }
-            try {
-                Method method = baseOptions.getClass ().getMethod (
-                    "setGuessMethodArguments",
-                    new Class [] {Boolean.TYPE}
-                );
-                method.invoke (
-                    baseOptions, 
-                    new Object [] {Boolean.valueOf (guessMethodArguments)}
-                );
-            } catch (Exception ex) {
-            }
+            prefs.putBoolean("pair-characters-completion", pairCharacterCompletion); //NOI18N
+            prefs.putBoolean(SimpleValueNames.COMPLETION_AUTO_POPUP, completionAutoPopup);
+            prefs.putBoolean(SimpleValueNames.JAVADOC_AUTO_POPUP, documentationAutoPopup);
+            prefs.putBoolean(SimpleValueNames.SHOW_DEPRECATED_MEMBERS, showDeprecatedMembers);
+            prefs.putBoolean(SimpleValueNames.COMPLETION_INSTANT_SUBSTITUTION, completionInstantSubstitution);
+            prefs.putBoolean(SimpleValueNames.COMPLETION_CASE_SENSITIVE, completionCaseSensitive);
+            prefs.putBoolean("guessMethodArguments", guessMethodArguments); //NOI18N
         }
     }
     
@@ -277,64 +174,29 @@ public class Model {
         
     // private helper methods ..................................................
     
-    private boolean getFoldingParameter (
-        String parameterName, 
-        boolean defaultValue
-    ) {
-        boolean successfullRead = false;
+    private static final List<String> PRIVILEDGED_MIME_TYPES = Arrays.asList(new String [] {
+        "text/x-java", //NOI18N
+        "text/x-c++", //NOI18N
+        "text/x-c", //NOI18N
+        "text/x-ruby", //NOI18N
+        "text/x-php5", //NOI18N
+    });
+    
+    private boolean getParameter(String parameterName, boolean defaultValue) {
         Set<String> mimeTypes = EditorSettings.getDefault().getAllMimeTypes();
+        List<String> list = new ArrayList<String>(PRIVILEDGED_MIME_TYPES);
+        list.addAll(mimeTypes);
         
-        for(String mimeType : mimeTypes) {
-            BaseOptions options = getOptions(mimeType);
+        for(String mimeType : list) {
+            Preferences prefs = MimeLookup.getLookup(mimeType).lookup(Preferences.class);
             
-            if (options == null) {
-                continue;
-            }
-        
-            Map foldingParams = options.getCodeFoldingProps();
-            Boolean value = (Boolean) foldingParams.get(parameterName);
-            
-            if (value != null && value.booleanValue()) {
-                return true;
-            } else {
-                successfullRead = true;
+            String value = prefs.get(parameterName, null);
+            if (value != null) {
+                return prefs.getBoolean(parameterName, false);
             }
         }
         
-        return successfullRead ? false : defaultValue;
-    }
-    
-    private boolean getParameter (String parameterName, boolean defaultValue) {
-        boolean successfullRead = false;
-        Set<String> mimeTypes = EditorSettings.getDefault().getAllMimeTypes();
-        
-        for(String mimeType : mimeTypes) {
-            BaseOptions options = getOptions(mimeType);
-            
-            if (options == null) {
-                continue;
-            }
-            
-            try {
-                Method method = options.getClass ().getMethod (
-                    parameterName,
-                    new Class [0]
-                );
-                boolean value = ((Boolean) method.invoke(options, new Object[0])).booleanValue();
-                if (value) {
-                    return true;
-                } else {
-                    successfullRead = true;
-                }
-            } catch (Exception ex) {
-            }
-        }
-        
-        return successfullRead ? false : defaultValue;
-    }
-    
-    private static BaseOptions getOptions (String mimeType) {
-        return MimeLookup.getLookup(MimePath.parse(mimeType)).lookup(BaseOptions.class);
+        return defaultValue;
     }
     
     private Preferences getJavaModulePreferenes() {

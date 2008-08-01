@@ -50,7 +50,6 @@ import org.netbeans.modules.uml.core.metamodel.infrastructure.ICollaboration;
 import org.netbeans.modules.uml.core.metamodel.structure.IProject;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
 import org.netbeans.modules.uml.ui.controls.projecttree.IProjectTreeControl;
-import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaDropContext;
 
 public interface IDesignPatternManager
 {
@@ -94,11 +93,12 @@ public interface IDesignPatternManager
 	public void applyPattern(IDesignPatternDetails pDetails);
 
 	// Determines whether or not drag/drop should be allowed
-	public boolean allowDragAndDrop(IDrawingAreaDropContext pContext);
-	public ICollaboration getDragAndDropCollab(IDrawingAreaDropContext pContext);
+        // TODO: meteora
+//	public boolean allowDragAndDrop(IDrawingAreaDropContext pContext);
+//	public ICollaboration getDragAndDropCollab(IDrawingAreaDropContext pContext);
 
 	// Determines whether or not this diagram is owned by the addins project
-	public boolean diagramOwnedByAddInProject(IProject pProject, IDiagram pParentDiagram, IDrawingAreaDropContext pContext);
+//	public boolean diagramOwnedByAddInProject(IProject pProject, IDiagram pParentDiagram, IDrawingAreaDropContext pContext);
 
 	// Determines whether or not this element takes care of all of the roles of the pattern
 	public boolean doesElementFulfillPattern(IElement pElement, ICollaboration pCollab);

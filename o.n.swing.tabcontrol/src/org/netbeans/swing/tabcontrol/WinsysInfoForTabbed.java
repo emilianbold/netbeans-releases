@@ -69,5 +69,4 @@ public interface WinsysInfoForTabbed {
      * false otherwise 
      */
     public boolean inMaximizedMode (Component comp);
-    
 }

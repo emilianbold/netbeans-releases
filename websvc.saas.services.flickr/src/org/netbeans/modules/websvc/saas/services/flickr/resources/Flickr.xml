@@ -56,47 +56,48 @@
     <saas-metadata>
         <localizing-bundle>org.netbeans.modules.websvc.saas.services.flickr.Bundle</localizing-bundle>
         <group name="Flickr"/>
-        
-        <authentication profile="SaaSServices/Facebook/profile.properties">
+        <code-gen>
+            <artifacts targets="java,servlet,resource,jsp" profile="Templates/SaaSServices/sessionkey.properties">
+                <artifact id="FlickrAuthenticatorDesktop" type="template"
+                    url="Templates/SaaSServices/FlickrAuthenticatorDesktop.java"/>
+                <artifact id="FlickrAuthenticator" type="template"
+                    url="Templates/SaaSServices/FlickrAuthenticator.java"/>
+                <artifact id="FlickrAuthenticatorLogin" type="template"
+                    url="Templates/SaaSServices/FlickrLogin.java"/>
+                <artifact id="FlickrAuthenticatorCallback" type="template"
+                    url="Templates/SaaSServices/FlickrCallback.java"/>
+            </artifacts>
+            <artifacts targets="php" profile="Templates/SaaSServices/sessionkey.php">
+                <artifact id="FlickrAuthenticatorDesktop" type="template"
+                    url="Templates/SaaSServices/FlickrAuthenticatorDesktop.php"/>
+                <artifact id="FlickrAuthenticator" type="template"
+                    url="Templates/SaaSServices/FlickrAuthenticator.php"/>
+                <artifact id="FlickrAuthenticatorLogin" type="template"
+                    url="Templates/SaaSServices/FlickrLogin.php"/>
+                <artifact id="FlickrAuthenticatorCallback" type="template"
+                    url="Templates/SaaSServices/FlickrCallback.php"/>
+            </artifacts>
+        </code-gen>
+        <authentication>
             <session-key api-id="api_key" session-id="auth_token" sig-id="api_sig">
-                <sign id="apiSig">
+                <sign id="sig">
                     <params>
-                        <param name="method" type="string" required="true"/>
                         <param id="api_key={api_key}" name="api_key" type="string" required="true"/>
                         <param id="auth_token={auth_token}" name="auth_token" type="string" required="true"/>
                     </params>
                 </sign>
-                <login>
-                    <sign id="apiSig">
-                        <params>
-                            <param name="method" type="string" required="true"/>
-                            <param name="api_key" type="string" required="true"/>
-                            <param id="frob={frob}" name="frob" type="string" required="true"/>
-                        </params>
-                    </sign>
-                    <method id="auth_token={token}" name="login" href="#flickr.auth_getToken"/>
-                </login>
-                <token id="frob">
-                    <sign id="apiSig">
-                        <params>
-                            <param name="method" type="string" required="true"/>
-                            <param name="api_key" type="string" required="true"/>
-                        </params>
-                    </sign>
-                    <method id="frob={frob}" name="getFrob" href="#flickr.auth_getFrob"/>
-                    <prompt>
-                        <desktop url="http://www.flickr.com/services/auth/?api_key={apiKey}&amp;perms={perms:write}&amp;frob={frob}&amp;api_sig={apiSig}"/>
-                        <web url="http://www.flickr.com/services/auth/?api_key={apiKey}&amp;perms={perms:write}"/>
-                        <sign id="apiSig">
-                            <params>
-                                <param name="frob" type="string" required="true"/>
-                                <param name="api_key" type="string" required="true"/>
-                                <param name="perms" type="string" required="true" default="write"/>
-                            </params>
-                        </sign>
-                    </prompt>
-                </token>
-                <logout/>
+                <authenticator>
+                    <use-templates>
+                        <desktop>
+                            <template type="auth" href="FlickrAuthenticatorDesktop"/>
+                        </desktop>
+                        <web>
+                            <template type="auth" href="FlickrAuthenticator"/>
+                            <template type="login" href="FlickrAuthenticatorLogin"/>
+                            <template type="callback" href="FlickrAuthenticatorCallback"/>
+                        </web>
+                    </use-templates>
+                </authenticator>
             </session-key>
         </authentication>
         

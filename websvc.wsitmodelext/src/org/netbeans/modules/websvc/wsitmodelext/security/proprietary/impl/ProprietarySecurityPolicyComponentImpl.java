@@ -41,17 +41,16 @@
 
 package org.netbeans.modules.websvc.wsitmodelext.security.proprietary.impl;
 
+import org.netbeans.modules.websvc.wsitmodelext.GenericComponentImpl;
 import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.ProprietarySecurityPolicyQName;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import org.netbeans.modules.xml.wsdl.model.spi.GenericExtensibilityElement;
-import org.netbeans.modules.xml.wsdl.model.visitor.WSDLVisitor;
 import org.w3c.dom.Element;
 
 /**
  *
  * @author MartinGrebac
  */
-public abstract class ProprietarySecurityPolicyComponentImpl extends GenericExtensibilityElement {
+public abstract class ProprietarySecurityPolicyComponentImpl extends GenericComponentImpl {
     
     /**
      * Creates a new instance of ProprietarySecurityPolicyComponentImpl
@@ -61,20 +60,7 @@ public abstract class ProprietarySecurityPolicyComponentImpl extends GenericExte
     }
 
     @Override
-    public abstract void accept(WSDLVisitor visitor);
-    
-    @Override
     protected String getNamespaceURI() {
         return ProprietarySecurityPolicyQName.PROPRIETARY_SECPOLICY_UTILITY;
     }
-
-    @Override
-    public String getAttribute(String attribute) {
-        throw new UnsupportedOperationException();
-    }
-    
-    @Override
-    public void setAttribute(String attribute, String value) {
-        throw new UnsupportedOperationException();
-    }    
 }

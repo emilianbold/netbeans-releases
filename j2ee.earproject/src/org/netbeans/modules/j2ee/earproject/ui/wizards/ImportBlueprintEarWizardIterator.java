@@ -89,7 +89,7 @@ public class ImportBlueprintEarWizardIterator implements WizardDescriptor.Progre
             new ProjectServerWizardPanel(J2eeModule.EAR, 
                     NbBundle.getMessage(NewEarProjectWizardIterator.class, "NewEarProjectWizardIterator.secondStep"),
                     NbBundle.getMessage(NewEarProjectWizardIterator.class, "TXT_ImportProject"),
-                    false, false, false, false, false),
+                    false, false, false, false, true, false),
             new PanelModuleDetection()
         };
     }
@@ -184,9 +184,9 @@ public class ImportBlueprintEarWizardIterator implements WizardDescriptor.Progre
             if (c instanceof JComponent) { // assume Swing components
                 JComponent jc = (JComponent)c;
                 // Step #.
-                jc.putClientProperty("WizardPanel_contentSelectedIndex", i); // NOI18N
+                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, i); // NOI18N
                 // Step name (actually the whole list for reference).
-                jc.putClientProperty("WizardPanel_contentData", steps); // NOI18N
+                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps); // NOI18N
             }
         }
     }

@@ -41,6 +41,9 @@
 
 package org.netbeans.modules.editor.java;
 
+import org.openide.modules.ModuleInfo;
+import org.openide.util.Lookup;
+
 /**
  * Java formatter tests.
  *
@@ -50,6 +53,12 @@ public class JavaFormatterArrayInitOrEnumUnitTest extends JavaFormatterUnitTestC
 
     public JavaFormatterArrayInitOrEnumUnitTest(String testMethodName) {
         super(testMethodName);
+    }
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        Lookup.getDefault().lookup(ModuleInfo.class);
     }
 
     public void testReformatIntArray() {

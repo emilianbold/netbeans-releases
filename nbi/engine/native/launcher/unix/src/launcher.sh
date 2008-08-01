@@ -102,10 +102,14 @@ MSG_ARG_CPA="nlu.arg.cpa"
 MSG_ARG_CPP="nlu.arg.cpp"
 MSG_ARG_DISABLE_FREE_SPACE_CHECK="nlu.arg.disable.space.check"
 MSG_ARG_LOCALE="nlu.arg.locale"
+MSG_ARG_SILENT="nlu.arg.silent"
 MSG_ARG_HELP="nlu.arg.help"
 MSG_USAGE="nlu.msg.usage"
 
-entryPoint() {		
+isSymlink=
+
+entryPoint() {
+        initSymlinkArgument        
 	CURRENT_DIRECTORY=`pwd`
 	LAUNCHER_NAME=`echo $0`
 	parseCommandLineArguments "$@"
@@ -133,6 +137,15 @@ entryPoint() {
 	else 
 	    exitProgram $ERROR_OK
 	fi
+}
+
+initSymlinkArgument() {
+        testSymlinkErr=`test -L / > /dev/null`
+        if [ -z "$testSymlinkErr" ] ; then
+            isSymlink=-L
+        else
+            isSymlink=-h
+        fi
 }
 
 debugLauncherArguments() {
@@ -311,6 +324,83 @@ ifLess() {
 	echo $compare
 }
 
+formatVersion() {
+        formatted=`echo "$1" | sed "s/-ea//g;s/-rc[0-9]*//g;s/-beta[0-9]*//g;s/-preview[0-9]*//g;s/-dp[0-9]*//g;s/-alpha[0-9]*//g;s/-fcs//g;s/_/./g;s/-/\./g"`
+        formatted=`echo "$formatted" | sed "s/^\(\([0-9][0-9]*\)\.\([0-9][0-9]*\)\.\([0-9][0-9]*\)\)\.b\([0-9][0-9]*\)/\1\.0\.\5/g"`
+        formatted=`echo "$formatted" | sed "s/\.b\([0-9][0-9]*\)/\.\1/g"`
+	echo "$formatted"
+
+}
+
+compareVersions() {
+        current1=`formatVersion "$1"`
+        current2=`formatVersion "$2"`
+	compresult=
+	#0 - equals
+	#-1 - less
+	#1 - more
+
+	while [ -z "$compresult" ] ; do
+		value1=`echo "$current1" | sed "s/\..*//g"`
+		value2=`echo "$current2" | sed "s/\..*//g"`
+
+
+		removeDots1=`echo "$current1" | sed "s/\.//g"`
+		removeDots2=`echo "$current2" | sed "s/\.//g"`
+
+		if [ 1 -eq `ifEquals "$current1" "$removeDots1"` ] ; then
+			remainder1=""
+		else
+			remainder1=`echo "$current1" | sed "s/^$value1\.//g"`
+		fi
+		if [ 1 -eq `ifEquals "$current2" "$removeDots2"` ] ; then
+			remainder2=""
+		else
+			remainder2=`echo "$current2" | sed "s/^$value2\.//g"`
+		fi
+
+		current1="$remainder1"
+		current2="$remainder2"
+		
+		if [ -z "$value1" ] || [ 0 -eq `ifNumber "$value1"` ] ; then 
+			value1=0 
+		fi
+		if [ -z "$value2" ] || [ 0 -eq `ifNumber "$value2"` ] ; then 
+			value2=0 
+		fi
+		if [ "$value1" -gt "$value2" ] ; then 
+			compresult=1
+			break
+		elif [ "$value2" -gt "$value1" ] ; then 
+			compresult=-1
+			break
+		fi
+
+		if [ -z "$current1" ] && [ -z "$current2" ] ; then	
+			compresult=0
+			break
+		fi
+	done
+	echo $compresult
+}
+
+ifVersionLess() {
+	compareResult=`compareVersions "$1" "$2"`
+        if [ -1 -eq $compareResult ] ; then
+            echo 1
+        else
+            echo 0
+        fi
+}
+
+ifVersionGreater() {
+	compareResult=`compareVersions "$1" "$2"`
+        if [ 1 -eq $compareResult ] ; then
+            echo 1
+        else
+            echo 0
+        fi
+}
 
 ifGreater() {
 	arg1=`escapeBackslash "$1"`
@@ -404,7 +494,12 @@ getLauncherLocation() {
 }
 
 getLauncherSize() {
-	ls -l "$LAUNCHER_FULL_PATH" | awk ' { print $5 }' 2>/dev/null
+	lsOutput=`ls -l --block-size=1 "$LAUNCHER_FULL_PATH" 2>/dev/null`
+	if [ $? -ne 0 ] ; then
+	    #default block size
+	    lsOutput=`ls -l "$LAUNCHER_FULL_PATH" 2>/dev/null`
+	fi
+	echo "$lsOutput" | awk ' { print $5 }' 2>/dev/null
 }
 
 verifyIntegrity() {
@@ -434,7 +529,8 @@ showHelp() {
 	msg7=`message "$MSG_ARG_CPP $ARG_CLASSPATHP"`
 	msg8=`message "$MSG_ARG_DISABLE_FREE_SPACE_CHECK $ARG_NOSPACECHECK"`
         msg9=`message "$MSG_ARG_LOCALE $ARG_LOCALE"`
-	msg10=`message "$MSG_ARG_HELP $ARG_HELP"`
+        msg10=`message "$MSG_ARG_SILENT $ARG_SILENT"`
+	msg11=`message "$MSG_ARG_HELP $ARG_HELP"`
 	out "$msg0"
 	out "$msg1"
 	out "$msg2"
@@ -446,6 +542,7 @@ showHelp() {
 	out "$msg8"
 	out "$msg9"
 	out "$msg10"
+	out "$msg11"
 	exitProgram $ERROR_OK
 }
 
@@ -559,7 +656,7 @@ setTestJVMClasspath() {
 	if [ -d "$TEST_JVM_PATH" ] ; then
 		TEST_JVM_CLASSPATH="$TEST_JVM_PATH"
 		debug "... testJVM path is a directory"
-	elif [ -L "$TEST_JVM_PATH" ] && [ $notClassFile -eq 1 ] ; then
+	elif [ $isSymlink "$TEST_JVM_PATH" ] && [ $notClassFile -eq 1 ] ; then
 		TEST_JVM_CLASSPATH="$TEST_JVM_PATH"
 		debug "... testJVM path is a link but not a .class file"
 	else
@@ -718,7 +815,7 @@ processJarsClasspath() {
 	while [ $jarsCounter -lt $JARS_NUMBER ] ; do
 		resolvedFile=`resolveResourcePath "JAR_$jarsCounter"`
 		debug "... adding jar to classpath : $resolvedFile"
-		if [ ! -f "$resolvedFile" ] && [ ! -d "$resolvedFile" ] && [ ! -L "$resolvedFile" ] ; then
+		if [ ! -f "$resolvedFile" ] && [ ! -d "$resolvedFile" ] && [ ! $isSymlink "$resolvedFile" ] ; then
 				message "$MSG_ERROP_MISSING_RESOURCE" "$resolvedFile"
 				exitProgram $ERROR_MISSING_RESOURCES
 		else
@@ -884,7 +981,7 @@ searchJavaSystemPaths() {
 				debug "... next item is $nextItem"				
 				nextItem=`removeEndSlashes "$nextItem"`
 				if [ -n "$nextItem" ] ; then
-					if [ -d "$nextItem" ] || [ -L "$nextItem" ] ; then
+					if [ -d "$nextItem" ] || [ $isSymlink "$nextItem" ] ; then
 	               				debug "... checking item : $nextItem"
 						verifyJVM "$nextItem"
 					fi
@@ -914,7 +1011,7 @@ searchJavaUserDefined() {
 }
 searchJava() {
 	message "$MSG_JVM_SEARCH"
-        if [ ! -f "$TEST_JVM_CLASSPATH" ] && [ ! -L "$TEST_JVM_CLASSPATH" ] && [ ! -d "$TEST_JVM_CLASSPATH" ]; then
+        if [ ! -f "$TEST_JVM_CLASSPATH" ] && [ ! $isSymlink "$TEST_JVM_CLASSPATH" ] && [ ! -d "$TEST_JVM_CLASSPATH" ]; then
                 debug "Cannot find file for testing JVM at $TEST_JVM_CLASSPATH"
 		message "$MSG_ERROR_JVM_NOT_FOUND" "$ARG_JAVAHOME"
                 exitProgram $ERROR_TEST_JVM_FILE
@@ -961,7 +1058,7 @@ normalizePath() {
 
 resolveSymlink() {  
     pathArg="$1"	
-    while [ -L "$pathArg" ] ; do
+    while [ $isSymlink "$pathArg" ] ; do
         ls=`ls -ld "$pathArg"`
         link=`expr "$ls" : '^.*-> \(.*\)$' 2>/dev/null`
     
@@ -1014,10 +1111,10 @@ checkJavaHierarchy() {
 	tryJava="$1"
 	javaHierarchy=0
 	if [ -n "$tryJava" ] ; then
-		if [ -d "$tryJava" ] || [ -L "$tryJava" ] ; then # existing directory or a symlink        			
+		if [ -d "$tryJava" ] || [ $isSymlink "$tryJava" ] ; then # existing directory or a isSymlink        			
 			javaLib="$tryJava"/"lib"
 	        
-			if [ -d "$javaLib" ] || [ -L "$javaLib" ] ; then
+			if [ -d "$javaLib" ] || [ $isSymlink "$javaLib" ] ; then
 				javaLibDtjar="$javaLib"/"dt.jar"
 				if [ -f "$javaLibDtjar" ] || [ -f "$javaLibDtjar" ] ; then
 					#definitely JDK as the JRE doesn`t have dt.jar
@@ -1027,7 +1124,7 @@ checkJavaHierarchy() {
 					javaLibJce="$javaLib"/"jce.jar"
 					javaLibCharsets="$javaLib"/"charsets.jar"					
 					javaLibRt="$javaLib"/"rt.jar"
-					if [ -f "$javaLibJce" ] || [ -L "$javaLibJce" ] || [ -f "$javaLibCharsets" ] || [ -L "$javaLibCharsets" ] || [ -f "$javaLibRt" ] || [ -L "$javaLibRt" ] ; then
+					if [ -f "$javaLibJce" ] || [ $isSymlink "$javaLibJce" ] || [ -f "$javaLibCharsets" ] || [ $isSymlink "$javaLibCharsets" ] || [ -f "$javaLibRt" ] || [ $isSymlink "$javaLibRt" ] ; then
 						javaHierarchy=1
 					fi
 					
@@ -1112,13 +1209,18 @@ verifyJavaHome() {
 				debug "Java OS Name     : $JAVA_COMP_OSNAME"
 				debug "Java OS Arch     : $JAVA_COMP_OSARCH"
 
-				compMin=`ifLess "$javaVersion" "$JAVA_COMP_VERSION_MIN"`
-				compMax=`ifGreater "$javaVersion" "$JAVA_COMP_VERSION_MAX"`
-				if [ -n "$JAVA_COMP_VERSION_MIN" ] && [ 1 -eq $compMin ] ; then
-				    comp=0
+				if [ -n "$JAVA_COMP_VERSION_MIN" ] ; then
+                                    compMin=`ifVersionLess "$javaVersion" "$JAVA_COMP_VERSION_MIN"`
+                                    if [ 1 -eq $compMin ] ; then
+                                        comp=0
+                                    fi
 				fi
-		                if [ -n "$JAVA_COMP_VERSION_MAX" ] && [ 1 -eq $compMax ] ; then
-		    	    	    comp=0
+
+		                if [ -n "$JAVA_COMP_VERSION_MAX" ] ; then
+                                    compMax=`ifVersionGreater "$javaVersion" "$JAVA_COMP_VERSION_MAX"`
+                                    if [ 1 -eq $compMax ] ; then
+                                        comp=0
+                                    fi
 		                fi				
 				if [ -n "$JAVA_COMP_VENDOR" ] ; then
 					debug " checking vendor = {$vendor}, {$JAVA_COMP_VENDOR}"
@@ -1164,7 +1266,13 @@ verifyJavaHome() {
 
 checkFreeSpace() {
 	size="$1"
-	path=`dirname "$2"`	
+	path="$2"
+
+	if [ ! -d "$path" ] && [ ! $isSymlink "$path" ] ; then
+		# if checking path is not an existing directory - check its parent dir
+		path=`dirname "$path"`
+	fi
+
 	diskSpaceCheck=0
 
 	if [ 0 -eq $PERFORM_FREE_SPACE_CHECK ] ; then

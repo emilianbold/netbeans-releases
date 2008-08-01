@@ -182,8 +182,9 @@ public class BreakpointModel extends ViewModelSupport
         if (node instanceof AbstractBreakpoint) {
             if (columnID.equals(Constants.BREAKPOINT_ENABLED_COLUMN_ID)) {
                 return ((AbstractBreakpoint)node).isEnabled();
+            } else {
+                return null;
             }
-            assert false; 
         }
 
         throw new UnknownTypeException(node);
@@ -195,8 +196,9 @@ public class BreakpointModel extends ViewModelSupport
         if (node instanceof AbstractBreakpoint) {
             if (columnID.equals(Constants.BREAKPOINT_ENABLED_COLUMN_ID)) {
                 return false;
+            } else {
+                return true;
             }
-            assert false;
         }
 
         throw new UnknownTypeException(node);

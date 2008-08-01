@@ -592,7 +592,7 @@ class Resolv
           }
         end
 
-        def |>METHOD:sender<|(|>PARAMETER:msg<|, |>PARAMETER:data<|, |>PARAMETER:queue<|, |>PARAMETER:host<|, |>PARAMETER:port<|=Port<|)
+        def |>METHOD:sender<|(|>PARAMETER:msg<|, |>PARAMETER:data<|, |>PARAMETER:queue<|, |>PARAMETER:host<|, |>PARAMETER:port<|=Port)
           service = [|>PARAMETER:host<|, |>PARAMETER:port<|]
           id = Thread.exclusive {
             @id[service] = (@id[service] + 1) & 0xffff
@@ -617,7 +617,7 @@ class Resolv
       end
 
       class ConnectedUDP < Requester
-        def |>METHOD:initialize<|(|>PARAMETER:host<|, |>PARAMETER:port<|=Port<|)
+        def |>METHOD:initialize<|(|>PARAMETER:host<|, |>PARAMETER:port<|=Port)
           super()
           @host = |>PARAMETER:host<|
           @port = |>PARAMETER:port<|
@@ -644,7 +644,7 @@ class Resolv
           }
         end
 
-        def |>METHOD:sender<|(|>PARAMETER:msg<|, |>PARAMETER:data<|, |>PARAMETER:queue<|, |>PARAMETER:host<|=@host<|, |>PARAMETER:port<|=@port<|)
+        def |>METHOD:sender<|(|>PARAMETER:msg<|, |>PARAMETER:data<|, |>PARAMETER:queue<|, |>PARAMETER:host<|=@host, |>PARAMETER:port<|=@port)
           unless |>PARAMETER:host<| == @host && |>PARAMETER:port<| == @port
             |>METHOD:raise<| RequestError.new("host/port don't match: #{|>PARAMETER:host<|}:#{|>PARAMETER:port<|}")
           end
@@ -662,7 +662,7 @@ class Resolv
       end
 
       class TCP < Requester
-        def |>METHOD:initialize<|(|>PARAMETER:host<|, |>PARAMETER:port<|=Port<|)
+        def |>METHOD:initialize<|(|>PARAMETER:host<|, |>PARAMETER:port<|=Port)
           super()
           @host = |>PARAMETER:host<|
           @port = |>PARAMETER:port<|
@@ -691,7 +691,7 @@ class Resolv
           }
         end
 
-        def |>METHOD:sender<|(|>PARAMETER:msg<|, |>PARAMETER:data<|, |>PARAMETER:queue<|, |>PARAMETER:host<|=@host<|, |>PARAMETER:port<|=@port<|)
+        def |>METHOD:sender<|(|>PARAMETER:msg<|, |>PARAMETER:data<|, |>PARAMETER:queue<|, |>PARAMETER:host<|=@host, |>PARAMETER:port<|=@port)
           unless |>PARAMETER:host<| == @host && |>PARAMETER:port<| == @port
             |>METHOD:raise<| RequestError.new("host/port don't match: #{|>PARAMETER:host<|}:#{|>PARAMETER:port<|}")
           end
@@ -973,7 +973,7 @@ class Resolv
         end
       end
 
-      def |>METHOD:initialize<|(|>PARAMETER:labels<|, |>PARAMETER:absolute<|=true<|)
+      def |>METHOD:initialize<|(|>PARAMETER:labels<|, |>PARAMETER:absolute<|=true)
         @labels = |>PARAMETER:labels<|
         @absolute = |>PARAMETER:absolute<|
       end

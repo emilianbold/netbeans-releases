@@ -55,6 +55,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Stack;
 import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Pack200;
@@ -62,9 +63,11 @@ import java.util.jar.Pack200.Packer;
 import java.util.jar.Pack200.Unpacker;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import org.apache.tools.ant.Project;
+import org.apache.tools.bzip2.CBZip2InputStream;
 
 /**
  * A collection of utility methods used throughout the custom tasks classes.
@@ -85,7 +88,10 @@ public final class Utils {
     private static byte[] buffer = new byte[102400];
     
     private static Project project = null;
-    
+
+    private static boolean tarInitialized = false;
+
+    private static String tarExecutable = null;
     /**
      * Setter for the 'project' property.
      *
@@ -204,7 +210,7 @@ public final class Utils {
                 project.getProperty("pack200.max.perm.size");
         
         Results results = run(
-                PACKER_EXECUTABLE,
+                getPackerExecutable(),
                 xmx,
                 permSize,
                 maxPermSize,
@@ -267,7 +273,7 @@ public final class Utils {
         
         
         Results results = run(
-                UNPACKER_EXECUTABLE,
+                getUnPackerExecutable(),
                 ARG_PREFIX + XMX_ARG + project.getProperty("pack200.xmx"),
                 ARG_PREFIX + PERM_SIZE_ARG + project.getProperty("pack200.perm.size"),
                 ARG_PREFIX + MAX_PERM_SIZE_ARG + project.getProperty("pack200.max.perm.size"),
@@ -393,9 +399,12 @@ public final class Utils {
     public static void copy(
             final InputStream in,
             final OutputStream out) throws IOException {
-        
+        int read = 0;
         while (in.available() > 0) {
-            out.write(buffer, 0, in.read(buffer));
+            read = in.read(buffer);
+            if (read > 0) {
+                out.write(buffer, 0, read);
+            }
         }
     }
     
@@ -450,7 +459,7 @@ public final class Utils {
             final File file,
             final File directory) throws IOException {
         final String[] command = new String[] {
-                NATIVE_UNZIP_EXECUTABLE,
+                getUnzipExecutable(),
                 file.getAbsolutePath(),
                 "-d",
                 directory.getAbsolutePath()};
@@ -467,7 +476,98 @@ public final class Utils {
             throw new IOException();
         }
     }
+
+    private static final String findTarExecutable() {
+        if (!tarInitialized) {
+            for (String s : new String[]{NATIVE_GNUTAR_EXECUTABLE, NATIVE_GTAR_EXECUTABLE, NATIVE_TAR_EXECUTABLE}) {
+                try {                    
+                    run(s);
+                    tarExecutable = s;                    
+                    break;                    
+                } catch (IOException ex) {                    
+                }
+            }
+        }
+        tarInitialized = true;
+        return tarExecutable;
+    }
+    /**
+     * Untars a tar(.tar.gz|.tgz|.tar.bz2|.tar.bzip2) archive to the specified directory.
+     *
+     * @param file Tar archive to extract.
+     * @param directory Directory which will be the target for the extraction.
+     * @throws java.io.IOException if an I/O error occurs.
+     */
     
+    public static void nativeUntar(
+            final File file,
+            final File directory) throws IOException {
+        boolean gzipCompression  = 
+                file.getName().endsWith(".tar.gz")  || 
+                file.getName().endsWith(".tgz");
+        boolean bzip2Compression = 
+                file.getName().endsWith(".tar.bz2") || 
+                file.getName().endsWith(".tar.bzip2");
+        
+        File tempSource = null;
+        if (gzipCompression || bzip2Compression) {            
+            tempSource = File.createTempFile("temp-tar-file", ".tar", directory);
+            if (project != null) {
+                project.log("... extract compressed tar archive to temporary file " + tempSource);
+            }
+            final FileInputStream fis = new FileInputStream(file);
+            InputStream is = (gzipCompression) ? new GZIPInputStream(fis) : new CBZip2InputStream(fis);
+            FileOutputStream fos = null;
+            try {
+                fos = new FileOutputStream(tempSource);
+                copy(is, fos);
+            } catch (IOException e) {
+                if(fos != null) {
+                    fos.close();
+                    fos = null;
+                }
+                tempSource.delete();
+                throw e;   
+            } finally {          
+                if(fos != null) {
+                    fos.close();
+                }
+                is.close();
+            }
+        }
+        String tar = getTarExecutable();
+        if(tar==null) {
+            throw new IOException("... native tar executable not available");
+        }
+            
+        
+        final String[] command = new String[]{
+            tar,
+            "xvf",
+            ((tempSource != null) ? tempSource : file).getName(),
+            "-C",
+            directory.getAbsolutePath().replace("\\","/")
+        };
+
+        if (project != null) {
+            project.log("            running command: " + Arrays.asList(command));
+        }
+        try {
+            final Results results = run(
+                    ((tempSource != null) ? tempSource : file).getAbsoluteFile().getParentFile(),
+                    command);
+
+            if (results.getExitcode() != 0) {
+                System.out.println(results.getStdout());
+                System.out.println(results.getStderr());
+                throw new IOException();
+            }
+        } finally {
+            if (tempSource != null) {
+                tempSource.delete();
+            }
+        }
+    }
     /**
      * Deletes a file. If the file is a directory its contents are recursively
      * deleted.
@@ -671,7 +771,7 @@ public final class Utils {
             final String password) throws IOException {
         List<String> command = new ArrayList<String>();
         
-        command.add(JARSIGNER_EXECUTABLE);
+        command.add(getJarSignerExecutable());
         command.add("-keystore");
         command.add(keystore);
         command.add(file.getAbsolutePath());
@@ -685,7 +785,7 @@ public final class Utils {
     
     public static int getPermissions(final File file) {
         try {
-            final Results results = run(LS_EXECUTABLE, "-ld", file.getAbsolutePath());
+            final Results results = run(getLsExecutable(), "-ld", file.getAbsolutePath());
             
             final String output = results.getStdout().toString().trim();
             
@@ -792,7 +892,7 @@ public final class Utils {
         
         final List<String> command = new ArrayList<String>();
         
-        command.add(JAVA_EXECUTABLE);
+        command.add(getVerificationJavaExecutable());
         command.add(CLASSPATH_ARG);
         command.add(classPath);
         command.add(clazz);
@@ -860,7 +960,126 @@ public final class Utils {
         
         return handleProcess(process);
     }
+
+    private static Results run(File directory, final String... command) throws IOException {
+        
+        Process process = new ProcessBuilder(command).directory(directory).start();
+        
+        return handleProcess(process);
+    }
     
+    public static String getPackerExecutable() {
+        return getExecutable(PACKER_EXECUTABLE_PROPERTY, PACKER_EXECUTABLE);
+    }
+    public static String getUnPackerExecutable() {
+        return getExecutable(UNPACKER_EXECUTABLE_PROPERTY, UNPACKER_EXECUTABLE);
+    }
+    public static String getLsExecutable() {
+        return getExecutable(LS_EXECUTABLE_PROPERTY, LS_EXECUTABLE);
+    }
+    public static String getUnzipExecutable() {
+        return getExecutable(UNZIP_EXECUTABLE_PROPERTY, NATIVE_UNZIP_EXECUTABLE);
+    }
+    public static String getTarExecutable() {
+        final String value = project.getProperty(TAR_EXECUTABLE_PROPERTY);
+        return (value == null || value.equals("")) ? findTarExecutable() : value;
+    }
+    public static String getJarSignerExecutable() {
+        return getExecutable(JARSIGNER_EXECUTABLE_PROPERTY, JARSIGNER_EXECUTABLE);
+    }
+    public static String getVerificationJavaExecutable() {
+        return getExecutable(VERIFICATION_JAVA_EXECUTABLE_PROPERTY, VERIFICATION_JAVA_EXECUTABLE);
+    }
+    private static String getExecutable(String propName, String defaultValue) {
+        final String value = project.getProperty(propName);
+        return (value == null || value.equals("")) ? defaultValue : value;
+    }
+    /**
+     * Resolving the project property
+     *
+     * @param string Property to resolve
+     * @return Results of resolving the property
+     */
+    public static final String resolveProperty(String string) {        
+        return resolveProperty(string,project);
+    }
+    
+    /**
+     * Resolving the project property
+     *
+     * @param string Property to resolve
+     * @param prj Project to resolve the property for
+     * @return Results of resolving the property
+     */    
+    public static final String resolveProperty(String string, Project prj) {        
+        final List <String> resolving = new ArrayList <String> ();
+        return resolveProperty(string, prj, resolving);
+    }
+    
+    private static final String resolveProperty(String string, Project prj, List <String> resolving) {
+        if(string==null || string.equals("")) {
+            return string;
+        }        
+        StringBuilder result = new StringBuilder(string.length());
+        StringBuilder buf = null;
+        Stack <StringBuilder> started = new Stack <StringBuilder> ();
+        boolean inside = false;
+        
+        for (int i = 0; i < string.length(); i++) {
+            char c = string.charAt(i);
+            switch (c) {
+                case '$':
+                    if (i + 1 < string.length() && string.charAt(i + 1) == '{') {
+                        if (inside) {
+                            started.push(buf);
+                        }
+                        i++;
+                        inside = true;
+                        buf = new StringBuilder();
+                    } else {
+                        (inside ? buf : result).append("$");
+                    }
+                    break;
+                case '}':
+                    if (inside) {
+                        final String propName = buf.toString();
+                        String propValue;
+                        
+                        if(resolving.contains(propName)) {                            
+                            propValue = null;
+                        } else {
+                            resolving.add(propName);
+                            propValue = resolveProperty(prj.getProperty(propName),prj,resolving);
+                            resolving.remove(propName);
+                        }
+                        final String resolved = propValue != null ? propValue : "${" + propName + "}";
+                        if (!started.empty()) {
+                            buf = started.pop().append(resolved);
+                        } else {
+                            result.append(resolved);
+                            inside = false;
+                        }
+                    } else {
+                        result.append(c);
+                    }
+                    break;
+                default:
+                    (inside ? buf : result).append(c);
+            }
+        }
+        
+        if (inside) {
+            do {
+                if (!started.empty()) {
+                    buf = started.pop().append("${").append(buf);
+                } else {
+                    result.append("${").append(buf);
+                    buf = null;
+                }
+            } while (buf != null);
+        }
+        return result.toString();    
+    }
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
     /**
@@ -1113,18 +1332,40 @@ public final class Utils {
     public static final String JAVA_EXE =
             "bin\\java.exe"; // NOI18N
     
-    public static final String JAVA_EXECUTABLE = 
+    private static final String VERIFICATION_JAVA_EXECUTABLE = 
             JAVA_HOME_VALUE + File.separator + ((IS_WINDOWS) ? JAVA_EXE : JAVA);
     
-    public static final String PACKER_EXECUTABLE = JAVA_HOME_VALUE + 
+    private static final String PACKER_EXECUTABLE = JAVA_HOME_VALUE + 
             ((IS_WINDOWS) ? "\\bin\\pack200.exe" : "/bin/pack200");//NOI18N
-    public static final String UNPACKER_EXECUTABLE = JAVA_HOME_VALUE + 
+    private static final String UNPACKER_EXECUTABLE = JAVA_HOME_VALUE + 
             ((IS_WINDOWS) ? "\\bin\\unpack200.exe" : "/bin/unpack200");//NOI18N
-    public static final String NATIVE_UNZIP_EXECUTABLE =
+    private static final String NATIVE_UNZIP_EXECUTABLE =
             (IS_WINDOWS) ? "unzip.exe" : "unzip"; //NOI18N
-    public static final String JARSIGNER_EXECUTABLE = JAVA_HOME_VALUE +
+    private static final String NATIVE_TAR_EXECUTABLE =
+            (IS_WINDOWS) ? "tar.exe" : "tar"; //NOI18N
+    private static final String NATIVE_GTAR_EXECUTABLE =
+            (IS_WINDOWS) ? "gtar.exe" : "gtar"; //NOI18N
+    private static final String NATIVE_GNUTAR_EXECUTABLE =
+            (IS_WINDOWS) ? "gnutar.exe" : "gnutar"; //NOI18N
+
+    public static final String PACKER_EXECUTABLE_PROPERTY = 
+            "pack200.executable";
+    public static final String UNPACKER_EXECUTABLE_PROPERTY = 
+            "unpack200.executable";
+    public static final String TAR_EXECUTABLE_PROPERTY = 
+            "tar.executable";
+    public static final String UNZIP_EXECUTABLE_PROPERTY = 
+            "unzip.executable";
+    public static final String LS_EXECUTABLE_PROPERTY = 
+            "ls.executable";
+    public static final String JARSIGNER_EXECUTABLE_PROPERTY = 
+            "jarsigner.executable";
+    public static final String VERIFICATION_JAVA_EXECUTABLE_PROPERTY =
+            "verification.java.executable";
+    
+    private static final String JARSIGNER_EXECUTABLE = JAVA_HOME_VALUE +
         ((IS_WINDOWS) ? "\\..\\bin\\jarsigner.exe" : "/../bin/jarsigner");//NOI18N
-    public static final String LS_EXECUTABLE = 
+    private static final String LS_EXECUTABLE = 
         (IS_WINDOWS) ? "ls.exe" : "ls";//NOI18N
     public static final String LINE_SEPARATOR = System.getProperty("line.separator");
 }

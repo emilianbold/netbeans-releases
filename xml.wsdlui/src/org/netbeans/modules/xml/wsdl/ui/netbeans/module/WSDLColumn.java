@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.xml.wsdl.ui.netbeans.module;
 
 import java.awt.BorderLayout;
@@ -133,6 +132,9 @@ public class WSDLColumn extends JPanel
         if (rootNode != null) {
             if (rootNode.getCookie(DummyDefinitionsNode.class) == null &&
                     rootNode.getCookie(DefinitionsNode.class) != null) {
+                //IZ 142123 : Call getNodes initially.
+                if (rootNode.getChildren() != null) 
+                    rootNode.getChildren().getNodes();
                 rootNode = new DummyDefinitionsNode(rootNode);
             }
             getExplorerManager().setRootContext(rootNode);

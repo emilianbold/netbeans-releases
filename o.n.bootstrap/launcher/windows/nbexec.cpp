@@ -90,7 +90,7 @@ static char *findJavaExeInDirectory(char *dir);
 static int findJdkFromRegistry(const char* keyname, char jdkhome[]);
 
 static void addJdkJarsToClassPath(const char *jdkhome);
-static void addLauncherJarsToClassPath(const char *plathome);
+static void addLauncherJarsToClassPath();
 
 static void addToClassPath(const char *pathprefix, const char *path);
 static void addToClassPathIfExists(const char *pathprefix, const char *path);
@@ -349,8 +349,8 @@ void runClass(char *mainclass, bool deleteAUClustersFile) {
         strcpy(classpath, classpathBefore);
     else
         classpath[0] = '\0';
-  
-    addLauncherJarsToClassPath(plathome);
+
+    addLauncherJarsToClassPath();
     addJdkJarsToClassPath(jdkhome);
 
     char *proxy = 0, *nonProxyHosts = 0;
@@ -727,18 +727,28 @@ void addJdkJarsToClassPath(const char *jdkhome)
     addToClassPathIfExists(jdkhome, "lib\\tools.jar");
 }
 
-void addLauncherJarsToClassPath(const char *plathome)
+void addJarsToClassPathFrom(const char *dir)
 {
     char buf[1024];
-
-    strcat(strcpy(buf, plathome), "\\lib");
+    strcat(strcpy(buf, dir), "\\lib\\patches");
     addAllFilesToClassPath(buf, "*.jar");
     addAllFilesToClassPath(buf, "*.zip");
 
-    strcat(strcpy(buf, plathome), "\\lib\\locale");
+    strcat(strcpy(buf, dir), "\\lib");
     addAllFilesToClassPath(buf, "*.jar");
     addAllFilesToClassPath(buf, "*.zip");
 
+    strcat(strcpy(buf, dir), "\\lib\\locale");
+    addAllFilesToClassPath(buf, "*.jar");
+    addAllFilesToClassPath(buf, "*.zip");    
+}
+
+void addLauncherJarsToClassPath()
+{
+    addJarsToClassPathFrom(userdir);
+    addJarsToClassPathFrom(plathome);
+
+    char buf[1024];
     if (runupdater) {
         char userUpdater[MAX_PATH] = "";
         _snprintf(userUpdater, MAX_PATH, "%s\\modules\\ext\\updater.jar", userdir);
@@ -804,7 +814,15 @@ void addOption(char *str)
             options = tmp;
         }
     }
-    options[numOptions++] = strdup(str);
+    int len = strlen(str);
+    char *strOpt = (char *) malloc(len+1);
+    int k = 0;
+    for (int i = 0; i < len; i++) {
+        if (str[i] != '\"')
+            strOpt[k++] = str[i];
+    }
+    strOpt[k] = '\0';
+    options[numOptions++] = strOpt;
 }
 
 void parseArgs(int argc, char *argv[]) {

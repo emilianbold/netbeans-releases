@@ -71,8 +71,9 @@ public abstract class AbstractStep implements WizardDescriptor.ValidatingPanel {
     private boolean valid;
     private JComponent panel;
     private volatile boolean underConstruction;
-    private String errorMessage;
+    private WizardMessage errorMessage;
     private boolean applyStandaloneLayout;
+    private boolean isInfo;
 
     /**
      * If called before getComponent it disables 3:2 size mode.
@@ -131,19 +132,19 @@ public abstract class AbstractStep implements WizardDescriptor.ValidatingPanel {
      * Valid with error message that can be corrected
      * by external change.
      */
-    protected final void valid(String extErrorMessage) {
-        setValid(true, extErrorMessage);
+    protected final void valid(WizardMessage msg) {
+        setValid(true, msg);
     }
 
-    protected final void invalid(String message) {
-        setValid(false, message);
+    protected final void invalid(WizardMessage msg) {
+        setValid(false, msg);
     }
 
     public final boolean isValid() {
         return valid;
     }
 
-    public final String getErrorMessage() {
+    public final WizardMessage getErrorMessage() {
         return errorMessage;
     }
 
@@ -153,8 +154,8 @@ public abstract class AbstractStep implements WizardDescriptor.ValidatingPanel {
         if (isValid() == false || errorMessage != null) {
             throw new WizardValidationException (
                 panel,
-                errorMessage,
-                errorMessage
+                errorMessage.getMessage(),
+                errorMessage.getMessage()
             );
         }
     }
@@ -177,11 +178,13 @@ public abstract class AbstractStep implements WizardDescriptor.ValidatingPanel {
         }
     }
 
-    private void setValid(boolean valid, String errorMessage) {
+    private void setValid(boolean valid, WizardMessage msg) {
         boolean fire = AbstractStep.this.valid != valid;
-        fire |= errorMessage != null && (errorMessage.equals(this.errorMessage) == false);
+        fire |= ((msg != null && errorMessage == null)  ||
+                 (msg == null && errorMessage != null)) ||
+                 (msg != null && errorMessage !=null && !msg.getMessage().equals(errorMessage.getMessage())) ;
         AbstractStep.this.valid = valid;
-        this.errorMessage = errorMessage;
+        errorMessage = msg;
         if (fire) {
             fireChange();
         }
@@ -198,6 +201,21 @@ public abstract class AbstractStep implements WizardDescriptor.ValidatingPanel {
         while (it.hasNext()) {
             ChangeListener listener = it.next();
             listener.stateChanged(event);
+        }
+    }
+
+    public class WizardMessage {
+        private final boolean info;
+        private final String msg;
+        public WizardMessage(String msg, boolean isInfo) {
+            this.info = isInfo;
+            this.msg = msg;
+        }
+        public boolean isInfo() {
+            return info;
+        }
+        public String getMessage() {
+            return msg;
         }
     }
 

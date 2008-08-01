@@ -85,6 +85,7 @@ import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileLock;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.MultiDataObject;
+import org.openide.loaders.SaveAsCapable;
 import org.openide.nodes.Node.Cookie;
 import org.openide.text.CloneableEditor;
 import org.openide.text.CloneableEditorSupport;
@@ -108,6 +109,11 @@ public class J2MEDataObject extends MultiDataObject {
     
     public J2MEDataObject(FileObject pf, MultiFileLoader loader)  throws DataObjectExistsException {
         super(pf,loader);
+        getCookieSet().assign( SaveAsCapable.class, new SaveAsCapable() {
+            public void saveAs( FileObject folder, String fileName ) throws IOException {
+                createJavaEditorSupport().saveAs( folder, fileName );
+            }
+        });
     }
     
     @Override

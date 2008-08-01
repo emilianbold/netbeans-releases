@@ -41,8 +41,6 @@
 
 package org.netbeans.modules.j2ee.common.project.ui;
 
-import org.netbeans.modules.j2ee.common.project.ui.RemoveClassPathRootAction;
-import org.netbeans.modules.j2ee.common.project.ui.ShowJavadocAction;
 import java.awt.Image;
 import java.net.URI;
 import java.net.URL;
@@ -51,12 +49,9 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
 import javax.swing.Action;
 import javax.swing.Icon;
-import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
 import org.openide.filesystems.FileUtil;
@@ -75,10 +70,6 @@ import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.api.java.queries.JavadocForBinaryQuery;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
-import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
-import org.netbeans.spi.project.support.ant.EditableProperties;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -101,10 +92,10 @@ class ProjectNode extends AbstractNode {
     private Image cachedIcon;
 
     ProjectNode (AntArtifact antArtifact, URI artifactLocation, UpdateHelper helper, 
-            String classPathId, 
-            String entryId, String webModuleElementName, ClassPathSupport cs, String[] libUpdaterProperties) {
+            String classPathId, String entryId, String webModuleElementName, 
+            ClassPathSupport cs, ReferenceHelper rh) {
         super (Children.LEAF, createLookup (antArtifact, artifactLocation, 
-                helper, classPathId, entryId, webModuleElementName, cs, libUpdaterProperties));
+                helper, classPathId, entryId, webModuleElementName, cs, rh));
         this.antArtifact = antArtifact;
         this.artifactLocation = artifactLocation;
     }
@@ -169,7 +160,8 @@ class ProjectNode extends AbstractNode {
     private static Lookup createLookup (AntArtifact antArtifact, URI artifactLocation, 
             UpdateHelper helper, 
             String classPathId, String entryId, String webModuleElementName,
-            ClassPathSupport cs, String[] libUpdaterProperties) {
+            ClassPathSupport cs,
+            ReferenceHelper rh) {
         Project p = antArtifact.getProject();
         Object[] content;
         if (p == null) {
@@ -180,7 +172,7 @@ class ProjectNode extends AbstractNode {
             content[1] = new JavadocProvider(antArtifact, artifactLocation);
             content[2] = p;
         }
-        content[0] = new Removable(helper, classPathId, entryId, webModuleElementName, cs, libUpdaterProperties);        
+        content[0] = new ActionFilterNode.Removable(helper, classPathId, entryId, webModuleElementName, cs, rh);
         Lookup lkp = Lookups.fixed(content);
         return lkp;
     }
@@ -287,70 +279,4 @@ class ProjectNode extends AbstractNode {
         }
     }
 
-    private static class Removable implements RemoveClassPathRootAction.Removable {
-
-        private final UpdateHelper helper;
-        private final String classPathId;
-        private final String entryId;
-        private final String webModuleElementName;
-        private String[] libUpdaterProperties;
-
-        private final ClassPathSupport cs;
-
-        Removable (UpdateHelper helper, 
-                String classPathId, String entryId, String webModuleElementName,
-                ClassPathSupport cs, String[] libUpdaterProperties) {
-            this.helper = helper;
-            this.classPathId = classPathId;
-            this.entryId = entryId;
-            this.webModuleElementName = webModuleElementName;
-            this.libUpdaterProperties = libUpdaterProperties;
-            
-            this.cs = cs;
-
-        }
-
-        public boolean canRemove () {
-            //Allow to remove only entries from PROJECT_PROPERTIES, same behaviour as the project customizer
-            EditableProperties props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-            return props.getProperty (classPathId) != null;
-        }
-
-        public Project remove() {
-            // The caller has write access to ProjectManager
-            // and ensures the project will be saved.
-            
-            boolean removed = false;
-            EditableProperties props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);
-            String raw = props.getProperty (classPathId);
-            List resources = cs.itemsList( raw, webModuleElementName );
-            for (Iterator i = resources.iterator(); i.hasNext();) {
-                ClassPathSupport.Item item = (ClassPathSupport.Item)i.next();
-                if (entryId.equals(CommonProjectUtils.getAntPropertyName(item.getReference()))) {
-                    i.remove();
-                    removed = true;
-                }
-            }
-            if (removed) {
-                String[] itemRefs = cs.encodeToStrings(resources, webModuleElementName);
-                props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);    //Reread the properties, PathParser changes them
-                props.setProperty (classPathId, itemRefs);
-                
-                if (libUpdaterProperties != null) {
-                    // update library properties:
-                    HashSet set = new HashSet();
-                    for (String property : libUpdaterProperties) {
-                        List wmLibs = cs.itemsList(props.getProperty(property),  null);
-                        set.addAll(wmLibs);
-                    }
-                    ProjectProperties.storeLibrariesLocations(set.iterator(), props, helper.getAntProjectHelper().getProjectDirectory());
-                }
-                
-                helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
-                return FileOwnerQuery.getOwner(helper.getAntProjectHelper().getProjectDirectory());
-            } else {
-                return null;
-            }
-        }
-    }
 }

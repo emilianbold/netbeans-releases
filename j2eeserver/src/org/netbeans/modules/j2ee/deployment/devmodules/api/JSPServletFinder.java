@@ -154,6 +154,8 @@ System.out.println("getting servlet temp directory - find is " + find);
         String webURL = getWebURL();
         if (webURL == null)
             return null;
+        if (null == jspResourcePath)
+            throw new NullPointerException("jspResourcePath");
         return find.getServletResourcePath(webURL, jspResourcePath);
     }
  

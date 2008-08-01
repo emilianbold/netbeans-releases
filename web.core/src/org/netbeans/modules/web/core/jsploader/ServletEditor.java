@@ -46,7 +46,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.ObjectInput;
-import java.io.ObjectInputStream;
 import java.util.Date;
 import java.beans.*;
 import javax.swing.JEditorPane;
@@ -58,7 +57,6 @@ import javax.swing.Timer;
 import javax.swing.event.CaretListener;
 import javax.swing.text.Caret;
 import javax.swing.event.CaretEvent;
-
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.CloseCookie;
 import org.openide.cookies.PrintCookie;
@@ -68,13 +66,13 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.DataNode;
 import org.openide.nodes.Node;
-import org.openide.text.*;
 import org.openide.windows.CloneableOpenSupport;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
-
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
+import org.openide.text.CloneableEditor;
+import org.openide.text.CloneableEditorSupport;
 import org.openide.util.WeakListeners;
  
 /** Editor for servlet files generated from JSP files. Main features:
@@ -99,6 +97,7 @@ public class ServletEditor extends CloneableEditorSupport
         jspdo.addPropertyChangeListener(WeakListeners.propertyChange(this, jspdo));
     }
     
+    @Override
     protected CloneableEditor createCloneableEditor () {
         return new ServletEditorComponent (this);
     }
@@ -108,6 +107,7 @@ public class ServletEditor extends CloneableEditorSupport
     }
     
     /** Overriding the default loading from stream - need to look at encoding */
+    @Override
     protected void loadFromStreamToKit (StyledDocument doc, InputStream stream, EditorKit kit) throws IOException, BadLocationException {
         FileObject fo = getServlet().getPrimaryFile();
         String encoding =  (String) fo.getAttribute(ATTR_FILE_ENCODING); //NOI18N
@@ -202,6 +202,7 @@ public class ServletEditor extends CloneableEditorSupport
      * @param kit kit to user to create the document
      * @return the document annotated by the properties
      */
+    @Override
     protected StyledDocument createStyledDocument(EditorKit kit) {
         StyledDocument doc = super.createStyledDocument(kit);
         
@@ -233,7 +234,7 @@ public class ServletEditor extends CloneableEditorSupport
 
     public static class ServletEditorComponent extends CloneableEditor {
 
-        static final int SELECTED_NODES_DELAY = 1000;//copied from the JavaEditor
+        static final int SELECTED_NODES_DELAY = 1000; //copied from the JavaEditor
         Timer timerSelNodes;//copied from the JavaEditor
         /** Listener on caret movements */
         CaretListener caretListener; //copied from the JavaEditor
@@ -250,11 +251,13 @@ public class ServletEditor extends CloneableEditorSupport
             init();
         }
 
+        @Override
         protected void componentShowing() {
             super.componentShowing(); // just this initializes the pane now
             pane.setEditable(false);
         }
 
+        @Override
         public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
             super.readExternal(in);
             init();
@@ -264,18 +267,12 @@ public class ServletEditor extends CloneableEditorSupport
             return pane;
         }
         
-        /*protected CloneableEditorSupport cloneableEditorSupport() {
-            return super.cloneableEditorSupport();
-        }*/
-
         /** Called after creation of this object and after deexternalization. */
         private void init() {
             //set the pane read only
             if ( null != getPane()) {
                 getPane().setEditable(false);
             }
-            //set the activated nodes
-//            setCorrectActivatedNodes();
             //register a listener to set activated nodes after a change of the servlet
             ServletEditor se = (ServletEditor)cloneableEditorSupport();
             if (se != null) {
@@ -297,6 +294,7 @@ public class ServletEditor extends CloneableEditorSupport
          *
          * copied from the JavaEditor
         */
+        @Override
         protected void componentActivated () {
             pane.addCaretListener(caretListener);
             super.componentActivated (); 
@@ -336,35 +334,9 @@ public class ServletEditor extends CloneableEditorSupport
         private void setNodes (JspDataObject jspdo, final int offset){
             JspServletDataObject servlet = jspdo.getServletDataObject();
             if (servlet==null) {
-                    setActivatedNodes(new Node[] { jspdo.getNodeDelegate() });
-                    return;
-                }
-            
-//RETOUCHE
-//            SourceCookie.Editor seditor = (SourceCookie.Editor) servlet.getCookie(SourceCookie.Editor.class);
-//
-//            org.openide.src.Element element = seditor.findElement(offset);
-//            org.openide.src.nodes.ElementNodeFactory factory = JavaDataObject.getExplorerFactory();
-//            Node n = null;
-//            if (element instanceof org.openide.src.MethodElement) {
-//                n = factory.createMethodNode((org.openide.src.MethodElement)element);
-//            }
-//            else if (element instanceof org.openide.src.ClassElement) {
-//                n = factory.createClassNode((org.openide.src.ClassElement)element);
-//            }
-//            else if (element instanceof org.openide.src.ConstructorElement) {
-//                n = factory.createConstructorNode((org.openide.src.ConstructorElement)element);
-//            }
-//            else if (element instanceof org.openide.src.FieldElement) {
-//                n = factory.createFieldNode((org.openide.src.FieldElement)element);
-//            }
-//            else if (element instanceof org.openide.src.InitializerElement) {
-//                n = factory.createInitializerNode((org.openide.src.InitializerElement)element);
-//            }
-//            else if (element instanceof org.openide.src.SourceElement) {
-//                n = servlet.getNodeDelegate();
-//            }
-//            setActivatedNodes((n != null) ? new Node[] { n } : new Node[] { jspdo.getNodeDelegate() });
+                setActivatedNodes(new Node[] { jspdo.getNodeDelegate() });
+                return;
+            }
         }
         
         /** Obtain a support for this component 
@@ -375,23 +347,23 @@ public class ServletEditor extends CloneableEditorSupport
             ServletEditor se = (ServletEditor)cloneableEditorSupport();
             if (se != null) {
                 timerSelNodes = new Timer(100, new java.awt.event.ActionListener() {
-                                              public void actionPerformed(java.awt.event.ActionEvent e) {
-                                                  if (lastCaretOffset == -1 && pane != null) {
-                                                      Caret caret = pane.getCaret();
-                                                      if (caret != null)
-                                                        lastCaretOffset = caret.getDot();
-                                                  }
-                                                  selectElementsAtOffset(lastCaretOffset);
-                                              }
-                                          });
+                    public void actionPerformed(java.awt.event.ActionEvent e) {
+                        if (lastCaretOffset == -1 && pane != null) {
+                            Caret caret = pane.getCaret();
+                            if (caret != null)
+                                lastCaretOffset = caret.getDot();
+                        }
+                        selectElementsAtOffset(lastCaretOffset);
+                    }
+                });
                 timerSelNodes.setInitialDelay(100);
                 timerSelNodes.setRepeats(false);
                 timerSelNodes.restart();
                 caretListener = new CaretListener() { 
-                                    public void caretUpdate(CaretEvent e) {
-                                        restartTimerSelNodes(e.getDot());
-                                    }
-                                };
+                    public void caretUpdate(CaretEvent e) {
+                        restartTimerSelNodes(e.getDot());
+                    }
+                };
             }
             if (lastCaretOffset == -1 && pane != null) {
                 Caret caret = pane.getCaret();
@@ -406,6 +378,7 @@ public class ServletEditor extends CloneableEditorSupport
          *
          *copied from the JavaEditor
          */
+        @Override
         public SystemAction[] getSystemActions() {
             selectElementsAtOffset(lastCaretOffset);
             timerSelNodes.stop();
@@ -460,11 +433,11 @@ public class ServletEditor extends CloneableEditorSupport
             }
         }
         
-        private void readObject (ObjectInputStream ois)
-        throws IOException, ClassNotFoundException {
-            ois.defaultReadObject();
-            init();
-        }
+//        private void readObject (ObjectInputStream ois)
+//        throws IOException, ClassNotFoundException {
+//            ois.defaultReadObject();
+//            init();
+//        }
         
         private void init() {
             jspdo.addPropertyChangeListener(WeakListeners.propertyChange (this, jspdo));
@@ -611,6 +584,7 @@ public class ServletEditor extends CloneableEditorSupport
         // methods from FileChangeAdapter
 
         /** Handles <code>FileObject</code> deletion event. */
+        @Override
         public void fileDeleted(FileEvent fe) {
             fe.getFile().removeFileChangeListener(this);
             
@@ -620,10 +594,10 @@ public class ServletEditor extends CloneableEditorSupport
         /** Fired when a file is changed.
          * @param fe the event describing context where action has taken place
          */
+        @Override
         public void fileChanged(FileEvent fe) {
             firePropertyChange(PROP_TIME, null, null);
         }
-        
-        
     }
+    
 }

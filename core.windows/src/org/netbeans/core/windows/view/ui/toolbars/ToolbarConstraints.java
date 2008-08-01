@@ -107,10 +107,12 @@ public class ToolbarConstraints {
         Value -1 means that absolute pixel positioning will be used instead. */
     private int initialIndexInRow;
     
+    private boolean alwaysRight = false;
+    
     private PropertyChangeSupport propSupport;
 
-    ToolbarConstraints (ToolbarConfiguration conf, String nam, Integer pos, Boolean vis) {
-        this( conf, nam, pos, vis, -1 );
+    ToolbarConstraints (ToolbarConfiguration conf, String nam, Integer pos, Boolean vis, boolean alwaysRight) {
+        this( conf, nam, pos, vis, -1, alwaysRight );
     }
     
     /** Create new ToolbarConstraints
@@ -119,7 +121,7 @@ public class ToolbarConstraints {
      * @param pos wanted position of toolbar
      * @param vis visibility of toolbar
      */
-    ToolbarConstraints (ToolbarConfiguration conf, String nam, Integer pos, Boolean vis, int initialIndexInRow) {
+    ToolbarConstraints (ToolbarConfiguration conf, String nam, Integer pos, Boolean vis, int initialIndexInRow, boolean alwaysRight) {
         toolbarConfig = conf;
         name = nam;
         if (pos == null) {
@@ -133,6 +135,7 @@ public class ToolbarConstraints {
             //declarations in layers
             this.initialIndexInRow = -1;
         }
+        this.alwaysRight = alwaysRight;
         visible = vis.booleanValue();
 
         prefSize = new Dimension ();
@@ -141,6 +144,10 @@ public class ToolbarConstraints {
         bounds = new Rectangle ();
 
         initValues();
+    }
+    
+    boolean isAlwaysRight() {
+        return alwaysRight;
     }
 
     /** Init neighbourhood values. */
@@ -158,16 +165,16 @@ public class ToolbarConstraints {
      * @param visible maybe new visibility
      */
     void checkNextPosition (Integer position, Boolean visible) {
-        if (position == null) {
-            this.position = 0;
-            this.anchor = LEFT_ANCHOR;
-        } else {
-            if (anchor == NO_ANCHOR)
-                this.position = (this.position + position.intValue()) / 2;
-            else
-                this.position = position.intValue();
-            this.anchor = NO_ANCHOR;
-        }
+            if (position == null) {
+                this.position = 0;
+                this.anchor = LEFT_ANCHOR;
+            } else {
+                if (anchor == NO_ANCHOR)
+                    this.position = (this.position + position.intValue()) / 2;
+                else
+                    this.position = position.intValue();
+                this.anchor = NO_ANCHOR;
+            }
         this.visible = this.visible || visible.booleanValue();
     }
 
@@ -461,8 +468,10 @@ public class ToolbarConstraints {
         int nextPos;
         while (it.hasNext()) {
             tc = (ToolbarConstraints)it.next();
-            nextBeg = Math.min (nextBeg, nextPos = tc.getPosition());
-            nextEnd = Math.min (nextEnd, nextPos + tc.getWidth());
+            if (!tc.isAlwaysRight()) {
+                nextBeg = Math.min (nextBeg, nextPos = tc.getPosition());
+                nextEnd = Math.min (nextEnd, nextPos + tc.getWidth());
+            }
         }
         updateBounds();
     }

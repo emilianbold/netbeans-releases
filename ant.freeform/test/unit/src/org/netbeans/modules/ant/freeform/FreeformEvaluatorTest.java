@@ -48,9 +48,9 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
-import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Mutex;
 import org.w3c.dom.Element;
@@ -70,7 +70,8 @@ public class FreeformEvaluatorTest extends TestBase {
         PropertyEvaluator eval = simple.evaluator();
         assertEquals("right src.dir", "src", eval.getProperty("src.dir"));
     }
-    
+
+    @RandomlyFails
     public void testPropertyEvaluationChanges() throws Exception {
         FreeformProject simple2 = copyProject(simple);
         PropertyEvaluator eval = simple2.evaluator();
@@ -104,7 +105,8 @@ public class FreeformEvaluatorTest extends TestBase {
         l.reset();
         assertEquals("new value of src.dir", "somethingnew", eval.getProperty("src.dir"));
     }
-    
+
+    @RandomlyFails
     public void testChangesInPropertyFileLocation() throws Exception {
         // #48230: if some change in earlier properties causes location of a property file to change, reread it
         FreeformProject simple2 = copyProject(simple);

@@ -52,7 +52,7 @@ import org.netbeans.modules.cnd.utils.cache.TextCache;
  */
 public class APTBaseToken extends CommonToken implements APTToken {
     private static final long serialVersionUID = 2834353662691067170L;
-    
+
     private int offset;
     /**
      * Creates a new instance of APTBaseToken
@@ -63,16 +63,16 @@ public class APTBaseToken extends CommonToken implements APTToken {
     public APTBaseToken(Token token) {
         this(token, token.getType());
     }
-    
+
     public APTBaseToken(Token token, int ttype) {
         this.setColumn(token.getColumn());
         this.setFilename(token.getFilename());
         this.setLine(token.getLine());
-        
-        // This constructor is used with the existing tokens so do not use setText here, 
+
+        // This constructor is used with the existing tokens so do not use setText here,
         // because we do not need to go through APTStringManager once again
         text = token.getText();
-        
+
         this.setType(ttype);
         if (token instanceof APTToken) {
             APTToken aptToken = (APTToken)token;
@@ -83,13 +83,13 @@ public class APTBaseToken extends CommonToken implements APTToken {
             this.setTextID(aptToken.getTextID());
         }
     }
-    
+
     public APTBaseToken(String text) {
         this.setText(text);
     }
-    
+
     public int getOffset() {
-        return this.offset;
+        return offset;
     }
 
     public void setOffset(int o) {
@@ -103,32 +103,35 @@ public class APTBaseToken extends CommonToken implements APTToken {
     public void setEndOffset(int end) {
         // do nothing
     }
-    
+
     public int getTextID() {
 //        return textID;
         return -1;
     }
-    
+
     public void setTextID(int textID) {
 //        this.textID = textID;
     }
-  
+
+    @Override
     public String getText() {
         // TODO: get from shared string map
         String res = super.getText();
         return res;
     }
-    
+
+    @Override
     public void setText(String t) {
         if (APTTraceFlags.APT_SHARE_TEXT) {
             t = TextCache.getString(t).toString();
         }
         super.setText(t);
     }
-    
+
+    @Override
     public String toString() {
         return "[\"" + getText() + "\",<" + getType() + ">,line=" + getLine() + ",col=" + getColumn() + "]" + ",offset="+getOffset()+",file="+getFilename(); // NOI18N
-    }  
+    }
 
     public int getEndColumn() {
         return getColumn() + getText().length();

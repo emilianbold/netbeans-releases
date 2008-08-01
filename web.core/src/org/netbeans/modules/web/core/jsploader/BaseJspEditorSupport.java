@@ -40,6 +40,7 @@
  */
 
 package org.netbeans.modules.web.core.jsploader;
+
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.ByteArrayOutputStream;
@@ -69,7 +70,6 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.web.core.palette.JSPPaletteFactory;
 import org.openide.filesystems.FileUtil;
-
 import org.openide.text.DataEditorSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileLock;
@@ -86,9 +86,6 @@ import org.openide.util.lookup.ProxyLookup;
 import org.openide.windows.CloneableOpenSupport;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
-//import org.openide.debugger.Debugger;
-//import org.openide.debugger.Breakpoint;
-
 import org.openide.loaders.DataObject;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.spi.palette.PaletteController;
@@ -191,7 +188,10 @@ class BaseJspEditorSupport extends DataEditorSupport implements EditCookie, Edit
             FileObject wmRoot = webModule.getDocumentBase();
             // register class path listener
             ClassPath cp = ClassPath.getClassPath(wmRoot, ClassPath.EXECUTE);
-            cp.addPropertyChangeListener(WeakListeners.propertyChange(this, cp));
+            if (cp != null) {
+                cp.addPropertyChangeListener(WeakListeners.propertyChange(this, cp));
+
+            }
         }
     }
     
@@ -266,24 +266,6 @@ class BaseJspEditorSupport extends DataEditorSupport implements EditCookie, Edit
         restartTimer(false);
     }
     
-//    protected void loadFromStreamToKit(StyledDocument doc, InputStream stream, EditorKit kit) throws IOException, BadLocationException {
-//
-//        Reader reader = null;
-//        encoding = getObjectEncoding(false, true);//use encoding from fileobject & cache it
-//        
-//        if (!isSupportedEncoding(encoding)){
-//            encoding = defaulEncoding;
-//        }
-//        try {
-//            reader = new InputStreamReader(stream, encoding);
-//            kit.read(reader, doc, 0);
-//        }
-//        finally {
-//            if (reader != null)
-//                reader.close();
-//        }
-//    }
-    
     /** Notify about the editor closing.
      */
     protected void notifyClose() {}
@@ -325,24 +307,10 @@ class BaseJspEditorSupport extends DataEditorSupport implements EditCookie, Edit
         obj.removeSaveCookie();
     }
     
-//    protected String getObjectEncoding(boolean useEditor) {
-//        return getObjectEncoding(useEditor, false);
-//    }
-    
-//    /** Returns encoding of the JSP file. 
-//     * @param useEditor if <code>true</code> then the encoding is got from the editor 
-//     *        otherwise the encoding is obtained from webmodule parser.
-//     * @param useCache if <code>true</code> then the encoding parsed from the webmodule and JSP is 
-//     *        cached. So the next call of this method wont parse the wm and the JSP again until the JSP file is changed.
-//     * @return JSP page encoding.
-//     */
-//    protected String getObjectEncoding(boolean useEditor, boolean useCache) {
-//            return ((JspDataObject)getDataObject()).getFileEncoding(!useCache, useEditor).trim();
-//    }
-    
     /** Save the document in this thread and start reparsing it.
      * @exception IOException on I/O error
      */
+    @Override
     public void saveDocument() throws IOException {
         saveDocument(true, true);
     }
@@ -365,7 +333,6 @@ class BaseJspEditorSupport extends DataEditorSupport implements EditCookie, Edit
             ((JspDataObject)getDataObject()).updateFileEncoding(true);
             
             encoding = ((JspDataObject)getDataObject()).getFileEncoding();
-//            encoding = getObjectEncoding(true); //use encoding from editor 
             if (!isSupportedEncoding(encoding)){
                 NotifyDescriptor nd = new NotifyDescriptor.Confirmation(
                 NbBundle.getMessage (BaseJspEditorSupport.class, "MSG_BadEncodingDuringSave", //NOI18N
@@ -526,6 +493,7 @@ class BaseJspEditorSupport extends DataEditorSupport implements EditCookie, Edit
             return ((MultiDataObject)getDataObject()).getPrimaryEntry().takeLock();
         }
         
+        @Override
         public CloneableOpenSupport findCloneableOpenSupport() {
             return (BaseJspEditorSupport)getDataObject().getCookie(BaseJspEditorSupport.class);
         }
@@ -541,7 +509,6 @@ class BaseJspEditorSupport extends DataEditorSupport implements EditCookie, Edit
         
         /** Listener on caret movements */
         CaretListener caretListener;
-        //BaseJspEditorSupport support;
         
         public BaseJspEditor() {
             super();
@@ -601,12 +568,12 @@ class BaseJspEditorSupport extends DataEditorSupport implements EditCookie, Edit
             };
             
             taglibParseSupport = (TagLibParseSupport)((BaseJspEditorSupport)cloneableEditorSupport()).getDataObject().getCookie(TagLibParseSupport.class);
-
         }
         
         /* This method is called when parent window of this component has focus,
          * and this component is preferred one in it.
          */
+        @Override
         protected void componentActivated() {
             // Workaround for bug #37188. If the pane is null, don't activate the component.
             if (getEditorPane() != null){
@@ -619,13 +586,13 @@ class BaseJspEditorSupport extends DataEditorSupport implements EditCookie, Edit
             taglibParseSupport.setEditorOpened(true);
             //show up the component palette
             associatePalette((BaseJspEditorSupport)cloneableEditorSupport());
-            
         }
         
         /*
          * This method is called when parent window of this component losts focus,
          * or when this component losts preferrence in the parent window.
          */
+        @Override
         protected void componentDeactivated() {
              if (getEditorPane() != null){
                 getEditorPane().removeCaretListener(caretListener);
@@ -637,6 +604,7 @@ class BaseJspEditorSupport extends DataEditorSupport implements EditCookie, Edit
         /* When closing last view, also close the document.
          * @return <code>true</code> if close succeeded
          */
+        @Override
         protected boolean closeLast() {
             if (!super.closeLast()) return false;
             ((BaseJspEditorSupport)cloneableEditorSupport()).notifyClose();
@@ -646,6 +614,7 @@ class BaseJspEditorSupport extends DataEditorSupport implements EditCookie, Edit
         /** Deserialize this top component.
          * @param in the stream to deserialize from
          */
+        @Override
         public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
             super.readExternal(in);
             initialize();

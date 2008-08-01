@@ -126,19 +126,38 @@ public class FormLAF {
 
             PreviewInfo info = new PreviewInfo(previewLookAndFeel, previewDefaults);
             if (isNimbusLAF(lafClass) && !isNimbusLAF(UIManager.getLookAndFeel().getClass())) {
+                Object control = null;
                 try {
+                    // Nimbus is based on "control" default. So, make sure that we use the correct one.
+                    control = UIManager.getDefaults().remove("control"); // NOI18N
+                    // Issue 130221 - Nimbus needs "defaultFont" on some places outside
+                    // our control (e.g. outside our preview LAF blocks). Unfortunately,
+                    // it is not possible to use Nimbus.Overrides for this purpose because
+                    // we don't have access to all components that needs this key. For example,
+                    // it is needed by tooltips that are created on demand.
+                    // Modification of IDE defaults may be dangerous, but AFAIK there is no other
+                    // look and feel or library using "defaultFont" key.
+                    UIManager.getDefaults().put("defaultFont", previewDefaults.get("defaultFont")); // NOI18N
                     // The update of derived colors must be performed within preview block
                     FormLAF.setUsePreviewDefaults(formClassLoader, info);
                     for (PropertyChangeListener listener : UIManager.getPropertyChangeListeners()) {
-                        if (listener.getClass().getName().endsWith("UIDefaultColorListener")) { // NOI18N
-                            // Forces update of derived colors, see NimbusDefaults.UIDefaultColorListener
-                            listener.propertyChange(new PropertyChangeEvent(UIManager.class, "lookAndFeel", null, null)); // NOI18N
-                            // Remove listener added by NimbusLookAndFeel.initialize()
+                        if (listener.getClass().getName().contains("NimbusDefaults")) { // NOI18N
+                            // Forces update of derived colors, see NimbusDefaults.DefaultsListener
+                            // We must fire the event several times because some values are dependent
+                            for (int i=0; i<5; i++) {
+                                listener.propertyChange(new PropertyChangeEvent(UIManager.class, "lookAndFeel", null, null)); // NOI18N
+                            }
+                            // Remove listeners added by NimbusLookAndFeel.initialize()
                             UIManager.removePropertyChangeListener(listener);
+                            UIManager.getDefaults().removePropertyChangeListener(listener);
                         }
                     }
                 } finally {
                     FormLAF.setUsePreviewDefaults(null, null);
+                }
+                // Return the old "control" default back
+                if (control != null) {
+                    UIManager.getDefaults().put("control", control); // NOI18N
                 }
             }
 
@@ -309,7 +328,7 @@ public class FormLAF {
         }
         UIDefaults defaults = UIManager.getDefaults();
         netbeansDefaults.clear();
-        netbeansDefaults.putAll(defaults);
+        copyMultiUIDefaults(defaults, netbeansDefaults);
         netbeansDefaults.keySet().removeAll(userDefaults.keySet());
         defaults.keySet().removeAll(netbeansDefaults.keySet());
 
@@ -322,15 +341,39 @@ public class FormLAF {
 
     private static void useIDELookAndFeel() {
         userDefaults.clear();
-        userDefaults.putAll(UIManager.getDefaults());
+        copyMultiUIDefaults(UIManager.getDefaults(), userDefaults);
 
         if (!preview) {
             setUseDesignerDefaults(null);
         } else if (ideLafIsMetal) {
-            MetalLookAndFeel.setCurrentTheme(lafToTheme.get(UIManager.getLookAndFeel().getClass()));
+            if (!isNimbusLAF(previewLaf)) { // Issue 134846
+                MetalLookAndFeel.setCurrentTheme(lafToTheme.get(UIManager.getLookAndFeel().getClass()));
+            }
         }
 
         UIManager.getDefaults().putAll(netbeansDefaults);
+    }
+
+    private static void copyMultiUIDefaults(UIDefaults what, Map where) {
+        // We cannot invoke what.entrySet() because it was overriden
+        // in MultiUIDefaults in JDK 6 Update 10
+        try {
+            java.lang.reflect.Method method = Hashtable.class.getDeclaredMethod("getIterator", new Class[] {int.class}); // NOI18N
+            method.setAccessible(true);
+            Object i = method.invoke(what, new Object[] {2/*Hashtable.ENTRIES*/});
+            if (i instanceof Iterator) {
+                Iterator iter = (Iterator)i;
+                while (iter.hasNext()) {
+                    Object item = iter.next();
+                    if (item instanceof Map.Entry) {
+                        Map.Entry entry = (Map.Entry)item;
+                        where.put(entry.getKey(), entry.getValue());
+                    }
+                }
+            }
+        } catch (Exception ex) {
+            Logger.getLogger(FormLAF.class.getName()).log(Level.INFO, ex.getMessage(), ex);
+        }
     }
 
     /**
@@ -395,7 +438,7 @@ public class FormLAF {
         if (formModel == null) {
             // Determine new user defaults add add them to classLoaderDefaults
             UIDefaults newDefaults = new UIDefaults();
-            newDefaults.putAll(UIManager.getDefaults());
+            copyMultiUIDefaults(UIManager.getDefaults(), newDefaults);
             newDefaults.keySet().removeAll(lastDefaults.keySet());
             classLoaderDefaults.putAll(newDefaults);
             defaults.putAll(lastDefaults);
@@ -408,7 +451,7 @@ public class FormLAF {
                 classLoaderToDefaults.put(classLoader, classLoaderDefaults);
             }
             lastDefaults.clear();
-            lastDefaults.putAll(defaults);
+            copyMultiUIDefaults(defaults, lastDefaults);
             defaults.putAll(classLoaderDefaults);
         }
         delDefaults.setDelegating(classLoader);

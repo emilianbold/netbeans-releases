@@ -70,6 +70,9 @@ import java.beans.PropertyChangeEvent;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
+import java.util.prefs.Preferences;
 import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JScrollBar;
@@ -88,14 +91,22 @@ import javax.swing.event.DocumentListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.EventListenerList;
 import javax.swing.text.AbstractDocument;
+import javax.swing.text.AttributeSet;
 import javax.swing.text.Position;
+import javax.swing.text.StyleConstants;
 import org.netbeans.api.editor.fold.Fold;
 import org.netbeans.api.editor.fold.FoldHierarchy;
 import org.netbeans.api.editor.fold.FoldHierarchyEvent;
 import org.netbeans.api.editor.fold.FoldHierarchyListener;
 import org.netbeans.api.editor.fold.FoldStateChange;
 import org.netbeans.api.editor.fold.FoldUtilities;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.settings.FontColorNames;
+import org.netbeans.api.editor.settings.FontColorSettings;
+import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.lib.editor.util.swing.DocumentListenerPriority;
+import org.netbeans.modules.editor.lib.EditorPreferencesDefaults;
+import org.netbeans.modules.editor.lib.SettingsConversions;
 import org.openide.util.WeakListeners;
 
 /**
@@ -107,7 +118,7 @@ import org.openide.util.WeakListeners;
 
 public class BaseCaret implements Caret,
 MouseListener, MouseMotionListener, PropertyChangeListener,
-DocumentListener, ActionListener, SettingsChangeListener,
+DocumentListener, ActionListener, 
 AtomicLockListener, FoldHierarchyListener {
 
     /** Caret type representing block covering current character */
@@ -118,10 +129,13 @@ AtomicLockListener, FoldHierarchyListener {
 
     /** One dot thin line compatible with Swing default caret */
     public static final String THIN_LINE_CARET = "thin-line-caret"; // NOI18N
-    
+
+    /** @since 1.23 */
+    public static final String THICK_LINE_CARET = "thick-line-caret"; // NOI18N
+
     // -J-Dorg.netbeans.editor.BaseCaret.level=FINEST
     private static final Logger LOG = Logger.getLogger(BaseCaret.class.getName());
-
+    
     static {
         // Compatibility debugging flags mapping to logger levels
         if (Boolean.getBoolean("netbeans.debug.editor.caret.focus") && LOG.getLevel().intValue() < Level.FINE.intValue())
@@ -129,11 +143,11 @@ AtomicLockListener, FoldHierarchyListener {
         if (Boolean.getBoolean("netbeans.debug.editor.caret.focus.extra") && LOG.getLevel().intValue() < Level.FINER.intValue())
             LOG.setLevel(Level.FINER);
     }
-    
+
     /**
      * Implementation of various listeners.
      */
-    private ListenerImpl listenerImpl;
+    private final ListenerImpl listenerImpl;
     
     /**
      * Present bounds of the caret. This rectangle needs to be repainted
@@ -175,6 +189,9 @@ AtomicLockListener, FoldHierarchyListener {
     /** Type of the caret */
     String type;
 
+    /** Width of thick caret */
+    int width;
+    
     /** Is the caret italic for italic fonts */
     boolean italic;
 
@@ -240,71 +257,61 @@ AtomicLockListener, FoldHierarchyListener {
      * its relative visual position on the screen.
      */
     private boolean updateAfterFoldHierarchyChange;
+    private FoldHierarchyListener weakFHListener;
+
+    private Preferences prefs = null;
+    private final PreferenceChangeListener prefsListener = new PreferenceChangeListener() {
+        public void preferenceChange(PreferenceChangeEvent evt) {
+            String setingName = evt == null ? null : evt.getKey();
+            if (setingName == null || SimpleValueNames.CARET_BLINK_RATE.equals(setingName)) {
+                SettingsConversions.callSettingsChange(BaseCaret.this);
+                int rate = prefs.getInt(SimpleValueNames.CARET_BLINK_RATE, -1);
+                if (rate == -1) {
+                    JTextComponent c = component;
+                    Integer rateI = c == null ? null : (Integer) c.getClientProperty(BaseTextUI.PROP_DEFAULT_CARET_BLINK_RATE);
+                    rate = rateI != null ? rateI : EditorPreferencesDefaults.defaultCaretBlinkRate;
+                }
+                setBlinkRate(rate);
+                refresh();
+            }
+        }
+    };
+    private PreferenceChangeListener weakPrefsListener = null;
+    
     
     public BaseCaret() {
         listenerImpl = new ListenerImpl();
-        Settings.addSettingsChangeListener(this);
-    }
-
-    /** Called when settings were changed. The method is called
-    * also in constructor, so the code must count with the evt being null.
-    */
-    public void settingsChange(SettingsChangeEvent evt) {
-        if( evt != null && SettingsNames.CARET_BLINK_RATE.equals( evt.getSettingName() ) ) {
-            
-            JTextComponent c = component;
-            if (c == null) return;
-            if (evt.getKitClass() != Utilities.getKitClass(c)) return;
-            
-            Object value = evt.getNewValue();
-            if( value instanceof Integer ) {
-                int rate = ((Integer)value).intValue();
-                if (rate == -1) {
-                    Integer rateI = (Integer) c.getClientProperty(BaseTextUI.PROP_DEFAULT_CARET_BLINK_RATE);
-                    rate = rateI != null ? rateI : 300;
-                }
-                setBlinkRate(rate);
-            }
-        }
-        updateType();
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                updateCaretBounds(); // the line height etc. may have change
-            }
-        });
     }
 
     void updateType() {
         JTextComponent c = component;
-        if (c != null) {
-            Class kitClass = Utilities.getKitClass(c);
-            if (kitClass==null) return;
+        if (c != null && prefs != null) {
+            
             String newType;
+            int newWidth = 0;
             boolean newItalic;
-            Color caretColor;
+            Color caretColor = Color.black;
+            
             if (overwriteMode) {
-                newType = SettingsUtil.getString(kitClass,
-                                                 SettingsNames.CARET_TYPE_OVERWRITE_MODE, LINE_CARET);
-                newItalic = SettingsUtil.getBoolean(kitClass,
-                                                    SettingsNames.CARET_ITALIC_OVERWRITE_MODE, false);
-
-                Color insertModeColor = getColor( kitClass, SettingsNames.CARET_COLOR_INSERT_MODE,
-                    SettingsDefaults.defaultCaretColorInsertMode );
-                
-                caretColor = getColor( kitClass, SettingsNames.CARET_COLOR_OVERWRITE_MODE,
-                    insertModeColor );
-                
+                newType = prefs.get(SimpleValueNames.CARET_TYPE_OVERWRITE_MODE, EditorPreferencesDefaults.defaultCaretTypeOverwriteMode);
+                newItalic = prefs.getBoolean(SimpleValueNames.CARET_ITALIC_OVERWRITE_MODE, EditorPreferencesDefaults.defaultCaretItalicOverwriteMode);
             } else { // insert mode
-                newType = SettingsUtil.getString(kitClass,
-                                                 SettingsNames.CARET_TYPE_INSERT_MODE, LINE_CARET);
-                newItalic = SettingsUtil.getBoolean(kitClass,
-                                                    SettingsNames.CARET_ITALIC_INSERT_MODE, false);
-                caretColor = getColor( kitClass, SettingsNames.CARET_COLOR_INSERT_MODE,
-                    SettingsDefaults.defaultCaretColorInsertMode );
+                newType = prefs.get(SimpleValueNames.CARET_TYPE_INSERT_MODE, EditorPreferencesDefaults.defaultCaretTypeInsertMode);
+                newItalic = prefs.getBoolean(SimpleValueNames.CARET_ITALIC_INSERT_MODE, EditorPreferencesDefaults.defaultCaretItalicInsertMode);
+                newWidth = prefs.getInt(SimpleValueNames.THICK_CARET_WIDTH, EditorPreferencesDefaults.defaultThickCaretWidth);
             }
 
+            FontColorSettings fcs = MimeLookup.getLookup(org.netbeans.lib.editor.util.swing.DocumentUtilities.getMimeType(c)).lookup(FontColorSettings.class);
+            if (fcs != null) {
+                AttributeSet attribs = fcs.getFontColors(FontColorNames.CARET_COLOR_INSERT_MODE); //NOI18N
+                if (attribs != null) {
+                    caretColor = (Color) attribs.getAttribute(StyleConstants.Foreground);
+                }
+            }
+            
             this.type = newType;
             this.italic = newItalic;
+            this.width = newWidth;
             c.setCaretColor(caretColor);
             if (LOG.isLoggable(Level.FINER)) {
                 LOG.finer("Updating caret color:" + caretColor + '\n'); // NOI18N
@@ -313,11 +320,6 @@ AtomicLockListener, FoldHierarchyListener {
             resetBlink();
             dispatchUpdate(false);
         }
-    }
-
-    private static Color getColor( Class kitClass, String settingName, Color defaultValue) {
-        Object value = Settings.getValue(kitClass, settingName);
-        return (value instanceof Color) ? (Color)value : defaultValue;
     }
 
     /**
@@ -381,11 +383,6 @@ AtomicLockListener, FoldHierarchyListener {
         EditorUI editorUI = Utilities.getEditorUI(component);
         editorUI.addPropertyChangeListener( this );
         
-        FoldHierarchy hierarchy = FoldHierarchy.get(c);
-        if (hierarchy != null) {
-            hierarchy.addFoldHierarchyListener(this);
-        }
-        
         if (component.hasFocus()) {
             if (LOG.isLoggable(Level.FINE)) {
                 LOG.fine("Component has focus, calling BaseCaret.focusGained(); doc=" // NOI18N
@@ -417,11 +414,13 @@ AtomicLockListener, FoldHierarchyListener {
         c.removeFocusListener(listenerImpl);
         c.removePropertyChangeListener(this);
         
-        FoldHierarchy hierarchy = FoldHierarchy.get(c);
-        if (hierarchy != null) {
-            hierarchy.removeFoldHierarchyListener(this);
+        if (weakFHListener != null) {
+            FoldHierarchy hierarchy = FoldHierarchy.get(c);
+            if (hierarchy != null) {
+                hierarchy.removeFoldHierarchyListener(weakFHListener);
+            }
         }
-        
+
         modelChanged(listenDoc, null);
     }
 
@@ -442,6 +441,9 @@ AtomicLockListener, FoldHierarchyListener {
             }
 
             listenDoc = null;
+            if (prefs != null && weakPrefsListener != null) {
+                prefs.removePreferenceChangeListener(weakPrefsListener);
+            }
         }
 
 
@@ -461,8 +463,12 @@ AtomicLockListener, FoldHierarchyListener {
                 Utilities.annotateLoggable(e);
             }
 
-            settingsChange(null); // update settings
-
+            prefs = MimeLookup.getLookup(org.netbeans.lib.editor.util.swing.DocumentUtilities.getMimeType(newDoc)).lookup(Preferences.class);
+            if (prefs != null) {
+                weakPrefsListener = WeakListeners.create(PreferenceChangeListener.class, prefsListener, prefs);
+                prefs.addPreferenceChangeListener(weakPrefsListener);
+            }
+            
             Utilities.runInEventDispatchThread(
                 new Runnable() {
                     public void run() {
@@ -470,7 +476,6 @@ AtomicLockListener, FoldHierarchyListener {
                     }
                 }
             );
-
         }
     }
 
@@ -506,7 +511,15 @@ AtomicLockListener, FoldHierarchyListener {
                 }
                 g.drawLine((int)upperX, caretBounds.y, caretBounds.x,
                         (caretBounds.y + caretBounds.height - 1));
-
+            } else if (THICK_LINE_CARET.equals(type)) { // thick caret
+                int blkWidth = this.width;
+                if (blkWidth <= 0) blkWidth = 5; // sanity check
+                if (afterCaretFont != null) g.setFont(afterCaretFont);
+                Color textBackgroundColor = c.getBackground();
+                if (textBackgroundColor != null) {
+                    g.setXORMode( textBackgroundColor);
+                }
+                g.fillRect(caretBounds.x, caretBounds.y, blkWidth, caretBounds.height - 1);
             } else if (BLOCK_CARET.equals(type)) { // block caret
                 if (afterCaretFont != null) g.setFont(afterCaretFont);
                 if (afterCaretFont != null && afterCaretFont.isItalic() && italic) { // paint italic caret
@@ -799,7 +812,7 @@ AtomicLockListener, FoldHierarchyListener {
             c.repaint(repaintRect);
         }
     }
-    
+
     private String dumpVisibility() {
         return "visible=" + isVisible() + ", blinkVisible=" + blinkVisible;
     }
@@ -932,11 +945,11 @@ AtomicLockListener, FoldHierarchyListener {
     */
     public int getMark() {
         if (component != null) {
-            try {
-                return selectionMark.getOffset();
-            } catch (InvalidMarkException e) {
+                try {
+                    return selectionMark.getOffset();
+                } catch (InvalidMarkException e) {
+                }
             }
-        }
         return 0;
     }
 
@@ -993,8 +1006,15 @@ AtomicLockListener, FoldHierarchyListener {
                     try {
                         Utilities.moveMark(doc, caretMark, offset);
                         Utilities.moveMark(doc, selectionMark, offset);
-                        // Unfold fold 
+
                         FoldHierarchy hierarchy = FoldHierarchy.get(c);
+                        // hook the listener if not already done
+                        if (weakFHListener == null) {
+                            weakFHListener = WeakListeners.create(FoldHierarchyListener.class, this, hierarchy);
+                            hierarchy.addFoldHierarchyListener(weakFHListener);
+                        }
+
+                        // Unfold fold
                         hierarchy.lock();
                         try {
                             Fold collapsed = null;
@@ -1072,7 +1092,7 @@ AtomicLockListener, FoldHierarchyListener {
                     Utilities.moveMark(doc, caretMark, offset);
                     if (selectionVisible) { // selection already visible
                         Utilities.getEditorUI(c).repaintBlock(oldCaretPos, offset);
-                    }
+                        }
                 } catch (BadLocationException e) {
                     throw new IllegalStateException(e.toString());
                     // position is incorrect
@@ -1093,6 +1113,8 @@ AtomicLockListener, FoldHierarchyListener {
             BaseDocumentEvent bevt = (BaseDocumentEvent)evt;
             if ((bevt.isInUndo() || bevt.isInRedo())
                     && component == Utilities.getLastActiveComponent()
+                    && !Boolean.TRUE.equals(org.netbeans.lib.editor.util.swing.
+                        DocumentUtilities.getEventProperty(evt, "caretIgnore"))
                ) {
                 // in undo mode and current component
                 undoOffset = evt.getOffset() + evt.getLength();
@@ -1114,6 +1136,8 @@ AtomicLockListener, FoldHierarchyListener {
             BaseDocumentEvent bevt = (BaseDocumentEvent)evt;
             if ((bevt.isInUndo() || bevt.isInRedo())
                 && c == Utilities.getLastActiveComponent()
+                && !Boolean.TRUE.equals(org.netbeans.lib.editor.util.swing.
+                    DocumentUtilities.getEventProperty(evt, "caretIgnore"))
             ) {
                 // in undo mode and current component
                 undoOffset = evt.getOffset();
@@ -1220,25 +1244,24 @@ AtomicLockListener, FoldHierarchyListener {
                     Transferable trans = buffer.getContents(null);
                     if (trans == null) return;
 
-                    BaseDocument doc = (BaseDocument)c.getDocument();
+                    final BaseDocument doc = (BaseDocument)c.getDocument();
                     if (doc == null) return;
                     
-                    int offset = ((BaseTextUI)c.getUI()).viewToModel(c,
+                    final int offset = ((BaseTextUI)c.getUI()).viewToModel(c,
                                     evt.getX(), evt.getY());
 
                     try{
-                        String pastingString = (String)trans.getTransferData(DataFlavor.stringFlavor);
+                        final String pastingString = (String)trans.getTransferData(DataFlavor.stringFlavor);
                         if (pastingString == null) return;
-                         try {
-                             doc.atomicLock();
-                             try {
-                                 doc.insertString(offset, pastingString, null);
-                                 setDot(offset+pastingString.length());
-                             } finally {
-                                 doc.atomicUnlock();
-                             }
-                         } catch( BadLocationException exc ) {
-                         }
+                        doc.runAtomic (new Runnable () {
+                            public void run () {
+                                 try {
+                                     doc.insertString(offset, pastingString, null);
+                                     setDot(offset+pastingString.length());
+                                 } catch( BadLocationException exc ) {
+                                 }
+                            }
+                        });
                     }catch(UnsupportedFlavorException ufe){
                     }catch(IOException ioe){
                     }
@@ -1516,7 +1539,7 @@ AtomicLockListener, FoldHierarchyListener {
                 if (component.isEnabled()) {
                     if (component.isEditable()) {
                         setVisible(true);
-                    }
+                }
                     setSelectionVisible(true);
                 }
                 if (LOG.isLoggable(Level.FINER)) {
@@ -1592,4 +1615,12 @@ AtomicLockListener, FoldHierarchyListener {
 
     } // End of ListenerImpl class
 
+    public final void refresh() {
+        updateType();
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                updateCaretBounds(); // the line height etc. may have change
+            }
+        });
+    }
 }

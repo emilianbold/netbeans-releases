@@ -64,7 +64,7 @@ public final class RubyBreakpointNodeActions implements NodeActionsProviderFilte
         ActionPerformer goToSource = new ActionPerformer() {
             public boolean isEnabled(Object node) { return true; }
             public void perform(Object[] nodes) {
-                RubyBreakpoint bp = (RubyBreakpoint) nodes[0];
+                RubyLineBreakpoint bp = (RubyLineBreakpoint) nodes[0];
                 EditorUtil.showLine(EditorUtil.getLineAnnotable(bp.getFilePath(), bp.getLineNumber() - 1));
             }
         };
@@ -75,7 +75,7 @@ public final class RubyBreakpointNodeActions implements NodeActionsProviderFilte
         ActionPerformer customize = new ActionPerformer() {
             public boolean isEnabled(Object node) { return true; }
             public void perform(Object[] nodes) {
-                RubyBreakpoint bp = (RubyBreakpoint) nodes[0];
+                RubyLineBreakpoint bp = (RubyLineBreakpoint) nodes[0];
                 BreakpointCustomizer.customize(bp);
             }
         };
@@ -86,7 +86,7 @@ public final class RubyBreakpointNodeActions implements NodeActionsProviderFilte
     
     public void performDefaultAction(NodeActionsProvider original, Object node) throws UnknownTypeException {
         if (node instanceof RubyBreakpoint) {
-            RubyBreakpoint bp = (RubyBreakpoint) node;
+            RubyLineBreakpoint bp = (RubyLineBreakpoint) node;
             EditorUtil.showLine(EditorUtil.getLineAnnotable(bp.getFilePath(), bp.getLineNumber() - 1));
         } else {
             original.performDefaultAction(node);

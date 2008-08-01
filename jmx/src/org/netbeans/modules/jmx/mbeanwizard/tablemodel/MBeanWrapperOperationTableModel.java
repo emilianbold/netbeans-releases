@@ -43,9 +43,6 @@ package org.netbeans.modules.jmx.mbeanwizard.tablemodel;
 
 import java.util.ArrayList;
 import org.openide.util.NbBundle;
-import org.netbeans.modules.jmx.WizardConstants;
-import org.netbeans.modules.jmx.MBeanOperationParameter;
-import org.netbeans.modules.jmx.MBeanOperationException;
 import org.netbeans.modules.jmx.mbeanwizard.MBeanWrapperOperation;
 import org.netbeans.modules.jmx.MBeanOperation;
 

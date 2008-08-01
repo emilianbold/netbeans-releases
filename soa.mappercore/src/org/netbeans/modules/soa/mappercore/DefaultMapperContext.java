@@ -21,8 +21,11 @@ package org.netbeans.modules.soa.mappercore;
 
 import java.awt.Color;
 import java.awt.Font;
+import java.util.List;
 import javax.swing.Icon;
+import javax.swing.JMenu;
 import javax.swing.JPopupMenu;
+import org.netbeans.modules.soa.mappercore.model.GraphItem;
 import org.netbeans.modules.soa.mappercore.model.MapperModel;
 
 /**
@@ -79,6 +82,14 @@ public class DefaultMapperContext implements MapperContext {
     }
 
     public String getLeftToolTipText(MapperModel mode, Object value) {
+        return null;
+    }
+
+    public JPopupMenu getCanvasPopupMenu(MapperModel mode, GraphItem item) {
+        return null;
+    }
+
+    public List<JMenu> getMenuNewEllements(MapperModel mode) {
         return null;
     }
 }

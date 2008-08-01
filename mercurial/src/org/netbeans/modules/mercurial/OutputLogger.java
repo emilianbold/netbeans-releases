@@ -89,9 +89,7 @@ public class OutputLogger {
         rp.post(new Runnable() {
             public void run() {
                 log.getOut().flush();
-                log.getOut().close();        
                 log.getErr().flush();
-                log.getErr().close();        
             }
         });
     }

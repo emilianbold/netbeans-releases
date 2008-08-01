@@ -122,8 +122,8 @@ public class ExecutionService {
         this.descriptor = descriptor;
     }
 
-    public void setupProcessEnvironment(Map<String,String> env) {
-        String path = descriptor.getCmd().getParent();
+    public static void setupProcessEnvironment(Map<String, String> env, final String pwd, boolean appendJdkToPath) {
+        String path = pwd;
         if (!Utilities.isWindows()) {
             path = path.replace(" ", "\\ "); // NOI18N
         }
@@ -152,7 +152,7 @@ public class ExecutionService {
 
         currentPath = path + File.pathSeparator + currentPath;
         
-        if (descriptor.getAppendJdkToPath()) {
+        if (appendJdkToPath) {
             // jruby.java.home always points to jdk(?)
             String jdkHome = System.getProperty("jruby.java.home"); // NOI18N
 
@@ -171,10 +171,18 @@ public class ExecutionService {
         env.put(pathName, currentPath); // NOI18N
     }
     
+    public void setupProcessEnvironment(Map<String,String> env) {
+        setupProcessEnvironment(env, descriptor.getCmd().getParent(), descriptor.getAppendJdkToPath());
+    }
+    
     public void kill() {
+        // temp logging to track down #131628
+        LOGGER.log(Level.FINE, "Killing " + this.displayName + " " + this);
         if (stopAction != null) {
+            LOGGER.log(Level.FINE, "StopAction: " + stopAction);
             stopAction.actionPerformed(null);
             if (stopAction.process != null) {
+                LOGGER.log(Level.FINE, "Destroying process: " + stopAction.process);
                 stopAction.process.destroy();
             }
         }
@@ -186,7 +194,7 @@ public class ExecutionService {
         }
     }
 
-    Task rerun() {
+    public Task rerun() {
         try {
             io.getOut().reset();
         } catch (IOException ex) {
@@ -210,6 +218,10 @@ public class ExecutionService {
             argvList.addAll(Arrays.asList(descriptor.getInitialArgs()));
         }
 
+        if (descriptor.getScriptPrefix() != null) {
+            argvList.add(descriptor.getScriptPrefix());
+        }
+        
         if (descriptor.script != null) {
             argvList.add(descriptor.script);
         }
@@ -221,6 +233,14 @@ public class ExecutionService {
     }
 
     public Task run() {
+        if (descriptor.debug) {
+            RubyDebuggerImplementation debugger = Lookup.getDefault().lookup(RubyDebuggerImplementation.class);
+            debugger.describeProcess(descriptor);
+            if (debugger == null || !debugger.canDebug()) {
+                return null;
+            }
+        }
+
         if (!rerun) {
             // try to find free output windows
             synchronized (this) {
@@ -274,8 +294,9 @@ public class ExecutionService {
                         Process process = null;
                         if (descriptor.debug) {
                             RubyDebuggerImplementation debugger = Lookup.getDefault().lookup(RubyDebuggerImplementation.class);
-                            if (debugger != null) {
-                                process = debugger.debug(descriptor);
+                            debugger.describeProcess(descriptor);
+                            if (debugger != null && debugger.canDebug()) {
+                                process = debugger.debug();
                             }
                             if (process == null) { 
                                 return; 
@@ -304,7 +325,10 @@ public class ExecutionService {
                             
                             Map<String, String> env = pb.environment();
                             // set up custom environment configuration
-                            env.putAll(descriptor.getAdditionalEnvironment());
+                            Map<String, String> additionalEnv = descriptor.getAdditionalEnvironment();
+                            if (additionalEnv != null) {
+                                env.putAll(additionalEnv);
+                            }
                             if (descriptor.addBinPath) {
                                 setupProcessEnvironment(env);
                             }
@@ -322,7 +346,7 @@ public class ExecutionService {
                             }
                         }
                         runIO(stopAction, process, io, descriptor.getFileLocator(),
-                                descriptor.outputRecognizers);
+                                descriptor.outputRecognizers, descriptor.getEncoding());
                         
                         process.waitFor();
                     } catch (IOException ex) {
@@ -408,13 +432,13 @@ public class ExecutionService {
     }
 
     private static void runIO(final StopAction sa, Process process, InputOutput ioput,
-        FileLocator fileLocator, List<OutputRecognizer> recognizers) {
+        FileLocator fileLocator, List<OutputRecognizer> recognizers, String encoding) {
         try {
             InputForwarder in = new InputForwarder(process.getOutputStream(), ioput.getIn());
             OutputForwarder out =
-                new OutputForwarder(process.getInputStream(), ioput.getOut(), fileLocator, recognizers, sa);
+                new OutputForwarder(process.getInputStream(), ioput.getOut(), fileLocator, recognizers, sa, encoding);
             OutputForwarder err =
-                new OutputForwarder(process.getErrorStream(), ioput.getErr(), fileLocator, recognizers, sa);
+                new OutputForwarder(process.getErrorStream(), ioput.getErr(), fileLocator, recognizers, sa, encoding);
 
             RequestProcessor PROCESSOR =
                 new RequestProcessor("Process Execution Stream Handler", 3, true); // NOI18N

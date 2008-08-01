@@ -49,8 +49,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import javax.swing.Action;
-import junit.framework.TestCase;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ui.OpenProjects;
@@ -62,12 +60,10 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.nodes.Node;
-import org.openide.nodes.Node.Handle;
 import org.openide.nodes.NodeEvent;
 import org.openide.nodes.NodeListener;
 import org.openide.nodes.NodeMemberEvent;
 import org.openide.nodes.NodeReorderEvent;
-import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
 
@@ -110,11 +106,6 @@ public class CloseProjectsTest extends NbTestCase {
         OpenProjectListSettings.getInstance().setOpenProjectsURLs(list);
         OpenProjectListSettings.getInstance().setOpenProjectsDisplayNames(names);
         OpenProjectListSettings.getInstance().setOpenProjectsIcons(icons);
-    }
-
-    @Override
-    protected void tearDown() throws Exception {
-        super.tearDown();
     }
 
     public void testClose() throws Exception {

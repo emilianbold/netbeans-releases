@@ -60,6 +60,9 @@ public class Reformatter implements ReformatTask {
     private Context context;
     private Document doc;
     private CodeStyle codeStyle;
+    private static boolean expandTabToSpaces = true;
+    private static int tabSize = 8;
+
 
     public Reformatter(Context context) {
         this.context = context;
@@ -75,6 +78,8 @@ public class Reformatter implements ReformatTask {
         if (codeStyle == null){
             codeStyle = CodeStyle.getDefault(doc);
         }
+	expandTabToSpaces = codeStyle.expandTabToSpaces();
+        tabSize = codeStyle.getGlobalTabSize();
         if (context != null) {
             for (Context.Region region : context.indentRegions()) {
                 reformatImpl(region);
@@ -135,37 +140,65 @@ public class Reformatter implements ReformatTask {
     }
     
     private void reformatImpl(TokenSequence<CppTokenId> ts, int startOffset, int endOffset) throws BadLocationException {
+        int prevStart = -1;
+        int prevEnd = -1;
+        String prevText = null;
         for (Diff diff : new ReformatterImpl(ts, startOffset, endOffset, codeStyle).reformat()) {
-            int start = diff.getStartOffset();
-            int end = diff.getEndOffset();
-            String text = diff.getText();
-            if (startOffset > end || endOffset < start) {
+            int curStart = diff.getStartOffset();
+            int curEnd = diff.getEndOffset();
+            if (startOffset > curEnd || endOffset < curStart) {
                 continue;
             }
-            if (endOffset < end) {
-                if (text != null && text.length() > 0) {
-                    text = end - endOffset >= text.length() ? null : 
-                           text.substring(0, text.length() - end + endOffset);
+            String curText = diff.getText();
+            if (endOffset < curEnd) {
+                if (curText != null && curText.length() > 0) {
+                    curText = curEnd - endOffset >= curText.length() ? null : 
+                           curText.substring(0, curText.length() - curEnd + endOffset);
                 }
-                end = endOffset;
+                curEnd = endOffset;
             }
-            if (end - start > 0) {
-                if (!checkRemoved(doc.getText(start, end - start))){
-                    // Reformat failed
-                    Logger log = Logger.getLogger("org.netbeans.modules.cnd.editor"); // NOI18N
-                    String error = NbBundle.getMessage(Reformatter.class, "REFORMATTING_FAILED", // NOI18N
-                            doc.getText(start, end - start), diff.toString());
-                    log.severe(error);
-                    break;
+            if (prevStart == curEnd) {
+                prevStart = curStart;
+                prevText = curText+prevText;
+                continue;
+            } else {
+                if (!applyDiff(prevStart, prevEnd, prevText)){
+                    return;
                 }
-                doc.remove(start, end - start);
+                prevStart = curStart;
+                prevEnd = curEnd;
+                prevText = curText;
             }
-            if (text != null && text.length() > 0) {
-                doc.insertString(start, text, null);
-            }
+        }
+        if (prevStart > -1) {
+            applyDiff(prevStart, prevEnd, prevText);
         }
     }
 
+    private boolean applyDiff(int start, int end, String text) throws BadLocationException{
+        if (end - start > 0) {
+            String what = doc.getText(start, end - start);
+            if (text != null && text.equals(what)) {
+                // optimization
+                return true;
+            }
+            if (!checkRemoved(what)){
+                // Reformat failed
+                Logger log = Logger.getLogger("org.netbeans.modules.cnd.editor"); // NOI18N
+                String error = NbBundle.getMessage(Reformatter.class, "REFORMATTING_FAILED", // NOI18N
+                        doc.getText(start, end - start), text);
+                log.severe(error);
+                return false;
+            }
+            doc.remove(start, end - start);
+        }
+        if (text != null && text.length() > 0) {
+            doc.insertString(start, text, null);
+        }
+        return true;
+    }
+            
+    
     private boolean checkRemoved(String whatRemoved){
         for(int i = 0; i < whatRemoved.length(); i++){
             char c = whatRemoved.charAt(i);
@@ -208,12 +241,14 @@ public class Reformatter implements ReformatTask {
         private int end;
         private int newLines;
         private int spaces;
+	private boolean isIndent;
 
-        Diff(int start, int end, int newLines, int spaces) {
+        Diff(int start, int end, int newLines, int spaces, boolean isIndent) {
             this.start = start;
             this.end = end;
             this.spaces = spaces;
             this.newLines = newLines;
+	    this.isIndent = isIndent;
         }
 
         public int getStartOffset() {
@@ -225,16 +260,18 @@ public class Reformatter implements ReformatTask {
         }
 
         public String getText() {
-            return repeatChar(newLines, '\n')+repeatChar(spaces, ' '); // NOI18N
+            return repeatChar(newLines, '\n', false)+repeatChar(spaces, ' ', isIndent); // NOI18N
         }
 
-        public void setText(int newLines, int spaces) {
+        public void setText(int newLines, int spaces, boolean isIndent) {
             this.newLines = newLines;
             this.spaces = spaces;
+	    this.isIndent = isIndent;
         }
         
-        public void replaceSpaces(int spaces){
+        public void replaceSpaces(int spaces, boolean isIndent){
             this.spaces = spaces;
+	    this.isIndent = isIndent;
         }
 
         public boolean hasNewLine(){
@@ -250,16 +287,31 @@ public class Reformatter implements ReformatTask {
             return "Diff<" + start + "," + end + ">: newLines="+newLines+" spaces="+spaces; //NOI18N
         }
 
-        public static String repeatChar(int length, char c){
+        public static String repeatChar(int length, char c, boolean indent) {
+            if (length == 0) {
+                return ""; //NOI18N
+            } else if (length == 1) {
+                if (c == ' ') {
+                    return " "; //NOI18N
+                } else {
+                    return "\n"; //NOI18N
+                }
+            }
             StringBuilder buf = new StringBuilder(length);
+            if (c == ' '  && indent && !Reformatter.expandTabToSpaces && Reformatter.tabSize > 1) {
+                while (length >= Reformatter.tabSize) {
+                    buf.append('\t'); //NOI18N
+                    length -= Reformatter.tabSize;
+                }
+            }
             for (int i = 0; i < length; i++) {
                 buf.append(c);
             }
             return buf.toString();
         }
 
-        public static boolean equals(String text, int newLines, int spaces){
-           String space = repeatChar(newLines, '\n')+repeatChar(spaces, ' '); // NOI18N
+        public static boolean equals(String text, int newLines, int spaces, boolean isIndent){
+           String space = repeatChar(newLines, '\n', false)+repeatChar(spaces, ' ', isIndent); // NOI18N
            return text.equals(space);
         }
     }

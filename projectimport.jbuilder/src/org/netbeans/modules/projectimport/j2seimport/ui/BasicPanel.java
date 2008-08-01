@@ -92,12 +92,12 @@ public abstract class BasicPanel extends JPanel {
     }
     
     final void initPanel() {
-        putClientProperty("WizardPanel_autoWizardStyle", Boolean.TRUE); // NOI18N
-        putClientProperty("WizardPanel_contentDisplayed", Boolean.TRUE); // NOI18N
-        putClientProperty("WizardPanel_contentNumbered", Boolean.TRUE); // NOI18N
-        putClientProperty("WizardPanel_contentSelectedIndex",  // NOI18N
+        putClientProperty(WizardDescriptor.PROP_AUTO_WIZARD_STYLE, Boolean.TRUE); // NOI18N
+        putClientProperty(WizardDescriptor.PROP_CONTENT_DISPLAYED, Boolean.TRUE); // NOI18N
+        putClientProperty(WizardDescriptor.PROP_CONTENT_NUMBERED, Boolean.TRUE); // NOI18N
+        putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX,  // NOI18N
                 new Integer(getPanelIndex()));
-        putClientProperty("WizardPanel_contentData", new String[] { // NOI18N
+        putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, new String[] { // NOI18N
             getPanelDescription()
         });
         setPreferredSize(new java.awt.Dimension(500, 380));

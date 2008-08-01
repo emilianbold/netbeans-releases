@@ -53,6 +53,7 @@ import org.netbeans.modules.xml.text.TextEditorSupport;
 import org.netbeans.modules.xml.sync.*;
 import org.netbeans.modules.xml.cookies.*;
 
+import org.netbeans.modules.xml.lib.Util;
 import org.netbeans.spi.xml.cookies.*;
 import org.openide.util.Lookup;
 import org.xml.sax.InputSource;
@@ -97,6 +98,10 @@ public final class EntityDataObject extends MultiDataObject implements XMLDataOb
 //         new CookieManager (this, set, EntityCookieFactoryCreator.class);
     }
 
+    @Override
+    public final Lookup getLookup() {
+        return getCookieSet().getLookup();
+    }
 
     /**
      */
@@ -129,10 +134,6 @@ public final class EntityDataObject extends MultiDataObject implements XMLDataOb
     }
         
 
-    //
-    // class EntityDataNode
-    //
-
     /**
      *
      */
@@ -144,7 +145,8 @@ public final class EntityDataObject extends MultiDataObject implements XMLDataOb
 
             setDefaultAction (SystemAction.get (EditAction.class));
             setIconBase ("org/netbeans/modules/xml/resources/entObject"); // NOI18N
-            setShortDescription(Util.THIS.getString("PROP_EntityDataNode_desc"));
+            setShortDescription(Util.THIS.getString(
+                    EntityDataObject.class, "PROP_EntityDataNode_desc"));
         }
 
         /**
@@ -156,17 +158,5 @@ public final class EntityDataObject extends MultiDataObject implements XMLDataOb
         }
         
     } // end of class EntityDataNode
-
-
-//     //
-//     // interface EntityCookieFactoryCreator
-//     //
-
-//     /**
-//      *
-//      */
-//     public static interface EntityCookieFactoryCreator extends CookieFactoryCreator {
-        
-//     } // end: interface EntityCookieFactoryCreator
 
 }

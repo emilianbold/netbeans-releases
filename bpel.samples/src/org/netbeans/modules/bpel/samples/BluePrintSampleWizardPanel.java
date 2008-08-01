@@ -45,9 +45,9 @@ public class BluePrintSampleWizardPanel extends SampleWizardPanel {
     private SampleWizardPanelVisual myComponent;
     private String bluePrintSampleName;
     
-    public BluePrintSampleWizardPanel(String bluePrintSampleName) {
+    public BluePrintSampleWizardPanel(String name) {
         super();
-        this.bluePrintSampleName = bluePrintSampleName;
+        this.bluePrintSampleName = name;
     }
 
     public SampleWizardPanelVisual getComponent() {

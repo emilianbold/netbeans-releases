@@ -48,6 +48,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.netbeans.modules.cnd.api.model.CsmBuiltIn;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
+import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
@@ -76,22 +77,27 @@ public class UIDUtilities {
     private UIDUtilities() {
     }
  
+    @SuppressWarnings("unchecked")
     public static CsmUID<CsmProject> createProjectUID(ProjectBase prj) {
         return UIDManager.instance().getSharedUID(new ProjectUID(prj));
     } 
     
+    @SuppressWarnings("unchecked")
     public static CsmUID<CsmFile> createFileUID(FileImpl file) {
         return UIDManager.instance().getSharedUID(new FileUID(file));
     } 
 
+    @SuppressWarnings("unchecked")
     public static CsmUID<CsmNamespace> createNamespaceUID(CsmNamespace ns) {
         return UIDManager.instance().getSharedUID(new NamespaceUID(ns));
     }
 
+    @SuppressWarnings("unchecked")
     public static <T extends CsmOffsetableDeclaration> CsmUID<T> createDeclarationUID(T declaration) {
         assert (! (declaration instanceof CsmBuiltIn)) : "built-in have own UIDs";
         CsmUID<T> uid;
-        if (!ProjectBase.canRegisterDeclaration(declaration)) {
+        //if (!ProjectBase.canRegisterDeclaration(declaration)) {
+        if (!namedDeclaration(declaration)) {
             uid = handleUnnamedDeclaration((CsmOffsetableDeclaration)declaration);
         } else {
             if (declaration instanceof CsmTypedef) {
@@ -105,26 +111,70 @@ public class UIDUtilities {
         return UIDManager.instance().getSharedUID(uid);
     }
     
+    private static <T extends CsmOffsetableDeclaration> boolean namedDeclaration(T declaration){
+        assert declaration != null;
+        assert declaration.getName() != null;
+        return declaration.getName().length() > 0;
+    }
+    
+    @SuppressWarnings("unchecked")
     public static CsmUID<CsmMacro> createMacroUID(CsmMacro macro) {
         return UIDManager.instance().getSharedUID(new MacroUID(macro));
     }    
 
+    @SuppressWarnings("unchecked")
     public static CsmUID<CsmInclude> createIncludeUID(CsmInclude incl) {
         return UIDManager.instance().getSharedUID(new IncludeUID(incl));
     }    
+    @SuppressWarnings("unchecked")
     
     public static CsmUID<CsmClass> createUnresolvedClassUID(String name, CsmProject project) {
 	return UIDManager.instance().getSharedUID(new UnresolvedClassUID(name, project));
     }
 
+    @SuppressWarnings("unchecked")
     public static CsmUID<CsmFile> createUnresolvedFileUID(CsmProject project) {
 	return UIDManager.instance().getSharedUID(new UnresolvedFileUID(project));
     }
 
+    @SuppressWarnings("unchecked")
     public static CsmUID<CsmNamespace> createUnresolvedNamespaceUID(CsmProject project) {
 	return UIDManager.instance().getSharedUID(new UnresolvedNamespaceUID(project));
     }
+
+    public static CsmDeclaration.Kind getKind(CsmUID<CsmOffsetableDeclaration> uid){
+        if (uid instanceof KeyBasedUID) {
+            Key key = ((KeyBasedUID)uid).getKey();
+            return KeyUtilities.getKeyKind(key);
+        }
+        return null;
+    }
+
+    public static CharSequence getName(CsmUID<CsmOffsetableDeclaration> uid){
+        if (uid instanceof KeyBasedUID) {
+            Key key = ((KeyBasedUID)uid).getKey();
+            return KeyUtilities.getKeyName(key);
+        }
+        return null;
+    }
+
+    public static int getStartOffset(CsmUID<CsmOffsetableDeclaration> uid){
+        if (uid instanceof KeyBasedUID) {
+            Key key = ((KeyBasedUID)uid).getKey();
+            return KeyUtilities.getKeyStartOffset(key);
+        }
+        return -1;
+    }
+
+    public static int getEndOffset(CsmUID<CsmOffsetableDeclaration> uid){
+        if (uid instanceof KeyBasedUID) {
+            Key key = ((KeyBasedUID)uid).getKey();
+            return KeyUtilities.getKeyEndOffset(key);
+        }
+        return -1;
+    }
     
+    @SuppressWarnings("unchecked")
     private static CsmUID handleUnnamedDeclaration(CsmOffsetableDeclaration decl) {
         if (TraceFlags.TRACE_UNNAMED_DECLARATIONS) {
             System.err.print("\n\ndeclaration with empty name '" + decl.getUniqueName() + "'");
@@ -347,6 +397,7 @@ public class UIDUtilities {
 	    return (ProjectBase) projectUID.getObject();
 	}
 
+        @SuppressWarnings("unchecked")
         /* package */ UnresolvedUIDBase (DataInput aStream) throws IOException {
             projectUID = UIDObjectFactory.getDefaultFactory().readUID(aStream);
         }

@@ -243,7 +243,7 @@ public class ActionManager {
     
     public FileObject getApplicationClassFile() {
         String appClassName = AppFrameworkSupport.getApplicationClassName(getRoot());
-        return getFileForClass(appClassName);
+        return (appClassName == null) ? null : getFileForClass(appClassName);
     }
     
     /** Creates a new instance of ActionManager */
@@ -286,7 +286,10 @@ public class ActionManager {
      */
     public void rescan() {
         actions = new HashMap<String,List<ProxyAction>>();
-        scanFolderForActions(getRoot(), actions);
+        FileObject root = getRoot();
+        if (root != null) {
+            scanFolderForActions(root, actions);
+        }
         actionList.clear();
         for(String appClsName : actions.keySet()) {
             actionList.addAll(actions.get(appClsName));

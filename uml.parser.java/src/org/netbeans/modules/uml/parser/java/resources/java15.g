@@ -38,7 +38,7 @@ header
  * to extend the choice of license to its licensees as provided above.
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
- * made subject to such option by the copyright holder.
+ * made subject to such option by the copyright holder. 
  */
 
 package org.netbeans.modules.uml.parser.java;
@@ -971,6 +971,7 @@ classField!
 					)
 			)
 		)
+
 
 	// "static { ... }" class initializer
 	|	"static" s3:compoundStatement

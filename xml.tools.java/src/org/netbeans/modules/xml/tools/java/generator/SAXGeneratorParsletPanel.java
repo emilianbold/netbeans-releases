@@ -115,7 +115,7 @@ public final class SAXGeneratorParsletPanel extends SAXGeneratorAbstractPanel {
     /** Creates new form SAXGeneratorParsletPanel */
     public SAXGeneratorParsletPanel() {
 //        try {
-//            this.putClientProperty("WizardPanel_helpURL", new URL("nbresloc:/org/netbeans/modules/xml/tools/generator/SAXGeneratorParsletPanel.html"));  //NOI18N
+//            this.putClientProperty(WizardDescriptor.PROP_HELP_URL, new URL("nbresloc:/org/netbeans/modules/xml/tools/generator/SAXGeneratorParsletPanel.html"));  //NOI18N
 //        } catch (MalformedURLException ex) {
 //        }            
     }
@@ -288,25 +288,25 @@ public final class SAXGeneratorParsletPanel extends SAXGeneratorAbstractPanel {
             // set to parslet or null if none assigned
             String parslet = entry.getParslet();
 
-            switch (column) {
-                
+            switch (column) {                
                 case ELEMENT_COLUMN: 
                     return entry.getElement();
                     
-                case TYPE_COLUMN: 
+                case TYPE_COLUMN: {
                     if (parslet == null) {
                         return String.class.getName();
                     } else {
-                        //TODO: Retouche
-//                        return parslets.getReturnType(parslet).toString();
+                        return parslets.getReturnType(parslet).toString();
                     }
+                }
                     
-                case METHOD_COLUMN: 
+                case METHOD_COLUMN: {
                     if (parslet == null) {
                         return NO_METHOD;
                     } else {
                         return parslet;
                     }
+                }
             }
             return null;
         }

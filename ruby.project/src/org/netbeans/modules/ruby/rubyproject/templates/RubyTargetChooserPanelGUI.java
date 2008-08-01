@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -53,8 +53,6 @@ import javax.swing.JFileChooser;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
-import javax.swing.SwingUtilities;
-import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
@@ -67,6 +65,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.ruby.RubyUtils;
+import org.netbeans.modules.ruby.rubyproject.templates.NewRubyFileWizardIterator.Type;
 import org.netbeans.modules.ruby.spi.project.support.rake.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -88,38 +87,43 @@ public class RubyTargetChooserPanelGUI extends JPanel implements ActionListener,
     /** preferred dimension of the panel */
     private static final Dimension PREF_DIM = new Dimension(500, 340);
     
-    private Project project;
+    private final Project project;
+    
     /** File set except for when we're manually updating values in some of the
      * dependent text fields */
-    private boolean userEdit = true;
+    private boolean userEdit;
+    
     /** Flag used to keep track of whether the user has edited the file field manually */
     private boolean fileEdited;
+    
     /** Flag used to keep track of whether the user has edited the class field manually */
     private boolean classEdited;
+    
     private String expectedExtension;
-    private final List<ChangeListener> listeners = new ArrayList<ChangeListener>();
-    private int type;
-    private SourceGroup groups[];
+    private final List<ChangeListener> listeners;
+    private Type type;
+    private final SourceGroup groups[];
     //private boolean ignoreRootCombo;
     
-    /** Creates new form SimpleTargetChooserGUI */
-    public RubyTargetChooserPanelGUI( Project p, SourceGroup[] groups, Component bottomPanel, int type ) {
+    public RubyTargetChooserPanelGUI(Project p, SourceGroup[] groups, Component bottomPanel, Type type) {
         this.type = type;
         this.project = p;
         this.groups = groups;
-        
-        initComponents();      
-        
+        this.listeners = new ArrayList<ChangeListener>();
+        this.userEdit = true;
+
+        initComponents();
+
         // NOTE - even when adding a -module-, we will use the "class" textfield
         // to represent the name of the module, and the "module" text field to represent
         // modules surrounding the current module
-        if (type == NewRubyFileWizardIterator.TYPE_TEST) {
+        if (type == Type.TEST) {
             extendsText.setText("Test::Unit::TestCase"); // NOI18N
-            type = this.type = NewRubyFileWizardIterator.TYPE_CLASS;
+            type = this.type = Type.CLASS;
         }
 
-        if (type == NewRubyFileWizardIterator.TYPE_CLASS || type == NewRubyFileWizardIterator.TYPE_MODULE) {
-            if (type == NewRubyFileWizardIterator.TYPE_MODULE) {
+        if (type == Type.CLASS || type == Type.MODULE) {
+            if (type == Type.MODULE) {
                 extendsLabel.setVisible(false);
                 extendsText.setVisible(false);
                 Mnemonics.setLocalizedText(classLabel, NbBundle.getMessage(RubyTargetChooserPanelGUI.class, "LBL_RubyTargetChooserPanelGUI_ModuleName_Label")); // NOI18N
@@ -128,7 +132,7 @@ public class RubyTargetChooserPanelGUI extends JPanel implements ActionListener,
             }
             moduleText.getDocument().addDocumentListener(this);
             classText.getDocument().addDocumentListener(this);
-        } else if (type == NewRubyFileWizardIterator.TYPE_SPEC) {
+        } else if (type == Type.SPEC) {
             Mnemonics.setLocalizedText(classLabel, NbBundle.getMessage(RubyTargetChooserPanelGUI.class, "LBL_RubyTargetChooserPanelGUI_Spec_Class")); // NOI18N
             moduleLabel.setVisible(false);
             moduleText.setVisible(false);
@@ -136,7 +140,7 @@ public class RubyTargetChooserPanelGUI extends JPanel implements ActionListener,
             extendsText.setVisible(false);
             classText.getDocument().addDocumentListener(this);
         } else {
-            // TYPE_FILE
+            // Type.FILE
             classLabel.setVisible(false);
             classText.setVisible(false);
             moduleLabel.setVisible(false);
@@ -203,21 +207,20 @@ public class RubyTargetChooserPanelGUI extends JPanel implements ActionListener,
         
         //ignoreRootCombo = false;
 
-        if (template != null) {
-            if ( documentNameTextField.getText().trim().length() == 0 ) { // To preserve the class name on back in the wiazard
-                //Ordinary file
-                String prefix = NEW_CLASS_PREFIX;
-                // See 91580
-                Object customPrefix = template.getAttribute("templateNamePrefix"); // NOI18N
-                if (customPrefix != null) {
-                    prefix = customPrefix.toString();
-                }
+        if (template != null && documentNameTextField.getText().trim().length() == 0) { // To preserve the class name on back in the wiazard
+            //Ordinary file
+            String prefix = NEW_CLASS_PREFIX;
+            // See 91580
+            Object customPrefix = template.getAttribute("templateNamePrefix"); // NOI18N
 
-                if (type != NewRubyFileWizardIterator.TYPE_SPEC) {
-                    documentNameTextField.setText (prefix + template.getName ());
-                }
-                documentNameTextField.selectAll ();
+            if (customPrefix != null) {
+                prefix = customPrefix.toString();
             }
+
+            if (type != Type.SPEC) {
+                documentNameTextField.setText(prefix + template.getName());
+            }
+            documentNameTextField.selectAll();
         }
 
         // Determine the extension
@@ -227,7 +230,7 @@ public class RubyTargetChooserPanelGUI extends JPanel implements ActionListener,
         updateText();
         fileEdited = false;
         classEdited = false;
-        if (type == NewRubyFileWizardIterator.TYPE_CLASS || type == NewRubyFileWizardIterator.TYPE_MODULE) {
+        if (type == Type.CLASS || type == Type.MODULE) {
             classText.selectAll();
         }
     }
@@ -619,13 +622,13 @@ public class RubyTargetChooserPanelGUI extends JPanel implements ActionListener,
                 if (text.length() == 0) {
                     fileEdited = false;
                 }
-                if (type == NewRubyFileWizardIterator.TYPE_SPEC && (!classEdited ||
+                if (type == Type.SPEC && (!classEdited ||
                         classText.getText().length() == 0)) {
                     classEdited = false;
                     if (text.endsWith("_spec")) { // NOI18N
                         syncFields(classText, text.substring(0, text.length()-"_spec".length())); // NOI18N
                     }
-                } else if ((type == NewRubyFileWizardIterator.TYPE_CLASS || type == NewRubyFileWizardIterator.TYPE_MODULE) && (!classEdited ||
+                } else if ((type == Type.CLASS || type == Type.MODULE) && (!classEdited ||
                         classText.getText().length() == 0)) {
                     classEdited = false;
                     syncFields(classText, RubyUtils.underlinedNameToCamel(text));
@@ -639,7 +642,7 @@ public class RubyTargetChooserPanelGUI extends JPanel implements ActionListener,
                 if (!fileEdited || documentNameTextField.getText().trim().length() == 0) {
                     fileEdited = false;
                     String text = classText.getText().trim();
-                    if (type == NewRubyFileWizardIterator.TYPE_SPEC && text.length() > 0) {
+                    if (type == Type.SPEC && text.length() > 0) {
                         syncFields(documentNameTextField, RubyUtils.camelToUnderlinedName(text) + "_spec"); // NOI18N
                     } else {
                         syncFields(documentNameTextField, RubyUtils.camelToUnderlinedName(text));

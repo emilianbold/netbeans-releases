@@ -137,7 +137,6 @@ public abstract class UnitCategoryTableModel extends AbstractTableModel {
         String countInfo = (count == rawCount) ? String.valueOf (rawCount) :
             NbBundle.getMessage (PluginManagerUI.class, "PluginManagerUI_Tabs_CountFormat", count, rawCount);
         String newName = NbBundle.getMessage (PluginManagerUI.class, "PluginManagerUI_Tabs_NameFormat", getTabTitle(), countInfo);
-        int index = getTabIndex();
         return (rawCount == 0) ? getTabTitle() : newName;        
     }
         

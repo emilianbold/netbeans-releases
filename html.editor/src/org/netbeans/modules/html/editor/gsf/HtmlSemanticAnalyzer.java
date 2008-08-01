@@ -39,8 +39,8 @@
 package org.netbeans.modules.html.editor.gsf;
 
 import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
+import java.util.Map;
 import org.netbeans.editor.ext.html.parser.SyntaxElement.TagAttribute;
 import org.netbeans.modules.gsf.api.ColoringAttributes;
 import org.netbeans.modules.gsf.api.CompilationInfo;
@@ -57,9 +57,9 @@ import org.netbeans.modules.editor.html.HTMLKit;
 public class HtmlSemanticAnalyzer implements SemanticAnalyzer {
 
     private boolean cancelled;
-    private Map<OffsetRange, ColoringAttributes> semanticHighlights;
+    private Map<OffsetRange, Set<ColoringAttributes>> semanticHighlights;
 
-    public Map<OffsetRange, ColoringAttributes> getHighlights() {
+    public Map<OffsetRange, Set<ColoringAttributes>> getHighlights() {
         return semanticHighlights;
     }
 
@@ -69,45 +69,43 @@ public class HtmlSemanticAnalyzer implements SemanticAnalyzer {
 
     public void run(CompilationInfo ci) throws Exception {
 
+        cancelled = false; //resume
+        
         if (cancelled) {
             return;
         }
 
-        final Map<OffsetRange, ColoringAttributes> highlights = new HashMap<OffsetRange, ColoringAttributes>();
+        final Map<OffsetRange, Set<ColoringAttributes>> highlights = new HashMap<OffsetRange, Set<ColoringAttributes>>();
 
         ParserResult presult = ci.getEmbeddedResults(HTMLKit.HTML_MIME_TYPE).iterator().next();
         final TranslatedSource source = presult.getTranslatedSource();
         
         HtmlParserResult htmlResult = (HtmlParserResult) presult;
         
+        if (cancelled) {
+            return;
+        }
+        
         //just a test - highlight all tags' ids
         Set<TagAttribute> ids = htmlResult.elementsIds();
         for(TagAttribute ta : ids) {
-            OffsetRange range = new AstOffsetRange(ta.getValueOffset(), ta.getValueOffset() + ta.getValueLength(), source);
-                highlights.put(range, ColoringAttributes.METHOD);
+            int start = ta.getValueOffset();
+            if (source != null) {
+                start = source.getLexicalOffset(start);
+                if (start == -1) {
+                    start = 0;
+                }
+            }
+            
+            // We assume that the start and end are always mapped to the same delta,
+            // e.g. tags don't span embedding regions
+            int end = start + ta.getValueLength();
+
+            OffsetRange range = new OffsetRange(start, end);
+            highlights.put(range, ColoringAttributes.METHOD_SET);
         }    
-        
+
         semanticHighlights = highlights;
 
     }
-    
-    public static class AstOffsetRange extends OffsetRange {
-
-        private TranslatedSource source;
-        
-        public AstOffsetRange(int start, int end, TranslatedSource source) {
-            super(start, end);
-            this.source = source;
-        }
-        
-    public int getStart() {
-        return source == null ? super.getStart() : source.getLexicalOffset(super.getStart());
-    }
-
-    public int getEnd() {
-        return source == null ? super.getEnd() : source.getLexicalOffset(super.getEnd());
-    }
-        
-    }
-    
 }

@@ -20,11 +20,12 @@
 package org.netbeans.modules.bpel.mapper.model;
 
 import java.util.ArrayList;
+import java.util.List;
 import org.netbeans.modules.bpel.mapper.tree.search.FinderListBuilder;
 import org.netbeans.modules.bpel.mapper.tree.search.PartFinder;
 import org.netbeans.modules.bpel.mapper.tree.search.PartnerLinkFinder;
 import org.netbeans.modules.bpel.mapper.tree.search.VariableFinder;
-import org.netbeans.modules.bpel.mapper.tree.spi.TreeItemFinder;
+import org.netbeans.modules.bpel.mapper.model.MapperModelFactory;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.PartnerLink;
 import org.netbeans.modules.bpel.model.api.Query;
@@ -32,8 +33,11 @@ import org.netbeans.modules.bpel.model.api.To;
 import org.netbeans.modules.bpel.model.api.VariableDeclaration;
 import org.netbeans.modules.bpel.model.api.references.BpelReference;
 import org.netbeans.modules.bpel.model.api.references.WSDLReference;
-import org.netbeans.modules.bpel.model.api.support.XPathModelFactory;
+import org.netbeans.modules.bpel.model.api.support.BpelXPathModelFactory;
 import org.netbeans.modules.bpel.model.api.support.XPathBpelVariable;
+import org.netbeans.modules.bpel.model.ext.editor.api.Cast;
+import org.netbeans.modules.bpel.model.ext.editor.api.PseudoComp;
+import org.netbeans.modules.soa.ui.tree.TreeItemFinder;
 import org.netbeans.modules.xml.xpath.ext.AbstractLocationPath;
 import org.netbeans.modules.xml.xpath.ext.XPathException;
 import org.netbeans.modules.xml.xpath.ext.XPathExpression;
@@ -105,7 +109,10 @@ public class CopyToProcessor {
     public static ArrayList<TreeItemFinder> constructFindersList(
             CopyToForm form, 
             BpelEntity contextEntity, To copyTo, 
-            XPathExpression toExpr) {
+            XPathExpression toExpr, 
+            List<Cast> castList, 
+            List<PseudoComp> pseudoComps, 
+            MapperModelFactory modelFactory) {
         //
         ArrayList<TreeItemFinder> finderList = new ArrayList<TreeItemFinder>();
         //
@@ -186,7 +193,8 @@ public class CopyToProcessor {
         }
         case EXPRESSION: {
             if (toExpr == null) {
-                toExpr = constructExpression(contextEntity, copyTo);
+                toExpr = constructExpression(contextEntity, copyTo, 
+                        castList, pseudoComps, modelFactory);
             }
             //
             if (toExpr != null) {
@@ -195,7 +203,7 @@ public class CopyToProcessor {
                             (AbstractLocationPath)toExpr));
                 } else if (toExpr instanceof XPathVariableReference) {
                     finderList.addAll(FinderListBuilder.build(
-                            (XPathVariableReference)toExpr));
+                            (XPathVariableReference)toExpr, null));
                 }
             }
             //
@@ -219,17 +227,27 @@ public class CopyToProcessor {
     }
     
     public static XPathExpression constructExpression(
-            BpelEntity contextEntity, To copyTo) {
+            BpelEntity contextEntity, To copyTo, 
+            List<Cast> castList, List<PseudoComp> pseudoComps, 
+            MapperModelFactory modelFactory) {
         //
         String exprLang = copyTo.getExpressionLanguage();
         String exprText = copyTo.getContent();
         boolean isXPathExpr = (exprLang == null || exprLang.length() == 0 ||
-                XPathModelFactory.DEFAULT_EXPR_LANGUAGE.equals(exprLang));
+                BpelXPathModelFactory.DEFAULT_EXPR_LANGUAGE.equals(exprLang));
         //
         // we can handle only xpath expressions.
         if (isXPathExpr && exprText != null && exprText.length() != 0) {
             try {
-                XPathModel newXPathModel = XPathModelFactory.create(contextEntity);
+                XPathModel newXPathModel = BpelXPathModelFactory.create(
+                        contextEntity, castList, pseudoComps);
+                //
+                // Specify the Caching visitor for optimization!
+                if (modelFactory != null) {
+                    newXPathModel.setCachingSchemaSearchVisitor(
+                            modelFactory.getCachingSchemaSearchVisitor());
+                }
+                //
                 // NOT NEED to specify schema context because of an 
                 // expression with variable is implied here. 
                 //

@@ -212,9 +212,9 @@ public class TcgModelManager implements TcgModelConstants {
             Document dcmt = db.parse(is);
 
             if (dcmt == null) {
-            	String message = NbBundle.getMessage(TcgModelManager.class, "TcgModelManager.PARSE_XML_FAILED", new Object[]{"db:model:" + fullName });
-            	throw new Exception(message);
-            	/*
+                String message = NbBundle.getMessage(TcgModelManager.class, "TcgModelManager.PARSE_XML_FAILED", new Object[]{"db:model:" + fullName });
+                throw new Exception(message);
+                /*
                 throw new ParseXmlException("TcgModelManager.PARSE_XML_FAILED",
                                             "org.netbeans.modules.iep.editor.tcg.model.Bundle",
                                             new Object[]{"db:model:" + fullName });
@@ -223,9 +223,9 @@ public class TcgModelManager implements TcgModelConstants {
             component = getComponent(dcmt.getDocumentElement());
 
             if (component == null) {
-            	String message = NbBundle.getMessage(TcgModelManager.class, "TcgModelManager.BAD_COMPONENT_ERROR", new Object[]{"db:model:" + fullName });
-            	throw new Exception(message);
-            	/*
+                String message = NbBundle.getMessage(TcgModelManager.class, "TcgModelManager.BAD_COMPONENT_ERROR", new Object[]{"db:model:" + fullName });
+                throw new Exception(message);
+                /*
                 throw new ParseXmlException("TcgModelManager.BAD_COMPONENT_ERROR",
                                             "org.netbeans.modules.iep.editor.tcg.model.Bundle",
                                             new Object[]{"db:model:" + fullName });
@@ -234,8 +234,8 @@ public class TcgModelManager implements TcgModelConstants {
         } catch (Exception e) {
             e.printStackTrace();
             String message = NbBundle.getMessage(TcgModelManager.class, "TcgModelManager.PARSE_XML_FAILED", new Object[]{"db:model:" + fullName });
-        	throw new Exception(message);
-        	/*
+            throw new Exception(message);
+            /*
             throw new ParseXmlException(
                 "TcgModelManager.PARSE_XML_FAILED", 
                 "org.netbeans.modules.iep.editor.tcg.model.Bundle",
@@ -393,9 +393,9 @@ public class TcgModelManager implements TcgModelConstants {
                 db.parse(new ByteArrayInputStream(baos.toByteArray()));
 
             if (doc == null) {
-            	String message = NbBundle.getMessage(TcgModelManager.class, "TcgModelManager.PARSE_XML_FAILED", new Object[]{"db:model:" + filePath });
-            	throw new Exception(message);
-            	/*
+                String message = NbBundle.getMessage(TcgModelManager.class, "TcgModelManager.PARSE_XML_FAILED", new Object[]{"db:model:" + filePath });
+                throw new Exception(message);
+                /*
                 throw new ParseXmlException("TcgModelManager.PARSE_XML_FAILED",
                                             "org.netbeans.modules.iep.editor.tcg.model.Bundle",
                                             new Object[]{"db:model:" + filePath });
@@ -405,9 +405,9 @@ public class TcgModelManager implements TcgModelConstants {
             component = getComponent(doc.getDocumentElement());
 
             if (component == null) {
-            	String message = NbBundle.getMessage(TcgModelManager.class, "TcgModelManager.BAD_COMPONENT_ERROR", new Object[]{"db:model:" + filePath });
-            	throw new Exception(message);
-            	/*
+                String message = NbBundle.getMessage(TcgModelManager.class, "TcgModelManager.BAD_COMPONENT_ERROR", new Object[]{"db:model:" + filePath });
+                throw new Exception(message);
+                /*
                 throw new ParseXmlException("TcgModelManager.BAD_COMPONENT_ERROR",
                                             "org.netbeans.modules.iep.editor.tcg.model.Bundle",
                                             new Object[]{"db:model:" + filePath });

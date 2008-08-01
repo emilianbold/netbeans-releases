@@ -53,6 +53,10 @@ public class OverloadedOperatorTestCase extends CompletionBaseTestCase {
     public OverloadedOperatorTestCase(String testName) {
         super(testName, true);
     }
+
+    public void testNextLevelArrow() throws Exception {
+        performTest("file.cc", 7, 5, "(*pC).fieldCB->");
+    }
     
     public void testOverloadedArrowOnB() throws Exception {
         performTest("file.cc", 7, 5, "pB->");
@@ -84,5 +88,5 @@ public class OverloadedOperatorTestCase extends CompletionBaseTestCase {
     
     public void testInstantiationOverloadedArrowArrayOnC() throws Exception {
         performTest("file.cc", 5, 5, "c[1]->");
-    }    
+    }       
 }

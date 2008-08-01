@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -72,7 +72,7 @@ import org.openide.util.Parameters;
 class OpenedEditors implements PropertyChangeListener {
 
     private List<JTextComponent> visibleEditors = new ArrayList<JTextComponent>();
-    private Map<JTextComponent, FileObject> visibleEditors2Files = new HashMap<JTextComponent, FileObject>();
+    private Map<JTextComponent, DataObject> visibleEditors2Files = new HashMap<JTextComponent, DataObject>();
     private List<ChangeListener> listeners = new ArrayList<ChangeListener>();
 
     private static OpenedEditors DEFAULT;
@@ -115,63 +115,96 @@ class OpenedEditors implements PropertyChangeListener {
     }
 
     public synchronized List<JTextComponent> getVisibleEditors() {
-        return Collections.unmodifiableList(visibleEditors);
+        List<JTextComponent> result = new LinkedList<JTextComponent>();
+        
+        for (JTextComponent c : visibleEditors) {
+            if (visibleEditors2Files.get(c) != null) {
+                result.add(c);
+            }
+        }
+        
+        return Collections.unmodifiableList(result);
     }
 
     public synchronized Collection<FileObject> getVisibleEditorsFiles() {
-        return Collections.unmodifiableCollection(visibleEditors2Files.values());
+        List<FileObject> result = new LinkedList<FileObject>();
+        
+        for (DataObject file : visibleEditors2Files.values()) {
+            if (file != null) {
+                result.add(file.getPrimaryFile());
+            }
+        }
+        
+        return Collections.unmodifiableCollection(result);
     }
 
     public synchronized void stateChanged() {
         for (JTextComponent c : visibleEditors) {
             c.removePropertyChangeListener(this);
-            visibleEditors2Files.remove(c);
+            
+            DataObject file = visibleEditors2Files.remove(c);
+            
+            if (file != null) {
+                file.removePropertyChangeListener(this);
+            }
         }
 
         visibleEditors.clear();
 
         JTextComponent editor = EditorRegistry.lastFocusedComponent();
 
-        FileObject fo = editor != null ? getFileObject(editor) : null;
-        if (editor instanceof JEditorPane && fo != null && JavaSource.forFileObject(fo) != null) {
+        DataObject file = editor != null ? getDataObject(editor) : null;
+        
+        if (editor instanceof JEditorPane && file != null && JavaSource.forFileObject(file.getPrimaryFile()) != null) {
             visibleEditors.add(editor);
         }
 
         for (JTextComponent c : visibleEditors) {
             c.addPropertyChangeListener(this);
-            visibleEditors2Files.put(c, getFileObject(c));
+            DataObject cFile = getDataObject(c);
+            cFile.addPropertyChangeListener(this);
+            visibleEditors2Files.put(c, cFile);
         }
 
         fireChangeEvent();
     }
 
     public synchronized void propertyChange(PropertyChangeEvent evt) {
-        JTextComponent c = (JTextComponent) evt.getSource();
-        FileObject originalFile = visibleEditors2Files.get(c);
-        FileObject nueFile = getFileObject(c);
-
-        if (originalFile != nueFile) {
-            visibleEditors2Files.put(c, nueFile);
+        if (evt.getSource() instanceof DataObject && DataObject.PROP_PRIMARY_FILE.equals(evt.getPropertyName())) {
             fireChangeEvent();
+            return ;
+        }
+        
+        if (evt.getSource() instanceof JTextComponent) {
+            JTextComponent c = (JTextComponent) evt.getSource();
+            DataObject originalFile = visibleEditors2Files.get(c);
+            DataObject nueFile = getDataObject(c);
+
+            if (originalFile != nueFile) {
+                visibleEditors2Files.put(c, nueFile);
+                fireChangeEvent();
+            }
+            
+            return ;
         }
     }
 
-    static FileObject getFileObject(JTextComponent pane) {
+    private static DataObject getDataObject(JTextComponent pane) {
         Object source = pane.getDocument().getProperty(Document.StreamDescriptionProperty);
         
         if (!(source instanceof DataObject)) {
             return null;
         }
         
-        DataObject file = (DataObject) source;
-        
-        if (file != null) {
-            return file.getPrimaryFile();
-        }
-
-        return null;
+        return (DataObject) source;
     }
 
+    static FileObject getFileObject(JTextComponent pane) {
+        DataObject od = getDataObject(pane);
+        
+        return od != null ? od.getPrimaryFile() : null;
+    }
+    
     /**Checks if the given file is supported. See {@link #filterSupportedMIMETypes}
      * for more details.
      *

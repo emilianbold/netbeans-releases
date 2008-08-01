@@ -69,6 +69,9 @@
         <mapID target="framework_spring_about" url="web/create/tag/framework/spring/about.html"/>
 	<mapID target="framework_spring_create" url="web/create/tag/framework/spring/create.html"/>
 	<mapID target="framework_spring_add" url="web/create/tag/framework/spring/add.html"/>	
+        <mapID target="framework_grails_about" url="web/create/tag/framework/grails/about.html"/>
+        <mapID target="framework_grails_create" url="web/create/tag/framework/grails/create.html"/>
+        <mapID target="framework_grails_install" url="web/create/tag/framework/grails/install.html"/>
         <mapID target="html_create" url="web/create/html/html_create.html"/>
 	<mapID target="jsp_compile" url="web/create/jsp/jsp_compile.html"/>
 	<mapID target="jsp_create" url="web/create/jsp/jsp_create.html"/>
@@ -95,7 +98,7 @@
 	<mapID target="org.netbeans.modules.web.jsf.dialogs.AddNavigationRuleDialog" url="web/create/tag/framework/jsf/AddNavigationRuleDialog.html"/>
 	<mapID target="org.netbeans.modules.web.jsf.wizards.JSFConfigurationPanelVisual" url="web/csh/projwiz_standard/PanelSupportedFrameworks.html"/>
 	<mapID target="org.netbeans.modules.web.jsf.wizards.ManagedBeanPanel" url="web/create/tag/framework/jsf/file_ManagedBeanPanel.html"/>
-        <mapID target="org.netbeans.modules.web.jsf.wizards.PersistenceClientIterator$PersistenceClientEntitySelection" url="web/create/tag/framework/jsf/file_jsffromentity.html"/>
+        <mapID target="org.netbeans.modules.web.jsf.wizards.PersistenceClientIterator$PersistenceClientEntitySelection" url="web/create/tag/framework/jsf/file_jsffromentity_panel1.html"/>
 	<mapID target="org.netbeans.modules.web.project.ui.customizer.CustomizerCompile" url="web/csh/dbox_projprops/WebCustomizerCompile.html"/>
 	<mapID target="org.netbeans.modules.web.project.ui.customizer.CustomizerFrameworks" url="web/csh/dbox_projprops/CustomizerFrameworks.html"/>
 	<mapID target="org.netbeans.modules.web.project.ui.customizer.CustomizerJavadoc" url="web/csh/dbox_projprops/WebCustomizerJavadoc.html"/>
@@ -108,8 +111,10 @@
 	<mapID target="org.netbeans.modules.web.project.ui.customizer.CustomizerWSServiceHost" url="web/csh/dbox_projprops/CustomizerWSServiceHost.html"/>
 	<mapID target="org.netbeans.modules.web.project.ui.customizer.CustomizerWSServiceHostDisabled" url="web/csh/dbox_projprops/CustomizerWSServiceHostDisabled.html"/>
 	<mapID target="org.netbeans.modules.web.project.ui.customizer.WebCustomizer" url="web/csh/dbox_projprops/WebCustomizerSources.html"/>
-	<mapID target="org.netbeans.modules.web.project.ui.wizards.ImportWebProjectWizardIterator$ThePanel" url="web/csh/projwiz_standard/ThePanel.html"/>
-	<mapID target="org.netbeans.modules.web.project.ui.wizards.PanelConfigureProject" url="web/csh/projwiz_standard/PanelConfigureProject.html"/>
+	<mapID target="org.netbeans.modules.j2ee.common.project.ui.ProjectImportLocationWizardPanel_WAR" url="web/csh/projwiz_standard/ThePanel.html"/>
+	<mapID target="org.netbeans.modules.j2ee.common.project.ui.ProjectLocationWizardPanel_WAR" url="web/csh/projwiz_standard/PanelConfigureProject.html"/>
+        <mapID target="org.netbeans.modules.j2ee.common.project.ui.ProjectServerWizardPanel_WAR" url="web/csh/projwiz_standard/PanelConfigureProject_servers.html"/>
+        <mapID target="org.netbeans.modules.j2ee.common.project.ui.ProjectServerWizardPanel_WAR_IMPORT" url="web/csh/projwiz_standard/PanelConfigureProject_servers.html"/>
 	<mapID target="org.netbeans.modules.web.project.ui.wizards.PanelSourceFolders" url="web/csh/projwiz_standard/SecondPanel.html"/>
 	<mapID target="org.netbeans.modules.web.project.ui.wizards.PanelSupportedFrameworks" url="web/csh/projwiz_standard/PanelSupportedFrameworks.html"/>
 	<mapID target="org.netbeans.modules.web.struts.dialogs.AddActionPanel" url="web/create/tag/framework/struts/AddActionPanel.html"/>
@@ -122,6 +127,7 @@
 	<mapID target="org.netbeans.modules.web.struts.wizards.ActionPanel" url="web/create/tag/framework/struts/file_ActionPanel.html"/>
 	<mapID target="org.netbeans.modules.web.struts.wizards.ActionPanel1" url="web/create/tag/framework/struts/file_ActionPanel1.html"/>
 	<mapID target="org.netbeans.modules.web.struts.wizards.FormBeanNewPanel" url="web/create/tag/framework/struts/file_FormBeanNewPanel.html"/>
+	<mapID target="org.netbeans.modules.groovy.grailsproject.ui.wizards.GetProjectLocationStep" url="web/create/tag/framework/grails/NewGrailsProjectWizard.html"/>
 	<mapID target="projrave_a11y_navigation_editor_shortcuts" url="a11y/navigation_editor_shortcuts.html"/>
 	<mapID target="projrave_a11y_query_editor_shortcuts" url="a11y/query_editor_shortcuts.html"/>
 	<mapID target="projrave_components_about_complibs" url="components/about_complibs.html"/>
@@ -240,7 +246,7 @@
 	<mapID target="projrave_ui_elements_dialogs_number_converter_db" url="ui_elements/dialogs/number_converter_db.html"/>
 	<mapID target="projrave_ui_elements_dialogs_options_customizer_db" url="ui_elements/dialogs/options_customizer_db.html"/>
 	<mapID target="projrave_ui_elements_dialogs_property_binding_db" url="ui_elements/dialogs/property_binding_db.html"/>
-	<mapID target="projrave_ui_elements_dialogs_resolve_data_source_db" url="ui_elements/dialogs/resolve_data_source_db.html"/>
+	<mapID target="org.netbeans.modules.j2ee.common.ui.MissingDatabaseConnectionWarning" url="ui_elements/dialogs/resolve_data_source_db.html"/>
 	<mapID target="projrave_ui_elements_dialogs_theme_switch_info_db" url="ui_elements/dialogs/theme_switch_info_db.html"/>
 	<mapID target="projrave_ui_elements_dialogs_virtual_forms_db" url="ui_elements/dialogs/virtual_forms_db.html"/>
 	<mapID target="projrave_ui_elements_editors_about_css_editor" url="ui_elements/editors/about_css_editor.html"/>
@@ -492,7 +498,8 @@
 	<mapID target="projrave_ui_elements_palette_wdstk-jsf1.2_link" url="ui_elements/palette/wdstk-jsf1_2/link.html"/>
 	<mapID target="projrave_ui_elements_palette_wdstk-jsf1.2_listbox" url="ui_elements/palette/wdstk-jsf1_2/listbox.html"/>
 	<mapID target="projrave_ui_elements_palette_wdstk-jsf1.2_markup" url="ui_elements/palette/wdstk-jsf1_2/markup.html"/>
-	<mapID target="projrave_ui_elements_palette_wdstk-jsf1.2_message" url="ui_elements/palette/wdstk-jsf1_2/message.html"/>
+        <mapID target="projrave_ui_elements_palette_wdstk-jsf1.2_menu" url="ui_elements/palette/wdstk-jsf1_2/menu.html"/>
+ 	<mapID target="projrave_ui_elements_palette_wdstk-jsf1.2_message" url="ui_elements/palette/wdstk-jsf1_2/message.html"/>
 	<mapID target="projrave_ui_elements_palette_wdstk-jsf1.2_message_group" url="ui_elements/palette/wdstk-jsf1_2/message_group.html"/>
 	<mapID target="projrave_ui_elements_palette_wdstk-jsf1.2_meta" url="ui_elements/palette/wdstk-jsf1_2/meta.html"/>
 	<mapID target="projrave_ui_elements_palette_wdstk-jsf1.2_page_alert" url="ui_elements/palette/wdstk-jsf1_2/page_alert.html"/>
@@ -528,6 +535,7 @@
 	<mapID target="projrave_ui_elements_palette_wdstk-jsf1.2_propsheets_link_props" url="ui_elements/palette/wdstk-jsf1_2/propsheets/link_props.html"/>
 	<mapID target="projrave_ui_elements_palette_wdstk-jsf1.2_propsheets_listbox_props" url="ui_elements/palette/wdstk-jsf1_2/propsheets/listbox_props.html"/>
 	<mapID target="projrave_ui_elements_palette_wdstk-jsf1.2_propsheets_markup_props" url="ui_elements/palette/wdstk-jsf1_2/propsheets/markup_props.html"/>
+        <mapID target="projrave_ui_elements_palette_wdstk-jsf1.2_propsheets_menu_props" url="ui_elements/palette/wdstk-jsf1_2/propsheets/menu_props.html"/>
 	<mapID target="projrave_ui_elements_palette_wdstk-jsf1.2_propsheets_message_group_props" url="ui_elements/palette/wdstk-jsf1_2/propsheets/message_group_props.html"/>
 	<mapID target="projrave_ui_elements_palette_wdstk-jsf1.2_propsheets_message_props" url="ui_elements/palette/wdstk-jsf1_2/propsheets/message_props.html"/>
 	<mapID target="projrave_ui_elements_palette_wdstk-jsf1.2_propsheets_meta_props" url="ui_elements/palette/wdstk-jsf1_2/propsheets/meta_props.html"/>

@@ -35,6 +35,7 @@ import org.mozilla.javascript.Token;
 import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.napi.gsfret.source.CompilationInfo;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.gsf.api.annotations.CheckForNull;
 import org.netbeans.modules.javascript.editing.AstPath;
 import org.netbeans.modules.javascript.editing.AstUtilities;
 import org.netbeans.modules.javascript.editing.Element;
@@ -119,18 +120,20 @@ public class JsElementCtx {
         initialize(ctx.getRoot(), node, element, ctx.getFileObject(), ctx.getInfo());
     }
 
+    /*
     public JsElementCtx(IndexedFunction element, CompilationInfo info) {
-        Node[] rootRet = new Node[1];
-        Node node = AstUtilities.getForeignNode(element, rootRet);
-        Node root = rootRet[0];
+        CompilationInfo[] infoRet = new CompilationInfo[1];
+        Node node = AstUtilities.getForeignNode(element, infoRet);
+        Node root = AstUtilities.getRoot(infoRet[0]);
 
+// TODO - shouldn't I use infoRet[0] instead of info here?
         Element e = AstElement.getElement(info, node);
 
         FileObject fo = element.getFileObject();
         document = RetoucheUtils.getDocument(null, fo);
 
         initialize(root, node, e, fo, info);
-    }
+    }*/
 
     private void initialize(Node root, Node node, Element element, FileObject fileObject,
         CompilationInfo info) {
@@ -234,7 +237,13 @@ public class JsElementCtx {
 
         return name;
     }
+    
+    public void setNames(String name, String simpleName) {
+        this.name = name;
+        this.simpleName = simpleName;
+    }
 
+    @CheckForNull
     public String getSimpleName() {
         if (name == null) {
             getName();

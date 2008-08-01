@@ -48,7 +48,7 @@ made subject to such option by the copyright holder.
         <field field-type="string" required="true">
             <name>jndi-name</name>
             <field-value>
-                <default-field-value>jms/</default-field-value>
+                <default-field-value></default-field-value>
             </field-value>
         </field>
         <field field-type="list">

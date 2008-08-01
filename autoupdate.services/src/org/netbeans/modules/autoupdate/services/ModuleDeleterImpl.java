@@ -253,22 +253,15 @@ public final class ModuleDeleterImpl  {
         if (updateTracking != null && updateTracking.exists ()) {
             //err.log ("Find UPDATE_TRACKING: " + updateTracking + " found.");
             // check the write permission
-            File installCluster = null;
-            File updateTrackingDir = updateTracking.getParentFile ();
-            for (File cluster : UpdateTracking.clusters (true)) {       
-                if (cluster.equals (updateTrackingDir.getParentFile ())) {
-                    installCluster = cluster;
-                    break;
-                }
-            }
-            if (installCluster == null || ! installCluster.canWrite ()) {
+            if (! Utilities.canWrite (updateTracking)) {
                 err.log(Level.FINE,
                         "Cannot delete module " + moduleInfo.getCodeName() +
                         " because is forbidden to write in directory " +
                         updateTracking.getParentFile ().getParent ());
                 return false;
+            } else {
+                return true;
             }
-            return true;
         } else {
             err.log(Level.FINE,
                     "Cannot delete module " + moduleInfo.getCodeName() +

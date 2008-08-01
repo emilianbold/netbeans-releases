@@ -524,4 +524,12 @@ made subject to such option by the copyright holder.
             </file>
         </folder>
     </folder>
+    <folder name="ProjectXMLCatalog">
+        <!-- XXX unlike everyone else, does not use /1 versioning suffix -->
+        <file name="j2me-project.xsd" url="../../resources/j2me-project.xsd"/>
+        <file name="j2me-project-private.xsd" url="../../resources/j2me-project-private.xsd"/>
+        <folder name="project-configurations">
+            <file name="1.xsd" url="../../../../project/support/resources/project-configurations.xsd"/>
+        </folder>
+    </folder>
 </filesystem>

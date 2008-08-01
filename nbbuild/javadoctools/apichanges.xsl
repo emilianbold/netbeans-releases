@@ -416,14 +416,7 @@ committed to the repository for legal reasons. You need to download it:
         see here a feature you need which is labelled <samp>1.20</samp>, your
         manifest should contain in its main attributes the line:
       </p>
-      <xsl:choose>
-          <xsl:when test="starts-with(@module-code-name, 'IDE/')">
-              <pre>OpenIDE-Module-IDE-Dependencies: <xsl:value-of select="@module-code-name"/> &gt; 1.20</pre>
-          </xsl:when>
-          <xsl:otherwise>
-              <pre>OpenIDE-Module-Module-Dependencies: <xsl:value-of select="@module-code-name"/> &gt; 1.20</pre>
-          </xsl:otherwise>
-      </xsl:choose>
+      <pre>OpenIDE-Module-Module-Dependencies: <xsl:value-of select="@module-code-name"/> &gt; 1.20</pre>
       <xsl:call-template name="changelist-all-by-version"/>
 
       <h1><a name="all-by-class">Changes by affected class</a></h1>

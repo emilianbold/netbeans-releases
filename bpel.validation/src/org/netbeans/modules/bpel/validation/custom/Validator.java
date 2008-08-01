@@ -11,9 +11,9 @@
  * http://www.netbeans.org/cddl-gplv2.html
  * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
  * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
+ * License. When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
  * particular file as subject to the "Classpath" exception as provided
  * by Sun in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
@@ -42,15 +42,9 @@ package org.netbeans.modules.bpel.validation.custom;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.HashMap;
 import java.util.Collection;
-import java.util.Set;
 
-import org.netbeans.modules.bpel.model.api.Import;
-import org.netbeans.modules.bpel.model.api.support.ImportHelper;
 import org.netbeans.modules.bpel.model.api.BaseCorrelation;
-import org.netbeans.modules.bpel.model.api.BaseScope;
-import org.netbeans.modules.bpel.model.api.BpelContainer;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.Branches;
 import org.netbeans.modules.bpel.model.api.CompletionCondition;
@@ -71,9 +65,7 @@ import org.netbeans.modules.bpel.model.api.Invoke;
 import org.netbeans.modules.bpel.model.api.OnAlarmEvent;
 import org.netbeans.modules.bpel.model.api.OnEvent;
 import org.netbeans.modules.bpel.model.api.OnMessage;
-import org.netbeans.modules.bpel.model.api.OperationReference;
 import org.netbeans.modules.bpel.model.api.PartnerLink;
-import org.netbeans.modules.bpel.model.api.PartnerLinkContainer;
 import org.netbeans.modules.bpel.model.api.PatternedCorrelation;
 import org.netbeans.modules.bpel.model.api.PatternedCorrelationContainer;
 import org.netbeans.modules.bpel.model.api.Pick;
@@ -82,6 +74,8 @@ import org.netbeans.modules.bpel.model.api.Receive;
 import org.netbeans.modules.bpel.model.api.Reply;
 import org.netbeans.modules.bpel.model.api.Sequence;
 import org.netbeans.modules.bpel.model.api.TerminationHandler;
+import org.netbeans.modules.bpel.model.api.StartCounterValue;
+import org.netbeans.modules.bpel.model.api.FinalCounterValue;
 import org.netbeans.modules.bpel.model.api.Throw;
 import org.netbeans.modules.bpel.model.api.references.BpelReference;
 import org.netbeans.modules.bpel.model.api.references.WSDLReference;
@@ -90,13 +84,11 @@ import org.netbeans.modules.bpel.model.api.support.ExpressionUpdater;
 import org.netbeans.modules.xml.wsdl.model.Operation;
 import org.netbeans.modules.xml.wsdl.model.PortType;
 import org.netbeans.modules.xml.wsdl.model.RequestResponseOperation;
-import org.netbeans.modules.xml.wsdl.model.extensions.bpel.Role;
 import org.netbeans.modules.xml.xam.Component;
-import org.netbeans.modules.xml.xam.spi.Validator.ResultType;
-import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
-import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.bpel.validation.core.BpelValidator;
-import static org.netbeans.modules.soa.ui.util.UI.*;
+import org.netbeans.modules.bpel.model.api.support.SimpleBpelModelVisitor;
+import org.netbeans.modules.bpel.model.api.support.SimpleBpelModelVisitorAdaptor;
+import static org.netbeans.modules.xml.ui.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -104,13 +96,23 @@ import static org.netbeans.modules.soa.ui.util.UI.*;
  */
 public final class Validator extends BpelValidator {
 
+  @Override
   protected void init() {
     myErrored = new ArrayList<Component>();
   }
 
   @Override
+  protected SimpleBpelModelVisitor getVisitor() { return new SimpleBpelModelVisitorAdaptor() {
+
+  @Override
   public void visit(ForEach forEach) {
 //out();
+    // # 124918
+    checkCounters(forEach);
+
+    // # 125001
+    checkNegativeCounter(forEach);
+
 //out("forEach: " + forEach);
 //out("forEach.getCounterName: " + forEach.getCounterName());
     String counter = forEach.getCounterName();
@@ -144,6 +146,97 @@ public final class Validator extends BpelValidator {
       if (variable.equals(counter)) {
         addError("FIX_Branches_Cant_Use_Counter", branches, counter); // NOI18N
       }
+    }
+  }
+
+  private void checkCounters(ForEach forEach) {
+    StartCounterValue startCounterValue = forEach.getStartCounterValue();
+
+    if (startCounterValue == null) {
+      return;
+    }
+    int startCounter;
+
+    try {
+      startCounter = Integer.parseInt(startCounterValue.getContent());
+    }
+    catch (NumberFormatException e) {
+      return;
+    }
+    FinalCounterValue finalCounterValue = forEach.getFinalCounterValue();
+
+    if (finalCounterValue == null) {
+      return;
+    }
+    int finalCounter;
+
+    try {
+      finalCounter = Integer.parseInt(finalCounterValue.getContent());
+    }
+    catch (NumberFormatException e) {
+      return;
+    }
+    if (finalCounter < startCounter) {
+      addError("FIX_Final_Start_Counters", forEach, "" + startCounter, "" + finalCounter); // NOI18N
+    }
+  }
+
+  private void checkNegativeCounter(ForEach forEach) {
+    // start
+    StartCounterValue startCounterValue = forEach.getStartCounterValue();
+
+    if (startCounterValue == null) {
+      return;
+    }
+    int startCounter;
+
+    try {
+      startCounter = Integer.parseInt(startCounterValue.getContent());
+    }
+    catch (NumberFormatException e) {
+      return;
+    }
+    if (startCounter < 0) {
+      addError("FIX_Negative_Start_Counter", startCounterValue, "" + startCounter); // NOI18N
+    }
+    // final
+    FinalCounterValue finalCounterValue = forEach.getFinalCounterValue();
+
+    if (finalCounterValue == null) {
+      return;
+    }
+    int finalCounter;
+
+    try {
+      finalCounter = Integer.parseInt(finalCounterValue.getContent());
+    }
+    catch (NumberFormatException e) {
+      return;
+    }
+    if (finalCounter < 0) {
+      addError("FIX_Negative_Final_Counter", finalCounterValue, "" + finalCounter); // NOI18N
+    }
+    // completion
+    CompletionCondition completionCondition = forEach.getCompletionCondition();
+
+    if (completionCondition == null) {
+      return;
+    }
+    Branches branches = completionCondition.getBranches();
+
+    if (branches == null) {
+      return;
+    }
+    int completionCounter;
+
+    try {
+      completionCounter = Integer.parseInt(branches.getContent());
+    }
+    catch (NumberFormatException e) {
+      return;
+    }
+    if (completionCounter < 0) {
+      addError("FIX_Negative_Completion_Counter", branches, "" + completionCounter); // NOI18N
     }
   }
 
@@ -209,8 +302,8 @@ public final class Validator extends BpelValidator {
     if (
       samePartnerLink(receive1, receive2) &&
       samePortType(receive1, receive2) &&
-      sameOperation(receive1, receive2))
-    {
+      sameOperation(receive1, receive2)
+    ) {
       addWarning("FIX_Receives_in_OnEventOnAlarm", receive1, receive1.getName(), receive2.getName()); // NOI18N
       addWarning("FIX_Receives_in_OnEventOnAlarm", receive2, receive2.getName(), receive1.getName()); // NOI18N
     }
@@ -411,7 +504,7 @@ public final class Validator extends BpelValidator {
     }
     Correlation [] correlations = container.getCorrelations();
 
-    if (correlations == null)  {
+    if (correlations == null) {
       return;
     }
     Process process = holder.getBpelModel().getProcess();
@@ -465,7 +558,7 @@ public final class Validator extends BpelValidator {
     }
     Correlation [] correlations = container.getCorrelations();
 
-    if (correlations == null)  {
+    if (correlations == null) {
       return false;
     }
     for (Correlation correlation : correlations) {
@@ -490,7 +583,7 @@ public final class Validator extends BpelValidator {
     }
     PatternedCorrelation [] correlations = container.getPatternedCorrelations();
 
-    if (correlations == null)  {
+    if (correlations == null) {
       return false;
     }
     for (PatternedCorrelation correlation : correlations) {
@@ -515,7 +608,7 @@ public final class Validator extends BpelValidator {
       return false;
     }
 //out("    view: " + getName(corr));
-    return corr == set && correlation.getInitiate() == Initiate.YES;
+    return corr == set && correlation.getInitiate() != Initiate.NO;
   }
 
   private void checkReplies(Reply reply1, Reply reply2) {
@@ -593,8 +686,8 @@ public final class Validator extends BpelValidator {
     CorrelationsHolder holder1,
     CorrelationsHolder holder2,
     BpelEntity parent1,
-    BpelEntity parent2)
-  {
+    BpelEntity parent2
+  ) {
     // # 128357
     if (holder1 instanceof OnMessage && parent1 instanceof Pick) {
       return false;
@@ -864,43 +957,9 @@ public final class Validator extends BpelValidator {
   // # 111409
   @Override
   public void visit(Throw _throw) {
-    if (hasParentTerminationHandler(_throw.getParent())) {
-      addError("FIX_Throw_in_TerminationHandler", _throw); // NOI18N
+    if (_throw.getParent() instanceof TerminationHandler) {
+      addError("FIX_Throw_in_TerminationHandler", _throw, _throw.getName()); // NOI18N
     }
-  }
-
-  private boolean hasParentTerminationHandler(Component component) {
-    if (component == null) {
-      return false;
-    }
-    if (component instanceof TerminationHandler) {
-      return true;
-    }
-    return hasParentTerminationHandler(component.getParent());
-  }
-
-  @Override
-  public void visit(Import imp) {
-    Model model = getModel(imp);
-
-    if (model == null) {
-      addError("FIX_Not_Well_Formed_Import", imp); // NOI18N
-      return;
-    }
-    if (isValidationComplete()) {
-//out();
-//out("Vadlidate model: " + model);
-      validate(model);
-    }
-  }
-
-  private Model getModel(Import imp) {
-    Model model = ImportHelper.getWsdlModel(imp, false);
-
-    if (model != null) {
-      return model;
-    }
-    return ImportHelper.getSchemaModel(imp, false);
   }
 
   private void addErrorCheck(String key, Component component, String name1, String name2) {
@@ -910,6 +969,8 @@ public final class Validator extends BpelValidator {
     myErrored.add(component);
     addError(key, component, name1, name2);
   }
+  
+  };}
 
   private List<Component> myErrored;
 }

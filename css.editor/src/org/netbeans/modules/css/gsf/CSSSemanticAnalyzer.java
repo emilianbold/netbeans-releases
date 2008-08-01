@@ -39,6 +39,7 @@
 package org.netbeans.modules.css.gsf;
 
 import java.util.HashMap;
+import java.util.Set;
 import java.util.Map;
 import org.netbeans.modules.gsf.api.ColoringAttributes;
 import org.netbeans.modules.gsf.api.CompilationInfo;
@@ -48,6 +49,7 @@ import org.netbeans.modules.gsf.api.SemanticAnalyzer;
 import org.netbeans.modules.gsf.api.TranslatedSource;
 import org.netbeans.modules.css.editor.Css;
 import org.netbeans.modules.css.parser.CSSParserTreeConstants;
+import org.netbeans.modules.css.parser.CssParserAccess;
 import org.netbeans.modules.css.parser.NodeVisitor;
 import org.netbeans.modules.css.parser.SimpleNode;
 
@@ -58,9 +60,9 @@ import org.netbeans.modules.css.parser.SimpleNode;
 public class CSSSemanticAnalyzer implements SemanticAnalyzer {
 
     private boolean cancelled;
-    private Map<OffsetRange, ColoringAttributes> semanticHighlights;
+    private Map<OffsetRange, Set<ColoringAttributes>> semanticHighlights;
 
-    public Map<OffsetRange, ColoringAttributes> getHighlights() {
+    public Map<OffsetRange, Set<ColoringAttributes>> getHighlights() {
         return semanticHighlights;
     }
 
@@ -69,12 +71,13 @@ public class CSSSemanticAnalyzer implements SemanticAnalyzer {
     }
 
     public void run(CompilationInfo ci) throws Exception {
-
+        cancelled = false;
+        
         if (cancelled) {
             return;
         }
         
-        final Map<OffsetRange, ColoringAttributes> highlights = new HashMap<OffsetRange, ColoringAttributes>();
+        final Map<OffsetRange, Set<ColoringAttributes>> highlights = new HashMap<OffsetRange, Set<ColoringAttributes>>();
 
         //XXX fixthis - the css parser always parses the whole css content!
         ParserResult presult = ci.getEmbeddedResults(Css.CSS_MIME_TYPE).iterator().next();
@@ -94,23 +97,30 @@ public class CSSSemanticAnalyzer implements SemanticAnalyzer {
             
             public void visit(SimpleNode node) {
                 if (node.kind() == CSSParserTreeConstants.JJTELEMENTNAME || node.kind() == CSSParserTreeConstants.JJT_CLASS || node.kind() == CSSParserTreeConstants.JJTPSEUDO || node.kind() == CSSParserTreeConstants.JJTHASH || node.kind() == CSSParserTreeConstants.JJTATTRIB) {
-                    AstOffsetRange range = new AstOffsetRange(node.startOffset(), node.endOffset(), source);
-                    //filter virtual nodes
-                    if (!range.isEmpty()) {
-                        highlights.put(range, ColoringAttributes.METHOD);
+                    OffsetRange range = getOffsetRange(node.startOffset(), node.endOffset(), source);
+                    int dso = AstUtils.documentPosition(node.startOffset(), source);
+                    int deo = AstUtils.documentPosition(node.endOffset(), source);
+                    //filter out generated and inlined style definitions - they have just virtual selector which
+                    //is mapped to empty string
+                    if (!range.isEmpty() && deo > dso) {
+                        highlights.put(range, ColoringAttributes.METHOD_SET);
                     }
                 } else if (node.kind() == CSSParserTreeConstants.JJTPROPERTY) {
                     //check vendor speficic property
-                    AstOffsetRange range = new AstOffsetRange(node.startOffset(), node.endOffset(), source);
+                    OffsetRange range = getOffsetRange(node.startOffset(), node.endOffset(), source);
 
                     if (!range.isEmpty()) { //filter virtual nodes
 
                         String propertyName = node.image().trim();
+                        if(CssParserAccess.containsGeneratedCode(propertyName)) {
+                            return;
+                        }
+                        
                         if (CssAnalyser.isVendorSpecificProperty(propertyName)) {
                             //special highlight for vend. spec. properties
-                            highlights.put(range, ColoringAttributes.PARAMETER_USE);
+                            highlights.put(range, ColoringAttributes.CUSTOM2_SET);
                         } else {
-                            highlights.put(range, ColoringAttributes.PARAMETER);
+                            highlights.put(range, ColoringAttributes.CUSTOM1_SET);
                         }
                     }
                 }
@@ -141,26 +151,19 @@ public class CSSSemanticAnalyzer implements SemanticAnalyzer {
         semanticHighlights = highlights;
 
     }
-
-    public static class AstOffsetRange extends OffsetRange {
-
-        private TranslatedSource source;
-
-        public AstOffsetRange(int start, int end, TranslatedSource source) {
-            super(start, end);
-            this.source = source;
+    
+    private OffsetRange getOffsetRange(int start, int end, TranslatedSource source) {
+        if (source != null) {
+            int length = end-start;
+            start = source.getLexicalOffset(start);
+            if (start == -1) {
+                start = 0;
+            }
+            // We assume that the start and end are always mapped to the same delta,
+            // e.g. tags don't span embedding regions.
+            // If not, we could call getLexicalOffset(end) as well
+            end = start+length;
         }
-
-        public int getStart() {
-            return source == null ? super.getStart() : source.getLexicalOffset(super.getStart());
-        }
-
-        public int getEnd() {
-            return source == null ? super.getEnd() : source.getLexicalOffset(super.getEnd());
-        }
-
-        public boolean isEmpty() {
-            return getEnd() - getStart() == 0;
-        }
+        return new OffsetRange(start, end);
     }
 }

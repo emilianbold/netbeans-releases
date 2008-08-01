@@ -86,12 +86,18 @@ public class LoginScreenDisplayPresenter extends DisplayableDisplayPresenter {
     @Override
     public Collection<ScreenPropertyDescriptor> getPropertyDescriptors() {
         Collection<ScreenPropertyDescriptor> desciptors = new ArrayList<ScreenPropertyDescriptor>(super.getPropertyDescriptors());
-        desciptors.addAll(Arrays.asList(new ScreenPropertyDescriptor(getComponent(), loginView.passwordTextField, new ScreenStringPropertyEditor(LoginScreenCD.PROP_PASSWORD, JTextField.CENTER)), new ScreenPropertyDescriptor(getComponent(), loginView.passwordLabel, new ScreenStringPropertyEditor(LoginScreenCD.PROP_PASSWORD_LABEL, JTextField.CENTER)), new ScreenPropertyDescriptor(getComponent(), loginView.usernameLabel, new ScreenStringPropertyEditor(LoginScreenCD.PROP_USERNAME_LABEL, JTextField.CENTER)), new ScreenPropertyDescriptor(getComponent(), loginView.usernameTextField, new ScreenStringPropertyEditor(LoginScreenCD.PROP_USERNAME, JTextField.CENTER))));
+        desciptors.addAll(Arrays.asList(
+                new ScreenPropertyDescriptor(getComponent(), loginView.passwordTextField, new ScreenStringPropertyEditor(LoginScreenCD.PROP_PASSWORD, JTextField.CENTER)),
+                new ScreenPropertyDescriptor(getComponent(), loginView.passwordLabel, new ScreenStringPropertyEditor(LoginScreenCD.PROP_PASSWORD_LABEL, JTextField.CENTER)),
+                new ScreenPropertyDescriptor(getComponent(), loginView.usernameLabel, new ScreenStringPropertyEditor(LoginScreenCD.PROP_USERNAME_LABEL, JTextField.CENTER)),
+                new ScreenPropertyDescriptor(getComponent(), loginView.usernameTextField, new ScreenStringPropertyEditor(LoginScreenCD.PROP_USERNAME, JTextField.CENTER))
+                ));
         return desciptors;
     }
 
     private class LoginView extends JPanel {
 
+        JLabel loginTitleLabel;
         JButton loginButton;
         JLabel passwordLabel;
         JPasswordField passwordTextField;
@@ -104,6 +110,7 @@ public class LoginScreenDisplayPresenter extends DisplayableDisplayPresenter {
         }
 
         private void initComponents() {
+            loginTitleLabel = new javax.swing.JLabel();
             usernameLabel = new javax.swing.JLabel();
             passwordLabel = new javax.swing.JLabel();
             usernameTextField = new javax.swing.JTextField();
@@ -112,26 +119,32 @@ public class LoginScreenDisplayPresenter extends DisplayableDisplayPresenter {
 
             setLayout(new java.awt.GridBagLayout());
 
+            addLoginTitle();
+            
             gridBagConstraints = new java.awt.GridBagConstraints();
+            gridBagConstraints.gridx = 0;
+            gridBagConstraints.gridy = 1;
             gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
             gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 10);
             add(usernameLabel, gridBagConstraints);
 
             gridBagConstraints = new java.awt.GridBagConstraints();
             gridBagConstraints.gridx = 0;
-            gridBagConstraints.gridy = 1;
+            gridBagConstraints.gridy = 2;
             gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
             gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 10);
             add(passwordLabel, gridBagConstraints);
 
             gridBagConstraints = new java.awt.GridBagConstraints();
+            gridBagConstraints.gridx = 1;
+            gridBagConstraints.gridy = 1;
             gridBagConstraints.gridwidth = 3;
             gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
             add(usernameTextField, gridBagConstraints);
 
             gridBagConstraints = new java.awt.GridBagConstraints();
             gridBagConstraints.gridx = 1;
-            gridBagConstraints.gridy = 1;
+            gridBagConstraints.gridy = 2;
             gridBagConstraints.gridwidth = 3;
             gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
             gridBagConstraints.ipadx = 100;
@@ -144,13 +157,23 @@ public class LoginScreenDisplayPresenter extends DisplayableDisplayPresenter {
 
         private void addLoginButton() {
             gridBagConstraints = new java.awt.GridBagConstraints();
-            gridBagConstraints.gridx = 3;
+            gridBagConstraints.gridx = 1;
             gridBagConstraints.gridy = 4;
+            gridBagConstraints.gridwidth = 2;
             gridBagConstraints.ipadx = 10;
-            gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+            gridBagConstraints.anchor = java.awt.GridBagConstraints.CENTER;
             gridBagConstraints.insets = new java.awt.Insets(10, 0, 0, 0);
             add(loginButton, gridBagConstraints);
-            loginButton.setText("Login"); //NOI18N
+        }
+
+        private void addLoginTitle() {
+            gridBagConstraints = new java.awt.GridBagConstraints();
+            gridBagConstraints.gridx = 0;
+            gridBagConstraints.gridy = 0;
+            gridBagConstraints.gridwidth = 4;
+            gridBagConstraints.anchor = java.awt.GridBagConstraints.CENTER;
+            gridBagConstraints.insets = new java.awt.Insets(0, 0, 10, 0);
+            add(loginTitleLabel, gridBagConstraints);
         }
 
         void updateView() {
@@ -207,14 +230,35 @@ public class LoginScreenDisplayPresenter extends DisplayableDisplayPresenter {
                         passwordTextField.setForeground(color);
                         loginButton.setForeground(color);
                     }
+                    
                     Boolean buttonUsed = (Boolean) component.readProperty(LoginScreenCD.PROP_USE_LOGIN_BUTTON).getPrimitiveValue();
                     if (buttonUsed == null) {
                         throw new IllegalArgumentException();
                     }
                     if (buttonUsed) {
                         addLoginButton();
+                        PropertyValue loginButtonPV = component.readProperty(LoginScreenCD.PROP_LOGIN_BUTTON_TEXT);
+                        if (loginButtonPV.getKind() == PropertyValue.Kind.VALUE) {
+                            loginButton.setText((String) loginButtonPV.getPrimitiveValue());
+                        } else if (loginButtonPV.getKind() == PropertyValue.Kind.USERCODE) {
+                            loginButton.setText(USER_CODE);
+                        } else {
+                            loginButton.setText(NULL_TEXT);
+                        }
                     } else {
                         remove(loginButton);
+                    }
+
+                    PropertyValue loginTitlePV = component.readProperty(LoginScreenCD.PROP_LOGIN_TITLE);
+                    if (loginTitlePV.getKind() == PropertyValue.Kind.NULL) {
+                        remove(loginTitleLabel);
+                    } else {
+                        addLoginTitle();
+                        if (loginTitlePV.getKind() == PropertyValue.Kind.VALUE) {
+                            loginTitleLabel.setText((String) loginTitlePV.getPrimitiveValue());
+                        } else if (loginTitlePV.getKind() == PropertyValue.Kind.USERCODE) {
+                            loginTitleLabel.setText(USER_CODE);
+                        }
                     }
                 }
             });

@@ -53,6 +53,9 @@ import java.io.IOException;
 import java.util.NoSuchElementException;
 import java.util.ResourceBundle;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import javax.lang.model.element.TypeElement;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -63,6 +66,7 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
+import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
@@ -75,7 +79,7 @@ import org.openide.util.NbBundle;
  */
 
 class TemplateWizardIterator implements WizardDescriptor.InstantiatingIterator {
-
+    private transient WizardDescriptor wiz;
     private transient WizardDescriptor.Panel superclassPanel;
     private transient boolean superclassPanelCurrent;
     private transient WizardDescriptor.InstantiatingIterator delegateIterator;
@@ -96,6 +100,7 @@ class TemplateWizardIterator implements WizardDescriptor.InstantiatingIterator {
     }
 
     public void initialize(WizardDescriptor wizard) {
+        wiz = wizard;
         delegateIterator.initialize(wizard);
         superclassPanelCurrent = false;
         if (superclassPanel == null && specifySuperclass) {
@@ -103,11 +108,11 @@ class TemplateWizardIterator implements WizardDescriptor.InstantiatingIterator {
             
             ResourceBundle bundle = NbBundle.getBundle(TemplateWizardIterator.class);
             JComponent comp = (JComponent)delegateIterator.current().getComponent();
-            String[] contentData = (String[])comp.getClientProperty("WizardPanel_contentData"); // NOI18N
+            String[] contentData = (String[])comp.getClientProperty(WizardDescriptor.PROP_CONTENT_DATA); // NOI18N
             String[] newContentData = new String[contentData.length+1];
             System.arraycopy(contentData, 0, newContentData, 0, contentData.length);
             newContentData[contentData.length] = bundle.getString("CTL_SuperclassTitle"); // NOI18N
-            comp.putClientProperty("WizardPanel_contentData", newContentData); // NOI18N
+            comp.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, newContentData); // NOI18N
         }    
     }
 
@@ -119,6 +124,11 @@ class TemplateWizardIterator implements WizardDescriptor.InstantiatingIterator {
     public Set instantiate() throws IOException, IllegalArgumentException {
         Set set = delegateIterator.instantiate();
         FileObject template = (FileObject) set.iterator().next();
+        Logger logger = Logger.getLogger("org.netbeans.ui.metrics.form"); // NOI18N
+        LogRecord rec = new LogRecord(Level.INFO, "USG_FORM_CREATED"); // NOI18N
+        rec.setLoggerName(logger.getName());
+        rec.setParameters(new Object[] {Templates.getTemplate(wiz).getName()});
+        logger.log(rec);
         
         if (specifySuperclass) {
             final String className = template.getName();
@@ -255,7 +265,7 @@ class TemplateWizardIterator implements WizardDescriptor.InstantiatingIterator {
         SuperclassPanel() {
             ResourceBundle bundle = NbBundle.getBundle(TemplateWizardIterator.class);
             setName(bundle.getString("CTL_SuperclassTitle")); // NOI18N
-            putClientProperty("WizardPanel_contentSelectedIndex", new Integer(1)); //NOI18N
+            putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer(1)); //NOI18N
             getAccessibleContext()
                 .setAccessibleDescription(bundle.getString("ACSD_SuperclassPanel")); // NOI18N
 

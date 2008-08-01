@@ -45,6 +45,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
@@ -53,6 +54,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.regex.*;
 import junit.framework.TestCase;
+import org.netbeans.modules.form.FormLAF;
 import org.netbeans.modules.form.FormModel;
 import org.netbeans.modules.form.GandalfPersistenceManager;
 import org.netbeans.modules.form.PersistenceException;
@@ -153,9 +155,11 @@ public abstract class LayoutTestCase extends TestCase {
         super.setUp();
         testSwitch = System.getProperty(LayoutDesigner.TEST_SWITCH);
         System.setProperty(LayoutDesigner.TEST_SWITCH, "true"); // NOI18N
+        hackFormLAF(true);
     }
 
     protected void tearDown() throws Exception {
+        hackFormLAF(false);
         if (testSwitch != null)
             System.setProperty(LayoutDesigner.TEST_SWITCH, testSwitch);
         else
@@ -163,22 +167,35 @@ public abstract class LayoutTestCase extends TestCase {
         super.tearDown();
     }
 
-    private void loadForm(FileObject file) {
+    private void hackFormLAF(boolean b) {
+        try {
+            Field f = FormLAF.class.getDeclaredField("preview"); // NOI18N
+            f.setAccessible(true);
+            f.setBoolean(null, b);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    private void loadForm(final FileObject file) {
         FormModel fm = null;
         GandalfPersistenceManager gpm = new GandalfPersistenceManager();
-        List errors = new ArrayList();
+        List<Throwable> errors = new ArrayList<Throwable>();
         try {
             fm = gpm.loadForm(file, file, null, errors);
         } catch (PersistenceException pe) {
             fail(pe.toString());
         }
-        
+
         if (errors.size() > 0) {
-            System.out.println("There were errors while loading the form: " + errors);
+            System.out.println("There were errors while loading the form: ");
+            for (Throwable er : errors) {
+                er.printStackTrace();
+            }
         }
-        
+
         lm = fm.getLayoutModel();
-        
+
         ld = new LayoutDesigner(lm, new FakeLayoutMapper(fm,
                                                          contInterior,
                                                          baselinePosition,

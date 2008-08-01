@@ -133,14 +133,14 @@ public class RetoucheUtils {
     }
     
     public static BaseDocument getDocument(CompilationInfo info, FileObject fo) {
-        try {
-            BaseDocument doc = null;
+        BaseDocument doc = null;
 
-            if (info != null) {
-                doc = (BaseDocument)info.getDocument();
-            }
+        if (info != null) {
+            doc = (BaseDocument)info.getDocument();
+        }
 
-            if (doc == null) {
+        if (doc == null) {
+            try {
                 // Gotta open it first
                 DataObject od = DataObject.find(fo);
                 EditorCookie ec = od.getCookie(EditorCookie.class);
@@ -148,16 +148,13 @@ public class RetoucheUtils {
                 if (ec != null) {
                     doc = (BaseDocument)ec.openDocument();
                 }
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
             }
-
-            return doc;
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-
-            return null;
         }
+
+        return doc;
     }
-    
     
     /** Compute the names (full and simple, e.g. Foo::Bar and Bar) for the given node, if any, and return as 
      * a String[2] = {name,simpleName} */
@@ -425,7 +422,11 @@ public class RetoucheUtils {
             if (fo!=null)
                 p=FileOwnerQuery.getOwner(fo);
             if (p!=null) {
-                URL sourceRoot = URLMapper.findURL(ClassPath.getClassPath(fo, ClassPath.SOURCE).findOwnerRoot(fo), URLMapper.INTERNAL);
+                ClassPath classPath = ClassPath.getClassPath(fo, ClassPath.SOURCE);
+                if (classPath == null) {
+                    return null;
+                }
+                URL sourceRoot = URLMapper.findURL(classPath.findOwnerRoot(fo), URLMapper.INTERNAL);
                 dependentRoots.addAll(SourceUtils.getDependentRoots(sourceRoot));
                 for (SourceGroup root:ProjectUtils.getSources(p).getSourceGroups(RubyProject.SOURCES_TYPE_RUBY)) {
                     dependentRoots.add(URLMapper.findURL(root.getRootFolder(), URLMapper.INTERNAL));
@@ -452,9 +453,12 @@ public class RetoucheUtils {
     }
     
     public static List<FileObject> getRubyFilesInProject(FileObject fileInProject) {
-        ClasspathInfo cpInfo = RetoucheUtils.getClasspathInfoFor(fileInProject);
-        ClassPath cp = cpInfo.getClassPath(ClasspathInfo.PathKind.SOURCE);
         List<FileObject> list = new ArrayList<FileObject>(100);
+        ClasspathInfo cpInfo = RetoucheUtils.getClasspathInfoFor(fileInProject);
+        if (cpInfo == null) {
+            return list;
+        }
+        ClassPath cp = cpInfo.getClassPath(ClasspathInfo.PathKind.SOURCE);
         for (ClassPath.Entry entry : cp.entries()) {
             FileObject root = entry.getRoot();
             String name = root.getName();

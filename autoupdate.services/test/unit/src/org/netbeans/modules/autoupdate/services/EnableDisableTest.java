@@ -42,6 +42,7 @@
 package org.netbeans.modules.autoupdate.services;
 
 import org.netbeans.api.autoupdate.UpdateUnit;
+import org.netbeans.junit.RandomlyFails;
 
 /**
  *
@@ -56,7 +57,8 @@ public class EnableDisableTest extends OperationsTestImpl {
     protected String moduleCodeNameBaseForTest() {
         return "org.yourorghere.independent";//NOI18N
     } 
-    
+
+    @RandomlyFails
     public void testSelf() throws Exception {
         UpdateUnit toEnable = UpdateManagerImpl.getInstance().getUpdateUnit(moduleCodeNameBaseForTest());
         assertNotNull(toEnable);

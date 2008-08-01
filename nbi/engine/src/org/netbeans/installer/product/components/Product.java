@@ -36,6 +36,8 @@
 
 package org.netbeans.installer.product.components;
 
+import org.netbeans.installer.utils.cli.options.ForceUninstallOption;
+import org.netbeans.installer.utils.cli.options.TargetOption;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
@@ -52,6 +54,7 @@ import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.helper.DependencyType;
 import org.netbeans.installer.utils.helper.DetailedStatus;
 import org.netbeans.installer.utils.helper.RemovalMode;
+import org.netbeans.installer.utils.cli.*;
 import org.netbeans.installer.utils.helper.Status;
 import org.netbeans.installer.utils.FileProxy;
 import org.netbeans.installer.utils.ErrorManager;
@@ -88,7 +91,7 @@ import org.w3c.dom.Element;
  *
  * @author Kirill Sorokin
  */
-public final class Product extends RegistryNode {
+public final class Product extends RegistryNode implements StatusInterface {
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
     private Version version;
@@ -129,6 +132,7 @@ public final class Product extends RegistryNode {
     
     // essential functionality //////////////////////////////////////////////////////
     public void install(final Progress progress) throws InstallationException {
+        LogManager.logIndent("Start installation of " + getDisplayName() + "(" + getUid() + "/" + getVersion()+")");
         final CompositeProgress totalProgress = new CompositeProgress();
         final CompositeProgress unjarProgress = new CompositeProgress();
         final Progress          logicProgress = new Progress();
@@ -244,7 +248,7 @@ public final class Product extends RegistryNode {
                         ERROR_CANNOT_WRAP_FOR_MACOS_KEY), e);
             }
         }
-        
+        LogManager.log("... extracting files from the data archives");
         // extract each of the defined installation data files
         unjarProgress.setPercentage(Progress.COMPLETE % dataUris.size());
         unjarProgress.synchronizeDetails(true);
@@ -306,7 +310,7 @@ public final class Product extends RegistryNode {
                         e);
             }
         }
-        
+        LogManager.log("... saving legal artifacts if required");
         // create legal/docs artifacts
         progress.setDetail(StringUtils.format(MESSAGE_LEGAL_ARTIFACTS_STRING));
         try {
@@ -326,6 +330,8 @@ public final class Product extends RegistryNode {
         
         // run custom configuration logic
         progress.setDetail(StringUtils.format(MESSAGE_RUN_LOGIC_STRING));
+        
+        LogManager.log("... running installation logic");
         configurationLogic.install(logicProgress);
         logicProgress.setPercentage(Progress.COMPLETE);
         progress.setDetail(StringUtils.EMPTY_STRING);
@@ -335,19 +341,23 @@ public final class Product extends RegistryNode {
         
         // finalization phase ///////////////////////////////////////////////////////
         installationPhase = InstallationPhase.FINALIZATION;
-        
+        LogManager.log("... register in system, create uninstaller, etc");
         // register the component in the system install manager
         if (configurationLogic.registerInSystem()) {
             try {
                 progress.setDetail(StringUtils.format(MESSAGE_SYSTEM_REGISTRATION_STRING));
-                SystemUtils.addComponentToSystemInstallManager(getApplicationDescriptor());
+                installedFiles.add(SystemUtils.addComponentToSystemInstallManager(getApplicationDescriptor()));
             } catch (NativeException e) {
+                throw new InstallationException(ResourceUtils.getString(Product.class,
+                        ERROR_SYSTEM_INTEGRATION_FAILER_KEY,
+                        getDisplayName()),e);
+            } catch (IOException e) {
                 throw new InstallationException(ResourceUtils.getString(Product.class,
                         ERROR_SYSTEM_INTEGRATION_FAILER_KEY,
                         getDisplayName()),e);
             }
         }
-        
+        LogManager.log("... save installation files list");
         // save the installed files list
         progress.setDetail(StringUtils.format(MESSAGE_SAVE_INSTALL_FILES_LIST_STRING));
         try {
@@ -360,14 +370,16 @@ public final class Product extends RegistryNode {
         
         installationPhase = InstallationPhase.COMPLETE;
         progress.setPercentage(Progress.COMPLETE);
+        progress.setDetail(StringUtils.EMPTY_STRING);
         setStatus(Status.INSTALLED);
+        LogManager.logUnindent("... finished installation of " + getDisplayName() + "(" + getUid() + "/" + getVersion()+")");
     }
     
     public void rollback(final Progress progress) throws UninstallationException {
         final CompositeProgress totalProgress = new CompositeProgress();
         final Progress          logicProgress = new Progress();
         final Progress          eraseProgress = new Progress();
-        
+        LogManager.logIndent("Start rollback of " + getDisplayName() + "(" + getUid() + "/" + getVersion()+")");
         // initialization ///////////////////////////////////////////////////////////
         
         // load the component's configuration logic (it should be already
@@ -402,6 +414,7 @@ public final class Product extends RegistryNode {
         switch (installationPhase) {
             case COMPLETE:
             case FINALIZATION:
+                LogManager.log("... deleting installed files files");
                 try {
                     FileUtils.deleteFile(getInstalledFilesList());
                 } catch (IOException e) {
@@ -410,6 +423,7 @@ public final class Product extends RegistryNode {
                 }
                 
                 if (configurationLogic.registerInSystem()) {
+                    LogManager.log("... removing system integration");
                     try {
                         SystemUtils.removeComponentFromSystemInstallManager(getApplicationDescriptor());
                     } catch (NativeException e) {
@@ -420,11 +434,12 @@ public final class Product extends RegistryNode {
                 }
                 
             case CUSTOM_LOGIC:
+                LogManager.log("... running uninstallation logic");
                 configurationLogic.uninstall(logicProgress);
                 
             case EXTRACTION:
                 logicProgress.setPercentage(Progress.COMPLETE);
-                
+                LogManager.log("... deleting installed files");
                 // remove installation files
                 int total   = installedFiles.getSize();
                 int current = 0;
@@ -453,9 +468,11 @@ public final class Product extends RegistryNode {
             default:
                 // default, nothing should be done here
         }
+        LogManager.logUnindent("... finished rollbacking of " + getDisplayName() + "(" + getUid() + "/" + getVersion()+")");
     }
     
     public void uninstall(final Progress progress) throws UninstallationException {
+        LogManager.logIndent("Start uninstallation of " + getDisplayName() + "(" + getUid() + "/" + getVersion()+")");
         final CompositeProgress totalProgress = new CompositeProgress();
         final Progress logicProgress = new Progress();
         final Progress eraseProgress = new Progress();
@@ -495,6 +512,7 @@ public final class Product extends RegistryNode {
                 MESSAGE_UNCONFIGURATION_STRING, getDisplayName()));
         
         // run custom unconfiguration logic
+        LogManager.log("... running uninstallation logic");
         configurationLogic.uninstall(logicProgress);
         logicProgress.setPercentage(Progress.COMPLETE);
         progress.setDetail(StringUtils.EMPTY_STRING);
@@ -504,6 +522,7 @@ public final class Product extends RegistryNode {
                 MESSAGE_UNINSTALLATION_STRING, getDisplayName()));
         
         // remove installation files
+        LogManager.log("... removing installation files");
         if (configurationLogic.getRemovalMode() == RemovalMode.ALL) {
             try {
                 File startPoint = getInstallationLocation();
@@ -530,7 +549,7 @@ public final class Product extends RegistryNode {
                         e));
             }
         }
-        
+        LogManager.log("... removing the system integration");
         // remove the component from the native install manager
         if (configurationLogic.registerInSystem()) {
             try {
@@ -542,7 +561,7 @@ public final class Product extends RegistryNode {
                         getDisplayName()), e));
             }
         }
-        
+        LogManager.log("... removing installation files list");
         progress.setDetail(StringUtils.EMPTY_STRING);
         // remove the files list
         try {
@@ -555,6 +574,7 @@ public final class Product extends RegistryNode {
         
         progress.setPercentage(Progress.COMPLETE);
         setStatus(Status.NOT_INSTALLED);
+        LogManager.logUnindent("...finished uninstallation of " + getDisplayName() + "(" + getUid() + "/" + getVersion()+")");
     }
     
     // configuration logic //////////////////////////////////////////////////////////
@@ -635,7 +655,13 @@ public final class Product extends RegistryNode {
         } catch (IllegalAccessException e) {
             throw new InitializationException(ResourceUtils.getString(Product.class,
                     ERROR_CANNOT_LOAD_LOGIC_KEY, getDisplayName()), e);
-        }
+        } catch (NoClassDefFoundError e) {
+            throw new InitializationException(ResourceUtils.getString(Product.class,
+                    ERROR_CANNOT_LOAD_LOGIC_KEY, getDisplayName()), e);
+        } catch (UnsupportedClassVersionError e) {
+            throw new InitializationException(ResourceUtils.getString(Product.class,
+                    ERROR_CANNOT_LOAD_LOGIC_KEY, getDisplayName()), e);
+        } 
     }
     
     // installation data ////////////////////////////////////////////////////////////
@@ -842,7 +868,7 @@ public final class Product extends RegistryNode {
         return PRODUCT_TAG_NAME;
     }
     
-    public Element saveToDom(final Element element) throws FinalizationException {
+    protected Element saveToDom(final Element element) throws FinalizationException {
         super.saveToDom(element);
         
         final Document document = element.getOwnerDocument();
@@ -1007,10 +1033,10 @@ public final class Product extends RegistryNode {
         }
         
         final String[] modifyCommand = new String[] {
-            Installer.TARGET_ARG, uid, version.toString()};
+            TargetOption.TARGET_ARG, uid, version.toString()};
         
         final String[] uninstallCommand = new String[] {
-            Installer.TARGET_ARG, uid, version.toString(), Installer.FORCE_UNINSTALL_ARG};
+            TargetOption.TARGET_ARG, uid, version.toString(), ForceUninstallOption.FORCE_UNINSTALL_ARG};
         
         if (configurationLogic.allowModifyMode()) {
             return new ApplicationDescriptor(

@@ -42,10 +42,8 @@
 package org.netbeans.modules.websvc.wsitmodelext.security.impl;
 
 import org.netbeans.modules.websvc.wsitmodelext.security.SecurityPolicyAttribute;
-import org.netbeans.modules.websvc.wsitmodelext.security.SecurityPolicyQName;
 import org.netbeans.modules.websvc.wsitmodelext.security.SignedElements;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import org.netbeans.modules.xml.wsdl.model.visitor.WSDLVisitor;
 import org.w3c.dom.Element;
 
 /**
@@ -59,15 +57,6 @@ public class SignedElementsImpl extends SecurityPolicyComponentImpl implements S
      */
     public SignedElementsImpl(WSDLModel model, Element e) {
         super(model, e);
-    }
-    
-    public SignedElementsImpl(WSDLModel model){
-        this(model, createPrefixedElement(SecurityPolicyQName.SIGNEDELEMENTS.getQName(), model));
-    }
-
-    @Override
-    public void accept(WSDLVisitor visitor) {
-        visitor.visit(this);
     }
 
     public void setXpathVersion(String xPathVersion) {

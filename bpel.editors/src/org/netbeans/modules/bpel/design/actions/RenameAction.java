@@ -6,6 +6,10 @@ package org.netbeans.modules.bpel.design.actions;
 
 import java.awt.event.ActionEvent;
 import org.netbeans.modules.bpel.design.DesignView;
+import org.netbeans.modules.bpel.design.DiagramView;
+import org.netbeans.modules.bpel.design.NameEditor;
+import org.netbeans.modules.bpel.design.model.patterns.Pattern;
+import org.netbeans.modules.bpel.design.selection.EntitySelectionModel;
 
 /**
  *
@@ -24,6 +28,23 @@ public class RenameAction extends DesignModeAction {
         if (getDesignView().getModel().isReadOnly()) {
             return;
         }
-        //FIXME getDesignView().getNameEditor().startEdit(getSelectionModel().getSelectedPattern());
+        
+        Pattern currentPattern = null;
+        DesignView design = getDesignView();
+        EntitySelectionModel selModel = design == null 
+                        ? null : design.getSelectionModel();
+        currentPattern = selModel == null ? null : selModel.getSelectedPattern();
+        DiagramView diagram = null;
+        if (currentPattern != null) {
+            diagram = currentPattern.getView();
+        }
+        
+        NameEditor nameEditor = null;
+        if (diagram != null) {
+            nameEditor = diagram.getNameEditor();
+        }
+        if (nameEditor != null) {
+            nameEditor.startEdit(currentPattern);
+        }
     }
 }

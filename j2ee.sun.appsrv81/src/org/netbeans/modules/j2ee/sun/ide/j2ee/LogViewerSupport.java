@@ -119,9 +119,6 @@ public final class LogViewerSupport extends Thread {
             logViewer.startAtBeginning = startAtBeginning;
             Deployment.getDefault().addInstanceListener(new InstanceListener() {
 
-                public void changeDefaultInstance(String oldServerInstanceID, String newServerInstanceID) {
-                }
-
                 public void instanceAdded(String serverInstanceID) {
                 }
 

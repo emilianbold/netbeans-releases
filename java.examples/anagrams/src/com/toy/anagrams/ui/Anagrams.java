@@ -35,8 +35,6 @@ import com.toy.anagrams.lib.WordLibrary;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Toolkit;
-import java.awt.event.ActionListener;
-import java.awt.event.WindowListener;
 import javax.swing.JFrame;
 
 /**
@@ -49,12 +47,15 @@ public class Anagrams extends JFrame {
     }
 
     private int wordIdx = 0;
+    private WordLibrary wordLibrary;
 
     /** Creates new form Anagrams */
     public Anagrams() {
+        wordLibrary = WordLibrary.getDefault();
+        
         initComponents();
         getRootPane().setDefaultButton(guessButton);
-        scrambledWord.setText(WordLibrary.getScrambledWord(wordIdx));
+        scrambledWord.setText(wordLibrary.getScrambledWord(wordIdx));
         pack();
         guessedWord.requestFocusInWindow();
         // Center in the screen
@@ -63,7 +64,7 @@ public class Anagrams extends JFrame {
         setLocation(new Point((screenSize.width - frameSize.width) / 2,
                               (screenSize.height - frameSize.width) / 2));
     }
-
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -218,10 +219,10 @@ public class Anagrams extends JFrame {
     }//GEN-LAST:event_aboutMenuItemActionPerformed
 
     private void nextTrialActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_nextTrialActionPerformed
-        wordIdx = (wordIdx + 1) % WordLibrary.getSize();
+        wordIdx = (wordIdx + 1) % wordLibrary.getSize();
 
         feedbackLabel.setText(" ");
-        scrambledWord.setText(WordLibrary.getScrambledWord(wordIdx));
+        scrambledWord.setText(wordLibrary.getScrambledWord(wordIdx));
         guessedWord.setText("");
         getRootPane().setDefaultButton(guessButton);
 
@@ -233,7 +234,7 @@ public class Anagrams extends JFrame {
     }//GEN-LAST:event_exitMenuItemActionPerformed
 
     private void guessedWordActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_guessedWordActionPerformed
-        if (WordLibrary.isCorrect(wordIdx, guessedWord.getText())){
+        if (wordLibrary.isCorrect(wordIdx, guessedWord.getText())){
             feedbackLabel.setText("Correct! Try a new word!");
             getRootPane().setDefaultButton(nextTrial);
         } else {

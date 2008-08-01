@@ -6,18 +6,6 @@
             <name>nb_svg_midp_components</name>
             <minimum-ant-version>1.6</minimum-ant-version>
         </data>
-        <references xmlns="http://www.netbeans.org/ns/ant-project-references/2">
-            <reference>
-                <foreign-project>nb_midp_components</foreign-project>
-                <artifact-type>jar</artifact-type>
-                <script>${project.nb_midp_components}/build.xml</script>
-                <target>jar</target>
-                <clean-target>clean</clean-target>
-                <id>jar</id>
-                <properties>
-                    <property name="config.active"/>
-                </properties>
-            </reference>
-        </references>
+        <references xmlns="http://www.netbeans.org/ns/ant-project-references/2"/>
     </configuration>
 </project>

@@ -23,8 +23,8 @@ package org.netbeans.modules.compapp.projects.base.ui.wizards;
 import org.netbeans.modules.compapp.projects.base.ui.customizer.IcanproProjectProperties;
 import org.openide.WizardDescriptor;
 
-class PanelOptionsVisual
-    extends javax.swing.JPanel
+public class PanelOptionsVisual
+    extends SettingsPanel
     implements org.netbeans.modules.compapp.projects.base.IcanproConstants {
 
 //    private static boolean lastMainClassCheck = false; // XXX Store somewhere
@@ -63,16 +63,16 @@ class PanelOptionsVisual
 
     }// </editor-fold>//GEN-END:initComponents
     
-    boolean valid(WizardDescriptor wizardDescriptor) {
+    public boolean valid(WizardDescriptor wizardDescriptor) {
         return true;
     }
 
-    void store(WizardDescriptor d) {
+    public void store(WizardDescriptor d) {
         d.putProperty(WizardProperties.SET_AS_MAIN, setAsMainCheckBox.isSelected() ? Boolean.TRUE : Boolean.FALSE );
         d.putProperty(WizardProperties.J2EE_LEVEL, j2eeLevel);
     }
     
-    void read(WizardDescriptor d) {
+    public void read(WizardDescriptor d) {
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables

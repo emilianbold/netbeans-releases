@@ -51,23 +51,21 @@ import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.modules.turbo.Turbo;
 import org.netbeans.modules.turbo.CustomProviders;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import java.util.*;
 import org.netbeans.modules.subversion.client.SvnClient;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
-import org.netbeans.modules.versioning.util.Utils;
-import org.openide.filesystems.FileSystem;
+import org.netbeans.modules.subversion.client.SvnClientFactory;
 import org.openide.util.RequestProcessor;
 import org.tigris.subversion.svnclientadapter.*;
 import org.tigris.subversion.svnclientadapter.ISVNStatus;
+import org.tigris.subversion.svnclientadapter.SVNRevision.Number;
 
 /**
  * Central part of Subversion status management, deduces and caches statuses of files under version control.
  * 
  * @author Maros Sandor
  */
-public class FileStatusCache implements ISVNNotifyListener {
+public class FileStatusCache {
 
     /**
      * Indicates that status of a file changed and listeners SHOULD check new status 
@@ -122,23 +120,36 @@ public class FileStatusCache implements ISVNNotifyListener {
      */
     private final String FILE_STATUS_MAP = DiskMapTurboProvider.ATTR_STATUS_MAP;
 
-    private DiskMapTurboProvider    cacheProvider;
-    
-    private Subversion     svn;
-    
-    private Set<FileSystem> filesystemsToRefresh;
-    
-    private RequestProcessor.Task refreshFilesystemsTask;    
+    private DiskMapTurboProvider        cacheProvider;    
+    private Subversion                  svn;
+
+    private RequestProcessor rp = new RequestProcessor("Subversion - file status refresh", 1); // NOI18N    
+    private Set<File> filesToRefresh = new HashSet<File>();
+    private RequestProcessor.Task refreshTask;
     
     FileStatusCache() {
         this.svn = Subversion.getInstance();
         cacheProvider = new DiskMapTurboProvider();
+        
         turbo = Turbo.createCustom(new CustomProviders() {
             private final Set providers = Collections.singleton(cacheProvider);
             public Iterator providers() {
                 return providers.iterator();
             }
         }, 200, 5000);
+    
+        refreshTask = rp.create( new Runnable() {
+            public void run() {
+                File[] fileArray;            
+                synchronized(filesToRefresh) {
+                    fileArray = filesToRefresh.toArray(new File[filesToRefresh.size()]);
+                    filesToRefresh.clear();
+                }    
+                for (File file : fileArray) {
+                    refresh(file, REPOSITORY_STATUS_UNKNOWN);
+                }
+            }
+        });
     }
 
     // --- Public interface -------------------------------------------------
@@ -247,7 +258,7 @@ public class FileStatusCache implements ISVNNotifyListener {
      * @see FileInformation
      */ 
     public FileInformation getStatus(File file) {
-        if (svn.isAdministrative(file)) return FILE_INFORMATION_NOTMANAGED_DIRECTORY;
+        if (SvnUtils.isAdministrative(file)) return FILE_INFORMATION_NOTMANAGED_DIRECTORY;
         File dir = file.getParentFile();
         if (dir == null) {
             return FILE_INFORMATION_NOTMANAGED; //default for filesystem roots 
@@ -267,7 +278,7 @@ public class FileStatusCache implements ISVNNotifyListener {
     }
 
     /**
-     * Looks up cacnehed file status.
+     * Looks up cached file status.
      * 
      * @param file file to check
      * @return give file's status or null if the file's status is not in cache
@@ -279,6 +290,83 @@ public class FileStatusCache implements ISVNNotifyListener {
         return files != null ? files.get(file) : null;
     }
 
+    /**
+     * 
+     * Refreshes the given files asynchrously
+     * 
+     * @param files files to be refreshed
+     */
+    public void refreshAsync(List<File> files) {
+        refreshAsync(false, files.toArray(new File[files.size()]));
+    }
+    
+    /**
+     * 
+     * Refreshes the given files asynchrously
+     * 
+     * @param files files to be refreshed
+     */
+    public void refreshAsync(File... files) {
+        refreshAsync(false, files);
+    }
+    
+    /**
+     * 
+     * Refreshes the given files asynchrously
+     * 
+     * @param files files to be refreshed
+     * @param recursively if true all children are also refreshed
+     */
+    public void refreshAsync(boolean recursively, File... files) {
+        synchronized(filesToRefresh) {
+            for (File file : files) {                
+                if(recursively) {
+                    filesToRefresh.addAll(SvnUtils.listRecursively(file));
+                } else {
+                    filesToRefresh.add(file);    
+                }
+            }                
+        }
+        refreshTask.schedule(200);
+    }
+
+    /**
+     * Refreshes the status of the file given the repository status. Repository status is filled
+     * in when this method is called while processing server output. 
+     *
+     * @param file
+     * @param repositoryStatus
+     */ 
+    public FileInformation refresh(File file, ISVNStatus repositoryStatus) {
+        return refresh(file, repositoryStatus, false);
+    }
+    
+    /**
+     * Refreshes status of all files inside given context. Files that have some remote status, eg. REMOTELY_ADDED
+     * are brought back to UPTODATE.
+     * 
+     * @param ctx context to refresh
+     */ 
+    public void refreshCached(Context ctx) {
+        File [] files = listFiles(ctx, ~0);
+        for (int i = 0; i < files.length; i++) {
+            File file = files[i];
+            refresh(file, REPOSITORY_STATUS_UNKNOWN);
+        }
+    }
+    
+    /**
+     * Refreshes the status for the given file and all its children
+     * 
+     * @param root
+     */
+    public void refreshRecursively(File root) {  
+        List<File> files = SvnUtils.listRecursively(root);
+        for (File file : files) {
+            refresh(file, REPOSITORY_STATUS_UNKNOWN);
+        }        
+    }    
+    
     private FileInformation refresh(File file, ISVNStatus repositoryStatus, boolean forceChangeEvent) {
         
         boolean refreshDone = false;
@@ -365,21 +453,27 @@ public class FileStatusCache implements ISVNNotifyListener {
             fireFileStatusChanged(file, current, fi);    
         }                       
         return fi;
-    }
+    }    
 
-    /**
-     * Refreshes the status of the file given the repository status. Repository status is filled
-     * in when this method is called while processing server output. 
-     *
-     * <p>Note: it's not necessary if you use Subversion.getClient(), it
-     * updates the cache automatically using onNotify(). It's not
-     * fully reliable for removed files.
-     *
-     * @param file
-     * @param repositoryStatus
-     */ 
-    public FileInformation refresh(File file, ISVNStatus repositoryStatus) {
-        return refresh(file, repositoryStatus, false);
+    public void patchRevision(File[] fileArray, Number revision) {        
+        for (File file : fileArray) {            
+            synchronized(this) {        
+                FileInformation status = getCachedStatus(file);
+                ISVNStatus entry = status != null ? status.getEntry(file) : null;
+                if(entry != null) {
+                    Number rev = entry.getRevision();
+                    if(rev == null) continue;
+                    if(rev.getNumber() != revision.getNumber()) {
+                        FileInformation info = createFileInformation(file, new FakeRevisionStatus(entry, revision), REPOSITORY_STATUS_UNKNOWN);
+                        File dir = file.getParentFile();
+                        Map<File, FileInformation> files = getScannedFiles(dir);
+                        Map<File, FileInformation> newFiles = new HashMap<File, FileInformation>(files);
+                        newFiles.put(file, info);
+                        turbo.writeEntry(dir, FILE_STATUS_MAP, newFiles.size() == 0 ? null : newFiles);
+                    }
+                }
+            }
+        }
     }
     
     /**
@@ -425,7 +519,6 @@ public class FileStatusCache implements ISVNNotifyListener {
     }
     
     private boolean needRecursiveRefresh(FileInformation fi, FileInformation current) {
-        // XXX review this part and see also the places where svnutils.refreshrecursively is called.
         //     looks like the same thing is done at diferent places in a different way but the same result.
         if (fi.getStatus() == FileInformation.STATUS_NOTVERSIONED_EXCLUDED || 
                 current != null && current.getStatus() == FileInformation.STATUS_NOTVERSIONED_EXCLUDED) return true;
@@ -434,33 +527,6 @@ public class FileStatusCache implements ISVNNotifyListener {
         if (fi.getStatus() == FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY ||
                 current != null && current.getStatus() == FileInformation.STATUS_VERSIONED_ADDEDLOCALLY) return true;        
         return false;
-    }
-
-    /**
-     * Refreshes information about a given file or directory ONLY if its status is already cached. The
-     * only exception are non-existing files (new-in-repository) whose statuses are cached in all cases. 
-     *  
-     * @param file
-     * @param repositoryStatus
-     */ 
-    public void refreshCached(File file, ISVNStatus repositoryStatus) {
-        refresh(file, repositoryStatus);
-    }
-
-    /**
-     * Refreshes status of all files inside given context. Files that have some remote status, eg. REMOTELY_ADDED
-     * are brought back to UPTODATE.
-     * 
-     * @param ctx context to refresh
-     */ 
-    public void refreshCached(Context ctx) {
-        
-        File [] files = listFiles(ctx, ~0);
-        
-        for (int i = 0; i < files.length; i++) {
-            File file = files[i];
-            refreshCached(file, REPOSITORY_STATUS_UNKNOWN);
-        }
     }
     
     // --- Package private contract ------------------------------------------
@@ -511,11 +577,11 @@ public class FileStatusCache implements ISVNNotifyListener {
 
         // there are 2nd level nested admin dirs (.svn/tmp, .svn/prop-base, ...)
 
-        if (svn.isAdministrative(dir)) {
+        if (SvnUtils.isAdministrative(dir)) {
             return NOT_MANAGED_MAP;
         }
         File parent = dir.getParentFile();
-        if (parent != null && svn.isAdministrative(parent)) {
+        if (parent != null && SvnUtils.isAdministrative(parent)) {
             return NOT_MANAGED_MAP;
         }
 
@@ -557,10 +623,10 @@ public class FileStatusCache implements ISVNNotifyListener {
         Map<File, FileInformation> folderFiles = new HashMap<File, FileInformation>(files.length);
 
         ISVNStatus [] entries = null;
-        try {            
-            if (Subversion.getInstance().isManaged(dir)) {
-                SvnClient client = Subversion.getInstance().getClient(true); 
-                entries = client.getStatus(dir, false, false); 
+        try {
+            if (SvnUtils.isManaged(dir)) {                
+                SvnClient client = Subversion.getInstance().getClient(true);
+                entries = client.getStatus(dir, false, true); 
             }
         } catch (SVNClientException e) {
             // no or damaged entries
@@ -571,7 +637,7 @@ public class FileStatusCache implements ISVNNotifyListener {
         if (entries == null) {
             for (int i = 0; i < files.length; i++) {
                 File file = files[i];
-                if (svn.isAdministrative(file)) continue;
+                if (SvnUtils.isAdministrative(file)) continue;
                 FileInformation fi = createFileInformation(file, null, REPOSITORY_STATUS_UNKNOWN);
                 if (fi.isDirectory() || fi.getStatus() != FileInformation.STATUS_VERSIONED_UPTODATE) {
                     folderFiles.put(file, fi);
@@ -586,7 +652,7 @@ public class FileStatusCache implements ISVNNotifyListener {
                     continue;
                 }
                 localFiles.remove(file);
-                if (svn.isAdministrative(file)) {
+                if (SvnUtils.isAdministrative(file)) {
                     continue;
                 }
                 FileInformation fi = createFileInformation(file, entry, REPOSITORY_STATUS_UNKNOWN);
@@ -616,7 +682,7 @@ public class FileStatusCache implements ISVNNotifyListener {
      */ 
     private FileInformation createFileInformation(File file, ISVNStatus status, ISVNStatus repositoryStatus) {
         if (status == null || status.getTextStatus().equals(SVNStatusKind.UNVERSIONED)) {
-            if (!svn.isManaged(file)) {
+            if (!SvnUtils.isManaged(file)) {
                 return file.isDirectory() ? FILE_INFORMATION_NOTMANAGED_DIRECTORY : FILE_INFORMATION_NOTMANAGED;
             }
             return createMissingEntryFileInformation(file, repositoryStatus);
@@ -648,16 +714,18 @@ public class FileStatusCache implements ISVNNotifyListener {
             } else if (repositoryStatus.getRepositoryTextStatus() == SVNStatusKind.ADDED
             /*|| repositoryStatus.getRepositoryPropStatus() == SVNStatusKind.ADDED*/) {
                 // solved in createMissingfileInformation
-            } else if (repositoryStatus.getRepositoryTextStatus() == null
-            && repositoryStatus.getRepositoryPropStatus() == null) {
+            } else if ( (repositoryStatus.getRepositoryTextStatus() == null &&
+                         repositoryStatus.getRepositoryPropStatus() == null)
+                        ||
+                        (repositoryStatus.getRepositoryTextStatus() == SVNStatusKind.NONE &&
+                         repositoryStatus.getRepositoryPropStatus() == SVNStatusKind.NONE))
+            {
                 // no remote change at all
             } else {
-                // TODO systematically handle all repository statuses
                 // so far above were observed....
-                // XXX
-                System.err.println("SVN.FSC: unhandled repository status: " + file.getAbsolutePath()); // NOI18N
-                System.err.println("\ttext: " + repositoryStatus.getRepositoryTextStatus()); // NOI18N
-                System.err.println("\tprop: " + repositoryStatus.getRepositoryPropStatus()); // NOI18N
+                Subversion.LOG.warning("SVN.FSC: unhandled repository status: " + file.getAbsolutePath() + "\n" +   // NOI18N
+                                       "\ttext: " + repositoryStatus.getRepositoryTextStatus() + "\n" +             // NOI18N
+                                       "\tprop: " + repositoryStatus.getRepositoryPropStatus());                    // NOI18N
             }
         }
         
@@ -694,8 +762,7 @@ public class FileStatusCache implements ISVNNotifyListener {
             return new FileInformation(FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY | remoteStatus, status);
         } else if (SVNStatusKind.MISSING.equals(kind)) {            
             return new FileInformation(FileInformation.STATUS_VERSIONED_DELETEDLOCALLY | remoteStatus, status);
-        } else if (SVNStatusKind.REPLACED.equals(kind)) {            
-            // XXX  create new status constant? Is it neccesary to visualize
+        } else if (SVNStatusKind.REPLACED.equals(kind)) {                      
             // this status or better to use this simplyfication?
             return new FileInformation(FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY | remoteStatus, status);
         } else if (SVNStatusKind.MERGED.equals(kind)) {            
@@ -703,15 +770,12 @@ public class FileStatusCache implements ISVNNotifyListener {
         } else if (SVNStatusKind.CONFLICTED.equals(kind)) {            
             return new FileInformation(FileInformation.STATUS_VERSIONED_CONFLICT | remoteStatus, status);
         } else if (SVNStatusKind.OBSTRUCTED.equals(kind)) {            
-            // TODO: create new status constant?
             return new FileInformation(FileInformation.STATUS_VERSIONED_CONFLICT | remoteStatus, status);
         } else if (SVNStatusKind.IGNORED.equals(kind)) {            
             return new FileInformation(FileInformation.STATUS_NOTVERSIONED_EXCLUDED | remoteStatus, status);
         } else if (SVNStatusKind.INCOMPLETE.equals(kind)) {            
-            // TODO: create new status constant?
             return new FileInformation(FileInformation.STATUS_VERSIONED_CONFLICT | remoteStatus, status);
         } else if (SVNStatusKind.EXTERNAL.equals(kind)) {            
-            // TODO: create new status constant?
             return new FileInformation(FileInformation.STATUS_VERSIONED_UPTODATE | remoteStatus, status);
         } else {        
             throw new IllegalArgumentException("Unknown text status: " + status.getTextStatus()); // NOI18N
@@ -753,16 +817,12 @@ public class FileStatusCache implements ISVNNotifyListener {
         // I source.java.r45
         // I source.java.r57
         //
-        // XXX:svnClientAdapter design:  why is not it returned from getSingleStatus() ?
-        //
         // after-merge conflicts (even svn st does not recognize as ignored)
         // C source.java
         // ? source.java.working
         // ? source.jave.merge-right.r20
         // ? source.java.merge-left.r0
         //
-        // XXX:svn-cli design:  why is not it returned from getSingleStatus() ?
-        
         String name = file.getName();
         Matcher m = auxConflictPattern.matcher(name);
         if (m.matches()) {
@@ -793,6 +853,7 @@ public class FileStatusCache implements ISVNNotifyListener {
         }
     }
 
+    
     private boolean exists(File file) {
         if (!file.exists()) return false;
         return file.getAbsolutePath().equals(FileUtil.normalizeFile(file).getAbsolutePath());
@@ -833,82 +894,89 @@ public class FileStatusCache implements ISVNNotifyListener {
 
     public void logCompleted(String message) {
         // boring ISVNNotifyListener event
-    }
-
-    public void onNotify(final File path, final SVNNodeKind kind) {
-        // notifications from the svnclientadapter may be caused by a synchronously handled FS event. 
-        // The thing is that we have to prevent reentrant calls on the FS api ...
-        Utils.post(new Runnable() {
-            public void run() {
-                onNotifyImpl(path, kind);
-            }
-        });                        
-    }
-
-    private void onNotifyImpl(File path, SVNNodeKind kind) {
-        if (path == null) {  // on kill
-            return;
-        }
-
-        // I saw "./"
-        path = FileUtil.normalizeFile(path);
-
-        // ISVNNotifyListener event
-        // invalidate cached status
-        // force event: an updated file changes status from uptodate to uptodate but its entry changes
-        refresh(path, REPOSITORY_STATUS_UNKNOWN, true);
-        
-        // collect the filesystems to notify them in SvnClientInvocationHandler about the external change
-        for (;;) {
-            FileObject fo = FileUtil.toFileObject(path);
-            if (fo != null) {
-                try {
-                  Set<FileSystem> filesystems = getFilesystemsToRefresh();
-                  synchronized (filesystems) {
-                    filesystems.add(fo.getFileSystem());
-                  }
-                } catch (FileStateInvalidException e) {
-                    // ignore invalid filesystems
-                }
-                break;
-            } else {
-                path = path.getParentFile();
-                if (path == null) break;
-            }
-        }
-    }
-                
-    public void refreshDirtyFileSystems() {
-        if(refreshFilesystemsTask == null) {
-           RequestProcessor rp = new RequestProcessor();
-           refreshFilesystemsTask = rp.create(new Runnable() {
-                public void run() {
-                    Set<FileSystem> filesystems = getFilesystemsToRefresh();
-                    FileSystem[]  filesystemsToRefresh = new FileSystem[filesystems.size()];
-                    synchronized (filesystems) {
-                        filesystemsToRefresh = filesystems.toArray(new FileSystem[filesystems.size()]);
-                        filesystems.clear();
-                    }
-                    for (int i = 0; i < filesystemsToRefresh.length; i++) {            
-                        // don't call refresh() in synchronized (filesystems). It may lead to a deadlock.
-                        filesystemsToRefresh[i].refresh(true);            
-                    }                            
-                }
-           }); 
-        }
-        refreshFilesystemsTask.schedule(200);
-    }
-    
-    private Set<FileSystem> getFilesystemsToRefresh() {
-        if(filesystemsToRefresh == null) {
-            filesystemsToRefresh = new HashSet<FileSystem>();
-        }
-        return filesystemsToRefresh;
-    }
+    }       
         
     private static final class NotManagedMap extends AbstractMap<File, FileInformation> {
         public Set<Entry<File, FileInformation>> entrySet() {
             return Collections.emptySet();
         }
     }
+
+    private class FakeRevisionStatus implements ISVNStatus {
+        private ISVNStatus value;
+        private Number revision;
+        public FakeRevisionStatus(ISVNStatus value, Number revision) {
+            this.value = value;
+            this.revision = revision;           
+        }
+        public boolean isWcLocked() {
+            return value.isWcLocked();
+        }
+        public boolean isSwitched() {
+            return value.isSwitched();
+        }
+        public boolean isCopied() {
+            return value.isCopied();
+        }
+        public String getUrlString() {
+            return value.getUrlString();
+        }
+        public SVNUrl getUrlCopiedFrom() {
+            return value.getUrlCopiedFrom();
+        }
+        public SVNUrl getUrl() {
+            return value.getUrl();
+        }
+        public SVNStatusKind getTextStatus() {
+            return value.getTextStatus();
+        }
+        public Number getRevision() {                        
+            return revision;
+        }
+        public SVNStatusKind getRepositoryTextStatus() {
+            return value.getRepositoryTextStatus();
+        }
+        public SVNStatusKind getRepositoryPropStatus() {
+            return value.getRepositoryPropStatus();
+        }
+        public SVNStatusKind getPropStatus() {
+            return value.getPropStatus();
+        }
+        public String getPath() {
+            return value.getPath();
+        }
+        public SVNNodeKind getNodeKind() {
+            return value.getNodeKind();
+        }
+        public String getLockOwner() {
+            return value.getLockOwner();
+        }
+        public Date getLockCreationDate() {
+            return value.getLockCreationDate();
+        }
+        public String getLockComment() {
+            return value.getLockComment();
+        }
+        public String getLastCommitAuthor() {
+            return value.getLastCommitAuthor();
+        }
+        public Number getLastChangedRevision() {
+            return value.getLastChangedRevision();
+        }
+        public Date getLastChangedDate() {
+            return value.getLastChangedDate();
+        }
+        public File getFile() {
+            return value.getFile();
+        }
+        public File getConflictWorking() {
+            return value.getConflictWorking();
+        }
+        public File getConflictOld() {
+            return value.getConflictOld();
+        }
+        public File getConflictNew() {
+            return value.getConflictNew();
+        }
+    }    
 }

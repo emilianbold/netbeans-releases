@@ -130,7 +130,7 @@ public class TomcatModuleConfiguration implements ModuleConfiguration, ContextRo
         }
         if (contextDataObject == null) {
             try {
-                contextDataObject = DataObject.find(FileUtil.toFileObject(contextXml));
+                contextDataObject = DataObject.find(FileUtil.toFileObject(FileUtil.normalizeFile(contextXml)));
                 contextDataObject.addPropertyChangeListener(this);
             } catch(DataObjectNotFoundException donfe) {
                 LOGGER.log(Level.FINE, null, donfe);
@@ -403,6 +403,9 @@ public class TomcatModuleConfiguration implements ModuleConfiguration, ContextRo
             newContext.setLoggerPrefix(computeLoggerPrefix(path));
             newContext.setLoggerSuffix(".log");    // NOI18N
             newContext.setLoggerTimestamp("true"); // NOI18N
+        } else {
+            // tomcat 5.5 and 6.0
+            newContext.setAntiJARLocking("true"); // NOI18N
         }
         return newContext;
     }

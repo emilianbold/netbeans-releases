@@ -38,10 +38,8 @@ package org.netbeans.installer.wizard;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.util.LinkedList;
 import java.util.List;
-import javax.swing.SwingUtilities;
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -60,6 +58,7 @@ import org.netbeans.installer.utils.exceptions.InitializationException;
 import org.netbeans.installer.utils.exceptions.ParseException;
 import org.netbeans.installer.utils.helper.FinishHandler;
 import org.netbeans.installer.utils.helper.Context;
+import org.netbeans.installer.wizard.containers.SilentContainer;
 import org.netbeans.installer.wizard.containers.WizardContainer;
 import org.netbeans.installer.wizard.containers.SwingFrameContainer;
 import org.w3c.dom.Document;
@@ -479,6 +478,31 @@ public class Wizard {
         this.classLoader = classLoader;
     }
     
+    private WizardContainer newWizardContainer() {
+        // then create the container according to the current UI mode
+        switch (UiMode.getCurrentUiMode()) {
+            case SWING:
+                // init the look and feel
+                // we have to do it here, not in SwingFrameContainer because 
+                // we must to initialize L&F before calling JFrame constructor because of
+                // using JFrame.setDefaultLookAndFeelDecorated
+                try {
+                    UiUtils.initializeLookAndFeel();
+                } catch (InitializationException e) {
+                    ErrorManager.notifyWarning(e.getMessage(), e.getCause());
+                }
+                return new SwingFrameContainer();
+            case SILENT:
+                return new SilentContainer();
+            default:
+                ErrorManager.notifyCritical(ResourceUtils.getString(
+                        Wizard.class,
+                        RESOURCE_UNKNOWN_UI_MODE,
+                        UiMode.getCurrentUiMode()));
+                return null;
+        }
+    }
+    
     // wizard lifecycle control methods /////////////////////////////////////////////
     /**
      * Opens the wizard. Depending on the current UI mode, an appropriate
@@ -496,51 +520,12 @@ public class Wizard {
             return;
         }
         
-        // init the look and feel
-        try {
-            UiUtils.initializeLookAndFeel();
-        } catch (InitializationException  e) {
-            ErrorManager.notifyWarning(e.getMessage(), e.getCause());
-        }
-        
         // then create the container according to the current UI mode
-        switch (UiMode.getCurrentUiMode()) {
-            case SWING:
-                container = new SwingFrameContainer();
-                
-                try {
-                    SwingUtilities.invokeAndWait(new Runnable() {
-                        public void run() {
-                            Thread.currentThread().setUncaughtExceptionHandler(
-                                    ErrorManager.getExceptionHandler());
-                        }
-                    });
-                } catch (InvocationTargetException e) {
-                    ErrorManager.notifyDebug(ResourceUtils.getString(
-                            Wizard.class,
-                            RESOURCE_FAILED_TO_ATTACH_ERROR_HANDLER), e);
-                } catch (InterruptedException e) {
-                    ErrorManager.notifyDebug(ResourceUtils.getString(
-                            Wizard.class,
-                            RESOURCE_FAILED_TO_ATTACH_ERROR_HANDLER), e);
-                }
-                
-                SwingUtilities.invokeLater(new Runnable(){
-                    public void run() {
-                        container.setVisible(true);
-                    }
-                });
-                break;
-            case SILENT:
-                // we don't have to initialize anything for silent mode
-                break;
-            default:
-                ErrorManager.notifyCritical(ResourceUtils.getString(
-                        Wizard.class,
-                        RESOURCE_UNKNOWN_UI_MODE,
-                        UiMode.getCurrentUiMode()));
-        }
+        container = newWizardContainer();        
         
+        if (container!=null) {
+            container.open();
+        }
         next();
     }
     
@@ -581,22 +566,10 @@ public class Wizard {
             return;
         }
         
-        switch (UiMode.getCurrentUiMode()) {
-            case SWING:
-                // if the container has not yet been initialized -- we do not need to
-                // do anything with it
-                if (container != null) {
-                    container.setVisible(false);
-                }
-                break;
-            case SILENT:
-                // we don't have to initialize anything for silent mode
-                break;
-            default:
-                ErrorManager.notifyCritical(ResourceUtils.getString(
-                        Wizard.class,
-                        RESOURCE_UNKNOWN_UI_MODE,
-                        UiMode.getCurrentUiMode()));
+        // if the container has not yet been initialized -- we do not need to
+        // do anything with it
+        if (container!=null) {
+            container.close();
         }
         
         if (blocking) {
@@ -627,23 +600,9 @@ public class Wizard {
             
             component.setWizard(this);
             component.initialize();
-            
-            switch (UiMode.getCurrentUiMode()) {
-                case SWING:
-                    if (component.getWizardUi() != null) {
-                        container.updateWizardUi(component.getWizardUi());
-                    }
-                    break;
-                case SILENT:
-                    // nothing special should be done for silent mode
-                    break;
-                default:
-                    ErrorManager.notifyCritical(ResourceUtils.getString(
-                            Wizard.class,
-                            RESOURCE_UNKNOWN_UI_MODE,
-                            UiMode.getCurrentUiMode()));
+            if (container!=null) {
+                container.updateWizardUi(component.getWizardUi());
             }
-            
             System.setProperty(
                     CURRENT_COMPONENT_CLASSNAME_PROPERTY,
                     component.getClass().getName());
@@ -676,23 +635,8 @@ public class Wizard {
             
             component.setWizard(this);
             component.initialize();
-            
-            switch (UiMode.getCurrentUiMode()) {
-                case SWING:
-                    if (component.getWizardUi() != null) {
-                        container.updateWizardUi(component.getWizardUi());
-                    }
-                    break;
-                case SILENT:
-                    ErrorManager.notifyCritical(ResourceUtils.getString(
-                            Wizard.class,
-                            RESOURCE_CANNOT_MOVE_BACKWARD_SILENT));
-                    break;
-                default:
-                    ErrorManager.notifyCritical(ResourceUtils.getString(
-                            Wizard.class,
-                            RESOURCE_UNKNOWN_UI_MODE,
-                            UiMode.getCurrentUiMode()));
+            if (container!=null) {
+                container.updateWizardUi(component.getWizardUi());
             }
             
             System.setProperty(
@@ -1038,18 +982,6 @@ public class Wizard {
      */
     private static final String RESOURCE_FAILED_TO_LOAD_COMPONENT =
             "W.error.failed.to.load.component"; // NOI18N
-    
-    /**
-     * Name of a resource bundle entry.
-     */
-    private static final String RESOURCE_FAILED_TO_ATTACH_ERROR_HANDLER =
-            "W.error.failed.to.attach.error.handler"; // NOI18N
-    
-    /**
-     * Name of a resource bundle entry.
-     */
-    private static final String RESOURCE_CANNOT_MOVE_BACKWARD_SILENT =
-            "W.error.cannot.move.backward.silent"; // NOI18N
     
     /**
      * Name of a resource bundle entry.

@@ -2806,6 +2806,33 @@ public class LayoutDesigner implements LayoutConstants {
     }
 
     /**
+     * Checks if given components can be aligned together in a parallel group
+     * using the 'align' method. For now it is enough if the components are in
+     * the same container and layer (under same layout roots).
+     * @param componentIds IDs of components that should be aligned
+     * @return true if the components can be aligned in a parallel group
+     */
+    public boolean canAlign(Collection<String> componentIds) {
+        if (componentIds != null && componentIds.size() > 1) {
+            LayoutInterval commonRoot = null;
+            for (String id : componentIds) {
+                LayoutComponent component = layoutModel.getLayoutComponent(id);
+                if (component == null || component.getParent() == null) {
+                    return false;
+                }
+                LayoutInterval root = LayoutInterval.getRoot(component.getLayoutInterval(HORIZONTAL));
+                if (commonRoot == null) {
+                    commonRoot = root;
+                } else if (root != commonRoot) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        return false;
+    }
+
+    /**
      * Aligns given components in the specified direction.
      *
      * @param componentIds IDs of components that should be aligned.

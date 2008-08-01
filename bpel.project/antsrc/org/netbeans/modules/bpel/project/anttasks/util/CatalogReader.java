@@ -40,127 +40,102 @@
  */
 package org.netbeans.modules.bpel.project.anttasks.util;
 
+import java.io.File;
 import java.io.FileReader;
-import java.net.MalformedURLException;
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
-import org.apache.xml.resolver.Catalog;
+import java.util.Stack;
 import org.apache.xml.resolver.CatalogManager;
-import org.apache.xml.resolver.tools.CatalogResolver;
 import org.apache.xml.resolver.tools.ResolvingXMLReader;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.helpers.DefaultHandler;
 
-
 /**
  * This class helps Bpel project to Read the Catalog XML file
+ * 
  * @author Sreenivasan Genipudi
+ * @author Kirill Sorokin
  */
 public class CatalogReader {
+    
     private MyContentHandler mContentHandler = new MyContentHandler();
-
+    private Stack<File> nextCatalogs = new Stack<File>();
+    private File rootCatalog;
+    private File currentCatalog;
+    
+    private List<String> namespaces = new LinkedList<String>();
+    private List<String> locations = new LinkedList<String>();
+    
     /**
      * Constructor
      * @param catalogXML Location of Catalog XML
      * @throws Excepetion Exception during parsing the Catalog.xml file.
      */
     public CatalogReader(String catalogXML) throws Exception {
-        CatalogResolver catalogResolver;
-        Catalog apacheCatalogResolverObj;
-
-
-        CatalogManager manager = new CatalogManager(null);
+        final CatalogManager manager = new CatalogManager(null);
         manager.setUseStaticCatalog(false);
         manager.setPreferPublic(false);
-        catalogResolver = new CatalogResolver(manager);
-        apacheCatalogResolverObj = catalogResolver.getCatalog();
-        try {
-            apacheCatalogResolverObj.parseCatalog(catalogXML);
-        } catch (MalformedURLException ex) {
-            throw new RuntimeException(ex);
-        }
-        ResolvingXMLReader saxParser = new ResolvingXMLReader(manager);
+        
+        final ResolvingXMLReader saxParser = new ResolvingXMLReader(manager);
         saxParser.setContentHandler(mContentHandler);
-        FileReader finRead = 
-            new FileReader(catalogXML);
-        InputSource isource = new InputSource(finRead);
-        saxParser.parse(isource);
-    }
-
-    /**
-     * Get the list of URI's listed in Catalog.xml
-     * @return Set of URIs listed in Catalog.xml
-     */
-    public ArrayList<String> getListOfLocalURIs() {
-        return mContentHandler.listOfURI;
-    }
-
-    
-    public int locateNS(String ns) {
-        if (mContentHandler.listOfNS.size() <= 0) {
-            return -1;
-        }
-        int in =0;
-        for (String myNS: mContentHandler.listOfNS) {
-            if (myNS.equals(ns)) {
-                return in;
+        
+        rootCatalog = new File(catalogXML);
+        nextCatalogs.push(rootCatalog);
+        
+        do {
+            currentCatalog = nextCatalogs.pop();
+            if (currentCatalog.exists() && (currentCatalog.length() > 0)) {
+                saxParser.parse(new InputSource(new FileReader(currentCatalog)));
             }
-            in++;
-        }
-        return -1;
-    }
-
-    /**
-     * Get the Set of Namespaces listed in Catalog.xml
-     * @return Set of Namespaces listed in Catalog.xml
-     */
-    public ArrayList<String> getListOfNamespaces() {
-        return mContentHandler.listOfNS;
-    }
-
-
-}
-class MyContentHandler extends DefaultHandler {
-    private static final String SYSTEM_CONST = "system";
-    private static final String SYSTEM_ID_CONST = "systemId";
-    private static final String URI_CONST = "uri";
-    boolean isSystem = false;
-    ArrayList<String> listOfURI = new ArrayList<String>();
-    ArrayList<String> listOfNS = new ArrayList<String>();
-
-    public List getURIs() {
-        return listOfURI;
-    }
-
-    public List getNSs() {
-        return listOfNS;
-    }
-
-    @Override
-    public void startElement(String uri, String localName, String qName, 
-                             Attributes atts) {
-        if (qName.equals(SYSTEM_CONST)) {
-            String nameSpace = atts.getValue(SYSTEM_ID_CONST);
-            String location = atts.getValue(URI_CONST);
-            if (nameSpace != null) {
-                listOfNS.add(nameSpace);
-            }
-            if (location != null) {
-                listOfURI.add(location);
-            }
-        }
-
+        } while (nextCatalogs.size() > 0);
     }
     
-
-    @Override
-    public void endElement(String uri, String localName, String qName) {
+    public List<String> getNamespaces() {
+        return namespaces;
     }
-
-    @Override
-    public void characters(char[] chars, int start, int length) {
+    
+    public List<String> getLocations() {
+        return locations;
     }
+    
+    private class MyContentHandler extends DefaultHandler {
 
-
+        private static final String SYSTEM_CONST = "system";
+        private static final String SYSTEM_ID_CONST = "systemId";
+        private static final String URI_CONST = "uri";
+        private static final String NEXT_CATALOG_CONST = "nextCatalog";
+        private static final String CATALOG_CONST = "catalog";
+        
+        boolean isSystem = false;
+        
+        @Override
+        public void startElement(
+                final String uri, 
+                final String localName, 
+                final String qName,
+                final Attributes atts) {
+            
+            if (qName.equals(SYSTEM_CONST)) {
+                final String namespace = atts.getValue(SYSTEM_ID_CONST);
+                String location = atts.getValue(URI_CONST);
+                
+                if ((namespace != null) && !namespaces.contains(namespace)) {
+                    if (currentCatalog != rootCatalog) {
+                        location = Util.getRelativePath(rootCatalog.getParentFile(), 
+                                currentCatalog.getParentFile()) + "/" + location;
+                    }
+                    
+                    namespaces.add(namespace);
+                    locations.add(location.replace("\\", "/"));
+                }
+            }
+            
+            if (qName.equals(NEXT_CATALOG_CONST)) {
+                final String catalog = atts.getValue(CATALOG_CONST);
+                
+                nextCatalogs.push(new File(currentCatalog.getParentFile(), catalog));
+            }
+        }
+    }
 }

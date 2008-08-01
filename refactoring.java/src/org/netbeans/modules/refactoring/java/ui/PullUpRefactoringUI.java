@@ -49,7 +49,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.TreePathHandle;
-import org.netbeans.api.java.source.UiUtils;
+import org.netbeans.api.java.source.ui.ElementHeaders;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.java.api.MemberInfo;
@@ -58,7 +58,6 @@ import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.lookup.Lookups;
 
 /** Refactoring UI object for Pull Up refactoring.
  *
@@ -77,19 +76,19 @@ public class PullUpRefactoringUI implements RefactoringUI {
     /** Creates a new instance of PullUpRefactoringUI
      * @param selectedElements Elements the refactoring action was invoked on.
      */
-    public PullUpRefactoringUI(TreePathHandle[] selectedElements, CompilationInfo info) {
+    public PullUpRefactoringUI(TreePathHandle selectedElements, CompilationInfo info) {
         initialMembers = new HashSet();
-        initialMembers.add(MemberInfo.create(selectedElements[0].resolveElement(info),info));
+        initialMembers.add(MemberInfo.create(selectedElements.resolveElement(info),info));
         // compute source type and members that should be pre-selected from the
         // set of elements the action was invoked on
         
        // create an instance of pull up refactoring object
-        Element selected = selectedElements[0].resolveElement(info);
+        Element selected = selectedElements.resolveElement(info);
         if (!(selected instanceof TypeElement))
             selected = SourceUtils.getEnclosingTypeElement(selected);
         TreePath tp = info.getTrees().getPath(selected);
         TreePathHandle sourceType = TreePathHandle.create(tp, info);
-        description = UiUtils.getHeader(tp, info, UiUtils.PrintPart.NAME);
+        description = ElementHeaders.getHeader(tp, info, ElementHeaders.NAME);
         refactoring = new PullUpRefactoring(sourceType);
         refactoring.getContext().add(info.getClasspathInfo());
         

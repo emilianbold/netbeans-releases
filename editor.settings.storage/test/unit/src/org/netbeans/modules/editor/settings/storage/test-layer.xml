@@ -135,6 +135,23 @@ made subject to such option by the copyright holder.
                 </folder>
             </folder>
         </folder>
+
+        <folder name="text">
+            <folder name="x-StorageFilterTest">
+                <folder name="Preferences">
+                    <folder name="Defaults">
+                        <file name="preferences.xml" url="preferences.xml"/>
+                    </folder>
+                </folder>
+                <folder name="Keybindings">
+                    <folder name="NetBeans">
+                        <folder name="Defaults">
+                            <file name="keybindings.xml" url="key-bindings.xml"/> 
+                        </folder>
+                    </folder>
+                </folder>
+            </folder>
+        </folder>
     </folder>
 
 </filesystem>

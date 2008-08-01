@@ -64,7 +64,6 @@ import org.netbeans.modules.ruby.rhtml.lexer.api.RhtmlTokenId;
 import org.netbeans.spi.editor.highlighting.HighlightsLayer;
 import org.netbeans.spi.editor.highlighting.HighlightsLayerFactory;
 import org.netbeans.spi.editor.highlighting.HighlightsSequence;
-import org.netbeans.spi.editor.highlighting.HighlightsSequence;
 import org.netbeans.spi.editor.highlighting.ZOrder;
 import org.netbeans.spi.editor.highlighting.support.AbstractHighlightsContainer;
 import org.openide.util.WeakListeners;
@@ -191,8 +190,9 @@ public class EmbeddedSectionsHighlighting extends AbstractHighlightsContainer im
                             sectionEnd = sequence.offset() + sequence.token().length();
 
                             try {
-                                int startLine = Utilities.getLineOffset((BaseDocument) document, sectionStart);
-                                int endLine = Utilities.getLineOffset((BaseDocument) document, sectionEnd);
+                                int docLen = document.getLength();
+                                int startLine = Utilities.getLineOffset((BaseDocument) document, Math.min(sectionStart, docLen));
+                                int endLine = Utilities.getLineOffset((BaseDocument) document, Math.min(sectionEnd, docLen));
 
                                 if (startLine != endLine) {
                                     // multiline scriplet section
@@ -279,7 +279,7 @@ public class EmbeddedSectionsHighlighting extends AbstractHighlightsContainer im
         public HighlightsLayer[] createLayers(Context context) {
             return new HighlightsLayer[]{ HighlightsLayer.create(
                 "rhtml-embedded-ruby-scriplets-highlighting-layer", //NOI18N
-                ZOrder.SYNTAX_RACK.forPosition(110), 
+                ZOrder.BOTTOM_RACK.forPosition(100), 
                 true, 
                 new EmbeddedSectionsHighlighting(context.getDocument())
             )};

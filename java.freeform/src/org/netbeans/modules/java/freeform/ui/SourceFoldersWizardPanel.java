@@ -94,7 +94,7 @@ public class SourceFoldersWizardPanel implements WizardDescriptor.Panel, ChangeL
         // Next button is enabled only when there is some soruce 
         // folder specified -> see NewJ2SEFreeformProjectWizardIterator
         // which enables/disables Next button
-        wizardDescriptor.putProperty("WizardPanel_errorMessage", ""); // NOI18N
+        wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, ""); // NOI18N
         return true;
     }
 

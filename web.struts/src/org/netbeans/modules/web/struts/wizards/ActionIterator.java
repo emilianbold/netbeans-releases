@@ -117,7 +117,7 @@ public class ActionIterator implements TemplateWizard.Iterator {
         panels = new WizardDescriptor.Panel[] { javaPanel, thirdPanel };
         
         // Creating steps.
-        Object prop = wizard.getProperty ("WizardPanel_contentData"); // NOI18N
+        Object prop = wizard.getProperty (WizardDescriptor.PROP_CONTENT_DATA); // NOI18N
         String[] beforeSteps = null;
         if (prop != null && prop instanceof String[]) {
             beforeSteps = (String[])prop;
@@ -129,8 +129,8 @@ public class ActionIterator implements TemplateWizard.Iterator {
             if (steps[i] == null) {
                 steps[i] = jc.getName ();
             }
-	    jc.putClientProperty ("WizardPanel_contentSelectedIndex", new Integer (i)); // NOI18N 
-	    jc.putClientProperty ("WizardPanel_contentData", steps); // NOI18N
+	    jc.putClientProperty (WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer (i)); // NOI18N 
+	    jc.putClientProperty (WizardDescriptor.PROP_CONTENT_DATA, steps); // NOI18N
 	}
     }
     

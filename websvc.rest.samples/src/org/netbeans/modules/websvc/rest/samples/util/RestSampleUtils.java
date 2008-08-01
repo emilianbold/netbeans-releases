@@ -42,27 +42,17 @@
 
 package org.netbeans.modules.websvc.rest.samples.util;
 
-import java.io.*;
-import java.util.Enumeration;
-import java.util.Properties;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.project.JavaProjectConstants;
-import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.libraries.Library;
-import org.netbeans.api.project.libraries.LibraryManager;
-import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -101,135 +91,6 @@ public class RestSampleUtils {
         } finally {
             source.close();
         }
-    }
-
-    public static void unZipFileTranslateProjectName(InputStream source, FileObject rootFolder, String name, String token) throws IOException {
-        try {
-            ZipInputStream str = new ZipInputStream(source);
-            ZipEntry entry;
-            while ((entry = str.getNextEntry()) != null) {
-                if (entry.isDirectory()) {
-                    FileUtil.createFolder(rootFolder, entry.getName());
-                    continue;
-                }
-                String fname = entry.getName();
-                FileObject fo = FileUtil.createData(rootFolder, fname);
-                FileLock lock = fo.lock();
-                try {
-                    OutputStream out = fo.getOutputStream(lock);
-                    try {
-                        if (needTranslation(fname)) {
-                            translateProjectName(str, out, name, token);
-                        } else {
-                            FileUtil.copy(str, out);
-                        }
-                    } finally {
-                        out.close();
-                    }
-                } finally {
-                    lock.releaseLock();
-                }
-            }
-        } finally {
-            source.close();
-        }
-    }
-
-    static boolean needTranslation(String fname) {
-        for (int i = 0; i < xlateFiles.length; i++) {
-            if (fname.endsWith(xlateFiles[i])) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    static void translateProjectName(InputStream str, OutputStream out, String name, String token) throws IOException {
-        ByteArrayOutputStream bo = new ByteArrayOutputStream();
-        FileUtil.copy(str, bo);
-        ByteArrayInputStream bi = new ByteArrayInputStream(bo.toString().replaceAll(token, name).getBytes());
-        FileUtil.copy(bi, out);
-    }
-
-    public static FileObject getStudioUserDir() {
-        Log.out("StudioUserDir: " + FileUtil.toFileObject(new File(System.getProperty("netbeans.user"))).getPath()); // NOI18N
-        return FileUtil.toFileObject(new File(System.getProperty("netbeans.user"))); // NOI18N
-    }
-
-    public static FileObject getProjectFolder(FileObject parentDir, String projectDirName) {
-        assert parentDir != null : parentDir + "/" + projectDirName + "doesn't exist"; // NOI18N
-        assert projectDirName != null : "project name can't be empty"; // NOI18N
-        return parentDir.getFileObject(projectDirName);
-    }
-
-    private static FileObject getFolder(String relative) {
-        return getFolder(getStudioUserDir(), relative);
-    }
-
-    private static FileObject getFolder(FileObject parent, String relative) {
-        FileObject folder = parent.getFileObject(relative);
-        if (folder != null) {
-            return folder;
-        }
-        try {
-            folder = parent.createFolder(relative);
-        } catch (IOException ioe) {
-            ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ioe);
-        }
-        return folder;
-    }
-
-    private static String getPropertiesPath(String name) {
-        return RestSampleProjectProperties.getDefault().isPrivateProperty(name) ? AntProjectHelper.PRIVATE_PROPERTIES_PATH : AntProjectHelper.PROJECT_PROPERTIES_PATH;
-    }
-
-    private static AntProjectHelper getAntProjectHelper(Project project) {
-        return (AntProjectHelper) project.getLookup().lookup(AntProjectHelper.class);
-    }
-
-    public static void setPrivateProperty(FileObject prjLoc, String name, String value) {
-        Properties properties = new Properties();
-        try {
-            properties.setProperty(name, value);
-
-            FileObject propFile = FileUtil.createData(prjLoc, AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-            FileLock lock = propFile.lock();
-            OutputStream os = propFile.getOutputStream(lock);
-            try {
-                properties.store(os, null);
-            } finally {
-                os.close();
-                lock.releaseLock();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public static String getProperty(Project project, String name) {
-        return getProperties(project, name).getProperty(name);
-    }
-
-    private static EditableProperties getProperties(Project project, String name) {
-        AntProjectHelper helper = getAntProjectHelper(project);
-        assert helper != null : "Can't get AntProjectHelper for project: " + project;
-        return helper.getProperties(getPropertiesPath(name));
-    }
-
-    /**
-     * @return SunApp default server instance location
-     */
-    public static String getDefaultSunAppLocation() {
-        String loc = null;
-        String[] instances = InstanceProperties.getInstanceList();
-        for (String instanceId : instances) {
-            if (instanceId.indexOf(RestSampleProjectProperties.SERVER_INSTANCE_SUN_APPSERVER) != -1) {
-                int endIdx = instanceId.indexOf(']');
-                loc = instanceId.substring(1, endIdx);
-                break;
-            }
-        }
-        return loc;
     }
 
     /**
@@ -292,65 +153,6 @@ public class RestSampleUtils {
             }
         } finally {
             lock.releaseLock();
-        }
-    }
-
-    public static void insertParameters(FileObject dir, String bpelProjDir) {
-        Enumeration files = dir.getData(true);
-
-        while (files.hasMoreElements()) {
-            FileObject fileObject = (FileObject) files.nextElement();
-
-            if (fileObject.isFolder()) {
-                continue;
-            }
-            if (!((fileObject.getExt().toLowerCase().equals("xml") || fileObject.getExt().toLowerCase().equals("properties")))) {
-                // NOI18N
-                continue;
-            }
-            String line;
-            StringBuffer buffer = new StringBuffer();
-
-            try {
-                InputStream inputStream = fileObject.getInputStream();
-                BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
-
-                while ((line = reader.readLine()) != null) {
-                    line = line.replace("__BPELPROJECTNAME__", bpelProjDir); // NOI18N
-                    buffer.append(line);
-                    buffer.append("\n"); // NOI18N
-                }
-
-                File file = FileUtil.toFile(fileObject);
-                OutputStream outputStream = new FileOutputStream(file);
-                PrintWriter writer = new PrintWriter(outputStream);
-                writer.write(buffer.toString());
-                writer.flush();
-                outputStream.close();
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
-    }
-
-    public static void addJerseyLibrary(Project project) {
-        Library jerseyLibrary = LibraryManager.getDefault().getLibrary(JERSEY_LIBRARY);
-
-        if (jerseyLibrary == null) {
-            System.out.println("no jersey library found");
-            return;
-        }
-
-        SourceGroup[] sgs = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-        FileObject sourceRoot = sgs[0].getRootFolder();
-        String[] classPathTypes = new String[]{ClassPath.COMPILE, ClassPath.EXECUTE};
-
-        for (String type : classPathTypes) {
-            try {
-                ProjectClassPathModifier.addLibraries(new Library[]{jerseyLibrary}, sourceRoot, type);
-            } catch (Exception ex) {
-                Exceptions.printStackTrace(ex);
-            }
         }
     }
 }

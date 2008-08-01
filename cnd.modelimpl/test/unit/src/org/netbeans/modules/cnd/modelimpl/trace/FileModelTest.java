@@ -53,7 +53,8 @@ public class FileModelTest extends TraceModelTestBase {
 
     @Override
     protected void setUp() throws Exception {
-	System.setProperty("parser.report.errors", "true");
+    System.setProperty("parser.report.errors", "true");
+        System.setProperty("antlr.exceptions.hideExpectedTokens", "true");
         super.setUp();
     }
 
@@ -62,6 +63,16 @@ public class FileModelTest extends TraceModelTestBase {
         // init flags needed for file model tests
         getTraceModel().setDumpModel(true);
         getTraceModel().setDumpPPState(true);
+    }
+    
+    public void testDeclSpec() throws Exception {
+        // IZ#132136: code completion for C++ and Qt does not work under Windows
+        performTest("declspec.cc");
+    }
+    
+    public void testTemplateFunctionInTemplateClass() throws Exception {
+        // IZ#
+        performTest("template_fun_in_template_class.cc");
     }
     
     public void testIncludeMacroExpansion() throws Exception {
@@ -259,6 +270,133 @@ public class FileModelTest extends TraceModelTestBase {
     public void testStaticFunction() throws Exception {
         performTest("static_function.cc"); // NOI18N
     }
+
+    public void testTypename() throws Exception {
+        // IZ 131012 : missed declaration with "typename" keyword
+        performTest("typename.cc"); // NOI18N
+    }
+    
+    public void testArray() throws Exception {
+        // IZ 130678 : incorrect offsets for type of array delcaration
+        performTest("array.cc"); // NOI18N
+    }
+    
+    public void testTemplateDestrucror() throws Exception {
+        // IZ 131407 : parser doesn't handle specialized destructor
+        performTest("template_destructor.cc"); // NOI18N
+    }
+    
+    public void testConversionOperator() throws Exception {
+        // IZ 137468 : grammar does not support conversion operator invocation
+        performTest("conversion_operator.cc"); // NOI18N
+    }
+
+    public void testClassQualifiers() throws Exception {
+        // IZ 136821 : Keyword volatile breakes classifier content
+        performTest("class_qualifiers.cc"); // NOI18N
+    }
+
+    public void testExtensions() throws Exception {
+        // IZ 137118 : IDE highlights GTK_WIDGET_SET_FLAGS and GTK_CAN_DEFAULT macros
+        performTest("extensions.cc"); // NOI18N
+    }
+
+    public void testClassTemplateMethodCall() throws Exception {
+        // IZ 137531 : IDE highlights db.template cursor<T> line as error
+        performTest("class_template_method_call.cc"); // NOI18N
+    }
+
+    public void testGccAttribute() throws Exception {
+        // IZ 136947 : IDE highlights code with 'typedef' as wrong
+        performTest("gcc_attribute.c"); // NOI18N
+    }
+
+    public void testComplex() throws Exception {
+        // IZ 136729 : Code model is broken by _Complex keyword
+        performTest("complex.c"); // NOI18N
+    }
+
+    public void testAttributeInConstructor() throws Exception {
+        // IZ 136239 : C++ grammar does not allow attributes after constructor
+        performTest("attribute_in_constructor.cc"); // NOI18N
+    }
+
+    public void testCastOperator() throws Exception {
+        // IZ 137094 : grammar do not support parenthesis in cast
+        performTest("cast.cc"); // NOI18N
+    }
+
+    public void testIZ138320() throws Exception {
+        // IZ 138320 : IDE doesn't recognize 'class P = V const *' line in template
+        performTest("IZ138320.cc"); // NOI18N
+    }
+
+    public void testIZ138551() throws Exception {
+        // IZ 138551 : parser fails on "template class A::B<1>;"
+        performTest("IZ138551.cc"); // NOI18N
+    }
+
+    public void testArrayCast() throws Exception {
+        // IZ 138899 : parser fails on conversion "(int(*)[4][4])"
+        performTest("array_cast.cc");
+    }
+
+    public void testStringizeMacro() throws Exception {
+        // IZ 137465 : wrong macro expansion for #x
+        performPreprocessorTest("stringize_macro.cc"); // NOI18N
+    }
+
+    public void testTemplateParams() throws Exception {
+        // IZ 138551 : parser fails on "template class A::B<1>;"
+        performTest("templateParams.h"); // NOI18N
+    }
+
+    public void testTemplateMethodCall() throws Exception {
+        // IZ 138962 : Passer fails on template method calls
+        performTest("template_method_call.cc"); // NOI18N
+    }
+
+    public void testExpressions() throws Exception {
+        // IZ 138962 : Passer fails on template method calls
+        performTest("expressions.cc"); // NOI18N
+    }
+
+    public void testFunctionPointerAsTemplateParameter() throws Exception {
+        performTest("function_pointer_as_template_parameter.cc"); // NOI18N
+    }
+
+    public void test100000parameters() throws Exception {
+        performTest("100000parameters.c"); // NOI18N
+    }
+    
+    public void testTypedefPointerToStaticMember() throws Exception {
+        // IZ 138325 : IDE highlights 'typedef R (T::*F);' line as wrong
+        performTest("typedef_pointer_to_static_member.cc"); // NOI18N
+    }
+
+    public void testEmptyArrayInitializer() throws Exception {
+        // IZ 140082 : parser fails on "int empty[] = {}"
+        performTest("empty_array_initializer.cc"); // NOI18N
+    }
+
+    public void testTemplatePointerToMethod() throws Exception {
+        // IZ 140559 : parser fails on code from boost
+        performTest("template_pointer_to_method.cc"); // NOI18N
+    }
+
+    public void testResolverNs_1() throws Exception {
+        // IZ 140704 A constant in namespace is highlighted as an unresolved id
+        performTest("resolver_ns_general.cc"); // NOI18N
+    }
+
+    public void testResolverNs_2() throws Exception {
+        // IZ 140704 A constant in namespace is highlighted as an unresolved id
+        performTest("resolver_ns_using_declaration.cc"); // NOI18N
+    }
+
+    public void testResolverUsingDeclarationInClass() throws Exception {
+        performTest("resolver_using_declaration_in_class.cc"); // NOI18N
+    }
     
     /////////////////////////////////////////////////////////////////////
     // FAILS
@@ -283,7 +421,13 @@ public class FileModelTest extends TraceModelTestBase {
 	public void testTemplateInnerClassDtorDefinition() throws Exception {
 	    performTest("template_inner_class_dtor_definition.cc"); // NOI18N
 	}
-        
+
+	public void testTwoBranches() throws Exception {
+            // iz #142110 For a header file, that is included with different
+            // preprocessor states, code model should include the most complete data
+	    performTest("branches_1.cc"); // NOI18N
+	}
+               
         @Override
 	protected void postSetUp() {
 	    // init flags needed for file model tests
@@ -293,3 +437,6 @@ public class FileModelTest extends TraceModelTestBase {
    }
     
 }
+
+
+

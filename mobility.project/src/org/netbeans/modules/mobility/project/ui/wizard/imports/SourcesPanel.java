@@ -46,6 +46,7 @@
  */
 package org.netbeans.modules.mobility.project.ui.wizard.imports;
 
+import java.awt.Component;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -53,6 +54,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -68,6 +70,7 @@ import org.netbeans.modules.mobility.project.ui.wizard.PlatformSelectionPanel;
 import org.netbeans.modules.mobility.project.ui.wizard.ProjectPanel;
 import org.netbeans.modules.mobility.project.ui.wizard.Utils;
 import org.netbeans.spi.project.ui.templates.support.Templates;
+import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.TemplateWizard;
@@ -380,7 +383,7 @@ public class SourcesPanel extends javax.swing.JPanel implements DocumentListener
         
         public void showError(final String message) {
             if (wizard != null)
-                wizard.putProperty("WizardPanel_errorMessage", message); // NOI18N
+                wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, message); // NOI18N
         }
         
         public boolean isValid() {
@@ -484,6 +487,12 @@ public class SourcesPanel extends javax.swing.JPanel implements DocumentListener
         public void readSettings(final Object obj) {
             wizard = (TemplateWizard) obj;
             ((SourcesPanel) getComponent()).readData(wizard);
+            Component component = getComponent();
+            Object substitute = ((JComponent)component).getClientProperty ("NewProjectWizard_Title"); // NOI18N
+            if (substitute != null) {
+                wizard.putProperty ("NewProjectWizard_Title", substitute); // NOI18N
+            }
+            
         }
         
         public void storeSettings(final Object obj) {

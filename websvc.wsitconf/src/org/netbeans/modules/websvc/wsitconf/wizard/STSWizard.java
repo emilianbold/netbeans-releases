@@ -38,13 +38,13 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.websvc.wsitconf.wizard;
 
 import java.awt.Component;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
@@ -52,6 +52,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.MessageFormat;
 import java.util.Collections;
@@ -82,6 +83,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.xml.sax.SAXException;
 
@@ -90,218 +92,260 @@ import org.xml.sax.SAXException;
  * @author Martin Grebac
  */
 public class STSWizard implements TemplateWizard.Iterator {
-    
+
     private Project project;
-
     private static final Logger logger = Logger.getLogger(STSWizard.class.getName());
-
     private static final String SERVICENAME_TAG = "__SERVICENAME__"; //NOI18N
-    
     private WsdlModeler wsdlModeler;
     private WsdlModel wsdlModel;
     private WsdlService service;
     private WsdlPort port;
-    
+
     /** Create a new wizard iterator. */
     public STSWizard() {
     }
-    
+
     public static STSWizard create() {
         return new STSWizard();
     }
-    
-    public Set<DataObject> instantiate(TemplateWizard wiz) throws IOException {
-        File wsdlFile = null;
+
+    public Set<DataObject> instantiate(final TemplateWizard wiz) throws IOException {
         File tempFolder = new File(System.getProperty("netbeans.user"));     //NOI18N
         DataObject folderDO = DataObject.find(FileUtil.toFileObject(tempFolder));
 
-        OutputStream schemaos = null, wsdlos = null;
-                
-        try {
-            final InputStream schemaIS = this.getClass().getClassLoader().getResourceAsStream("org/netbeans/modules/websvc/wsitconf/resources/templates/sts_schema.template"); //NOI18N
-            File schema = new File(System.getProperty("netbeans.user") + File.separator + "sts_schema.xsd");     //NOI18N       
-            schema.createNewFile();
-            schemaos = new FileOutputStream(schema);
-            FileUtil.copy(schemaIS, schemaos);
-        } catch (FileNotFoundException ex) {
-            logger.log(Level.INFO, null, ex);
-        } catch (IOException ex) {
-            logger.log(Level.INFO, null, ex);
-        } finally {
-            if (schemaos != null) schemaos.close();
-        }
+        final File wsdlFile = new File(System.getProperty("netbeans.user") + File.separator + "sts.wsdl");
 
-        try {
-            final InputStream wsdlIS = this.getClass().getClassLoader().getResourceAsStream("org/netbeans/modules/websvc/wsitconf/resources/templates/sts.template"); //NOI18N
-            wsdlFile = new File(System.getProperty("netbeans.user") + File.separator + "sts.wsdl");     //NOI18N       
-            wsdlFile.createNewFile();
-            wsdlos = new FileOutputStream(wsdlFile);
-            FileUtil.copy(wsdlIS, wsdlos);
-        } catch (FileNotFoundException ex) {
-            logger.log(Level.INFO, null, ex);
-        } catch (IOException ex) {
-            logger.log(Level.INFO, null, ex);
-        } finally {
-            if (schemaos != null) schemaos.close();
-        }
+        FileUtil.runAtomicAction(new Runnable() {
 
-        if (wsdlFile == null) return null;
-        String serviceName = Templates.getTargetName(wiz) + NbBundle.getMessage(STSWizard.class, "LBL_ServiceEnding"); //NOI18N
-
-        FileObject wsdlFO = FileUtil.toFileObject(wsdlFile);
-        FileObject wsdlFolder = wsdlFO.getParent();
-        
-        String newName = serviceName;
-        FileObject newFO = null;
-        
-        try {
-            newFO = FileUtil.copyFile(wsdlFO, wsdlFolder, newName);
-        } catch (FileNotFoundException ex) {
-            logger.log(Level.INFO, null, ex);
-        } catch (IOException ex) {
-            logger.log(Level.INFO, null, ex);
-        }
-
-        File newFile = FileUtil.toFile(newFO);
-        final URL wsdlURL = newFile.toURI().toURL();
-         
-        wiz.putProperty(WizardProperties.WSDL_FILE_PATH, newFile.getPath());
-
-        BufferedReader reader = null;
-        BufferedWriter writer = null;
-        
-        try {
-            reader = new BufferedReader(new FileReader(wsdlFile));
-            writer = new BufferedWriter(new FileWriter(newFile));
-
-            String line;
-            while ((line = reader.readLine()) != null) {
-                if ((index = line.indexOf(SERVICENAME_TAG)) != -1) {
-                    line = line.replaceAll(SERVICENAME_TAG, serviceName);
-                }
-                writer.write(line);
-                writer.newLine();
-            }
-        } catch (FileNotFoundException ex) {
-            logger.log(Level.INFO, null, ex);
-        } catch (IOException ex) {
-            logger.log(Level.INFO, null, ex);
-        } finally {
-            try {
-                if (writer != null) {
-                    writer.flush();
-                    writer.close();
+            public void run() {
+                OutputStream schemaos = null;
+                try {
+                    final InputStream schemaIS = this.getClass().getClassLoader().getResourceAsStream("org/netbeans/modules/websvc/wsitconf/resources/templates/sts_schema.template"); //NOI18N
+                    File schema = new File(System.getProperty("netbeans.user") + File.separator + "sts_schema.xsd");     //NOI18N
+                    schema.createNewFile();
+                    schemaos = new FileOutputStream(schema);
+                    FileUtil.copy(schemaIS, schemaos);
+                } catch (FileNotFoundException ex) {
+                    logger.log(Level.INFO, null, ex);
+                } catch (IOException ex) {
+                    logger.log(Level.INFO, null, ex);
+                } finally {
+                    if (schemaos != null) {
+                        try {
+                            schemaos.close();
+                        } catch (IOException ex) {
+                            logger.log(Level.INFO, null, ex);
+                        }
+                    }
                 }
 
-                if (reader != null) {
-                    reader.close();
-                }
-            } catch (IOException ex) {
-                logger.log(Level.INFO, null, ex);
-            }
-        }
-        
-        wsdlModeler = WsdlModelerFactory.getDefault().getWsdlModeler(wsdlURL);
-        wsdlModeler.generateWsdlModel(new WsdlModelListener() {
-            public void modelCreated(WsdlModel model) {
-                wsdlModel=model;
-                if (wsdlModel==null) {
+                String serviceName = Templates.getTargetName(wiz) + NbBundle.getMessage(STSWizard.class, "LBL_ServiceEnding"); //NOI18N
+
+                try {
+                    OutputStream wsdlos = null;
                     try {
-                        WsdlServiceHandler.parse(wsdlURL.toExternalForm());
-                    } catch (ParserConfigurationException ex) {
-                        logger.log(Level.FINE, null, ex);
-                    } catch (SAXException ex) {
-                        logger.log(Level.FINE, null, ex);
+                        if (!wsdlFile.exists()) {
+                            final InputStream wsdlIS = this.getClass().getClassLoader().getResourceAsStream("org/netbeans/modules/websvc/wsitconf/resources/templates/sts.template"); //NOI18N
+                            wsdlFile.createNewFile();
+                            wsdlos = new FileOutputStream(wsdlFile);
+                            FileUtil.copy(wsdlIS, wsdlos);
+                        }
+                    } catch (FileNotFoundException ex) {
+                        logger.log(Level.INFO, null, ex);
                     } catch (IOException ex) {
-                        logger.log(Level.FINE, null, ex);
+                        logger.log(Level.INFO, null, ex);
+                    } finally {
+                        if (wsdlos != null) {
+                            try {
+                                wsdlos.close();
+                            } catch (IOException ex) {
+                                logger.log(Level.INFO, null, ex);
+                            }
+                        }
                     }
-                } else {
-                    List services = wsdlModel.getServices();
-                    if (services != null && !services.isEmpty()) {
-                        service = (WsdlService) services.get(0);
-                        List ports = service.getPorts();
-                        if (ports != null && !ports.isEmpty())
-                            port = (WsdlPort) ports.get(0);
+
+
+                    FileObject wsdlFO = FileUtil.toFileObject(wsdlFile);
+                    FileObject wsdlFolder = wsdlFO.getParent();
+
+                    String newName = serviceName;
+                    FileObject newFO = null;
+
+                    FileInputStream fi = null;
+                    OutputStream fo = null;
+
+                    try {
+                        fi = new FileInputStream(wsdlFile);
+                        File f = new File(FileUtil.toFile(wsdlFolder).getAbsolutePath(), newName + ".wsdl");
+                        f.createNewFile();
+                        fo = new FileOutputStream(f);
+                        FileUtil.copy(fi, fo);
+                        newFO = FileUtil.toFileObject(f);
+                    //newFO = FileUtil.copyFile(wsdlFO, wsdlFolder, newName);
+                    } catch (FileNotFoundException ex) {
+                        logger.log(Level.INFO, null, ex);
+                    } catch (IOException ex) {
+                        logger.log(Level.INFO, null, ex);
+                    } finally {
+                        try {
+                            if (fi != null) {
+                                fi.close();
+                            }
+                            if (fo != null) {
+                                fo.close();
+                            }
+                        } catch (IOException ex) {
+                            logger.log(Level.INFO, null, ex);
+                        }
                     }
+
+                    File newFile = FileUtil.toFile(newFO);
+                    final URL wsdlURL = newFile.toURI().toURL();
+
+                    wiz.putProperty(WizardProperties.WSDL_FILE_PATH, newFile.getPath());
+
+                    BufferedReader reader = null;
+                    BufferedWriter writer = null;
+
+                    try {
+                        reader = new BufferedReader(new FileReader(wsdlFile));
+                        writer = new BufferedWriter(new FileWriter(newFile));
+
+                        String line;
+                        while ((line = reader.readLine()) != null) {
+                            if ((index = line.indexOf(SERVICENAME_TAG)) != -1) {
+                                line = line.replaceAll(SERVICENAME_TAG, serviceName);
+                            }
+                            writer.write(line);
+                            writer.newLine();
+                        }
+                    } catch (FileNotFoundException ex) {
+                        logger.log(Level.INFO, null, ex);
+                    } catch (IOException ex) {
+                        logger.log(Level.INFO, null, ex);
+                    } finally {
+                        try {
+                            if (writer != null) {
+                                writer.flush();
+                                writer.close();
+                            }
+
+                            if (reader != null) {
+                                reader.close();
+                            }
+                        } catch (IOException ex) {
+                            logger.log(Level.INFO, null, ex);
+                        }
+                    }
+
+                    wsdlModeler = WsdlModelerFactory.getDefault().getWsdlModeler(wsdlURL);
+                    wsdlModeler.generateWsdlModel(new WsdlModelListener() {
+
+                        public void modelCreated(WsdlModel model) {
+                            wsdlModel = model;
+                            if (wsdlModel == null) {
+                                try {
+                                    WsdlServiceHandler.parse(wsdlURL.toExternalForm());
+                                } catch (ParserConfigurationException ex) {
+                                    logger.log(Level.FINE, null, ex);
+                                } catch (SAXException ex) {
+                                    logger.log(Level.FINE, null, ex);
+                                } catch (IOException ex) {
+                                    logger.log(Level.FINE, null, ex);
+                                }
+                            } else {
+                                List services = wsdlModel.getServices();
+                                if (services != null && !services.isEmpty()) {
+                                    service = (WsdlService) services.get(0);
+                                    List ports = service.getPorts();
+                                    if (ports != null && !ports.isEmpty()) {
+                                        port = (WsdlPort) ports.get(0);
+                                    }
+                                }
+                            }
+                        }
+                    });
+
+                    int timeout = 10000;
+                    while ((service == null) && (timeout > 0)) {
+                        try {
+                            Thread.sleep(200);
+                            timeout -= 200;
+                        } catch (InterruptedException ex) {
+                            //                ex.printStackTrace();
+                        }
+                    }
+
+                    if (service != null) {
+                        wiz.putProperty(WizardProperties.WSDL_SERVICE, service);
+                        wiz.putProperty(WizardProperties.WSDL_PORT, port);
+                        wiz.putProperty(WizardProperties.WSDL_MODELER, wsdlModeler);
+                        new STSWizardCreator(project, wiz).createSTS();
+                    }
+                } catch (MalformedURLException ex) {
+                    logger.log(Level.INFO, null, ex);
                 }
             }
         });
 
-        int timeout = 10000;
-        while ((service == null) && (timeout > 0)) {
-            try {
-                Thread.sleep(200);
-                timeout -= 200;
-            } catch (InterruptedException ex) {
-//                ex.printStackTrace();
-            }
-        }
-        
-        if (service != null) {
-            wiz.putProperty(WizardProperties.WSDL_SERVICE, service);
-            wiz.putProperty(WizardProperties.WSDL_PORT, port);
-            wiz.putProperty(WizardProperties.WSDL_MODELER, wsdlModeler);            
-            new STSWizardCreator(project, wiz).createSTS();
-        }
-        
         return Collections.singleton(folderDO);
     }
-    
     private transient int index;
     private transient WizardDescriptor.Panel<WizardDescriptor>[] panels;
     private transient TemplateWizard wiz;
-    
+
     public void initialize(TemplateWizard wiz) {
         this.wiz = wiz;
         index = 0;
-        
+
         project = Templates.getProject(wiz);
-        
+
         boolean wizardEnabled = Util.isJavaEE5orHigher(project);
-        
+
         SourceGroup[] sourceGroups = Util.getJavaSourceGroups(project);
         WizardDescriptor.Panel firstPanel; //special case: use Java Chooser
-        if (sourceGroups.length == 0)
+        if (sourceGroups.length == 0) {
             firstPanel = new FinishableProxyWizardPanel(Templates.createSimpleTargetChooser(project, sourceGroups, null), wizardEnabled);
-        else
+        } else {
             firstPanel = new FinishableProxyWizardPanel(JavaTemplates.createPackageChooser(project, sourceGroups, null), wizardEnabled);
+        }
         JComponent comp = (JComponent) firstPanel.getComponent();
         Util.changeLabelInComponent(comp, NbBundle.getMessage(STSWizard.class, "LBL_JavaTargetChooserPanelGUI_ClassName_Label"),
-                NbBundle.getMessage(STSWizard.class, "LBL_Webservice_Name") );
+                NbBundle.getMessage(STSWizard.class, "LBL_Webservice_Name"));
         Util.hideLabelAndLabelFor(comp, NbBundle.getMessage(STSWizard.class, "LBL_JavaTargetChooserPanelGUI_CreatedFile_Label"));
-        
-        panels = new WizardDescriptor.Panel[] {
-            firstPanel,
-        };
-        
+
+        panels = new WizardDescriptor.Panel[]{
+                    firstPanel,
+                };
+
         // Creating steps.
-        Object prop = this.wiz.getProperty("WizardPanel_contentData"); // NOI18N
+        Object prop = this.wiz.getProperty(WizardDescriptor.PROP_CONTENT_DATA); // NOI18N
         String[] beforeSteps = null;
         if (prop != null && prop instanceof String[]) {
             beforeSteps = (String[]) prop;
         }
         String[] steps = createSteps(beforeSteps, panels);
-        
+
         // Make sure list of steps is accurate.
         for (int i = 0; i < panels.length; i++) {
             Component c = panels[i].getComponent();
             if (c instanceof JComponent) { // assume Swing components
                 JComponent jc = (JComponent) c;
                 // Step #.
-                jc.putClientProperty("WizardPanel_contentSelectedIndex", Integer.valueOf(i)); // NOI18N
+                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, Integer.valueOf(i)); // NOI18N
                 // Step name (actually the whole list for reference).
-                jc.putClientProperty("WizardPanel_contentData", steps); // NOI18N
+                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps); // NOI18N
             }
         }
     }
-    
+
     public void uninitialize(TemplateWizard wiz) {
         if (this.wiz != null) {
             this.wiz.putProperty(WizardProperties.WEB_SERVICE_TYPE, null);
         }
         panels = null;
     }
-    
+
     private String[] createSteps(String[] before, WizardDescriptor.Panel[] panels) {
         int diff = 0;
         if (before == null) {
@@ -309,7 +353,7 @@ public class STSWizard implements TemplateWizard.Iterator {
         } else if (before.length > 0) {
             diff = ("...".equals(before[before.length - 1])) ? 1 : 0; // NOI18N
         }
-        String[] res = new String[ (before.length - diff) + panels.length];
+        String[] res = new String[(before.length - diff) + panels.length];
         for (int i = 0; i < res.length; i++) {
             if (i < (before.length - diff)) {
                 res[i] = before[i];
@@ -319,36 +363,42 @@ public class STSWizard implements TemplateWizard.Iterator {
         }
         return res;
     }
-    
+
     public String name() {
         return MessageFormat.format(NbBundle.getMessage(STSWizard.class, "LBL_WizardStepsCount"),
-                new String[] {(Integer.valueOf(index + 1)).toString(), Integer.valueOf(panels.length).toString()}); //NOI18N
+                new String[]{(Integer.valueOf(index + 1)).toString(), Integer.valueOf(panels.length).toString()}); //NOI18N
     }
-    
+
     public boolean hasNext() {
         return index < panels.length - 1;
     }
-    
+
     public boolean hasPrevious() {
         return index > 0;
     }
-    
+
     public void nextPanel() {
-        if (!hasNext()) throw new NoSuchElementException();
+        if (!hasNext()) {
+            throw new NoSuchElementException();
+        }
         index++;
     }
-    
+
     public void previousPanel() {
-        if (!hasPrevious()) throw new NoSuchElementException();
+        if (!hasPrevious()) {
+            throw new NoSuchElementException();
+        }
         index--;
     }
-    
+
     public WizardDescriptor.Panel<WizardDescriptor> current() {
         return panels[index];
     }
-    
+
     // If nothing unusual changes in the middle of the wizard, simply:
-    public final void addChangeListener(ChangeListener l) {}
-    public final void removeChangeListener(ChangeListener l) {}
-    
+    public final void addChangeListener(ChangeListener l) {
+    }
+
+    public final void removeChangeListener(ChangeListener l) {
+    }
 }

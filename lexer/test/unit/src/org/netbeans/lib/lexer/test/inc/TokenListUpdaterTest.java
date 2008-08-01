@@ -41,13 +41,16 @@
 
 package org.netbeans.lib.lexer.test.inc;
 
+import java.io.PrintStream;
 import java.util.ConcurrentModificationException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.Document;
 import junit.framework.TestCase;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenHierarchy;
-import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.junit.NbTestCase;
 import org.netbeans.lib.lexer.test.LexerTestUtilities;
 import org.netbeans.lib.lexer.test.ModificationTextDocument;
 import org.netbeans.lib.lexer.lang.TestTokenId;
@@ -57,7 +60,7 @@ import org.netbeans.lib.lexer.lang.TestTokenId;
  *
  * @author mmetelka
  */
-public class TokenListUpdaterTest extends TestCase {
+public class TokenListUpdaterTest extends NbTestCase {
     
     public TokenListUpdaterTest(String testName) {
         super(testName);
@@ -67,6 +70,18 @@ public class TokenListUpdaterTest extends TestCase {
     }
 
     protected void tearDown() throws java.lang.Exception {
+    }
+
+    @Override
+    public PrintStream getLog() {
+        return System.out;
+//        return super.getLog();
+    }
+
+    @Override
+    protected Level logLevel() {
+        return Level.INFO;
+//        return super.logLevel();;
     }
 
     public void testInsertUnfinishedLexing() throws Exception {
@@ -176,7 +191,9 @@ public class TokenListUpdaterTest extends TestCase {
         LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "a", 0);
         
         // Remove "b"
+//        Logger.getLogger(org.netbeans.lib.lexer.inc.TokenListUpdater.class.getName()).setLevel(Level.FINE); // Extra logging
         doc.remove(2, 1);
+//        Logger.getLogger(org.netbeans.lib.lexer.inc.TokenListUpdater.class.getName()).setLevel(Level.WARNING); // End of extra logging
         try {
             ts.moveNext();
             fail("Should not get there");
@@ -186,6 +203,7 @@ public class TokenListUpdaterTest extends TestCase {
 
         ts = hi.tokenSequence();
         assertTrue(ts.moveNext());
+        CharSequence tokenText = ts.token().text();
         LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "a", 0);
         assertTrue(ts.moveNext());
         LexerTestUtilities.assertTokenEquals(ts,TestTokenId.PLUS, "+", 1);

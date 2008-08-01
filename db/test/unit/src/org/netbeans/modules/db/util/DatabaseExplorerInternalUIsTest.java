@@ -94,8 +94,15 @@ public class DatabaseExplorerInternalUIsTest extends TestBase {
         DatabaseExplorerInternalUIs.connect(combo, JDBCDriverManager.getDefault());
 
         assertTrue("Wrong number of items in the combobox", combo.getItemCount() == 4);
-        assertSame(driver2, combo.getItemAt(0));
-        assertSame(driver1, combo.getItemAt(1));
+        JdbcUrl url = (JdbcUrl)combo.getItemAt(0);
+        assertSame(driver2, url.getDriver());
+        assertSame(driver2.getClassName(), url.getClassName());
+        assertSame(driver2.getDisplayName(), url.getDisplayName());
+        
+        url = (JdbcUrl)combo.getItemAt(1);
+        assertSame(driver1,  url.getDriver());
+        assertSame(driver1.getClassName(), url.getClassName());
+        assertSame(driver1.getDisplayName(), url.getDisplayName());
     }
 
     public void testComboBoxWithDriverClass() throws Exception {
@@ -104,6 +111,9 @@ public class DatabaseExplorerInternalUIsTest extends TestBase {
         DatabaseExplorerInternalUIs.connect(combo, JDBCDriverManager.getDefault(), "org.bar.BarDriver");
 
         assertTrue("Wrong number of items in the combobox", combo.getItemCount() == 1);
-        assertSame(driver2, combo.getItemAt(0));
+        JdbcUrl url = (JdbcUrl)combo.getItemAt(0);
+        assertSame(driver2, url.getDriver());
+        assertSame(driver2.getClassName(), url.getClassName());
+        assertSame(driver2.getDisplayName(), url.getDisplayName());
     }
 }

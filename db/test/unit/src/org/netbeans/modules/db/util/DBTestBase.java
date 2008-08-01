@@ -27,6 +27,7 @@
  */
 package org.netbeans.modules.db.util;
 
+import java.net.URL;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
@@ -35,19 +36,14 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.sql.Types;
 import java.util.Iterator;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.lib.ddl.impl.AddColumn;
-import org.netbeans.lib.ddl.impl.CreateIndex;
-import org.netbeans.lib.ddl.impl.CreateTable;
-import org.netbeans.lib.ddl.impl.CreateView;
-import org.netbeans.lib.ddl.impl.DriverSpecification;
-import org.netbeans.lib.ddl.impl.Specification;
-import org.netbeans.lib.ddl.impl.SpecificationFactory;
-import org.netbeans.lib.ddl.impl.TableColumn;
+import org.netbeans.api.db.explorer.ConnectionManager;
+import org.netbeans.api.db.explorer.DatabaseConnection;
+import org.netbeans.api.db.explorer.JDBCDriver;
+import org.netbeans.api.db.explorer.JDBCDriverManager;
 import org.netbeans.modules.db.test.TestBase;
 
 /**
@@ -72,14 +68,15 @@ public abstract class DBTestBase extends TestBase {
     private static String password;
     private static String dbname;
     protected static String dblocation;
-
+    private static URL driverJarUrl;
+    
     private static String DRIVER_PROPERTY = "db.driverclass";
     private static String URL_PROPERTY = "db.url";
     private static String USERNAME_PROPERTY = "db.username";
     private static String PASSWORD_PROPERTY = "db.password";
     private static String DBDIR_PROPERTY = "db.dir";
     private static String DBNAME_PROPERTY = "db.name";
-    
+
     private static String quoteString = null;
     
     // This defines what happens to identifiers when stored in db
@@ -92,67 +89,90 @@ public abstract class DBTestBase extends TestBase {
     private static int    unquotedCaseRule = RULE_UNDEFINED;
     private static int    quotedCaseRule = RULE_UNDEFINED;
 
-    protected static SpecificationFactory specfactory;
+    private static JDBCDriver jdbcDriver;
+    private static DatabaseConnection dbConnection;
     
     protected Connection conn;
-    protected Specification spec;
-    protected DriverSpecification drvSpec;
-
-    static {
-        try {
-            specfactory = new SpecificationFactory();
-
-            driverClass = System.getProperty(DRIVER_PROPERTY, 
-                    "org.apache.derby.jdbc.EmbeddedDriver");
-            dbname = System.getProperty(DBNAME_PROPERTY, "ddltestdb");
-            
-            dblocation = System.getProperty(DBDIR_PROPERTY, "");
-            
-            // Add a slash for the Derby URL syntax if we are
-            // requesting a specific path for database files
-            if ( dblocation.length() > 0 ) {
-                dblocation = dblocation + "/";
-            }
-            
-            LOGGER.log(DEBUGLEVEL, "DB location is " + dblocation);
-            
-            dbUrl = System.getProperty(URL_PROPERTY, 
-                    "jdbc:derby:" + dblocation + dbname + ";create=true");
-            
-            LOGGER.log(DEBUGLEVEL, "DB URL is " + dbUrl);
-                            
-            username = System.getProperty(USERNAME_PROPERTY, "testddl");
-            password = System.getProperty(PASSWORD_PROPERTY, "testddl");
-        } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, null, e);
-            throw new RuntimeException(e);
-        }
-    }
 
     public DBTestBase(String name) {
         super(name);
     }
 
+    protected static JDBCDriver getJDBCDriver() throws Exception{
+        if (jdbcDriver == null) {
+            jdbcDriver = JDBCDriver.create("derbydriver", "derbydriver", driverClass, new URL[] {driverJarUrl});
+            assertNotNull(jdbcDriver);
+            JDBCDriverManager.getDefault().addDriver(jdbcDriver);
+        }
+
+        return jdbcDriver;
+
+    }
+
+    /**
+     * Get the DatabaseConnection for the configured Java DB database.  This
+     * method will create and register the connection the first time it is called
+     */
+    protected static DatabaseConnection getDatabaseConnection() throws Exception {
+        if (dbConnection == null) {
+            JDBCDriver driver = getJDBCDriver();
+
+            dbConnection = DatabaseConnection.create(driver, dbUrl, username, "APP", password, false);
+            ConnectionManager.getDefault().addConnection(dbConnection);
+        }
+
+        return dbConnection;
+    }
+
+    protected static String getDbUrl() {
+        return dbUrl;
+    }
+
+    protected static String getDriverClass() {
+        return driverClass;
+    }
+
+    protected static String getPassword() {
+        return password;
+    }
+
+    public static String getUsername() {
+        return username;
+    }
+
     
-    public void setUp() throws Exception {
+    @Override
+    protected void setUp() throws Exception {
+        driverClass = System.getProperty(DRIVER_PROPERTY,
+                "org.apache.derby.jdbc.EmbeddedDriver");
+        dbname = System.getProperty(DBNAME_PROPERTY, "ddltestdb");
+
+        clearWorkDir();
+        dblocation = System.getProperty(DBDIR_PROPERTY, getWorkDirPath());
+
+        // Add a slash for the Derby URL syntax if we are
+        // requesting a specific path for database files
+        if ( dblocation.length() > 0 ) {
+            dblocation = dblocation + "/";
+        }
+
+        LOGGER.log(DEBUGLEVEL, "DB location is " + dblocation);
+
+        dbUrl = System.getProperty(URL_PROPERTY,
+                "jdbc:derby:" + dblocation + dbname + ";create=true");
+
+        LOGGER.log(DEBUGLEVEL, "DB URL is " + dbUrl);
+
+        username = System.getProperty(USERNAME_PROPERTY, "testddl");
+        password = System.getProperty(PASSWORD_PROPERTY, "testddl");
+
+        driverJarUrl = Class.forName(driverClass).getProtectionDomain().getCodeSource().getLocation();
+
         try {
             getConnection();
             createSchema();
             setSchema();
             initQuoteString();
-            spec = (Specification)specfactory.createSpecification(conn);
-            
-            drvSpec = specfactory.createDriverSpecification(
-                    spec.getMetaData().getDriverName().trim());
-            if (spec.getMetaData().getDriverName().trim().equals(
-                    "jConnect (TM) for JDBC (TM)")) //NOI18N
-                //hack for Sybase ASE - copied from mainline code
-                drvSpec.setMetaData(conn.getMetaData());
-            else
-                drvSpec.setMetaData(spec.getMetaData());
-            
-            drvSpec.setCatalog(conn.getCatalog());
-            drvSpec.setSchema(SCHEMA);
         } catch ( SQLException e ) {
             SQLException original = e;
             while ( e != null ) {
@@ -191,7 +211,7 @@ public abstract class DBTestBase extends TestBase {
         conn = DriverManager.getConnection(dbUrl, username, password);
         return conn;
     }
-
+    
     protected void createSchema() throws Exception {
         dropSchema();
         conn.createStatement().executeUpdate("CREATE SCHEMA " + SCHEMA);
@@ -296,7 +316,7 @@ public abstract class DBTestBase extends TestBase {
         }
     }
     
-    private void initQuoteString() throws Exception {
+    protected void initQuoteString() throws Exception {
         if ( quoteString != null  ) {
             return;
         }
@@ -577,67 +597,6 @@ public abstract class DBTestBase extends TestBase {
         }
         
         return numrows;
-    }
-    
-    protected void createBasicTable(String tablename, String pkeyName) 
-            throws Exception {
-        dropTable(tablename);
-        CreateTable cmd = spec.createCommandCreateTable(tablename);
-        cmd.setObjectOwner(SCHEMA);
-                
-        // primary key
-        TableColumn col = cmd.createPrimaryKeyColumn(pkeyName);
-        col.setColumnType(Types.INTEGER);
-        col.setNullAllowed(false);
-        
-        cmd.execute();
-    }
-    
-    protected void createView(String viewName, String query) throws Exception {
-        CreateView cmd = spec.createCommandCreateView(viewName);
-        cmd.setQuery(query);
-        cmd.setObjectOwner(SCHEMA);
-        cmd.execute();
-        
-        assertFalse(cmd.wasException());        
-    }
-
-    protected void createSimpleIndex(String tablename, 
-            String indexname, String colname) throws Exception {
-        // Need to get identifier into correct case because we are
-        // still quoting referred-to identifiers.
-        tablename = fixIdentifier(tablename);
-        CreateIndex xcmd = spec.createCommandCreateIndex(tablename);
-        xcmd.setIndexName(indexname);
-
-        // *not* unique
-        xcmd.setIndexType(new String());
-
-        xcmd.setObjectOwner(SCHEMA);
-        xcmd.specifyColumn(fixIdentifier(colname));
-
-        xcmd.execute();        
-    }
-    
-    /**
-     * Adds a basic column.  Non-unique, allows nulls.
-     */
-    protected void addBasicColumn(String tablename, String colname,
-            int type, int size) throws Exception {
-        // Need to get identifier into correct case because we are
-        // still quoting referred-to identifiers.
-        tablename = fixIdentifier(tablename);
-        AddColumn cmd = spec.createCommandAddColumn(tablename);
-        cmd.setObjectOwner(SCHEMA);
-        TableColumn col = (TableColumn)cmd.createColumn(colname);
-        col.setColumnType(type);
-        col.setColumnSize(size);
-        col.setNullAllowed(true);
-        
-        cmd.execute();
-        if ( cmd.wasException() ) {
-            throw new Exception("Unable to add column");
-        }
     }
     
     protected void tearDown() throws Exception {

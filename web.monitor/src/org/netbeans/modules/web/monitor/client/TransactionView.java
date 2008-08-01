@@ -427,12 +427,12 @@ class TransactionView extends TopComponent implements ExplorerManager.Provider,
 	requestDisplay = new RequestDisplay(); 
 	JScrollPane p = new JScrollPane(requestDisplay);
         p.getVerticalScrollBar().setUnitIncrement(scrollingUnitIncrement);
-	jtp.addTab(NbBundle.getBundle(TransactionView.class).getString("MON_Request_19"), p);
+	jtp.addTab(NbBundle.getBundle(TransactionView.class).getString("MON_Request_19_Tab"), p);
 
 	cookieDisplay = new CookieDisplay(); 
 	p = new JScrollPane(cookieDisplay);
         p.getVerticalScrollBar().setUnitIncrement(scrollingUnitIncrement);
-	jtp.addTab(NbBundle.getBundle(TransactionView.class).getString("MON_Cookies_4"), p);
+	jtp.addTab(NbBundle.getBundle(TransactionView.class).getString("MON_Cookies_4_Tab"), p);
 
 	sessionDisplay = new SessionDisplay(); 
 	p = new JScrollPane(sessionDisplay);

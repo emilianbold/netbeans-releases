@@ -55,7 +55,6 @@ import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.openide.filesystems.*;
-import org.openide.loaders.*;
 import org.openide.util.*;
 
 import org.netbeans.tax.*;
@@ -88,14 +87,14 @@ public class GenerateDOMScannerSupport implements XMLGenerateCookie {
 //    private static final Type Type_STRING = Type.createFromClass (String.class);
 
 
-    private DataObject DO;
+    private DTDDataObject DO;
     private TreeDTDRoot dtd;
 
     public GenerateDOMScannerSupport (DTDDataObject DO) {
 	this (DO, null);
     }
 
-    public GenerateDOMScannerSupport (DataObject DO, TreeDTDRoot dtd) {
+    public GenerateDOMScannerSupport (DTDDataObject DO, TreeDTDRoot dtd) {
         if (DO == null) throw new IllegalArgumentException("null"); // NOI18N
         this.DO = DO;
         this.dtd = dtd;
@@ -137,7 +136,7 @@ public class GenerateDOMScannerSupport implements XMLGenerateCookie {
 	if (dtd == null) {
         TreeDocumentRoot result;
 
-        TreeEditorCookie cake = (TreeEditorCookie) ((DTDDataObject)DO).getCookie(TreeEditorCookie.class);
+        TreeEditorCookie cake = (TreeEditorCookie)DO.getCookie(TreeEditorCookie.class);
         if (cake != null) {
             result = cake.openDocumentRoot();
         } else {

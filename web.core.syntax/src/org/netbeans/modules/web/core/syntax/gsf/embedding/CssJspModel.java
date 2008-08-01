@@ -40,7 +40,10 @@
  */
 package org.netbeans.modules.web.core.syntax.gsf.embedding;
 
+import java.io.StringReader;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.Document;
@@ -49,7 +52,15 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.css.parser.CSSParserTreeConstants;
+import org.netbeans.modules.css.parser.CssParserAccess;
+import org.netbeans.modules.css.parser.NodeVisitor;
+import org.netbeans.modules.css.parser.SimpleNode;
+import org.netbeans.modules.css.parser.SimpleNodeUtil;
+import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.html.editor.gsf.embedding.CssModel;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
 
 /**
  * Creates a CSS model from HTML source code in JSP page. 
@@ -71,13 +82,35 @@ public class CssJspModel extends CssModel {
         return model;
     }
 
+    private static final String PREFIX = "GENERATED_";
+    private static final String POSTFIX = ";";
+    
+    private static final String EL = PREFIX + "EXPRESSION_LANGUAGE" + POSTFIX;
+    private static final String JAVA = PREFIX + "GENERATED_JAVA_CODE" + POSTFIX;
+    
+    private static final String FIXED_SELECTOR = PREFIX + "FIXED_SELECTOR";
+    
+    private CssParserAccess.CssParserResult cachedParserResult = null;
+    
     private CssJspModel(Document doc) {
         super(doc);
     }
 
+    public CssParserAccess.CssParserResult getCachedParserResult() {
+        if(!documentDirty) {
+            return cachedParserResult;
+        } else {
+            return null;
+        }
+    }
+    
     @Override
     public String getCode() {
         if (documentDirty) {
+            cachedParserResult = null;
+            
+            long a = System.currentTimeMillis();
+            
             documentDirty = false;
 
             codeBlocks.clear();
@@ -86,23 +119,244 @@ public class CssJspModel extends CssModel {
             BaseDocument d = (BaseDocument) doc;
             try {
                 d.readLock();
-                extractCssFromJSP(doc, buffer);
+                List<OffsetRange> generated = new  ArrayList<OffsetRange>();
+                extractCssFromJSP(doc, buffer, generated);
+
+                if(generated.isEmpty()) {
+                    code = buffer.toString();
+                    LOGGER.log(Level.FINE, "NO REPLACED TEMPLATING!");
+                    return code;
+                }
+                
+                Boolean doSanitize = (Boolean)doc.getProperty("sanitize_source");
+                
+                if(doSanitize != null && !doSanitize.booleanValue()) {
+                    //do not sanitize
+                    code = buffer.toString();
+                    
+                    LOGGER.log(Level.FINE, "SANITIZING DISABLED!");
+                    LOGGER.log(Level.FINE, dumpCode());
+                    return code;
+                }
+                
+                if (LOG) {
+                    code = buffer.toString();
+                    LOGGER.log(Level.FINE, "BEFORE SANITIZING");
+                    LOGGER.log(Level.FINE, dumpCode());
+                }
+
+                long b = System.currentTimeMillis();
+                sanitizeCode(buffer, generated);
+
+                code = buffer.toString();
+                
+                if (LOG) {
+                    
+                    LOGGER.log(Level.FINE, "AFTER SANITIZING");
+                    LOGGER.log(Level.FINE, dumpCode());
+                }
+
+
+                if(LOG) {
+                    LOGGER.log(Level.FINE, "CSS source generation took " + (b - a) + " ms.");
+                    LOGGER.log(Level.FINE, "CSS source validation took " + (System.currentTimeMillis() - b) + " ms.");
+                }
+
+
             } finally {
                 d.readUnlock();
             }
-            code = buffer.toString();
-        }
 
-        if(LOG) {
-            LOGGER.log(Level.FINE, dumpCode());
-            
         }
 
         return code;
     }
 
+    private void sanitizeCode(final StringBuilder buff, final List<OffsetRange> templatingBlocks) {
+        
+        final boolean[] cleared = new boolean[1];
+            
+            NodeVisitor visitor = new NodeVisitor() {
+
+                public void visit(SimpleNode node) {
+                    if (node.kind() == CSSParserTreeConstants.JJTERROR_SKIPBLOCK || node.kind() == CSSParserTreeConstants.JJTERROR_SKIPDECL) {
+                        SimpleNode parent = (SimpleNode) node.jjtGetParent();
+
+                        LOGGER.log(Level.FINE, "Tree Error  on " + node + "; parent: " + parent);
+
+                        if (parent.kind() == CSSParserTreeConstants.JJTDECLARATION) {
+                            //possibly clear the declaration even there is no generated code inside
+                            //the error may be caused by previous incorrectly fixed declaration
+                            boolean fixesInPreviousDeclaration = false;
+                            SimpleNode siblingBefore = SimpleNodeUtil.getSibling(parent, true);
+                            if(siblingBefore != null && siblingBefore.kind() == CSSParserTreeConstants.JJTDECLARATION) {
+                                //force clear if there was fixes in the previous declaration
+                                fixesInPreviousDeclaration = containsGeneratedCode(siblingBefore, buff);
+                            }
+
+                            if(clearNode(parent, buff, 0, 0, templatingBlocks, fixesInPreviousDeclaration, true)) {
+                                cleared[0] = true;
+                            }
+                        }
+                        if (parent.kind() == CSSParserTreeConstants.JJTSTYLERULE) {
+                            SimpleNode siblingBefore = SimpleNodeUtil.getSibling(node, true);
+                            if (siblingBefore.kind() == CSSParserTreeConstants.JJTREPORTERROR) {
+                                siblingBefore = SimpleNodeUtil.getSibling(siblingBefore, true);
+                                if (siblingBefore.kind() == CSSParserTreeConstants.JJTDECLARATION) {
+                                    boolean modif = clearNode(siblingBefore, buff, 0, 0, templatingBlocks, false, false); //clear the last declaration node
+                                    if (modif) {
+                                        clearNode(node, buff, 0, -1, templatingBlocks, true, false); //clear the skipblock itself, exclude closing symbol
+                                        cleared[0] = true;
+                                    }
+                                } else if(siblingBefore.kind() == CSSParserTreeConstants.JJTSELECTORLIST) {
+                                    //error in selector list
+                                    //repair the code from the selector list beginning to first left curly bracket
+                                    int from = siblingBefore.startOffset();
+                                    int curlyBracketIndex = buff.indexOf("{", from);
+                                    if(curlyBracketIndex > 0) {
+                                        clearAndWrite(buff, from, curlyBracketIndex, FIXED_SELECTOR);
+                                        cleared[0] = true;
+                                    }
+                                    
+                                }
+                            }
+                        }
+
+
+                    }
+                }
+            };
+
+            long startTime = System.currentTimeMillis();
+            
+            //parse the buffer until the templating issue gets fixed.
+            int i = 0;
+            for(; i < 4; i++) {
+                cleared[0] = false;
+                //parse the buffer
+                CssParserAccess parserAccess = CssParserAccess.getDefault();
+                CssParserAccess.CssParserResult result = parserAccess.parse(new StringReader(buff.toString()));
+                
+                SimpleNode root = result.root();
+                if(root == null) {
+                    //unrecoverable parsing error
+                    return;
+                }
+                
+                if(LOG) {
+                    LOGGER.fine("> SANITIZING LEVEL #" + i + " >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+                    LOGGER.fine(buff.toString());
+                    LOGGER.fine("------------------------");
+                    LOGGER.fine(root.dump(""));
+                    LOGGER.fine("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
+                }
+                
+                root.visitChildren(visitor);
+
+                if(!cleared[0]) {
+                    //cache the parser result
+                    cachedParserResult = result;
+                    //source checking finished without any correction => finish
+                    break;
+                }
+            }
+            
+            if(cleared[0]) {
+                LOGGER.warning("CSS source sanitization didn't success even after four passes!");
+            }
+            
+            long endTime = System.currentTimeMillis();
+            DataObject od = (DataObject)doc.getProperty(doc.StreamDescriptionProperty);
+            FileObject fo = null;
+            if(od != null) {
+                fo = od.getPrimaryFile();
+            }
+            Logger.getLogger("TIMER").log(Level.FINE, "CSS Sanitizing [" + i + "]",
+                    new Object[] {fo, endTime - startTime});                
+            
+        
+
+    }
+    
+    private boolean clearNode(SimpleNode node, StringBuilder buff, 
+            int startDelta, int endDelta, 
+            List<OffsetRange> templatingBlocks,
+            boolean forceClear, boolean wholeLine) {
+        int from = node.startOffset();
+        int to = node.endOffset();
+        
+        if(from >= to) {
+            System.err.println("clearNode from >= to! node: " + node);
+            return false;
+        }
+        
+        if(wholeLine) {
+            //find line start and end
+            int linestart = from;
+            while(linestart >= 0) {
+                char ch = buff.charAt(linestart);
+                if(ch == '\n') {
+                    break;
+                } else {
+                    linestart--;
+                }
+            }
+            
+            int lineend = to;
+            while(lineend < buff.length()) {
+                char ch = buff.charAt(lineend);
+                
+                if(ch == '\n') {
+                    break;
+                } else {
+                    lineend++;
+                }
+            }
+            
+            from = linestart;
+            to = lineend;
+        }
+        
+        
+        from += startDelta;
+        to += endDelta;
+
+        if(from >= to) {
+            System.err.println("clearNode from+startDelta >= to+endDelta! node: " + node);
+            return false;
+        }
+        
+        if(forceClear || containsGeneratedCode(node, buff)) {
+            LOGGER.log(Level.FINE, "CLEARING NODE " + node + " [" + buff.substring(from, to) + "]");
+            clear(buff, from, to);
+            return true;
+        }
+        return false;
+    }
+    
+    private boolean containsGeneratedCode(SimpleNode node, StringBuilder buff) {
+        int from = node.startOffset();
+        int to = node.endOffset();
+
+        //fast hack, I should rather use the templating ranges
+        return buff.substring(from, to).contains(PREFIX);
+    }
+    
+    private void clear(StringBuilder buff, int from, int to) {
+        assert from < to;
+        for (int i = from; i < to; i++) {
+                buff.setCharAt(i, ' ');
+            }
+    }
+    
+    private void clearAndWrite(StringBuilder buff, int from, int to, String text) {
+        LOGGER.log(Level.FINE, "CLEARING&&REPLACING [" + buff.substring(from, to) + "]: " + text);
+        clear(buff, from, to);
+        buff.replace(from, from + text.length(), text);
+    }
+
     /** @DocumenLock(type=READ) */
-    private void extractCssFromJSP(Document doc, StringBuilder buffer) {
+    private void extractCssFromJSP(Document doc, StringBuilder buffer, List<OffsetRange> templatingBlocks) {
         HashMap<String, Object> state = new HashMap<String, Object>(6);
         TokenHierarchy th = TokenHierarchy.get(doc);
         TokenSequence<JspTokenId> ts = th.tokenSequence();
@@ -125,8 +379,11 @@ public class CssJspModel extends CssModel {
                         int sourceEnd = ts.offset() + token.length();
 
                         int generatedStart = buffer.length();
-                        buffer.append(token.id() == JspTokenId.EL ? "EXPRESSION_LANGUAGE" : "JAVA_CODE"); //NOI18N
+                        buffer.append(token.id() == JspTokenId.EL ? EL : JAVA); //NOI18N
                         int generatedEnd = buffer.length();
+                        
+                        templatingBlocks.add(new OffsetRange(generatedStart, generatedEnd));
+                        
                         CodeBlockData blockData = new CodeBlockData(sourceStart, sourceEnd, generatedStart,
                                 generatedEnd);
                         codeBlocks.add(blockData);

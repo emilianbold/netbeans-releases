@@ -79,4 +79,7 @@ public interface Resolver {
      */
     public CsmObject resolve(CharSequence qualifiedName, int interestedKind);
 
+    public interface SafeClassifierProvider {
+        CsmClassifier getClassifier(Resolver resolver);
+    }    
 }

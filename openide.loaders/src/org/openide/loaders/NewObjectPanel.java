@@ -47,6 +47,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentListener;
+import org.openide.WizardDescriptor;
 import org.openide.awt.Mnemonics;
 import org.openide.util.Utilities;
 
@@ -75,8 +76,8 @@ final class NewObjectPanel extends javax.swing.JPanel implements DocumentListene
         
         setNewObjectName(""); // NOI18N
 
-        putClientProperty("WizardPanel_contentData", new String[] { getName() }); //NOI18N
-        putClientProperty("WizardPanel_contentSelectedIndex", new Integer(0)); //NOI18N
+        putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, new String[] { getName() }); //NOI18N
+        putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer(0)); //NOI18N
         
         newObjectName.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_NewObjectName"));  // NOI18N
         getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_NewObjectPanel")); // NOI18N

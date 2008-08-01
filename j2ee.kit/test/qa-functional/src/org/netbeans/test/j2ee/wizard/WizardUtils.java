@@ -113,7 +113,7 @@ public class WizardUtils {
     public static NewProjectNameLocationStepOperator setJ2eeSpecVersion(
             NewProjectNameLocationStepOperator op, int moduleType, String version) {
         op.next();
-        JComboBoxOperator jcbo = new JComboBoxOperator(op, 0);
+        JComboBoxOperator jcbo = new JComboBoxOperator(op, 1);
         boolean found = false;
         int i = 0;
         for (; i < jcbo.getItemCount(); i++) {

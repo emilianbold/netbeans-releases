@@ -25,7 +25,6 @@ import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jemmy.QueueTool;
 import org.netbeans.jemmy.operators.JCheckBoxMenuItemOperator;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JMenuBarOperator;
@@ -130,8 +129,8 @@ public final class TestKit {
     
     public static void waitForScanFinishedAndQueueEmpty() {
         ProjectSupport.waitScanFinished();
-        new QueueTool().waitEmpty(1000);
-        ProjectSupport.waitScanFinished();
+//        new QueueTool().waitEmpty(1000);
+//        ProjectSupport.waitScanFinished();
     }
     
     public static void finalRemove() throws Exception {

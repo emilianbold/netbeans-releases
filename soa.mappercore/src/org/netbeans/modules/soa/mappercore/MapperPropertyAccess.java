@@ -57,7 +57,7 @@ public class MapperPropertyAccess {
     
     
     public final MapperModel getMapperModel() {
-        return mapper.getModel();
+        return mapper.getFilteredModel();
     }
     
     

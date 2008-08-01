@@ -47,6 +47,7 @@ import java.beans.VetoableChangeListener;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.LinkedList;
+import java.util.logging.Level;
 import org.netbeans.junit.NbTestCase;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -72,6 +73,11 @@ public class ExplorerManagerTest extends NbTestCase
     @Override
     protected boolean runInEQ() {
         return true;
+    }
+
+    @Override
+    protected Level logLevel() {
+        return Level.FINE;
     }
     
     @Override

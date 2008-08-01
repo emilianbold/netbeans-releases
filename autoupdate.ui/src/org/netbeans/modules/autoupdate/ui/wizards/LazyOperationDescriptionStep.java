@@ -80,6 +80,8 @@ public class LazyOperationDescriptionStep implements WizardDescriptor.Panel<Wiza
     private RequestProcessor.Task checkRealUpdatesTask = null;
     private WizardDescriptor wd = null;
     private boolean forceReload;
+    private boolean canClose = false;
+
     
     /** Creates a new instance of OperationDescriptionStep */
     public LazyOperationDescriptionStep (Collection<LazyUnit> model, OperationType doOperation, boolean forceReload) {
@@ -123,7 +125,7 @@ public class LazyOperationDescriptionStep implements WizardDescriptor.Panel<Wiza
             long estimatedTime = Utilities.getTimeOfInitialization ();
             if (forceReload) {
                 long refreshTime = Utilities.getTimeOfRefreshUpdateCenters ();
-                estimatedTime = estimatedTime > 0 && refreshTime > 0 ? estimatedTime + refreshTime : 0;
+                estimatedTime = estimatedTime > 0 || refreshTime > 0 ? estimatedTime + refreshTime : 0;
             }
             component.setWaitingState (true, estimatedTime);
             checkRealUpdates ();
@@ -135,7 +137,7 @@ public class LazyOperationDescriptionStep implements WizardDescriptor.Panel<Wiza
     private void checkRealUpdates () {
         checkRealUpdatesTask = RequestProcessor.getDefault ().post (new Runnable () {
             public void run () {
-                Collection<UpdateElement> updates = AutoupdateCheckScheduler.checkUpdateElements (operationType, true);
+                final Collection<UpdateElement> updates = AutoupdateCheckScheduler.checkUpdateElements (operationType, forceReload);
                 hasUpdates = updates != null && ! updates.isEmpty ();
                 if (hasUpdates) {
                     assert wd != null : "WizardDescriptor must found!";
@@ -154,6 +156,8 @@ public class LazyOperationDescriptionStep implements WizardDescriptor.Panel<Wiza
                             public void run () {
                                 wd.setPanelsAndSettings (panels, wd);
                                 fireChange ();
+                                LazyUnit.storeUpdateElements (operationType, updates);
+                                AutoupdateCheckScheduler.notifyAvailable (LazyUnit.loadLazyUnits (operationType), operationType);
                             }
                         });
                     }
@@ -170,6 +174,8 @@ public class LazyOperationDescriptionStep implements WizardDescriptor.Panel<Wiza
                             "", "",
                             false);
                     installModel = Collections.EMPTY_SET;
+                    new InstallUnitWizardModel (null, null).modifyOptionsForDoClose (wd);
+                    canClose = true;
                     LazyUnit.storeLazyUnits (operationType, installModel);
                     SwingUtilities.invokeLater (new Runnable () {
                         public void run () {
@@ -230,7 +236,7 @@ public class LazyOperationDescriptionStep implements WizardDescriptor.Panel<Wiza
     }
 
     public boolean isValid () {
-        return false;
+        return canClose;
     }
 
     public synchronized void addChangeListener (ChangeListener l) {

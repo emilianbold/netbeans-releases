@@ -1,5 +1,19 @@
-package test;
+<#-- FreeMarker template (see http://freemarker.org/) -->
+<#assign licenseFirst = "/*">
+<#assign licensePrefix = " * ">
+<#assign licenseLast = " */">
+<#include "../Licenses/license-${project.license}.txt">
 
+/*
+ * ${name}.java
+ *
+ * Created on ${date}, ${time}
+ */
+
+<#if package?? && package != "">
+package ${package};
+
+</#if>
 import java.awt.EventQueue;
 import java.beans.Beans;
 import java.util.ArrayList;/* DETAIL_ONLY */
@@ -11,9 +25,13 @@ import javax.persistence.RollbackException;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
-public class __NAME__ extends JPanel {
+/**
+ *
+ * @author ${user}
+ */
+public class ${name} extends JPanel {
     
-    public __NAME__() {
+    public ${name}() {
         initComponents();
         if (!Beans.isDesignTime()) {
             entityManager.getTransaction().begin();
@@ -57,7 +75,7 @@ public class __NAME__ extends JPanel {
         Collection<_detailClass_> _detailEntityInitial_s = _masterEntityInitial_.get_joinCollectionCapital_();
         if (_detailEntityInitial_s == null) {
             _detailEntityInitial_s = new LinkedList<_detailClass_>();
-            _masterEntityInitial_.set_joinCollectionCapital_(_detailEntityInitial_s);
+            _masterEntityInitial_.set_joinCollectionCapital_((List)_detailEntityInitial_s);
         }
         _detailClass_ _detailEntityInitial_ = new _detailClass_();
         entityManager.persist(_detailEntityInitial_);
@@ -126,7 +144,7 @@ public class __NAME__ extends JPanel {
         EventQueue.invokeLater(new Runnable() {
             public void run() {
                 JFrame frame = new JFrame();
-                frame.setContentPane(new __NAME__());
+                frame.setContentPane(new ${name}());
                 frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
                 frame.pack();
                 frame.setVisible(true);

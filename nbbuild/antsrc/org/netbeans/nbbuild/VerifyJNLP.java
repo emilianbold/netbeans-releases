@@ -167,13 +167,17 @@ public class VerifyJNLP extends Task {
                             // jnlp.xml in harness generates <icon href="${app.icon}"/> optimistically.
                             // Does not seem to be a problem if it is missing.
                             log(jnlp + ": warning: no such file " + f, Project.MSG_WARN);
-                        } else {
+                        } else if (! f.exists() && f.getName().startsWith("locale")) {
+                            // skip missing locale files, probably the best fix for #103301 (copied from MakeJNLP.java)
+                            log("Localization file " + f + " is referenced, but cannot be found. Skipping.", Project.MSG_WARN);
+                        }
+                        else {
                             throw new BuildException("JNLP validation error\n" + jnlp + ": no such file " + f);
                         }
                     }
                     if (el.getTagName().equals("extension")) {
                         validate(f);
-                    } else if (el.getTagName().equals("jar")) {
+                    } else if (el.getTagName().equals("jar") && f.exists()) {
                         try {
                             JarFile jf = new JarFile(f, true);
                             // Try to find signers.

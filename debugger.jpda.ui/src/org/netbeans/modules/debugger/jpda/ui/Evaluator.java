@@ -68,6 +68,10 @@ import javax.swing.JEditorPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.event.PopupMenuEvent;
+import javax.swing.event.PopupMenuListener;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
@@ -122,6 +126,8 @@ public class Evaluator extends javax.swing.JPanel {
     private boolean ignoreEvents = false;
     private SessionListener sessionListener;
     private PropertyChangeListener csfListener;
+    private JButton watchButton;
+    private JButton evaluateButton;
     
     /** Creates new form Evaluator */
     public Evaluator(JPDADebugger debugger) {
@@ -141,6 +147,9 @@ public class Evaluator extends javax.swing.JPanel {
     }
     
     private void setDebugger(JPDADebugger debugger) {
+        if (debugger == this.debugger || debugger == null) {
+            return;
+        }
         this.debugger = debugger;
         this.csfListener = new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
@@ -156,6 +165,14 @@ public class Evaluator extends javax.swing.JPanel {
         };
         debugger.addPropertyChangeListener(
                 WeakListeners.propertyChange(csfListener, debugger));
+    }
+    
+    private void setButtons(JButton watchButton, JButton evaluateButton) {
+        this.watchButton = watchButton;
+        this.evaluateButton = evaluateButton;
+        boolean enabled = ((CompletionedEditor) expressionComboBox.getEditor()).getDocument().getLength() > 0;
+        watchButton.setEnabled(enabled);
+        evaluateButton.setEnabled(enabled);
     }
     
     /** This method is called from within the constructor to
@@ -236,13 +253,36 @@ public class Evaluator extends javax.swing.JPanel {
     
     private void initCombo() {
         String textInEditor = (String) expressionComboBox.getEditor().getItem();
-        CompletionedEditor ce = new CompletionedEditor();
+        final CompletionedEditor ce = new CompletionedEditor(expressionComboBox);
         expressionComboBox.setEditor(ce);
         expressionComboBox.setEditable(true);
         ce.setupContext();
         expressionComboBox.getEditor().setItem(textInEditor);
         //expressionComboBox.revalidate();
         expressionComboBox.repaint();
+        
+        class ExpressionDocumentListener implements DocumentListener, Runnable {
+            public void insertUpdate(DocumentEvent e) {
+                updateWatch();
+            }
+            public void removeUpdate(DocumentEvent e) {
+                updateWatch();
+            }
+            public void changedUpdate(DocumentEvent e) {
+                updateWatch();
+            }
+            private void updateWatch() {
+                // Update this LAZILY to prevent from deadlocks!
+                SwingUtilities.invokeLater(this);
+            }
+            public void run() {
+                boolean enabled = ce.getDocument().getLength() > 0;
+                watchButton.setEnabled(enabled);
+                evaluateButton.setEnabled(enabled);
+            }
+        }
+        
+        ce.getDocument().addDocumentListener(new ExpressionDocumentListener());
     }
     
     private void initResult() {
@@ -373,6 +413,7 @@ public class Evaluator extends javax.swing.JPanel {
         final JButton closeBtn = new JButton();
         Mnemonics.setLocalizedText(closeBtn, closeStr);
         closeBtn.setToolTipText(NbBundle.getMessage(Evaluator.class, "Evaluator.Close.TLT"));
+        evaluatorPanel.setButtons(watchBtn, evalBtn);
         DialogDescriptor dd = new DialogDescriptor(evaluatorPanel,
                 NbBundle.getMessage(Evaluator.class, "Evaluator.Title"),
                 false, new Object[] { evalBtn, watchBtn, closeBtn },
@@ -492,8 +533,23 @@ public class Evaluator extends javax.swing.JPanel {
                 addExpressionToHistory(exp);
                 displayResult(var);
             } catch (InvalidExpressionException ieex) {
+                String message = ieex.getLocalizedMessage();
+                Throwable t = ieex.getTargetException();
+                if (t != null && t instanceof org.omg.CORBA.portable.ApplicationException) {
+                    java.io.StringWriter s = new java.io.StringWriter();
+                    java.io.PrintWriter p = new java.io.PrintWriter(s);
+                    t.printStackTrace(p);
+                    p.close();
+                    message += " \n"+s.toString();
+                }
                 DialogDisplayer.getDefault().notify(
-                        new NotifyDescriptor.Message(ieex.getLocalizedMessage()));
+                        new NotifyDescriptor.Message(message));
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        evalDialog.requestFocus();
+                        expressionComboBox.getEditor().getEditorComponent().requestFocusInWindow();
+                    }
+                });
             }
         }
     }
@@ -504,8 +560,9 @@ public class Evaluator extends javax.swing.JPanel {
         private java.awt.Component component;
         private Object oldValue;
         private boolean isContextSetUp;
+        private boolean canTransferFocus = true;
         
-        public CompletionedEditor() {
+        public CompletionedEditor(javax.swing.JComboBox comboBox) {
             editor = new JEditorPane();
             editor.setBorder(null);
             editor.setKeymap(new FilteredKeymap(editor));
@@ -515,9 +572,29 @@ public class Evaluator extends javax.swing.JPanel {
             component = new JScrollPane(editor,
                                         JScrollPane.VERTICAL_SCROLLBAR_NEVER,
                                         JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+            ((JScrollPane)component).setBorder(null);
             editor.addFocusListener(new FocusListener() {
                 public void focusGained(FocusEvent e) {
                     setupContext();
+                }
+                public void focusLost(FocusEvent e) {
+                }
+            });
+            comboBox.addPopupMenuListener(new PopupMenuListener() {
+                public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
+                    canTransferFocus = false;
+                }
+                public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
+                    canTransferFocus = true;
+                }
+                public void popupMenuCanceled(PopupMenuEvent e) {
+                }
+            });
+            component.addFocusListener(new FocusListener() {
+                public void focusGained(FocusEvent e) {
+                    if (canTransferFocus) {
+                        editor.requestFocusInWindow();
+                    }
                 }
                 public void focusLost(FocusEvent e) {
                 }
@@ -532,6 +609,7 @@ public class Evaluator extends javax.swing.JPanel {
         public void setupContext() {
             if (!isContextSetUp) {
                 WatchPanel.setupContext(editor);
+                HelpCtx.setHelpIDString(editor, Evaluator.class.getName());
                 isContextSetUp = true;
             }
         }
@@ -544,6 +622,10 @@ public class Evaluator extends javax.swing.JPanel {
 
         public java.awt.Component getEditorComponent() {
             return component;
+        }
+        
+        javax.swing.text.Document getDocument() {
+            return editor.getDocument();
         }
 
         public Object getItem() {

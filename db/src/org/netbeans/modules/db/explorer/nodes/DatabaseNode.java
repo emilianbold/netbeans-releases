@@ -42,21 +42,31 @@
 package org.netbeans.modules.db.explorer.nodes;
 
 import java.io.IOException;
+import java.lang.reflect.Constructor;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.swing.Action;
 
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import org.netbeans.api.db.explorer.DatabaseException;
 import org.openide.nodes.*;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 import org.netbeans.modules.db.explorer.*;
-import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
+import org.netbeans.modules.db.explorer.infos.RegisteredNodeInfo;
+import org.openide.util.Exceptions;
+import org.openide.util.WeakListeners;
 
-public class DatabaseNode extends AbstractNode implements Node.Cookie, Comparable {
+public class DatabaseNode extends AbstractNode implements Node.Cookie, 
+        ChangeListener {
+    
+    private static final Logger LOGGER = Logger.getLogger(
+            DatabaseNode.class.getName());
 
     /** Cookie */
     protected DatabaseNodeInfo info;
@@ -77,46 +87,55 @@ public class DatabaseNode extends AbstractNode implements Node.Cookie, Comparabl
     public static final String VIEWLIST = "viewlist"; //NOI18N
     public static final String VIEWCOLUMN = "viewcolumn"; //NOI18N
     public static final String INDEX = "index"; //NOI18N
+    public static final String INDEXLIST = "ilist"; // NOI18N
     public static final String COLUMN = "column"; //NOI18N
     public static final String INDEXCOLUMN = "indexcolumn"; //NOI18N
     public static final String PRIMARY_KEY = "pcolumn"; //NOI18N
     public static final String INDEXED_COLUMN = "icolumn"; //NOI18N
     public static final String FOREIGN_COLUMN = "fcolumn"; //NOI18N
     public static final String FOREIGN_KEY = "fcolumn"; //NOI18N
+    public static final String FOREIGN_KEY_LIST = "fklist"; // NOI18N
     public static final String EXPORTED_KEY = "ekey"; //NOI18N
     public static final String IMPORTED_KEY = "fkey"; //NOI18N
     public static final String PROCEDURE = "procedure"; //NOI18N
     public static final String PROCEDURELIST = "procedurelist"; //NOI18N
     public static final String PROCEDURE_COLUMN = "procedurecolumn"; //NOI18N
-
+        
     /** Constructor */
-    public DatabaseNode()
+    public DatabaseNode(DatabaseNodeInfo info)
     {
-        super(new DatabaseNodeChildren());
+        super(Children.create(new DatabaseNodeChildFactory(info), true));
+        setInfo(info);
+        
+    }
+    
+    public void stateChanged(ChangeEvent evt) {
+        processInfo();
+    }
+    
+    protected DatabaseNode(Children children, DatabaseNodeInfo info) {
+        super(children);
+        setInfo(info);
+    }
+    
+    public void setInfo(DatabaseNodeInfo info) {
+        this.info = info;
+        info.addChangeListener(WeakListeners.create(
+                ChangeListener.class, this, info)); 
+        
+        stateChanged(new ChangeEvent(info));
     }
 
-    /** Constructor */
-    public DatabaseNode(Children child)
-    {
-        super(child);
-    }
-
-    /** Returns cookie */
     public DatabaseNodeInfo getInfo()
     {
         return info;
     }
-
-    /** Sets cookie */
-    public void setInfo(DatabaseNodeInfo nodeinfo)
-    {
-        info = (DatabaseNodeInfo)nodeinfo.clone();
-        processInfo();
-    }
-    
+        
     protected void processInfo() {
-        super.setName(info.getName());
         setIconBase(info.getIconBase());
+        
+        // Ditto for display name
+        setDisplayName(info.getDisplayName());
 
         // Read options
         // Cut, copy and delete flags
@@ -140,45 +159,43 @@ public class DatabaseNode extends AbstractNode implements Node.Cookie, Comparabl
                     writable = ((String)propmap.get(DatabaseNodeInfo.WRITABLE)).toUpperCase().equals("YES"); //NOI18N
                 }
             }
-        } catch (Exception e) {}
+        } catch (Exception e) {
+            LOGGER.log(Level.INFO, null, e);
+        }
     }
 
-    /** Sets name */
+    @Override
     public void setName(String newname)
     {
         super.setName(newname);
         info.setName(newname);
     }
-
+    
+    @Override
     public boolean canRename()
     {
         return writable;
     }
 
-    /**
-    * Can be cut only if copyable flag is set.
-    */
+    @Override
     public boolean canCut ()
     {
         return cutflag;
     }
 
-    /**
-    * Can be copied only if copyable flag is set.
-    */
+    @Override
     public boolean canCopy ()
     {
         return copyflag;
     }
 
-    /**
-    * Can be destroyed only if copyable flag is set.
-    */
+    @Override
     public boolean canDestroy()
     {
         return delflag;
     }
 
+    @Override
     public void destroy() throws IOException
     {
         info.delete();
@@ -191,12 +208,14 @@ public class DatabaseNode extends AbstractNode implements Node.Cookie, Comparabl
         }
     }
 
+    @Override
     public Node.Cookie getCookie(Class cls)
     {
         if (cls.isInstance(info)) return info;
         return super.getCookie(cls);
     }
 
+    @Override
     public Action[] getActions(boolean context) {
         if (context) {
             return getContextActions();
@@ -227,6 +246,7 @@ public class DatabaseNode extends AbstractNode implements Node.Cookie, Comparabl
 
     /** Sheet for this node.
     */
+    @Override
     protected Sheet createSheet()
     {
         Sheet sheet = Sheet.createDefault();
@@ -282,47 +302,14 @@ public class DatabaseNode extends AbstractNode implements Node.Cookie, Comparabl
         return sheet;
     }
 
-    /** Deletes subnode.
-    * Called by deleteNode.
-    * @param node Node to delete.
-    */
-    protected void deleteNode(DatabaseNode node)
-    throws DatabaseException
-    {
-        try {
-            DatabaseNodeInfo ninfo = node.getInfo();
-            DatabaseNodeChildren children = (DatabaseNodeChildren)getChildren();
-            info.getChildren().removeElement(ninfo);
-            children.remove(new Node[] {node});
-        } catch (Exception e) {
-            throw new DatabaseException(e.getMessage());
-        }
-    }
-
-    /** Deletes node and subnodes.
-    * Called by delete actions
-    */
-    public void deleteNode()
-    throws DatabaseException
-    {
-        try {
-//            DatabaseNode parent = (DatabaseNode)getParentNode().getCookie(null);
-            Node parent = getParentNode();
-            if ( parent instanceof DatabaseNode ) {
-                ((DatabaseNode)parent).deleteNode(this);
-            } else {
-                this.destroy();
-            }
-        } catch (Exception e) {
-            throw new DatabaseException(e);
-        }
-    }
-    
+    @Override
     public HelpCtx getHelpCtx () {
         return new HelpCtx ("dbexpovew");
     }
     
+    @Override
     public String getShortDescription() {
+        // TODO - Migrate this to the owning NodeInfos.
         String code = getInfo().getCode();
         
         if (code.equals(DatabaseNode.INDEXCOLUMN))
@@ -332,13 +319,79 @@ public class DatabaseNode extends AbstractNode implements Node.Cookie, Comparabl
         else if (code.equals("ilist"))
             return NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ND_IndexList"); //NOI18N
         else
-            return ""; //NOI18N
+            return info.getShortDescription();
     }
+    
+    @Override
+    public String getDisplayName() {
+        return info.getDisplayName();
+    }
+    
+    @Override
+    public String getName() {
+        return info.getName();
+    }
+    
+    private static class DatabaseNodeChildFactory extends ChildFactory<DatabaseNodeInfo> 
+                implements ChangeListener {
+        private static final Logger LOGGER = Logger.getLogger(
+                DatabaseNodeChildFactory.class.getName());
+        
+        private final DatabaseNodeInfo parentInfo;
+        
+        public DatabaseNodeChildFactory(DatabaseNodeInfo parentInfo) {
+            this.parentInfo = parentInfo;
+            parentInfo.addChangeListener(
+                    WeakListeners.create(ChangeListener.class, this, parentInfo));
 
-    public int compareTo(Object arg0) {
-        Node other = (Node)arg0;
-        return this.getDisplayName().compareTo(
-            other == null ? null : other.getDisplayName());
+            stateChanged(new ChangeEvent(parentInfo));
+        }
+
+        @Override
+        protected Node createNodeForKey(DatabaseNodeInfo info) {
+            DatabaseNode node = null;
+
+            if ( info instanceof RegisteredNodeInfo ) {
+                // For nodes registered by other modules, just get the
+                // registered node.
+                return ((RegisteredNodeInfo)info).getNode();
+            }
+
+            try {
+                // Get the node class that is registered for this particular
+                // DatabaseNodeInfo class in explorer.plist.  Then create
+                // a new instance of this registered class.
+                String nclass = (String)info.get(DatabaseNodeInfo.CLASS);
+                Class nodeClass = Class.forName(nclass);
+                
+                Constructor<DatabaseNode> constructor =
+                            nodeClass.getDeclaredConstructor(DatabaseNodeInfo.class);
+                    
+                node = constructor.newInstance(info);
+                
+            } catch (Exception e) {
+                Exceptions.printStackTrace(e);
+            }
+
+            return node;
+        }
+
+        @Override
+        protected boolean createKeys(List<DatabaseNodeInfo> toPopulate) {
+            try {
+                toPopulate.addAll(parentInfo.getChildren());
+                Collections.sort(toPopulate);
+            } catch ( DatabaseException dbe ) {
+                LOGGER.log(Level.WARNING, null, dbe);
+            }
+
+            return true;
+        }
+
+        public void stateChanged(ChangeEvent e) {
+            refresh(false);
+        }
+
     }
 
 }

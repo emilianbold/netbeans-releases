@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.javascript.editing;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.text.BadLocationException;
@@ -135,80 +134,76 @@ public class JsOccurrenceFinder implements OccurrencesFinder {
         // . to the end of Scanf as a CallNode, which is a weird highlight.
         // We don't want occurrences highlights that span lines.
         if (closest != null) {
+            BaseDocument doc = (BaseDocument)info.getDocument();
+            if (doc == null) {
+                // Document was just closed
+                return;
+            }
             try {
-                BaseDocument doc = (BaseDocument)info.getDocument();
-                if (doc == null) {
-                    // Document was just closed
-                    return;
-                }
                 doc.readLock();
-                try {
-                    int length = doc.getLength();
-                    OffsetRange astRange = AstUtilities.getRange(closest);
-                    OffsetRange lexRange = LexUtilities.getLexerOffsets(info, astRange);
-                    int lexStartPos = lexRange.getStart();
-                    int lexEndPos = lexRange.getEnd();
+                int length = doc.getLength();
+                OffsetRange astRange = AstUtilities.getRange(closest);
+                OffsetRange lexRange = LexUtilities.getLexerOffsets(info, astRange);
+                int lexStartPos = lexRange.getStart();
+                int lexEndPos = lexRange.getEnd();
 
-                    // If the buffer was just modified where a lot of text was deleted,
-                    // the parse tree positions could be pointing outside the valid range
-                    if (lexStartPos > length) {
-                        lexStartPos = length;
-                    }
-                    if (lexEndPos > length) {
-                        lexEndPos = length;
-                    }
+                // If the buffer was just modified where a lot of text was deleted,
+                // the parse tree positions could be pointing outside the valid range
+                if (lexStartPos > length) {
+                    lexStartPos = length;
+                }
+                if (lexEndPos > length) {
+                    lexEndPos = length;
+                }
 
-                    // One special case I care about: highlighting method exit points. In
-                    // this case, the full def node is selected, which typically spans
-                    // lines. This should trigger if you put the caret on the method definition
-                    // line, unless it's in a comment there.
-                    org.netbeans.api.lexer.Token<?extends JsTokenId> token = LexUtilities.getToken(doc, caretPosition);
-                    boolean isFunctionKeyword = (token != null) && token.id() == JsTokenId.FUNCTION;
-                    boolean isMethodName = closest.getType() == Token.FUNCNAME;
-                    boolean isReturn = closest.getType() == Token.RETURN && astOffset < closest.getSourceStart() + "return".length();
+                // One special case I care about: highlighting method exit points. In
+                // this case, the full def node is selected, which typically spans
+                // lines. This should trigger if you put the caret on the method definition
+                // line, unless it's in a comment there.
+                org.netbeans.api.lexer.Token<?extends JsTokenId> token = LexUtilities.getToken(doc, caretPosition);
+                boolean isFunctionKeyword = (token != null) && token.id() == JsTokenId.FUNCTION;
+                boolean isMethodName = closest.getType() == Token.FUNCNAME;
+                boolean isReturn = closest.getType() == Token.RETURN && astOffset < closest.getSourceStart() + "return".length();
 
-                    if (isFunctionKeyword || isMethodName || isReturn) {
-                        // Highlight exit points
-                        Node func = closest;
-                        if (isFunctionKeyword) {
-                            // Look inside the method - the offsets for function doesn't include the "function" keyword yet
-                            // Hmm, perhaps it's easier to just fix that? XXX TODO
-                            int offset =  astOffset+"function".length();
-                            path = new AstPath(root, offset);
-                            func = path.leaf();
-                            if (func.getType() == Token.PARAMETER) {
-                                func = func.getParentNode();
-                            }
-                        } else if (func.getType() == Token.FUNCNAME) {
+                if (isFunctionKeyword || isMethodName || isReturn) {
+                    // Highlight exit points
+                    Node func = closest;
+                    if (isFunctionKeyword) {
+                        // Look inside the method - the offsets for function doesn't include the "function" keyword yet
+                        // Hmm, perhaps it's easier to just fix that? XXX TODO
+                        int offset =  astOffset+"function".length();
+                        path = new AstPath(root, offset);
+                        func = path.leaf();
+                        if (func.getType() == Token.PARAMETER) {
                             func = func.getParentNode();
-                        } else if (isReturn) {
-                            Node f = func.getParentNode();
-                            while (f != null && f.getType() != Token.FUNCTION) {
-                                f = f.getParentNode();
-                            }
-                            if (f != null) {
-                                func = f;
-                            }
                         }
-                        highlightExits(func, highlights, info);
-                        // Fall through and set closest to null such that I don't do other highlighting
-                        closest = null;
-                    } else if (closest.getType() == Token.CALL && 
-                            lexStartPos != -1 && lexEndPos != -1 && 
-                                Utilities.getRowStart(doc, lexStartPos) != Utilities.getRowStart(doc, lexEndPos)) {
-                        // Some nodes may span multiple lines, but the range we care about is only
-                        // on a single line because we're pulling out the lvalue - for example,
-                        // a method call may span multiple lines because of a long parameter list,
-                        // but we only highlight the methodname itself
-                        closest = null;
+                    } else if (func.getType() == Token.FUNCNAME) {
+                        func = func.getParentNode();
+                    } else if (isReturn) {
+                        Node f = func.getParentNode();
+                        while (f != null && f.getType() != Token.FUNCTION) {
+                            f = f.getParentNode();
+                        }
+                        if (f != null) {
+                            func = f;
+                        }
                     }
-                } finally {
-                    doc.readUnlock();
+                    highlightExits(func, highlights, info);
+                    // Fall through and set closest to null such that I don't do other highlighting
+                    closest = null;
+                } else if (closest.getType() == Token.CALL && 
+                        lexStartPos != -1 && lexEndPos != -1 && 
+                            Utilities.getRowStart(doc, lexStartPos) != Utilities.getRowStart(doc, lexEndPos)) {
+                    // Some nodes may span multiple lines, but the range we care about is only
+                    // on a single line because we're pulling out the lvalue - for example,
+                    // a method call may span multiple lines because of a long parameter list,
+                    // but we only highlight the methodname itself
+                    closest = null;
                 }
             } catch (BadLocationException ble) {
                 Exceptions.printStackTrace(ble);
-            } catch (IOException ioe) {
-                Exceptions.printStackTrace(ioe);
+            } finally {
+                doc.readUnlock();
             }
         }
 
@@ -313,27 +308,29 @@ public class JsOccurrenceFinder implements OccurrencesFinder {
         CompilationInfo info) {
         int type = node.getType();
         
-        if (type == Token.THROW || type == Token.RETHROW || type == Token.RETURN) {
+        if (type == Token.THROW || type == Token.RETHROW ||
+                // There are many RETURN nodes for implicit returns (e.g. end of the
+                // function) - these have zero size, and we skip these for occurrence highlighting
+                (type == Token.RETURN && node.getSourceEnd() > node.getSourceStart())) {
             OffsetRange astRange = AstUtilities.getRange(node);
-            try {
-                BaseDocument doc = (BaseDocument)info.getDocument();
-                
-                OffsetRange lexRange = LexUtilities.getLexerOffsets(info, astRange);
-                if (lexRange != OffsetRange.NONE) {
-                    int lineStart = Utilities.getRowStart(doc, lexRange.getStart());
-                    int endLineStart = Utilities.getRowStart(doc, lexRange.getEnd());
-                    if (lineStart != endLineStart) {
-                        lexRange = new OffsetRange(lexRange.getStart(), Utilities.getRowEnd(doc, lexRange.getStart()));
-                        astRange = AstUtilities.getAstOffsets(info, lexRange);
+            BaseDocument doc = (BaseDocument)info.getDocument();
+            if (doc != null) {
+                try {
+                    OffsetRange lexRange = LexUtilities.getLexerOffsets(info, astRange);
+                    if (lexRange != OffsetRange.NONE) {
+                        int lineStart = Utilities.getRowStart(doc, lexRange.getStart());
+                        int endLineStart = Utilities.getRowStart(doc, lexRange.getEnd());
+                        if (lineStart != endLineStart) {
+                            lexRange = new OffsetRange(lexRange.getStart(), Utilities.getRowEnd(doc, lexRange.getStart()));
+                            astRange = AstUtilities.getAstOffsets(info, lexRange);
+                        }
                     }
+                } catch (BadLocationException ble) {
+                    Exceptions.printStackTrace(ble);
                 }
-            } catch (BadLocationException ble) {
-                Exceptions.printStackTrace(ble);
-            } catch (IOException ioe) {
-                Exceptions.printStackTrace(ioe);
-            }
-            if (astRange != OffsetRange.NONE) {
-                highlights.put(astRange, ColoringAttributes.MARK_OCCURRENCES);
+                if (astRange != OffsetRange.NONE) {
+                    highlights.put(astRange, ColoringAttributes.MARK_OCCURRENCES);
+                }
             }
         } else if (type == Token.FUNCTION || type == Token.SCRIPT) {
             // Don't go into sub methods

@@ -47,22 +47,33 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Vector;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import org.openide.NotifyDescriptor;
-import org.openide.nodes.Node;
 
 import org.netbeans.lib.ddl.impl.AbstractCommand;
 import org.netbeans.lib.ddl.impl.DriverSpecification;
 import org.netbeans.lib.ddl.impl.Specification;
 import org.netbeans.api.db.explorer.DatabaseException;
-import org.netbeans.modules.db.explorer.DatabaseNodeChildren;
+import org.netbeans.lib.ddl.CommandNotSupportedException;
 import org.netbeans.modules.db.explorer.nodes.DatabaseNode;
+import org.openide.DialogDisplayer;
 
 public class TableNodeInfo extends DatabaseNodeInfo {
     static final long serialVersionUID =-632875098783935367L;
     
+    @Override
+    public void refreshChildren() throws DatabaseException {
+        super.refreshChildren();
+        
+        // Now add the foreign key and index nodes (only do this
+        // for this class, not any of the subclasses
+        if ( this.getClass().getName().equals(TableNodeInfo.class.getName())) {
+            addChild(createNodeInfo(this, DatabaseNode.INDEXLIST));
+            addChild(createNodeInfo(this, DatabaseNode.FOREIGN_KEY_LIST));
+        }
+    }
+    
+    @Override
     public void initChildren(Vector children) throws DatabaseException {
         initChildren(children, null);
     }
@@ -151,7 +162,7 @@ public class TableNodeInfo extends DatabaseNodeInfo {
                     rset.clear();
                 }
                 rs.close();
-            }
+            }            
         } catch (Exception e) {
             DatabaseException dbe = new DatabaseException(e.getMessage());
             dbe.initCause(e);
@@ -202,78 +213,13 @@ public class TableNodeInfo extends DatabaseNodeInfo {
         //???
     }
 
-    public void refreshChildren() throws DatabaseException {
-        // force init collection
-        getNode().getChildren().getNodes();
-        
-        // create list of columns (infos)
-        Vector charr = new Vector();
-        put(DatabaseNodeInfo.CHILDREN, charr);
-        initChildren(charr);
-        
-        // create sub-tree (by infos)
-        try {
-            Node[] subTreeNodes = new Node[charr.size()+1/*special node Foreign keys*/+/*special node Indexes*/1];
-
-            // current sub-tree
-            DatabaseNodeChildren children = (DatabaseNodeChildren) getNode().getChildren();            
-            final Node[] childrenNodes = children.getNodes();            
-            for (int i = 0; i < childrenNodes.length; i++)
-                // is it node Indexes
-                if ((childrenNodes[i]).getCookie(IndexListNodeInfo.class) != null) {
-                    final int j = i;
-                    javax.swing.SwingUtilities.invokeLater(new Runnable() {
-                        public void run() {
-                            try {
-                                // refresh indexes
-                                ((DatabaseNode) childrenNodes[j]).getInfo().refreshChildren();
-                            } catch (Exception ex) {
-                                Logger.getLogger("global").log(Level.INFO, null, ex);
-                            }
-                        }
-                    });
-                    // add into refreshed sub-tree
-                    subTreeNodes[charr.size()] = childrenNodes[i];
-                } else
-                // is it node Foreign keys or column?
-                if ((childrenNodes[i]).getCookie(ForeignKeyListNodeInfo.class) != null) {
-                    final int j = i;
-                    javax.swing.SwingUtilities.invokeLater(new Runnable() {
-                        public void run() {
-                            try {
-                                // refresh foreign keys
-                                ((DatabaseNode) childrenNodes[j]).getInfo().refreshChildren();
-                            } catch (Exception ex) {
-                                Logger.getLogger("global").log(Level.INFO, null, ex);
-                            }
-                        }
-                    });
-                    // add into refreshed sub-tree
-                    subTreeNodes[charr.size() + 1] = childrenNodes[i];
-                }
-
-            // remove current sub-tree
-            children.remove(childrenNodes);
-
-            // build refreshed sub-tree
-            for (int i=0; i<charr.size(); i++)
-                subTreeNodes[i] = children.createNode((DatabaseNodeInfo) charr.elementAt(i));
-
-            // add built sub-tree
-            children.add(subTreeNodes);
-            
-            fireRefresh();
-        } catch (Exception ex) {
-            Logger.getLogger("global").log(Level.INFO, null, ex);
-        }
-    }
-
+    @Override
     public void delete() throws IOException {
         try {
             DDLHelper.deleteTable((Specification)getSpecification(),
                     (String)get(DatabaseNodeInfo.SCHEMA), getTable());
             
-            fireRefresh();
+            getParent().removeChild(this);
         } catch (Exception e) {
             org.openide.DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
         }
@@ -301,20 +247,41 @@ public class TableNodeInfo extends DatabaseNodeInfo {
     }
 
     public void addColumn(String tname) throws DatabaseException {
+        refreshChildren();
+    }
+
+    @Override
+    public void setName(String newname)
+    {
         try {
-            Vector chvec = new Vector(1);
-            initChildren(chvec, tname);
-            if (chvec.size() == 1) {
-                DatabaseNodeInfo nfo = (DatabaseNodeInfo)chvec.elementAt(0);
-                DatabaseNodeChildren chld = (DatabaseNodeChildren)getNode().getChildren();
-                chld.createSubnode(nfo, true);
-            }
-            // refresh list of columns
-            refreshChildren();
-        } catch (Exception e) {
-            DatabaseException dbe = new DatabaseException(e.getMessage());
-            dbe.initCause(e);
-            throw dbe;
+            Specification spec = (Specification)getSpecification();
+            AbstractCommand cmd = spec.createCommandRenameTable(getName(), newname);
+            cmd.setObjectOwner((String)get(DatabaseNodeInfo.SCHEMA));
+            cmd.execute();
+            super.setName(newname);
+            put(DatabaseNode.TABLE, newname);
+            notifyChange();
+        } catch (CommandNotSupportedException ex) {
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(ex.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
+        } catch (Exception ex) {
+            //			ex.printStackTrace();
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(ex.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
         }
+    }
+    
+    @Override 
+    public String getDisplayName() {
+        return getName();
+    }
+    
+    @Override
+    public String getShortDescription() {
+        return bundle().getString("ND_Table"); //NOI18N
+    } 
+    
+    @Override
+    protected void notifyChange() {
+        super.notifyChange();
+        fireRefresh();
     }
 }

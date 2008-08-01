@@ -214,6 +214,7 @@ final class CustomizerPackaging extends NbPropertyPanel.Single {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
         add(jarFile, gridBagConstraints);
 
+        jarFileValue.setColumns(30);
         jarFileValue.setEditable(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;

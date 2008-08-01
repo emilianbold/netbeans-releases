@@ -44,6 +44,7 @@ package org.netbeans.modules.editor.mimelookup.impl;
 import java.util.Collection;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -52,13 +53,14 @@ import org.openide.util.LookupListener;
  *
  * @author vita
  */
+@RandomlyFails
 public class SwitchLookupTest extends NbTestCase {
 
     /** Creates a new instance of FolderPathLookupTest */
     public SwitchLookupTest(String name) {
         super(name);
     }
-
+    
     protected @Override void setUp() throws Exception {
         clearWorkDir();
         // Set up the default lookup, repository, etc.
@@ -89,7 +91,7 @@ public class SwitchLookupTest extends NbTestCase {
         
         assertEquals("Wrong number of instances", 0, instances.size());
     }
-
+    
     public void testAddingMimePath() throws Exception {
         // Create lookup over a non-existing mime path
         Lookup lookup = new SwitchLookup(MimePath.parse("text/x-jsp/text/x-java"));

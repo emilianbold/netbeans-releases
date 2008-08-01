@@ -37,8 +37,8 @@ import org.openide.explorer.ExplorerUtils;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
 
 final class FeedTopComponent extends TopComponent implements ExplorerManager.Provider {
@@ -51,7 +51,7 @@ final class FeedTopComponent extends TopComponent implements ExplorerManager.Pro
     private FeedTopComponent() {
         setName(NbBundle.getMessage(FeedTopComponent.class, "CTL_FeedTopComponent"));
         setToolTipText(NbBundle.getMessage(FeedTopComponent.class, "HINT_FeedTopComponent"));
-        setIcon(Utilities.loadImage("org/myorg/feedreader/rss16.gif", true));
+        setIcon(ImageUtilities.loadImage("org/myorg/feedreader/rss16.gif", true));
         setLayout(new BorderLayout());
         add(view, BorderLayout.CENTER);
         view.setRootVisible(true);
@@ -72,14 +72,17 @@ final class FeedTopComponent extends TopComponent implements ExplorerManager.Pro
         return instance;
     }
     
+    @Override
     public int getPersistenceType() {
         return TopComponent.PERSISTENCE_ALWAYS;
     }
     
+    @Override
     protected String preferredID() {
         return "FeedTopComponent";
     }
     
+    @Override
     protected Object writeReplace() {
         return new ResolvableHelper();
     }

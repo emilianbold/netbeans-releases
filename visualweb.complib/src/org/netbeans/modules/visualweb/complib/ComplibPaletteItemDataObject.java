@@ -267,8 +267,9 @@ class ComplibPaletteItemDataObject extends MultiDataObject {
             super(ComplibPaletteItemDataObject.class.getName());
 
             ExtensionList ext = new ExtensionList();
-            ext.addExtension(ITEM_EXT);
-            setExtensions(ext);
+            //ext.addExtension(ITEM_EXT);
+            //setExtensions(ext);
+            getExtensions().addMimeType("text/x-comp-palette+xml");
         }
 
         /** Gets default display name. Overides superclass method. */

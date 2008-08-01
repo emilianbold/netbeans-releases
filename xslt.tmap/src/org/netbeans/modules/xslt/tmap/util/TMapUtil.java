@@ -21,22 +21,43 @@ package org.netbeans.modules.xslt.tmap.util;
 import java.io.File;
 import java.util.List;
 import java.util.StringTokenizer;
+import javax.swing.text.StyledDocument;
+import org.netbeans.modules.soa.ui.SoaUtil;
 import org.netbeans.modules.soa.ui.axinodes.AxiomUtils;
 import org.netbeans.modules.xml.axi.AXIComponent;
 import org.netbeans.modules.xml.axi.AXIModel;
 import org.netbeans.modules.xml.axi.AXIModelFactory;
 import org.netbeans.modules.xml.schema.model.ReferenceableSchemaComponent;
 import org.netbeans.modules.xml.wsdl.model.Part;
+import org.netbeans.modules.xml.xam.Component;
+import org.netbeans.modules.xml.xam.ModelSource;
+import org.netbeans.modules.xml.xam.dom.DocumentComponent;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.netbeans.modules.xslt.tmap.model.api.Operation;
 import org.netbeans.modules.xslt.tmap.model.api.Service;
+import org.netbeans.modules.xslt.tmap.model.api.TMapComponent;
 import org.netbeans.modules.xslt.tmap.model.api.TMapModel;
 import org.netbeans.modules.xslt.tmap.model.api.Transform;
 import org.netbeans.modules.xslt.tmap.model.api.TransformMap;
 import org.netbeans.modules.xslt.tmap.model.api.VariableReference;
 import org.netbeans.modules.xslt.tmap.model.api.WSDLReference;
+import org.netbeans.modules.xslt.tmap.multiview.source.TMapSourceMultiViewElementDesc;
+import org.netbeans.modules.xslt.tmap.multiview.tree.TreeMultiViewElementDesc;
+import org.netbeans.modules.xslt.tmap.nodes.NavigatorNodeFactory;
+import org.netbeans.modules.xslt.tmap.nodes.NodeType;
+import org.openide.cookies.EditCookie;
+import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.nodes.Children;
+import org.openide.nodes.Node;
+import org.openide.text.Line;
+import org.openide.text.NbDocument;
+import org.openide.util.Lookup;
+import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
 
 /**
  * @author Vitaly Bychkov
@@ -195,4 +216,101 @@ public class TMapUtil {
         return schemaComponent;
     }
 
+    public static void goToTreeView(Component component) {
+        if ( !(component instanceof TMapComponent)) {
+            return;
+        }
+        final TMapComponent tmapComponent = (TMapComponent) component;
+
+        if (tmapComponent.getModel() == null) { // deleted
+            return;
+        }
+        FileObject fo = SoaUtil.getFileObjectByModel(tmapComponent.getModel());
+
+        if (fo == null) {
+            return;                                                        
+        }
+        try {
+            DataObject d = DataObject.find(fo);
+            final Lookup lookup = d != null ? d.getLookup() : null;
+
+            final EditCookie ec = d.getCookie(EditCookie.class);
+            if (ec == null) {
+                return;
+            }
+
+            javax.swing.SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    ec.edit();
+                    openActiveTreeEditor();
+                    if (lookup != null || tmapComponent != null) {
+                        NodeType nodeType = NodeType.getNodeType(tmapComponent);
+                        if (nodeType == null) {
+                            return;
+                        } 
+                        Node tmapNode = NavigatorNodeFactory.getInstance().
+                                createNode(nodeType, tmapComponent, Children.LEAF, lookup);
+                        TopComponent treeTc = WindowManager.getDefault().getRegistry().getActivated();
+
+                        if (treeTc != null) {
+                            treeTc.setActivatedNodes(new Node[0]);
+                            treeTc.setActivatedNodes(new Node[] {tmapNode});
+                        }
+                    }
+                }
+            });
+        } catch (DataObjectNotFoundException ex) {
+          return;
+        }
+    }
+
+    public static void goToSourceView(Component component) {
+        if (component.getModel() == null) { // deleted
+            return;
+        }
+        if ( !(component instanceof DocumentComponent)) {
+            return;
+        }
+        DocumentComponent document = (DocumentComponent) component;
+        FileObject fo = SoaUtil.getFileObjectByModel(component.getModel());
+
+        if (fo == null) {
+            return;
+        }
+        try {
+            DataObject d = DataObject.find(fo);
+            LineCookie lc = d.getCookie(LineCookie.class);
+            if (lc == null) {
+                return;
+            }
+            int lineNum = SoaUtil.getLineNum(document);
+            if (lineNum < 0) {
+                return;
+            }
+
+            final Line l = lc.getLineSet().getCurrent(lineNum);
+            final int column = SoaUtil.getColumnNum(document);
+            if (column < 0) {
+                return;
+            }
+
+            javax.swing.SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    l.show(Line.SHOW_GOTO, column);
+                    openActiveSourceEditor();
+                }
+            });
+        } catch (DataObjectNotFoundException ex) {
+          return;
+        }
+    }
+
+    private static void openActiveTreeEditor() {
+        SoaUtil.openActiveMVEditor(TreeMultiViewElementDesc.PREFERRED_ID);
+    }
+    
+    private static void openActiveSourceEditor() {
+        SoaUtil.openActiveMVEditor(TMapSourceMultiViewElementDesc.PREFERED_ID);
+    }
+    
 }

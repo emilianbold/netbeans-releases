@@ -40,16 +40,13 @@
  */
 package org.netbeans.modules.j2ee.deployment.devmodules.api;
 
-import java.awt.Dialog;
 import java.awt.EventQueue;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
-import javax.swing.JButton;
-import org.netbeans.modules.j2ee.deployment.impl.ServerInstance;
+import java.util.Collection;
+import org.netbeans.api.server.CommonServerUIs;
+import org.netbeans.api.server.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.impl.ServerRegistry;
-import org.netbeans.modules.j2ee.deployment.impl.ui.ServersCustomizer;
+import org.netbeans.modules.j2ee.deployment.impl.bridge.BridgingServerInstanceProvider;
+import org.netbeans.modules.j2ee.deployment.impl.bridge.ServerInstanceProviderLookup;
 import org.netbeans.modules.j2ee.deployment.impl.ui.wizard.AddServerInstanceWizard;
 
 /**
@@ -74,28 +71,25 @@ public final class ServerManager {
      * 
      * @throws IllegalThreadStateException if the method is not called from the 
      *         event dispatch thread.
+     * @deprecated use {@link org.netbeans.api.server.CommonServerUIs#showCustomizer} instead
      */
     public static void showCustomizer(String serverInstanceID) {
-        checkDispatchThread();
-        ServerInstance instance =  ServerRegistry.getInstance().getServerInstance(serverInstanceID);
-        ServersCustomizer customizer = new ServersCustomizer(instance);
-        JButton close = new JButton(NbBundle.getMessage(ServerManager.class,"CTL_Close"));
-        close.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ServerManager.class,"AD_Close"));
-        DialogDescriptor descriptor = new DialogDescriptor (
-                customizer,
-                NbBundle.getMessage(ServerManager.class, "TXT_ServerManager"),
-                true, 
-                new Object[] {close},
-                close,
-                DialogDescriptor.DEFAULT_ALIGN, 
-                new HelpCtx(ServerManager.class),
-                null);
-        Dialog dlg = DialogDisplayer.getDefault().createDialog(descriptor);
-        try {
-            dlg.setVisible(true);
-        } finally {
-            dlg.dispose();
+        // bridge to new infrastructure (common server)
+        ServerInstance bridgingInstance = null;
+        org.netbeans.modules.j2ee.deployment.impl.ServerInstance j2eeInstance =
+                ServerRegistry.getInstance().getServerInstance(serverInstanceID);
+        if (j2eeInstance != null) {
+            Collection<? extends org.netbeans.spi.server.ServerInstanceProvider> providers = ServerInstanceProviderLookup.getInstance().lookupAll(org.netbeans.spi.server.ServerInstanceProvider.class);
+            for (org.netbeans.spi.server.ServerInstanceProvider provider : providers) {
+                if (provider instanceof BridgingServerInstanceProvider) {
+                    bridgingInstance = ((BridgingServerInstanceProvider) provider).getBridge(j2eeInstance);
+                    if (bridgingInstance != null) {
+                        break;
+                    }
+                }
+            }
         }
+        CommonServerUIs.showCustomizer(bridgingInstance);
     }
     
     /**

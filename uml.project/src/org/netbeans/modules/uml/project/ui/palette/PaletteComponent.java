@@ -45,32 +45,32 @@ import javax.swing.JButton;
 import javax.swing.JPanel;
 
 import org.netbeans.modules.uml.resources.images.ImageUtil;
-import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaControl;
 
 public class PaletteComponent extends JPanel
 {
-   private IDrawingAreaControl m_Control = null;
-
-   public PaletteComponent()
-   {
-      super();
-   }
-
-   public PaletteComponent(IDrawingAreaControl control)
-   {
-      super();
-      m_Control = control;
-   }
-
-   public void initComponent(IDrawingAreaControl control)
-   {
-      m_Control = control;
-
-      if (m_Control != null)
-         //initialize the toolbars according to the control
-         add(new JButton(ImageUtil.instance().getIcon("actor.png"))); // NOI18N
-      
-      else //assume its a class diagram
-         add(new JButton(ImageUtil.instance().getIcon("class.png"))); // NOI18N
-   }
+    // TODO: meteora
+//   private IDrawingAreaControl m_Control = null;
+//
+//   public PaletteComponent()
+//   {
+//      super();
+//   }
+//
+//   public PaletteComponent(IDrawingAreaControl control)
+//   {
+//      super();
+//      m_Control = control;
+//   }
+//
+//   public void initComponent(IDrawingAreaControl control)
+//   {
+//      m_Control = control;
+//
+//      if (m_Control != null)
+//         //initialize the toolbars according to the control
+//         add(new JButton(ImageUtil.instance().getIcon("actor.png"))); // NOI18N
+//      
+//      else //assume its a class diagram
+//         add(new JButton(ImageUtil.instance().getIcon("class.png"))); // NOI18N
+//   }
 }

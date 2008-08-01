@@ -42,10 +42,12 @@ package org.netbeans.modules.java.hints.errors;
 
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.ParameterizedTypeTree;
 import com.sun.source.tree.Scope;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
@@ -92,10 +94,16 @@ public class Utilities {
     }
 
     public static String guessName(CompilationInfo info, TreePath tp) {
-        String name = getName((ExpressionTree) tp.getLeaf());
+        ExpressionTree et = (ExpressionTree) tp.getLeaf();
+        String name = getName(et);
         
         if (name == null) {
-            return "name";
+            if(et instanceof LiteralTree) {
+                String guess = (String) ((LiteralTree) et).getValue();
+                if (guess != null)
+                    return guessLiteralName(guess);
+            } else
+                return "name";
         }
         
         Scope s = info.getTrees().getScope(tp);
@@ -119,6 +127,26 @@ public class Utilities {
         
         return proposedName;
     }
+
+    private static String guessLiteralName(String str) {
+        StringBuffer sb = new StringBuffer();
+        char first = str.charAt(0);
+        if(Character.isJavaIdentifierStart(str.charAt(0)))
+            sb.append(first);
+
+        for (int i = 1; i < str.length(); i++) {
+            char ch = str.charAt(i);
+            if(ch == ' ') {
+                sb.append('_');
+                continue;
+            }
+            if (Character.isJavaIdentifierPart(ch))
+                sb.append(ch);
+            if (i > 40)
+                break;
+        }
+        return sb.toString();
+    }
     
     public static String getName(TypeMirror tm) {
         if (tm.getKind().isPrimitive()) {
@@ -137,10 +165,14 @@ public class Utilities {
     }
     
     public static String getName(ExpressionTree et) {
+        return getName((Tree) et);
+    }
+    
+    public static String getName(Tree et) {
         return adjustName(getNameRaw(et));
     }
     
-    private static String getNameRaw(ExpressionTree et) {
+    private static String getNameRaw(Tree et) {
         if (et == null)
             return null;
 
@@ -152,13 +184,9 @@ public class Utilities {
         case MEMBER_SELECT:
             return ((MemberSelectTree) et).getIdentifier().toString();
         case NEW_CLASS:
-            String type = ((NewClassTree) et).getIdentifier().toString();
-            char firstChar = type.charAt(0);
-            if (Character.isUpperCase(firstChar)) {
-                return Character.toLowerCase(firstChar) + type.substring(1);
-            } else {
-                return type + "1"; // NOI18N
-            }
+            return firstToLower(getName(((NewClassTree) et).getIdentifier()));
+        case PARAMETERIZED_TYPE:
+            return firstToLower(getName(((ParameterizedTypeTree) et).getType()));
         default:
             return null;
         }
@@ -211,10 +239,21 @@ public class Utilities {
         }
         
     }
-    
-    public static ChangeInfo commitAndComputeChangeInfo(FileObject target, ModificationResult diff) throws IOException {
+
+    /**
+     * Commits changes and provides selection bounds
+     *
+     * @param target target FileObject
+     * @param diff set of changes made by ModificationTask
+     * @param tag mark used for selection of generated text
+     * @return set of changes made by hint
+     * @throws java.io.IOException
+     */
+    public static ChangeInfo commitAndComputeChangeInfo(FileObject target, final ModificationResult diff, final Object tag) throws IOException {
         List<? extends Difference> differences = diff.getDifferences(target);
         ChangeInfo result = null;
+        
+        diff.commit();
         
         try {
             if (differences != null) {
@@ -227,14 +266,20 @@ public class Utilities {
                             doc = start.getCloneableEditorSupport().openDocument();
                         }
                         
-                        final Position[] pos = new Position[1];
+                        final Position[] pos = new Position[2];
                         final Document fdoc = doc;
                         
                         doc.render(new Runnable() {
-
                             public void run() {
                                 try {
-                                    pos[0] = NbDocument.createPosition(fdoc, start.getOffset(), Position.Bias.Backward);
+                                    int[] span = diff.getSpan(tag);
+                                    if(span != null) {
+                                        pos[0] = fdoc.createPosition(span[0]);
+                                        pos[1] = fdoc.createPosition(span[1]);
+                                    } else {
+                                        pos[0] = NbDocument.createPosition(fdoc, start.getOffset(), Position.Bias.Backward);
+                                        pos[1] = pos[0];
+                                    }
                                 } catch (BadLocationException ex) {
                                     Exceptions.printStackTrace(ex);
                                 }
@@ -242,7 +287,7 @@ public class Utilities {
                         });
                         
                         if (pos[0] != null) {
-                            result = new ChangeInfo(target, pos[0], pos[0]);
+                            result = new ChangeInfo(target, pos[0], pos[1]);
                         }
                         
                         break;
@@ -252,8 +297,6 @@ public class Utilities {
         } catch (IOException e) {
             Exceptions.printStackTrace(e);
         }
-        
-        diff.commit();
         
         return result;
     }
@@ -281,7 +324,13 @@ public class Utilities {
         TypeMirror type = resolveCapturedTypeInt(info, tm);
         
         if (type.getKind() == TypeKind.WILDCARD) {
-            return ((WildcardType) type).getExtendsBound();
+            TypeMirror tmirr = ((WildcardType) type).getExtendsBound();
+            if (tmirr != null)
+                return tmirr;
+            else { //no extends, just '?'
+                return info.getElements().getTypeElement("java.lang.Object").asType(); // NOI18N
+            }
+                
         }
         
         return type;

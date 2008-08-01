@@ -43,9 +43,7 @@ package org.netbeans.modules.websvc.wsitmodelext.security.proprietary.impl;
 
 import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.CallbackHandler;
 import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.ProprietarySecurityPolicyAttribute;
-import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.ProprietarySecurityPolicyQName;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import org.netbeans.modules.xml.wsdl.model.visitor.WSDLVisitor;
 import org.w3c.dom.Element;
 
 /**
@@ -61,15 +59,6 @@ public class CallbackHandlerImpl extends ProprietarySecurityPolicyComponentImpl 
         super(model, e);
     }
     
-    public CallbackHandlerImpl(WSDLModel model){
-        this(model, createPrefixedElement(ProprietarySecurityPolicyQName.CALLBACKHANDLER.getQName(), model));
-    }
-
-    @Override
-    public void accept(WSDLVisitor visitor) {
-        visitor.visit(this);
-    }
-
     public void setDefault(String def) {
         setAttribute(DEFAULT, ProprietarySecurityPolicyAttribute.DEFAULT, def);        
     }

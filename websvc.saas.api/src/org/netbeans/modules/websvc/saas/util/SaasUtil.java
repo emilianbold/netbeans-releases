@@ -45,6 +45,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.ByteArrayOutputStream;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.util.ArrayList;
@@ -77,6 +78,7 @@ import org.netbeans.modules.websvc.saas.model.wadl.Param;
 import org.netbeans.modules.websvc.saas.model.wadl.ParamStyle;
 import org.netbeans.modules.websvc.saas.model.wadl.RepresentationType;
 import org.netbeans.modules.websvc.saas.model.wadl.Resource;
+import org.netbeans.modules.websvc.saas.spi.MethodNodeActionsProvider;
 import org.netbeans.modules.websvc.saas.spi.SaasNodeActionsProvider;
 import org.netbeans.modules.xml.retriever.Retriever;
 import org.openide.filesystems.FileLock;
@@ -99,8 +101,6 @@ public class SaasUtil {
     public static final String DEFAULT_SERVICE_NAME = "Service";
     public static final String CATALOG = "catalog";
     
-    
-
     public static <T> T loadJaxbObject(FileObject input, Class<T> type, boolean includeAware) throws IOException {
         if (input == null) {
             return null;
@@ -255,6 +255,14 @@ public class SaasUtil {
             extensionsResult = Lookup.getDefault().lookupResult(SaasNodeActionsProvider.class);
         }
         return extensionsResult.allInstances();
+    }
+    
+    private static Lookup.Result<MethodNodeActionsProvider> methodsResult = null;
+    public static Collection<? extends MethodNodeActionsProvider> getMethodNodeActionsProviders() {
+        if (methodsResult == null) {
+            methodsResult = Lookup.getDefault().lookupResult(MethodNodeActionsProvider.class);
+        }
+        return methodsResult.allInstances();
     }
     
     /*public static <T> T fromXPath(Object root, String xpath, Class<T> type) {
@@ -600,6 +608,38 @@ public class SaasUtil {
         return Retriever.getDefault();
     }
     
+    public static String getSaasType(String url) {
+        String urlLowerCase = url.toLowerCase();
+        if (urlLowerCase.endsWith(Saas.WSDL_EXT) || urlLowerCase.endsWith(Saas.ASMX_EXT)) {
+            return Saas.NS_WSDL;
+        }
+        
+        if (urlLowerCase.endsWith(Saas.NS_WADL)) {
+            return Saas.NS_WADL;
+        }
+        
+        try {
+            InputStream is = new URI(url).toURL().openStream();
+            ByteArrayOutputStream os = new ByteArrayOutputStream();
+            byte[] buffer = new byte[1024];
+            int count = 0;
+            
+            while ((count = is.read(buffer)) != -1) {
+                os.write(buffer, 0, count);
+            }
+            
+            String doc = os.toString("UTF-8");      //NOI18N
+            if (doc.contains(Saas.NS_WSDL) || doc.contains(Saas.WSDL_EXT)) {
+                return Saas.NS_WSDL;
+            } else if (doc.contains(Saas.NS_WADL)) {
+                return Saas.NS_WADL;
+            } 
+        } catch (Exception ex) {          
+        }
+        
+        return null;
+    }
+    
     public static String filenameFromPath(String path) {
         return path.substring(path.lastIndexOf('/')+1);
     }
@@ -653,6 +693,6 @@ public class SaasUtil {
     public static String deriveDefaultPackageName(Saas saas) {
         String pack1 = toValidJavaName(saas.getTopLevelGroup().getName());
         String pack2 = toValidJavaName(saas.getDisplayName());
-        return pack1 + "." + pack2;
+        return (pack1 + "." + pack2).toLowerCase();
     }
 }

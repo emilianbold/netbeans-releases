@@ -58,9 +58,10 @@ import org.openide.nodes.BeanNode;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
+import org.openide.util.NbCollections;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
@@ -73,8 +74,9 @@ public class RssNode extends FilterNode {
     }
     
     /** Declaring the Add Feed action and Add Folder action */
+    @Override
     public Action[] getActions(boolean popup) {
-        DataFolder df = (DataFolder)getLookup().lookup(DataFolder.class);
+        DataFolder df = getLookup().lookup(DataFolder.class);
         return new Action[] {
             new AddRssAction(df),
             new AddFolderAction(df)
@@ -89,6 +91,7 @@ public class RssNode extends FilterNode {
                     .getRoot().getFileObject("RssFeeds")).getNodeDelegate());
         }
         
+        @Override
         public String getDisplayName() {
             return NbBundle.getMessage(RssNode.class, "FN_title");
         }
@@ -100,8 +103,8 @@ public class RssNode extends FilterNode {
             super(rssFolderNode);
         }
         
-        protected Node[] createNodes(Object key) {
-            Node n = (Node) key;
+        @Override
+        protected Node[] createNodes(Node n) {
             if (n.getLookup().lookup(DataFolder.class) != null) {
                 return new Node[] {new RssNode(n)};
             } else {
@@ -131,19 +134,23 @@ public class RssNode extends FilterNode {
             }));
         }
         
+        @Override
         public String getDisplayName() {
-            SyndFeed feed = (SyndFeed) getLookup().lookup(SyndFeed.class);
+            SyndFeed feed = getLookup().lookup(SyndFeed.class);
             return feed.getTitle();
         }
         
+        @Override
         public Image getIcon(int type) {
-            return Utilities.loadImage("org/myorg/feedreader/rss16.gif");
+            return ImageUtilities.loadImage("org/myorg/feedreader/rss16.gif");
         }
         
+        @Override
         public Image getOpenedIcon(int type) {
             return getIcon(type);
         }
         
+        @Override
         public Action[] getActions(boolean context) {
             return new Action[] { SystemAction.get(DeleteAction.class) };
         }
@@ -151,19 +158,20 @@ public class RssNode extends FilterNode {
     }
     
     /** Defining the children of a feed node */
-    private static class FeedChildren extends Children.Keys {
+    private static class FeedChildren extends Children.Keys<SyndEntry> {
         private final SyndFeed feed;
         public FeedChildren(SyndFeed feed) {
             this.feed = feed;
         }
         
+        @Override
         protected void addNotify() {
-            setKeys(feed.getEntries());
+            setKeys(NbCollections.checkedListByCopy(feed.getEntries(), SyndEntry.class, true));
         }
         
-        public Node[] createNodes(Object key) {
+        public Node[] createNodes(SyndEntry entry) {
             try {
-                return new Node[] { new EntryBeanNode((SyndEntry) key) };
+                return new Node[] {new EntryBeanNode(entry)};
             } catch (IntrospectionException ex) {
                 assert false : ex;
                 return new Node[0];
@@ -177,16 +185,18 @@ public class RssNode extends FilterNode {
         private final SyndEntry entry;
         
         public EntryBeanNode(SyndEntry entry) throws IntrospectionException {
-            super(new BeanNode(entry), Children.LEAF, Lookups.fixed(new Object[] { entry, new EntryOpenCookie(entry) }));
+            super(new BeanNode<SyndEntry>(entry), Children.LEAF, Lookups.fixed(entry, new EntryOpenCookie(entry)));
             this.entry = entry;
         }
         
         /** Using HtmlDisplayName ensures any HTML in RSS entry titles are properly handled, escaped, entities resolved, etc. */
+        @Override
         public String getHtmlDisplayName() {
             return entry.getTitle();
         }
         
         /** Making a tooltip out of the entry's description */
+        @Override
         public String getShortDescription() {
             StringBuffer sb = new StringBuffer();
             sb.append("Author: " + entry.getAuthor() + "; ");
@@ -197,12 +207,14 @@ public class RssNode extends FilterNode {
         }
         
         /** Providing the Open action on a feed entry */
+        @Override
         public Action[] getActions(boolean popup) {
             return new Action[] { SystemAction.get(OpenAction.class) };
         }
         
+        @Override
         public Action getPreferredAction() {
-            return (SystemAction) getActions(false) [0];
+            return getActions(false)[0];
         }
         
     }
@@ -227,7 +239,7 @@ public class RssNode extends FilterNode {
     
     /** Looking up a feed */
     private static Feed getFeed(Node node) {
-        InstanceCookie ck = (InstanceCookie) node.getCookie(InstanceCookie.class);
+        InstanceCookie ck = node.getCookie(InstanceCookie.class);
         if (ck == null) {
             throw new IllegalStateException("Bogus file in feeds folder: " + node.getLookup().lookup(FileObject.class));
         }

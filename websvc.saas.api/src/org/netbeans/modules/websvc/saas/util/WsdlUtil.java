@@ -55,6 +55,10 @@ import org.openide.util.Lookup;
  */
 public class WsdlUtil {
 
+    public static boolean hasWsdlSupport() {
+        return Lookup.getDefault().lookup(WsdlDataManager.class) != null;
+    }
+    
     public static WsdlData findWsdlData(String url, String serviceName) {
         WsdlDataManager manager = Lookup.getDefault().lookup(WsdlDataManager.class);
         if (manager != null) {
@@ -86,13 +90,13 @@ public class WsdlUtil {
         }
     }    
 
-    public static void saveWsdlData(WsdlData data) {
+    public static void removeWsdlData(String url) {
         WsdlDataManager manager = Lookup.getDefault().lookup(WsdlDataManager.class);
         if (manager != null) {
-            manager.save(data);
+            manager.removeWsdlData(url, null);
         }
     }
-
+  
     public static void refreshWsdlData(WsdlData data) {
         WsdlDataManager manager = Lookup.getDefault().lookup(WsdlDataManager.class);
         if (manager != null) {

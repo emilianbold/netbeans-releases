@@ -140,11 +140,14 @@ public class Main extends Object {
         // use the console logging
         System.setProperty ("netbeans.logger.console", "true");
 
-        final String blacklist = System.getProperty("xtest.ide.blacklist");
-        if (blacklist != null) {
+        String blacklist = System.getProperty("xtest.ide.blacklist");
+        String whitelist = System.getProperty("xtest.ide.whitelist");
+        String whitelistStorage = System.getProperty("xtest.ide.whitelist.storage");
+        boolean generateWhitelist = Boolean.getBoolean("xtest.ide.generate.whitelist");
+        if (blacklist != null || whitelist != null) {
             try {
                 Logger classLogger = Logger.getLogger("org.netbeans.ProxyClassLoader");
-                classLogger.addHandler(BlacklistedClassesHandler.getBlacklistedClassesHandler(blacklist));
+                classLogger.addHandler(BlacklistedClassesHandler.getBlacklistedClassesHandler(blacklist, whitelist, whitelistStorage, generateWhitelist));
                 classLogger.setLevel(Level.ALL);
                 classLogger.setUseParentHandlers(false);
                 System.out.println("BlacklistedClassesHandler handler added");

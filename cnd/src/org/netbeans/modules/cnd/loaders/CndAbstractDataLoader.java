@@ -45,6 +45,9 @@ import java.io.File;
 import java.util.Date;
 import java.util.Map;
 import java.text.DateFormat;
+import org.netbeans.modules.cnd.editor.filecreation.CndExtensionList;
+import org.netbeans.modules.cnd.editor.filecreation.CndHandlableExtensions;
+import org.netbeans.modules.cnd.editor.filecreation.ExtensionsSettings;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.ExtensionList;
 import org.openide.loaders.MultiDataObject;
@@ -60,7 +63,7 @@ import org.netbeans.modules.cnd.settings.CppSettings;
  * used to format template files (e.g. substitute values for parameters such as
  * __FILENAME__, __NAME__, __DATE__, __TIME__, __USER__, __GUARD_NAME etc.).
  */
-public abstract class CndAbstractDataLoader extends UniFileLoader {
+public abstract class CndAbstractDataLoader extends UniFileLoader implements CndHandlableExtensions {
 
     /** Serial version number */
     static final long serialVersionUID = 6801389470714975682L;
@@ -69,15 +72,21 @@ public abstract class CndAbstractDataLoader extends UniFileLoader {
         super(representationClassName);
     }
 
-    protected void createExtentions(String[] extensions) {
-        ExtensionList extensionList = new ExtensionList();
-        for (int i = 0; i < extensions.length; i++) {
-            extensionList.addExtension(extensions[i]);
-        }
-        setExtensions(extensionList);
+    protected abstract String getMimeType();
+
+    @Override
+    public ExtensionList getExtensions() {
+        return ExtensionsSettings.getInstance(this).getExtensionList();
     }
 
-    protected abstract String getMimeType();
+    @Override
+    public void setExtensions(ExtensionList ext) {
+        ExtensionsSettings.getInstance(this).setExtensionList((CndExtensionList)ext);
+    }
+
+    public ExtensionList getDefaultExtensionList() {
+        return ExtensionsSettings.getDefaultExtensionList(getSettingsName());
+    }
 
     @Override
     protected void initialize() {
@@ -116,7 +125,13 @@ public abstract class CndAbstractDataLoader extends UniFileLoader {
             map.put("PACKAGE_AND_NAME", packageName + name); // NOI18N
             map.put("NAME", name); // NOI18N
             map.put("EXTENSION", ext); // NOI18N
-            String guardName = (name + "_" + ext).replace('-', '_').replace('.', '_'); // NOI18N
+//            String guardName = (name + "_" + ext).replace('-', '_').replace('.', '_'); // NOI18N
+            String fullName = name + "_" + ext, guardName = ""; //NOI18N
+            for (int i = 0; i < fullName.length(); i++) {
+                char c = fullName.charAt(i);
+                guardName += Character.isJavaIdentifierPart(c) ? c : '_';
+            }
+
             map.put("GUARD_NAME", guardName.toUpperCase()); // NOI18N
             /*
             This is a ugly hack but I don't have a choice. That's because

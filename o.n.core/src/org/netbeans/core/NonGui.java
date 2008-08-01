@@ -41,9 +41,7 @@
 
 package org.netbeans.core;
 
-import java.awt.EventQueue;
 import java.awt.Frame;
-import java.awt.Toolkit;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.io.IOException;
@@ -53,7 +51,6 @@ import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import org.netbeans.TopSecurityManager;
-import org.netbeans.core.startup.InstalledFileLocatorImpl;
 import org.netbeans.core.startup.Main;
 import org.netbeans.core.startup.ModuleSystem;
 import org.netbeans.core.startup.Splash;
@@ -111,9 +108,7 @@ implements Runnable, org.netbeans.core.startup.RunLevel {
         // 8. Advance Policy
 
         // set security manager
-        SecurityManager secman = new TopSecurityManager();
-
-        System.setSecurityManager(secman);
+        TopSecurityManager.install();
         TopSecurityManager.makeSwingUseSpecialClipboard(Lookup.getDefault().lookup(org.openide.util.datatransfer.ExClipboard.class));
 
         // install java.net.Authenticator
@@ -167,43 +162,34 @@ implements Runnable, org.netbeans.core.startup.RunLevel {
 
         // Access winsys from AWT thread only. In this case main thread wouldn't harm, just to be kosher.
         SwingUtilities.invokeLater(new Runnable() {
-
-                                       public void run() {
-                                           StartLog.logProgress("Window system initialization");
-                                           if (System.getProperty("netbeans.warmup.skip") ==
-                                               null &&
-                                               System.getProperty("netbeans.close") ==
-                                               null) {
-                                               final Frame mainWindow = WindowManager.getDefault().getMainWindow();
-
-                                               mainWindow.addComponentListener(new ComponentAdapter() {
-
-                                                                                   public void componentShown(ComponentEvent evt) {
-                                                                                       mainWindow.removeComponentListener(this);
-                                                                                       WarmUpSupport.warmUp();
-                                                                                   }
-                                                                               });
-                                           }
-                                           NbTopManager.WindowSystem windowSystem = (NbTopManager.WindowSystem) Lookup.getDefault().lookup(NbTopManager.WindowSystem.class);
-
-                                           if (windowSystem != null) {
-                                               windowSystem.load();
-                                               StartLog.logProgress("Window system loaded");
-                                               if (StartLog.willLog()) {
-                                                   waitForMainWindowPaint();
-                                               }
-                                               windowSystem.show();
-                                           } else {
-                                               Logger.getLogger(NonGui.class.getName()).log(Level.WARNING,
-                                                                 null,
-                                                                 new NullPointerException("\n\n\nWindowSystem is not supplied!!!\\n\n"));
-                                           }
-                                           StartLog.logProgress("Window system shown");
-                                           if (!StartLog.willLog()) {
-                                               maybeDie(null);
-                                           }
-                                       }
-                                   });
+            public void run() {
+                StartLog.logProgress("Window system initialization");
+                if (System.getProperty("netbeans.warmup.skip") == null && System.getProperty("netbeans.close") == null) {
+                    final Frame mainWindow = WindowManager.getDefault().getMainWindow();
+                    mainWindow.addComponentListener(new ComponentAdapter() {
+                        public @Override void componentShown(ComponentEvent evt) {
+                            mainWindow.removeComponentListener(this);
+                            WarmUpSupport.warmUp();
+                        }
+                    });
+                }
+                NbTopManager.WindowSystem windowSystem = Lookup.getDefault().lookup(NbTopManager.WindowSystem.class);
+                if (windowSystem != null) {
+                    windowSystem.load();
+                    StartLog.logProgress("Window system loaded");
+                    if (StartLog.willLog()) {
+                        waitForMainWindowPaint();
+                    }
+                    windowSystem.show();
+                } else {
+                    Logger.getLogger(NonGui.class.getName()).log(Level.WARNING, "Module org.netbeans.core.windows missing, cannot start window system");
+                }
+                StartLog.logProgress("Window system shown");
+                if (!StartLog.willLog()) {
+                    maybeDie(null);
+                }
+            }
+        });
         StartLog.logEnd ("Main window initialization"); //NOI18N
     }
   

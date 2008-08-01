@@ -53,6 +53,8 @@ import org.netbeans.modules.dbschema.SchemaElementUtil;
 import org.netbeans.modules.j2ee.persistence.entitygenerator.DbSchemaEjbGenerator;
 import org.netbeans.modules.j2ee.persistence.entitygenerator.EntityClass;
 import org.netbeans.modules.j2ee.persistence.entitygenerator.EntityMember;
+import org.netbeans.modules.j2ee.persistence.entitygenerator.EntityRelation.CollectionType;
+import org.netbeans.modules.j2ee.persistence.entitygenerator.EntityRelation.FetchType;
 import org.netbeans.modules.j2ee.persistence.entitygenerator.GeneratedTables;
 import org.netbeans.modules.j2ee.persistence.sourcetestsupport.SourceTestSupport;
 import org.openide.filesystems.FileObject;
@@ -88,7 +90,8 @@ public class JPAGenTest extends SourceTestSupport{
     public void testGenerateOneEntity() throws IOException{
         EntityClass user = getUserEntity();
         
-        generator.generateBeans(new EntityClass[]{user}, true, getProgressContributor(), null);
+        generator.generateBeans(new EntityClass[]{user}, true, false, false, 
+                FetchType.DEFAULT, CollectionType.COLLECTION, getProgressContributor(), null);
         assertEquals(1,generator.createdObjects().size());
         
         FileObject result = generator.createdObjects().iterator().next();
@@ -99,7 +102,8 @@ public class JPAGenTest extends SourceTestSupport{
         
         EntityClass user = getUserEntity();
         
-        EntityClass product = new EntityClass("PRODUCT", getWorkDirFO(), packageName, "Product");
+        EntityClass product = new EntityClass( null, null ,"PRODUCT", 
+                getWorkDirFO(), packageName, "Product", null);
         product.usePkField(true);
         
         EntityMemberImpl description = new EntityMemberImpl();
@@ -120,7 +124,9 @@ public class JPAGenTest extends SourceTestSupport{
         product.setFields(fields);
         
         
-        generator.generateBeans(new EntityClass[]{user, product}, true, getProgressContributor(), null);
+        generator.generateBeans(new EntityClass[]{user, product}, true, 
+                false, false, FetchType.DEFAULT, CollectionType.COLLECTION,
+                getProgressContributor(), null);
         Set<FileObject> result = generator.createdObjects();
         assertEquals(2, result.size());
   
@@ -140,11 +146,11 @@ public class JPAGenTest extends SourceTestSupport{
                 break;
             }
         }
-        GenerateTablesImpl genTables = new GenerateTablesImpl(tables, packageName, getWorkDirFO());
+        GenerateTablesImpl genTables = new GenerateTablesImpl(schema.getCatalog().getName(), schema.getSchema().getName(), tables, packageName, getWorkDirFO());
         
         EntityClass[] beans = new DbSchemaEjbGenerator(genTables, schema).getBeans();
         
-        generator.generateBeans(beans, true, getProgressContributor(), null);
+        generator.generateBeans(beans, true, false, false, FetchType.DEFAULT, CollectionType.COLLECTION, getProgressContributor(), null);
         Set<FileObject> result = generator.createdObjects();
         assertEquals(1, result.size());
         
@@ -161,11 +167,11 @@ public class JPAGenTest extends SourceTestSupport{
         relatedTables.add("PRODUCT_CODE");
         relatedTables.add("MANUFACTURER");
         
-        GenerateTablesImpl genTables = new GenerateTablesImpl(relatedTables, packageName, getWorkDirFO());
+        GenerateTablesImpl genTables = new GenerateTablesImpl(schema.getCatalog().getName(), schema.getSchema().getName(), relatedTables, packageName, getWorkDirFO());
         
         EntityClass[] beans = new DbSchemaEjbGenerator(genTables, schema).getBeans();
         
-        generator.generateBeans(beans, true, getProgressContributor(), null);
+        generator.generateBeans(beans, true, false, false, FetchType.DEFAULT, CollectionType.COLLECTION, getProgressContributor(), null);
         Set<FileObject> result = generator.createdObjects();
         assertEquals(3, result.size());
         
@@ -192,7 +198,8 @@ public class JPAGenTest extends SourceTestSupport{
     
     
     private EntityClass getUserEntity() throws IOException{
-        EntityClass user = new EntityClass("USER", getWorkDirFO(), packageName, "User");
+        EntityClass user = new EntityClass( null, null, 
+                "USER", getWorkDirFO(), packageName, "User", null);
         user.usePkField(true);
         
         EntityMemberImpl name = new EntityMemberImpl();
@@ -234,6 +241,9 @@ public class JPAGenTest extends SourceTestSupport{
         private boolean nullable;
         private String columnName;
         private String tableName;
+        private Integer length;
+        private Integer precision;
+        private Integer scale;
         
         public void setLob(boolean lob) {
             this.lob = lob;
@@ -275,6 +285,18 @@ public class JPAGenTest extends SourceTestSupport{
             return supportsFinder;
         }
         
+        public Integer getLength() {
+            return length;
+        }
+
+        public Integer getPrecision(){
+            return precision;
+        }
+
+        public Integer getScale(){
+            return scale;
+        }
+        
         public boolean isNullable() {
             return nullable;
         }
@@ -286,16 +308,25 @@ public class JPAGenTest extends SourceTestSupport{
         public String getTableName() {
             return tableName;
         }
+
+        @Override
+        public boolean isAutoIncrement() {
+            return false;
+        }
     }
     
     private static final class GenerateTablesImpl implements GeneratedTables {
         
+        private String schemaName;
+        private String catalogName;
         private Set<String> tableNames;
         private String packageName;
         private FileObject rootFolder;
         
-        public GenerateTablesImpl(Set<String> tableNames, String packageName,
+        public GenerateTablesImpl(String catalog, String schema, Set<String> tableNames, String packageName,
                 FileObject rootFolder) {
+            this.schemaName = schema;
+            this.catalogName = catalog;
             this.tableNames = tableNames;
             this.packageName = packageName;
             this.rootFolder = rootFolder;
@@ -315,6 +346,18 @@ public class JPAGenTest extends SourceTestSupport{
         
         public String getClassName(String tableName) {
             return EntityMember.makeClassName(tableName);
+        }
+
+        public String getCatalog() {
+            return catalogName;
+        }
+        
+        public String getSchema() {
+            return schemaName;
+        }
+
+        public Set<List<String>> getUniqueConstraints(String tableName) {
+            return null;
         }
     }
     

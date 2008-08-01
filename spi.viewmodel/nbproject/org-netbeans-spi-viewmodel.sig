@@ -1,5 +1,5 @@
 #API master signature file
-#Version 1.12.1
+#Version 1.13
 CLSS public static org.netbeans.spi.viewmodel.ModelEvent$NodeChanged
 cons public NodeChanged(java.lang.Object,java.lang.Object)
 cons public NodeChanged(java.lang.Object,java.lang.Object,int)

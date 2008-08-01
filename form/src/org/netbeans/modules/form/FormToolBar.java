@@ -129,6 +129,7 @@ class FormToolBar extends JToolBar {
 
         // status label
         addLabel = new JLabel();
+        addLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 6));
 
         // popup menu
         addMouseListener(listener);

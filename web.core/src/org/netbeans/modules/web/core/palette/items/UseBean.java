@@ -40,10 +40,10 @@
  */
 
 package org.netbeans.modules.web.core.palette.items;
+
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.web.core.palette.JSPPaletteUtilities;
-import org.netbeans.modules.web.jsps.parserapi.PageInfo;
 import org.openide.text.ActiveEditorDrop;
 
 
@@ -72,7 +72,6 @@ public class UseBean implements ActiveEditorDrop {
     }
 
     public boolean handleTransfer(JTextComponent targetComponent) {
-
         UseBeanCustomizer c = new UseBeanCustomizer(this, targetComponent);
         boolean accept = c.showDialog(JSPPaletteUtilities.getAllBeans(targetComponent));
         if (accept) {
@@ -88,7 +87,6 @@ public class UseBean implements ActiveEditorDrop {
     }
 
     private String createBody() {
-        
         String strBean = " id=\"\""; // NOI18N
         if (beanIndex == -1)
             strBean = " id=\"" + bean + "\""; // NOI18N
@@ -100,15 +98,12 @@ public class UseBean implements ActiveEditorDrop {
         String strScope = " scope=\"" + scopes[scopeIndex] + "\""; // NOI18N
 
         String ub = "<jsp:useBean" + strBean + strScope + strClass + " />"; // NOI18N
-        
         return ub;
     }
         
     private String[] findBeans() {
-         
         //TODO retrieve existing beans
         String[] beans = new String[] {};
-        
         return beans;
     }
 

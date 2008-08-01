@@ -89,7 +89,8 @@ public class FilteringLineDiff extends LineDiff {
                 ) {
             return true;
         }
-        if (l1.trim().length() == 0 && super.compareLines(l1.trim(), l2.trim())) {
+        //we're not interested in changes in whitespaces, only content is important
+        if (super.compareLines(l1.trim(), l2.trim())) {
             return true;
         }
         //WA: there's some strange random issue which causes that some

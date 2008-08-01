@@ -79,6 +79,7 @@ final public class Settings {
         scanCommentsOnly = getPreferences().getBoolean( "scanCommentsOnly", true ); //NOI18N
         
         ext2comments.put( "JAVA", new CommentTags( "//", "/*", "*/") ); //NOI18N //NOI18N //NOI18N //NOI18N
+        ext2comments.put( "JS", new CommentTags( "//", "/*", "*/") ); //NOI18N //NOI18N //NOI18N //NOI18N
         ext2comments.put( "C", new CommentTags( "//", "/*", "*/") ); //NOI18N //NOI18N //NOI18N //NOI18N
         ext2comments.put( "CPP", new CommentTags( "//", "/*", "*/") ); //NOI18N //NOI18N //NOI18N //NOI18N
         ext2comments.put( "CXX", new CommentTags( "//", "/*", "*/") ); //NOI18N //NOI18N //NOI18N //NOI18N
@@ -88,9 +89,11 @@ final public class Settings {
         ext2comments.put( "HTM", new CommentTags( "<!--", "-->")  ); //NOI18N //NOI18N //NOI18N
         ext2comments.put( "XML", new CommentTags( "<!--", "-->") ); //NOI18N //NOI18N //NOI18N
         ext2comments.put( "JSP", new CommentTags( "<%--", "--%>")  ); //NOI18N //NOI18N //NOI18N
+        ext2comments.put( "CSS", new CommentTags( "/*", "*/")  ); //NOI18N //NOI18N //NOI18N
         ext2comments.put( "PROPERTIES", new CommentTags("#") ); //NOI18N //NOI18N
         ext2comments.put( "SH", new CommentTags("#") ); //NOI18N //NOI18N
         ext2comments.put( "RB", new CommentTags("#") ); //NOI18N //NOI18N
+        ext2comments.put( "PHP", new CommentTags( "//", "/*", "*/") ); //NOI18N //NOI18N //NOI18N //NOI18N
         
         mime2comments.put( "text/x-java", new CommentTags( "//", "/*", "*/") ); //NOI18N //NOI18N //NOI18N //NOI18N
         mime2comments.put( "text/html", new CommentTags( "<!--", "-->") ); //NOI18N //NOI18N //NOI18N

@@ -45,7 +45,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.modules.php.dbgp.DebugSession;
-import org.netbeans.modules.php.dbgp.api.SessionId;
+import org.netbeans.modules.php.dbgp.SessionId;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -58,8 +58,8 @@ import org.openide.util.WeakListeners;
  *
  * @author ads
  */
-public class LineBreakpoint extends AbstractBreakpoint {
-    
+public class LineBreakpoint extends AbstractBreakpoint {    
+
     public LineBreakpoint(Line line) {
         myLine = line;
         myListener = new FileRemoveListener();
@@ -70,6 +70,15 @@ public class LineBreakpoint extends AbstractBreakpoint {
             fileObject.addFileChangeListener( myWeakListener );
         }
     }
+
+    public final void setValid(String message) {
+        setValidity(VALIDITY.VALID, message);
+    }
+
+    public final void setInvalid(String message) {
+        setValidity(VALIDITY.INVALID, message);
+    }
+
 
     public Line getLine() {
         return myLine;

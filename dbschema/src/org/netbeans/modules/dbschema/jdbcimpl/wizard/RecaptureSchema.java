@@ -50,6 +50,8 @@ import java.util.logging.Logger;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 
+import org.netbeans.api.db.explorer.JDBCDriver;
+import org.netbeans.api.db.explorer.JDBCDriverManager;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.*;
 import org.openide.nodes.Node;
@@ -58,9 +60,14 @@ import org.openide.util.RequestProcessor;
 
 import org.netbeans.modules.dbschema.*;
 import org.netbeans.modules.dbschema.jdbcimpl.*;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.Exceptions;
+import org.openide.util.Mutex;
 
 public class RecaptureSchema {
+    private static final Logger LOGGER = Logger.getLogger(
+            RecaptureSchema.class.getName());
     
     private static final boolean debug = Boolean.getBoolean("org.netbeans.modules.dbschema.recapture.debug");
 
@@ -75,7 +82,7 @@ public class RecaptureSchema {
         data = new DBSchemaWizardData();
         data.setExistingConn(true);
     }
-
+    
     public void start() throws ClassNotFoundException, SQLException {
         final DBschemaDataObject dobj = (DBschemaDataObject)dbSchemaNode.getCookie(DBschemaDataObject.class);
         final SchemaElement elem = dobj.getSchema();
@@ -122,11 +129,15 @@ public class RecaptureSchema {
             System.out.println("[dbschema] ec='" + ec + "'");
             System.out.println("[dbschema] NEW dbIdentName='" + dbIdentName + "'");
         }
-        final ConnectionProvider cp = createConnectionProvider(data, elem.getUrl());
+        final ConnectionProvider cp = createConnectionProvider(data, elem);
         try {
             final ConnectionProvider c = cp;
             if (c == null) {
-                throw new SQLException(bundle.getString("EXC_ConnectionNotEstablished"));
+                String message = MessageFormat.format(
+                        bundle.getString("EXC_CouldNotCreateConnection"),
+                        elem.getUrl());
+                
+                throw new SQLException(message);
             }
             if (debug) {
                 System.out.println("[dbschema] c.getConnection()='" + c.getConnection() + "'");
@@ -155,25 +166,35 @@ public class RecaptureSchema {
                                 }
                                 
                                 if (event.getPropertyName().equals("tableName")) { //NOI18N
-                                    message = MessageFormat.format(bundle.getString("CapturingTable"), new String[] {((String) event.getNewValue()).toUpperCase()}); //NOI18N
+                                    message = MessageFormat.format(bundle.
+                                            getString("CapturingTable"), 
+                                            ((String) event.getNewValue()).toUpperCase()); //NOI18N
                                     pf.setMessage(message);
                                     return;
                                 }
                                 
                                 if (event.getPropertyName().equals("FKt")) { //NOI18N
-                                    message = MessageFormat.format(bundle.getString("CaptureFK"), new String[] {((String) event.getNewValue()).toUpperCase(), bundle.getString("CaptureFKtable")}); //NOI18N
+                                    message = MessageFormat.format(
+                                            bundle.getString("CaptureFK"), 
+                                            ((String) event.getNewValue()).toUpperCase(), 
+                                            bundle.getString("CaptureFKtable")); //NOI18N
                                     pf.setMessage(message);
                                     return;
                                 }
                                 
                                 if (event.getPropertyName().equals("FKv")) { //NOI18N
-                                    message = MessageFormat.format(bundle.getString("CaptureFK"), new String[] {((String) event.getNewValue()).toUpperCase(), bundle.getString("CaptureFKview")}); //NOI18N
+                                    message = MessageFormat.format(
+                                            bundle.getString("CaptureFK"), 
+                                            ((String) event.getNewValue()).toUpperCase(), 
+                                            bundle.getString("CaptureFKview")); //NOI18N
                                     pf.setMessage(message);
                                     return;
                                 }
                                 
                                 if (event.getPropertyName().equals("viewName")) { //NOI18N
-                                    message = MessageFormat.format(bundle.getString("CapturingView"), new String[] {((String) event.getNewValue()).toUpperCase()}); //NOI18N
+                                    message = MessageFormat.format(
+                                            bundle.getString("CapturingView"), 
+                                            ((String) event.getNewValue()).toUpperCase()); //NOI18N
                                     pf.setMessage(message);
                                     return;
                                 }
@@ -241,12 +262,13 @@ public class RecaptureSchema {
                 }
             }, 0);
         } catch (Exception exc) {
-            String message = MessageFormat.format(bundle.getString("UnableToCreateSchema"), new String[] {exc.getMessage()}); //NOI18N
+            String message = MessageFormat.format(
+                    bundle.getString("UnableToCreateSchema"), 
+                    exc.getMessage()); //NOI18N
             StatusDisplayer.getDefault().setStatusText(message);
-            if (debug) {
-                Logger.getLogger("global").log(Level.INFO, null, exc);
-            }
-            
+            DialogDisplayer.getDefault().notifyLater(
+                    new NotifyDescriptor.Exception(exc, exc.getMessage()));
+            LOGGER.log(Level.INFO, null, exc);
             try {
                 if (cp != null)
                     cp.closeConnection();
@@ -284,14 +306,19 @@ public class RecaptureSchema {
         return s.toString();
     }
     
-    public ConnectionProvider createConnectionProvider(DBSchemaWizardData data, String url) throws SQLException {
+    public ConnectionProvider createConnectionProvider(DBSchemaWizardData data,
+            SchemaElement elem) throws SQLException {
         
-        DatabaseConnection dbconn = findDatabaseConnection(url);
+        DatabaseConnection dbconn = findDatabaseConnection(elem);
         if (dbconn == null) {
             if (debug) {
-                System.out.println("[dbschema-ccp] not found dbconn='" + dbconn + "'");
-            }
-            return null;
+                    System.out.println("[dbschema-ccp] not found dbconn='" + dbconn + "'");
+                }
+            String message = MessageFormat.format(
+                    bundle.getString("EXC_CouldNotCreateConnection"),
+                    elem.getUrl());
+
+            throw new SQLException(message);
         }
         if (debug) {
             System.out.println("[dbschema-ccp] found dbconn='" + dbconn.getDatabaseURL() + "'");
@@ -313,17 +340,73 @@ public class RecaptureSchema {
         if (debug) {
             System.out.println("[dbschema-ccp] connection not ensured, returning null");
         }
-        return null;
+        
+        String message = MessageFormat.format(
+                bundle.getString("EXC_UnableToConnect"), elem.getUrl());
+        throw new SQLException(message);
     }
     
-    private DatabaseConnection findDatabaseConnection(String url) {
+    private DatabaseConnection findDatabaseConnection(final SchemaElement elem) {
         DatabaseConnection dbconns[] = ConnectionManager.getDefault().getConnections();
+        
+        // Trim off connection properties, as in some cases, what dbmd.getUrl()
+        // returns is not the same as what is set in the DB Explorer, and
+        // we really want to match on the base URL, not on the full
+        // set of property strings.  Otherwise you get false negatives,
+        // see issue 104259.
+        String url = trimUrl(elem.getUrl());
         for (int i = 0; i < dbconns.length; i++) {
-            if (url.equals(dbconns[i].getDatabaseURL())) {
+            String dburl = dbconns[i].getDatabaseURL();
+            if ( dburl != null && dburl.startsWith(url)) {
                 return dbconns[i];
             }
         }
-        return null;
+        
+        // None found, so let the user pick one
+        DatabaseConnection conn = 
+            Mutex.EVENT.readAccess(new Mutex.Action<DatabaseConnection>() {
+
+                public DatabaseConnection run() {
+                    return ChooseConnectionPanel.showChooseConnectionDialog(
+                            elem.getUrl());
+                }
+            });
+            
+        return conn;
+    }
+    
+    private static String trimUrl(String url) {
+        assert url != null;
+        
+        // Strip off connection properties
+        url = url.split("[\\?\\&;]")[0]; // NOI18N
+        
+        return url;
+    }
+    
+    private DatabaseConnection createDatabaseConnection(SchemaElement elem)
+        throws SQLException {
+        final String url = elem.getUrl();
+        final String user = elem.getUsername();
+        String driver = elem.getDriver();
+        JDBCDriver[] jdbcDrivers = JDBCDriverManager.getDefault().getDrivers(driver);
+        if ( jdbcDrivers.length == 0 ) {
+            String message = MessageFormat.format(
+                    bundle.getString("EXC_NoDriverFound"), driver);
+            throw new SQLException(message);
+        }
+        
+        final JDBCDriver jdbcDriver = jdbcDrivers[0];
+        
+        DatabaseConnection conn = Mutex.EVENT.readAccess(new Mutex.Action<DatabaseConnection>() {
+            public DatabaseConnection run() {
+                return ConnectionManager.getDefault().
+                        showAddConnectionDialogFromEventThread(jdbcDriver, url,
+                            user, null);
+            }
+        });
+        
+        return conn;        
     }
     
     private static class ConnectionHandler extends DBSchemaTablesPanel {

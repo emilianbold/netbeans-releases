@@ -44,7 +44,6 @@ package org.netbeans.modules.web.wizards;
 
 /**
  * Filter Mapping representation
-
  * @author ana.von.klopp@sun.com
  */
 class FilterMappingData {
@@ -69,6 +68,7 @@ class FilterMappingData {
 	this.dispatch = d; 
     } 
 
+    @Override
     public Object clone() { 
 	return new FilterMappingData(name, type, pattern, dispatch); 
     }
@@ -137,6 +137,7 @@ class FilterMappingData {
 	this.dispatch = d;
     }
 
+    @Override
     public String toString() { 
 	StringBuffer buf = 
 	    new StringBuffer("FilterMapping for filter: "); //NOI18N
@@ -160,16 +161,28 @@ class FilterMappingData {
 
     static class Type { 
 	private String name; 
-	private Type(String name) { this.name = name; } 
-	public String toString() { return name; } 
+        
+	private Type(String name) {
+            this.name = name;
+        } 
+        @Override
+	public String toString() {
+            return name;
+        } 
 	public static final Type URL = new Type("URL pattern"); 
 	public static final Type SERVLET = new Type("Servlet"); 
     } 
 
     static class Dispatcher { 
-	private String name; 
-	private Dispatcher(String name) { this.name = name; } 
-	public String toString() { return name; } 
+	private String name;
+        
+	private Dispatcher(String name) {
+            this.name = name;
+        }
+        @Override
+	public String toString() {
+            return name;
+        } 
 	public static final Dispatcher BLANK = new Dispatcher(""); 
 	public static final Dispatcher REQUEST = new Dispatcher("REQUEST"); 
 	public static final Dispatcher INCLUDE = new Dispatcher("INCLUDE"); 

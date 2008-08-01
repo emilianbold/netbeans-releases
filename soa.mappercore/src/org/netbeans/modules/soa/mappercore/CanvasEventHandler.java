@@ -18,12 +18,20 @@
  */
 package org.netbeans.modules.soa.mappercore;
 
+import java.awt.Cursor;
+import java.awt.Rectangle;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.MouseEvent;
+import java.util.List;
+import javax.swing.JMenu;
+import javax.swing.JPopupMenu;
 import javax.swing.tree.TreePath;
+import org.netbeans.modules.soa.mappercore.model.Constant;
+import org.netbeans.modules.soa.mappercore.model.Function;
 import org.netbeans.modules.soa.mappercore.model.Graph;
 import org.netbeans.modules.soa.mappercore.model.GraphItem;
 import org.netbeans.modules.soa.mappercore.model.Link;
+import org.netbeans.modules.soa.mappercore.model.MapperModel;
 import org.netbeans.modules.soa.mappercore.model.SourcePin;
 import org.netbeans.modules.soa.mappercore.model.TargetPin;
 import org.netbeans.modules.soa.mappercore.model.TreeSourcePin;
@@ -37,6 +45,7 @@ import org.netbeans.modules.soa.mappercore.model.VertexItem;
 public class CanvasEventHandler extends AbstractMapperEventHandler {
 
     private MouseEvent initialEvent = null;
+    private Vertex resizingVertex = null;
     
     public CanvasEventHandler(Canvas canvas) {
         super(canvas.getMapper(), canvas);
@@ -45,7 +54,7 @@ public class CanvasEventHandler extends AbstractMapperEventHandler {
 
     private void reset() {
         initialEvent = null;
-
+        resizingVertex = null;
     }
 
     public void mouseReleased(MouseEvent e) {
@@ -64,6 +73,9 @@ public class CanvasEventHandler extends AbstractMapperEventHandler {
             }
         }
         reset();
+        if (e.isPopupTrigger() && getMapper().getNodeAt(e.getY()) != null) {
+            showPopupMenu(e);
+        }
     }
 
     public void mousePressed(MouseEvent e) {
@@ -102,7 +114,65 @@ public class CanvasEventHandler extends AbstractMapperEventHandler {
     }
 
     public void mouseDragged(MouseEvent e) {
-        if ((initialEvent != null) && (initialEvent.getPoint().distance(e.getPoint()) >= 5)) {
+        if (initialEvent != null && resizingVertex == null) {
+            int x = e.getX();
+            int y = e.getY();
+            
+            CanvasSearchResult searchResult = getCanvas().find(x, y);
+
+            if (searchResult != null) {
+                GraphItem item = searchResult.getGraphItem();
+                Rectangle r = null;
+
+                if (item instanceof Function) {
+                    r = ((Function) item).getBounds();
+                }
+                
+                if (item instanceof VertexItem &&
+                        ((VertexItem) item).getVertex() instanceof Constant) {
+                    r = ((VertexItem) item).getVertex().getBounds();
+                }
+                
+                if (r != null) {
+                    int tx = r.x + r.width;
+                    int ty = r.y + r.height;
+
+                    int step = getCanvas().getStep();
+                    int graphY = getCanvas().toGraphY(y);
+
+                    graphY = graphY + (step - 1) / 2 + 1;
+
+                    tx = getCanvas().toCanvas(tx * step);
+                    ty = ty * step + graphY;
+
+                    int dx = tx - x;
+                    int dy = ty - y;
+
+                    if (dx > 0 && dy > 0 && dx + dy < step) {
+                        if (item instanceof Vertex) {
+                            resizingVertex = (Vertex) item;
+                        } else {
+                            resizingVertex = ((VertexItem) item).getVertex();
+                        }
+                    }
+                }
+            }
+        }
+    
+        
+        if (resizingVertex != null) {
+            int step = getCanvas().getStep();
+            
+            int x =  getCanvas().toGraph(e.getX()) / step;
+            int x0 = resizingVertex.getX();
+            
+            resizingVertex.setWidth(x - x0);
+            
+            getCanvas().repaint();
+            return;
+       }
+
+       if ((initialEvent != null) && (initialEvent.getPoint().distance(e.getPoint()) >= 5)) {
 
             LinkTool linkTool = getMapper().getLinkTool();
             MoveTool moveTool = getMapper().getMoveTool();
@@ -160,6 +230,54 @@ public class CanvasEventHandler extends AbstractMapperEventHandler {
         }
     }
 
+    @Override
+    public void mouseMoved(MouseEvent e) {
+        int x = e.getX();
+        int y = e.getY();
+        
+        CanvasSearchResult searchResult = getCanvas().find(x, y);
+
+        if (searchResult != null) {
+            GraphItem item = searchResult.getGraphItem();
+            Rectangle r = null;
+
+            if (item instanceof Function) {
+                r = ((Function) item).getBounds();
+            }
+
+            if (item instanceof VertexItem &&
+                    ((VertexItem) item).getVertex() instanceof Constant) {
+                r = ((VertexItem) item).getVertex().getBounds();
+            }
+
+            if (r != null) {
+
+                int tx = r.x + r.width;
+                int ty = r.y + r.height;
+
+                int step = getCanvas().getStep();
+                int graphY = getCanvas().toGraphY(y);
+                                
+                graphY = graphY + (step - 1) / 2 + 1;
+                
+                tx = getCanvas().toCanvas(tx * step);
+                ty = ty * step + graphY;
+                
+                int dx = tx - x;
+                int dy = ty - y;
+                
+                if (dx > 0 && dy > 0 && dx + dy < step) {
+                    getCanvas().setCursor(new Cursor(Cursor.W_RESIZE_CURSOR));
+                    return;
+                }
+            }
+            getCanvas().setCursor(null);
+        }
+    }
+
+
+
+    
 
     @Override
     public void mouseClicked(MouseEvent e) {
@@ -186,6 +304,51 @@ public class CanvasEventHandler extends AbstractMapperEventHandler {
                 } 
                 getLinkTool().done();
             }
+        }
+    }
+    
+    private void showPopupMenu(MouseEvent event) {
+        MapperContext context = getMapper().getContext();
+        MapperModel model = getMapper().getModel();
+        
+        if (context == null || model == null) { return; }
+
+        TreePath treePath = getSelectionModel().getSelectedPath();
+        if (treePath == null) { return; }
+        
+        GraphItem item = null;
+        List<Link> links = getSelectionModel().getSelectedLinks();
+        if (links != null && !links.isEmpty()) {
+            item = links.get(0);
+        }
+        
+        List<Vertex> vertexes = getSelectionModel().getSelectedVerteces();
+        if (vertexes != null && !vertexes.isEmpty()) {
+            item = vertexes.get(0);
+        }
+        
+        JPopupMenu mapperMenu = MapperPopupMenuFactory.
+                createMapperPopupMenu(getCanvas(), item);           
+        
+        List<JMenu> listMenu = context.getMenuNewEllements(model);
+        JMenu newMenu = (JMenu) mapperMenu.getComponent(0);
+        for (JMenu m : listMenu) {
+            newMenu.add(m);
+        }
+
+        JPopupMenu menu = context.getCanvasPopupMenu(model, item);
+        
+        if (menu != null) {
+            if (menu.getComponentCount() > 0) {
+                mapperMenu.addSeparator();
+            }
+
+            for (int i = 0; i < menu.getComponentCount(); i++) {
+                mapperMenu.add(menu.getComponent(i));
+            }
+        }
+        if (mapperMenu != null) {
+            mapperMenu.show(getCanvas(), event.getX(), event.getY());
         }
     }
 }

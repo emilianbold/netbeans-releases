@@ -41,13 +41,14 @@
 #include <math.h>
 #include "FileUtils.h"
 #include "StringUtils.h"
+#include "SystemUtils.h"
 #include "JavaUtils.h"
 #include "RegistryUtils.h"
 #include "ExtractUtils.h"
 #include "Launcher.h"
 #include "Main.h"
 
-const DWORD   STUB_FILL_SIZE      = 420000;
+const DWORD   STUB_FILL_SIZE      = 450000;
 
 void skipLauncherStub(LauncherProperties * props,  DWORD stubSize) {
     HANDLE hFileRead = props->handler;
@@ -73,8 +74,19 @@ void skipLauncherStub(LauncherProperties * props,  DWORD stubSize) {
 
 void skipStub(LauncherProperties * props) {
     if(props->isOnlyStub) {
-        props->status = EXIT_CODE_STUB;
-        showMessageW(props, L"It`s only stub", 0);
+        WCHAR * os;
+        props->status = EXIT_CODE_STUB;        
+        os = appendStringW(NULL, L"It`s only the launcher stub.\nOS: ");
+        if(is9x()) os = appendStringW(os, L"Windows 9x");
+        if(isNT()) os = appendStringW(os, L"Windows NT");
+        if(is2k()) os = appendStringW(os, L"Windows 2000");
+        if(isXP()) os = appendStringW(os, L"Windows XP");
+        if(is2003())  os = appendStringW(os, L"Windows 2003");
+        if(isVista()) os = appendStringW(os, L"Windows Vista");
+        if(is2008())  os = appendStringW(os, L"Windows 2008");
+	if(IsWow64) os = appendStringW(os, L" x64");
+        showMessageW(props,  os , 0);
+	FREE(os);
     } else {
         skipLauncherStub(props, STUB_FILL_SIZE);
         if(!isOK(props)) {

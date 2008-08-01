@@ -46,7 +46,6 @@ import junit.framework.Test;
 import junit.framework.TestResult;
 import junit.framework.TestSuite;
 
-
 /**
  *
  * @author ca@netbeans.org

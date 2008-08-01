@@ -1,30 +1,5 @@
 Manifest-Version: 1.0
 OpenIDE-Module: org.netbeans.modules.j2ee.websphere6/1
-OpenIDE-Module-Specification-Version: 1.2
+OpenIDE-Module-Specification-Version: 1.3
 OpenIDE-Module-Layer: org/netbeans/modules/j2ee/websphere6/resources/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/j2ee/websphere6/resources/Bundle.properties
-
-Name: org/netbeans/modules/j2ee/websphere6/dd/loaders/appbnd/WSAppBndDataLoader.class
-Install-Before: org.openide.loaders.XMLDataObject, org.netbeans.modules.xml.XMLDataObject
-OpenIDE-Module-Class: Loader
-
-Name: org/netbeans/modules/j2ee/websphere6/dd/loaders/appext/WSAppExtDataLoader.class
-Install-Before: org.openide.loaders.XMLDataObject, org.netbeans.modules.xml.XMLDataObject
-OpenIDE-Module-Class: Loader
-
-Name: org/netbeans/modules/j2ee/websphere6/dd/loaders/ejbbnd/WSEjbBndDataLoader.class
-Install-Before: org.openide.loaders.XMLDataObject, org.netbeans.modules.xml.XMLDataObject
-OpenIDE-Module-Class: Loader
-
-Name: org/netbeans/modules/j2ee/websphere6/dd/loaders/ejbext/WSEjbExtDataLoader.class
-Install-Before: org.openide.loaders.XMLDataObject, org.netbeans.modules.xml.XMLDataObject
-OpenIDE-Module-Class: Loader
-
-Name: org/netbeans/modules/j2ee/websphere6/dd/loaders/webbnd/WSWebBndDataLoader.class
-Install-Before: org.openide.loaders.XMLDataObject, org.netbeans.modules.xml.XMLDataObject
-OpenIDE-Module-Class: Loader
-
-Name: org/netbeans/modules/j2ee/websphere6/dd/loaders/webext/WSWebExtDataLoader.class
-Install-Before: org.openide.loaders.XMLDataObject, org.netbeans.modules.xml.XMLDataObject
-OpenIDE-Module-Class: Loader
-

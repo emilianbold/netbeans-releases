@@ -50,6 +50,7 @@ import java.util.TreeSet;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.ant.freeform.FreeformProjectGenerator;
 import org.netbeans.modules.ant.freeform.FreeformProjectType;
 import org.netbeans.modules.ant.freeform.TestBase;
@@ -86,6 +87,7 @@ public class ViewTest extends TestBase {
     
     private LogicalViewProvider lvp;
     
+    @Override
     protected void setUp() throws Exception {
         super.setUp();
         ModuleInfo info = Lookup.getDefault().lookup(ModuleInfo.class);
@@ -106,7 +108,8 @@ public class ViewTest extends TestBase {
                 DataObject.find(egdirFO.getFileObject("extsrcroot/proj/nbproject/project.xml")),
                 kids[1].getLookup().lookup(DataObject.class));
     }
-    
+
+    @RandomlyFails // NB-Core-Build #1012
     public void testViewItemChanges() throws Exception {
         Node root = lvp.createLogicalView();
         Children ch = root.getChildren();
@@ -234,6 +237,7 @@ public class ViewTest extends TestBase {
         ProjectManager.getDefault().saveProject(p);
         assertEquals(appearanceFloating, expand(r));
     }
+    @RandomlyFails
     public void testIncludesExcludes() throws Exception {
         doTestIncludesExcludes(this, "tree",
                 "prj{s{ignored{file} relevant{excluded{file} included{file}}}}",

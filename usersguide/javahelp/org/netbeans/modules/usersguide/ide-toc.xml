@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='ISO-8859-1' ?>
 <!--
-*     Copyright © 2007 Sun Microsystems, Inc. All rights reserved.
+*     Copyright © 2008 Sun Microsystems, Inc. All rights reserved.
 *     Use is subject to license terms.
 -->
 
@@ -73,6 +73,15 @@
       <tocitem text="Installing Plugins Offline" target="update.offline" />
       <tocitem text="Updating a Multi-User IDE Installation" target="update.globally" />
       <tocitem text="Activating and Deactivating a Plugin" target="configure.enable.module" />
+    </tocitem>
+    
+    <tocitem text="JavaScript Files">
+        <tocitem text="Basic Features" target="js.basics" />
+        <tocitem text="Code Completion" target="js.code.completion"/>
+        <tocitem text="Refactoring" target="js.refactoring" />
+        <tocitem text="Quick Fixes and Semantic Checks" target="js.quickfixes" />
+        <tocitem text="Browser Compatibility" target="js.browser.compatibility" />
+        <tocitem text="Cross-File Navigation" target="js.function.jump" />        
     </tocitem>
   
      <tocitem text="XML Documents" >

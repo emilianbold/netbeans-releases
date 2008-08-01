@@ -209,8 +209,8 @@ import static org.netbeans.modules.servicetag.RegistrationDocument.*;
  * @see <a href="https://sunconnection.sun.com/inventory">Sun Connection Inventory Channel</a>
  */
 public class RegistrationData {
-    private final Map<String, String> environment;
-    private final Map<String, ServiceTag> svcTagMap;
+    private final Map<String, String> environment = initEnvironment();
+    private final Map<String, ServiceTag> svcTagMap = new LinkedHashMap<String, ServiceTag>();
     private final String urn;
 
     /**
@@ -226,28 +226,35 @@ public class RegistrationData {
      * and the value of other keys may be empty.
      */
     public RegistrationData() {
-        this(Util.generateURN());
+        this.urn = Util.generateURN();
+        SystemEnvironment sysEnv = SystemEnvironment.getSystemEnvironment();
+        setEnvironment(ST_NODE_HOSTNAME, sysEnv.getHostname());
+        setEnvironment(ST_NODE_HOST_ID, sysEnv.getHostId());
+        setEnvironment(ST_NODE_OS_NAME, sysEnv.getOsName());
+        setEnvironment(ST_NODE_OS_VERSION, sysEnv.getOsVersion());
+        setEnvironment(ST_NODE_OS_ARCH, sysEnv.getOsArchitecture());
+        setEnvironment(ST_NODE_SYSTEM_MODEL, sysEnv.getSystemModel());
+        setEnvironment(ST_NODE_SYSTEM_MANUFACTURER, sysEnv.getSystemManufacturer());
+        setEnvironment(ST_NODE_CPU_MANUFACTURER, sysEnv.getCpuManufacturer());
+        setEnvironment(ST_NODE_SERIAL_NUMBER, sysEnv.getSerialNumber());
     }
     
     // package private
     RegistrationData(String urn) {
         this.urn = urn;
-        this.environment = initEnvironment();
-        this.svcTagMap = new LinkedHashMap<String, ServiceTag>();
     }
     
     private Map<String, String> initEnvironment() {
         Map<String, String> map = new LinkedHashMap<String, String>();
-        SystemEnvironment sysEnv = SystemEnvironment.getSystemEnvironment();
-        map.put(ST_NODE_HOSTNAME, sysEnv.getHostname());
-        map.put(ST_NODE_HOST_ID, sysEnv.getHostId());
-        map.put(ST_NODE_OS_NAME, sysEnv.getOsName());
-        map.put(ST_NODE_OS_VERSION, sysEnv.getOsVersion());
-        map.put(ST_NODE_OS_ARCH, sysEnv.getOsArchitecture());
-        map.put(ST_NODE_SYSTEM_MODEL, sysEnv.getSystemModel());
-        map.put(ST_NODE_SYSTEM_MANUFACTURER, sysEnv.getSystemManufacturer());
-        map.put(ST_NODE_CPU_MANUFACTURER, sysEnv.getCpuManufacturer());
-        map.put(ST_NODE_SERIAL_NUMBER, sysEnv.getSerialNumber());
+        map.put(ST_NODE_HOSTNAME, "");
+        map.put(ST_NODE_HOST_ID, "");
+        map.put(ST_NODE_OS_NAME, "");
+        map.put(ST_NODE_OS_VERSION, "");
+        map.put(ST_NODE_OS_ARCH, "");
+        map.put(ST_NODE_SYSTEM_MODEL, "");
+        map.put(ST_NODE_SYSTEM_MANUFACTURER, "");
+        map.put(ST_NODE_CPU_MANUFACTURER, "");
+        map.put(ST_NODE_SERIAL_NUMBER, "");
         return map;
     }  
     

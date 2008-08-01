@@ -44,6 +44,8 @@ package org.netbeans.modules.gsf.api;
 import java.util.EnumSet;
 import java.util.Set;
 import javax.swing.Icon;
+import org.netbeans.modules.gsf.api.annotations.CheckForNull;
+import org.netbeans.modules.gsf.api.annotations.NonNull;
 import org.netbeans.spi.jumpto.type.TypeDescriptor;
 import org.openide.filesystems.FileObject;
 
@@ -53,21 +55,22 @@ import org.openide.filesystems.FileObject;
  * @author Tor Norbye
  */
 public interface TypeSearcher {
-    //Set<? extends /*ElementHandle<*/Element/*>*/> getDeclaredTypes(Index index, String textForQuery, NameKind kind, EnumSet<Index.SearchScope> scope);
-    Set<? extends GsfTypeDescriptor> getDeclaredTypes(Index index, String textForQuery, NameKind kind, EnumSet<Index.SearchScope> scope, Helper helper);
+    @NonNull Set<? extends GsfTypeDescriptor> getDeclaredTypes(@NonNull Index index, @NonNull String textForQuery, 
+        @NonNull NameKind kind, @NonNull EnumSet<Index.SearchScope> scope, @NonNull Helper helper);
 
     /** This TypeSearcher is associated with the Gsf language for the given type.
      * The type searcher api part needs to be cleaned up; TypeSearchers aren't registered via the normal
      * GSF means etc. which is why this hack is needed.
      */
-    String getMimetype();
+    @NonNull String getMimetype();
     
     public abstract class GsfTypeDescriptor extends TypeDescriptor {
+        @NonNull
         public abstract ElementHandle getElement();
     }
     
     public interface Helper {
-        Icon getIcon(ElementHandle element);
-        void open(FileObject fileObject, ElementHandle element);
+        @CheckForNull Icon getIcon(@NonNull ElementHandle element);
+        void open(@NonNull FileObject fileObject, @NonNull ElementHandle element);
     }
 }

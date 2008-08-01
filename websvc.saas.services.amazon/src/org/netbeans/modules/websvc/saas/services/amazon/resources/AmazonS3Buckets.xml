@@ -59,12 +59,17 @@
         <localizing-bundle>org.netbeans.modules.websvc.saas.services.amazon.Bundle</localizing-bundle>
 
         <group name="Amazon"/>
+        
+        <code-gen>
+            <artifacts targets="java,servlet,resource,jsp" profile="Templates/SaaSServices/signedurl.properties"/>
+            <artifacts targets="php" profile="Templates/SaaSServices/signedurl.php"/>
+        </code-gen>
 
-        <authentication profile="SaaSServices/AmazonS3/profile.properties">
+        <authentication>
             <signed-url sig-id="Authorization">
-                <sign>
+                <sign id="authorization">
                     <params>
-                        <param name="HTTP-Verb" type="string" required="true" default="GET" />
+                        <param name="HTTP-Verb" type="httpMethod" required="true"/>
                         <param name="Date" type="date" required="true"/>
                         <param name="HTTP-Request-URI" type="string"/>
                         <param name="Bucket" type="string" required="true" default=""/>
@@ -75,9 +80,7 @@
 
     </saas-metadata>
 
-    <!--
-    <methods>
-        <method name="getBuckets" href="#amazons3.getBuckets"/>
-    </methods>
-    -->
+    <!-- Process all methods in the wadl !-->
+    <methods/>
+    
 </saas-services>

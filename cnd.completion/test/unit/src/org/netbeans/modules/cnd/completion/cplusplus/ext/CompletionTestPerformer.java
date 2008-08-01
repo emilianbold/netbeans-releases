@@ -41,6 +41,9 @@
 package org.netbeans.modules.cnd.completion.cplusplus.ext;
 import java.beans.PropertyVetoException;
 import java.io.*;
+import java.lang.reflect.InvocationTargetException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
@@ -53,7 +56,7 @@ import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.test.CndCoreTestUtils;
 import org.netbeans.spi.editor.completion.CompletionItem;
-import org.openide.cookies.SaveCookie;
+import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -160,26 +163,36 @@ public class CompletionTestPerformer {
             JEditorPane editor,
             BaseDocument doc,
             boolean unsorted,
-            String textToInsert, int offsetAfterInsertion, 
+            final String textToInsert, int offsetAfterInsertion, 
             int lineIndex,
             int colIndex) throws BadLocationException, IOException {
         if (!SwingUtilities.isEventDispatchThread()) {
             throw new IllegalStateException("The testPerform method may be called only inside AWT event dispatch thread.");
         }
-        
+        Logger.getLogger(FileLock.class.getName()).setLevel(Level.SEVERE);
         doc = doc == null ? Utilities.getDocument(editor) : doc;
         assert doc != null;
         int offset = CndCoreTestUtils.getDocumentOffset(doc, lineIndex, colIndex);
         
         if (textToInsert.length() > 0) {
-            doc.atomicLock();
-            try {
-                doc.insertString(offset, textToInsert, null);
-            } finally {
-                doc.atomicUnlock();
+            final int insOffset = offset;
+            final BaseDocument insDoc = doc;
+            final BadLocationException ex[] = new BadLocationException[] { null };
+            insDoc.runAtomic(new Runnable() {
+
+                public void run() {
+                    try {
+                        insDoc.insertString(insOffset, textToInsert, null);
+                    } catch (BadLocationException e) {
+                        ex[0] = e;
+                    }
+                }
+            });
+            if (ex[0] != null) {
+                throw ex[0];
             }
             String text = doc.getText(0, doc.getLength());
-            saveDocument((DataObject) doc.getProperty(BaseDocument.StreamDescriptionProperty),text);
+            parseModifiedFile((DataObject) doc.getProperty(BaseDocument.StreamDescriptionProperty),text);
             offset += textToInsert.length() + offsetAfterInsertion;
         }
         if (editor != null) {
@@ -218,7 +231,13 @@ public class CompletionTestPerformer {
                 if (SwingUtilities.isEventDispatchThread()) {
                     run.run();
                 } else {
-                    SwingUtilities.invokeAndWait(run);
+                    try {
+                        SwingUtilities.invokeAndWait(run);
+                    } catch (InvocationTargetException invocationTargetException) {
+                        if (invocationTargetException.getCause() != null) {
+                            invocationTargetException.getCause().printStackTrace(System.err);
+                        }
+                    }
                 }
             } finally {
                 testFile.setModified(false);
@@ -242,32 +261,33 @@ public class CompletionTestPerformer {
         return test;
     }
     
-    private static void saveDocument(DataObject dob,String docText) throws IOException { //!!!WARNING: if this exception is thrown, the test may be locked (the file in editor may be modified, but not saved. problems with IDE finishing are supposed in this case).
-        SaveCookie sc = dob.getCookie(SaveCookie.class);
-        if (sc != null) {
-            sc.save();
-        }
-        FileObject fo = dob.getPrimaryFile();
-        if (fo != null) {
-            InputStream is = fo.getInputStream();
-            int ch;
-            StringBuilder fileText = new StringBuilder();
-            while ((ch = is.read()) != -1) {
-                fileText.append((char)ch);
-            }
-            is.close();
-            String text = fileText.toString();
-            if (!text.equals(docText) && false) {
-                System.err.println("file after cookie saving " + fo.getPath() + "\ntext:\n" + fileText);
-                System.err.println("document after cookie saving " + fo.getPath() + "\ntext:\n" + docText);
-            }
-        }
+    private static void parseModifiedFile(DataObject dob,String docText) throws IOException { //!!!WARNING: if this exception is thrown, the test may be locked (the file in editor may be modified, but not saved. problems with IDE finishing are supposed in this case).
+//        SaveCookie sc = dob.getCookie(SaveCookie.class);
+//        assert sc != null : "document must have save cookie " + dob;
+//        if (sc != null) {
+//            sc.save();
+//        }
+//        FileObject fo = dob.getPrimaryFile();
+//        if (fo != null) {
+//            InputStream is = fo.getInputStream();
+//            int ch;
+//            StringBuilder fileText = new StringBuilder();
+//            while ((ch = is.read()) != -1) {
+//                fileText.append((char)ch);
+//            }
+//            is.close();
+//            String text = fileText.toString();
+//            if (!text.equals(docText) && false) {
+//                System.err.println("file after cookie saving " + fo.getPath() + "\ntext:\n" + fileText);
+//                System.err.println("document after cookie saving " + fo.getPath() + "\ntext:\n" + docText);
+//            }
+//        }
         CsmFile csmFile = CsmUtilities.getCsmFile(dob, false);
         assert csmFile != null : "Must be csmFile for data object " + dob;
         CsmProject prj = csmFile.getProject();
         assert prj != null : "Must be project for csm file " + csmFile;
         prj.waitParse();
-        assert csmFile.isParsed() : " file must be parsed";
-        assert prj.isStable(null) : " full project must be parsed";
+        assert csmFile.isParsed() : " file must be parsed: " + csmFile;
+        assert prj.isStable(null) : " full project must be parsed" + prj;
     }
 }

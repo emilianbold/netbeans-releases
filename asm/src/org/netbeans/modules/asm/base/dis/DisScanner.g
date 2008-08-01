@@ -54,6 +54,7 @@ options {
     testLiterals = false;
     charVocabulary = '\0'..'\ufffe';
     classHeaderSuffix = "AntlrScanner";
+    filter = true;
 }
 
 
@@ -103,7 +104,7 @@ options {
    
     public void consume() {
         super.consume();
-        if (inputState.guessing == 0) {
+        if (guessing == 0) {
             offset++;
         }
     }

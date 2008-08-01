@@ -355,7 +355,6 @@ public final class RhtmlLexer implements Lexer<RhtmlTokenId> {
                     }
                     break;
             }
-            
         }
         
         // At this stage there's no more text in the scanned buffer.

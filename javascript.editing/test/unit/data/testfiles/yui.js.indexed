@@ -1,12 +1,7 @@
 
 
 Document 0
-Delete:  source : <TESTURL>/yui.js
-
-
-
-Document 1
-Indexed:
+Searchable Keys:
   base : calendar2up;YAHOO.widget;Calendar2up;|DOCUMENTED|CONSTRUCTOR|STATIC|DEPRECATED|;id,containerId,config;0;3a;;YAHOO.widget.Calendar2up;
   base : calendarnavigator;YAHOO.widget;CalendarNavigator;|CONSTRUCTOR|STATIC|;cal;0;;;YAHOO.widget.CalendarNavigator;
   base : event;YAHOO.util;Event;|DOCUMENTED|CONSTRUCTOR|STATIC|;;0;217;;YAHOO.util.Event;
@@ -23,4 +18,4 @@ Indexed:
   fqn : yahoo.widget.calendar2up;;YAHOO.widget.Calendar2up;|DOCUMENTED|CONSTRUCTOR|STATIC|DEPRECATED|;id,containerId,config;0;3a;;YAHOO.widget.Calendar2up;
   fqn : yahoo.widget.calendarnavigator;;YAHOO.widget.CalendarNavigator;|CONSTRUCTOR|STATIC|;cal;0;;;YAHOO.widget.CalendarNavigator;
 
-Not Indexed:
+Not Searchable Keys:

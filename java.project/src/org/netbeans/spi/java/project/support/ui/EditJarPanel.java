@@ -43,12 +43,17 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 import javax.swing.JFileChooser;
 import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileFilter;
 import org.netbeans.api.project.ant.FileChooser;
+import org.netbeans.spi.java.project.support.JavadocAndSourceRootDetection;
 import org.netbeans.spi.java.project.support.ui.EditJarSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -72,23 +77,96 @@ class EditJarPanel extends javax.swing.JPanel {
         this();
         this.item = item;
         this.helper = helper;
-        txtJar.setText(item.getJarFile());
+        txtJar.setText(stripOffVariableMarkup(item.getJarFile()));
         if (item.getSourceFile() != null) {
-            txtSource.setText(item.getSourceFile());
+            txtSource.setText(stripOffJARContent(stripOffVariableMarkup(item.getSourceFile())));
         }
         if (item.getJavadocFile() != null) {
-            txtJavadoc.setText(item.getJavadocFile());
+            txtJavadoc.setText(stripOffJARContent(stripOffVariableMarkup(item.getJavadocFile())));
         }
+    }
+
+    private static String stripOffVariableMarkup(String v) {
+        if (!v.startsWith("${var.")) { // NOI18N
+            return v;
+        }
+        int i = v.replace('\\', '/').indexOf('/'); // NOI18N
+        if (i == -1) {
+            i = v.length();
+        }
+        return v.substring(6, i-1)+v.substring(i);
+    }
+    
+    private static String stripOffJARContent(String v) {
+        int i = v.indexOf("!/");
+        if (i == -1) { // NOI18N
+            return v;
+        } else {
+            return v.substring(0, i);
+        }
+    }
+
+    private static Set<String> getVariableNames() {
+        Set<String> names = new HashSet<String>();
+        for (String v : PropertyUtils.getGlobalProperties().keySet()) {
+            if (!v.startsWith("var.")) { // NOI18N
+                continue;
+            }
+            names.add(v.substring(4));
+        }
+        return names;
+    }
+    
+    private static String addVariableMarkup(String v) {
+        int i = v.replace('\\', '/').indexOf('/'); // NOI18N
+        if (i == -1) {
+            i = v.length();
+        }
+        String varName = v.substring(0, i);
+        if (!getVariableNames().contains(varName)) {
+            return v;
+        }
+        return "${var." + varName + "}" + v.substring(i); // NOI18N
+    }
+
+    private static String convertPath(AntProjectHelper helper, String path, boolean javadoc) {
+        String val = addVariableMarkup(path);
+        String eval = helper.getStandardPropertyEvaluator().evaluate(val);
+        if (eval == null) {
+            return val;
+        }
+        FileObject fo = helper.resolveFileObject(eval);
+        if (fo == null) {
+            return val;
+        }
+        boolean archiveFile = false;
+        if (FileUtil.isArchiveFile(fo)) {
+            fo = FileUtil.getArchiveRoot(fo);
+            archiveFile = true;
+        }
+        FileObject root;
+        if (javadoc) {
+            root = JavadocAndSourceRootDetection.findJavadocRoot(fo);
+        } else {
+            root = JavadocAndSourceRootDetection.findSourceRoot(fo);
+        }
+        if (root != null && !fo.equals(root)) {
+            if (archiveFile) {
+                val += "!/"; //NOI18N
+            }
+            val += (val.replace('\\', '/').endsWith("/") ? "" : File.separator) + FileUtil.getRelativePath(fo, root)+File.separatorChar; //NOI18N
+        }
+        return val;
     }
 
     EditJarSupport.Item assignValues() {
         if (txtSource.getText() != null && txtSource.getText().trim().length() > 0) {
-            item.setSourceFile(txtSource.getText().trim());
+            item.setSourceFile(convertPath(helper, txtSource.getText().trim(), false));
         } else {
             item.setSourceFile(null);
         }
         if (txtJavadoc.getText() != null && txtJavadoc.getText().trim().length() > 0) {
-            item.setJavadocFile(txtJavadoc.getText().trim());
+            item.setJavadocFile(convertPath(helper, txtJavadoc.getText().trim(), true));
         } else {
             item.setJavadocFile(null);
         }
@@ -191,7 +269,14 @@ class EditJarPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
     private void btnJavadocActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnJavadocActionPerformed
         // Let user search for the Jar file
-        FileChooser chooser = new FileChooser(helper, true);
+        FileChooser chooser;
+        if (helper.isSharableProject()) {
+            chooser = new FileChooser(helper, true);
+        } else {
+            chooser = new FileChooser(FileUtil.toFile(helper.getProjectDirectory()), null);
+        }
+        chooser.enableVariableBasedSelection(true);
+        chooser.setFileHidingEnabled(false);
         FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
         chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
         chooser.setMultiSelectionEnabled(false);
@@ -201,7 +286,7 @@ class EditJarPanel extends javax.swing.JPanel {
         chooser.setFileFilter(new SimpleFileFilter(
                 "Javadoc Entry (folder, ZIP or JAR file)", 
                 new String[]{"ZIP", "JAR"}));   // NOI18N 
-        File curDir = helper.resolveFile(item.getJarFile());
+        File curDir = helper.resolveFile(helper.getStandardPropertyEvaluator().evaluate(item.getJarFile()));
         chooser.setCurrentDirectory(curDir);
         int option = chooser.showOpenDialog(SwingUtilities.getWindowAncestor(this)); // Sow the chooser
 
@@ -214,13 +299,20 @@ class EditJarPanel extends javax.swing.JPanel {
                 Exceptions.printStackTrace(ex);
                 return;
             }
-            txtJavadoc.setText(files[0]);
+            txtJavadoc.setText(chooser.getSelectedPathVariables() != null ? stripOffVariableMarkup(chooser.getSelectedPathVariables()[0]) : files[0]);
         }
         
     }//GEN-LAST:event_btnJavadocActionPerformed
 
     private void btnSourceActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSourceActionPerformed
-        FileChooser chooser = new FileChooser(helper, true);
+        FileChooser chooser;
+        if (helper.isSharableProject()) {
+            chooser = new FileChooser(helper, true);
+        } else {
+            chooser = new FileChooser(FileUtil.toFile(helper.getProjectDirectory()), null);
+        }
+        chooser.enableVariableBasedSelection(true);
+        chooser.setFileHidingEnabled(false);
         FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
         chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
         chooser.setMultiSelectionEnabled(false);
@@ -230,7 +322,7 @@ class EditJarPanel extends javax.swing.JPanel {
         chooser.setFileFilter(new SimpleFileFilter(
                 "Source Entry (folder, ZIP or JAR file)", 
                 new String[]{"ZIP", "JAR"}));   // NOI18N 
-        File curDir = helper.resolveFile(item.getJarFile());
+        File curDir = helper.resolveFile(helper.getStandardPropertyEvaluator().evaluate(item.getJarFile()));
         chooser.setCurrentDirectory(curDir);
         int option = chooser.showOpenDialog(SwingUtilities.getWindowAncestor(this)); // Sow the chooser
 
@@ -243,7 +335,7 @@ class EditJarPanel extends javax.swing.JPanel {
                 Exceptions.printStackTrace(ex);
                 return;
             }
-            txtSource.setText(files[0]);
+            txtSource.setText(chooser.getSelectedPathVariables() != null ? stripOffVariableMarkup(chooser.getSelectedPathVariables()[0]) : files[0]);
         }
 
     }//GEN-LAST:event_btnSourceActionPerformed

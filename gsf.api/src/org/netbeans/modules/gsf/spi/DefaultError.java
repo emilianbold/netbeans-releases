@@ -101,6 +101,7 @@ public class DefaultError implements Error {
         return end;
     }
 
+    @Override
     public String toString() {
         return "DefaultError[" + displayName + ", " + description + ", " + severity + "]";
     }
@@ -123,5 +124,10 @@ public class DefaultError implements Error {
 
     public FileObject getFile() {
         return file;
+    }
+
+    public void setOffsets(int start, int end) {
+        this.start = start;
+        this.end = end;
     }
 }

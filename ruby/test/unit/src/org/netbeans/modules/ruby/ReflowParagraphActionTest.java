@@ -75,7 +75,7 @@ public class ReflowParagraphActionTest extends RubyTestBase {
         JTextArea ta = new JTextArea(doc);
         Caret caret = ta.getCaret();
         caret.setDot(caretOffset);
-        action.actionPerformed(ta);
+        action.actionPerformed(null, ta);
         
         String after = doc.getText(0, doc.getLength());
         assertEquals(before, after);
@@ -100,7 +100,7 @@ public class ReflowParagraphActionTest extends RubyTestBase {
         JTextArea ta = new JTextArea(doc);
         Caret caret = ta.getCaret();
         caret.setDot(caretOffset);
-        action.actionPerformed(ta);
+        action.actionPerformed(null, ta);
         
         String after = doc.getText(0, doc.getLength());
         assertDescriptionMatches(file, after, false, ".formatted");

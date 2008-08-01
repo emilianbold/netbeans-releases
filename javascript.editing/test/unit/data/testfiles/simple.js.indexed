@@ -1,12 +1,7 @@
 
 
 Document 0
-Delete:  source : <TESTURL>/simple.js
-
-
-
-Document 1
-Indexed:
+Searchable Keys:
   base : boo;DonaldDuck.Mickey.Baz.boo;boo;|FUNCTION|STATIC|;param;0;;;Boolean;
   base : global1;;global1;|GLOBAL|;;0;;;Foo.Bar;
   base : global2;;global2;|DOCUMENTED|GLOBAL|;;0;90;;Array;
@@ -22,4 +17,4 @@ Indexed:
   fqn : method2;;method2;|DOCUMENTED|FUNCTION|;;0;28;;void;
   fqn : method2;;method2;|DOCUMENTED|FUNCTION|;;0;4c;;void;
 
-Not Indexed:
+Not Searchable Keys:

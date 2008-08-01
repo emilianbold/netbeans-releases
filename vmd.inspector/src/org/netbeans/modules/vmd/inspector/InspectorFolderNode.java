@@ -95,7 +95,18 @@ final class InspectorFolderNode extends AbstractNode {
     }
     
     public String getHtmlDisplayName() {
-        return folder.getHtmlDisplayName();
+        if (component == null)
+            return ""; //NOI18N
+        final String[] componentTypeName = new String[1];
+        getComponent().getDocument().getTransactionManager().readAccess(new Runnable() {
+
+            public void run() {
+                InfoPresenter presenter = getComponent().getPresenter(InfoPresenter.class);
+                componentTypeName[0] = presenter.getDisplayName (InfoPresenter.NameType.SECONDARY);
+            }
+        });
+        return componentTypeName[0] != null ? getName() + " <font color=\"#808080\">[" + componentTypeName[0] + "]" : getName(); //NOI18N
+        
     }
     
     public Image getIcon(int type) {
@@ -142,10 +153,12 @@ final class InspectorFolderNode extends AbstractNode {
         this.folder = folderWrapper.getFolder();
         super.setDisplayName(folder.getDisplayName());
         this.componentID = folder.getComponentID();
-        if (folder.getName() == null)
+        
+        if (folder.getName() == null) {
             super.setName(folder.getDisplayName());
-        else
+        } else {
             super.setName(folder.getName());
+        }
         if (componentID != null) {
             document.getTransactionManager().readAccess(new Runnable() {
                 public void run() {

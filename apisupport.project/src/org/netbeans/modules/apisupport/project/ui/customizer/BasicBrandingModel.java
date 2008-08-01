@@ -56,6 +56,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.suite.BrandingSupport;
 import org.netbeans.modules.apisupport.project.suite.BrandingSupport.BrandedFile;
+import org.netbeans.modules.apisupport.project.suite.BrandingSupport.BundleKey;
 import org.netbeans.modules.apisupport.project.suite.SuiteProjectType;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.ErrorManager;
@@ -113,10 +114,23 @@ public class BasicBrandingModel {
     private BrandingSupport.BundleKey splashProgressBarEdgeColor = null;
     private BrandingSupport.BundleKey splashProgressBarCornerColor = null;
     
-    private final ChangeSupport changeSupport = new ChangeSupport(this);
-    
     /**all above splash BundleKeys in set*/
     private final Set<BrandingSupport.BundleKey> splashKeys = new HashSet<BrandingSupport.BundleKey>();
+    
+    /** representation of bundle keys for window system section */
+    private BrandingSupport.BundleKey wsEnableDragAndDrop = null;
+    private BrandingSupport.BundleKey wsEnableFloating = null;
+    private BrandingSupport.BundleKey wsEnableSliding = null;
+    private BrandingSupport.BundleKey wsEnableClosingViews = null;
+    private BrandingSupport.BundleKey wsEnableClosingEditors = null;
+    private BrandingSupport.BundleKey wsEnableResizing = null;
+    private BrandingSupport.BundleKey wsEnableMinimumSize = null;
+    private BrandingSupport.BundleKey wsEnableMaximization = null;
+    
+    /**all above splash BundleKeys in set*/
+    private final Set<BrandingSupport.BundleKey> winsysKeys = new HashSet<BrandingSupport.BundleKey>();
+    
+    private final ChangeSupport changeSupport = new ChangeSupport(this);
     
     /** Creates a new instance of ApplicationDetails */
     public BasicBrandingModel(final SuiteProperties suiteProps) {
@@ -234,6 +248,7 @@ public class BasicBrandingModel {
                                     
             getBranding().brandBundleKeys(splashKeys);
             getBranding().brandFile(splash);                        
+            getBranding().brandBundleKeys(winsysKeys);
         } else {
             if (brandingChanged) {//#115737
                 suiteProps.removeProperty(BasicBrandingModel.BRANDING_TOKEN_PROPERTY);
@@ -453,7 +468,76 @@ public class BasicBrandingModel {
             splashKeys.add(splashProgressBarCornerColor);
         }
         splashKeys.remove(null);
-    }
+
+            
+        wsEnableClosingEditors = getBranding().getBundleKey(
+                "org.netbeans.core.windows",//NOI18N
+                "org/netbeans/core/windows/Bundle.properties",//NOI18N
+                "Editor.TopComponent.Closing.Enabled");//NOI18N
+            
+        wsEnableClosingViews = getBranding().getBundleKey(
+                "org.netbeans.core.windows",//NOI18N
+                "org/netbeans/core/windows/Bundle.properties",//NOI18N
+                "View.TopComponent.Closing.Enabled");//NOI18N
+            
+        wsEnableDragAndDrop = getBranding().getBundleKey(
+                "org.netbeans.core.windows",//NOI18N
+                "org/netbeans/core/windows/Bundle.properties",//NOI18N
+                "TopComponent.DragAndDrop.Enabled");//NOI18N
+            
+        wsEnableFloating = getBranding().getBundleKey(
+                "org.netbeans.core.windows",//NOI18N
+                "org/netbeans/core/windows/Bundle.properties",//NOI18N
+                "TopComponent.Undocking.Enabled");//NOI18N
+            
+        wsEnableMinimumSize = getBranding().getBundleKey(
+                "org.netbeans.core.windows",//NOI18N
+                "org/netbeans/core/windows/Bundle.properties",//NOI18N
+                "Splitter.Respect.MinimumSize.Enabled");//NOI18N
+            
+        wsEnableResizing = getBranding().getBundleKey(
+                "org.netbeans.core.windows",//NOI18N
+                "org/netbeans/core/windows/Bundle.properties",//NOI18N
+                "TopComponent.Resizing.Enabled");//NOI18N
+            
+        wsEnableSliding = getBranding().getBundleKey(
+                "org.netbeans.core.windows",//NOI18N
+                "org/netbeans/core/windows/Bundle.properties",//NOI18N
+                "TopComponent.Sliding.Enabled");//NOI18N
+            
+        wsEnableMaximization = getBranding().getBundleKey(
+                "org.netbeans.core.windows",//NOI18N
+                "org/netbeans/core/windows/Bundle.properties",//NOI18N
+                "TopComponent.Maximization.Enabled");//NOI18N
+        
+        winsysKeys.clear();
+        
+        if (wsEnableClosingEditors != null) {
+            winsysKeys.add(wsEnableClosingEditors);
+        }
+        if (wsEnableClosingViews != null) {
+            winsysKeys.add(wsEnableClosingViews);
+        }
+        if (wsEnableDragAndDrop != null) {
+            winsysKeys.add(wsEnableDragAndDrop);
+        }
+        if (wsEnableFloating != null) {
+            winsysKeys.add(wsEnableFloating);
+        }
+        if (wsEnableMaximization != null) {
+            winsysKeys.add(wsEnableMaximization);
+        }
+        if (wsEnableMinimumSize != null) {
+            winsysKeys.add(wsEnableMinimumSize);
+        }
+        if (wsEnableResizing != null) {
+            winsysKeys.add(wsEnableResizing);
+        }
+        if (wsEnableSliding != null) {
+            winsysKeys.add(wsEnableSliding);
+        }
+        winsysKeys.remove(null);
+}
     
     public BrandingSupport.BundleKey getSplashWidth() {
         return splashWidth;
@@ -497,5 +581,37 @@ public class BasicBrandingModel {
     
     public BrandingSupport.BrandedFile getSplash() {
         return splash;
+    }
+
+    public BundleKey getWsEnableClosingEditors() {
+        return wsEnableClosingEditors;
+    }
+
+    public BundleKey getWsEnableClosingViews() {
+        return wsEnableClosingViews;
+    }
+
+    public BundleKey getWsEnableDragAndDrop() {
+        return wsEnableDragAndDrop;
+    }
+
+    public BundleKey getWsEnableFloating() {
+        return wsEnableFloating;
+    }
+
+    public BundleKey getWsEnableMaximization() {
+        return wsEnableMaximization;
+    }
+
+    public BundleKey getWsEnableMinimumSize() {
+        return wsEnableMinimumSize;
+    }
+
+    public BundleKey getWsEnableResizing() {
+        return wsEnableResizing;
+    }
+
+    public BundleKey getWsEnableSliding() {
+        return wsEnableSliding;
     }
 }

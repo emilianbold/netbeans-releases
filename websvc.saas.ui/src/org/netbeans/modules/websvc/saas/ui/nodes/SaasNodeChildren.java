@@ -98,7 +98,4 @@ public abstract class SaasNodeChildren<T> extends Children.Keys<T> implements Pr
         return new Node[] { wait };
     }
 
-    public boolean needsWaiting() {
-        return saas.getState() == Saas.State.INITIALIZING;
-    }
 }

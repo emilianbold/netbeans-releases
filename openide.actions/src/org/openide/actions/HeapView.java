@@ -59,6 +59,7 @@ import java.awt.image.BufferedImage;
 import java.awt.image.ConvolveOp;
 import java.awt.image.Kernel;
 import java.text.MessageFormat;
+import java.util.prefs.Preferences;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -66,6 +67,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 
 /**
  *
@@ -275,7 +277,9 @@ class HeapView extends JComponent {
      */
     private BufferedImage gridOverlayImage;
     
-    
+    private static final String TICK_STYLE = "tickStyle";
+    private static final String SHOW_TEXT = "showText";
+    private static final String DROP_SHADOW = "dropShadow";
     
     public HeapView() {
         // Configure structures needed for rendering drop shadow.
@@ -288,9 +292,6 @@ class HeapView extends JComponent {
         blur = new ConvolveOp(new Kernel(kw, kh, kernelData));
         format = new MessageFormat("{0,choice,0#{0,number,0.0}|999<{0,number,0}}/{1,choice,0#{1,number,0.0}|999<{1,number,0}}MB");
         heapSizeText = "";
-        showDropShadow = true;
-        showText = true;
-        tickStyle = STYLE_OVERLAY;
         // Enable mouse events. This is the equivalent to adding a mouse
         // listener.
         enableEvents(AWTEvent.MOUSE_EVENT_MASK);
@@ -325,7 +326,7 @@ class HeapView extends JComponent {
      *        STYLE_OVERLAY
      */
     public void setTickStyle(int style) {
-        tickStyle = style;
+        prefs().putInt(TICK_STYLE, style);
         repaint();
     }
 
@@ -336,7 +337,7 @@ class HeapView extends JComponent {
      *         STYLE_OVERLAY
      */
     public int getTickStyle() {
-        return tickStyle;
+        return prefs().getInt(TICK_STYLE, STYLE_OVERLAY);
     }
     
     /**
@@ -347,7 +348,7 @@ class HeapView extends JComponent {
      *        shown.
      */
     public void setShowText(boolean showText) {
-        this.showText = showText;
+        prefs().putBoolean(SHOW_TEXT, showText);
         repaint();
     }
     
@@ -357,7 +358,7 @@ class HeapView extends JComponent {
      * @return whether the text displaying the heap size should be shown
      */
     public boolean getShowText() {
-        return showText;
+        return prefs().getBoolean(SHOW_TEXT, true);
     }
 
     /**
@@ -367,7 +368,7 @@ class HeapView extends JComponent {
      * @param show whether a drop shadow should be shown around the text
      */
     public void setShowDropShadow(boolean show) {
-        showDropShadow = show;
+        prefs().putBoolean(DROP_SHADOW, show);
         repaint();
     }
 
@@ -375,7 +376,7 @@ class HeapView extends JComponent {
      * Returns whether a drop shadow should be shown around the text.
      */
     public boolean getShowDropShadow() {
-        return showDropShadow;
+        return prefs().getBoolean(DROP_SHADOW, true);
     }
 
     /**
@@ -394,6 +395,10 @@ class HeapView extends JComponent {
         return size;
     }
 
+    private Preferences prefs() {
+        return NbPreferences.forModule(HeapView.class);
+    }
+    
     /**
      * Recalculates the width needed to display the heap size string.
      */

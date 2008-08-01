@@ -148,10 +148,15 @@ made subject to such option by the copyright holder.
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/jsf/resources/JsfFromDB.html"/>
                 <attr name="templateWizardIterator" newvalue="org.netbeans.modules.web.jsf.wizards.PersistenceClientIterator"/>
-                <attr name="SystemFileSystem.icon"
-                          urlvalue="nbresloc:/org/netbeans/modules/web/jsf/resources/jsp16.gif"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/web/jsf/resources/jsp16.gif"/>
             </file>
         </folder>
+    </folder>
+    
+    <folder name="org-netbeans-api-project-libraries">
+        <folder name="Libraries">
+            <file name="jsf-extensions.xml" url="/org/netbeans/modules/web/jsf/libraries/jsf-extensions.xml"/>
+         </folder>
     </folder>
 
     <folder name="org-netbeans-modules-web-jsf">
@@ -172,6 +177,11 @@ made subject to such option by the copyright holder.
     <folder name="Loaders">
         <folder name="text">
             <folder name="x-jsf+xml">
+                <folder name="Factories">
+                    <file name="org-netbeans-modules-web-jsf-JSFConfigLoader.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.resources.Bundle"/>
+                    </file>
+                </folder>
                 <folder name="Actions">
                     <file name="org-openide-actions-OpenAction.instance">
                         <attr name="position" intvalue="100"/>

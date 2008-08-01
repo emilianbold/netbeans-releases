@@ -54,6 +54,7 @@ import java.util.Collections;
 import java.util.List;
 import javax.swing.JFileChooser;
 import org.netbeans.api.queries.CollocationQuery;
+import org.netbeans.modules.project.ant.VariablesModel.Variable;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -80,6 +81,8 @@ public class FileChooserAccessory extends javax.swing.JPanel
     private List<String> copiedRelativeFiles = null;
     /** In RelativizeFilePathCustomizer scenario this property holds preselected file */
     private File usetThisFileInsteadOfOneFromChooser = null;
+    private VariablesModel varModel;
+    private boolean enableVariableBasedSelection = false;
 
     /**
      * Constructor for usage from RelativizeFilePathCustomizer.
@@ -93,13 +96,14 @@ public class FileChooserAccessory extends javax.swing.JPanel
         //when deciding on predefined file, we can assume certain options to be preferable.
         if (CollocationQuery.areCollocated(baseFolder, selectedFile)) {
             rbRelative.setSelected(true);
+        } else if (getVariablesModel().getRelativePath(selectedFile, true) != null) {
+            rbVariable.setSelected(true);
+        } else if (copyAllowed) {
+            rbCopy.setSelected(true);
         } else {
-            if (copyAllowed) {
-                rbCopy.setSelected(true);
-            } else {
-                rbAbsolute.setSelected(true);
-            }
+            rbAbsolute.setSelected(true);
         }
+        enableVariableBasedSelection(enableVariableBasedSelection);
     }
     
     /**
@@ -125,6 +129,7 @@ public class FileChooserAccessory extends javax.swing.JPanel
         rbCopy.addActionListener(this);
         rbRelative.addActionListener(this);
         rbAbsolute.addActionListener(this);
+        rbVariable.addActionListener(this);
         if (chooser != null) {
             chooser.addPropertyChangeListener(this);
         }
@@ -136,6 +141,14 @@ public class FileChooserAccessory extends javax.swing.JPanel
             rbCopy.setVisible(false);
             copyTo.setVisible(false);
         }
+        enableVariableBasedSelection(enableVariableBasedSelection);
+    }
+
+    public void enableVariableBasedSelection(boolean enable) {
+        this.enableVariableBasedSelection = enable;
+        rbVariable.setVisible(enableVariableBasedSelection);
+        variablePath.setVisible(enableVariableBasedSelection);
+        variablesButton.setVisible(enableVariableBasedSelection);
     }
 
     public String[] getFiles() {
@@ -207,29 +220,55 @@ public class FileChooserAccessory extends javax.swing.JPanel
     
     private void enableAccessory(boolean enable) {
         rbRelative.setEnabled(enable);
+        relativePath.setEnabled(enable);
         rbCopy.setEnabled(enable && copyAllowed);
         rbAbsolute.setEnabled(enable);
+        absolutePath.setEnabled(enable);
         copyTo.setEnabled(enable);
         copyTo.setEditable(enable && rbCopy.isSelected());
+        if (enable) {
+            File f = getSelectedFiles()[0];
+            boolean b = getVariablesModel().getRelativePath(f, true) != null;
+            rbVariable.setEnabled(b);
+            variablePath.setEnabled(b);
+        } else {
+            rbVariable.setEnabled(false);
+            variablePath.setEnabled(false);
+        }
+        variablePath.setEditable(false);
+        variablesButton.setEnabled(enable);
     }
     
     private File[] getSelectedFiles() {
         if (usetThisFileInsteadOfOneFromChooser != null) {
             return new File[]{usetThisFileInsteadOfOneFromChooser};
         }
+        File files[];
         if (chooser.isMultiSelectionEnabled()) {
-            return chooser.getSelectedFiles();
+            files = chooser.getSelectedFiles();
         } else {
             if (chooser.getSelectedFile() != null) {
-                return new File[] { chooser.getSelectedFile() };
+                files = new File[] { chooser.getSelectedFile() };
             } else {
-                return new File[0];
+                files = new File[0];
             }
         }
+        for (int i = 0; i < files.length; i++) {
+            // #135677 - user could type "../folder" and pressed OK 
+            //           normalize such a filename:
+            if (files[i].getPath().contains("..")) { // NOI18N
+                files[i] = FileUtil.normalizeFile(files[i]);
+            }
+        }
+        return files;
     }
     
     public boolean isRelative() {
         return (rbRelative.isEnabled() && rbRelative.isSelected()) || isCopy();
+    }
+    
+    public boolean isVariableBased() {
+        return rbVariable.isEnabled() && rbVariable.isSelected();
     }
     
     private boolean isCopy() {
@@ -253,13 +292,15 @@ public class FileChooserAccessory extends javax.swing.JPanel
     private void update(List<File> files) {
         StringBuffer absolute = new StringBuffer();
         StringBuffer relative = new StringBuffer();
+        StringBuffer variable = new StringBuffer();
         boolean isRelative = true;
         for (File file : files) {
+            String varPath = getVariablesModel().getRelativePath(file, true);
             if (absolute.length() != 0) {
                 absolute.append(", ");
                 relative.append(", ");
-                if (file.getParentFile() != null && file.getParentFile().getParentFile() != null &&
-                        file.getParentFile().getName().length() > 0) {
+                if (varPath != null) {
+                    variable.append(", ");
                 }
             }
             absolute.append(file.getAbsolutePath());
@@ -268,6 +309,10 @@ public class FileChooserAccessory extends javax.swing.JPanel
                 isRelative = false;
             }
             relative.append(s);
+            
+            if (varPath != null) {
+                variable.append(varPath);
+            }
         }
         rbRelative.setEnabled(isRelative && rbRelative.isEnabled());
         relativePath.setText(relative.toString());
@@ -280,12 +325,44 @@ public class FileChooserAccessory extends javax.swing.JPanel
         absolutePath.setText(absolute.toString());
         absolutePath.setCaretPosition(0);
         absolutePath.setToolTipText(absolute.toString());
+        
+        if (variable.length() == 0) {
+            variable.append(NbBundle.getMessage(FileChooserAccessory.class, "FileChooserAccessory.noSuitableVariable")); // NOI18N
+        }
+        variablePath.setText(variable.toString());
+        variablePath.setCaretPosition(0);
+        variablePath.setToolTipText(variable.toString());
+    }
+    
+    private VariablesModel getVariablesModel() {
+        if (varModel == null) {
+            varModel = new VariablesModel();
+        }
+        return varModel;
     }
 
     private List<String> getRelativeFiles(List<File> files) {
         List<String> fs = new ArrayList<String>();
         for (File file : files) {
             String s = PropertyUtils.relativizeFile(baseFolder, file);
+            if (s != null) {
+                fs.add(s);
+            }
+        }
+        return fs;
+    }
+
+    public String[] getVariableBasedFiles() {
+        assert isVariableBased();
+        List<File> files = Arrays.asList(getSelectedFiles());
+        List<String> l = getVariableBasedFiles(files);
+        return l.toArray(new String[l.size()]);
+    }
+    
+    private List<String> getVariableBasedFiles(List<File> files) {
+        List<String> fs = new ArrayList<String>();
+        for (File file : files) {
+            String s = getVariablesModel().getRelativePath(file, false);
             if (s != null) {
                 fs.add(s);
             }
@@ -348,65 +425,107 @@ public class FileChooserAccessory extends javax.swing.JPanel
         copyTo = new javax.swing.JTextField();
         rbAbsolute = new javax.swing.JRadioButton();
         absolutePath = new javax.swing.JTextField();
-
-        setMinimumSize(new java.awt.Dimension(250, 139));
-        setPreferredSize(new java.awt.Dimension(250, 139));
+        rbVariable = new javax.swing.JRadioButton();
+        variablePath = new javax.swing.JTextField();
+        variablesButton = new javax.swing.JButton();
 
         buttonGroup1.add(rbRelative);
         rbRelative.setSelected(true);
-        rbRelative.setText(org.openide.util.NbBundle.getMessage(FileChooserAccessory.class, "FileChooserAccessory.rbRelative.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(rbRelative, org.openide.util.NbBundle.getMessage(FileChooserAccessory.class, "FileChooserAccessory.rbRelative.text")); // NOI18N
 
         relativePath.setEditable(false);
         relativePath.setText(null);
 
         buttonGroup1.add(rbCopy);
-        rbCopy.setText(org.openide.util.NbBundle.getMessage(FileChooserAccessory.class, "FileChooserAccessory.rbCopy.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(rbCopy, org.openide.util.NbBundle.getMessage(FileChooserAccessory.class, "FileChooserAccessory.rbCopy.text")); // NOI18N
 
         copyTo.setEditable(false);
         copyTo.setText(null);
 
         buttonGroup1.add(rbAbsolute);
-        rbAbsolute.setText(org.openide.util.NbBundle.getMessage(FileChooserAccessory.class, "FileChooserAccessory.rbAbsolute.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(rbAbsolute, org.openide.util.NbBundle.getMessage(FileChooserAccessory.class, "FileChooserAccessory.rbAbsolute.text")); // NOI18N
 
         absolutePath.setEditable(false);
         absolutePath.setText(null);
+
+        buttonGroup1.add(rbVariable);
+        org.openide.awt.Mnemonics.setLocalizedText(rbVariable, org.openide.util.NbBundle.getMessage(FileChooserAccessory.class, "FileChooserAccessory.rbVariable.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(variablesButton, org.openide.util.NbBundle.getMessage(FileChooserAccessory.class, "FileChooserAccessory.variablesButton.text")); // NOI18N
+        variablesButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                variablesButtonActionPerformed(evt);
+            }
+        });
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
+                .add(rbAbsolute)
+                .addContainerGap(104, Short.MAX_VALUE))
+            .add(layout.createSequentialGroup()
+                .add(rbCopy, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 238, Short.MAX_VALUE)
+                .addContainerGap(12, Short.MAX_VALUE))
+            .add(layout.createSequentialGroup()
+                .add(rbVariable)
+                .addContainerGap(108, Short.MAX_VALUE))
+            .add(layout.createSequentialGroup()
+                .add(rbRelative)
+                .addContainerGap(110, Short.MAX_VALUE))
+            .add(layout.createSequentialGroup()
+                .add(21, 21, 21)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(rbRelative)
-                    .add(layout.createSequentialGroup()
-                        .add(21, 21, 21)
-                        .add(relativePath, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 219, Short.MAX_VALUE))
-                    .add(rbCopy, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 240, Short.MAX_VALUE)
-                    .add(layout.createSequentialGroup()
-                        .add(21, 21, 21)
-                        .add(copyTo, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 219, Short.MAX_VALUE))
-                    .add(rbAbsolute)
-                    .add(layout.createSequentialGroup()
-                        .add(21, 21, 21)
-                        .add(absolutePath, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 219, Short.MAX_VALUE)))
-                .addContainerGap())
+                    .add(copyTo, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 229, Short.MAX_VALUE)
+                    .add(relativePath, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 229, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                        .add(variablePath, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 199, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(variablesButton))
+                    .add(absolutePath, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 229, Short.MAX_VALUE)))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(rbRelative)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(0, 0, 0)
                 .add(relativePath, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(rbCopy)
+                .add(rbVariable)
+                .add(0, 0, 0)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(variablesButton)
+                    .add(variablePath, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(rbCopy)
+                .add(0, 0, 0)
                 .add(copyTo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(rbAbsolute)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(0, 0, 0)
                 .add(absolutePath, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         );
+
+        rbRelative.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FileChooserAccessory.class, "ACSD_FileChooserAccessory_NA")); // NOI18N
+        rbCopy.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FileChooserAccessory.class, "ACSD_FileChooserAccessory_NA")); // NOI18N
+        rbAbsolute.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FileChooserAccessory.class, "ACSD_FileChooserAccessory_NA")); // NOI18N
+        rbVariable.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FileChooserAccessory.class, "ACSD_FileChooserAccessory_NA")); // NOI18N
+        variablesButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FileChooserAccessory.class, "ACSD_FileChooserAccessory.variablesButton.text")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
+
+private void variablesButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_variablesButtonActionPerformed
+    Variable selected = VariablesPanel.showVariablesCustomizer();
+    varModel = null;
+    File[] files = getSelectedFiles();
+    if (selected != null && ((files.length > 0 && getVariablesModel().getRelativePath(files[0], true) == null) ||
+            files.length == 0)) {
+        chooser.setSelectedFile(selected.getValue());
+        files = getSelectedFiles();
+    }
+    update(Arrays.asList(files));    
+    enableAccessory(files.length != 0);
+}//GEN-LAST:event_variablesButtonActionPerformed
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -416,7 +535,10 @@ public class FileChooserAccessory extends javax.swing.JPanel
     private javax.swing.JRadioButton rbAbsolute;
     private javax.swing.JRadioButton rbCopy;
     private javax.swing.JRadioButton rbRelative;
+    private javax.swing.JRadioButton rbVariable;
     private javax.swing.JTextField relativePath;
+    private javax.swing.JTextField variablePath;
+    private javax.swing.JButton variablesButton;
     // End of variables declaration//GEN-END:variables
 
 }

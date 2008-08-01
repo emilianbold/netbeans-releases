@@ -55,6 +55,10 @@ public class JbiExtensionAttribute implements Serializable {
      */
     private String name;
     /**
+     * Display name of the extension attribute.
+     */
+    private String displayName;
+    /**
      * Type of the extension attribute. 
      */
     private String type;
@@ -71,24 +75,29 @@ public class JbiExtensionAttribute implements Serializable {
      * Constructs a JbiExtensionAttribute.
      *
      * @param name  attribute name
+     * @param displayName  attribute display name
      * @param type  attribute type
      * @param description   attribute description
      */
-    public JbiExtensionAttribute(String name, String type, String description) {
-        this(name, type, description, true);
+    public JbiExtensionAttribute(String name, String displayName, 
+            String type, String description) {
+        this(name, displayName, type, description, true);
     }
 
     /**
      * Constructs a JbiExtensionAttribute.
      *
      * @param name  attribute name
+     * @param displayName  attribute display name
      * @param type  attribute type
      * @param description   attribute description
      * @param codeGen       whether to generate this attribute in codegen
      */
-    public JbiExtensionAttribute(String name, String type, String description,
+    public JbiExtensionAttribute(String name, String displayName,
+            String type, String description,
             boolean codeGen) {
         this.name = name;
+        this.displayName = displayName;
         this.type = type;
         this.description = description;
         this.codeGen = codeGen;
@@ -101,6 +110,15 @@ public class JbiExtensionAttribute implements Serializable {
      */
     public String getName() {
         return this.name;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return the display name.
+     */
+    public String getDisplayName() {
+        return this.displayName;
     }
 
     /**
@@ -135,6 +153,7 @@ public class JbiExtensionAttribute implements Serializable {
         StringBuilder sb = new StringBuilder();
         sb.append("JbiExtensionAttribute:")
                 .append(" name=").append(getName())
+                .append(" displayName=").append(getDisplayName())
                 .append(" type=").append(getType())
                 .append(" codeGen=").append(getCodeGen())
                 .append(" description=").append(getDescription());

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -44,6 +44,7 @@ package org.netbeans.modules.autoupdate.services;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.Util;
 import org.openide.modules.ModuleInfo;
 import org.openide.modules.Dependency;
 import org.openide.modules.SpecificationVersion;
@@ -58,28 +59,15 @@ class DependencyChecker extends Object {
             err.log(Level.FINE, "Dependency[" + dep.getType () + "]: " + dep);
             switch (dep.getType ()) {
                 case (Dependency.TYPE_REQUIRES) :
-                    if (findModuleMatchesDependencyRequires (dep, modules) != null) {
-                        // ok
-                    } else {
-                        // bad, report missing module
-                        res.add (dep);
-                    }
-                    break;
                 case (Dependency.TYPE_NEEDS) :
-                    if (findModuleMatchesDependencyRequires (dep, modules) != null) {
-                        // ok
-                    } else {
+                    if (findModuleMatchesDependencyRequires (dep, modules).isEmpty ()) {
                         // bad, report missing module
                         res.add (dep);
+                    } else {
+                        // ok
                     }
                     break;
                 case (Dependency.TYPE_RECOMMENDS) :
-                    if (findModuleMatchesDependencyRequires (dep, modules) != null) {
-                        // ok
-                    } else {
-                        // bad, report missing module
-                        res.add (dep);
-                    }
                     break;
                 case (Dependency.TYPE_MODULE) :
                     if (matchDependencyModule (dep, modules) != null) {
@@ -90,7 +78,18 @@ class DependencyChecker extends Object {
                     }
                     break;
                 case (Dependency.TYPE_JAVA) :
-                    err.log(Level.FINE, "Check dependency on Java platform. Dependency: " + dep);
+                    if (! matchDependencyJava (dep)) {
+                        err.log(Level.FINE, "The Java platform version " + dep +
+                                " or higher was requested but only " + Dependency.JAVA_SPEC + " is running.");
+                        res.add (dep);
+                    }
+                    break;
+                case (Dependency.TYPE_PACKAGE) :
+                    if (! matchPackageDependency (dep)) {
+                        err.log(Level.FINE, "The package " + dep +
+                                " was requested but it is not in current ClassPath.");
+                        res.add (dep);
+                    }
                     break;
                 default:
                     //assert false : "Unknown type of Dependency, was " + dep.getType ();
@@ -108,37 +107,23 @@ class DependencyChecker extends Object {
         Set<Dependency> res = new HashSet<Dependency> ();
         for (Dependency dep : filterTypeRecommends (info.getDependencies ())) {
             err.log(Level.FINE, "Dependency[" + dep.getType () + "]: " + dep);
-            ModuleInfo m = null;
+            Collection<ModuleInfo> providers = null;
             switch (dep.getType ()) {
                 case (Dependency.TYPE_REQUIRES) :
-                    m = findModuleMatchesDependencyRequires (dep, modules);
-                    if (m != null) {
-                        res.addAll (findBrokenDependenciesTransitive (m, modules, seen));
-                    } else {
-                        // bad, report missing module
-                        res.add (dep);
-                    }
-                    break;
                 case (Dependency.TYPE_NEEDS) :
-                    m = findModuleMatchesDependencyRequires (dep, modules);
-                    if (m != null) {
-                        res.addAll (findBrokenDependenciesTransitive (m, modules, seen));
-                    } else {
-                        // bad, report missing module
-                        res.add (dep);
-                    }
-                    break;
                 case (Dependency.TYPE_RECOMMENDS) :
-                    m = findModuleMatchesDependencyRequires (dep, modules);
-                    if (m != null) {
-                        res.addAll (findBrokenDependenciesTransitive (m, modules, seen));
+                    providers = findModuleMatchesDependencyRequires (dep, modules);
+                    if (providers.size () > 0) {
+                        for (ModuleInfo m : providers) {
+                            res.addAll (findBrokenDependenciesTransitive (m, modules, seen));
+                        }
                     } else {
                         // bad, report missing module
                         res.add (dep);
                     }
                     break;
                 case (Dependency.TYPE_MODULE) :
-                    m = matchDependencyModule (dep, modules);
+                    ModuleInfo m = matchDependencyModule (dep, modules);
                     if (m != null) {
                         res.addAll (findBrokenDependenciesTransitive (m, modules, seen));
                     } else {
@@ -147,7 +132,18 @@ class DependencyChecker extends Object {
                     }
                     break;
                 case (Dependency.TYPE_JAVA) :
-                    err.log(Level.FINE, "Check dependency on Java platform. Dependency: " + dep);
+                    if (! matchDependencyJava (dep)) {
+                        err.log(Level.FINE, "The Java platform version " + dep +
+                                " or higher was requested but only " + Dependency.JAVA_SPEC + " is running.");
+                        res.add (dep);
+                    }
+                    break;
+                case (Dependency.TYPE_PACKAGE) :
+                    if (! matchPackageDependency (dep)) {
+                        err.log(Level.FINE, "The package " + dep +
+                                " was requested but it is not in current ClassPath.");
+                        res.add (dep);
+                    }
                     break;
                 default:
                     //assert false : "Unknown type of Dependency, was " + dep.getType ();
@@ -167,13 +163,20 @@ class DependencyChecker extends Object {
         return res;
     }
     
-    static ModuleInfo findModuleMatchesDependencyRequires (Dependency dep, Collection<ModuleInfo> modules) {
-        for (ModuleInfo info : modules) {
-            if (Arrays.asList (info.getProvides ()).contains (dep.getName ())) {
-                return info;
+    static Collection<ModuleInfo> findModuleMatchesDependencyRequires (Dependency dep, Collection<ModuleInfo> modules) {
+        UpdateManagerImpl mgr = UpdateManagerImpl.getInstance ();
+        Set<ModuleInfo> providers = new HashSet<ModuleInfo> ();
+        providers.addAll (mgr.getAvailableProviders (dep.getName ()));
+        providers.addAll (mgr.getInstalledProviders (dep.getName ()));
+        Set<ModuleInfo> res = new HashSet<ModuleInfo> (providers);
+        for (ModuleInfo mi : providers) {
+            for (ModuleInfo input : modules) {
+                if (mi.getCodeName ().equals (input.getCodeName ())) {
+                    res.add (mi);
+                }
             }
         }
-        return null;
+        return res;
     }
     
     private static ModuleInfo matchDependencyModule (Dependency dep, Collection<ModuleInfo> modules) {
@@ -184,6 +187,18 @@ class DependencyChecker extends Object {
         }
         
         return null;
+    }
+    
+    private static boolean matchDependencyJava (Dependency dep) {
+        if (dep.getName ().equals (Dependency.JAVA_NAME) && Dependency.COMPARE_SPEC == dep.getComparison ()) {
+            return Dependency.JAVA_SPEC.compareTo (new SpecificationVersion (dep.getVersion ())) >= 0;
+        }
+        // All other usages unlikely
+        return true;
+    }
+    
+    private static boolean matchPackageDependency (Dependency dep) {
+        return Util.checkPackageDependency (dep, ClassLoader.getSystemClassLoader ());
     }
     
     static boolean checkDependencyModuleAllowEqual (Dependency dep, ModuleInfo module) {

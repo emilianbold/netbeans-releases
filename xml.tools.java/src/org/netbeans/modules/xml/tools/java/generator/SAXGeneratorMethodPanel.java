@@ -98,7 +98,7 @@ public final class SAXGeneratorMethodPanel extends SAXGeneratorAbstractPanel {
     /** Creates new form SAXGeneratorMethodPanel */
     public SAXGeneratorMethodPanel() {
 //        try {
-//            this.putClientProperty("WizardPanel_helpURL", new URL("nbresloc:/org/netbeans/modules/xml/tools/generator/SAXGeneratorMethodPanel.html"));  //NOI18N
+//            this.putClientProperty(WizardDescriptor.PROP_HELP_URL, new URL("nbresloc:/org/netbeans/modules/xml/tools/generator/SAXGeneratorMethodPanel.html"));  //NOI18N
 //        } catch (MalformedURLException ex) {
 //        }            
     }

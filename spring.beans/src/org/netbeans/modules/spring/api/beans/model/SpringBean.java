@@ -42,6 +42,7 @@
 package org.netbeans.modules.spring.api.beans.model;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * Describes a single bean definition.
@@ -91,6 +92,13 @@ public interface SpringBean {
      * @return the factory method or null.
      */
     String getFactoryMethod();
+    
+    /**
+     * Returns the list of properties defined in this bean
+     * 
+     * @return list of properties; never null
+     */
+    Set<SpringBeanProperty> getProperties();
 
     /**
      * Returns the location of this bean.

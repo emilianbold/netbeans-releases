@@ -225,27 +225,6 @@ public final class Util {
     }
 
     /**
-     * @deprecated Use FileUtil#urlForArchiveOrDir instead.
-     */
-    public static URL urlForDir(File dir) {
-        return FileUtil.urlForArchiveOrDir(dir);
-    }
-    
-    /**
-     * @deprecated Use FileUtil#urlForArchiveOrDir instead.
-     */
-    public static URL urlForJar(File jar) {
-        return FileUtil.urlForArchiveOrDir(jar);
-    }
-    
-    /**
-     * @deprecated Use FileUtil#urlForArchiveOrDir instead.
-     */
-    public static URL urlForDirOrJar(File location) {
-        return FileUtil.urlForArchiveOrDir(location);
-    }
-    
-    /**
      * Tries to find {@link Project} in the given directory. If succeeds
      * delegates to {@link ProjectInformation#getDisplayName}. Returns {@link
      * FileUtil#getFileDisplayName} otherwise.
@@ -571,7 +550,7 @@ public final class Util {
             File[] javadocs = builtJavadoc.listFiles();
             javadocURLs = new URL[javadocs.length];
             for (int i = 0; i < javadocs.length; i++) {
-                javadocURLs[i] = Util.urlForDirOrJar(javadocs[i]);
+                javadocURLs[i] = FileUtil.urlForArchiveOrDir(javadocs[i]);
             }
         }
         return javadocURLs == null ? null : findJavadocURL(

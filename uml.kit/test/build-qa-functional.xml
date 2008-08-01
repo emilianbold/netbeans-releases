@@ -51,25 +51,24 @@ made subject to such option by the copyright holder.
         <fileset dir="${uml.modules.dir}">
             <include name="**/org-netbeans-modules-uml*.jar"/>
         </fileset>
-        <pathelement location="./qa-lib/uml-lib.jar"/>
-        <pathelement location="${o.n.core.dir}/modules/org-netbeans-core.jar"/>
-        <pathelement location="${core.windows.dir}/modules/org-netbeans-core-windows.jar"/>
-        <pathelement location="${o.n.swing.tabcontrol.dir}/modules/org-netbeans-swing-tabcontrol.jar"/>
+        <pathelement location="${netbeans.dest.dir}/platform9/modules/org-netbeans-core.jar"/>
+        <pathelement location="${netbeans.dest.dir}/platform9/modules/org-netbeans-core-windows.jar"/>
+        <pathelement location="${netbeans.dest.dir}/platform9/modules/org-netbeans-api-visual.jar"/>
+        <pathelement location="${netbeans.dest.dir}/platform9/modules/org-netbeans-swing-tabcontrol.jar"/>
+        <pathelement location="${netbeans.dest.dir}/platform9/modules/org-netbeans-api-visual.jar"/>
+        <pathelement location="${netbeans.dest.dir}/uml6/modules/org-netbeans-modules-uml-drawingarea.jar"/>
         <pathelement location="../../jemmy/builds/jemmy.jar"/>                    
         <pathelement location="../../jellytools/builds/jelly2-nb.jar"/>
         <pathelement location="${xtest.home}/lib/junit.jar"/>                    
         <pathelement location="${xtest.home}/lib/nbjunit.jar"/> 
-        <pathelement location="${java.j2seproject.dir}/modules/org-netbeans-modules-java-j2seproject.jar"/> 
-        <pathelement location="${project.ant.dir}/modules/org-netbeans-modules-project-ant.jar"/> 
-        <pathelement location="${projectapi.dir}/modules/org-netbeans-modules-projectapi.jar"/> 
-
-        <pathelement location="${openide.util.dir}/lib/org-openide-util.jar"/>
-
-        <pathelement location="${openide.nodes.dir}/modules/org-openide-nodes.jar"/>            
+        <pathelement location="${netbeans.dest.dir}/java1/modules/org-netbeans-modules-java-j2seproject.jar"/> 
+        <pathelement location="${netbeans.dest.dir}/java1/modules/org-netbeans-modules-project-ant.jar"/> 
+        <pathelement location="${netbeans.dest.dir}/ide10/modules/org-netbeans-modules-projectapi.jar"/> 
+        <pathelement location="${netbeans.dest.dir}/platform9/lib/org-openide-util.jar"/>
+        <pathelement location="${netbeans.dest.dir}/platform9/modules/org-openide-nodes.jar"/>            
         
     </path>    
     <path id="run.extra">
-        <pathelement location="./qa-lib/uml-lib.jar"/>
         <pathelement location="../../jemmy/builds/jemmy.jar"/>                    
         <pathelement location="../../jellytools/builds/jelly2-nb.jar"/>
         <pathelement location="${xtest.home}/lib/junit.jar"/>                    
@@ -95,6 +94,7 @@ made subject to such option by the copyright holder.
         <echo message="memory update"/>
         <replace file="${netbeans.dest.dir}/etc/netbeans.conf">
             <replacefilter token="-J-Xmx128m" value="-J-Xmx192m"/>
+            <replacefilter token="-J-Xms32m" value="-J-Xms128m"/>
         </replace>
     </target>
     

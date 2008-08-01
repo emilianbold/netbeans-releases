@@ -110,6 +110,9 @@ public class HeapActionsFilter implements NodeActionsProviderFilter {
         NbBundle.getBundle(HeapActionsFilter.class).getString("CTL_References_Label"),
         new Models.ActionPerformer () {
             public boolean isEnabled (Object node) {
+                if ((node == null) || (!(node instanceof ObjectVariable))) {
+                    return false;
+                }
                 ObjectVariable var = (ObjectVariable) node;
                 return var.getUniqueID() != 0L;
             }

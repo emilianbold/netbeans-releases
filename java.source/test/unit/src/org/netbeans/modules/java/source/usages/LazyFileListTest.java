@@ -41,15 +41,12 @@
 
 package org.netbeans.modules.java.source.usages;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import junit.framework.*;
+import java.util.Set;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.HashSet;
 import org.netbeans.junit.NbTestCase;
 
 /**
@@ -138,12 +135,12 @@ public class LazyFileListTest extends NbTestCase {
     }
 
     public void testIterator() {
-        RepositoryUpdater.LazyFileList lfl = new RepositoryUpdater.LazyFileList (this.root);
-        List<String> fileNames = new ArrayList();
-        for (File f :lfl) {
+        RepositoryUpdater.FileList lfl = new RepositoryUpdater.FileList (this.root);
+        final Set<String> fileNames = new HashSet<String>();
+        for (File f :lfl.getJavaFiles()) {
             fileNames.add(f.getName());
         }
-        assertEquals(Arrays.asList(EXPECTED_NAMES),fileNames);
+        assertEquals(new HashSet(Arrays.asList(EXPECTED_NAMES)),fileNames);
     }
     
     

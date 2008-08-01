@@ -321,9 +321,12 @@ public class RetoucheUtils {
     public static boolean isFileInOpenProject(FileObject file) {
         assert file != null;
         Project p = FileOwnerQuery.getOwner(file);
+        if (p == null) {
+            return false;
+        }
         Project[] opened = OpenProjects.getDefault().getOpenProjects();
         for (int i = 0; i<opened.length; i++) {
-            if (p==opened[i])
+            if (p.equals(opened[i]))
                 return true;
         }
         return false;
@@ -585,7 +588,10 @@ public class RetoucheUtils {
             FileObject ownerRoot = null;
             if (fo != null) {
                 p = FileOwnerQuery.getOwner(fo);
-                ownerRoot = ClassPath.getClassPath(fo, ClassPath.SOURCE).findOwnerRoot(fo);
+                ClassPath cp = ClassPath.getClassPath(fo, ClassPath.SOURCE);
+                if (cp!=null) {
+                    ownerRoot = cp.findOwnerRoot(fo);
+                }
             }
             if (p != null && ownerRoot != null) {
                 URL sourceRoot = URLMapper.findURL(ownerRoot, URLMapper.INTERNAL);
@@ -963,8 +969,10 @@ public class RetoucheUtils {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     if (!cancel) {
-                        if (waitDialog!=null)
+                        if (waitDialog != null) {
                             waitDialog.setVisible(false);
+                            waitDialog.dispose();
+                        }
                         action.run();
                     }
                 }
@@ -979,6 +987,7 @@ public class RetoucheUtils {
             if (waitDialog != null) {
                 cancel = true;
                 waitDialog.setVisible(false);
+                waitDialog.dispose();
             }
         }
     }

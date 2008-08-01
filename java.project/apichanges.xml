@@ -2,7 +2,7 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
 
 
 The contents of this file are subject to the terms of either the GNU
@@ -26,7 +26,7 @@ your own identifying information:
 Contributor(s):
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
 Microsystems, Inc. All Rights Reserved.
 
 If you wish your version of this file to be governed by only the CDDL
@@ -106,6 +106,72 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        
+        <change id="javadoc-root-and-source-root-detection">
+            <api name="general"/>
+            <summary>Detection of Javadoc root and source root</summary>
+            <version major="1" minor="20"/>
+            <date day="22" month="7" year="2008"/>
+            <author login="dkonecny"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Class <code>JavadocAndSourceRootDetection</code> added with couple of
+                    helper methods to detect Javadoc and/or sources root.
+                </p>
+            </description>
+            <class package="org.netbeans.spi.java.project.support" name="JavadocAndSourceRootDetection"/>
+            <issue number="124779"/>
+        </change>
+
+        <change id="ProjectRunner">
+            <api name="general"/>
+            <summary>Added ProjectRunner</summary>
+            <version major="1" minor="19"/>
+            <date day="7" month="7" year="2008"/>
+            <author login="jlahoda"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Class <code>ProjectRunner</code> added.
+                </p>
+            </description>
+            <class package="org.netbeans.api.java.project.runner" name="ProjectRunner"/>
+            <issue number="999999"/>
+        </change>
+        
+        <change id="LookupMerger">
+            <api name="classpath"/>
+            <summary>Create LookupMerger implementation for ClassPathProvider</summary>
+            <version major="1" minor="18"/>
+            <date day="19" month="5" year="2008"/>
+            <author login="mkleint"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    <code>LookupMergerSupport.createClassPathProviderMerger(ClassPathProvider)</code>
+                    can be used to allow composing the project's classpath from multiple sources (modules).
+                </p>
+            </description>
+            <class package="org.netbeans.spi.java.project.support" name="LookupMergerSupport"/>
+            <issue number="134341"/>
+        </change>
+        
+        <change id="use-uri-for-relative-paths">
+            <api name="general"/>
+            <summary>Support for adding/removing relative classpath entries</summary>
+            <version major="1" minor="16"/>
+            <date day="27" month="3" year="2008"/>
+            <author login="dkonecny"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>Allow to add/remove relative classpath entries.
+                </p>
+            </description>
+            <class package="org.netbeans.spi.java.project.classpath" name="ProjectClassPathModifierImplementation"/>
+            <class package="org.netbeans.api.java.project.classpath" name="ProjectClassPathModifier"/>
+            <issue number="129628"/>
+        </change>        
         <change id="ant-project-libraries">
             <api name="general"/>
             <summary>Support for project-specific libraries</summary>

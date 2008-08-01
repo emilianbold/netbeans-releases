@@ -107,15 +107,6 @@ public final class ClassPathSupportCallbackImpl implements org.netbeans.modules.
 
         for (Item item : classpath) {
             Element library = doc.createElementNS(EarProjectType.PROJECT_CONFIGURATION_NAMESPACE, TAG_LIBRARY);
-            List<String> files = new ArrayList<String>();
-            List<String> dirs = new ArrayList<String>();
-            ProjectProperties.getFilesForItem(item, files, dirs, helper.getProjectDirectory());
-            if (files.size() > 0) {
-                library.setAttribute(ATTR_FILES, "" + files.size());
-            }
-            if (dirs.size() > 0) {
-                library.setAttribute(ATTR_DIRS, "" + dirs.size());
-            }           
             webModuleLibs.appendChild(library);
             Element webFile = doc.createElementNS(EarProjectType.PROJECT_CONFIGURATION_NAMESPACE, TAG_FILE);
             library.appendChild(webFile);

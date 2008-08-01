@@ -62,6 +62,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 import com.sun.sql.framework.exception.BaseException;
+import com.sun.sql.framework.utils.StringUtil;
 import java.util.LinkedHashMap;
 import org.netbeans.modules.sql.framework.model.DBTable;
 import org.netbeans.modules.sql.framework.model.DatabaseModel;
@@ -1198,6 +1199,33 @@ public abstract class AbstractDBTable extends AbstractSQLObject implements SQLDB
         setAliasName("");
         setUsingFullyQualifiedName(true);
         setStagingTableName("");
+    }
+    
+    public static String getResolvedCatalogName(SQLDBTable t) {
+        // Ensure order of precedence for catalog name is followed.
+        String resolvedCatalogName = t.getUserDefinedCatalogName();
+        if (StringUtil.isNullString(resolvedCatalogName)) {
+            resolvedCatalogName = t.getCatalog();
+        }
+        return resolvedCatalogName;
+    }
+        
+    public static String getResolvedSchemaName(SQLDBTable t) {
+        // Ensure order of precedence for schema name is followed.
+        String resolvedSchemaName = t.getUserDefinedSchemaName();
+        if (StringUtil.isNullString(resolvedSchemaName)) {
+            resolvedSchemaName = t.getSchema();
+        }
+        return resolvedSchemaName;
+    }
+    
+    public static String getResolvedTableName(SQLDBTable t) {
+        // Ensure order of precedence for schema name is followed.
+        String resolvedTableName = t.getUserDefinedTableName();
+        if (StringUtil.isNullString(resolvedTableName)) {
+            resolvedTableName = t.getName();
+        }
+        return resolvedTableName;
     }
 }
 

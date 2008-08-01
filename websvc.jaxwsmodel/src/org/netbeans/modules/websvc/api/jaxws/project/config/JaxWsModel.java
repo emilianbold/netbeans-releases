@@ -48,13 +48,11 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.schema2beans.BaseBean;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem.AtomicAction;
 import org.openide.util.ChangeSupport;
 
 /** Provides information about web services and clients in a project
@@ -290,21 +288,19 @@ public final class JaxWsModel {
     
     public void write() throws IOException {
         if (fo!=null) {
-            fo.getFileSystem().runAtomicAction(new AtomicAction() {
-            public void run() {
-                FileLock lock=null;
-                try {
-                    lock = fo.lock();
-                    OutputStream os = fo.getOutputStream(lock);
-                    write(os);
-                    os.close();
-                } catch (IOException ex) {
-                    ErrorManager.getDefault().notify(ex);
-                } finally {
-                    if (lock!=null) lock.releaseLock();
-                }
-            }
-        });
+            FileLock lock=null;
+            OutputStream os = null;
+            try {
+                lock = fo.lock();
+                os = fo.getOutputStream(lock);
+                write(os);
+                os.close();
+            } catch (IOException ex) {
+                ErrorManager.getDefault().notify(ex);
+            } finally {
+                if (lock!=null) lock.releaseLock();
+                if (os != null) os.close();
+            };
         } else throw new IOException("No FileObject for writing specified"); //NOI18N
     }
     

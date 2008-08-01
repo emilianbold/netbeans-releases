@@ -40,7 +40,7 @@
  */   
 package org.netbeans.modules.mobility.svgcore.palette;
 
-import org.netbeans.modules.mobility.svgcore.view.source.*;
+import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.util.logging.Level;
@@ -120,7 +120,9 @@ public final class SVGPaletteFactory {
                                     } else if (comp instanceof SVGViewTopComponent) {
                                         DataObject sourceDObj = lookup.lookup(DataObject.class);
                                         assert sourceDObj != null;
-                                        ((SVGViewTopComponent) comp).dropDataObject(sourceDObj);
+                                        // TODO calculate real mouse release point.
+                                        float[] point = new float[]{0,0};
+                                        ((SVGViewTopComponent) comp).dropDataObject(sourceDObj, point);
                                     }
                                 } catch( Exception ex) {
                                     SceneManager.error("Palette drop failed.", ex); //NOI18N

@@ -16,7 +16,6 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
 package org.netbeans.modules.bpel.mapper.predicates.editor;
 
 import java.awt.Dialog;
@@ -37,12 +36,12 @@ import org.netbeans.modules.bpel.mapper.palette.Palette;
 import org.netbeans.modules.bpel.mapper.predicates.AbstractPredicate;
 import org.netbeans.modules.bpel.mapper.tree.MapperSwingTreeModel;
 import org.netbeans.modules.bpel.mapper.tree.search.FinderListBuilder;
-import org.netbeans.modules.bpel.mapper.tree.spi.TreeItemFinder;
+import org.netbeans.modules.soa.ui.tree.impl.TreeFinderProcessor;
 import org.netbeans.modules.soa.mappercore.Mapper;
 import org.netbeans.modules.soa.mappercore.model.Graph;
 import org.netbeans.modules.soa.mappercore.model.MapperModel;
 import org.netbeans.modules.soa.mappercore.model.Vertex;
-import org.netbeans.modules.soa.ui.SoaUiUtil;
+import org.netbeans.modules.soa.ui.SoaUtil;
 import org.netbeans.modules.soa.ui.form.EditorLifeCycleAdapter;
 import org.netbeans.modules.soa.ui.form.valid.DefaultDialogDescriptor;
 import org.netbeans.modules.soa.ui.form.valid.DefaultValidStateManager;
@@ -50,7 +49,8 @@ import org.netbeans.modules.soa.ui.form.valid.DefaultValidator;
 import org.netbeans.modules.soa.ui.form.valid.SoaDialogDisplayer;
 import org.netbeans.modules.soa.ui.form.valid.ValidStateManager;
 import org.netbeans.modules.soa.ui.form.valid.Validator;
-import org.netbeans.modules.xml.xpath.ext.XPathSchemaContext;
+import org.netbeans.modules.soa.ui.tree.TreeItemFinder;
+import org.netbeans.modules.xml.xpath.ext.schema.resolver.XPathSchemaContext;
 import org.openide.util.NbBundle;
 
 /**
@@ -100,7 +100,7 @@ public class PredicateEditor extends EditorLifeCycleAdapter
                 }
             }
         });
-        SoaUiUtil.activateInlineMnemonics(this);
+        SoaUtil.activateInlineMnemonics(this);
     }
 
     @Override
@@ -129,7 +129,7 @@ public class PredicateEditor extends EditorLifeCycleAdapter
         DefaultDialogDescriptor descriptor = 
                 new DefaultDialogDescriptor(editor, editor.getDlgTitle());
         Dialog dialog = SoaDialogDisplayer.getDefault().createDialog(descriptor);
-        SoaUiUtil.setInitialFocusComponentFor(editor);
+        SoaUtil.setInitialFocusComponentFor(editor);
         dialog.setVisible(true);
 
         return descriptor.isOkHasPressed();
@@ -156,8 +156,11 @@ public class PredicateEditor extends EditorLifeCycleAdapter
         // Look for the tree node
         TreeModel leftTreeModel = mMapperModel.getLeftTreeModel();
         assert leftTreeModel instanceof MapperSwingTreeModel;
-        TreePath schemaContextPath = ((MapperSwingTreeModel)leftTreeModel).
-                findFirstNode(finderList);
+        TreeFinderProcessor fProcessor = new TreeFinderProcessor(
+                (MapperSwingTreeModel)leftTreeModel);
+        TreePath schemaContextPath = fProcessor.findFirstNode(finderList);
+//        TreePath schemaContextPath = ((MapperSwingTreeModel)leftTreeModel).
+//                findFirstNode(finderList);
         //
         // Show context path
         if (schemaContextPath != null) {
@@ -210,21 +213,18 @@ public class PredicateEditor extends EditorLifeCycleAdapter
                         }
                     }
                     //
-                    if (unconnectedGraphs > 0) {
-                        if (notEmptyGraphs.size() == unconnectedGraphs) {
-                            addReasonKey(Severity.WARNING, 
-                                    "WARN_THERE_ARENT_ANY_CONNECTED_GRAPH"); //NOI18N
-                        } else {
-                            addReasonKey(Severity.WARNING, 
-                                    "WARN_THERE_ARE_UNCONNECTED_GRAPHS"); //NOI18N
-                        }
+                    if (notEmptyGraphs.size() == unconnectedGraphs) {
+                        addReasonKey(Severity.ERROR,
+                                "WARN_THERE_ARENT_ANY_CONNECTED_GRAPH"); //NOI18N
+                    } else if (unconnectedGraphs > 0) {
+                        addReasonKey(Severity.WARNING,
+                                "WARN_THERE_ARE_UNCONNECTED_GRAPHS"); //NOI18N
                     }
                     if (incompleteGraphs > 0) {
                         addReasonKey(Severity.WARNING, 
                                 "WARN_THERE_ARE_INCOMPLETE_GRAPHS"); //NOI18N
                     }
                 }
-                
             };
         }
         return mValidator;

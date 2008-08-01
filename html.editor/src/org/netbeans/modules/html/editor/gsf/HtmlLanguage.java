@@ -40,15 +40,15 @@
  */
 package org.netbeans.modules.html.editor.gsf;
 
-
-import java.util.Collection;
-import java.util.Collections;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.Language;
-import org.netbeans.modules.gsf.api.GsfLanguage;
-import org.openide.filesystems.FileObject;
+import org.netbeans.modules.gsf.api.CodeCompletionHandler;
+import org.netbeans.modules.gsf.api.Parser;
+import org.netbeans.modules.gsf.api.SemanticAnalyzer;
+import org.netbeans.modules.gsf.api.StructureScanner;
+import org.netbeans.modules.gsf.spi.DefaultLanguageConfig;
 
-public class HtmlLanguage implements GsfLanguage {
+public class HtmlLanguage extends DefaultLanguageConfig {
     
     //XXX no line comment in html!
     private static final String LINE_COMMENT_PREFIX = "<!--";
@@ -56,19 +56,60 @@ public class HtmlLanguage implements GsfLanguage {
     public HtmlLanguage() {
     }
 
+    @Override
     public Language getLexerLanguage() {
         return HTMLTokenId.language();
     }
 
+    @Override
     public String getLineCommentPrefix() {
         return LINE_COMMENT_PREFIX;
     }
 
+    @Override
     public boolean isIdentifierChar(char c) {
         return Character.isLetter(c);
     }
 
-    public Collection<FileObject> getCoreLibraries() {
-        return Collections.emptyList();
+    @Override
+    public String getDisplayName() {
+        return "HTML";
+    }
+    
+    @Override
+    public String getPreferredExtension() {
+        return "html"; // NOI18N
+    }
+
+    // Service registrations
+    
+    @Override
+    public boolean isUsingCustomEditorKit() {
+        return true;
+    }
+
+    @Override
+    public Parser getParser() {
+        return new HtmlGSFParser();
+    }
+
+    @Override
+    public boolean hasStructureScanner() {
+        return true;
+    }
+
+    @Override
+    public StructureScanner getStructureScanner() {
+        return new HtmlStructureScanner();
+    }
+
+    @Override
+    public SemanticAnalyzer getSemanticAnalyzer() {
+        return new HtmlSemanticAnalyzer();
+    }
+
+    @Override
+    public CodeCompletionHandler getCompletionHandler() {
+        return new HtmlGsfCompletionHandler();
     }
 }

@@ -41,10 +41,8 @@
 
 package org.netbeans.modules.websvc.wsitmodelext.mtom.impl;
 
-import org.netbeans.modules.websvc.wsitmodelext.mtom.MtomQName;
 import org.netbeans.modules.websvc.wsitmodelext.mtom.OptimizedMimeSerialization;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import org.netbeans.modules.xml.wsdl.model.visitor.WSDLVisitor;
 import org.w3c.dom.Element;
 
 /**
@@ -59,14 +57,4 @@ public class OptimizedMimeSerializationImpl extends MtomComponentImpl implements
     public OptimizedMimeSerializationImpl(WSDLModel model, Element e) {
         super(model, e);
     }
-    
-    public OptimizedMimeSerializationImpl(WSDLModel model){
-        this(model, createPrefixedElement(MtomQName.OPTIMIZEDMIMESERIALIZATION.getQName(), model));
-    }
-
-    @Override
-    public void accept(WSDLVisitor visitor) {
-        visitor.visit(this);
-    }
-
 }

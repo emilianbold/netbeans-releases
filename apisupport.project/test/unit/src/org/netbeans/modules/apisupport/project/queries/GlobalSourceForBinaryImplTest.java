@@ -83,19 +83,19 @@ public class GlobalSourceForBinaryImplTest extends TestBase {
 
     public void testFindSourceRootForZipWithFirstLevelDepthNbBuild() throws Exception {
         File nbSrcZip = generateNbSrcZip("");
-        NbPlatform.getDefaultPlatform().addSourceRoot(Util.urlForJar(nbSrcZip));
+        NbPlatform.getDefaultPlatform().addSourceRoot(FileUtil.urlForArchiveOrDir(nbSrcZip));
         
-        URL loadersURL = Util.urlForJar(file("nbbuild/netbeans/" + TestBase.CLUSTER_PLATFORM + "/modules/org-openide-loaders.jar"));
-        URL loadersSrcURL = new URL(Util.urlForJar(nbSrcZip), "openide/loaders/src/");
+        URL loadersURL = FileUtil.urlForArchiveOrDir(file("nbbuild/netbeans/" + TestBase.CLUSTER_PLATFORM + "/modules/org-openide-loaders.jar"));
+        URL loadersSrcURL = new URL(FileUtil.urlForArchiveOrDir(nbSrcZip), "openide/loaders/src/");
         assertRoot(loadersURL, URLMapper.findFileObject(loadersSrcURL));
     }
     
     public void testFindSourceRootForZipWithSecondLevelDepthNbBuild() throws Exception {
         File nbSrcZip = generateNbSrcZip("netbeans-src/");
-        NbPlatform.getDefaultPlatform().addSourceRoot(Util.urlForJar(nbSrcZip));
+        NbPlatform.getDefaultPlatform().addSourceRoot(FileUtil.urlForArchiveOrDir(nbSrcZip));
         
-        URL loadersURL = Util.urlForJar(file("nbbuild/netbeans/" + TestBase.CLUSTER_PLATFORM + "/modules/org-openide-loaders.jar"));
-        URL loadersSrcURL = new URL(Util.urlForJar(nbSrcZip), "netbeans-src/openide/loaders/src/");
+        URL loadersURL = FileUtil.urlForArchiveOrDir(file("nbbuild/netbeans/" + TestBase.CLUSTER_PLATFORM + "/modules/org-openide-loaders.jar"));
+        URL loadersSrcURL = new URL(FileUtil.urlForArchiveOrDir(nbSrcZip), "netbeans-src/openide/loaders/src/");
         assertRoot(loadersURL, URLMapper.findFileObject(loadersSrcURL));
     }
     
@@ -104,8 +104,8 @@ public class GlobalSourceForBinaryImplTest extends TestBase {
         GlobalSourceForBinaryImpl.quiet = true;
         File nbSrcZip = new File(getWorkDir(), "wrong-nbsrc.zip");
         nbSrcZip.createNewFile();
-        NbPlatform.getDefaultPlatform().addSourceRoot(Util.urlForJar(nbSrcZip));
-        URL loadersURL = Util.urlForJar(file("nbbuild/netbeans/" + TestBase.CLUSTER_PLATFORM + "/modules/org-openide-loaders.jar"));
+        NbPlatform.getDefaultPlatform().addSourceRoot(FileUtil.urlForArchiveOrDir(nbSrcZip));
+        URL loadersURL = FileUtil.urlForArchiveOrDir(file("nbbuild/netbeans/" + TestBase.CLUSTER_PLATFORM + "/modules/org-openide-loaders.jar"));
         SourceForBinaryQuery.findSourceRoots(loadersURL).getRoots();
     }
     
@@ -124,39 +124,61 @@ public class GlobalSourceForBinaryImplTest extends TestBase {
                 System.err.println("Skipping testResolveSpecialNBSrcPaths since "+srcDirs[i]+" is not checked out");
                 continue;
             }
-            assertRoot(Util.urlForJar(file(xtestJars[i])),
+            assertRoot(FileUtil.urlForArchiveOrDir(file(xtestJars[i])),
                     FileUtil.toFileObject(file(srcDirs[i])));
             File jarFile = new File(file("nbbuild/netbeans"), ideJars[i]);
             if (jarFile.exists()) {
                 assertResolved(ideJars[i], srcDirs[i]);
             } else {
                 assertEquals("no resolved root", 0,
-                        SourceForBinaryQuery.findSourceRoots(Util.urlForJar(jarFile)).getRoots().length);
+                        SourceForBinaryQuery.findSourceRoots(FileUtil.urlForArchiveOrDir(jarFile)).getRoots().length);
             }
         }
     }
     
     private void assertResolved(String jarInNBBuild, String dirInNBSrc) {
         File jarFile = new File(file("nbbuild/netbeans"), jarInNBBuild);
-        assertRoot(Util.urlForJar(jarFile), FileUtil.toFileObject((file(dirInNBSrc))));
+        assertRoot(FileUtil.urlForArchiveOrDir(jarFile), FileUtil.toFileObject((file(dirInNBSrc))));
     }
     
     public void testListeningToNbPlatform() throws Exception {
         File nbSrcZip = generateNbSrcZip("");
-        URL loadersURL = Util.urlForJar(file("nbbuild/netbeans/" + TestBase.CLUSTER_PLATFORM + "/modules/org-openide-loaders.jar"));
+        URL loadersURL = FileUtil.urlForArchiveOrDir(file("nbbuild/netbeans/" + TestBase.CLUSTER_PLATFORM + "/modules/org-openide-loaders.jar"));
         SourceForBinaryQuery.Result res = SourceForBinaryQuery.findSourceRoots(loadersURL);
         assertNotNull("got result", res);
         ResultChangeListener resultCL = new ResultChangeListener();
         res.addChangeListener(resultCL);
         assertFalse("not changed yet", resultCL.changed);
         assertEquals("non source root", 0, res.getRoots().length);
-        NbPlatform.getDefaultPlatform().addSourceRoot(Util.urlForJar(nbSrcZip));
+        NbPlatform.getDefaultPlatform().addSourceRoot(FileUtil.urlForArchiveOrDir(nbSrcZip));
         assertTrue("changed yet", resultCL.changed);
         assertEquals("one source root", 1, res.getRoots().length);
-        URL loadersSrcURL = new URL(Util.urlForJar(nbSrcZip), "openide/loaders/src/");
+        URL loadersSrcURL = new URL(FileUtil.urlForArchiveOrDir(nbSrcZip), "openide/loaders/src/");
         assertRoot(loadersURL, URLMapper.findFileObject(loadersSrcURL));
     }
     
+    public void testNewModuleLayout() throws Exception {
+        File nbSrcZip = FileUtil.toFile(TestFileUtils.writeZipFile(FileUtil.toFileObject(getWorkDir()), "nbsrc.zip",
+                "nbbuild/nbproject/project.xml:",
+                "openide.loaders/src/dummy:",
+                "openide.loaders/nbproject/project.xml:" + LOADERS_XML));
+        NbPlatform.getDefaultPlatform().addSourceRoot(FileUtil.urlForArchiveOrDir(nbSrcZip));
+        URL loadersURL = FileUtil.urlForArchiveOrDir(file("nbbuild/netbeans/" + TestBase.CLUSTER_PLATFORM + "/modules/org-openide-loaders.jar"));
+        URL loadersSrcURL = new URL(FileUtil.urlForArchiveOrDir(nbSrcZip), "openide.loaders/src/");
+        assertRoot(loadersURL, URLMapper.findFileObject(loadersSrcURL));
+    }
+
+    public void testOldProjectXML() throws Exception { // #136679
+        File nbSrcZip = FileUtil.toFile(TestFileUtils.writeZipFile(FileUtil.toFileObject(getWorkDir()), "nbsrc.zip",
+                "nbbuild/nbproject/project.xml:",
+                "openide.loaders/src/dummy:",
+                "openide.loaders/nbproject/project.xml:" + LOADERS_XML.replace("/3", "/2")));
+        NbPlatform.getDefaultPlatform().addSourceRoot(FileUtil.urlForArchiveOrDir(nbSrcZip));
+        URL loadersURL = FileUtil.urlForArchiveOrDir(file("nbbuild/netbeans/" + TestBase.CLUSTER_PLATFORM + "/modules/org-openide-loaders.jar"));
+        URL loadersSrcURL = new URL(FileUtil.urlForArchiveOrDir(nbSrcZip), "openide.loaders/src/");
+        assertRoot(loadersURL, URLMapper.findFileObject(loadersSrcURL));
+    }
+
     private File generateNbSrcZip(String topLevelEntry) throws IOException {
         return FileUtil.toFile(TestFileUtils.writeZipFile(FileUtil.toFileObject(getWorkDir()), "nbsrc.zip",
                 topLevelEntry + "nbbuild/nbproject/project.xml:",

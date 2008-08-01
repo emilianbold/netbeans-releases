@@ -134,6 +134,7 @@ public class IntConfiguration {
 	setModified(conf.getModified());
     }
 
+    @Override
     public Object clone() {
 	IntConfiguration clone = new IntConfiguration(master, def, names, options);
 	clone.setValue(getValue());

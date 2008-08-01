@@ -44,6 +44,9 @@ package org.netbeans.modules.uml.core.metamodel.structure;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -63,6 +66,9 @@ import org.netbeans.modules.uml.core.roundtripframework.codegeneration.ISourceCo
 import org.netbeans.modules.uml.core.support.umlsupport.ProductRetriever;
 import org.netbeans.modules.uml.core.support.umlsupport.UMLUtilities;
 import org.netbeans.modules.uml.core.support.umlutils.UMLUtilitiesResource;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 
 
 
@@ -371,20 +377,31 @@ public class SourceFileArtifact extends Artifact implements ISourceFileArtifact
 		{
 			// can only read from a file that exists.
 			File file = new File(sourceFileName);
-			if (file.exists() && file.isFile())
+                        FileObject fo=FileUtil.toFileObject(file);
+			if (fo!=null && !fo.isFolder())
 			{
-				int length = (int)file.length();
+				int length = (int)fo.getSize();
 				srcBytes = new byte[length];
-				FileInputStream fis = null;
+				InputStream fis = null;
 				try
 				{
-					fis = new FileInputStream(file);
+					fis = fo.getInputStream();
 					fis.read(srcBytes);
 				}
 				catch(Exception e)
 				{
 					e.printStackTrace();
-				}				
+				}	
+                                finally
+                                {
+                                    try {
+                                        if (fis != null) {
+                                            fis.close();
+                                        }
+                                    } catch (IOException ex) {
+                                        Exceptions.printStackTrace(ex);
+                                    }
+                                }
 			}
 		}
 		return srcBytes != null? new String(srcBytes) : null;
@@ -439,10 +456,12 @@ public class SourceFileArtifact extends Artifact implements ISourceFileArtifact
 			try
 			{
 				File file = new File(sourceFileName);
-				if (file != null)
+                                FileObject fo=FileUtil.toFileObject(file);
+				if (fo != null)
 				{
-					FileOutputStream fos = new FileOutputStream(file);
+					OutputStream fos = fo.getOutputStream();
 					fos.write(sourceCode.getBytes());
+                                        fos.close();
 				}
 			}
 			catch(Exception e)

@@ -71,6 +71,20 @@ public class TestUtils {
                 snippet +
                 "</beans>";
     }
+    
+    public static String createXMLConfigText(String snippet, boolean includePNamespace) {
+        if(includePNamespace) {
+            return createXMLConfigText(snippet);
+        }
+        
+        return "<?xml version='1.0' encoding='UTF-8'?>" +
+                "<beans xmlns='http://www.springframework.org/schema/beans' " +
+                "       xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' " +
+                "       xsi:schemaLocation='http://www.springframework.org/schema/beans " +
+                "       http://www.springframework.org/schema/beans/spring-beans-2.5.xsd'>" +
+                snippet +
+                "</beans>";
+    }
 
     public static BaseDocument createSpringXMLConfigDocument(String content) throws Exception {
         Class<?> kitClass = CloneableEditorSupport.getEditorKit(SpringConstants.CONFIG_MIME_TYPE).getClass();

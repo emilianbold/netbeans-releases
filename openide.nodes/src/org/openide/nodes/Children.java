@@ -41,8 +41,6 @@
 
 package org.openide.nodes;
 
-import java.lang.ref.Reference;
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -50,14 +48,11 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.openide.util.Enumerations;
 import org.openide.util.Mutex;
 
@@ -103,31 +98,13 @@ public abstract class Children extends Object {
     * object may be used by all such nodes.
     */
     public static final Children LEAF = new Empty();
-    private static final Object LOCK = new Object();
-    private static final Logger LOG_GET_ARRAY = Logger.getLogger(
-            "org.openide.nodes.Children.getArray"
-        ); // NOI18N
+    
+    /** access to entries/nodes */
+    private EntrySupport entrySupport;
 
     /** parent node for all nodes in this list (can be null) */
-    private Node parent;
+    Node parent;
 
-    /** mapping from entries to info about them */
-    private java.util.Map<Entry,Info> map;
-
-    /** collection of all entries */
-    private Collection<? extends Entry> entries = Collections.emptyList();
-
-    private Reference<ChildrenArray> array = new WeakReference<ChildrenArray>(null);
-
-    /** Obtains references to array holder. If it does not exist, it is
-    * created.
-     *
-     * @param cannotWorkBetter array of size 1 or null, will contain true, if
-     *    the getArray cannot be initialized (we are under read access
-     *    and another thread is responsible for initialization, in such case
-     *    give up on computation of best result
-    */
-    private Thread initThread;
 
     /*
       private StringBuffer debug = new StringBuffer ();
@@ -146,8 +123,44 @@ public abstract class Children extends Object {
     /** Constructor.
     */
     public Children() {
+        this(false);
     }
 
+    Children(boolean lazy) {
+        lazySupport = lazy;
+    }
+
+    /**
+     * Initializes entry support.
+     */
+    final EntrySupport entrySupport() {
+        synchronized (Children.class) {
+            if (entrySupport == null) {
+                entrySupport = createEntrySource();
+                postInitializeEntrySupport();
+            }
+            return entrySupport;
+        }
+    }
+    
+    final boolean lazySupport;
+    /**
+     * Creates appropriate entry support for this children.
+     * Overriden in Children.Keys to sometimes make lazy support.
+     */
+    EntrySupport createEntrySource() {
+        return lazySupport ? new EntrySupport.Lazy(this) : new EntrySupport.Default(this);
+        //return new EntrySupport.Lazy(this);
+    }
+
+    /**
+     * Does further initialization of entry support. Is called just once, under internal
+     * lock so subclasses should behave sane. Can be overriden just in this 
+     * package, until found that this is needed somewhere else. 
+     */
+    void postInitializeEntrySupport() {
+    }
+    
     /** Setter of parent node for this list of children. Each children in the list
     * will have this node set as parent. The parent node will return nodes in
     * this list as its children.
@@ -255,7 +268,7 @@ public abstract class Children extends Object {
      * Create a <code>Children</code> object using the passed <code>ChildFactory</code>
      * object.  The <code>ChildFactory</code> will be asked to create a list
      * of model objects that are the children;  then for each object in the list,
-     * {@link ChildFactory#createNodesFor} will be called to instantiate
+     * {@link ChildFactory#createNodesForKey} will be called to instantiate
      * one or more <code>Node</code>s for that object.
      * @param factory a factory which will provide child objects
      * @param asynchronous If true, the factory will always be called to
@@ -304,14 +317,11 @@ public abstract class Children extends Object {
     *   a parent node
     * *exception CloneNotSupportedException if <code>Cloneable</code> interface is not implemented
     */
+    @Override
     protected Object clone() throws CloneNotSupportedException {
         Children ch = (Children) super.clone();
-
         ch.parent = null;
-        ch.map = null;
-        ch.entries = Collections.emptyList();
-        ch.array = new WeakReference<ChildrenArray>(null);
-
+        ch.entrySupport = null;
         return ch;
     }
 
@@ -386,16 +396,18 @@ public abstract class Children extends Object {
     * @see #addNotify
     */
     protected final boolean isInitialized() {
-        ChildrenArray arr = array.get();
-
-        return (arr != null) && arr.isInitialized();
+        return entrySupport().isInitialized();
     }
 
-    /** Get's the node at given position. Package private right now
-     * to allow tests to use it.
+    /** Getter for a child at a given position. If child with such index
+     * does not exists it returns null.
+     *
+     * @param index the index of a node we want to know (non negative)
+     * @return the node at given index or null
+     * @since org.openide.nodes 7.5
      */
-    final Node getNodeAt(int i) {
-        return getNodes()[i];
+    public final Node getNodeAt(int index) {
+        return entrySupport().getNodeAt(index);
     }
 
     /** Get a (sorted) array of nodes in this list.
@@ -410,47 +422,7 @@ public abstract class Children extends Object {
 
     //  private static String off = ""; // NOI18N
     public final Node[] getNodes() {
-        //Thread.dumpStack();
-        //System.err.println(off + "getNodes: " + getNode ());
-        boolean[] results = new boolean[2];
-
-        for (;;) {
-            results[1] = isInitialized();
-
-            // initializes the ChildrenArray possibly calls 
-            // addNotify if this is for the first time
-            ChildrenArray array = getArray(results); // fils results[0]
-
-            Node[] nodes;
-
-            try {
-                PR.enterReadAccess();
-
-                nodes = array.nodes();
-            } finally {
-                PR.exitReadAccess();
-            }
-
-            final boolean IS_LOG_GET_ARRAY = LOG_GET_ARRAY.isLoggable(Level.FINE);
-            if (IS_LOG_GET_ARRAY) {
-                LOG_GET_ARRAY.fine("  length     : " + nodes.length); // NOI18N
-                LOG_GET_ARRAY.fine("  entries    : " + entries); // NOI18N
-                LOG_GET_ARRAY.fine("  init now   : " + isInitialized()); // NOI18N
-            }
-            // if not initialized that means that after
-            // we computed the nodes, somebody changed them (as a
-            // result of addNotify) => we have to compute them
-            // again
-            if (results[1]) {
-                // otherwise it is ok.
-                return nodes;
-            }
-
-            if (results[0]) {
-                // looks like the result cannot be computed, just give empty one
-                return (nodes == null) ? new Node[0] : nodes;
-            }
-        }
+        return entrySupport().getNodes(false);
     }
 
     /** Get a (sorted) array of nodes in this list.
@@ -481,31 +453,41 @@ public abstract class Children extends Object {
      * @return array of nodes
      */
     public Node[] getNodes(boolean optimalResult) {
-        ChildrenArray hold;
-        Node find;
-        if (optimalResult) {
-            final boolean IS_LOG_GET_ARRAY = LOG_GET_ARRAY.isLoggable(Level.FINE);
-            if (IS_LOG_GET_ARRAY) {
-                LOG_GET_ARRAY.fine("computing optimal result");// NOI18N
-            }
-            hold = getArray(null);
-            if (IS_LOG_GET_ARRAY) {
-                LOG_GET_ARRAY.fine("optimal result is here: " + hold);// NOI18N
-            }
-            find = findChild(null);
-            if (IS_LOG_GET_ARRAY) {
-                LOG_GET_ARRAY.fine("Find child got: " + find); // NOI18N
-            }
-        }
-
-        return getNodes();
+        return entrySupport().getNodes(optimalResult);
     }
 
     /** Get the number of nodes in the list.
     * @return the count
     */
     public final int getNodesCount() {
-        return getNodes().length;
+        return entrySupport().getNodesCount(false);
+    }
+
+    /** Get the number of nodes in the list
+     * @param optimalResult whether to try to perform full initialization
+     * or to simply delegate to {@link #getNodesCount()}
+     * @return the count
+     * @since org.openide.nodes 7.6
+     */
+    public int getNodesCount(boolean optimalResult) {
+        return entrySupport().getNodesCount(optimalResult);
+    }
+
+    /** Creates an immutable snapshot representing the current view of the nodes
+     * in this children object. This is No attempt is made to extract incorrect or invalid
+     * nodes from the list, as a result, the value may not be exactly the same
+     * as returned by {@link #getNodes()}.
+     * 
+     * @return immutable and unmodifiable list of nodes in this children object
+     * @since 7.6
+     */
+    public final List<Node> snapshot() {
+        try {
+            PR.enterReadAccess();
+            return entrySupport().createSnapshot(false);
+        } finally {
+            PR.exitReadAccess();
+        }
     }
 
     //
@@ -538,731 +520,34 @@ public abstract class Children extends Object {
     * do additional work and then call addNotify.
     */
     void callAddNotify() {
+        //System.err.println("Thread: " + Thread.currentThread().getName() + ", N: " + getNode());
+        //System.err.println("Children: " + this);
         addNotify();
+        //System.err.println("Finished: " + this);
     }
 
-    //
-    // ChildrenArray operations call only under lock
-    //
+    final void callRemoveNotify() {
+        removeNotify();
+    }
+
+    /** Called when the nodes have been removed from the children.
+     * This method should allow subclasses to clean the nodes somehow.
+     * <p>
+     * Current implementation notifies all listeners on the nodes
+     * that nodes have been deleted.
+     *
+     * @param arr array of deleted nodes
+     */
+    void destroyNodes(Node[] arr) {
+    }
 
     /** @return either nodes associated with this children or null if
-    * they are not created
-    */
+     * they are not created
+     */
     private Node[] testNodes() {
-        ChildrenArray arr = array.get();
-
-        return (arr == null) ? null : arr.nodes();
+        return entrySupport == null ? null : entrySupport().testNodes();
     }
 
-    private ChildrenArray getArray(boolean[] cannotWorkBetter) {
-        final boolean IS_LOG_GET_ARRAY = LOG_GET_ARRAY.isLoggable(Level.FINE);
-
-        ChildrenArray arr;
-        boolean doInitialize = false;
-        synchronized (LOCK) {
-            arr = array.get();
-
-            if (arr == null) {
-                arr = new ChildrenArray();
-
-                // register the array with the children
-                registerChildrenArray(arr, true);
-                doInitialize = true;
-                initThread = Thread.currentThread();
-            }
-        }
-
-        if (doInitialize) {
-            if (IS_LOG_GET_ARRAY) {
-                LOG_GET_ARRAY.fine("Initialize " + this + " on " + Thread.currentThread()); // NOI18N
-            }
-
-            // this call can cause a lot of callbacks => be prepared
-            // to handle them as clean as possible
-            try {
-                this.callAddNotify();
-
-                if (IS_LOG_GET_ARRAY) {
-                    LOG_GET_ARRAY.fine("addNotify successfully called for " + this + " on " + Thread.currentThread()); // NOI18N
-                }
-            } finally {
-                boolean notifyLater;
-                notifyLater = MUTEX.isReadAccess();
-
-                if (IS_LOG_GET_ARRAY) {
-                    LOG_GET_ARRAY.fine(
-                        "notifyAll for " + this + " on " + Thread.currentThread() + "  notifyLater: " + notifyLater
-                    ); // NOI18N
-                }
-
-                // now attach to children, so when children == null => we are
-                // not fully initialized!!!!
-                arr.children = this;
-                class SetAndNotify implements Runnable {
-                    public ChildrenArray toSet;
-                    public Children whatSet;
-
-                    public void run() {
-                        synchronized (LOCK) {
-                            initThread = null;
-                            LOCK.notifyAll();
-                        }
-                        
-                        if (IS_LOG_GET_ARRAY) {
-                            LOG_GET_ARRAY.fine(
-                                "notifyAll done"
-                            ); // NOI18N
-                        }
-                        
-                    }
-                }
-
-                SetAndNotify setAndNotify = new SetAndNotify();
-                setAndNotify.toSet = arr;
-                setAndNotify.whatSet = this;
-
-                if (notifyLater) {
-                    // the notify to the lock has to be done later than
-                    // setKeys is executed, otherwise the result of addNotify
-                    // might not be visible to other threads
-                    // fix for issue 50308
-                    MUTEX.postWriteRequest(setAndNotify);
-                } else {
-                    setAndNotify.run();
-                }
-            }
-        } else {
-            // otherwise, if not initialize yet (arr.children) wait 
-            // for the initialization to finish, but only if we can wait
-            if (MUTEX.isReadAccess() || MUTEX.isWriteAccess() || (initThread == Thread.currentThread())) {
-                // fail, we are in read access
-                if (IS_LOG_GET_ARRAY) {
-                    LOG_GET_ARRAY.log(Level.FINE,
-                        "cannot initialize better " + this + // NOI18N
-                        " on " + Thread.currentThread() + // NOI18N
-                        " read access: " + MUTEX.isReadAccess() + // NOI18N
-                        " initThread: " + initThread, // NOI18N
-                        new Exception("StackTrace") // NOI18N
-                    );
-                }
-
-                if (cannotWorkBetter != null) {
-                    cannotWorkBetter[0] = true;
-                }
-
-                return arr;
-            }
-
-            // otherwise we can wait
-            synchronized (LOCK) {
-                while (initThread != null) {
-                    if (IS_LOG_GET_ARRAY) {
-                        LOG_GET_ARRAY.fine(
-                            "waiting for children for " + this + // NOI18N
-                            " on " + Thread.currentThread() // NOI18N
-                        );
-                    }
-
-                    try {
-                        LOCK.wait();
-                    } catch (InterruptedException ex) {
-                    }
-                }
-            }
-            if (IS_LOG_GET_ARRAY) {
-                LOG_GET_ARRAY.fine(
-                    " children are here for " + this + // NOI18N
-                    " on " + Thread.currentThread() + // NOI18N
-                    " children " + arr.children
-                );
-            }
-        }
-
-        return arr;
-    }
-
-    /** Clears the nodes
-    */
-    private void clearNodes() {
-        ChildrenArray arr = array.get();
-
-        //System.err.println(off + "  clearNodes: " + getNode ());
-        if (arr != null) {
-            // clear the array
-            arr.clear();
-        }
-    }
-
-    /** Forces finalization of nodes for given info.
-    * Called from finalizer of Info.
-    */
-    final void finalizeNodes() {
-        ChildrenArray arr = array.get();
-
-        if (arr != null) {
-            arr.finalizeNodes();
-        }
-    }
-
-    /** Registration of ChildrenArray.
-    * @param chArr the associated ChildrenArray
-    * @param weak use weak or hard reference
-    */
-    final void registerChildrenArray(final ChildrenArray chArr, boolean weak) {
-        final boolean IS_LOG_GET_ARRAY = LOG_GET_ARRAY.isLoggable(Level.FINE);
-        if (IS_LOG_GET_ARRAY) {
-            LOG_GET_ARRAY.fine("registerChildrenArray: " + chArr + " weak: " + weak); // NOI18N
-        }
-        if (weak) {
-            this.array = new WeakReference<ChildrenArray>(chArr);
-        } else {
-            // hold the children hard
-            this.array = new WeakReference<ChildrenArray>(chArr) {
-                @Override
-                public ChildrenArray get() {
-                    return chArr;
-                }
-            };
-        }
-        
-        chArr.pointedBy(this.array);
-        if (IS_LOG_GET_ARRAY) {
-            LOG_GET_ARRAY.fine("pointed by: " + chArr + " to: " + this.array); // NOI18N
-        }
-    }
-
-    /** Finalized.
-    */
-    final void finalizedChildrenArray(Reference caller) {
-        final boolean IS_LOG_GET_ARRAY = LOG_GET_ARRAY.isLoggable(Level.FINE);
-        // usually in removeNotify setKeys is called => better require write access
-        try {
-            PR.enterWriteAccess();
-
-            if (IS_LOG_GET_ARRAY) {
-                LOG_GET_ARRAY.fine("previous array: " + array + " caller: " + caller);
-            }
-            if (array == caller) {
-                // really finalized and not reconstructed
-                removeNotify();
-            }
-
-            /*
-            else {
-                System.out.println("Strange removeNotify " + caller + " : " + value );
-            }
-            */
-        } finally {
-            PR.exitWriteAccess();
-        }
-    }
-
-    /** Computes the nodes now.
-    */
-    final Node[] justComputeNodes() {
-        if (map == null) {
-            map = Collections.synchronizedMap(new HashMap<Entry,Info>(17));
-
-            //      debug.append ("Map initialized\n"); // NOI18N
-            //      printStackTrace();
-        }
-
-        List<Node> l = new LinkedList<Node>();
-        for (Entry entry : entries) {
-            Info info = findInfo(entry);
-
-            try {
-                l.addAll(info.nodes());
-            } catch (RuntimeException ex) {
-                NodeOp.warning(ex);
-            }
-        }
-
-        Node[] arr = l.toArray(new Node[l.size()]);
-
-        // initialize parent nodes
-        for (int i = 0; i < arr.length; i++) {
-            Node n = arr[i];
-            n.assignTo(this, i);
-            n.fireParentNodeChange(null, parent);
-        }
-
-        return arr;
-    }
-
-    /** Finds info for given entry, or registers
-    * it, if not registered yet.
-    */
-    private Info findInfo(Entry entry) {
-        synchronized(map) {
-            Info info = map.get(entry);
-
-            if (info == null) {
-                info = new Info(entry);
-                map.put(entry, info);
-
-                //      debug.append ("Put: " + entry + " info: " + info); // NOI18N
-                //      debug.append ('\n');
-                //      printStackTrace();
-            }
-            return info;
-        }
-    }
-
-    //
-    // Entries
-    //
-
-    /** Access to copy of current entries.
-    * @return copy of entries in the objects
-    */
-    final List<Entry> getEntries() {
-        return new ArrayList<Entry>(this.entries);
-    }
-
-    final void setEntries(Collection<? extends Entry> entries) {
-        final boolean IS_LOG_GET_ARRAY = LOG_GET_ARRAY.isLoggable(Level.FINE);
-        // current list of nodes
-        ChildrenArray holder = array.get();
-
-        if (IS_LOG_GET_ARRAY) {
-            LOG_GET_ARRAY.fine("setEntries for " + this + " on " + Thread.currentThread()); // NOI18N
-            LOG_GET_ARRAY.fine("       values: " + entries); // NOI18N
-            LOG_GET_ARRAY.fine("       holder: " + holder); // NOI18N
-        }
-        if (holder == null) {
-            //      debug.append ("Set1: " + entries); // NOI18N
-            //      printStackTrace();
-            this.entries = entries;
-
-            if (map != null) {
-                map.keySet().retainAll(new HashSet<Entry>(entries));
-            }
-
-            return;
-        }
-
-        Node[] current = holder.nodes();
-
-        if (current == null) {
-            // the initialization is not finished yet =>
-            //      debug.append ("Set2: " + entries); // NOI18N
-            //      printStackTrace();
-            this.entries = entries;
-
-            if (map != null) {
-                map.keySet().retainAll(new HashSet<Entry>(entries));
-            }
-
-            return;
-        }
-
-        // if there are old items in the map, remove them to
-        // reflect current state
-        map.keySet().retainAll(new HashSet<Entry>(this.entries));
-
-        // what should be removed
-        Set<Entry> toRemove = new HashSet<Entry>(map.keySet());
-        Set<Entry> entriesSet = new HashSet<Entry>(entries);
-        toRemove.removeAll(entriesSet);
-
-        if (!toRemove.isEmpty()) {
-            // notify removing, the set must be ready for
-            // callbacks with questions
-            updateRemove(current, toRemove);
-            current = holder.nodes();
-        }
-
-        // change the order of entries, notifies
-        // it and again brings children to up-to-date state
-        Collection<Info> toAdd = updateOrder(current, entries);
-
-        if (!toAdd.isEmpty()) {
-            // toAdd contains Info objects that should
-            // be added
-            updateAdd(toAdd, entries);
-        }
-    }
-
-    private void checkInfo(Info info, Entry entry, Collection<? extends Entry> entries, java.util.Map<Entry,Info> map) {
-        if (info == null) {
-            throw new IllegalStateException(
-                "Error in " + getClass().getName() + " with entry " + entry + " from among " + entries + " in " + map + // NOI18N
-                " probably caused by faulty key implementation." + // NOI18N
-                " The key hashCode() and equals() methods must behave as for an IMMUTABLE object" + // NOI18N
-                " and the hashCode() must return the same value for equals() keys."
-            ); // NOI18N
-        }
-    }
-    
-    /** Removes the objects from the children.
-    */
-    private void updateRemove(Node[] current, Set<Entry> toRemove) {
-        List<Node> nodes = new LinkedList<Node>();
-
-        for (Entry en : toRemove) {
-            Info info = map.remove(en);
-
-            //debug.append ("Removed: " + en + " info: " + info); // NOI18N
-            //debug.append ('\n');
-            //printStackTrace();
-            checkInfo(info, en, null, map);
-            
-            nodes.addAll(info.nodes());
-        }
-
-        // modify the current set of entries and empty the list of nodes
-        // so it has to be recreated again
-        //debug.append ("Current : " + this.entries + '\n'); // NOI18N
-        this.entries.removeAll(toRemove);
-
-        //debug.append ("Removing: " + toRemove + '\n'); // NOI18N
-        //debug.append ("New     : " + this.entries + '\n'); // NOI18N
-        //printStackTrace();
-        clearNodes();
-
-        notifyRemove(nodes, current);
-    }
-
-    /** Notifies that a set of nodes has been removed from
-    * children. It is necessary that the system is already
-    * in consistent state, so any callbacks will return
-    * valid values.
-    *
-    * @param nodes list of removed nodes
-    * @param current state of nodes
-    * @return array of nodes that were deleted
-    */
-    Node[] notifyRemove(Collection<Node> nodes, Node[] current) {
-        //System.err.println("notifyRemove from: " + getNode ());
-        //System.err.println("notifyRemove: " + nodes);
-        //System.err.println("Current     : " + Arrays.asList (current));
-        //Thread.dumpStack();
-        //Keys.last.printStackTrace();
-        // [TODO] Children do not have always a parent
-        // see Services->FIRST ($SubLevel.class)
-        // during a deserialization it may have parent == null
-        Node[] arr = nodes.toArray(new Node[nodes.size()]);
-
-        if (parent == null) {
-            return arr;
-        }
-
-        // fire change of nodes
-        parent.fireSubNodesChange(false, // remove
-            arr, current
-        );
-
-        // fire change of parent
-        Iterator it = nodes.iterator();
-
-        while (it.hasNext()) {
-            Node n = (Node) it.next();
-            n.deassignFrom(this);
-            n.fireParentNodeChange(parent, null);
-        }
-
-        return arr;
-    }
-
-    /** Updates the order of entries.
-    * @param current current state of nodes
-    * @param entries new set of entries
-    * @return list of infos that should be added
-    */
-    private List<Info> updateOrder(Node[] current, Collection<? extends Entry> newEntries) {
-        List<Info> toAdd = new LinkedList<Info>();
-
-        // that assignes entries their begining position in the array
-        // of nodes
-        java.util.Map<Info,Integer> offsets = new HashMap<Info,Integer>();
-
-        {
-            int previousPos = 0;
-
-            for (Entry entry : entries) {
-                Info info = map.get(entry);
-                checkInfo(info, entry, entries, map);
-
-                offsets.put(info, previousPos);
-
-                previousPos += info.length();
-            }
-        }
-
-        // because map can contain some additional items,
-        // that has not been garbage collected yet,
-        // retain only those that are in current list of
-        // entries
-        map.keySet().retainAll(new HashSet<Entry>(entries));
-
-        int[] perm = new int[current.length];
-        int currentPos = 0;
-        int permSize = 0;
-        List<Entry> reorderedEntries = null;
-
-        for (Entry entry : newEntries) {
-            Info info = map.get(entry);
-
-            if (info == null) {
-                // this info has to be added
-                info = new Info(entry);
-                toAdd.add(info);
-            } else {
-                int len = info.length();
-
-                if (reorderedEntries == null) {
-                    reorderedEntries = new LinkedList<Entry>();
-                }
-
-                reorderedEntries.add(entry);
-
-                // already there => test if it should not be reordered
-                Integer previousInt = offsets.get(info);
-
-                /*
-                        if (previousInt == null) {
-                          System.err.println("Offsets: " + offsets);
-                          System.err.println("Info: " + info);
-                          System.err.println("Entry: " + info.entry);
-                          System.err.println("This entries: " + this.entries);
-                          System.err.println("Entries: " + entries);
-                          System.err.println("Map: " + map);
-
-                          System.err.println("---------vvvvv");
-                          System.err.println(debug);
-                          System.err.println("---------^^^^^");
-
-                        }
-                */
-                int previousPos = previousInt;
-
-                if (currentPos != previousPos) {
-                    for (int i = 0; i < len; i++) {
-                        perm[previousPos + i] = 1 + currentPos + i;
-                    }
-
-                    permSize += len;
-                }
-            }
-
-            currentPos += info.length();
-        }
-
-        if (permSize > 0) {
-            // now the perm array contains numbers 1 to ... and
-            // 0 one places where no permutation occures =>
-            // decrease numbers, replace zeros
-            for (int i = 0; i < perm.length; i++) {
-                if (perm[i] == 0) {
-                    // fixed point
-                    perm[i] = i;
-                } else {
-                    // decrease
-                    perm[i]--;
-                }
-            }
-
-            // reorderedEntries are not null
-            this.entries = reorderedEntries;
-
-            //      debug.append ("Set3: " + this.entries); // NOI18N
-            //      printStackTrace();
-            // notify the permutation to the parent
-            clearNodes();
-
-            //System.err.println("Paremutaiton! " + getNode ());
-            Node p = parent;
-
-            if (p != null) {
-                p.fireReorderChange(perm);
-            }
-        }
-
-        return toAdd;
-    }
-
-    /** Updates the state of children by adding given Infos.
-    * @param infos list of Info objects to add
-    * @param entries the final state of entries that should occur
-    */
-    private void updateAdd(Collection<Info> infos, Collection<? extends Entry> entries) {
-        List<Node> nodes = new LinkedList<Node>();
-        for (Info info : infos) {
-            nodes.addAll(info.nodes());
-            map.put(info.entry, info);
-
-            //      debug.append ("updateadd: " + info.entry + " info: " + info + '\n'); // NOI18N
-            //      printStackTrace();
-        }
-
-        this.entries = entries;
-
-        //      debug.append ("Set4: " + entries); // NOI18N
-        //      printStackTrace();
-        clearNodes();
-
-        notifyAdd(nodes);
-    }
-
-    /** Notifies that a set of nodes has been add to
-    * children. It is necessary that the system is already
-    * in consistent state, so any callbacks will return
-    * valid values.
-    *
-    * @param nodes list of removed nodes
-    */
-    private void notifyAdd(Collection<Node> nodes) {
-        // notify about parent change
-        for (Node n : nodes) {
-            n.assignTo(this, -1);
-            n.fireParentNodeChange(null, parent);
-        }
-
-        Node[] arr = nodes.toArray(new Node[nodes.size()]);
-
-        Node n = parent;
-
-        if (n != null) {
-            n.fireSubNodesChange(true, arr, null);
-        }
-    }
-
-    /** Refreshes content of one entry. Updates the state of children
-    * appropriately.
-    */
-    final void refreshEntry(Entry entry) {
-        // current list of nodes
-        ChildrenArray holder = array.get();
-
-        if (holder == null) {
-            return;
-        }
-
-        Node[] current = holder.nodes();
-
-        if (current == null) {
-            // the initialization is not finished yet =>
-            return;
-        }
-
-        // because map can contain some additional items,
-        // that has not been garbage collected yet,
-        // retain only those that are in current list of
-        // entries
-        map.keySet().retainAll(new HashSet<Entry>(this.entries));
-
-        Info info = map.get(entry);
-
-        if (info == null) {
-            // refresh of entry that is not present =>
-            return;
-        }
-
-        Collection<Node> oldNodes = info.nodes();
-        Collection<Node> newNodes = info.entry.nodes();
-
-        if (oldNodes.equals(newNodes)) {
-            // nodes are the same =>
-            return;
-        }
-
-        Set<Node> toRemove = new HashSet<Node>(oldNodes);
-        toRemove.removeAll(new HashSet<Node>(newNodes));
-
-        if (!toRemove.isEmpty()) {
-            // notify removing, the set must be ready for
-            // callbacks with questions
-            // modifies the list associated with the info
-            oldNodes.removeAll(toRemove);
-            clearNodes();
-
-            // now everything should be consistent => notify the remove
-            notifyRemove(toRemove, current);
-
-            current = holder.nodes();
-        }
-
-        List<Node> toAdd = refreshOrder(entry, oldNodes, newNodes);
-        info.useNodes(newNodes);
-
-        if (!toAdd.isEmpty()) {
-            // modifies the list associated with the info
-            clearNodes();
-            notifyAdd(toAdd);
-        }
-    }
-
-    /** Updates the order of nodes after a refresh.
-    * @param entry the refreshed entry
-    * @param oldNodes nodes that are currently in the list
-    * @param newNodes new nodes (defining the order of oldNodes and some more)
-    * @return list of infos that should be added
-    */
-    private List<Node> refreshOrder(Entry entry, Collection<Node> oldNodes, Collection<Node> newNodes) {
-        List<Node> toAdd = new LinkedList<Node>();
-
-        int currentPos = 0;
-
-        // cycle thru all entries to find index of the entry
-        Iterator<? extends Entry> it1 = this.entries.iterator();
-
-        for (;;) {
-            Entry e = it1.next();
-
-            if (e.equals(entry)) {
-                break;
-            }
-
-            Info info = findInfo(e);
-            currentPos += info.length();
-        }
-
-        Set<Node> oldNodesSet = new HashSet<Node>(oldNodes);
-        Set<Node> toProcess = new HashSet<Node>(oldNodesSet);
-
-        Node[] permArray = new Node[oldNodes.size()];
-        Iterator<Node> it2 = newNodes.iterator();
-
-        int pos = 0;
-
-        while (it2.hasNext()) {
-            Node n = it2.next();
-
-            if (oldNodesSet.remove(n)) {
-                // the node is in the old set => test for permuation
-                permArray[pos++] = n;
-            } else {
-                if (!toProcess.contains(n)) {
-                    // if the node has not been processed yet
-                    toAdd.add(n);
-                } else {
-                    it2.remove();
-                }
-            }
-        }
-
-        // JST: If you get IllegalArgumentException in following code
-        // then it can be cause by wrong synchronization between
-        // equals and hashCode methods. First of all check them!
-        int[] perm = NodeOp.computePermutation(oldNodes.toArray(new Node[oldNodes.size()]), permArray);
-
-        if (perm != null) {
-            // apply the permutation
-            clearNodes();
-
-            // temporarily change the nodes the entry should use
-            findInfo(entry).useNodes(Arrays.asList(permArray));
-
-            Node p = parent;
-
-            if (p != null) {
-                p.fireReorderChange(perm);
-            }
-        }
-
-        return toAdd;
-    }
 
     /** Interface that provides a set of nodes.
     */
@@ -1270,53 +555,6 @@ public abstract class Children extends Object {
         /** Set of nodes associated with this entry.
         */
         public Collection<Node> nodes();
-    }
-
-    /** Information about an entry. Contains number of nodes,
-    * position in the array of nodes, etc.
-    */
-    final class Info extends Object {
-        int length;
-        final Entry entry;
-
-        public Info(Entry entry) {
-            this.entry = entry;
-        }
-
-        /** Finalizes the content of ChildrenArray.
-        */
-        protected void finalize() {
-            finalizeNodes();
-        }
-
-        public Collection<Node> nodes() {
-            // forces creation of the array
-            ChildrenArray arr = getArray(null);
-
-            return arr.nodesFor(this);
-        }
-
-        public void useNodes(Collection<Node> nodes) {
-            // forces creation of the array
-            ChildrenArray arr = getArray(null);
-
-            arr.useNodes(this, nodes);
-
-            // assign all there nodes the new children
-            for (Node n : nodes) {
-                n.assignTo(Children.this, -1);
-                n.fireParentNodeChange(null, parent);
-            }
-        }
-
-        public int length() {
-            return length;
-        }
-
-        @Override
-        public String toString() {
-            return "Children.Info[" + entry + ",length=" + length + "]"; // NOI18N
-        }
     }
 
     /** Empty list of children. Does not allow anybody to insert a node.
@@ -1375,14 +613,27 @@ public abstract class Children extends Object {
         * first time, children will be used.
         */
         public Array() {
-            nodesEntry = createNodesEntry();
-            this.setEntries(Collections.singleton(getNodesEntry()));
+            this(false);
+        }
+
+        Array(boolean lazy) {
+            super(lazy);
+            if (!lazy) {
+                nodesEntry = createNodesEntry();
+            }
+        }
+        @Override
+        void postInitializeEntrySupport() {
+            if (!lazySupport) {
+                entrySupport().setEntries(Collections.singleton(getNodesEntry()));
+            }
         }
 
         /** Clones all nodes that are contained in the children list.
         *
         * @return the cloned array for this children
         */
+        @Override
         public Object clone() {
             try {
                 final Children.Array ar = (Array) super.clone();
@@ -1437,8 +688,8 @@ public abstract class Children extends Object {
         */
         final void refreshImpl() {
             if (isInitialized()) {
-                Array.this.refreshEntry(getNodesEntry());
-                super.getArray(null).nodes();
+                Array.this.entrySupport().refreshEntry(getNodesEntry());
+                entrySupport().getNodes(false);
             } else if (nodes != null) {
                 for (Node n : nodes) {
                     n.assignTo(this, -1);
@@ -1480,7 +731,6 @@ public abstract class Children extends Object {
                     nodes = initCollection();
                 }
             }
-
             return nodes;
         }
 
@@ -1494,12 +744,8 @@ public abstract class Children extends Object {
                     // no change to the collection
                     return false;
                 }
-
-                ;
             }
-
             refresh();
-
             return true;
         }
 
@@ -1590,9 +836,9 @@ public abstract class Children extends Object {
 
         /** Called on first use.
         */
+        @Override
         final void callAddNotify() {
-            this.setEntries(createEntries(getMap()));
-
+            entrySupport().setEntries(createEntries(getMap()));
             super.callAddNotify();
         }
 
@@ -1615,7 +861,7 @@ public abstract class Children extends Object {
         * MUTEX.writeAccess.
         */
         final void refreshImpl() {
-            this.setEntries(createEntries(getMap()));
+            entrySupport().setEntries(createEntries(getMap()));
         }
 
         /** Allows subclasses that directly modifies the
@@ -1638,7 +884,7 @@ public abstract class Children extends Object {
         * @param key the key that should be refreshed
         */
         final void refreshKeyImpl(T key) {
-            this.refreshEntry(new ME(key, null));
+            entrySupport().refreshEntry(new ME(key, null));
         }
 
         /** Allows subclasses that directly modifies the
@@ -1773,12 +1019,14 @@ public abstract class Children extends Object {
 
             /** Hash code.
             */
+            @Override
             public int hashCode() {
                 return key.hashCode();
             }
 
             /** Equals.
             */
+            @Override
             public boolean equals(Object o) {
                 if (o instanceof ME) {
                     ME me = (ME) o;
@@ -1789,6 +1037,7 @@ public abstract class Children extends Object {
                 return false;
             }
 
+            @Override
             public String toString() {
                 return "Key (" + key + ")"; // NOI18N
             }
@@ -1843,6 +1092,7 @@ public abstract class Children extends Object {
         /** This method allows subclasses (only in this package) to
         * provide own version of entry. Useful for SortedArray.
         */
+        @Override
         Entry createNodesEntry() {
             return new SAE();
         }
@@ -1917,6 +1167,7 @@ public abstract class Children extends Object {
         * @param map the map (Object, Node)
         * @return collection of (Entry)
         */
+        @Override
         Collection<? extends Entry> createEntries(java.util.Map<T,Node> map) {
             // SME objects use natural ordering
             Set<ME> l = new TreeSet<ME>(new SMComparator());
@@ -1990,14 +1241,31 @@ public abstract class Children extends Object {
         private static java.util.Map<Keys<?>,Runnable> lastRuns = new HashMap<Keys<?>,Runnable>(11);
 
         /** add array children before or after keys ones */
-        private boolean before;
-
+        boolean before;
+        
         public Keys() {
-            super();
+            this(false);
         }
-
+        
+        /** Constructor for optional "lazy behavoir" (tries to avoid 
+         * computation of nodes if possible).
+         * <p> There are certain requirements for usage of lazy mode:
+         * It is forbidden to create more than 1 node in {@link #createNodes}
+         * for key. In optimal case there should be 1:1 pairing between key and Node,
+         * but it is also possible to have 1:0 pairing - create no node (return null). 
+         * In such case after detection that there is no Node for key, 
+         * the key is automatically removed and change (removal of 
+         * "dummy" Node) is fired.
+         * @param lazy whether to introduce lazy behavior
+         * @since org.openide.nodes 7.6
+         */
+        protected Keys(boolean lazy) {
+            super(lazy);
+        }
+        
         /** Special handling for clonning.
         */
+        @Override
         public Object clone() {
             Keys<?> k = (Keys<?>) super.clone();
 
@@ -2008,7 +1276,11 @@ public abstract class Children extends Object {
          * @deprecated Do not use! Just call {@link #setKeys(Collection)} with a larger set.
          */
         @Deprecated
+        @Override
         public boolean add(Node[] arr) {
+            if (lazySupport) {
+                return false;
+            }
             return super.add(arr);
         }
 
@@ -2016,7 +1288,11 @@ public abstract class Children extends Object {
          * @deprecated Do not use! Just call {@link #setKeys(Collection)} with a smaller set.
          */
         @Deprecated
+        @Override
         public boolean remove(final Node[] arr) {
+            if (lazySupport) {
+                return false;
+            }
             try {
                 PR.enterWriteAccess();
 
@@ -2047,10 +1323,15 @@ public abstract class Children extends Object {
             MUTEX.postWriteRequest(
                 new Runnable() {
                     public void run() {
-                        Keys.this.refreshEntry(new KE(key));
+                        Keys.this.entrySupport().refreshEntry(createEntryForKey(key));
                     }
                 }
             );
+        }
+
+        /** To be overriden in FilterNode.Children */
+        Entry createEntryForKey(T key) {
+            return new KE(key);
         }
 
         /** Set new keys for this children object. Setting of keys
@@ -2075,16 +1356,18 @@ public abstract class Children extends Object {
             }
 
             final List<Entry> l = new ArrayList<Entry>(keysSet.size() + 1);
-
-            if (before) {
-                l.add(getNodesEntry());
-            }
-
             KE updator = new KE();
-            updator.updateList(keysSet, l);
 
-            if (!before) {
-                l.add(getNodesEntry());
+            if (lazySupport) {
+                updator.updateList(keysSet, l);
+            } else {
+                if (before) {
+                    l.add(getNodesEntry());
+                }
+                updator.updateList(keysSet, l);
+                if (!before) {
+                    l.add(getNodesEntry());
+                }
             }
 
             applyKeys(l);
@@ -2110,17 +1393,18 @@ public abstract class Children extends Object {
             }
 
             final List<Entry> l = new ArrayList<Entry>(keys.length + 1);
-
             KE updator = new KE();
 
-            if (before) {
-                l.add(getNodesEntry());
-            }
-
-            updator.updateList(keys, l);
-
-            if (!before) {
-                l.add(getNodesEntry());
+            if (lazySupport) {
+                updator.updateList(keys, l);
+            } else {
+                if (before) {
+                    l.add(getNodesEntry());
+                }
+                updator.updateList(keys, l);
+                if (!before) {
+                    l.add(getNodesEntry());
+                }
             }
 
             applyKeys(l);
@@ -2133,7 +1417,7 @@ public abstract class Children extends Object {
                     public void run() {
                         if (keysCheck(Keys.this, this)) {
                             // no next request after me
-                            Keys.this.setEntries(l);
+                            entrySupport().setEntries(l);
 
                             // clear this runnable
                             keysExit(Keys.this, this);
@@ -2153,8 +1437,8 @@ public abstract class Children extends Object {
             try {
                 PR.enterWriteAccess();
 
-                if (before != b) {
-                    List<Entry> l = Keys.this.getEntries();
+                if (before != b && !lazySupport) {
+                    List<Entry> l = entrySupport().getEntries();
                     l.remove(getNodesEntry());
                     before = b;
 
@@ -2164,13 +1448,13 @@ public abstract class Children extends Object {
                         l.add(getNodesEntry());
                     }
 
-                    Keys.this.setEntries(l);
+                    entrySupport().setEntries(l);
                 }
             } finally {
                 PR.exitWriteAccess();
             }
         }
-
+        
         /** Create nodes for a given key.
         * @param key the key
         * @return child nodes for this key or null if there should be no
@@ -2186,19 +1470,11 @@ public abstract class Children extends Object {
         *
         * @param arr array of deleted nodes
         */
+        @Override
         protected void destroyNodes(Node[] arr) {
             for (int i = 0; i < arr.length; i++) {
                 arr[i].fireNodeDestroyed();
             }
-        }
-
-        /** Notifies the children class that nodes has been released.
-        */
-        Node[] notifyRemove(Collection<Node> nodes, Node[] current) {
-            Node[] arr = super.notifyRemove(nodes, current);
-            destroyNodes(arr);
-
-            return arr;
         }
 
         /** Enter of setKeys.
@@ -2231,7 +1507,7 @@ public abstract class Children extends Object {
 
         /** Entry for a key
         */
-        private final class KE extends Dupl<T> {
+        class KE extends Dupl<T> {
             /** Has default constructor that allows to create a factory
             * of KE objects for use with updateList
             */
@@ -2260,7 +1536,7 @@ public abstract class Children extends Object {
             public String toString() {
                 String s = getKey().toString();
                 if (s.length() > 80) {
-                    s = s.substring(0, 80);
+                    s = s.substring(s.length() - 80);
                 }
                 return "Children.Keys.KE[" + s + "," + getCnt() + "]"; // NOI18N
             }
@@ -2343,7 +1619,7 @@ public abstract class Children extends Object {
         * @return the key
         */
         @SuppressWarnings("unchecked") // data structure really weird
-        public final T getKey() {
+        public T getKey() {
             if (key instanceof Dupl) {
                 return (T) ((Dupl) key).getKey();
             } else {
@@ -2354,7 +1630,7 @@ public abstract class Children extends Object {
         /** Counts the index of this key.
         * @return integer
         */
-        public final int getCnt() {
+        public int getCnt() {
             int cnt = 0;
             Dupl d = this;
 

@@ -98,6 +98,10 @@ public class ReaderInputStream extends InputStream {
     }
 
     public int read(byte[] b, int off, int len) throws IOException {
+        if (len == 0) {
+            return 0;
+        }
+
         int c = read();
 
         if (c == -1) {

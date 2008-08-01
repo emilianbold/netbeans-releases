@@ -163,15 +163,9 @@ public class DataFormatter implements IDataFormatter
       
 		if( format == null || format.length() == 0 )
 		{
-			IPropertyElement pElem = null;
 			if (elem != null)
 			{
-			   IPropertyDefinition pDef = getDefinition(helper);
-			   if (pDef != null)
-			   {
-				   pElem = getPropertyElement(helper, pDef);
-				   format = formatElement(helper);
-			   }
+                            format = formatElement(helper);
 			}
 		}
       	return format;

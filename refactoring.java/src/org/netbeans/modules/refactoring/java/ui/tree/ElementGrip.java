@@ -47,7 +47,8 @@ import javax.lang.model.element.Element;
 import javax.swing.Icon;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreePathHandle;
-import org.netbeans.api.java.source.UiUtils;
+import org.netbeans.api.java.source.ui.ElementHeaders;
+import org.netbeans.api.java.source.ui.ElementIcons;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -65,9 +66,12 @@ public final class ElementGrip {
      */
     public ElementGrip(TreePath treePath, CompilationInfo info) {
         this.delegateElementHandle = TreePathHandle.create(treePath, info);
-        this.toString = UiUtils.getHeader(treePath, info, UiUtils.PrintPart.NAME);
+        this.toString = ElementHeaders.getHeader(treePath, info, ElementHeaders.NAME);
         this.fileObject = info.getFileObject();
-        this.icon = UiUtils.getDeclarationIcon(info.getTrees().getElement(treePath));
+        Element el = info.getTrees().getElement(treePath);
+        if (el != null) {
+            this.icon = ElementIcons.getElementIcon(el.getKind(), el.getModifiers());
+        }
     }
     
     public Icon getIcon() {

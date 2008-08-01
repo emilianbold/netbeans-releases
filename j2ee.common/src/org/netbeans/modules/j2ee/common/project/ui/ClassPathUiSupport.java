@@ -42,6 +42,7 @@
 package org.netbeans.modules.j2ee.common.project.ui;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -98,10 +99,7 @@ public final class ClassPathUiSupport {
                           && selectionModel.getMinSelectionIndex() != -1;
         if (can) {
             ClassPathSupport.Item item = (ClassPathSupport.Item) listModel.get(selectionModel.getMinSelectionIndex());
-            can =  item.getType() == ClassPathSupport.Item.TYPE_JAR || item.getType() == ClassPathSupport.Item.TYPE_LIBRARY;
-            if (item.isBroken()) {
-                can = false;
-            }
+            can = item.canEdit();
         }
         return can;
     }
@@ -110,7 +108,7 @@ public final class ClassPathUiSupport {
         ClassPathSupport.Item item = (ClassPathSupport.Item) listModel.getElementAt(selectedIndices[0]);
         if (item.getType() == ClassPathSupport.Item.TYPE_JAR) {
             EditJarSupport.Item eji = new EditJarSupport.Item();
-            eji.setJarFile(item.getFilePath());
+            eji.setJarFile(item.getVariableBasedProperty() != null ? item.getVariableBasedProperty() : item.getFilePath());
             eji.setSourceFile(item.getSourceFilePath());
             eji.setJavadocFile(item.getJavadocFilePath());
             eji = EditJarSupport.showEditDialog(helper, eji);
@@ -225,25 +223,30 @@ public final class ClassPathUiSupport {
             }
         }
         Set<Library> addedLibs = new HashSet<Library>(Arrays.asList(libraries));
-        int[] indexes = new int[libraries.length];
-        for (int i=0, j=0; i<listModel.getSize(); i++) {
-            ClassPathSupport.Item item = (ClassPathSupport.Item)listModel.get (i);
-            if (item.getType() == ClassPathSupport.Item.TYPE_LIBRARY && !item.isBroken() ) {
+        List<Integer> indexes = new ArrayList<Integer>();
+        for (int i=0; i<listModel.getSize(); i++) {
+            ClassPathSupport.Item item = (ClassPathSupport.Item)listModel.get(i);
+            if (item.getType() == ClassPathSupport.Item.TYPE_LIBRARY && !item.isBroken()) {
                 if (addedLibs.contains(item.getLibrary())) {
-                    indexes[j++] =i;
+                    indexes.add(i);
                 }
             }
         }
-        return indexes;        
+        int[] indexesArray = new int[indexes.size()];
+        int j = 0;
+        for (Integer val : indexes) {
+            indexesArray[j++] = val.intValue();
+        }
+        return indexesArray;
     }
 
-    public static int[] addJarFiles( DefaultListModel listModel, int[] indices, String filePaths[], File base,
-            Callback callback) {
+    public static int[] addJarFiles( DefaultListModel listModel, int[] indices, String filePaths[], File base, 
+            String[] variables, Callback callback) {
         int lastIndex = indices == null || indices.length == 0 ? listModel.getSize() - 1 : indices[indices.length - 1];
         int[] indexes = new int[filePaths.length];
         for( int i = 0, delta = 0; i+delta < filePaths.length; ) {            
             int current = lastIndex + 1 + i;
-            ClassPathSupport.Item item = ClassPathSupport.Item.create( filePaths[i], base, null);
+            ClassPathSupport.Item item = ClassPathSupport.Item.create( filePaths[i], base, null, variables != null ? variables[i] : null);
             if (callback != null) {
                 callback.initItem(item);
             }

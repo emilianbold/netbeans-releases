@@ -64,10 +64,10 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.filechooser.FileFilter;
-import javax.swing.filechooser.FileFilter;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.project.libraries.LibraryChooser.Filter;
 import org.openide.filesystems.FileUtil;
 
 import org.netbeans.api.project.Project;
@@ -89,6 +89,10 @@ public final class EditMediator implements ActionListener, ListSelectionListener
 
     private static String[] DEFAULT_ANT_ARTIFACT_TYPES = new String[] {
         JavaProjectConstants.ARTIFACT_TYPE_JAR, JavaProjectConstants.ARTIFACT_TYPE_FOLDER};
+
+    public static final FileFilter JAR_ZIP_FILTER = new SimpleFileFilter( 
+        NbBundle.getMessage( EditMediator.class, "LBL_ZipJarFolderFilter" ), // NOI18N
+        new String[] {"ZIP","JAR"} ); // NOI18N
     
     private final ListComponent list;
     private final DefaultListModel listModel;
@@ -107,6 +111,7 @@ public final class EditMediator implements ActionListener, ListSelectionListener
     private Project project;
     private FileFilter filter;
     private String[] antArtifactTypes;
+    private int fileSelectionMode;
 
     private EditMediator( Project project,
                          AntProjectHelper helper,
@@ -121,7 +126,9 @@ public final class EditMediator implements ActionListener, ListSelectionListener
                          ButtonModel edit,
                          Document libPath,
                          ClassPathUiSupport.Callback callback,
-                         String[] antArtifactTypes) {
+                         String[] antArtifactTypes,
+                         FileFilter filter,
+                         int fileSelectionMode) {
 
         // Remember all buttons
 
@@ -146,9 +153,8 @@ public final class EditMediator implements ActionListener, ListSelectionListener
         this.helper = helper;
         this.refHelper = refHelper;
         this.project = project;
-        this.filter = new SimpleFileFilter( 
-            NbBundle.getMessage( EditMediator.class, "LBL_ZipJarFolderFilter" ), // NOI18N
-            new String[] {"ZIP","JAR"} ); // NOI18N
+        this.filter = filter;
+        this.fileSelectionMode = fileSelectionMode;
         this.antArtifactTypes = antArtifactTypes;
     }
 
@@ -167,7 +173,8 @@ public final class EditMediator implements ActionListener, ListSelectionListener
                                 ClassPathUiSupport.Callback callback) {    
         register(project, helper, refHelper, list, addJar, addLibrary, 
                 addAntArtifact, remove, moveUp, moveDown, edit, libPath, 
-                callback, DEFAULT_ANT_ARTIFACT_TYPES);
+                callback, DEFAULT_ANT_ARTIFACT_TYPES, JAR_ZIP_FILTER, 
+                JFileChooser.FILES_AND_DIRECTORIES);
     }
     
     public static void register(Project project,
@@ -183,7 +190,9 @@ public final class EditMediator implements ActionListener, ListSelectionListener
                                 ButtonModel edit,
                                 Document libPath,
                                 ClassPathUiSupport.Callback callback,
-                                String[] antArtifactTypes) {    
+                                String[] antArtifactTypes,
+                                FileFilter filter,
+                                int fileSelectionMode) {    
 
         EditMediator em = new EditMediator( project, 
                                             helper,
@@ -198,7 +207,9 @@ public final class EditMediator implements ActionListener, ListSelectionListener
                                             edit,
                                             libPath,
                                             callback,
-                                            antArtifactTypes);
+                                            antArtifactTypes,
+                                            filter,
+                                            fileSelectionMode);
 
         // Register the listener on all buttons
         addJar.addActionListener( em ); 
@@ -224,9 +235,16 @@ public final class EditMediator implements ActionListener, ListSelectionListener
 
         if ( source == addJar ) { 
             // Let user search for the Jar file
-            FileChooser chooser = new FileChooser(helper, true);
+            FileChooser chooser;
+            if (helper.isSharableProject()) {
+                chooser = new FileChooser(helper, true);
+            } else {
+                chooser = new FileChooser(FileUtil.toFile(project.getProjectDirectory()), null);
+            }
+            chooser.enableVariableBasedSelection(true);
+            chooser.setFileHidingEnabled(false);
             FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
-            chooser.setFileSelectionMode( JFileChooser.FILES_AND_DIRECTORIES );
+            chooser.setFileSelectionMode(fileSelectionMode);
             chooser.setMultiSelectionEnabled( true );
             chooser.setDialogTitle( NbBundle.getMessage( EditMediator.class, "LBL_AddJar_DialogTitle" ) ); // NOI18N
             //#61789 on old macosx (jdk 1.4.1) these two method need to be called in this order.
@@ -249,7 +267,8 @@ public final class EditMediator implements ActionListener, ListSelectionListener
                 // value of PATH_IN_DEPLOYMENT depends on whether file or folder is being added.
                 // do not override value set by callback.initAdditionalProperties if includeNewFilesInDeployment
                 int[] newSelection = ClassPathUiSupport.addJarFiles( listModel, list.getSelectedIndices(), 
-                        filePaths, FileUtil.toFile(helper.getProjectDirectory()), callback);
+                        filePaths, FileUtil.toFile(helper.getProjectDirectory()), 
+                        chooser.getSelectedPathVariables(), callback);
                 list.setSelectedIndices( newSelection );
                 curDir = FileUtil.normalizeFile(chooser.getCurrentDirectory());
                 UserProjectSettings.getDefault().setLastUsedClassPathFolder(curDir);
@@ -283,7 +302,7 @@ public final class EditMediator implements ActionListener, ListSelectionListener
             }
 
             Set<Library> added = LibraryChooser.showDialog(manager,
-                    null, refHelper.getLibraryChooserImportHandler()); // XXX filter to j2se libs only?
+                    createLibraryFilter(), refHelper.getLibraryChooserImportHandler());
             if (added != null) {
                 Set<Library> includedLibraries = new HashSet<Library>();
                int[] newSelection = ClassPathUiSupport.addLibraries(listModel, list.getSelectedIndices(), 
@@ -355,6 +374,22 @@ public final class EditMediator implements ActionListener, ListSelectionListener
         moveUp.setEnabled( ClassPathUiSupport.canMoveUp( selectionModel ) );
         moveDown.setEnabled( ClassPathUiSupport.canMoveDown( selectionModel, listModel.getSize() ) );       
 
+    }
+
+    static Filter createLibraryFilter() {
+        return  new Filter() {
+            public boolean accept(Library library) {
+                if ("javascript".equals(library.getType())) { //NOI18N
+                    return false;
+                }
+                try {
+                    library.getContent("classpath"); //NOI18N
+                    return true;
+                } catch (IllegalArgumentException ex) {
+                    return false;
+                }
+            }
+        };
     }
 
     public interface ListComponent {

@@ -345,7 +345,7 @@ public abstract class CreateClassFix implements Fix {
                 }
             });
             
-            return Utilities.commitAndComputeChangeInfo(targetFile, diff);
+            return Utilities.commitAndComputeChangeInfo(targetFile, diff, null);
         }
         
         public String toDebugString(CompilationInfo info) {

@@ -41,24 +41,23 @@
 
 package org.netbeans.qa.form.refactoring;
 
-import org.netbeans.junit.NbTestSuite;
+import java.io.IOException;
 import org.netbeans.qa.form.*;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JDialogOperator;
 import java.io.File;
-import javax.swing.JTextField;
+import junit.framework.Test;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.actions.ActionNoBlock;
-import org.netbeans.jellytools.actions.NewFileAction;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.modules.form.FormDesignerOperator;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
 import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jemmy.operators.Operator;
+import org.netbeans.junit.NbModuleSuite;
 
 
 /**
@@ -80,25 +79,15 @@ public class MoveFormClassTest extends ExtJellyTestCase {
         super(testName);
     }
     
-    /**
-     * Method allowing to execute test directly from IDE.
-     * @param args
-     */
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
+    public void setUp() throws IOException{
+        openProject(_testProjectName);
     }
     
-    /**
-     * Creates suite from particular test cases.
-     * @return nb test suite
-     */
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new MoveFormClassTest("testCreatePackage")); // NOI18N
-        suite.addTest(new MoveFormClassTest("testRefactoring")); // NOI18N
-        suite.addTest(new MoveFormClassTest("testChangesInJavaFile")); // NOI18N
-        suite.addTest(new MoveFormClassTest("testChangesInPropertiesFile")); // NOI18N
-        return suite;
+    public static Test suite() {
+        return NbModuleSuite.create(NbModuleSuite.createConfiguration(MoveFormClassTest.class)
+                .addTest("testCreatePackage", "testRefactoring", "testChangesInJavaFile", "testChangesInPropertiesFile" )
+                .clusters(".*").enableModules(".*").gui(true));
+        
     }
 
     /** Creates subdata package  */

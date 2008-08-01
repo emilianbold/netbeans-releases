@@ -69,6 +69,10 @@ import javax.swing.text.Document;
  * The callers may call the methods in any order and even do not call some of these methods
  * at all.
  * </p>
+ * 
+ * <p><b>Related documentation</b>
+ * 
+ * <p><a href="http://platform.netbeans.org/tutorials/60/nbm-hyperlink.html">NetBeans Hyperlink Navigation Tutorial</a>
  *
  * @author Jan Lahoda
  * @since 1.0

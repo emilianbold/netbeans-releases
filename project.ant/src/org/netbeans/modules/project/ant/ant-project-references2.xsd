@@ -53,7 +53,7 @@ made subject to such option by the copyright holder.
                             <xsd:element name="foreign-project" type="xsd:NCName"/>
                             <xsd:element name="artifact-type" type="xsd:NCName"/>
                             <!-- semantics of script field changed in /2 version (#50092) -->
-                            <xsd:element name="script" type="xsd:NCName"/>
+                            <xsd:element name="script" type="xsd:string"/>
                             <xsd:element name="target" type="xsd:NCName"/>
                             <xsd:element name="clean-target" type="xsd:NCName"/>
                             <xsd:element name="id" type="xsd:NCName"/>

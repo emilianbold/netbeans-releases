@@ -109,6 +109,10 @@ public final class PropertyEditorDefaultCommand extends PropertyEditorUserCode i
     private void initComponents() {
         radioButton = new JRadioButton();
         Mnemonics.setLocalizedText(radioButton, NbBundle.getMessage(PropertyEditorDefaultCommand.class, "LBL_DEF_COMMAND_STR")); // NOI18N
+        
+        radioButton.getAccessibleContext().setAccessibleName( radioButton.getText());
+        radioButton.getAccessibleContext().setAccessibleDescription( radioButton.getText());
+        
         customEditor = new CustomEditor();
         radioButton.addActionListener(customEditor);
     }
@@ -340,6 +344,14 @@ public final class PropertyEditorDefaultCommand extends PropertyEditorUserCode i
         private void initComponents() {
             setLayout(new BorderLayout());
             combobox = new JComboBox();
+            
+            combobox.getAccessibleContext().setAccessibleName( 
+                    NbBundle.getMessage(PropertyEditorDefaultCommand.class, 
+                            "ACSN_DefaultCommandChooser"));
+            combobox.getAccessibleContext().setAccessibleDescription( 
+                    NbBundle.getMessage(PropertyEditorDefaultCommand.class, 
+                            "ACSD_DefaultCommandChooser"));
+            
             combobox.setModel(new DefaultComboBoxModel());
             combobox.addActionListener(this);
             add(combobox, BorderLayout.CENTER);

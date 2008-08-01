@@ -103,7 +103,7 @@ public class PlatformInstallIterator implements WizardDescriptor.InstantiatingIt
             WizardDescriptor.Panel p = it.current();
             if (p != null) {
                 javax.swing.JComponent pc = (javax.swing.JComponent)p.getComponent();
-                String[] steps = (String[])pc.getClientProperty("WizardPanel_contentData"); // NOI18N
+                String[] steps = (String[])pc.getClientProperty(WizardDescriptor.PROP_CONTENT_DATA); // NOI18N
                 if (steps != null)
                     c.addAll(Arrays.asList(steps));
             }
@@ -112,7 +112,7 @@ public class PlatformInstallIterator implements WizardDescriptor.InstantiatingIt
         }
         String[] names = c.toArray(new String[c.size()]);
         for (JComponent comp : where) {
-            comp.putClientProperty("WizardPanel_contentData",names); // NOI18N
+            comp.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA,names); // NOI18N
         }
     }
     
@@ -192,7 +192,7 @@ public class PlatformInstallIterator implements WizardDescriptor.InstantiatingIt
         updatePanelsList(new JComponent[]{((JComponent)current().getComponent())}, this.typeIterator);
         this.wizard.setTitle(NbBundle.getMessage(PlatformInstallIterator.class,"TXT_AddPlatformTitle"));
         panelNumber = 0;
-        wizard.putProperty("WizardPanel_contentSelectedIndex", // NOI18N
+        wizard.putProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, // NOI18N
             new Integer(panelNumber));
     }
     
@@ -226,7 +226,7 @@ public class PlatformInstallIterator implements WizardDescriptor.InstantiatingIt
             typeIterator.nextPanel();
         }
         panelNumber++;
-        wizard.putProperty("WizardPanel_contentSelectedIndex", // NOI18N
+        wizard.putProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, // NOI18N
             new Integer(panelNumber));
     }
     
@@ -248,7 +248,7 @@ public class PlatformInstallIterator implements WizardDescriptor.InstantiatingIt
             }                
         } 
         panelNumber--;
-        wizard.putProperty("WizardPanel_contentSelectedIndex", // NOI18N
+        wizard.putProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, // NOI18N
             new Integer(panelNumber));
     }
     
@@ -304,7 +304,7 @@ public class PlatformInstallIterator implements WizardDescriptor.InstantiatingIt
             }, null);
         }
         typeIterator = it;
-        wizard.putProperty("WizardPanel_contentSelectedIndex", new Integer(panelNumber)); // NOI18N
+        wizard.putProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer(panelNumber)); // NOI18N
     }                
                 
 }

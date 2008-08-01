@@ -51,7 +51,7 @@ import org.netbeans.jellytools.ProjectsTabOperator;
 public class FindInFilesAction extends ActionNoBlock {
     // "Edit|Find in Projects..."
     private static final String menu =
-            Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/Edit") +
+            Bundle.getStringTrimmed("org.netbeans.core.ui.resources.Bundle", "Menu/Edit") +
             "|" +
             Bundle.getStringTrimmed("org.netbeans.modules.search.Bundle", "LBL_Action_FindInProjects");
     // "Find"

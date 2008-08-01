@@ -56,6 +56,7 @@ import org.netbeans.installer.wizard.components.actions.DownloadConfigurationLog
 import org.netbeans.installer.wizard.components.actions.DownloadInstallationDataAction;
 import org.netbeans.installer.wizard.components.actions.InstallAction;
 import org.netbeans.installer.wizard.components.actions.UninstallAction;
+import org.netbeans.installer.wizard.components.actions.netbeans.NbMetricsAction;
 import org.netbeans.installer.wizard.components.actions.netbeans.NbRegistrationAction;
 import org.netbeans.installer.wizard.components.actions.netbeans.NbServiceTagCreateAction;
 import org.netbeans.installer.wizard.components.panels.PostCreateBundleSummaryPanel;
@@ -81,6 +82,7 @@ public class MainSequence extends WizardSequence {
     private CreateNativeLauncherAction createNativeLauncherAction;
     private CreateMacOSAppLauncherAction createAppLauncherAction ;
     private PostCreateBundleSummaryPanel postCreateBundleSummaryPanel;
+    private NbMetricsAction metricsAction;
     private NbServiceTagCreateAction serviceTagAction;
     private NbRegistrationAction nbRegistrationAction;
     private Map<Product, ProductWizardSequence> productSequences;
@@ -99,6 +101,7 @@ public class MainSequence extends WizardSequence {
         createAppLauncherAction = new CreateMacOSAppLauncherAction();
         
         postCreateBundleSummaryPanel = new PostCreateBundleSummaryPanel();
+        metricsAction = new NbMetricsAction();
         serviceTagAction = new NbServiceTagCreateAction();
         nbRegistrationAction = new NbRegistrationAction ();
         productSequences = new HashMap<Product, ProductWizardSequence>();
@@ -153,6 +156,7 @@ public class MainSequence extends WizardSequence {
                 
                 addChild(nbPostInstallSummaryPanel);
                 if (toInstall.size() > 0) {
+                    addChild(metricsAction);
                     addChild(nbRegistrationAction);
                 }
                 

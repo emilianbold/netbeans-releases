@@ -107,7 +107,7 @@ public abstract class LexerSpiPackageAccessor {
 
     public abstract <T extends TokenId> boolean isRetainTokenText(LanguageHierarchy<T> languageHierarchy, T id);
 
-    public abstract LexerInput createLexerInput(CharProvider charProvider);
+    public abstract LexerInput createLexerInput(LexerInputOperation<?> operation);
     
     public abstract Language<?> language(MutableTextInput<?> mti);
     

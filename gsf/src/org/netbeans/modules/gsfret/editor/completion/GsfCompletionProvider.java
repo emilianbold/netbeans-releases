@@ -45,6 +45,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
+import java.util.prefs.Preferences;
 import java.util.Set;
 import javax.swing.JToolTip;
 import javax.swing.text.AbstractDocument;
@@ -52,16 +55,20 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.completion.Completion;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.api.editor.settings.SimpleValueNames;
+import org.netbeans.modules.gsf.api.CodeCompletionResult;
 import org.netbeans.modules.gsf.api.CompletionProposal;
-import org.netbeans.modules.gsf.api.Completable;
+import org.netbeans.modules.gsf.api.CodeCompletionHandler;
 import org.netbeans.modules.gsf.api.CancellableTask;
-import org.netbeans.modules.gsf.api.Completable.QueryType;
+import org.netbeans.modules.gsf.api.CodeCompletionHandler.QueryType;
 import org.netbeans.modules.gsf.api.ElementHandle;
 import org.netbeans.modules.gsf.api.ElementKind;
+import org.netbeans.modules.gsf.api.HtmlFormatter;
 import org.netbeans.modules.gsf.api.NameKind;
 import org.netbeans.modules.gsf.api.ParameterInfo;
 import org.netbeans.api.lexer.TokenHierarchy;
-import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.napi.gsfret.source.CompilationController;
 import org.netbeans.napi.gsfret.source.CompilationInfo;
@@ -70,16 +77,10 @@ import org.netbeans.napi.gsfret.source.Source;
 import org.netbeans.napi.gsfret.source.SourceUtils;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Registry;
-import org.netbeans.editor.Settings;
-import org.netbeans.editor.SettingsChangeEvent;
-import org.netbeans.editor.SettingsChangeListener;
-import org.netbeans.editor.SettingsUtil;
-import org.netbeans.editor.ext.ExtSettingsDefaults;
-import org.netbeans.editor.ext.ExtSettingsNames;
-import org.netbeans.modules.gsf.GsfEditorKitFactory;
 import org.netbeans.modules.gsf.GsfHtmlFormatter;
 import org.netbeans.modules.gsf.Language;
 import org.netbeans.modules.gsf.LanguageRegistry;
+import org.netbeans.modules.gsf.api.CodeCompletionContext;
 import org.netbeans.spi.editor.completion.*;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionQuery;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
@@ -87,6 +88,7 @@ import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.WeakListeners;
 
 
 /**
@@ -101,25 +103,18 @@ import org.openide.util.NbBundle;
  */
 public class GsfCompletionProvider implements CompletionProvider {
     
-    private static final String COMMENT_CATEGORY_NAME = "comment";
+    //private static final String COMMENT_CATEGORY_NAME = "comment";
     
-    /** 
-     * Flag which is set when we're in a query that was initiated 
-     * automatically rather than through an explicit gesture 
-     */
-    private static boolean isAutoQuery;
-    private static boolean expectingCreateTask;
-        
-    public static Completable getCompletable(CompilationInfo info, int offset) {
-        try {
-            return getCompletable(info.getDocument(), offset);
-        } catch (IOException ioe) {
-            Exceptions.printStackTrace(ioe);
+    public static CodeCompletionHandler getCompletable(CompilationInfo info, int offset) {
+        Document document = info.getDocument();
+        if (document != null) {
+            return getCompletable(document,offset);
+        } else {
             return null;
         }
     }
     
-    static Completable getCompletable(Document doc, int offset) {
+    static CodeCompletionHandler getCompletable(Document doc, int offset) {
         BaseDocument baseDoc = (BaseDocument)doc;
         List<Language> list = LanguageRegistry.getInstance().getEmbeddedLanguages(baseDoc, offset);
         for (Language l : list) {
@@ -130,20 +125,18 @@ public class GsfCompletionProvider implements CompletionProvider {
 
         return null;
     }
-    private static boolean isInCompletion(JTextComponent component) {
-        Object o = component.getClientProperty("completion-active"); // NOI18N
-        return o == Boolean.TRUE;
-    }
     
-    public static int autoQueryTypes(JTextComponent component, String typedText) {
+    public int getAutoQueryTypes(JTextComponent component, String typedText) {
+        if (!autoPopup) {
+            return 0;
+        }
         if (typedText.length() > 0) {
-            Completable provider = getCompletable(component.getDocument(), component.getCaretPosition());
+            CodeCompletionHandler provider = getCompletable(component.getDocument(), component.getCaretPosition());
             if (provider != null) {
                 QueryType autoQuery = provider.getAutoQuery(component, typedText);
                 switch (autoQuery) {
                 case NONE: return 0;
                 case STOP: {
-                    isAutoQuery = false;
                     Completion.get().hideAll();
                     return 0;
                 }
@@ -158,17 +151,6 @@ public class GsfCompletionProvider implements CompletionProvider {
         return 0;
     }
 
-    public int getAutoQueryTypes(JTextComponent component, String typedText) {
-        boolean isCompleting = isInCompletion(component);
-        int type = autoQueryTypes(component, typedText);
-        if (!isCompleting) {
-            isAutoQuery = (type != 0);
-            expectingCreateTask = (type != 0); // I get createTask even during editing (or just when matches==0?)
-        }
-        
-        return type;
-    }
-    
     // From Utilities
     public static boolean isJavaContext(final JTextComponent component, final int offset) {
         Document doc = component.getDocument();
@@ -192,13 +174,15 @@ public class GsfCompletionProvider implements CompletionProvider {
                 return false;
             }
 
-            TokenId tokenId = ts.token().id();
-            
-            Set s = language.tokenCategories().contains(COMMENT_CATEGORY_NAME) 
-                    ? language.tokenCategoryMembers(COMMENT_CATEGORY_NAME) 
-                    : null;
-            
-            return s == null || !s.contains(tokenId); //NOI18N
+// I used to block completion in comments... but why should I do that?            
+//            TokenId tokenId = ts.token().id();
+//            
+//            Set s = language.tokenCategories().contains(COMMENT_CATEGORY_NAME) 
+//                    ? language.tokenCategoryMembers(COMMENT_CATEGORY_NAME) 
+//                    : null;
+//            
+//            return s == null || !s.contains(tokenId); //NOI18N
+            return true;
         } finally {
             if (doc instanceof AbstractDocument) {
                 ((AbstractDocument) doc).readUnlock();
@@ -216,10 +200,6 @@ public class GsfCompletionProvider implements CompletionProvider {
     }
 
     public CompletionTask createTask(int type, JTextComponent component) {
-        if (!expectingCreateTask) {
-            isAutoQuery = false;
-        }
-        
         if (((type & COMPLETION_QUERY_TYPE) != 0) || (type == TOOLTIP_QUERY_TYPE) ||
                 (type == DOCUMENTATION_QUERY_TYPE)) {
             return new AsyncCompletionTask(new JavaCompletionQuery(type,
@@ -247,7 +227,9 @@ public class GsfCompletionProvider implements CompletionProvider {
         private int caretOffset;
         private String filterPrefix;
         private ElementHandle element;
-        private Source source;
+        private boolean isTruncated;
+        private boolean isFilterable;
+        //private Source source;
         /** The compilation info that the Element was generated for */
 
         private JavaCompletionQuery(int queryType, int caretOffset) {
@@ -284,6 +266,8 @@ public class GsfCompletionProvider implements CompletionProvider {
                 this.caretOffset = caretOffset;
                 if (queryType == TOOLTIP_QUERY_TYPE || queryType == DOCUMENTATION_QUERY_TYPE || isJavaContext(component, caretOffset)) {
                     results = null;
+                    isTruncated = false;
+                    isFilterable = true;
                     documentation = null;
                     toolTip = null;
                     anchorOffset = -1;
@@ -334,6 +318,10 @@ public class GsfCompletionProvider implements CompletionProvider {
             int newOffset = component.getSelectionStart();
 
             if ((queryType & COMPLETION_QUERY_TYPE) != 0) {
+                if (isTruncated || !isFilterable) {
+                    return false;
+                }
+                
                 if (newOffset >= caretOffset) {
                     if (anchorOffset > -1) {
                         try {
@@ -411,7 +399,7 @@ public class GsfCompletionProvider implements CompletionProvider {
         private void resolveToolTip(final CompilationController controller) throws IOException {
             CompletionProposal proposal = GsfCompletionItem.tipProposal;
             Env env = getCompletionEnvironment(controller, false);
-            Completable completer = env.getCompletable();
+            CodeCompletionHandler completer = env.getCompletable();
 
             if (completer != null) {
                 int offset = env.getOffset();
@@ -461,6 +449,52 @@ public class GsfCompletionProvider implements CompletionProvider {
                 }
             }
         }        
+        
+        private static class CodeCompletionContextImpl extends CodeCompletionContext {
+            private final int caretOffset;
+            private final CompilationInfo info;
+            private final String prefix;
+            private final NameKind kind;
+            private final QueryType queryType;
+
+            public CodeCompletionContextImpl(int caretOffset, CompilationInfo info, String prefix, NameKind kind, QueryType queryType) {
+                this.caretOffset = caretOffset;
+                this.info = info;
+                this.prefix = prefix;
+                this.kind = kind;
+                this.queryType = queryType;
+            }
+
+            @Override
+            public int getCaretOffset() {
+                return caretOffset;
+            }
+
+            @Override
+            public org.netbeans.modules.gsf.api.CompilationInfo getInfo() {
+                return info;
+            }
+
+            @Override
+            public String getPrefix() {
+                return prefix;
+            }
+
+            @Override
+            public NameKind getNameKind() {
+                return kind;
+            }
+
+            @Override
+            public QueryType getQueryType() {
+                return queryType;
+            }
+
+            @Override
+            public boolean isCaseSensitive() {
+                return GsfCompletionProvider.isCaseSensitive();
+            }
+        }
 
         private void resolveDocumentation(CompilationController controller)
             throws IOException {
@@ -473,20 +507,22 @@ public class GsfCompletionProvider implements CompletionProvider {
                 int offset = env.getOffset();
                 String prefix = env.getPrefix();
                 results = new ArrayList<CompletionItem>();
+                isTruncated = false;
+                isFilterable = true;
                 anchorOffset = env.getOffset() - ((prefix != null) ? prefix.length() : 0);
 
-                Completable completer = env.getCompletable();
+                CodeCompletionHandler completer = env.getCompletable();
 
                 if (completer != null) {
-                    List<CompletionProposal> proposals =
-                        completer.complete(controller, offset, prefix, NameKind.EXACT_NAME, QueryType.DOCUMENTATION,
-                            isCaseSensitive(), new CompletionFormatter());
+                    CodeCompletionContext context = new CodeCompletionContextImpl(offset, controller, prefix, NameKind.EXACT_NAME, QueryType.DOCUMENTATION);
+                    CodeCompletionResult result = completer.complete(context);
+                    assert result != null : completer.getClass().getName() + " should return CodeCompletionResult.NONE rather than null";
 
-                    if (proposals != null) {
-                        for (CompletionProposal proposal : proposals) {
-                            ElementHandle element = proposal.getElement();
-                            if (element != null) {
-                                documentation = GsfCompletionDoc.create(controller, element);
+                    if (result != CodeCompletionResult.NONE) {
+                        for (CompletionProposal proposal : result.getItems()) {
+                            ElementHandle el = proposal.getElement();
+                            if (el != null) {
+                                documentation = GsfCompletionDoc.create(controller, el);
                                 // TODO - find some way to show the multiple overloaded methods?
                                 if (documentation.getText() != null && documentation.getText().length() > 0) {
                                     // Make sure we at least pick an alternative that has documentation
@@ -505,30 +541,58 @@ public class GsfCompletionProvider implements CompletionProvider {
             int offset = env.getOffset();
             String prefix = env.getPrefix();
             results = new ArrayList<CompletionItem>();
+            isTruncated = false;
+            isFilterable = true;
             anchorOffset = env.getOffset() - ((prefix != null) ? prefix.length() : 0);
 
-            Completable completer = env.getCompletable();
+            CodeCompletionHandler completer = env.getCompletable();
 
             if (completer != null) {
-                List<CompletionProposal> proposals =
-                    completer.complete(controller, offset, prefix, 
-                    isCaseSensitive() ? NameKind.PREFIX : NameKind.CASE_INSENSITIVE_PREFIX, 
-                    QueryType.COMPLETION, isCaseSensitive(), new CompletionFormatter());
+                addCodeCompletionItems(controller, completer, offset, prefix);
+                
+                if (isTruncated) {
+                    // Add truncation item
+                    GsfCompletionItem item = GsfCompletionItem.createTruncationItem();
+                    results.add(item);
+                }
+            }
+        }
+        
+        private void addCodeCompletionItems(CompilationController controller, CodeCompletionHandler completer, int offset, String prefix) {
+            CodeCompletionContext context = new CodeCompletionContextImpl(offset, controller, prefix, 
+                    isCaseSensitive() ? NameKind.PREFIX : NameKind.CASE_INSENSITIVE_PREFIX,
+                    QueryType.COMPLETION);
+            CodeCompletionResult result = completer.complete(context);
+            assert result != null : completer.getClass().getName() + " should return CodeCompletionResult.NONE rather than null";
 
-                if (proposals != null) {
-                    for (CompletionProposal proposal : proposals) {
-                        GsfCompletionItem item = GsfCompletionItem.createItem(proposal, controller);
+            if (result != CodeCompletionResult.NONE) {
+                if (result.isTruncated()) {
+                    isTruncated = true;
+                }
+                if (!result.isFilterable()) {
+                    isFilterable = false;
+                }
 
-                        if (item != null) {
-                            results.add(item);
-                        }
+                for (CompletionProposal proposal : result.getItems()) {
+                    GsfCompletionItem item = GsfCompletionItem.createItem(proposal, result, controller);
+
+                    if (item != null) {
+                        results.add(item);
                     }
                 }
 
-                // If we automatically queried, and there were no hits, take it down
-                if (isAutoQuery && (proposals == null || proposals.size() == 0)) {
-                    Completion.get().hideCompletion();
-                    expectingCreateTask = false;
+                // Go into embedded results. NOT allowed to recurse!!
+                Set<String> embeddedTypes = result.embeddedTypes();
+                if (embeddedTypes != null) {
+                    for (String mimeType : embeddedTypes) {
+                        Language language = LanguageRegistry.getInstance().getLanguageByMimeType(mimeType);
+                        if (language != null) {
+                            CodeCompletionHandler handler = language.getCompletionProvider();
+                            if (handler != null) {
+                                addCodeCompletionItems(controller, handler, offset, prefix);
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -590,7 +654,7 @@ public class GsfCompletionProvider implements CompletionProvider {
             // Look at the parse tree, and find the corresponding end node
             // offset...
             
-            Completable completer = getCompletable(controller, offset);
+            CodeCompletionHandler completer = getCompletable(controller, offset);
             try {
                 // TODO: use the completion helper to get the contxt
                 if (completer != null) {
@@ -598,7 +662,7 @@ public class GsfCompletionProvider implements CompletionProvider {
                 }
                 if (prefix == null) {
                     int[] blk =
-                        org.netbeans.editor.Utilities.getIdentifierBlock((BaseDocument)controller.getDocument(),
+                        org.netbeans.editor.Utilities.getIdentifierBlock((BaseDocument)doc,
                             offset);
 
                     if (blk != null) {
@@ -606,16 +670,14 @@ public class GsfCompletionProvider implements CompletionProvider {
 
                         if (start < offset ) {
                             if (upToOffset) {
-                                prefix = controller.getDocument().getText(start, offset - start);
+                                prefix = doc.getText(start, offset - start);
                             } else {
-                                prefix = controller.getDocument().getText(start, blk[1]-start);
+                                prefix = doc.getText(start, blk[1]-start);
                             }
                         }
                     }
                 }
             } catch (BadLocationException ex) {
-                ErrorManager.getDefault().notify(ex);
-            } catch (IOException ex) {
                 ErrorManager.getDefault().notify(ex);
             }
             
@@ -628,10 +690,10 @@ public class GsfCompletionProvider implements CompletionProvider {
             private int offset;
             private String prefix;
             private CompilationController controller;
-            private Completable completable;
+            private CodeCompletionHandler completable;
             private boolean autoCompleting;
 
-            private Env(int offset, String prefix, CompilationController controller, Completable completable) {
+            private Env(int offset, String prefix, CompilationController controller, CodeCompletionHandler completable) {
                 this.offset = offset;
                 this.prefix = prefix;
                 this.controller = controller;
@@ -658,132 +720,64 @@ public class GsfCompletionProvider implements CompletionProvider {
                 return controller;
             }
             
-            public Completable getCompletable() {
+            public CodeCompletionHandler getCompletable() {
                 return completable;
             }
         }
     }
     
-    /** Format parameters in orange etc. */
-    private static class CompletionFormatter extends GsfHtmlFormatter {
-        private static final String METHOD_COLOR = "<font color=#000000>"; //NOI18N
-        private static final String PARAMETER_NAME_COLOR = "<font color=#a06001>"; //NOI18N
-        private static final String END_COLOR = "</font>"; // NOI18N
-        private static final String CLASS_COLOR = "<font color=#560000>"; //NOI18N
-        private static final String PKG_COLOR = "<font color=#808080>"; //NOI18N
-        private static final String KEYWORD_COLOR = "<font color=#000099>"; //NOI18N
-        private static final String FIELD_COLOR = "<font color=#008618>"; //NOI18N
-        private static final String VARIABLE_COLOR = "<font color=#00007c>"; //NOI18N
-        private static final String CONSTRUCTOR_COLOR = "<font color=#b28b00>"; //NOI18N
-        private static final String INTERFACE_COLOR = "<font color=#404040>"; //NOI18N
-        private static final String PARAMETERS_COLOR = "<font color=#808080>"; //NOI18N
-        private static final String ACTIVE_PARAMETER_COLOR = "<font color=#000000>"; //NOI18N
-
-        @Override
-        public void parameters(boolean start) {
-            assert start != isParameter;
-            isParameter = start;
-
-            if (isParameter) {
-                sb.append(PARAMETER_NAME_COLOR);
-            } else {
-                sb.append(END_COLOR);
-            }
-        }
-        
-        @Override
-        public void active(boolean start) {
-            if (start) {
-                sb.append(ACTIVE_PARAMETER_COLOR);
-                sb.append("<b>");
-            } else {
-                sb.append("</b>");
-                sb.append(END_COLOR);
-            }
-        }
-        
-        @Override
-        public void name(ElementKind kind, boolean start) {
-            assert start != isName;
-            isName = start;
-
-            if (isName) {
-                switch (kind) {
-                case CONSTRUCTOR:
-                    sb.append(CONSTRUCTOR_COLOR);
-                    break;
-                case CALL:
-                    sb.append(PARAMETERS_COLOR);
-                    break;
-                case DB:
-                case METHOD:
-                    sb.append(METHOD_COLOR);
-                     break;
-                case CLASS:
-                    sb.append(CLASS_COLOR);
-                    break;
-                case FIELD:
-                    sb.append(FIELD_COLOR);
-                    break;
-                case MODULE:
-                    sb.append(PKG_COLOR);
-                    break;
-                case KEYWORD:
-                    sb.append(KEYWORD_COLOR);
-                    sb.append("<b>");
-                    break;
-                case VARIABLE:
-                    sb.append(VARIABLE_COLOR);
-                    sb.append("<b>");
-                    break;
-                default:
-                    sb.append("<font>");
-                }
-            } else {
-                switch (kind) {
-                case KEYWORD:
-                case VARIABLE:
-                    sb.append("</b>");
-                    break;
-                }
-                sb.append(END_COLOR);
-            }
-        }
-        
-    }
-    
     // From Utilities
     private static boolean caseSensitive = true;
+    private static boolean autoPopup = true;
     private static boolean inited;
 
-    public static boolean isCaseSensitive() {
+    private static boolean isCaseSensitive() {
         lazyInit();
         return caseSensitive;
     }
 
-    private static class SettingsListener implements SettingsChangeListener {
+    private static class SettingsListener implements PreferenceChangeListener {
 
-        public void settingsChange(SettingsChangeEvent evt) {
-            setCaseSensitive(SettingsUtil.getBoolean(GsfEditorKitFactory.GsfEditorKit.class,
-                    ExtSettingsNames.COMPLETION_CASE_SENSITIVE,
-                    ExtSettingsDefaults.defaultCompletionCaseSensitive));
+//        public void settingsChange(SettingsChangeEvent evt) {
+//            setCaseSensitive(SettingsUtil.getBoolean(GsfEditorKitFactory.GsfEditorKit.class,
+//                    ExtSettingsNames.COMPLETION_CASE_SENSITIVE,
+//                    ExtSettingsDefaults.defaultCompletionCaseSensitive));
+//        }
+
+        public void preferenceChange(PreferenceChangeEvent evt) {
+            if (evt.getKey() == null || SimpleValueNames.COMPLETION_CASE_SENSITIVE.equals(evt.getKey())) {
+                setCaseSensitive(Boolean.valueOf(evt.getNewValue()));
+            } else if (SimpleValueNames.COMPLETION_AUTO_POPUP.equals(evt.getKey())) {
+                setAutoPopup(Boolean.valueOf(evt.getNewValue()));
+            }
         }
     }
 
-    private static SettingsChangeListener settingsListener = new SettingsListener();
+    private static PreferenceChangeListener settingsListener = new SettingsListener();
 
-    public static void setCaseSensitive(boolean b) {
+    private static void setCaseSensitive(boolean b) {
         lazyInit();
         caseSensitive = b;
+    }
+
+    private static void setAutoPopup(boolean b) {
+        lazyInit();
+        autoPopup = b;
     }
 
     private static void lazyInit() {
         if (!inited) {
             inited = true;
-            Settings.addSettingsChangeListener(settingsListener);
-            setCaseSensitive(SettingsUtil.getBoolean(GsfEditorKitFactory.GsfEditorKit.class,
-                    ExtSettingsNames.COMPLETION_CASE_SENSITIVE,
-                    ExtSettingsDefaults.defaultCompletionCaseSensitive));
+            
+            // correctly we should use a proper mime type for the document where the completion runs,
+            // but at the moment this is enough, because completion settings are mainted globaly for all mime types
+            // (ie. their the same for all mime types). Also, if using a specific mime type
+            // this code should hold the prefs instance somewhere, but not in a static field!
+            Preferences prefs = MimeLookup.getLookup(MimePath.EMPTY).lookup(Preferences.class);
+            prefs.addPreferenceChangeListener(WeakListeners.create(PreferenceChangeListener.class, settingsListener, prefs));
+            
+            setCaseSensitive(prefs.getBoolean(SimpleValueNames.COMPLETION_CASE_SENSITIVE, false));
+            setAutoPopup(prefs.getBoolean(SimpleValueNames.COMPLETION_AUTO_POPUP, false));
         }
     }
 }

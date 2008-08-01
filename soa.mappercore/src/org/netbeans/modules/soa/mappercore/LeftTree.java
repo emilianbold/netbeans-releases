@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.soa.mappercore;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -36,8 +37,10 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
@@ -73,16 +76,15 @@ public class LeftTree extends JTree implements
     private LeftTreeEventHandler eventHandler;
     public JComponent scrollPaneWrapper;
     public JScrollPane scrollPane;
-    private boolean printMode = false;
-
+    
     /** Creates a new instance of LeftTree */
     public LeftTree(Mapper mapper) {
         super((TreeModel) null);
         this.mapper = mapper;
 
         // vlv: print
-        putClientProperty(java.awt.print.Printable.class, ""); // NOI18N
-        putClientProperty(java.lang.Integer.class, new Integer(0));
+        putClientProperty("print.printable", Boolean.TRUE); // NOI18N
+        putClientProperty("print.order", new Integer(0)); // NOI18N
 
         scrollPane = new JScrollPane(this,
                 JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
@@ -148,6 +150,8 @@ public class LeftTree extends JTree implements
         iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_CONTEXT_MENU, 0), "show-popupMenu");
         aMap.put("show-popupMenu", new ShowPopupMenuAction());
         
+        ViewTooltips.register(this);
+        
         getAccessibleContext().setAccessibleName(NbBundle
                 .getMessage(LeftTree.class, "ACSN_LeftTree")); // NOI18N
         getAccessibleContext().setAccessibleDescription(NbBundle
@@ -171,7 +175,7 @@ public class LeftTree extends JTree implements
     
     @Override
     public String getToolTipText(MouseEvent event) {
-        MapperModel model = getMapperModel();
+        MapperModel model = getMapper().getModel();
         MapperContext context = getMapper().getContext();
         
         if (model == null || context == null) {
@@ -210,7 +214,7 @@ public class LeftTree extends JTree implements
  
     public int getCenterY(TreePath treePath) {
         Rectangle bounds = getRowBounds(getRowForPath(treePath));
-
+        
         while (bounds == null) {
             treePath = treePath.getParentPath();
             bounds = getRowBounds(getRowForPath(treePath));
@@ -236,7 +240,7 @@ public class LeftTree extends JTree implements
     }
 
     MapperModel getMapperModel() {
-        return mapper.getModel();
+        return mapper.getFilteredModel();
     }
 
     @Override
@@ -247,47 +251,96 @@ public class LeftTree extends JTree implements
     }
 
     @Override
+    protected void printComponent(Graphics g) {
+        mapper.setPrintMode(true);
+        super.printComponent(g);
+        mapper.setPrintMode(false);
+    }
+
+
+
+    @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
 
-        Set<TreePath> edgeTreePathes = getConnectedTreePathes();
+        Map<TreePath, Set<Link>> edgeTreePathes = getConnectedTreePathes();
 
         if (!edgeTreePathes.isEmpty()) {
             Graphics2D g2 = (Graphics2D) g.create();
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
                     RenderingHints.VALUE_ANTIALIAS_ON);
-            g2.setPaint(MapperStyle.LINK_COLOR_SELECTED_NODE);
-            
+                       
             Object[][] edgePathes = new Object[edgeTreePathes.size()][];
 
             int x2 = getWidth() - 1;
 
             int edgePathIndex = 0;
 
-            for (TreePath edgeTreePath : edgeTreePathes) {
+            for (TreePath edgeTreePath : edgeTreePathes.keySet()) {
                 edgePathes[edgePathIndex++] = edgeTreePath.getPath();
             }
-
+            
+            SelectionModel selectionModel = getMapper().getSelectionModel();
+            TreePath rightTreePath = selectionModel.getSelectedPath();
+            
             int rowCount = getRowCount();
 
             for (int row = 0; row < rowCount; row++) {
-                int connectedEdges = connectedEdges(row, getPathForRow(row),
+                Set<Link> connectedEdges = connectedEdges(row, getPathForRow(row),
                         edgeTreePathes, edgePathes);
 
-                if (connectedEdges != 0) {
+                if (connectedEdges != null && connectedEdges.size() > 0) {
                     Rectangle rowBounds = getRowBounds(row);
 
                     int x1 = rowBounds.x + rowBounds.width;
                     int y = rowBounds.y + rowBounds.height / 2;
+                    
+                    Set<Link> linksForTreePath = edgeTreePathes.get(getPathForRow(row));
+                    Color linkColor = MapperStyle.LINK_COLOR_UNSELECTED_NODE;
+                    boolean hasSelectedLink = false;
 
-                    if (connectedEdges >= 2) {
-                        Stroke oldStroke = g2.getStroke();
-                        g2.setStroke(Mapper.DASHED_STROKE);
+                    if (!mapper.getPrintMode()) {
+                        for (Link link : connectedEdges) {
+                            if (selectionModel.isSelected(rightTreePath, link) &&
+                                    mapper.getNode(rightTreePath, true).isVisibleGraph()) {
+                                linkColor = MapperStyle.SELECTION_COLOR;
+                                hasSelectedLink = true;
+                                break;
+                            }
+
+                            if (linkColor != MapperStyle.LINK_COLOR_SELECTED_NODE) {
+                                if (selectionModel.getSelectedGraph() == link.getGraph()
+                                        || parentPathIsSelected(mapper.
+                                        getRightTreePathForLink(link).getParentPath()))
+                                {
+                                    linkColor = MapperStyle.LINK_COLOR_SELECTED_NODE;
+
+                                    linkColor = MapperStyle.LINK_COLOR_SELECTED_NODE;
+                                }
+                            }
+
+                        }
+                    }
+                    
+                    g2.setPaint(linkColor);
+                    Stroke oldStroke = g2.getStroke();
+                    if (linksForTreePath == null ||
+                            connectedEdges.size() > linksForTreePath.size()) {
+
+                        if (hasSelectedLink) {
+                            g2.setStroke(Mapper.DASHED_SELECTED_STROKE);
+                        } else {
+                            g2.setStroke(Mapper.DASHED_STROKE);
+                        }
                         g2.drawLine(x1, y, x2, y);
-                        g2.setStroke(oldStroke);
+
                     } else {
+                        if (hasSelectedLink) {
+                            g2.setStroke(MapperStyle.SELECTION_STROKE);
+                        }
                         g2.drawLine(x1, y, x2, y);
                     }
+                    g2.setStroke(oldStroke);
                 }
             }
 
@@ -317,38 +370,56 @@ public class LeftTree extends JTree implements
 
     @Override
     public int getY() {
-        if (printMode) {
+        if (getMapper().getPrintMode()) {
             return 0;
         }
         return super.getY();
     }
     
-    public void setPrintMode(boolean printMode) {
-        this.printMode = printMode;
+    private Set<Link> connectedEdges(int row, TreePath treePath,
+            Map<TreePath, Set<Link>> edgeTreePathes, Object[][] edgePathes) {
+        if (getModel().isLeaf(treePath.getLastPathComponent()) || isExpanded(row)) {
+            return edgeTreePathes.get(treePath);
+        }
+
+        Set<Link> result = new HashSet<Link>();
+        if (edgeTreePathes.get(treePath) != null) {
+            result.addAll(edgeTreePathes.get(treePath));
+        }
+        
+//        int treePathLength = treePath.getPathCount();
+
+//        for (int i = edgePathes.length - 1; i >= 0; i--) {
+//            if (pathStartsWith(edgePathes[i], treePath, treePathLength)) {
+//                result |= (edgePathes[i].length == treePathLength)
+//                        ? EDGE_CONNECTED
+//                        : EDGE_CONNECTED_TO_CHILD;
+//               
+//            }
+
+//            if (result == 3) {
+//                return 3;
+//            }
+//        }
+        
+        for (TreePath childTreePath : edgeTreePathes.keySet()) {
+            if (treePath.isDescendant(childTreePath)) {
+                result.addAll(edgeTreePathes.get(childTreePath));
+            }
+        }
+        
+        return result;
     }
 
-    private int connectedEdges(int row, TreePath treePath,
-            Set<TreePath> edgeTreePathes, Object[][] edgePathes) {
-        if (getModel().isLeaf(treePath.getLastPathComponent()) || isExpanded(row)) {
-            return (edgeTreePathes.contains(treePath)) ? EDGE_CONNECTED : 0;
-        }
-
-        int result = 0;
-        int treePathLength = treePath.getPathCount();
-
-        for (int i = edgePathes.length - 1; i >= 0; i--) {
-            if (pathStartsWith(edgePathes[i], treePath, treePathLength)) {
-                result |= (edgePathes[i].length == treePathLength)
-                        ? EDGE_CONNECTED
-                        : EDGE_CONNECTED_TO_CHILD;
-            }
-
-            if (result == 3) {
-                return 3;
-            }
-        }
-
-        return result;
+    private boolean parentPathIsSelected(TreePath rightTreePath) {
+        if (rightTreePath.getParentPath() == null) return false;
+        
+        MapperNode node = mapper.getNode(rightTreePath, true);
+        
+        if (node.isExpanded()) return false;
+        if (node.isSelected()) return true;
+        
+        return parentPathIsSelected(rightTreePath.getParentPath());
     }
 
     private boolean pathStartsWith(Object[] path, TreePath treePath,
@@ -370,11 +441,11 @@ public class LeftTree extends JTree implements
         return true;
     }
 
-    public  Set<TreePath> getConnectedTreePathes() {
+    public Map<TreePath, Set<Link>> getConnectedTreePathes() {
         MapperNode root = getRoot();
         MapperModel model = getMapperModel();
 
-        Set<TreePath> treePathes = new HashSet<TreePath>();
+        Map<TreePath, Set<Link>> treePathes = new HashMap<TreePath, Set<Link>>();
 
         if (root != null && model != null) {
             Set<Graph> connectedGraphs = getRoot().getChildGraphs();
@@ -393,7 +464,14 @@ public class LeftTree extends JTree implements
                     for (int j = edges.size() - 1; j >= 0; j--) {
                         Link edge = edges.get(j);
                         TreePath treePath = ((TreeSourcePin) edge.getSource()).getTreePath();
-                        treePathes.add(treePath);
+                        Set<Link> links = treePathes.get(treePath);
+                        if (links != null) {
+                            treePathes.get(treePath).add(edge);
+                        } else {
+                            links = new HashSet<Link>();
+                            links.add(edge);
+                            treePathes.put(treePath, links);
+                        }
                     }
 
                     edges.clear();
@@ -492,6 +570,10 @@ public class LeftTree extends JTree implements
         return getParentsRowForPath(treePath.getParentPath());
     }
 
+    public TreePath getParentVisiblePathForPath(TreePath treePath) {
+        return getPathForRow(getParentsRowForPath(treePath));
+    }
+
     public Insets getAutoscrollInsets() {
         Rectangle rect = scrollPane.getViewport().getViewRect();
         return new Insets(rect.y + 16, rect.x + 16,
@@ -558,8 +640,7 @@ public class LeftTree extends JTree implements
             if (lastComp == null) { return; }
             
             JPopupMenu popup = tree.mapper.getContext().
-                    getLeftPopupMenu(tree.mapper.getModel(),
-                    lastComp);
+                    getLeftPopupMenu(tree.mapper.getModel(), lastComp);
                    
             if (popup != null) {
                 popup.show(tree, rect.x, rect.y);

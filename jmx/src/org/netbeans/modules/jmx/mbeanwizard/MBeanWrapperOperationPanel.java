@@ -49,7 +49,7 @@ import org.netbeans.modules.jmx.mbeanwizard.table.WrapperOperationTable;
 import org.netbeans.modules.jmx.mbeanwizard.tablemodel.MBeanWrapperOperationTableModel;
 import org.netbeans.modules.jmx.MBeanDO;
 import org.netbeans.modules.jmx.MBeanOperation;
-import org.netbeans.modules.jmx.WizardConstants;
+import org.netbeans.modules.jmx.common.WizardConstants;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -255,7 +255,7 @@ public class MBeanWrapperOperationPanel extends MBeanOperationPanel
          */
         private void setErrorMsg(String message) {
             if (wiz != null) {
-                wiz.putProperty(WizardConstants.WIZARD_ERROR_MESSAGE,
+                wiz.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
                         message);
             }
         }
@@ -364,7 +364,7 @@ public class MBeanWrapperOperationPanel extends MBeanOperationPanel
                 getPanel().orderNumber = oNumber;
             } 
             
-            wiz.putProperty(WizardConstants.WIZARD_ERROR_MESSAGE, "");// NOI18N
+            wiz.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, "");// NOI18N
         }
         
         /**

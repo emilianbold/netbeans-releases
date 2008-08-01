@@ -11,7 +11,6 @@ import antlr.RecognitionException;
 import antlr.NoViableAltException;
 import antlr.MismatchedTokenException;
 import antlr.SemanticException;
-import antlr.ParserSharedInputState;
 import antlr.collections.impl.BitSet;
 
 /** Simple lexer/parser for reading token definition files
@@ -99,11 +98,6 @@ protected ANTLRTokdefParser(TokenStream lexer, int k) {
 
 public ANTLRTokdefParser(TokenStream lexer) {
   this(lexer,3);
-}
-
-public ANTLRTokdefParser(ParserSharedInputState state) {
-  super(state,3);
-  tokenNames = _tokenNames;
 }
 
 	public final void file(

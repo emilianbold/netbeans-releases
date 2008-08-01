@@ -74,19 +74,21 @@ import java.text.MessageFormat;
 import java.beans.PropertyChangeListener;
 import java.beans.VetoableChangeListener;
 import java.nio.charset.Charset;
+import java.util.logging.LogRecord;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.util.Lookup;
+import org.openide.util.Utilities;
 
 /**
  * Utilities class.
- * 
+ *
  * @author Maros Sandor
  */
 public final class Utils {
-    
+
     /**
      * Request processor for quick tasks.
      */
@@ -98,7 +100,17 @@ public final class Utils {
     private static final RequestProcessor vcsBlockingRequestProcessor = new RequestProcessor("Versioning long tasks", 1);
 
     private static /*final*/ File [] unversionedFolders;
-    
+
+    /**
+     * Metrics logger
+     */
+    private static Logger METRICS_LOG = Logger.getLogger("org.netbeans.ui.metrics.vcs");
+
+    /**
+     * Keeps track about already logged metrics events
+     */
+    private static Set<String> metrics = new HashSet<String>(3);
+
     static {
         try {
             String uf = VersioningSupport.getPreferences().get("unversionedFolders", null);
@@ -117,14 +129,14 @@ public final class Utils {
             Logger.getLogger(Utils.class.getName()).log(Level.WARNING, e.getMessage(), e);
         }
     }
-    
+
     private Utils() {
     }
 
     /**
      * Creates a task that will run in the Versioning RequestProcessor (with has throughput of 1). The runnable may take long
      * to execute (connet through network, etc).
-     * 
+     *
      * @param runnable Runnable to run
      * @return RequestProcessor.Task created task
      */
@@ -135,16 +147,16 @@ public final class Utils {
     /**
      * Runs the runnable in the Versioning RequestProcessor (with has throughput of 1). The runnable must not take long
      * to execute (connet through network, etc).
-     * 
+     *
      * @param runnable Runnable to run
      */
     public static void post(Runnable runnable) {
         vcsRequestProcessor.post(runnable);
     }
-    
+
     /**
      * Tests for ancestor/child file relationsip.
-     * 
+     *
      * @param ancestor supposed ancestor of the file
      * @param file a file
      * @return true if ancestor is an ancestor folder of file OR both parameters are equal, false otherwise
@@ -153,6 +165,24 @@ public final class Utils {
         if (VersioningSupport.isFlat(ancestor)) {
             return ancestor.equals(file) || ancestor.equals(file.getParentFile()) && !file.isDirectory();
         }
+        
+        String filePath = file.getAbsolutePath();
+        String ancestorPath = ancestor.getAbsolutePath();
+        if(Utilities.isWindows()) {
+            if(filePath.indexOf("~") < 0 && ancestorPath.indexOf("~") < 0) {
+                if(!filePath.toUpperCase().startsWith(ancestorPath.toUpperCase())) {
+                    return false;
+                }
+            }
+        } else {
+            if(!filePath.startsWith(ancestorPath)) {
+                return false;
+            }
+        }
+
+        // get sure as it still could be something like:
+        // ancestor: /home/dil
+        // file:     /home/dil1/dil2
         for (; file != null; file = file.getParentFile()) {
             if (file.equals(ancestor)) return true;
         }
@@ -161,7 +191,7 @@ public final class Utils {
 
     /**
      * Tests whether all files belong to the same data object.
-     * 
+     *
      * @param files array of Files
      * @return true if all files share common DataObject (even null), false otherwise
      */
@@ -171,7 +201,7 @@ public final class Utils {
         for (int i = 1; i < files.length; i++) {
             DataObject dao = findDataObject(files[i]);
             if (dao != common && (dao == null || !dao.equals(common))) return false;
-        }  
+        }
         return true;
     }
 
@@ -196,7 +226,7 @@ public final class Utils {
         }
         return filesToCheckout;
     }
-    
+
     private static DataObject findDataObject(File file) {
         FileObject fo = FileUtil.toFileObject(file);
         if (fo != null) {
@@ -208,7 +238,7 @@ public final class Utils {
         }
         return null;
     }
-    
+
     /**
      * Checks if the file is to be considered as textuall.
      *
@@ -217,25 +247,25 @@ public final class Utils {
      */
     public static boolean isFileContentText(File file) {
         FileObject fo = FileUtil.toFileObject(file);
-        if (fo == null) return false;        
-        if (fo.getMIMEType().startsWith("text")) { // NOI18N  
-            return true;            
-        }        
+        if (fo == null) return false;
+        if (fo.getMIMEType().startsWith("text")) { // NOI18N
+            return true;
+        }
         try {
-            DataObject dao = DataObject.find(fo); 
-            return dao.getLookup().lookupItem(new Lookup.Template<EditorCookie>(EditorCookie.class)) != null; 
+            DataObject dao = DataObject.find(fo);
+            return dao.getLookup().lookupItem(new Lookup.Template<EditorCookie>(EditorCookie.class)) != null;
         } catch (DataObjectNotFoundException e) {
             // not found, continue
         }
         return false;
-    }    
-    
+    }
+
     /**
      * Copies all content from the supplied reader to the supplies writer and closes both streams when finished.
-     * 
+     *
      * @param writer where to write
      * @param reader what to read
-     * @throws IOException if any I/O operation fails 
+     * @throws IOException if any I/O operation fails
      */
     public static void copyStreamsCloseAll(OutputStream writer, InputStream reader) throws IOException {
         byte [] buffer = new byte[4096];
@@ -249,10 +279,10 @@ public final class Utils {
 
     /**
      * Copies all content from the supplied reader to the supplies writer and closes both streams when finished.
-     * 
+     *
      * @param writer where to write
      * @param reader what to read
-     * @throws IOException if any I/O operation fails 
+     * @throws IOException if any I/O operation fails
      */
     public static void copyStreamsCloseAll(Writer writer, Reader reader) throws IOException {
         char [] buffer = new char[4096];
@@ -263,10 +293,10 @@ public final class Utils {
         writer.close();
         reader.close();
     }
-    
+
     /**
      * Helper method to get an array of Strings from preferences.
-     *  
+     *
      * @param prefs storage
      * @param key key of the String array
      * @return List<String> stored List of String or an empty List if the key was not found (order is preserved)
@@ -274,7 +304,7 @@ public final class Utils {
     public static List<String> getStringList(Preferences prefs, String key) {
         List<String> retval = new ArrayList<String>();
         try {
-            String[] keys = prefs.keys();            
+            String[] keys = prefs.keys();
             for (int i = 0; i < keys.length; i++) {
                 String k = keys[i];
                 if (k != null && k.startsWith(key)) {
@@ -298,14 +328,14 @@ public final class Utils {
 
     /**
      * Stores a List of Strings into Preferences node under the given key.
-     * 
+     *
      * @param prefs storage
      * @param key key of the String array
      * @param value List of Strings to write (order will be preserved)
      */
     public static void put(Preferences prefs, String key, List<String> value) {
         try {
-            String[] keys = prefs.keys();            
+            String[] keys = prefs.keys();
             for (int i = 0; i < keys.length; i++) {
                 String k = keys[i];
                 if (k != null && k.startsWith(key + ".")) {
@@ -318,64 +348,64 @@ public final class Utils {
             }
         } catch (BackingStoreException ex) {
             Logger.getLogger(Utils.class.getName()).log(Level.INFO, null, ex);
-        }        
+        }
     }
 
     /**
      * Convenience method for storing array of Strings with a maximum length with LRU policy. Supplied value is
      * stored at index 0 and all items beyond (maxLength - 1) index are discarded. <br>
      * If the value is already stored then it will be first removed from its old position.
-     * 
+     *
      * @param prefs storage
      * @param key key for the array
      * @param value String to store
      * @param maxLength maximum length of the stored array. won't be considered if &lt; 0
      */
     public static void insert(Preferences prefs, String key, String value, int maxLength) {
-        List<String> newValues = getStringList(prefs, key);        
+        List<String> newValues = getStringList(prefs, key);
         if(newValues.contains(value)) {
             newValues.remove(value);
-        }    
-        newValues.add(0, value);   
+        }
+        newValues.add(0, value);
         if (maxLength > -1 && newValues.size() > maxLength) {
             newValues.subList(maxLength, newValues.size()).clear();
         }
-        put(prefs, key, newValues);        
-    }
-    
-    /**
-     * Convenience method to remove a array of values from a in preferences stored array of Strings 
-     * 
-     * @param prefs storage
-     * @param key key for the array
-     * @param values Strings to remove     
-     */
-    public static void removeFromArray(Preferences prefs, String key, List<String> values) {
-        List<String> newValues = getStringList(prefs, key);
-        newValues.removeAll(values);                            
         put(prefs, key, newValues);
     }
 
     /**
-     * Convenience method to remove a value from a in preferences stored array of Strings 
-     * 
+     * Convenience method to remove a array of values from a in preferences stored array of Strings
+     *
      * @param prefs storage
      * @param key key for the array
-     * @param value String to remove     
+     * @param values Strings to remove
+     */
+    public static void removeFromArray(Preferences prefs, String key, List<String> values) {
+        List<String> newValues = getStringList(prefs, key);
+        newValues.removeAll(values);
+        put(prefs, key, newValues);
+    }
+
+    /**
+     * Convenience method to remove a value from a in preferences stored array of Strings
+     *
+     * @param prefs storage
+     * @param key key for the array
+     * @param value String to remove
      */
     public static void removeFromArray(Preferences prefs, String key, String value) {
         List<String> newValues = getStringList(prefs, key);
-        newValues.remove(value);                            
+        newValues.remove(value);
         put(prefs, key, newValues);
     }
-    
+
     /**
      * Splits files/folders into 2 groups: flat folders and other files
-     * 
+     *
      * @param files array of files to split
      * @return File[][] the first array File[0] contains flat folders (@see #flatten for their direct descendants),
      * File[1] contains all other files
-     */ 
+     */
     public static File[][] splitFlatOthers(File [] files) {
         Set<File> flat = new HashSet<File>(1);
         for (int i = 0; i < files.length; i++) {
@@ -412,12 +442,12 @@ public final class Utils {
 
     /**
      * Searches for common filesystem parent folder for given files.
-     * 
+     *
      * @param a first file
      * @param b second file
      * @return File common parent for both input files with the longest filesystem path or null of these files
      * have not a common parent
-     */ 
+     */
     public static File getCommonParent(File a, File b) {
         for (;;) {
             if (a.equals(b)) {
@@ -442,7 +472,7 @@ public final class Utils {
 
     /**
      * Copied from org.netbeans.api.xml.parsers.DocumentInputSource to save whole module dependency.
-     *  
+     *
      * @param doc a Document to read
      * @return Reader a reader that reads document's text
      */
@@ -463,8 +493,8 @@ public final class Utils {
     }
 
     /**
-     * For popups invoked by keyboard determines best location for it. 
-     * 
+     * For popups invoked by keyboard determines best location for it.
+     *
      * @param table source of popup event
      * @return Point best location for menu popup
      */
@@ -476,8 +506,8 @@ public final class Utils {
     }
 
     /**
-     * For popups invoked by keyboard determines best location for it. 
-     * 
+     * For popups invoked by keyboard determines best location for it.
+     *
      * @param list source of popup event
      * @return Point best location for menu popup
      */
@@ -488,10 +518,10 @@ public final class Utils {
         rect.x += 10; rect.y += rect.height;
         return rect.getLocation();
     }
-    
+
     /**
      * Creates a menu item from an action.
-     * 
+     *
      * @param action an action
      * @return JMenuItem
      */
@@ -519,10 +549,10 @@ public final class Utils {
 
     /**
      * Utility method to word-wrap a String.
-     * 
-     * @param s String to wrap 
+     *
+     * @param s String to wrap
      * @param maxLineLength maximum length of one line. If less than 1 no wrapping will occurr
-     * @return String wrapped string 
+     * @return String wrapped string
      */
     public static String wordWrap(String s, int maxLineLength) {
         int n = s.length() - 1;
@@ -551,11 +581,11 @@ public final class Utils {
 
     /**
      * Computes display name of an action based on its context.
-     *  
+     *
      * @param clazz caller class for bundle location
      * @param baseName base bundle name
      * @param ctx action's context
-     * @return String full name of the action, eg. Show "File.java" Annotations 
+     * @return String full name of the action, eg. Show "File.java" Annotations
      */
     public static String getActionName(Class clazz, String baseName, VCSContext ctx) {
         Set<File> nodes = ctx.getRootFiles();
@@ -574,7 +604,7 @@ public final class Utils {
                 break;
             }
         }
-        if (projectsOnly) objectCount = activatedNodes.length; 
+        if (projectsOnly) objectCount = activatedNodes.length;
 
         if (objectCount == 0) {
             return NbBundle.getBundle(clazz).getString(baseName);
@@ -614,12 +644,12 @@ public final class Utils {
 
     /**
      * Computes display name of a context.
-     *  
+     *
      * @param ctx a context
-     * @return String short display name of the context, eg. File.java, 3 Files, 2 Projects, etc. 
+     * @return String short display name of the context, eg. File.java, 3 Files, 2 Projects, etc.
      */
     public static String getContextDisplayName(VCSContext ctx) {
-        // TODO: reuse this code in getActionName() 
+        // TODO: reuse this code in getActionName()
         Set<File> nodes = ctx.getFiles();
         int objectCount = nodes.size();
         // if all nodes represent project node the use plain name
@@ -636,7 +666,7 @@ public final class Utils {
                 break;
             }
         }
-        if (projectsOnly) objectCount = activatedNodes.length; 
+        if (projectsOnly) objectCount = activatedNodes.length;
 
         if (objectCount == 0) {
             return null;
@@ -672,7 +702,7 @@ public final class Utils {
 
     /**
      * Open a read-only view of the file in editor area.
-     * 
+     *
      * @param fo a file to open
      * @param revision revision of the file
      */
@@ -685,13 +715,17 @@ public final class Utils {
     /**
      * Asks for permission to scan a given folder for versioning metadata. Misconfigured automount daemons may
      * try to look for a "CVS" server if asked for "/net/CVS/Entries" file for example causing hangs and full load.
-     * Versioning systems must NOT scan a folder if this method returns true and should consider it as unversioned. 
-     * 
+     * Versioning systems must NOT scan a folder if this method returns true and should consider it as unversioned.
+     *
      * @param folder a folder to query
      * @link http://www.netbeans.org/issues/show_bug.cgi?id=105161
      * @return true if scanning for versioning system metadata is forbidden in the given folder, false otherwise
      */
     public static boolean isScanForbidden(File folder) {
+        // forbid scanning for UNC paths \\ or \\computerName
+        if(folder.getPath().startsWith("\\\\")) {
+            return folder.getParent() == null || folder.getParent().equals("\\\\");
+        }
         for (File unversionedFolder : unversionedFolders) {
             if (isAncestorOrEqual(unversionedFolder, folder)) {
                 return true;
@@ -702,9 +736,9 @@ public final class Utils {
 
     /**
      * Opens a file in the editor area.
-     * 
+     *
      * @param file a File to open
-     */ 
+     */
     public static void openFile(File file) {
         FileObject fo = FileUtil.toFileObject(file);
         if (fo != null) {
@@ -719,47 +753,47 @@ public final class Utils {
             }
         }
     }
-    
+
     private static Map<File, Charset> fileToCharset;
-    
+
     /**
      * Retrieves the Charset for the referenceFile and associates it weakly with
-     * the given file. A following getAssociatedEncoding() call for 
-     * the file will then return the referenceFile-s Charset.      
-     * 
+     * the given file. A following getAssociatedEncoding() call for
+     * the file will then return the referenceFile-s Charset.
+     *
      * @param referenceFile the file which charset has to be used when encoding file
-     * @param file file to be encoded with the referenceFile-s charset 
-     * 
+     * @param file file to be encoded with the referenceFile-s charset
+     *
      */
     public static void associateEncoding(File referenceFile, File file) {
         FileObject fo = FileUtil.toFileObject(referenceFile);
         if(fo == null || fo.isFolder()) {
             return;
         }
-        Charset c = FileEncodingQuery.getEncoding(fo);        
+        Charset c = FileEncodingQuery.getEncoding(fo);
         if(c == null) {
             return;
         }
         if(fileToCharset == null) {
             fileToCharset = new WeakHashMap<File, Charset>();
-        }        
+        }
         synchronized(fileToCharset) {
             fileToCharset.put(file, c);
         }
-    }   
-    
+    }
+
     /**
      * Returns a charset for the given file if it was previously registered via associateEncoding()
-     * 
+     *
      * @param fo file for which the encoding has to be retrieved
      * @return the charset the given file has to be encoded with
-     */ 
+     */
     public static Charset getAssociatedEncoding(FileObject fo) {
         try {
             if(fileToCharset == null || fileToCharset.isEmpty() || fo == null || fo.isFolder()) {
                 return null;
-            }       
-            File file = FileUtil.toFile(fo);            
+            }
+            File file = FileUtil.toFile(fo);
             if(file == null) {
                 return null;
             }
@@ -769,9 +803,9 @@ public final class Utils {
         } catch (Throwable t) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, t);
             return  null;
-        }        
+        }
     }
-    
+
     public static Reader createReader(File file) throws FileNotFoundException {
         FileObject fo = FileUtil.toFileObject(file);
         if (fo == null) {
@@ -784,10 +818,10 @@ public final class Utils {
     public static Reader createReader(FileObject file) throws FileNotFoundException {
         return new InputStreamReader(file.getInputStream(), FileEncodingQuery.getEncoding(file));
     }
-    
+
     /**
      * Convenience method for awkward Logger invocation.
-     *  
+     *
      * @param caller caller object for logger name determination
      * @param e exception that defines the error
      */
@@ -797,7 +831,7 @@ public final class Utils {
 
     /**
      * Convenience method for awkward Logger invocation.
-     *  
+     *
      * @param caller caller object for logger name determination
      * @param e exception that defines the error
      */
@@ -807,7 +841,7 @@ public final class Utils {
 
     /**
      * Convenience method for awkward Logger invocation.
-     *  
+     *
      * @param caller caller object for logger name determination
      * @param e exception that defines the error
      */
@@ -817,7 +851,7 @@ public final class Utils {
 
     /**
      * Convenience method for awkward Logger invocation.
-     *  
+     *
      * @param caller caller object for logger name determination
      * @param e exception that defines the error
      */
@@ -825,8 +859,70 @@ public final class Utils {
         logWarn(caller.getClass(), e);
     }
 
+    /**
+     * Logs a vcs client usage.
+     *
+     * @param vcs - the particular vcs "SVN", "CVS", "CC", "HG", ...
+     * @param client - the particular vcs cient "CLI", "JAVAHL", "JAVALIB"
+     */
+    public static void logVCSClientEvent(String vcs, String client) {
+        String key = "USG_VCS_CLIENT"  + vcs;
+        if (checkMetricsKey(key)) return;
+        LogRecord rec = new LogRecord(Level.INFO, "USG_VCS_CLIENT");
+        rec.setParameters(new Object[] { vcs, client });
+        rec.setLoggerName(METRICS_LOG.getName());
+        METRICS_LOG.log(rec);
+    }
+
+    /**
+     * Logs a vcs client action usage.
+     *
+     * @param vcs - the particular vcs "SVN", "CVS", "CC", "HG", ...
+     */
+    public static void logVCSActionEvent(String vcs) {
+        String key = "USG_VCS_ACTION"  + vcs;
+        if (checkMetricsKey(key)) return;
+        LogRecord rec = new LogRecord(Level.INFO, "USG_VCS_ACTION");
+        rec.setParameters(new Object[] { vcs });
+        rec.setLoggerName(METRICS_LOG.getName());
+        METRICS_LOG.log(rec);
+    }
+
+    private static boolean checkMetricsKey(String key) {
+        synchronized (metrics) {
+            if (metrics.contains(key)) {
+                return true;
+            } else {
+                metrics.add(key);
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Sets or resets r/o flag.
+     *
+     * @param file a file to modify
+     * @param ro true to make the file r/o, false to make the file r/w
+     */
+    public static void setReadOnly(File file, boolean readOnly) {
+        // TODO: update for Java6
+        String [] args;
+        if (Utilities.isWindows()) {
+            args = new String [] {"attrib", readOnly ? "+r": "-r", file.getName()}; //NOI18N
+        } else {
+            args = new String [] {"chmod", readOnly ? "u-w": "u+w", file.getName()}; //NOI18N
+        }
+        try {
+            Process process = Runtime.getRuntime().exec(args, null, file.getParentFile());
+            process.waitFor();
+        } catch (Exception e) {
+            logWarn(Utils.class, e);
+        }
+    }
+
     private static class ViewEnv implements CloneableEditorSupport.Env {
-        
+
         private final FileObject    file;
 
         public ViewEnv(FileObject file) {
@@ -880,9 +976,9 @@ public final class Utils {
             return null;
         }
     }
-    
+
     private static class ViewCES extends CloneableEditorSupport {
-        
+
         private final String name;
         private final Charset charset;
 
@@ -915,5 +1011,5 @@ public final class Utils {
         protected String messageOpened() {
             return name;
         }
-    }    
+    }
 }

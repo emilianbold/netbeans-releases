@@ -56,7 +56,6 @@ made subject to such option by the copyright holder.
 	</taskdef>
   </target>
 
-
   <target name="privatedtds">
       <antcall target="ddgen">
           <param name="dtdfile" value="src/org/netbeans/modules/j2ee/deployment/plugins/api/netbeans-deployment.dtd"/>
@@ -91,7 +90,11 @@ made subject to such option by the copyright holder.
      </java>
   </target> 
 
-
+  <target name="javadocdtds">
+      <copy file="src/org/netbeans/modules/j2ee/deployment/plugins/api/netbeans-deployment.dtd"
+        tofile="${netbeans.javadoc.dir}/${code.name.base.dashes}/org/netbeans/modules/j2ee/deployment/plugins/spi/netbeans-deployment.dtd"/>
+  </target>
+  
   <target name="compile" depends="privatedtds, projectized-common.compile"/>
   
   <target name="clean" depends="clean-ddgen-src, projectized-common.clean"/>
@@ -100,5 +103,6 @@ made subject to such option by the copyright holder.
     <delete dir="src/org/netbeans/modules/j2ee/deployment/impl/gen"/>
   </target>
   
+  <target name="javadoc" depends="javadocdtds, projectized.javadoc"/>  
 </project>
 

@@ -51,6 +51,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.refactoring.api.SingleCopyRefactoring;
 import org.netbeans.modules.refactoring.spi.BackupFacility;
 import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
@@ -195,6 +196,13 @@ public class FormRefactoringUpdate extends SimpleRefactoringElementImplementatio
             saveFormForUndo();
             transactionDone = true;
             break;
+        case PACKAGE_RENAME: // renaming package of a component used in the form,
+                             // but not the package of the form itself
+            if (!changingFile.getParent().equals(refInfo.getPrimaryFile())) {
+                packageRename();
+                transactionDone = true;
+            }
+            break;
         }
             
     }
@@ -253,7 +261,12 @@ public class FormRefactoringUpdate extends SimpleRefactoringElementImplementatio
                 formMove();
             }
             break;
-        case PACKAGE_RENAME:
+        case CLASS_COPY: // copying the form itslef
+            if (refInfo.getPrimaryFile().equals(changingFile) && prepareForm(false)) {
+                formCopy();
+            }
+            break;
+        case PACKAGE_RENAME: // renaming package of the form
         case FOLDER_RENAME:
             packageRename();
             break;
@@ -299,7 +312,7 @@ public class FormRefactoringUpdate extends SimpleRefactoringElementImplementatio
         if (prepareForm(true)) {
             saveFormForUndo();
             saveResourcesForFormRenameUndo();
-            ResourceSupport.formRenamed(formEditor.getFormModel(), refInfo.getOldName());
+            ResourceSupport.formMoved(formEditor.getFormModel(), null, refInfo.getOldName(), false);
             updateForm(true);
         }
     }
@@ -335,8 +348,40 @@ public class FormRefactoringUpdate extends SimpleRefactoringElementImplementatio
             saveFormForUndo();
             FileObject oldFolder = changingFile.getParent();
             saveResourcesForFormMoveUndo(oldFolder);
-            ResourceSupport.formMoved(formEditor.getFormModel(), oldFolder);
+            String oldFormName = refInfo.getOldName(); // should be a short name
+            oldFormName = oldFormName.substring(oldFormName.lastIndexOf('.')+1);
+            ResourceSupport.formMoved(formEditor.getFormModel(), oldFolder, oldFormName, false);
             updateForm(true);
+        }
+    }
+
+    private void formCopy() {
+        if (refInfo.getRefactoring() instanceof SingleCopyRefactoring) {
+            SingleCopyRefactoring copyRef = (SingleCopyRefactoring)refInfo.getRefactoring();
+            String newName = copyRef.getNewName(); // short name without extension
+            Lookup target = copyRef.getTarget();
+            FileObject targetFolder = URLMapper.findFileObject((URL)target.lookup(URL.class));
+            FileObject oldFolder = changingFile.getParent();
+            changingFile = targetFolder.getFileObject(newName, "java"); // NOI18N
+            try {
+                DataObject dobj = DataObject.find(changingFile);
+                if (dobj instanceof FormDataObject) {
+                    formDataObject = (FormDataObject) dobj;
+                }
+            } catch(DataObjectNotFoundException ex) {
+                assert false;
+            }
+            formEditor = null;
+            if (prepareForm(true)) {
+                saveResourcesForFormRenameUndo(); // same set of files like if the new form was renamed
+                if (oldFolder == targetFolder) {
+                    oldFolder = null;
+                }
+                String oldFormName = refInfo.getOldName(); // need a short name
+                oldFormName = oldFormName.substring(oldFormName.lastIndexOf('.')+1);
+                ResourceSupport.formMoved(formEditor.getFormModel(), oldFolder, oldFormName, true);
+                updateForm(true);
+            }
         }
     }
 

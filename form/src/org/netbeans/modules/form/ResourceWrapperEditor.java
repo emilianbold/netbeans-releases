@@ -255,14 +255,18 @@ public class ResourceWrapperEditor implements ExPropertyEditor, FormAwareEditor,
             setValue(resValue);
         }
         else { // resource panel disabled
+            if (property != null) {
+                ResourceSupport.setExcludedProperty(property, true);
+            }
             propertyValue = delegateEditor.getValue();
             firePropertyChange();
         }
     }
 
     // called when OK button is pressed in the custom editor dialog
-    // TODO: this should only be done if this property editor is the selected one
     public void vetoableChange(PropertyChangeEvent ev) throws PropertyVetoException {
+        // should only be done if this property editor is the selected one
+        if (property.getCurrentEditor() != this) return;
         if (PropertyEnv.PROP_STATE.equals(ev.getPropertyName())) {
             boolean excludeRes = false;
             if (resourcePanel != null) {

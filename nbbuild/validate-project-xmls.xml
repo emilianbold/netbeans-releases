@@ -41,67 +41,34 @@ Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
 <project basedir="." default="validate" name="nbbuild/validate-project-xmls">
-    <target name="init">
-        <property name="nbroot" location=".."/>
-        <property name="validroot" location="${nbroot}"/>
-        <ant dir="${nbroot}/ant/project/eg" antfile="create-sample.xml" target="validate-compile"/>
-    </target>
-    <target name="find-xmls" depends="init">
-        <pathconvert property="xmls" pathsep=",">
-            <path>
-                <fileset dir="${validroot}">
-                    <include name="**/nbproject/project.xml"/>
-                    <include name="**/nbproject/private/private.xml"/>
-                    <exclude name="**/test/results/"/>
-                    <exclude name="**/test/work/"/>
-                    <exclude name="xtest/instance/results/"/>
-                    <exclude name="libs/www/template/"/>
-                </fileset>
-            </path>
-        </pathconvert>
-    </target>
-    <target name="find-schemas" depends="init">
-        <pathconvert property="schemas" pathsep=",">
-            <path>
-                <fileset dir="${nbroot}">
-                    <include name="ant/project/src/**/*.xsd"/>
-                    <include name="ant/freeform/src/**/*.xsd"/>
-                    <include name="apisupport/project/src/**/*.xsd"/>
-                    <include name="java/j2seproject/src/**/*.xsd"/>
-                    <include name="j2ee/earproject/src/**/*.xsd"/>
-                    <include name="j2ee/ejbjarproject/src/**/*.xsd"/>
-                    <include name="projects/*/src/**/*.xsd"/>
-                    <include name="web/project/src/**/*.xsd"/>
-                </fileset>
-            </path>
-        </pathconvert>
-    </target>
-    <target name="validate" depends="init,find-xmls,find-schemas" description="Ensure that all project.xml files are valid acc. to schema.">
-        <java classname="ValidateAllBySchema" failonerror="true" fork="true">
-            <classpath>
-                <pathelement location="${nbroot}/ant/project/eg"/>
-                <fileset dir="${nbroot}/libs/xerces/external">
-                    <include name="xerces*.jar"/>
-                </fileset>
-            </classpath>
-            <arg value="${xmls}"/>
-            <arg value="${schemas}"/>
-        </java>
-    </target>
-    <!-- XXX the following should work, without requiring ValidateAllBySchema.java, if the external-schemaLocation is completed but inexplicably does not:
-         /space/src/nb_all/ant/docs/nbproject/project.xml:14:55: cvc-elt.1: Cannot find the declaration of element 'project'.
-    <property name="nbroot" location=".."/>
     <target name="validate" description="Ensure that all project.xml files are valid acc. to schema.">
-        <xmlvalidate lenient="false" warn="true" failonerror="false">
-            <fileset dir="${nbroot}">
+        <property name="nbroot" location=".."/>
+        <ant target="bootstrap"/>
+        <taskdef name="vabs" classname="org.netbeans.nbbuild.ValidateAllBySchema">
+            <classpath>
+                <pathelement location="nbantext.jar"/>
+                <fileset dir="../libs.xerces/external" includes="xerces*.jar"/>
+            </classpath>
+        </taskdef>
+        <mkdir dir="build"/>
+        <vabs report="build/vabs.xml">
+            <documents dir="${nbroot}">
                 <include name="**/nbproject/project.xml"/>
                 <include name="**/nbproject/private/private.xml"/>
                 <exclude name="**/test/results/"/>
-            </fileset>
-            <attribute name="http://apache.org/xml/features/validation/schema" value="true"/>
-            <attribute name="http://xml.org/sax/features/namespaces" value="true"/>
-            <property name="http://apache.org/xml/properties/schema/external-schemaLocation" value="http://www.netbeans.org/ns/project/1 file:${nbroot}/ant/project/src/org/netbeans/modules/project/ant/project.xsd [etc.]"/>
-        </xmlvalidate>
+                <exclude name="**/test/work/"/>
+                <exclude name="xtest/instance/results/"/>
+            </documents>
+            <schemas dir="${nbroot}">
+                <include name="project.ant/src/**/*.xsd"/>
+                <include name="ant.freeform/src/**/*.xsd"/>
+                <include name="apisupport.project/src/**/*.xsd"/>
+                <include name="java.j2seproject/src/**/*.xsd"/>
+                <include name="j2ee.earproject/src/**/*.xsd"/>
+                <include name="j2ee.ejbjarproject/src/**/*.xsd"/>
+                <include name="projectui/src/**/*.xsd"/>
+                <include name="web.project/src/**/*.xsd"/>
+            </schemas>
+        </vabs>
     </target>
-    -->
 </project>

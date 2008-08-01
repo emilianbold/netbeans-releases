@@ -65,6 +65,7 @@ import org.netbeans.spi.project.support.ant.AntProjectListener;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.ErrorManager;
 import org.openide.util.Mutex;
+import org.openide.util.Mutex.Action;
 import org.openide.util.MutexException;
 
 /**
@@ -116,7 +117,7 @@ public final class ProjectConfigurationsHelper implements ProjectConfigurationPr
         return preprocessorOn;
     }
     
-    public synchronized ProjectConfiguration getDefaultConfiguration() {
+    public ProjectConfiguration getDefaultConfiguration() {
         if (defaultConfiguration == null) {
             defaultConfiguration = createConfiguration(DEFAULT_CONFIGURATION_NAME); //NOI18N
         }
@@ -235,11 +236,11 @@ public final class ProjectConfigurationsHelper implements ProjectConfigurationPr
      * Get list of project configuration names.
      * @return ProjectConfiguration[] list.
      */
-    public final synchronized Collection<ProjectConfiguration> getConfigurations() {
+    public final Collection<ProjectConfiguration> getConfigurations() {
         return getConfigurations(configurations);
     }
     
-    private final synchronized Collection<ProjectConfiguration> getConfigurations(final TreeMap<String,ProjectConfiguration> oldConfig) {
+    private final Collection<ProjectConfiguration> getConfigurations(final TreeMap<String,ProjectConfiguration> oldConfig) {
         if (configurations == null) {
             configurations = ProjectManager.mutex().readAccess(new Mutex.Action<TreeMap<String,ProjectConfiguration>>() {
                 public TreeMap<String,ProjectConfiguration> run() {
@@ -287,18 +288,26 @@ public final class ProjectConfigurationsHelper implements ProjectConfigurationPr
      * Get currently active configuration of the project.
      * @return String active configuration name.
      */
-    public final synchronized ProjectConfiguration getActiveConfiguration() {
+    public final ProjectConfiguration getActiveConfiguration() {
         if (activeConfiguration == null) {
-            activeConfiguration = getDefaultConfiguration();
-            final String confName = h.getStandardPropertyEvaluator().getProperty(PROJ_PROP_CONFIGURATION_ACTIVE);
-            if (confName == null || confName.length() == 0) return getDefaultConfiguration();
-            final ProjectConfiguration confs[] = getConfigurations().toArray(new ProjectConfiguration[0]);
-            for (int i=0; i<confs.length; i++) {
-                if (confName.equals((confs[i]).getDisplayName())) {
-                    activeConfiguration = confs[i];
-                    return activeConfiguration;
+            ProjectManager.mutex().readAccess(new Action<Boolean>(){
+                public Boolean run(){
+                    activeConfiguration = getDefaultConfiguration();
+                    final String confName = h.getStandardPropertyEvaluator().getProperty(PROJ_PROP_CONFIGURATION_ACTIVE);
+                    if (confName == null || confName.length() == 0) {
+                        activeConfiguration = getDefaultConfiguration();
+                        return null;
+                    }
+                    final ProjectConfiguration confs[] = getConfigurations().toArray(new ProjectConfiguration[0]);
+                    for (int i = 0; i < confs.length; i++) {
+                        if (confName.equals((confs[i]).getDisplayName())) {
+                            activeConfiguration = confs[i];
+                            return null;
+                        }
+                    }
+                    return null;                    
                 }
-            }
+            });
         }
         return activeConfiguration;
     }
@@ -308,7 +317,7 @@ public final class ProjectConfigurationsHelper implements ProjectConfigurationPr
      * @param configName name of the ProjectConfiguration to retrieve
      * @return ProjectConfiguration object that has the passed name
      */
-    public final synchronized ProjectConfiguration getConfigurationByName(String configName) {
+    public final ProjectConfiguration getConfigurationByName(String configName) {
         return configurations.get(configName);
     }
     
@@ -331,7 +340,7 @@ public final class ProjectConfigurationsHelper implements ProjectConfigurationPr
      * Fire property change with PROP_CONFIGURATION_ACTIVE to all listeners.
      * @param configuration new active ProjectConfiguration
      */
-    public final synchronized void setActiveConfiguration(ProjectConfiguration configuration) throws IllegalArgumentException, IOException {
+    public final void setActiveConfiguration(ProjectConfiguration configuration) throws IllegalArgumentException, IOException {
         final ProjectConfiguration oldAC = activeConfiguration;
         activeConfiguration = null;
         

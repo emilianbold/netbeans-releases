@@ -53,7 +53,7 @@ public class StopServerAction extends ActionNoBlock {
 
     /** creates new "Stop Server" action */
     public StopServerAction() {
-        super(Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/Tools")+"|"
+        super(Bundle.getStringTrimmed("org.netbeans.core.ui.resources.Bundle", "Menu/Tools")+"|"
                 +Bundle.getStringTrimmed("org.netbeans.modules.derby.Bundle", "LBL_DerbyDatabase")+"|"
                 +Bundle.getStringTrimmed("org.netbeans.modules.derby.Bundle", "LBL_StopAction"), null);
     }

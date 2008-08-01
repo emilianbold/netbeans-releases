@@ -41,11 +41,9 @@
 
 package org.netbeans.modules.websvc.wsitmodelext.security.parameters.impl;
 
-import org.netbeans.modules.websvc.wsitmodelext.security.SecurityPolicyQName;
 import org.netbeans.modules.websvc.wsitmodelext.security.impl.SecurityPolicyComponentImpl;
 import org.netbeans.modules.websvc.wsitmodelext.security.parameters.ProtectTokens;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import org.netbeans.modules.xml.wsdl.model.visitor.WSDLVisitor;
 import org.w3c.dom.Element;
 
 /**
@@ -61,13 +59,4 @@ public class ProtectTokensImpl extends SecurityPolicyComponentImpl implements Pr
         super(model, e);
     }
     
-    public ProtectTokensImpl(WSDLModel model){
-        this(model, createPrefixedElement(SecurityPolicyQName.PROTECTTOKENS.getQName(), model));
-    }
-
-    @Override
-    public void accept(WSDLVisitor visitor) {
-        visitor.visit(this);
-    }
-
 }

@@ -37,10 +37,6 @@ Microsystems, Inc. All Rights Reserved.
     <target name="qa-functional-compiler" depends="init-cp">
         <buildTests srcDir="qa-functional/src" compileExcludes="**/data/**">
             <classpath>
-                <pathelement location="${soa.mapper.dir}/modules/org-netbeans-modules-soa-mapper.jar"/>
-                <fileset dir="${o.n.soa.libs.jgo.dir}/modules/ext/jgo">
-                    <include name="*.jar"/>
-                </fileset>
                 <pathelement location="../../jemmy/builds/jemmy.jar"/>                    
                 <pathelement location="../../jellytools/builds/jelly2-nb.jar"/>
                 <pathelement location="${xtest.home}/lib/junit.jar"/>                    

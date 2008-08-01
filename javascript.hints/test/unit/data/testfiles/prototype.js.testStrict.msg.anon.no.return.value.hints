@@ -1,7 +1,3 @@
-  evalResponse: function() {
-                ------------
-HINT:Anonymous function does not always return a value (click on "function" to see exits)
-FIX:Show more information about this warning
   hasClassName: function(element, className) {
                 ------------------------------
 HINT:Anonymous function does not always return a value (click on "function" to see exits)

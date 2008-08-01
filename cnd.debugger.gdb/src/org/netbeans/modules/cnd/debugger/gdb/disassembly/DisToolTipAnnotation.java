@@ -45,23 +45,25 @@ import javax.swing.JEditorPane;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Element;
 import javax.swing.text.StyledDocument;
-import org.netbeans.modules.cnd.debugger.gdb.EditorContextImpl;
 import org.netbeans.modules.cnd.debugger.gdb.GdbContext;
+import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
 import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataObject;
-import org.openide.nodes.Node;
 import org.openide.text.Annotation;
 import org.openide.text.DataEditorSupport;
 import org.openide.text.Line;
 import org.openide.text.Line.Part;
 import org.openide.text.NbDocument;
-import org.openide.windows.TopComponent;
+import org.openide.util.RequestProcessor;
 
 /**
  * Copied from CND ToolTipAnnotation
  * @author eu155513
  */
-public class DisToolTipAnnotation extends Annotation {
+public class DisToolTipAnnotation extends Annotation implements Runnable {
+    
+    private Part lp;
+    private EditorCookie ec;
     
     public String getShortDescription() {
         Disassembly dis = Disassembly.getCurrent();
@@ -81,31 +83,47 @@ public class DisToolTipAnnotation extends Annotation {
         if (ec == null) {
             return null;
         }
-
+        
+        this.lp = lp;
+        this.ec = ec;
+        RequestProcessor.getDefault ().post (this);
+        return null;
+    }
+    
+    public void run() {
+        if (lp == null || ec == null) {
+            return;
+        }
+        StyledDocument doc;
         try {
-            StyledDocument doc = ec.openDocument();
-            // getCurrentEditor can be locked if called during disassembly update
-            // disabled until the solution is found
-            /*JEditorPane ep = getCurrentEditor();
-            if (ep == null) {
-                return null;
-            }*/
-            JEditorPane ep = null;
-            String register = getRegister(doc, ep, NbDocument.findLineOffset(doc,
-                    lp.getLine().getLineNumber()) + lp.getColumn());
-            if (register == null) {
-                return null;
-            }
-            Collection<RegisterValue> regValues = (Collection<RegisterValue>)GdbContext.getInstance().getProperty(GdbContext.PROP_REGISTERS);
+            doc = ec.openDocument();
+        } catch (IOException ex) {
+            return;
+        }                    
+        JEditorPane ep = EditorContextDispatcher.getDefault().getCurrentEditor();
+        if (ep == null) {
+            return;
+        }
+        
+        String register = getRegister(doc, ep, NbDocument.findLineOffset(doc, 
+                lp.getLine().getLineNumber()) + lp.getColumn());
+        
+        if (register == null) {
+            return;
+        }
+        
+        String toolTipText = null;
+        
+        Collection<RegisterValue> regValues = (Collection<RegisterValue>)GdbContext.getInstance().getProperty(GdbContext.PROP_REGISTERS);
+        if (regValues != null) {
             for (RegisterValue value : regValues) {
-                if (value.getName().equals(register)) {
-                    return value.getValue();
+                if (register.equals(value.getName())) {
+                    toolTipText = value.getValue();
                 }
             }
-        } catch (IOException e) {
-            // do nothing
         }
-        return null;
+        
+        firePropertyChange (PROP_SHORT_DESCRIPTION, null, toolTipText);
     }
 
     public String getAnnotationType () {
@@ -114,14 +132,12 @@ public class DisToolTipAnnotation extends Annotation {
 
     private static String getRegister(StyledDocument doc, JEditorPane ep, int offset) {
         String t = null;
-        // getCurrentEditor can be locked if called during disassembly update
-        // disabled until the solution is found
-        /*if ((ep.getSelectionStart() <= offset) && (offset <= ep.getSelectionEnd())) {
+        if ((ep.getSelectionStart() <= offset) && (offset <= ep.getSelectionEnd())) {
             t = ep.getSelectedText();
         }
         if (t != null) {
             return t;
-        }*/
+        }
         
         int line = NbDocument.findLineNumber(doc, offset);
         int col = NbDocument.findLineColumn(doc, offset);
@@ -156,36 +172,6 @@ public class DisToolTipAnnotation extends Annotation {
         }
     }
     
-    /** 
-     * Returns current editor component instance.
-     *
-     * Used in: ToolTipAnnotation
-     */
-    private static JEditorPane getCurrentEditor() {
-        EditorCookie e = getCurrentEditorCookie();
-        if (e == null) {
-            return null;
-                    }
-        JEditorPane[] op = EditorContextImpl.getOpenedPanes(e);
-        if ((op == null) || (op.length < 1)) {
-            return null;
-            }
-        return op[0];
-        }
-    
-    /** 
-     * Returns current editor component instance.
-     *
-     * @return current editor component instance
-     */
-    private static EditorCookie getCurrentEditorCookie() {
-        Node[] nodes = TopComponent.getRegistry().getActivatedNodes();
-        if (nodes == null || nodes.length != 1) {
-            return null;
-        }
-        Node n = nodes[0];
-        return (EditorCookie) n.getCookie(EditorCookie.class);
-    }
 }
 
 

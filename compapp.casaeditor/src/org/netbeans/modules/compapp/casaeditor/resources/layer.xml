@@ -81,6 +81,18 @@ made subject to such option by the copyright holder.
             </file>
         </folder>
     </folder>
+    
+    <folder name="Loaders">
+        <folder name="text">
+          <folder name="x-casa+xml">
+            <folder name="Factories">
+                <file name="org-netbeans-modules-compapp-casaeditor-CasaDataLoader.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.compapp.casaeditor.Bundle"/>
+                    </file>
+            </folder>
+          </folder>
+        </folder>
+    </folder>
 
     <!--
     <folder name="Editors">
@@ -115,7 +127,7 @@ made subject to such option by the copyright holder.
     </folder>
     
     <!-- default workspaces, frames and their layout defined by core -->
-    <!--
+
     <folder name="Windows2">
         <folder name="Groups">
             <file name="casa_ui.wsgrp" url="groups/casa_ui.wsgrp"/>
@@ -125,5 +137,5 @@ made subject to such option by the copyright holder.
             </folder>
         </folder>
     </folder>
-    -->
+    
 </filesystem>

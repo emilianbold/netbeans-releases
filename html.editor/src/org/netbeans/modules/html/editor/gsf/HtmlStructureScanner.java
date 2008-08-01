@@ -38,7 +38,6 @@
  */
 package org.netbeans.modules.html.editor.gsf;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -54,6 +53,7 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.html.parser.AstNode;
 import org.netbeans.editor.ext.html.parser.AstNodeUtils;
 import org.netbeans.editor.ext.html.parser.AstNodeVisitor;
+import org.netbeans.editor.ext.html.parser.AstPath;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.ElementHandle;
 import org.netbeans.modules.gsf.api.ElementKind;
@@ -65,7 +65,6 @@ import org.netbeans.modules.gsf.api.StructureItem;
 import org.netbeans.modules.gsf.api.StructureScanner;
 import org.netbeans.modules.gsf.api.TranslatedSource;
 import org.netbeans.modules.editor.html.HTMLKit;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -75,9 +74,8 @@ public class HtmlStructureScanner implements StructureScanner {
 
     private static final Logger LOGGER = Logger.getLogger(HtmlStructureScanner.class.getName());
     private static final boolean LOG = LOGGER.isLoggable(Level.FINE);
-    private HtmlFormatter formatter;
 
-    public List<? extends StructureItem> scan(final CompilationInfo info, HtmlFormatter formatter) {
+    public List<? extends StructureItem> scan(final CompilationInfo info) {
 
         ParserResult presult = info.getEmbeddedResults(HTMLKit.HTML_MIME_TYPE).iterator().next();
         final TranslatedSource source = presult.getTranslatedSource();
@@ -98,61 +96,69 @@ public class HtmlStructureScanner implements StructureScanner {
     }
 
     public Map<String, List<OffsetRange>> folds(CompilationInfo info) {
-        try {
-            //so far the css parser always parses the whole css content
-            ParserResult presult = info.getEmbeddedResults("text/html").iterator().next();
-            final TranslatedSource source = presult.getTranslatedSource();
-            final BaseDocument doc = (BaseDocument) info.getDocument();
-            AstNode root = ((HtmlParserResult) presult).root();
+        final BaseDocument doc = (BaseDocument) info.getDocument();
+        if (doc == null) {
+            return Collections.emptyMap();
+        }
+        //so far the css parser always parses the whole css content
+        ParserResult presult = info.getEmbeddedResults(HTMLKit.HTML_MIME_TYPE).iterator().next();
+        final TranslatedSource source = presult.getTranslatedSource();
+        AstNode root = ((HtmlParserResult) presult).root();
 
-            final Map<String, List<OffsetRange>> folds = new HashMap<String, List<OffsetRange>>();
-            final List<OffsetRange> foldRange = new ArrayList<OffsetRange>();
+        final Map<String, List<OffsetRange>> folds = new HashMap<String, List<OffsetRange>>();
+        final List<OffsetRange> foldRange = new ArrayList<OffsetRange>();
 
-            AstNodeVisitor foldsSearch = new AstNodeVisitor() {
+        AstNodeVisitor foldsSearch = new AstNodeVisitor() {
 
-                public void visit(AstNode node) {
-                    if (node.type() == AstNode.NodeType.TAG 
-                            || node.type() == AstNode.NodeType.COMMENT) {
-                        try {
-                            int so = documentPosition(node.startOffset(), source);
-                            int eo = documentPosition(node.endOffset(), source);
-                            
-                            if (Utilities.getLineOffset(doc, so) < Utilities.getLineOffset(doc, eo)) {
-                                //do not creare one line folds
-                                //XXX this logic could possibly seat in the GSF folding impl.
-                                foldRange.add(new OffsetRange(so, eo));
-                            }
-                        } catch (BadLocationException ex) {
-                            Exceptions.printStackTrace(ex);
+            public void visit(AstNode node) {
+                if (node.type() == AstNode.NodeType.TAG 
+                        || node.type() == AstNode.NodeType.COMMENT) {
+                    try {
+                        int so = documentPosition(node.startOffset(), source);
+                        int eo = documentPosition(node.endOffset(), source);
+
+                        if (Utilities.getLineOffset(doc, so) < Utilities.getLineOffset(doc, eo)) {
+                            //do not creare one line folds
+                            //XXX this logic could possibly seat in the GSF folding impl.
+                            foldRange.add(new OffsetRange(so, eo));
                         }
+                    } catch (BadLocationException ex) {
+                        LOGGER.log(Level.INFO, null, ex);
                     }
                 }
-            };
+            }
+        };
+
+        //the document is touched during the ast tree visiting, we need to lock it
+        doc.readLock();
+        try {
             AstNodeUtils.visitChildren(root, foldsSearch);
-            folds.put("codeblocks", foldRange);
-
-            return folds;
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+        } finally {
+            doc.readUnlock();
         }
+        folds.put("codeblocks", foldRange);
 
-        return null;
-
+        return folds;
     }
 
     public static int documentPosition(int astOffset, TranslatedSource source) {
         return source == null ? astOffset : source.getLexicalOffset(astOffset);
     }
     
+    public Configuration getConfiguration() {
+        return new Configuration(false, false, 0);
+    }
+
     private static final class HtmlStructureItem implements StructureItem {
 
         private TranslatedSource source;
         private HtmlElementHandle handle;
-
+        private int myIndexInParent = -1;
+        private List<StructureItem> items = null;
+        
         private HtmlStructureItem(HtmlElementHandle handle, TranslatedSource source) {
             this.handle = handle;
             this.source= source;
-
         }
 
         public String getName() {
@@ -166,7 +172,7 @@ public class HtmlStructureScanner implements StructureScanner {
             return Integer.toHexString(10000+(int)getPosition());
         }
 
-        public String getHtml() {
+        public String getHtml(HtmlFormatter formatter) {
             return getName();
         }
 
@@ -174,28 +180,35 @@ public class HtmlStructureScanner implements StructureScanner {
             return handle;
         }
 
-        //>>> such equals and hashCode implementation
-        //is necessary since the ElementNode class from
-        // gsf navigator requires it
+        synchronized int indexInParent() {
+            if(myIndexInParent == -1) {
+                AstNode papa = handle.node().parent();
+                myIndexInParent = papa == null ? -2 : AstPath.indexInSimilarNodes(papa, handle.node());
+            }
+            return myIndexInParent;
+        }
+        
         @Override
         public boolean equals(Object o) {
             if(!(o instanceof HtmlStructureItem)) {
                 return false;
             }
+            HtmlStructureItem item = (HtmlStructureItem)o;
             
-            HtmlStructureItem compared = (HtmlStructureItem)o;
-            
-            return getName().equals(compared.getName())
-                    && getKind() == compared.getKind();
+            AstNode he = ((HtmlStructureItem)o).handle.node();
+            AstNode me = handle.node();
+            if(he.type() == me.type() && he.name().equals(me.name())) {
+                return indexInParent() == item.indexInParent();
+            }
+            return false;
         }
-        
+
         @Override
         public int hashCode() {
-            return getName().hashCode() + getKind().hashCode();
-            
-        }
-        //<<<
+            return handle.node().name().hashCode() + indexInParent();
         
+        }
+      
         public ElementKind getKind() {
             return ElementKind.TAG;
         }
@@ -217,16 +230,18 @@ public class HtmlStructureScanner implements StructureScanner {
             //return handle.node().children().isEmpty();
         }
 
-        public List<? extends StructureItem> getNestedItems() {
-            List<StructureItem> list = new  ArrayList<StructureItem>(handle.node().children().size());
-            for(AstNode child : handle.node().children()) {
-                if(child.type() == AstNode.NodeType.TAG 
-                        || child.type() == AstNode.NodeType.UNMATCHED_TAG) {
-                    HtmlElementHandle childHandle = new HtmlElementHandle(child, handle.compilationInfo());
-                    list.add(new HtmlStructureItem(childHandle, source));
+        public synchronized List<? extends StructureItem> getNestedItems() {
+            if(items == null) {
+                items = new  ArrayList<StructureItem>(handle.node().children().size());
+                for(AstNode child : handle.node().children()) {
+                    if(child.type() == AstNode.NodeType.TAG 
+                            || child.type() == AstNode.NodeType.UNMATCHED_TAG) {
+                        HtmlElementHandle childHandle = new HtmlElementHandle(child, handle.compilationInfo());
+                        items.add(new HtmlStructureItem(childHandle, source));
+                    }
                 }
             }
-            return list;
+            return items;
         }
 
         public long getPosition() {

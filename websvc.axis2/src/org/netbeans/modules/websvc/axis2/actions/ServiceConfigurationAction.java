@@ -41,6 +41,8 @@
 package org.netbeans.modules.websvc.axis2.actions;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.axis2.AxisUtils;
@@ -89,7 +91,8 @@ public class ServiceConfigurationAction extends NodeAction  {
 
         Service service = activatedNodes[0].getLookup().lookup(Service.class);
         ServiceConfigurationPanel configPanel = new ServiceConfigurationPanel(service);
-        DialogDescriptor dialog = new DialogDescriptor(configPanel, "Configuration...");
+        DialogDescriptor dialog = new DialogDescriptor(configPanel, 
+                NbBundle.getMessage(ServiceConfigurationAction.class, "TTL_ServiceConfiguration"));
         DialogDisplayer.getDefault().notify(dialog);
         if (dialog.getValue() == DialogDescriptor.OK_OPTION) {
             Axis2Model model = service.getModel();
@@ -154,20 +157,28 @@ public class ServiceConfigurationAction extends NodeAction  {
                         ex.printStackTrace();
                     }
                 }
-
+                
                 if (serviceNameChanged || serviceClassChanged) {
                    ServicesModel servicesModel = AxisUtils.getServicesModelForProject(prj);
                    if (servicesModel != null) {
                        servicesModel.startTransaction();
                        ServiceGroup serviceGroup = (ServiceGroup) servicesModel.getRootComponent();
+                       
+                       try {
+                           oldServiceName = URLEncoder.encode(oldServiceName, "UTF-8"); //NOI18N
+                       } catch (UnsupportedEncodingException ex) {}
+                       
                        for (org.netbeans.modules.websvc.axis2.services.model.Service serv:serviceGroup.getServices()) {
                            if (oldServiceName.equals(serv.getNameAttr())) {
                                if (serviceNameChanged) {
+                                   try {
+                                       newServiceName = URLEncoder.encode(newServiceName, "UTF-8"); //NOI18N
+                                   } catch (UnsupportedEncodingException ex) {}
                                    serv.setNameAttr(newServiceName);
                                }
                                if (serviceClassChanged) {
                                    for (Parameter param:serv.getParameters()) {
-                                       if ("ServiceClass".equals(param.getNameAttr())) {
+                                       if ("ServiceClass".equals(param.getNameAttr())) { // NOI18N
                                            param.setValue(newServiceClass);
                                            break;
                                        }

@@ -65,6 +65,7 @@ import org.openide.util.NbBundle;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import org.netbeans.modules.vmd.midp.codegen.MidpDatabindingCodeSupport;
 
 /**
  * @author David Kaspar
@@ -133,9 +134,11 @@ public final class EventSourceCD extends ComponentDescriptor {
                     section.switchToEditable (getComponent ().getComponentID () + "-preAction"); // NOI18N
                     section.getWriter ().write (" // write pre-action user code here\n").commit (); // NOI18N
                     section.switchToGuarded ();
-
+                    //This code gives possibility to inject some code to the commandAction method 
+                    MidpDatabindingCodeSupport.generateCodeDatabindingEventSource(getComponent(), section);
+                    //end
                     CodeMultiGuardedLevelPresenter.generateMultiGuardedSectionCode (section, EventSourceCD.getEventHandler (getComponent ()));
-
+                    
                     section.getWriter ().commit ();
                     section.switchToEditable (getComponent ().getComponentID () + "-postAction"); // NOI18N
                     section.getWriter ().write (" // write post-action user code here\n").commit (); // NOI18N

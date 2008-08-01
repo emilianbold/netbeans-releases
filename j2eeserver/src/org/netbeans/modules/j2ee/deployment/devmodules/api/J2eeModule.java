@@ -59,7 +59,8 @@ import org.openide.util.Parameters;
  * <p>
  * It is not possible to instantiate this class directly. Implementators have to
  * implement the {@link J2eeModuleImplementation} first and then use the
- * {@link J2eeModuleFactory} to create a J2eeModule instance.
+ * {@link org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleFactory}
+ * to create a J2eeModule instance.
  * 
  * @author  Pavel Buzek
  */

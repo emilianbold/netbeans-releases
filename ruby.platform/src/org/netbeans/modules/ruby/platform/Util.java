@@ -46,12 +46,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.swing.JComboBox;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.api.ruby.platform.RubyPlatformManager;
@@ -63,7 +66,13 @@ import org.openide.util.NbCollections;
 import org.openide.util.NbPreferences;
 
 public final class Util {
-    
+
+    /**
+     * Regexp for matching version number in gem packages:  name-x.y.z (we need
+     * to pull out x,y,z such that we can do numeric comparisons on them)
+     */
+    private static final Pattern VERSION_PATTERN = Pattern.compile("(\\d+)\\.(\\d+)(\\.(\\d+)(-\\S+)?)?"); // NOI18N
+
     private static final Logger LOGGER = Logger.getLogger(Util.class.getName());
 
     // FIXME: get rid of those proxy constants as soon as some NB Proxy API is available
@@ -72,13 +81,16 @@ public final class Util {
     private static final String PROXY_AUTHENTICATION_PASSWORD = "proxyAuthenticationPassword"; // NOI18N
 
     private static final String FIRST_TIME_KEY = "platform-manager-called-first-time"; // NOI18N
+    private static final String FETCH_ALL_VERSIONS = "gem-manager-fetch-all-versions"; // NOI18N
+    private static final String FETCH_GEM_DESCRIPTIONS = "gem-manager-fetch-descriptions"; // NOI18N
+
+    public static final Comparator<String> VERSION_COMPARATOR = new Comparator<String>() {
+        public int compare(String v1, String v2) {
+            return Util.compareVersions(v1, v2);
+        }
+    };
 
     private Util() {
-    }
-    
-    /** Returns {@link NbPreferences preferences} for this module. */
-    public static Preferences getPreferences() {
-        return NbPreferences.forModule(Util.class);
     }
 
     /** Return true iff the given line seems to be colored using ANSI terminal escape codes */
@@ -174,7 +186,7 @@ public final class Util {
      * elements on the <em>PATH</em> environment variables. That means,
      * duplicates and elements which are not valid, existing directories are
      * skipped.
-     * 
+     *
      * @return an {@link Iterable} which will traverse all valid elements on the
      * <em>PATH</em> environment variables.
      */
@@ -208,7 +220,7 @@ public final class Util {
     }
 
     public static void preselectPlatform(final JComboBox platforms, final String preferencePlatformIDKey) {
-        String lastPlatformID = Util.getPreferences().get(preferencePlatformIDKey, null);
+        String lastPlatformID = RubyPreferences.getPreferences().get(preferencePlatformIDKey, null);
         if (lastPlatformID != null) {
             RubyPlatform platform = RubyPlatformManager.getPlatformByID(lastPlatformID);
             if (platform != null) {
@@ -224,7 +236,7 @@ public final class Util {
         }
         DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, type));
     }
-    
+
     public static void notifyLocalized(Class aClass, String resName, Object... params) {
         notifyLocalized(aClass, resName, NotifyDescriptor.INFORMATION_MESSAGE, params);
     }
@@ -236,14 +248,6 @@ public final class Util {
         return result.equals(NotifyDescriptor.OK_OPTION);
     }
 
-    public static void setFirstPlatformTouch(boolean b) {
-        Util.getPreferences().putBoolean(FIRST_TIME_KEY, b);
-    }
-
-    static boolean isFirstPlatformTouch() {
-        return Util.getPreferences().getBoolean(FIRST_TIME_KEY, true);
-    }
-    
     public static String readAsString(final InputStream is) throws IOException {
         try {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -253,5 +257,50 @@ public final class Util {
             is.close();
         }
     }
-    
+
+    /**
+     * Return &gt; 0 if <code>version1</code> is greater than
+     * <code>version2</code>, 0 if equal and -1 otherwise.
+     */
+    public static int compareVersions(String version1, String version2) {
+        if (version1.equals(version2)) {
+            return 0;
+        }
+
+        Matcher matcher1 = VERSION_PATTERN.matcher(version1);
+
+        if (matcher1.matches()) {
+            int major1 = Integer.parseInt(matcher1.group(1));
+            int minor1 = Integer.parseInt(matcher1.group(2));
+            int micro1 = matcher1.group(4) == null ? 0 : Integer.parseInt(matcher1.group(4));
+
+            Matcher matcher2 = VERSION_PATTERN.matcher(version2);
+
+            if (matcher2.matches()) {
+                int major2 = Integer.parseInt(matcher2.group(1));
+                int minor2 = Integer.parseInt(matcher2.group(2));
+                int micro2 = matcher2.group(4) == null ? 0 : Integer.parseInt(matcher2.group(4));
+
+                if (major1 != major2) {
+                    return major1 - major2;
+                }
+
+                if (minor1 != minor2) {
+                    return minor1 - minor2;
+                }
+
+                if (micro1 != micro2) {
+                    return micro1 - micro2;
+                }
+            } else {
+                // TODO uh oh
+                //assert false : "no version match on " + version2;
+            }
+        } else {
+            // TODO assert false : "no version match on " + version1;
+        }
+
+        // Just do silly alphabetical comparison
+        return version1.compareTo(version2);
+    }
 }

@@ -46,6 +46,10 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.KeyEvent;
 
+import java.util.StringTokenizer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 import javax.swing.*;
 import javax.swing.BorderFactory;
 import javax.swing.event.ListSelectionListener;
@@ -54,9 +58,9 @@ import javax.swing.text.JTextComponent;
 import javax.swing.text.Keymap;
 import javax.swing.text.EditorKit;
 
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.editor.*;
-import org.netbeans.editor.ext.ExtSettingsDefaults;
-import org.netbeans.editor.ext.ExtSettingsNames;
 import org.netbeans.modules.editor.hints.FixData;
 import org.netbeans.spi.editor.hints.Fix;
 
@@ -68,7 +72,9 @@ import org.netbeans.spi.editor.hints.Fix;
 * @version 1.00
 */
 
-public class ScrollCompletionPane extends JScrollPane implements SettingsChangeListener {
+public class ScrollCompletionPane extends JScrollPane {
+
+    private static final Logger LOG = Logger.getLogger(ScrollCompletionPane.class.getName());
     
     private static final String COMPLETION_UP = "completion-up"; //NOI18N
     private static final String COMPLETION_DOWN = "completion-down"; //NOI18N
@@ -96,7 +102,7 @@ public class ScrollCompletionPane extends JScrollPane implements SettingsChangeL
     public ScrollCompletionPane(JTextComponent component, FixData fixes, String title, ListSelectionListener listener) {
         this( component, fixes, title, listener, null );
     }
-    
+
     public ScrollCompletionPane(JTextComponent component, FixData fixes, String title, ListSelectionListener listener, Dimension maxSize ) {
         this.component = component;
         
@@ -113,8 +119,15 @@ public class ScrollCompletionPane extends JScrollPane implements SettingsChangeL
                 BorderFactory.createLineBorder(java.awt.SystemColor.controlDkShadow), 
                 BorderFactory.createEmptyBorder(4, 4, 4, 4))); 
         setViewportBorder( null );
-        Settings.addSettingsChangeListener(this);
-        settingsChange(null); // initialize sizes
+        
+        // initialize sizes, why are we using the same values as for the CC popup ??
+        String mimeType = org.netbeans.lib.editor.util.swing.DocumentUtilities.getMimeType(component);
+        Preferences prefs = MimeLookup.getLookup(mimeType).lookup(Preferences.class);
+        minSize = parseDimension(prefs.get(SimpleValueNames.COMPLETION_PANE_MIN_SIZE, null), new Dimension(60, 17));
+        setMinimumSize(minSize);
+
+        //Resize upto edge of screenborder, not COMPLETION_PANE_MAX_SIZE
+        //maxSize = parseDimension(prefs.get(SimpleValueNames.COMPLETION_PANE_MAX_SIZE, null), new Dimension(400, 300));
         if( maxSize != null ) {
             this.maxSize = maxSize;
             setMaximumSize(maxSize);
@@ -149,22 +162,7 @@ public class ScrollCompletionPane extends JScrollPane implements SettingsChangeL
         return ret instanceof Fix ? (Fix) ret : null;
     }
     
-    public void settingsChange(SettingsChangeEvent evt) {
-        Class kitClass = Utilities.getKitClass(component);
-        if (kitClass != null) {
-            minSize = (Dimension)SettingsUtil.getValue(kitClass,
-                      ExtSettingsNames.COMPLETION_PANE_MIN_SIZE,
-                      ExtSettingsDefaults.defaultCompletionPaneMinSize);
-            setMinimumSize(minSize);
-
-            maxSize = (Dimension)SettingsUtil.getValue(kitClass,
-                      ExtSettingsNames.COMPLETION_PANE_MAX_SIZE,
-                      ExtSettingsDefaults.defaultCompletionPaneMaxSize);
-            setMaximumSize(maxSize);
-        }
-    }
-    
-    public Dimension getPreferredSize() {
+    public @Override Dimension getPreferredSize() {
         Dimension ps = super.getPreferredSize();
 
         /* Add size of the vertical scrollbar by default. This could be improved
@@ -217,10 +215,10 @@ public class ScrollCompletionPane extends JScrollPane implements SettingsChangeL
         // #25715 - Attempt to search keymap for the keybinding that logically corresponds to the action
         KeyStroke[] ret = new KeyStroke[] { defaultKey };
         if (component != null) {
-            TextUI ui = component.getUI();
+            TextUI componentUI = component.getUI();
             Keymap km = component.getKeymap();
-            if (ui != null && km != null) {
-                EditorKit kit = ui.getEditorKit(component);
+            if (componentUI != null && km != null) {
+                EditorKit kit = componentUI.getEditorKit(component);
                 if (kit instanceof BaseKit) {
                     Action a = ((BaseKit)kit).getActionByName(editorActionName);
                     if (a != null) {
@@ -309,6 +307,34 @@ public class ScrollCompletionPane extends JScrollPane implements SettingsChangeL
                         view.end();
                     break;
             }
+        }
+    }
+
+    private static Dimension parseDimension(String s, Dimension d) {
+        int arr[] = new int[2];
+        int i = 0;
+        
+        if (s != null) {
+            StringTokenizer st = new StringTokenizer(s, ","); // NOI18N
+
+            while (st.hasMoreElements()) {
+                if (i > 1) {
+                    return d;
+                }
+                try {
+                    arr[i] = Integer.parseInt(st.nextToken());
+                } catch (NumberFormatException nfe) {
+                    LOG.log(Level.WARNING, null, nfe);
+                    return d;
+                }
+                i++;
+            }
+        }
+        
+        if (i != 2) {
+            return d;
+        } else {
+            return new Dimension(arr[0], arr[1]);
         }
     }
 }

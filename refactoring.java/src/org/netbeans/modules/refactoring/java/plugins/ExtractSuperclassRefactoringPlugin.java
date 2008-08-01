@@ -578,7 +578,7 @@ public final class ExtractSuperclassRefactoringPlugin extends JavaRefactoringPlu
                             TreePath expath = javac.getTrees().getPath(path.getCompilationUnit(), expr);
                             Element el = javac.getTrees().getElement(expath);
                             if (el != null && el.getKind() == ElementKind.CONSTRUCTOR && added.add(el)) {
-                                MethodTree template = (MethodTree) javac.getTrees().getTree(el);
+                                ExecutableElement superclassConstr = (ExecutableElement) el;
                                 MethodInvocationTree invk = (MethodInvocationTree) expr;
                                 // create constructor block with super call
                                 BlockTree block = isSyntheticSuper
@@ -588,15 +588,10 @@ public final class ExtractSuperclassRefactoringPlugin extends JavaRefactoringPlu
                                                 make.MethodInvocation(
                                                     Collections.<ExpressionTree>emptyList(),
                                                     invk.getMethodSelect(),
-                                                    params2Arguments(make, template.getParameters())
+                                                    params2Arguments(make, superclassConstr.getParameters())
                                                 ))), false);
                                 // create constructor
-                                MethodTree newConstr = make.Constructor(
-                                        template.getModifiers(),
-                                        template.getTypeParameters(),
-                                        template.getParameters(),
-                                        template.getThrows(),
-                                        block);
+                                MethodTree newConstr = make.Method(superclassConstr, block);
                                 newConstr = genUtils.importFQNs(newConstr);
                                 members.add(newConstr);
                             }
@@ -609,13 +604,13 @@ public final class ExtractSuperclassRefactoringPlugin extends JavaRefactoringPlu
             }
         }
         
-        private static List<? extends ExpressionTree> params2Arguments(TreeMaker make, List<? extends VariableTree> params) {
+        private static List<? extends ExpressionTree> params2Arguments(TreeMaker make, List<? extends VariableElement> params) {
             if (params.isEmpty()) {
                 return Collections.<ExpressionTree>emptyList();
             }
             List<ExpressionTree> args = new ArrayList<ExpressionTree>(params.size());
-            for (VariableTree param : params) {
-                args.add(make.Identifier(param.getName()));
+            for (VariableElement param : params) {
+                args.add(make.Identifier(param.getSimpleName()));
             }
             return args;
         }

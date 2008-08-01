@@ -41,12 +41,12 @@ package org.netbeans.modules.cnd.dwarfdiscovery.provider;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.cnd.discovery.api.Configuration;
+import org.netbeans.modules.cnd.discovery.api.ProjectImpl;
 import org.netbeans.modules.cnd.discovery.api.ProjectProperties;
 import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
 import org.netbeans.modules.cnd.discovery.api.ProviderProperty;
@@ -175,12 +175,15 @@ public class AnalyzeMakeLog extends BaseDwarfProvider {
                 for (File when : log.listFiles()) {
                     if (when.isDirectory()) {
                         for (File l : when.listFiles()) {
-                            if (l.getAbsolutePath().endsWith("/nightly.log")) { // NOI18N
-                                if (latest == null){
-                                    latest = l.getAbsolutePath();
+                            String current = l.getAbsolutePath();
+                            if (current.endsWith("/nightly.log")) { // NOI18N
+                                if (latest == null) {
+                                    latest = current;
                                 } else {
-                                    if (latest.compareTo(l.getAbsolutePath())<0) {
-                                        latest = l.getAbsolutePath();
+                                    String folder1 = latest.substring(0, latest.lastIndexOf("/nightly.log")); // NOI18N
+                                    String folder2 = current.substring(0, current.lastIndexOf("/nightly.log")); // NOI18N
+                                    if (folder1.compareTo(folder2) < 0) {
+                                        latest = current;
                                     }
                                 }
                                 break;
@@ -230,7 +233,7 @@ public class AnalyzeMakeLog extends BaseDwarfProvider {
                 private List<SourceFileProperties> myFileProperties;
                 private List<String> myIncludedFiles;
                 public List<ProjectProperties> getProjectConfiguration() {
-                    return divideByLanguage(getSourcesConfiguration());
+                    return ProjectImpl.divideByLanguage(getSourcesConfiguration());
                 }
                 
                 public List<Configuration> getDependencies() {

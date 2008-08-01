@@ -64,6 +64,7 @@ import org.openide.util.NbBundle;
 
 import org.netbeans.modules.dbschema.jdbcimpl.DDLBridge;
 import org.netbeans.modules.dbschema.jdbcimpl.ConnectionProvider;
+import org.openide.WizardDescriptor;
 import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.RequestProcessor;
@@ -98,7 +99,7 @@ public class DBSchemaTablesPanel extends JPanel implements ListDataListener {
         views = new LinkedList();
         cp = null;
 
-        putClientProperty("WizardPanel_contentSelectedIndex", new Integer(2)); //NOI18N
+        putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer(2)); //NOI18N
         setName(bundle.getString("TablesChooser")); //NOI18N
 
         initComponents();
@@ -187,7 +188,21 @@ public class DBSchemaTablesPanel extends JPanel implements ListDataListener {
         handlers.add(new Handler() {
             public void handle(Parameters params) {
                 ConnectionManager.getDefault().showConnectionDialog(dbconn);
+                
+                // TODO - This is a workaround until we add an API to show
+                // connection dialog on the event thread that guarantees
+                // the connection will not be null
                 conn = dbconn.getJDBCConnection();
+                int count = 0;
+                while ( conn == null && count < 10 ) {
+                    try {
+                        Thread.sleep(1000);
+                    } catch ( InterruptedException e ) {
+                        break;
+                    }
+                    conn = dbconn.getJDBCConnection();
+                    count++;
+                }
             }
             public boolean getRunInEDT() {
                 return true;

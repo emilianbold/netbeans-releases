@@ -57,10 +57,12 @@ import org.openide.nodes.Node;
 import org.netbeans.modules.db.explorer.dlg.AddDriverDialog;
 import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.api.db.explorer.JDBCDriverManager;
+import org.openide.util.Exceptions;
 
 public class AddDriverAction extends DatabaseAction {
     static final long serialVersionUID =-109193000951395612L;
-    
+
+    @Override
     public void performAction(Node[] activatedNodes) {
         new AddDriverDialogDisplayer().showDialog();
     }
@@ -68,9 +70,9 @@ public class AddDriverAction extends DatabaseAction {
     public static final class AddDriverDialogDisplayer {
         
         private Dialog dialog;
-        private JDBCDriver driver;
+        private JDBCDriver driver = null;
         
-        public void showDialog() {
+        public JDBCDriver showDialog() {
             final AddDriverDialog dlgPanel = new AddDriverDialog();
 
             ActionListener actionListener = new ActionListener() {
@@ -90,7 +92,8 @@ public class AddDriverAction extends DatabaseAction {
                             err.append(bundle().getString("AddDriverDialog_MissingClass")); //NOI18N
                         }
                         if (err.length() > 0) {
-                            String message = MessageFormat.format(bundle().getString("AddDriverDialog_ErrorMessage"), new String[] {err.toString()}); //NOI18N
+                            String message = MessageFormat.format(bundle().getString("AddDriverDialog_ErrorMessage"),
+                                    err.toString()); //NOI18N
                             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.INFORMATION_MESSAGE));
 
                             return;
@@ -107,7 +110,7 @@ public class AddDriverAction extends DatabaseAction {
                             driver = JDBCDriver.create(name, name, drvClass, (URL[]) drvLoc.toArray(new URL[drvLoc.size()]));
                             JDBCDriverManager.getDefault().addDriver(driver);
                         } catch (DatabaseException exc) {
-                            //PENDING
+                            Exceptions.printStackTrace(exc);
                         }                    
                     }
                 }
@@ -118,6 +121,7 @@ public class AddDriverAction extends DatabaseAction {
             descriptor.setClosingOptions(closingOptions);
             dialog = DialogDisplayer.getDefault().createDialog(descriptor);
             dialog.setVisible(true);
+            return driver;
         }
     }
 }

@@ -106,6 +106,61 @@ is the proper place.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
+     <change id="FolderLookup.dispatch">
+        <api name="loaders"/>
+        <summary>Changes in <code>FolderLookup</code> are delivered in dedicated thread</summary>
+        <version major="7" minor="2"/>
+        <date day="27" month="6" year="2008"/>
+        <author login="jtulach"/>
+        <compatibility binary="compatible" semantic="incompatible"/>
+        <description>
+        <p>
+            Changes found in <code>FolderLookup</code> are delivered in their own
+            thread. This is a change to previous behaviour which used the
+            <q>Folder recognizer</q> thread for event delivery. That could
+            cause deadlocks, if malicious code decided to do something wild
+            in the <code>resultChanged</code> method.
+        </p>
+        </description>
+        <class package="org.openide.loaders" name="FolderLookup" />
+        <issue number="134297"/>
+    </change>
+     <change id="factory">
+        <api name="loaders"/>
+        <summary>DataObjects without DataLoaders</summary>
+        <version major="7" minor="1"/>
+        <date day="11" month="6" year="2008"/>
+        <author login="jtulach"/>
+        <compatibility addition="yes" binary="compatible" />
+        <description>
+        <p>
+            There is new method to register new DataObject types without
+            the need to write own DataLoader. Use
+            <a href="@TOP@/org/openide/loaders/DataLoaderPool.html#factory(java.lang.Class,%20java.lang.String,%20java.awt.Image)">
+                DataLoaderPool.factory</a> method.
+        </p>
+        </description>
+        <class package="org.openide.loaders" name="DataLoaderPool" />
+        <issue number="91665"/>
+    </change>
+     <change id="layer.registration">
+        <api name="loaders"/>
+        <summary>Loaders are registered in layer files</summary>
+        <version major="7" minor="0"/>
+        <date day="26" month="5" year="2008"/>
+        <author login="jtulach"/>
+        <compatibility addition="yes" binary="compatible" />
+        <description>
+        <p>
+            There is new 
+            <a href="@TOP@/org/openide/loaders/doc-files/api.html#register">registration
+            scheme</a> for <code>DataLoader</code>s.
+        </p>
+        </description>
+        <class package="org.openide.loaders" name="DataObject" />
+        <class package="org.openide.loaders" name="DataLoader" />
+        <issue number="91665"/>
+    </change>
      <change id="xml.mimetypes">
         <api name="loaders"/>
         <summary>XMLDataObject no longer enforces text/xml as document mimetype</summary>

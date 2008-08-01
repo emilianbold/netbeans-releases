@@ -101,7 +101,23 @@ made subject to such option by the copyright holder.
         </patternset>
     </target>
 
-    <target name="compile" depends="init">
+    <target name="up-to-date" depends="init">
+        <uptodate targetfile="${cluster}/${module.jar}" property="is.jar.uptodate">
+            <srcfiles dir="${src.dir}"/>
+            <srcfiles dir="nbproject">
+                <include name="project.xml"/>
+                <include name="project.properties"/>
+            </srcfiles>
+            <srcfiles dir=".">
+                <include name="manifest.mf"/>
+            </srcfiles>
+            <srcresources>
+                <path refid="cp"/>
+            </srcresources>
+        </uptodate>
+    </target>
+
+    <target name="compile" depends="init,up-to-date" unless="is.jar.uptodate">
         <mkdir dir="${build.classes.dir}"/>
         <depend srcdir="${src.dir}" destdir="${build.classes.dir}" cache="build/depcache">
             <classpath refid="cp"/>
@@ -167,8 +183,8 @@ made subject to such option by the copyright holder.
             <format property="buildnumber" pattern="yyMMdd" timezone="UTC"/>
         </tstamp>
     </target>
-    
-    <target name="jar" depends="init,compile,jar-prep">
+
+    <target name="jar" depends="init,compile,jar-prep" unless="is.jar.uptodate">
         <!-- XXX it seems that using <manifest> forces the JAR to be recreated each time -->
         <!-- (presumably due to the variable OIDE-M-I-V) -->
         <!-- so might have to use e.g. <manifest> task (created in build/ somewhere)? -->
@@ -178,7 +194,7 @@ made subject to such option by the copyright holder.
             <fileset dir="${build.classes.dir}"/>
         </jarwithmoduleattributes>
     </target>
-    
+
     <!-- Can insert extra stuff in here: -->
     <target name="netbeans-extra"/>
 
@@ -222,7 +238,7 @@ made subject to such option by the copyright holder.
             </fileset>
         </copy>
     </target>
-    
+
     <target name="verify-class-linkage" depends="jar,release">
         <verifyclasslinkage jar="${cluster}/${module.jar}" failonerror="false" ignores="${module.jar.verifylinkageignores}" maxwarnings="10">
             <classpath refid="cp"/>
@@ -257,10 +273,10 @@ made subject to such option by the copyright holder.
         </condition>
         <property name="jnlp.sign.jars" value="false"/>
     </target>
-    
+
     <target name="jnlp" depends="init,netbeans,jnlp-master,-jnlp-init" description="Builds JNLP descriptor and signs JAR files" >
-        <makejnlp 
-            dir="${jnlp.dest.dir}" 
+        <makejnlp
+            dir="${jnlp.dest.dir}"
             alias="${jnlp.signjar.alias}"
             storepass="${jnlp.signjar.password}"
             keystore="${jnlp.signjar.keystore}"
@@ -276,20 +292,20 @@ made subject to such option by the copyright holder.
             <indirectjars dir="${cluster}" includes="${jnlp.indirect.jars}"/>
         </makejnlp>
     </target>
-    
+
     <target name="jnlp-master" depends="init,netbeans" if="jnlp.master.dir" >
         <property name="jnlp.master.codebase" value="" />
-        <makemasterjnlp 
+        <makemasterjnlp
             dir="${jnlp.master.dir}"
-            codebase="${jnlp.master.codebase}" 
+            codebase="${jnlp.master.codebase}"
         >
             <modules dir="${cluster}" >
                 <include name="${module.jar}" />
             </modules>
         </makemasterjnlp>
     </target>
-    
-    
+
+
     <target name="-nbm-prompt-for-storepass" if="keystore" unless="storepass">
         <input addproperty="storepass" message="Enter password for ${keystore}:"/>
     </target>
@@ -309,240 +325,334 @@ made subject to such option by the copyright holder.
                  moduleauthor="${nbm.module.author}">
             <license file="${license.file.override}"/>
             <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
+            <updaterjar>
+                <fileset dir="${netbeans.dest.dir}" includes="platform*/modules/ext/updater.jar"/>
+            </updaterjar>
         </makenbm>
     </target>
 
     <target name="test-preinit" depends="init"/>
     <target name="test-init" depends="init,test-preinit,test-lib-init">
-        <property name="test.unit.dir" location="test/unit"/>
-        <property name="test.unit.src.dir" location="${test.unit.dir}/src"/>
-        <property name="test.unit.data.dir" location="${test.unit.dir}/data"/>
-        <property name="build.test.unit.dir" location="build/test/unit"/>
-        <property name="build.test.unit.classes.dir" location="${build.test.unit.dir}/classes"/>
-        <property name="build.test.unit.results.dir" location="${build.test.unit.dir}/results"/>
-        <property name="build.test.unit.work.dir" location="${build.test.unit.dir}/work"/>
-        <property name="extra.test.libs.dir" location="${test.dist.dir}/extralibs"/> 
-        <!-- if project.xml doesn't contain test dependencies -->
-        <property name="test.unit.folder" location="build/test/unit/dist"/>
-        <property name="test.unit.out.folder" location="${test.unit.folder}"/>
         <property name="test.timeout" value="600000"/> <!-- 10min per test -->
-
+        <property name="test.run.args" value="-ea"/>
         <property name="test.filter.trace" value="true"/>
-        <path id="test.unit.cp">
-            <!-- Cannot use <path refid="cp"/> since that uses ${module.classpath} and we want ${module.run.classpath}: -->
-            <pathelement path="${test.unit.compile.cp}"/>
-            <pathelement path="${cp.extra}"/>
-            <pathelement location="${cluster}/${module.jar}"/>
-            <path refid="test.unit.lib.cp"/>
-            <!-- for compatibility with property based classpath-->
-            <pathelement path="${module.run.classpath}"/>
-            <pathelement path="${test.unit.cp.extra}"/>
-        </path>
-        <path id="test.unit.run.cp">
-            <!-- Cannot use <path refid="cp"/> since that uses ${module.classpath} and we want ${module.run.classpath}: -->
-            <pathelement path="${test.unit.runtime.cp}"/>
-            <pathelement path="${cp.extra}"/>
-            <pathelement location="${cluster}/${module.jar}"/>
-            <path refid="test.unit.lib.cp"/>
-           <pathelement path="${build.test.unit.classes.dir}"/>
-            <!-- for compatibility with property based classpath-->
-            <pathelement path="${module.run.classpath}"/>
-            <pathelement path="${test.unit.run.cp.extra}"/>
-            <pathelement path="${test.unit.cp.extra}"/>
-        </path>
-        
-        <!-- path reference used in both compiler and executor -->
-        <propertyset id="test.unit.properties">
-            <propertyset>
-                <propertyref prefix="test-unit-sys-prop."/>
-                <mapper type="glob" from="test-unit-sys-prop.*" to="*"/>
-            </propertyset>
-            <propertyset>
-                <propertyref name="build.test.unit.work.dir"/>
-                <mapper type="glob" from="build.test.unit.work.dir" to="nbjunit.workdir"/>
-            </propertyset>
-        </propertyset>
-        
-        <available file="${test.unit.src.dir}" type="dir" property="exists.test.unit.src.dir"/>
+        <macrodef name="test-init">
+            <attribute name="test.type"/>
+            <sequential>
+                <property name="test.@{test.type}.dir" location="test/@{test.type}"/>
+                <property name="test.@{test.type}.src.dir" location="${test.@{test.type}.dir}/src"/>
+                <property name="test.@{test.type}.data.dir" location="${test.@{test.type}.dir}/data"/>
+                <property name="build.test.@{test.type}.dir" location="build/test/@{test.type}"/>
+                <property name="build.test.@{test.type}.classes.dir" location="${build.test.@{test.type}.dir}/classes"/>
+                <property name="build.test.@{test.type}.results.dir" location="${build.test.@{test.type}.dir}/results"/>
+                <property name="build.test.@{test.type}.work.dir" location="${build.test.@{test.type}.dir}/work"/>
+                <property name="extra.test.libs.dir" location="${test.dist.dir}/extralibs"/>
+                <!-- if project.xml doesn't contain test dependencies -->
+                <property name="test.@{test.type}.folder" location="build/test/@{test.type}/dist"/>
+                <property name="test.@{test.type}.out.folder" location="${test.@{test.type}.folder}"/>
+                <path id="test.@{test.type}.cp">
+                    <!-- Cannot use <path refid="cp"/> since that uses ${module.classpath} and we want ${module.run.classpath}: -->
+                    <pathelement path="${test.@{test.type}.compile.cp}"/>
+                    <pathelement path="${cp.extra}"/>
+                    <pathelement location="${cluster}/${module.jar}"/>
+                    <path refid="test.unit.lib.cp"/>
+                    <!-- for compatibility with property based classpath-->
+                    <pathelement path="${module.run.classpath}"/>
+                    <pathelement path="${test.@{test.type}.cp.extra}"/>
+                </path>
+                <path id="test.@{test.type}.run.cp">
+                    <!-- Cannot use <path refid="cp"/> since that uses ${module.classpath} and we want ${module.run.classpath}: -->
+                    <pathelement path="${test.@{test.type}.runtime.cp}"/>
+                    <pathelement path="${cp.extra}"/>
+                    <pathelement location="${cluster}/${module.jar}"/>
+                    <path refid="test.unit.lib.cp"/>
+                    <pathelement path="${build.test.@{test.type}.classes.dir}"/>
+                    <!-- for compatibility with property based classpath-->
+                    <pathelement path="${module.run.classpath}"/>
+                    <pathelement path="${test.@{test.type}.run.cp.extra}"/>
+                    <pathelement path="${test.@{test.type}.cp.extra}"/>
+                </path>
+                <!-- path reference used in both compiler and executor -->
+                <propertyset id="test.@{test.type}.properties">
+                    <propertyset>
+                        <propertyref prefix="test-@{test.type}-sys-prop."/>
+                        <mapper type="glob" from="test-@{test.type}-sys-prop.*" to="*"/>
+                    </propertyset>
+                    <propertyset>
+                        <propertyref name="build.test.@{test.type}.work.dir"/>
+                        <mapper type="glob" from="build.test.@{test.type}.work.dir" to="nbjunit.workdir"/>
+                    </propertyset>
+                </propertyset>
+                <condition property="exists.test.@{test.type}.src.dir">
+                    <and>
+                        <available file="${test.@{test.type}.src.dir}" type="dir"/>
+                        <not>
+                            <istrue value="${disable.@{test.type}.tests}"/>
+                        </not>
+                    </and>
+                </condition>
+
+            </sequential>
+        </macrodef>
+        <test-init test.type="unit"/>
+        <test-init test.type="qa-functional"/>
     </target>
 
-    <target name="test-build" depends="jar,test-dep-build,do-test-build,test-build-datajar"/>
+    <target name="test-build" depends="netbeans,test-dep-build,do-test-build,test-build-datajar" description="Compile and package all tests."/>
 
-    <target name="test-dep-build" if="test.unit.testdep">
-        <pathconvert property="test.modules.fullpath" >
-          <path>
-              <dirset dir="${nb_all}" includes="${test.unit.testdep}" />
-          </path>
-          <mapper type="identity" />
-      </pathconvert>
-      <sortsuitemodules unsortedmodules="${test.modules.fullpath}" sortedmodulesproperty="modules.sorted" sorttests="true"/>
-      <subant buildpath="${modules.sorted}" target="do-test-build" />
+    <macrodef name="test-dep-build">
+        <attribute name="test.type"/>
+        <sequential>
+            <pathconvert property="test.modules.fullpath" >
+                <path>
+                    <dirset dir="${nb_all}" includes="${test.@{test.type}.testdep}" />
+                </path>
+                <mapper type="identity" />
+            </pathconvert>
+            <sortsuitemodules unsortedmodules="${test.modules.fullpath}" sortedmodulesproperty="mods.sorted" sorttests="true"/>
+            <subant buildpath="${mods.sorted}" target="do-test-build" />
+        </sequential>
+    </macrodef>
+    <target name="test-unit-dep-build" if="test.unit.testdep">
+        <test-dep-build test.type="unit"/>
     </target>
+    <target name="test-qa-functional-dep-build" if="test.qa-functional.testdep">
+        <test-dep-build test.type="qa-functional"/>
+    </target>
+    <target name="test-dep-build" depends="test-unit-dep-build,test-qa-functional-dep-build"/>
 
-    <target name="do-test-build" depends="init,test-init" if="exists.test.unit.src.dir">
-        <fail >
-         Missing test dependency 
-          Runtime classpath: ${test.unit.runtime.cp}
-          Compile classpath: ${test.unit.compile.cp} 
-            <condition>
-                <or>
-                <contains string="${test.unit.runtime.cp}" substring="-missing-Module-Entries-:" />
-                <contains string="${test.unit.compile.cp}" substring="-missing-Module-Entries-:" />
-                </or>
-            </condition>
-             </fail>
-        <mkdir dir="${build.test.unit.classes.dir}"/>
-        <mkdir dir="${test.dist.dir}"/>
-        <depend srcdir="${test.unit.src.dir}" destdir="${build.test.unit.classes.dir}" cache="${build.test.unit.dir}/depcache">
-            <classpath refid="test.unit.cp"/>
-        </depend>
-        <property name="test.excludes" value=""/> <!-- # 113770 -->
-        <javac srcdir="${test.unit.src.dir}" destdir="${build.test.unit.classes.dir}" excludes="${test.excludes}"
-               debug="true" deprecation="${build.compiler.deprecation}" encoding="UTF-8"
-               source="${javac.source}" target="${javac.target}" optimize="${build.compiler.optimize}" includeantruntime="false">
-            <classpath refid="test.unit.cp"/>
-            <compilerarg line="${javac.compilerargs}"/>
-        </javac>
-        <copy todir="${build.test.unit.classes.dir}">
-            <fileset dir="${test.unit.src.dir}">
-                <exclude name="**/*.java"/>
-            </fileset>
-        </copy>
-        <copy todir="${build.test.unit.dir}">
-            <fileset dir="${test.unit.dir}">
-                <include name="data/**"/>
-            </fileset>
-        </copy>
-        
-        <available file="${test.unit.data.dir}" type="dir" property="exists.test.data"/>
-        <!-- test distribution -->
-           <mkdir dir="${test.dist.dir}/extralibs"/>
-           <mkdir dir="${test.unit.out.folder}"/>
-           <jar destfile="${test.unit.out.folder}/tests.jar" basedir="${build.test.unit.classes.dir}" filesetmanifest="merge"/>            
-           <!-- create properties -->
-            <shorterpaths inref="test.unit.run.cp" 
-                           out="test.unit.run.cp.short" 
-                           extralibs="extra.test.libs.short" 
-                           extralibsdir="${extra.test.libs.dir}"
-                           testproperties="${test.unit.out.folder}/test.properties">
-
-                <replacement dir="${netbeans.dest.dir}" name="netbeans.dest.dir"/>
-                <replacement dir="${test.dist.dir}" name="test.dist.dir"/>
-                <replacement dir="${java.home}" name="java.home"/>
-                <replacement dir="${java.home.parent}" name="java.home.parent"/>
-            </shorterpaths>
-             <copy todir="${test.unit.out.folder}">
-                <fileset dir="${test.unit.dir}/..">
-                  <include name="build-unit.xml"/>
-                  <include name="build.xml"/>
-                  <include name="cfg-unit.xml"/>
+    <macrodef name="do-test-build">
+        <attribute name="test.type"/>
+        <sequential>
+            <fail >
+             Missing test dependency
+              Runtime classpath: ${test.@{test.type}.runtime.cp}
+              Compile classpath: ${test.@{test.type}.compile.cp}
+                <condition>
+                    <or>
+                        <contains string="${test.@{test.type}.runtime.cp}" substring="-missing-Module-Entries-:" />
+                        <contains string="${test.@{test.type}.compile.cp}" substring="-missing-Module-Entries-:" />
+                    </or>
+                </condition>
+            </fail>
+            <mkdir dir="${build.test.@{test.type}.classes.dir}"/>
+            <mkdir dir="${test.dist.dir}"/>
+            <depend srcdir="${test.@{test.type}.src.dir}" destdir="${build.test.@{test.type}.classes.dir}" cache="${build.test.@{test.type}.dir}/depcache">
+                <classpath refid="test.@{test.type}.cp"/>
+            </depend>
+            <property name="test.excludes" value=""/> <!-- # 113770 -->
+            <javac srcdir="${test.@{test.type}.src.dir}" destdir="${build.test.@{test.type}.classes.dir}" excludes="${test.excludes}"
+                   debug="true" deprecation="${build.compiler.deprecation}" encoding="UTF-8"
+                   source="${javac.source}" target="${javac.target}" optimize="${build.compiler.optimize}" includeantruntime="false">
+                <classpath refid="test.@{test.type}.cp"/>
+                <compilerarg line="${javac.compilerargs}"/>
+            </javac>
+            <copy todir="${build.test.@{test.type}.classes.dir}">
+                <fileset dir="${test.@{test.type}.src.dir}">
+                    <exclude name="**/*.java"/>
                 </fileset>
             </copy>
-    </target>
-    
-    <target name="test-build-datajar" depends="do-test-build" if="exists.test.data">
-           <zip destfile="${test.unit.out.folder}/data.zip" basedir="${test.unit.data.dir}"/> 
-    </target>
-
-    
-    <target name="compile-test-single" depends="init,test-init,jar">
-        <fail unless="javac.includes">Must select some files in the IDE or set javac.includes</fail>
-        <mkdir dir="${build.test.unit.classes.dir}"/>
-        <!-- XXX consider forcing deprecation=true -->
-        <!-- XXX consider deleting the .class file first to force a rebuild -->
-        <depend srcdir="${test.unit.src.dir}" destdir="${build.test.unit.classes.dir}" cache="${build.test.unit.dir}/depcache">
-            <classpath refid="test.unit.cp"/>
-        </depend>
-        <javac srcdir="${test.unit.src.dir}" destdir="${build.test.unit.classes.dir}"
-               debug="true" deprecation="${build.compiler.deprecation}" encoding="UTF-8"
-               source="${javac.source}" target="${javac.target}" includeantruntime="false" optimize="${build.compiler.optimize}" includes="${javac.includes}">
-            <classpath refid="test.unit.cp"/>
-            <compilerarg line="${javac.compilerargs}"/>
-        </javac>
-        <copy todir="${build.test.unit.classes.dir}">
-            <fileset dir="${test.unit.src.dir}">
-                <exclude name="**/*.java"/>
-            </fileset>
-        </copy>
-        <copy todir="${build.test.unit.dir}">
-            <fileset dir="${test.unit.dir}">
-                <include name="data/**"/>
-            </fileset>
-        </copy>
-    </target>
-
-    <target name="test" depends="init,test-init,test-build" if="exists.test.unit.src.dir">
-        <mkdir dir="${build.test.unit.results.dir}"/>
-        <junit showoutput="true" fork="true" failureproperty="tests.failed" errorproperty="tests.failed" filtertrace="${test.filter.trace}" tempdir="${build.test.unit.results.dir}" timeout="${test.timeout}">
-            <batchtest todir="${build.test.unit.results.dir}">
-                <fileset dir="${build.test.unit.classes.dir}">
-                    <include name="**/*Test.class"/>
+            <delete dir="${build.test.@{test.type}.dir}/data"/>
+            <copy todir="${build.test.@{test.type}.dir}">
+                <fileset dir="${test.@{test.type}.dir}">
+                    <include name="data/**"/>
                 </fileset>
-            </batchtest>
-            <classpath refid="test.unit.run.cp"/>
-            <syspropertyset refid="test.unit.properties"/>
-            <jvmarg value="-ea"/>
-            <formatter type="brief" usefile="false"/>
-            <formatter type="xml"/>
-        </junit>
-        <fail if="tests.failed" unless="continue.after.failing.tests">Some tests failed; see details above.</fail>
+            </copy>
+
+            <available file="${test.@{test.type}.data.dir}" type="dir" property="exists.test.@{test.type}.data"/>
+            <!-- test distribution -->
+            <mkdir dir="${extra.test.libs.dir}"/>
+            <mkdir dir="${test.@{test.type}.out.folder}"/>
+            <jar destfile="${test.@{test.type}.out.folder}/tests.jar" basedir="${build.test.@{test.type}.classes.dir}" filesetmanifest="merge"/>
+            <!-- create properties -->
+            <shorterpaths inref="test.@{test.type}.run.cp"
+                          out="test.@{test.type}.run.cp.short"
+                          extralibs="extra.test.libs.short"
+                          extralibsdir="${extra.test.libs.dir}"
+                          testproperties="${test.@{test.type}.out.folder}/test.properties">
+                <replacement dir="${netbeans.dest.dir}" name="netbeans.dest.dir"/>
+                <replacement dir="${test.dist.dir}" name="test.dist.dir"/>
+                <!-- XXX this will not be right on Macs: -->
+                <replacement dir="${nbjdk.home}/jre" name="java.home"/>
+                <replacement dir="${nbjdk.home}" name="java.home.parent"/>
+            </shorterpaths>
+        </sequential>
+    </macrodef>
+    <target name="do-unit-test-build" depends="init,test-init" if="exists.test.unit.src.dir">
+        <do-test-build test.type="unit"/>
     </target>
+    <target name="do-qa-functional-test-build" depends="init,test-init" if="exists.test.qa-functional.src.dir">
+        <do-test-build test.type="qa-functional"/>
+    </target>
+    <target name="do-test-build" depends="do-unit-test-build,do-qa-functional-test-build"/>
+
+    <target name="test-unit-build-datajar" depends="do-test-build" if="exists.test.unit.data">
+        <zip destfile="${test.unit.out.folder}/data.zip" basedir="${test.unit.data.dir}"/>
+    </target>
+    <target name="test-qa-functional-build-datajar" depends="do-test-build" if="exists.test.qa-functional.data">
+        <zip destfile="${test.qa-functional.out.folder}/data.zip" basedir="${test.qa-functional.data.dir}"/>
+    </target>
+    <target name="test-build-datajar" depends="test-unit-build-datajar,test-qa-functional-build-datajar"/>
+
+    <target name="compile-test-single" depends="init,test-init,jar">
+        <macrodef name="compile-test-single">
+            <attribute name="test.type"/>
+            <sequential>
+                <fail unless="javac.includes">Must select some files in the IDE or set javac.includes</fail>
+                <mkdir dir="${build.test.@{test.type}.classes.dir}"/>
+                <!-- XXX consider forcing deprecation=true -->
+                <!-- XXX consider deleting the .class file first to force a rebuild -->
+                <depend srcdir="${test.@{test.type}.src.dir}" destdir="${build.test.@{test.type}.classes.dir}" cache="${build.test.@{test.type}.dir}/depcache">
+                    <classpath refid="test.@{test.type}.cp"/>
+                </depend>
+                <javac srcdir="${test.@{test.type}.src.dir}" destdir="${build.test.@{test.type}.classes.dir}"
+                       debug="true" deprecation="${build.compiler.deprecation}" encoding="UTF-8"
+                       source="${javac.source}" target="${javac.target}" includeantruntime="false" optimize="${build.compiler.optimize}" includes="${javac.includes}">
+                    <classpath refid="test.@{test.type}.cp"/>
+                    <compilerarg line="${javac.compilerargs}"/>
+                </javac>
+                <copy todir="${build.test.@{test.type}.classes.dir}">
+                    <fileset dir="${test.@{test.type}.src.dir}">
+                        <exclude name="**/*.java"/>
+                    </fileset>
+                </copy>
+                <copy todir="${build.test.@{test.type}.dir}">
+                    <fileset dir="${test.@{test.type}.dir}">
+                        <include name="data/**"/>
+                    </fileset>
+                </copy>
+            </sequential>
+        </macrodef>
+        <property name="test.type" value="unit"/>
+        <compile-test-single test.type="${test.type}"/>
+    </target>
+
+    <macrodef name="metaproperty">
+        <attribute name="name"/>
+        <attribute name="value"/>
+        <sequential>
+            <property name="@{name}" value="${@{value}}"/>
+        </sequential>
+    </macrodef>
+    <macrodef name="test">
+        <attribute name="test.type"/>
+        <sequential>
+            <property name="test.config" value="default"/>
+            <property name="test.config.default.includes" value="**/*Test.class"/>
+            <property name="test.config.${test.config}.includes" value="NOTHING"/>
+            <metaproperty name="test.includes" value="test.config.${test.config}.includes"/>
+            <property name="test.config.${test.config}.excludes" value=""/>
+            <metaproperty name="test.excludes" value="test.config.${test.config}.excludes"/>
+            <mkdir dir="${build.test.@{test.type}.results.dir}"/>
+            <junit showoutput="true" fork="true" failureproperty="tests.failed" errorproperty="tests.failed" filtertrace="${test.filter.trace}" tempdir="${build.test.@{test.type}.results.dir}" timeout="${test.timeout}">
+                <batchtest todir="${build.test.@{test.type}.results.dir}">
+                    <fileset dir="${build.test.@{test.type}.classes.dir}" includes="${test.includes}" excludes="${test.excludes}"/>
+                </batchtest>
+                <classpath refid="test.@{test.type}.run.cp"/>
+                <syspropertyset refid="test.@{test.type}.properties"/>
+                <jvmarg line="${test.run.args}"/>
+                <formatter type="brief" usefile="false"/>
+                <formatter type="xml"/>
+            </junit>
+            <fail if="tests.failed" unless="continue.after.failing.tests">Some tests failed; see details above.</fail>
+        </sequential>
+    </macrodef>
+    <target name="test-unit" depends="init,test-init,test-build" if="exists.test.unit.src.dir">
+        <test test.type="unit"/>
+    </target>
+    <target name="test-qa-functional" depends="init,test-init,test-build" if="exists.test.qa-functional.src.dir">
+        <test test.type="qa-functional"/>
+    </target>
+
+    <target name="test-generate-html" depends="-do-test-generate-html,-test-browse-html"/>
+    <target name="-do-test-generate-html">
+        <junitreport todir="${test.results.dir}">
+            <fileset dir="${test.results.dir}">
+                <include name="TEST-*.xml"/>
+            </fileset>
+            <report format="frames" todir="${test.results.dir}/html"/>
+        </junitreport>
+    </target>
+    <target name="-test-browse-html" if="netbeans.home">
+        <nbbrowse file="${test.results.dir}/html/index.html"/>
+    </target>
+    <target name="test" depends="test-unit,test-qa-functional"/>
 
     <target name="test-single" depends="init,test-init,test-build">
-        <fail unless="test.includes">Must set test.includes</fail>
-        <mkdir dir="${build.test.unit.results.dir}"/>
-        <junit showoutput="true" fork="true" failureproperty="tests.failed" errorproperty="tests.failed" filtertrace="${test.filter.trace}" tempdir="${build.test.unit.results.dir}" timeout="${test.timeout}">
-            <batchtest todir="${build.test.unit.results.dir}">
-                <fileset dir="${test.unit.src.dir}" includes="${test.includes}"/>
-            </batchtest>
-            <classpath refid="test.unit.run.cp"/>
-            <syspropertyset refid="test.unit.properties"/>
-            <!-- <assertions> does not seem to work in Ant 1.6.1? -->
-            <jvmarg value="-ea"/>
-            <formatter type="brief" usefile="false"/>
-            <formatter type="xml"/>
-        </junit>
-        <fail if="tests.failed" unless="continue.after.failing.tests">Some tests failed; see details above.</fail>
+        <macrodef name="test-single">
+            <attribute name="test.type"/>
+            <sequential>
+                <fail unless="test.includes">Must set test.includes</fail>
+                <mkdir dir="${build.test.@{test.type}.results.dir}"/>
+                <junit showoutput="true" fork="true" failureproperty="tests.failed" errorproperty="tests.failed" filtertrace="${test.filter.trace}" tempdir="${build.test.@{test.type}.results.dir}" timeout="${test.timeout}">
+                    <batchtest todir="${build.test.@{test.type}.results.dir}">
+                        <fileset dir="${test.@{test.type}.src.dir}" includes="${test.includes}"/>
+                    </batchtest>
+                    <classpath refid="test.@{test.type}.run.cp"/>
+                    <syspropertyset refid="test.@{test.type}.properties"/>
+                    <jvmarg line="${test.run.args}"/>
+                    <formatter type="brief" usefile="false"/>
+                    <formatter type="xml"/>
+                </junit>
+                <fail if="tests.failed" unless="continue.after.failing.tests">Some tests failed; see details above.</fail>
+            </sequential>
+        </macrodef>
+        <property name="test.type" value="unit"/>
+        <test-single test.type="${test.type}"/>
     </target>
 
-    <target name="do-debug-test-single">
-        <fail unless="test.class">Must set test.class</fail>
-        <property name="test.report.file" location="${build.test.unit.results.dir}/TEST-${test.class}.xml"/>
-        <delete file="${test.report.file}"/>
-        <mkdir dir="${build.test.unit.results.dir}"/>
-        <touch file="${test.report.file}" verbose="false"/>   <!-- must exist, otherwise the XML formatter would fail -->
-        <java fork="true" classname="org.apache.tools.ant.taskdefs.optional.junit.JUnitTestRunner">
-            <jvmarg value="-Xdebug"/>
-            <jvmarg value="-Xnoagent"/>
-            <jvmarg value="-Djava.compiler=none"/>
-            <jvmarg value="-Xrunjdwp:transport=dt_socket,address=${jpda.address}"/>
-            <jvmarg value="-ea"/>
-            <classpath>
-                <path refid="test.unit.run.cp"/>
-                <pathelement location="${ant.home}/lib/ant.jar"/>
-                <pathelement location="${ant.home}/lib/ant-junit.jar"/>
-            </classpath>
-            <syspropertyset refid="test.unit.properties"/>
-            <arg value="${test.class}"/>
-            <arg value="showoutput=true"/>
-            <arg value="formatter=org.apache.tools.ant.taskdefs.optional.junit.BriefJUnitResultFormatter"/>
-            <arg value="formatter=org.apache.tools.ant.taskdefs.optional.junit.XMLJUnitResultFormatter,${test.report.file}"/>
-        </java>
+    <target name="do-debug-test-single" depends="test-init">
+        <macrodef name="do-debug-test-single">
+            <attribute name="test.type"/>
+            <sequential>
+                <fail unless="test.class">Must set test.class</fail>
+                <property name="test.report.file" location="${build.test.@{test.type}.results.dir}/TEST-${test.class}.xml"/>
+                <delete file="${test.report.file}"/>
+                <mkdir dir="${build.test.@{test.type}.results.dir}"/>
+                <touch file="${test.report.file}" verbose="false"/>   <!-- must exist, otherwise the XML formatter would fail -->
+                <java fork="true" classname="org.apache.tools.ant.taskdefs.optional.junit.JUnitTestRunner">
+                    <jvmarg value="-Xdebug"/>
+                    <jvmarg value="-Xnoagent"/>
+                    <jvmarg value="-Djava.compiler=none"/>
+                    <jvmarg value="-Xrunjdwp:transport=dt_socket,address=${jpda.address}"/>
+                    <jvmarg line="${test.run.args}"/>
+                    <classpath>
+                        <path refid="test.@{test.type}.run.cp"/>
+                        <pathelement location="${ant.home}/lib/ant.jar"/>
+                        <pathelement location="${ant.home}/lib/ant-junit.jar"/>
+                    </classpath>
+                    <syspropertyset refid="test.@{test.type}.properties"/>
+                    <arg value="${test.class}"/>
+                    <arg value="showoutput=true"/>
+                    <arg value="formatter=org.apache.tools.ant.taskdefs.optional.junit.BriefJUnitResultFormatter"/>
+                    <arg value="formatter=org.apache.tools.ant.taskdefs.optional.junit.XMLJUnitResultFormatter,${test.report.file}"/>
+                </java>
+            </sequential>
+        </macrodef>
+        <property name="test.type" value="unit"/>
+        <do-debug-test-single test.type="${test.type}"/>
     </target>
 
     <target name="debug-test-single" depends="init,test-init,test-build,do-debug-test-single"/>
 
     <target name="debug-test-single-nb" depends="init,test-init,test-build,-jdk-presetdef-nbjpdastart" if="netbeans.home">
-        <fail unless="test.class">Must set test.class</fail>
-        <nbjpdastart transport="dt_socket" addressproperty="jpda.address" name="${test.class}">
-            <classpath>
-                <path refid="test.unit.run.cp"/>
-                <!-- Permit extra sources to be searched even if they are not in the actual CP. -->
-                <!-- Used e.g. from ant/test/unit since some tests use dynamic loading: -->
-                <pathelement path="${test.unit.debug.cp.extra}"/>
-            </classpath>
-        </nbjpdastart>
-        <antcall target="do-debug-test-single"/>
+        <macrodef name="debug-test-single-nb">
+            <attribute name="test.type"/>
+            <sequential>
+                <fail unless="test.class">Must set test.class</fail>
+                <nbjpdastart transport="dt_socket" addressproperty="jpda.address" name="${test.class}">
+                    <classpath>
+                        <path refid="test.@{test.type}.run.cp"/>
+                        <!-- Permit extra sources to be searched even if they are not in the actual CP. -->
+                        <!-- Used e.g. from ant/test/unit since some tests use dynamic loading: -->
+                        <pathelement path="${test.@{test.type}.debug.cp.extra}"/>
+                    </classpath>
+                </nbjpdastart>
+                <antcall target="do-debug-test-single"/>
+            </sequential>
+        </macrodef>
+        <property name="test.type" value="unit"/>
+        <debug-test-single-nb test.type="${test.type}"/>
     </target>
 
     <target name="-pre-debug-fix" depends="init">
@@ -555,34 +665,47 @@ made subject to such option by the copyright holder.
         </nbjpdareload>
     </target>
     <target name="debug-fix-test-nb" if="netbeans.home" depends="init,-pre-debug-fix,compile-test-single">
-        <nbjpdareload>
-            <fileset includes="${fix.class}*.class" dir="${build.test.unit.classes.dir}"/>
-        </nbjpdareload>
+        <macrodef name="debug-fix-test-nb">
+            <attribute name="test.type"/>
+            <sequential>
+                <nbjpdareload>
+                    <fileset includes="${fix.class}*.class" dir="${build.test.@{test.type}.classes.dir}"/>
+                </nbjpdareload>
+            </sequential>
+        </macrodef>
+        <property name="test.type" value="unit"/>
+        <debug-fix-test-nb test.type="${test.type}"/>
     </target>
 
     <target name="profile-test-single-nb" depends="init,test-init,test-build,-jdk-presetdef-nbprofiledirect">
-        <fail unless="profile.class">Must set profile.class</fail>
-        <mkdir dir="${build.test.unit.results.dir}"/>
-        <nbprofiledirect
-            jvmargsproperty="profiler.jvmargs"
-            >
-            <classpath refid="test.unit.run.cp"/>
-        </nbprofiledirect>
-        <junit showoutput="true" fork="true" failureproperty="tests.failed" errorproperty="tests.failed" filtertrace="${test.filter.trace}" tempdir="${build.test.unit.results.dir}">
-            <env key="${profiler.info.pathvar}" path="${profiler.info.agentpath}:${profiler.current.path}"/>
-            <jvmarg value="${profiler.info.jvmargs.agent}"/>
-            <jvmarg line="${profiler.info.jvmargs}"/>
-            <test name="${profile.class}" todir="${build.test.unit.results.dir}"/>
-            <classpath refid="test.unit.run.cp"/>
-            <syspropertyset refid="test.unit.properties"/>
-            <!-- <assertions> does not seem to work in Ant 1.6.1? -->
-            <jvmarg value="-ea"/>
-            <formatter type="brief" usefile="false"/>
-            <formatter type="xml"/>
-        </junit>
-        <fail if="tests.failed">Some tests failed; see details above.</fail>
+        <macrodef name="profile-test-single-nb">
+            <attribute name="test.type"/>
+            <sequential>
+                <fail unless="profile.class">Must set profile.class</fail>
+                <mkdir dir="${build.test.@{test.type}.results.dir}"/>
+                <nbprofiledirect
+                    jvmargsproperty="profiler.jvmargs"
+                    >
+                    <classpath refid="test.@{test.type}.run.cp"/>
+                </nbprofiledirect>
+                <junit showoutput="true" fork="true" failureproperty="tests.failed" errorproperty="tests.failed" filtertrace="${test.filter.trace}" tempdir="${build.test.@{test.type}.results.dir}">
+                    <env key="${profiler.info.pathvar}" path="${profiler.info.agentpath}:${profiler.current.path}"/>
+                    <jvmarg value="${profiler.info.jvmargs.agent}"/>
+                    <jvmarg line="${profiler.info.jvmargs}"/>
+                    <test name="${profile.class}" todir="${build.test.@{test.type}.results.dir}"/>
+                    <classpath refid="test.@{test.type}.run.cp"/>
+                    <syspropertyset refid="test.@{test.type}.properties"/>
+                    <jvmarg line="${test.run.args}"/>
+                    <formatter type="brief" usefile="false"/>
+                    <formatter type="xml"/>
+                </junit>
+                <fail if="tests.failed">Some tests failed; see details above.</fail>
+            </sequential>
+        </macrodef>
+        <property name="test.type" value="unit"/>
+        <profile-test-single-nb test.type="${test.type}"/>
     </target>
-    
+
     <target name="-javadoc-init" depends="init">
         <!-- #71884: default Javadoc title and header -->
         <property file="${manifest.mf}" prefix="mf."/>
@@ -598,14 +721,14 @@ made subject to such option by the copyright holder.
         <property name="mf.OpenIDE-Module-Implementation-Version" value=""/> <!-- fallback -->
         <property name="javadoc.header" value="${mf.OpenIDE-Module} ${mf.OpenIDE-Module-Specification-Version} ${mf.OpenIDE-Module-Implementation-Version}"/>
     </target>
-    
+
     <target name="arch" depends="init" description="Process an arch.xml, creating it if it does not yet exist.">
         <fail unless="javadoc.arch">You must define e.g. javadoc.arch=$${basedir}/arch.xml in project.properties</fail>
         <mkdir dir="build"/>
         <property name="arch.output.html" location="build/arch.html"/>
         <property name="arch.generate" value="true"/>
         <arch answers="${javadoc.arch}" output="${arch.output.html}"
-            project="nbproject/project.xml" 
+            project="nbproject/project.xml"
         />
     </target>
 
@@ -620,7 +743,7 @@ made subject to such option by the copyright holder.
     <target name="arch-nb" depends="init,arch,-arch-nb-check" if="-arch-nb-run" description="Process an arch.xml, creating it if it does not yet exist, and display the result.">
         <nbbrowse file="${arch.output.html}"/>
     </target>
-    
+
     <target name="-testuserdir-delete-init" depends="files-init">
         <property name="test.user.dir" location="build/testuserdir"/>
         <property name="test.user.dir.lock" location="${test.user.dir}/lock"/>
@@ -634,7 +757,7 @@ made subject to such option by the copyright holder.
         <fail>Will not delete ${test.user.dir} because ${test.user.dir.lock} still exists; kill any running process and delete lock file if necessary</fail>
     </target>
     <target name="testuserdir-delete" depends="-testuserdir-delete-ok,-testuserdir-delete-fail" description="Delete testing user directory (if the application is not running); clears any saved settings etc."/>
-    
+
     <target name="clean" depends="files-init,testuserdir-delete,test-clean">
         <delete failonerror="false" includeemptydirs="true">
             <fileset dir="build">
@@ -650,35 +773,49 @@ made subject to such option by the copyright holder.
         </delete>
         <delete file="${cluster}/update_tracking/${code.name.base.dashes}.xml"/>
     </target>
+    <target name="test-clean" depends="basic-init,files-init">
+        <macrodef name="test-clean">
+            <attribute name="test.type"/>
+            <sequential>
+                <parseprojectxml project=".">
+                    <testtype name="@{test.type}" folder="test.@{test.type}.folder"/>
+                </parseprojectxml>
+                <property name="test.@{test.type}.out.folder" location="${test.@{test.type}.folder}"/>
+                <delete dir="${test.@{test.type}.out.folder}"/>
+            </sequential>
+        </macrodef>
+        <test-clean test.type="unit"/>
+        <test-clean test.type="qa-functional"/>
+    </target>
 
     <target name="fix-dependencies" depends="basic-init" description="Removes unused compilation dependencies on other modules.">
-        <property name="build.compiler.deprecation" value="false" />        
+        <property name="build.compiler.deprecation" value="false" />
         <fixdependencies antfile="../../build.xml" buildtarget="netbeans" cleantarget="clean" failonerror="true" >
-          <replace codenamebase="org.openide" addcompiletime="true" >
-            <module codenamebase="org.openide.filesystems" spec="6.2"/>
-            <module codenamebase="org.openide.util" spec="6.2"/>
-            <module codenamebase="org.openide.util.enumerations" spec="6.2"/>
-            <module codenamebase="org.openide.modules" spec="6.2"/>
-            <module codenamebase="org.openide.nodes" spec="6.2"/>
-            <module codenamebase="org.openide.explorer" spec="6.2"/>
-            <module codenamebase="org.openide.awt" spec="6.2"/>
-            <module codenamebase="org.openide.dialogs" spec="6.2"/>
-            <module codenamebase="org.openide.compat" spec="6.2"/>
-            <module codenamebase="org.openide.options" spec="6.2"/>
-            <module codenamebase="org.openide.windows" spec="6.2"/>
-            <module codenamebase="org.openide.text" spec="6.2"/>
-            <module codenamebase="org.openide.actions" spec="6.2"/>
-            <module codenamebase="org.openide.loaders" spec="5.3"/>
-          </replace>
-          
-          <fileset dir="nbproject" >
-              <include name="project.xml" />
-          </fileset>
+            <replace codenamebase="org.openide" addcompiletime="true" >
+                <module codenamebase="org.openide.filesystems" spec="6.2"/>
+                <module codenamebase="org.openide.util" spec="6.2"/>
+                <module codenamebase="org.openide.util.enumerations" spec="6.2"/>
+                <module codenamebase="org.openide.modules" spec="6.2"/>
+                <module codenamebase="org.openide.nodes" spec="6.2"/>
+                <module codenamebase="org.openide.explorer" spec="6.2"/>
+                <module codenamebase="org.openide.awt" spec="6.2"/>
+                <module codenamebase="org.openide.dialogs" spec="6.2"/>
+                <module codenamebase="org.openide.compat" spec="6.2"/>
+                <module codenamebase="org.openide.options" spec="6.2"/>
+                <module codenamebase="org.openide.windows" spec="6.2"/>
+                <module codenamebase="org.openide.text" spec="6.2"/>
+                <module codenamebase="org.openide.actions" spec="6.2"/>
+                <module codenamebase="org.openide.loaders" spec="5.3"/>
+            </replace>
+
+            <fileset dir="nbproject" >
+                <include name="project.xml" />
+            </fileset>
         </fixdependencies>
     </target>
-    
+
     <target name="fix-test-dependencies" depends="basic-init" description="Moves classpath for tests from project.properties to project.xml.">
-            <fixtestdeps projectXml="nbproject/project.xml" 
-                  propertiesFile="nbproject/project.properties"/>  
+        <fixtestdeps projectXml="nbproject/project.xml"
+                  propertiesFile="nbproject/project.properties"/>
     </target>
 </project>

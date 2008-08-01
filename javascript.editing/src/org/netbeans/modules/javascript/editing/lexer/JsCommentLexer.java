@@ -85,6 +85,7 @@ public class JsCommentLexer implements Lexer<JsCommentTokenId> {
         return null;
     }
     
+    @SuppressWarnings("empty-statement")
     public Token<JsCommentTokenId> nextToken() {
         int ch = input.read();
         
@@ -105,11 +106,13 @@ public class JsCommentLexer implements Lexer<JsCommentTokenId> {
             //TODO: EOF
             ch = input.read();
             
-            while (!Character.isJavaIdentifierStart(ch) && "@<.#{}".indexOf(ch) == (-1) && ch != EOF)
+            while (!Character.isJavaIdentifierStart(ch) && "@<.#{}".indexOf(ch) == (-1) && ch != EOF) {
                 ch = input.read();
+            }
             
-            if (ch != EOF)
+            if (ch != EOF) {
                 input.backup(1);
+            }
             return token(JsCommentTokenId.OTHER_TEXT);
         }
         
@@ -120,7 +123,7 @@ public class JsCommentLexer implements Lexer<JsCommentTokenId> {
                     
                     if (!Character.isLetter(ch)) {
                         input.backup(1);
-                        return tokenFactory.createToken(JsCommentTokenId.TAG, input.readLength());
+                        return tokenFactory.createToken(JsCommentTokenId.COMMENT_TAG, input.readLength());
                     }
                 }
             case '<':
@@ -165,12 +168,16 @@ public class JsCommentLexer implements Lexer<JsCommentTokenId> {
         while (ts.moveNext()) {
             Token<? extends JsCommentTokenId> token = ts.token();
             TokenId id = token.id();
-            if (id == JsCommentTokenId.TAG) {
+            if (id == JsCommentTokenId.COMMENT_TAG) {
                 CharSequence text = token.text();
                 if (TokenUtilities.textEquals("@param", text) ||  // NOI18N
                         TokenUtilities.textEquals("@argument", text)) { // NOI18N
                     int index = ts.index();
                     String type = nextType(ts);
+                    if (type == null) {
+                        ts.moveIndex(index);
+                        ts.moveNext();
+                    }
                     String name = nextIdent(ts);
                     if (name != null) {
                         result.put(name, type);
@@ -193,6 +200,8 @@ public class JsCommentLexer implements Lexer<JsCommentTokenId> {
                     }
                 } else if (TokenUtilities.textEquals("@namespace", text) || // NOI18N
                         TokenUtilities.textEquals("@extends", text) || // NOI18N
+                        TokenUtilities.textEquals("@method", text) || // NOI18N
+                        TokenUtilities.textEquals("@property", text) || // NOI18N
                         TokenUtilities.textEquals("@class", text)) { // NOI18N
                     String arg = nextIdentGroup(ts);
                     if (arg != null) {
@@ -209,7 +218,7 @@ public class JsCommentLexer implements Lexer<JsCommentTokenId> {
         
         return result;
     }
-
+    
     /**
      * Searches for closest (to current token) type definition in curly braces.
      * Skips sequence IGNORED - LCURL - IGNORED where IGNORED is token ignored by {@link #nextNonIgnored}
@@ -217,7 +226,7 @@ public class JsCommentLexer implements Lexer<JsCommentTokenId> {
      * @param ts token sequence to perform the search from current token
      * @return found IDENT token or null if no such token exists
      */
-    private static String nextType(TokenSequence<? extends JsCommentTokenId> ts) {
+    public static String nextType(TokenSequence<? extends JsCommentTokenId> ts) {
         StringBuilder sb = new StringBuilder();
         // find next token which is not OTHER_TEXT
         Token<? extends JsCommentTokenId> nextToken = nextNonIgnored(ts);
@@ -231,7 +240,16 @@ public class JsCommentLexer implements Lexer<JsCommentTokenId> {
                         if (sb.length() > 0) { sb.append('|'); }
                     }
                     newToken = false;
-                    sb.append(ts.token().text().toString());
+                    sb.append(ts.token().text());
+                } else if (tid == JsCommentTokenId.OTHER_TEXT && TokenUtilities.startsWith(ts.token().text(), "[]")) { // NOI18N
+                    //sb.append("[]"); // NOI18N
+                    rewriteAsArray(sb);
+                    newToken = true;
+                } else if (tid == JsCommentTokenId.HTML_TAG && TokenUtilities.startsWith(ts.token().text(), "<") && // NOI18N
+                        sb.length() >= 5 && sb.charAt(sb.length()-1) == 'y' && sb.toString().endsWith("Array")) { // NOI18N
+                    // Array<Foo>. We don't just insert all tags since many references put links to documentation around types
+                    sb.append(ts.token().text());
+                    newToken = true;
                 } else {
                     newToken = true;
                 }
@@ -249,7 +267,7 @@ public class JsCommentLexer implements Lexer<JsCommentTokenId> {
      * @param ts token sequence to perform the search from current token
      * @return found IDENT token or null if no such token exists
      */
-    private static String nextIdent(TokenSequence<? extends JsCommentTokenId> ts) {
+    public static String nextIdent(TokenSequence<? extends JsCommentTokenId> ts) {
         // find next token which is not OTHER_TEXT
         Token<? extends JsCommentTokenId> nextToken = nextNonIgnored(ts);
         // if it is IDENT token return its text
@@ -265,14 +283,15 @@ public class JsCommentLexer implements Lexer<JsCommentTokenId> {
      * @param ts token sequence to perform the search from current token
      * @return found IDENT token group or null if no such token exists
      */
-    private static String nextIdentGroup(TokenSequence<? extends JsCommentTokenId> ts) {
+    public static String nextIdentGroup(TokenSequence<? extends JsCommentTokenId> ts) {
         // find next token which is not OTHER_TEXT
         Token<? extends JsCommentTokenId> nextToken = nextNonIgnored(ts);
         // if it is IDENT token return its text
         if (nextToken != null && nextToken.id() == JsCommentTokenId.IDENT) {
             // Peek to see if we have a dot next to it
             if (ts.moveNext()) {
-                if (ts.token().id() == JsCommentTokenId.DOT) {
+                TokenId tid = ts.token().id();
+                if (tid == JsCommentTokenId.DOT) {
                     StringBuilder sb = new StringBuilder();
                     sb.append(nextToken.text());
                     
@@ -285,10 +304,19 @@ public class JsCommentLexer implements Lexer<JsCommentTokenId> {
                             break;
                         }
                     }
-                    if (goback) {
+                    if (goback && TokenUtilities.startsWith(ts.token().text(), "[]")) { // NOI18N
+                        //sb.append("[]");
+                        rewriteAsArray(sb);
+                    } else if (goback) {
                         ts.movePrevious();
                     }
                     return sb.toString();
+                } else if (tid == JsCommentTokenId.HTML_TAG && TokenUtilities.startsWith(ts.token().text(), "<") && // NOI18N
+                        TokenUtilities.endsWith(nextToken.text(), "Array")) { // NOI18N
+                    return "Array" + ts.token().text().toString(); // NOI18N
+                } else if (tid == JsCommentTokenId.OTHER_TEXT && TokenUtilities.startsWith(ts.token().text(), "[]")) { // NOI18N
+                    // XXX This won't work for dotted types
+                    return "Array<" + nextToken.text().toString() + ">"; // NOI18N
                 }
                 
                 ts.movePrevious();
@@ -296,6 +324,32 @@ public class JsCommentLexer implements Lexer<JsCommentTokenId> {
             return nextToken.text().toString();
         }
         return null;
+    }
+    
+    /** If you have something like "String[]" we want to rewrite it as Array<String>.
+     * The StringBuilder may already contain "String" when we see []. At this point
+     * we want to rewrite the buffer to contain Array<String>. That's what this method
+     * does: It finds the most recent type and converts it to an array.
+     */
+    private static void rewriteAsArray(StringBuilder sb) {
+        int last = sb.length()-1;
+        for (; last >= 0; last--) {
+            char c = sb.charAt(last);
+            if (c == '|') {
+                break;
+            }
+        }
+        last++;
+        if (last == sb.length()) {
+            // Error in documentation
+            return;
+        }
+        
+        String s = sb.substring(last);
+        sb.setLength(last);
+        sb.append("Array<"); // NOI18N
+        sb.append(s);
+        sb.append(">"); // NOI18N
     }
     
     /**

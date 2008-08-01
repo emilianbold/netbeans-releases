@@ -46,6 +46,7 @@ import java.util.Map;
 import java.util.HashMap;
 
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarProjectProperties;
@@ -59,6 +60,7 @@ import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Mutex;
 
 /**
  * Defines the various class paths for a EJB project.
@@ -100,16 +102,21 @@ public final class ClassPathProviderImpl implements ClassPathProvider, AntProjec
         this.helper.addAntProjectListener (this);
     }
 
-    private synchronized FileObject getDir(String propname) {
-        FileObject fo = this.dirCache.get(propname);
-        if (fo == null ||  !fo.isValid()) {
-            String prop = helper.getStandardPropertyEvaluator ().getProperty (propname);
-            if (prop != null) {
-                fo = helper.resolveFileObject(prop);
-                this.dirCache.put(propname, fo);
-            }
-        }
-        return fo;
+    private FileObject getDir(final String propname) {
+        return ProjectManager.mutex().readAccess(new Mutex.Action<FileObject>() {
+            public FileObject run() {
+                synchronized (ClassPathProviderImpl.this) {
+                    FileObject fo = (FileObject) ClassPathProviderImpl.this.dirCache.get (propname);
+                    if (fo == null ||  !fo.isValid()) {
+                        String prop = helper.getStandardPropertyEvaluator ().getProperty (propname);
+                        if (prop != null) {
+                            fo = helper.resolveFileObject(prop);
+                            ClassPathProviderImpl.this.dirCache.put (propname, fo);
+                        }
+                    }
+                    return fo;
+                }
+            }});
     }
     
     private FileObject[] getPrimarySrcPath() {
@@ -249,10 +256,10 @@ public final class ClassPathProviderImpl implements ClassPathProvider, AntProjec
         if (cp == null) {
             switch (type) {
                 case 0:
-                    cp = ClassPathFactory.createClassPath(new SourcePathImplementation (this.sourceRoots,this.helper));
+                    cp = ClassPathFactory.createClassPath(new SourcePathImplementation (this.sourceRoots,this.helper, this.evaluator));
                     break;
                 case 1:
-                    cp = ClassPathFactory.createClassPath(new SourcePathImplementation (this.testSourceRoots,this.helper));
+                    cp = ClassPathFactory.createClassPath(new SourcePathImplementation (this.testSourceRoots,this.helper, this.evaluator));
                     break;
             }
         }

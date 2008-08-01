@@ -44,9 +44,11 @@ package org.openide.text;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.actions.CopyAction;
 import org.openide.actions.CutAction;
 import org.openide.actions.DeleteAction;
@@ -69,6 +71,7 @@ import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataLoader;
 import org.openide.loaders.DataNode;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectExistsException;
@@ -79,6 +82,7 @@ import org.openide.loaders.UniFileLoader;
 import org.openide.nodes.Children;
 import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.LookupListener;
@@ -104,7 +108,15 @@ public class AnnotationProviderTest extends NbTestCase {
         org.openide.filesystems.LocalFileSystem lfs = new org.openide.filesystems.LocalFileSystem ();
         lfs.setRootDirectory (getWorkDir ());
         fs = lfs;
+        ConsistencyCheckProvider.initialized = false;
     }
+
+    @Override
+    protected int timeOut() {
+        return 20000;
+    }
+    
+    
     
     public void testAnnotationProviderIsCalledCorrectly() throws Exception {              
         Object o = Lookup.getDefault().lookup(AnnotationProvider.class);
@@ -116,15 +128,15 @@ public class AnnotationProviderTest extends NbTestCase {
 
         DataObject data = DataObject.find(fo);
         
-        EditorCookie ec = (EditorCookie)data.getCookie(EditorCookie.class);
+        EditorCookie ec = data.getCookie(EditorCookie.class);
         
-        ConsistencyCheckProvider.called = 0;
+        ConsistencyCheckProvider.setCalled(0);
         ec.open();
         
         CloneableEditorSupport ces = (CloneableEditorSupport)ec;
         
-        assertEquals("Provider called exactly once", 1, ConsistencyCheckProvider.called);
-        assertEquals("Consistent lookup content", data.getPrimaryFile(), ConsistencyCheckProvider.inLkp);
+        assertEquals("Provider called exactly once", 1,ConsistencyCheckProvider.getCalled());
+        assertEquals("Consistent lookup content", data.getPrimaryFile(),ConsistencyCheckProvider.getInLkp());
 
         Line l1 = ces.getLineSet().getCurrent(0);
         assertEquals("Exactly one annotation attached", 1, l1.getAnnotationCount());
@@ -135,18 +147,20 @@ public class AnnotationProviderTest extends NbTestCase {
         assertEquals ("Lines are the same", l1, l2);
         assertEquals("Exactly one annotation attached after close", 1, l2.getAnnotationCount());
 
-        ConsistencyCheckProvider.called = 0;
+        ConsistencyCheckProvider.setCalled(0);
         ec.open();
         // XXX
-        assertEquals("Provider not called during reopen", 0, ConsistencyCheckProvider.called);
+        assertEquals("Provider not called during reopen", 0,ConsistencyCheckProvider.getCalled());
         assertEquals("Exactly one annotation attached after reopen", 1, ces.getLineSet().getCurrent(0).getAnnotationCount());
     }
 
+    @RandomlyFails
     public void testContextLookupIsConsistentAfterMove() throws Exception {              
+        ConsistencyCheckProvider.setCalled(0);
         // Prepare the data object (to initialize the lookup)
         FileObject fo = fs.getRoot().createData("test2", "txt");
         DataObject data = DataObject.find(fo);
-        EditorCookie ec = (EditorCookie)data.getCookie(EditorCookie.class);
+        EditorCookie ec = data.getCookie(EditorCookie.class);
 
         // now move it (the lookup should update itself)
         FileObject fld = fs.getRoot().createFolder("folder1");
@@ -156,7 +170,7 @@ public class AnnotationProviderTest extends NbTestCase {
         // now open the editor (invoke AnnotationProviders)
         // and check the lookup
         ec.open();
-        assertEquals("Consistent lookup content", data.getPrimaryFile(), ConsistencyCheckProvider.inLkp);
+        assertEquals("Consistent lookup content", data.getPrimaryFile(),ConsistencyCheckProvider.getInLkp());
     }
     
     private void forceGC () {
@@ -164,21 +178,22 @@ public class AnnotationProviderTest extends NbTestCase {
             System.gc ();
         }
     }
-    
+
+    @RandomlyFails
     public void testContextLookupFiresDuringMove() throws Exception {              
         // Prepare the data object (to initialize the lookup)
         FileObject fo = fs.getRoot().createData("test3", "txt");
         DataObject data = DataObject.find(fo);
-        EditorCookie ec = (EditorCookie)data.getCookie(EditorCookie.class);
+        EditorCookie ec = data.getCookie(EditorCookie.class);
 
         // open the editor and check the lookup before move
         ec.open();
-        assertEquals("Lookup content consistent before move", data.getPrimaryFile(), ConsistencyCheckProvider.inLkp);
+        assertEquals("Lookup content consistent before move", data.getPrimaryFile(),ConsistencyCheckProvider.getInLkp());
 
         forceGC ();
         
         // now move the file
-        ConsistencyCheckProvider.called = 0;
+        ConsistencyCheckProvider.setCalled(0);
         FileObject fld = fs.getRoot().createFolder("folder1");
         DataFolder df = DataFolder.findFolder(fld);
         data.move(df);
@@ -187,11 +202,40 @@ public class AnnotationProviderTest extends NbTestCase {
         
         // check the result
         assertEquals("Lookup fires one change during move", 1, ConsistencyCheckProvider.changes);
-        assertEquals("Lookup content consistent after move", data.getPrimaryFile(), ConsistencyCheckProvider.inLkp);
+        assertEquals("Lookup content consistent after move", data.getPrimaryFile(),ConsistencyCheckProvider.getInLkp());
     }
     
     public static class ConsistencyCheckProvider implements AnnotationProvider, LookupListener {
         
+        public static synchronized void waitInitialized() {
+            while (!initialized) {
+                try {
+                    ConsistencyCheckProvider.class.wait();
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
+
+        public static int getCalled() {
+            waitInitialized();
+            return called;
+        }
+
+        public static void setCalled(int aCalled) {
+            called = aCalled;
+        }
+
+        public static FileObject getInLkp() {
+            waitInitialized();
+            return inLkp;
+        }
+
+        public static void setInLkp(FileObject aInLkp) {
+            inLkp = aInLkp;
+        }
+        
+        private static boolean initialized;
         private static Set myLines = new HashSet();
         private static int called;
         private static FileObject inLkp;
@@ -199,21 +243,25 @@ public class AnnotationProviderTest extends NbTestCase {
         private static int changes;
         
         public void annotate(org.openide.text.Line.Set set, org.openide.util.Lookup context) {
-            result = context.lookupResult(FileObject.class);
-            result.addLookupListener(this);
-            inLkp= (FileObject)result.allInstances().iterator().next();
-            called++;
+            synchronized (ConsistencyCheckProvider.class) {
+                result = context.lookupResult(FileObject.class);
+                result.addLookupListener(this);
+                setInLkp((FileObject) result.allInstances().iterator().next());
+                called++;
 
-            Line act = set.getCurrent(0);
-            
-            myLines.add(act);
-            act.addAnnotation(new MyAnnotation());
-            
+                Line act = set.getCurrent(0);
+
+                myLines.add(act);
+                act.addAnnotation(new MyAnnotation());
+      
+                initialized = true;
+                ConsistencyCheckProvider.class.notifyAll();
+            }
         }        
         
         public void resultChanged(org.openide.util.LookupEvent ev) {
             changes++;
-            inLkp= (FileObject)result.allInstances().iterator().next();            
+            setInLkp((FileObject) result.allInstances().iterator().next());            
         }
         
     }
@@ -234,7 +282,7 @@ public class AnnotationProviderTest extends NbTestCase {
     }
     
     protected boolean runInEQ() {
-        return true;
+        return false;
     }    
     
     //
@@ -506,7 +554,7 @@ public class AnnotationProviderTest extends NbTestCase {
              * @return text editor support (instance of enclosing class)
              */
             public CloneableOpenSupport findCloneableOpenSupport() {
-                return (TXTEditorSupport)getDataObject().getCookie(TXTEditorSupport.class);
+                return getDataObject().getCookie(TXTEditorSupport.class);
             }
         } // End of nested Environment class.
 
@@ -514,7 +562,8 @@ public class AnnotationProviderTest extends NbTestCase {
 
     
     private static class MyPool extends org.openide.loaders.DataLoaderPool {
-        protected java.util.Enumeration loaders() {
+        @Override
+        protected Enumeration<? extends DataLoader> loaders() {
             return Collections.enumeration(Collections.singleton(
                 TXTDataLoader.getLoader(TXTDataLoader.class)
             ));

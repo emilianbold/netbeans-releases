@@ -41,12 +41,10 @@
 
 package org.netbeans.modules.web.wizards;
 
-import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -56,15 +54,12 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
-
-
 import org.openide.util.NbBundle;
 
-/* 
+/**
  * Wizard panel that collects deployment data for Servlets and Filters
  * @author Ana von Klopp 
  */
-
 class InitParamPanel extends JPanel implements ActionListener, 
 						ListSelectionListener { 
 
@@ -73,16 +68,12 @@ class InitParamPanel extends JPanel implements ActionListener,
     private final static String REMOVE = "remove"; 
     private ServletData deployData; 
     private BaseWizardPanel parent; 
-    private boolean edited = false; 
-
     private JLabel jLinitparams;
     private DDTable table; 
     private JButton jBnew; 
     private JButton jBedit; 
     private JButton jBdelete; 
     private JScrollPane scrollP; 
-
-    private static final boolean debug = false; 
 
     private static final long serialVersionUID = -5803905591685582710L;
     
@@ -93,7 +84,6 @@ class InitParamPanel extends JPanel implements ActionListener,
     }
 
     private void initComponents () {
-
 	// Layout description
 	setLayout(new java.awt.GridBagLayout());
 
@@ -143,9 +133,7 @@ class InitParamPanel extends JPanel implements ActionListener,
 	// 2. Table row
 
 	String[] headers = { "paramname", "paramvalue" };
-	table = new DDTable(headers, 
-			    "LBL_initparams", 
-			    Editable.BOTH); 
+	table = new DDTable(headers, "LBL_initparams", Editable.BOTH); 
 
 	jLinitparams.setLabelFor(table);
 
@@ -157,19 +145,14 @@ class InitParamPanel extends JPanel implements ActionListener,
 
 	table.getModel().addTableModelListener(new TableModelListener() { 
 	    public void tableChanged(TableModelEvent evt) {
-		if(debug) log("\ttable model changed"); //NOI18N
 		updateInitParams();
-		//table.revalidate(); 
-		//scrollP.revalidate(); 
-		//scrollP.repaint(); 
 	    }}); 
 
 	scrollP = new JScrollPane(table); 
 	this.add(scrollP, tableC); 
 
 	jBnew = new JButton(); 
-	jBnew.setText(NbBundle.getMessage(InitParamPanel.class, 
-					  "LBL_new")); 
+	jBnew.setText(NbBundle.getMessage(InitParamPanel.class, "LBL_new")); 
 	jBnew.setMnemonic(NbBundle.getMessage(InitParamPanel.class, "LBL_new_mnemonic").charAt(0));
 	jBnew.addActionListener(this); 
 	jBnew.setActionCommand(ADD); 
@@ -178,8 +161,7 @@ class InitParamPanel extends JPanel implements ActionListener,
 
 	bC.gridy++; 
 	jBedit = new JButton(); 
-	jBedit.setText(NbBundle.getMessage(InitParamPanel.class,
-					     "LBL_edit")); 
+	jBedit.setText(NbBundle.getMessage(InitParamPanel.class, "LBL_edit")); 
 	jBedit.setMnemonic(NbBundle.getMessage(InitParamPanel.class, "LBL_edit_mnemonic").charAt(0));
 	jBedit.addActionListener(this);
 	jBedit.setActionCommand(EDIT); 
@@ -189,8 +171,7 @@ class InitParamPanel extends JPanel implements ActionListener,
 
 	bC.gridy++; 
 	jBdelete = new JButton(); 
-	jBdelete.setText(NbBundle.getMessage(InitParamPanel.class,
-					     "LBL_delete")); 
+	jBdelete.setText(NbBundle.getMessage(InitParamPanel.class, "LBL_delete")); 
 	jBdelete.setMnemonic(NbBundle.getMessage(InitParamPanel.class, "LBL_delete_mnemonic").charAt(0));
 	jBdelete.addActionListener(this);
 	jBdelete.setActionCommand(REMOVE); 
@@ -199,20 +180,14 @@ class InitParamPanel extends JPanel implements ActionListener,
 	this.add(jBdelete, bC);
         
         this.add(new javax.swing.JPanel(),fillerC);
-
     }
 
     public void setEnabled() { 
-	
 	boolean enable = deployData.makeEntry(); 
     
 	jLinitparams.setEnabled(enable);
 	jBnew.setEnabled(enable); 
 	if(enable) { 
-	    if(debug) { 
-		log("\tnumRows: " + table.getRowCount()); //NOI18N
-		log("\tselected row: " + table.getSelectedRow()); //NOI18N
-	    }
 	    ListSelectionModel lsm = table.getSelectionModel(); 
 	    if (lsm.isSelectionEmpty()) {
 		jBdelete.setEnabled(false); 
@@ -231,41 +206,31 @@ class InitParamPanel extends JPanel implements ActionListener,
     } 
 
     public void actionPerformed(ActionEvent evt) { 
-
-	if(debug) log("::actionPerformed()"); //NOI18n
 	int row = -1; 
 	if(evt.getSource() instanceof JButton) { 
 	    if(evt.getActionCommand() == ADD) { 
-		if(debug) log("\tAdding row"); //NOI18N
 		String[] values= { 
 		    NbBundle.getMessage(InitParamPanel.class, "LBL_paramname"), 
 		    NbBundle.getMessage(InitParamPanel.class, "LBL_paramvalue"), 
 		}; 
 		row = table.addRow(values); 
 		table.setRowSelectionInterval(row, row);
-		if(debug) log("\tAdded row " + row); 
 	    } 
 	    else if (evt.getActionCommand() == REMOVE) { 
-		if(debug) log("\tDeleting row"); //NOI18N
 		row = table.getSelectedRow(); 
 		table.removeRow(row); 
                 setEnabled();
 	    }
 	    else if (evt.getActionCommand() == EDIT) { 
-		if(debug) log("\tEditing row"); //NOI18N
-		//table.stopEditing(); 
 		row = table.getSelectedRow(); 
 		String name = (String)(table.getValueAt(row, 0)); 
 		String value = (String)(table.getValueAt(row, 1)); 
-		String title =  NbBundle.getMessage(DDTable.class, 
-						    "LBL_initparams_edit"); //NOI18N
+		String title =  NbBundle.getMessage(DDTable.class, "LBL_initparams_edit"); //NOI18N
 		TableRowDialog d =
 		    new TableRowDialog(name, value, Editable.BOTH, 
-				       TableRowDialog.Condition.NONE, 
-				       title);
+				       TableRowDialog.Condition.NONE, title);
 		d.showDialog();
 		if(d.getDialogOK()) {
-		    if(debug) log("Dialog is OK"); 
 		    table.setData(d.getName(), d.getValue(), row); 
 		}
 		else 
@@ -276,7 +241,6 @@ class InitParamPanel extends JPanel implements ActionListener,
     }
 
     public void valueChanged(ListSelectionEvent e) {
-	if(debug) log("::valueChanged()"); //NOI18N
 	//Ignore extra messages.
 	if (e.getValueIsAdjusting()) return;
 	setEnabled(); 
@@ -284,37 +248,32 @@ class InitParamPanel extends JPanel implements ActionListener,
     } 
 
     private void updateInitParams() { 
-
-	if(debug) log("::updateInitParams()"); 
-	edited = true; 
-
 	if(deployData.makeEntry()) { 
-
-	    if(debug) { 
-		log("\tnumRows: " + table.getRowCount()); //NOI18N
-		log("\tselected row: " + table.getSelectedRow()); //NOI18N
-	    }
-
 	    int numInitParams = table.getRowCount(); 
 	    String[][] param = new String[numInitParams][2]; 
-
-	    if(debug) log("\tnum params " + //NOI18N
-			  String.valueOf(numInitParams)); 
-
 	    boolean isOK = true; 
 	    for(int i=0; i<numInitParams; ++i) { 
 		param[i][0] = (String)(table.getModel().getValueAt(i,0)); 
-		if(debug) log("\tname is " + param[i][0]); //NOI18N
-		if(param[i][0].length() == 0) isOK = false; 
+		if(param[i][0].length() == 0)
+                    isOK = false; 
 		param[i][1] = (String)(table.getModel().getValueAt(i,1)); 
-		if(debug) log("\tname is " + param[i][1]); //NOI18N
 	    } 
-	    deployData.setInitParams(param, isOK); 
+            
+            // test parameters for duplicities
+            String duplicitParam = null;
+            for (int i=0,maxi=param.length; i<maxi; i++) {
+                String param1name = param[i][0];
+                for (int j=i+1; j<maxi; j++) {
+                    if (param1name.equals(param[j][0])) {
+                        duplicitParam = param1name;
+                        break;
+                    }
+                }
+            }
+            
+	    deployData.setInitParams(param, isOK, duplicitParam);
 	    parent.fireChangeEvent();
 	}
     }	    
     
-    private void log(String s) { 
-	System.out.println("InitParamPanel" + s); 
-    }
 }

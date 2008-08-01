@@ -211,6 +211,7 @@ public class CommonAttributePanel extends ResourceWizardPanel {
                               setErrorMsg(bundle.getString("Err_InvalidJndiName"));
                               return false;
                           } else if (!ResourceUtils.isLegalResourceName(jndiName)) {
+                              setErrorMsg(bundle.getString("Err_InvalidJndiName"));
                               return false;
                           } else {
                               FileObject resFolder = this.helper.getData().getTargetFileObject();
@@ -286,15 +287,20 @@ public class CommonAttributePanel extends ResourceWizardPanel {
         if(component == null)
             getComponent();
         if(resFolder != null){
-            if (wizardInfo.getName ().equals (__JdbcResource)){
-                if(this.helper.getData ().getString (__DynamicWizPanel).equals ("true")){ //NOI18N
-                    targetName = null;
+            String resourceName = this.helper.getData().getString("jndi-name");
+            if((resourceName != null) && (! resourceName.equals(""))) {
+                this.helper.getData().setTargetFile(resourceName);
+            } else {
+                if (wizardInfo.getName().equals(__JdbcResource)) {
+                    if (this.helper.getData().getString(__DynamicWizPanel).equals("true")) { //NOI18N
+                        targetName = null;
+                    }
+                    targetName = ResourceUtils.createUniqueFileName(targetName, resFolder, __JDBCResource);
+                    this.helper.getData().setTargetFile(targetName);
+                } else if (wizardInfo.getName().equals(__PersistenceManagerFactoryResource)) {
+                    targetName = ResourceUtils.createUniqueFileName(targetName, resFolder, __PersistenceResource);
+                    this.helper.getData().setTargetFile(targetName);
                 }
-                targetName = ResourceUtils.createUniqueFileName (targetName, resFolder, __JDBCResource);
-                this.helper.getData ().setTargetFile (targetName);
-            }else if(wizardInfo.getName ().equals (__PersistenceManagerFactoryResource)){
-                targetName = ResourceUtils.createUniqueFileName (targetName, resFolder, __PersistenceResource);
-                this.helper.getData ().setTargetFile (targetName);
             }
             if(! getIsConnPool()) {
               CommonAttributeVisualPanel visComponent = (CommonAttributeVisualPanel) component;

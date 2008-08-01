@@ -179,11 +179,6 @@ public class JspParserImpl implements JspParserAPI {
     
     private synchronized WebAppParseProxy getParseProxy(WebModule wm) {
         WebAppParseProxy pp = parseSupports.get(wm);
-        // #67785 - the document root fileobject has to be valid
-        FileObject wmRoot = wm.getDocumentBase();
-        if (!wmRoot.isValid()) {
-            pp = null;
-        }
         if (pp == null) {
             pp = createParseProxy(wm);
             parseSupports.put(wm, pp);

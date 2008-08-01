@@ -118,18 +118,18 @@ public abstract class SvnProgressSupport implements Runnable, Cancellable {
             return false;
         }                
         getLogger().flushLog();
+        if(delegate != null) {
+            delegate.cancel();
+        } 
         if(task != null) {
             task.cancel();
         }
-        if(delegate != null) {
-            delegate.cancel();
-        }        
         getProgressHandle().finish();
         canceled = true;
         return true;
     }
 
-    void setCancellableDelegate(Cancellable cancellable) {
+    protected void setCancellableDelegate(Cancellable cancellable) {
         this.delegate = cancellable;
     }
 

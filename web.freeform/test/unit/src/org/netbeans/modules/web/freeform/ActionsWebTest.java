@@ -45,9 +45,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import org.netbeans.junit.NbTestCase;
 import org.netbeans.spi.project.ActionProvider;
-import org.openide.modules.ModuleInfo;
 import org.openide.util.Lookup;
 
 // XXX testContextActions
@@ -72,9 +70,9 @@ public class ActionsWebTest extends TestBaseWeb {
         if (true) return ;
         
         
-        ActionProvider ap = (ActionProvider)jakarta.getLookup().lookup(ActionProvider.class);
+        ActionProvider ap = jakarta.getLookup().lookup(ActionProvider.class);
         assertNotNull("have an action provider", ap);
-        List/*<String>*/ actionNames = new ArrayList(Arrays.asList(ap.getSupportedActions()));
+        List<String> actionNames = new ArrayList<String>(Arrays.asList(ap.getSupportedActions()));
         Collections.sort(actionNames);
         assertEquals("right action names", Arrays.asList(new String[] {"build", "clean", "compile.single", "copy", "debug", "delete", "javadoc", "move", "rebuild", "redeploy", "rename", "run", "test"}), actionNames);
         assertTrue("clean is enabled", ap.isActionEnabled("clean", Lookup.EMPTY));

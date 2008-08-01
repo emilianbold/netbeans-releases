@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.xml.wsdl.ui.netbeans.module;
 
 import java.io.IOException;
@@ -106,7 +105,7 @@ public class WSDLDataObject extends MultiDataObject {
     }
 
     @Override
-	protected FileObject handleMove(DataFolder df) throws IOException {
+    protected FileObject handleMove(DataFolder df) throws IOException {
         //TODO:make sure we save file before moving This is what jave move does.
         //It also launch move refactoring dialog which we should be doing
         //as well
@@ -153,12 +152,15 @@ public class WSDLDataObject extends MultiDataObject {
         return getCookie(WSDLEditorSupport.class);
     }
 
+    @Override
     public Lookup getLookup() {
         if (myLookup.get() == null) {
             Lookup superLookup = super.getLookup();
             //
             Lookup[] lookupArr = new Lookup[] {
-                Lookups.fixed(XmlFileEncodingQueryImpl.singleton()), 
+                Lookups.fixed(new Object[] {
+                    new SearchProvider(this),
+                    XmlFileEncodingQueryImpl.singleton()}),
                 superLookup};
             //
             Lookup newLookup = new ProxyLookup(lookupArr);
@@ -171,6 +173,5 @@ public class WSDLDataObject extends MultiDataObject {
         new AtomicReference<Lookup>();
     
     private static final long serialVersionUID = 6338889116068357651L;
-
     public static final String WSDL_ICON_BASE_WITH_EXT = "org/netbeans/modules/xml/wsdl/ui/netbeans/module/resources/wsdl_file.png";
 }

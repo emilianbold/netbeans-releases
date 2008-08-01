@@ -197,8 +197,9 @@ public class EmbeddedSectionsHighlighting extends AbstractHighlightsContainer im
                             sectionEnd = sequence.offset() + sequence.token().length();
 
                             try {
-                                int startLine = Utilities.getLineOffset((BaseDocument) document, sectionStart);
-                                int endLine = Utilities.getLineOffset((BaseDocument) document, sectionEnd);
+                                int docLen = document.getLength();
+                                int startLine = Utilities.getLineOffset((BaseDocument) document, Math.min(sectionStart, docLen));
+                                int endLine = Utilities.getLineOffset((BaseDocument) document, Math.min(sectionEnd, docLen));
 
                                 if (startLine != endLine) {
                                     // multiline scriplet section
@@ -296,7 +297,7 @@ public class EmbeddedSectionsHighlighting extends AbstractHighlightsContainer im
         public HighlightsLayer[] createLayers(Context context) {
             return new HighlightsLayer[]{ HighlightsLayer.create(
                 "jsp-embedded-java-scriplets-highlighting-layer", //NOI18N
-                ZOrder.SYNTAX_RACK.forPosition(-10),  //we need to have lower priority than the default syntax from options - 0
+                ZOrder.BOTTOM_RACK.forPosition(100),  //we need to have lower priority than the default syntax from options - 0
                 true, 
                 new EmbeddedSectionsHighlighting(context.getDocument())
             )};

@@ -46,11 +46,13 @@
  */
 package org.netbeans.modules.mobility.project.ui.wizard;
 
+import java.awt.Component;
 import java.awt.event.ItemListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentListener;
@@ -135,22 +137,27 @@ public class ProjectPanel extends javax.swing.JPanel {
             tmp = "My Project"; // NOI18N
         tName.setText(camelize(tmp));
         
-        final File home = ProjectChooser.getProjectsFolder();
-        tHome.setText(home != null ? home.getAbsolutePath() : System.getProperty("user.home", "")); // NOI18N
-        
-        if (testIfProjectNameExists()) {
-            String name = getProjectName();
-            if (name.endsWith("1")) name = name.substring(0, name.length() - 1); //NOI18N
-            int i = 2;
-            for (;;) {
-                tName.setText(name + i); // NOI18N
-                if (! testIfProjectNameExists())
-                    break;
-                i ++;
+        File location = (File) object.getProperty(PROJECT_LOCATION);
+        if (location != null){
+            tCreated.setText(location.getAbsolutePath());
+        } else {
+            final File home = ProjectChooser.getProjectsFolder();
+            tHome.setText(home != null ? home.getAbsolutePath() : System.getProperty("user.home", "")); // NOI18N
+
+            if (testIfProjectNameExists()) {
+                String name = getProjectName();
+                if (name.endsWith("1")) name = name.substring(0, name.length() - 1); //NOI18N
+                int i = 2;
+                for (;;) {
+                    tName.setText(name + i); // NOI18N
+                    if (! testIfProjectNameExists())
+                        break;
+                    i ++;
+                }
             }
+            tName.selectAll();
         }
-        tName.selectAll();
-        
+
         b = (Boolean) object.getProperty(PROJECT_MAIN);
         cMainProject.setSelected(b == null ? true : b.booleanValue());
         
@@ -432,7 +439,7 @@ public class ProjectPanel extends javax.swing.JPanel {
         
         public void showError(final String message) {
             if (wizard != null)
-                wizard.putProperty("WizardPanel_errorMessage", message); // NOI18N
+                wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, message); // NOI18N
         }
         
         private boolean isLatin1(final String s) {
@@ -494,6 +501,11 @@ public class ProjectPanel extends javax.swing.JPanel {
         public void readSettings(final Object obj) {
             wizard = (TemplateWizard) obj;
             ((ProjectPanel) getComponent()).readData(wizard);
+            Component component = getComponent();
+            Object substitute = ((JComponent)component).getClientProperty ("NewProjectWizard_Title"); // NOI18N
+            if (substitute != null) {
+                wizard.putProperty ("NewProjectWizard_Title", substitute); // NOI18N
+            }
         }
         
         public void storeSettings(final Object obj) {

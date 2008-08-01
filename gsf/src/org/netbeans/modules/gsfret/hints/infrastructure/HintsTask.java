@@ -46,6 +46,8 @@ import java.util.Set;
 import org.netbeans.modules.gsf.api.HintsProvider;
 import org.netbeans.modules.gsf.Language;
 import org.netbeans.modules.gsf.LanguageRegistry;
+import org.netbeans.modules.gsf.api.Hint;
+import org.netbeans.modules.gsf.api.RuleContext;
 import org.netbeans.napi.gsfret.source.CompilationInfo;
 import org.netbeans.modules.gsfret.editor.semantic.ScanningCancellableTask;
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -62,8 +64,9 @@ public class HintsTask extends ScanningCancellableTask<CompilationInfo> {
     }
     
     public void run(CompilationInfo info) throws Exception {
+        resume();
+        
         List<ErrorDescription> result = new ArrayList<ErrorDescription>();
-
         Set<String> mimeTypes = info.getEmbeddedMimeTypes();
         for (String mimeType : mimeTypes) {
             Language language = LanguageRegistry.getInstance().getLanguageByMimeType(mimeType);
@@ -74,13 +77,27 @@ public class HintsTask extends ScanningCancellableTask<CompilationInfo> {
             HintsProvider provider = language.getHintsProvider();
 
             if (provider == null) {
+                continue;
+            }
+
+            GsfHintsManager manager = language.getHintsManager();
+            if (manager == null) {
+                continue;
+            }
+            RuleContext ruleContext = manager.createRuleContext(info, language, -1, -1, -1);
+            List<Hint> hints = new ArrayList<Hint>();
+
+            if (ruleContext != null) {
+                provider.computeHints(manager, ruleContext, hints);
+            }
+            
+            if (isCancelled()) {
                 return;
             }
 
-            provider.computeHints(info, result);
-
-            if (isCancelled()) {
-                return;
+            for (Hint hint : hints) {
+                ErrorDescription desc = manager.createDescription(hint, ruleContext, false);
+                result.add(desc);
             }
         }
         

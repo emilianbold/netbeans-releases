@@ -63,7 +63,7 @@ public final class URLPatternWizard implements ChangeListener {
     private RepositoryStep repositoryStep;
     private URLPatternStep urlPatternStep;        
     
-    private String errorMessage;
+    private AbstractStep.WizardMessage errorMessage;
     private WizardDescriptor wizardDescriptor;
     private PanelsIterator wizardIterator;
         
@@ -80,10 +80,19 @@ public final class URLPatternWizard implements ChangeListener {
         return wizardDescriptor.getValue() == WizardDescriptor.FINISH_OPTION;
     }        
 
-    private void setErrorMessage(String msg) {
+    private void setErrorMessage(AbstractStep.WizardMessage msg) {
         errorMessage = msg;
         if (wizardDescriptor != null) {
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", msg); // NOI18N
+            if(errorMessage != null) {
+                if(errorMessage.isInfo()) {
+                    wizardDescriptor.putProperty(WizardDescriptor.PROP_INFO_MESSAGE, errorMessage.getMessage()); // NOI18N
+                } else {
+                    wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, errorMessage.getMessage()); // NOI18N
+                }
+            } else {
+                wizardDescriptor.putProperty(WizardDescriptor.PROP_INFO_MESSAGE, null); // NOI18N
+                wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, null); // NOI18N
+            }
         }
     }
 
@@ -92,7 +101,7 @@ public final class URLPatternWizard implements ChangeListener {
             return;
         }
         AbstractStep step = (AbstractStep) wizardIterator.current();
-        if(step == null) {
+        if(step==null) {
             return;
         }
         setErrorMessage(step.getErrorMessage());
@@ -136,15 +145,15 @@ public final class URLPatternWizard implements ChangeListener {
                 if (c instanceof JComponent) { // assume Swing components
                     JComponent jc = (JComponent) c;
                     // Sets step number of a component
-                    jc.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(i)); // NOI18N
+                    jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer(i)); // NOI18N
                     // Sets steps names for a panel
-                    jc.putClientProperty("WizardPanel_contentData", steps); // NOI18N
+                    jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps); // NOI18N
                     // Turn on subtitle creation on each step
-                    jc.putClientProperty("WizardPanel_autoWizardStyle", Boolean.TRUE); // NOI18N
+                    jc.putClientProperty(WizardDescriptor.PROP_AUTO_WIZARD_STYLE, Boolean.TRUE); // NOI18N
                     // Show steps on the left side with the image on the background
-                    jc.putClientProperty("WizardPanel_contentDisplayed", Boolean.TRUE); // NOI18N
+                    jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DISPLAYED, Boolean.TRUE); // NOI18N
                     // Turn on numbering of all steps
-                    jc.putClientProperty("WizardPanel_contentNumbered", Boolean.TRUE); // NOI18N                    
+                    jc.putClientProperty(WizardDescriptor.PROP_CONTENT_NUMBERED, Boolean.TRUE); // NOI18N                    
                 }
             }
             return panels;

@@ -142,7 +142,8 @@ class AST2Bytecode {
                     }
                 } while (true);
                 if (from < to) { // We have the method call
-                    if (!ci.getTreeUtilities().isSynthetic(ci.getTrees().getPath(cu, node))) {
+                    TreePath nodePath = trees.getPath(cu, node);
+                    if (nodePath != null && !ci.getTreeUtilities().isSynthetic(nodePath)) {
                         int pos = (int) sp.getStartPosition(cu, node);
                         EditorContext.Position startPosition =
                                 opCreationDelegate.createPosition(

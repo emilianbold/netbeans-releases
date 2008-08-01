@@ -104,6 +104,7 @@ import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
 import org.netbeans.spi.project.ui.support.UILookupMergerSupport;
+import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
@@ -158,7 +159,7 @@ public final class J2SEProject implements Project, AntProjectListener {
             }
         }
         refHelper = new ReferenceHelper(helper, aux, eval);
-        buildExtender = AntBuildExtenderFactory.createAntExtender(new J2SEExtenderImplementation());
+        buildExtender = AntBuildExtenderFactory.createAntExtender(new J2SEExtenderImplementation(), refHelper);
     /// TODO replace this GeneratedFilesHelper with the default one when fixing #101710
         genFilesHelper = new GeneratedFilesHelper(helper, buildExtender);
         UpdateImplementation updateProject = new UpdateProjectImpl(this, helper, aux);
@@ -171,7 +172,7 @@ public final class J2SEProject implements Project, AntProjectListener {
         actionProvider.startFSListener();
         helper.addAntProjectListener(this);
     }
-
+    
     /**
      * Returns the project directory
      * @return the directory the project is located in
@@ -251,19 +252,21 @@ public final class J2SEProject implements Project, AntProjectListener {
     }
 
     private Lookup createLookup(final AuxiliaryConfiguration aux,
-            final ActionProvider actionProvider) {
+            final J2SEActionProvider actionProvider) {
         final SubprojectProvider spp = refHelper.createSubprojectProvider();        
+        FileEncodingQueryImplementation encodingQuery = QuerySupport.createFileEncodingQuery(evaluator(), J2SEProjectProperties.SOURCE_ENCODING);
         final Lookup base = Lookups.fixed(new Object[] {
             J2SEProject.this,
             new Info(),
             aux,
             helper.createCacheDirectoryProvider(),
+            helper.createAuxiliaryProperties(),
             spp,
             actionProvider,
             new J2SELogicalViewProvider(this, this.updateHelper, evaluator(), spp, refHelper),
             // new J2SECustomizerProvider(this, this.updateHelper, evaluator(), refHelper),
             new CustomizerProviderImpl(this, this.updateHelper, evaluator(), refHelper, this.genFilesHelper),        
-            new ClassPathProviderMerger(cpProvider),
+            LookupMergerSupport.createClassPathProviderMerger(cpProvider),
             QuerySupport.createCompiledSourceForBinaryQuery(helper, evaluator(), getSourceRoots(), getTestSourceRoots()),
             QuerySupport.createJavadocForBinaryQuery(helper, evaluator()),
             new AntArtifactProviderImpl(),
@@ -279,15 +282,15 @@ public final class J2SEProject implements Project, AntProjectListener {
             buildExtender,
             cpMod,
             this, // never cast an externally obtained Project to J2SEProject - use lookup instead
-            new J2SEProjectOperations(this),
+            new J2SEProjectOperations(this, actionProvider),
             new J2SEConfigurationProvider(this),
             new J2SEPersistenceProvider(this, cpProvider),
             UILookupMergerSupport.createPrivilegedTemplatesMerger(),
             UILookupMergerSupport.createRecommendedTemplatesMerger(),
             LookupProviderSupport.createSourcesMerger(),
-            QuerySupport.createFileEncodingQuery(evaluator(), J2SEProjectProperties.SOURCE_ENCODING),
+            encodingQuery,
             new J2SEPropertyEvaluatorImpl(evaluator()),
-            new J2SETemplateAttributesProvider(this.helper),
+            QuerySupport.createTemplateAttributesProvider(helper, encodingQuery),
             ExtraSourceJavadocSupport.createExtraSourceQueryImplementation(this, helper, eval),
             LookupMergerSupport.createSFBLookupMerger(),
             ExtraSourceJavadocSupport.createExtraJavadocQueryImplementation(this, helper, eval),
@@ -731,7 +734,7 @@ public final class J2SEProject implements Project, AntProjectListener {
         public Project getOwningProject() {
             return J2SEProject.this;
         }
-
+        
     }
     
     private static final String ENDORSED_DIR_PROPERTY="jaxws.endorsed.dir"; //NOI18N

@@ -41,13 +41,8 @@
 
 package org.netbeans.modules.websvc.wsitmodelext.security.impl;
 
-import java.util.Collections;
-import org.netbeans.modules.websvc.wsitmodelext.policy.Policy;
 import org.netbeans.modules.websvc.wsitmodelext.security.BootstrapPolicy;
-import org.netbeans.modules.websvc.wsitmodelext.security.SecurityPolicyQName;
-import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import org.netbeans.modules.xml.wsdl.model.visitor.WSDLVisitor;
 import org.w3c.dom.Element;
 
 /**
@@ -63,25 +58,4 @@ public class BootstrapPolicyImpl extends SecurityPolicyComponentImpl implements 
         super(model, e);
     }
     
-    public BootstrapPolicyImpl(WSDLModel model){
-        this(model, createPrefixedElement(SecurityPolicyQName.BOOTSTRAPPOLICY.getQName(), model));
-    }
-
-    @Override
-    public void accept(WSDLVisitor visitor) {
-        visitor.visit(this);
-    }
-
-    public void setPolicy(Policy policy) {
-        java.util.List<Class<? extends WSDLComponent>> classes = Collections.emptyList();
-        setChild(Policy.class, POLICY_PROPERTY, policy, classes);
-    }
-
-    public Policy getPolicy() {
-        return getChild(Policy.class);
-    }
-
-    public void removePolicy(Policy policy) {
-        removeChild(POLICY_PROPERTY, policy);
-    }    
 }

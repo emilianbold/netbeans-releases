@@ -84,14 +84,8 @@ public class WsFromJavaWizardIterator implements TemplateWizard.Iterator /*, Ite
     public WsFromJavaWizardIterator() {
     }
         
-//    public static WsFromJavaWizardIterator create() {
-//        return new WsFromJavaWizardIterator();
-//    }
-
     public Set<DataObject> instantiate(TemplateWizard wiz) throws IOException {
         DataObject dObj = null;
-        
-        WizardUtils.addAxis2Library(project);
         
         if (WizardProperties.JAVA_TYPE_EXISTING.equals(wiz.getProperty(WizardProperties.PROP_FROM_JAVA_TYPE))) {
             FileObject fo = (FileObject)wiz.getProperty(WizardProperties.PROP_JAVA_CLASS);
@@ -122,7 +116,7 @@ public class WsFromJavaWizardIterator implements TemplateWizard.Iterator /*, Ite
         if (servicesModel == null) {            
             FileObject configFolder = AxisUtils.getServicesFolder(project.getProjectDirectory(), true);
             if (configFolder != null) {
-                FileObject servicesFo = configFolder.getFileObject("services.xml");
+                FileObject servicesFo = configFolder.getFileObject("services.xml"); // NOI18N
                 if (servicesFo == null) {
                     AxisUtils.retrieveServicesFromResource(configFolder, true);
                 }
@@ -183,20 +177,17 @@ public class WsFromJavaWizardIterator implements TemplateWizard.Iterator /*, Ite
         bottomPanel = new WsFromJavaPanel1(project, wiz);
         WizardDescriptor.Panel<WizardDescriptor> secondPanel; //special case: use Java Chooser
         if (sourceGroups.length == 0)
-            secondPanel = new FinishableProxyWizardPanel(Templates.createSimpleTargetChooser(project, sourceGroups, bottomPanel));
+            secondPanel = Templates.createSimpleTargetChooser(project, sourceGroups, bottomPanel);
         else
-            secondPanel = new FinishableProxyWizardPanel(JavaTemplates.createPackageChooser(project, sourceGroups, bottomPanel, true));
-
-        //JComponent comp = (JComponent) secondPanel.getComponent();
-        
-        
+            secondPanel = JavaTemplates.createPackageChooser(project, sourceGroups, bottomPanel, true);
+      
         panels = new WizardDescriptor.Panel[] {
             new WsFromJavaPanel0(project, wiz),
             secondPanel
         };
         
         // Creating steps.
-        Object prop = this.wiz.getProperty("WizardPanel_contentData"); // NOI18N
+        Object prop = this.wiz.getProperty(WizardDescriptor.PROP_CONTENT_DATA); // NOI18N
         String[] beforeSteps = null;
         if (prop != null && prop instanceof String[]) {
             beforeSteps = (String[]) prop;
@@ -210,9 +201,9 @@ public class WsFromJavaWizardIterator implements TemplateWizard.Iterator /*, Ite
             if (c instanceof JComponent) { // assume Swing components
                 JComponent jc = (JComponent) c;
                 // Step #.
-                jc.putClientProperty("WizardPanel_contentSelectedIndex", Integer.valueOf(i)); // NOI18N
+                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, Integer.valueOf(i)); // NOI18N
                 // Step name (actually the whole list for reference).
-                jc.putClientProperty("WizardPanel_contentData", steps); // NOI18N
+                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps); // NOI18N
             }
         }
     }

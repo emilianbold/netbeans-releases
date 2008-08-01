@@ -37,16 +37,22 @@
 package org.netbeans.installer.product.components;
 
 import java.util.Locale;
+import java.util.ArrayList;
+import java.util.List;
 import org.netbeans.installer.product.RegistryNode;
 import org.netbeans.installer.utils.exceptions.InitializationException;
 import org.netbeans.installer.utils.StringUtils;
 import org.w3c.dom.Element;
+import org.netbeans.installer.utils.helper.Status;
 
 /**
  *
  * @author Kirill Sorokin
+ * @author Yulia Novozhilova
  */
-public class Group extends RegistryNode {
+public class Group extends RegistryNode implements StatusInterface {
+    private Status currentStatus;
+
     public Group() {
         uid = StringUtils.EMPTY_STRING;
         displayNames.put(new Locale(StringUtils.EMPTY_STRING), "Product Tree Root");
@@ -77,4 +83,35 @@ public class Group extends RegistryNode {
         
         return this;
     }
+
+    public Status getStatus() {
+        if(currentStatus == null && !isEmpty()) {                            
+            final List<Status> statuses = new ArrayList<Status>();
+            for (RegistryNode node: getVisibleChildren()) {
+                if (node instanceof Group) {
+                   statuses.add(((Group)node).getStatus());
+                } 
+                if (node instanceof Product) {
+                   statuses.add(((Product)node).getStatus());
+                }
+            }            
+            //todo
+            currentStatus = statuses.contains(Status.TO_BE_INSTALLED) ||
+                   statuses.contains(Status.NOT_INSTALLED)? 
+                       Status.TO_BE_INSTALLED : Status.INSTALLED;
+        }        
+        return currentStatus;
+    }
+    
+    public void setStatus(final Status status) {               
+        currentStatus = status;
+   
+        for (RegistryNode node: getVisibleChildren()) {
+            if(node instanceof StatusInterface && 
+                    ((StatusInterface)node).getStatus()!= Status.INSTALLED) {
+                ((StatusInterface)node).setStatus(status);
+            }            
+        }        
+    }           
+
 }

@@ -174,7 +174,7 @@ public class AnnotateAction extends ContextAction {
         HgLogMessage [] logs;
         Set<File> setFile = new HashSet<File>();
         setFile.add(file);
-        logs = HgCommand.getLogMessages(repository.getAbsolutePath(), setFile, progress.getLogger());
+        logs = HgCommand.getLogMessagesNoFileInfo(repository.getAbsolutePath(), setFile, progress.getLogger());
         if (progress.isCanceled()) {
             return;
         }
@@ -193,8 +193,18 @@ public class AnnotateAction extends ContextAction {
                 if (log.getRevisionAsLong() < lowestRevisionNumber) {
                     lowestRevisionNumber = log.getRevisionAsLong();
                 }
+                if (annotation == null || log == null) {
+                    if (annotation == null) {
+                        Mercurial.LOG.log(Level.WARNING, "AnnotateAction: annotation {0} of {1} is null", new Object[] {i, annotations.length}); //NOI18N
+                    }
+                    if (log == null) {
+                        Mercurial.LOG.log(Level.WARNING, "AnnotateAction: log {0} of {1} is null", new Object [] {j, logs.length}); //NOI18N
+                    }
+                    continue;
+                }
                 if (annotation.getRevision().equals(log.getRevision())) {
                     annotation.setDate(log.getDate());
+                    annotation.setId(log.getCSetShortID());
                     annotation.setCommitMessage(log.getMessage());
                 }
             }
@@ -202,7 +212,11 @@ public class AnnotateAction extends ContextAction {
         String lowestRev = Long.toString(lowestRevisionNumber);
         for (int i = 0; i < annotations.length; i++) {
             AnnotateLine annotation = annotations[i];
-            annotation.setCanBeRolledBack(!annotation.getRevision().equals(lowestRev));
+            if (annotation == null) {
+                Mercurial.LOG.log(Level.WARNING, "AnnotateAction: annotation {0} of {1} is null", new Object[]{i, annotations.length}); //NOI18N
+            }else{
+                annotation.setCanBeRolledBack(!annotation.getRevision().equals(lowestRev));
+            }
         }
     }
 
@@ -213,24 +227,26 @@ public class AnnotateAction extends ContextAction {
         final int GROUP_FILENAME = 3;
         final int GROUP_CONTENT = 4;
         
-        AnnotateLine [] lines = new AnnotateLine[annotations.size()];
+        List<AnnotateLine> lines = new ArrayList<AnnotateLine>();
         int i = 0;
         Pattern p = Pattern.compile("^\\s*(\\w+\\b)\\s+(\\d+)\\s+(\\b\\S*):\\s(.*)$"); //NOI18N
         for (String line : annotations) {
+            i++;
             Matcher m = p.matcher(line);
             if (!m.matches()){
                 Mercurial.LOG.log(Level.WARNING, "AnnotateAction: toAnnotateLines(): Failed when matching: {0}", new Object[] {line}); //NOI18N
                 continue;
             }
-            lines[i] = new AnnotateLine();
-            lines[i].setAuthor(m.group(GROUP_AUTHOR));
-            lines[i].setRevision(m.group(GROUP_REVISION));
-            lines[i].setFileName(m.group(GROUP_FILENAME));
-            lines[i].setContent(m.group(GROUP_CONTENT));
-            lines[i].setLineNum(i + 1);
-            i++;
+            AnnotateLine anLine = new AnnotateLine();
+            anLine.setAuthor(m.group(GROUP_AUTHOR));
+            anLine.setRevision(m.group(GROUP_REVISION));
+            anLine.setFileName(m.group(GROUP_FILENAME));
+            anLine.setContent(m.group(GROUP_CONTENT));
+            anLine.setLineNum(i);
+            
+            lines.add(anLine);
         }
-        return lines;
+        return lines.toArray(new AnnotateLine[lines.size()]);
     }
 
     /**

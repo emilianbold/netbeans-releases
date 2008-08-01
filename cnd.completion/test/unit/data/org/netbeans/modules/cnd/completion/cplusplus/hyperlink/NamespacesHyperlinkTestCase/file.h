@@ -19,6 +19,14 @@ namespace S1 {
     public:
         void clsS1pubFun();
     };
+
+    template <T> class myBasic {
+        // Types:
+    public:
+        typedef T& reference;
+    };
+    
+    typedef myBasic<char>    myType;    
 }
 
 #endif

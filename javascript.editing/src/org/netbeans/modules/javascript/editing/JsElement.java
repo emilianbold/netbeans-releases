@@ -44,6 +44,7 @@ import java.util.Set;
 import org.netbeans.modules.gsf.api.ElementHandle;
 import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.modules.gsf.api.Modifier;
+import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -55,7 +56,7 @@ public abstract class JsElement implements Element {
     public abstract ElementKind getKind();
     
     public String getMimeType() {
-        return JsMimeResolver.JAVASCRIPT_MIME_TYPE;
+        return JsTokenId.JAVASCRIPT_MIME_TYPE;
     }
 
     public boolean signatureEquals(ElementHandle handle) {

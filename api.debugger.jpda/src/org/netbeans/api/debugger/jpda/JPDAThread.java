@@ -76,10 +76,18 @@ public interface JPDAThread {
     /** Thread state constant. */
     public static final int STATE_ZOMBIE = ThreadReference.THREAD_STATUS_ZOMBIE;
 
+    /**
+     * Suspended property of the thread. Fired when isSuspended() changes.
+     * @since 2.16
+     */
+    public static final String PROP_SUSPENDED = "suspended";
     /** Property name constant. */
     public static final String PROP_CALLSTACK = "callStack";
     /** Property name constant. */
     public static final String PROP_VARIABLES = "variables";
+    /** Property name constant.
+     * @since 2.16     */
+    public static final String PROP_BREAKPOINT = "currentBreakpoint";
 
     
     
@@ -114,6 +122,13 @@ public interface JPDAThread {
      * @see {@link CallStackFrame#getCurrentOperation}
      */
     public abstract Operation getCurrentOperation();
+    
+    /**
+     * Returns the current breakpoint hit by this thread.
+     * @return The current breakpoint, or <CODE>null</CODE>.
+     * @since 2.16
+     */
+    public abstract JPDABreakpoint getCurrentBreakpoint();
     
     /**
      * Returns the list of the last operations, that were performed on this thread.
@@ -237,9 +252,26 @@ public interface JPDAThread {
     public abstract ObjectVariable getContendedMonitor ();
     
     /**
+     * Returns monitor this thread is waiting on, with the information
+     * about the owner of the monitor.
+     *
+     * @return monitor this thread is waiting on, with the owner.
+     * @since 2.16
+     */
+    public abstract MonitorInfo getContendedMonitorAndOwner ();
+    
+    /**
      * Returns monitors owned by this thread.
      *
      * @return monitors owned by this thread
      */
     public abstract ObjectVariable[] getOwnedMonitors ();
+    
+    /**
+     * Get the list of monitors with stack frame info owned by this thread.
+     * 
+     * @return the list of monitors with stack frame info
+     * @since 2.16
+     */
+    List<MonitorInfo> getOwnedMonitorsAndFrames();
 }

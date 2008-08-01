@@ -50,6 +50,7 @@ import org.openide.loaders.MultiDataObject;
 import org.openide.util.NbBundle;
 import org.openide.util.SharedClassObject;
 import org.netbeans.modules.cnd.MIMENames;
+import org.netbeans.modules.cnd.editor.filecreation.ExtensionsSettings;
 
 /**
  *
@@ -62,14 +63,10 @@ public class CCDataLoader extends CndAbstractDataLoaderExt {
     /** Serial version number */
     static final long serialVersionUID = 6801389470714975684L;
 
-    /** The suffix list for C++ primary files */
-    private static final String[] cppExtensions =
-				{ "cpp", "cc", "c++", "cxx", "C", "mm" }; // NOI18N
-
     protected CCDataLoader() {
 	super("org.netbeans.modules.cnd.loaders.CCDataObject"); // NOI18N
         instance = this;
-        createExtentions(cppExtensions);
+        //createExtentions(cppExtensions);
     }
 
     public static CCDataLoader getInstance(){
@@ -93,15 +90,11 @@ public class CCDataLoader extends CndAbstractDataLoaderExt {
         return new CCDataObject(primaryFile, this);
     }
 
-    public ExtensionList getDefaultExtensionList() {
-        return arrayToExtensionList(cppExtensions);
-    }
-
-    public String getDefaultDefaultExtension() {
-        return cppExtensions[0];
-    }
-
     public String getDisplayNameForExtensionList() {
 	return NbBundle.getMessage(CCDataLoader.class, "CCDataLoader_Name_ForExtList"); // NOI18N
+    }
+
+    public String getSettingsName() {
+        return ExtensionsSettings.CPP_FILE;
     }
 }

@@ -42,7 +42,6 @@
 package org.netbeans.modules.ruby.rhtml.editor;
 
 import java.awt.event.ActionEvent;
-import java.util.List;
 import javax.swing.Action;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
@@ -64,8 +63,6 @@ import org.netbeans.modules.editor.gsfret.InstantRenameAction;
 import org.netbeans.modules.gsf.DeleteToNextCamelCasePosition;
 import org.netbeans.modules.gsf.DeleteToPreviousCamelCasePosition;
 import org.netbeans.modules.gsf.GsfEditorKitFactory;
-import org.netbeans.modules.gsf.Language;
-import org.netbeans.modules.gsf.LanguageRegistry;
 import org.netbeans.modules.gsf.NextCamelCasePosition;
 import org.netbeans.modules.gsf.PreviousCamelCasePosition;
 import org.netbeans.modules.gsf.SelectCodeElementAction;
@@ -219,7 +216,7 @@ public class RhtmlKit extends HTMLKit {
                                 return true;
                             }
                         }
-                    } else if (token.id() == RhtmlTokenId.RUBY || token.id() == RhtmlTokenId.RUBY_EXPR && dotPos >= 1 && dotPos <= doc.getLength()-3) {
+                    } else if ((token.id() == RhtmlTokenId.RUBY || token.id() == RhtmlTokenId.RUBY_EXPR) && dotPos >= 1 && dotPos <= doc.getLength()-3) {
                         // If you type ">" one space away from %> it's likely that you typed
                         // "<% foo %>" without looking at the screen; I had auto inserted %> at the end
                         // and because I also auto insert a space without typing through it, you've now

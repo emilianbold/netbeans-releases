@@ -42,9 +42,12 @@
 package org.netbeans.modules.cnd.editor.cplusplus;
 
 
+import java.util.HashMap;
+import java.util.Map;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.netbeans.editor.ext.ExtSettingsNames;
+import org.netbeans.modules.cnd.editor.CppFoldManagerBase;
 import org.netbeans.modules.editor.options.BaseOptions;
 import org.netbeans.modules.editor.options.OptionSupport;
 
@@ -108,5 +111,37 @@ public class CCOptions extends BaseOptions {
         catch (Exception e) {
             return super.getString(s);
         }
+    }
+
+    @Override
+    public Map<String, Boolean> getCodeFoldingProps() {
+        Map<String, Boolean> map = new HashMap<String, Boolean>(super.getCodeFoldingProps());
+        String name = CppFoldManagerBase.CODE_FOLDING_COLLAPSE_METHOD;
+        map.put(name, (Boolean)getSettingValue(name));
+        name = CppFoldManagerBase.CODE_FOLDING_COLLAPSE_INNERCLASS;
+        map.put(name, (Boolean)getSettingValue(name));
+        name = CppFoldManagerBase.CODE_FOLDING_COLLAPSE_IMPORT;
+        map.put(name, (Boolean)getSettingValue(name));
+        name = CppFoldManagerBase.CODE_FOLDING_COLLAPSE_JAVADOC;
+        map.put(name, (Boolean)getSettingValue(name));
+        name = CppFoldManagerBase.CODE_FOLDING_COLLAPSE_INITIAL_COMMENT;
+        map.put(name, (Boolean)getSettingValue(name));
+        return map;
+    }
+
+    @Override
+    public void setCodeFoldingProps(Map props) {
+        String name = CppFoldManagerBase.CODE_FOLDING_ENABLE;
+        setSettingValue(name, props.get(name));
+        name = CppFoldManagerBase.CODE_FOLDING_COLLAPSE_METHOD;
+        setSettingValue(name, props.get(name));
+        name = CppFoldManagerBase.CODE_FOLDING_COLLAPSE_INNERCLASS;
+        setSettingValue(name, props.get(name));
+        name = CppFoldManagerBase.CODE_FOLDING_COLLAPSE_IMPORT;
+        setSettingValue(name, props.get(name));
+        name = CppFoldManagerBase.CODE_FOLDING_COLLAPSE_JAVADOC;
+        setSettingValue(name, props.get(name));
+        name = CppFoldManagerBase.CODE_FOLDING_COLLAPSE_INITIAL_COMMENT;
+        setSettingValue(name, props.get(name));
     }
 }

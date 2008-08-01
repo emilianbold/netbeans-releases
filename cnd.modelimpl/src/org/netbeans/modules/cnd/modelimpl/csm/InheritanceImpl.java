@@ -41,85 +41,35 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm;
 
-import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.*;
 import antlr.collections.AST;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
-import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
-import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
-import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
-import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 
 /**
  * CsmInheritance implementation
  * @author Vladimir Kvashin
  */
-public class InheritanceImpl extends OffsetableBase implements CsmInheritance {
+public class InheritanceImpl extends OffsetableBase implements CsmInheritance, Resolver.SafeClassifierProvider {
 
     private CsmVisibility visibility;
     private boolean virtual;
     
-    private CsmUID<CsmClass> resolvedAncestorClassCacheUID;
+    //private CsmUID<CsmClass> resolvedAncestorClassCacheUID;
     
-    private CsmUID<CsmClassifier> classifierCacheUID;
+    //private CsmUID<CsmClassifier> classifierCacheUID;
     
-    private CharSequence ancestorName;
+    private CsmType ancestorType;
+    private CsmClassifier resolvedClassifier;
     
-    public InheritanceImpl(AST ast, CsmFile file) {
+    public InheritanceImpl(AST ast, CsmFile file, CsmScope scope) {
         super(ast, file);
-        render(ast);
-    }
-
-    public boolean isVirtual() {
-        return virtual;
-    }
-
-    public CsmVisibility getVisibility() {
-        return visibility;
-    }
-
-    public CsmClass getCsmClass() {
-        return getCsmClass(null);
-    }
-    
-    public CsmClass getCsmClass(Resolver parent) {
-        CsmClass ancestorCache = _getAncestorCache();
-        if (ancestorCache == null || !ancestorCache.isValid())
-        {
-            ancestorCache = null;
-            CsmClassifier classifier = getCsmClassifier(parent);
-            classifier = CsmBaseUtilities.getOriginalClassifier(classifier);
-            if (CsmKindUtilities.isClass(classifier)) {
-                ancestorCache = (CsmClass)classifier;
-            }
-            _setAncestorCache(ancestorCache);
-        }
-        return ancestorCache;
-    }
-    
-    public CsmClassifier getCsmClassifier() {
-        return getCsmClassifier(null);
-    }
-    
-    public CsmClassifier getCsmClassifier(Resolver parent) {
-        CsmClassifier classifierCache = _getClassifierCache();
-        if (classifierCache == null || 
-                ((classifierCache instanceof CsmValidable) && !((CsmValidable)classifierCache).isValid())) {
-            classifierCache = renderClassifier(ancestorName, parent);
-            _setClassifierCache(classifierCache);
-        }
-        return classifierCache;        
-    }
-    
-    private void render(AST node) {
         visibility = CsmVisibility.PRIVATE;
-        for( AST token = node.getFirstChild(); token != null; token = token.getNextSibling() ) {
+        for( AST token = ast.getFirstChild(); token != null; token = token.getNextSibling() ) {
             switch( token.getType() ) {
                 case CPPTokenTypes.LITERAL_private:
                     visibility = CsmVisibility.PRIVATE;
@@ -134,61 +84,39 @@ public class InheritanceImpl extends OffsetableBase implements CsmInheritance {
                     virtual = true;
                     break;
                 case CPPTokenTypes.ID:
-                    StringBuilder ancNameBuffer = new StringBuilder();
-                    int counter = 0;
-                    for( ; token != null; token = token.getNextSibling() ) {
-                        switch( token.getType() ) {
-                            case CPPTokenTypes.ID:
-                                ancNameBuffer.append(token.getText());
-                                break;
-                            case CPPTokenTypes.SCOPE:
-                                ancNameBuffer.append("::"); // NOI18N
-                                counter++;
-                                break;
-                            default:
-                                // here can be "<", ">" and other template stuff
-                        }
-                    }
-                    //CsmObject o = ResolverFactory.createResolver(this).resolve(new String[] { token.getText() } );
-                    this.ancestorName = ancNameBuffer.toString();
-                    this.ancestorName = counter == 0 ? NameCache.getManager().getString(this.ancestorName) : QualifiedNameCache.getManager().getString(this.ancestorName);
-                    return; // it's definitely the last!; besides otherwise we get NPE in for 
-                    //break;
+                    this.ancestorType = TemplateUtils.checkTemplateType(TypeFactory.createType(token, getContainingFile(), null, 0), scope);
+                    return; // it's definitely the last!; besides otherwise we get NPE in for
             }
         }
     }
 
-    private CsmClassifier renderClassifier(CharSequence ancName, Resolver parent) {
-        CsmClassifier result = null;
-        CsmObject o = ResolverFactory.createResolver(this, parent).resolve(ancName, Resolver.CLASSIFIER);
-        if( CsmKindUtilities.isClassifier(o) ) {
-            result = (CsmClassifier) o;
+    public boolean isVirtual() {
+        return virtual;
+    }
+
+    public CsmVisibility getVisibility() {
+        return visibility;
+    }
+
+    public CsmType getAncestorType() {
+        return ancestorType;
+    }
+
+    public CsmClassifier getClassifier() {
+        return getClassifier(null);
+    }
+
+    public CsmClassifier getClassifier(Resolver parent) {
+        if (resolvedClassifier == null){
+            if (getAncestorType() instanceof Resolver.SafeClassifierProvider) {
+                resolvedClassifier = ((Resolver.SafeClassifierProvider)getAncestorType()).getClassifier(parent);
+            } else {
+                resolvedClassifier = getAncestorType().getClassifier();
+            }
         }
-        return result;
-    }
-    
-    public CsmClass _getAncestorCache() {
-        // can be null if cached one was removed 
-        return UIDCsmConverter.UIDtoDeclaration(resolvedAncestorClassCacheUID);
+        return resolvedClassifier;
     }
 
-    public void _setAncestorCache(CsmClass ancestorCache) {
-        resolvedAncestorClassCacheUID = UIDCsmConverter.declarationToUID(ancestorCache);
-        assert (resolvedAncestorClassCacheUID != null || ancestorCache == null);
-    }
-    
-
-    private CsmClassifier _getClassifierCache() {
-        CsmClassifier classifierCache = UIDCsmConverter.UIDtoDeclaration(classifierCacheUID);
-        // can be null if cached one was removed 
-        return classifierCache;            
-    }
-
-    private void _setClassifierCache(CsmClassifier classifierCache) {
-        classifierCacheUID = UIDCsmConverter.declarationToUID(classifierCache);
-        assert (classifierCacheUID != null || classifierCacheUID == null);
-    }
-    
     ////////////////////////////////////////////////////////////////////////////
     // impl of persistent
     
@@ -197,38 +125,41 @@ public class InheritanceImpl extends OffsetableBase implements CsmInheritance {
         super.write(output);
         PersistentUtils.writeVisibility(this.visibility, output);
         output.writeBoolean(this.virtual);
-        assert this.ancestorName != null;
-        output.writeUTF(ancestorName.toString());        
+        //assert this.ancestorName != null;
+        //output.writeUTF(ancestorName.toString());
+        PersistentUtils.writeType(ancestorType, output);
 
         // save cache
-        UIDObjectFactory.getDefaultFactory().writeUID(classifierCacheUID, output);     
+        /*UIDObjectFactory.getDefaultFactory().writeUID(classifierCacheUID, output);
         boolean theSame = ((CsmUID)resolvedAncestorClassCacheUID == (CsmUID)classifierCacheUID);
         output.writeBoolean(theSame);
         if (!theSame) {
             UIDObjectFactory.getDefaultFactory().writeUID(resolvedAncestorClassCacheUID, output);        
-        }
+        }*/
     }
 
     public InheritanceImpl(DataInput input) throws IOException {
         super(input);
         this.visibility = PersistentUtils.readVisibility(input);
         this.virtual = input.readBoolean();
-        this.ancestorName = input.readUTF();
+        /*this.ancestorName = input.readUTF();
         this.ancestorName = ancestorName.toString().indexOf("::") == -1 ? NameCache.getManager().getString(ancestorName) : QualifiedNameCache.getManager().getString(ancestorName); // NOI18N
-        assert this.ancestorName != null;
+        assert this.ancestorName != null;*/
+        this.ancestorType = PersistentUtils.readType(input);
 
         // restore cached value
-        this.classifierCacheUID = UIDObjectFactory.getDefaultFactory().readUID(input);
+        /*this.classifierCacheUID = UIDObjectFactory.getDefaultFactory().readUID(input);
         boolean theSame = input.readBoolean();
         if (!theSame) {
             this.resolvedAncestorClassCacheUID = UIDObjectFactory.getDefaultFactory().readUID(input);
         } else {
             this.resolvedAncestorClassCacheUID = (CsmUID)this.classifierCacheUID;
-        }
+        }*/
     }    
 
     @Override
     public String toString() {
-        return "INHERITANCE " + visibility + " " + (isVirtual() ? "virtual " : "") + ancestorName + getOffsetString(); // NOI18N
-    }  
+        return "INHERITANCE " + visibility + " " + (isVirtual() ? "virtual " : "") + ancestorType.getText() + getOffsetString(); // NOI18N
+    }
+
 }

@@ -58,19 +58,18 @@
 
         <localizing-bundle>org.netbeans.modules.websvc.saas.services.zvents.Bundle</localizing-bundle>
 
-        <group name="Zvents">
-        </group>
-
-        <authentication profile="SaaSServices/Zvents/profile.properties">
+        <group name="Zvents"/>
+        
+        <code-gen>
+            <artifacts targets="java,servlet,resource,jsp" profile="Templates/SaaSServices/apikey.properties"/>
+            <artifacts targets="php" profile="Templates/SaaSServices/apikey.php"/>
+        </code-gen>
+        
+        <authentication>
             <api-key id="key"/>
         </authentication>
 
     </saas-metadata>
 
-    <!--
-    <methods>
-        <method name="searchGet" href="#zvents.searchGet"/>
-    </methods>
-    -->
-    
+    <methods/>
 </saas-services>

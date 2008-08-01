@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -72,6 +72,7 @@ import org.openide.nodes.NodeOperation;
 import org.openide.util.HelpCtx;
 import org.openide.util.UserCancelException;
 import org.netbeans.modules.i18n.SelectorUtils;
+import org.openide.WizardDescriptor;
 
 /**
  * First panel used in I18N (test) Wizard.
@@ -109,12 +110,12 @@ final class SourceWizardPanel extends JPanel {
         
         initList();
         
-        putClientProperty("WizardPanel_contentSelectedIndex", new Integer(0)); // NOI18N
+        putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, Integer.valueOf(0));
         
         if (testRole) {
-            setName(Util.getString("TXT_SelecTestSources"));
+            setName(Util.getString("TXT_SelecTestSources"));            //NOI18N
         } else {
-            setName(Util.getString("TXT_SelectSources"));                
+            setName(Util.getString("TXT_SelectSources"));               //NOI18N
         }        
     }
     
@@ -139,9 +140,9 @@ final class SourceWizardPanel extends JPanel {
      */
     private String getPanelDescription() {
         if (testRole == false)   {
-            return Util.getString("MSG_SourcesPanel_desc");
+            return Util.getString("MSG_SourcesPanel_desc");             //NOI18N
         } else {
-            return Util.getString("MSG_SourcesPanel_test_desc");
+            return Util.getString("MSG_SourcesPanel_test_desc");        //NOI18N
         }        
     }
 
@@ -150,9 +151,9 @@ final class SourceWizardPanel extends JPanel {
      */
     private String getAccessibleListDescription() {
         if (testRole == false)   {
-            return Util.getString("ACSD_sourcesList");
+            return Util.getString("ACSD_sourcesList");                  //NOI18N
         } else {
-            return Util.getString("ACSD_sourcesList_test");
+            return Util.getString("ACSD_sourcesList_test");             //NOI18N
         }        
     }
     
@@ -175,11 +176,11 @@ final class SourceWizardPanel extends JPanel {
     private void initAccessibility() {        
         getAccessibleContext().setAccessibleDescription(getPanelDescription());
         
-        addButton.setToolTipText(Util.getString("CTL_AddSource_desc"));
+        addButton.setToolTipText(Util.getString("CTL_AddSource_desc")); //NOI18N
         
-        removeButton.setToolTipText(Util.getString("CTL_RemoveSource_desc"));
+        removeButton.setToolTipText(Util.getString("CTL_RemoveSource_desc"));//NOI18N
         
-        sourcesList.getAccessibleContext().setAccessibleName(Util.getString("ACSN_sourcesList"));
+        sourcesList.getAccessibleContext().setAccessibleName(Util.getString("ACSN_sourcesList"));//NOI18N
         sourcesList.getAccessibleContext().setAccessibleDescription(getAccessibleListDescription());
     }
     
@@ -240,8 +241,8 @@ final class SourceWizardPanel extends JPanel {
         // Selects source data objects which could be i18n-ized.
         try {
             Node[] selectedNodes= NodeOperation.getDefault().select(
-                Util.getString("LBL_SelectSources"),
-                Util.getString("LBL_Filesystems"),
+                Util.getString("LBL_SelectSources"),                    //NOI18N
+                Util.getString("LBL_Filesystems"),                      //NOI18N
                 SelectorUtils.sourcesNode(prj, SelectorUtils.ALL_FILTER),
                 new NodeAcceptor() {
                     public boolean acceptNodes(Node[] nodes) {

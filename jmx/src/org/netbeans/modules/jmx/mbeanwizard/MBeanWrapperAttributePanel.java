@@ -49,7 +49,7 @@ import org.netbeans.modules.jmx.mbeanwizard.table.WrapperAttributeTable;
 import org.netbeans.modules.jmx.mbeanwizard.tablemodel.MBeanWrapperAttributeTableModel;
 import org.netbeans.modules.jmx.MBeanDO;
 import org.netbeans.modules.jmx.MBeanAttribute;
-import org.netbeans.modules.jmx.WizardConstants;
+import org.netbeans.modules.jmx.common.WizardConstants;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -268,7 +268,7 @@ public class MBeanWrapperAttributePanel extends MBeanAttributePanel
          */
         private void setErrorMsg(String message) {
             if (wiz != null) {
-                wiz.putProperty(WizardConstants.WIZARD_ERROR_MESSAGE,
+                wiz.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
                         message);
             }
         }
@@ -345,7 +345,7 @@ public class MBeanWrapperAttributePanel extends MBeanAttributePanel
                 getPanel().orderNumber = oNumber;
             } 
             
-            wiz.putProperty(WizardConstants.WIZARD_ERROR_MESSAGE, "");// NOI18N
+            wiz.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, "");// NOI18N
         }
         
         /**

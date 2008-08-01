@@ -42,6 +42,7 @@
 package org.netbeans.modules.gsf.api;
 
 import java.util.Map;
+import org.netbeans.modules.gsf.api.annotations.NonNull;
 
 /**
  * A CancellableTask responsible for computing the set of highlights matching
@@ -61,5 +62,5 @@ public interface OccurrencesFinder extends CancellableTask<CompilationInfo> {
      * Return a set of occurrence highlights computed by the last call to
      * {@link #run}.
      */
-    public abstract Map<OffsetRange, ColoringAttributes> getOccurrences();
+    public abstract @NonNull Map<OffsetRange, ColoringAttributes> getOccurrences();
 }

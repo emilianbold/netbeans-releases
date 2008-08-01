@@ -91,7 +91,7 @@ public class WSDLUtils {
         if (doubleSlashIndex >=0) {
             base = ns.substring(doubleSlashIndex+2);
         } else {
-            int colonIndex = ns.indexOf(":");
+            int colonIndex = ns.indexOf(":"); // NOI18N
             if (colonIndex >=0) base = ns.substring(colonIndex+1);
         }
         StringTokenizer tokens = new StringTokenizer(base,"/"); //NOI18N
@@ -123,7 +123,7 @@ public class WSDLUtils {
                 }
                 StringBuffer buf = new StringBuffer(packageParts.get(0));
                 for (int i=1;i<packageParts.size();i++) {
-                    buf.append("."+packageParts.get(i));
+                    buf.append("."+packageParts.get(i)); // NOI18N
                 }
                 return buf.toString();
             }

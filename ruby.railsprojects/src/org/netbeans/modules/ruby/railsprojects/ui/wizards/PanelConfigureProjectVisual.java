@@ -77,13 +77,17 @@ public class PanelConfigureProjectVisual extends JPanel {
             getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PanelConfigureProjectVisual.class, "ACSD_RoRExtSourcesProjectLocation")); // NOI18N
         }
         locationContainer.add( projectLocationPanel, java.awt.BorderLayout.CENTER );
-        optionsPanel = new PanelOptionsVisual( panel, type );
+        optionsPanel = new PanelOptionsVisual(panel);
         projectLocationPanel.addPropertyChangeListener(optionsPanel);
         optionsContainer.add( optionsPanel, java.awt.BorderLayout.CENTER );
     }
     
     RubyPlatform getPlatform() {
         return optionsPanel.getPlatform();
+    }
+
+    boolean needWarSupport() {
+        return optionsPanel.needWarSupport();
     }
     
     boolean valid( WizardDescriptor wizardDescriptor ) {
@@ -97,12 +101,12 @@ public class PanelConfigureProjectVisual extends JPanel {
         //if (Utilities.isWindows()) {
         //    String rails = RubyInstallation.getInstance().getRails();
         //    if (rails.indexOf(' ') != -1) {
-        //         wizardDescriptor.putProperty("WizardPanel_errorMessage", "Rails path contains spaces; fails on Windows.\n " + rails);
+        //         wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, "Rails path contains spaces; fails on Windows.\n " + rails);
         //         //return false;
         //    }
         //}
         
-        wizardDescriptor.putProperty( "WizardPanel_errorMessage", "" ); //NOI18N
+        wizardDescriptor.putProperty( WizardDescriptor.PROP_ERROR_MESSAGE, "" ); //NOI18N
         return projectLocationPanel.valid( wizardDescriptor ) && optionsPanel.valid(wizardDescriptor);
     }
     

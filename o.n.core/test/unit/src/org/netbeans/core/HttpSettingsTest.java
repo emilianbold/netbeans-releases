@@ -43,7 +43,6 @@ package org.netbeans.core;
 
 import java.lang.reflect.Field;
 import java.net.ProxySelector;
-import java.util.logging.Logger;
 import java.util.prefs.AbstractPreferences;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
@@ -57,6 +56,7 @@ import org.openide.util.NbPreferences;
  * @author Jiri Rechtacek
  * @see http://www.netbeans.org/issues/show_bug.cgi?id=51641
  */
+@RandomlyFails
 public class HttpSettingsTest extends NbTestCase {
     private final Object sync = getEventQueueSync ();
     private static String SYSTEM_PROXY_HOST = "system.cache.org";
@@ -251,9 +251,6 @@ public class HttpSettingsTest extends NbTestCase {
     }
     
     public void testNonProxy () throws InterruptedException {
-        if (Boolean.getBoolean("ignore.random.failures")) {
-            return;
-        }
         assertEquals ("The ProxySettings takes as same value as System properties in initial.", System.getProperty ("http.nonProxyHosts"), ProxySettings.getNonProxyHosts ());
         
         // change value in ProxySettings
@@ -369,9 +366,6 @@ public class HttpSettingsTest extends NbTestCase {
     }    
     
     public void testSwitchAutoAndManualMode () throws Exception {
-        if (Boolean.getBoolean("ignore.random.failures")) {
-            return;
-        }
         setUpAutoDirect ();
         
         // ensure auto detect mode
@@ -412,10 +406,8 @@ public class HttpSettingsTest extends NbTestCase {
             Field f = AbstractPreferences.class.getDeclaredField("eventQueue");
             f.setAccessible(true);
             return f.get(null);
-            
         } catch (Exception ex) {
-            Logger.getLogger("global").log(java.util.logging.Level.SEVERE,ex.getMessage(), ex);
+            throw new ExceptionInInitializerError(ex);
         }
-        return null;
     }
 }

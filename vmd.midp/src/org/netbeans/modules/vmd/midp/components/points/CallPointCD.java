@@ -97,7 +97,7 @@ public class CallPointCD extends ComponentDescriptor {
         return new DefaultPropertiesPresenter ()
                 .addPropertiesCategory (MidpPropertiesCategories.CATEGORY_PROPERTIES)
                 .addPropertiesCategory (MidpPropertiesCategories.CATEGORY_CODE_PROPERTIES)
-                    .addProperty (NbBundle.getMessage(CallPointCD.class, "DISP_CallPoint_Call_Code"), PropertyEditorJavaString.createInstance(TYPEID), PROP_ACCESS_CODE); // NOI18N
+                    .addProperty (NbBundle.getMessage(CallPointCD.class, "DISP_CallPoint_Call_Code"), PropertyEditorJavaString.createInstance(TYPEID, MidpTypes.createJavaCodeValue("")), PROP_ACCESS_CODE); // NOI18N
     }
 
     @Override

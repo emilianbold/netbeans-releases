@@ -36,15 +36,17 @@
 
 var BUNDLED_SERVERS_GROUP_NAME = "Bundled&nbsp;Servers";
                                                    
-var MOBILITY_E2E_MESSAGE 	  = "Mobility Web Services Connection wizard is only included in the All download,<br>not in the Mobility download.";
 var NETBEANS_DOWNLOAD_BUNDLES_MSG = "NetBeans IDE Download Bundles";
 var NETBEANS_PACKS_MSG 		  = "NetBeans&nbsp;Packs";
 
 var JDK_DOWNLOAD_LINK    = "http://java.sun.com/javase/downloads/index.jsp";
 var NBJDK_DOWNLOAD_LINK  = "http://java.sun.com/javase/downloads/netbeans.html";
 
-var JDK_NOTE_ALL      = "JDK 6 or JDK 5.0 is required for installing and running the NetBeans IDE. You can download <a href=\"{0}\">standalone JDK</a> or download the latest <a href=\"{1}\">JDK6 Update {2} with NetBeans IDE Java SE bundle</a>.";
-var JDK_NOTE_MACOSX   = "JDK 5.0 is required for installing and running the NetBeans IDE.";
+var JAVA_COM_LINK        = "http://java.com/";
+
+var JDK_NOTE_ALL      = "Java 6 or Java 5 is required for installing and running the PHP, Ruby and C/C++ NetBeans Bundles. You can download the <a href=\"{3}\">latest Java 6 Update {2} at java.com</a>.<br><br>JDK 6 or JDK 5.0 is required for installing and running the Java SE, \"Java\" and \"All\" NetBeans Bundles. You can download <a href=\"{0}\">standalone JDK</a> or download the latest <a href=\"{1}\">JDK6 Update {2} with NetBeans IDE Java SE bundle</a>.<br><br>";
+//var JDK_NOTE_MACOSX   = "JDK 5.0 is required for installing and running the NetBeans IDE.";
+var JDK_NOTE_MACOSX   = "";
 
 var FREE_SIZE_MESSAGE  = "Free,&nbsp;{0}&nbsp;MB";
 var NOT_AVAILABLE_SIZE = "--";
@@ -59,9 +61,10 @@ var MULTIPLE_NOT_AVAILABLE_ZIP    = "{0} are not available in {1}";
 var MULTIPLE_NOT_AVAILABLE_BUNDLE = "{0} are not available for {1}";
 
 
-var NOTE_SOLARIS = "Note: Mobility is only available for Windows and Linux.";
-var NOTE_MACOSX  = "Note: Mobility is only available for Windows and Linux. UML for Mac OS X is only available from the IDE`s Plugin Manager (Tools | Plugins).";
-var NOTE_ZIP     = "Note: GlassFish and Apache Tomcat are only available in platform specific installers.";
+var NOTE_SOLARIS = "Note: Mobility is only available for Windows and Linux. <br>The UML Pack is available on the Update Center.";
+var NOTE_MACOSX  = "Note: Mobility is only available for Windows and Linux. <br>The UML Pack is available on the Update Center.";
+var NOTE_ZIP     = "Note: GlassFish and Apache Tomcat are only available in platform specific installers. The UML Pack is available on the Update Center.";
+var NOTE_OTHER   = "Note: The UML Pack is available on the Update Center.";
 
 
 var NETBEANS_DOWNLOAD_HEADER = "NetBeans IDE {0} Download";
@@ -75,8 +78,8 @@ var CONTACT_LABEL            = "NetBeans&nbsp;can&nbsp;contact&nbsp;me&nbsp;at&n
 var LANGUAGE_LABEL           = "Language:";
 var PLATFORM_LABEL           = "Platform:";
 var PLUGIN_MANAGER_LABEL     = "You can add or remove packs later using the IDE's Plugin Manager (Tools | Plugins).<br><br>";
-var JAVATOOLSBUNDLE_LABEL    = "You can also download the NetBeans IDE as part of the <a href=\"http://java.sun.com/javaee/downloads/index.jsp\">Java EE 5 Tools Bundle</a>.";
-var SOURCE_BINARY_LABEL      = "NetBeans source code and binary builds without bundled runtimes are also available in <a href=\"zip/\">zip file format</a>.";
+var JAVATOOLSBUNDLE_LABEL    = "You can also download the NetBeans IDE as part of the <a href=\"http://java.sun.com/javaee/downloads/index.jsp\">Java EE 5 Tools Bundle</a> or <a href=\"http://download.netbeans.org/netbeans/6.1/mysql_bundle/\">MySQL GlassFish Bundle</a>.";
+var SOURCE_BINARY_LABEL      = "NetBeans source code and binary builds without bundled runtimes are also available in <a href=\"{0}zip/\">zip file format</a>.";
 var BUILD_WIKI_LABEL         = "See also <a href=\"http://wiki.netbeans.org/wiki/view/WorkingWithNetBeansSources\">instructions on how to build the IDE from sources</a> or <a href=\"{0}\">installation instructions</a>.";
 
 var LICENSE_NOTES_LINK      = "http://www.netbeans.org/about/legal/product-licences.html";

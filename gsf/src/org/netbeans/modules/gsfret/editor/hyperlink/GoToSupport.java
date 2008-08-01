@@ -59,7 +59,7 @@ import org.netbeans.modules.gsf.api.DeclarationFinder.AlternativeLocation;
 import org.netbeans.modules.gsf.api.DeclarationFinder.DeclarationLocation;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.gsf.api.CancellableTask;
-import org.netbeans.modules.gsf.api.Completable;
+import org.netbeans.modules.gsf.api.CodeCompletionHandler;
 import org.netbeans.modules.gsf.api.ElementHandle;
 import org.netbeans.napi.gsfret.source.CompilationController;
 import org.netbeans.napi.gsfret.source.Phase;
@@ -68,12 +68,12 @@ import org.netbeans.napi.gsfret.source.UiUtils;
 import org.netbeans.modules.gsf.GsfHtmlFormatter;
 import org.netbeans.modules.gsf.Language;
 import org.netbeans.modules.gsf.LanguageRegistry;
+import org.netbeans.modules.gsf.api.DataLoadersBridge;
 import org.netbeans.modules.gsfret.editor.completion.GsfCompletionProvider;
 import org.netbeans.napi.gsfret.source.SourceUtils;
 import org.openide.awt.HtmlBrowser;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -149,7 +149,7 @@ public class GoToSupport {
                                     finder.findDeclaration(controller, offset);
 
                                 if (tooltip) {
-                                    Completable completer = language.getCompletionProvider();
+                                    CodeCompletionHandler completer = language.getCompletionProvider();
                                     if (location != DeclarationLocation.NONE && completer != null) {
                                         ElementHandle element = location.getElement();
                                         if (element != null) {
@@ -266,9 +266,7 @@ public class GoToSupport {
     }
     
     private static FileObject getFileObject(Document doc) {
-        DataObject od = (DataObject)doc.getProperty(Document.StreamDescriptionProperty);
-
-        return (od != null) ? od.getPrimaryFile() : null;
+        return DataLoadersBridge.getDefault().getFileObject(doc);
     }
 
     public int[] getHyperlinkSpan(Document doc, int offset) {

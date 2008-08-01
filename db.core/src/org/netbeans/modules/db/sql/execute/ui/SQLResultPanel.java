@@ -63,28 +63,10 @@ import org.openide.util.datatransfer.ExClipboard;
  */
 public class SQLResultPanel extends javax.swing.JPanel {
     
-    private SQLExecutionResults executionResults;
-    
     public SQLResultPanel() {
         initComponents();
     }
-    
-    public void setModel(SQLResultPanelModel model) {
-        TableModel resultSetModel = null;
         
-        if (model != null) {
-            if (model.getResultSetModel() != null) {
-                resultSetModel = model.getResultSetModel();
-            } else {
-                resultSetModel = new DefaultTableModel(0, 0);
-            }
-        } else {
-            resultSetModel = new DefaultTableModel(0, 0);
-        }
-        
-        resultTable.setModel(resultSetModel);
-    }
-    
     private void setClipboard(String contents) {
         ExClipboard clipboard = (ExClipboard) Lookup.getDefault().lookup (ExClipboard.class);
         StringSelection strSel = new StringSelection(contents);

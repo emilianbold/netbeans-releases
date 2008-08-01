@@ -93,6 +93,7 @@ public class PaintTopComponent extends TopComponent implements ActionListener, C
         preview.paintImmediately(0, 0, preview.getWidth(), preview.getHeight());
     }
     
+    @Override
     public int getPersistenceType() {
         return PERSISTENCE_NEVER;
     }
@@ -194,6 +195,7 @@ public class PaintTopComponent extends TopComponent implements ActionListener, C
         setDisplayName(f.getName());
     }
 
+    @Override
     protected void componentClosed() {
         super.componentClosed();
         tcCount--;

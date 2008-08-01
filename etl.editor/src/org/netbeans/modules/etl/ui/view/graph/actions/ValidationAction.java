@@ -77,11 +77,11 @@ public class ValidationAction extends GraphAction {
         this.putValue(Action.SMALL_ICON, new ImageIcon(validateImgUrl));
 
         //action tooltip
-        String nbBundle2 = mLoc.t("BUND040: Validate Collaboration (Shift-V)");
+        String nbBundle2 = mLoc.t("BUND040: Validate Collaboration (Ctrl+Shift+V)");
         this.putValue(Action.SHORT_DESCRIPTION,nbBundle2.substring(15));
 
         // Acceleratot Shift-V
-        this.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke('V', InputEvent.SHIFT_DOWN_MASK ));
+        this.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke('V', InputEvent.CTRL_DOWN_MASK+InputEvent.SHIFT_MASK));
     }
 
     /**

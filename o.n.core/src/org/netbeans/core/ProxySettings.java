@@ -215,7 +215,10 @@ public class ProxySettings {
 
         // helper methods
         private static boolean isSystemProxyDetect () {
-            String s = System.getProperty ("netbeans.system_http_proxy"); // NOT_PROXY_HOSTS
+            if (NbProxySelector.useSystemProxies ()) {
+                return true;
+            }
+            String s = System.getProperty ("netbeans.system_http_proxy"); // NOI18N
             return s != null && ! DIRECT.equals (s); // NOI18N
         }
 

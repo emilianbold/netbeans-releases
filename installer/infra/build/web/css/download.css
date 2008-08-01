@@ -190,6 +190,10 @@ table.components_table .left_border {
     border-left:        1px solid #D5D5D5;
 }
 
+table.components_table .right_border {
+    border-right:       1px solid #D5D5D5;
+}
+
 table.components_table .bottom_border {
     border-bottom:      1px solid #D5D5D5;
 }

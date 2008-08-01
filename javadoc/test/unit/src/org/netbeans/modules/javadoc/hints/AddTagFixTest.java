@@ -296,5 +296,117 @@ public class AddTagFixTest extends JavadocTestSupport {
                 "    }\n" +
                 "}\n");        
     }
+
+    public void testAddTypeParamTagFixInEmptyJavadoc() throws Exception {
+        doFirstMemberFixTest(
+                "package test;\n" +
+                "class Zima {\n" +
+                "    /**\n" +
+                "     * \n" +
+                "     */\n" +
+                "    <T> void leden() {\n" +
+                "    }\n" +
+                "}\n",
+                
+                "package test;\n" +
+                "class Zima {\n" +
+                "    /**\n" +
+                "     * \n" +
+                "     * @param <T> \n" +
+                "     */\n" +
+                "    <T> void leden() {\n" +
+                "    }\n" +
+                "}\n");        
+    }
+
+    public void testAddTypeParamTagFixInEmptyClassJavadoc() throws Exception {
+        doClassFixTest(
+                "package test;\n" +
+                "/**\n" +
+                " * \n" +
+                " */\n" +
+                "class Zima<T> {\n" +
+                "}\n",
+                
+                "package test;\n" +
+                "/**\n" +
+                " * \n" +
+                " * @param <T> \n" +
+                " */\n" +
+                "class Zima<T> {\n" +
+                "}\n");        
+    }
+
+    public void testAddTypeParamTagFixInClassJavadoc() throws Exception {
+        doClassFixTest(
+                "package test;\n" +
+                "/**\n" +
+                " * @param <Q> \n" +
+                " */\n" +
+                "class Zima<P,Q> {\n" +
+                "}\n",
+                
+                "package test;\n" +
+                "/**\n" +
+                " * @param <P> \n" +
+                " * @param <Q>\n" +
+                " */\n" +
+                "class Zima<P,Q> {\n" +
+                "}\n");        
+    }
+
+    public void testAddTypeParamTagFixWithReturn() throws Exception {
+        doFirstMemberFixTest(
+                "package test;\n" +
+                "class Zima {\n" +
+                "    /**\n" +
+                "     * @return bla\n" +
+                "     */\n" +
+                "    <T> int leden() {\n" +
+                "        return 0;\n" +
+                "    }\n" +
+                "}\n",
+                
+                "package test;\n" +
+                "class Zima {\n" +
+                "    /**\n" +
+                "     * @param <T> \n" +
+                "     * @return bla\n" +
+                "     */\n" +
+                "    <T> int leden() {\n" +
+                "        return 0;\n" +
+                "    }\n" +
+                "}\n");        
+    }
+
+    public void testAddTypeParamTagFixAndParamOrder() throws Exception {
+        doFirstMemberFixTest(
+                "package test;\n" +
+                "class Zima {\n" +
+                "    /**\n" +
+                "     * @param prvniho \n" +
+                "     * @param druheho \n" +
+                "     * @param tretiho \n" +
+                "     * @return bla\n" +
+                "     */\n" +
+                "    <T> T leden(int prvniho, int druheho, T tretiho) {\n" +
+                "        return tretiho;\n" +
+                "    }\n" +
+                "}\n",
+                
+                "package test;\n" +
+                "class Zima {\n" +
+                "    /**\n" +
+                "     * @param <T> \n" +
+                "     * @param prvniho\n" +
+                "     * @param druheho \n" +
+                "     * @param tretiho \n" +
+                "     * @return bla\n" +
+                "     */\n" +
+                "    <T> T leden(int prvniho, int druheho, T tretiho) {\n" +
+                "        return tretiho;\n" +
+                "    }\n" +
+                "}\n");        
+    }
     
 }

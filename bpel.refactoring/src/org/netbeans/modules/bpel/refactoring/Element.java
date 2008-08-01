@@ -11,9 +11,9 @@
  * http://www.netbeans.org/cddl-gplv2.html
  * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
  * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
+ * License. When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
  * particular file as subject to the "Classpath" exception as provided
  * by Sun in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
@@ -40,6 +40,9 @@
  */
 package org.netbeans.modules.bpel.refactoring;
 
+import java.awt.event.ActionEvent;
+
+import javax.swing.AbstractAction;
 import javax.swing.Icon;
 import javax.swing.text.Position.Bias;
 
@@ -63,28 +66,26 @@ import org.netbeans.modules.xml.xam.dom.DocumentModelAccess;
 
 import org.netbeans.modules.xml.refactoring.XMLRefactoringTransaction;
 import org.netbeans.modules.xml.refactoring.spi.SharedUtils;
-
-import org.netbeans.modules.bpel.editors.api.utils.RefactorUtil;
-import org.netbeans.modules.bpel.editors.api.utils.Util;
+import org.netbeans.modules.bpel.model.api.BpelEntity;
+import org.netbeans.modules.bpel.editors.api.EditorUtil;
+import static org.netbeans.modules.xml.ui.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
  * @version 2007.03.16
  */
-final class Element
-  extends SimpleRefactoringElementImplementation implements TreeElement
-{
+final class Element extends SimpleRefactoringElementImplementation implements TreeElement {
+
   Element(Component component) {
     myComponent = component;
   }
 
   public Lookup getLookup() {
-     return Lookups.singleton(myComponent);
+    return Lookups.fixed(myComponent, new GotoSource(), new GotoDiagram());
   }
 
   public FileObject getParentFile() {
-    return (FileObject) myComponent.getModel().
-      getModelSource().getLookup().lookup(FileObject.class);
+    return (FileObject) myComponent.getModel().getModelSource().getLookup().lookup(FileObject.class);
   }
 
   public TreeElement getParent(boolean isLogical) {
@@ -95,7 +96,7 @@ final class Element
   }
 
   public String getText() {
-    return RefactorUtil.getName(myComponent);
+    return EditorUtil.getName(myComponent);
   }
 
   public String getText(boolean isLogical) {
@@ -103,28 +104,26 @@ final class Element
   }
 
   public String getDisplayText() {
-    return RefactorUtil.getHtmlName(myComponent);
+    return EditorUtil.getHtmlName(myComponent);
   }
 
   public Icon getIcon() {
-    return RefactorUtil.getIcon(myComponent);
+    return EditorUtil.getIcon(myComponent);
   }
 
   public PositionBounds getPosition() {
     if ( !(myComponent.getModel() instanceof AbstractDocumentModel)) {
       return null;
     }
-    DocumentModelAccess access =
-      ((AbstractDocumentModel) myComponent.getModel()).getAccess();
-    String text = access.getXmlFragmentInclusive(
-      ((DocumentComponent) myComponent).getPeer());
+    DocumentModelAccess access = ((AbstractDocumentModel) myComponent.getModel()).getAccess();
+    String text = access.getXmlFragmentInclusive(((DocumentComponent) myComponent).getPeer());
+    
     int startPos = ((DocumentComponent) myComponent).findPosition();
     int endPos = startPos + text.length();
     DataObject data = null;
   
     try {
-      data = DataObject.find((FileObject) myComponent.getModel().
-        getModelSource().getLookup().lookup(FileObject.class));
+      data = DataObject.find((FileObject) myComponent.getModel().getModelSource().getLookup().lookup(FileObject.class));
     }
     catch (DataObjectNotFoundException e) {
       return null;
@@ -140,8 +139,9 @@ final class Element
     return new PositionBounds(start, end);
   }
        
+  @Override
   public void openInEditor() {
-    Util.goToSource(myComponent);
+    EditorUtil.goToSource(myComponent);
   }
 
   public Object getUserObject() {
@@ -152,17 +152,40 @@ final class Element
     myTransaction = transaction;
   }
 
+  @Override
   protected String getNewFileContent() {
-    if (
-      myComponent.getModel() instanceof AbstractDocumentModel &&
-      myTransaction != null)
-    {
+    if (myComponent.getModel() instanceof AbstractDocumentModel && myTransaction != null) {
       return myTransaction.refactorForPreview(myComponent.getModel());
     }
     return null;
   }
 
   public void performChange() {}
+
+  private class GotoSource extends AbstractAction {
+    public GotoSource() {
+      super(i18n(Element.class, "LBL_Go_to_Source")); // NOI18N
+    }
+
+    public void actionPerformed(ActionEvent event) {
+      openInEditor();
+    }
+  }
+
+  private class GotoDiagram extends AbstractAction {
+    public GotoDiagram() {
+      super(i18n(Element.class, "LBL_Go_to_Diagram")); // NOI18N
+    }
+
+    public void actionPerformed(ActionEvent event) {
+      EditorUtil.goToDesign(myComponent);
+    }
+
+    @Override
+    public boolean isEnabled() {
+      return myComponent instanceof BpelEntity;
+    }
+  }
 
   private Component myComponent;
   private XMLRefactoringTransaction myTransaction;

@@ -55,6 +55,7 @@ import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.modelimpl.csm.NamespaceImpl;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
+import static org.netbeans.modules.cnd.api.model.CsmDeclaration.Kind.*;
 
 
 /**
@@ -152,28 +153,58 @@ public class Utils {
     public static String getCsmDeclarationKindkey(CsmDeclaration.Kind kind) {
         // Returned string should be differed from getCsmIncludeKindkey()
 	switch( kind ) {
+	    case ASM:			    return "A"; // NOI18N
 	    case BUILT_IN:		    return "B"; // NOI18N
 	    case CLASS:			    return "C"; // NOI18N
-	    case UNION:			    return "U"; // NOI18N
-	    case STRUCT:		    return "S"; // NOI18N
 	    case ENUM:			    return "E"; // NOI18N
-	    case ENUMERATOR:		    return "e"; // NOI18N
-	    case MACRO:			    return "M"; // NOI18N
-	    case VARIABLE:		    return "V"; // NOI18N
-	    case VARIABLE_DEFINITION:	    return "v"; // NOI18N
 	    case FUNCTION:		    return "F"; // NOI18N
+	    case MACRO:			    return "M"; // NOI18N
+	    case NAMESPACE_DEFINITION:	    return "N"; // NOI18N
+	    case STRUCT:		    return "S"; // NOI18N
+	    case TEMPLATE_DECLARATION:	    return "T"; // NOI18N
+	    case UNION:			    return "U"; // NOI18N
+	    case VARIABLE:		    return "V"; // NOI18N
+	    case NAMESPACE_ALIAS:	    return "a"; // NOI18N
+	    case ENUMERATOR:		    return "e"; // NOI18N
 	    case FUNCTION_DEFINITION:	    return "f"; // NOI18N
+	    case USING_DIRECTIVE:	    return "g"; // NOI18N
+            case TEMPLATE_PARAMETER:        return "p"; // NOI18N
+	    case CLASS_FRIEND_DECLARATION:  return "r"; // NOI18N
 	    case TEMPLATE_SPECIALIZATION:   return "s"; // NOI18N
 	    case TYPEDEF:		    return "t"; // NOI18N
-	    case ASM:			    return "A"; // NOI18N
-	    case TEMPLATE_DECLARATION:	    return "T"; // NOI18N
-	    case NAMESPACE_DEFINITION:	    return "N"; // NOI18N
-	    case NAMESPACE_ALIAS:	    return "a"; // NOI18N
-	    case USING_DIRECTIVE:	    return "U"; // NOI18N
 	    case USING_DECLARATION:	    return "u"; // NOI18N
+	    case VARIABLE_DEFINITION:	    return "v"; // NOI18N
 	    case CLASS_FORWARD_DECLARATION: return "w"; // NOI18N
-	    case CLASS_FRIEND_DECLARATION:  return "r"; // NOI18N
-	    default:	throw new IllegalArgumentException("Unexpected value of CsmDeclaration.Kind"); //NOI18N
+            default:	throw new IllegalArgumentException("Unexpected value of CsmDeclaration.Kind:" + kind); //NOI18N
 	}
+    }
+
+    public static CsmDeclaration.Kind getCsmDeclarationKind(char kind) {
+	switch( kind ) {
+	    case 'A': return ASM; // NOI18N
+            case 'B': return BUILT_IN; // NOI18N
+            case 'C': return CLASS; // NOI18N
+	    case 'E': return ENUM; // NOI18N
+	    case 'F': return FUNCTION; // NOI18N
+	    case 'M': return MACRO; // NOI18N
+	    case 'N': return NAMESPACE_DEFINITION; // NOI18N
+	    case 'S': return STRUCT; // NOI18N
+	    case 'T': return TEMPLATE_DECLARATION; // NOI18N
+            case 'U': return UNION; // NOI18N
+	    case 'V': return VARIABLE; // NOI18N
+	    case 'a': return NAMESPACE_ALIAS; // NOI18N
+	    case 'e': return ENUMERATOR; // NOI18N
+	    case 'f': return FUNCTION_DEFINITION; // NOI18N
+	    case 'g': return USING_DIRECTIVE; // NOI18N
+            case 'p': return TEMPLATE_PARAMETER; // NOI18N
+	    case 'r': return CLASS_FRIEND_DECLARATION; // NOI18N
+	    case 's': return TEMPLATE_SPECIALIZATION; // NOI18N
+	    case 't': return TYPEDEF; // NOI18N
+	    case 'u': return USING_DECLARATION; // NOI18N
+	    case 'v': return VARIABLE_DEFINITION; // NOI18N
+	    case 'w': return CLASS_FORWARD_DECLARATION; // NOI18N
+            default:	throw new IllegalArgumentException("Unexpected char for CsmDeclaration.Kind: " + kind); //NOI18N
+	}
+        
     }
 }

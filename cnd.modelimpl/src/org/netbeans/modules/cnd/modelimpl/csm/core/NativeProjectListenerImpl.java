@@ -69,9 +69,11 @@ import org.openide.filesystems.FileUtil;
 class NativeProjectListenerImpl implements NativeProjectItemsListener {
 
    private final ModelImpl model;
+   private final NativeProject nativeProject;
    
-    public NativeProjectListenerImpl(ModelImpl model) {
+    public NativeProjectListenerImpl(ModelImpl model, NativeProject nativeProject) {
 	this.model = model;
+        this.nativeProject = nativeProject;
     }
     
     public void fileAdded(NativeFileItem fileItem) {
@@ -106,34 +108,36 @@ class NativeProjectListenerImpl implements NativeProjectItemsListener {
 	// FIXUP for #109425
 	ModelImpl.instance().enqueueModelTask(new Runnable() {
 	    public void run() {
-		for (List<NativeFileItem> list : divideByProjects(fileItems)){
-		    onProjectItemChanged(list);
-		}
+                filesPropertiesChangedImpl(fileItems);
 	    }
 	}, "Applying property changes"); // NOI18N
 
     }
+    
+    private void filesPropertiesChangedImpl(List<NativeFileItem> fileItems) {
+        for (List<NativeFileItem> list : divideByProjects(fileItems)){
+            onProjectItemChanged(list);
+        }
+   }
 
     public void filesPropertiesChanged() {
 	// FIXUP for #109425
 	ModelImpl.instance().enqueueModelTask(new Runnable() {
 	    public void run() {
-		for(NativeProject project : getNativeProjects()){
-		    ArrayList<NativeFileItem> list = new ArrayList<NativeFileItem>();
-		    for(NativeFileItem item : project.getAllFiles()){
-			if (!item.isExcluded()) {
-			    switch(item.getLanguage()){
-				case C:
-				case CPP:
-				    list.add(item);
-				    break;
-				default:
-				    break;
-			    }
-			}
-		    }
-		    filesPropertiesChanged(list);
-		}
+                ArrayList<NativeFileItem> list = new ArrayList<NativeFileItem>();
+                for(NativeFileItem item : nativeProject.getAllFiles()){
+                    if (!item.isExcluded()) {
+                        switch(item.getLanguage()){
+                            case C:
+                            case CPP:
+                                list.add(item);
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                }
+                filesPropertiesChangedImpl(list);
 	    }
 	}, "Applying property changes"); // NOI18N
     }

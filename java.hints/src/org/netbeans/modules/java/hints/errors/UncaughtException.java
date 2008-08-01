@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.java.hints.errors;
 
+import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.CatchTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
@@ -66,6 +67,7 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeKind;
@@ -217,7 +219,8 @@ public final class UncaughtException implements ErrorRule<Void> {
                 //if the method header is inside a guarded block, do nothing:
                 if (!org.netbeans.modules.java.hints.errors.Utilities.isMethodHeaderInsideGuardedBlock(info, (MethodTree) pathRec.getLeaf())) {
                     List<ElementDescription> eds = new LinkedList<ElementDescription>();
-                    AnnotationType at = IsOverriddenAnnotationHandler.detectOverrides(info, (TypeElement) method.getEnclosingElement(), method, eds);
+                    TypeElement enclosingType = (TypeElement) method.getEnclosingElement();
+                    AnnotationType at = IsOverriddenAnnotationHandler.detectOverrides(info, enclosingType, method,eds);
                     List<TypeMirror> declaredThrows = null;
                     
                     if (at != null) {
@@ -225,28 +228,30 @@ public final class UncaughtException implements ErrorRule<Void> {
 
                         for (ElementDescription ed : eds) {
                             ExecutableElement ee = (ExecutableElement) ed.getHandle().resolve(info);
-                            List<TypeMirror> thisDeclaredThrows = new LinkedList<TypeMirror>(ee.getThrownTypes());
+                            ExecutableType et = (ExecutableType) info.getTypes().asMemberOf((DeclaredType) enclosingType.asType(), ee);
+                            List<TypeMirror> thisDeclaredThrows = new LinkedList<TypeMirror>(et.getThrownTypes());
                             
-                            for (Iterator<TypeMirror> dt = declaredThrows.iterator(); dt.hasNext(); ) {
-                                for (Iterator<TypeMirror> tdt = thisDeclaredThrows.iterator(); tdt.hasNext(); ) {
-                                    TypeMirror dtNext = dt.next();
-                                    TypeMirror tdtNext = tdt.next();
-                                    
-                                    if (info.getTypes().isSubtype(tdtNext, dtNext)) {
+                            if (!thisDeclaredThrows.isEmpty()) {
+                                for (Iterator<TypeMirror> dt = declaredThrows.iterator(); dt.hasNext();) {
+                                    for (Iterator<TypeMirror> tdt = thisDeclaredThrows.iterator(); tdt.hasNext();) {
+                                        TypeMirror dtNext = dt.next();
+                                        TypeMirror tdtNext = tdt.next();
+
+                                        if (info.getTypes().isSubtype(tdtNext, dtNext)) {
+                                            tdt.remove();
+                                            continue;
+                                        }
+
+                                        if (info.getTypes().isSubtype(dtNext, tdtNext)) {
+                                            dt.remove();
+                                            continue;
+                                        }
+
                                         tdt.remove();
-                                        continue;
-                                    }
-                                    
-                                    if (info.getTypes().isSubtype(dtNext, tdtNext)) {
                                         dt.remove();
-                                        continue;
                                     }
-                                    
-                                    tdt.remove();
-                                    dt.remove();
                                 }
                             }
-                            
                             declaredThrows.addAll(thisDeclaredThrows);
                         }
                     }
@@ -286,13 +291,27 @@ public final class UncaughtException implements ErrorRule<Void> {
                 }
                 
                 if (ErrorFixesFakeHint.enabled(ErrorFixesFakeHint.FixKind.SURROUND_WITH_TRY_CATCH)) {
-                    result.add(new OrigSurroundWithTryCatchFix(info.getJavaSource(), thandles, TreePathHandle.create(path, info)));
-                    result.add(new MagicSurroundWithTryCatchFix(info.getJavaSource(), thandles, offset, ElementHandle.create(method), fqns));
+                    result.add(new OrigSurroundWithTryCatchFix(info.getJavaSource(), thandles, TreePathHandle.create(path, info), fqns));
+                    //#134408: "Surround Block with try-catch" is redundant when the block contains just a single statement
+                    TreePath tp = findBlock(path);
+                    boolean magic = true;
+                    if(tp != null && tp.getLeaf().getKind() == Kind.BLOCK) {
+                        magic = ((BlockTree) tp.getLeaf()).getStatements().size() != 1;
+                    }
+                    if(magic)
+                        result.add(new MagicSurroundWithTryCatchFix(info.getJavaSource(), thandles, offset, ElementHandle.create(method), fqns));
                 }
             }
         }
         
         return result;
+    }
+    
+    private TreePath findBlock(TreePath path) {
+        while (path != null && path.getLeaf().getKind() != Kind.BLOCK) {
+            path = path.getParentPath();
+        }
+        return path;
     }
     
     /**

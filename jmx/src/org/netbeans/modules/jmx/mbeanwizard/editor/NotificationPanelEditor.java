@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 package org.netbeans.modules.jmx.mbeanwizard.editor;
-import org.netbeans.modules.jmx.WizardConstants;
+import org.netbeans.modules.jmx.common.WizardConstants;
 import javax.swing.table.TableCellEditor;
 import javax.swing.JPanel;
 import javax.swing.event.EventListenerList;

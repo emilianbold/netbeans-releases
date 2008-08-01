@@ -43,7 +43,6 @@
 package org.netbeans.modules.uml.ui.support.helpers;
 
 import org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram;
-import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaControl;
 
 /**
  * @author brettb
@@ -93,7 +92,6 @@ public interface IGUIBlocker
       
    /// Some blockers will pump messages on this diagram before unblocking.  This allows the user to see the diagram changes immediately 
    public void setDiagramContext(IDiagram diagram);
-   public void setDiagramContext(IDrawingAreaControl control);
 
    /// Examines each of the indicated kinds and returns true if any are blocked 
    public boolean getKindIsBlocked( int kinds );

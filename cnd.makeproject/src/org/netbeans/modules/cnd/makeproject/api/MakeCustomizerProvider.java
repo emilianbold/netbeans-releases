@@ -178,12 +178,27 @@ public class MakeCustomizerProvider implements CustomizerProvider {
         options[ OPTION_OK ].addActionListener( optionsListener );
         options[ OPTION_CANCEL ].addActionListener( optionsListener );
         options[ OPTION_APPLY ].addActionListener( optionsListener );
+        
+        String dialogTitle = null;
+        if (item != null) {
+            dialogTitle = MessageFormat.format(
+                    NbBundle.getMessage(MakeCustomizerProvider.class, "LBL_File_Customizer_Title"),
+                    new Object[] {item.getFile().getName()}); // NOI18N 
+        }
+        else if (folder != null) {
+            dialogTitle = MessageFormat.format(
+                    NbBundle.getMessage(MakeCustomizerProvider.class, "LBL_Folder_Customizer_Title"),
+                    new Object[] {folder.getName()}); // NOI18N 
+        }
+        else {
+            dialogTitle = MessageFormat.format(
+                    NbBundle.getMessage(MakeCustomizerProvider.class, "LBL_Project_Customizer_Title"),
+                    new Object[] {ProjectUtils.getInformation(project).getDisplayName()}); // NOI18N 
+        }
 
         dialogDescriptor = new DialogDescriptor( 
             innerPane, // innerPane
-            MessageFormat.format(                 // displayName
-                NbBundle.getMessage( MakeCustomizerProvider.class, "LBL_Customizer_Title" ), // NOI18N 
-                new Object[] { ProjectUtils.getInformation(project).getDisplayName() } ),    
+            dialogTitle,
             true,                                  // modal
             options,                                // options
             options[OPTION_OK],                     // initial value
@@ -239,6 +254,7 @@ public class MakeCustomizerProvider implements CustomizerProvider {
 		//projectDescriptor.copyFromProjectDescriptor(clonedProjectdescriptor);
 		projectDescriptor.assign(clonedProjectdescriptor);
 		projectDescriptor.setModified();
+                projectDescriptor.save(); // IZ 133606
                 ((MakeConfigurationDescriptor)projectDescriptor).checkForChangedItems(project, folder, item);
 
 		((MakeSources)ProjectUtils.getSources(project)).descriptorChanged();// FIXUP: should be moved into ProjectDescriptorHelper...

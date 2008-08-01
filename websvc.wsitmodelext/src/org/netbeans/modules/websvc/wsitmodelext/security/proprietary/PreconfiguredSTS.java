@@ -55,6 +55,7 @@ public interface PreconfiguredSTS extends ExtensibilityElement{
     public static final String SERVICENAME = "serviceName";  //NOI18N
     public static final String PORTNAME = "portName";  //NOI18N
     public static final String NAMESPACE = "namespace";  //NOI18N
+    public static final String WSTVERSION = "wstversion";  //NOI18N
 
     void setVisibility(String vis);
     String getVisibility();
@@ -76,4 +77,7 @@ public interface PreconfiguredSTS extends ExtensibilityElement{
 
     void setNamespace(String ns);
     String getNamespace();
+
+    void setTrustVersion(String trustVersion);
+    String getTrustVersion();
 }

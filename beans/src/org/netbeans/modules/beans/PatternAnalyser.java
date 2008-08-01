@@ -93,7 +93,7 @@ public final class PatternAnalyser {
     // Event sets
     private ArrayList<EventSetPattern> currentEventSetPatterns =  new ArrayList<EventSetPattern>();
 
-    AtomicBoolean canceled = new AtomicBoolean();
+    final AtomicBoolean canceled = new AtomicBoolean();
 
     public PatternAnalyser( FileObject fileObject, BeanPanelUI ui ) {
         this.fileObject = fileObject;
@@ -276,9 +276,9 @@ public final class PatternAnalyser {
     private void resolveFields(Parameters p) {
         
         // Analyze fields
-        List<VariableElement> fields = ElementFilter.fieldsIn(p.element.getEnclosedElements());;
+        List<VariableElement> fields = ElementFilter.fieldsIn(p.element.getEnclosedElements());
         
-        String propertyStyle = PropertyActionSettings.getDefault().getPropStyle();
+        String propertyStyle = "this."; //NOI18N
         
         for ( VariableElement field : fields ) {
             

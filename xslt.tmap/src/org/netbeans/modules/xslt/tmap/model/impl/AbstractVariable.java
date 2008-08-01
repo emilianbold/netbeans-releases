@@ -18,6 +18,8 @@
  */
 package org.netbeans.modules.xslt.tmap.model.impl;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.xml.wsdl.model.Message;
 import org.netbeans.modules.xml.wsdl.model.OperationParameter;
 import org.netbeans.modules.xml.xam.Reference;
@@ -33,6 +35,7 @@ import org.netbeans.modules.xslt.tmap.model.api.WSDLReference;
  */
 public abstract class AbstractVariable implements Variable {
 
+    private static final Logger LOGGER = Logger.getLogger(Variable.class.getName());
     private TMapModelImpl myModel;
     private OperationReference myOperationReference;
     private Reference<Message> myMessage;
@@ -62,6 +65,7 @@ public abstract class AbstractVariable implements Variable {
     
     protected Reference<Message> getMessage(OperationParameter operationParam) {
         if (operationParam == null) {
+            LOGGER.log(Level.INFO, "Variable operationParam is null");
             return null;
         }
         

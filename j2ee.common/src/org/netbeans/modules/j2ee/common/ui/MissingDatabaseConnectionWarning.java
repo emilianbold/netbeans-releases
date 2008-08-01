@@ -115,7 +115,7 @@ public final class MissingDatabaseConnectionWarning extends JPanel {
             DialogDescriptor.CLOSED_OPTION
         };
         final DialogDescriptor desc = new DialogDescriptor(panel, title, true, options,
-                DialogDescriptor.CLOSED_OPTION, DialogDescriptor.DEFAULT_ALIGN, new HelpCtx("projrave_ui_elements_dialogs_resolve_data_source_db"), null);
+                DialogDescriptor.CLOSED_OPTION, DialogDescriptor.DEFAULT_ALIGN, new HelpCtx(MissingDatabaseConnectionWarning.class), null);
         desc.setMessageType(DialogDescriptor.WARNING_MESSAGE);
         Dialog dlg = null;
         try {

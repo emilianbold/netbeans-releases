@@ -204,7 +204,7 @@ public class Utils {
         Node node = new ProjectRootNode(tree, projectName);
         node.performPopupAction(Bundle.getStringTrimmed("org.netbeans.modules.j2ee.earproject.ui.Bundle", "LBL_DeployAction_Name"));
         MainWindowOperator.getDefault().getTimeouts().setTimeout("Waiter.WaitingTime", 600000);
-        MainWindowOperator.getDefault().waitStatusText(Bundle.getString("org.apache.tools.ant.module.run.Bundle", "FMT_finished_target_status", new String[] {(projectNameInStatus?projectName:"build.xml")+" (run-deploy)"}));
+        MainWindowOperator.getDefault().waitStatusText(Bundle.getString("org.apache.tools.ant.module.run.Bundle", "FMT_finished_target_status", new String[] {(projectNameInStatus?projectName:"build.xml")+" (run-deploy)."}));
         if (url != null)
             return Utils.loadFromURL(url);
         return null;
@@ -258,25 +258,27 @@ public class Utils {
     }
     
     public static void buildProject(String projectName) {
-        Node node = new ProjectsTabOperator().getProjectRootNode(projectName);
-        node.performPopupAction(Bundle.getStringTrimmed(
-                "org.netbeans.modules.j2ee.earproject.ui.Bundle", "LBL_BuildAction_Name"));
+        ProjectsTabOperator pto = ProjectsTabOperator.invoke();
+        Node node = pto.getProjectRootNode(projectName);
+//        node.performPopupAction(Bundle.getStringTrimmed(
+//                "org.netbeans.modules.j2ee.earproject.ui.Bundle", "LBL_RebuildAction_Name"));
+        node.performPopupAction("Clean and Build");
         MainWindowOperator.getDefault().getTimeouts().setTimeout("Waiter.WaitingTime", 300000);
         MainWindowOperator.getDefault().waitStatusText(Bundle.getString(
                 "org.apache.tools.ant.module.run.Bundle", "FMT_finished_target_status",
-                new String[] {projectName.replace(' ', '_') + " (dist)"}));
+                new String[] {projectName.replace(' ', '_') + " (clean,dist)"}));
         new EventTool().waitNoEvent(2500);
     }
     
     public static void cleanProject(String projectName) {
         Action cleanAction = new Action(null, Bundle.getStringTrimmed(
-                "org.netbeans.modules.j2ee.earproject.ui.Bundle", "LBL_CleanAction_Name"));
+                "org.netbeans.modules.j2ee.earproject.ui.Bundle", "LBL_RebuildAction_Name"));
         cleanAction.setComparator(new Operator.DefaultStringComparator(true, true));
         cleanAction.perform(new ProjectsTabOperator().getProjectRootNode(projectName));
         MainWindowOperator.getDefault().getTimeouts().setTimeout("Waiter.WaitingTime", 300000);
         MainWindowOperator.getDefault().waitStatusText(Bundle.getString(
                 "org.apache.tools.ant.module.run.Bundle", "FMT_finished_target_status",
-                new String[] {projectName.replace(' ', '_') + " (clean)"}));
+                new String[] {projectName.replace(' ', '_') + " (clean,dist)"}));
         new EventTool().waitNoEvent(2500);
     }
     

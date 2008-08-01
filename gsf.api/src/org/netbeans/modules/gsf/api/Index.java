@@ -42,8 +42,8 @@
 package org.netbeans.modules.gsf.api;
 
 import java.io.IOException;
-import java.util.Collection;
 import java.util.Set;
+import org.netbeans.modules.gsf.api.annotations.NonNull;
 
 /**
  * This class represents an index that is provided by the IDE to a language
@@ -57,35 +57,7 @@ public abstract class Index {
     }
 
     /**
-     * Encodes a reference type,
-     * used by {@link ClassIndex#getElements} and {@link ClassIndex#getResources}
-     * to restrict the search.
-     */
-    public enum SearchKind {
-        
-        /**
-         * The returned class has to extend or implement given element
-         */
-        IMPLEMENTORS,
-        
-        /**
-         * The returned class has to call method on given element
-         */
-        METHOD_REFERENCES,
-        
-        /**
-         * The returned class has to access a field on given element
-         */
-        FIELD_REFERENCES,
-        
-        /**
-         * The returned class contains references to the element type
-         */
-        TYPE_REFERENCES,        
-    };
-    
-    /**
-     * Scope used by {@link ClassIndex} to search in
+     * Scope used by {@link #search} to search in
      */
     public enum SearchScope {
         /**
@@ -117,9 +89,9 @@ public abstract class Index {
      *   symmetry, as long as it's convenient to use.
      */
     public interface SearchResult {
-        String getPersistentUrl();
-        String getValue(String key);
-        String[] getValues(String key);
+        @NonNull String getPersistentUrl();
+        @NonNull String getValue(@NonNull String key);
+        @NonNull String[] getValues(@NonNull String key);
         
         // FOR INDEX BROWSER (development/debugging aid) only
         Object getIndex(); // GSF Index
@@ -131,6 +103,11 @@ public abstract class Index {
     }
     
     
-    public abstract void search(final String key, final String name, final NameKind kind, 
-            final Set<SearchScope> scope, Set<SearchResult> result, final Set<String> includeKeys) throws IOException;
+    public abstract void search(
+            @NonNull final String key, 
+            @NonNull final String value, 
+            @NonNull final NameKind kind, 
+            @NonNull final Set<SearchScope> scope, 
+            @NonNull Set<SearchResult> result, 
+            @NonNull final Set<String> includeKeys) throws IOException;
 }

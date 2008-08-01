@@ -73,6 +73,8 @@ public class DbgpMethodBreakpointPanel extends JPanel implements Controller {
     /** Creates new form DbgpMethodBreakpointPanel */
     public DbgpMethodBreakpointPanel() {
         initComponents();
+        myStopOnLbl.setVisible(false);
+        myStopType.setVisible(false);
     }
     
     /* (non-Javadoc)

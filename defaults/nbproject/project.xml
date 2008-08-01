@@ -47,8 +47,7 @@ made subject to such option by the copyright holder.
             <code-name-base>org.netbeans.modules.defaults</code-name-base>
             <module-dependencies>
             </module-dependencies>
-            <public-packages>
-            </public-packages>
+            <public-packages/>
         </data>
     </configuration>
 </project>

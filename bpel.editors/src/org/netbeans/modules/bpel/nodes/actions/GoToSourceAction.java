@@ -49,7 +49,7 @@ public class GoToSourceAction extends BpelNodeAction {
 
     protected void performAction(BpelEntity[] bpelEntities) {
         if (bpelEntities != null && bpelEntities.length > 0) {
-            org.netbeans.modules.bpel.editors.api.utils.Util.goToSource(bpelEntities[0]);
+            org.netbeans.modules.bpel.editors.api.EditorUtil.goToSource(bpelEntities[0]);
         }
     }
 

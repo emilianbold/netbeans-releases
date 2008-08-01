@@ -50,17 +50,4 @@ made subject to such option by the copyright holder.
             <file name="org-netbeans-progress-module-ProgressListAction.instance"/>
         </folder>
     </folder>
-    <folder name="Menu">
-        <folder name="Window">
-            <file name="ProgressListAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-progress-module-ProgressListAction.instance"/>
-                <attr name="position" intvalue="1900"/>
-            </file>
-        </folder>
-    </folder>
-    <folder name="Shortcuts">
-        <file name="DS-DELETE.shadow">
-            <attr name="originalFile" stringvalue="Actions/System/org-netbeans-progress-module-CancelAction.instance"/>
-        </file>
-    </folder>
 </filesystem>

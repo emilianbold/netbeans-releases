@@ -48,9 +48,12 @@ import java.beans.PropertyChangeListener;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import javax.swing.AbstractAction;
 import javax.swing.Icon;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JMenuItem;
+import org.openide.awt.DynamicMenuContent;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
@@ -65,7 +68,7 @@ import org.openide.windows.TopComponent;
  * @author Petr Hrebejk
  */
 public abstract class LookupSensitiveAction extends BasicAction implements LookupListener, Presenter.Popup, Presenter.Menu {
-    private static Logger UILOG = Logger.getLogger("org.netbeans.ui.actions"); // NOI18N
+    static Logger UILOG = Logger.getLogger("org.netbeans.ui.actions"); // NOI18N
     private static Logger LOG = Logger.getLogger(LookupSensitiveAction.class.getName());
 
     private Lookup lookup;
@@ -209,18 +212,37 @@ public abstract class LookupSensitiveAction extends BasicAction implements Looku
         }
     }
 
-    // Implementation of Presenter.Menu ----------------------------------------
+    // Implementation of Presenter.Menu and Presenter.Popup --------------------
     
     public JMenuItem getMenuPresenter () {
-        JMenuItem menuPresenter = new JMenuItem();
-        org.openide.awt.Actions.connect(menuPresenter, this, false);
-        return menuPresenter;
+        return new DynamicMenuItem(this, false);
+    }
+    
+    public JMenuItem getPopupPresenter () {
+        return new DynamicMenuItem(this, true);
     }
 
-    public JMenuItem getPopupPresenter () {
-        JMenuItem menuPresenter = new JMenuItem();
-        org.openide.awt.Actions.connect(menuPresenter, this, true);
-        return menuPresenter;
+    private class DynamicMenuItem extends JMenuItem implements DynamicMenuContent {
+        
+        private AbstractAction action;
+        private boolean popup;
+        
+        public DynamicMenuItem(AbstractAction action, boolean popup) {
+            this.action = action;
+            this.popup = popup;
+            org.openide.awt.Actions.connect(this, action, popup);
+        }
+        
+        public JComponent[] getMenuPresenters() {
+            JMenuItem menuPresenter = new JMenuItem();
+            org.openide.awt.Actions.connect(menuPresenter, action, popup);
+            return new JComponent [] { menuPresenter };
+        }
+        
+        public JComponent[] synchMenuPresenters(JComponent[] items) {
+            return getMenuPresenters();
+        }
+        
     }
     
     /**

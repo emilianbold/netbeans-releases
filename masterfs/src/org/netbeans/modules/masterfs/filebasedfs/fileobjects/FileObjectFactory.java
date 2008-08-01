@@ -67,6 +67,7 @@ import org.netbeans.modules.masterfs.filebasedfs.utils.FileInfo;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.Utilities;
 
@@ -88,7 +89,8 @@ public final class FileObjectFactory {
 
     private FileObjectFactory(final FileInfo fInfo) {
         final File rootFile = fInfo.getFile();
-        assert rootFile.getParentFile() == null;
+        // can be not null for UNC 
+        // assert rootFile.getParentFile() == null;
 
         final BaseFileObj realRoot = create(fInfo);
         root = realRoot;
@@ -166,8 +168,8 @@ public final class FileObjectFactory {
 
         return retval;
     }
-
-
+    
+    
     public BaseFileObj getFileObject(FileInfo fInfo, Caller caller) {
         File file = fInfo.getFile();
         FileObject retVal = null;
@@ -190,49 +192,43 @@ public final class FileObjectFactory {
         if (initTouch == -1  && FileBasedFileSystem.isModificationInProgress()) {
             initTouch = file.exists() ? 1 : 0;
         }
-        return issueIfExist(file, caller, parent, child, initTouch);
+        return issueIfExist(file, caller, parent, child, initTouch, !caller.equals(Caller.Others));
     }
 
 
-    private boolean checkCacheState(boolean exist, File file, Caller caller) {        
-        return checkCacheState(exist, file, caller, false);
-    }
-
-    private boolean checkCacheState(boolean exist, File file, Caller caller, boolean afterRecovering) {
-        if (!exist && (caller.equals(Caller.GetParent) || caller.equals(Caller.ToFileObject))) {
+    /** 
+     * Check cache consistence. It is called only from assertion, so it can be disabled
+     * from command line. Given file should or shouldn't exist according to given 
+     * expectedExists parameter. If the state is different than expected, it prints
+     * warning to console. It can happen when some module doesn't use filesystems API
+     * to handle files but directly uses java.io.File.
+     * @param expectedExists whether given file is expected to exist
+     * @param file checked file
+     * @param caller caller of this method
+     * @return always true.
+     */
+    private boolean checkCacheState(boolean expectedExists, File file, Caller caller) {
+        if (!expectedExists && (caller.equals(Caller.GetParent) || caller.equals(Caller.ToFileObject))) {
             return true;
         }
         if (isWarningEnabled() && caller != null && !caller.equals(Caller.GetChildern)) {
             boolean realExists = file.exists();
-            boolean notsame = exist != realExists;
-            if (!realExists) {
-                //test for broken symlinks
-                File p = file.getParentFile();
-                if (p != null) {
-                    File[] childs = p.listFiles();
-                    if (childs != null && Arrays.asList(childs).contains(p)) {                    
-                        return true;
-                    }
-                }                    
-            }
+            boolean notsame = expectedExists != realExists;
             if (notsame) {
-                if (afterRecovering) {
-                    printWarning(file, Status.RecoverFail);
-                } else {
-                    printWarning(file, Status.NoRecover);
+                if (!realExists) {
+                    //test for broken symlinks
+                    File p = file.getParentFile();
+                    if (p != null) {
+                        File[] children = p.listFiles();
+                        if (children != null && Arrays.asList(children).contains(file)) {
+                            return true;
+                        }
+                    }                    
                 }
-            } else {
-                if (afterRecovering) {
-                    printWarning(file, Status.RecoverSuccess);
-                }
+                printWarning(file);
             }
         }
         return true;
-    }
-
-    public static enum Status {
-
-        RecoverSuccess, RecoverFail, NoRecover
     }
 
     private Integer initRealExists(int initTouch) {
@@ -240,7 +236,7 @@ public final class FileObjectFactory {
         return retval;
     }
 
-    private void printWarning(File file, Status stat) {
+    private void printWarning(File file) {
         StringBuilder sb = new StringBuilder("WARNING(please REPORT):  Externally ");
         sb.append(file.exists() ? "created " : "deleted "); //NOI18N
         sb.append(file.isDirectory() ? "folder: " : "file: "); //NOI18N
@@ -250,7 +246,7 @@ public final class FileObjectFactory {
         Logger.getLogger(getClass().getName()).log(Level.INFO, ise.getMessage(), ise);
     }
 
-    private BaseFileObj issueIfExist(File file, Caller caller, FileObject parent, FileNaming child, int initTouch) {
+    private BaseFileObj issueIfExist(File file, Caller caller, final FileObject parent, FileNaming child, int initTouch,boolean asyncFire) {
         boolean exist = false;
         BaseFileObj foForFile = null;
         Integer realExists = initRealExists(initTouch);
@@ -266,7 +262,7 @@ public final class FileObjectFactory {
                     if (fcb.impeachExistence(file, exist)) {
                         exist = touchExists(file, realExists);
                         if (!exist) {
-                            parent.refresh();
+                            refreshFromGetter(parent,asyncFire);
                         }
                     }
                     assert checkCacheState(true, file, caller);
@@ -275,7 +271,7 @@ public final class FileObjectFactory {
                     if (fcb.impeachExistence(file, exist)) {
                         exist = touchExists(file, realExists);
                         if (!exist) {
-                            parent.refresh();
+                            refreshFromGetter(parent,asyncFire);
                         }
                     }
                     assert checkCacheState(exist, file, caller);
@@ -283,7 +279,7 @@ public final class FileObjectFactory {
                     //!!!!!!!!!!!!!!!!! inconsistence
                     exist = touchExists(file, realExists);
                     if (!exist) {
-                        parent.refresh();
+                        refreshFromGetter(parent,asyncFire);
                     }
                 }
             } else {
@@ -297,12 +293,12 @@ public final class FileObjectFactory {
                     //!!!!!!!!!!!!!!!!! inconsistence
                     exist = touchExists(file, realExists);
                     if (!exist) {
-                        foForFile.refresh();
+                        refreshFromGetter(foForFile,asyncFire);
                     }
                 } else {
                     exist = touchExists(file, realExists);
                     if (exist) {
-                        parent.refresh();
+                        refreshFromGetter(parent,asyncFire);
                     }
                 }
             }
@@ -315,7 +311,7 @@ public final class FileObjectFactory {
                     if (fcb.impeachExistence(file, exist)) {
                         exist = touchExists(file, realExists);
                         if (!exist) {
-                            foForFile.refresh();
+                            refreshFromGetter(foForFile,asyncFire);
                         }
                     }
                     assert checkCacheState(exist, file, caller);
@@ -323,7 +319,7 @@ public final class FileObjectFactory {
                     //!!!!!!!!!!!!!!!!! inconsistence
                     exist = touchExists(file, realExists);
                     if (!exist) {
-                        foForFile.refresh();
+                        refreshFromGetter(foForFile,asyncFire);
                     }
                 }
             } else {
@@ -357,7 +353,7 @@ public final class FileObjectFactory {
                     //guarantee issuing for existing file
                     exist = touchExists(file, realExists);
                     if (exist && parent != null && parent.isValid()) {
-                        parent.refresh();
+                        refreshFromGetter(parent,asyncFire);
                     }
                     assert checkCacheState(exist, file, caller);
                     break;
@@ -710,5 +706,27 @@ public final class FileObjectFactory {
         Statistics.REFRESH_FOLDER.reset();
         Statistics.REFRESH_FILE.reset();
     }
+    
+    private static class AsyncRefreshAtomicAction implements  FileSystem.AtomicAction {
+        private FileObject fo;
+        AsyncRefreshAtomicAction(FileObject fo) {
+            this.fo = fo;
+        }
+        public void run() throws IOException {
+            this.fo.refresh();
+        }
+        
+    }
 
+    private void refreshFromGetter(final FileObject parent,boolean asyncFire)  {
+        try {
+            if (asyncFire) {
+                FileUtil.runAtomicAction(new AsyncRefreshAtomicAction(parent));
+            } else {
+                parent.refresh();
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
 }

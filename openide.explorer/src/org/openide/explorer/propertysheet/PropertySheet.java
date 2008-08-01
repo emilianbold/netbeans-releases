@@ -314,9 +314,6 @@ public class PropertySheet extends JPanel {
         table.getReusablePropertyEnv().setBeans(null);
         table.getReusablePropertyEnv().setNode(null);
         table.getReusablePropertyModel().setProperty(null);
-        
-        //don't hold anything when not in component hierarchy
-        helperNodes = null;
     }
 
     /** Prepare the initial state of the property sheet */
@@ -437,6 +434,7 @@ public class PropertySheet extends JPanel {
         if ((nodes == null) || (nodes.length == 0)) {
             table.getPropertySetModel().setPropertySets(null);
             table.getReusablePropertyEnv().clear();
+            psheet.setTabbedContainerItems(new Object[0], new String[0]);
             return;
         }
 
@@ -509,6 +507,13 @@ public class PropertySheet extends JPanel {
                 pclistener.detach();
             }
 
+            // try to cancel previous pending node setting which is now
+            // obsoleted by following clear
+            RequestProcessor.Task curTask = getScheduleTask();
+            if (!curTask.equals(initTask)) {
+                curTask.cancel();
+            }
+            
             if (SwingUtilities.isEventDispatchThread()) {
                 if (loggable) {
                     PropUtils.log(PropertySheet.class, "  Nodes cleared on event queue.  Emptying model.");
@@ -517,6 +522,7 @@ public class PropertySheet extends JPanel {
                 table.getPropertySetModel().setPropertySets(null);
                 table.getReusablePropertyEnv().clear();
                 helperNodes = null;
+                psheet.setTabbedContainerItems(new Object[0], new String[0]);
             } else {
                 SwingUtilities.invokeLater(
                     new Runnable() {
@@ -531,6 +537,7 @@ public class PropertySheet extends JPanel {
                             table.getPropertySetModel().setPropertySets(null);
                             table.getReusablePropertyEnv().clear();
                             helperNodes = null;
+                            psheet.setTabbedContainerItems(new Object[0], new String[0]);
                         }
                     }
                 );
@@ -574,20 +581,20 @@ public class PropertySheet extends JPanel {
             scheduleTask = RequestProcessor.getDefault().post(
                     new Runnable() {
                         public void run() {
-                            final Node[] nodes = helperNodes;
                             SwingUtilities.invokeLater(
                                 new Runnable() {
                                     public void run() {
                                         final boolean loggable = PropUtils.isLoggable(PropertySheet.class);
-
+                                        Node[] nodesToSet = helperNodes;
                                         if (loggable) {
                                             PropUtils.log(
                                                 PropertySheet.class,
-                                                "Delayed " + "updater setting nodes to " + Arrays.asList(nodes)
+                                                "Delayed " + "updater setting nodes to " + //NOI18N
+                                                    (null == nodesToSet ? "null" : Arrays.asList(nodesToSet)) //NOI18N
                                             );
                                         }
 
-                                        doSetNodes(nodes);
+                                        doSetNodes(nodesToSet);
                                     }
                                 }
                             );

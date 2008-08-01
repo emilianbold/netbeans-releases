@@ -40,9 +40,6 @@
  */
 package org.openide.filesystems;
 
-import java.util.*;
-
-
 /**
  * This class is intended as superclass for individual resolvers.
  * All registered subclasses of MIMEResolver are looked up and asked one by one
@@ -52,6 +49,10 @@ import java.util.*;
  * <p>
  * Resolvers are registered if they have their record in the Lookup area.
  * E.g. in form : org-some-package-JavaResolver.instance file.
+ * <p>
+ * MIME resolvers can also be registered in the <code>Services/MIMEResolver</code>
+ * folder as <code>*.xml</code> files obeying a <a href="doc-files/HOWTO-MIME.html">certain format</a>.
+ * These will be interpreted before resolvers in lookup (in the order specified in that folder).
  *
  * @author  rmatous
  */

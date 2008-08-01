@@ -127,15 +127,14 @@ public class StatusAction  extends ContextAction {
                     ISVNStatus status = statuses[s];                    
                     File file = status.getFile();                    
                     if(file.isDirectory() && status.getTextStatus().equals(SVNStatusKind.UNVERSIONED)) {
-                        // XXX could have been created externally and the cache ignores by designe 
+                        // could have been created externally and the cache ignores by designe 
                         // a newly created folders children. 
                         // As this is the place were such files should be recognized,
                         // we will force the refresh recursivelly. 
-                        SvnUtils.refreshRecursively(file);
+                        cache.refreshRecursively(file);
                     } else {
-                        cache.refresh(file, status);    
-                    }
-                    
+                        cache.refresh(file, status);
+                    }                    
                 }
             }
         } catch (SVNClientException ex) {

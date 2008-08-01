@@ -89,9 +89,19 @@ public interface CsmFinder {
     *   of the element or not.
     * @return list of the matching elements
     */
-    public List findNamespaceElements(CsmNamespace nmsp, String name, boolean exactMatch, boolean searchNested);
+    public List findNamespaceElements(CsmNamespace nmsp, String name, boolean exactMatch, boolean searchNested,boolean searchFirst);
 
-//    /** Find fields by name in a given class.
+//    /** Finds static elements (variables, functions) by name and position
+//    * @param nmsp namespace where the elements should be searched for. It can be null
+//    * @param offset - offset in current file.
+//    * @param begining of the name of the element. The namespace name must be omitted.
+//    * @param exactMatch whether the given name is the exact requested name
+//    *   of the element or not.
+//    * @return list of the matching elements
+//    */
+//    public List findStaticNamespaceElements(CsmNamespace nmsp, int offset, String name, boolean exactMatch, boolean searchNested,boolean searchFirst);
+
+    //    /** Find fields by name in a given class.
 //    * @param c class which is searched for the fields.
 //    * @param name start of the name of the field
 //    * @param exactMatch whether the given name of the field is exact
@@ -171,4 +181,7 @@ public interface CsmFinder {
     */
     public List findNestedClassifiers(CsmOffsetableDeclaration contextDeclaration, CsmClass c, String name, boolean exactMatch,
                             boolean inspectParentClasses, boolean sort);      
+
+    public List findLabel(CsmOffsetableDeclaration contextDeclaration, String name, boolean exactMatch,  boolean sort);
+
 }

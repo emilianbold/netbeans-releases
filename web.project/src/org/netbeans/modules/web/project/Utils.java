@@ -43,8 +43,13 @@ package org.netbeans.modules.web.project;
 
 import java.awt.*;
 import java.io.File;
+import java.util.Arrays;
+import java.util.ResourceBundle;
 import java.util.Vector;
 
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import javax.swing.*;
 
 import org.openide.filesystems.FileUtil;
@@ -55,11 +60,16 @@ import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
+import org.openide.util.NbBundle;
+import org.openide.util.Parameters;
 
 public class Utils {
 
+    private static final Logger UI_LOGGER = Logger.getLogger("org.netbeans.ui.web.project"); // NOI18N
+    private static final Logger USG_LOGGER = Logger.getLogger("org.netbeans.ui.metrics.web.project"); // NOI18N
+
     // COPIED FROM TOMCAT
-    private static final String javaKeywords[] = {
+    private static final String JAVA_KEYWORDS[] = {
         "abstract", "assert", "boolean", "break", "byte", "case",
         "catch", "char", "class", "const", "continue",
         "default", "do", "double", "else", "enum", "extends",
@@ -311,21 +321,7 @@ public class Utils {
      * Test whether the argument is a Java keyword
      */
     private static boolean isJavaKeyword(String key) {
-        int i = 0;
-        int j = javaKeywords.length;
-        while (i < j) {
-            int k = (i+j)/2;
-            int result = javaKeywords[k].compareTo(key);
-            if (result == 0) {
-                return true;
-            }
-            if (result < 0) {
-                i = k+1;
-            } else {
-                j = k;
-            }
-        }
-        return false;
+        return Arrays.binarySearch(JAVA_KEYWORDS, key) >= 0;
     }
 
     public static Color getErrorColor() {
@@ -346,5 +342,45 @@ public class Utils {
             }
         }
         return classpath.toString();
+    }
+
+    /**
+     * Logs the UI gesture.
+     *
+     * @param bundle resource bundle to use for message
+     * @param message message key
+     * @param params message parameters, may be <code>null</code>
+     */
+    public static void logUI(ResourceBundle bundle,String message, Object[] params) {
+        Parameters.notNull("message", message);
+        Parameters.notNull("bundle", bundle);
+
+        LogRecord logRecord = new LogRecord(Level.INFO, message);
+        logRecord.setLoggerName(UI_LOGGER.getName());
+        logRecord.setResourceBundle(bundle);
+        if (params != null) {
+            logRecord.setParameters(params);
+        }
+        UI_LOGGER.log(logRecord);
+    }
+
+    /**
+     * Logs usage data.
+     *
+     * @param srcClass source class
+     * @param message message key
+     * @param params message parameters, may be <code>null</code>
+     */
+    public static void logUsage(Class srcClass, String message, Object[] params) {
+        Parameters.notNull("message", message); // NOI18N
+
+        LogRecord logRecord = new LogRecord(Level.INFO, message);
+        logRecord.setLoggerName(USG_LOGGER.getName());
+        logRecord.setResourceBundle(NbBundle.getBundle(srcClass));
+        logRecord.setResourceBundleName(srcClass.getPackage().getName() + ".Bundle"); // NOI18N
+        if (params != null) {
+            logRecord.setParameters(params);
+        }
+        USG_LOGGER.log(logRecord);
     }
 }

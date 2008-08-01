@@ -192,8 +192,10 @@ public final class ConnectionWidgetLayout implements Layout {
         childWidget.resolveBounds (new Point (linePoint.x - referencePoint.x, linePoint.y - referencePoint.y), preferredBounds);
     }
 
-    private static Point getReferencePoint (LayoutFactory.ConnectionWidgetLayoutAlignment alignment, Rectangle rectangle) {
-        switch (alignment) {
+    private Point getReferencePoint (LayoutFactory.ConnectionWidgetLayoutAlignment alignment, Rectangle rectangle) {
+        LayoutFactory.ConnectionWidgetLayoutAlignment adjusted = adjustAlignment(alignment);
+        
+        switch (adjusted) {
             case BOTTOM_CENTER:
                 return new Point (GeomUtil.centerX (rectangle), rectangle.y - 1);
             case BOTTOM_LEFT:
@@ -218,5 +220,166 @@ public final class ConnectionWidgetLayout implements Layout {
                 return new Point ();
         }
     }
+    
+    private LayoutFactory.ConnectionWidgetLayoutAlignment adjustAlignment(LayoutFactory.ConnectionWidgetLayoutAlignment alignment)
+    {
+        LayoutFactory.ConnectionWidgetLayoutAlignment retVal = alignment;
+        
+        if(alignment == LayoutFactory.ConnectionWidgetLayoutAlignment.CENTER_SOURCE)
+        {
+            Point sourcePt = connectionWidget.getFirstControlPoint();
+            Rectangle sourceBounds = getSourceBounds();
 
+            retVal = calculateBestCenterAlignment(sourcePt, sourceBounds);
+        }
+        else if(alignment == LayoutFactory.ConnectionWidgetLayoutAlignment.CENTER_TARGET)
+        {
+            Point targetPt = connectionWidget.getLastControlPoint();
+            Rectangle targetBounds = getTargetBounds();
+
+            
+            retVal = calculateBestCenterAlignment(targetPt, targetBounds);
+        }
+        else if(alignment == LayoutFactory.ConnectionWidgetLayoutAlignment.BOTTOM_SOURCE)
+        {
+            Point sourcePt = connectionWidget.getFirstControlPoint();
+            Rectangle sourceBounds = getSourceBounds();
+            
+            retVal = calculateBestBottomAlignment(sourcePt, sourceBounds);
+        }
+        else if(alignment == LayoutFactory.ConnectionWidgetLayoutAlignment.BOTTOM_TARGET)
+        {   
+            Point targetPt = connectionWidget.getLastControlPoint();
+            Rectangle targetBounds = getTargetBounds();
+
+            retVal = calculateBestBottomAlignment(targetPt, targetBounds);
+        }
+        else if(alignment == LayoutFactory.ConnectionWidgetLayoutAlignment.TOP_SOURCE)
+        {
+            Point sourcePt = connectionWidget.getFirstControlPoint();
+            Rectangle sourceBounds = getSourceBounds();
+            
+            retVal = calculateBestTopAlignment(sourcePt, sourceBounds);
+        }
+        else if(alignment == LayoutFactory.ConnectionWidgetLayoutAlignment.TOP_TARGET)
+        {
+            Point targetPt = connectionWidget.getLastControlPoint();
+            Rectangle targetBounds = getTargetBounds();
+
+            retVal = calculateBestTopAlignment(targetPt, targetBounds);
+        }
+        
+        return retVal;
+    }
+    
+    private LayoutFactory.ConnectionWidgetLayoutAlignment calculateBestCenterAlignment(Point point,
+                                                                         Rectangle bounds)
+    {
+        LayoutFactory.ConnectionWidgetLayoutAlignment retVal = 
+                LayoutFactory.ConnectionWidgetLayoutAlignment.NONE;
+        
+        if(bounds != null)
+        {
+            if(point.x <= bounds.x)
+            {
+                retVal = LayoutFactory.ConnectionWidgetLayoutAlignment.CENTER_LEFT;
+            }
+            else if(point.x >= (bounds.x + bounds.width))
+            {
+                retVal = LayoutFactory.ConnectionWidgetLayoutAlignment.CENTER_RIGHT;
+            }
+            else 
+            if(point.y <= bounds.y)
+            {
+                retVal = LayoutFactory.ConnectionWidgetLayoutAlignment.TOP_CENTER;
+            }
+            else if(point.y >= (bounds.y + bounds.height))
+            {
+                retVal = LayoutFactory.ConnectionWidgetLayoutAlignment.BOTTOM_CENTER;
+            }
+        }
+        
+        return retVal;
+    }
+    
+    private LayoutFactory.ConnectionWidgetLayoutAlignment calculateBestBottomAlignment(Point point,
+                                                                         Rectangle bounds)
+    {
+        LayoutFactory.ConnectionWidgetLayoutAlignment retVal = 
+                LayoutFactory.ConnectionWidgetLayoutAlignment.NONE;
+        
+        if(point.x <= bounds.x)
+        {
+            retVal = LayoutFactory.ConnectionWidgetLayoutAlignment.BOTTOM_LEFT;
+        }
+        else if(point.x >= (bounds.x + bounds.width))
+        {
+            retVal = LayoutFactory.ConnectionWidgetLayoutAlignment.BOTTOM_RIGHT;
+        }
+        else if(point.y <= bounds.y)
+        {
+            retVal = LayoutFactory.ConnectionWidgetLayoutAlignment.TOP_RIGHT;
+        }
+        else if(point.y >= (bounds.y + bounds.height))
+        {
+            retVal = LayoutFactory.ConnectionWidgetLayoutAlignment.BOTTOM_LEFT;
+        }
+        
+        return retVal;
+    }
+    
+    private LayoutFactory.ConnectionWidgetLayoutAlignment calculateBestTopAlignment(Point point,
+                                                                      Rectangle bounds)
+    {
+        LayoutFactory.ConnectionWidgetLayoutAlignment retVal = 
+                LayoutFactory.ConnectionWidgetLayoutAlignment.NONE;
+        
+        if(point.x <= bounds.x)
+        {
+            retVal = LayoutFactory.ConnectionWidgetLayoutAlignment.TOP_LEFT;
+        }
+        else if(point.x >= (bounds.x + bounds.width))
+        {
+            retVal = LayoutFactory.ConnectionWidgetLayoutAlignment.TOP_RIGHT;
+        }
+        else 
+        if(point.y <= bounds.y)
+        {
+            retVal = LayoutFactory.ConnectionWidgetLayoutAlignment.TOP_LEFT;
+        }
+        else if(point.y >= (bounds.y + bounds.height))
+        {
+            retVal = LayoutFactory.ConnectionWidgetLayoutAlignment.BOTTOM_RIGHT;
+        }
+        
+        return retVal;
+    }
+    
+    private Rectangle getSourceBounds()
+    {
+        Widget source = connectionWidget.getSourceAnchor().getRelatedWidget();
+            
+        if(source != null)
+        {
+            Point sourceLocation = source.getLocation();
+            Rectangle clientArea = source.getClientArea();
+            return new Rectangle(sourceLocation, clientArea.getSize());
+        }
+        
+        return null;
+    }
+
+    private Rectangle getTargetBounds()
+    {
+        Widget target = connectionWidget.getTargetAnchor().getRelatedWidget();
+                
+        if(target != null)
+        {
+            Point targetLocation = target.getLocation();
+            Rectangle targetArea = target.getClientArea();
+            return new Rectangle(targetLocation, targetArea.getSize());
+        }
+        
+        return null;
+    }
 }

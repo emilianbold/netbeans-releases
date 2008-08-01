@@ -65,8 +65,6 @@ public class GeneralEditorPanel extends JPanel implements ActionListener {
      */
     public GeneralEditorPanel () {
         initComponents ();
-        
-        setName(loc ("General_Tab"));
                 
         loc (lCodeFolding, "Code_Folding");
         loc (lUseCodeFolding, "Code_Folding_Section");
@@ -219,18 +217,18 @@ public class GeneralEditorPanel extends JPanel implements ActionListener {
                                     .add(cbGuessMethodArgs)
                                     .add(cbDocsAutoPopup)))))
                     .add(lCamelCaseBehavior))
-                .addContainerGap(133, Short.MAX_VALUE))
+                .addContainerGap(147, Short.MAX_VALUE))
             .add(layout.createSequentialGroup()
                 .add(138, 138, 138)
                 .add(lCamelCaseBehaviorExample)
-                .addContainerGap(168, Short.MAX_VALUE))
+                .addContainerGap(177, Short.MAX_VALUE))
             .add(layout.createSequentialGroup()
                 .add(116, 116, 116)
-                .add(jSeparator3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 774, Short.MAX_VALUE))
+                .add(jSeparator3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 775, Short.MAX_VALUE))
             .add(layout.createSequentialGroup()
                 .add(lCodeCompletion)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jSeparator2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 768, Short.MAX_VALUE))
+                .add(jSeparator2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 770, Short.MAX_VALUE))
             .add(layout.createSequentialGroup()
                 .add(lCodeFolding)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -287,7 +285,7 @@ public class GeneralEditorPanel extends JPanel implements ActionListener {
                 .add(cbCamelCaseBehavior)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(lCamelCaseBehaviorExample)
-                .addContainerGap(13, Short.MAX_VALUE))
+                .addContainerGap(28, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
     

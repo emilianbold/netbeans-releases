@@ -41,41 +41,40 @@
 
 package org.netbeans.modules.cnd.debugger.gdb.models;
 
+import java.awt.datatransfer.Transferable;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import org.netbeans.api.debugger.Watch;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.viewmodel.ModelEvent;
-import org.netbeans.spi.viewmodel.NodeModel;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
-import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
-
 import org.netbeans.modules.cnd.debugger.gdb.LocalVariable;
 import org.netbeans.modules.cnd.debugger.gdb.Field;
+import org.netbeans.spi.viewmodel.ExtendedNodeModel;
+import org.openide.util.datatransfer.PasteType;
+import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /*
  * VariablesNodeModel.java
  *
  * @author Nik Molchanov (copied from Jan Jancura's JPDA implementation)
  */
-public class VariablesNodeModel implements NodeModel {
+public class VariablesNodeModel implements ExtendedNodeModel {
     
     public static final String FIELD =
-            "org/netbeans/modules/debugger/resources/watchesView/Field"; // NOI18N
+            "org/netbeans/modules/debugger/resources/watchesView/Field.gif"; // NOI18N
     public static final String LOCAL =
-            "org/netbeans/modules/debugger/resources/localsView/LocalVariable"; // NOI18N
-    public static final String FIXED_WATCH =
-            "org/netbeans/modules/debugger/resources/watchesView/FixedWatch"; // NOI18N
+            "org/netbeans/modules/debugger/resources/localsView/LocalVariable.gif"; // NOI18N
     public static final String WATCH =
-            "org/netbeans/modules/debugger/resources/watchesView/Watch"; // NOI18N
-    public static final String STATIC_FIELD =
-            "org/netbeans/modules/debugger/resources/watchesView/StaticField"; // NOI18N
-    public static final String SUPER =
-            "org/netbeans/modules/debugger/resources/watchesView/SuperVariable"; // NOI18N
+            "org/netbeans/modules/debugger/resources/watchesView/watch_16.png"; // NOI18N
+    public static final String ERROR =
+            "org/netbeans/modules/cnd/debugger/gdb/resources/error_small_16.png"; // NOI18N
     
     private RequestProcessor evaluationRP = new RequestProcessor();
     private final Collection<ModelListener> modelListeners = new HashSet<ModelListener>();
@@ -126,7 +125,7 @@ public class VariablesNodeModel implements NodeModel {
         throw new UnknownTypeException(o);
     }
     
-    private Map<Object, String> shortDescriptionMap = new HashMap<Object, String>();
+    private final Map<Object, String> shortDescriptionMap = new HashMap<Object, String>();
     
     public String getShortDescription(final Object o) throws UnknownTypeException {
         synchronized (shortDescriptionMap) {
@@ -195,27 +194,32 @@ public class VariablesNodeModel implements NodeModel {
     }
     
     public String getIconBase(Object o) throws UnknownTypeException {
-        if (o == TreeModel.ROOT) {
-            return FIELD;
-        } else if (o instanceof Field) {
-            if (((Field) o).isStatic()) {
-                return STATIC_FIELD;
+        throw new UnsupportedOperationException();
+    }
+
+    public String getIconBaseWithExtension(Object node) throws UnknownTypeException {
+        if (node == TreeModel.ROOT || node instanceof GdbWatchVariable || node instanceof Watch) {
+            return WATCH;
+        } else if (node instanceof Field) {
+            if (node instanceof AbstractVariable.ErrorField) {
+                return ERROR;
             } else {
                 return FIELD;
             }
-        } else if (o instanceof GdbWatchVariable) {
-            return WATCH;
-        } else if (o instanceof LocalVariable) {
+        } else if (node instanceof AbstractVariable) {
             return LOCAL;
+        } else {
+            // FIXME - I think the following is obsolete, but FCS code freeze is in 4
+            // days so I'm not willing to remove this code. Better to check in the future
+            // (or just leave it).
+            String str = node.toString();
+            if (str.startsWith(strSubArray)) {
+                return LOCAL;
+            } else if (str.equals(strNoInfo) || str.equals(strNoCurrentThread)) {
+                return null;
+            }
         }
-        
-        String str = o.toString();
-        if (str.startsWith(strSubArray)) {
-            return LOCAL;
-        } else if (str.equals(strNoInfo) || str.equals(strNoCurrentThread)) {
-            return null;
-        }
-        throw new UnknownTypeException(o);
+        throw new UnknownTypeException(node);
     }
     
     public void addModelListener(ModelListener l) {
@@ -238,5 +242,36 @@ public class VariablesNodeModel implements NodeModel {
         for (int i = 0; i < listeners.length; i++) {
             ((ModelListener) listeners[i]).modelChanged(me);
         }
+    } 
+    
+    // implement methods from ExtendedNodeModel
+    
+    public boolean canRename(Object node) throws UnknownTypeException {
+        return false;
+    }
+
+    public boolean canCopy(Object node) throws UnknownTypeException {
+        return false;
+    }
+
+    public boolean canCut(Object node) throws UnknownTypeException {
+        return false;
+    }
+
+    public Transferable clipboardCopy(Object node) throws IOException, UnknownTypeException {
+        throw new UnsupportedOperationException();
+    }
+
+    public Transferable clipboardCut(Object node) throws IOException,
+                                                         UnknownTypeException {
+        throw new UnsupportedOperationException();
+    }
+
+    public PasteType[] getPasteTypes(Object node, Transferable t) throws UnknownTypeException {
+        return null;
+    }
+
+    public void setName(Object node, String name) throws UnknownTypeException {
+        throw new UnsupportedOperationException();
     }
 }

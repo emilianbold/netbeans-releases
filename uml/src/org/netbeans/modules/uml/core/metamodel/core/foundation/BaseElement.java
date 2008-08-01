@@ -240,7 +240,8 @@ public class BaseElement extends VersionableElement
       if(helper.dispatchElementPreModified(this) == true)
       {
          UMLXMLManip.setAttributeValue(this, str, val);
-         helper.dispatchElementModified(this);
+         // comment out redundant event firing
+//         helper.dispatchElementModified(this);
       }
 	}
 	

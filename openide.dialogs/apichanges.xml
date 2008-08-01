@@ -47,6 +47,37 @@ made subject to such option by the copyright holder.
 <apidef name="dialogs">Dialogs API</apidef>
 </apidefs>
 <changes>
+    
+    <change id="WizardDescriptor_new_constants">
+        <api name="dialogs"/>
+        <summary>New WizardDescriptor constants introduced for info and warning messages</summary>
+        <version major="7" minor="8"/>
+        <date day="3" month="7" year="2008"/>
+        <author login="mkubec"/>
+        <compatibility addition="yes"/>
+        <description>
+            Two new constants for warning and info messages were introduced. Info message is annotated by blue info icon 
+            and warning message is annotated by orange warning icon with exclamation mark. Message foreground color is set to 
+            Label foreground standard color.
+        </description>
+        <class package="org.openide" name="WizardDescriptor"/>
+        <issue number="137737"/>
+    </change>
+    
+    <change id="WizardDescriptor_constants">
+        <api name="dialogs"/>
+        <summary>Wizard Descriptor properties changed to constants, two new constants introduced</summary>
+        <version major="7" minor="8"/>
+        <date day="3" month="7" year="2008"/>
+        <author login="mkubec"/>
+        <compatibility addition="yes"/>
+        <description>
+            Freeform property strings are replaced by public constants.
+        </description>
+        <class package="org.openide" name="WizardDescriptor"/>
+        <issue number="138128"/>
+    </change>
+    
     <change id="WizardDescriptor.ArrayIterator-generic-constructor">
         <api name="dialogs"/>
         <summary>Generics-friendly constructor added for <code>WizardDescriptor.ArrayIterator</code></summary>

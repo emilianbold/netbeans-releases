@@ -41,21 +41,14 @@
 
 package org.netbeans.test.sanity;
 
-import com.meterware.httpunit.HttpUnitOptions;
-import com.meterware.httpunit.SubmitButton;
-import com.meterware.httpunit.WebConversation;
-import com.meterware.httpunit.WebForm;
-import com.meterware.httpunit.WebResponse;
-import java.awt.Component;
-import javax.swing.JComponent;
 import junit.framework.Test;
 import junit.framework.TestSuite;
+import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.jemmy.operators.*;
 import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.TimeoutExpiredException;
-import org.netbeans.junit.NbTestSuite;
-
-import java.io.File;
-import java.awt.*;
+import org.netbeans.jellytools.OutputTabOperator;
 
 import org.netbeans.modules.visualweb.gravy.*;
 import org.netbeans.modules.visualweb.gravy.ProjectNavigatorOperator;
@@ -67,13 +60,16 @@ import org.netbeans.modules.visualweb.gravy.model.IDE;
 import org.netbeans.modules.visualweb.gravy.model.deployment.*;
 import org.netbeans.modules.visualweb.gravy.navigation.NavigatorOperator;
 import org.netbeans.modules.visualweb.gravy.properties.SheetTableOperator;
-import java.awt.event.KeyEvent;
+
+import java.awt.*;
+import java.io.File;
 import java.io.IOException;
-import java.io.IOException;
+import javax.swing.JComponent;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.netbeans.jellytools.OutputTabOperator;
-import org.netbeans.jemmy.operators.*;
+
+
+
 
 /**
  * @author Alexey Butenko (alexey.butenko@sun.com)
@@ -100,13 +96,25 @@ public class SanityTests extends RaveTestCase {
     public static String paletteGroup = null;
     public static int xButtonLoc;
     public static int yButtonLoc;
+
+    static final String [] tests = {
+                "testAddPlugin",
+                "testAddApplicationServer",
+                "testCreateProject",
+                "testAddButton",
+                "testBackingFile",
+                "testCloseProject",
+                "testCreateJavaEE5Project",
+                "testAddStandardComponents",
+                "testExecution",
+                "testCheckIDELog"
+    };
     
     public SanityTests(String testName) {
         super(testName);
-        doFullThreadDump = true;
     }
     
-    public static Test suite() {
+    /*public static Test suite() {
         TestSuite suite= new NbTestSuite();
         suite.addTest(new SanityTests("testAddPlugin"));
         suite.addTest(new SanityTests("testAddApplicationServer"));
@@ -123,8 +131,18 @@ public class SanityTests extends RaveTestCase {
         suite.addTest(new SanityTests("testExecution"));
         suite.addTest(new SanityTests("testCheckIDELog"));
         return suite;
+    }*/
+
+    public static junit.framework.Test suite() {
+        return NbModuleSuite.create(
+                NbModuleSuite.createConfiguration(SanityTests.class)
+                .addTest(tests)
+                .clusters(".*")
+                .enableModules(".*")
+                .gui(true)
+                );
     }
-    
+
     /** method called before each testcase
      */
     protected void setUp() {
@@ -464,7 +482,7 @@ public class SanityTests extends RaveTestCase {
         }
         
         try {
-            WebConversation conversation = new WebConversation();
+/*            WebConversation conversation = new WebConversation();
             WebResponse response = null;
             //HttpUnitOptions.setExceptionsThrownOnScriptError(false);
             HttpUnitOptions.setExceptionsThrownOnErrorStatus(false);
@@ -472,8 +490,8 @@ public class SanityTests extends RaveTestCase {
             
             // Get deployment target prefix from test/data/DefaultDepploymentTargets.propertes.
             // By default, it is http://localhost:8080
-            ApplicationServer  as = (ApplicationServer) IDE.getIDE().getDeploymentTargets().get(0);
-            _requestPrefix=as.requestPrefix;
+*/            ApplicationServer  as = (ApplicationServer) IDE.getIDE().getDeploymentTargets().get(0);
+/*            _requestPrefix=as.requestPrefix;
             log("prefix="+as.requestPrefix);
             
             response = conversation.getResponse(_requestPrefix+_projectName);
@@ -490,7 +508,7 @@ public class SanityTests extends RaveTestCase {
         //step is added
 //            assertFalse("Wrong response after form submit", response.getText().indexOf("Clicked on button")==-1);
 //            //assertFalse("Wrong response after form submit", response.getText().indexOf("Push me")==-1);
-            TestUtils.wait(2000);
+*/            TestUtils.wait(2000);
             ServerNavigatorOperator.showNavigatorOperator().pushPopup(ServerNavigatorOperator.STR_SERVERS_PATH + 
                     as.web_applications_path + "|" + as.app_pref + _projectName, as.APPLICATION_UNDEPLOY);
             TestUtils.wait(1000);

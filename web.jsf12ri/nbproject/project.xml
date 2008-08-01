@@ -4,13 +4,6 @@
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/3">
             <code-name-base>org.netbeans.modules.web.jsf12ri</code-name-base>
-            <class-path-extension>
-                <runtime-relative-path>ext/jsf-1_2/jsf-impl.jar</runtime-relative-path>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/glassfish-jspparser-2.0.jar</runtime-relative-path>
-                <binary-origin>../web.jspparser/external/glassfish-jspparser-2.0.jar</binary-origin>
-            </class-path-extension>
             <module-dependencies>
                 <dependency>
                     <code-name-base>org.netbeans.libs.glassfish_logging</code-name-base>
@@ -81,6 +74,13 @@
                 <package>com.sun.org.apache.commons.digester.rss</package>
                 <package>com.sun.org.apache.commons.digester.xmlrules</package>
             </friend-packages>
+            <class-path-extension>
+                <runtime-relative-path>ext/jsf-1_2/jsf-impl.jar</runtime-relative-path>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/glassfish-jspparser-2.0.jar</runtime-relative-path>
+                <binary-origin>../web.jspparser/external/glassfish-jspparser-2.0.jar</binary-origin>
+            </class-path-extension>
         </data>
     </configuration>
 </project>

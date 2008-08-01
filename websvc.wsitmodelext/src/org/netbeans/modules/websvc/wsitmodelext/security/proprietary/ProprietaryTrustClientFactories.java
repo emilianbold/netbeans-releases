@@ -57,9 +57,6 @@ public class ProprietaryTrustClientFactories {
         public Set<QName> getElementQNames() {
             return Collections.singleton(ProprietaryTrustClientQName.PRECONFIGUREDSTS.getQName());
         }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new PreconfiguredSTSImpl(context.getModel()));
-        }
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {
             return new PreconfiguredSTSImpl(context.getModel(), element);

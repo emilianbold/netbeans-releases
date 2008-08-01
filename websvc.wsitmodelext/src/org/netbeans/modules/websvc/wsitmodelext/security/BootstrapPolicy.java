@@ -41,11 +41,11 @@
 
 package org.netbeans.modules.websvc.wsitmodelext.security;
 
-import org.netbeans.modules.websvc.wsitmodelext.policy.NestedPolicyAllowed;
+import org.netbeans.modules.xml.wsdl.model.ExtensibilityElement;
 
 /**
  *
  * @author Martin Grebac
  */
-public interface BootstrapPolicy extends NestedPolicyAllowed {
+public interface BootstrapPolicy  extends ExtensibilityElement {
 }

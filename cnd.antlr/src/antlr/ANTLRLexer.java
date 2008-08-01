@@ -97,10 +97,10 @@ public ANTLRLexer(Reader in) {
 	this(new CharBuffer(in));
 }
 public ANTLRLexer(InputBuffer ib) {
-	this(new LexerSharedInputState(ib));
+	this(new LexerSharedInputState(), ib);
 }
-public ANTLRLexer(LexerSharedInputState state) {
-	super(state);
+public ANTLRLexer(LexerSharedInputState state, InputBuffer buf) {
+	super(state, buf);
 	caseSensitiveLiterals = true;
 	setCaseSensitive(true);
 	literals = new Hashtable();

@@ -105,8 +105,7 @@ public class SoapBindingSupportTest {
 
         String result = getBuildRequest("DocumentLiteral_MsgPartElement.wsdl");
         String expected = getFileContent("DocumentLiteral_MsgPartElement_ExpectedSoapMsg.xml");
-//        System.out.println("result is " + result);
-//        System.out.println("expected is " + expected);
+        
         List<Difference> diffs = xdmUtil.compareXML(
                 expected, result, XDMUtil.ComparisonCriteria.EQUAL);
         assertEquals(0, diffs.size());
@@ -123,8 +122,7 @@ public class SoapBindingSupportTest {
 
         String result = getBuildRequest("RPCLiteral_MsgPartType.wsdl");
         String expected = getFileContent("RPCLiteral_MsgPartType_ExpectedSoapMsg.xml");
-//        System.out.println("result is " + result);
-//        System.out.println("expected is " + expected);
+        
         List<Difference> diffs = xdmUtil.compareXML(
                 expected, result, XDMUtil.ComparisonCriteria.EQUAL);
         assertEquals(0, diffs.size());
@@ -141,8 +139,7 @@ public class SoapBindingSupportTest {
 
         String result = getBuildRequest("RPCLiteral_MsgPartElement.wsdl");
         String expected = getFileContent("RPCLiteral_MsgPartElement_ExpectedSoapMsg.xml");
-//        System.out.println("result is " + result);
-//        System.out.println("expected is " + expected);
+        
         List<Difference> diffs = xdmUtil.compareXML(
                 expected, result, XDMUtil.ComparisonCriteria.EQUAL);
         assertEquals(0, diffs.size());

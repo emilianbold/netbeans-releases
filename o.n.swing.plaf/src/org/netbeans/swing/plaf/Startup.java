@@ -59,6 +59,7 @@ import java.net.URL;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import org.netbeans.swing.plaf.nimbus.NimbusLFCustoms;
 import org.netbeans.swing.plaf.winclassic.WindowsLFCustoms;
 import org.netbeans.swing.plaf.winvista.VistaLFCustoms;
 import org.netbeans.swing.plaf.winxp.XPLFCustoms;
@@ -144,14 +145,17 @@ public final class Startup {
               uiClassName = UIManager.getSystemLookAndFeelClassName();
               // Enable GTK L&F only for JDK version 1.6.0 update 1 and later.
               // GTK L&F quality unacceptable for earlier versions.
+              // Also enable GTK L&F for OpenJDK
               String javaVersion = System.getProperty("java.version");
-              if ("1.6.0_01".compareTo(javaVersion) > 0) {
+              if ("1.6.0_01".compareTo(javaVersion) > 0 && 
+                       System.getProperty("java.vm.name") != null &&
+                       System.getProperty("java.vm.name").indexOf("OpenJDK") < 0) {
                   // IDE runs on 1.5 or 1.6 - useGtk can enabled Gtk
                   if (uiClassName.indexOf("gtk") >= 0 && !Boolean.getBoolean("useGtk")) {
                       uiClassName = "javax.swing.plaf.metal.MetalLookAndFeel";
                   }
               } else {
-                  // IDE runs on 1.6_01 or higher - useGtk can disabled Gtk
+                  // IDE runs on 1.6_0_01 or higher - useGtk can disabled Gtk
                   if (uiClassName.indexOf("gtk") >= 0 && System.getProperty("useGtk") != null && !Boolean.getBoolean("useGtk")) {
                       uiClassName = "javax.swing.plaf.metal.MetalLookAndFeel";
                   }
@@ -365,7 +369,7 @@ public final class Startup {
         }
         if (result == null) {
             String[] knownLFs = new String[] {
-                    "Metal", "Windows", "Aqua", "GTK" //NOI18N
+                    "Metal", "Windows", "Aqua", "GTK", "Nimbus" //NOI18N
                 };
             switch (Arrays.asList(knownLFs).indexOf(UIManager.getLookAndFeel().getID())) {
                 case 1 :
@@ -387,6 +391,9 @@ public final class Startup {
                     break;
                 case 3 :
                     result = new GtkLFCustoms();
+                    break;
+                case 4 :
+                    result = new NimbusLFCustoms();
                     break;
                 default :
                     // #79401 check if it's XP style LnF, for example jGoodies

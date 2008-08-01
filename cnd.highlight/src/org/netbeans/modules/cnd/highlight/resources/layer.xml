@@ -40,7 +40,7 @@ Contributor(s):
     <folder name="Editors">
         <folder name="AnnotationTypes">
             <file name="org-netbeans-modules-cnd-cpp-parser_annotation_err.xml" url="parser_annotation_err.xml"/>
-            <file name="org-netbeans-modules-cnd-highligh-semantic-markoccurences.xml" url="occurence_annotation.xml"/>
+            <file name="org-netbeans-modules-cnd-highligh-semantic-markoccurrences.xml" url="occurrence_annotation.xml"/>
         </folder>
         <folder name="text">
             <folder name="x-c++">
@@ -48,27 +48,13 @@ Contributor(s):
                 <folder name="UpToDateStatusProvider">
                     <file name="org-netbeans-modules-cnd-highlight-semantic-OccurrencesMarkProviderCreator.instance">
                     </file>
+                    <file name="org-netbeans-modules-cnd-highlight-error-CppUpToDateStatusProviderFactory.instance">
+                    </file>
                 </folder>
                 <folder name="Keybindings">
                     <folder name="NetBeans">
                         <folder name="Defaults">
                             <file name="highlighting-keybindings.xml" url="DefaultKeyBindings.xml"/>
-                        </folder>
-                    </folder>
-                </folder>
-                 <folder name="FontsColors">
-                    <folder name="NetBeans">
-                        <folder name="Defaults">
-                            <file name="org-netbeans-modules-cnd-resources-coloring.xml" url="Netbeans-CCHL-fontsColors.xml">
-                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.highlight.resources.Bundle"/>
-                            </file>
-                        </folder>
-                    </folder>
-                    <folder name="CityLights">
-                        <folder name="Defaults">
-                            <file name="org-netbeans-modules-cnd-resources-coloring.xml" url="CityLights-CCHL-fontsColors.xml">
-                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.highlight.resources.Bundle"/>
-                            </file>
                         </folder>
                     </folder>
                 </folder>
@@ -78,27 +64,13 @@ Contributor(s):
                 <folder name="UpToDateStatusProvider">
                     <file name="org-netbeans-modules-cnd-highlight-semantic-OccurrencesMarkProviderCreator.instance">
                     </file>
+                    <file name="org-netbeans-modules-cnd-highlight-error-CppUpToDateStatusProviderFactory.instance">
+                    </file>
                 </folder>
                 <folder name="Keybindings">
                     <folder name="NetBeans">
                         <folder name="Defaults">
                             <file name="highlighting-keybindings.xml" url="DefaultKeyBindings.xml"/>
-                        </folder>
-                    </folder>
-                </folder>
-                 <folder name="FontsColors">
-                    <folder name="NetBeans">
-                        <folder name="Defaults">
-                            <file name="org-netbeans-modules-cnd-resources-coloring.xml" url="Netbeans-CCHL-fontsColors.xml">
-                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.highlight.resources.Bundle"/>
-                            </file>
-                        </folder>
-                    </folder>
-                    <folder name="CityLights">
-                        <folder name="Defaults">
-                            <file name="org-netbeans-modules-cnd-resources-coloring.xml" url="CityLights-CCHL-fontsColors.xml">
-                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.highlight.resources.Bundle"/>
-                            </file>
                         </folder>
                     </folder>
                 </folder>

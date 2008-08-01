@@ -41,13 +41,12 @@
 
 package org.netbeans.modules.db.explorer.nodes;
 
-import org.openide.util.NbBundle;
+import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
 
 public class ProcedureListNode extends DatabaseNode {
-    public ProcedureListNode() {
-        setDisplayName(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("NDN_Procedures")); //NOI18N
+
+    public ProcedureListNode(DatabaseNodeInfo info) {
+        super(info);
     }
-    public String getShortDescription() {
-        return NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ND_ProcedureList"); //NOI18N
-    }
+
 }

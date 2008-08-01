@@ -45,17 +45,20 @@ import java.awt.Component;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.aggregate.AggregateProgressFactory;
 import org.netbeans.api.progress.aggregate.AggregateProgressHandle;
 import org.netbeans.api.progress.aggregate.ProgressContributor;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.j2ee.core.api.support.SourceGroups;
+import org.netbeans.modules.j2ee.core.api.support.wizard.Wizards;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceLocation;
 import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlException;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
@@ -63,6 +66,7 @@ import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
+import org.openide.WizardDescriptor.Panel;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
@@ -76,10 +80,7 @@ import org.openide.windows.WindowManager;
  *
  * @author Chris Webster, Martin Adamek, Andrei Badea
  */
-public class RelatedCMPWizard extends WizardDescriptor.ArrayIterator<WizardDescriptor> implements TemplateWizard.Iterator {
-    
-    private static final String WIZARD_PANEL_CONTENT_DATA = "WizardPanel_contentData"; // NOI18N
-    private static final String WIZARD_PANEL_CONTENT_SELECTED_INDEX = "WizardPanel_contentSelectedIndex"; //NOI18N;
+public class RelatedCMPWizard implements TemplateWizard.Iterator {
     
     private static final String PROP_HELPER = "wizard-helper"; //NOI18N
     private static final String PROP_CMP = "wizard-is-cmp"; //NOI18N
@@ -92,9 +93,8 @@ public class RelatedCMPWizard extends WizardDescriptor.ArrayIterator<WizardDescr
     
     private final String type;
     
-    private WizardDescriptor.Panel<WizardDescriptor>[] panels;
-    private String[] steps;
-    private int stepsStartPos;
+    private WizardDescriptor.Panel[] panels;
+    private int currentPanel = 0;
     
     private WizardDescriptor wizardDescriptor;
     
@@ -109,11 +109,6 @@ public class RelatedCMPWizard extends WizardDescriptor.ArrayIterator<WizardDescr
     public static RelatedCMPWizard createForCMP() {
         return new RelatedCMPWizard(TYPE_CMP);
     }
-    
-    public RelatedCMPWizard(String type) {
-        this.type = type;
-    }
-    
     private static PersistenceGenerator createPersistenceGenerator(String type) {
         assert type != null;
         
@@ -126,55 +121,6 @@ public class RelatedCMPWizard extends WizardDescriptor.ArrayIterator<WizardDescr
         throw new AssertionError("Could not find a persistence generator of type " + type); // NOI18N
     }
     
-    private boolean isCMP() {
-        return TYPE_CMP.equals(type);
-    }
-    
-    @SuppressWarnings("unchecked")
-    protected WizardDescriptor.Panel<WizardDescriptor>[] initializePanels() {
-        panels = (WizardDescriptor.Panel<WizardDescriptor>[])new WizardDescriptor.Panel<?>[] {
-            new DatabaseTablesPanel.WizardPanel(),
-            new EntityClassesPanel.WizardPanel()
-        };
-        return panels;
-    }
-    
-    /**
-     * Overriden to set the wizard content data and selected index for
-     * each panel when it is needed, not in advance (which would cause
-     * all the panels' components to be created prematurely).
-     */
-    public WizardDescriptor.Panel<WizardDescriptor> current() {
-        WizardDescriptor.Panel<WizardDescriptor> panel = super.current();
-        
-        if (steps == null) {
-            mergeSteps(new String[] {
-                NbBundle.getMessage(RelatedCMPWizard.class, "LBL_DatabaseTables"),
-                NbBundle.getMessage(RelatedCMPWizard.class, isCMP() ? "LBL_EntityBeansLocation" : "LBL_EntityClasses"),
-            });
-        }
-        
-        JComponent component = (JComponent)panel.getComponent();
-        if (component.getClientProperty(WIZARD_PANEL_CONTENT_DATA) == null) {
-            component.putClientProperty(WIZARD_PANEL_CONTENT_DATA, steps);
-        }
-        if (component.getClientProperty(WIZARD_PANEL_CONTENT_SELECTED_INDEX) == null) {
-            if (panel == panels[0]) {
-                component.putClientProperty(WIZARD_PANEL_CONTENT_SELECTED_INDEX, new Integer(0));
-                // don't use an absolute step value like 1,
-                // since we dont' know how may steps there are before us
-                component.setName(steps[steps.length - 2]);
-            } else {
-                component.putClientProperty(WIZARD_PANEL_CONTENT_SELECTED_INDEX, new Integer(1));
-                // don't use an absolute step value like 2,
-                // since we dont' know how may steps there are before us
-                component.setName(steps[steps.length - 1]);
-            }
-        }
-        
-        return panel;
-    }
-    
     static RelatedCMPHelper getHelper(WizardDescriptor wizardDescriptor) {
         return (RelatedCMPHelper)wizardDescriptor.getProperty(PROP_HELPER);
     }
@@ -183,8 +129,90 @@ public class RelatedCMPWizard extends WizardDescriptor.ArrayIterator<WizardDescr
         return ((Boolean)wizardDescriptor.getProperty(PROP_CMP)).booleanValue();
     }
     
+    public RelatedCMPWizard(String type) {
+        this.type = type;
+    }
+    
+    public String name() {
+        return null;
+    }
+    
+    public boolean hasPrevious() {
+        return currentPanel > 0;
+    }
+    
+    public void previousPanel() {
+        if (!hasPrevious()) {
+            throw new NoSuchElementException();
+        }
+        currentPanel--;
+    }
+    
+    public boolean hasNext() {
+        return currentPanel < panels.length - 1;
+    }
+    
+    public void nextPanel() {
+        if (!hasNext()) {
+            throw new NoSuchElementException();
+        }
+        currentPanel++;
+    }
+    
+    @SuppressWarnings("unchecked")
+    public Panel<WizardDescriptor> current() {
+        return panels[currentPanel];
+    }
+    
+    public void addChangeListener(ChangeListener l) {
+    }
+    
+    public void removeChangeListener(ChangeListener l) {
+    }
+    
+    private WizardDescriptor.Panel[] createPanels() {
+        
+        String wizardBundleKey = isCMP() ? "Templates/J2EE/RelatedCMP" : "Templates/Persistence/RelatedCMP"; // NOI18N
+        String wizardTitle = NbBundle.getMessage(RelatedCMPWizard.class, wizardBundleKey);
+        
+        if (isCMP()) {
+            return new WizardDescriptor.Panel[] {
+                    new DatabaseTablesPanel.WizardPanel(wizardTitle),
+                    new EntityClassesPanel.WizardPanel(),
+            };
+        } else {
+            return new WizardDescriptor.Panel[] {
+                    new DatabaseTablesPanel.WizardPanel(wizardTitle),
+                    new EntityClassesPanel.WizardPanel(),
+                    new MappingOptionsPanel.WizardPanel(),
+            };
+        }
+    }
+    
+    private String[] createSteps() {
+        if (isCMP()) {
+            return new String[] {
+                    NbBundle.getMessage(RelatedCMPWizard.class, "LBL_DatabaseTables"),
+                    NbBundle.getMessage(RelatedCMPWizard.class, isCMP() ? "LBL_EntityBeansLocation" : "LBL_EntityClasses"),
+            };
+        } else {
+            return new String[] {
+                    NbBundle.getMessage(RelatedCMPWizard.class, "LBL_DatabaseTables"),
+                    NbBundle.getMessage(RelatedCMPWizard.class, isCMP() ? "LBL_EntityBeansLocation" : "LBL_EntityClasses"),
+                    NbBundle.getMessage(RelatedCMPWizard.class, "LBL_MappingOptions")
+            };
+        }
+    }
+    
+    private boolean isCMP() {
+        return TYPE_CMP.equals(type);
+    }
+    
     public final void initialize(TemplateWizard wiz) {
         wizardDescriptor = wiz;
+        
+        panels = createPanels();
+        Wizards.mergeSteps(wizardDescriptor, panels, createSteps());
         
         Project project = Templates.getProject(wiz);
         generator = createPersistenceGenerator(type);
@@ -196,30 +224,7 @@ public class RelatedCMPWizard extends WizardDescriptor.ArrayIterator<WizardDescr
         wiz.putProperty(PROP_HELPER, helper);
         wiz.putProperty(PROP_CMP, new Boolean(isCMP()));
         
-        String wizardBundleKey = isCMP() ? "Templates/J2EE/RelatedCMP" : "Templates/Persistence/RelatedCMP"; // NOI18N
-        wiz.putProperty("NewFileWizard_Title", NbBundle.getMessage(RelatedCMPWizard.class, wizardBundleKey)); // NOI18N
-        
         generator.init(wiz);
-    }
-    
-    public void mergeSteps(String[] thisSteps) {
-        Object prop = wizardDescriptor.getProperty(WIZARD_PANEL_CONTENT_DATA);
-        String[] beforeSteps;
-        
-        if (prop instanceof String[]) {
-            beforeSteps = (String[]) prop;
-            stepsStartPos = beforeSteps.length;
-            if (stepsStartPos > 0 && ("...".equals(beforeSteps[stepsStartPos - 1]))) { // NOI18N
-                stepsStartPos--;
-            }
-        } else {
-            beforeSteps = null;
-            stepsStartPos = 0;
-        }
-        
-        steps = new String[stepsStartPos + thisSteps.length];
-        System.arraycopy(beforeSteps, 0, steps, 0, stepsStartPos);
-        System.arraycopy(thisSteps, 0, steps, stepsStartPos, thisSteps.length);
     }
     
     public final void uninitialize(TemplateWizard wiz) {
@@ -322,7 +327,11 @@ public class RelatedCMPWizard extends WizardDescriptor.ArrayIterator<WizardDescr
                     // project without persistence.xml
                     configFilesFolder = PersistenceLocation.createLocation(project);
                 }
-                assert configFilesFolder != null : "Should have set configFilesFolder, e.g. by retrieving it from a PersistenceLocationProvider or EjbJar or by asking the user"; // NOI18N
+                if (configFilesFolder == null) {
+                    String message = NbBundle.getMessage(RelatedCMPWizard.class, "TXT_NoConfigFiles");
+                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
+                    return;
+                }
                 
                 String projectName = ProjectUtils.getInformation(project).getDisplayName();
                 dbschemaFile = DBSchemaManager.updateDBSchemas(helper.getSchemaElement(), helper.getDBSchemaFileList(), configFilesFolder, projectName);
@@ -355,5 +364,4 @@ public class RelatedCMPWizard extends WizardDescriptor.ArrayIterator<WizardDescr
             });
         }
     }
-    
 }

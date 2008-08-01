@@ -231,6 +231,7 @@ public final class ImportDirectory implements Runnable{
                 String[] params = {file.toString(), errorsWhileCopyFiles.get(file).toString()};
                 error.println(NbBundle.getMessage(ImportDirectory.class,
                         "MSG_OUTPUT_from_target", params));
+                error.println(NbBundle.getMessage(ImportDirectory.class,"MSG_POSSIBLE_CAUSE_FOR_ERROR"));
             }
         }
         error.close();

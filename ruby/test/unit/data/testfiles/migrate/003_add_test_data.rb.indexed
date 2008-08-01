@@ -1,12 +1,7 @@
 
 
 Document 0
-Delete:  source : <TESTURL>/003_add_test_data.rb
-
-
-
-Document 1
-Indexed:
+Searchable Keys:
   class : AddTestData
   class-ig : addtestdata
   extends : ActiveRecord::Migration
@@ -14,5 +9,5 @@ Indexed:
   method : down|DOCUMENTED|STATIC|
   method : up|STATIC|
 
-Not Indexed:
+Not Searchable Keys:
   attrs : |DOCUMENTED|;10

@@ -2,4 +2,3 @@ Add throws clause for org.netbeans.test.java.hints.Exc2
 Add throws clause for java.io.FileNotFoundException
 Add throws clause for java.lang.IllegalThreadStateException
 Surround Statement with try-catch
-Surround Block with try-catch

@@ -40,21 +40,44 @@
  */
 package org.netbeans.modules.diff.builtin.visualizer.editable;
 
+import java.awt.Color;
+import java.awt.Cursor;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Image;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.Stroke;
 import org.netbeans.api.diff.Difference;
-import org.netbeans.editor.*;
 import org.openide.util.NbBundle;
 
-import javax.swing.*;
 import javax.swing.text.StyledDocument;
-import java.awt.*;
 import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.geom.Rectangle2D;
-import java.util.*;
 import java.util.List;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
+import java.util.ArrayList;
+import java.util.Map;
+import javax.swing.JPanel;
+import javax.swing.Scrollable;
+import javax.swing.SwingUtilities;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.StyleConstants;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.settings.EditorStyleConstants;
+import org.netbeans.api.editor.settings.FontColorNames;
+import org.netbeans.api.editor.settings.FontColorSettings;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.Coloring;
+import org.netbeans.editor.EditorUI;
+import org.netbeans.editor.Utilities;
+import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 
 /**
  * Draws both line numbers and diff actions for a decorated editor pane.
@@ -79,11 +102,6 @@ class LineNumbersActionsBar extends JPanel implements Scrollable, MouseMotionLis
     private final int actionIconsWidth;
 
     private final String  lineNumberPadding = "        "; // NOI18N
-
-    /**
-     * Rendering hints for annotations sidebar inherited from editor settings.
-     */
-    private Map renderingHints;
 
     private int     linesWidth;
     private int     actionsWidth;
@@ -124,41 +142,29 @@ class LineNumbersActionsBar extends JPanel implements Scrollable, MouseMotionLis
     }
     
     private Font getLinesFont() {
-        Map coloringMap = EditorUIHelper.getSharedColoringMapFor(master.getEditorPane().getEditorKit().getClass());
-        
-        Object colValue = coloringMap.get(SettingsNames.LINE_NUMBER_COLORING);
-        Coloring col = null;
-        if (colValue != null && colValue instanceof Coloring) {
-            col = (Coloring)colValue;
-        } else {
-            col = SettingsDefaults.defaultLineNumberColoring;
-        }
-        
+        String mimeType = DocumentUtilities.getMimeType(master.getEditorPane());
+        FontColorSettings fcs = MimeLookup.getLookup(mimeType).lookup(FontColorSettings.class);
+        Coloring col = Coloring.fromAttributeSet(fcs.getFontColors(FontColorNames.LINE_NUMBER_COLORING));
         Font font = col.getFont();
         if (font == null) {
-            font = ((Coloring) coloringMap.get(SettingsNames.DEFAULT_COLORING)).getFont();
+            font = Coloring.fromAttributeSet(fcs.getFontColors(FontColorNames.DEFAULT_COLORING)).getFont();
         }
         return font;
     }
     
     private void initUI() {
-        Map coloringMap = EditorUIHelper.getSharedColoringMapFor(master.getEditorPane().getEditorKit().getClass());
+        String mimeType = DocumentUtilities.getMimeType(master.getEditorPane());
+        FontColorSettings fcs = MimeLookup.getLookup(mimeType).lookup(FontColorSettings.class);
+        AttributeSet attrs = fcs.getFontColors(FontColorNames.LINE_NUMBER_COLORING);
+        AttributeSet defAttrs = fcs.getFontColors(FontColorNames.DEFAULT_COLORING);
         
-        Object colValue = coloringMap.get(SettingsNames.LINE_NUMBER_COLORING);
-        Coloring col = null;
-        if (colValue != null && colValue instanceof Coloring) {
-            col = (Coloring)colValue;
-        } else {
-            col = SettingsDefaults.defaultLineNumberColoring;
-        }
-        
-        linesColor = col.getForeColor();
+        linesColor = (Color) attrs.getAttribute(StyleConstants.Foreground);
         if (linesColor == null) {
-            linesColor = ((Coloring) coloringMap.get(SettingsNames.DEFAULT_COLORING)).getForeColor();
+            linesColor = (Color) defAttrs.getAttribute(StyleConstants.Foreground);
         }
-        Color bg = col.getBackColor();
+        Color bg = (Color) attrs.getAttribute(StyleConstants.Background);
         if (bg == null) {
-            bg = ((Coloring) coloringMap.get(SettingsNames.DEFAULT_COLORING)).getBackColor();
+            bg = (Color) defAttrs.getAttribute(StyleConstants.Background);
         }
         setBackground(bg);
         
@@ -316,13 +322,10 @@ class LineNumbersActionsBar extends JPanel implements Scrollable, MouseMotionLis
 
         if (checkLinesWidth(gr)) return;
         
-        if (renderingHints == null) {
-            DecoratedEditorPane jep = master.getEditorPane();
-            Class kitClass = jep.getEditorKit().getClass();
-            Object userSetHints = Settings.getValue(kitClass, SettingsNames.RENDERING_HINTS);
-            renderingHints = (userSetHints instanceof Map && ((Map)userSetHints).size() > 0) ? (Map)userSetHints : null;
-        }
-        if (renderingHints != null) {
+        String mimeType = DocumentUtilities.getMimeType(master.getEditorPane());
+        FontColorSettings fcs = MimeLookup.getLookup(mimeType).lookup(FontColorSettings.class);
+        Map renderingHints = (Map) fcs.getFontColors(FontColorNames.DEFAULT_COLORING).getAttribute(EditorStyleConstants.RenderingHints);
+        if (!renderingHints.isEmpty()) {
             g.addRenderingHints(renderingHints);
         }
         
@@ -424,13 +427,4 @@ class LineNumbersActionsBar extends JPanel implements Scrollable, MouseMotionLis
         }
     }
 
-    private static class EditorUIHelper extends EditorUI {
-        /** 
-         * Gets the coloring map that can be shared by the components
-         * with the same kit. Only the component coloring map is provided.
-         */
-        public static Map getSharedColoringMapFor(Class kitClass) {
-            return EditorUIHelper.getSharedColoringMap(kitClass);
-        }
-    }
 }

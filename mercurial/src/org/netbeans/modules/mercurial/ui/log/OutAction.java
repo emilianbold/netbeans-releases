@@ -65,7 +65,8 @@ public class OutAction extends ContextAction {
     
     public void performAction(ActionEvent e) {
         SearchHistoryAction.openOut(context,
-                NbBundle.getMessage(OutAction.class, "MSG_Out_TabTitle", org.netbeans.modules.versioning.util.Utils.getContextDisplayName(context)));
+                NbBundle.getMessage(OutAction.class, "MSG_Out_TabTitle", 
+                HgUtils.getRootFile(context).getName()));
     }
         
     public boolean isEnabled() {

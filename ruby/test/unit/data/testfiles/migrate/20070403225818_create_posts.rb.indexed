@@ -1,0 +1,27 @@
+
+
+Document 0
+Searchable Keys:
+  class : CreatePosts
+  class-ig : createposts
+  extends : ActiveRecord::Migration
+  fqn : CreatePosts
+  method : down|STATIC|
+  method : up|STATIC|
+
+Not Searchable Keys:
+  attrs : |CLASS|
+
+
+Document 1
+Searchable Keys:
+  dbtable : posts
+
+Not Searchable Keys:
+  dbcolumn : created_at;datetime
+  dbcolumn : importance;integer
+  dbcolumn : removedlater;string
+  dbcolumn : subtitle;string
+  dbcolumn : title;text
+  dbcolumn : updated_at;datetime
+  dbversion : 20070403225818

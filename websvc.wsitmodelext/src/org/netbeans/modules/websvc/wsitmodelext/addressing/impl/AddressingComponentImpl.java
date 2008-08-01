@@ -41,9 +41,9 @@
 
 package org.netbeans.modules.websvc.wsitmodelext.addressing.impl;
 
+import org.netbeans.modules.websvc.wsitmodelext.GenericComponentImpl;
 import org.netbeans.modules.websvc.wsitmodelext.addressing.AddressingQName;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import org.netbeans.modules.xml.wsdl.model.spi.GenericExtensibilityElement;
 import org.netbeans.modules.xml.wsdl.model.visitor.WSDLVisitor;
 import org.w3c.dom.Element;
 
@@ -51,7 +51,7 @@ import org.w3c.dom.Element;
  *
  * @author MartinGrebac
  */
-public abstract class AddressingComponentImpl extends GenericExtensibilityElement {
+public abstract class AddressingComponentImpl extends GenericComponentImpl {
     
     /**
      * Creates a new instance of AddressingComponentImpl
@@ -61,20 +61,12 @@ public abstract class AddressingComponentImpl extends GenericExtensibilityElemen
     }
 
     @Override
-    public abstract void accept(WSDLVisitor visitor);
-    
-     @Override
-     protected String getNamespaceURI() {
+    public void accept(WSDLVisitor visitor) {
+        visitor.visit(this);
+    }    
+     
+    @Override
+    protected String getNamespaceURI() {
         return AddressingQName.ADDRESSING_NS_URI;
     }
-
-    @Override
-    public String getAttribute(String attribute) {
-        throw new UnsupportedOperationException();
-    }
-    
-    @Override
-    public void setAttribute(String attribute, String value) {
-        throw new UnsupportedOperationException();
-    }    
 }

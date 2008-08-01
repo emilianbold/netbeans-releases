@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -70,6 +70,7 @@ public class UpdateUnitProviderImplTest extends NbTestCase {
         super(testName);
     }
     
+    @Override
     protected void setUp() throws Exception {
         super.setUp();
         MockServices.setServices(TestUpdateProvider.class);
@@ -85,6 +86,7 @@ public class UpdateUnitProviderImplTest extends NbTestCase {
         }        
     }
     
+    @Override
     protected void tearDown() throws Exception {
         super.tearDown();
         clearWorkDir();
@@ -100,6 +102,16 @@ public class UpdateUnitProviderImplTest extends NbTestCase {
             factory.remove(updateUnitProvider);
             assertEquals(--originalSize, factory.getUpdateUnitProviders(false).size());
         }        
+    }
+    
+    public void testCreateUpdateProviderWithIllegalName () throws Exception {                
+        String codeName = "http://wrong.myorg.org/files/updates.xml";
+        String displayName = "Update Provider With Illegal Name";
+        
+        UpdateUnitProvider newProvider = UpdateUnitProviderImpl.createUpdateUnitProvider (codeName, displayName, URL_TO_TEST_CATALOG);
+        
+        assertNotNull(codeName + " provider found.", newProvider);
+        assertEquals("Display name equals.", displayName, newProvider.getDisplayName());
     }
     
     public void testCreateUpdateProvider() throws Exception {                
@@ -140,8 +152,6 @@ public class UpdateUnitProviderImplTest extends NbTestCase {
         
         assertEquals("Original and loaded are identical " + codeName1, result2.getName(), load2.getName());
         assertEquals("Display name equals.", result2.getDisplayName(), load2.getDisplayName());
-        
-        clearWorkDir();
     }
     
     public void testGetUpdatesProviders() throws Exception {
@@ -157,7 +167,7 @@ public class UpdateUnitProviderImplTest extends NbTestCase {
         String displayName = "2nd Update Provider";
         URL url = URL_TO_TEST_CATALOG;
         
-        UpdateUnitProvider newProvider = UpdateUnitProviderImpl.createUpdateUnitProvider(codeName, displayName, url);
+        UpdateUnitProvider newProvider = UpdateUnitProviderImpl.createUpdateUnitProvider(codeName, displayName, url, CATEGORY.COMMUNITY);
         assertNotNull(codeName + " provider found.", newProvider);
         
         result = UpdateUnitProviderImpl.getUpdateUnitProviders(false);

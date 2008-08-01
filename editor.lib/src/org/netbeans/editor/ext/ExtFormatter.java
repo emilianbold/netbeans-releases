@@ -44,25 +44,31 @@ package org.netbeans.editor.ext;
 import java.io.CharArrayWriter;
 import java.io.Writer;
 import java.io.IOException;
-import java.util.Map;
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
+import java.util.prefs.Preferences;
 import javax.swing.text.Document;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
-import org.netbeans.editor.BaseKit;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Formatter;
-import org.netbeans.editor.Settings;
-import org.netbeans.editor.SettingsUtil;
-import org.netbeans.editor.SettingsChangeEvent;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.GuardedException;
 import org.netbeans.editor.Acceptor;
 import org.netbeans.editor.AcceptorFactory;
+import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.Syntax;
+import org.netbeans.modules.editor.lib.EditorPreferencesKeys;
+import org.netbeans.modules.editor.lib.SettingsConversions;
+import org.openide.util.Lookup;
+import org.openide.util.WeakListeners;
 
 /**
 * Unlike the formatter class, the ExtFormatter concentrates
@@ -98,21 +104,35 @@ public class ExtFormatter extends Formatter implements FormatLayer {
     private static final Object NULL_VALUE = new Object();
 
     /** Map that contains the requested [setting-name, setting-value] pairs */
-    private HashMap settingsMap = new HashMap();
-
-    /** Contains the names of the keys that were turned
-     * into custom settings and are no longer read from
-     * the Settings.
-     */
-    private HashMap customSettingsNamesMap = new HashMap();
+    private final HashMap settingsMap = new HashMap();
 
     private Acceptor indentHotCharsAcceptor;
     private boolean reindentWithTextBefore;
 
+    private final String mimeType;
+    private final Preferences prefs;
+    private final PreferenceChangeListener prefsListener = new PreferenceChangeListener() {
+        public void preferenceChange(PreferenceChangeEvent evt) {
+            String key = evt == null ? null : evt.getKey();
+            if (key == null || EditorPreferencesKeys.INDENT_HOT_CHARS_ACCEPTOR.equals(key)) {
+                indentHotCharsAcceptor = (Acceptor) SettingsConversions.callFactory(
+                    prefs, MimePath.parse(mimeType), EditorPreferencesKeys.INDENT_HOT_CHARS_ACCEPTOR, AcceptorFactory.FALSE);
+            }
+
+            if (key == null || EditorPreferencesKeys.REINDENT_WITH_TEXT_BEFORE.equals(key)) {
+                reindentWithTextBefore = prefs.getBoolean(EditorPreferencesKeys.REINDENT_WITH_TEXT_BEFORE, false);
+            }
+        }
+    };
+    
     public ExtFormatter(Class kitClass) {
         super(kitClass);
 
         initFormatLayers();
+
+        this.mimeType = BaseKit.getKit(kitClass).getContentType();
+        prefs = MimeLookup.getLookup(mimeType).lookup(Preferences.class);
+        prefs.addPreferenceChangeListener(WeakListeners.create(PreferenceChangeListener.class, prefsListener, prefs));
     }
 
     /** Add the desired format-layers to the formatter */
@@ -125,47 +145,27 @@ public class ExtFormatter extends Formatter implements FormatLayer {
      */
     public String getName() {
         return getKitClass().getName().substring(
-                getKitClass().getName().lastIndexOf('.') + 1);
-    }
-
-    public void settingsChange(SettingsChangeEvent evt) {
-        super.settingsChange(evt);
-        String settingName = (evt != null) ? evt.getSettingName() : null;
-
-        Class kitClass = getKitClass();
-        Iterator eit = settingsMap.entrySet().iterator();
-        while (eit.hasNext()) {
-            Map.Entry e = (Map.Entry)eit.next();
-            if (settingName == null || e.getKey().equals(e.getKey())) {
-                if (!customSettingsNamesMap.containsKey(e.getKey())) { // not custom
-                    e.setValue(Settings.getValue(kitClass, (String)e.getKey()));
-                }
-            }
-        }
-        
-        indentHotCharsAcceptor = SettingsUtil.getAcceptor(kitClass,
-            ExtSettingsNames.INDENT_HOT_CHARS_ACCEPTOR,
-            AcceptorFactory.FALSE);
-
-        reindentWithTextBefore = SettingsUtil.getBoolean(kitClass, 
-            ExtSettingsNames.REINDENT_WITH_TEXT_BEFORE,
-            false);
+                getKitClass().getName().lastIndexOf('.') + 1); //NOI18N
     }
 
     /** Get the value of the given setting.
     * @param settingName name of the setting to get.
     */
     public Object getSettingValue(String settingName) {
-        synchronized (Settings.class) {
+        synchronized (settingsMap) {
             Object value = settingsMap.get(settingName);
-            if (value == null && !customSettingsNamesMap.containsKey(settingName)) {
-                value = Settings.getValue(getKitClass(), settingName);
-                if (value == null) {
-                    value = NULL_VALUE;
-                }
-                settingsMap.put(settingName, value);
+            if (value != null) {
+                return (value != NULL_VALUE) ? value : null;
             }
-            return (value != NULL_VALUE) ? value : null;
+        }
+        
+        try {
+            ClassLoader loader = Lookup.getDefault().lookup(ClassLoader.class);
+            Class settingsClass = loader.loadClass("org.netbeans.editor.Settings"); //NOI18N
+            Method m = settingsClass.getMethod("getValue", Class.class, String.class); //NOI18N
+            return m.invoke(null, getKitClass(), settingName);
+        } catch (Exception e) {
+            return null;
         }
     }
 
@@ -177,9 +177,8 @@ public class ExtFormatter extends Formatter implements FormatLayer {
      * settings.
      */
     public void setSettingValue(String settingName, Object settingValue) {
-        synchronized (Settings.class) {
-            customSettingsNamesMap.put(settingName, settingName);
-            settingsMap.put(settingName, settingValue);
+        synchronized (settingsMap) {
+            settingsMap.put(settingName, settingValue == null ? NULL_VALUE : settingValue);
         }
     }
 
@@ -295,7 +294,7 @@ public class ExtFormatter extends Formatter implements FormatLayer {
     }
 
     /** Fix of #5620 - same method exists in Formatter (predecessor */
-    public int reformat(BaseDocument doc, int startOffset, int endOffset)
+    public @Override int reformat(BaseDocument doc, int startOffset, int endOffset)
     throws BadLocationException {
         try {
             javax.swing.text.Position pos = doc.createPosition(endOffset);
@@ -319,7 +318,7 @@ public class ExtFormatter extends Formatter implements FormatLayer {
      */
     public int[] getReformatBlock(JTextComponent target, String typedText) {
         if (indentHotCharsAcceptor == null) { // init if necessary
-            settingsChange(null);
+            prefsListener.preferenceChange(null);
         }
 
         if (indentHotCharsAcceptor.accept(typedText.charAt(0))) {
@@ -356,7 +355,7 @@ public class ExtFormatter extends Formatter implements FormatLayer {
 
     /** Create the indentation writer.
     */
-    public Writer createWriter(Document doc, int offset, Writer writer) {
+    public @Override Writer createWriter(Document doc, int offset, Writer writer) {
         return new FormatWriter(this, doc, offset, writer, false);
     }
 
@@ -366,7 +365,7 @@ public class ExtFormatter extends Formatter implements FormatLayer {
     * @param offset the offset of a character on the line
     * @return new offset of the original character
     */
-    public int indentLine(Document doc, int offset) {
+    public @Override int indentLine(Document doc, int offset) {
         if (doc instanceof BaseDocument) {
             try {
                 BaseDocument bdoc = (BaseDocument)doc;
@@ -405,61 +404,62 @@ public class ExtFormatter extends Formatter implements FormatLayer {
     * @param offset the offset of a character on the line
     * @return new offset to place cursor to
     */
-    public int indentNewLine(Document doc, int offset) {
+    public @Override int indentNewLine (final Document doc, final int offset) {
+        final int[] result = new int [] {offset};
         if (doc instanceof BaseDocument) {
-            BaseDocument bdoc = (BaseDocument)doc;
-            boolean newLineInserted = false;
+            final BaseDocument bdoc = (BaseDocument)doc;
 
-            bdoc.atomicLock();
-            try {
-                bdoc.insertString(offset, "\n", null); // NOI18N
-                offset++;
-                newLineInserted = true;
+            bdoc.runAtomic (new Runnable () {
+                public void run () {
+                    boolean newLineInserted = false;
+                    try {
+                        bdoc.insertString(result [0], "\n", null); // NOI18N
+                        result [0]++;
+                        newLineInserted = true;
 
-                int eolOffset = Utilities.getRowEnd(bdoc, offset);
+                        int eolOffset = Utilities.getRowEnd(bdoc, result [0]);
 
-                // Try to change the indent of the new line
-                // It may fail when inserting '\n' before the guarded block
-                Writer w = reformat(bdoc, offset, eolOffset, true);
+                        // Try to change the indent of the new line
+                        // It may fail when inserting '\n' before the guarded block
+                        Writer w = reformat(bdoc, result [0], eolOffset, true);
 
-                // Find the caret position
-                eolOffset = Utilities.getRowFirstNonWhite(bdoc, offset);
-                if (eolOffset < 0) { // white line
-                    eolOffset = getEOLOffset(bdoc, offset);
+                        // Find the caret position
+                        eolOffset = Utilities.getRowFirstNonWhite(bdoc, result [0]);
+                        if (eolOffset < 0) { // white line
+                            eolOffset = getEOLOffset(bdoc, result [0]);
+                        }
+
+                        result [0] = eolOffset;
+
+                        // Resulting offset (caret position) can be shifted
+                        if (w instanceof FormatWriter) {
+                            result [0] += ((FormatWriter)w).getIndentShift();
+                        }
+
+                    } catch (GuardedException e) {
+                        // Possibly couldn't insert additional indentation
+                        // at the begining of the guarded block
+                        // but the initial '\n' could be fine
+                        if (!newLineInserted) {
+                            java.awt.Toolkit.getDefaultToolkit().beep();
+                        }
+
+                    } catch (BadLocationException e) {
+                        Utilities.annotateLoggable(e);
+                    } catch (IOException e) {
+                        Utilities.annotateLoggable(e);
+                    }
                 }
-
-                offset = eolOffset;
-                
-                // Resulting offset (caret position) can be shifted
-                if (w instanceof FormatWriter) {
-                    offset += ((FormatWriter)w).getIndentShift();
-                }
-
-            } catch (GuardedException e) {
-                // Possibly couldn't insert additional indentation
-                // at the begining of the guarded block
-                // but the initial '\n' could be fine
-                if (!newLineInserted) {
-                    java.awt.Toolkit.getDefaultToolkit().beep();
-                }
-
-            } catch (BadLocationException e) {
-                Utilities.annotateLoggable(e);
-            } catch (IOException e) {
-                Utilities.annotateLoggable(e);
-            } finally {
-                bdoc.atomicUnlock();
-            }
-
+            });
         } else { // not BaseDocument
             try {
-                doc.insertString (offset, "\n", null); // NOI18N
-                offset++;
+                doc.insertString (result [0], "\n", null); // NOI18N
+                result [0]++;
             } catch (BadLocationException ex) {
             }
         }
 
-        return offset;
+        return result [0];
     }
 
     /** Whether the formatter accepts the given syntax
@@ -480,12 +480,12 @@ public class ExtFormatter extends Formatter implements FormatLayer {
             super(kitClass);
         }
 
-        public boolean isSimple() {
+        public @Override boolean isSimple() {
             return true;
         }
         
         /** Returns offset of EOL for the white line */
-        protected int getEOLOffset(BaseDocument bdoc, int offset) throws BadLocationException{
+        protected @Override int getEOLOffset(BaseDocument bdoc, int offset) throws BadLocationException{
             return offset;
         }
         

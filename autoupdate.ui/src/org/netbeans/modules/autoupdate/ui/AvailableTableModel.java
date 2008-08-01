@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -41,8 +41,6 @@
 
 package org.netbeans.modules.autoupdate.ui;
 
-import java.net.URL;
-import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
@@ -99,6 +97,9 @@ public class AvailableTableModel extends UnitCategoryTableModel {
         if (isExpansionControlAtRow(row)) return "";//NOI18N
         
         Unit.Available u = (Unit.Available) getUnitAtRow(row);
+        if (u == null) {
+            return null;
+        }
         switch (col) {
         case 0 :
             res = u.isMarked() ? Boolean.TRUE : Boolean.FALSE;
@@ -241,7 +242,7 @@ public class AvailableTableModel extends UnitCategoryTableModel {
     }
 
     public int getTabIndex() {
-        return 1;
+        return PluginManagerUI.INDEX_OF_AVAILABLE_TAB;
     }
 
     @Override

@@ -62,7 +62,7 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.api.ruby.platform.RubyPlatformProvider;
-import org.netbeans.modules.gsf.LanguageRegistry;
+import org.netbeans.modules.ruby.platform.Util;
 import org.netbeans.modules.ruby.platform.gems.GemManager;
 import org.netbeans.modules.ruby.railsprojects.RailsProjectUtil;
 import org.netbeans.modules.ruby.spi.project.support.rake.PropertyEvaluator;
@@ -109,13 +109,8 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
         }
     }
 
-//    private static final String PLATFORM_ACTIVE = "platform.active";        //NOI18N
-//    private static final String ANT_NAME = "platform.ant.name";             //NOI18N
-//    private static final String J2SE = "j2se";                              //NOI18N
-
     private File projectDirectory;
     private final PropertyEvaluator evaluator;
-//    private JavaPlatformManager platformManager;
     //name of project active platform
     private String activePlatformName;
     //active platform is valid (not broken reference)
@@ -132,13 +127,12 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
 
     public synchronized List<PathResourceImplementation> getResources() {
         if (this.resourcesCache == null) {
-//            JavaPlatform jp = findActivePlatform ();
-//            if (jp != null) {
                 //TODO: May also listen on CP, but from Platform it should be fixed.
             List<PathResourceImplementation> result = new ArrayList<PathResourceImplementation>();
             RubyPlatform platform = new RubyPlatformProvider(evaluator).getPlatform();
             if (platform == null) {
                 LOGGER.severe("Cannot resolve platform for project: " + projectDirectory);
+                return Collections.emptyList();
             }
             
             if (!platform.hasRubyGemsInstalled()) {
@@ -228,11 +222,6 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
                 }
             }
             
-            // Additional libraries - such as the JavaScript ones
-            for (URL url : LanguageRegistry.getInstance().getLibraryUrls()) {
-                result.add(ClassPathSupport.createResource(url));
-            }
-            
             resourcesCache = Collections.unmodifiableList (result);
         // XXX
 //            RubyInstallation.getInstance().removePropertyChangeListener(this);
@@ -259,17 +248,6 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
         this.support.removePropertyChangeListener (listener);
     }
 
-//    private JavaPlatform findActivePlatform () {
-//        if (this.platformManager == null) {
-//            this.platformManager = JavaPlatformManager.getDefault();
-//            this.platformManager.addPropertyChangeListener(WeakListeners.propertyChange(this, this.platformManager));
-//        }                
-//        this.activePlatformName = evaluator.getProperty(PLATFORM_ACTIVE);
-//        final JavaPlatform activePlatform = RubyProjectUtil.getActivePlatform (this.activePlatformName);
-//        this.isActivePlatformValid = activePlatform != null;
-//        return activePlatform;
-//    }
-//    
     public void propertyChange(PropertyChangeEvent evt) {
         if (evt.getSource() == RubyInstallation.getInstance() && evt.getPropertyName().equals("roots")) {
             resetCache();
@@ -364,7 +342,7 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
     private static void addGem(Map<String, String> gemVersions, Map<String, URL> gemUrls,
             String name, String version, URL url) {
         if (!gemVersions.containsKey(name) ||
-                GemManager.compareGemVersions(version, gemVersions.get(name)) > 0) {
+                Util.compareVersions(version, gemVersions.get(name)) > 0) {
             gemVersions.put(name, version);
             gemUrls.put(name, url);
         }

@@ -102,7 +102,7 @@ public class NewEarProjectWizardIterator implements WizardDescriptor.ProgressIns
             new ProjectServerWizardPanel(J2eeModule.EAR, 
                     NbBundle.getMessage(NewEarProjectWizardIterator.class, "NewEarProjectWizardIterator.secondStep"),
                     NbBundle.getMessage(NewEarProjectWizardIterator.class, "TXT_NewProject"),
-                    false, false, false, true, true),
+                    false, false, false, true, false, true),
         };
     }
     
@@ -299,9 +299,9 @@ public class NewEarProjectWizardIterator implements WizardDescriptor.ProgressIns
             if (c instanceof JComponent) { // assume Swing components
                 JComponent jc = (JComponent)c;
                 // Step #.
-                jc.putClientProperty("WizardPanel_contentSelectedIndex", i); // NOI18N
+                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, i); // NOI18N
                 // Step name (actually the whole list for reference).
-                jc.putClientProperty("WizardPanel_contentData", steps); // NOI18N
+                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps); // NOI18N
             }
         }
     }

@@ -210,19 +210,12 @@ public final class ModuleOperations implements DeleteOperationImplementation,
         }
     }
     
-    static boolean canRun(final NbModuleProject project, final boolean emitWarningToUser) {
+    static boolean canRun(final NbModuleProject project) {
         boolean result = true;
-        String testUserDir = project.evaluator().getProperty("test.user.dir"); // NOI18N
-        FileObject testUserDirFO = project.getHelper().resolveFileObject(testUserDir);
-        if (testUserDirFO != null && testUserDirFO.isFolder()) {
-            FileObject lock = testUserDirFO.getFileObject("lock"); // NOI18N
-            if (lock != null && lock.isData()) {
-                if (emitWarningToUser) {
-                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                            NbBundle.getMessage(ModuleOperations.class, "ERR_ModuleIsBeingRun")));
-                }
-                result = false;
-            }
+        if (project.getTestUserDirLockFile().isFile()) {
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                    NbBundle.getMessage(ModuleOperations.class, "ERR_ModuleIsBeingRun")));
+            result = false;
         }
         return result;
     }

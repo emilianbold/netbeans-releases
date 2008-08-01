@@ -42,34 +42,20 @@
 
 package org.netbeans.core.multiview;
 
+import java.util.Arrays;
 import org.netbeans.core.api.multiview.MultiViewHandler;
 import org.netbeans.core.api.multiview.MultiViews;
 import org.netbeans.core.spi.multiview.MultiViewDescription;
 import org.netbeans.core.spi.multiview.MultiViewFactory;
 
-import java.awt.Image;
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
 import java.util.Collection;
+import java.util.List;
 import javax.swing.Action;
-import javax.swing.JPanel;
-import javax.swing.JToolBar;
-import javax.swing.SwingUtilities;
 import junit.framework.*;
 import org.netbeans.core.api.multiview.MultiViewPerspective;
 import org.netbeans.core.spi.multiview.CloseOperationHandler;
-import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.junit.*;
-import org.openide.awt.UndoRedo;
-import org.openide.util.HelpCtx;
 import org.openide.util.io.NbMarshalledObject;
-import org.openide.util.lookup.Lookups;
 
 import org.openide.windows.*;
 
@@ -161,6 +147,36 @@ public class MultiViewTopComponentTest extends AbstractMultiViewTopComponentTest
         
         
     }    
+
+    /** Tests that multiple instances of the same class propagate well
+     * into array of actions of enclosing multiview TopComponent
+     */
+    public void testFix_132948_MoreActionsOfSameClass () {
+        Action[] acts = new Action[] {
+                new MultiViewActionMapTest.TestAction("First"),
+                new MultiViewActionMapTest.TestAction("Second"),
+                new MultiViewActionMapTest.TestAction("Third")
+        };
+        Action[] actsCopy = new Action[acts.length];
+        System.arraycopy(acts, 0, actsCopy, 0, acts.length);
+        
+        MVElem elem = new MVElem(actsCopy);
+        MultiViewDescription desc = new MVDesc("desc1", null, 0, elem);
+        TopComponent tc = MultiViewFactory.createMultiView(new MultiViewDescription[] { desc }, desc);
+
+        MultiViewTopComponent mvtc = (MultiViewTopComponent)tc;
+        mvtc.setSuperActions(actsCopy);
+        
+        List<Action> tcActs = Arrays.asList(tc.getActions());
+        
+        for (int i = 0; i < acts.length; i++) {
+            Action action = acts[i];
+            assertTrue("Action " + action.getValue(Action.NAME) + 
+                    " not propagated into multiview TC actions", 
+                    tcActs.contains(action));
+        }
+    }
+    
     
 }
 

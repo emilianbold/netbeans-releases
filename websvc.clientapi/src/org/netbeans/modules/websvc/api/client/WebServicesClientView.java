@@ -64,7 +64,7 @@ public final class WebServicesClientView {
 
 	private WebServicesClientViewImpl impl;
 	private static final Lookup.Result implementations =
-		Lookup.getDefault().lookup(new Lookup.Template(WebServicesClientViewProvider.class));
+		Lookup.getDefault().lookupResult(WebServicesClientViewProvider.class);
 
 	static  {
 		WebServicesClientViewAccessor.DEFAULT = new WebServicesClientViewAccessor() {

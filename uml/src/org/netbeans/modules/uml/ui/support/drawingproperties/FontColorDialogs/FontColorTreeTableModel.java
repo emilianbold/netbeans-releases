@@ -41,32 +41,19 @@
 
 
 package org.netbeans.modules.uml.ui.support.drawingproperties.FontColorDialogs;
-import java.util.StringTokenizer;
 import java.util.Vector;
-import java.util.HashMap;
 
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
-import javax.swing.JLabel;
-import javax.swing.JTree;
 import javax.swing.event.EventListenerList;
 import javax.swing.event.TreeModelEvent;
 import javax.swing.event.TreeModelListener;
 import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
 
 import org.netbeans.modules.uml.common.generics.ETPairT;
 import org.netbeans.modules.uml.core.configstringframework.ConfigStringTranslator;
-import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
-import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
-import org.netbeans.modules.uml.core.metamodel.diagrams.IProxyDiagram;
 import org.netbeans.modules.uml.ui.support.ProductHelper;
-import org.netbeans.modules.uml.ui.support.applicationmanager.IPresentationResourceMgr;
-import org.netbeans.modules.uml.ui.support.diagramsupport.IPresentationTarget;
 import org.netbeans.modules.uml.ui.support.drawingproperties.DrawingPropertyResource;
 import org.netbeans.modules.uml.ui.support.drawingproperties.IDrawingProperty;
-import org.netbeans.modules.uml.ui.swing.propertyeditor.PropertyEditor;
 import org.netbeans.modules.uml.ui.swing.treetable.JTreeTable;
 import org.netbeans.modules.uml.ui.swing.treetable.TreeTableModel;
 
@@ -151,21 +138,22 @@ public class FontColorTreeTableModel implements TreeTableModel
 				if (column == 0)
 				{
 					String displayName = pDrawingProperty.getResourceName();
-					IPresentationResourceMgr pMgr = ProductHelper.getPresentationResourceMgr();
-					if (pMgr != null)
-					{
-						// Convert that name to something more reasonable
-						ETPairT<String, String> val = pMgr.getDisplayName(pDrawingProperty.getDrawEngineName(), pDrawingProperty.getResourceName());
-						if (val != null)
-						{
-							displayName = val.getParamOne();
-						}
-
-						if (displayName == null || displayName.length() == 0)
-						{
-							displayName = pDrawingProperty.getResourceName();
-						}
-					}
+                                        // TODO: meteora
+//					IPresentationResourceMgr pMgr = ProductHelper.getPresentationResourceMgr();
+//					if (pMgr != null)
+//					{
+//						// Convert that name to something more reasonable
+//						ETPairT<String, String> val = pMgr.getDisplayName(pDrawingProperty.getDrawEngineName(), pDrawingProperty.getResourceName());
+//						if (val != null)
+//						{
+//							displayName = val.getParamOne();
+//						}
+//
+//						if (displayName == null || displayName.length() == 0)
+//						{
+//							displayName = pDrawingProperty.getResourceName();
+//						}
+//					}
 					return displayName;
 				}
 				else if (column == 1)

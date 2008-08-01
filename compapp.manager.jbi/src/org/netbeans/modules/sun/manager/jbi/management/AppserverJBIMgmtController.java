@@ -50,6 +50,7 @@ import com.sun.esb.management.client.ManagementClientFactory;
 import com.sun.esb.management.common.ManagementRemoteException;
 import java.io.File;
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.List;
 import java.util.logging.Logger;
 import javax.management.MBeanServerConnection;
@@ -84,6 +85,8 @@ public class AppserverJBIMgmtController {
     private PerformanceMeasurementServiceWrapper performanceMeasurementServiceWrapper;
     private RuntimeManagementServiceWrapper runtimeManagementServiceWrapper;
     private NotificationService notificationService;
+    
+    private boolean notificationServiceChecked;
     
     private String hostName;
     private String port;
@@ -149,7 +152,8 @@ public class AppserverJBIMgmtController {
     public NotificationService getNotificationService()
             throws ManagementRemoteException {
 
-        if (notificationService == null) {
+        if (!notificationServiceChecked && notificationService == null) {
+            notificationServiceChecked = true;
             String rmiPortString = managementClient.getAdministrationService().getJmxRmiPort();        
             notificationService = 
                     //managementClient.getNotificationService(); // DOES NOT WORK
@@ -318,14 +322,17 @@ public class AppserverJBIMgmtController {
                 // For local domains, use instance LOCATION instead of url location  (#90749)
                 String localInstanceLocation = instance.getLocation();
                 assert localInstanceLocation != null;
+                
                 localInstanceLocation = localInstanceLocation.replace('\\', '/'); // NOI18N
-
+                
                 if (isLocalHost) {
                     logger.fine("    localInstanceLocation=" + localInstanceLocation);
                     logger.fine("                  appBase=" + appBase);
                 }
 
-                if (!isLocalHost || appBase.toLowerCase().startsWith(localInstanceLocation.toLowerCase())) {
+                if (!isLocalHost || 
+                        appBase.toLowerCase().startsWith(localInstanceLocation.toLowerCase()) &&
+                        new File(localInstanceLocation).exists()) {
                     objectName = new ObjectName(HTTP_PORT_MBEAN_NAME);
                     String port = (String) mBeanServerConnection.getAttribute(objectName, "port");  // NOI18N
                     String instanceHttpPort = instance.getHttpPortNumber();

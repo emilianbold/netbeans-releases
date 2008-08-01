@@ -41,6 +41,8 @@
 
 package org.netbeans.modules.db.explorer.infos;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -50,11 +52,18 @@ import org.netbeans.api.db.explorer.JDBCDriverManager;
 import org.netbeans.modules.db.explorer.DatabaseDriver;
 import org.netbeans.modules.db.explorer.driver.JDBCDriverSupport;
 
-public class DriverNodeInfo extends DatabaseNodeInfo {
+public class DriverNodeInfo extends DatabaseNodeInfo 
+    implements PropertyChangeListener {
 
     static final long serialVersionUID =6994829681095273161L;
 
     public DriverNodeInfo() {
+        DatabaseDriver drv = (DatabaseDriver)get(DatabaseNodeInfo.DBDRIVER);
+        if (drv != null) {
+            setDatabaseDriver(drv);
+        }
+        
+        addDriverListener(this);
     }
 
     public DatabaseDriver getDatabaseDriver() {
@@ -67,8 +76,11 @@ public class DriverNodeInfo extends DatabaseNodeInfo {
         put(DatabaseNodeInfo.PREFIX, drv.getDatabasePrefix());
 //        put(DatabaseNodeInfo.ADAPTOR_CLASSNAME, drv.getDatabaseAdaptor());
         put(DatabaseNodeInfo.DBDRIVER, drv);
+        
+        notifyChange();
     }
 
+    @Override
     public void delete() throws IOException {
         try {
             JDBCDriver driver = getJDBCDriver();
@@ -81,7 +93,8 @@ public class DriverNodeInfo extends DatabaseNodeInfo {
     }
     
     public String getIconBase() {
-        return (String) ((checkDriverFiles()) ? get("iconbaseprefered") : get("iconbasepreferednotinstalled")); //NOI18N
+        return (String) ((checkDriverFiles()) ? get("iconbaseprefered") : 
+            get("iconbasepreferednotinstalled")); //NOI18N
     }
 
     public void setIconBase(String base) {
@@ -89,6 +102,8 @@ public class DriverNodeInfo extends DatabaseNodeInfo {
             put("iconbaseprefered", base); //NOI18N
         else
             put("iconbasepreferednotinstalled", base); //NOI18N
+        
+        notifyChange();
     }
 
     private boolean checkDriverFiles() {
@@ -107,4 +122,57 @@ public class DriverNodeInfo extends DatabaseNodeInfo {
         }
         return dbdrv.getJDBCDriver();
     }
+
+    public void propertyChange(PropertyChangeEvent evt) {
+        String pname = evt.getPropertyName();
+        Object newval = evt.getNewValue();
+        DatabaseDriver drv = getDatabaseDriver();
+        if ( drv != null ) {
+            if (pname.equals(DatabaseNodeInfo.NAME)) {
+                drv.setName((String)newval);
+            }
+            else if (pname.equals(DatabaseNodeInfo.URL)) {
+                drv.setURL((String)newval);
+            }
+            else if (pname.equals(DatabaseNodeInfo.PREFIX)) {
+                drv.setDatabasePrefix((String)newval);
+            }
+        }
+        
+        notifyChange();
+    }
+    
+    @Override
+    public String getShortDescription() {
+        return bundle().getString("ND_Driver"); //NOI18N
+    }
+    
+    @Override
+    public String getDisplayName() {
+        return getJDBCDriver().getDisplayName();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final DatabaseNodeInfo other = (DatabaseNodeInfo) obj;
+        if (this.getName() != other.getName() && (this.getName() == null || !this.getName().equals(other.getName()))) {
+            return false;
+        }
+        return true;
+
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 3;
+        hash = 19 * hash + (getName() != null ? getName().hashCode() : 0);
+        return hash;
+    }
+
 }

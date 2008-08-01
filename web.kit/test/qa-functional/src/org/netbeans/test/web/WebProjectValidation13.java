@@ -43,9 +43,11 @@ package org.netbeans.test.web;
 
 import java.io.File;
 import java.io.IOException;
+import junit.framework.Test;
 import org.netbeans.jellytools.*;
 import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.actions.NewProjectAction;
+import org.netbeans.jellytools.modules.web.nodes.WebPagesNode;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.Timeouts;
@@ -54,7 +56,7 @@ import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JListOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
-import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.ide.ProjectSupport;
 
 /**
@@ -72,6 +74,11 @@ public class WebProjectValidation13 extends WebProjectValidation {
         super(name);
     }
     
+    /** Need to be defined because of JUnit */
+    public WebProjectValidation13() {
+        super();
+    }
+
     /** Use for execution inside IDE */
     public static void main(java.lang.String[] args) {
         // run whole suite
@@ -80,31 +87,17 @@ public class WebProjectValidation13 extends WebProjectValidation {
         //junit.textui.TestRunner.run(new MyModuleValidation("testT2"));
     }
     
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new WebProjectValidation13("testNewWebProject"));
-        suite.addTest(new WebProjectValidation13("testNewJSP"));
-        suite.addTest(new WebProjectValidation13("testNewJSP2"));
-        suite.addTest(new WebProjectValidation13("testNewServlet"));
-        suite.addTest(new WebProjectValidation13("testNewServlet2"));
-        suite.addTest(new WebProjectValidation13("testBuildProject"));
-        suite.addTest(new WebProjectValidation13("testCompileAllJSP"));
-        suite.addTest(new WebProjectValidation13("testCompileJSP"));
-        suite.addTest(new WebProjectValidation13("testCleanProject"));
-        suite.addTest(new WebProjectValidation13("testRunProject"));
-        suite.addTest(new WebProjectValidation13("testRunJSP"));
-        suite.addTest(new WebProjectValidation13("testRunServlet"));
-        suite.addTest(new WebProjectValidation13("testCreateTLD"));
-        suite.addTest(new WebProjectValidation13("testCreateTagHandler"));
-        suite.addTest(new WebProjectValidation13("testRunTag"));
-        suite.addTest(new WebProjectValidation13("testNewHTML"));
-        suite.addTest(new WebProjectValidation13("testRunHTML"));
-        suite.addTest(new WebProjectValidation13("testNewSegment"));
-        suite.addTest(new WebProjectValidation13("testNewDocument"));
-        suite.addTest(new WebProjectValidation13("testStopServer"));
-        suite.addTest(new WebProjectValidation13("testStartServer"));
-        suite.addTest(new WebProjectValidation13("testFinish"));
-        return suite;
+    public static Test suite() {
+        NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(WebProjectValidation13.class);
+        conf = addServerTests(Server.TOMCAT, conf, 
+              "testNewWebProject", "testNewJSP", "testNewJSP2", "testNewServlet", "testNewServlet2",
+              "testCompileAllJSP", "testCompileJSP",
+              "testCleanAndBuildProject", "testRunProject", "testRunJSP", "testCleanAndBuildProject",
+              "testRunServlet", "testCreateTLD", "testCreateTagHandler", "testRunTag",
+              "testNewHTML", "testRunHTML", "testNewSegment", "testNewDocument",
+              "testStopServer", "testStartServer", "testFinish");
+        conf = conf.enableModules(".*").clusters(".*");
+        return NbModuleSuite.create(conf);        
     }
     
     /** Test creation of web project.
@@ -135,28 +128,23 @@ public class WebProjectValidation13 extends WebProjectValidation {
         nameStep.txtProjectName().typeText(PROJECT_NAME);
         nameStep.txtProjectLocation().setText("");
         nameStep.txtProjectLocation().typeText(PROJECT_LOCATION);
-        String sJ2EE_1_3 = Bundle.getStringTrimmed(
-                "org.netbeans.modules.web.project.ui.wizards.Bundle",
-                "J2EESpecLevel_13");
-        nameStep.selectJ2EEVersion(sJ2EE_1_3);
-        nameStep.finish();
-        Timeouts timeouts = nameStep.getTimeouts().cloneThis();
-        nameStep.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 60000);
-        nameStep.waitClosed();
-        nameStep.setTimeouts(timeouts);
+        nameStep.next();
+        NewWebProjectServerSettingsStepOperator serverStep = new NewWebProjectServerSettingsStepOperator();
+        serverStep.selectServer(getServerNode(Server.ANY).getText());
+        serverStep.selectJavaEEVersion(org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.j2ee.common.project.ui.Bundle", "J2EESpecLevel_13"));
+        serverStep.next();
+        NewWebProjectSourcesStepOperator frameworkStep =  new NewWebProjectSourcesStepOperator();
+        frameworkStep.finish();
+        Timeouts timeouts = frameworkStep.getTimeouts().cloneThis();
+        frameworkStep.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 60000);
+        frameworkStep.waitClosed();
+        frameworkStep.setTimeouts(timeouts);
         // wait for project creation
         sleep(5000);
         ProjectSupport.waitScanFinished();
-        // wait for project creation
-        new EditorWindowOperator().getEditor("index.jsp");//NOI18N
-        // HACK
-        Node webPages = new Node(new ProjectsTabOperator().
-                getProjectRootNode(PROJECT_NAME),"Web Pages");
-        new Node(webPages,"index.jsp");//NOI18N
-        new Node(webPages,"WEB-INF|web.xml");//NOI18N
-        new Node(webPages,"META-INF|context.xml");//NOI18N
-        ref(Util.dumpProjectView(PROJECT_NAME));
-        compareReferenceFiles();
+        verifyWebPagesNode("index.jsp");
+        verifyWebPagesNode("WEB-INF|web.xml");
+        verifyWebPagesNode("META-INF|context.xml");
     }
     
     @Override

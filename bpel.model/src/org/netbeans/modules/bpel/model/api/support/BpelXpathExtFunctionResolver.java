@@ -86,17 +86,14 @@ public class BpelXpathExtFunctionResolver implements ExtensionFunctionResolver,
         return null;
     }
 
-    public void validateFunction(XPathExtensionFunction function, 
-            XPathValidationContext context) {
-        assert context != null && context instanceof PathValidationContext;
+    public void validateFunction(XPathExtensionFunction function, XPathValidationContext context) {
+        assert context != null;
         QName funcQName = function.getMetadata().getName();
         if (GET_VARIABLE_PROPERTY_METADATA.getName().equals(funcQName)) {
             String funcName = funcQName.getLocalPart();
-            PathValidationContext vContext = (PathValidationContext)context;
-            vContext.addResultItem(ResultType.WARNING, 
+            context.addResultItem(ResultType.WARNING, 
                     NbBundle.getMessage(BpelVariableResolver.class,
                                     "RUNTIME_NOT_SUPPORT_EXT_FUNC"), funcName); // NOI18N
         }
     }
-
 }

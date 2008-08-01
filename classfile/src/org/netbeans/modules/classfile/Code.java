@@ -188,6 +188,7 @@ public final class Code {
         return stackMapTable.clone();
     }
 
+    @Override
     public String toString() {
 	StringBuffer sb = new StringBuffer("Code: bytes=");
 	sb.append(byteCodes.length);

@@ -111,12 +111,8 @@ public class GenerateJBIDescriptorTask extends org.apache.tools.ant.Task {
         this.mProjectClassPath = projectClassPath;
     }
         
-    
     /**
      * Invoke the task that generates the JBI.xml
-     */
-    /**
-     * Invoke validate BPEL Model
      */
     public void execute() throws BuildException { 
         try {

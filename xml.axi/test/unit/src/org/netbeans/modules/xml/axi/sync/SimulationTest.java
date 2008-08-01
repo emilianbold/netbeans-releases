@@ -138,8 +138,8 @@ public class SimulationTest extends AbstractSyncTestCase {
         assert(doc.getChildren().size() == 1);
         assert(model.getSchemaModel().getSchema().getChildren().size() == 1);
         assert(helper.inModel(e1) && helper.inModel(e2));
-        //assert(e1.getType() instanceof AnonymousType);
-        assert(e1.getType() == null);
+        assert(e1.getType() instanceof AnonymousType);
+        //assert(e1.getType() == null);
         
         //drop a GCT named GCT1
         ContentModel gct1 = helper.dropGlobalComplexType("GCT1");
@@ -280,7 +280,8 @@ public class SimulationTest extends AbstractSyncTestCase {
         
         Compositor sequence = helper.dropCompositor(e1, CompositorType.SEQUENCE);
         assert(helper.inModel(sequence));
-        assert(e1.getType() == null);
+        assert(e1.getType() instanceof AnonymousType);
+        //assert(e1.getType() == null);
         
         Element e11 = helper.dropElementOnCompositor(sequence, "E11");
         Element e12 = helper.dropElementOnCompositor(sequence, "E12");
@@ -307,8 +308,8 @@ public class SimulationTest extends AbstractSyncTestCase {
         
         Compositor sequence = helper.dropCompositor(e1, CompositorType.SEQUENCE);
         assert(helper.inModel(sequence));
-        //assert(e1.getType() instanceof AnonymousType);
-        assert(e1.getType() == null);
+        assert(e1.getType() instanceof AnonymousType);
+        //assert(e1.getType() == null);
         
         Element e2 = helper.dropElementOnCompositor(sequence, "E2");
         assert(helper.inModel(e2));
@@ -375,16 +376,16 @@ public class SimulationTest extends AbstractSyncTestCase {
     }
     
     private void assertEventsAfterSetComposiotorType(ModelPCL pcl) {
-        assert(pcl.getEvents().size() == 3);
+        assert(pcl.getEvents().size() == 2);
         PropertyChangeEvent evt0 = pcl.getEvents().get(0);
         PropertyChangeEvent evt1 = pcl.getEvents().get(1);
-        PropertyChangeEvent evt2 = pcl.getEvents().get(2);
+        //PropertyChangeEvent evt2 = pcl.getEvents().get(2);
         assert(evt0.getPropertyName().equals(Compositor.PROP_COMPOSITOR)
                 && (evt0.getOldValue() != null) && (evt0.getNewValue() == null));
         assert(evt1.getPropertyName().equals(Compositor.PROP_COMPOSITOR)
                 && (evt1.getOldValue() == null) && (evt1.getNewValue() != null));
-        assert(evt2.getPropertyName().equals(Element.PROP_TYPE)
-                && (evt2.getOldValue() == null) && (evt2.getNewValue() != null));
+//        assert(evt2.getPropertyName().equals(Element.PROP_TYPE)
+//                && (evt2.getOldValue() == null) && (evt2.getNewValue() != null));
     }
     
     public void simulateDropOnRussianDoll() throws IOException {

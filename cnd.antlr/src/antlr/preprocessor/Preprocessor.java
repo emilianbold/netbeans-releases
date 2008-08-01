@@ -13,7 +13,6 @@ import antlr.RecognitionException;
 import antlr.NoViableAltException;
 import antlr.MismatchedTokenException;
 import antlr.SemanticException;
-import antlr.ParserSharedInputState;
 import antlr.collections.impl.BitSet;
 
 import antlr.collections.impl.IndexedVector;
@@ -101,11 +100,6 @@ protected Preprocessor(TokenStream lexer, int k) {
 
 public Preprocessor(TokenStream lexer) {
   this(lexer,1);
-}
-
-public Preprocessor(ParserSharedInputState state) {
-  super(state,1);
-  tokenNames = _tokenNames;
 }
 
 	public final void grammarFile(

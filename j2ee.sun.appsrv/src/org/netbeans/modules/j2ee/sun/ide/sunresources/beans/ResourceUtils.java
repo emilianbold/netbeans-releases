@@ -38,6 +38,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+
 /*
  * ResourceUtils.java
  *
@@ -55,7 +56,6 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.Arrays;
 import java.util.Collections;
-
 import java.util.Map;
 import java.util.List;
 import java.util.Vector;
@@ -66,7 +66,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.ResourceBundle;
-
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.management.Attribute;
 import javax.management.ObjectName;
 import javax.management.AttributeList;
@@ -74,31 +75,22 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.sun.api.SunURIManager;
-
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
-import org.openide.ErrorManager;
-
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
-
 import javax.enterprise.deploy.spi.DeploymentManager;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
-
 import org.netbeans.modules.j2ee.sun.ide.editors.NameValuePair;
 import org.netbeans.modules.j2ee.sun.sunresources.beans.WizardConstants;
 import org.netbeans.modules.j2ee.sun.ide.sunresources.wizards.ResourceConfigData;
-
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
-
 import org.netbeans.modules.j2ee.sun.api.SunDeploymentManagerInterface;
 import org.netbeans.modules.j2ee.sun.api.ServerInterface;
 import org.netbeans.modules.j2ee.sun.api.ServerLocationManager;
-
 import org.netbeans.modules.j2ee.sun.dd.api.DDProvider;
 import org.netbeans.modules.j2ee.sun.dd.api.serverresources.*;
 import org.netbeans.modules.j2ee.sun.share.serverresources.SunDatasource;
@@ -118,7 +110,9 @@ public class ResourceUtils implements WizardConstants{
     static final String SAMPLE_DATASOURCE = "jdbc/sample";
     static final String SAMPLE_CONNPOOL = "SamplePool";
     static final String SUN_RESOURCE_FILENAME = "sun-resources.xml"; //NOI18N
-            
+    private static final Logger LOG = Logger.getLogger(ResourceUtils.class.getName());
+
+    //FIXME: should not the constructor be private? (all methods are static)
     /** Creates a new instance of ResourceUtils */
     public ResourceUtils() {
     }
@@ -127,7 +121,7 @@ public class ResourceUtils implements WizardConstants{
         try {             
             res.write(FileUtil.toFile(resFile));
         }catch(Exception ex){
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex); 
+            LOG.log(Level.SEVERE, "saveNodeToXml failed", ex);
         }
     } 
     
@@ -271,7 +265,7 @@ public class ResourceUtils implements WizardConstants{
             }//Returned value is null for JMS.
         }catch(Exception ex){
             String errorMsg = MessageFormat.format(bundle.getString("Err_ResourceUpdate"), new Object[]{resourceName}); //NOI18N
-            System.out.println(errorMsg);
+            LOG.log(Level.SEVERE, errorMsg, ex);
         }
         return isResUpdated;
     }    
@@ -320,7 +314,7 @@ public class ResourceUtils implements WizardConstants{
                 }//loop through project's resource Attributes
              }
          }catch(Exception ex){
-             throw new Exception(ex.getLocalizedMessage());
+             throw new Exception(ex.getLocalizedMessage(), ex);
          }
      }
     public static void updateResourceProperties(ObjectName objName, Properties props, ServerInterface mejb) throws Exception {
@@ -357,7 +351,7 @@ public class ResourceUtils implements WizardConstants{
              }//loop through server extra properties
              addNewExtraProperties(objName, props, attrList, mejb);
          }catch(Exception ex){
-             throw new Exception(ex.getLocalizedMessage());
+             throw new Exception(ex.getLocalizedMessage(), ex);
          }
      }
      
@@ -373,7 +367,7 @@ public class ResourceUtils implements WizardConstants{
              }
              return attributeInfos;
          }catch(Exception ex){
-             throw new Exception(ex.getLocalizedMessage());
+             throw new Exception(ex.getLocalizedMessage(), ex);
          }
      }
      
@@ -393,7 +387,7 @@ public class ResourceUtils implements WizardConstants{
                  }//while
              }
          }catch(Exception ex){
-             throw new Exception(ex.getLocalizedMessage());
+             throw new Exception(ex.getLocalizedMessage(), ex);
          }
      }
      
@@ -406,7 +400,7 @@ public class ResourceUtils implements WizardConstants{
             String[] signature = new String[]{"javax.management.AttributeList", "java.util.Properties", "java.lang.String"};  //NOI18N
             mejb.invoke(objName, operName, params, signature);
         }catch(Exception ex){
-            throw new Exception(ex.getLocalizedMessage());
+            throw new Exception(ex.getLocalizedMessage(), ex);
         }
     }
     
@@ -524,6 +518,7 @@ public class ResourceUtils implements WizardConstants{
         return propList;
     }
     
+    //FIXME: this method should be probably static
     public List getTargetServers(){
         String instances [] = InstanceProperties.getInstanceList();
         List targets = new ArrayList();
@@ -610,7 +605,7 @@ public class ResourceUtils implements WizardConstants{
             res.addJdbcConnectionPool(connPool);
             createFile(data.getTargetFileObject(), res);
         }catch(Exception ex){
-            System.out.println("Unable to saveConnPoolDatatoXml ");
+            LOG.log(Level.SEVERE, "Unable to saveConnPoolDatatoXml", ex);
         }
     }
     
@@ -652,8 +647,7 @@ public class ResourceUtils implements WizardConstants{
             }
             createFile(dsData.getTargetFileObject(), res);
         }catch(Exception ex){
-            ex.printStackTrace();
-            System.out.println("Unable to saveJDBCResourceDatatoXml ");
+            LOG.log(Level.SEVERE, "Unable to saveJDBCResourceDatatoXml", ex);
         }
     }
     
@@ -696,7 +690,7 @@ public class ResourceUtils implements WizardConstants{
                 saveJDBCResourceDatatoXml(dsData, cpData);
             }
         }catch(Exception ex){
-            System.out.println("Unable to savePMFResourceDatatoXml ");
+            LOG.log(Level.SEVERE, "Unable to savePMFResourceDatatoXml", ex);
         }
     }
     
@@ -746,8 +740,7 @@ public class ResourceUtils implements WizardConstants{
             
             createFile(jmsData.getTargetFileObject(), res);
         }catch(Exception ex){
-            ex.printStackTrace();
-            System.out.println("Unable to saveJMSResourceDatatoXml ");
+            LOG.log(Level.SEVERE, "Unable to saveJMSResourceDatatoXml", ex);
         }
     }
     
@@ -797,7 +790,7 @@ public class ResourceUtils implements WizardConstants{
             res.addMailResource(mlresource);
             createFile(data.getTargetFileObject(), res);
         }catch(Exception ex){
-            System.out.println("Unable to saveMailResourceDatatoXml ");
+            LOG.log(Level.SEVERE, "Unable to saveMailResourceDatatoXml", ex);
         }
     }
     
@@ -815,11 +808,10 @@ public class ResourceUtils implements WizardConstants{
     public static List getRegisteredConnectionPools(ResourceConfigData data){
         List connPools = new ArrayList();
         try {
-            String OPER_OBJ_ConnPoolResource = "getJdbcConnectionPool"; //NOI18N
             String keyProp = "name"; //NOI18N
             InstanceProperties instanceProperties = getTargetServer(data.getTargetFileObject());
             if(instanceProperties != null) {
-                connPools = getResourceNames(instanceProperties, OPER_OBJ_ConnPoolResource, keyProp);
+                connPools = getResourceNames(instanceProperties, __GetJdbcConnectionPool, keyProp);
             }    
             connPools.removeAll(Arrays.asList(sysConnpools));  
             List projectCP = getProjectResources(data, __ConnectionPoolResource);
@@ -830,7 +822,8 @@ public class ResourceUtils implements WizardConstants{
                 }   
             }
         } catch (java.lang.NoClassDefFoundError ncdfe) {
-            // this happens durring  unit tests for the DataSourceWizard
+            // this happens durring unit tests for the DataSourceWizard
+            LOG.log(Level.SEVERE, "getRegisteredConnectionPools failed", ncdfe);
         }
         return connPools;
     }
@@ -850,19 +843,28 @@ public class ResourceUtils implements WizardConstants{
                     dataSources.add(localDS);
             }
         } catch (java.lang.NoClassDefFoundError ncdfe) {
-            // this happens durring  unit tests for the PMFWizard
+            // this happens durring unit tests for the PMFWizard
+            LOG.log(Level.SEVERE, "getRegisteredJdbcResources failed", ncdfe);
         }
         return dataSources;
     }
     
     private static List getResourceNames(InstanceProperties instProps, String query, String keyProperty){
-        Object tmp = instProps.getDeploymentManager();
-        List retVal;
-        if (tmp instanceof SunDeploymentManagerInterface)  {
-            SunDeploymentManagerInterface eightDM = (SunDeploymentManagerInterface)tmp;
-            retVal = getResourceNames(eightDM, query, keyProperty);
-        } else {
-            retVal = Collections.EMPTY_LIST;
+        List retVal = new ArrayList();
+        DeploymentManager dm = instProps.getDeploymentManager();
+        if (dm instanceof SunDeploymentManagerInterface) {
+            SunDeploymentManagerInterface eightDM = (SunDeploymentManagerInterface) dm;
+            if (eightDM.isRunning()) {
+                retVal = getResourceNames(eightDM, query, keyProperty);
+            } else if (eightDM.isLocal()) {
+                if (query.equals(__GetJdbcResource)) {
+                    HashMap dsources = eightDM.getSunDatasourcesFromXml();
+                    retVal = new ArrayList(dsources.keySet());
+                } else if (query.equals(__GetJdbcConnectionPool)) {
+                    HashMap pools = eightDM.getConnPoolsFromXml();
+                    retVal = new ArrayList(pools.keySet());
+                }
+            }
         }
         return retVal;
     }
@@ -882,6 +884,7 @@ public class ResourceUtils implements WizardConstants{
             //Suppress exception when unable to get resource names
             //Possibe errors: deafult server is not Sun Application Server (classcast exception)
             //Application server is not running.
+            LOG.log(Level.WARNING, "getResourceNames failed", ex);
         }
         return resList;
     }
@@ -916,8 +919,9 @@ public class ResourceUtils implements WizardConstants{
                     projectCP.add(pools[i].getName());
                 }
             }
-        }catch(Exception exception){
+        }catch(Exception ex){
             //Could not get list of local Connection pools
+            LOG.log(Level.SEVERE, "filterConnectionPools failed", ex);
         }
         return projectCP;
     }
@@ -934,8 +938,9 @@ public class ResourceUtils implements WizardConstants{
                     projectDS.add(dataSources[i].getJndiName());
                 }
             }
-        }catch(Exception exception){
+        }catch(Exception ex){
             //Could not get list of local Connection pools
+            LOG.log(Level.SEVERE, "filterDataSources failed", ex);
         }
         return projectDS;
     }
@@ -1005,7 +1010,7 @@ public class ResourceUtils implements WizardConstants{
                         try {
                             resourceDir = FileUtil.createFolder(resourceLoc);
                         } catch (IOException ex) {
-                            Exceptions.printStackTrace(ex);
+                            LOG.log(Level.SEVERE, "getResourceDirectory failed", ex);
                         }
                     }
                 }
@@ -1035,6 +1040,7 @@ public class ResourceUtils implements WizardConstants{
                     eightDM.createSampleDataSourceinDomain();
                 }
             } catch (Exception ex) {
+                LOG.log(Level.SEVERE, "createSampleDataSource failed", ex);
             }
         }
     }
@@ -1076,6 +1082,7 @@ public class ResourceUtils implements WizardConstants{
             }// Server Running
         } catch (Exception ex) {
             //Unable to get server datasources
+            LOG.log(Level.SEVERE, "getServerDataSources failed", ex);
         }
         return datasources;
     }
@@ -1116,7 +1123,9 @@ public class ResourceUtils implements WizardConstants{
                 Object[] params = new Object[]{attrs, new Properties(), null};
                 createResource(__CreateDS, params, mejb);
             }
-        }catch(Exception ex){}
+        } catch (Exception ex) {
+            LOG.log(Level.SEVERE, "updateSampleDatasource failed", ex);
+        }
     }
     
     public static HashMap fillInPoolValues(SunDeploymentManagerInterface eightDM, ObjectName configObjName, String poolName) throws Exception {
@@ -1125,6 +1134,7 @@ public class ResourceUtils implements WizardConstants{
         //Get Values from JDBC Connection Pool : driver
         ObjectName connPoolObj = getConnectionPoolByName(mejb, configObjName, poolName);
         String dsClassName = (String)mejb.getAttribute(connPoolObj, "datasource-classname"); //NOI18N
+        String resType = (String)mejb.getAttribute(connPoolObj, "res-type"); //NOI18N
         String url = ""; //NOI18N
         String username = ""; //NOI18N
         String password = ""; //NOI18N
@@ -1179,13 +1189,13 @@ public class ResourceUtils implements WizardConstants{
                     if (portNo != null && portNo.length() > 0) {
                         url = url + ":" + portNo; //NOI18N
                     }
-                    url = url + "/" + dbName; //NOI8N
+                    url = url + "/" + dbName; //NOI18N
                     if(derbyConnAttr != null && (! derbyConnAttr.equals(""))) { //NOI18N
                         url = url + derbyConnAttr;
                     }
                 }
             } else if (url.equals("")) { //NOI18N
-                String urlPrefix = DatabaseUtils.getUrlPrefix(dsClassName);
+                String urlPrefix = DatabaseUtils.getUrlPrefix(dsClassName, resType);
                 String vName = ResourceConfigurator.getDatabaseVendorName(urlPrefix, null);
                 if (serverName != null) {
                     if (vName.equals("sybase2")) { //NOI18N
@@ -1204,7 +1214,7 @@ public class ResourceUtils implements WizardConstants{
                 } else if (Arrays.asList(Reqd_DBName).contains(vName)) {
                     url = url + ";databaseName=" + dbName; //NOI18N
                 } else if (Arrays.asList(VendorsDBNameProp).contains(vName)) {
-                    url = url + "/" + dbName; //NOI8N
+                    url = url + "/" + dbName; //NOI18N
                 }
                 if (vName.equals("informix")) { //NOI18N
                     url = url + ":INFORMIXSERVER=" + serverName;
@@ -1248,7 +1258,9 @@ public class ResourceUtils implements WizardConstants{
         ObjectName connPoolObj = null;
         try{
             connPoolObj = getConnectionPoolByName(mejb, configObjName, poolName);
-        }catch(Exception ex){}
+        } catch (Exception ex) {
+            LOG.log(Level.SEVERE, "getConnectionPoolObjByName failed", ex);
+        }
         return connPoolObj;
     }
         
@@ -1328,11 +1340,16 @@ public class ResourceUtils implements WizardConstants{
                 }else{
                     if(eightDM.isLocal()){
                         HashMap poolMap = eightDM.getConnPoolsFromXml();
-                        poolValues = formatPoolMap((HashMap)poolMap.get(poolName));
+                        HashMap reqdPool = (HashMap)poolMap.get(poolName);
+                        if (reqdPool != null && (! reqdPool.isEmpty())) {
+                            poolValues = formatPoolMap((HashMap)poolMap.get(poolName));
+                        }    
                     }
                 }    
             }
-        }catch(Exception ex){ }
+        } catch (Exception ex) {
+            LOG.log(Level.SEVERE, "getConnPoolValues failed", ex);
+        }
         return poolValues;
     }
     
@@ -1359,6 +1376,7 @@ public class ResourceUtils implements WizardConstants{
     
     private static HashMap formatPoolMap(HashMap poolValues){
         String driverClassName = getStringVal(poolValues.get("dsClassName")); //NOI18N
+        String resType = getStringVal(poolValues.get("resType")); //NOI18N
         String url = ""; //NOI18N
         String serverName = getStringVal(poolValues.get(__ServerName));
         String portNo     = getStringVal(poolValues.get(__DerbyPortNumber));
@@ -1369,51 +1387,53 @@ public class ResourceUtils implements WizardConstants{
         String urlValue     = getStringVal(poolValues.get(__Url));
         String driverClass     = getStringVal(poolValues.get(__DriverClass));
         String derbyConnAttr   = getStringVal(poolValues.get(__DerbyConnAttr));
-        
-        if(driverClassName.indexOf("pointbase") != -1){
-            url = getStringVal(poolValues.get(__DatabaseName));
-        }
-        if (urlValue == null || urlValue.equals("")) { //NOI18N
-            if (driverClassName.indexOf("derby") != -1) {
-                if (serverName != null) {
-                    url = "jdbc:derby://" + serverName;
-                    if (portNo != null && portNo.length() > 0) {
-                        url = url + ":" + portNo; //NOI18N
-                    }   
-                    url = url + "/" + dbName; //NOI8N
-                    if(derbyConnAttr != null && (! derbyConnAttr.equals(""))) { //NOI18N
-                        url = url + derbyConnAttr;
+
+        if (driverClassName != null) {
+            if (driverClassName.indexOf("pointbase") != -1) {
+                url = getStringVal(poolValues.get(__DatabaseName));
+            }
+            if (urlValue == null || urlValue.equals("")) { //NOI18N
+                if (driverClassName.indexOf("derby") != -1) {
+                    if (serverName != null) {
+                        url = "jdbc:derby://" + serverName;
+                        if (portNo != null && portNo.length() > 0) {
+                            url = url + ":" + portNo; //NOI18N
+                        }
+                        url = url + "/" + dbName; //NOI18N
+                        if (derbyConnAttr != null && (!derbyConnAttr.equals(""))) { //NOI18N
+                            url = url + derbyConnAttr;
+                        }
+                    }
+                } else {
+                    String in_url = getStringVal(poolValues.get(__Url));
+                    if (in_url != null) {
+                        url = in_url;
+                    }
+                    if (url.equals("")) {  //NOI18N
+                        String urlPrefix = DatabaseUtils.getUrlPrefix(driverClassName, resType);
+                        String vName = ResourceConfigurator.getDatabaseVendorName(urlPrefix, null);
+                        if (serverName != null) {
+                            if (vName.equals("sun_oracle")) {    //NOI18N
+                                url = urlPrefix + serverName;
+                            } else {
+                                url = urlPrefix + "//" + serverName; //NOI18N
+                            }
+                            if (portVal != null && portVal.length() > 0) {
+                                url = url + ":" + portVal; //NOI18N
+                            }
+                        }
+                        if (vName.equals("sun_oracle") || vName.equals("datadirect_oracle")) {  //NOI18N
+                            url = url + ";SID=" + sid; //NOI18N
+                        } else if (Arrays.asList(Reqd_DBName).contains(vName)) {
+                            url = url + ";databaseName=" + dbVal; //NOI18N
+                        } else if (Arrays.asList(VendorsDBNameProp).contains(vName)) {
+                            url = url + "/" + dbVal; //NOI18N
+                        }
                     }
                 }
             } else {
-                String in_url = getStringVal(poolValues.get(__Url));
-                if (in_url != null) {
-                    url = in_url;
-                }
-                if (url.equals("")) {  //NOI18N
-                    String urlPrefix = DatabaseUtils.getUrlPrefix(driverClassName);
-                    String vName = ResourceConfigurator.getDatabaseVendorName(urlPrefix, null);
-                    if (serverName != null) {
-                        if (vName.equals("sun_oracle")) {    //NOI18N
-                            url = urlPrefix + serverName;
-                        } else {
-                            url = urlPrefix + "//" + serverName; //NOI18N
-                        }
-                        if (portVal != null && portVal.length() > 0) {
-                            url = url + ":" + portVal; //NOI18N
-                        }
-                    }
-                    if (vName.equals("sun_oracle") || vName.equals("datadirect_oracle")) {  //NOI18N
-                        url = url + ";SID=" + sid; //NOI18N
-                    } else if (Arrays.asList(Reqd_DBName).contains(vName)) {
-                        url = url + ";databaseName=" + dbVal; //NOI18N
-                    } else if (Arrays.asList(VendorsDBNameProp).contains(vName)) {
-                        url = url + "/" + dbVal; //NOI8N
-                    }
-                }
+                url = urlValue;
             }
-        }else{
-            url = urlValue;
         }
         if(driverClass == null || driverClass.equals("")) { //NOI18N
             DatabaseConnection databaseConnection = getDatabaseConnection(url);
@@ -1472,6 +1492,7 @@ public class ResourceUtils implements WizardConstants{
             }// Server Running
         } catch (Exception ex) {
             //Unable to get server datasources
+            LOG.log(Level.SEVERE, "getServerDestinations failed", ex);
         }
         return destinations;
     }
@@ -1487,7 +1508,9 @@ public class ResourceUtils implements WizardConstants{
                 String serverName = (String)mejb.getAttribute(serverObj, "serverVersion"); //NOI18N
                 if((serverName != null) && (serverName.indexOf("8.") != -1)) //NOI18N
                     is90Server = false;
-            }catch(Exception ex){ }
+            } catch (Exception ex) {
+                LOG.log(Level.SEVERE, "is90Server failed", ex);
+            }
         }
         return is90Server;
     }
@@ -1496,9 +1519,10 @@ public class ResourceUtils implements WizardConstants{
         boolean isGlassfish = true;
         try{
             isGlassfish = ServerLocationManager.isGlassFish(sunDm.getPlatformRoot());
-        }catch(Exception ex){ }
+        } catch (Exception ex) {
+            LOG.log(Level.SEVERE, "is90ServerLocal failed", ex);
+        }
         return isGlassfish;
-
     }
      
     /*
@@ -1509,11 +1533,10 @@ public class ResourceUtils implements WizardConstants{
         FileObject location = FileUtil.toFileObject(targetFolder.getParentFile());
         try{
             location = FileUtil.createFolder(targetFolder);
-        }catch(Exception ex){
-        
+        } catch (Exception ex) {
+            LOG.log(Level.SEVERE, "getServerResourcesGraph failed", ex);
         }    
         return getServerResourcesGraph(location);
-            
     }
     
     /*
@@ -1542,12 +1565,14 @@ public class ResourceUtils implements WizardConstants{
                 in = new java.io.FileInputStream(sunResource);
                 res = DDProvider.getDefault().getResourcesGraph(in);
             } catch (FileNotFoundException ex) {
-                ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
+                LOG.log(Level.SEVERE, "getResourcesGraph failed", ex);
             } finally {
                 try {
-                    in.close();
+                    if (null != in)  {
+                        in.close();
+                    }
                 } catch (IOException ex) {
-                    ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
+                    LOG.log(Level.SEVERE, "getResourcesGraph failed", ex);
                 }
             }
         }
@@ -1565,7 +1590,7 @@ public class ResourceUtils implements WizardConstants{
             try {
                 res.write(sunResource);
             } catch (Exception ex) {
-                ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
+                LOG.log(Level.SEVERE, "createFile failed", ex);
             }
         }else{
             writeServerResource(targetFolder, res);
@@ -1588,13 +1613,14 @@ public class ResourceUtils implements WizardConstants{
                         out.close();
                     } catch(Exception ex){
                         //Error writing file
+                        LOG.log(Level.SEVERE, "writeServerResource failed", ex);
                     } finally {
                         lock.releaseLock();
                     }
                 }
             });
         } catch (Exception ex) {
-            ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
+            LOG.log(Level.SEVERE, "writeServerResource failed", ex);
         }
     }
     
@@ -1636,7 +1662,6 @@ public class ResourceUtils implements WizardConstants{
     public static void migrateResources(FileObject targetFolder){
         targetFolder = setUpExists(targetFolder);
         File sunResource = getServerResourcesFile(targetFolder);
-        boolean exists = false;
         if((sunResource == null) || (! sunResource.exists())){
             File resourceDir = FileUtil.toFile(targetFolder);
             File[] resources = resourceDir.listFiles(new ResourceFileFilter());
@@ -1650,7 +1675,7 @@ public class ResourceUtils implements WizardConstants{
                     }
                     createFile(targetFolder, newGraph);
                 } catch (Exception ex) {
-                    ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
+                    LOG.log(Level.SEVERE, "migrateResources failed", ex);
                 }
             }
         }

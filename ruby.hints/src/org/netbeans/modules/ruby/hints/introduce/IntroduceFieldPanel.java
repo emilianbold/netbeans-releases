@@ -30,16 +30,12 @@ package org.netbeans.modules.ruby.hints.introduce;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import org.netbeans.modules.ruby.RubyUtils;
-import org.netbeans.modules.ruby.hints.introduce.IntroduceFieldPanel;
-import java.util.Collections;
-import java.util.EnumSet;
 import java.util.Set;
 import java.util.prefs.Preferences;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
-import org.openide.util.Utilities;
 
 /**
  *
@@ -111,11 +107,11 @@ public class IntroduceFieldPanel extends javax.swing.JPanel {
     }
 
     private void adjustInitializeIn() {
-        int allowInitMethods = this.allowInitMethods[this.replaceAll.isSelected() ? 1 : 0];
+        int allowMethods = this.allowInitMethods[this.replaceAll.isSelected() ? 1 : 0];
 
-        initMethod.setEnabled((allowInitMethods & INIT_METHOD) != 0);
-        initField.setEnabled((allowInitMethods & INIT_FIELD) != 0);
-        initConstructors.setEnabled((allowInitMethods & INIT_CONSTRUCTORS) != 0);
+        initMethod.setEnabled((allowMethods & INIT_METHOD) != 0);
+        initField.setEnabled((allowMethods & INIT_FIELD) != 0);
+        initConstructors.setEnabled((allowMethods & INIT_CONSTRUCTORS) != 0);
 
         if (!initMethod.isEnabled() && initMethod.isSelected()) {
             if (initField.isEnabled()) {
@@ -291,27 +287,37 @@ private void replaceAllActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     // End of variables declaration//GEN-END:variables
     
     public String getFieldName() {
-        if (fieldNameTest != null) return fieldNameTest;
+        if (fieldNameTest != null) {
+            return fieldNameTest;
+        }
         return this.name.getText();
     }
     
     public int getInitializeIn() {
-        if (initializeInTest != null) return initializeInTest;
+        if (initializeInTest != null) {
+            return initializeInTest;
+        }
         int ret;
-        if (initMethod.isSelected())
+        if (initMethod.isSelected()) {
             ret = INIT_METHOD;
-        else if (initField.isSelected())
+        }
+        else if (initField.isSelected()) {
             ret = INIT_FIELD;
-        else if (initConstructors.isSelected())
+        }
+        else if (initConstructors.isSelected()) {
             ret = INIT_CONSTRUCTORS;
-        else
+        }
+        else {
             throw new IllegalStateException();
+        }
         getPreferences().putInt( "initMethod", ret ); //NOI18N
         return ret;
     }
     
     public boolean isReplaceAll() {
-        if (replaceAllTest != null) return replaceAllTest;
+        if (replaceAllTest != null) {
+            return replaceAllTest;
+        }
         boolean ret = replaceAll.isSelected();
         getPreferences().putBoolean( "replaceAll", ret ); //NOI18N
         return ret;

@@ -43,7 +43,7 @@ package org.netbeans.modules.subversion;
 
 import org.netbeans.modules.versioning.util.VersioningListener;
 import org.netbeans.modules.versioning.util.VersioningEvent;
-import org.netbeans.spi.queries.VisibilityQueryImplementation;
+import org.netbeans.spi.queries.VisibilityQueryImplementation2;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileObject;
 
@@ -60,31 +60,44 @@ import org.netbeans.modules.versioning.spi.VersioningSupport;
  * 
  * @author Maros Sandor
  */
-public class SubversionVisibilityQuery implements VisibilityQueryImplementation, VersioningListener {
+public class SubversionVisibilityQuery implements VisibilityQueryImplementation2, VersioningListener {
 
     private List<ChangeListener>  listeners = new ArrayList<ChangeListener>();
     private FileStatusCache       cache;
 
     public SubversionVisibilityQuery() {
-        cache = Subversion.getInstance().getStatusCache();
-        cache.addVersioningListener(this);
     }
 
     public boolean isVisible(FileObject fileObject) {
         if (fileObject.isData()) return true;
         File file = FileUtil.toFile(fileObject);
-        if(file == null) return true;                     
+        return isVisible(file);
+    }
+    
+    public boolean isVisible(File file) {
+        if(file == null) return true;
+        if (file.isFile()) {
+            return true;
+        }
         if(!(VersioningSupport.getOwner(file) instanceof SubversionVCS)) {
             return true;
         }
         try {
-            return cache.getStatus(file).getStatus() != FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY;
+            return getCache().getStatus(file).getStatus() != FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY;
         } catch (Exception e) {
             Subversion.LOG.log(Level.SEVERE, e.getMessage(), e);
             return true;
         }        
     }
 
+    private synchronized FileStatusCache getCache() {
+        if (cache == null) {
+            cache = Subversion.getInstance().getStatusCache();
+            cache.addVersioningListener(this);
+        }
+        return cache;
+    }
+    
     public synchronized void addChangeListener(ChangeListener l) {
         ArrayList<ChangeListener> newList = new ArrayList<ChangeListener>(listeners);
         newList.add(l);

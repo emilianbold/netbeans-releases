@@ -107,6 +107,10 @@ class BracesStack {
         if (codeStyle.getFormatNewlineBeforeBrace() == BracePlacement.NEW_LINE_HALF_INDENTED){
             statementIndent = codeStyle.indentSize()/2;
         }
+        int switchIndent = codeStyle.indentSize();
+        if (codeStyle.getFormatNewLineBeforeBraceSwitch() == BracePlacement.NEW_LINE_HALF_INDENTED){
+            switchIndent = codeStyle.indentSize()/2;
+        }
         if (prevEntry != null){
             prevIndent = prevEntry.getIndent();
             prevSelfIndent = prevEntry.getSelfIndent();
@@ -146,8 +150,11 @@ class BracesStack {
             case TRY: //("try", "keyword-directive"), // C++
             case FOR: //("for", "keyword-directive"),
             case ASM: //("asm", "keyword-directive"), // gcc and C++
-            case SWITCH: //("switch", "keyword-directive"),
                 newEntry.setIndent(prevIndent + statementIndent);
+                newEntry.setSelfIndent(prevIndent);
+                break;
+            case SWITCH: //("switch", "keyword-directive"),
+                newEntry.setIndent(prevIndent + switchIndent);
                 newEntry.setSelfIndent(prevIndent);
                 break;
             case LBRACE:
@@ -156,17 +163,17 @@ class BracesStack {
                 if (kind != null) {
                     switch (kind) {
                         case SWITCH: //("switch", "keyword-directive"),
-                            if (codeStyle.getFormatNewlineBeforeBrace() == BracePlacement.NEW_LINE_HALF_INDENTED){
+                            if (codeStyle.getFormatNewLineBeforeBraceSwitch() == BracePlacement.NEW_LINE_HALF_INDENTED){
                                 if (codeStyle.indentCasesFromSwitch()) {
                                     newEntry.setIndent(prevIndent + codeStyle.indentSize());
                                     newEntry.setSelfIndent(prevIndent);
                                     break;
                                 }
-                                newEntry.setIndent(prevIndent+statementIndent);
+                                newEntry.setIndent(prevIndent+switchIndent);
                                 newEntry.setSelfIndent(prevIndent);
                             } else {
                                 if (codeStyle.indentCasesFromSwitch()) {
-                                    newEntry.setIndent(prevIndent + statementIndent);
+                                    newEntry.setIndent(prevIndent + switchIndent);
                                     newEntry.setSelfIndent(prevSelfIndent);
                                     break;
                                 }
@@ -226,15 +233,15 @@ class BracesStack {
                     newEntry.setSelfIndent(prevIndent);
                 } else {
                     if (prevEntry != null && prevEntry.getImportantKind() == SWITCH) {
-                        if (codeStyle.getFormatNewlineBeforeBrace() == BracePlacement.NEW_LINE_HALF_INDENTED){
-                            newEntry.setIndent(prevIndent + statementIndent);
+                        if (codeStyle.getFormatNewLineBeforeBraceSwitch() == BracePlacement.NEW_LINE_HALF_INDENTED){
+                            newEntry.setIndent(prevIndent + switchIndent);
                             newEntry.setSelfIndent(prevIndent);
                         } else {
                             if (codeStyle.indentCasesFromSwitch()) {
-                                newEntry.setIndent(prevSelfIndent + codeStyle.indentSize() + statementIndent);
-                                newEntry.setSelfIndent(prevSelfIndent + statementIndent);
+                                newEntry.setIndent(prevSelfIndent + codeStyle.indentSize() + switchIndent);
+                                newEntry.setSelfIndent(prevSelfIndent + switchIndent);
                             } else {
-                                newEntry.setIndent(prevSelfIndent + statementIndent);
+                                newEntry.setIndent(prevSelfIndent + switchIndent);
                                 newEntry.setSelfIndent(prevSelfIndent);
                             }
                         }

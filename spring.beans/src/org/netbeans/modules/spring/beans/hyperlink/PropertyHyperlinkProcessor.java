@@ -42,6 +42,7 @@ package org.netbeans.modules.spring.beans.hyperlink;
 
 import java.io.IOException;
 import java.util.StringTokenizer;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -50,11 +51,12 @@ import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.ui.ElementOpen;
-import org.netbeans.editor.TokenItem;
 import org.netbeans.modules.spring.beans.editor.BeanClassFinder;
-import org.netbeans.modules.spring.beans.editor.Property;
-import org.netbeans.modules.spring.beans.editor.PropertyFinder;
-import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils;
+import org.netbeans.modules.spring.beans.utils.StringUtils;
+import org.netbeans.modules.spring.java.JavaUtils;
+import org.netbeans.modules.spring.java.MatchType;
+import org.netbeans.modules.spring.java.Property;
+import org.netbeans.modules.spring.java.PropertyFinder;
 import org.openide.util.Exceptions;
 
 /**
@@ -68,9 +70,8 @@ public class PropertyHyperlinkProcessor extends HyperlinkProcessor {
 
     public void process(HyperlinkEnv env) {
         try {
-            final String className = new BeanClassFinder(
-                                SpringXMLConfigEditorUtils.getBean(env.getCurrentTag()), 
-                                env.getDocument()).findImplementationClass();
+            final String className = new BeanClassFinder(env.getBeanAttributes(),
+                    env.getFileObject()).findImplementationClass();
             if (className == null) {
                 return;
             }
@@ -80,7 +81,9 @@ public class PropertyHyperlinkProcessor extends HyperlinkProcessor {
                 return;
             }
 
-            JavaSource js = SpringXMLConfigEditorUtils.getJavaSource(env.getDocument());
+            final boolean jumpToGetter = StringUtils.occurs(env.getValueString(), ".", propChain.length()); // NOI18N
+
+            JavaSource js = JavaUtils.getJavaSource(env.getFileObject());
             if (js == null) {
                 return;
             }
@@ -89,7 +92,7 @@ public class PropertyHyperlinkProcessor extends HyperlinkProcessor {
             js.runUserActionTask(new Task<CompilationController>() {
 
                 public void run(CompilationController cc) throws Exception {
-                    TypeElement te = SpringXMLConfigEditorUtils.findClassElementByBinaryName(className, cc);
+                    TypeElement te = JavaUtils.findClassElementByBinaryName(className, cc);
                     if (te == null) {
                         return;
                     }
@@ -102,7 +105,7 @@ public class PropertyHyperlinkProcessor extends HyperlinkProcessor {
                         StringTokenizer tokenizer = new StringTokenizer(getterChain, "."); // NOI18N
                         while (tokenizer.hasMoreTokens() && startType != null) {
                             String propertyName = tokenizer.nextToken();
-                            Property[] props = new PropertyFinder(startType, propertyName, eu).findProperties();
+                            Property[] props = new PropertyFinder(startType, propertyName, eu, MatchType.PREFIX).findProperties();
 
                             // no matching element found
                             if (props.length == 0 || props[0].getGetter() == null) {
@@ -124,9 +127,12 @@ public class PropertyHyperlinkProcessor extends HyperlinkProcessor {
                     }
 
                     String setterProp = propChain.substring(dotIndex + 1);
-                    Property[] sProps = new PropertyFinder(startType, setterProp, eu).findProperties();
-                    if (sProps.length > 0 && sProps[0].getSetter() != null) {
-                        ElementOpen.open(cc.getClasspathInfo(), sProps[0].getSetter());
+                    Property[] sProps = new PropertyFinder(startType, setterProp, eu, MatchType.PREFIX).findProperties();
+                    if(sProps.length > 0) {
+                        ExecutableElement element = jumpToGetter ? sProps[0].getGetter() : sProps[0].getSetter();
+                        if(element != null) {
+                            ElementOpen.open(cc.getClasspathInfo(), element);
+                        }
                     }
                 }
             }, true);
@@ -137,26 +143,23 @@ public class PropertyHyperlinkProcessor extends HyperlinkProcessor {
 
     @Override
     public int[] getSpan(HyperlinkEnv env) {
-        TokenItem tok = env.getToken();
-        int addOffset = tok.getOffset() + 1;
-        
+        int addOffset = env.getTokenStartOffset() + 1;
         String propChain = getPropertyChainUptoPosition(env);
         if(propChain == null || propChain.equals("")) { // NOI18N
             return null;
         }
-        
-        int endPos = tok.getOffset() + propChain.length() + 1;
+
+        int endPos = env.getTokenStartOffset() + propChain.length() + 1;
         int startPos = propChain.lastIndexOf("."); // NOI18N
         startPos = (startPos == -1) ? 0 : ++startPos;
         startPos += addOffset;
-        
+
         return new int[] { startPos, endPos };
     }
 
     private String getPropertyChainUptoPosition(HyperlinkEnv env) {
-        TokenItem tok = env.getToken();
-        int relOffset = env.getOffset() - tok.getOffset() - 1;
-        
+        int relOffset = env.getOffset() - env.getTokenStartOffset() - 1;
+
         int endPos = env.getValueString().indexOf(".", relOffset); // NOI18N
         // no . after the current pos, return full string
         if(endPos == -1) {

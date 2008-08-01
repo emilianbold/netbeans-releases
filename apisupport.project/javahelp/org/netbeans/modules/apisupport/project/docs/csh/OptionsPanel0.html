@@ -1,6 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--       
-*     Copyright � 2006 Sun Microsystems, Inc. All rights reserved.
+*     Copyright � 2008 Sun Microsystems, Inc. All rights reserved.
 *     Use is subject to license terms.
 -->
 <html>
@@ -20,10 +20,12 @@
     that you want the wizard to create for you.
 
     <ul>
-        <li><b>Create Miscellaneous Panel.</b> Specifies that the Options Panel will
-        be added as a new category to the Miscellaneous Panel in the Options window.
+        <li><b>Create Secondary Panel.</b> Specifies that the Options Panel will
+        be added as a new category to the selected panel in the Options window.
         <ul>
-            <li><b>Title.</b> Specifies the text displated as the title of the category.
+            <li><b>Primary Panel.</b> Specifies name of primary panel for which this
+             will be a secondary panel.
+            <li><b>Title.</b> Specifies the text displayed as the title of the category.
             <li><b>Tooltip.</b> Specifies the tooltip for the category.
         </ul>
         <li><b>Create Primary Panel.</b> Specifies that the Options Panel will
@@ -35,6 +37,9 @@
             new panel in the Options window.
             <li><b>Icon (32x32).</b> Specifies an icon, with a dimension of 32x32 pixels, which
             is displayed in the left sidebar of the Options window.
+            <li><b>Allow Secondary Panels.</b> Specifies whether
+             the generated code will include code allowing secondary
+             panels to be added to this panel.
 
         </ul>
     </ul>

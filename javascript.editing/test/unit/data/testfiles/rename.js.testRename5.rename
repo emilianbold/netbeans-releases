@@ -1,0 +1,2 @@
+7:     bbb: function(|>ppp<|) {
+8:         alert(|>ppp<|);

@@ -56,6 +56,6 @@ public class NestedFinalClassTest extends AbstractUMLParsingIntegrationTestCase 
 	}
 
 	public void testNestedFinalClass() {		
-		execute(getClass().getSimpleName());
+//		execute(getClass().getSimpleName());
 	}
 }

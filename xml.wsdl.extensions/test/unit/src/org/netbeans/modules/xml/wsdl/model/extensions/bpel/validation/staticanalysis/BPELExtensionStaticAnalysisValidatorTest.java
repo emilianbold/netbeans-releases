@@ -89,7 +89,7 @@ public class BPELExtensionStaticAnalysisValidatorTest extends TestCase {
     
     public void testProperty2() throws Exception {
          HashSet<String> expectedErrors = new HashSet<String>();
-         expectedErrors.add(mMessages.getString("VAL_INVALID_PROPERTY_MUST_SPECIFY_ONE_OF_ELEMENT_OR_TYPE"));
+         expectedErrors.add(mMessages.getString("FIX_SA00019"));
         
         String fileName = "/org/netbeans/modules/xml/wsdl/model/extensions/bpel/validation/staticanalysis/resources/invalid/invalidProperty2.wsdl";
         URL url = getClass().getResource(fileName);
@@ -102,7 +102,7 @@ public class BPELExtensionStaticAnalysisValidatorTest extends TestCase {
             
     public void testPropertyAlias() throws Exception {
          HashSet<String> expectedErrors = new HashSet<String>();
-        expectedErrors.add(mMessages.getString("VAL_INVALID_PROPERTY_ALIAS"));
+        expectedErrors.add(mMessages.getString("FIX_SA00020"));
         
         String fileName = "/org/netbeans/modules/xml/wsdl/model/extensions/bpel/validation/staticanalysis/resources/invalid/invalidPropertyAlias1.wsdl";
         URL url = getClass().getResource(fileName);

@@ -52,6 +52,7 @@ import org.netbeans.modules.refactoring.ruby.RubyElementCtx;
 import org.netbeans.modules.refactoring.ruby.api.WhereUsedQueryConstants;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
+import org.netbeans.napi.gsfret.source.ClasspathInfo;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
@@ -71,7 +72,10 @@ public class WhereUsedQueryUI implements RefactoringUI {
 
     public WhereUsedQueryUI(RubyElementCtx jmiObject, CompilationInfo info) {
         this.query = new WhereUsedQuery(Lookups.singleton(jmiObject));
-        this.query.getContext().add(RetoucheUtils.getClasspathInfoFor(jmiObject));
+        ClasspathInfo classpathInfoFor = RetoucheUtils.getClasspathInfoFor(jmiObject);
+        if (classpathInfoFor != null) {
+            this.query.getContext().add(classpathInfoFor);
+        }
         this.element = jmiObject;
         name = jmiObject.getName();
         kind = jmiObject.getKind();

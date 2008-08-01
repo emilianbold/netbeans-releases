@@ -44,7 +44,10 @@ package org.netbeans.modules.web.core.syntax;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.jsp.JspException;
@@ -92,7 +95,8 @@ import static org.netbeans.api.jsp.lexer.JspTokenId.JavaCodeType;
  */
 public class SimplifiedJSPServlet {
 
-    private static final String CLASS_HEADER = "\nclass SimplifiedJSPServlet extends %s {\n"; //NOI18N
+    private static final String CLASS_HEADER = "\nclass SimplifiedJSPServlet extends %s {\n" + //NOI18N
+            "\tprivate static final long serialVersionUID = 1L;\n"; //NOI18N
     private static final String METHOD_HEADER = "\n\tvoid mergedScriptlets(\n"
             + "\t\tHttpServletRequest request,\n" 
             + "\t\tHttpServletResponse response,\n" 
@@ -114,6 +118,8 @@ public class SimplifiedJSPServlet {
     private String header = null;
     private StringBuilder scriptlets = new StringBuilder();
     private StringBuilder declarations = new StringBuilder();
+    // keep bean declarations separate to avoid duplicating the declaration, see #130745
+    private String beanDeclarations = null; 
     private boolean processCalled = false;
     private String importStatements = null;
     private int expressionIndex = 1;
@@ -225,7 +231,7 @@ public class SimplifiedJSPServlet {
 
         header = getClassHeader();
         importStatements = createImportStatements();
-        declarations.append("\n" + createBeanVarDeclarations());
+        beanDeclarations = "\n" + createBeanVarDeclarations();
     }
     
     private void processIncludes()  {
@@ -237,15 +243,17 @@ public class SimplifiedJSPServlet {
             return ;
         }
         
+        final Collection<String> processedFiles = new TreeSet<String>(Collections.singleton(fobj.getPath()));
+        
         for (String preludePath : (List<String>)pageInfo.getIncludePrelude()){
-            processIncludedFile(preludePath);
+            processIncludedFile(preludePath, processedFiles);
         }
         
         Visitor visitor = new Visitor() {
 
             public void visit(IncludeDirective includeDirective) throws JspException {
                 String fileName = includeDirective.getAttributeValue("file");
-                processIncludedFile(fileName);
+                processIncludedFile(fileName, processedFiles);
             }
         };
 
@@ -261,10 +269,14 @@ public class SimplifiedJSPServlet {
         }
     }
     
-    private void processIncludedFile(String filePath) {
+    private void processIncludedFile(String filePath, Collection<String> processedFiles) {
         FileObject includedFile = JspUtils.getFileObject(doc, filePath);
         
-        if (includedFile != null && includedFile.canRead()) {
+        if (includedFile != null && includedFile.canRead() 
+                // prevent endless loop in case of a circular reference
+                && !processedFiles.contains(includedFile.getPath())) {
+            
+            processedFiles.add(includedFile.getPath());
 
             try {
                 DataObject includedFileDO = DataObject.find(includedFile);
@@ -463,7 +475,10 @@ public class SimplifiedJSPServlet {
             return ""; //NOI18N
         }
         
-        return importStatements + header + declarations + METHOD_HEADER + scriptlets + CLASS_FOOTER;
+        String classBody = importStatements + header + declarations + beanDeclarations 
+                + METHOD_HEADER + scriptlets + CLASS_FOOTER;
+        
+        return classBody;
     }
 
     private CodeBlockData getCodeBlockAtOffset(int offset) {
@@ -532,7 +547,7 @@ public class SimplifiedJSPServlet {
             int newBlockStart = newRelativeBlockStart + header.length() + importStatements.length();
 
             if (getType() != JavaCodeType.DECLARATION) {
-                newBlockStart += declarations.length() + METHOD_HEADER.length();
+                newBlockStart += declarations.length() + beanDeclarations.length() + METHOD_HEADER.length();
             }
 
             return newBlockStart;

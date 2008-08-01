@@ -153,9 +153,9 @@ public class OperationPanel extends SectionInnerPanel {
     private void enableDisable() {
     
         boolean isTomcat = Util.isTomcat(project);
-        boolean isWebProject = Util.isWebProject(project);
+//        boolean isWebProject = Util.isWebProject(project);
         
-        boolean txConfigEnabled = !isTomcat && isWebProject;
+        boolean txConfigEnabled = !isTomcat;// && isWebProject;
         txCombo.setEnabled(txConfigEnabled);
         txLbl.setEnabled(txConfigEnabled);        
     }

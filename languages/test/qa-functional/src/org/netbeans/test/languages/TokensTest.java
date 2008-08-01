@@ -19,6 +19,8 @@
 
 package org.netbeans.test.languages;
 
+import junit.framework.Test;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.test.lib.BasicTokensTest;
 
 /**
@@ -29,13 +31,12 @@ public class TokensTest extends BasicTokensTest {
 
     public TokensTest(String name) {
         super(name);
-        try {
-            Thread.sleep(2000);// wait for NB inicialization
-        } catch (InterruptedException ex) {
-           ex.printStackTrace(); 
-        }
     }
 
+    public static Test suite(){
+        return NbModuleSuite.allModules(TokensTest.class);
+    }
+    
     public void testDIFF(){
         testRun("sample.diff");
     }

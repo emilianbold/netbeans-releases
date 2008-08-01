@@ -74,7 +74,15 @@ public class MasterPanel implements WizardDescriptor.Panel {
     private EventListenerList listenerList;
     /** Determines whether the master/detail form is created as a part of a new project. */
     private boolean inNewProject;
-
+    
+    /** For acessing info/error label */
+    private WizardDescriptor wizardDesc;
+    /** Last displayed wizard msg */    
+    private String lastMsg; 
+    /** Last displayed wizard msg rendered with info icon  */    
+    private boolean lastMsgInfoIconEnabled; 
+    
+    
     /**
      * Creates new <code>MasterPanel</code>.
      * 
@@ -229,7 +237,7 @@ public class MasterPanel implements WizardDescriptor.Panel {
                             .add(connectionCombo, 0, 290, Short.MAX_VALUE)))
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, masterPanelLayout.createSequentialGroup()
                         .add(masterPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(availablePane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 141, Short.MAX_VALUE)
+                            .add(availablePane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 152, Short.MAX_VALUE)
                             .add(availableLabel))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(masterPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
@@ -240,7 +248,7 @@ public class MasterPanel implements WizardDescriptor.Panel {
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(masterPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(masterPanelLayout.createSequentialGroup()
-                                .add(includePane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 140, Short.MAX_VALUE)
+                                .add(includePane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 150, Short.MAX_VALUE)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(masterPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
                                     .add(upButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -268,8 +276,8 @@ public class MasterPanel implements WizardDescriptor.Panel {
                     .add(includeLabel))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(masterPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(availablePane, 0, 140, Short.MAX_VALUE)
-                    .add(includePane, 0, 140, Short.MAX_VALUE)
+                    .add(availablePane, 0, 152, Short.MAX_VALUE)
+                    .add(includePane, 0, 152, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, masterPanelLayout.createSequentialGroup()
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 15, Short.MAX_VALUE)
                         .add(addButton)
@@ -358,18 +366,24 @@ public class MasterPanel implements WizardDescriptor.Panel {
 
     private void removeAllButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeAllButtonActionPerformed
         moveListItems(includeList, availableList, false);
+        showMsg("MSG_AtLeastOneColumnIncluded"); // NOI18N
     }//GEN-LAST:event_removeAllButtonActionPerformed
 
     private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeButtonActionPerformed
         moveListItems(includeList, availableList, true);
+        if (includeList.getModel().getSize() == 0) {
+            showMsg("MSG_AtLeastOneColumnIncluded"); // NOI18N
+        }
     }//GEN-LAST:event_removeButtonActionPerformed
 
     private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
         moveListItems(availableList, includeList, true);
+        hideMsg();       
     }//GEN-LAST:event_addButtonActionPerformed
 
     private void addAllButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addAllButtonActionPerformed
         moveListItems(availableList, includeList, false);
+        hideMsg();
     }//GEN-LAST:event_addAllButtonActionPerformed
 
     private void includeListValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_includeListValueChanged
@@ -396,6 +410,15 @@ public class MasterPanel implements WizardDescriptor.Panel {
         J2EEUtils.DBColumnInfo table = getTable();
         DatabaseConnection connection = getConnection();
         Connection con = ((connection == null) || (table == null) || !table.isValid()) ? null : connection.getJDBCConnection();
+
+        if (table != null) {
+            if (!table.isValid()) {
+                showMsg("MSG_MasterInvalidTableSelected"); // NOI18N
+            } else {
+                hideMsg();
+            }
+        }
+        
         try {
             DefaultListModel model = (DefaultListModel)availableList.getModel();
             model.clear();
@@ -417,6 +440,7 @@ public class MasterPanel implements WizardDescriptor.Panel {
     private void connectionComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_connectionComboActionPerformed
         DatabaseConnection connection = getConnection();
         if (connection != null) {
+            hideMsg();
             Connection con = J2EEUtils.establishConnection(connection);
             if (con == null) return; // User canceled the connection dialog
             fillTableCombo(connection);
@@ -461,14 +485,28 @@ public class MasterPanel implements WizardDescriptor.Panel {
      */
     private void fillTableCombo(DatabaseConnection connection) {
         DefaultComboBoxModel model = new DefaultComboBoxModel();
+        int invalidCount = 0;
         if (connection != null) {
             for (J2EEUtils.DBColumnInfo tableName : J2EEUtils.tableNamesForConnection(connection)) {
+                if (!tableName.isValid()) {
+                    invalidCount++;
+                }
                 model.addElement(tableName);
             }
         }
         tableCombo.setModel(model);
         tableCombo.setEnabled(tableCombo.getModel().getSize() != 0);
         tableCombo.setSelectedItem(tableCombo.getSelectedItem());
+        
+        if (model.getSize() == 0) {
+            showMsg("MSG_MasterDBWithoutTables"); // NOI18N
+        } else {
+            if (invalidCount == model.getSize()) {
+                showMsg("MSG_MasterDBWithoutTablesWithPrimaryKeys"); // NOI18N
+            } else {
+                hideMsg();
+            }
+        }
     }
 
     /**
@@ -541,6 +579,7 @@ public class MasterPanel implements WizardDescriptor.Panel {
     }
 
     public void readSettings(Object settings) {
+        wizardDesc = (WizardDescriptor) settings;
         boolean valid = true;
         if (!inNewProject && (settings instanceof TemplateWizard)) {
             try {
@@ -550,7 +589,9 @@ public class MasterPanel implements WizardDescriptor.Panel {
                 ClassPath cp = ClassPath.getClassPath(fob, ClassPath.SOURCE);
                 String name = cp.getResourceName(fob).trim();
                 valid = (name.length() != 0);
-                wizard.putProperty("WizardPanel_errorMessage", valid ? null : NbBundle.getMessage(getClass(), "MSG_MasterDefaultPackage")); // NOI18N
+                if (!valid) {
+                    showMsg("MSG_MasterDefaultPackage"); // NOI18N
+                }
             } catch (IOException ioex) {
                 Logger.getLogger(getClass().getName()).log(Level.INFO, ioex.getMessage(), ioex);
             }
@@ -558,6 +599,16 @@ public class MasterPanel implements WizardDescriptor.Panel {
         connectionCombo.setEnabled(valid);
         if (!valid) {
             setValid(false);
+        } else {
+            if (connectionCombo.getSelectedItem() == null) {
+                showMsg("MSG_MasterDefaultConnection",true); // NOI18N
+            }
+        }
+        
+        // After pushing Back button and Next button wizard removes label text
+        // This code will setup last msg again
+        if (lastMsg != null) {
+            showMsg(lastMsg, lastMsgInfoIconEnabled);
         }
     }
 
@@ -636,4 +687,31 @@ public class MasterPanel implements WizardDescriptor.Panel {
         }
     }
     
+    /** Sets warning/error wizard label */
+    private void showMsg(String msg) {
+        showMsg(msg, false);
+    }
+ 
+    /** Sets info/warning/error wizard label */
+    private void showMsg(String msg, boolean showInfoIcon) {
+        lastMsg = msg;
+        lastMsgInfoIconEnabled = showInfoIcon;
+        
+        if (wizardDesc != null) {
+            if (msg != null) {
+                msg = NbBundle.getMessage(getClass(), msg);
+            }
+            
+            if (showInfoIcon) {
+                wizardDesc.putProperty(WizardDescriptor.PROP_INFO_MESSAGE, msg);
+            } else {
+                wizardDesc.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, msg);
+            }
+        }
+    }
+    
+    /** Hides info/warning/error wizard label */
+    private void hideMsg() {
+        showMsg(null, true);
+    }
 }

@@ -312,7 +312,7 @@ public class ConvertAnonymousToInnerTest extends NbTestCase {
                 "        new XImpl();\n" +
                 "    }\n" +
                 "    class X {}\n" +
-                "    private class XImpl extends Test.X {\n" +
+                "    private class XImpl extends X {\n" +
                 "        public XImpl() {\n" +
                 "        }\n" +
                 "    }\n" +

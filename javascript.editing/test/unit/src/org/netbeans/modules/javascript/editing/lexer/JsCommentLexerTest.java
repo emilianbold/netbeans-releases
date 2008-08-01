@@ -57,6 +57,7 @@ public class JsCommentLexerTest extends NbTestCase {
         super(testName);
     }
 
+    @Override
     protected void setUp() throws Exception {
     }
 
@@ -65,7 +66,7 @@ public class JsCommentLexerTest extends NbTestCase {
         
         TokenHierarchy<?> hi = TokenHierarchy.create(text, JsCommentTokenId.language());
         TokenSequence<?> ts = hi.tokenSequence();
-        LexerTestUtilities.assertNextTokenEquals(ts, JsCommentTokenId.TAG, "@param");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsCommentTokenId.COMMENT_TAG, "@param");
         LexerTestUtilities.assertNextTokenEquals(ts, JsCommentTokenId.OTHER_TEXT, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, JsCommentTokenId.IDENT, "aaa");
         LexerTestUtilities.assertNextTokenEquals(ts, JsCommentTokenId.OTHER_TEXT, " ");
@@ -76,7 +77,7 @@ public class JsCommentLexerTest extends NbTestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, JsCommentTokenId.IDENT, "xyz");
         LexerTestUtilities.assertNextTokenEquals(ts, JsCommentTokenId.OTHER_TEXT, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, JsCommentTokenId.LCURL, "{");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsCommentTokenId.TAG, "@link");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsCommentTokenId.COMMENT_TAG, "@link");
         LexerTestUtilities.assertNextTokenEquals(ts, JsCommentTokenId.OTHER_TEXT, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, JsCommentTokenId.IDENT, "org");
         LexerTestUtilities.assertNextTokenEquals(ts, JsCommentTokenId.DOT, ".");
@@ -129,4 +130,38 @@ public class JsCommentLexerTest extends NbTestCase {
         assertEquals("Function", types.get("@return"));
     }
     
+    public void testArrays() {
+        String text = "@type String[]\n";
+        
+        TokenHierarchy<?> hi = TokenHierarchy.create(text, JsCommentTokenId.language());
+        TokenSequence<?> ts = hi.tokenSequence();
+        LexerTestUtilities.assertNextTokenEquals(ts, JsCommentTokenId.COMMENT_TAG, "@type");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsCommentTokenId.OTHER_TEXT, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsCommentTokenId.IDENT, "String");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsCommentTokenId.OTHER_TEXT, "[]\n");
+    }
+    
+
+    public void testArrayTypes() {
+        String text =
+                "/**\n" +
+                "* Returns a function that will return a number ...\n" +
+                "* @param {String[]|Element[]} fooBar\n" +
+                "* @param {Array<Integer>} name This is my name \n" +
+                "* @param {<a href=\"http://netbeans.org\">MyType</a>} foo\n" +
+                "* @type Object[]\n" +
+                "*/";
+
+        TokenHierarchy<?> hi = TokenHierarchy.create(text, JsCommentTokenId.language());
+        @SuppressWarnings("unchecked")
+        TokenSequence<JsCommentTokenId> ts = (TokenSequence<JsCommentTokenId>) hi.tokenSequence();
+        
+        Map<String, String> types = JsCommentLexer.findFunctionTypes(ts);
+        
+        assertEquals(types.size(), 4);
+        assertEquals("Array<Object>", types.get("@return"));
+        assertEquals("Array<String>|Array<Element>", types.get("fooBar"));
+        assertEquals("Array<Integer>", types.get("name"));
+        assertEquals("MyType", types.get("foo"));
+    }
 }

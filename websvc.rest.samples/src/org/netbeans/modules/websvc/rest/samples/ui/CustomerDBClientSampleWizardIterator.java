@@ -41,18 +41,13 @@
 
 package org.netbeans.modules.websvc.rest.samples.ui;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.util.Set;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.WizardDescriptor;
-import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.NbBundle;
 
 /**
  *
@@ -68,21 +63,16 @@ public class CustomerDBClientSampleWizardIterator extends SampleWizardIterator {
         return new CustomerDBClientSampleWizardIterator();
     }
     
-    protected String[] createSteps() {
-        return new String[] {
-            NbBundle.getMessage(CustomerDBClientSampleWizardIterator.class, "MSG_NameAndLocation"),
-        };
-    }
-    
+    @Override
     protected WizardDescriptor.Panel[] createPanels() {
         return new WizardDescriptor.Panel[] {
             new CustomerDBClientSampleWizardPanel()
         };
     }
     
+    @Override
     public Set instantiate() throws IOException {
         setProjectConfigNamespace(null);
-        setAddJerseyLibrary(false);
         Set resultSet = super.instantiate();
         
         //replace tokens

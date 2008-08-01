@@ -42,7 +42,6 @@
 package org.netbeans.modules.debugger.jpda.ant;
 
 import java.io.File;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
@@ -59,6 +58,12 @@ import com.sun.jdi.connect.ListeningConnector;
 import com.sun.jdi.connect.Transport;
 import com.sun.jdi.connect.Connector;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.lang.ref.WeakReference;
+import java.text.MessageFormat;
+import java.util.LinkedList;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -68,11 +73,12 @@ import org.apache.tools.ant.BuildListener;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.types.Path;
+import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.jpda.DebuggerStartException;
-import org.netbeans.api.java.classpath.GlobalPathRegistry;
 
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileStateInvalidException;
+import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -80,13 +86,27 @@ import org.openide.filesystems.FileUtil;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.debugger.DebuggerManager;
-import org.netbeans.api.debugger.DebuggerInfo;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
+import org.netbeans.api.debugger.DebuggerManagerListener;
+import org.netbeans.api.debugger.Session;
+import org.netbeans.api.debugger.jpda.ExceptionBreakpoint;
+import org.netbeans.api.debugger.jpda.InvalidExpressionException;
+import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.MethodBreakpoint;
+import org.netbeans.api.debugger.jpda.ObjectVariable;
+import org.netbeans.api.debugger.jpda.Variable;
+import org.netbeans.api.debugger.jpda.event.JPDABreakpointEvent;
+import org.netbeans.api.debugger.jpda.event.JPDABreakpointListener;
 import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.source.BuildArtifactMapper;
+import org.netbeans.api.java.source.BuildArtifactMapper.ArtifactsUpdated;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.awt.StatusDisplayer;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -97,13 +117,16 @@ import org.netbeans.api.java.platform.JavaPlatform;
 public class JPDAStart extends Task implements Runnable {
 
     private static final Logger logger = Logger.getLogger("org.netbeans.modules.debugger.jpda.ant"); // NOI18N
+
+    private static final String SOCKET_TRANSPORT = "dt_socket"; // NOI18N
+    private static final String SHMEM_TRANSPORT = "dt_shmem"; // NOI18N
     
     /** Name of the property to which the JPDA address will be set.
      * Target VM should use this address and connect to it
      */
     private String                  addressProperty;
     /** Default transport is socket*/
-    private String                  transport = "dt_socket"; // NOI18N
+    private String                  transport = SOCKET_TRANSPORT;
     /** Name which will represent this debugging session in debugger UI.
      * If known in advance it should be name of the app which will be debugged.
      */
@@ -117,6 +140,7 @@ public class JPDAStart extends Task implements Runnable {
     private Object []               lock = null; 
     /** The class debugger should stop in, or null. */
     private String                  stopClassName = null;
+    private String                  listeningCP = null;
 
     
     // properties ..............................................................
@@ -130,6 +154,7 @@ public class JPDAStart extends Task implements Runnable {
     }
     
     public void setTransport (String transport) {
+        logger.fine("Set transport: '"+transport+"'");
         this.transport = transport;
     }
     
@@ -151,6 +176,10 @@ public class JPDAStart extends Task implements Runnable {
     
     private String getStopClassName () {
         return stopClassName;
+    }
+
+    public void setListeningcp(String listeningCP) {
+        this.listeningCP = listeningCP;
     }
     
     public void addClasspath (Path path) {
@@ -200,7 +229,7 @@ public class JPDAStart extends Task implements Runnable {
             if (addressProperty == null)
                 throw new BuildException ("addressproperty attribute must specify name of property to which address will be set", getLocation ());
             if (transport == null)
-                transport = "dt_socket"; // NOI18N
+                transport = SOCKET_TRANSPORT;
             debug ("Entering synch lock"); // NOI18N
             lock = new Object [2];
             synchronized (lock) {
@@ -239,17 +268,19 @@ public class JPDAStart extends Task implements Runnable {
                 Iterator i = Bootstrap.virtualMachineManager ().
                     listeningConnectors ().iterator ();
                 for (; i.hasNext ();) {
-                    lc = (ListeningConnector) i.next ();
-                    Transport t = lc.transport ();
-                    if (t != null && t.name ().equals (transport)) break;
+                    ListeningConnector llc = (ListeningConnector) i.next ();
+                    Transport t = llc.transport ();
+                    if (t != null && t.name ().equals (transport)) {
+                        lc = llc;
+                        break;
+                    }
                 }
                 if (lc == null) 
                     throw new BuildException
                         ("No trasports named " + transport + " found!");
 
-                // TODO: revisit later when http://developer.java.sun.com/developer/bugParade/bugs/4932074.html gets integrated into JDK
-                // This code parses the address string "HOST:PORT" to extract PORT and then point debugee to localhost:PORT
-                // This is NOT a clean solution to the problem but it SHOULD work in 99% cases
+                logger.fine("Listening using transport "+transport);
+
                 final Map args = lc.defaultArguments ();
                 String address;
                 try {
@@ -261,16 +292,39 @@ public class JPDAStart extends Task implements Runnable {
                     getProject().log("Listening failed with arguments: "+args);
                     throw iaex;
                 }
-                int port = -1;
-                try {
-                    port = Integer.parseInt (address.substring (address.indexOf (':') + 1));
-                    getProject ().setNewProperty (getAddressProperty (), "localhost:" + port); // NOI18N
-                    Connector.IntegerArgument portArg = (Connector.IntegerArgument) args.get("port"); // NOI18N
-                    portArg.setValue (port);
-                } catch (Exception e) {
-                    // this address format is not known, use default
-                    getProject ().setNewProperty (getAddressProperty (), address);
+                /* A fix to bug http://developer.java.sun.com/developer/bugParade/bugs/4932074.html has been integrated into JDK 1.5
+                // Uncomment if the fix is not complete in all cases
+                // This code parses the address string "HOST:PORT" to extract PORT and then point debugee to localhost:PORT
+                // This is NOT a clean solution to the problem but it SHOULD work in 99% cases
+                if (SOCKET_TRANSPORT.equals(transport)) {
+                    int port = -1;
+                    try {
+                        port = Integer.parseInt (address.substring (address.indexOf (':') + 1));
+                        Connector.IntegerArgument portArg = (Connector.IntegerArgument) args.get("port"); // NOI18N
+                        portArg.setValue (port);
+                        address = "localhost:" + port; // NOI18N
+                    } catch (Exception e) {
+                        // this address format is not known, use default
+                    }
+                }*/
+                if (SOCKET_TRANSPORT.equals(transport)) {
+                    try {
+                        int port = Integer.parseInt (address.substring (address.indexOf (':') + 1));
+                        Connector.IntegerArgument portArg = (Connector.IntegerArgument) args.get("port"); // NOI18N
+                        portArg.setValue (port);
+                    } catch (Exception e) {
+                        // ignore
+                    }
                 }
+                if (SHMEM_TRANSPORT.equals(transport)) {
+                    try {
+                        Connector.StringArgument name = (Connector.StringArgument) args.get("name"); // NOI18N
+                        name.setValue (address);
+                    } catch (Exception e) {
+                        // ignore
+                    }
+                }
+                getProject ().setNewProperty (getAddressProperty (), address);
 
                 debug ("Creating source path"); // NOI18N
                 ClassPath sourcePath = createSourcePath (
@@ -291,20 +345,18 @@ public class JPDAStart extends Task implements Runnable {
                     logger.fine("    >> jdkSourcePath : " + jdkSourcePath); // NOI18N
                 }
                 
+                Breakpoint first = null;
+                
                 if (stopClassName != null && stopClassName.length() > 0) {
                     logger.fine(
                             "create method breakpoint, class name = " + // NOI18N
                             stopClassName
                         );
-                    MethodBreakpoint b = createBreakpoint (stopClassName);
-                    DebuggerManager.getDebuggerManager ().addDebuggerListener (
-                        DebuggerManager.PROP_DEBUGGER_ENGINES,
-                        new Listener (b)
-                    );
+                    first = createBreakpoint (stopClassName);
                 }                
                 
                 debug ("Debugger started"); // NOI18N
-                logger.fine("start listening on port " + port); // NOI18N
+                logger.fine("start listening at " + address); // NOI18N
                 
                 final Map properties = new HashMap ();
                 // uncomment to implement smart stepping with step-outs 
@@ -314,10 +366,52 @@ public class JPDAStart extends Task implements Runnable {
                 properties.put ("name", getName ()); // NOI18N
                 properties.put ("jdksources", jdkSourcePath); // NOI18N
                 final ListeningConnector flc = lc;
+                final WeakReference<Session> startedSessionRef[] = new WeakReference[] { new WeakReference<Session>(null) };
+
+                Map<URL, ArtifactsUpdated> listeners = new HashMap<URL, ArtifactsUpdated>();
+                List<Breakpoint> artificialBreakpoints = new LinkedList<Breakpoint>();
+                if (listeningCP != null) {
+                    for (String cp : listeningCP.split(":")) {
+                        getProject().log("cp=" + cp, Project.MSG_DEBUG);
+                        File f = new File(cp);
+                        f = FileUtil.normalizeFile(f);
+                        URL entry = FileUtil.urlForArchiveOrDir(f);
+
+                        if (entry != null) {
+                            for (FileObject src : SourceForBinaryQuery.findSourceRoots(entry).getRoots()) {
+                                getProject().log("url=" + src.getURL().toString(), Project.MSG_DEBUG);
+                                URL url = src.getURL();
+                                ArtifactsUpdatedImpl l = new ArtifactsUpdatedImpl(startedSessionRef);
+
+                                BuildArtifactMapper.addArtifactsUpdatedListener(url, l);
+                                listeners.put(url, l);
+                            }
+                        }
+                    }
+
+                    ExceptionBreakpoint b = createCompilationErrorBreakpoint();
+                    DebuggerManager.getDebuggerManager ().addBreakpoint (b);
+                    artificialBreakpoints.add(b);
+                }
+
+                DebuggerManager.getDebuggerManager().addDebuggerListener(
+                        DebuggerManager.PROP_DEBUGGER_ENGINES,
+                        new Listener(first, artificialBreakpoints, listeners, startedSessionRef));
+
                 // Let it start asynchronously so that the script can go on and start the debuggee
                 RequestProcessor.getDefault().post(new Runnable() {
                     public void run() {
+                        DebuggerManagerListener sessionListener = new DebuggerManagerAdapter() {
+                            @Override
+                            public void sessionAdded(Session session) {
+                                synchronized (startedSessionRef) {
+                                    // TODO: make that more deterministic.
+                                    startedSessionRef[0] = new WeakReference(session);
+                                }
+                            }
+                        };
                         try {
+                            DebuggerManager.getDebuggerManager().addDebuggerListener(sessionListener);
                             JPDADebugger.startListening (
                                 flc,
                                 args,
@@ -325,9 +419,12 @@ public class JPDAStart extends Task implements Runnable {
                             );
                         } catch (DebuggerStartException dsex) {
                             // Was not able to start up
+                        } finally {
+                            DebuggerManager.getDebuggerManager().removeDebuggerListener(sessionListener);
                         }
                     }
                 });
+
                 getProject().addBuildListener(new BuildListener() {
                     
                     public void messageLogged(BuildEvent event) {}
@@ -341,6 +438,10 @@ public class JPDAStart extends Task implements Runnable {
                             flc.stopListening(args);
                         } catch (java.io.IOException ioex) {
                         } catch (com.sun.jdi.connect.IllegalConnectorArgumentsException iaex) {
+                        }
+                        Session s = startedSessionRef[0].get();
+                        if (s != null) {
+                            s.kill();
                         }
                     }
                     
@@ -367,6 +468,46 @@ public class JPDAStart extends Task implements Runnable {
         breakpoint.setHidden (true);
         DebuggerManager.getDebuggerManager ().addBreakpoint (breakpoint);
         return breakpoint;
+    }
+
+    private ExceptionBreakpoint createCompilationErrorBreakpoint() {
+        ExceptionBreakpoint b = ExceptionBreakpoint.create("java.lang.RuntimeException", ExceptionBreakpoint.TYPE_EXCEPTION_UNCATCHED);
+        b.setHidden (true);
+        b.addJPDABreakpointListener(new JPDABreakpointListener() {
+            public void breakpointReached(JPDABreakpointEvent event) {
+                boolean suspend = false;
+                try {
+                    if (event.getVariable() instanceof ObjectVariable) {
+                        ObjectVariable ov = (ObjectVariable) event.getVariable();
+
+                        suspend = "java.lang.RuntimeException".equals(ov.getClassType().getName());
+                        if (suspend) {
+                            java.lang.reflect.Method invokeMethodMethod = ov.getClass().getMethod("invokeMethod", JPDAThread.class, String.class, String.class, Variable[].class);
+                            invokeMethodMethod.setAccessible(true);
+                            Variable message = (Variable) invokeMethodMethod.invoke(ov, event.getThread(), "getMessage", "()Ljava/lang/String;", new Variable[0]);
+                            if (message != null) {
+                                suspend = message.getValue().startsWith("\"Uncompilable source code");
+                            }
+                            //suspend = suspend && ov.invokeMethod("getMessage", "()Ljava/lang/String;", new Variable[0]).getValue().startsWith("\"Uncompilable source code");
+                        }
+                    }
+                } catch (IllegalAccessException iaex) {
+                    logger.log(Level.FINE, null, iaex);
+                } catch (java.lang.reflect.InvocationTargetException itex) {
+                    logger.log(Level.FINE, null, itex);
+                } catch (NoSuchMethodException ex) {
+                    logger.log(Level.FINE, null, ex);
+                //} catch (InvalidExpressionException ex) {
+                //    logger.log(Level.FINE, null, ex);
+                }
+
+                if (!suspend) {
+                    event.resume();
+                }
+            }
+        });
+        b.setPrintText(NbBundle.getBundle("org/netbeans/modules/debugger/jpda/ant/Bundle").getString("MSG_StoppedOnCompileError"));
+        return b;
     }
 
     private final static void debug (String msg) {
@@ -524,51 +665,84 @@ public class JPDAStart extends Task implements Runnable {
     
     private static class Listener extends DebuggerManagerAdapter {
         
-        private MethodBreakpoint    breakpoint;
         private Set                 debuggers = new HashSet ();
+
+        private Breakpoint first;
+        private final List<Breakpoint> artificalBreakpoints;
+        private final Map<URL, ArtifactsUpdated> listeners;
+        private final WeakReference<Session> startedSessionRef[];
         
-        
-        Listener (MethodBreakpoint breakpoint) {
-            this.breakpoint = breakpoint;
+        private Listener(Breakpoint first,
+                         List<Breakpoint> artificalBreakpoints,
+                         Map<URL, ArtifactsUpdated> listeners,
+                         WeakReference<Session> startedSessionRef[]) {
+            this.first = first;
+            this.artificalBreakpoints = artificalBreakpoints;
+            this.listeners = listeners;
+            this.startedSessionRef = startedSessionRef;
         }
         
+        @Override
         public void propertyChange (PropertyChangeEvent e) {
             if (e.getPropertyName () == JPDADebugger.PROP_STATE) {
                 int state = ((Integer) e.getNewValue ()).intValue ();
-                if ( (state == JPDADebugger.STATE_DISCONNECTED) ||
-                     (state == JPDADebugger.STATE_STOPPED)
-                ) {
-                    RequestProcessor.getDefault ().post (new Runnable () {
-                        public void run () {
-                            if (breakpoint != null) {
-                                DebuggerManager.getDebuggerManager ().
-                                    removeBreakpoint (breakpoint);
-                                breakpoint = null;
+                if (state == JPDADebugger.STATE_STOPPED) {
+                    RequestProcessor.getDefault().post(new Runnable() {
+                        public void run() {
+                            if (first != null) {
+                                DebuggerManager.getDebuggerManager().removeBreakpoint(first);
+                                first = null;
                             }
                         }
                     });
-                    dispose ();
                 }
             }
             return;
         }
-        
-        private void dispose () {
+
+        private void dispose() {
             DebuggerManager.getDebuggerManager ().removeDebuggerListener (
                 DebuggerManager.PROP_DEBUGGER_ENGINES,
                 this
             );
-            Iterator it = debuggers.iterator ();
-            while (it.hasNext ()) {
-                JPDADebugger d = (JPDADebugger) it.next ();
-                d.removePropertyChangeListener (
-                    JPDADebugger.PROP_STATE,
-                    this
-                );
-            }
+            RequestProcessor.getDefault ().post (new Runnable () {
+                public void run () {
+                    if (artificalBreakpoints != null) {
+                        for (Breakpoint b : artificalBreakpoints) {
+                            DebuggerManager.getDebuggerManager().removeBreakpoint(b);
+                        }
+                    }
+                    if (first != null) {
+                        DebuggerManager.getDebuggerManager().removeBreakpoint(first);
+                    }
+                    if (listeners != null) {
+                        for (Entry<URL, ArtifactsUpdated> e : listeners.entrySet()) {
+                            BuildArtifactMapper.removeArtifactsUpdatedListener(e.getKey(), e.getValue());
+                        }
+                    }
+                }
+            });
         }
         
         public void engineAdded (DebuggerEngine engine) {
+            // Consider only engines from the started session.
+            Session s;
+            synchronized (startedSessionRef) {
+                s = startedSessionRef[0].get();
+            }
+            if (s == null) {
+                return ;
+            }
+            boolean haveEngine = false;
+            for (String l : s.getSupportedLanguages()) {
+                if (engine.equals(s.getEngineForLanguage(l))) {
+                    haveEngine = true;
+                    break;
+                }
+            }
+            if (!haveEngine) {
+                return ;
+            }
             JPDADebugger debugger = engine.lookupFirst(null, JPDADebugger.class);
             if (debugger == null) return;
             debugger.addPropertyChangeListener (
@@ -581,11 +755,129 @@ public class JPDAStart extends Task implements Runnable {
         public void engineRemoved (DebuggerEngine engine) {
             JPDADebugger debugger = engine.lookupFirst(null, JPDADebugger.class);
             if (debugger == null) return;
-            debugger.removePropertyChangeListener (
-                JPDADebugger.PROP_STATE,
-                this
-            );
-            debuggers.remove (debugger);
+            if (debuggers.remove (debugger) && debuggers.isEmpty()) {
+                debugger.removePropertyChangeListener (
+                    JPDADebugger.PROP_STATE,
+                    this
+                );
+                dispose();
+            }
         }
+    }
+
+    private static class ArtifactsUpdatedImpl implements ArtifactsUpdated {
+
+        private final WeakReference<Session> startedSessionRef[];
+        private final RequestProcessor hotFixRP = new RequestProcessor("Java Debugger HotFix", 1);
+
+        public ArtifactsUpdatedImpl(WeakReference<Session> startedSessionRef[]) {
+            this.startedSessionRef = startedSessionRef;
+        }
+
+        public void artifactsUpdated(Iterable<File> artifacts) {
+            String error = null;
+            Session s;
+            synchronized (startedSessionRef) {
+                s = startedSessionRef[0].get();
+            }
+            if (s == null) {
+                return ; // Session not yet started, or gone.
+            }
+            final JPDADebugger debugger = s.lookupFirst(null, JPDADebugger.class);
+            if (debugger == null) {
+                error = NbBundle.getBundle("org/netbeans/modules/debugger/jpda/ant/Bundle").getString("MSG_NoJPDADebugger");
+            } else if (!debugger.canFixClasses()) {
+                error = NbBundle.getBundle("org/netbeans/modules/debugger/jpda/ant/Bundle").getString("MSG_CanNotFix");
+            } else if (debugger.getState() == JPDADebugger.STATE_DISCONNECTED) {
+                error = NbBundle.getBundle("org/netbeans/modules/debugger/jpda/ant/Bundle").getString("MSG_NoDebug");
+            }
+
+            if (error == null) {
+                final Map map = new HashMap();
+
+                for (File f : artifacts) {
+                    FileObject fo = FileUtil.toFileObject(f);
+                    if (fo != null) {
+                        String className = fileToClassName(fo);
+                        InputStream is = null;
+                        try {
+                            is = fo.getInputStream();
+                            long fileSize = fo.getSize();
+                            byte[] bytecode = new byte[(int) fileSize];
+                            is.read(bytecode);
+                            // remove ".class" from and use dots for for separator
+                            map.put(
+                                    className,
+                                    bytecode);
+                            System.out.println(" " + className);
+                        } catch (IOException ex) {
+                            Exceptions.printStackTrace(ex);
+                        } finally {
+                            if (is != null) {
+                                try {
+                                    is.close();
+                                } catch (IOException ex) {
+                                    Exceptions.printStackTrace(ex);
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if (map.size() == 0) {
+                    System.out.println(" No class to reload");
+                    return;
+                }
+
+                hotFixRP.post(new Runnable() {
+                    public void run() {
+                        String error = null;
+                        try {
+                            debugger.fixClasses(map);
+                        } catch (UnsupportedOperationException uoex) {
+                            error = NbBundle.getBundle("org/netbeans/modules/debugger/jpda/ant/Bundle").getString("MSG_FixUnsupported");
+                            error = MessageFormat.format(error, uoex.getLocalizedMessage());
+                        } catch (NoClassDefFoundError ncdfex) {
+                            error = NbBundle.getBundle("org/netbeans/modules/debugger/jpda/ant/Bundle").getString("MSG_FixMismatch");
+                            error = MessageFormat.format(error, ncdfex.getLocalizedMessage());
+                        } catch (VerifyError ver) {
+                            error = NbBundle.getBundle("org/netbeans/modules/debugger/jpda/ant/Bundle").getString("MSG_FixVerifierProblems");
+                            error = MessageFormat.format(error, ver.getLocalizedMessage());
+                        } catch (UnsupportedClassVersionError ucver) {
+                            error = NbBundle.getBundle("org/netbeans/modules/debugger/jpda/ant/Bundle").getString("MSG_FixUnsupportedVersion");
+                            error = MessageFormat.format(error, ucver.getLocalizedMessage());
+                        } catch (ClassFormatError cfer) {
+                            error = NbBundle.getBundle("org/netbeans/modules/debugger/jpda/ant/Bundle").getString("MSG_FixNotValid");
+                            error = MessageFormat.format(error, cfer.getLocalizedMessage());
+                        } catch (ClassCircularityError ccer) {
+                            error = NbBundle.getBundle("org/netbeans/modules/debugger/jpda/ant/Bundle").getString("MSG_FixCircularity");
+                            error = MessageFormat.format(error, ccer.getLocalizedMessage());
+                        }
+                        if (error != null) {
+                            notifyError(error);
+                        } else {
+                            StatusDisplayer.getDefault().setStatusText(
+                                    NbBundle.getBundle("org/netbeans/modules/debugger/jpda/ant/Bundle").getString("MSG_FixSuccess"));
+                        }
+                    }
+                });
+            }
+            
+            if (error != null) {
+                notifyError(error);
+            }
+        }
+
+        private void notifyError(String error) {
+            NotifyDescriptor nd = new NotifyDescriptor.Message(error, NotifyDescriptor.Message.ERROR_MESSAGE);
+            DialogDisplayer.getDefault().notifyLater(nd);
+            StatusDisplayer.getDefault().setStatusText(error);
+        }
+    }
+
+    private static String fileToClassName (FileObject fo) {
+        ClassPath cp = ClassPath.getClassPath (fo, ClassPath.EXECUTE);
+//        FileObject root = cp.findOwnerRoot (fo);
+        return cp.getResourceName (fo, '.', false);
     }
 }

@@ -42,20 +42,14 @@
 package org.netbeans.modules.ruby.javaint;
 
 import java.awt.Component;
-import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.BeanInfo;
 import java.io.File;
-import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.ButtonModel;
@@ -63,39 +57,23 @@ import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JList;
-import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.filechooser.FileFilter;
-//import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectInformation;
-import org.netbeans.api.project.ProjectUtils;
-//import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.ruby.rubyproject.ProjectPropertyExtender;
-//import org.netbeans.modules.java.RubyProject.classpath.ClassPathSupport;
-//import org.netbeans.modules.ruby.rubyproject.classpath.ClassPathSupport;
 import org.netbeans.modules.ruby.rubyproject.ui.FoldersListSettings;
-//import org.netbeans.modules.ruby.rubyproject.ui.customizer.ClassPathUiSupport;
-//simport org.netbeans.modules.ruby.rubyproject.ui.customizer.RubyProjectProperties;
 import org.netbeans.modules.ruby.spi.project.support.rake.PropertyEvaluator;
-//import org.netbeans.modules.java.RubyProject.ui.FoldersListSettings;
-//import org.netbeans.spi.project.support.ant.AntProjectHelper;
-//import org.netbeans.spi.project.support.ant.PropertyEvaluator;
-//import org.netbeans.spi.project.support.ant.ReferenceHelper;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 /** Classes containing code speciic for handling UI of J2SE project classpath 
  *
@@ -121,12 +99,12 @@ public class RubyClassPathUi {
         private static String RESOURCE_ICON_BROKEN_BADGE = "org/netbeans/modules/ruby/javaint//brokenProjectBadge.gif"; //NOI18N
         
         
-        private static ImageIcon ICON_JAR = new ImageIcon( Utilities.loadImage( RESOURCE_ICON_JAR ) );
+        private static ImageIcon ICON_JAR = new ImageIcon( ImageUtilities.loadImage( RESOURCE_ICON_JAR ) );
         private static ImageIcon ICON_FOLDER = null; 
-        private static ImageIcon ICON_LIBRARY = new ImageIcon( Utilities.loadImage( RESOURCE_ICON_LIBRARY ) );
-        private static ImageIcon ICON_ARTIFACT  = new ImageIcon( Utilities.loadImage( RESOURCE_ICON_ARTIFACT ) );
-        private static ImageIcon ICON_CLASSPATH  = new ImageIcon( Utilities.loadImage( RESOURCE_ICON_CLASSPATH ) );
-        private static ImageIcon ICON_BROKEN_BADGE  = new ImageIcon( Utilities.loadImage( RESOURCE_ICON_BROKEN_BADGE ) );
+        private static ImageIcon ICON_LIBRARY = new ImageIcon( ImageUtilities.loadImage( RESOURCE_ICON_LIBRARY ) );
+        private static ImageIcon ICON_ARTIFACT  = new ImageIcon( ImageUtilities.loadImage( RESOURCE_ICON_ARTIFACT ) );
+        private static ImageIcon ICON_CLASSPATH  = new ImageIcon( ImageUtilities.loadImage( RESOURCE_ICON_CLASSPATH ) );
+        private static ImageIcon ICON_BROKEN_BADGE  = new ImageIcon( ImageUtilities.loadImage( RESOURCE_ICON_BROKEN_BADGE ) );
         
         private static ImageIcon ICON_BROKEN_JAR;
         private static ImageIcon ICON_BROKEN_LIBRARY;
@@ -208,7 +186,7 @@ public class RubyClassPathUi {
                 case ProjectPropertyExtender.Item.TYPE_LIBRARY:
                     if ( item.isBroken() ) {
                         if ( ICON_BROKEN_LIBRARY == null ) {
-                            ICON_BROKEN_LIBRARY = new ImageIcon( Utilities.mergeImages( ICON_LIBRARY.getImage(), ICON_BROKEN_BADGE.getImage(), 7, 7 ) );
+                            ICON_BROKEN_LIBRARY = new ImageIcon( ImageUtilities.mergeImages( ICON_LIBRARY.getImage(), ICON_BROKEN_BADGE.getImage(), 7, 7 ) );
                         }
                         return ICON_BROKEN_LIBRARY;
                     }
@@ -218,7 +196,7 @@ public class RubyClassPathUi {
 //                case ProjectPropertyExtender.Item.TYPE_ARTIFACT:
 //                    if ( item.isBroken() ) {
 //                        if ( ICON_BROKEN_ARTIFACT == null ) {
-//                            ICON_BROKEN_ARTIFACT = new ImageIcon( Utilities.mergeImages( ICON_ARTIFACT.getImage(), ICON_BROKEN_BADGE.getImage(), 7, 7 ) );
+//                            ICON_BROKEN_ARTIFACT = new ImageIcon( ImageUtilities.mergeImages( ICON_ARTIFACT.getImage(), ICON_BROKEN_BADGE.getImage(), 7, 7 ) );
 //                        }
 //                        return ICON_BROKEN_ARTIFACT;
 //                    }
@@ -233,7 +211,7 @@ public class RubyClassPathUi {
                 case ProjectPropertyExtender.Item.TYPE_JAR:
                     if ( item.isBroken() ) {
                         if ( ICON_BROKEN_JAR == null ) {
-                            ICON_BROKEN_JAR = new ImageIcon( Utilities.mergeImages( ICON_JAR.getImage(), ICON_BROKEN_BADGE.getImage(), 7, 7 ) );
+                            ICON_BROKEN_JAR = new ImageIcon( ImageUtilities.mergeImages( ICON_JAR.getImage(), ICON_BROKEN_BADGE.getImage(), 7, 7 ) );
                         }
                         return ICON_BROKEN_JAR;
                     }

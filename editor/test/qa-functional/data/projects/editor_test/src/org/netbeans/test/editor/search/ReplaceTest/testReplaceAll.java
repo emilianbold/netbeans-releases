@@ -1,0 +1,35 @@
+/*
+ * testReplaceAll.java
+ *
+ * Created on January 28, 2005, 2:02 PM
+ */
+
+package org.netbeans.test.editor.search.ReplaceTest;
+
+/**
+ *
+ * @author rs155161
+ */
+public class testReplaceAll {
+    
+    /** Creates a new instance of testReplaceAll */
+    public testReplaceAll() {
+        /**
+         * testWord
+         * testWord
+         * testWord
+         * testWord
+         * testWord
+         * testWord
+         * testWord
+         * testWord
+         * testWord
+         * testWord
+         * testWord
+         * testWord
+         * testWord
+         * testWord
+         */
+    }
+    
+}

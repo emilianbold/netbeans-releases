@@ -42,9 +42,7 @@
 package org.netbeans.modules.websvc.wsitmodelext.addressing.impl;
 
 import org.netbeans.modules.websvc.wsitmodelext.addressing.Addressing10Metadata;
-import org.netbeans.modules.websvc.wsitmodelext.addressing.Addressing10QName;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import org.netbeans.modules.xml.wsdl.model.visitor.WSDLVisitor;
 import org.w3c.dom.Element;
 
 /**
@@ -60,10 +58,6 @@ public class Addressing10MetadataImpl extends Addressing10ComponentImpl implemen
         super(model, e);
     }
     
-    public Addressing10MetadataImpl(WSDLModel model){
-        this(model, createPrefixedElement(Addressing10QName.ADDRESSINGMETADATA.getQName(), model));
-    }
-
     public void setAddressing10Metadata(String mdata) {
         setText(ADDRESSING10_METADATA_CONTENT_VALUE_PROPERTY, mdata);
     }
@@ -72,9 +66,4 @@ public class Addressing10MetadataImpl extends Addressing10ComponentImpl implemen
         return getText();
     }
 
-    @Override
-    public void accept(WSDLVisitor visitor) {
-        visitor.visit(this);
-    }
-    
 }

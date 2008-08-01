@@ -58,7 +58,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -73,7 +73,6 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.AbstractDocument;
@@ -93,20 +92,19 @@ import org.netbeans.modules.gsf.api.Error;
 import org.netbeans.modules.gsf.api.ParseEvent;
 import org.netbeans.modules.gsf.api.ParseListener;
 import org.netbeans.modules.gsf.api.Parser;
-import org.netbeans.modules.gsf.api.ParserResult;
 import org.netbeans.modules.gsf.api.SourceFileReader;
 import org.netbeans.modules.gsf.api.CancellableTask;
 import org.netbeans.modules.gsf.api.EmbeddingModel;
 import org.netbeans.napi.gsfret.source.ClasspathInfo.PathKind;
 import org.netbeans.napi.gsfret.source.ModificationResult.Difference;
-import org.netbeans.napi.gsfret.source.ParserTaskImpl;
-import org.netbeans.napi.gsfret.source.support.CaretAwareSourceTaskFactory;
-//import org.netbeans.api.timers.TimesCollector;
-import org.netbeans.editor.Registry;
 import org.netbeans.modules.gsf.Language;
 import org.netbeans.modules.gsf.LanguageRegistry;
+import org.netbeans.modules.gsf.api.DataLoadersBridge;
+import org.netbeans.modules.gsf.api.EditHistory;
+import org.netbeans.modules.gsf.api.IncrementalEmbeddingModel;
+import org.netbeans.modules.gsf.api.IncrementalParser;
+import org.netbeans.modules.gsf.api.ParserResult;
 import org.netbeans.modules.gsfret.source.SourceAccessor;
-import org.netbeans.modules.gsfret.source.parsing.SourceFileObject;
 import org.netbeans.modules.gsfret.source.usages.ClassIndexImpl;
 import org.netbeans.modules.gsfret.source.usages.ClassIndexManager;
 import org.netbeans.modules.gsfret.source.util.LowMemoryEvent;
@@ -114,14 +112,13 @@ import org.netbeans.modules.gsfret.source.util.LowMemoryListener;
 import org.netbeans.modules.gsfret.source.util.LowMemoryNotifier;
 import org.netbeans.modules.gsf.spi.DefaultParserFile;
 import org.openide.cookies.EditorCookie;
+import org.openide.cookies.EditorCookie.Observable;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -237,11 +234,15 @@ public final class Source {
     private final FileObject rootFo;
     private final FileChangeListener fileChangeListener;
     private DocListener listener;
-    private DataObjectListener dataObjectListener;
+    private PropertyChangeListener dataObjectListener;
     private String sourceLevel;
 
     private final ClasspathInfo classpathInfo;
     private CompilationInfo currentInfo;
+    private Map<String,ParserResult> recentParseResult = new HashMap<String,ParserResult>();
+    private Map<EmbeddingModel,Collection<? extends TranslatedSource>> recentEmbeddingTranslations = 
+            new IdentityHashMap<EmbeddingModel,Collection<? extends TranslatedSource>>();
+    private EditHistory editHistory = new EditHistory();
     private java.util.Stack<CompilationInfo> infoStack = new java.util.Stack<CompilationInfo> ();
 
     private int flags = 0;
@@ -348,9 +349,9 @@ public final class Source {
         Reference<Source> ref = (Reference<Source>)doc.getProperty(Source.class);
         Source js = ref != null ? ref.get() : null;
         if (js == null) {
-            DataObject dObj = (DataObject)doc.getProperty(Document.StreamDescriptionProperty);
-            if (dObj != null)
-                js = forFileObject(dObj.getPrimaryFile());
+            FileObject fo = DataLoadersBridge.getDefault().getFileObject(doc);
+            if (fo != null)
+                js = forFileObject(fo);
         }
         return js;
     }
@@ -374,7 +375,20 @@ public final class Source {
                 if (!multipleSources) {
                     file.addFileChangeListener(FileUtil.weakFileChangeListener(this.fileChangeListener,file));
                     this.assignDocumentListener(file);
-                    this.dataObjectListener = new DataObjectListener(file);
+                    this.dataObjectListener = DataLoadersBridge.getDefault().getDataObjectListener(file, new FileChangeAdapter() {
+                        @Override
+                        public void fileChanged(FileEvent fe) {
+                            try {
+                                assignDocumentListener(fe.getFile());
+                                resetState(true, true);
+                            } catch (IOException ex) {
+                                // should not occur
+                                Logger.getLogger(Source.class.getName()).log(Level.SEVERE,
+                                        ex.getMessage(),
+                                        ex);
+                            }
+                        }
+                    });
                 }
                 //if (!filterAssigned) {
                 //    filterAssigned = true;
@@ -813,8 +827,8 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
                 }
                 long start = System.currentTimeMillis();
 
-                List<ParserFile> sourceFiles = new ArrayList<ParserFile>(1);
-                sourceFiles.add(new DefaultParserFile(currentInfo.getFileObject(), null, false));
+                ParserFile file = new DefaultParserFile(currentInfo.getFileObject(), null, false);
+                List<ParserFile> sourceFiles = Collections.singletonList(file);
                 final FileObject bufferFo = currentInfo.getFileObject();
 
                 final ParserResult[] resultHolder = new ParserResult[1];
@@ -848,60 +862,193 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
                 LanguageRegistry registry = LanguageRegistry.getInstance();
                 String mimeType = currentInfo.getFileObject().getMIMEType();
                 List<Language> languages = registry.getApplicableLanguages(mimeType);
+                Source source = currentInfo.getSource();
+                currentInfo.setHistory(source.editHistory);
                 
             for (Language language : languages) {
                 EmbeddingModel model = registry.getEmbedding(language.getMimeType(), mimeType);
                 assert language != null;
                 Parser parser = language.getParser(); // Todo - call createParserTask here?
-                
+                IncrementalParser incrementalParser = parser instanceof IncrementalParser ? (IncrementalParser)parser : null;
+
+if (cancellable && currentRequest.isCanceled()) {
+    // Keep the currentPhase unchanged, it may happen that an userActionTask
+    // running after the phace completion task may still use it.
+    return Phase.MODIFIED;
+}
+// <editor-fold defaultstate="collapsed" desc="Peformance">                
+long vsTime = -1;
+long parseTime = -1;
+// </editor-fold>
                 if (parser != null) {
                     if (model != null) {
-                        Document document;
-                        try {
-                            document = currentInfo.getDocument();
+                        Document document = currentInfo.getDocument();
                             
-                            if (document == null) {
-                                // Ensure document is forced open such that info.getDocument() will not yield null
-                                UiUtils.getDocument(currentInfo.getFileObject(), true);
-                                document = currentInfo.getDocument();
-                            }
-                        } catch (IOException ex) {
-                            Exceptions.printStackTrace(ex);
-                            return null;
+                        if (document == null) {
+                            // Ensure document is forced open such that info.getDocument() will not yield null
+                            UiUtils.getDocument(currentInfo.getFileObject(), true);
+                            document = currentInfo.getDocument();
                         }
                         
                         if (document == null) {
                             // TODO - log problem
                             continue;
                         }
-                        
-                        Collection<? extends TranslatedSource> translations = model.translate(document);
+if (cancellable && currentRequest.isCanceled()) {
+    // Keep the currentPhase unchanged, it may happen that an userActionTask
+    // running after the phace completion task may still use it.
+    return Phase.MODIFIED;
+}
+// <editor-fold defaultstate="collapsed" desc="Peformance">                     
+long vsStart = System.currentTimeMillis();  
+// </editor-fold>
+
+                        Collection<? extends TranslatedSource> translations = null;
+
+                        boolean incremental = false;
+                        if (model instanceof IncrementalEmbeddingModel) {
+                            incremental = true;
+                            IncrementalEmbeddingModel incrementalModel = (IncrementalEmbeddingModel)model;
+                            translations = source.recentEmbeddingTranslations.get(model);
+                            if (translations != null) {
+                                IncrementalEmbeddingModel.UpdateState updated = incrementalModel.update(source.editHistory, translations);
+                                if (updated == IncrementalEmbeddingModel.UpdateState.COMPLETED) {
+                                    // No need to parse - nothing else to be done for this mime type
+                                    ParserResult result = source.recentParseResult.get(language.getMimeType());
+                                    if (result != null) {
+                                        currentInfo.addEmbeddingResult(language.getMimeType(), result);
+                                        result.setUpdateState(ParserResult.UpdateState.NO_CHANGE);
+                                        continue;
+                                    }
+                                } else if (updated == IncrementalEmbeddingModel.UpdateState.FAILED) {
+                                    // Force update!
+                                    translations = null;
+                                } else {
+                                    assert updated == IncrementalEmbeddingModel.UpdateState.UPDATED;
+                                    // Continue to parse below
+                                }
+                            }
+                        }
+
+                        if (translations == null) {
+                            // No incremental support or previous result
+                            translations = model.translate(document);
+                            if (incremental) {
+                                source.recentEmbeddingTranslations.put(model, translations);
+                            }
+                        }
+if (cancellable && currentRequest.isCanceled()) {
+    // Keep the currentPhase unchanged, it may happen that an userActionTask
+    // running after the phace completion task may still use it.
+    return Phase.MODIFIED;
+}
+// <editor-fold defaultstate="collapsed" desc="Peformance">                                        
+vsTime = System.currentTimeMillis() - vsStart; //some impls. may compute and cache the results just on model.translate(document)
+parseTime = 0;
+// </editor-fold>
                         for (TranslatedSource translatedSource : translations) {
+// <editor-fold defaultstate="collapsed" desc="Peformance">                                                 
+vsStart = System.currentTimeMillis();
+// </editor-fold>
                             String buffer = translatedSource.getSource();
+// <editor-fold defaultstate="collapsed" desc="Peformance">                                                 
+vsTime += System.currentTimeMillis() - vsStart;
+long parseStart = System.currentTimeMillis();
+// </editor-fold>
                             SourceFileReader reader = new StringSourceFileReader(buffer, bufferFo);
-                            Parser.Job job = new Parser.Job(sourceFiles, listener, reader, translatedSource);
-                            parser.parseFiles(job);
-                            ParserResult result = resultHolder[0];
+                            ParserResult result = null;
+                            if (incrementalParser != null) {
+                                ParserResult previousResult = source.recentParseResult.get(language.getMimeType());
+                                if (previousResult != null) {
+                                    ParserResult ir = incrementalParser.parse(file, reader, null, source.editHistory, previousResult);
+                                    if (ir != null) {
+                                        ParserResult.UpdateState state = ir.getUpdateState();
+                                        if (state != ParserResult.UpdateState.FAILED) {
+                                            result = ir;
+                                        }
+                                    }
+                                }
+                            }
+                            if (result == null) {
+                                Parser.Job job = new Parser.Job(sourceFiles, listener, reader, translatedSource);
+                                parser.parseFiles(job);
+                                result = resultHolder[0];
+                            }
+                            if (incrementalParser != null) {
+                                // Hmm, this will only work correctly for the FIRST element if the collections are > 1
+                                source.recentParseResult.put(language.getMimeType(), result);
+                            }
+// <editor-fold defaultstate="collapsed" desc="Peformance">                                                 
+parseTime += System.currentTimeMillis() - parseStart;     
+// </editor-fold>
+if (cancellable && currentRequest.isCanceled()) {
+    // Keep the currentPhase unchanged, it may happen that an userActionTask
+    // running after the phace completion task may still use it.
+    return Phase.MODIFIED;
+}
                             result.setTranslatedSource(translatedSource);
                             assert result != null;
                             currentInfo.addEmbeddingResult(language.getMimeType(), result);
                         }
                     } else {
+// <editor-fold defaultstate="collapsed" desc="Peformance">                                             
+long parseStart = System.currentTimeMillis();    
+// </editor-fold>
                         String buffer = currentInfo.getText();
                         SourceFileReader reader = new StringSourceFileReader(buffer, bufferFo);
-                        Parser.Job job = new Parser.Job(sourceFiles, listener, reader, null);
-                        parser.parseFiles(job);
-                        ParserResult result = resultHolder[0];
+
+                        ParserResult result = null;
+                        if (incrementalParser != null) {
+                            ParserResult previousResult = source.recentParseResult.get(language.getMimeType());
+                            if (previousResult != null) {
+                                result = incrementalParser.parse(file, reader, null, source.editHistory, previousResult);
+                                if (result != null) {
+                                    ParserResult.UpdateState state = result.getUpdateState();
+                                    if (state == ParserResult.UpdateState.FAILED) {
+                                        result = null;
+                                    }
+                                }
+                            }
+                        }
+                        if (result == null) {
+                            Parser.Job job = new Parser.Job(sourceFiles, listener, reader, null);
+                            parser.parseFiles(job);
+                            result = resultHolder[0];
+                        }
+                        if (incrementalParser != null) {
+                            source.recentParseResult.put(language.getMimeType(), result);
+                        }
+// <editor-fold defaultstate="collapsed" desc="Peformance">                     
+parseTime = System.currentTimeMillis() - parseStart;
+// </editor-fold>
+if (cancellable && currentRequest.isCanceled()) {
+    // Keep the currentPhase unchanged, it may happen that an userActionTask
+    // running after the phace completion task may still use it.
+    return Phase.MODIFIED;
+}
                         assert result != null;
                         currentInfo.addEmbeddingResult(language.getMimeType(), result);
                     }
                 }
+// <editor-fold defaultstate="collapsed" desc="Peformance">                     
+
+if(vsTime > 0) {                
+    Logger.getLogger("TIMER").log(Level.FINE, "Virtual Source (" + language.getMimeType() + ")", 
+        new Object[] {currentInfo.getFileObject(), vsTime});
+}
+if(parseTime > 0) {                
+    Logger.getLogger("TIMER").log(Level.FINE, "Parsing (" + language.getMimeType() + ")",
+        new Object[] {currentInfo.getFileObject(), parseTime});
+}
+// </editor-fold>
             }
                 currentPhase = Phase.PARSED;
-                long end = System.currentTimeMillis();
-                FileObject file = currentInfo.getFileObject();
-                //TimesCollector.getDefault().reportReference(file, "compilationUnit", "[M] Compilation Unit", unit);     //NOI18N
-                logTime (file,currentPhase,(end-start));
+                source.editHistory = new EditHistory();
+
+//                long end = System.currentTimeMillis();
+//                FileObject file = currentInfo.getFileObject();
+//                //TimesCollector.getDefault().reportReference(file, "compilationUnit", "[M] Compilation Unit", unit);     //NOI18N
+//                logTime (file,currentPhase,(end-start));
             }
             if (lmListener != null && lmListener.lowMemory.getAndSet(false)) {
                 currentInfo.needsRestart = true;
@@ -1057,8 +1204,7 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
     }
 
     private void assignDocumentListener(FileObject fo) throws IOException {
-        DataObject od = DataObject.find(fo);
-        EditorCookie.Observable ec = (EditorCookie.Observable) od.getCookie(EditorCookie.Observable.class);
+        EditorCookie.Observable ec =  DataLoadersBridge.getDefault().getCookie(fo,EditorCookie.Observable.class);
         if (ec != null) {
             this.listener = new DocListener (ec);
         } else {
@@ -1303,6 +1449,7 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
             //the callback cannot be in synchronized section
             //since NbDocument.runAtomic fires under lock
             Source.this.resetState(true, true);
+            editHistory.insertUpdate(e);
         }
 
         public void removeUpdate(DocumentEvent e) {
@@ -1310,6 +1457,7 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
             //the callback cannot be in synchronized section
             //since NbDocument.runAtomic fires under lock
             Source.this.resetState(true, true);
+            editHistory.removeUpdate(e);
         }
 
         public void changedUpdate(DocumentEvent e) {
@@ -1321,6 +1469,9 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
                 if (old instanceof Document && docListener != null) {
                     ((Document) old).removeDocumentListener(docListener);
                     docListener = null;
+                    // Document closed - don't hang on to parse results
+                    recentParseResult.clear();
+                    recentEmbeddingTranslations.clear();
                 }
                 Document doc = ec.getDocument();
                 if (doc != null) {
@@ -1338,7 +1489,7 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
 
     private static class EditorRegistryListener implements CaretListener/*, PropertyChangeListener*/ {
                         
-        private Request request;
+        //private Request request;
         private JTextComponent lastEditor;
         
         public EditorRegistryListener() {
@@ -1428,50 +1579,6 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
         public @Override void fileRenamed(FileRenameEvent fe) {
             Source.this.resetState(true, false);
         }
-    }
-
-    private final class DataObjectListener implements PropertyChangeListener {
-
-        private DataObject dobj;
-        private final FileObject fobj;
-        private PropertyChangeListener wlistener;
-
-        public DataObjectListener(FileObject fo) throws DataObjectNotFoundException {
-            this.fobj = fo;
-            this.dobj = DataObject.find(fo);
-            wlistener = WeakListeners.propertyChange(this, dobj);
-            this.dobj.addPropertyChangeListener(wlistener);
-        }
-
-        public void propertyChange(PropertyChangeEvent pce) {
-            DataObject invalidDO = (DataObject) pce.getSource();
-            if (invalidDO != dobj)
-                return;
-            if (DataObject.PROP_VALID.equals(pce.getPropertyName())) {
-                handleInvalidDataObject(invalidDO);
-            } else if (pce.getPropertyName() == null && !dobj.isValid()) {
-                handleInvalidDataObject(invalidDO);
-            }
-        }
-
-        private void handleInvalidDataObject(DataObject invalidDO) {
-            invalidDO.removePropertyChangeListener(wlistener);
-            if (fobj.isValid()) {
-                // file object still exists try to find new data object
-                try {
-                    dobj = DataObject.find(fobj);
-                    dobj.addPropertyChangeListener(wlistener);
-                    assignDocumentListener(fobj);
-                    resetState(true, true);
-                } catch (IOException ex) {
-                    // should not occur
-                    Logger.getLogger(Source.class.getName()).log(Level.SEVERE,
-                                                                     ex.getMessage(),
-                                                                     ex);
-                }
-            }
-        }
-
     }
 
     private static CompilationInfo createCurrentInfo (final Source js, final FileObject fo, final Object/*FilterListener*/ filterListener, final ParserTaskImpl javac) throws IOException {
@@ -1726,17 +1833,13 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
             final Thread currentThread = Thread.currentThread();
             for (FileObject fo : files) {
                 try {
-                final DataObject dobj = DataObject.find(fo);
-                final EditorCookie ec = (EditorCookie) dobj.getCookie(EditorCookie.class);
-                if (ec != null) {
-                    final StyledDocument doc = ec.getDocument();
+                    final StyledDocument doc = DataLoadersBridge.getDefault().getDocument(fo);
                     if (doc instanceof AbstractDocument) {
                         Object result = method.invoke(doc);
                         if (result == currentThread) {
                             return true;
                         }
                     }
-                }
                 } catch (Exception e) {
                     Exceptions.printStackTrace(e);
                 }

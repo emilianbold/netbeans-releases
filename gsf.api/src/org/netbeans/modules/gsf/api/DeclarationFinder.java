@@ -62,7 +62,7 @@ public interface DeclarationFinder {
      * Return a Set of regions that should be renamed if the element under the caret offset is
      * renamed.
      *
-     * Return {@link Declaration.NONE} if the declaration can not be found, otherwise return
+     * Return {@link DeclarationLocation#NONE} if the declaration can not be found, otherwise return
      *   a valid DeclarationLocation.
      */
     @NonNull
@@ -79,7 +79,7 @@ public interface DeclarationFinder {
      * {@code (sequence.move(offset); sequence.offset() == offset)} and check both
      * sides such that placing the caret between two tokens will match either side.
      *
-     * @return {@link OffsetRange.NONE} if the caret is not over a valid reference span,
+     * @return {@link OffsetRange#NONE} if the caret is not over a valid reference span,
      *   otherwise return the character range for the given hyperlink tokens
      */
     @NonNull
@@ -88,7 +88,7 @@ public interface DeclarationFinder {
     
     /**
      * Holder object for return values from the DeclarationFinder#findDeclaration method.
-     * The constant NONE object should be returned when finding a declaration failed.
+     * The constant {@link #NONE} object should be returned when finding a declaration failed.
      */
     public final class DeclarationLocation {
         /** DeclarationLocation representing no match or failure to find declaration */

@@ -42,7 +42,6 @@
 package org.netbeans.modules.xml.schema.completion;
 
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.event.KeyEvent;
@@ -57,7 +56,6 @@ import org.netbeans.modules.xml.axi.AXIComponent;
 import org.netbeans.modules.xml.schema.completion.spi.CompletionContext;
 import org.netbeans.modules.xml.schema.completion.util.CompletionContextImpl;
 import org.netbeans.modules.xml.schema.completion.util.CompletionUtil;
-import org.netbeans.modules.xml.text.syntax.dom.StartTag;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
 
 /**
@@ -103,6 +101,13 @@ public abstract class CompletionResultItem implements CompletionItem {
      */
     public abstract String getReplacementText();
     
+    /**
+     * Returns the relative caret position.
+     * The caller must call this w.r.t. the offset
+     * e.g. component.setCaretPosition(offset + getCaretPosition())
+     */
+    public abstract int getCaretPosition();
+    
     public String toString() {
         return getItemText();
     }
@@ -120,22 +125,19 @@ public abstract class CompletionResultItem implements CompletionItem {
         BaseDocument doc = (BaseDocument)component.getDocument();
         doc.atomicLock();
         try {
-            doc.remove( offset, len );
-            doc.insertString( offset, text, null);
-            //for attributes, place the cursor between the double-quotes.
-            if(this instanceof AttributeResultItem) {
-                component.setCaretPosition(offset+text.length()-1);
+            if(context.canReplace(text)) {
+                doc.remove( offset, len );
+                doc.insertString( offset, text, null);
             }
-            
-            StartTag docRoot = context.getDocRoot();
+            //position the caret
+            component.setCaretPosition(offset+getCaretPosition());            
             String prefix = CompletionUtil.getPrefixFromTag(text);
             if(prefix == null)
                 return true;            
             //insert namespace declaration for the new prefix
-            if(!context.isPrefixBeingUsed(prefix)) {
+            if(!context.isSpecialCompletion() && !context.isPrefixBeingUsed(prefix)) {
                 String tns = context.getTargetNamespaceByPrefix(prefix);
-                doc.insertString( docRoot.getElementOffset() +
-                        docRoot.getElementLength()-1, " "+
+                doc.insertString(CompletionUtil.getNamespaceInsertionOffset(doc), " " +
                         XMLConstants.XMLNS_ATTRIBUTE+":"+prefix+"=\"" +
                         tns + "\"", null);
             }            
@@ -214,14 +216,9 @@ public abstract class CompletionResultItem implements CompletionItem {
     protected CompletionPaintComponent component;
     protected AXIComponent axiComponent;
     private CompletionContextImpl context;
-    
-    private static Color foreground = Color.black;
-    private static Color background = Color.white;
-    private static Color selectionForeground = Color.black;
-    private static Color selectionBackground = new Color(204, 204, 255);    
-    private static final int XML_ITEMS_SORT_PRIORITY = 20;
-    
-    public static final String ICON_ELEMENT    = "element.png"; //NOI18N
-    public static final String ICON_ATTRIBUTE  = "attribute.png"; //NOI18N
+        
+    public static final String ICON_ELEMENT    = "element.png";     //NOI18N
+    public static final String ICON_ATTRIBUTE  = "attribute.png";   //NOI18N
+    public static final String ICON_VALUE      = "value.png";       //NOI18N
     public static final String ICON_LOCATION   = "/org/netbeans/modules/xml/schema/completion/resources/"; //NOI18N
 }

@@ -99,16 +99,16 @@ public class EntityWizardDescriptor implements WizardDescriptor.FinishablePanel,
             return true;
         }
         if (SourceLevelChecker.isSourceLevel14orLower(project)) {
-            wizardDescriptor.putProperty("WizardPanel_errorMessage",
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
                     NbBundle.getMessage(EntityWizardDescriptor.class, "ERR_NeedProperSourceLevel")); // NOI18N
             return false;
         }
         if (p.getPrimaryKeyClassName().trim().equals("")) { //NOI18N
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(EntityWizardDescriptor.class,"ERR_PrimaryKeyNotEmpty")); //NOI18N
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(EntityWizardDescriptor.class,"ERR_PrimaryKeyNotEmpty")); //NOI18N
             return false;
         }
         
-        wizardDescriptor.putProperty("WizardPanel_errorMessage", " "); //NOI18N
+        wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, " "); //NOI18N
         return true;
     }
     

@@ -415,4 +415,3 @@ public class RightStripe extends JPanel implements ComponentListener,
     private static final Color BORDER_DARK = new Color(0xCDCABB);
     private static final Color BORDER_BRIGHT = Color.WHITE;
 }
-    

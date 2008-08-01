@@ -46,6 +46,7 @@ import java.util.List;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.javascript.editing.lexer.JsCommentTokenId;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -55,21 +56,29 @@ public class JsCommentFormatter {
 
     private static final String PARAM_TAG = "@param"; //NOI18N
     private static final String RETURN_TAG = "@return"; //NOI18N
+    private static final String TYPE_TAG = "@type"; //NOI18N
     private static final String THROWS_TAG = "@throws"; //NOI18N
     private static final String DEPRECATED_TAG = "@deprecated"; //NOI18N
+    private static final String CODE_TAG = "@code"; //NOI18N
+    private static final String EXAMPLE_TAG = "@example"; //NOI18N
+    private static final String DESCRIPTION_TAG = "@description"; //NOI18N
     
     private final TokenSequence<? extends JsCommentTokenId> ts;
     private final StringBuilder summary;
     private String returnTag;
+    private String returnType;
     private String deprecation;
+    private String code;
     private final List<String> params;
     private final List<String> exceptions;
     // flag to see if this is already formatted comment with all html stuff
     private boolean formattedComment;
+    private final StringBuilder rest;
     
     @SuppressWarnings("unchecked")
     public JsCommentFormatter(List<String> comments) {
         this.summary = new StringBuilder();
+        this.rest = new StringBuilder();
         this.params = new  ArrayList<String>();
         this.exceptions = new  ArrayList<String>();
 
@@ -78,9 +87,27 @@ public class JsCommentFormatter {
             sb.append(line);
             sb.append("\n"); // NOI18N
         }
-        sb.deleteCharAt(sb.length() - 1);
+        // Determine whether this is preformatted MDC content or should get
+        // normal jsdoc rendering
+        boolean haveJsTag = false;
+        boolean haveMDC = false;
+        for (int i = 0, n = comments.size(); i < n; i++) {
+            String s = comments.get(i);
+            if (s.indexOf("MDC:Copyrights") != -1) { // NOI18N
+                haveMDC = true;
+                break; // We know that it must be preformatted
+            } else if (s.indexOf('@') != -1) {
+                haveJsTag = true;
+            }
+        }
+        if (haveMDC) {
+            formattedComment = true;
+        } else if (!haveJsTag) {
+            formattedComment = true;
+        }
+        sb.setLength(sb.length()-1);
         TokenHierarchy<?> hi = TokenHierarchy.create(sb.toString(), JsCommentTokenId.language());
-        this.ts = (TokenSequence<JsCommentTokenId>) hi.tokenSequence();
+        this.ts = hi.tokenSequence(JsCommentTokenId.language());
         
         process();
     }
@@ -89,17 +116,15 @@ public class JsCommentFormatter {
         
     }
 
-    public void setFormattedComment(boolean formattedComment) {
-        this.formattedComment = formattedComment;
-    }
-
     String toHtml() {
         StringBuilder sb = new StringBuilder();
         
         if (!formattedComment && summary.length() > 0) {
             String summaryText = summary.toString().trim();
             if (summaryText.length() > 0) {
-                sb.append("<b>Summary</b><blockquote>").append(summaryText).append("</blockquote>"); //NOI18N
+                sb.append("<b>");
+                sb.append(NbBundle.getMessage(JsCommentFormatter.class, "Summary"));
+                sb.append("</b><blockquote>").append(summaryText).append("</blockquote>"); //NOI18N
             }
         } else {
             sb.append(summary);
@@ -111,7 +136,9 @@ public class JsCommentFormatter {
             if (!hasDescription) {
                 sb.append(" style=\"background:#ffcccc\"");
             }
-            sb.append(">Deprecated</b>");
+            sb.append(">");
+            sb.append(NbBundle.getMessage(JsCommentFormatter.class, "Deprecated"));
+            sb.append("</b>");
             sb.append("<blockquote");
             if (hasDescription) {
                 sb.append(" style=\"background:#ffcccc\">");
@@ -123,24 +150,61 @@ public class JsCommentFormatter {
         }
         
         if (params.size() > 0) {
-            sb.append("<b>Parameters</b><blockquote>"); //NOI18N
-            for (String tag : params) {
+            sb.append("<b>");
+            sb.append(NbBundle.getMessage(JsCommentFormatter.class, "Parameters"));
+            sb.append("</b><blockquote>"); //NOI18N
+            for (int i = 0, n = params.size(); i < n; i++) {
+                if (i > 0) {
+                    sb.append("<br><br>"); // NOI18N
+                }
+                String tag = params.get(i);
+                sb.append(tag);
+            }
+            sb.append("</blockquote>"); // NOI18N
+        }
+
+        if (returnTag != null || returnType != null) {
+            sb.append("<b>"); // NOI18N
+            sb.append(NbBundle.getMessage(JsCommentFormatter.class, "Returns"));
+            sb.append("</b><blockquote>"); //NOI18N
+            if (returnTag != null) {
+                sb.append(returnTag);
+                if (returnType != null) {
+                    sb.append("<br>"); // NOI18N
+                }
+            }
+            if (returnType != null) {
+                sb.append(NbBundle.getMessage(JsCommentFormatter.class, "ReturnType"));
+                sb.append(" <i>"); // NOI18N
+                sb.append(returnType);
+                sb.append("</i>"); // NOI18N
+            }
+            sb.append("</blockquote>"); //NOI18N
+        }
+        
+        if (exceptions.size() > 0) {
+            sb.append("<b>");
+            sb.append(NbBundle.getMessage(JsCommentFormatter.class, "Throws"));
+            sb.append("</b><blockquote>"); //NOI18N
+            for (String tag : exceptions) {
                 sb.append(tag);
                 sb.append("<br>"); // NOI18N
             }
             sb.append("</blockquote>"); // NOI18N
         }
-
-        if (returnTag != null) {
-            sb.append("<b>Returns</b><blockquote>").append(returnTag).append("</blockquote>"); //NOI18N
+        
+        if (code != null) {
+            sb.append("<b>");
+            sb.append(NbBundle.getMessage(JsCommentFormatter.class, "CodeExample"));
+            sb.append("</b><blockquote>"); //NOI18N
+            sb.append("<pre>").append(code).append("</pre></blockquote>"); //NOI18N
         }
         
-        if (exceptions.size() > 0) {
-            sb.append("<b>Throws</b><blockquote>"); //NOI18N
-            for (String tag : exceptions) {
-                sb.append(tag);
-                sb.append("<br>"); // NOI18N
-            }
+        if (rest.length() > 0) {
+            sb.append("<b>");
+            sb.append(NbBundle.getMessage(JsCommentFormatter.class, "Miscellaneous"));
+            sb.append("</b><blockquote>"); //NOI18N
+            sb.append(rest);
             sb.append("</blockquote>"); // NOI18N
         }
 
@@ -164,13 +228,13 @@ public class JsCommentFormatter {
     }
     
     private void process() {
-        while (ts.moveNext() && ts.token().id() != JsCommentTokenId.TAG) {
+        while (ts.moveNext() && ts.token().id() != JsCommentTokenId.COMMENT_TAG) {
             summary.append(ts.token().text());
         }
         ts.movePrevious();
         StringBuilder sb = null;
         while (ts.moveNext()) {
-            if (ts.token().id() == JsCommentTokenId.TAG) {
+            if (ts.token().id() == JsCommentTokenId.COMMENT_TAG) {
                 if (sb != null) {
                     processTag(sb.toString().trim());
                 }
@@ -187,13 +251,76 @@ public class JsCommentFormatter {
 
     private void processTag(String tag) {
         if (tag.startsWith(PARAM_TAG)) {
-            params.add(tag.substring(PARAM_TAG.length()).trim());
+            // Try to make the parameter name bold, and the type italic
+            String s = tag.substring(PARAM_TAG.length()).trim();
+            if (s.length() == 0) {
+                return;
+            }
+            StringBuilder sb = new StringBuilder();
+            int index = 0;
+            if (s.charAt(0) == '{') {
+                // We have a type
+                int end = s.indexOf('}');
+                if (end != -1) {
+                    end++;
+                    sb.append("<i>"); // NOI18N
+                    sb.append(s.substring(0, end));
+                    sb.append("</i>"); // NOI18N
+                }
+                index = end;
+                for (; index < s.length(); index++) {
+                    if (!Character.isWhitespace((s.charAt(index)))) {
+                        break;
+                    }
+                }
+            }
+            if (index < s.length()) {
+                int end = index;
+                for (; end < s.length(); end++) {
+                    if (Character.isWhitespace((s.charAt(end)))) {
+                        break;
+                    }
+                }
+                if (end < s.length()) {
+                    sb.append(" <b>"); // NOI18N
+                    sb.append(s.substring(index, end));
+                    sb.append("</b>"); // NOI18N
+                    sb.append(s.substring(end));
+                    params.add(sb.toString());
+                    return;
+                }
+            }
+            params.add(s);
+        } else if (tag.startsWith(DESCRIPTION_TAG)) {
+            String desc = tag.substring(DESCRIPTION_TAG.length()).trim();
+            summary.insert(0, desc);
         } else if (tag.startsWith(RETURN_TAG)) {
             returnTag = tag.substring(RETURN_TAG.length()).trim();
+        } else if (tag.startsWith(TYPE_TAG)) {
+            returnType = tag.substring(TYPE_TAG.length()).trim();
         } else if (tag.startsWith(THROWS_TAG)) {
             exceptions.add(tag.substring(THROWS_TAG.length()).trim());
         } else if (tag.startsWith(DEPRECATED_TAG)) {
             deprecation = tag.substring(DEPRECATED_TAG.length()).trim();
+        } else if (tag.startsWith(CODE_TAG)) {
+            code = tag.substring(CODE_TAG.length()).trim();
+            code = code.replace("&", "&amp;"); // NOI18N
+            code = code.replace("<", "&lt;"); // NOI18N
+            code = code.replace(">", "&gt;"); // NOI18N
+        } else if (tag.startsWith(EXAMPLE_TAG)) {
+            code = tag.substring(EXAMPLE_TAG.length()).trim();
+            code = code.replace("&", "&amp;"); // NOI18N
+            code = code.replace("<", "&lt;"); // NOI18N
+            code = code.replace(">", "&gt;"); // NOI18N
+        } else { // NOI18N
+            // Store up the rest of the stuff so we don't miss unexpected tags,
+            // like @private, @config, etc.
+            if (!tag.startsWith("@id ") && !tag.startsWith("@name ") && // NOI18N
+                    !tag.startsWith("@attribute") && // NOI18N
+                    !tag.startsWith("@method") && !tag.startsWith("@property")) { // NOI18N
+                rest.append(tag);
+                rest.append("<br>"); // NOI18N
+            }
         }
     }
 }

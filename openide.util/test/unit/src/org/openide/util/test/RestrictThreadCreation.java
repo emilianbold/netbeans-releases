@@ -72,6 +72,7 @@ public class RestrictThreadCreation {
         permit(// Found experimentally:
                 "sun.java2d.Disposer.<clinit>",
                 "java.awt.Toolkit.getDefaultToolkit",
+                "java.util.logging.LogManager$Cleaner.<init>",
                 "org.netbeans.core.startup.Splash$SplashComponent.setText",
                 "org.openide.loaders.FolderInstance.waitFinished",
                 "org.openide.loaders.FolderInstance.postCreationTask",

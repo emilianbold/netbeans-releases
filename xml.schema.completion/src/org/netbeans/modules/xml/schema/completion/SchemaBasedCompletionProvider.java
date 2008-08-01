@@ -42,8 +42,10 @@
 package org.netbeans.modules.xml.schema.completion;
 
 import javax.swing.text.JTextComponent;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.xml.schema.completion.util.CompletionUtil;
+import org.netbeans.modules.xml.schema.completion.util.CompletionUtil.DocRoot;
 import org.netbeans.modules.xml.text.syntax.XMLSyntaxSupport;
 import org.netbeans.spi.editor.completion.CompletionProvider;
 import org.netbeans.spi.editor.completion.CompletionTask;
@@ -65,32 +67,24 @@ public class SchemaBasedCompletionProvider implements CompletionProvider {
     }
     
     public int getAutoQueryTypes(JTextComponent component, String typedText) {
-        XMLSyntaxSupport support = ((XMLSyntaxSupport)Utilities.
-                getDocument(component).getSyntaxSupport());
-        if(support.noCompletion(component)) {
+        BaseDocument doc = Utilities.getDocument(component);
+        if(doc == null)
+            return 0;
+        XMLSyntaxSupport support = ((XMLSyntaxSupport)doc.getSyntaxSupport());
+        if(support.noCompletion(component) || !CompletionUtil.canProvideCompletion(doc)) {
             return 0;
         }
         
         return COMPLETION_QUERY_TYPE;
     }
-    
+        
     public CompletionTask createTask(int queryType, JTextComponent component) {
         if (queryType == COMPLETION_QUERY_TYPE || queryType == COMPLETION_ALL_QUERY_TYPE) {
-            return new AsyncCompletionTask(new CompletionQuery(getPrimaryFile()), component);
+            return new AsyncCompletionTask(new CompletionQuery(CompletionUtil.getPrimaryFile()), component);
         }
         
         return null;
     }
     
-    private FileObject getPrimaryFile() {
-        TopComponent activatedTC = TopComponent .getRegistry().getActivated();
-        if(activatedTC == null)
-            return null;
-        DataObject activeFile = activatedTC.getLookup().lookup(DataObject.class);
-        if(activeFile == null)
-            return null;
-        
-        return activeFile.getPrimaryFile();
-    }
         
 }

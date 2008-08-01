@@ -159,7 +159,7 @@ StringText = (\\\"|[^\r\n\"])*
   "="                                     { return token(ASSIGN); }       
   "//" | "/*"                             { yybegin(OTHERTEXT); return token(SIMPLE_COMMENT); }
   [a-zA-Z_]([a-zA-Z0-9_\.\\\/$])*         { return token(ABILITY); }
-  [0-9]+                                  { return token(NUMBER); }
+  [\-]{0,1}[0-9]+ | 0[xX][0-9a-fA-F]+     { return token(NUMBER); }
   \"{StringText}\"                        { return token(STRING); }
   \"{StringText}                          { return token(UNFINISHED_STRING); }
   {WhiteSpace}+                           { padding.append(yytext()); }

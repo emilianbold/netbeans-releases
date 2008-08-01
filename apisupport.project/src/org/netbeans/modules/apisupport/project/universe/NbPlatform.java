@@ -116,6 +116,8 @@ public final class NbPlatform {
     public static final int HARNESS_VERSION_60 = 4;
     /** Harness version found in 6.1. */
     public static final int HARNESS_VERSION_61 = 5;
+    /** Harness version found in 6.5. */
+    public static final int HARNESS_VERSION_65 = 6;
     
     /**
      * Reset cached info so unit tests can start from scratch.
@@ -236,7 +238,7 @@ public final class NbPlatform {
     private static URL[] defaultPlatformJavadoc() {
         File apidocsZip = InstalledFileLocator.getDefault().locate("docs/NetBeansAPIs.zip", "org.netbeans.modules.apisupport.apidocs", true); // NOI18N
         if (apidocsZip != null) {
-            return new URL[] {Util.urlForJar(apidocsZip)};
+            return new URL[] {FileUtil.urlForArchiveOrDir(apidocsZip)};
         } else {
             return new URL[0];
         }
@@ -277,7 +279,7 @@ public final class NbPlatform {
             if (parent != null && parent.getName().equals("nbbuild")) { // NOI18N
                 File superparent = parent.getParentFile();
                 if (superparent != null && ModuleList.isNetBeansOrg(superparent)) {
-                    sources = new URL[] {Util.urlForDir(superparent)};
+                    sources = new URL[] {FileUtil.urlForArchiveOrDir(superparent)};
                 }
             }
         }
@@ -445,7 +447,7 @@ public final class NbPlatform {
         URL[] urls = new URL[pieces.length];
         for (int i = 0; i < pieces.length; i++) {
             // XXX perhaps also support http: URLs somehow?
-            urls[i] = Util.urlForDirOrJar(FileUtil.normalizeFile(new File(pieces[i])));
+            urls[i] = FileUtil.urlForArchiveOrDir(FileUtil.normalizeFile(new File(pieces[i])));
         }
         return urls;
     }
@@ -700,7 +702,7 @@ public final class NbPlatform {
      */
     public File getSourceLocationOfModule(File jar) {
         if (listsForSources == null) {
-            listsForSources = new ArrayList<ModuleList>();
+            List<ModuleList> _listsForSources = new ArrayList<ModuleList>();
             for (URL u : getSourceRoots()) {
                 if (!u.getProtocol().equals("file")) { // NOI18N
                     continue;
@@ -709,15 +711,16 @@ public final class NbPlatform {
                 if (dir.isDirectory()) {
                     try {
                         if (ModuleList.isNetBeansOrg(dir)) {
-                            listsForSources.add(ModuleList.findOrCreateModuleListFromNetBeansOrgSources(dir));
+                            _listsForSources.add(ModuleList.findOrCreateModuleListFromNetBeansOrgSources(dir));
                         } else {
-                            listsForSources.add(ModuleList.findOrCreateModuleListFromSuiteWithoutBinaries(dir));
+                            _listsForSources.add(ModuleList.findOrCreateModuleListFromSuiteWithoutBinaries(dir));
                         }
                     } catch (IOException e) {
                         Util.err.notify(ErrorManager.INFORMATIONAL, e);
                     }
                 }
             }
+            listsForSources = _listsForSources;
         }
         for (ModuleList l : listsForSources) {
             for (ModuleEntry entry : l.getAllEntriesSoft()) {
@@ -832,7 +835,10 @@ public final class NbPlatform {
             if (currVer == null) {
                 throw new IOException(coreJar.getAbsolutePath());
             }
-            implVers = jf.getManifest().getMainAttributes().getValue("OpenIDE-Module-Implementation-Version"); // NOI18N
+            implVers = jf.getManifest().getMainAttributes().getValue("OpenIDE-Module-Build-Version"); // NOI18N
+            if (implVers == null) {
+                implVers = jf.getManifest().getMainAttributes().getValue("OpenIDE-Module-Implementation-Version"); // NOI18N
+            }
             if (implVers == null) {
                 throw new IOException(coreJar.getAbsolutePath());
             }
@@ -947,7 +953,9 @@ public final class NbPlatform {
                     String spec = jf.getManifest().getMainAttributes().getValue(ManifestManager.OPENIDE_MODULE_SPECIFICATION_VERSION);
                     if (spec != null) {
                         SpecificationVersion v = new SpecificationVersion(spec);
-                        if (v.compareTo(new SpecificationVersion("1.11")) >= 0) { // NOI18N
+                        if (v.compareTo(new SpecificationVersion("1.12")) >= 0) { // NOI18N
+                            return harnessVersion = HARNESS_VERSION_65;
+                        } else if (v.compareTo(new SpecificationVersion("1.11")) >= 0) { // NOI18N
                             return harnessVersion = HARNESS_VERSION_61;
                         } else if (v.compareTo(new SpecificationVersion("1.10")) >= 0) { // NOI18N
                             return harnessVersion = HARNESS_VERSION_60;
@@ -1025,6 +1033,8 @@ public final class NbPlatform {
                 return NbBundle.getMessage(NbPlatform.class, "LBL_harness_version_6.0");
             case HARNESS_VERSION_61:
                 return NbBundle.getMessage(NbPlatform.class, "LBL_harness_version_6.1");
+            case HARNESS_VERSION_65:
+                return NbBundle.getMessage(NbPlatform.class, "LBL_harness_version_6.5");
             default:
                 assert version == HARNESS_VERSION_UNKNOWN;
                 return NbBundle.getMessage(NbPlatform.class, "LBL_harness_version_unknown");

@@ -50,7 +50,6 @@ import java.util.Set;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.TestBase;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
-import org.netbeans.modules.apisupport.project.ui.SuiteLogicalView.SuiteRootNode;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
@@ -109,18 +108,6 @@ public class SuiteLogicalViewTest extends TestBase {
         assertEquals(new HashSet<String>(Arrays.asList(Node.PROP_NAME, Node.PROP_DISPLAY_NAME)), nl.changed);
         assertEquals("Sweetness is Now!", n.getName());
         assertEquals("Sweetness is Now!", n.getDisplayName());
-    }
-    
-    public void testProjectFiles() throws Exception {
-        SuiteProject suite = generateSuite("suite");
-        TestBase.generateSuiteComponent(suite, "module");
-        suite.open();
-        SuiteRootNode rootNode = (SuiteRootNode) suite.getLookup().lookup(LogicalViewProvider.class).createLogicalView();
-        Set<FileObject> expected = new HashSet<FileObject>(Arrays.asList(
-            suite.getProjectDirectory().getFileObject("nbproject"),
-            suite.getProjectDirectory().getFileObject("build.xml")
-        ));
-        assertTrue(expected.equals(rootNode.getProjectFiles()));
     }
     
     public void testImportantFiles() throws Exception {

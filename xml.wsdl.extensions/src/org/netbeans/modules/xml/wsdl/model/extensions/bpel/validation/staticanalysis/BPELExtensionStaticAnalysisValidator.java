@@ -65,8 +65,4 @@ public class BPELExtensionStaticAnalysisValidator extends AbstractValidator {
     {
         return new BPELExtensionStaticAnalysisVisitor(this);
     }
-
-
-    
 }
-

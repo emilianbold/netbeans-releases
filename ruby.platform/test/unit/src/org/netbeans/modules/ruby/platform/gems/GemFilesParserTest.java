@@ -36,43 +36,76 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.ruby.platform.gems;
 
-import junit.framework.TestCase;
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+import org.netbeans.junit.NbTestCase;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
  * @author Erno Mononen
  */
-public class GemFilesParserTest extends TestCase {
-    
+public class GemFilesParserTest extends NbTestCase {
+
     public GemFilesParserTest(String testName) {
         super(testName);
-    }            
-
-    public void testParseInfo() {
-        
-        String gem1 = "mongrel-1.1.3-i386-mswin32";
-        assertEquals("mongrel", GemFilesParser.parseInfo(gem1).getName());
-        assertEquals("1.1.3", GemFilesParser.parseInfo(gem1).getVersion());
-        
-        String gem2 = "activeresource-2.0.2";
-        assertEquals("activeresource", GemFilesParser.parseInfo(gem2).getName());
-        assertEquals("2.0.2", GemFilesParser.parseInfo(gem2).getVersion());
-        
-        String gem3 = "win32-sapi-0.1.4";
-        assertEquals("win32-sapi", GemFilesParser.parseInfo(gem3).getName());
-        assertEquals("0.1.4", GemFilesParser.parseInfo(gem3).getVersion());
-        
-        String gem4 = "cgi_multipart_eof_fix-2.5.0";
-        assertEquals("cgi_multipart_eof_fix", GemFilesParser.parseInfo(gem4).getName());
-        assertEquals("2.5.0", GemFilesParser.parseInfo(gem4).getVersion());
-        
-        String gem5 = "win32-api-1.0.5-x86-mswin32-60";
-        assertEquals("win32-api", GemFilesParser.parseInfo(gem5).getName());
-        assertEquals("1.0.5", GemFilesParser.parseInfo(gem5).getVersion());
-        
     }
 
+    public void testParseInfo() {
+
+        String gem1 = "mongrel-1.1.3-i386-mswin32";
+        assertEquals("mongrel", GemFilesParser.parseNameAndVersion(gem1)[0]);
+        assertEquals("1.1.3", GemFilesParser.parseNameAndVersion(gem1)[1]);
+
+        String gem2 = "activeresource-2.0.2";
+        assertEquals("activeresource", GemFilesParser.parseNameAndVersion(gem2)[0]);
+        assertEquals("2.0.2", GemFilesParser.parseNameAndVersion(gem2)[1]);
+
+        String gem3 = "win32-sapi-0.1.4";
+        assertEquals("win32-sapi", GemFilesParser.parseNameAndVersion(gem3)[0]);
+        assertEquals("0.1.4", GemFilesParser.parseNameAndVersion(gem3)[1]);
+
+        String gem4 = "cgi_multipart_eof_fix-2.5.0";
+        assertEquals("cgi_multipart_eof_fix", GemFilesParser.parseNameAndVersion(gem4)[0]);
+        assertEquals("2.5.0", GemFilesParser.parseNameAndVersion(gem4)[1]);
+
+        String gem5 = "win32-api-1.0.5-x86-mswin32-60";
+        assertEquals("win32-api", GemFilesParser.parseNameAndVersion(gem5)[0]);
+        assertEquals("1.0.5", GemFilesParser.parseNameAndVersion(gem5)[1]);
+
+    }
+
+    public void testVersionSorting() throws IOException {
+        
+        GemFilesParser gemFilesParser = new GemFilesParser(
+                createGemFile("rails", "1.2.5"), 
+                createGemFile("rails", "2.0.2"), 
+                createGemFile("rails", "1.2.6"), 
+                createGemFile("rails", "1.2"),
+                createGemFile("rails", "2.0") 
+                );
+        
+        gemFilesParser.parseGems();
+        Map<String, List<GemInfo>> result = gemFilesParser.getGemInfos();
+        
+        List<GemInfo> versions = result.get("rails");
+        assertEquals(5, versions.size());
+        assertEquals("2.0.2", versions.get(0).getVersion());
+        assertEquals("2.0", versions.get(1).getVersion());
+        assertEquals("1.2.6", versions.get(2).getVersion());
+        assertEquals("1.2.5", versions.get(3).getVersion());
+        assertEquals("1.2", versions.get(4).getVersion());
+    }
+    
+    private File createGemFile(String name, String version) throws IOException {
+        FileObject result = 
+                FileUtil.createData(FileUtil.toFileObject(getWorkDir()), name + '-' + version + ".gemspec");
+        return FileUtil.toFile(result);
+        
+    }
 }

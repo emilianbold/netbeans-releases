@@ -246,7 +246,8 @@ public class Lifeline extends NamedElement implements ILifeline
      */
     public IMessage insertMessage(IMessage fromBeforeMessage, IInteractionFragment fromOwner, IElement toElement, IInteractionFragment toOwner, IOperation oper, int kind)
     {
-        org.netbeans.modules.uml.ui.swing.drawingarea.ADDrawingAreaControl.DABlocker.startBlocking();
+        // TODO: meteora
+//        org.netbeans.modules.uml.ui.swing.drawingarea.ADDrawingAreaControl.DABlocker.startBlocking();
         
         IMessage message = null;
         try
@@ -257,7 +258,7 @@ public class Lifeline extends NamedElement implements ILifeline
         }
         finally
         {
-            org.netbeans.modules.uml.ui.swing.drawingarea.ADDrawingAreaControl.DABlocker.stopBlocking();
+//            org.netbeans.modules.uml.ui.swing.drawingarea.ADDrawingAreaControl.DABlocker.stopBlocking();
         }
         
         return message;

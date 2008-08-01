@@ -71,11 +71,10 @@ public class ViewNodeTest extends TestBase {
         DatabaseConnection dbconn = DatabaseConnection.create(driver, "url", "user", "schema", "pwd", false);
         ConnectionManager.getDefault().addConnection(dbconn);
 
-        ViewNode viewNode = new ViewNode();
         ConnectionNodeInfo connNodeInfo = (ConnectionNodeInfo)DatabaseNodeInfo.createNodeInfo(null, DatabaseNodeInfo.CONNECTION);
         connNodeInfo.setDatabaseConnection(ConnectionList.getDefault().getConnections()[0]);
-        DatabaseNodeInfo ViewNodeInfo = DatabaseNodeInfo.createNodeInfo(connNodeInfo, DatabaseNode.VIEW);
-        viewNode.setInfo(ViewNodeInfo);
+        DatabaseNodeInfo viewNodeInfo = DatabaseNodeInfo.createNodeInfo(connNodeInfo, DatabaseNode.VIEW);
+        ViewNode viewNode = new ViewNode(viewNodeInfo);
 
         assertTrue(viewNode.canCopy());
 

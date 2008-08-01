@@ -83,13 +83,7 @@ public interface CsmClass extends CsmCompoundClassifier<CsmClass> {
     Collection<CsmFriend> getFriends();
 
     /** Returns the list of base classes */
-    Collection<CsmInheritance> getBaseClasses();
-    
-    /** 
-     * Returns true if this class is template, otherwise false.
-     * If isTemplate() returns true, this class is an instance of CsmTemplate
-     */
-    public boolean isTemplate();
+    Collection<CsmInheritance> getBaseClasses();   
     
     /**
      * Gets the offset of the class' open curly bracket.

@@ -41,54 +41,28 @@
  */
 
 package org.netbeans.test.j2ee.multiview;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.Writer;
-import java.util.List;
-import java.util.Map;
-import javax.swing.text.JTextComponent;
 import java.awt.Component;
 import java.io.File;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
 import junit.framework.Test;
 import junit.textui.TestRunner;
 import org.netbeans.api.project.Project;
-import org.netbeans.jellytools.JellyTestCase;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.modules.j2ee.dd.api.common.CommonDDBean;
-import org.netbeans.modules.j2ee.dd.api.common.ResourceRef;
-import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
-import org.netbeans.modules.j2ee.dd.api.web.ErrorPage;
-import org.netbeans.modules.j2ee.dd.api.web.JspConfig;
-import org.netbeans.modules.j2ee.dd.api.web.JspPropertyGroup;
+import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.j2ee.dd.api.web.*;
-import org.netbeans.modules.j2ee.dd.api.web.SecurityConstraint;
-//import org.netbeans.modules.j2ee.dd.impl.web.model_2_5.SecurityConstraint;
 import org.netbeans.modules.j2ee.ddloaders.web.DDDataObject;
-import org.netbeans.modules.j2ee.ddloaders.web.multiview.DDBeanTableModel;
-import org.netbeans.modules.j2ee.ddloaders.web.multiview.ErrorPagesTablePanel;
 import org.netbeans.modules.j2ee.ddloaders.web.multiview.SecurityRoleTableModel;
-import org.netbeans.modules.j2ee.deployment.impl.gen.nbd.CommonBean;
 import org.netbeans.modules.web.project.WebProject;
-import org.netbeans.modules.xml.multiview.ui.LinkButton;
 import org.netbeans.modules.xml.multiview.ui.DefaultTablePanel;
 import org.netbeans.test.j2ee.lib.J2eeProjectSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
-import org.w3c.dom.Node;
 /**
  *
  * @author kolard
  */
-public class SecurityDDTest extends JellyTestCase {
+public class SecurityDDTest extends J2eeTestCase {
     
     private static DDTestUtils utils;
     
@@ -111,15 +85,12 @@ public class SecurityDDTest extends JellyTestCase {
     private static DDDataObject ddObj;
     
     public static Test suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new SecurityDDTest("testOpenProject"));
-        suite.addTest(new SecurityDDTest("testExistingLoginConfiguration"));
-        suite.addTest(new SecurityDDTest("testExistingSecurityRoles"));
-        suite.addTest(new SecurityDDTest("testExistingSecurityConstraint"));
-        suite.addTest(new SecurityDDTest("testAddSecurityRole"));
-        suite.addTest(new SecurityDDTest("testEditSecurityRole"));
-        suite.addTest(new SecurityDDTest("testDelSecurityRole"));
-        return suite;
+        NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(SecurityDDTest.class);
+        conf = addServerTests(conf,"testOpenProject","testExistingLoginConfiguration",
+        "testExistingSecurityRoles","testExistingSecurityConstraint","testAddSecurityRole",
+        "testEditSecurityRole","testDelSecurityRole");
+        conf = conf.enableModules(".*").clusters(".*");
+        return NbModuleSuite.create(conf);
     }
     
     /** Use for execution inside IDE */

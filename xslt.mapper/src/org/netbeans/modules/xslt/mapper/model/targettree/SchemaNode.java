@@ -26,7 +26,7 @@ import javax.swing.Action;
 import javax.swing.JMenu;
 import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
-import org.netbeans.modules.soa.ui.SoaUiUtil;
+import org.netbeans.modules.soa.ui.SoaUtil;
 import org.netbeans.modules.soa.ui.TooltipTextProvider;
 import org.netbeans.modules.soa.ui.axinodes.AxiomUtils;
 import org.netbeans.modules.soa.ui.axinodes.NodeType;
@@ -145,8 +145,8 @@ public class SchemaNode extends TreeNode implements TooltipTextProvider {
         String result = getName();
         //
         if (!selected && !isSourceViewNode()) {
-            result = SoaUiUtil.getFormattedHtmlString(true,
-                    new SoaUiUtil.TextChunk(result, SoaUiUtil.INACTIVE_BLUE));
+            result = SoaUtil.getFormattedHtmlString(true,
+                    new SoaUtil.TextChunk(result, SoaUtil.INACTIVE_BLUE));
         }
         //
         return result;

@@ -42,10 +42,12 @@ made subject to such option by the copyright holder.
 -->
 <project xmlns="http://www.netbeans.org/ns/project/1">
     <type>org.netbeans.modules.apisupport.project</type>
-    <configuration>        
+    <configuration>
+        <
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/3">
             <code-name-base>org.netbeans.modules.xml.axi</code-name-base>
             <module-dependencies>
+                <
                 <dependency>
                     <code-name-base>org.netbeans.modules.xml.schema.model</code-name-base>
                     <build-prerequisite/>

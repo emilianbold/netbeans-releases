@@ -138,19 +138,27 @@ class ItemNode extends FilterNode {
     }
 
     private PaletteActions getCustomActions() {
+        PaletteActions res = null;
         Node category = getParentNode();
-        assert null != category;
-        Node root = category.getParentNode();
-        assert null != root;
-        return (PaletteActions)root.getLookup().lookup( PaletteActions.class );
+        if( null != category ) {
+            Node root = category.getParentNode();
+            if( null != root ) {
+               res = root.getLookup().lookup( PaletteActions.class ); 
+            }
+        }
+        return res;
     }
 
     private DragAndDropHandler getTransferableProvider() {
+        DragAndDropHandler res = null;
         Node category = getParentNode();
-        assert null != category;
-        Node root = category.getParentNode();
-        assert null != root;
-        return (DragAndDropHandler)root.getLookup().lookup( DragAndDropHandler.class );
+        if( null != category ) {
+            Node root = category.getParentNode();
+            if( null != root ) {
+                res = root.getLookup().lookup( DragAndDropHandler.class );
+            }
+        }
+        return res;
     }
     
     public Action getPreferredAction() {

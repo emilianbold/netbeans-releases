@@ -78,8 +78,7 @@ public class LoginScreenProducer extends MidpComponentProducer {
         loginScreen.writeProperty(LoginScreenCD.PROP_USE_LOGIN_BUTTON, MidpTypes.createBooleanValue(Boolean.FALSE));
         loginScreen.writeProperty(LoginScreenCD.PROP_USERNAME_LABEL, MidpTypes.createStringValue(LoginScreenCD.USERNAME_LOGIN));
         loginScreen.writeProperty(LoginScreenCD.PROP_PASSWORD_LABEL, MidpTypes.createStringValue(LoginScreenCD.PASSWORD_LOGIN));
-        PropertyValue loginButtonScreen = MidpTypes.createStringValue(NbBundle.getMessage(LoginScreenProducer.class, "LBL_LoginScreen_LoginButtonScreen"));//NOI18
-        loginScreen.writeProperty(LoginScreenCD.PROP_LOGIN_BUTTON_TEXT,loginButtonScreen);
+        loginScreen.writeProperty(LoginScreenCD.PROP_LOGIN_BUTTON_TEXT, MidpTypes.createStringValue(LoginScreenCD.LOGIN_BUTTON_TEXT));
         return new Result(loginScreen, loginCommand, loginEventSource);
     }
 

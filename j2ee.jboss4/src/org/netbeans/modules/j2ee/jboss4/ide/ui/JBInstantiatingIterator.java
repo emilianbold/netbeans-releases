@@ -66,6 +66,7 @@ import org.openide.util.NbBundle;
  */
 public class JBInstantiatingIterator implements WizardDescriptor.InstantiatingIterator, ChangeListener {
     
+    private final static String PROP_DISPLAY_NAME = "ServInstWizard_displayName"; // NOI18N
     
     /**
      * skipServerLocationStep allow to skip Select Location step in New Instance Wizard
@@ -134,7 +135,7 @@ public class JBInstantiatingIterator implements WizardDescriptor.InstantiatingIt
     public Set instantiate() throws IOException {
         Set result = new HashSet();
         
-        String displayName =  (String)wizard.getProperty(org.netbeans.modules.j2ee.deployment.impl.ui.wizard.AddServerInstanceWizard.PROP_DISPLAY_NAME);
+        String displayName =  (String)wizard.getProperty(PROP_DISPLAY_NAME);
         
         String url = JBDeploymentFactory.URI_PREFIX + host + ":" + port;    // NOI18N
         if (server != null && !server.equals(""))                           // NOI18N
@@ -236,8 +237,8 @@ public class JBInstantiatingIterator implements WizardDescriptor.InstantiatingIt
     public WizardDescriptor.Panel current() {
         WizardDescriptor.Panel result = getPanels()[index];
         JComponent component = (JComponent)result.getComponent();
-        component.putClientProperty("WizardPanel_contentData", getSteps());  // NOI18N
-        component.putClientProperty("WizardPanel_contentSelectedIndex", Integer.valueOf(getIndex()));// NOI18N
+        component.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, getSteps());  // NOI18N
+        component.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, Integer.valueOf(getIndex()));// NOI18N
         return result;
     }
     

@@ -1,14 +1,59 @@
 <?xml version="1.0" encoding="utf-8"?>
+
+<!--
+ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ 
+ Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ 
+ The contents of this file are subject to the terms of either the GNU
+ General Public License Version 2 only ("GPL") or the Common
+ Development and Distribution License("CDDL") (collectively, the
+ "License"). You may not use this file except in compliance with the
+ License. You can obtain a copy of the License at
+ http://www.netbeans.org/cddl-gplv2.html
+ or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ specific language governing permissions and limitations under the
+ License.  When distributing the software, include this License Header
+ Notice in each file and include the License file at
+ nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ particular file as subject to the "Classpath" exception as provided
+ by Sun in the GPL Version 2 section of the License file that
+ accompanied this code. If applicable, add the following below the
+ License Header, with the fields enclosed by brackets [] replaced by
+ your own identifying information:
+ "Portions Copyrighted [year] [name of copyright owner]"
+ 
+ Contributor(s):
+ 
+ The Original Software is NetBeans. The Initial Developer of the Original
+ Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ Microsystems, Inc. All Rights Reserved.
+ 
+ If you wish your version of this file to be governed by only the CDDL
+ or only the GPL Version 2, indicate your decision by adding
+ "[Contributor] elects to include this software in this distribution
+ under the [CDDL or GPL Version 2] license." If you do not indicate a
+ single choice of license, a recipient has the option to distribute
+ your version of this file under either the CDDL, the GPL Version 2 or
+ to extend the choice of license to its licensees as provided above.
+ However, if you add GPL Version 2 code and therefore, elected the GPL
+ Version 2 license, then the option applies only if the new code is
+ made subject to such option by the copyright holder.
+-->
+
 <application 
+    xmlns:yt="urn:yahoo:tripsearchresponse"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
     xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
     xsi:schemaLocation="http://research.sun.com/wadl/2006/10 
-                    ../../../../../../../../../../websvc.saas.api/src/org/netbeans/modules/websvc/saas/model/wadl20061109.xsd"
+                    https://wadl.dev.java.net/wadl20061109.xsd"
     xmlns="http://research.sun.com/wadl/2006/10">
-    
-    <grammars/>
+    <grammars>
+        <include href="TripSearchResponse.xsd"/>
+        <!--<include href="NewsSearchError.xsd"/>-->
+    </grammars>
     <resources base="http://travel.yahooapis.com/TripService/V1.1">
-       <resource path="tripSearch">
+        <resource path="tripSearch">
             <method name="GET" id="tripSearch">
                 <doc xml:lang="en"> 
                     The Yahoo! Travel Trip Search service enables your applications to use a Yahoo!
@@ -27,38 +72,41 @@
                 </doc>
                 <request>
                     <param name="appid" type="xsd:string" style="query" required="true">
-                    <doc xml:lang="en">
+                        <doc xml:lang="en">
                         The application ID. For more information, 
                         see &quot;What is an Application ID?&quot;  
                         at http://developer.yahoo.com/faq/index.html#token .
-                    </doc>
+                        </doc>
                     </param>
                     <param name="query" type="xsd:string" style="query" required="false">
-                    <doc xml:lang="en">
+                        <doc xml:lang="en">
                         Search keyword(s). Returns public trip plans containing 
-                        the keywords in the trip plans' title, description, or tags.</doc>
+                        the keywords in the trip plans' title, description, or tags.
+                        </doc>
                     </param>
-                    <param name="results" type="xsd:integer" style="query" required="false">        
-                    <doc xml:lang="en">
+                    <param name="results" type="xsd:integer" style="query"  default="10" required="false">
+                        <doc xml:lang="en">
                         The number of trip plans to return. 
                         The default value is 10, and the maximum allowed
-                        number is 50.</doc>
+                        number is 50.
+                        </doc>
                     </param>
-                    <param name="start" type="xsd:integer" style="query" required="false">        
-                    <doc xml:lang="en">
+                    <param name="start" type="xsd:integer" style="query" default="1" required="false">
+                        <doc xml:lang="en">
                         The result from which to start the block of trip plan results. 
-                        By default the results start from 1.</doc>
+                        By default the results start from 1.
+                        </doc>
                     </param>
-                    <param name="output" type="xsd:string" style="query" required="false">        
-                    <doc xml:lang="en">
+                    <param name="output" type="xsd:string" style="query" default="xml" required="false">
+                        <doc xml:lang="en">
                         The output format. The default is xml. You can also specify json or php.
                         XML format is described at http://developer.yahoo.com/travel/tripservice/V1/tripSearch.html .
                         JSON format is described at http://developer.yahoo.com/common/json.html .
                         Serialized PHP format is described at http://developer.yahoo.com/common/phpserial.html
-                    </doc>
+                        </doc>
                     </param>
                     <param name="callback" type="xsd:string" style="query" required="false">
-                    <doc xml:lang="en">
+                        <doc xml:lang="en">
                         If JSON is the output format, this parameter specifies 
                         the name of the callback function to wrap around the JSON data. The following
                         characters are allowed in the function name: A-Z a-z 0-9 . [] _ 
@@ -66,15 +114,15 @@
                         If JSON hasn't been specified as the output, 
                         this parameter is ignored. For more information on callbacks,
                         see http://developer.yahoo.net/common/json.html#callbackparam
-                    </doc>
-                 </param>
+                        </doc>
+                    </param>
                 </request>
-                <response> 		  
+                <response>
+                    <representation mediaType="application/xml" element="yt:ResultSet"/>
                 </response>
-                
             </method>
         </resource>
-		<resource path="getTrip">
+        <resource path="getTrip">
             <method name="GET" id="getTrip">
                 <doc xml:lang="en"> 
 					The Yahoo! Travel Get Trip service enables your application to use a Yahoo! API to get detailed
@@ -91,29 +139,29 @@
                 </doc>
                 <request>
                     <param name="appid" type="xsd:string" style="query" required="true">
-                    <doc xml:lang="en">
+                        <doc xml:lang="en">
                         The application ID. For more information, 
                         see &quot;What is an Application ID?&quot;  
                         at http://developer.yahoo.com/faq/index.html#token.
-                    </doc>
+                        </doc>
                     </param>
-					<param name="id" type="xsd:string" style="query" required="true">        
-                    <doc xml:lang="en">
+                    <param name="id" type="xsd:string" style="query" required="true">
+                        <doc xml:lang="en">
                         The ID of the trip plan, created with the Yahoo! Travel Trip Planner,
 						that you want to retrieve. You can find out the ID of the trip you
 						want to find using the Yahoo! Travel Trip Search service.
-                    </doc>
-                    </param>                   
-                    <param name="output" type="xsd:string" style="query" required="false">        
-                    <doc xml:lang="en">
+                        </doc>
+                    </param>
+                    <param name="output" type="xsd:string" style="query" required="false">
+                        <doc xml:lang="en">
                         The output format. The default is xml. You can also specify json or php.
                         XML format is described at http://developer.yahoo.com/travel/tripservice/V1/tripSearch.html .
                         JSON format is described at http://developer.yahoo.com/common/json.html .
                         Serialized PHP format is described at http://developer.yahoo.com/common/phpserial.html
-                    </doc>
+                        </doc>
                     </param>
                     <param name="callback" type="xsd:string" style="query" required="false">
-                    <doc xml:lang="en">
+                        <doc xml:lang="en">
                         If JSON is the output format, this parameter specifies 
                         the name of the callback function to wrap around the JSON data. The following
                         characters are allowed in the function name: A-Z a-z 0-9 . [] _ 
@@ -121,14 +169,13 @@
                         If JSON hasn't been specified as the output, 
                         this parameter is ignored. For more information on callbacks,
                         see http://developer.yahoo.net/common/json.html#callbackparam
-                    </doc>
-                 </param>
+                        </doc>
+                    </param>
                 </request>
-                <response> 
+                <response>
+                    <representation mediaType="application/xml" element="yt:ResultSet"/>
                 </response>
-                
             </method>
         </resource>
-    </resources>  
-
+    </resources>
 </application>

@@ -45,12 +45,18 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
 
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.api.project.ProjectUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 
 import org.netbeans.modules.websvc.spi.client.WebServicesClientSupportImpl;
 import org.netbeans.modules.websvc.spi.client.WebServicesClientSupportProvider;
 import org.netbeans.modules.websvc.client.WebServicesClientSupportAccessor;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.util.NbBundle;
 
 /** WebServicesClientSupport should be used to manipulate a projects representation
  *  of a web service implementation.
@@ -67,7 +73,7 @@ public final class WebServicesClientSupport {
 
     private WebServicesClientSupportImpl impl;
     private static final Lookup.Result implementations =
-        Lookup.getDefault().lookup(new Lookup.Template(WebServicesClientSupportProvider.class));
+        Lookup.getDefault().lookupResult(WebServicesClientSupportProvider.class);
 
     static  {
         WebServicesClientSupportAccessor.DEFAULT = new WebServicesClientSupportAccessor() {
@@ -218,7 +224,7 @@ public final class WebServicesClientSupport {
         return impl.getDeploymentDescriptor();
     }
 
-    public List/*StubDescriptor*/ getStubDescriptors() {
+    public List<ClientStubDescriptor> getStubDescriptors() {
         return impl.getStubDescriptors();
     }
 
@@ -242,6 +248,20 @@ public final class WebServicesClientSupport {
         return impl.getServiceRefName(serviceName);
     }
 
+    public boolean isBroken(Project  project) {
+        return (getWebServicesClientSupport(project.getProjectDirectory()) == null && !getServiceClients().isEmpty());
+    }
+    
+    public void showBrokenAlert(Project  project) {
+        ProjectInformation pi = ProjectUtils.getInformation(project);
+        String projectName = null;
+        if(pi !=null) projectName = pi.getDisplayName();
+        NotifyDescriptor alert = new NotifyDescriptor.Message(
+                NbBundle.getMessage(WebServicesClientSupport.class, 
+                "ERR_NoJaxrpcPluginFound", projectName), NotifyDescriptor.WARNING_MESSAGE);
+        DialogDisplayer.getDefault().notifyLater(alert);
+    }
+    
 /* !PW FIXME What to put here?  (commented code came from WebModule API)
  *
     public boolean equals (Object obj) {

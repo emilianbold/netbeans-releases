@@ -21,7 +21,7 @@ package org.netbeans.modules.php.dbgp.models.nodes;
 import java.util.List;
 import java.util.Set;
 
-import org.netbeans.modules.php.dbgp.api.ModelNode;
+import org.netbeans.modules.php.dbgp.ModelNode;
 import org.netbeans.modules.php.dbgp.models.VariablesModelFilter.FilterType;
 import org.netbeans.modules.php.dbgp.packets.Property;
 import org.netbeans.modules.php.dbgp.packets.ContextNamesResponse.Context;

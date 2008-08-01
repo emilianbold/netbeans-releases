@@ -43,16 +43,13 @@
 package org.netbeans.modules.debugger.ui.actions;
 
 import java.awt.event.ActionEvent;
-import java.util.Iterator;
 import javax.swing.Action;
 import javax.swing.AbstractAction;
 import javax.swing.ImageIcon;
 
-import org.netbeans.modules.debugger.ui.views.View;
 
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
-import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
@@ -105,6 +102,7 @@ public class ViewActions extends AbstractAction {
      */
     public static Action createBreakpointsViewAction () {
         ViewActions action = new ViewActions("breakpointsView");
+        // When changed, update also mf-layer.xml, where are the properties duplicated because of Actions.alwaysEnabled()
         action.putValue (Action.NAME, "CTL_BreakpointsAction");
         action.putValue (Action.SMALL_ICON, 
                 "org/netbeans/modules/debugger/resources/breakpointsView/Breakpoint.gif" // NOI18N
@@ -117,6 +115,7 @@ public class ViewActions extends AbstractAction {
      */
     public static Action createCallStackViewAction () {
         ViewActions action = new ViewActions("callstackView");
+        // When changed, update also mf-layer.xml, where are the properties duplicated because of Actions.alwaysEnabled()
         action.putValue (Action.NAME, "CTL_CallStackAction");
         action.putValue (Action.SMALL_ICON, 
                 "org/netbeans/modules/debugger/resources/callStackView/call_stack_16.png" // NOI18N
@@ -129,6 +128,7 @@ public class ViewActions extends AbstractAction {
      */
     public static Action createLocalsViewAction() {
         ViewActions action = new ViewActions("localsView");
+        // When changed, update also mf-layer.xml, where are the properties duplicated because of Actions.alwaysEnabled()
         action.putValue (Action.NAME, "CTL_LocalVariablesAction");
         action.putValue (Action.SMALL_ICON, 
                 "org/netbeans/modules/debugger/resources/localsView/local_variable_16.png" // NOI18N
@@ -141,6 +141,7 @@ public class ViewActions extends AbstractAction {
      */
     public static Action createSessionsViewAction () {
         ViewActions action = new ViewActions("sessionsView");
+        // When changed, update also mf-layer.xml, where are the properties duplicated because of Actions.alwaysEnabled()
         action.putValue (Action.NAME, "CTL_SessionsAction");
         action.putValue (Action.SMALL_ICON, 
                 "org/netbeans/modules/debugger/resources/sessionsView/session_16.png" // NOI18N
@@ -153,6 +154,7 @@ public class ViewActions extends AbstractAction {
      */
     public static Action createThreadsViewAction () {
         ViewActions action = new ViewActions("threadsView");
+        // When changed, update also mf-layer.xml, where are the properties duplicated because of Actions.alwaysEnabled()
         action.putValue (Action.NAME, "CTL_ThreadsAction");
         action.putValue (Action.SMALL_ICON, 
                 "org/netbeans/modules/debugger/resources/threadsView/ThreadGroup.gif" // NOI18N
@@ -166,9 +168,23 @@ public class ViewActions extends AbstractAction {
      */
     public static Action createWatchesViewAction() {
         ViewActions action = new ViewActions("watchesView");
+        // When changed, update also mf-layer.xml, where are the properties duplicated because of Actions.alwaysEnabled()
         action.putValue (Action.NAME, "CTL_WatchesAction");
         action.putValue (Action.SMALL_ICON, 
                 "org/netbeans/modules/debugger/resources/watchesView/watch_16.png" // NOI18N
+        );
+        return action;
+    }
+
+    /**
+     * Creates an action that opens Sources TopComponent.
+     */
+    public static Action createSourcesViewAction() {
+        ViewActions action = new ViewActions("sources");
+        // When changed, update also mf-layer.xml, where are the properties duplicated because of Actions.alwaysEnabled()
+        action.putValue (Action.NAME, "CTL_SourcesAction");
+        action.putValue (Action.SMALL_ICON,
+                "org/netbeans/modules/debugger/resources/sourcesView/sources_16.png" // NOI18N
         );
         return action;
     }

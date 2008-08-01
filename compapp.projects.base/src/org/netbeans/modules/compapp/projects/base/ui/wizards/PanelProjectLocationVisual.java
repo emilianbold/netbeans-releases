@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.text.MessageFormat;
 
 import javax.swing.JFileChooser;
+import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
@@ -51,6 +52,10 @@ class PanelProjectLocationVisual
         // Register listener on the textFields to make the automatic updates
         projectNameTextField.getDocument().addDocumentListener(this);
         projectLocationTextField.getDocument().addDocumentListener(this);
+    }
+    
+    JTextField getProjectNameTextField() {
+        return projectNameTextField;
     }
     
     /** This method is called from within the constructor to
@@ -169,7 +174,7 @@ class PanelProjectLocationVisual
         projectNameTextField.requestFocus();
     }
     
-    boolean valid(WizardDescriptor wizardDescriptor) {
+    public boolean valid(WizardDescriptor wizardDescriptor) {
         String projectName = projectNameTextField.getText();
         if (projectName.length() == 0                //String indexOf is not picking up \ char if this is the
                 // first char
@@ -178,13 +183,13 @@ class PanelProjectLocationVisual
                 || projectName.indexOf("\\") >= 0         //NOI18N
                 || projectName.indexOf(':')  >= 0
                 || !isValidName(projectName)) {
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getBundle(WIZARD_BUNDLE).getString("MSG_IllegalProjectName")); //NOI18N
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getBundle(WIZARD_BUNDLE).getString("MSG_IllegalProjectName")); //NOI18N
             return false; // Display name not specified
         }
         
 
         if (projectName.indexOf(' ')  >= 0) {        //NOI18N
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", // NOI18N
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, // NOI18N
                     NbBundle.getMessage(PanelProjectLocationVisual.class, "MSG_IllegalProjectNameWithWhiteSpace"));
             return false;
         }
@@ -192,14 +197,14 @@ class PanelProjectLocationVisual
         File f = new File(projectLocationTextField.getText()).getAbsoluteFile();
         if (getCanonicalFile(f)==null) {
             String message = NbBundle.getMessage(PanelProjectLocationVisual.class, "MSG_IllegalProjectLocation");
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", message);
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, message);
             return false;
         }
 
         File destFolder = new File(createdFolderTextField.getText());
         if (getCanonicalFile(destFolder) == null) {
             String message = NbBundle.getMessage(PanelProjectLocationVisual.class, "MSG_IllegalProjectName");
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", message);
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, message);
             return false;
         }
         
@@ -208,25 +213,25 @@ class PanelProjectLocationVisual
             projLoc = projLoc.getParentFile();
         }
         if (projLoc == null || !projLoc.canWrite()) {
-            wizardDescriptor.putProperty( "WizardPanel_errorMessage", // NOI18N
+            wizardDescriptor.putProperty( WizardDescriptor.PROP_ERROR_MESSAGE, // NOI18N
                     NbBundle.getMessage(PanelProjectLocationVisual.class, "MSG_ProjectFolderReadOnly"));
             return false;
         }
 
         if (FileUtil.toFileObject(projLoc) == null) {
             String message = NbBundle.getMessage(PanelProjectLocationVisual.class, "MSG_IllegalProjectLocation");
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", message);
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, message);
             return false;
         }
 
         File[] children = destFolder.listFiles();
         if (destFolder.exists() && children != null && children.length > 0) {
             // Folder exists and is not empty
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getBundle(WIZARD_BUNDLE).getString("MSG_ProjectFolderExists")); //NOI18N
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getBundle(WIZARD_BUNDLE).getString("MSG_ProjectFolderExists")); //NOI18N
             return false;
         }
                 
-        wizardDescriptor.putProperty("WizardPanel_errorMessage", ""); //NOI18N
+        wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, ""); //NOI18N
         return true;
     }
     
@@ -251,35 +256,37 @@ class PanelProjectLocationVisual
         }
     }
     
-    void store(WizardDescriptor d) {        
+    public void store(WizardDescriptor d) {        
         String name = projectNameTextField.getText().trim();
         
-        d.putProperty(WizardProperties.PROJECT_DIR, new File(createdFolderTextField.getText().trim()));
-        d.putProperty(WizardProperties.NAME, name);
+        d.putProperty(    WizardProperties.PROJECT_DIR, new File(createdFolderTextField.getText().trim()));
+        d.putProperty(    WizardProperties.NAME, name);
         
         File projectsDir = new File(this.projectLocationTextField.getText());
+
         if (projectsDir.isDirectory()) {
             ProjectChooser.setProjectsFolder (projectsDir);
         }
     }
         
-    void read (WizardDescriptor settings) {
+    public void read(WizardDescriptor settings) {
         File projectLocation = (File) settings.getProperty(WizardProperties.PROJECT_DIR);
-        if (projectLocation == null)
+
+        if (projectLocation == null || projectLocation.getParentFile() == null || !projectLocation.getParentFile().isDirectory()) {
             projectLocation = ProjectChooser.getProjectsFolder();
-        else
+        }
+        else {
             projectLocation = projectLocation.getParentFile();
-        
+        }
         projectLocationTextField.setText(projectLocation.getAbsolutePath());
-        
-        String projectName = (String) settings.getProperty(WizardProperties.NAME);
+        String projectName = (String) settings.getProperty(    WizardProperties.NAME);
+
         if (projectName == null) {
             int baseCount = FoldersListSettings.getDefault().getNewProjectCount() + 1;
-            String formater = panel.getDefaultName(); // NbBundle.getBundle(WIZARD_BUNDLE).getString("LBL_NPW1_DefaultProjectName");
+            String formater = panel.getDefaultName();
             while ((projectName = validFreeProjectName(projectLocation, formater, baseCount)) == null)
                 baseCount++;
         }
-        
         projectNameTextField.setText(projectName);                
         projectNameTextField.selectAll();
     }

@@ -1,0 +1,29 @@
+| Window |                  W (mnemonics)
+==========
+Projects                    j
+Files                       F
+Classes                     C
+Favorites                   i
+Services                    S
+Tasks                       k
+Palette                     t
+Properties                  r
+Output                  >   O
+Navigating              >   N
+Debugging               >   b
+Profiling               >   g
+Versioning              >   V
+Other                   >   h
+Editor                      E
+Processes                   P
+=========================
+Close Window                C
+Maximize Window             z
+Undock Window               U
+=========================
+Clone Document              l
+Close All Documents         A
+Close Other Documents       m
+Documents...                D
+=========================
+Reset Windows               W

@@ -1,4 +1,4 @@
 Manifest-Version: 1.0
 OpenIDE-Module: org.jruby.distro/1
 OpenIDE-Module-Localizing-Bundle: org/jruby/distro/Bundle.properties
-OpenIDE-Module-Specification-Version: 0.103
+OpenIDE-Module-Specification-Version: 0.104

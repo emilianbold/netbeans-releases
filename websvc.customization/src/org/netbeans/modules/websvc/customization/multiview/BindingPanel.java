@@ -87,7 +87,6 @@ public class BindingPanel extends SaveableSectionInnerPanel {
         this.primaryDefinitions = primaryDefinitions;
         this.model = this.binding.getModel();
         initComponents();
-        this.enableMIMEContentCB.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         
         sync();
         
@@ -236,6 +235,7 @@ public class BindingPanel extends SaveableSectionInnerPanel {
         enableMIMEContentCB.setToolTipText(bundle.getString("TOOLTIP_ENABLE_MIME")); // NOI18N
         enableMIMEContentCB.setActionCommand(bundle.getString("LBL_ENABLE_MIME_CONTENT")); // NOI18N
         enableMIMEContentCB.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        enableMIMEContentCB.setContentAreaFilled(false);
         enableMIMEContentCB.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);

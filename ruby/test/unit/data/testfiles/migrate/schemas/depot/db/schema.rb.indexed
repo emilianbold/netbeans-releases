@@ -1,15 +1,10 @@
 
 
 Document 0
-Delete:  source : <TESTURL>/schema.rb
-
-
-
-Document 1
-Indexed:
+Searchable Keys:
   dbtable : line_items
 
-Not Indexed:
+Not Searchable Keys:
   dbcolumn : order_id;integer
   dbcolumn : product_id;integer
   dbcolumn : quantity;integer
@@ -17,11 +12,11 @@ Not Indexed:
   dbversion : schema
 
 
-Document 2
-Indexed:
+Document 1
+Searchable Keys:
   dbtable : orders
 
-Not Indexed:
+Not Searchable Keys:
   dbcolumn : address;text
   dbcolumn : email;string
   dbcolumn : name;string
@@ -29,11 +24,11 @@ Not Indexed:
   dbversion : schema
 
 
-Document 3
-Indexed:
+Document 2
+Searchable Keys:
   dbtable : products
 
-Not Indexed:
+Not Searchable Keys:
   dbcolumn : description;text
   dbcolumn : image_url;string
   dbcolumn : price;decimal
@@ -41,22 +36,22 @@ Not Indexed:
   dbversion : schema
 
 
-Document 4
-Indexed:
+Document 3
+Searchable Keys:
   dbtable : sessions
 
-Not Indexed:
+Not Searchable Keys:
   dbcolumn : data;text
   dbcolumn : session_id;string
   dbcolumn : updated_at;datetime
   dbversion : schema
 
 
-Document 5
-Indexed:
+Document 4
+Searchable Keys:
   dbtable : users
 
-Not Indexed:
+Not Searchable Keys:
   dbcolumn : hashed_password;string
   dbcolumn : name;string
   dbcolumn : salt;string

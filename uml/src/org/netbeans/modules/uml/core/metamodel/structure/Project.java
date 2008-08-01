@@ -225,6 +225,7 @@ public class Project extends Model implements IProject, IElementModifiedEventsSi
 	*
 	* @param node[in] the node to inject the XML attributes into.
 	*/
+    @Override
    public void establishNodeAttributes(Element node)
    {
    	    super.establishNodeAttributes(node);
@@ -251,7 +252,6 @@ public class Project extends Model implements IProject, IElementModifiedEventsSi
     *                object should not clear its dirty flag. If fileName is NULL, 
     *                the implementation should ignore the remember flag
     */
-   
    synchronized public void save( String fileName, boolean remember )
    {
         // m_ChildrenDirty will only be set during the EstablishDirtyState()
@@ -300,7 +300,7 @@ public class Project extends Model implements IProject, IElementModifiedEventsSi
                 }
         }		
    }
-
+   
 	/**
 	 * Injects all the necessary XMI nodes into the document.
 	 */
@@ -1687,8 +1687,7 @@ public class Project extends Model implements IProject, IElementModifiedEventsSi
 			}
 		}
 	}
-	
-	
+		
 	/**
 	 *
 	 * Called during the Save() processing
@@ -1742,7 +1741,7 @@ public class Project extends Model implements IProject, IElementModifiedEventsSi
                      }
                 }
 	}
-	
+        
 	public void close()
 	{
 		ICoreProduct prod = ProductRetriever.retrieveProduct();
@@ -2144,10 +2143,10 @@ public class Project extends Model implements IProject, IElementModifiedEventsSi
 //		boolean isSuccess = false;
 //		try
 //		{	
-//			File source_file = new File(source_file1);  // absolute file of *temp.etd |*temp.ettm file
+//			File source_file = new File(source_file1);
 //			if(source_file.exists())	
 //			{		
-//				File dest_file = new File(destination_file1);   // absolute file of *.etd | *.ettm
+//				File dest_file = new File(destination_file1);
 //				if(!dest_file.exists())		
 //				{			
 //					isSuccess = source_file.renameTo(dest_file);					
@@ -2160,7 +2159,7 @@ public class Project extends Model implements IProject, IElementModifiedEventsSi
 //		}
 //		return isSuccess;
 //	}
-        
+	
 	/**
 	 * Sets / Gets the name of the file this project will be saved to.
 	*/
@@ -2496,9 +2495,14 @@ public class Project extends Model implements IProject, IElementModifiedEventsSi
         if (elem instanceof IPackage || elem instanceof IPackageImport)
         {
             ETList<IPackageImport> imports = getPackageImports();
-            for (IPackageImport im: imports)
+            // avoid concurrent modification to the imported list
+            ArrayList<IPackageImport> list = new ArrayList<IPackageImport>();
+            list.addAll(imports);
+            for (IPackageImport im: list)
             {
                 IPackage element = im.getImportedPackage();
+                if (element == null)
+                    return;
                 if ( im == elem || elem.getXMIID().equals(element.getXMIID()))
                 {      
                     // im.delete() basically fires delete event, it's important to 
@@ -2513,10 +2517,13 @@ public class Project extends Model implements IProject, IElementModifiedEventsSi
         else
         {
             ETList<IElementImport> imports = getElementImports();
-            for (IElementImport im: imports)
+            ArrayList<IElementImport> list = new ArrayList<IElementImport>();
+            list.addAll(imports);
+            for (IElementImport im: list)
             {
                 IElement element = im.getImportedElement();
-
+                if (element == null)
+                    return;
                 if (im == elem || elem.getXMIID().equals(element.getXMIID()))
                 {
                     setDirty(true);

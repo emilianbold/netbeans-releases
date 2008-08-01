@@ -43,6 +43,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import org.netbeans.installer.Installer;
+import org.netbeans.installer.utils.EngineUtils;
 import org.netbeans.installer.utils.helper.EnvironmentScope;
 import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.FileUtils;
@@ -67,11 +68,11 @@ import org.netbeans.installer.utils.system.shortcut.LocationType;
  */
 public abstract class NativeUtils {
     /////////////////////////////////////////////////////////////////////////////////
-    // Static
-    private static NativeUtils instance;
+    // Static    
+    protected static boolean nativeLibraryLoaded;
     private static HashSet<File> forbiddenDeletingFiles = new HashSet<File>();
     private static List <LauncherResource> uninstallerJVMs = new ArrayList <LauncherResource> ();
-    private static List <File> deleteOnExitFiles = new ArrayList <File> ();
+    private static Platform currentPlatform;    
     public final static String NATIVE_RESOURCE_SUFFIX = "native/"; // NOI18N
     public final static String NATIVE_JNILIB_RESOURCE_SUFFIX =
             NATIVE_RESOURCE_SUFFIX +
@@ -83,21 +84,14 @@ public abstract class NativeUtils {
             NATIVE_RESOURCE_SUFFIX +
             "cleaner/"; // NOI18N
     private static OnExitCleanerHandler cleanerHandler;
+
+    protected abstract Platform getPlatform();
     
-    public static synchronized NativeUtils getInstance() {
-        final Platform platform = SystemUtils.getCurrentPlatform();
-        
-        if (platform.isCompatibleWith(Platform.WINDOWS)) {
-            instance = new WindowsNativeUtils();
-        } else if (platform.isCompatibleWith(Platform.LINUX)) {
-            instance = new LinuxNativeUtils();
-        } else if (platform.isCompatibleWith(Platform.SOLARIS)) {
-            instance = new SolarisNativeUtils();
-        } else if (platform.isCompatibleWith(Platform.MACOSX)) {
-            instance = new MacOsNativeUtils();
-        }
-        
-        return instance;
+    final public Platform getCurrentPlatform() {
+        if (currentPlatform == null) {
+            currentPlatform = getPlatform();
+        }        
+        return currentPlatform;
     }
     
     /////////////////////////////////////////////////////////////////////////////////
@@ -145,7 +139,7 @@ public abstract class NativeUtils {
         final File engine = new File(descriptor.getInstallPath(),
                 "uninstall.jar");
         try {
-            Installer.cacheInstallerEngine(engine, new Progress());
+            EngineUtils.cacheEngine(engine, new Progress());
             
             final LauncherProperties props = new LauncherProperties();
             
@@ -158,10 +152,8 @@ public abstract class NativeUtils {
                 "-Xmx256m",
                 "-Xms64m",
                 "-D" + Installer.LOCAL_DIRECTORY_PATH_PROPERTY +
-                        "=" + new File(System.getProperty(
-                        Installer.LOCAL_DIRECTORY_PATH_PROPERTY)).
-                        getAbsolutePath()});
-            props.setMainClass(Installer.class.getName());
+                        "=" + Installer.getInstance().getLocalDirectory()});
+            props.setMainClass(EngineUtils.getEngineMainClass().getName());
             
             if (uninstall) {
                 props.setAppArguments(descriptor.getUninstallCommand());
@@ -205,9 +197,6 @@ public abstract class NativeUtils {
     public boolean checkFileAccess(File file, boolean isReadNotModify) throws NativeException {
         return true;
     }
-    private final void initializeDeteleOnExit() {
-        
-    }
     public final void addDeleteOnExitFile(File file) {        
         getDeleteOnExitHandler().addDeleteOnExitFile(file);
     }
@@ -246,7 +235,7 @@ public abstract class NativeUtils {
                 FileUtils.writeFile(file, input);
                 
                 System.load(file.getAbsolutePath());
-                
+                nativeLibraryLoaded = true;
                 addDeleteOnExitFile(file);
             } catch (IOException e) {
                 ErrorManager.notifyCritical(
@@ -273,7 +262,7 @@ public abstract class NativeUtils {
         for (String path : filepaths) {
             if(path!=null) {
                 File file = new File(path);
-                if(file.exists()) {
+                if(file.exists() && !forbiddenDeletingFiles.contains(file)) {
                     forbiddenDeletingFiles.add(file);
                 }
             }

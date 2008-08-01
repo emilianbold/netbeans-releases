@@ -50,6 +50,7 @@ import javax.swing.text.StyleConstants;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.View;
+import org.netbeans.api.editor.settings.FontColorNames;
 
 /**
  * Various draw layers are located here
@@ -273,7 +274,7 @@ public class DrawLayerFactory {
 
         public void updateContext(DrawContext ctx) {
             if (coloring == null) {
-                coloring = ctx.getEditorUI().getColoring(SettingsNames.SELECTION_COLORING);
+                coloring = ctx.getEditorUI().getColoring(FontColorNames.SELECTION_COLORING);
             }
             if (coloring != null) {
                 coloring.apply(ctx);
@@ -361,7 +362,7 @@ public class DrawLayerFactory {
             int pos = ctx.getFragmentOffset();
             if (pos >= blocks[curInd] && pos < blocks[curInd + 1]) {
                 if (coloring == null) {
-                    coloring = ctx.getEditorUI().getColoring(SettingsNames.HIGHLIGHT_SEARCH_COLORING);
+                    coloring = ctx.getEditorUI().getColoring(FontColorNames.HIGHLIGHT_SEARCH_COLORING);
                 }
                 if (coloring != null) {
                     coloring.apply(ctx);
@@ -377,13 +378,8 @@ public class DrawLayerFactory {
      * @deprecated Please use Highlighting SPI instead, for details see
      *   <a href="@org-netbeans-modules-editor-lib2@/overview-summary.html">Editor Library 2</a>.
      */
-    public static class IncSearchLayer extends DrawLayer.AbstractLayer implements SettingsChangeListener{
+    public static class IncSearchLayer extends DrawLayer.AbstractLayer {
 
-        /** Coloring to use for highlighting */
-        Coloring coloring;
-
-        Coloring invertedColoring;
-        
         /** Position where the searched string begins */
         int pos;
 
@@ -397,7 +393,6 @@ public class DrawLayerFactory {
 
         public IncSearchLayer() {
             super(INC_SEARCH_LAYER_NAME);
-            Settings.addSettingsChangeListener(this);
         }
 
         public boolean isEnabled() {
@@ -446,43 +441,25 @@ public class DrawLayerFactory {
         }
         
         public void updateContext(DrawContext ctx) {
-            if (!invert){
-                if (coloring == null) {
-                    coloring = ctx.getEditorUI().getColoring(SettingsNames.INC_SEARCH_COLORING);
-                }
+            if (!invert) {
+                Coloring coloring = ctx.getEditorUI().getColoring(FontColorNames.INC_SEARCH_COLORING);
                 if (coloring != null) {
                     coloring.apply(ctx);
                 }
-            }else{
-                if (invertedColoring == null) {
-                    invertedColoring = ctx.getEditorUI().getColoring(SettingsNames.SELECTION_COLORING);
-                }
+            } else {
+                Coloring invertedColoring = ctx.getEditorUI().getColoring(FontColorNames.SELECTION_COLORING);
                 if (invertedColoring != null) {
                     invertedColoring.apply(ctx);
                 }
             }
         }
-
-        public void settingsChange(org.netbeans.editor.SettingsChangeEvent evt)
-        {
-            if (evt != null){
-                String incSearchColoring = SettingsNames.INC_SEARCH_COLORING+SettingsNames.COLORING_NAME_SUFFIX;
-                if (incSearchColoring.equals(evt.getSettingName())){
-                    coloring = null;
-                }
-            }
-        }
-
-    }
+    } // End of IncSearchLayer class
 
     /**
      * @deprecated Please use Highlighting SPI instead, for details see
      *   <a href="@org-netbeans-modules-editor-lib2@/overview-summary.html">Editor Library 2</a>.
      */
-    public static class BlockSearchLayer extends DrawLayer.AbstractLayer implements SettingsChangeListener{
-
-        /** Coloring to use for highlighting */
-        Coloring coloring;
+    public static class BlockSearchLayer extends DrawLayer.AbstractLayer {
 
         /** Position where the searched string begins */
         int pos;
@@ -495,7 +472,6 @@ public class DrawLayerFactory {
 
         public BlockSearchLayer() {
             super(BLOCK_SEARCH_LAYER_NAME);
-            Settings.addSettingsChangeListener(this);
         }
 
         public boolean extendsEmptyLine(){
@@ -553,25 +529,12 @@ public class DrawLayerFactory {
         }
 
         public void updateContext(DrawContext ctx) {
-            if (coloring == null) {
-                coloring = ctx.getEditorUI().getColoring(SettingsNames.BLOCK_SEARCH_COLORING);
-            }
+            Coloring coloring = ctx.getEditorUI().getColoring(FontColorNames.BLOCK_SEARCH_COLORING);
             if (coloring != null) {
                 coloring.apply(ctx);
             }
         }
-
-        public void settingsChange(org.netbeans.editor.SettingsChangeEvent evt)
-        {
-            if (evt != null){
-                String blockSearchColoring = SettingsNames.BLOCK_SEARCH_COLORING+SettingsNames.COLORING_NAME_SUFFIX;
-                if (blockSearchColoring.equals(evt.getSettingName())){
-                    coloring = null;
-                }
-            }
-        }
-        
-    }
+    } // End of BlockSearchLayer class
 
 //
 //  XXX: Deprecated and not used anymore. Can be removed.
@@ -772,7 +735,11 @@ public class DrawLayerFactory {
         public boolean isActive(DrawContext ctx, MarkFactory.DrawMark mark) {
             int nextActivityOffset;
             coloring = null;
-            
+//            LOG.setLevel(Level.FINE);
+//            if (LOG.isLoggable(Level.FINE)) {
+//                LOG.fine("  ctx-offset=" + ctx.getFragmentOffset() + ", mark=" + mark + '\n');
+//            }
+
             if (mark == null) {
                 View view = ctx instanceof DrawEngine.DrawInfo ? ((DrawEngine.DrawInfo)ctx).view : null;
                 if (view instanceof DrawEngineLineView) {
@@ -812,6 +779,10 @@ public class DrawLayerFactory {
                 return false;
             }
 
+//            if (LOG.isLoggable(Level.FINE)) {
+//                LOG.log(Level.FINE, "anno: o=" + anno.getOffset() + ", l=" + anno.getLength() + ", wl=" + anno.isWholeLine()
+//                    + ", m=" + mark + ", ctx-offset=" + ctx.getFragmentOffset() + '\n');
+//            }
             if (anno.isWholeLine()) {
                 try {
                     nextActivityOffset = Utilities.getRowEnd(doc, ctx.getFragmentOffset());
@@ -820,7 +791,20 @@ public class DrawLayerFactory {
                     return false;
                 }
             } else {
+                if (ctx.getFragmentOffset() < anno.getOffset()) { // Queried below annotation start
+                    setNextActivityChangeOffset(anno.getOffset());
+                    return false;
+                }
                 nextActivityOffset = anno.getOffset() + anno.getLength();
+                if (ctx.getFragmentOffset() >= nextActivityOffset) { // Queried above annotation end
+                    try {
+                        setNextActivityChangeOffset(Utilities.getRowEnd(doc, ctx.getFragmentOffset()));
+                    } catch (BadLocationException ble) {
+                        LOG.log(Level.FINE, null, ble);
+                        return false;
+                    }
+                    return false;
+                }
             }
             
             setNextActivityChangeOffset(nextActivityOffset);

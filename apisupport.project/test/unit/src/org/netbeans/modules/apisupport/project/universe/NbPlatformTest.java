@@ -51,7 +51,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.modules.apisupport.project.TestBase;
-import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileUtil;
@@ -87,11 +86,11 @@ public class NbPlatformTest extends TestBase {
         assertEquals("right name for default platform", NbPlatform.PLATFORM_ID_DEFAULT, def.getID());
         assertEquals("right name for custom platform", "custom", custom.getID());
         assertEquals("right sources for default platform", new HashSet<URL>(Arrays.asList(
-            Util.urlForDir(nbRootFile()),
-            Util.urlForDir(resolveEEPFile("suite2"))
+            FileUtil.urlForArchiveOrDir(nbRootFile()),
+            FileUtil.urlForArchiveOrDir(resolveEEPFile("suite2"))
         )), new HashSet<URL>(Arrays.asList(def.getSourceRoots())));
         assertEquals("right Javadoc for default platform", new HashSet<URL>(Arrays.asList(
-            Util.urlForJar(apisZip)
+            FileUtil.urlForArchiveOrDir(apisZip)
         )), new HashSet<URL>(Arrays.asList(def.getJavadocRoots())));
         assertEquals("no sources for custom platform", Collections.emptySet(), new HashSet<URL>(Arrays.asList(custom.getSourceRoots())));
         assertEquals("no Javadoc for custom platform", Collections.emptySet(), new HashSet<URL>(Arrays.asList(custom.getJavadocRoots())));
@@ -271,14 +270,14 @@ public class NbPlatformTest extends TestBase {
     
     public void testHarnessVersionDetection() throws Exception {
         NbPlatform p = NbPlatform.getDefaultPlatform();
-        assertEquals("6.1 harness detected", NbPlatform.HARNESS_VERSION_61, p.getHarnessVersion());
+        assertEquals("6.5 harness detected", NbPlatform.HARNESS_VERSION_65, p.getHarnessVersion());
         File testPlatform = new File(getWorkDir(), "test-platform");
         makePlatform(testPlatform);
         p = NbPlatform.getPlatformByDestDir(testPlatform);
         assertEquals("5.0 harness detected", NbPlatform.HARNESS_VERSION_50, p.getHarnessVersion());
         File defaultHarnessLocation = NbPlatform.getDefaultPlatform().getHarnessLocation();
         p = NbPlatform.addPlatform("test", testPlatform, defaultHarnessLocation, "Test");
-        assertEquals("6.1 harness detected", NbPlatform.HARNESS_VERSION_61, p.getHarnessVersion());
+        assertEquals("6.5 harness detected", NbPlatform.HARNESS_VERSION_65, p.getHarnessVersion());
         PropertyEvaluator eval = PropertyUtils.sequentialPropertyEvaluator(null, PropertyUtils.globalPropertyProvider());
         assertEquals(defaultHarnessLocation, FileUtil.normalizeFile(new File(eval.getProperty("nbplatform.test.harness.dir"))));
         NbPlatform.reset();
@@ -286,7 +285,7 @@ public class NbPlatformTest extends TestBase {
         assertNotNull(p);
         assertEquals(testPlatform, p.getDestDir());
         assertEquals(defaultHarnessLocation, p.getHarnessLocation());
-        assertEquals(NbPlatform.HARNESS_VERSION_61, p.getHarnessVersion());
+        assertEquals(NbPlatform.HARNESS_VERSION_65, p.getHarnessVersion());
     }
     
     public void testSourceRootChangeFiring() throws Exception {

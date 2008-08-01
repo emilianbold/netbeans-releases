@@ -287,9 +287,12 @@ final class ShortcutAndMenuKeyEventProcessor implements KeyEventDispatcher, KeyE
         
         MenuSelectionManager.defaultManager().processKeyEvent(ev);
         
-        if (!ev.isConsumed() && arr[0] instanceof JMenuBar) {
+        // commented out as #130919 fix - I don't know why this was here, but
+        // it did prevent keyboard functioning in menus in dialogs
+        /*if (!ev.isConsumed() && arr != null && arr.length > 0 && arr[0] instanceof JMenuBar) {
             ev.setSource(WindowManagerImpl.getInstance().getMainWindow());
-        }
+        }*/
+        
         return ev.isConsumed();
     }
 

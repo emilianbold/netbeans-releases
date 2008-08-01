@@ -370,26 +370,23 @@ public class BreakpointsActionsProvider implements NodeActionsProvider {
         if (DialogDisplayer.getDefault ().notify (descriptor) == 
             NotifyDescriptor.OK_OPTION
         ) {
-            if (nodes [0] instanceof String) {
-                String oldName = (String) nodes [0];
-                Breakpoint[] bs = DebuggerManager.getDebuggerManager ().
-                    getBreakpoints ();
-                int j, jj = bs.length;
-                for (j = 0; j < jj; j++)
-                    if ( ((Breakpoint) bs [j]).getGroupName ().
-                         equals (oldName)
-                    )
-                        ((Breakpoint) bs [j]).setGroupName (
-                            descriptor.getInputText ()
-                        );
-                return;
+           int i, k = nodes.length;
+            String newName = descriptor.getInputText ();
+            for (i = 0; i < k; i++) {
+                if (nodes [i] instanceof String) {
+                    String oldName = (String) nodes [i];
+                    Breakpoint[] bs = DebuggerManager.getDebuggerManager ().
+                        getBreakpoints ();
+                    int j, jj = bs.length;
+                    for (j = 0; j < jj; j++)
+                        if ( ((Breakpoint) bs [j]).getGroupName ().
+                             equals (oldName)
+                        )
+                            ((Breakpoint) bs [j]).setGroupName ( newName );
+                } else if (nodes [i] instanceof Breakpoint) {
+                    ((Breakpoint) nodes [i]).setGroupName ( newName );
+                }
             }
-            int i, k = nodes.length;
-            for (i = 0; i < k; i++)
-                ((Breakpoint) nodes [i]).setGroupName (
-                    descriptor.getInputText ()
-                );
-           // fireTreeChanged ();
         }
     }
 }

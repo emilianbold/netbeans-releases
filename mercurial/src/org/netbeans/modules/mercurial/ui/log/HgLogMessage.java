@@ -1,4 +1,4 @@
-/*
+ /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
@@ -45,19 +45,22 @@ import java.util.Date;
 import java.util.List;
 import org.netbeans.modules.mercurial.FileInformation;
 import org.netbeans.modules.mercurial.FileStatus;
+import org.netbeans.modules.mercurial.HgException;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.OutputLogger;
+import org.netbeans.modules.mercurial.util.HgCommand;
 import org.netbeans.modules.mercurial.util.HgUtils;
+import org.openide.util.Exceptions;
 
 /**
  *
  * @author jr140578
  */
 public class HgLogMessage {
-    private char mod = 'M';
-    private char add = 'A';
-    private char del = 'R';
-    private char copy = 'C';
+    public static char HgModStatus = 'M';
+    public static char HgAddStatus = 'A';
+    public static char HgDelStatus = 'R';
+    public static char HgCopyStatus = 'C';
     
     private List<HgLogMessageChangedPath> mpaths;
     private List<HgLogMessageChangedPath> apaths;
@@ -69,17 +72,53 @@ public class HgLogMessage {
     private Date date;
     private String id;
     private String timeZoneOffset;
-    
+
+    private String parentOneRev;
+    private String parentTwoRev;
+    private boolean bMerged;
+    private String rootURL;
+    private OutputLogger logger;
+
     public HgLogMessage(String changeset){
     }
-    
-    public HgLogMessage( String rev, String auth, String desc, String date, String id, 
-            String fm, String fa, String fd, String fc){
+    private void updatePaths(List<HgLogMessageChangedPath> paths, List<String> pathsStrings, String path, 
+            List<String> filesShortPaths, char HgStatus) {
+        if (filesShortPaths.isEmpty()) {
+            paths.add(new HgLogMessageChangedPath(path, HgStatus));
+            if(pathsStrings != null){
+                pathsStrings.add(path);
+            }
+        } else {
+            for (String fileSP : filesShortPaths) {
+                if (path.equals(fileSP) || path.startsWith(fileSP)) {
+                    paths.add(new HgLogMessageChangedPath(path, HgStatus));
+                    if(pathsStrings != null){
+                        pathsStrings.add(path);
+                    }
+                    break;
+                }
+            }
+        }
+    }
+    public HgLogMessage(String rootURL, List<String> filesShortPaths, String rev, String auth, String desc, String date, String id, 
+            String parents, String fm, String fa, String fd, String fc){
         String splits[];
 
+        String parentSplits[];
+        this.rootURL = rootURL;
         this.rev = rev;
         this.author = auth;
         this.desc = desc;
+        parentSplits = parents != null? parents.split(" "): null;
+        if((parentSplits != null) && (parentSplits.length == 2)){
+            String ps1[] = parentSplits[0].split(":"); // NOI18N
+            this.parentOneRev = ps1 != null && ps1.length >=1? ps1[0]: null;
+            String ps2[] = parentSplits[1].split(":"); // NOI18N
+            this.parentTwoRev = ps2 != null && ps2.length >=1? ps2[0]: null;
+        }
+        this.bMerged = this.parentOneRev != null && this.parentTwoRev != null &&
+                !this.parentOneRev.equals("-1") && !this.parentTwoRev.equals("-1")? true: false;
+        
         splits = date.split(" ");
         this.date = new Date(Long.parseLong(splits[0]) * 1000); // UTC in miliseconds       
         this.id = id;
@@ -87,38 +126,43 @@ public class HgLogMessage {
         this.apaths = new ArrayList<HgLogMessageChangedPath>();
         this.dpaths = new ArrayList<HgLogMessageChangedPath>();
         this.cpaths = new ArrayList<HgLogMessageChangedPath>();
+        List<String> apathsStrings = new ArrayList<String>();
+        List<String> dpathsStrings = new ArrayList<String>();
+        List<String> cpathsStrings = new ArrayList<String>();
         
-        if( fm != null && !fm.equals("")){
-            splits = fm.split(" ");
-            for(String s: splits){
-                this.mpaths.add(new HgLogMessageChangedPath(s, mod));             
-                logCopied(s);
-            }
-        }
-        if( fa != null && !fa.equals("")){
-            splits = fa.split(" ");
-            for(String s: splits){
-                this.apaths.add(new HgLogMessageChangedPath(s, add));                
-                logCopied(s);
-            }
-        }
-        if( fd != null && !fd.equals("")){
-            splits = fd.split(" ");
-            for(String s: splits){
-                this.dpaths.add(new HgLogMessageChangedPath(s, del));                
-                logCopied(s);
-            }
-        }
-        if( fc != null && !fc.equals("")){
+        // Mercurial Bug: Currently not seeing any file_copies coming back from Mercurial
+        if (fc != null && !fc.equals("")) {
             splits = fc.split(" ");
-            for(String s: splits){
-                this.cpaths.add(new HgLogMessageChangedPath(s, copy));                
-                logCopied(s);
+            for (String s : splits) {
+                updatePaths(this.cpaths, cpathsStrings, s, filesShortPaths, HgCopyStatus);
+            }
+        }
+        if (fa != null && !fa.equals("")) {
+            splits = fa.split(" ");
+            for (String s : splits) {
+                if(!cpathsStrings.contains(s)){
+                    updatePaths(this.apaths, apathsStrings, s, filesShortPaths, HgAddStatus);
+                }
+            }
+        }
+        if (fd != null && !fd.equals("")) {
+            splits = fd.split(" ");
+            for (String s : splits) {
+                updatePaths(this.dpaths, dpathsStrings, s, filesShortPaths, HgDelStatus);
+            }
+        }
+        if (fm != null && !fm.equals("")) {
+            splits = fm.split(" ");
+            for (String s : splits) {
+                //#132743, incorrectly reporting files as added/modified, deleted/modified in same changeset
+                if (!apathsStrings.contains(s) && !dpathsStrings.contains(s) && !cpathsStrings.contains(s)) {
+                    updatePaths(this.mpaths, null, s, filesShortPaths, HgModStatus);
+                }
             }
         }
     }
 
-    private void logCopied(String s){
+    private void debugLogCopied(String s){
         File file = new File(s);
         FileInformation fi = Mercurial.getInstance().getFileStatusCache().getStatus(file);
         FileStatus fs = fi != null? fi.getStatus(file): null;
@@ -161,6 +205,31 @@ public class HgLogMessage {
     public String getCSetShortID() {
         return id;
     }
+
+    public  String getAncestor() {
+        if(bMerged){
+            try{
+                return HgCommand.getCommonAncestor(rootURL, parentOneRev, parentTwoRev, getLogger());
+            } catch (HgException ex) {
+                return null;
+            }
+        }
+        int revInt = -1;
+        try{
+            revInt = Integer.parseInt(rev);
+        }catch(NumberFormatException ex){
+        }
+        revInt = revInt > -1? revInt -1: -1;
+        return Integer.toString(revInt);
+    }
+    
+    private OutputLogger getLogger() {
+        if (logger == null) {
+            logger = Mercurial.getInstance().getLogger(rootURL);
+        }
+        return logger;
+    }
+
     public String getMessage() {
         return desc;
     }

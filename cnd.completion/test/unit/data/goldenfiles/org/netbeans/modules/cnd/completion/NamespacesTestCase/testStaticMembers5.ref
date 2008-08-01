@@ -1,0 +1,6 @@
+ssi int
+s2Struct
+i2 int
+sss s2Struct
+f2() void
+ssfoo() void

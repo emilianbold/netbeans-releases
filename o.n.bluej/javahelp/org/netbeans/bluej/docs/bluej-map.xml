@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE map PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp Map Version 2.0//EN" "http://java.sun.com/products/javahelp/map_2_0.dtd">
+<map version="2.0">
+    <mapID target="org.netbeans.bluej.about" url="bluej-about.html"/>
+    <mapID target="bluej-about-help" url="bluej-about-help.html"/>
+    <mapID target="bluej-proj-import" url="bluej-proj-import.html"/>
+    <mapID target="bluej-proj-new" url="bluej-proj-new.html"/>
+    <mapID target="bluej-proj-convert" url="bluej-proj-convert.html"/>    
+    <mapID target="bluej-quickref" url="bluej-quickref.html"/>
+    <mapID target="bluej-editor-quickref" url="bluej-editor-quickref.html"/>
+    
+</map>

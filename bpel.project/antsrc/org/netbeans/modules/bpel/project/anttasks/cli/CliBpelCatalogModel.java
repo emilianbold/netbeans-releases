@@ -53,7 +53,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import java.util.Properties;
-
 import javax.swing.text.Document;
 
 import org.apache.xml.resolver.Catalog;
@@ -75,22 +74,16 @@ import org.netbeans.modules.xml.xam.locator.CatalogModelException;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.Lookup;
 
-/**
- * This class helps Bpel project to obtain the Bpel model given a
- * BPEL File URI
- * @author Sreenivasan Genipudi
- */
 public class CliBpelCatalogModel implements CatalogModel {
     
     static CliBpelCatalogModel singletonCatMod = null;
     static File projectCatalogFileLocation = null;
-    
         
     /**
      * Constructor
      */
     public CliBpelCatalogModel() {
-      URI catalogFileLocPath= CommandlineBpelProjectXmlCatalogProvider.getInstance().getProjectWideCatalogForWizard();
+      URI catalogFileLocPath= CommandlineBpelProjectXmlCatalogProvider.getInstance().getProjectCatalogUri();
       if (catalogFileLocPath != null) {
           projectCatalogFileLocation = new File(catalogFileLocPath);
       }
@@ -116,12 +109,6 @@ public class CliBpelCatalogModel implements CatalogModel {
         }
     }    
     
-    /**
-     * Gets the  Model source for BPEL URI
-     * @param locationURI URI location of the BPEL File
-     * @return ModelSource return ModelSource
-     * @throws org.netbeans.modules.xml.xam.locator.CatalogModelException 
-     */
     public ModelSource getModelSource(URI locationURI) throws CatalogModelException {
        List<File> catalogFileList = new ArrayList<File>();
        File file = null;
@@ -157,19 +144,10 @@ public class CliBpelCatalogModel implements CatalogModel {
         return createModelSource(file, true);
     }
     
-    
-    /**
-     * Implementation of CatalogModel
-     * @param locationURI 
-     * @param modelSourceOfSourceDocument 
-     * @throws org.netbeans.modules.xml.xam.locator.CatalogModelException 
-     * @return 
-     */
     public ModelSource getModelSource(URI locationURI, ModelSource modelSourceOfSourceDocument) throws CatalogModelException {
         if(locationURI == null) {
             return null;
         }
-        
         URI resolvedURI = locationURI;
         
         if(modelSourceOfSourceDocument != null) {
@@ -188,11 +166,7 @@ public class CliBpelCatalogModel implements CatalogModel {
         
         return null;
     }
-    /**
-     * Implementation of CatalogModel
-     * @param file 
-     * @return 
-     */
+
      protected Document getDocument(File file) throws CatalogModelException{
         Document result = null;
 
@@ -202,8 +176,6 @@ public class CliBpelCatalogModel implements CatalogModel {
 
             FileInputStream fis = new FileInputStream(file);
             byte buffer[] = new byte[fis.available()];
-//                result = new org.netbeans.editor.BaseDocument(
-//                        org.netbeans.modules.xml.text.syntax.XMLKit.class, false);
             result = new javax.swing.text.PlainDocument();
             result.remove(0, result.getLength());
             fis.read(buffer);
@@ -221,41 +193,25 @@ public class CliBpelCatalogModel implements CatalogModel {
     private BpelModelFactory getModelFactory() {
         BpelModelFactory factory =null;
         try {
-            factory = (BpelModelFactory)//Lookups.metaInfServices(getClass().getClassLoader()).lookup(BpelModelFactory.class);            
-                Lookup.getDefault().lookup(BpelModelFactory.class);
+            factory = (BpelModelFactory) Lookup.getDefault().lookup(BpelModelFactory.class);
         }catch (Exception cnfe) {
             throw new RuntimeException(cnfe);
         }
         return factory;
-        
     }
     
-    /**
-     * Implementation of CatalogModel
-     * @param file 
-     * @param readOnly 
-     * @throws org.netbeans.modules.xml.xam.locator.CatalogModelException 
-     * @return 
-     */
      public ModelSource createModelSource(File file, boolean readOnly) throws CatalogModelException{
          
          Lookup lookup = Lookups.fixed(new Object[]{
                 file,
                 getDocument(file),
                 getDefault(),
-              //  new StreamSource(file)
                 file
             });
             
          return new ModelSource(lookup, readOnly);
      }
     
-    /**
-     * Creates BPEL Model from BPEL URI
-     * @param locationURI 
-     * @throws java.lang.Exception 
-     * @return 
-     */
     public BpelModel getBPELModel(URI locationURI) throws Exception {
         ModelSource source = getDefault().getModelSource(locationURI);
         BpelModel model = getModelFactory().getModel (source);
@@ -322,12 +278,10 @@ public class CliBpelCatalogModel implements CatalogModel {
     }    
     
      public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
-         //TODO FIXME: this is to fix a build break. Please implement this method.
          return null;
      }
      
      public LSInput resolveResource(String type, String namespaceURI, String publicId, String systemId, String baseURI) {
-         //TODO FIXME: this is to fix a build break. Please implement this method.
          return null;
      }    
 }

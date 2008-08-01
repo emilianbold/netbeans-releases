@@ -22,13 +22,11 @@ package org.netbeans.modules.xml.xpath.ext.impl;
 import org.netbeans.modules.xml.xpath.ext.LocationStep;
 import org.netbeans.modules.xml.xpath.ext.XPathLocationPath;
 import org.netbeans.modules.xml.xpath.ext.XPathModel;
-import org.netbeans.modules.xml.xpath.ext.XPathSchemaContext;
+import org.netbeans.modules.xml.xpath.ext.schema.resolver.XPathSchemaContext;
 import org.netbeans.modules.xml.xpath.ext.visitor.XPathVisitor;
 
 
 /**
- * @todo PUT DESCRIPTION HERE
- * 
  * @author Enrico Lelina
  * @version 
  */

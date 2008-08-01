@@ -10,7 +10,9 @@
       </jsp-property-group>
     </jsp-config>
 --%>
-
+<%
+    application.getClass();
+%>
 <%-- any content can be specified here e.g.: --%>
 <h2>This is the page header</h2>
 <%-- completion for HTML attributes -->
@@ -27,6 +29,13 @@ rtl
 <p dir="rtl"
 --%>
 
+<%-- Java completion for out object --%>
+<%--CC
+<% ou|  %>
+JspWriter out
+<% out  %>
+--%>
+
 <%--CC
 <jsp:|
 < jsp:text >
@@ -38,13 +47,5 @@ ${p|
 pageContext
 ${pageContext
 --%>
-
-<%-- Java completion for out object --%>
-<%--CC
-<% ou|  %>
-JspWriter out
-<% out  %>
---%>
-
 
 <hr>

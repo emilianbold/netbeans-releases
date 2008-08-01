@@ -89,24 +89,41 @@ class AppFrameworkSupport {
     private static Map<FileObject, String> appClassMap = new HashMap<FileObject, String>();
     
     /**
-     * Checks if the given project uses the app framework. Technically it checks
-     * the project classpath for Application class.
+     * Checks whether the project of given file is an application based on
+     * Swing Application Framework. Technically it checks if the app framework
+     * library is on classpath and the project contains a valid Application
+     * subclass.
      * @param fileInProject some source file contained in the project
-     * @return true if the project of given file uses app framework
+     * @return true if the project of given file uses app framework and has
+     *         a valid application class
      */
     static boolean isFrameworkEnabledProject(FileObject fileInProject) {
         return isFrameworkLibAvailable(fileInProject)
                 && getApplicationClassName(fileInProject) != null;
     }
-    
+
+    /**
+     * Checks whether the project of given file uses Swing Application Framework,
+     * i.e. whether the framework is on project classpath. Does not check if
+     * there is an Application subclass (the project can be just a library).
+     * @param fileInProject some source file contained in the project
+     * @return true if the project of given file uses app framework
+     */
     static boolean isFrameworkLibAvailable(FileObject fileInProject) {
         ClassPath cp = ClassPath.getClassPath(fileInProject, ClassPath.EXECUTE);
         return cp != null && cp.findResource(APPLICATION_RESOURCE_NAME) != null
                && projectCanUseFramework(fileInProject);
     }
 
+    /**
+     * Checks whether given project has an Application subclass stored in its
+     * auxiliary configuration (i.e. a quick check if it is an application -
+     * without checking the application class really exists in the project).
+     * @param project
+     * @return true if the project appears as app framework-based application
+     */
     static boolean isApplicationProject(Project project) {
-        AuxiliaryConfiguration ac = project.getLookup().lookup(AuxiliaryConfiguration.class);
+        AuxiliaryConfiguration ac = ProjectUtils.getAuxiliaryConfiguration(project);
         return ac.getConfigurationFragment(SWINGAPP_ELEMENT, SWINGAPP_NS, true) != null;
         // [would be better to check for presence of valid application class in ac]
     }
@@ -148,7 +165,7 @@ class AppFrameworkSupport {
     static String getApplicationClassName(FileObject fileInProject) {
         Project project = FileOwnerQuery.getOwner(fileInProject);
         if (project != null) {
-            AuxiliaryConfiguration ac = project.getLookup().lookup(AuxiliaryConfiguration.class);
+            AuxiliaryConfiguration ac = ProjectUtils.getAuxiliaryConfiguration(project);
             return getApplicationClassName(fileInProject, project, ac);
         } else {
             return null;
@@ -158,7 +175,7 @@ class AppFrameworkSupport {
     static String getApplicationClassName(Project project) {
         FileObject fileRep = getSourceRoot(project);
         if (fileRep != null) {
-            AuxiliaryConfiguration ac = project.getLookup().lookup(AuxiliaryConfiguration.class);
+            AuxiliaryConfiguration ac = ProjectUtils.getAuxiliaryConfiguration(project);
             return getApplicationClassName(fileRep, project, ac);
         }
         return null;
@@ -204,7 +221,7 @@ class AppFrameworkSupport {
         }
 
         if (searched) { // possibly update project and cache
-            if (storedInProject) {
+            if (appClassName != null) { // valid app class found - make sure it is stored in project
                 org.w3c.dom.Document xml = XMLUtil.createDocument(SWINGAPP_ELEMENT, SWINGAPP_NS, null, null);
                 appEl = xml.createElementNS(SWINGAPP_NS, SWINGAPP_ELEMENT);
                 if (appClassName != null) {
@@ -213,6 +230,15 @@ class AppFrameworkSupport {
                     appEl.appendChild(clsEl);
                 }
                 ac.putConfigurationFragment(appEl, true);
+                storedInProject = true;
+                try {
+                    ProjectManager.getDefault().saveProject(project);
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            } else if (storedInProject) { // app class disappeared
+                ac.removeConfigurationFragment(SWINGAPP_ELEMENT, SWINGAPP_NS, true);
+                storedInProject = false;
                 try {
                     ProjectManager.getDefault().saveProject(project);
                 } catch (IOException ex) {

@@ -2,7 +2,7 @@
 <!--
  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  
- Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  
  The contents of this file are subject to the terms of either the GNU
  General Public License Version 2 only ("GPL") or the Common
@@ -55,21 +55,21 @@
                     <code-name-base>org.netbeans.modules.websvc.rest</code-name-base>
                     <run-dependency>
                         <release-version>0</release-version>
-                        <specification-version>0.6.1</specification-version>
+                        <specification-version>0.9</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.websvc.rest.samples</code-name-base>
                     <run-dependency>
                         <release-version>0</release-version>
-                        <specification-version>0.6.1</specification-version>
+                        <specification-version>0.9</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.websvc.restapi</code-name-base>
                     <run-dependency>
                         <release-version>0</release-version>
-                        <specification-version>0.6.1</specification-version>
+                        <specification-version>0.9</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -78,7 +78,7 @@
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>0</release-version>
-                        <specification-version>0.6.1</specification-version>
+                        <specification-version>0.9</specification-version>
                     </run-dependency>
                 </dependency>
             </module-dependencies>
@@ -86,10 +86,23 @@
                 <test-type>
                     <name>qa-functional</name>
                     <test-dependency>
+                        <code-name-base>org.netbeans.modules.projectui</code-name-base>
+                        <compile-dependency/>
+                        <test/>
+                    </test-dependency>
+                    <test-dependency>
                         <code-name-base>org.netbeans.modules.websvc.kit</code-name-base>
                         <recursive/>
                         <compile-dependency/>
                         <test/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.jellytools</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.jellytools.platform</code-name-base>
+                        <compile-dependency/>
                     </test-dependency>
                 </test-type>
             </test-dependencies>

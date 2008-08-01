@@ -168,20 +168,19 @@ class Archive implements Stamps.Updater {
         dos.write(data);
     }
     
-    private Entry getEntry(JarSource source, String name) {
-        Integer src = sources.get(source.getIdentifier());
-        if (src == null) return null;
-        
-        return entries.get(new Template(src, name)); // or null
-    }
-    
     public byte[] getData(JarSource source, String name) throws IOException {
         Entry e = null;
+        Map<Entry, Entry> ents = entries;
         if (active) {
-            e = getEntry(source, name);
+            Integer src = sources.get(source.getIdentifier());
+            if (src == null) {
+                e = null;
+            } else {
+                e = ents.get(new Template(src, name)); // or null
+            }
             if (e == null && gathering) {
                 String srcId = source.getIdentifier();
-                String key = srcId + "!/" + name;
+                String key = srcId + name;
 
                 synchronized(gatheringLock) {
                     if (!knownSources.containsKey(srcId)) knownSources.put(srcId, source);
@@ -230,8 +229,9 @@ class Archive implements Stamps.Updater {
         // no need to really synchronize on this collection, gathering flag
         // is already cleared
         for (String s:requests.keySet()) {
-            String[] parts = s.split("!/");
+            String[] parts = s.split("(?<=!/)");
             JarSource src = knownSources.get(parts[0]);
+            assert src != null : "Could not find " + s + " in " + knownSources;
             byte[] data = src.resource(parts[1]);
             Integer srcId = sources.get(parts[0]);
             if (srcId == null) {

@@ -70,6 +70,8 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.RequiredProjectsC
 
 /**
  * Change History:
+ * V46 - 06.17.08 - NB 6.5
+ *   [Remote] Development Server
  * V45 - 01.12-08
  *  Encoding
  * V44 - 3.08.08 - NB 6.1
@@ -112,7 +114,7 @@ public abstract class CommonConfigurationXMLCodec
     extends XMLDecoder
     implements XMLEncoder {
 
-    public final static int CURRENT_VERSION = 45;
+    public final static int CURRENT_VERSION = 46;
 
     // Generic
     protected final static String PROJECT_DESCRIPTOR_ELEMENT = "projectDescriptor"; // NOI18N
@@ -133,6 +135,7 @@ public abstract class CommonConfigurationXMLCodec
     protected final static String SOURCE_ENCODING_ELEMENT = "sourceEncoding"; // NOI18N
     // Tools Set (Compiler set and platform)
     protected final static String TOOLS_SET_ELEMENT = "toolsSet"; // NOI18N
+    protected final static String DEVELOPMENT_SERVER_ELEMENT = "developmentServer"; // NOI18N
     protected final static String COMPILER_SET_ELEMENT = "compilerSet"; // NOI18N
     protected final static String C_REQUIRED_ELEMENT = "cRequired"; // NOI18N
     protected final static String CPP_REQUIRED_ELEMENT = "cppRequired"; // NOI18N
@@ -306,6 +309,7 @@ public abstract class CommonConfigurationXMLCodec
     
     private void writeToolsSetBlock(XMLEncoderStream xes, MakeConfiguration makeConfiguration) {
 	xes.elementOpen(TOOLS_SET_ELEMENT);
+	xes.element(DEVELOPMENT_SERVER_ELEMENT, makeConfiguration.getDevelopmentHost().getDisplayName());
         xes.element(COMPILER_SET_ELEMENT, "" + makeConfiguration.getCompilerSet().getNameAndFlavor());
         if (makeConfiguration.getCRequired().getValue() != makeConfiguration.getCRequired().getDefault())
             xes.element(C_REQUIRED_ELEMENT, "" + makeConfiguration.getCRequired().getValue());

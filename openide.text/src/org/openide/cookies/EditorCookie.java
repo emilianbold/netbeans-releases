@@ -98,6 +98,12 @@ public interface EditorCookie extends LineCookie {
     * it is.
     * <p><em>Note</em> that this does not involve opening the actual Editor window.
     * For that, use {@link #open}.
+    * 
+    * <p>Method will throw {@link org.openide.util.UserQuestionException} exception
+    * if file size is too big. This exception could be caught and 
+    * its method {@link org.openide.util.UserQuestionException#confirmed} 
+    * can be used for confirmation. You need to call {@link #openDocument}}
+    * one more time after confirmation.
     *
     * @return the styled document for this cookie
     * @exception IOException if the document could not be loaded

@@ -141,6 +141,9 @@ public abstract class BasicTabDisplayerUI extends AbstractTabDisplayerUI {
         super.install();
         tabState = createTabState();
         defaultRenderer = createDefaultRenderer();
+        if( null != displayer.getContainerWinsysInfo() ) {
+            defaultRenderer.setShowCloseButton( displayer.getContainerWinsysInfo().isTopComponentClosingEnabled() );
+        }
         layoutModel.setPadding (defaultRenderer.getPadding());
         pixelsToAdd = defaultRenderer.getPixelsToAddToSelection();
         repaintPolicy = createRepaintPolicy();

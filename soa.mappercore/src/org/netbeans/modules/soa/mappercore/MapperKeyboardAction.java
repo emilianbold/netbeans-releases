@@ -48,10 +48,15 @@ import javax.swing.KeyStroke;
  * @author alex
  */
 public abstract class MapperKeyboardAction extends AbstractAction {
-    private String actionKey;
-    private KeyStroke key;
+    protected Canvas canvas;
+    
+    public MapperKeyboardAction(Canvas canvas) {
+        this.canvas = canvas;
+    }
     
     public abstract String getActionKey();
     public abstract KeyStroke[] getShortcuts();
-    
+    protected void getName() {
+        
+    }
 }

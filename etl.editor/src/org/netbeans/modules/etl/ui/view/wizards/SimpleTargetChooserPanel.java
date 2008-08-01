@@ -183,7 +183,7 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.FinishablePanel
         String errorMessage = canUseFileName(
                 gui.getTargetGroup().getRootFolder(), gui.getTargetFolder(), gui.getTargetName(),
                 template.getExt());
-        wizard.putProperty("WizardPanel_errorMessage", errorMessage); // NOI18N
+        wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, errorMessage); // NOI18N
 
         return errorMessage == null;
     }
@@ -249,7 +249,7 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.FinishablePanel
             wizard.putProperty("NewEtlWizard_Title", substitute); // NOI18N
         }
         wizard.putProperty(
-                "WizardPanel_contentData",
+                WizardDescriptor.PROP_CONTENT_DATA,
                 new String[]{ // NOI18N
             nbBundle4.substring(15), // NOI18N
             nbBundle5.substring(15)}); // NOI18N

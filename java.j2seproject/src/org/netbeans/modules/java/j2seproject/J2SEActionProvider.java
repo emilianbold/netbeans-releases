@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -50,6 +50,7 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -69,10 +70,13 @@ import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.project.runner.ProjectRunner;
 import org.netbeans.api.java.queries.UnitTestForSourceQuery;
+import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.ui.ScanDialog;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
@@ -89,6 +93,7 @@ import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
+import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -103,6 +108,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -154,12 +160,21 @@ class J2SEActionProvider implements ActionProvider {
         COMMAND_DEBUG_STEP_INTO,
     };
 
+    private static final String[] actionsDisabledForQuickRun = {
+        COMMAND_BUILD,
+        COMMAND_CLEAN,
+        COMMAND_COMPILE_SINGLE,
+        JavaProjectConstants.COMMAND_DEBUG_FIX,
+    };
+
     // Project
     final J2SEProject project;
 
     // Ant project helper of the project
     private UpdateHelper updateHelper;
-
+    
+    //Property evaluator
+    private final PropertyEvaluator evaluator;
 
     /** Map from commands to ant targets */
     Map<String,String[]> commands;
@@ -172,11 +187,11 @@ class J2SEActionProvider implements ActionProvider {
 
     private Sources src;
     private List<FileObject> roots;
-    
+
     // Used only from unit tests to suppress detection of top level classes. If value
     // is different from null it will be returned instead.
     String unitTestingSupport_fixClasses;
-
+    
     public J2SEActionProvider(J2SEProject project, UpdateHelper updateHelper) {
 
         commands = new HashMap<String,String[]>();
@@ -203,9 +218,10 @@ class J2SEActionProvider implements ActionProvider {
         ));
 
         this.updateHelper = updateHelper;
-        this.project = project;        
+        this.project = project;
+        this.evaluator = project.evaluator();
     }
-    
+
     private final FileChangeListener modificationListener = new FileChangeAdapter() {
         public @Override void fileChanged(FileEvent fe) {
             modification(fe.getFile());
@@ -223,8 +239,8 @@ class J2SEActionProvider implements ActionProvider {
             }
         }
     };
-    
-    
+
+
     void startFSListener () {
         //Listener has to be started when the project's lookup is initialized
         try {
@@ -318,6 +334,51 @@ class J2SEActionProvider implements ActionProvider {
                 targetNames = getTargetNames(command, context, p);
                 if (targetNames == null) {
                     return;
+                }
+                if (isCompileOnSaveEnabled(J2SEProjectProperties.DISABLE_COMPILE_ON_SAVE)) {
+                    Properties execProperties = new Properties();
+
+                    copyValue(J2SEProjectProperties.RUN_JVM_ARGS, execProperties);
+                    copyValue(J2SEProjectProperties.RUN_WORK_DIR, execProperties);
+                    
+                    if (targetNames.length == 1 && ("run-applet".equals(targetNames[0]) || "debug-applet".equals(targetNames[0]))) {
+                        try {
+                            FileObject file = findSources(context)[0];
+                            String url = p.getProperty("applet.url");
+                            execProperties.setProperty("applet.url", url);
+                            ProjectRunner.execute(targetNames[0], execProperties, file);
+                        } catch (IOException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                        return ;
+                    }
+                    if (COMMAND_RUN.equals(command) || COMMAND_DEBUG.equals(command)) {
+                        bypassAntBuildScript(command, context, execProperties);
+
+                        return ;
+                    }
+                    if (COMMAND_RUN_SINGLE.equals(command) || COMMAND_DEBUG_SINGLE.equals(command)) {
+                        FileObject[] files;
+                        if ((files = findTestSources(context, false)) != null) {
+                            try {
+                                ProjectRunner.execute(command.equals(COMMAND_RUN_SINGLE) ? ProjectRunner.QUICK_TEST : ProjectRunner.QUICK_TEST_DEBUG, execProperties, files[0]);
+                            } catch (IOException ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
+                            return;
+                        }
+                        bypassAntBuildScript(command, context, p);
+                        return;
+                    }
+                    if (COMMAND_TEST_SINGLE.equals(command) || COMMAND_DEBUG_TEST_SINGLE.equals(command)) {
+                        FileObject[] files = findSources(context);
+                        try {
+                            ProjectRunner.execute(COMMAND_TEST_SINGLE.equals(command) ? ProjectRunner.QUICK_TEST : ProjectRunner.QUICK_TEST_DEBUG, execProperties, files[0]);
+                        } catch (IOException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                        return;
+                    }
                 }
                 if (targetNames.length == 0) {
                     targetNames = null;
@@ -537,7 +598,7 @@ class J2SEActionProvider implements ActionProvider {
                         return null;
                     }
                 } else {
-                    if (!hasMainClassFromTest) {                    
+                    if (!hasMainClassFromTest) {
                         if (mainClasses.size() == 1) {
                             //Just one main class
                             clazz = mainClasses.iterator().next().getBinaryName();
@@ -686,9 +747,19 @@ class J2SEActionProvider implements ActionProvider {
         return new String[] {"debug-test"}; // NOI18N
     }
 
+    private boolean isCompileOnSaveEnabled(String propertyName) {
+        String compileOnSaveProperty = project.evaluator().getProperty(propertyName);
+
+        return (compileOnSaveProperty == null || !Boolean.valueOf(compileOnSaveProperty)) && J2SEProjectUtil.isCompileOnSaveSupported(project);
+    }
+
     public boolean isActionEnabled( String command, Lookup context ) {
         FileObject buildXml = findBuildXml();
         if (  buildXml == null || !buildXml.isValid()) {
+            return false;
+        }
+        if (   Arrays.asList(actionsDisabledForQuickRun).contains(command)
+            && isCompileOnSaveEnabled(J2SEProjectProperties.DISABLE_COMPILE_ON_SAVE)) {
             return false;
         }
         if ( command.equals( COMMAND_COMPILE_SINGLE ) ) {
@@ -723,8 +794,8 @@ class J2SEActionProvider implements ActionProvider {
 
     private static final Pattern SRCDIRJAVA = Pattern.compile("\\.java$"); // NOI18N
     private static final String SUBST = "Test.java"; // NOI18N
-    
-    
+
+
     /**
      * Lists all top level classes in a String, classes are separated by space (" ")
      * Used by debuger fix and continue (list of files to fix)
@@ -871,6 +942,74 @@ class J2SEActionProvider implements ActionProvider {
         return srcDir;
     }
 
+    private void bypassAntBuildScript(String command, Lookup context, Properties p) throws IllegalArgumentException {
+        FileObject toRun;
+        boolean run = true;
+
+        if (COMMAND_RUN.equals(command) || COMMAND_DEBUG.equals(command)) {
+            final String mainClass = project.evaluator().getProperty(J2SEProjectProperties.MAIN_CLASS);
+            final FileObject[] mainClassFile = new FileObject[1];
+            ClassPathProviderImpl cpProvider = project.getClassPathProvider();
+            if (cpProvider != null) {
+                ClassPath bootPath = cpProvider.getProjectSourcesClassPath(ClassPath.BOOT);
+                ClassPath compilePath = cpProvider.getProjectSourcesClassPath(ClassPath.COMPILE);
+                ClassPath sourcePath = cpProvider.getProjectSourcesClassPath(ClassPath.SOURCE);
+                try {
+                    JavaSource.create(ClasspathInfo.create(bootPath, compilePath, sourcePath)).runUserActionTask(new org.netbeans.api.java.source.Task<CompilationController>() {
+                        public void run(CompilationController parameter) throws Exception {
+                            TypeElement main = parameter.getElements().getTypeElement(mainClass);
+
+                            if (main != null) {
+                                mainClassFile[0] = SourceUtils.getFile(main, parameter.getClasspathInfo());
+                            }
+                        }
+                    }, true);
+                } catch (IOException e) {
+                    Exceptions.printStackTrace(e);
+                }
+            }
+
+            if (mainClassFile[0] == null) {
+                //XXX: notify user
+                return;
+            }
+
+            toRun = mainClassFile[0];
+        } else {
+            //run single:
+            FileObject[] files = findSources(context);
+
+            if (files == null || files.length != 1) {
+                files = findTestSources(context, false);
+                run = false;
+            }
+
+            if (files == null || files.length != 1) {
+                return ;//warn the user
+            }
+
+            toRun = files[0];
+        }
+        boolean debug = COMMAND_DEBUG.equals(command) || COMMAND_DEBUG_SINGLE.equals(command);
+        try {
+            if (run) {
+                copyValue(J2SEProjectProperties.APPLICATION_ARGS, p);
+                ProjectRunner.execute(debug ? ProjectRunner.QUICK_DEBUG : ProjectRunner.QUICK_RUN, p, toRun);
+            } else {
+                ProjectRunner.execute(debug ? ProjectRunner.QUICK_TEST_DEBUG : ProjectRunner.QUICK_TEST, p, toRun);
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+
+    private void copyValue(String propertyName, Properties properties) {
+        String val = evaluator.getProperty(propertyName);
+        if (val != null) {
+            properties.setProperty(propertyName, val);
+        }
+    }
+
     private static enum MainClassStatus {
         SET_AND_VALID,
         SET_BUT_INVALID,
@@ -980,13 +1119,13 @@ class J2SEActionProvider implements ActionProvider {
 
         return canceled;
     }
-    
+
     private String showMainClassWarning (final FileObject file, final Collection<ElementHandle<TypeElement>> mainClasses) {
         assert mainClasses != null;
         String mainClass = null;
         final JButton okButton = new JButton (NbBundle.getMessage (MainClassWarning.class, "LBL_MainClassWarning_ChooseMainClass_OK")); // NOI18N
         okButton.getAccessibleContext().setAccessibleDescription (NbBundle.getMessage (MainClassWarning.class, "AD_MainClassWarning_ChooseMainClass_OK"));
-        
+
         final MainClassWarning panel = new MainClassWarning (NbBundle.getMessage(MainClassWarning.class, "CTL_FileMultipleMain", file.getNameExt()),mainClasses);
         Object[] options = new Object[] {
             okButton,

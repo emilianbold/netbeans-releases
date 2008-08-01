@@ -54,7 +54,62 @@ public class ContextDetector extends ExtendedTokenSequence {
         super(ts, diffs);
         this.braces = braces;
     }
+    
+    /*package local*/ boolean isStatementContinuation(){
+        Token<CppTokenId> prev = lookPreviousImportant();
+        Token<CppTokenId> next = lookNextImportant();
+        if (prev == null || next == null){
+            return false;
+        }
+        if (next.id() == IDENTIFIER) {
+            if (prev.id() == IDENTIFIER) {
+                return false;
+            } else if (prev.id() == RPAREN) {
+                prev =lookPreviousStatement();
+                if (prev == null || prev.id() == IDENTIFIER){
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
 
+    /*package local*/ boolean isQuestionColumn(){
+        int index = index();
+        try {
+            int depth = 0;
+            while(movePrevious()) {
+                if (braces.lastStatementStart >= index()){
+                    return false;
+                }
+                switch (token().id()) {
+                    case RPAREN:
+                        depth++;
+                        break;
+                    case LPAREN:
+                        depth--;
+                        if (depth < 0) {
+                            return false;
+                        }
+                        break;
+                    case QUESTION:
+                        if (depth == 0) {
+                            return true;
+                        }
+                        break;
+                    case LBRACE:
+                    case RBRACE:
+                    case SEMICOLON:
+                        return false;
+                }
+            }
+            return false;
+        } finally {
+            moveIndex(index);
+            moveNext();
+        }
+    }
+    
     /*package local*/ boolean isLikeTemplate(Token<CppTokenId> current){
         int index = index();
         try {
@@ -119,6 +174,8 @@ public class ContextDetector extends ExtendedTokenSequence {
                     case FLOAT_LITERAL:
                     case DOUBLE_LITERAL:
                     case UNSIGNED_LITERAL:
+                    case UNSIGNED_LONG_LITERAL:
+                    case UNSIGNED_LONG_LONG_LITERAL:
                     case CHAR_LITERAL:
                     case STRING_LITERAL:
                         //it's a template specialization
@@ -273,6 +330,49 @@ public class ContextDetector extends ExtendedTokenSequence {
         }
         return false;
     }
+
+    /*package local*/ boolean isPrefixOperator(Token<CppTokenId> current){
+        Token<CppTokenId> previous = lookPreviousImportant();
+        if (previous != null) {
+            String prevCategory = previous.id().primaryCategory();
+            if (OPERATOR_CATEGORY.equals(prevCategory)) {
+                return true;
+            }
+            switch(previous.id()){
+                case RBRACE:
+                case LBRACE:
+                case LPAREN:
+                case LBRACKET:
+                case SEMICOLON:
+                case COMMA:
+                    return true;
+                default:
+                    return false;
+            }
+        }
+        return true;
+    }
+
+    /*package local*/ boolean isPostfixOperator(Token<CppTokenId> current){
+        Token<CppTokenId> next = lookNextImportant();
+        if (next != null) {
+            String nextCategory = next.id().primaryCategory();
+            if (OPERATOR_CATEGORY.equals(nextCategory)) {
+                return true;
+            }
+            switch(next.id()){
+                case RBRACE:
+                case RPAREN:
+                case RBRACKET:
+                case SEMICOLON:
+                case COMMA:
+                    return true;
+                default:
+                    return false;
+            }
+        }
+        return true;
+    }
     
     /*package local*/ OperatorKind getOperatorKind(Token<CppTokenId> current){
         Token<CppTokenId> previous = lookPreviousImportant();
@@ -294,6 +394,65 @@ public class ContextDetector extends ExtendedTokenSequence {
                     case LT:
                     default:
                         return OperatorKind.SEPARATOR;
+                }
+            }
+            if (OPERATOR_CATEGORY.equals(prevCategory)) {
+                switch(previous.id()){
+                    case EQ: //("=", "operator"),
+                    case PLUSEQ: //("+=", "operator"),
+                    case MINUSEQ: //("-=", "operator"),
+                    case STAREQ: //("*=", "operator"),
+                    case SLASHEQ: //("/=", "operator"),
+                    case AMPEQ: //("&=", "operator"),
+                    case BAREQ: //("|=", "operator"),
+                    case CARETEQ: //("^=", "operator"),
+                    case PERCENTEQ: //("%=", "operator"),
+                    case LTLTEQ: //("<<=", "operator"),
+                    case GTGTEQ: //(">>=", "operator"),
+                        switch(current.id()){
+                            case STAR:
+                            case AMP:
+                            case PLUS:
+                            case MINUS:
+                                return OperatorKind.UNARY;
+                            case GT:
+                            case LT:
+                            default:
+                                return OperatorKind.SEPARATOR;
+                        }
+                    case LT: //("<", "operator"),
+                    case EQEQ: //("==", "operator"),
+                    case LTEQ: //("<=", "operator"),
+                    case GTEQ: //(">=", "operator"),
+                    case NOTEQ: //("!=","operator"),
+                    case AMPAMP: //("&&", "operator"),
+                    case BARBAR: //("||", "operator"),
+                    case SLASH: //("/", "operator"),
+                    case BAR: //("|", "operator"),
+                    case PERCENT: //("%", "operator"),
+                    case LTLT: //("<<", "operator"),
+                    case GTGT: //(">>", "operator"),
+                        switch(current.id()){
+                            case STAR:
+                            case AMP:
+                            case PLUS:
+                            case MINUS:
+                                return OperatorKind.UNARY;
+                            case GT:
+                            case LT:
+                            default:
+                                return OperatorKind.SEPARATOR;
+                        }
+                    case GT: //(">", "operator"),
+                        switch(current.id()){
+                            case PLUS:
+                            case MINUS:
+                                return OperatorKind.UNARY;
+                            case GT:
+                            case LT:
+                                return OperatorKind.SEPARATOR;
+                        }
+                        break;
                 }
             }
             if (NUMBER_CATEGORY.equals(prevCategory) ||

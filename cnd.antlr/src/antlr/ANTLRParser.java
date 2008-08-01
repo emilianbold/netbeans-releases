@@ -13,7 +13,6 @@ import antlr.RecognitionException;
 import antlr.NoViableAltException;
 import antlr.MismatchedTokenException;
 import antlr.SemanticException;
-import antlr.ParserSharedInputState;
 import antlr.collections.impl.BitSet;
 
 import java.util.Enumeration;
@@ -89,11 +88,6 @@ public ANTLRParser(TokenStream lexer) {
   this(lexer,2);
 }
 
-public ANTLRParser(ParserSharedInputState state) {
-  super(state,2);
-  tokenNames = _tokenNames;
-}
-
 	public final void grammar() throws RecognitionException, TokenStreamException {
 		
 		Token  n = null;
@@ -104,7 +98,7 @@ public ANTLRParser(ParserSharedInputState state) {
 			_loop4:
 			do {
 				if ((LA(1)==LITERAL_header)) {
-					if ( inputState.guessing==0 ) {
+					if ( guessing==0 ) {
 						
 									n = null;	// RK: prevent certain orders of header actions
 													// overwriting eachother.
@@ -131,7 +125,7 @@ public ANTLRParser(ParserSharedInputState state) {
 					}
 					h = LT(1);
 					match(ACTION);
-					if ( inputState.guessing==0 ) {
+					if ( guessing==0 ) {
 						
 									// store the header action
 									// FIXME: 'n' should be checked for validity
@@ -181,7 +175,7 @@ public ANTLRParser(ParserSharedInputState state) {
 			match(Token.EOF_TYPE);
 		}
 		catch (RecognitionException ex) {
-			if (inputState.guessing==0) {
+			if (guessing==0) {
 				
 				reportError(ex, "rule grammar trapped:\n"+ex.toString());
 						consumeUntil(EOF);
@@ -204,8 +198,8 @@ public ANTLRParser(ParserSharedInputState state) {
 				idTok=id();
 				match(ASSIGN);
 				value=optionValue();
-				if ( inputState.guessing==0 ) {
-					behavior.setFileOption(idTok, value,getInputState().filename);
+				if ( guessing==0 ) {
+					behavior.setFileOption(idTok, value,getFilename());
 				}
 				match(SEMI);
 			}
@@ -231,7 +225,7 @@ public ANTLRParser(ParserSharedInputState state) {
 			{
 				a = LT(1);
 				match(ACTION);
-				if ( inputState.guessing==0 ) {
+				if ( guessing==0 ) {
 					behavior.refPreambleAction(a);
 				}
 				break;
@@ -254,7 +248,7 @@ public ANTLRParser(ParserSharedInputState state) {
 			{
 				d = LT(1);
 				match(DOC_COMMENT);
-				if ( inputState.guessing==0 ) {
+				if ( guessing==0 ) {
 					doc=d.getText();
 				}
 				break;
@@ -275,7 +269,7 @@ public ANTLRParser(ParserSharedInputState state) {
 			if (((LA(1)==LITERAL_lexclass||LA(1)==LITERAL_class) && (LA(2)==TOKEN_REF||LA(2)==RULE_REF))) {
 				int _m13 = mark();
 				synPredMatched13 = true;
-				inputState.guessing++;
+				guessing++;
 				try {
 					{
 					switch ( LA(1)) {
@@ -303,7 +297,7 @@ public ANTLRParser(ParserSharedInputState state) {
 					synPredMatched13 = false;
 				}
 				rewind(_m13);
-				inputState.guessing--;
+				guessing--;
 			}
 			if ( synPredMatched13 ) {
 				lexerSpec(doc);
@@ -313,7 +307,7 @@ public ANTLRParser(ParserSharedInputState state) {
 				if (((LA(1)==LITERAL_class) && (LA(2)==TOKEN_REF||LA(2)==RULE_REF))) {
 					int _m15 = mark();
 					synPredMatched15 = true;
-					inputState.guessing++;
+					guessing++;
 					try {
 						{
 						match(LITERAL_class);
@@ -326,7 +320,7 @@ public ANTLRParser(ParserSharedInputState state) {
 						synPredMatched15 = false;
 					}
 					rewind(_m15);
-					inputState.guessing--;
+					guessing--;
 				}
 				if ( synPredMatched15 ) {
 					treeParserSpec(doc);
@@ -340,12 +334,12 @@ public ANTLRParser(ParserSharedInputState state) {
 				}
 				}
 				rules();
-				if ( inputState.guessing==0 ) {
+				if ( guessing==0 ) {
 					behavior.endGrammar();
 				}
 			}
 			catch (RecognitionException ex) {
-				if (inputState.guessing==0) {
+				if (guessing==0) {
 					
 							if ( ex instanceof NoViableAltException ) {
 								NoViableAltException e = (NoViableAltException)ex;
@@ -393,7 +387,7 @@ public ANTLRParser(ParserSharedInputState state) {
 		{
 			a = LT(1);
 			match(TOKEN_REF);
-			if ( inputState.guessing==0 ) {
+			if ( guessing==0 ) {
 				idTok = a;
 			}
 			break;
@@ -402,7 +396,7 @@ public ANTLRParser(ParserSharedInputState state) {
 		{
 			b = LT(1);
 			match(RULE_REF);
-			if ( inputState.guessing==0 ) {
+			if ( guessing==0 ) {
 				idTok = b;
 			}
 			break;
@@ -433,7 +427,7 @@ public ANTLRParser(ParserSharedInputState state) {
 			lc = LT(1);
 			match(LITERAL_lexclass);
 			idTok=id();
-			if ( inputState.guessing==0 ) {
+			if ( guessing==0 ) {
 				
 								antlrTool.warning("lexclass' is deprecated; use 'class X extends Lexer'",
 												 getFilename(), lc.getLine(), lc.getColumn());
@@ -473,7 +467,7 @@ public ANTLRParser(ParserSharedInputState state) {
 		}
 		}
 		}
-		if ( inputState.guessing==0 ) {
+		if ( guessing==0 ) {
 			behavior.startLexer(getFilename(), idTok,sup,doc);
 		}
 		match(SEMI);
@@ -501,7 +495,7 @@ public ANTLRParser(ParserSharedInputState state) {
 		}
 		}
 		}
-		if ( inputState.guessing==0 ) {
+		if ( guessing==0 ) {
 			behavior.endOptions();
 		}
 		{
@@ -533,7 +527,7 @@ public ANTLRParser(ParserSharedInputState state) {
 		{
 			a = LT(1);
 			match(ACTION);
-			if ( inputState.guessing==0 ) {
+			if ( guessing==0 ) {
 				behavior.refMemberAction(a);
 			}
 			break;
@@ -586,7 +580,7 @@ public ANTLRParser(ParserSharedInputState state) {
 		}
 		}
 		}
-		if ( inputState.guessing==0 ) {
+		if ( guessing==0 ) {
 			behavior.startTreeWalker(getFilename(), idTok,sup,doc);
 		}
 		match(SEMI);
@@ -614,7 +608,7 @@ public ANTLRParser(ParserSharedInputState state) {
 		}
 		}
 		}
-		if ( inputState.guessing==0 ) {
+		if ( guessing==0 ) {
 			behavior.endOptions();
 		}
 		{
@@ -646,7 +640,7 @@ public ANTLRParser(ParserSharedInputState state) {
 		{
 			a = LT(1);
 			match(ACTION);
-			if ( inputState.guessing==0 ) {
+			if ( guessing==0 ) {
 				behavior.refMemberAction(a);
 			}
 			break;
@@ -707,7 +701,7 @@ public ANTLRParser(ParserSharedInputState state) {
 		}
 		case SEMI:
 		{
-			if ( inputState.guessing==0 ) {
+			if ( guessing==0 ) {
 				
 							antlrTool.warning("use 'class X extends Parser'", getFilename(), idTok.getLine(), idTok.getColumn());
 				//			System.out.println("warning: line " +
@@ -722,7 +716,7 @@ public ANTLRParser(ParserSharedInputState state) {
 		}
 		}
 		}
-		if ( inputState.guessing==0 ) {
+		if ( guessing==0 ) {
 			behavior.startParser(getFilename(), idTok, sup, doc);
 		}
 		match(SEMI);
@@ -750,7 +744,7 @@ public ANTLRParser(ParserSharedInputState state) {
 		}
 		}
 		}
-		if ( inputState.guessing==0 ) {
+		if ( guessing==0 ) {
 			behavior.endOptions();
 		}
 		{
@@ -782,7 +776,7 @@ public ANTLRParser(ParserSharedInputState state) {
 		{
 			a = LT(1);
 			match(ACTION);
-			if ( inputState.guessing==0 ) {
+			if ( guessing==0 ) {
 				behavior.refMemberAction(a);
 			}
 			break;
@@ -842,7 +836,7 @@ public ANTLRParser(ParserSharedInputState state) {
 		{
 			sl = LT(1);
 			match(STRING_LITERAL);
-			if ( inputState.guessing==0 ) {
+			if ( guessing==0 ) {
 				retval = sl;
 			}
 			break;
@@ -851,7 +845,7 @@ public ANTLRParser(ParserSharedInputState state) {
 		{
 			cl = LT(1);
 			match(CHAR_LITERAL);
-			if ( inputState.guessing==0 ) {
+			if ( guessing==0 ) {
 				retval = cl;
 			}
 			break;
@@ -860,7 +854,7 @@ public ANTLRParser(ParserSharedInputState state) {
 		{
 			il = LT(1);
 			match(INT);
-			if ( inputState.guessing==0 ) {
+			if ( guessing==0 ) {
 				retval = il;
 			}
 			break;
@@ -885,7 +879,7 @@ public ANTLRParser(ParserSharedInputState state) {
 				idTok=id();
 				match(ASSIGN);
 				value=optionValue();
-				if ( inputState.guessing==0 ) {
+				if ( guessing==0 ) {
 					behavior.setGrammarOption(idTok, value);
 				}
 				match(SEMI);
@@ -911,7 +905,7 @@ public ANTLRParser(ParserSharedInputState state) {
 				idTok=id();
 				match(ASSIGN);
 				value=optionValue();
-				if ( inputState.guessing==0 ) {
+				if ( guessing==0 ) {
 					behavior.setGrammarOption(idTok, value);
 				}
 				match(SEMI);
@@ -940,7 +934,7 @@ public ANTLRParser(ParserSharedInputState state) {
 				match(ASSIGN);
 				b=charSet();
 				match(SEMI);
-				if ( inputState.guessing==0 ) {
+				if ( guessing==0 ) {
 					behavior.setCharVocabulary(b);
 				}
 				break;
@@ -951,7 +945,7 @@ public ANTLRParser(ParserSharedInputState state) {
 				idTok=id();
 				match(ASSIGN);
 				value=optionValue();
-				if ( inputState.guessing==0 ) {
+				if ( guessing==0 ) {
 					behavior.setGrammarOption(idTok, value);
 				}
 				match(SEMI);
@@ -982,7 +976,7 @@ public ANTLRParser(ParserSharedInputState state) {
 			if ((LA(1)==OR)) {
 				match(OR);
 				tmpSet=setBlockElement();
-				if ( inputState.guessing==0 ) {
+				if ( guessing==0 ) {
 					b.orInPlace(tmpSet);
 				}
 			}
@@ -1007,7 +1001,7 @@ public ANTLRParser(ParserSharedInputState state) {
 				idTok=id();
 				match(ASSIGN);
 				value=optionValue();
-				if ( inputState.guessing==0 ) {
+				if ( guessing==0 ) {
 					behavior.setSubruleOption(idTok, value);
 				}
 				match(SEMI);
@@ -1033,7 +1027,7 @@ public ANTLRParser(ParserSharedInputState state) {
 		
 		
 		a=id();
-		if ( inputState.guessing==0 ) {
+		if ( guessing==0 ) {
 			buf.append(a.getText());
 		}
 		{
@@ -1042,7 +1036,7 @@ public ANTLRParser(ParserSharedInputState state) {
 			if ((LA(1)==WILDCARD)) {
 				match(WILDCARD);
 				a=id();
-				if ( inputState.guessing==0 ) {
+				if ( guessing==0 ) {
 					buf.append('.'); buf.append(a.getText());
 				}
 			}
@@ -1052,7 +1046,7 @@ public ANTLRParser(ParserSharedInputState state) {
 			
 		} while (true);
 		}
-		if ( inputState.guessing==0 ) {
+		if ( guessing==0 ) {
 			
 					 // can use either TOKEN_REF or RULE_REF; should
 					 // really create a QID or something instead.
@@ -1075,7 +1069,7 @@ public ANTLRParser(ParserSharedInputState state) {
 		
 		c1 = LT(1);
 		match(CHAR_LITERAL);
-		if ( inputState.guessing==0 ) {
+		if ( guessing==0 ) {
 			
 					rangeMin = ANTLRLexer.tokenTypeForCharLiteral(c1.getText());
 					b = BitSet.of(rangeMin);
@@ -1088,7 +1082,7 @@ public ANTLRParser(ParserSharedInputState state) {
 			match(RANGE);
 			c2 = LT(1);
 			match(CHAR_LITERAL);
-			if ( inputState.guessing==0 ) {
+			if ( guessing==0 ) {
 				
 							int rangeMax = ANTLRLexer.tokenTypeForCharLiteral(c2.getText());
 							if (rangeMax < rangeMin) {
@@ -1131,7 +1125,7 @@ public ANTLRParser(ParserSharedInputState state) {
 				switch ( LA(1)) {
 				case TOKEN_REF:
 				{
-					if ( inputState.guessing==0 ) {
+					if ( guessing==0 ) {
 						s1=null;
 					}
 					t1 = LT(1);
@@ -1156,7 +1150,7 @@ public ANTLRParser(ParserSharedInputState state) {
 					}
 					}
 					}
-					if ( inputState.guessing==0 ) {
+					if ( guessing==0 ) {
 						behavior.defineToken(t1, s1);
 					}
 					{
@@ -1182,7 +1176,7 @@ public ANTLRParser(ParserSharedInputState state) {
 				{
 					s3 = LT(1);
 					match(STRING_LITERAL);
-					if ( inputState.guessing==0 ) {
+					if ( guessing==0 ) {
 						behavior.defineToken(null, s3);
 					}
 					{
@@ -1234,7 +1228,7 @@ public ANTLRParser(ParserSharedInputState state) {
 		o=id();
 		match(ASSIGN);
 		v=optionValue();
-		if ( inputState.guessing==0 ) {
+		if ( guessing==0 ) {
 			behavior.refTokensSpecElementOption(t,o,v);
 		}
 		{
@@ -1245,7 +1239,7 @@ public ANTLRParser(ParserSharedInputState state) {
 				o=id();
 				match(ASSIGN);
 				v=optionValue();
-				if ( inputState.guessing==0 ) {
+				if ( guessing==0 ) {
 					behavior.refTokensSpecElementOption(t,o,v);
 				}
 			}
@@ -1264,7 +1258,7 @@ public ANTLRParser(ParserSharedInputState state) {
 		sup=null;
 		
 		match(LPAREN);
-		if ( inputState.guessing==0 ) {
+		if ( guessing==0 ) {
 			
 						sup = LT(1).getText();
 						sup = StringUtils.stripFrontBack(sup, "\"", "\"");
@@ -1300,7 +1294,7 @@ public ANTLRParser(ParserSharedInputState state) {
 		{
 			d = LT(1);
 			match(DOC_COMMENT);
-			if ( inputState.guessing==0 ) {
+			if ( guessing==0 ) {
 				doc=d.getText();
 			}
 			break;
@@ -1325,7 +1319,7 @@ public ANTLRParser(ParserSharedInputState state) {
 		{
 			p1 = LT(1);
 			match(LITERAL_protected);
-			if ( inputState.guessing==0 ) {
+			if ( guessing==0 ) {
 				access=p1.getText();
 			}
 			break;
@@ -1334,7 +1328,7 @@ public ANTLRParser(ParserSharedInputState state) {
 		{
 			p2 = LT(1);
 			match(LITERAL_public);
-			if ( inputState.guessing==0 ) {
+			if ( guessing==0 ) {
 				access=p2.getText();
 			}
 			break;
@@ -1343,7 +1337,7 @@ public ANTLRParser(ParserSharedInputState state) {
 		{
 			p3 = LT(1);
 			match(LITERAL_private);
-			if ( inputState.guessing==0 ) {
+			if ( guessing==0 ) {
 				access=p3.getText();
 			}
 			break;
@@ -1365,7 +1359,7 @@ public ANTLRParser(ParserSharedInputState state) {
 		case BANG:
 		{
 			match(BANG);
-			if ( inputState.guessing==0 ) {
+			if ( guessing==0 ) {
 				ruleAutoGen = false;
 			}
 			break;
@@ -1385,7 +1379,7 @@ public ANTLRParser(ParserSharedInputState state) {
 		}
 		}
 		}
-		if ( inputState.guessing==0 ) {
+		if ( guessing==0 ) {
 			
 					behavior.defineRuleName(idTok, access, ruleAutoGen, doc);
 				
@@ -1396,7 +1390,7 @@ public ANTLRParser(ParserSharedInputState state) {
 		{
 			aa = LT(1);
 			match(ARG_ACTION);
-			if ( inputState.guessing==0 ) {
+			if ( guessing==0 ) {
 				behavior.refArgAction(aa);
 			}
 			break;
@@ -1422,7 +1416,7 @@ public ANTLRParser(ParserSharedInputState state) {
 			match(LITERAL_returns);
 			rt = LT(1);
 			match(ARG_ACTION);
-			if ( inputState.guessing==0 ) {
+			if ( guessing==0 ) {
 				behavior.refReturnAction(rt);
 			}
 			break;
@@ -1483,7 +1477,7 @@ public ANTLRParser(ParserSharedInputState state) {
 		{
 			a = LT(1);
 			match(ACTION);
-			if ( inputState.guessing==0 ) {
+			if ( guessing==0 ) {
 				behavior.refInitAction(a);
 			}
 			break;
@@ -1527,7 +1521,7 @@ public ANTLRParser(ParserSharedInputState state) {
 		}
 		}
 		}
-		if ( inputState.guessing==0 ) {
+		if ( guessing==0 ) {
 			behavior.endRule(idTok.getText());
 		}
 	}
@@ -1541,7 +1535,7 @@ public ANTLRParser(ParserSharedInputState state) {
 		
 		match(LITERAL_throws);
 		a=id();
-		if ( inputState.guessing==0 ) {
+		if ( guessing==0 ) {
 			t=a.getText();
 		}
 		{
@@ -1550,7 +1544,7 @@ public ANTLRParser(ParserSharedInputState state) {
 			if ((LA(1)==COMMA)) {
 				match(COMMA);
 				b=id();
-				if ( inputState.guessing==0 ) {
+				if ( guessing==0 ) {
 					t+=","+b.getText();
 				}
 			}
@@ -1560,7 +1554,7 @@ public ANTLRParser(ParserSharedInputState state) {
 			
 		} while (true);
 		}
-		if ( inputState.guessing==0 ) {
+		if ( guessing==0 ) {
 			behavior.setUserExceptions(t);	
 		}
 	}
@@ -1577,7 +1571,7 @@ public ANTLRParser(ParserSharedInputState state) {
 				idTok=id();
 				match(ASSIGN);
 				value=optionValue();
-				if ( inputState.guessing==0 ) {
+				if ( guessing==0 ) {
 					behavior.setRuleOption(idTok, value);
 				}
 				match(SEMI);
@@ -1594,7 +1588,7 @@ public ANTLRParser(ParserSharedInputState state) {
 	public final void block() throws RecognitionException, TokenStreamException {
 		
 		
-		if ( inputState.guessing==0 ) {
+		if ( guessing==0 ) {
 			blockNesting++;
 		}
 		alternative();
@@ -1611,7 +1605,7 @@ public ANTLRParser(ParserSharedInputState state) {
 			
 		} while (true);
 		}
-		if ( inputState.guessing==0 ) {
+		if ( guessing==0 ) {
 			blockNesting--;
 		}
 	}
@@ -1619,7 +1613,7 @@ public ANTLRParser(ParserSharedInputState state) {
 	public final void exceptionGroup() throws RecognitionException, TokenStreamException {
 		
 		
-		if ( inputState.guessing==0 ) {
+		if ( guessing==0 ) {
 			behavior.beginExceptionGroup();
 		}
 		{
@@ -1636,7 +1630,7 @@ public ANTLRParser(ParserSharedInputState state) {
 			_cnt95++;
 		} while (true);
 		}
-		if ( inputState.guessing==0 ) {
+		if ( guessing==0 ) {
 			behavior.endExceptionGroup();
 		}
 	}
@@ -1650,7 +1644,7 @@ public ANTLRParser(ParserSharedInputState state) {
 		case BANG:
 		{
 			match(BANG);
-			if ( inputState.guessing==0 ) {
+			if ( guessing==0 ) {
 				altAutoGen=false;
 			}
 			break;
@@ -1678,7 +1672,7 @@ public ANTLRParser(ParserSharedInputState state) {
 		}
 		}
 		}
-		if ( inputState.guessing==0 ) {
+		if ( guessing==0 ) {
 			behavior.beginAlt(altAutoGen);
 		}
 		{
@@ -1712,7 +1706,7 @@ public ANTLRParser(ParserSharedInputState state) {
 		}
 		}
 		}
-		if ( inputState.guessing==0 ) {
+		if ( guessing==0 ) {
 			behavior.endAlt();
 		}
 	}
@@ -1757,7 +1751,7 @@ public ANTLRParser(ParserSharedInputState state) {
 		
 		
 		match(LITERAL_exception);
-		if ( inputState.guessing==0 ) {
+		if ( guessing==0 ) {
 			behavior.beginExceptionSpec(null);
 		}
 		{
@@ -1772,7 +1766,7 @@ public ANTLRParser(ParserSharedInputState state) {
 			
 		} while (true);
 		}
-		if ( inputState.guessing==0 ) {
+		if ( guessing==0 ) {
 			behavior.endExceptionSpec();
 		}
 	}
@@ -1789,7 +1783,7 @@ public ANTLRParser(ParserSharedInputState state) {
 		{
 			aa = LT(1);
 			match(ARG_ACTION);
-			if ( inputState.guessing==0 ) {
+			if ( guessing==0 ) {
 				labelAction = aa;
 			}
 			break;
@@ -1815,7 +1809,7 @@ public ANTLRParser(ParserSharedInputState state) {
 		}
 		}
 		}
-		if ( inputState.guessing==0 ) {
+		if ( guessing==0 ) {
 			behavior.beginExceptionSpec(labelAction);
 		}
 		{
@@ -1830,7 +1824,7 @@ public ANTLRParser(ParserSharedInputState state) {
 			
 		} while (true);
 		}
-		if ( inputState.guessing==0 ) {
+		if ( guessing==0 ) {
 			behavior.endExceptionSpec();
 		}
 	}
@@ -1846,7 +1840,7 @@ public ANTLRParser(ParserSharedInputState state) {
 		match(ARG_ACTION);
 		a2 = LT(1);
 		match(ACTION);
-		if ( inputState.guessing==0 ) {
+		if ( guessing==0 ) {
 			behavior.refExceptionHandler(a1, a2);
 		}
 	}
@@ -1873,7 +1867,7 @@ public ANTLRParser(ParserSharedInputState state) {
 		{
 			a = LT(1);
 			match(ACTION);
-			if ( inputState.guessing==0 ) {
+			if ( guessing==0 ) {
 				behavior.refAction(a);
 			}
 			break;
@@ -1882,7 +1876,7 @@ public ANTLRParser(ParserSharedInputState state) {
 		{
 			p = LT(1);
 			match(SEMPRED);
-			if ( inputState.guessing==0 ) {
+			if ( guessing==0 ) {
 				behavior.refSemPred(p);
 			}
 			break;
@@ -1900,7 +1894,7 @@ public ANTLRParser(ParserSharedInputState state) {
 				if ((LA(1)==TOKEN_REF||LA(1)==RULE_REF) && (LA(2)==COLON)) {
 					label=id();
 					match(COLON);
-					if ( inputState.guessing==0 ) {
+					if ( guessing==0 ) {
 						checkForMissingEndRule(label);
 					}
 				}
@@ -1923,7 +1917,7 @@ public ANTLRParser(ParserSharedInputState state) {
 					{
 						aa = LT(1);
 						match(ARG_ACTION);
-						if ( inputState.guessing==0 ) {
+						if ( guessing==0 ) {
 							args=aa;
 						}
 						break;
@@ -1958,7 +1952,7 @@ public ANTLRParser(ParserSharedInputState state) {
 					case BANG:
 					{
 						match(BANG);
-						if ( inputState.guessing==0 ) {
+						if ( guessing==0 ) {
 							autoGen = GrammarElement.AUTO_GEN_BANG;
 						}
 						break;
@@ -1987,7 +1981,7 @@ public ANTLRParser(ParserSharedInputState state) {
 					}
 					}
 					}
-					if ( inputState.guessing==0 ) {
+					if ( guessing==0 ) {
 						behavior.refRule(assignId, rr, label, args, autoGen);
 					}
 					break;
@@ -2002,7 +1996,7 @@ public ANTLRParser(ParserSharedInputState state) {
 					{
 						aa2 = LT(1);
 						match(ARG_ACTION);
-						if ( inputState.guessing==0 ) {
+						if ( guessing==0 ) {
 							args=aa2;
 						}
 						break;
@@ -2031,7 +2025,7 @@ public ANTLRParser(ParserSharedInputState state) {
 					}
 					}
 					}
-					if ( inputState.guessing==0 ) {
+					if ( guessing==0 ) {
 						behavior.refToken(assignId, tr, label, args, false, autoGen, lastInRule());
 					}
 					break;
@@ -2048,7 +2042,7 @@ public ANTLRParser(ParserSharedInputState state) {
 				if ((LA(1)==TOKEN_REF||LA(1)==RULE_REF) && (LA(2)==COLON)) {
 					label=id();
 					match(COLON);
-					if ( inputState.guessing==0 ) {
+					if ( guessing==0 ) {
 						checkForMissingEndRule(label);
 					}
 				}
@@ -2071,7 +2065,7 @@ public ANTLRParser(ParserSharedInputState state) {
 					{
 						aa3 = LT(1);
 						match(ARG_ACTION);
-						if ( inputState.guessing==0 ) {
+						if ( guessing==0 ) {
 							args=aa3;
 						}
 						break;
@@ -2106,7 +2100,7 @@ public ANTLRParser(ParserSharedInputState state) {
 					case BANG:
 					{
 						match(BANG);
-						if ( inputState.guessing==0 ) {
+						if ( guessing==0 ) {
 							autoGen = GrammarElement.AUTO_GEN_BANG;
 						}
 						break;
@@ -2135,7 +2129,7 @@ public ANTLRParser(ParserSharedInputState state) {
 					}
 					}
 					}
-					if ( inputState.guessing==0 ) {
+					if ( guessing==0 ) {
 						behavior.refRule(assignId, r2, label, args, autoGen);
 					}
 					break;
@@ -2198,7 +2192,7 @@ public ANTLRParser(ParserSharedInputState state) {
 		o=id();
 		match(ASSIGN);
 		v=optionValue();
-		if ( inputState.guessing==0 ) {
+		if ( guessing==0 ) {
 			behavior.refElementOption(o,v);
 		}
 		{
@@ -2209,7 +2203,7 @@ public ANTLRParser(ParserSharedInputState state) {
 				o=id();
 				match(ASSIGN);
 				v=optionValue();
-				if ( inputState.guessing==0 ) {
+				if ( guessing==0 ) {
 					behavior.refElementOption(o,v);
 				}
 			}
@@ -2251,7 +2245,7 @@ public ANTLRParser(ParserSharedInputState state) {
 			case BANG:
 			{
 				match(BANG);
-				if ( inputState.guessing==0 ) {
+				if ( guessing==0 ) {
 					autoGen = GrammarElement.AUTO_GEN_BANG;
 				}
 				break;
@@ -2280,7 +2274,7 @@ public ANTLRParser(ParserSharedInputState state) {
 			}
 			}
 			}
-			if ( inputState.guessing==0 ) {
+			if ( guessing==0 ) {
 				behavior.refCharRange(crLeft, crRight, label, autoGen, lastInRule());
 			}
 			break;
@@ -2294,7 +2288,7 @@ public ANTLRParser(ParserSharedInputState state) {
 			{
 				t = LT(1);
 				match(TOKEN_REF);
-				if ( inputState.guessing==0 ) {
+				if ( guessing==0 ) {
 					trLeft=t;
 				}
 				break;
@@ -2303,7 +2297,7 @@ public ANTLRParser(ParserSharedInputState state) {
 			{
 				u = LT(1);
 				match(STRING_LITERAL);
-				if ( inputState.guessing==0 ) {
+				if ( guessing==0 ) {
 					trLeft=u;
 				}
 				break;
@@ -2321,7 +2315,7 @@ public ANTLRParser(ParserSharedInputState state) {
 			{
 				v = LT(1);
 				match(TOKEN_REF);
-				if ( inputState.guessing==0 ) {
+				if ( guessing==0 ) {
 					trRight=v;
 				}
 				break;
@@ -2330,7 +2324,7 @@ public ANTLRParser(ParserSharedInputState state) {
 			{
 				w = LT(1);
 				match(STRING_LITERAL);
-				if ( inputState.guessing==0 ) {
+				if ( guessing==0 ) {
 					trRight=w;
 				}
 				break;
@@ -2342,7 +2336,7 @@ public ANTLRParser(ParserSharedInputState state) {
 			}
 			}
 			autoGen=ast_type_spec();
-			if ( inputState.guessing==0 ) {
+			if ( guessing==0 ) {
 				behavior.refTokenRange(trLeft, trRight, label, autoGen, lastInRule());
 			}
 			break;
@@ -2378,7 +2372,7 @@ public ANTLRParser(ParserSharedInputState state) {
 			case BANG:
 			{
 				match(BANG);
-				if ( inputState.guessing==0 ) {
+				if ( guessing==0 ) {
 					autoGen = GrammarElement.AUTO_GEN_BANG;
 				}
 				break;
@@ -2407,7 +2401,7 @@ public ANTLRParser(ParserSharedInputState state) {
 			}
 			}
 			}
-			if ( inputState.guessing==0 ) {
+			if ( guessing==0 ) {
 				behavior.refCharLiteral(cl, label, false, autoGen, lastInRule());
 			}
 			break;
@@ -2423,7 +2417,7 @@ public ANTLRParser(ParserSharedInputState state) {
 			{
 				aa = LT(1);
 				match(ARG_ACTION);
-				if ( inputState.guessing==0 ) {
+				if ( guessing==0 ) {
 					args=aa;
 				}
 				break;
@@ -2452,7 +2446,7 @@ public ANTLRParser(ParserSharedInputState state) {
 			}
 			}
 			}
-			if ( inputState.guessing==0 ) {
+			if ( guessing==0 ) {
 				behavior.refToken(null, tr, label, args, false, autoGen, lastInRule());
 			}
 			break;
@@ -2462,7 +2456,7 @@ public ANTLRParser(ParserSharedInputState state) {
 			sl = LT(1);
 			match(STRING_LITERAL);
 			autoGen=ast_type_spec();
-			if ( inputState.guessing==0 ) {
+			if ( guessing==0 ) {
 				behavior.refStringLiteral(sl, label, autoGen, lastInRule());
 			}
 			break;
@@ -2472,7 +2466,7 @@ public ANTLRParser(ParserSharedInputState state) {
 			wi = LT(1);
 			match(WILDCARD);
 			autoGen=ast_type_spec();
-			if ( inputState.guessing==0 ) {
+			if ( guessing==0 ) {
 				behavior.refWildcard(wi, label, autoGen);
 			}
 			break;
@@ -2502,7 +2496,7 @@ public ANTLRParser(ParserSharedInputState state) {
 			case BANG:
 			{
 				match(BANG);
-				if ( inputState.guessing==0 ) {
+				if ( guessing==0 ) {
 					autoGen = GrammarElement.AUTO_GEN_BANG;
 				}
 				break;
@@ -2531,7 +2525,7 @@ public ANTLRParser(ParserSharedInputState state) {
 			}
 			}
 			}
-			if ( inputState.guessing==0 ) {
+			if ( guessing==0 ) {
 				behavior.refCharLiteral(cl, label, true, autoGen, lastInRule());
 			}
 			break;
@@ -2541,7 +2535,7 @@ public ANTLRParser(ParserSharedInputState state) {
 			tr = LT(1);
 			match(TOKEN_REF);
 			autoGen=ast_type_spec();
-			if ( inputState.guessing==0 ) {
+			if ( guessing==0 ) {
 				behavior.refToken(null, tr, label, null, true, autoGen, lastInRule());
 			}
 			break;
@@ -2563,7 +2557,7 @@ public ANTLRParser(ParserSharedInputState state) {
 		
 		lp = LT(1);
 		match(LPAREN);
-		if ( inputState.guessing==0 ) {
+		if ( guessing==0 ) {
 			behavior.beginSubRule(label, lp, not);
 		}
 		{
@@ -2575,7 +2569,7 @@ public ANTLRParser(ParserSharedInputState state) {
 			{
 				aa = LT(1);
 				match(ACTION);
-				if ( inputState.guessing==0 ) {
+				if ( guessing==0 ) {
 					behavior.refInitAction(aa);
 				}
 				break;
@@ -2595,7 +2589,7 @@ public ANTLRParser(ParserSharedInputState state) {
 		else if ((LA(1)==ACTION) && (LA(2)==COLON)) {
 			ab = LT(1);
 			match(ACTION);
-			if ( inputState.guessing==0 ) {
+			if ( guessing==0 ) {
 				behavior.refInitAction(ab);
 			}
 			match(COLON);
@@ -2636,7 +2630,7 @@ public ANTLRParser(ParserSharedInputState state) {
 			case QUESTION:
 			{
 				match(QUESTION);
-				if ( inputState.guessing==0 ) {
+				if ( guessing==0 ) {
 					behavior.optionalSubRule();
 				}
 				break;
@@ -2644,7 +2638,7 @@ public ANTLRParser(ParserSharedInputState state) {
 			case STAR:
 			{
 				match(STAR);
-				if ( inputState.guessing==0 ) {
+				if ( guessing==0 ) {
 					behavior.zeroOrMoreSubRule();
 				}
 				break;
@@ -2652,7 +2646,7 @@ public ANTLRParser(ParserSharedInputState state) {
 			case PLUS:
 			{
 				match(PLUS);
-				if ( inputState.guessing==0 ) {
+				if ( guessing==0 ) {
 					behavior.oneOrMoreSubRule();
 				}
 				break;
@@ -2687,7 +2681,7 @@ public ANTLRParser(ParserSharedInputState state) {
 			case BANG:
 			{
 				match(BANG);
-				if ( inputState.guessing==0 ) {
+				if ( guessing==0 ) {
 					behavior.noASTSubRule();
 				}
 				break;
@@ -2721,7 +2715,7 @@ public ANTLRParser(ParserSharedInputState state) {
 		case IMPLIES:
 		{
 			match(IMPLIES);
-			if ( inputState.guessing==0 ) {
+			if ( guessing==0 ) {
 				behavior.synPred();
 			}
 			break;
@@ -2732,7 +2726,7 @@ public ANTLRParser(ParserSharedInputState state) {
 		}
 		}
 		}
-		if ( inputState.guessing==0 ) {
+		if ( guessing==0 ) {
 			behavior.endSubRule();
 		}
 	}
@@ -2743,11 +2737,11 @@ public ANTLRParser(ParserSharedInputState state) {
 		
 		lp = LT(1);
 		match(TREE_BEGIN);
-		if ( inputState.guessing==0 ) {
+		if ( guessing==0 ) {
 			behavior.beginTree(lp);
 		}
 		rootNode();
-		if ( inputState.guessing==0 ) {
+		if ( guessing==0 ) {
 			behavior.beginChildList();
 		}
 		{
@@ -2764,11 +2758,11 @@ public ANTLRParser(ParserSharedInputState state) {
 			_cnt122++;
 		} while (true);
 		}
-		if ( inputState.guessing==0 ) {
+		if ( guessing==0 ) {
 			behavior.endChildList();
 		}
 		match(RPAREN);
-		if ( inputState.guessing==0 ) {
+		if ( guessing==0 ) {
 			behavior.endTree();
 		}
 	}
@@ -2781,7 +2775,7 @@ public ANTLRParser(ParserSharedInputState state) {
 		if ((LA(1)==TOKEN_REF||LA(1)==RULE_REF) && (LA(2)==COLON)) {
 			label=id();
 			match(COLON);
-			if ( inputState.guessing==0 ) {
+			if ( guessing==0 ) {
 				checkForMissingEndRule(label);
 			}
 		}
@@ -2805,7 +2799,7 @@ public ANTLRParser(ParserSharedInputState state) {
 		case CARET:
 		{
 			match(CARET);
-			if ( inputState.guessing==0 ) {
+			if ( guessing==0 ) {
 				autoGen = GrammarElement.AUTO_GEN_CARET;
 			}
 			break;
@@ -2813,7 +2807,7 @@ public ANTLRParser(ParserSharedInputState state) {
 		case BANG:
 		{
 			match(BANG);
-			if ( inputState.guessing==0 ) {
+			if ( guessing==0 ) {
 				autoGen = GrammarElement.AUTO_GEN_BANG;
 			}
 			break;

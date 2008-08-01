@@ -2080,12 +2080,10 @@ public class LiveUnit implements Unit, DesignContext, FacesDesignContext {
                 } else {
                     return (DesignInfo) cacheEntry;
                 }
-            } catch (Exception e) {
-
+            } catch (ClassNotFoundException cnfe) {
                 // Now try looking for <searchPath>.fooDesignInfo
-                lbiClassName = lbiClassName.substring(lbiClassName.lastIndexOf('.')+1);
+                lbiClassName = lbiClassName.substring(lbiClassName.lastIndexOf('.') + 1);
                 for (int i = 0; i < searchPath.length; i++) {
-
                     try {
                         String fullName = searchPath[i] + "." + lbiClassName;
                         DesignInfo designInfo = (DesignInfo) instantiate(beanClass, fullName, classLoder);
@@ -2098,17 +2096,24 @@ public class LiveUnit implements Unit, DesignContext, FacesDesignContext {
                             designInfoCache.put(beanClass, nullDesignInfoMarker);
                             return null;
                         }
-
-                    } catch (Exception ex) {
+                    } catch (ClassNotFoundException cnfe1) {
                         // Silently ignore, because we want to iterate over all path
+                    } catch (InstantiationException ie) {
+                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ie);
+                    } catch (IllegalAccessException iae) {
+                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, iae);
                     }
                 }
-                // It's normal to not find the DesignInfo and land in here
-                designInfoCache.put(beanClass, nullDesignInfoMarker);
-                return null;
+            } catch (InstantiationException ie) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ie);
+            } catch (IllegalAccessException iae) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, iae);
             }
+            // It's normal to not find the DesignInfo and land in here
+            designInfoCache.put(beanClass, nullDesignInfoMarker);
+            return null;
         } finally {
-             Thread.currentThread().setContextClassLoader(oldContextClassLoader);
+            Thread.currentThread().setContextClassLoader(oldContextClassLoader);
         }
     }
     

@@ -157,6 +157,9 @@ public final class JavadocHintProvider extends AbstractHint {
         int row = 0;
         JRadioButton radio = new JRadioButton();
         Mnemonics.setLocalizedText(radio, NbBundle.getMessage(JavadocHintProvider.class, "CTL_PUBLIC_OPTION")); // NOI18N
+        radio.setToolTipText(NbBundle.getMessage(JavadocHintProvider.class, "HINT_PUBLIC_OPTION")); // NOI18N
+        radio.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(JavadocHintProvider.class, "ACD_PUBLIC_OPTION")); // NOI18N
+        radio.getAccessibleContext().setAccessibleName(NbBundle.getMessage(JavadocHintProvider.class, "ACN_PUBLIC_OPTION")); // NOI18N
         radio.addActionListener( l );
         group.add( radio );
         radio.setSelected( radio.getText().equals( node.get(SCOPE_KEY, SCOPE_DEFAULT) ) );
@@ -165,6 +168,9 @@ public final class JavadocHintProvider extends AbstractHint {
         
         radio = new JRadioButton();
         Mnemonics.setLocalizedText(radio, NbBundle.getMessage(JavadocHintProvider.class, "CTL_PROTECTED_OPTION")); // NOI18N
+        radio.setToolTipText(NbBundle.getMessage(JavadocHintProvider.class, "HINT_PROTECTED_OPTION")); // NOI18N
+        radio.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(JavadocHintProvider.class, "ACD_PROTECTED_OPTION")); // NOI18N
+        radio.getAccessibleContext().setAccessibleName(NbBundle.getMessage(JavadocHintProvider.class, "ACN_PROTECTED_OPTION")); // NOI18N
         radio.addActionListener( l );
         group.add( radio );
         radio.setSelected( radio.getText().equals( node.get(SCOPE_KEY, SCOPE_DEFAULT) ) );
@@ -173,6 +179,9 @@ public final class JavadocHintProvider extends AbstractHint {
         
         radio = new JRadioButton();
         Mnemonics.setLocalizedText(radio, NbBundle.getMessage(JavadocHintProvider.class, "CTL_PACKAGE_OPTION")); // NOI18N
+        radio.setToolTipText(NbBundle.getMessage(JavadocHintProvider.class, "HINT_PACKAGE_OPTION")); // NOI18N
+        radio.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(JavadocHintProvider.class, "ACD_PACKAGE_OPTION")); // NOI18N
+        radio.getAccessibleContext().setAccessibleName(NbBundle.getMessage(JavadocHintProvider.class, "ACN_PACKAGE_OPTION")); // NOI18N
         radio.addActionListener( l );
         group.add( radio );
         radio.setSelected( radio.getText().equals( node.get(SCOPE_KEY, SCOPE_DEFAULT) ) );
@@ -181,6 +190,9 @@ public final class JavadocHintProvider extends AbstractHint {
         
         radio = new JRadioButton();
         Mnemonics.setLocalizedText(radio, NbBundle.getMessage(JavadocHintProvider.class, "CTL_PRIVATE_OPTION")); // NOI18N
+        radio.setToolTipText(NbBundle.getMessage(JavadocHintProvider.class, "HINT_PRIVATE_OPTION")); // NOI18N
+        radio.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(JavadocHintProvider.class, "ACD_PRIVATE_OPTION")); // NOI18N
+        radio.getAccessibleContext().setAccessibleName(NbBundle.getMessage(JavadocHintProvider.class, "ACN_PRIVATE_OPTION")); // NOI18N
         radio.addActionListener( l );
         group.add( radio );
         radio.setSelected( radio.getText().equals( node.get(SCOPE_KEY, SCOPE_DEFAULT) ) );

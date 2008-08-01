@@ -27,6 +27,7 @@ import java.util.List;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.EventListenerList;
+import javax.swing.Action;
 import org.netbeans.api.project.Project;
 
 import org.netbeans.api.queries.VisibilityQuery;
@@ -38,6 +39,7 @@ import org.openide.nodes.Node;
 import net.java.hulp.i18n.Logger;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
+import org.netbeans.spi.project.ui.support.CommonProjectActions;
 
 import org.netbeans.modules.compapp.projects.base.ui.customizer.IcanproProjectProperties;
 import org.netbeans.modules.etl.project.Localizer;
@@ -56,8 +58,11 @@ class EtlproViews {
     static final class LogicalViewChildren extends Children.Keys implements FileChangeListener {
 
         private static final String KEY_SOURCE_DIR = "srcDir"; // NOI18N        
+
         private static final String KEY_DATA_DIR = "data"; //NOI18N
+
         private static final String KEY_DB_DIR = "databases"; //NOI18N
+
         private AntProjectHelper helper;
         private final PropertyEvaluator evaluator;
         private FileObject projectDir;
@@ -83,6 +88,7 @@ class EtlproViews {
             List l = new ArrayList();
 
             DataFolder srcDir = getFolder(IcanproProjectProperties.SRC_DIR);//EtlproProjectGenerator.DEFAULT_SRC_FOLDER);
+
             if (srcDir != null) {
                 l.add(KEY_SOURCE_DIR);
             }
@@ -102,6 +108,7 @@ class EtlproViews {
 
         private FileObject getDataFolder(String propName) {
             return projectDir.getFileObject(propName); //NOI18N
+
         }
 
         @Override
@@ -118,7 +125,7 @@ class EtlproViews {
                 DataObject fileDO;
                 try {
                     fileDO = DataObject.find(srcRoot);
-                    n = new ViewItemNode((DataFolder) fileDO, "collaborations", "collaborations");
+                    n = new ViewItemNode((DataFolder) fileDO, "Collaborations", "Collaborations");
                 } catch (DataObjectNotFoundException e) {
                     throw new AssertionError(e);
                 }
@@ -127,19 +134,19 @@ class EtlproViews {
         }
 
         private DataFolder getFolder(String propName) {
-             String propertyValue = evaluator.getProperty (propName);
-            if (propertyValue != null ) {
-                FileObject fo = helper.resolveFileObject(evaluator.getProperty (propName));
-                if ( fo != null && fo.isValid()) {
+            String propertyValue = evaluator.getProperty(propName);
+            if (propertyValue != null) {
+                FileObject fo = helper.resolveFileObject(evaluator.getProperty(propName));
+                if (fo != null && fo.isValid()) {
                     try {
                         DataFolder df = DataFolder.findFolder(fo);
                         return df;
-                    }catch (Exception ex) {
+                    } catch (Exception ex) {
                         mLogger.errorNoloc(mLoc.t("PRJS021: Exception :{0}", ex.getMessage()), ex);
                     }
                 }
             }
-            return null;           
+            return null;
         }
 
         // file change events in the project directory
@@ -210,6 +217,22 @@ class EtlproViews {
         @Override
         public void setName(String arg0) {
             super.setName(arg0);
+        }
+
+        @Override
+        public Action[] getActions(boolean context) {
+            //return super.getActions(context);
+            return new Action[]{
+                        CommonProjectActions.newFileAction(),
+                        null,
+                        org.openide.util.actions.SystemAction.get(org.openide.actions.FileSystemAction.class),
+                        null,
+                        org.openide.util.actions.SystemAction.get(org.openide.actions.FindAction.class),
+                        null,
+                        org.openide.util.actions.SystemAction.get(org.openide.actions.PasteAction.class),
+                        null,
+                        org.openide.util.actions.SystemAction.get(org.openide.actions.ToolsAction.class),
+                    };
         }
 
         public void propertyChange(PropertyChangeEvent evt) {

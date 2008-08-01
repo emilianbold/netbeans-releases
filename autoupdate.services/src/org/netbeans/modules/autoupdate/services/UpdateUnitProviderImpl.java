@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -48,6 +48,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -58,7 +59,6 @@ import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.autoupdate.updateprovider.AutoupdateCatalogProvider;
 import org.netbeans.modules.autoupdate.updateprovider.AutoupdateCatalogFactory;
 import org.netbeans.modules.autoupdate.updateprovider.LocalNBMsProvider;
@@ -68,7 +68,6 @@ import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
-import org.openide.util.Cancellable;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.netbeans.api.autoupdate.UpdateUnitProvider.CATEGORY;
@@ -82,6 +81,7 @@ import org.netbeans.api.autoupdate.UpdateUnitProvider.CATEGORY;
  * @author Jiri Rechtacek
  */
 public final class UpdateUnitProviderImpl {
+
     private UpdateProvider provider;
     private static Logger err = Logger.getLogger ("org.netbeans.modules.autoupdate.services.UpdateUnitProviderImpl");
     private static final String REMOVED_MASK ="_removed";
@@ -146,31 +146,15 @@ public final class UpdateUnitProviderImpl {
      */
     public boolean refresh (ProgressHandle handle, boolean force) throws IOException {
         boolean res = false;
-        ProgressHandle ownHandle = null;
-        if (handle == null) {
-            CancellableProgress cancelProgress = new CancellableProgress();
-            ownHandle = ProgressHandleFactory.createHandle (NbBundle.getMessage (UpdateUnitProviderImpl.class, "UpdateUnitProviderImpl_CheckingForUpdates"), cancelProgress);
-            cancelProgress.setHandle(ownHandle);
-            ownHandle.setInitialDelay (0);
-            ownHandle.start ();
+        if (handle != null) {
+            handle.progress (NbBundle.getMessage (UpdateUnitProviderImpl.class, "UpdateUnitProviderImpl_FormatCheckingForUpdates", getDisplayName ()));
         }
-        try {
-            if (handle != null) {
-                handle.progress (NbBundle.getMessage (UpdateUnitProviderImpl.class, "UpdateUnitProviderImpl_FormatCheckingForUpdates", getDisplayName ()));
-            } else if (ownHandle != null) {
-                ownHandle.progress (getDisplayName ());
-            }
-            final UpdateProvider updateProvider = getUpdateProvider();
-            updateProvider.refresh (force);
-            if (force) {
-                // store time of the last check
-                AutoupdateSettings.setLastCheck (new Date ());
-                AutoupdateSettings.setLastCheck (updateProvider.getName(),new Date ());
-            }
-        } finally {
-            if (ownHandle != null) {
-                ownHandle.finish ();
-            }
+        final UpdateProvider updateProvider = getUpdateProvider();
+        updateProvider.refresh (force);
+        if (force) {
+            // store time of the last check
+            AutoupdateSettings.setLastCheck (new Date ());
+            AutoupdateSettings.setLastCheck (updateProvider.getName(),new Date ());
         }
         // don't remember update units while refreshing the content
         UpdateManagerImpl.getInstance().clearCache ();
@@ -219,6 +203,7 @@ public final class UpdateUnitProviderImpl {
     
     // static factory methods
     public static UpdateUnitProvider createUpdateUnitProvider (String codeName, String displayName, URL url, CATEGORY category) {
+        codeName = normalizeCodeName (codeName);
         // store to Preferences
         storeProvider(codeName, displayName, url);
         
@@ -228,6 +213,7 @@ public final class UpdateUnitProviderImpl {
     }
 
     public static UpdateUnitProvider createUpdateUnitProvider (String name, File... files) {
+        name = normalizeCodeName (name);
         LocalNBMsProvider provider = new LocalNBMsProvider (name, files);
         return Trampoline.API.createUpdateUnitProvider (new UpdateUnitProviderImpl (provider));
     }
@@ -325,6 +311,9 @@ public final class UpdateUnitProviderImpl {
     }
     
     private static void storeProvider (String codeName, String displayName, URL url) {
+        if (codeName.contains ("/")) {
+            codeName = codeName.replaceAll ("/", "_");
+        }
         Preferences providerPreferences = getPreferences ().node (codeName);
         assert providerPreferences != null : "Preferences node " + codeName + " found.";
         
@@ -442,19 +431,6 @@ public final class UpdateUnitProviderImpl {
         }
     }
     
-    private static class CancellableProgress implements Cancellable {
-        private ProgressHandle handle;        
-        public boolean cancel() {
-            assert handle != null;
-            handle.finish();
-            return true;
-        }
-        
-        private void setHandle(ProgressHandle handle) {
-            this.handle = handle;
-        }        
-    }
-    
     private static class LookupListenerImpl implements LookupListener {
         final Lookup.Result<UpdateProvider> result = Lookup.getDefault ().lookupResult(UpdateProvider.class);
         
@@ -477,4 +453,15 @@ public final class UpdateUnitProviderImpl {
         }
     }
 
+    private static String normalizeCodeName (String codeName) {
+        Collection<Character> illegalChars = Arrays.asList (new Character [] {'"', '*', '/', ':', '<', '>', '?', '\\', '|'}); // NOI18N
+        StringBuffer buf = new StringBuffer ();
+        for (char ch : codeName.toCharArray ()) {
+            if (illegalChars.contains (ch)) {
+                ch = '_'; // NOI18N
+            }
+            buf.append (ch);
+        }
+        return buf.toString ();
+    }
 }

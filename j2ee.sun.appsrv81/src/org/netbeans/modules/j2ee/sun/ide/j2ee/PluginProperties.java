@@ -576,7 +576,7 @@ public class PluginProperties  {
                             //  The LOCATION is the domains directory, not the install root now...
                             instanceFO.setAttribute("LOCATION", asenvContent.get(Asenv.AS_DEF_DOMAINS_PATH)); // NOI18N
                             instanceFO.setAttribute(DeploymentManagerProperties.HTTP_MONITOR_ATTR,
-                                Boolean.TRUE.toString());
+                                Boolean.FALSE.toString());
                         }
                     }
                 } catch (IOException ioe){

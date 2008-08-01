@@ -62,7 +62,10 @@ import javax.swing.text.BadLocationException;
 import org.netbeans.modules.mobility.svgcore.SVGDataObject;
 import org.netbeans.modules.mobility.svgcore.export.AnimationRasterizer.ColorReductionMethod;
 import org.netbeans.modules.mobility.svgcore.export.AnimationRasterizer.ImageType;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -70,10 +73,11 @@ import org.openide.util.RequestProcessor;
  * @author Pavel Benes
  */
 public final class SVGAnimationRasterizerPanel extends SVGRasterizerPanel {
-    private       SpinnerNumberModel m_previewSpinnerModel;
-    private final ComponentGroup     m_startTime;    
-    private final ComponentGroup     m_stopTime;    
-    private       Thread             m_sizeCalculationThread;
+    private          SpinnerNumberModel m_previewSpinnerModel;
+    private final    ComponentGroup     m_startTime;    
+    private final    ComponentGroup     m_stopTime;    
+    private          Thread             m_sizeCalculationThread;
+    private volatile boolean            m_processingStopped = false;
 
     /** Creates new form SVGAnimationRasterizer */
     public SVGAnimationRasterizerPanel(SVGDataObject dObj) throws IOException, BadLocationException {
@@ -191,7 +195,7 @@ public final class SVGAnimationRasterizerPanel extends SVGRasterizerPanel {
 
         keepRatio.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(keepRatio, org.openide.util.NbBundle.getBundle(SVGAnimationRasterizerPanel.class).getString("LBL_AnimationKeepRatio")); // NOI18N
-        keepRatio.setToolTipText(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "TOOLTIP_keepRatio")); // NOI18N
+        keepRatio.setToolTipText("Images for other configurations are transformed using screen ratio.");
         keepRatio.setMargin(new java.awt.Insets(0, 0, 0, 0));
         keepRatio.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -217,7 +221,7 @@ public final class SVGAnimationRasterizerPanel extends SVGRasterizerPanel {
                     .add(sizePanelLayout.createSequentialGroup()
                         .add(12, 12, 12)
                         .add(keepRatio)))
-                .addContainerGap(106, Short.MAX_VALUE))
+                .addContainerGap(151, Short.MAX_VALUE))
         );
         sizePanelLayout.setVerticalGroup(
             sizePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -234,16 +238,16 @@ public final class SVGAnimationRasterizerPanel extends SVGRasterizerPanel {
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        jLabel11.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "ACCESSIBLE_NAME_jLabel11")); // NOI18N
-        jLabel11.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "ACCESSIBLE_DESCRIPTION_jLabel11")); // NOI18N
-        spinnerWidth.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "ACCESSIBLE_NAME_spinnerWidth")); // NOI18N
-        spinnerWidth.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "ACCESSIBLE_DESCRIPTION_spinnerWidth")); // NOI18N
-        jLabel12.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "ACCESSIBLE_NAME_jLabel12")); // NOI18N
-        jLabel12.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "ACCESSIBLE_DESCRIPTION_jLabel12")); // NOI18N
-        spinnerHeight.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "ACCESSIBLE_NAME_spinnerHeight")); // NOI18N
-        spinnerHeight.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "ACCESSIBLE_DESCRIPTION_spinnerHeight")); // NOI18N
-        keepRatio.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "ACCESSIBLE_NAME_keepRatio")); // NOI18N
-        keepRatio.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "ACCESSIBLE_DESCRIPTION_keepRatio")); // NOI18N
+        jLabel11.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "A11Y_jLabel11_name")); // NOI18N
+        jLabel11.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "A11Y_jLabel11_description")); // NOI18N
+        spinnerWidth.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "A11Y_jSpinner_name")); // NOI18N
+        spinnerWidth.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "A11Y_jSpinner_descriprion")); // NOI18N
+        jLabel12.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "A11Y_jSpinner_height")); // NOI18N
+        jLabel12.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "A11Y_jSpinner_description")); // NOI18N
+        spinnerHeight.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "A11Y_spinnerHeight_name")); // NOI18N
+        spinnerHeight.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "A11Y_spinnerHeight_description")); // NOI18N
+        keepRatio.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "A11Y_keepRation_name")); // NOI18N
+        keepRatio.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "A11Y_keepRation_description")); // NOI18N
 
         optionsPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "LBL_ImageOptions"))); // NOI18N
 
@@ -294,7 +298,7 @@ public final class SVGAnimationRasterizerPanel extends SVGRasterizerPanel {
                 .add(optionsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(optionsPanelLayout.createSequentialGroup()
                         .add(84, 84, 84)
-                        .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 141, Short.MAX_VALUE))
+                        .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 162, Short.MAX_VALUE))
                     .add(optionsPanelLayout.createSequentialGroup()
                         .add(jLabel2)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
@@ -302,7 +306,7 @@ public final class SVGAnimationRasterizerPanel extends SVGRasterizerPanel {
                         .addContainerGap())
                     .add(optionsPanelLayout.createSequentialGroup()
                         .add(progressiveCheckBox)
-                        .addContainerGap(124, Short.MAX_VALUE))
+                        .addContainerGap(169, Short.MAX_VALUE))
                     .add(optionsPanelLayout.createSequentialGroup()
                         .add(optionsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(compressionLabel)
@@ -315,12 +319,12 @@ public final class SVGAnimationRasterizerPanel extends SVGRasterizerPanel {
                         .add(40, 40, 40))
                     .add(optionsPanelLayout.createSequentialGroup()
                         .add(transparentCheckBox)
-                        .addContainerGap(121, Short.MAX_VALUE))
+                        .addContainerGap(165, Short.MAX_VALUE))
                     .add(optionsPanelLayout.createSequentialGroup()
                         .add(optionsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
                             .add(org.jdesktop.layout.GroupLayout.LEADING, reductionCombo, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .add(org.jdesktop.layout.GroupLayout.LEADING, reductionLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                        .addContainerGap(64, Short.MAX_VALUE))))
+                        .addContainerGap(130, Short.MAX_VALUE))))
         );
         optionsPanelLayout.setVerticalGroup(
             optionsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -348,26 +352,26 @@ public final class SVGAnimationRasterizerPanel extends SVGRasterizerPanel {
                 .addContainerGap())
         );
 
-        jLabel2.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "ACCESSIBLE_NAME_jLabel2")); // NOI18N
-        jLabel2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "ACCESSIBLE_DESCRIPTION_jLabel2")); // NOI18N
-        formatComboBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "ACCESSIBLE_NAME_formatComboBox")); // NOI18N
-        formatComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "ACCESSIBLE_DESCRIPTION_formatComboBox")); // NOI18N
-        progressiveCheckBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "ACCESSIBLE_NAME_progressiveCheckBox")); // NOI18N
-        progressiveCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "ACCESSIBLE_DESCRIPTION_progressiveCheckBox")); // NOI18N
-        compressionLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "ACCESSIBLE_NAME_compressionLabel")); // NOI18N
-        compressionLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "ACCESSIBLE_DESCRIPTION_compressionLabel")); // NOI18N
-        compressionLevelCombo.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "ACCESSIBLE_NAME_compressionLevelCombo")); // NOI18N
-        compressionLevelCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "ACCESSIBLE_DESCRIOTION_compressionLevelCombo")); // NOI18N
-        compressionQualityLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "ACCESSIBLE_NAME_compressionQualityLabel")); // NOI18N
-        compressionQualityLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "ACCESSIBLE_DESCRIPTION_compressionQualityLabel")); // NOI18N
-        compressionQualitySpinner.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "ACCESSIBLE_NAME_compressionQualitySpinner")); // NOI18N
-        compressionQualitySpinner.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "ACCESSIBLE_DESCRIPTION_compressionQualitySpinner")); // NOI18N
-        reductionLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "ACCESSIBLE_NAME_reductionLabel")); // NOI18N
-        reductionLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "ACCESSIBLE_DESCRIPTION_reductionLabel")); // NOI18N
-        reductionCombo.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "ACCESSIBLE_NAME_reductionCombo")); // NOI18N
-        reductionCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "ACCESSIBLE_DESCRIPTION_reductionCombo")); // NOI18N
-        transparentCheckBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "ACCESSIBLE_NAME_transparentCheckBox")); // NOI18N
-        transparentCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "ACCESSIBLE_DESCRIPTION_transparentCheckBox")); // NOI18N
+        jLabel2.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "A11Y_jLabel2_name")); // NOI18N
+        jLabel2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "A11Y_jLabel2_description")); // NOI18N
+        formatComboBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "A11Y_formatComboBox_name")); // NOI18N
+        formatComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "A11Y_jLabel2_descritpion")); // NOI18N
+        progressiveCheckBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "A11Y_progressiveCheckBox_name")); // NOI18N
+        progressiveCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "A11Y_progressiveCheckBox_description")); // NOI18N
+        compressionLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "A11Y_compressionLabel_name")); // NOI18N
+        compressionLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "A11Y_compressionLabel_description")); // NOI18N
+        compressionLevelCombo.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "A11Y_compressionLevelCombo_name")); // NOI18N
+        compressionLevelCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "A11Y_compressionLevelCombo_description")); // NOI18N
+        compressionQualityLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "A11Y_compressionQuailityLabel_name")); // NOI18N
+        compressionQualityLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "A11Y_compressionQuailityLabel_description")); // NOI18N
+        compressionQualitySpinner.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "A11Y_compressionQuailitySpinner_name")); // NOI18N
+        compressionQualitySpinner.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "A11Y_compressionQuailitySpinner_description")); // NOI18N
+        reductionLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "A11Y_reductionLabel_name")); // NOI18N
+        reductionLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "A11Y_reductionLabel_descritpion")); // NOI18N
+        reductionCombo.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "A11Y_reductionCombo_name")); // NOI18N
+        reductionCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "A11Y_reductionCombo_description")); // NOI18N
+        transparentCheckBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "A11Y_transpartenCheckBox_name")); // NOI18N
+        transparentCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "A11Y_transpartenCheckBox_description")); // NOI18N
 
         timeLinePanel.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "LBL_AnimationFrameTime"))); // NOI18N
 
@@ -389,20 +393,20 @@ public final class SVGAnimationRasterizerPanel extends SVGRasterizerPanel {
                     .add(timeLinePanelLayout.createSequentialGroup()
                         .add(12, 12, 12)
                         .add(framesPerSecLabel)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 42, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 97, Short.MAX_VALUE)
                         .add(framesPerSecSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 46, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                    .add(startTimeSlider, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 218, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, stopTimeSlider, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 218, Short.MAX_VALUE)
+                    .add(startTimeSlider, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 246, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, stopTimeSlider, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 246, Short.MAX_VALUE)
                     .add(timeLinePanelLayout.createSequentialGroup()
                         .addContainerGap()
                         .add(timeLinePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(timeLinePanelLayout.createSequentialGroup()
                                 .add(stopTimeLabel)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 52, Short.MAX_VALUE)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 105, Short.MAX_VALUE)
                                 .add(stopTimeSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 84, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                             .add(timeLinePanelLayout.createSequentialGroup()
                                 .add(startTimeLabel)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 51, Short.MAX_VALUE)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 104, Short.MAX_VALUE)
                                 .add(startTimeSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 83, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))))
                 .addContainerGap())
         );
@@ -427,22 +431,22 @@ public final class SVGAnimationRasterizerPanel extends SVGRasterizerPanel {
                 .add(24, 24, 24))
         );
 
-        startTimeSpinner.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "ACCESSIBLE_NAME_startTimeSpinner")); // NOI18N
-        startTimeSpinner.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "ACCESSIBLE_DESCRIPTION_startTimeSpinner")); // NOI18N
-        startTimeLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "ACCESSIBLE_NAME_startTimeLabel")); // NOI18N
-        startTimeLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "ACCESSIBLE_DESCRIPTION_startTimeLabel")); // NOI18N
-        stopTimeLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "ACCESSIBLE_NAME_stopTimeLabel")); // NOI18N
-        stopTimeLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "ACCESSIBLE_DESCRIPTION_stopTimeLabel")); // NOI18N
-        stopTimeSpinner.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "ACCESSIBLE_NAME_stopTimeSpinner")); // NOI18N
-        stopTimeSpinner.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "ACCESSIBLE_DESCRIPTION_stopTimeSpinner")); // NOI18N
-        startTimeSlider.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "ACCESSIBLE_NAME_startTimeSlider")); // NOI18N
-        startTimeSlider.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "ACCESSIBLE_DESCRIPTION_startTimeSlider")); // NOI18N
-        stopTimeSlider.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "ACCESSIBLE_NAME_stopTimeSlider")); // NOI18N
-        stopTimeSlider.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "ACCESSIBLE_DESCRIPTION_stopTimeSlider")); // NOI18N
-        framesPerSecLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "ACCESSIBLE_NAME_framePerSecLabel")); // NOI18N
-        framesPerSecLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "ACCESSIBLE_DESCRIPTION_framePerSecLabel")); // NOI18N
-        framesPerSecSpinner.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "ACCESSIBLE_NAME_framePerSecSpinner")); // NOI18N
-        framesPerSecSpinner.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "ACCESSIBLE_DESCRIPTION_framePerSecSpinner")); // NOI18N
+        startTimeSpinner.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "A11Y_startTimeSpinner_name")); // NOI18N
+        startTimeSpinner.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "A11Y_startTimeSpinner_description")); // NOI18N
+        startTimeLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "A11Y_startTimeLabel_name")); // NOI18N
+        startTimeLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "A11Y_startTimeLabel_description")); // NOI18N
+        stopTimeLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "A11Y_stopTimeLabel_name")); // NOI18N
+        stopTimeLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "A11Y_stopTimeLabel_description")); // NOI18N
+        stopTimeSpinner.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "A11Y_stopTimeSpinner_name")); // NOI18N
+        stopTimeSpinner.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "A11Y_stopTimeSpinner_description")); // NOI18N
+        startTimeSlider.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "A11Y_startTimeSlider_name")); // NOI18N
+        startTimeSlider.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "A11Y_startTimeSlider_descritpion")); // NOI18N
+        stopTimeSlider.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "A11Y_stopTimeSlider_name")); // NOI18N
+        stopTimeSlider.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "A11Y_stopTimeSlider_description")); // NOI18N
+        framesPerSecLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "A11Y_framePerSecLabel_name")); // NOI18N
+        framesPerSecLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "A11Y_framePerSecLabel_description")); // NOI18N
+        framesPerSecSpinner.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "A11Y_framePerSecSpinner_name")); // NOI18N
+        framesPerSecSpinner.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "A11Y_framePerSecSpinner_description")); // NOI18N
 
         exportPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "LBL_ExportLabel"))); // NOI18N
 
@@ -474,7 +478,7 @@ public final class SVGAnimationRasterizerPanel extends SVGRasterizerPanel {
                     .add(radioExportAll)
                     .add(allFramesCheckBox)
                     .add(radioExportCurrent))
-                .addContainerGap(18, Short.MAX_VALUE))
+                .addContainerGap(89, Short.MAX_VALUE))
         );
         exportPanelLayout.setVerticalGroup(
             exportPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -486,44 +490,44 @@ public final class SVGAnimationRasterizerPanel extends SVGRasterizerPanel {
                 .add(allFramesCheckBox))
         );
 
-        radioExportCurrent.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "ACCESSIBLE_NAME_radioExportCurrent")); // NOI18N
-        radioExportCurrent.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "ACCESSIBLE_DESCRIPTION_radioExportCurrent")); // NOI18N
-        radioExportAll.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "ACCESSIBLE_NAME_radioExportAll")); // NOI18N
-        radioExportAll.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "ACCESSIBLE_DESCRIPTION_radioExportAll")); // NOI18N
-        allFramesCheckBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "ACCESSIBLE_NAME_allFramesCheckBox")); // NOI18N
-        allFramesCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "ACCESSIBLE_DESCRIPTION_allFramesCheckBox")); // NOI18N
+        radioExportCurrent.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "A11Y_radioExportCurrent_name")); // NOI18N
+        radioExportCurrent.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "A11Y_radioExportCurrent_description")); // NOI18N
+        radioExportAll.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "A11Y_radioExportAll_name")); // NOI18N
+        radioExportAll.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "A11Y_radioExportAll_description")); // NOI18N
+        allFramesCheckBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "A11Y_allFramesCheckBox_name")); // NOI18N
+        allFramesCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "A11Y_allFramesCheckBox_name")); // NOI18N
 
         jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "LBL_PreviewTitle"))); // NOI18N
 
         jPanel4.setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
         jLabel3.setLabelFor(previewFormatText);
-        jLabel3.setText(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "LBL_PreviewFormat")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "LBL_PreviewFormat")); // NOI18N
 
         jLabel1.setLabelFor(previewFrameSizeText);
-        jLabel1.setText(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "LBL_PreviewSize")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "LBL_PreviewSize")); // NOI18N
 
         jLabel4.setLabelFor(previewFileText);
-        jLabel4.setText(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "LBL_PreviewFile")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel4, org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "LBL_PreviewFile")); // NOI18N
 
         previewFormatText.setEditable(false);
         previewFormatText.setText("JPEG");
-        previewFormatText.setToolTipText(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "TOOL_TIP_previewFormatText")); // NOI18N
+        previewFormatText.setToolTipText("Image format");
 
         previewFrameSizeText.setEditable(false);
         previewFrameSizeText.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
         previewFrameSizeText.setText("5.6KBytes");
-        previewFrameSizeText.setToolTipText(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "TOOL_TIP_previewFormSizeText")); // NOI18N
+        previewFrameSizeText.setToolTipText("Single frame size");
 
         previewFileText.setEditable(false);
         previewFileText.setText("C:\\Program Files\\about.svg");
-        previewFileText.setToolTipText(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "TOOL_TIP_previewFileText")); // NOI18N
+        previewFileText.setToolTipText("File location");
 
         jLabel5.setText("/");
 
         previewAnimationSizeText.setEditable(false);
         previewAnimationSizeText.setText("132.5 KBytes");
-        previewAnimationSizeText.setToolTipText(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "TOOL_TIP_previewAnimationSizeText")); // NOI18N
+        previewAnimationSizeText.setToolTipText("Whole animation size");
 
         org.jdesktop.layout.GroupLayout jPanel4Layout = new org.jdesktop.layout.GroupLayout(jPanel4);
         jPanel4.setLayout(jPanel4Layout);
@@ -544,8 +548,8 @@ public final class SVGAnimationRasterizerPanel extends SVGRasterizerPanel {
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(jLabel5)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(previewAnimationSizeText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 126, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                    .add(previewFileText, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 332, Short.MAX_VALUE)
+                        .add(previewAnimationSizeText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 162, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(previewFileText, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 379, Short.MAX_VALUE)
                     .add(previewFormatText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 55, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
         );
@@ -569,50 +573,51 @@ public final class SVGAnimationRasterizerPanel extends SVGRasterizerPanel {
                 .addContainerGap())
         );
 
-        jLabel3.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "ACCESSIBLE_NAME_jLabel3")); // NOI18N
-        jLabel3.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "ACCESSIBLE_DESCRIPTION_jLabel3")); // NOI18N
-        jLabel1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "ACCESSIBLE_NAME_jLabel1")); // NOI18N
-        jLabel1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "ACCESSIBLE_DESCRIPTION_jLabel1")); // NOI18N
-        jLabel4.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "ACCESSIBLE_NAME_jLabel4")); // NOI18N
-        jLabel4.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "ACCESSIBLE_DESCRIPTION_jLabel4")); // NOI18N
-        previewFormatText.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "ACCESSIBLE_NAME_previewFormatText")); // NOI18N
-        previewFormatText.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "ACCESSIBLE_DESCRIPTION_previewFormatText")); // NOI18N
-        previewFrameSizeText.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "ACCESSIBLE_NAME_previewFormatSizeText")); // NOI18N
-        previewFrameSizeText.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "ACCESSIBLE_DESCRIPTION_previewFormatSizeText")); // NOI18N
-        previewFileText.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "ACCESSIBLE_NAME_previewFileText")); // NOI18N
-        previewFileText.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "ACCESSIBLE_DESCRIPTION_previewFileText")); // NOI18N
-        jLabel5.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "ACCESSIBLE_NAME_jLabel5")); // NOI18N
-        jLabel5.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "ACCESSIBLE_DESCRIPTION_jLabel5")); // NOI18N
-        previewAnimationSizeText.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "ACCESSIBLE_NAME_previewAnimationSizeText")); // NOI18N
-        previewAnimationSizeText.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "ACCESSIBLE_DESCRIPTION_previewAnimationSizeText")); // NOI18N
+        jLabel3.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "A11Y_jlabel3_name")); // NOI18N
+        jLabel3.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "A11Y_jlabel3_descritpion")); // NOI18N
+        jLabel1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "A11Y_previewSizelabel_name")); // NOI18N
+        jLabel1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "A11Y_previewSizelabel_description")); // NOI18N
+        jLabel4.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "A11Y_previewFileLabel_name")); // NOI18N
+        jLabel4.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "A11Y_previewFileLabel_description")); // NOI18N
+        previewFormatText.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "A11Y_previewFormatlabel_name")); // NOI18N
+        previewFormatText.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "A11Y_previewFormatlabel_description")); // NOI18N
+        previewFrameSizeText.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "A11Y_previewFrameSizeText_name")); // NOI18N
+        previewFrameSizeText.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "A11Y_previewFrameSizeText_description")); // NOI18N
+        previewFileText.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "A11Y_previewFileLabel_name")); // NOI18N
+        previewFileText.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "A11Y_previewFileLabel_description")); // NOI18N
+        jLabel5.getAccessibleContext().setAccessibleDescription("/");
+        previewAnimationSizeText.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "A11Y_previewAnimationSizeText_name")); // NOI18N
+        previewAnimationSizeText.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "A11Y_previewAnimationSizeText_description")); // NOI18N
 
         imageHolder.setBorder(javax.swing.BorderFactory.createEtchedBorder());
         imageHolder.setPreferredSize(new java.awt.Dimension(300, 300));
 
         previewLabel.setLabelFor(previewFrameSpinner);
-        previewLabel.setText(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "LBL_AnimationPreviewFrame")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(previewLabel, org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "LBL_AnimationPreviewFrame")); // NOI18N
 
         previewMaxFrameText.setEditable(false);
         previewMaxFrameText.setText("30");
-        previewMaxFrameText.setToolTipText(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "TOOL_TIP_previewMaxFrameText")); // NOI18N
+        previewMaxFrameText.setToolTipText("Number of frames");
 
-        jLabel7.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/mobility/svgcore/export/Bundle").getString("LBL_AnimationPreviewTime").charAt(0));
         jLabel7.setLabelFor(previewCurrentTimeText);
-        jLabel7.setText(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "LBL_AnimationPreviewTime")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel7, org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "LBL_AnimationPreviewTime")); // NOI18N
 
         previewCurrentTimeText.setEditable(false);
         previewCurrentTimeText.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
         previewCurrentTimeText.setText("0");
-        previewCurrentTimeText.setToolTipText(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "TOOL_TIP_previewCurrentTimeText")); // NOI18N
+        previewCurrentTimeText.setToolTipText("Current time");
 
+        jLabel8.setLabelFor(previewEndTimeText);
         jLabel8.setText("/");
 
+        jLabel9.setLabelFor(previewMaxFrameText);
         jLabel9.setText("/");
 
         previewEndTimeText.setEditable(false);
         previewEndTimeText.setText("60");
-        previewEndTimeText.setToolTipText(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "TOOL_TIP_previewEndTimeText")); // NOI18N
+        previewEndTimeText.setToolTipText("Duration");
 
+        jLabel10.setLabelFor(previewEndTimeText);
         jLabel10.setText("[s]");
 
         org.jdesktop.layout.GroupLayout jPanel3Layout = new org.jdesktop.layout.GroupLayout(jPanel3);
@@ -622,7 +627,7 @@ public final class SVGAnimationRasterizerPanel extends SVGRasterizerPanel {
             .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel3Layout.createSequentialGroup()
                 .addContainerGap()
                 .add(jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, imageHolder, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 442, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, imageHolder, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 450, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, jPanel4, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, jPanel3Layout.createSequentialGroup()
                         .add(previewLabel)
@@ -632,7 +637,7 @@ public final class SVGAnimationRasterizerPanel extends SVGRasterizerPanel {
                         .add(jLabel9)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(previewMaxFrameText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 35, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 62, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 155, Short.MAX_VALUE)
                         .add(jLabel7)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(previewCurrentTimeText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 56, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
@@ -664,26 +669,26 @@ public final class SVGAnimationRasterizerPanel extends SVGRasterizerPanel {
                 .addContainerGap())
         );
 
-        imageHolder.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "ACCESSIBLE_NAME_imageHolder")); // NOI18N
-        imageHolder.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "ACCESSIBLE_DESCRIPTION_imageHolder")); // NOI18N
-        previewLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "ACCESSIBLE_NAME_previewLabel")); // NOI18N
-        previewLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "ACCESSIBLE_DESCRIPTION_previewLabel")); // NOI18N
-        previewFrameSpinner.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "ACCESSIBLE_NAME_previewFrameSpinner")); // NOI18N
-        previewFrameSpinner.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "ACCESSIBLE_DESCRIPTION_previewFrameSpinner")); // NOI18N
-        previewMaxFrameText.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "ACCESSIBLE_NAME_previwMaxFrameSet")); // NOI18N
-        previewMaxFrameText.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "ACCESSIBLE_DESCRIPTION_previwMaxFrameSet")); // NOI18N
-        jLabel7.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "ACCESSIBLE_NAME_jLabel7")); // NOI18N
-        jLabel7.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "ACCESSIBLE_DESCRIPTION_jLabel7")); // NOI18N
-        previewCurrentTimeText.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "ACCESSIBLE_NAME_previewCurrentTime")); // NOI18N
-        previewCurrentTimeText.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "ACCESSIBLE_DESCRIPTION_previewCurrentTime")); // NOI18N
-        jLabel8.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "ACCESSIBLE_NAME_jLabel8")); // NOI18N
-        jLabel8.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "ACCESSIBLE_DESCRIPTION_jLabel8")); // NOI18N
-        jLabel9.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "ACCESSIBLE_NAME_jLabel9")); // NOI18N
-        jLabel9.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "ACCESSIBLE_DESCRIPTION_jLabel9")); // NOI18N
-        previewEndTimeText.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "ACCESSIBLE_NAME_previewEndTimeText")); // NOI18N
-        previewEndTimeText.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "ACCESSIBLE_DESCRIPTION_previewEndTimeText")); // NOI18N
-        jLabel10.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "ACCESSIBLE_NAME_jlabel10")); // NOI18N
-        jLabel10.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "ACCESSIBLE_DESCRIPTION_jLabel10")); // NOI18N
+        jPanel4.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "A11Y_jPanel4_name")); // NOI18N
+        jPanel4.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "A11Y_jPanel4_description")); // NOI18N
+        imageHolder.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "A11Y_imageHolder_name")); // NOI18N
+        imageHolder.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "A11Y_imageHolder_description")); // NOI18N
+        previewLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "LBL_Frame_Label")); // NOI18N
+        previewLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "LBL_Frame_Label_Description")); // NOI18N
+        previewFrameSpinner.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "A11Y_Frame_spin_name")); // NOI18N
+        previewFrameSpinner.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "A11Y_Frame_spin_description")); // NOI18N
+        previewMaxFrameText.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "AY11Y_Max_frame_name")); // NOI18N
+        previewMaxFrameText.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "A11Y_Frame_spin_description")); // NOI18N
+        jLabel7.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "A11Y_LBL_Time_name")); // NOI18N
+        jLabel7.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "A11Y_LBL_Time_description")); // NOI18N
+        previewCurrentTimeText.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "A11Y_LBL_CurrentTimetext_name")); // NOI18N
+        previewCurrentTimeText.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "A11Y_CurrentTimeText_description")); // NOI18N
+        jLabel8.getAccessibleContext().setAccessibleDescription("/");
+        jLabel9.getAccessibleContext().setAccessibleDescription("/");
+        previewEndTimeText.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "A11Y_EndTimeText_name")); // NOI18N
+        previewEndTimeText.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "A11Y_EndTimeText_description")); // NOI18N
+        jLabel10.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "A11Y_jLable10_name")); // NOI18N
+        jLabel10.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "A11Y_jLable10_description")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -695,7 +700,7 @@ public final class SVGAnimationRasterizerPanel extends SVGRasterizerPanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
                     .add(timeLinePanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(optionsPanel, 0, 250, Short.MAX_VALUE)
+                    .add(optionsPanel, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .add(sizePanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .add(exportPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
@@ -711,22 +716,25 @@ public final class SVGAnimationRasterizerPanel extends SVGRasterizerPanel {
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(optionsPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(timeLinePanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 183, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .add(timeLinePanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(exportPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
 
-        sizePanel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "ACCESSIBLE_NAME_sizePanel")); // NOI18N
-        sizePanel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "ACCESSIBLE_DESCRIPTION_sizePanel")); // NOI18N
-        optionsPanel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "ACCESSIBLE_NAME_optionsPanel")); // NOI18N
-        optionsPanel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "ACCESSIBLE_DESCRIPTION_optionsPanel")); // NOI18N
-        timeLinePanel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "ACCESSIBLE_NAME_timeLinePanel")); // NOI18N
-        timeLinePanel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "ACCESSIBLE_DESCRIPTION_timeLinePanel")); // NOI18N
-        exportPanel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "ACCESSIBLE_NAME_exportPanel")); // NOI18N
-        exportPanel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "ACCESSIBLE_DESCRIPTION_exportPanel")); // NOI18N
-        jPanel3.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "ACCESSIBLE_NAME_jPanel3")); // NOI18N
-        jPanel3.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "ACCESSIBLE_DESCRIPTION_previewFileText")); // NOI18N
+        sizePanel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "A11Y_sizePanel_name")); // NOI18N
+        sizePanel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "A11Y_sizePanel_description")); // NOI18N
+        optionsPanel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "A11Y_optionsPanel_name")); // NOI18N
+        optionsPanel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "A11Y_optionsPanel_description")); // NOI18N
+        timeLinePanel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "A11Y_timeLinePanel_name")); // NOI18N
+        timeLinePanel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "A11Y_timeLinePanel_description")); // NOI18N
+        exportPanel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "A11Y_exportPanel_name")); // NOI18N
+        exportPanel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "A11Y_exportPanel_description")); // NOI18N
+        jPanel3.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "LBL_Preview_Panel")); // NOI18N
+        jPanel3.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "LBL_Preview_Descripton")); // NOI18N
+
+        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "A11Y_Panel_name")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "A11Y_Panel_description")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
 private void transparentCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_transparentCheckBoxActionPerformed
@@ -848,8 +856,19 @@ private void formatComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GE
         return (ColorReductionMethod) reductionCombo.getSelectedItem();
     }
     
+    public void stopProcessing() {
+        m_processingStopped = true;
+        if ( m_sizeCalculationThread != null) {
+            m_sizeCalculationThread.interrupt();
+        }
+    }
+    
+    protected String getPreviewFileName(){
+        return previewFileText.getText();
+    }
+    
     protected void updateImage(JComponent source, boolean isOutputChanged) {
-        if ( !m_updateInProgress) {
+        if ( !m_updateInProgress && !m_processingStopped) {
             m_updateInProgress = true;
             //System.out.println("Updating model " + source);
             final JLabel label = new JLabel( "Updating image...");
@@ -905,22 +924,33 @@ private void formatComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GE
                 if ( m_sizeCalculationThread != null) {
                     m_sizeCalculationThread.interrupt();
                 }
+                final boolean [] blockUpdate = { false};
                 m_sizeCalculationThread = new Thread() {
                     public void run() {
                         try {
                             AnimationRasterizer.calculateAnimationSize(getSVGImage(), 
                                     SVGAnimationRasterizerPanel.this, new AnimationRasterizer.ProgressUpdater() {
                                 public void updateProgress(final String text) {
-                                    SwingUtilities.invokeLater(new Runnable() {
-                                        public void run() {
-                                            previewAnimationSizeText.setText(text);
-                                        }
-                                    });
+                                    if ( !blockUpdate[0]) {
+                                        updatePreviewText(text);
+                                    }
                                 }
                             });
+                            updateSafeValues();
                         } catch( InterruptedException e) {
+                        } catch( javax.imageio.IIOException e) {
+                            blockUpdate[0] = true;
+                            if ( !m_processingStopped) {
+                                String msg = NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "MSG_IMG_ENCODING_ERROR");   
+                                updatePreviewText(msg + ".");
+                                msg += ": " + e.getLocalizedMessage();
+                                DialogDisplayer.getDefault().notify(
+                                        new NotifyDescriptor.Message( msg, NotifyDescriptor.ERROR_MESSAGE));
+                                restoreSafeValues();
+                            }
                         } catch (Exception ex) {
                             Exceptions.printStackTrace(ex);
+                            restoreSafeValues();
                         }
                     }
                 };
@@ -960,6 +990,14 @@ private void formatComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GE
         }
     }
     
+    private void updatePreviewText(final String msg) {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                previewAnimationSizeText.setText(msg);
+            }
+        });
+    }
+    
     private void updateTimelineBounds(JComponent source) {
         ComponentGroup.ComponentWrapper wrapper;
         if ( (wrapper = m_startTime.findWrapper(source)) != null) {
@@ -971,5 +1009,28 @@ private void formatComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GE
             startTimeSlider.setExtent( startTimeSlider.getMaximum() - Math.round( value * 100));
             ((SpinnerNumberModel)startTimeSpinner.getModel()).setMaximum( new Double(value));
         }
+    }
+    
+    private double  m_backupFramesPerSec;
+    private boolean m_backupAllFramesInSingleImage;
+    private double  m_backupStartTime;
+    private double  m_backupStopTime;
+    
+    private void updateSafeValues() {
+        m_backupStartTime              = getStartTime();
+        m_backupStopTime               = getEndTime();
+        m_backupFramesPerSec           = getFramesPerSecond();
+        m_backupAllFramesInSingleImage = isInSingleImage();
+    }
+    
+    private void restoreSafeValues() {
+        SwingUtilities.invokeLater( new Runnable() {
+            public void run() {
+                framesPerSecSpinner.setValue( Double.valueOf(m_backupFramesPerSec));
+                allFramesCheckBox.setSelected(m_backupAllFramesInSingleImage);
+                startTimeSpinner.setValue( Double.valueOf(m_backupStartTime));
+                stopTimeSpinner.setValue( Double.valueOf(m_backupStopTime));
+            };
+        });
     }
 }

@@ -351,6 +351,7 @@ public class ContextTreeView extends TreeView {
             newChildren = null;
         }
          */
+        @Override
         protected void fireTreeNodesRemoved(Object source, Object[] path, int[] childIndices, Object[] children) {
             LOG.fine("fireTreeNodesRemoved"); // NOI18N
             if (!removalEvent(path, childIndices, children)) {
@@ -364,6 +365,15 @@ public class ContextTreeView extends TreeView {
             LOG.fine("fireTreeNodesRemoved - end"); // NOI18N
         }
 
+        @Override
+        void nodesWereInsertedInternal(final VisualizerEvent ev) {
+            TreeNode node = ev.getVisualizer();
+            int[] childIndices = ev.getArray();
+            Object[] path = getPathToRoot(node);
+            fireTreeNodesInserted(this, path, childIndices, NodeTreeModel.computeChildren(ev));
+        }
+
+        @Override
         protected void fireTreeNodesInserted(Object source, Object[] path, int[] childIndices, Object[] children) {
             LOG.fine("fireTreeNodesInserted"); // NOI18N
             if (!filterEvent(path, childIndices, children)) {
@@ -377,6 +387,7 @@ public class ContextTreeView extends TreeView {
             LOG.fine("fireTreeNodesInserted - end"); // NOI18N
         }
 
+        @Override
         protected void fireTreeNodesChanged(Object source, Object[] path, int[] childIndices, Object[] children) {
             LOG.fine("fireTreeNodesChanged"); // NOI18N
             if (!filterEvent(path, childIndices, children)) {

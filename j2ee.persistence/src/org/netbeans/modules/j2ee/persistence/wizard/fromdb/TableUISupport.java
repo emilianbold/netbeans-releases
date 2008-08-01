@@ -151,7 +151,8 @@ public class TableUISupport {
             int oldSize = getSize();
             displayTables = new ArrayList<Table>(tableClosure.getAvailableTables());
             Collections.sort(displayTables);
-            fireContentsChanged(this, 0, Math.max(oldSize, getSize()));
+            fireIntervalRemoved(this, 0, oldSize);
+            fireIntervalAdded(this, 0, getSize());
         }
     }
 
@@ -183,7 +184,8 @@ public class TableUISupport {
             int oldSize = getSize();
             displayTables = new ArrayList<Table>(tableClosure.getSelectedTables());
             Collections.sort(displayTables);
-            fireContentsChanged(this, 0, Math.max(oldSize, getSize()));
+            fireIntervalRemoved(this, 0, oldSize);
+            fireIntervalAdded(this, 0, getSize());
         }
 
         public TableClosure getTableClosure() {
@@ -203,7 +205,10 @@ public class TableUISupport {
                 if (disabledReason!= null) {
                     displayName = NbBundle.getMessage(TableUISupport.class, "LBL_TableNameWithDisabledReason", tableItem.getName(), disabledReason.getDisplayName());
                 } else {
-                    displayName = tableItem.getName();
+                    if(tableItem.isTable())
+                        displayName = tableItem.getName();
+                    else
+                        displayName = tableItem.getName() + NbBundle.getMessage(TableUISupport.class, "LBL_DB_VIEW");
                 }
             }
 
@@ -226,7 +231,10 @@ public class TableUISupport {
 
             if (value instanceof Table) {
                 table = (Table)value;
-                displayName = table.getName();
+                if(((Table)value).isTable())
+                    displayName = table.getName();
+                else
+                    displayName = table.getName() + NbBundle.getMessage(TableUISupport.class, "LBL_DB_VIEW");
 
                 if (list.getModel() instanceof SelectedTablesModel) {
                     SelectedTablesModel model = (SelectedTablesModel)list.getModel();

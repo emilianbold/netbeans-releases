@@ -46,7 +46,13 @@ import org.netbeans.modules.editor.settings.storage.fontscolors.FontColorSetting
 import java.awt.Color;
 import java.lang.ref.WeakReference;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Random;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.prefs.Preferences;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.StyleConstants;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
@@ -71,6 +77,7 @@ public class SettingsProviderTest extends NbTestCase {
     
     protected @Override void setUp() throws Exception {
         super.setUp();
+        clearWorkDir();
     
         EditorTestLookup.setLookup(
             new URL[] {
@@ -222,7 +229,56 @@ public class SettingsProviderTest extends NbTestCase {
         assertNotNull("Can't find coloring defined for typeA embedded in typeB", attribsEmbedded);
         assertEquals("Wrong bgColor in coloring defined for typeA embedded in typeB", new Color(0xAABB00), attribsEmbedded.getAttribute(StyleConstants.Background));
     }
-    
+
+    public void testPreferencesExist() {
+        final long seed = System.currentTimeMillis();
+        final Random r = new Random(seed);
+        final AtomicInteger finished = new AtomicInteger();
+        final List<String> failures = Collections.synchronizedList(new ArrayList<String>());
+        int threads = r.nextInt(123) + 13;
+
+        System.out.println("Spawning " + threads + " threads");
+        for(int i = 0; i < threads; i++) {
+            new Thread() {
+                public @Override void run() {
+                    int delay = r.nextInt(345) + 123;
+                    try {
+                        Thread.sleep(delay);
+                    } catch (InterruptedException ie) {
+                        // ignore
+                    }
+
+                    String mimeType = "text/x-ABC";
+                    Lookup lookup = MimeLookup.getLookup(mimeType);
+
+                    Preferences prefs = lookup.lookup(Preferences.class);
+                    if (prefs == null) {
+                        failures.add("Seed(" + seed + "): No preferences for " + mimeType);
+                    }
+
+                    finished.incrementAndGet();
+                }
+            }.start();
+        }
+
+        while(finished.get() < threads) {
+            try {
+                Thread.sleep(123);
+            } catch (InterruptedException ex) {
+                // ignore
+            }
+        }
+
+        if (failures.size() > 0) {
+            System.out.println("Failures: " + failures.size());
+            for(String msg : failures) {
+                System.out.println("    " + msg);
+            }
+
+            fail(failures.size() + " threads failed. First message: " + failures.get(0));
+        }
+    }
+
     public static Marker createMarker(FileObject f) {
         return new Marker(f);
     }

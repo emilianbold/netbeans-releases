@@ -41,8 +41,7 @@ package org.netbeans.modules.ws.qaf.wsdl;
 
 import java.io.File;
 import java.io.IOException;
-import junit.framework.TestSuite;
-import junit.textui.TestRunner;
+import junit.framework.Test;
 import org.netbeans.api.project.Project;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
@@ -51,7 +50,7 @@ import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
-import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.ws.qaf.WsValidation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -94,19 +93,23 @@ public class FromWSDLTSuite extends WsValidation {
         return "WsFromWSDL"; //NOI18N
     }
 
-    /** Creates suite from particular test cases. You can define order of testcases here. */
-    public static TestSuite suite() {
-        TestSuite suite = new NbTestSuite();
-        suite.addTest(new FromWSDLTSuite("testWSFromWSDL"));
-        suite.addTest(new FromWSDLTSuite("testRefreshService"));
-        suite.addTest(new FromWSDLTSuite("testRefreshServiceAndReplaceWSDL"));
-        return suite;
+    public static Test suite() {
+        return NbModuleSuite.create(addServerTests(NbModuleSuite.createConfiguration(FromWSDLTSuite.class), "testWSFromWSDL", "testRefreshService", "testRefreshServiceAndReplaceWSDL").enableModules(".*").clusters(".*"));
     }
     
-    /* Method allowing test execution directly from the IDE. */
-    public static void main(java.lang.String[] args) {
-        TestRunner.run(suite());
-    }
+    /** Creates suite from particular test cases. You can define order of testcases here. */
+//    public static TestSuite suite() {
+//        TestSuite suite = new NbTestSuite(); 
+//        suite.addTest(new FromWSDLTSuite("testWSFromWSDL"));
+//        suite.addTest(new FromWSDLTSuite("testRefreshService"));
+//        suite.addTest(new FromWSDLTSuite("testRefreshServiceAndReplaceWSDL"));
+//        return suite;
+//    }
+//    
+//    /* Method allowing test execution directly from the IDE. */
+//    public static void main(java.lang.String[] args) {
+//        TestRunner.run(suite());
+//    }
 
     public void testWSFromWSDL() throws IOException {
         File wsdl = new File(getDataDir(), "resources/AddNumbers.wsdl");

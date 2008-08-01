@@ -138,7 +138,7 @@ public class Tracer {
 	sb.append("  "); // NOI18N
 
 	if( decl instanceof  CsmOffsetable ) {
-	    sb.append(CsmTracer.getOffsetString((CsmOffsetable) decl));
+	    sb.append(CsmTracer.getOffsetString((CsmOffsetable) decl, true));
 	}
 	if( CsmKindUtilities.isVariable(decl) ) {
 	    sb.append("  "); // NOI18N

@@ -106,6 +106,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -402,6 +403,12 @@ public class Util {
         return null;
     }
 
+    public static boolean isEqual(Object a, Object b) {
+        if ((a == null) && (b == null)) return true;
+        if ((a != null) && (b != null)) return a.equals(b);
+        return false;
+    }
+    
     public static String getStoreLocation(Project project, boolean trust, boolean client) {
         String storeLocation = null;
         if (project == null) {
@@ -436,20 +443,94 @@ public class Util {
         return storeLocation;
     }
     
+    public static final String BUNDLED_TOMCAT_SETTING = "J2EE/BundledTomcat/Setting"; // NOI18N
+
     public static FileObject getTomcatLocation(Project project) {
+        
+        String catalinaHome = null;
+        String catalinaBase = null;
+
+        File homeDir = null;
+        File baseDir = null;
+        
         J2eeModuleProvider mp = project.getLookup().lookup(J2eeModuleProvider.class);
-        FileObject folder = null;
-        String id = null;
+        InstanceProperties ip = null;
         if (mp != null) { 
-            try {
-                id = mp.getServerInstanceID();
-                folder = getTomcatLocation(id);
-            } catch (Exception ex) {
-                Logger.getLogger(LOGGER_GLOBAL).log(Level.INFO, id, ex);
-            }    
+            ip = mp.getInstanceProperties();
         }
-        return folder;
+
+        /* copied from TomcatProperties */
+        /* START */
+        String uri = ip.getProperty(InstanceProperties.URL_ATTR);
+        final String home = "home=";    // NOI18N
+        final String base = ":base=";   // NOI18N
+        final String uriString = "http://";  // NOI18N
+        int uriOffset = uri.indexOf (uriString);
+        int homeOffset = uri.indexOf (home) + home.length ();
+        int baseOffset = uri.indexOf (base, homeOffset);
+        if (homeOffset >= home.length ()) {
+            int homeEnd = baseOffset > 0 ? baseOffset : (uriOffset > 0 ? uriOffset - 1 : uri.length ());
+            int baseEnd = uriOffset > 0 ? uriOffset - 1 : uri.length ();
+            catalinaHome= uri.substring (homeOffset, homeEnd);
+            if (baseOffset > 0) {
+                catalinaBase = uri.substring (baseOffset + base.length (), baseEnd);
+            }
+            // Bundled Tomcat home and base dirs can be specified as attributes
+            // specified in BUNDLED_TOMCAT_SETTING file. Tomcat manager URL can 
+            // then look like "tomcat:home=$bundled_home:base=$bundled_base" and
+            // therefore remains valid even if Tomcat version changes. (issue# 40659)
+            if (catalinaHome.length() > 0 && catalinaHome.charAt(0) == '$') {
+                FileSystem fs = Repository.getDefault().getDefaultFileSystem();
+                FileObject fo = fs.findResource(BUNDLED_TOMCAT_SETTING);
+                if (fo != null) {
+                    catalinaHome = fo.getAttribute(catalinaHome.substring(1)).toString();
+                    if (catalinaBase != null && catalinaBase.length() > 0 
+                        && catalinaBase.charAt(0) == '$') {
+                        catalinaBase = fo.getAttribute(catalinaBase.substring(1)).toString();
+                    }
+                }
+            }
+        }
+        if (catalinaHome == null) {
+            throw new IllegalArgumentException("CATALINA_HOME must not be null."); // NOI18N
+        }
+        homeDir = new File(catalinaHome);
+        if (!homeDir.isAbsolute ()) {
+            InstalledFileLocator ifl = InstalledFileLocator.getDefault();
+            homeDir = ifl.locate(catalinaHome, null, false);
+        }
+        if (!homeDir.exists()) {
+            throw new IllegalArgumentException("CATALINA_HOME directory does not exist."); // NOI18N
+        }
+        if (catalinaBase != null) {
+            baseDir = new File(catalinaBase);
+            if (!baseDir.isAbsolute ()) {
+                InstalledFileLocator ifl = InstalledFileLocator.getDefault();
+                baseDir = ifl.locate(catalinaBase, null, false);
+                if (baseDir == null) {
+                    baseDir = new File(System.getProperty("netbeans.user"), catalinaBase);   // NOI18N
+                }
+            }
+        }     
+        /* END */
+        
+        return ((baseDir == null) ?
+            ((homeDir == null) ? null : FileUtil.toFileObject(homeDir)) : FileUtil.toFileObject(baseDir));
     }
+    
+    /**
+     * Return server.xml file from the catalina base folder if the base folder is used 
+     * or from the catalina home folder otherwise.
+     * <p>
+     * <b>BEWARE</b>: If the catalina base folder is used but has not bee generated yet,
+     * the server.xml file from the catalina home folder will be returned.
+     * </p>
+     */
+    public static FileObject getServerXml(Project p) {
+        String confServerXml = "conf/server.xml"; // NIO18N
+        FileObject fO = getTomcatLocation(p);
+        return (fO == null) ? null : fO.getFileObject(confServerXml);
+    }    
 
     public static FileObject getTomcatLocation(String serverID) {
         if (serverID == null) return null;
@@ -471,18 +552,17 @@ public class Util {
         return folder;
     }
         
-    public static final void fillDefaultsToDefaultServer() {
+    public static final void fillDefaultsToServer(String serverID) {
+        
+        boolean glassfish = isGlassfish(serverID);
 
-        String sID = Deployment.getDefault().getDefaultServerInstanceID();
-        boolean glassfish = isGlassfish(sID);
-
-        String serverKeyStorePath = getStoreLocation(sID, false, false);
-        String serverTrustStorePath = getStoreLocation(sID, true, false);
-        String clientKeyStorePath = getStoreLocation(sID, false, true);
-        String clientTrustStorePath = getStoreLocation(sID, true, true);
+        String serverKeyStorePath = getStoreLocation(serverID, false, false);
+        String serverTrustStorePath = getStoreLocation(serverID, true, false);
+        String clientKeyStorePath = getStoreLocation(serverID, false, true);
+        String clientTrustStorePath = getStoreLocation(serverID, true, true);
 
         if (!glassfish) {
-            FileObject tomcatLocation = getTomcatLocation(sID);
+            FileObject tomcatLocation = getTomcatLocation(serverID);
             try {
                 FileObject targetFolder = FileUtil.createFolder(tomcatLocation, STORE_FOLDER_NAME);
                 DataFolder folderDO = (DataFolder) DataObject.find(targetFolder);
@@ -551,13 +631,13 @@ public class Util {
             return;
         }
 
-        String dstPasswd = getDefaultPassword(sID);
+        String dstPasswd = getDefaultPassword(serverID);
         try {
             copyKey(SERVER_KEYSTORE_BUNDLED, XWS_SECURITY_SERVER, PASSWORD, PASSWORD, serverKeyStorePath,XWS_SECURITY_SERVER, dstPasswd, false);
             copyKey(SERVER_KEYSTORE_BUNDLED, WSSIP, PASSWORD, PASSWORD, serverKeyStorePath,WSSIP, dstPasswd, false);
             copyKey(SERVER_TRUSTSTORE_BUNDLED, "certificate-authority", PASSWORD, PASSWORD, serverTrustStorePath, "xwss-certificate-authority", dstPasswd, true);
             copyKey(SERVER_TRUSTSTORE_BUNDLED, XWS_SECURITY_CLIENT, PASSWORD, PASSWORD, serverTrustStorePath,XWS_SECURITY_CLIENT, dstPasswd, true);
-            copyKey(SERVER_TRUSTSTORE_BUNDLED, XWS_SECURITY_SERVER, PASSWORD, PASSWORD, serverTrustStorePath,XWS_SECURITY_SERVER, dstPasswd, true);
+            copyKey(SERVER_KEYSTORE_BUNDLED, XWS_SECURITY_SERVER, PASSWORD, PASSWORD, serverTrustStorePath,XWS_SECURITY_SERVER, dstPasswd, true);
             copyKey(CLIENT_KEYSTORE_BUNDLED, XWS_SECURITY_CLIENT, PASSWORD, PASSWORD, clientKeyStorePath,XWS_SECURITY_CLIENT, dstPasswd, false);
             copyKey(CLIENT_TRUSTSTORE_BUNDLED, XWS_SECURITY_SERVER, PASSWORD, PASSWORD, clientTrustStorePath,XWS_SECURITY_SERVER, dstPasswd, true);
             copyKey(CLIENT_TRUSTSTORE_BUNDLED, WSSIP, PASSWORD, PASSWORD, clientTrustStorePath,WSSIP, dstPasswd, true);
@@ -657,6 +737,7 @@ public class Util {
                 copyKey(SERVER_KEYSTORE_BUNDLED, WSSIP, PASSWORD, PASSWORD, serverKeyStorePath,WSSIP, dstPasswd, false);
                 copyKey(SERVER_TRUSTSTORE_BUNDLED, "certificate-authority", PASSWORD, PASSWORD, serverTrustStorePath, "xwss-certificate-authority", dstPasswd, true);
                 copyKey(SERVER_TRUSTSTORE_BUNDLED, XWS_SECURITY_CLIENT, PASSWORD, PASSWORD, serverTrustStorePath,XWS_SECURITY_CLIENT, dstPasswd, true);
+                copyKey(SERVER_KEYSTORE_BUNDLED, XWS_SECURITY_SERVER, PASSWORD, PASSWORD, serverTrustStorePath,XWS_SECURITY_SERVER, dstPasswd, true);
                 copyKey(CLIENT_KEYSTORE_BUNDLED, XWS_SECURITY_CLIENT, PASSWORD, PASSWORD, clientKeyStorePath,XWS_SECURITY_CLIENT, dstPasswd, false);
                 copyKey(CLIENT_TRUSTSTORE_BUNDLED, XWS_SECURITY_SERVER, PASSWORD, PASSWORD, clientTrustStorePath,XWS_SECURITY_SERVER, dstPasswd, true);
                 copyKey(CLIENT_TRUSTSTORE_BUNDLED, WSSIP, PASSWORD, PASSWORD, clientTrustStorePath,WSSIP, dstPasswd, true);
@@ -689,9 +770,11 @@ public class Util {
                     Certificate[] chain = new Certificate[] {cert};
                     dstStore.setKeyEntry(dstAlias, privKey, dstPasswd.toCharArray(), chain);
                 }
-                dstStore.store(os, dstPasswd.toCharArray());
             } finally {
-                if (os != null) os.close();
+                if (os != null) {
+                    dstStore.store(os, dstPasswd.toCharArray());
+                    os.close();
+                }
             }
         } finally {
             if (is != null) is.close();

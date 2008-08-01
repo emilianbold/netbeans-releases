@@ -107,8 +107,8 @@ public class Scene implements GlobalRepositoryListener, PropertyChangeListener, 
 		for (Iterator iter = other.layers.iterator(); iter.hasNext();) {
 			Layer layer = (Layer) iter.next();
 			this.insert(layer, other.indexOf(layer));
-			this.setLayerLocked(layer, other.isLayerLocked(layer));
 			this.setLayerPosition(layer, other.getLayerPosition(layer), false);
+			this.setLayerLocked(layer, other.isLayerLocked(layer));
 			this.setLayerVisible(layer, other.isLayerVisible(layer));
 		}
 	}

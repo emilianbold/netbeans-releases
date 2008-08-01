@@ -1,0 +1,1325 @@
+
+#
+# date.rb - date and time library
+#
+# Author: Tadayoshi Funaba 1998-2006
+#
+# Documentation: William Webber &lt;william@williamwebber.com&gt;
+#
+# == Overview
+#
+# This file provides two classes for working with
+# dates and times.
+#
+# The first class, Date, represents dates. 
+# It works with years, months, weeks, and days.
+# See the Date class documentation for more details.
+#
+# The second, DateTime, extends Date to include hours,
+# minutes, seconds, and fractions of a second.  It
+# provides basic support for time zones.  See the
+# DateTime class documentation for more details.
+#
+# === Ways of calculating the date.
+#
+# In common usage, the date is reckoned in years since or
+# before the Common Era (CE/BCE, also known as AD/BC), then
+# as a month and day-of-the-month within the current year.
+# This is known as the *Civil* *Date*, and abbreviated
+# as +civil+ in the Date class.
+#
+# Instead of year, month-of-the-year,  and day-of-the-month,
+# the date can also be reckoned in terms of year and
+# day-of-the-year.  This is known as the *Ordinal* *Date*,
+# and is abbreviated as +ordinal+ in the Date class.  (Note
+# that referring to this as the Julian date is incorrect.)
+#
+# The date can also be reckoned in terms of year, week-of-the-year,
+# and day-of-the-week.  This is known as the *Commercial*
+# *Date*, and is abbreviated as +commercial+ in the
+# Date class.  The commercial week runs Monday (day-of-the-week
+# 1) to Sunday (day-of-the-week 7), in contrast to the civil
+# week which runs Sunday (day-of-the-week 0) to Saturday
+# (day-of-the-week 6).  The first week of the commercial year
+# starts on the Monday on or before January 1, and the commercial
+# year itself starts on this Monday, not January 1.
+#
+# For scientific purposes, it is convenient to refer to a date
+# simply as a day count, counting from an arbitrary initial
+# day.  The date first chosen for this was January 1, 4713 BCE.
+# A count of days from this date is the *Julian* *Day* *Number*
+# or *Julian* *Date*, which is abbreviated as +jd+ in the
+# Date class.  This is in local time, and counts from midnight
+# on the initial day.  The stricter usage is in UTC, and counts
+# from midday on the initial day.  This is referred to in the
+# Date class as the *Astronomical* *Julian* *Day* *Number*, and
+# abbreviated as +ajd+.  In the Date class, the Astronomical
+# Julian Day Number includes fractional days.
+#
+# Another absolute day count is the *Modified* *Julian* *Day*
+# *Number*, which takes November 17, 1858 as its initial day.
+# This is abbreviated as +mjd+ in the Date class.  There
+# is also an *Astronomical* *Modified* *Julian* *Day* *Number*,
+# which is in UTC and includes fractional days.  This is
+# abbreviated as +amjd+ in the Date class.  Like the Modified
+# Julian Day Number (and unlike the Astronomical Julian
+# Day Number), it counts from midnight.
+#
+# Alternative calendars such as the Chinese Lunar Calendar,
+# the Islamic Calendar, or the French Revolutionary Calendar
+# are not supported by the Date class; nor are calendars that
+# are based on an Era different from the Common Era, such as
+# the Japanese Imperial Calendar or the Republic of China
+# Calendar.
+#
+# === Calendar Reform
+#
+# The standard civil year is 365 days long.  However, the
+# solar year is fractionally longer than this.  To account
+# for this, a *leap* *year* is occasionally inserted.  This
+# is a year with 366 days, the extra day falling on February 29. 
+# In the early days of the civil calendar, every fourth
+# year without exception was a leap year.  This way of
+# reckoning leap years is the *Julian* *Calendar*.
+#
+# However, the solar year is marginally shorter than 365 1/4
+# days, and so the *Julian* *Calendar* gradually ran slow
+# over the centuries.  To correct this, every 100th year
+# (but not every 400th year) was excluded as a leap year.
+# This way of reckoning leap years, which we use today, is
+# the *Gregorian* *Calendar*.
+#
+# The Gregorian Calendar was introduced at different times
+# in different regions.  The day on which it was introduced
+# for a particular region is the *Day* *of* *Calendar*
+# *Reform* for that region.  This is abbreviated as +sg+
+# (for Start of Gregorian calendar) in the Date class.
+#
+# Two such days are of particular
+# significance.  The first is October 15, 1582, which was
+# the Day of Calendar Reform for Italy and most Catholic
+# countries.  The second is September 14, 1752, which was
+# the Day of Calendar Reform for England and its colonies
+# (including what is now the United States).  These two
+# dates are available as the constants Date::ITALY and
+# Date::ENGLAND, respectively.  (By comparison, Germany and
+# Holland, less Catholic than Italy but less stubborn than
+# England, changed over in 1698; Sweden in 1753; Russia not
+# till 1918, after the Revolution; and Greece in 1923.  Many
+# Orthodox churches still use the Julian Calendar.  A complete
+# list of Days of Calendar Reform can be found at
+# http://www.polysyllabic.com/GregConv.html.)
+#
+# Switching from the Julian to the Gregorian calendar
+# involved skipping a number of days to make up for the
+# accumulated lag, and the later the switch was (or is)
+# done, the more days need to be skipped.  So in 1582 in Italy,
+# 4th October was followed by 15th October, skipping 10 days; in 1752
+# in England, 2nd September was followed by 14th September, skipping
+# 11 days; and if I decided to switch from Julian to Gregorian
+# Calendar this midnight, I would go from 27th July 2003 (Julian)
+# today to 10th August 2003 (Gregorian) tomorrow, skipping
+# 13 days.  The Date class is aware of this gap, and a supposed
+# date that would fall in the middle of it is regarded as invalid.
+#
+# The Day of Calendar Reform is relevant to all date representations
+# involving years.  It is not relevant to the Julian Day Numbers,
+# except for converting between them and year-based representations.
+#
+# In the Date and DateTime classes, the Day of Calendar Reform or
+# +sg+ can be specified a number of ways.  First, it can be as
+# the Julian Day Number of the Day of Calendar Reform.  Second,
+# it can be using the constants Date::ITALY or Date::ENGLAND; these
+# are in fact the Julian Day Numbers of the Day of Calendar Reform
+# of the respective regions.  Third, it can be as the constant
+# Date::JULIAN, which means to always use the Julian Calendar.
+# Finally, it can be as the constant Date::GREGORIAN, which means
+# to always use the Gregorian Calendar.
+#
+# Note: in the Julian Calendar, New Years Day was March 25.  The
+# Date class does not follow this convention.
+#
+# === Time Zones
+#
+# DateTime objects support a simple representation
+# of time zones.  Time zones are represented as an offset
+# from UTC, as a fraction of a day.  This offset is the
+# how much local time is later (or earlier) than UTC.
+# UTC offset 0 is centred on England (also known as GMT). 
+# As you travel east, the offset increases until you
+# reach the dateline in the middle of the Pacific Ocean;
+# as you travel west, the offset decreases.  This offset
+# is abbreviated as +of+ in the Date class.
+#
+# This simple representation of time zones does not take
+# into account the common practice of Daylight Savings
+# Time or Summer Time.
+#
+# Most DateTime methods return the date and the
+# time in local time.  The two exceptions are
+# #ajd() and #amjd(), which return the date and time
+# in UTC time, including fractional days.
+#
+# The Date class does not support time zone offsets, in that
+# there is no way to create a Date object with a time zone.
+# However, methods of the Date class when used by a
+# DateTime instance will use the time zone offset of this
+# instance.
+#
+# == Examples of use
+#
+# === Print out the date of every Sunday between two dates.
+#
+#     def print_sundays(d1, d2)
+#         d1 +=1 while (d1.wday != 0)
+#         d1.step(d2, 7) do |date|
+#             puts "#{Date::MONTHNAMES[date.mon]} #{date.day}"
+#         end
+#     end
+#
+#     print_sundays(Date::civil(2003, 4, 8), Date::civil(2003, 5, 23))
+#
+# === Calculate how many seconds to go till midnight on New Year's Day.
+#
+#     def secs_to_new_year(now = DateTime::now())
+#         new_year = DateTime.new(now.year + 1, 1, 1)
+#         dif = new_year - now
+#         hours, mins, secs, ignore_fractions = Date::day_fraction_to_time(dif)
+#         return hours * 60 * 60 + mins * 60 + secs
+#     end
+#
+#     puts secs_to_new_year()
+
+<BLOCKNODE><FCALLNODE>require <ARRAYNODE><STRNODE>'rational'</STRNODE></ARRAYNODE></FCALLNODE>
+<FCALLNODE>require <ARRAYNODE><STRNODE>'date/format'</STRNODE></ARRAYNODE></FCALLNODE>
+
+# Class representing a date.
+#
+# See the documentation to the file date.rb for an overview.
+#
+# Internally, the date is represented as an Astronomical
+# Julian Day Number, +ajd+.  The Day of Calendar Reform, +sg+, is
+# also stored, for conversions to other date formats.  (There
+# is also an +of+ field for a time zone offset, but this
+# is only for the use of the DateTime subclass.)
+#
+# A new Date object is created using one of the object creation
+# class methods named after the corresponding date format, and the
+# arguments appropriate to that date format; for instance,
+# Date::civil() (aliased to Date::new()) with year, month,
+# and day-of-month, or Date::ordinal() with year and day-of-year.
+# All of these object creation class methods also take the
+# Day of Calendar Reform as an optional argument.
+#
+# Date objects are immutable once created.
+#
+# Once a Date has been created, date values
+# can be retrieved for the different date formats supported
+# using instance methods.  For instance, #mon() gives the
+# Civil month, #cwday() gives the Commercial day of the week,
+# and #yday() gives the Ordinal day of the year.  Date values
+# can be retrieved in any format, regardless of what format
+# was used to create the Date instance.
+#
+# The Date class includes the Comparable module, allowing
+# date objects to be compared and sorted, ranges of dates
+# to be created, and so forth.
+<CLASSNODE>class <COLON2NODE>Date</COLON2NODE>
+
+  <BLOCKNODE><FCALLNODE>include <ARRAYNODE><CONSTNODE>Comparable</CONSTNODE></ARRAYNODE></FCALLNODE>
+
+  # Full month names, in English.  Months count from 1 to 12; a
+  # month's numerical representation indexed into this array
+  # gives the name of that month (hence the first element is nil).
+  <CONSTDECLNODE>MONTHNAMES = <CALLNODE><ARRAYNODE>[<NILNODE>nil</NILNODE>]</ARRAYNODE> + <ARRAYNODE><ARRAYNODE>%w(<STRNODE>January</STRNODE> <STRNODE>February</STRNODE> <STRNODE>March</STRNODE> <STRNODE>April</STRNODE> <STRNODE>May</STRNODE> <STRNODE>June</STRNODE> <STRNODE>July</STRNODE>
+			  <STRNODE>August</STRNODE> <STRNODE>September</STRNODE> <STRNODE>October</STRNODE> <STRNODE>November</STRNODE> <STRNODE>December</STRNODE>)</ARRAYNODE></ARRAYNODE></CALLNODE></CONSTDECLNODE>
+
+  # Full names of days of the week, in English.  Days of the week
+  # count from 0 to 6 (except in the commercial week); a day's numerical
+  # representation indexed into this array gives the name of that day.
+  <CONSTDECLNODE>DAYNAMES = <ARRAYNODE>%w(<STRNODE>Sunday</STRNODE> <STRNODE>Monday</STRNODE> <STRNODE>Tuesday</STRNODE> <STRNODE>Wednesday</STRNODE> <STRNODE>Thursday</STRNODE> <STRNODE>Friday</STRNODE> <STRNODE>Saturday</STRNODE>)</ARRAYNODE></CONSTDECLNODE>
+
+  # Abbreviated month names, in English.
+  <CONSTDECLNODE>ABBR_MONTHNAMES = <CALLNODE><ARRAYNODE>[<NILNODE>nil</NILNODE>]</ARRAYNODE> + <ARRAYNODE><ARRAYNODE>%w(<STRNODE>Jan</STRNODE> <STRNODE>Feb</STRNODE> <STRNODE>Mar</STRNODE> <STRNODE>Apr</STRNODE> <STRNODE>May</STRNODE> <STRNODE>Jun</STRNODE>
+			       <STRNODE>Jul</STRNODE> <STRNODE>Aug</STRNODE> <STRNODE>Sep</STRNODE> <STRNODE>Oct</STRNODE> <STRNODE>Nov</STRNODE> <STRNODE>Dec</STRNODE>)</ARRAYNODE></ARRAYNODE></CALLNODE></CONSTDECLNODE>
+
+  # Abbreviated day names, in English.
+  <CONSTDECLNODE>ABBR_DAYNAMES = <ARRAYNODE>%w(<STRNODE>Sun</STRNODE> <STRNODE>Mon</STRNODE> <STRNODE>Tue</STRNODE> <STRNODE>Wed</STRNODE> <STRNODE>Thu</STRNODE> <STRNODE>Fri</STRNODE> <STRNODE>Sat</STRNODE>)</ARRAYNODE></CONSTDECLNODE>
+
+  # The Julian Day Number of the Day of Calendar Reform for Italy
+  # and the Catholic countries.
+  <CONSTDECLNODE>ITALY     = <FIXNUMNODE>2299161</FIXNUMNODE></CONSTDECLNODE> # 1582-10-15
+
+  # The Julian Day Number of the Day of Calendar Reform for England
+  # and her Colonies.
+  <CONSTDECLNODE>ENGLAND   = <FIXNUMNODE>2361222</FIXNUMNODE></CONSTDECLNODE> # 1752-09-14
+
+  # A constant used to indicate that a Date should always use the
+  # Julian calendar.
+  <CONSTDECLNODE>JULIAN    = <FALSENODE>false</FALSENODE></CONSTDECLNODE>
+
+  # A constant used to indicate that a Date should always use the
+  # Gregorian calendar.
+  <CONSTDECLNODE>GREGORIAN = <TRUENODE>true</TRUENODE></CONSTDECLNODE>
+
+  # Does a given Julian Day Number fall inside the old-style (Julian)
+  # calendar?
+  #
+  # +jd+ is the Julian Day Number in question. +sg+ may be Date::GREGORIAN,
+  # in which case the answer is false; it may be Date::JULIAN, in which case
+  # the answer is true; or it may a number representing the Day of
+  # Calendar Reform. Date::ENGLAND and Date::ITALY are two possible such
+  # days.
+  <DEFSNODE>def <SELFNODE>self</SELFNODE>.<ARGUMENTNODE>os?</ARGUMENTNODE> <ARGSNODE>(<LISTNODE><ARGUMENTNODE>jd</ARGUMENTNODE>, <ARGUMENTNODE>sg</ARGUMENTNODE></LISTNODE>)</ARGSNODE>
+    <CASENODE>case <LOCALVARNODE>sg</LOCALVARNODE>
+    <WHENNODE>when <ARRAYNODE><CONSTNODE>Numeric</CONSTNODE></ARRAYNODE>; <CALLNODE><LOCALVARNODE>jd</LOCALVARNODE> &lt; <ARRAYNODE><LOCALVARNODE>sg</LOCALVARNODE></ARRAYNODE></CALLNODE></WHENNODE>
+    else;         <NOTNODE>not <LOCALVARNODE>sg</LOCALVARNODE></NOTNODE>
+    end</CASENODE>
+  end</DEFSNODE>
+
+  # Does a given Julian Day Number fall inside the new-style (Gregorian)
+  # calendar?
+  #
+  # The reverse of self.os?  See the documentation for that method for
+  # more details.
+  <DEFSNODE>def <SELFNODE>self</SELFNODE>.<ARGUMENTNODE>ns?</ARGUMENTNODE> <ARGSNODE>(<LISTNODE><ARGUMENTNODE>jd</ARGUMENTNODE>, <ARGUMENTNODE>sg</ARGUMENTNODE></LISTNODE>)</ARGSNODE> <NOTNODE>not <FCALLNODE>os?<ARRAYNODE>(<LOCALVARNODE>jd</LOCALVARNODE>, <LOCALVARNODE>sg</LOCALVARNODE>)</ARRAYNODE></FCALLNODE></NOTNODE> end</DEFSNODE>
+
+  # Convert a Civil Date to a Julian Day Number.
+  # +y+, +m+, and +d+ are the year, month, and day of the
+  # month.  +sg+ specifies the Day of Calendar Reform.
+  #
+  # Returns the corresponding Julian Day Number.
+  <DEFSNODE>def <SELFNODE>self</SELFNODE>.<ARGUMENTNODE>civil_to_jd</ARGUMENTNODE><ARGSNODE>(<LISTNODE><ARGUMENTNODE>y</ARGUMENTNODE>, <ARGUMENTNODE>m</ARGUMENTNODE>, <ARGUMENTNODE>d</ARGUMENTNODE></LISTNODE>, <LOCALASGNNODE>sg=<CONSTNODE>GREGORIAN</CONSTNODE></LOCALASGNNODE><BLOCKNODE/>)</ARGSNODE>
+    <BLOCKNODE><IFNODE>if <CALLNODE><LOCALVARNODE>m</LOCALVARNODE> &lt;= <ARRAYNODE><FIXNUMNODE>2</FIXNUMNODE></ARRAYNODE></CALLNODE>
+      <BLOCKNODE><LOCALASGNNODE><CALLNODE><LOCALVARNODE>y</LOCALVARNODE> -= <ARRAYNODE><FIXNUMNODE>1</FIXNUMNODE></ARRAYNODE></CALLNODE></LOCALASGNNODE>
+      <LOCALASGNNODE><CALLNODE><LOCALVARNODE>m</LOCALVARNODE> += <ARRAYNODE><FIXNUMNODE>12</FIXNUMNODE></ARRAYNODE></CALLNODE></LOCALASGNNODE></BLOCKNODE>
+    end</IFNODE>
+    <LOCALASGNNODE>a = (<CALLNODE><CALLNODE><LOCALVARNODE>y</LOCALVARNODE> / <ARRAYNODE><FLOATNODE>100.0</FLOATNODE></ARRAYNODE></CALLNODE>).floor</CALLNODE></LOCALASGNNODE>
+    <LOCALASGNNODE>b = <CALLNODE><CALLNODE><FIXNUMNODE>2</FIXNUMNODE> - <ARRAYNODE><LOCALVARNODE>a</LOCALVARNODE></ARRAYNODE></CALLNODE> + (<ARRAYNODE><CALLNODE><CALLNODE><LOCALVARNODE>a</LOCALVARNODE> / <ARRAYNODE><FLOATNODE>4.0</FLOATNODE></ARRAYNODE></CALLNODE>).floor</CALLNODE></ARRAYNODE></CALLNODE></LOCALASGNNODE>
+    <LOCALASGNNODE>jd = (<CALLNODE><CALLNODE><CALLNODE><CALLNODE><CALLNODE><CALLNODE><FLOATNODE>365.25</FLOATNODE> * <ARRAYNODE>(<CALLNODE><LOCALVARNODE>y</LOCALVARNODE> + <ARRAYNODE><FIXNUMNODE>4716</FIXNUMNODE></ARRAYNODE></CALLNODE>)</ARRAYNODE></CALLNODE>).floor</CALLNODE> +
+      (<ARRAYNODE><CALLNODE><CALLNODE><FLOATNODE>30.6001</FLOATNODE> * <ARRAYNODE>(<CALLNODE><LOCALVARNODE>m</LOCALVARNODE> + <ARRAYNODE><FIXNUMNODE>1</FIXNUMNODE></ARRAYNODE></CALLNODE>)</ARRAYNODE></CALLNODE>).floor</CALLNODE></ARRAYNODE></CALLNODE> +
+      <ARRAYNODE><LOCALVARNODE>d</LOCALVARNODE></ARRAYNODE></CALLNODE> + <ARRAYNODE><LOCALVARNODE>b</LOCALVARNODE></ARRAYNODE></CALLNODE> - <ARRAYNODE><FIXNUMNODE>1524</FIXNUMNODE></ARRAYNODE></CALLNODE></LOCALASGNNODE>
+    <IFNODE>if <FCALLNODE>os?<ARRAYNODE>(<LOCALVARNODE>jd</LOCALVARNODE>, <LOCALVARNODE>sg</LOCALVARNODE>)</ARRAYNODE></FCALLNODE>
+      <LOCALASGNNODE><CALLNODE><LOCALVARNODE>jd</LOCALVARNODE> -= <ARRAYNODE><LOCALVARNODE>b</LOCALVARNODE></ARRAYNODE></CALLNODE></LOCALASGNNODE>
+    end</IFNODE>
+    <LOCALVARNODE>jd</LOCALVARNODE></BLOCKNODE>
+  end</DEFSNODE>
+
+  # Convert a Julian Day Number to a Civil Date.  +jd+ is
+  # the Julian Day Number. +sg+ specifies the Day of
+  # Calendar Reform.
+  #
+  # Returns the corresponding [year, month, day_of_month]
+  # as a three-element array.
+  <DEFSNODE>def <SELFNODE>self</SELFNODE>.<ARGUMENTNODE>jd_to_civil</ARGUMENTNODE><ARGSNODE>(<LISTNODE><ARGUMENTNODE>jd</ARGUMENTNODE></LISTNODE>, <LOCALASGNNODE>sg=<CONSTNODE>GREGORIAN</CONSTNODE></LOCALASGNNODE><BLOCKNODE/>)</ARGSNODE>
+    <BLOCKNODE><IFNODE>if <FCALLNODE>os?<ARRAYNODE>(<LOCALVARNODE>jd</LOCALVARNODE>, <LOCALVARNODE>sg</LOCALVARNODE>)</ARRAYNODE></FCALLNODE>
+      <LOCALASGNNODE>a = <LOCALVARNODE>jd</LOCALVARNODE></LOCALASGNNODE>
+    else
+      <BLOCKNODE><LOCALASGNNODE>x = (<CALLNODE><CALLNODE>(<CALLNODE><LOCALVARNODE>jd</LOCALVARNODE> - <ARRAYNODE><FLOATNODE>1867216.25</FLOATNODE></ARRAYNODE></CALLNODE>) / <ARRAYNODE><FLOATNODE>36524.25</FLOATNODE></ARRAYNODE></CALLNODE>).floor</CALLNODE></LOCALASGNNODE>
+      <LOCALASGNNODE>a = <CALLNODE><CALLNODE><CALLNODE><LOCALVARNODE>jd</LOCALVARNODE> + <ARRAYNODE><FIXNUMNODE>1</FIXNUMNODE></ARRAYNODE></CALLNODE> + <ARRAYNODE><LOCALVARNODE>x</LOCALVARNODE></ARRAYNODE></CALLNODE> - (<ARRAYNODE><CALLNODE><CALLNODE><LOCALVARNODE>x</LOCALVARNODE> / <ARRAYNODE><FLOATNODE>4.0</FLOATNODE></ARRAYNODE></CALLNODE>).floor</CALLNODE></ARRAYNODE></CALLNODE></LOCALASGNNODE></BLOCKNODE>
+    end</IFNODE>
+    <LOCALASGNNODE>b = <CALLNODE><LOCALVARNODE>a</LOCALVARNODE> + <ARRAYNODE><FIXNUMNODE>1524</FIXNUMNODE></ARRAYNODE></CALLNODE></LOCALASGNNODE>
+    <LOCALASGNNODE>c = (<CALLNODE><CALLNODE>(<CALLNODE><LOCALVARNODE>b</LOCALVARNODE> - <ARRAYNODE><FLOATNODE>122.1</FLOATNODE></ARRAYNODE></CALLNODE>) / <ARRAYNODE><FLOATNODE>365.25</FLOATNODE></ARRAYNODE></CALLNODE>).floor</CALLNODE></LOCALASGNNODE>
+    <LOCALASGNNODE>d = (<CALLNODE><CALLNODE><FLOATNODE>365.25</FLOATNODE> * <ARRAYNODE><LOCALVARNODE>c</LOCALVARNODE></ARRAYNODE></CALLNODE>).floor</CALLNODE></LOCALASGNNODE>
+    <LOCALASGNNODE>e = (<CALLNODE><CALLNODE>(<CALLNODE><LOCALVARNODE>b</LOCALVARNODE> - <ARRAYNODE><LOCALVARNODE>d</LOCALVARNODE></ARRAYNODE></CALLNODE>) / <ARRAYNODE><FLOATNODE>30.6001</FLOATNODE></ARRAYNODE></CALLNODE>).floor</CALLNODE></LOCALASGNNODE>
+    <LOCALASGNNODE>dom = <CALLNODE><CALLNODE><LOCALVARNODE>b</LOCALVARNODE> - <ARRAYNODE><LOCALVARNODE>d</LOCALVARNODE></ARRAYNODE></CALLNODE> - (<ARRAYNODE><CALLNODE><CALLNODE><FLOATNODE>30.6001</FLOATNODE> * <ARRAYNODE><LOCALVARNODE>e</LOCALVARNODE></ARRAYNODE></CALLNODE>).floor</CALLNODE></ARRAYNODE></CALLNODE></LOCALASGNNODE>
+    <IFNODE>if <CALLNODE><LOCALVARNODE>e</LOCALVARNODE> &lt;= <ARRAYNODE><FIXNUMNODE>13</FIXNUMNODE></ARRAYNODE></CALLNODE>
+      <BLOCKNODE><LOCALASGNNODE>m = <CALLNODE><LOCALVARNODE>e</LOCALVARNODE> - <ARRAYNODE><FIXNUMNODE>1</FIXNUMNODE></ARRAYNODE></CALLNODE></LOCALASGNNODE>
+      <LOCALASGNNODE>y = <CALLNODE><LOCALVARNODE>c</LOCALVARNODE> - <ARRAYNODE><FIXNUMNODE>4716</FIXNUMNODE></ARRAYNODE></CALLNODE></LOCALASGNNODE></BLOCKNODE>
+    else
+      <BLOCKNODE><LOCALASGNNODE>m = <CALLNODE><LOCALVARNODE>e</LOCALVARNODE> - <ARRAYNODE><FIXNUMNODE>13</FIXNUMNODE></ARRAYNODE></CALLNODE></LOCALASGNNODE>
+      <LOCALASGNNODE>y = <CALLNODE><LOCALVARNODE>c</LOCALVARNODE> - <ARRAYNODE><FIXNUMNODE>4715</FIXNUMNODE></ARRAYNODE></CALLNODE></LOCALASGNNODE></BLOCKNODE>
+    end</IFNODE>
+    <RETURNNODE>return <ARRAYNODE><LOCALVARNODE>y</LOCALVARNODE>, <LOCALVARNODE>m</LOCALVARNODE>, <LOCALVARNODE>dom</LOCALVARNODE></ARRAYNODE></RETURNNODE></BLOCKNODE>
+  end</DEFSNODE>
+
+  # Convert an Ordinal Date to a Julian Day Number.
+  #
+  # +y+ and +d+ are the year and day-of-year to convert.
+  # +sg+ specifies the Day of Calendar Reform.
+  #
+  # Returns the corresponding Julian Day Number.
+  <DEFSNODE>def <SELFNODE>self</SELFNODE>.<ARGUMENTNODE>ordinal_to_jd</ARGUMENTNODE><ARGSNODE>(<LISTNODE><ARGUMENTNODE>y</ARGUMENTNODE>, <ARGUMENTNODE>d</ARGUMENTNODE></LISTNODE>, <LOCALASGNNODE>sg=<CONSTNODE>GREGORIAN</CONSTNODE></LOCALASGNNODE><BLOCKNODE/>)</ARGSNODE>
+    <FCALLNODE>civil_to_jd<ARRAYNODE>(<LOCALVARNODE>y</LOCALVARNODE>, <FIXNUMNODE>1</FIXNUMNODE>, <LOCALVARNODE>d</LOCALVARNODE>, <LOCALVARNODE>sg</LOCALVARNODE>)</ARRAYNODE></FCALLNODE>
+  end</DEFSNODE>
+
+  # Convert a Julian Day Number to an Ordinal Date.
+  #
+  # +jd+ is the Julian Day Number to convert.
+  # +sg+ specifies the Day of Calendar Reform.
+  #
+  # Returns the corresponding Ordinal Date as
+  # [year, day_of_year]
+  <DEFSNODE>def <SELFNODE>self</SELFNODE>.<ARGUMENTNODE>jd_to_ordinal</ARGUMENTNODE><ARGSNODE>(<LISTNODE><ARGUMENTNODE>jd</ARGUMENTNODE></LISTNODE>, <LOCALASGNNODE>sg=<CONSTNODE>GREGORIAN</CONSTNODE></LOCALASGNNODE><BLOCKNODE/>)</ARGSNODE>
+    <BLOCKNODE><LOCALASGNNODE>y = <CALLNODE><FCALLNODE>jd_to_civil<ARRAYNODE>(<LOCALVARNODE>jd</LOCALVARNODE>, <LOCALVARNODE>sg</LOCALVARNODE>)</ARRAYNODE></FCALLNODE>[<ARRAYNODE><FIXNUMNODE>0</FIXNUMNODE></ARRAYNODE></CALLNODE></LOCALASGNNODE>]
+    <LOCALASGNNODE>doy = <CALLNODE><LOCALVARNODE>jd</LOCALVARNODE> - <ARRAYNODE><FCALLNODE>civil_to_jd<ARRAYNODE>(<CALLNODE><LOCALVARNODE>y</LOCALVARNODE> - <ARRAYNODE><FIXNUMNODE>1</FIXNUMNODE></ARRAYNODE></CALLNODE>, <FIXNUMNODE>12</FIXNUMNODE>, <FIXNUMNODE>31</FIXNUMNODE>, <FCALLNODE>ns?<ARRAYNODE>(<LOCALVARNODE>jd</LOCALVARNODE>, <LOCALVARNODE>sg</LOCALVARNODE>)</ARRAYNODE></FCALLNODE>)</ARRAYNODE></FCALLNODE></ARRAYNODE></CALLNODE></LOCALASGNNODE>
+    <RETURNNODE>return <ARRAYNODE><LOCALVARNODE>y</LOCALVARNODE>, <LOCALVARNODE>doy</LOCALVARNODE></ARRAYNODE></RETURNNODE></BLOCKNODE>
+  end</DEFSNODE>
+
+  # Convert a Julian Day Number to a Commercial Date
+  #
+  # +jd+ is the Julian Day Number to convert.
+  # +sg+ specifies the Day of Calendar Reform.
+  #
+  # Returns the corresponding Commercial Date as
+  # [commercial_year, week_of_year, day_of_week]
+  <DEFSNODE>def <SELFNODE>self</SELFNODE>.<ARGUMENTNODE>jd_to_commercial</ARGUMENTNODE><ARGSNODE>(<LISTNODE><ARGUMENTNODE>jd</ARGUMENTNODE></LISTNODE>, <LOCALASGNNODE>sg=<CONSTNODE>GREGORIAN</CONSTNODE></LOCALASGNNODE><BLOCKNODE/>)</ARGSNODE>
+    <BLOCKNODE><LOCALASGNNODE>ns = <FCALLNODE>ns?<ARRAYNODE>(<LOCALVARNODE>jd</LOCALVARNODE>, <LOCALVARNODE>sg</LOCALVARNODE>)</ARRAYNODE></FCALLNODE></LOCALASGNNODE>
+    <LOCALASGNNODE>a = <CALLNODE><FCALLNODE>jd_to_civil<ARRAYNODE>(<CALLNODE><LOCALVARNODE>jd</LOCALVARNODE> - <ARRAYNODE><FIXNUMNODE>3</FIXNUMNODE></ARRAYNODE></CALLNODE>, <LOCALVARNODE>ns</LOCALVARNODE>)</ARRAYNODE></FCALLNODE>[<ARRAYNODE><FIXNUMNODE>0</FIXNUMNODE></ARRAYNODE></CALLNODE></LOCALASGNNODE>]
+    <LOCALASGNNODE>y = <IFNODE>if <CALLNODE><LOCALVARNODE>jd</LOCALVARNODE> &gt;= <ARRAYNODE><FCALLNODE>commercial_to_jd<ARRAYNODE>(<CALLNODE><LOCALVARNODE>a</LOCALVARNODE> + <ARRAYNODE><FIXNUMNODE>1</FIXNUMNODE></ARRAYNODE></CALLNODE>, <FIXNUMNODE>1</FIXNUMNODE>, <FIXNUMNODE>1</FIXNUMNODE>, <LOCALVARNODE>ns</LOCALVARNODE>)</ARRAYNODE></FCALLNODE></ARRAYNODE></CALLNODE> then <CALLNODE><LOCALVARNODE>a</LOCALVARNODE> + <ARRAYNODE><FIXNUMNODE>1</FIXNUMNODE></ARRAYNODE></CALLNODE> else <LOCALVARNODE>a</LOCALVARNODE> end</IFNODE></LOCALASGNNODE>
+    <LOCALASGNNODE>w = <CALLNODE><FIXNUMNODE>1</FIXNUMNODE> + (<ARRAYNODE><CALLNODE><CALLNODE>(<CALLNODE><LOCALVARNODE>jd</LOCALVARNODE> - <ARRAYNODE><FCALLNODE>commercial_to_jd<ARRAYNODE>(<LOCALVARNODE>y</LOCALVARNODE>, <FIXNUMNODE>1</FIXNUMNODE>, <FIXNUMNODE>1</FIXNUMNODE>, <LOCALVARNODE>ns</LOCALVARNODE>)</ARRAYNODE></FCALLNODE></ARRAYNODE></CALLNODE>) / <ARRAYNODE><FIXNUMNODE>7</FIXNUMNODE></ARRAYNODE></CALLNODE>).floor</CALLNODE></ARRAYNODE></CALLNODE></LOCALASGNNODE>
+    <LOCALASGNNODE>d = <CALLNODE>(<CALLNODE><LOCALVARNODE>jd</LOCALVARNODE> + <ARRAYNODE><FIXNUMNODE>1</FIXNUMNODE></ARRAYNODE></CALLNODE>) % <ARRAYNODE><FIXNUMNODE>7</FIXNUMNODE></ARRAYNODE></CALLNODE></LOCALASGNNODE>
+    <IFNODE>if <CALLNODE><LOCALVARNODE>d</LOCALVARNODE>.zero?</CALLNODE> then <LOCALASGNNODE>d = <FIXNUMNODE>7</FIXNUMNODE></LOCALASGNNODE> end</IFNODE>
+    <RETURNNODE>return <ARRAYNODE><LOCALVARNODE>y</LOCALVARNODE>, <LOCALVARNODE>w</LOCALVARNODE>, <LOCALVARNODE>d</LOCALVARNODE></ARRAYNODE></RETURNNODE></BLOCKNODE>
+  end</DEFSNODE>
+
+  # Convert a Commercial Date to a Julian Day Number.
+  #
+  # +y+, +w+, and +d+ are the (commercial) year, week of the year,
+  # and day of the week of the Commercial Date to convert.
+  # +sg+ specifies the Day of Calendar Reform.
+  <DEFSNODE>def <SELFNODE>self</SELFNODE>.<ARGUMENTNODE>commercial_to_jd</ARGUMENTNODE><ARGSNODE>(<LISTNODE><ARGUMENTNODE>y</ARGUMENTNODE>, <ARGUMENTNODE>w</ARGUMENTNODE>, <ARGUMENTNODE>d</ARGUMENTNODE></LISTNODE>, <LOCALASGNNODE>ns=<CONSTNODE>GREGORIAN</CONSTNODE></LOCALASGNNODE><BLOCKNODE/>)</ARGSNODE>
+    <BLOCKNODE><LOCALASGNNODE>jd = <FCALLNODE>civil_to_jd<ARRAYNODE>(<LOCALVARNODE>y</LOCALVARNODE>, <FIXNUMNODE>1</FIXNUMNODE>, <FIXNUMNODE>4</FIXNUMNODE>, <LOCALVARNODE>ns</LOCALVARNODE>)</ARRAYNODE></FCALLNODE></LOCALASGNNODE>
+    <CALLNODE><CALLNODE>(<CALLNODE><LOCALVARNODE>jd</LOCALVARNODE> - <ARRAYNODE>(<CALLNODE>(<CALLNODE>(<CALLNODE><LOCALVARNODE>jd</LOCALVARNODE> - <ARRAYNODE><FIXNUMNODE>1</FIXNUMNODE></ARRAYNODE></CALLNODE>) + <ARRAYNODE><FIXNUMNODE>1</FIXNUMNODE></ARRAYNODE></CALLNODE>) % <ARRAYNODE><FIXNUMNODE>7</FIXNUMNODE></ARRAYNODE></CALLNODE>)</ARRAYNODE></CALLNODE>) +
+      <ARRAYNODE><CALLNODE><FIXNUMNODE>7</FIXNUMNODE> * <ARRAYNODE>(<CALLNODE><LOCALVARNODE>w</LOCALVARNODE> - <ARRAYNODE><FIXNUMNODE>1</FIXNUMNODE></ARRAYNODE></CALLNODE>)</ARRAYNODE></CALLNODE></ARRAYNODE></CALLNODE> +
+      <ARRAYNODE>(<CALLNODE><LOCALVARNODE>d</LOCALVARNODE> - <ARRAYNODE><FIXNUMNODE>1</FIXNUMNODE></ARRAYNODE></CALLNODE>)</ARRAYNODE></CALLNODE></BLOCKNODE>
+  end</DEFSNODE>
+
+  <CALLNODE><ARRAYNODE>%w(<STRNODE>self.clfloor</STRNODE> <STRNODE>clfloor</STRNODE>)</ARRAYNODE>.each <ITERNODE>do |<DASGNNODE>name</DASGNNODE>|
+    <FCALLNODE>module_eval<STRNODE> <ARRAYNODE><DSTRNODE>&lt;&lt;-"end;"
+      def </STRNODE><EVSTRNODE>#{<DVARNODE>name</DVARNODE>}</EVSTRNODE><STRNODE>(x, y=1)
+	q, r = x.divmod(y)
+	q = q.to_i
+	return q, r
+      end
+    end;</STRNODE></DSTRNODE></ARRAYNODE></FCALLNODE>
+  end</ITERNODE></CALLNODE>
+
+  <FCALLNODE>private_class_method <ARRAYNODE><SYMBOLNODE>:clfloor</SYMBOLNODE></ARRAYNODE></FCALLNODE>
+  <FCALLNODE>private              <ARRAYNODE><SYMBOLNODE>:clfloor</SYMBOLNODE></ARRAYNODE></FCALLNODE>
+
+
+  # Convert an Astronomical Julian Day Number to a (civil) Julian
+  # Day Number.
+  #
+  # +ajd+ is the Astronomical Julian Day Number to convert. 
+  # +of+ is the offset from UTC as a fraction of a day (defaults to 0).
+  #
+  # Returns the (civil) Julian Day Number as [day_number,
+  # fraction] where +fraction+ is always 1/2.
+  <DEFSNODE>def <SELFNODE>self</SELFNODE>.<ARGUMENTNODE>ajd_to_jd</ARGUMENTNODE><ARGSNODE>(<LISTNODE><ARGUMENTNODE>ajd</ARGUMENTNODE></LISTNODE>, <LOCALASGNNODE>of=<FIXNUMNODE>0</FIXNUMNODE></LOCALASGNNODE><BLOCKNODE/>)</ARGSNODE> <FCALLNODE>clfloor<ARRAYNODE>(<CALLNODE><CALLNODE><LOCALVARNODE>ajd</LOCALVARNODE> + <ARRAYNODE><LOCALVARNODE>of</LOCALVARNODE></ARRAYNODE></CALLNODE> + <ARRAYNODE><CALLNODE><CALLNODE><FIXNUMNODE>1</FIXNUMNODE>.to_r</CALLNODE>/<ARRAYNODE><FIXNUMNODE>2</FIXNUMNODE></ARRAYNODE></CALLNODE></ARRAYNODE></CALLNODE>)</ARRAYNODE></FCALLNODE> end</DEFSNODE>
+
+  # Convert a (civil) Julian Day Number to an Astronomical Julian
+  # Day Number.
+  #
+  # +jd+ is the Julian Day Number to convert, and +fr+ is a
+  # fractional day. 
+  # +of+ is the offset from UTC as a fraction of a day (defaults to 0).
+  #
+  # Returns the Astronomical Julian Day Number as a single
+  # numeric value.
+  <DEFSNODE>def <SELFNODE>self</SELFNODE>.<ARGUMENTNODE>jd_to_ajd</ARGUMENTNODE><ARGSNODE>(<LISTNODE><ARGUMENTNODE>jd</ARGUMENTNODE>, <ARGUMENTNODE>fr</ARGUMENTNODE></LISTNODE>, <LOCALASGNNODE>of=<FIXNUMNODE>0</FIXNUMNODE></LOCALASGNNODE><BLOCKNODE/>)</ARGSNODE> <CALLNODE><CALLNODE><CALLNODE><LOCALVARNODE>jd</LOCALVARNODE> + <ARRAYNODE><LOCALVARNODE>fr</LOCALVARNODE></ARRAYNODE></CALLNODE> - <ARRAYNODE><LOCALVARNODE>of</LOCALVARNODE></ARRAYNODE></CALLNODE> - <ARRAYNODE><CALLNODE><CALLNODE><FIXNUMNODE>1</FIXNUMNODE>.to_r</CALLNODE>/<ARRAYNODE><FIXNUMNODE>2</FIXNUMNODE></ARRAYNODE></CALLNODE></ARRAYNODE></CALLNODE> end</DEFSNODE>
+
+  # Convert a fractional day +fr+ to [hours, minutes, seconds,
+  # fraction_of_a_second]
+  <DEFSNODE>def <SELFNODE>self</SELFNODE>.<ARGUMENTNODE>day_fraction_to_time</ARGUMENTNODE><ARGSNODE>(<LISTNODE><ARGUMENTNODE>fr</ARGUMENTNODE></LISTNODE>)</ARGSNODE>
+    <BLOCKNODE><MULTIPLEASGNNODE><ARRAYNODE><LOCALASGNNODE>h</LOCALASGNNODE>,   <LOCALASGNNODE>fr</LOCALASGNNODE></ARRAYNODE></MULTIPLEASGNNODE><TOARYNODE> = <FCALLNODE>clfloor<ARRAYNODE>(<LOCALVARNODE>fr</LOCALVARNODE>, <CALLNODE><CALLNODE><FIXNUMNODE>1</FIXNUMNODE>.to_r</CALLNODE>/<ARRAYNODE><FIXNUMNODE>24</FIXNUMNODE></ARRAYNODE></CALLNODE>)</ARRAYNODE></FCALLNODE>
+</TOARYNODE>    <MULTIPLEASGNNODE><ARRAYNODE><LOCALASGNNODE>min</LOCALASGNNODE>, <LOCALASGNNODE>fr</LOCALASGNNODE></ARRAYNODE></MULTIPLEASGNNODE><TOARYNODE> = <FCALLNODE>clfloor<ARRAYNODE>(<LOCALVARNODE>fr</LOCALVARNODE>, <CALLNODE><CALLNODE><FIXNUMNODE>1</FIXNUMNODE>.to_r</CALLNODE>/<ARRAYNODE><FIXNUMNODE>1440</FIXNUMNODE></ARRAYNODE></CALLNODE>)</ARRAYNODE></FCALLNODE>
+</TOARYNODE>    <MULTIPLEASGNNODE><ARRAYNODE><LOCALASGNNODE>s</LOCALASGNNODE>,   <LOCALASGNNODE>fr</LOCALASGNNODE></ARRAYNODE></MULTIPLEASGNNODE><TOARYNODE> = <FCALLNODE>clfloor<ARRAYNODE>(<LOCALVARNODE>fr</LOCALVARNODE>, <CALLNODE><CALLNODE><FIXNUMNODE>1</FIXNUMNODE>.to_r</CALLNODE>/<ARRAYNODE><FIXNUMNODE>86400</FIXNUMNODE></ARRAYNODE></CALLNODE>)</ARRAYNODE></FCALLNODE>
+</TOARYNODE>    <RETURNNODE>return <ARRAYNODE><LOCALVARNODE>h</LOCALVARNODE>, <LOCALVARNODE>min</LOCALVARNODE>, <LOCALVARNODE>s</LOCALVARNODE>, <LOCALVARNODE>fr</LOCALVARNODE></ARRAYNODE></RETURNNODE></BLOCKNODE>
+  end</DEFSNODE>
+
+  # Convert an +h+ hour, +min+ minutes, +s+ seconds period
+  # to a fractional day.
+  <DEFSNODE>def <SELFNODE>self</SELFNODE>.<ARGUMENTNODE>time_to_day_fraction</ARGUMENTNODE><ARGSNODE>(<LISTNODE><ARGUMENTNODE>h</ARGUMENTNODE>, <ARGUMENTNODE>min</ARGUMENTNODE>, <ARGUMENTNODE>s</ARGUMENTNODE></LISTNODE>)</ARGSNODE>
+    <CALLNODE><CALLNODE><CALLNODE><CALLNODE><LOCALVARNODE>h</LOCALVARNODE>.to_r</CALLNODE>/<ARRAYNODE><FIXNUMNODE>24</FIXNUMNODE></ARRAYNODE></CALLNODE> + <ARRAYNODE><CALLNODE><CALLNODE><LOCALVARNODE>min</LOCALVARNODE>.to_r</CALLNODE>/<ARRAYNODE><FIXNUMNODE>1440</FIXNUMNODE></ARRAYNODE></CALLNODE></ARRAYNODE></CALLNODE> + <ARRAYNODE><CALLNODE><CALLNODE><LOCALVARNODE>s</LOCALVARNODE>.to_r</CALLNODE>/<ARRAYNODE><FIXNUMNODE>86400</FIXNUMNODE></ARRAYNODE></CALLNODE></ARRAYNODE></CALLNODE>
+  end</DEFSNODE>
+
+  # Convert an Astronomical Modified Julian Day Number to an
+  # Astronomical Julian Day Number.
+  <DEFSNODE>def <SELFNODE>self</SELFNODE>.<ARGUMENTNODE>amjd_to_ajd</ARGUMENTNODE><ARGSNODE>(<LISTNODE><ARGUMENTNODE>amjd</ARGUMENTNODE></LISTNODE>)</ARGSNODE> <CALLNODE><LOCALVARNODE>amjd</LOCALVARNODE> + <ARRAYNODE><CALLNODE><CALLNODE><FIXNUMNODE>4800001</FIXNUMNODE>.to_r</CALLNODE>/<ARRAYNODE><FIXNUMNODE>2</FIXNUMNODE></ARRAYNODE></CALLNODE></ARRAYNODE></CALLNODE> end</DEFSNODE>
+
+  # Convert an Astronomical Julian Day Number to an
+  # Astronomical Modified Julian Day Number.
+  <DEFSNODE>def <SELFNODE>self</SELFNODE>.<ARGUMENTNODE>ajd_to_amjd</ARGUMENTNODE><ARGSNODE>(<LISTNODE><ARGUMENTNODE>ajd</ARGUMENTNODE></LISTNODE>)</ARGSNODE> <CALLNODE><LOCALVARNODE>ajd</LOCALVARNODE> - <ARRAYNODE><CALLNODE><CALLNODE><FIXNUMNODE>4800001</FIXNUMNODE>.to_r</CALLNODE>/<ARRAYNODE><FIXNUMNODE>2</FIXNUMNODE></ARRAYNODE></CALLNODE></ARRAYNODE></CALLNODE> end</DEFSNODE>
+
+  # Convert a Modified Julian Day Number to a Julian
+  # Day Number.
+  <DEFSNODE>def <SELFNODE>self</SELFNODE>.<ARGUMENTNODE>mjd_to_jd</ARGUMENTNODE><ARGSNODE>(<LISTNODE><ARGUMENTNODE>mjd</ARGUMENTNODE></LISTNODE>)</ARGSNODE> <CALLNODE><LOCALVARNODE>mjd</LOCALVARNODE> + <ARRAYNODE><FIXNUMNODE>2400001</FIXNUMNODE></ARRAYNODE></CALLNODE> end</DEFSNODE>
+
+  # Convert a Julian Day Number to a Modified Julian Day
+  # Number.
+  <DEFSNODE>def <SELFNODE>self</SELFNODE>.<ARGUMENTNODE>jd_to_mjd</ARGUMENTNODE><ARGSNODE>(<LISTNODE><ARGUMENTNODE>jd</ARGUMENTNODE></LISTNODE>)</ARGSNODE> <CALLNODE><LOCALVARNODE>jd</LOCALVARNODE> - <ARRAYNODE><FIXNUMNODE>2400001</FIXNUMNODE></ARRAYNODE></CALLNODE> end</DEFSNODE>
+
+  # Convert a count of the number of days since the adoption
+  # of the Gregorian Calendar (in Italy) to a Julian Day Number.
+  <DEFSNODE>def <SELFNODE>self</SELFNODE>.<ARGUMENTNODE>ld_to_jd</ARGUMENTNODE><ARGSNODE>(<LISTNODE><ARGUMENTNODE>ld</ARGUMENTNODE></LISTNODE>)</ARGSNODE> <CALLNODE><LOCALVARNODE>ld</LOCALVARNODE> + <ARRAYNODE><FIXNUMNODE>2299160</FIXNUMNODE></ARRAYNODE></CALLNODE> end</DEFSNODE>
+
+  # Convert a Julian Day Number to the number of days since
+  # the adoption of the Gregorian Calendar (in Italy).
+  <DEFSNODE>def <SELFNODE>self</SELFNODE>.<ARGUMENTNODE>jd_to_ld</ARGUMENTNODE><ARGSNODE>(<LISTNODE><ARGUMENTNODE>jd</ARGUMENTNODE></LISTNODE>)</ARGSNODE> <CALLNODE><LOCALVARNODE>jd</LOCALVARNODE> - <ARRAYNODE><FIXNUMNODE>2299160</FIXNUMNODE></ARRAYNODE></CALLNODE> end</DEFSNODE>
+
+  # Convert a Julian Day Number to the day of the week.
+  #
+  # Sunday is day-of-week 0; Saturday is day-of-week 6.
+  <DEFSNODE>def <SELFNODE>self</SELFNODE>.<ARGUMENTNODE>jd_to_wday</ARGUMENTNODE><ARGSNODE>(<LISTNODE><ARGUMENTNODE>jd</ARGUMENTNODE></LISTNODE>)</ARGSNODE> <CALLNODE>(<CALLNODE><LOCALVARNODE>jd</LOCALVARNODE> + <ARRAYNODE><FIXNUMNODE>1</FIXNUMNODE></ARRAYNODE></CALLNODE>) % <ARRAYNODE><FIXNUMNODE>7</FIXNUMNODE></ARRAYNODE></CALLNODE> end</DEFSNODE>
+
+  # Is a year a leap year in the Julian calendar?
+  #
+  # All years divisible by 4 are leap years in the Julian calendar.
+  <DEFSNODE>def <SELFNODE>self</SELFNODE>.<ARGUMENTNODE>julian_leap?</ARGUMENTNODE> <ARGSNODE>(<LISTNODE><ARGUMENTNODE>y</ARGUMENTNODE></LISTNODE>)</ARGSNODE> <CALLNODE><CALLNODE><LOCALVARNODE>y</LOCALVARNODE> % <ARRAYNODE><FIXNUMNODE>4</FIXNUMNODE></ARRAYNODE></CALLNODE> == <ARRAYNODE><FIXNUMNODE>0</FIXNUMNODE></ARRAYNODE></CALLNODE> end</DEFSNODE>
+
+  # Is a year a leap year in the Gregorian calendar?
+  #
+  # All years divisible by 4 are leap years in the Gregorian calendar,
+  # except for years divisible by 100 and not by 400.
+  <DEFSNODE>def <SELFNODE>self</SELFNODE>.<ARGUMENTNODE>gregorian_leap?</ARGUMENTNODE> <ARGSNODE>(<LISTNODE><ARGUMENTNODE>y</ARGUMENTNODE></LISTNODE>)</ARGSNODE> <ORNODE><ANDNODE><CALLNODE><CALLNODE><LOCALVARNODE>y</LOCALVARNODE> % <ARRAYNODE><FIXNUMNODE>4</FIXNUMNODE></ARRAYNODE></CALLNODE> == <ARRAYNODE><FIXNUMNODE>0</FIXNUMNODE></ARRAYNODE></CALLNODE> and <NOTNODE><CALLNODE><CALLNODE><LOCALVARNODE>y</LOCALVARNODE> % <ARRAYNODE><FIXNUMNODE>100</FIXNUMNODE></ARRAYNODE></CALLNODE> != <ARRAYNODE><FIXNUMNODE>0</FIXNUMNODE></ARRAYNODE></CALLNODE></NOTNODE></ANDNODE> or <CALLNODE><CALLNODE><LOCALVARNODE>y</LOCALVARNODE> % <ARRAYNODE><FIXNUMNODE>400</FIXNUMNODE></ARRAYNODE></CALLNODE> == <ARRAYNODE><FIXNUMNODE>0</FIXNUMNODE></ARRAYNODE></CALLNODE></ORNODE> end</DEFSNODE>
+
+  <SCLASSNODE>class &lt;&lt; <SELFNODE>self</SELFNODE>; <FCALLNODE>alias_method <ARRAYNODE><SYMBOLNODE>:leap?</SYMBOLNODE>, <SYMBOLNODE>:gregorian_leap?</SYMBOLNODE></ARRAYNODE></FCALLNODE> end</SCLASSNODE>
+  <SCLASSNODE>class &lt;&lt; <SELFNODE>self</SELFNODE>; <FCALLNODE>alias_method <ARRAYNODE><SYMBOLNODE>:new0</SYMBOLNODE>, <SYMBOLNODE>:new</SYMBOLNODE></ARRAYNODE></FCALLNODE> end</SCLASSNODE>
+
+  # Is +jd+ a valid Julian Day Number?
+  #
+  # If it is, returns it.  In fact, any value is treated as a valid
+  # Julian Day Number.
+  <DEFSNODE>def <SELFNODE>self</SELFNODE>.<ARGUMENTNODE>valid_jd?</ARGUMENTNODE> <ARGSNODE>(<LISTNODE><ARGUMENTNODE>jd</ARGUMENTNODE></LISTNODE>, <LOCALASGNNODE>sg=<CONSTNODE>ITALY</CONSTNODE></LOCALASGNNODE><BLOCKNODE/>)</ARGSNODE> <LOCALVARNODE>jd</LOCALVARNODE> end</DEFSNODE>
+
+  # Create a new Date object from a Julian Day Number.
+  #
+  # +jd+ is the Julian Day Number; if not specified, it defaults to
+  # 0. 
+  # +sg+ specifies the Day of Calendar Reform.
+  <DEFSNODE>def <SELFNODE>self</SELFNODE>.<ARGUMENTNODE>jd</ARGUMENTNODE><ARGSNODE>(<LOCALASGNNODE>jd=<FIXNUMNODE>0</FIXNUMNODE></LOCALASGNNODE><BLOCKNODE>, <LOCALASGNNODE>sg=<CONSTNODE>ITALY</CONSTNODE></LOCALASGNNODE></BLOCKNODE>)</ARGSNODE>
+    <BLOCKNODE><LOCALASGNNODE>jd = <FCALLNODE>valid_jd?<ARRAYNODE>(<LOCALVARNODE>jd</LOCALVARNODE>, <LOCALVARNODE>sg</LOCALVARNODE>)</ARRAYNODE></FCALLNODE></LOCALASGNNODE>
+    <FCALLNODE>new0<ARRAYNODE>(<FCALLNODE>jd_to_ajd<ARRAYNODE>(<LOCALVARNODE>jd</LOCALVARNODE>, <FIXNUMNODE>0</FIXNUMNODE>, <FIXNUMNODE>0</FIXNUMNODE>)</ARRAYNODE></FCALLNODE>, <FIXNUMNODE>0</FIXNUMNODE>, <LOCALVARNODE>sg</LOCALVARNODE>)</ARRAYNODE></FCALLNODE></BLOCKNODE>
+  end</DEFSNODE>
+
+  # Do the year +y+ and day-of-year +d+ make a valid Ordinal Date?
+  # Returns the corresponding Julian Day Number if they do, or
+  # nil if they don't.
+  #
+  # +d+ can be a negative number, in which case it counts backwards
+  # from the end of the year (-1 being the last day of the year).
+  # No year wraparound is performed, however, so valid values of
+  # +d+ are -365 .. -1, 1 .. 365 on a non-leap-year,
+  # -366 .. -1, 1 .. 366 on a leap year. 
+  # A date falling in the period skipped in the Day of Calendar Reform
+  # adjustment is not valid.
+  #
+  # +sg+ specifies the Day of Calendar Reform.
+  <DEFSNODE>def <SELFNODE>self</SELFNODE>.<ARGUMENTNODE>valid_ordinal?</ARGUMENTNODE> <ARGSNODE>(<LISTNODE><ARGUMENTNODE>y</ARGUMENTNODE>, <ARGUMENTNODE>d</ARGUMENTNODE></LISTNODE>, <LOCALASGNNODE>sg=<CONSTNODE>ITALY</CONSTNODE></LOCALASGNNODE><BLOCKNODE/>)</ARGSNODE>
+    <BLOCKNODE><IFNODE>if <CALLNODE><LOCALVARNODE>d</LOCALVARNODE> &lt; <ARRAYNODE><FIXNUMNODE>0</FIXNUMNODE></ARRAYNODE></CALLNODE>
+      <ARRAYNODE><LOCALASGNNODE>ny</LOCALASGNNODE></ARRAYNODE><BLOCKNODE><MULTIPLEASGNNODE>, =</MULTIPLEASGNNODE><TOARYNODE> <FCALLNODE>clfloor<ARRAYNODE>(<CALLNODE><LOCALVARNODE>y</LOCALVARNODE> + <ARRAYNODE><FIXNUMNODE>1</FIXNUMNODE></ARRAYNODE></CALLNODE>, <FIXNUMNODE>1</FIXNUMNODE>)</ARRAYNODE></FCALLNODE>
+</TOARYNODE>      <LOCALASGNNODE>jd = <FCALLNODE>ordinal_to_jd<ARRAYNODE>(<LOCALVARNODE>ny</LOCALVARNODE>, <CALLNODE><LOCALVARNODE>d</LOCALVARNODE> + <ARRAYNODE><FIXNUMNODE>1</FIXNUMNODE></ARRAYNODE></CALLNODE>, <LOCALVARNODE>sg</LOCALVARNODE>)</ARRAYNODE></FCALLNODE></LOCALASGNNODE>
+      <LOCALASGNNODE>ns = <FCALLNODE>ns?<ARRAYNODE>(<LOCALVARNODE>jd</LOCALVARNODE>, <LOCALVARNODE>sg</LOCALVARNODE>)</ARRAYNODE></FCALLNODE></LOCALASGNNODE>
+      <IFNODE><RETURNNODE>return</RETURNNODE> unless <CALLNODE><ARRAYNODE>[<LOCALVARNODE>y</LOCALVARNODE>]</ARRAYNODE> == <ARRAYNODE><CALLNODE><FCALLNODE>jd_to_ordinal<ARRAYNODE>(<LOCALVARNODE>jd</LOCALVARNODE>, <LOCALVARNODE>sg</LOCALVARNODE>)</ARRAYNODE></FCALLNODE>[<ARRAYNODE><DOTNODE><FIXNUMNODE>0</FIXNUMNODE>..<FIXNUMNODE>0</FIXNUMNODE></DOTNODE></ARRAYNODE></CALLNODE></ARRAYNODE></CALLNODE></IFNODE>]
+      <IFNODE><RETURNNODE>return</RETURNNODE> unless <CALLNODE><ARRAYNODE>[<LOCALVARNODE>ny</LOCALVARNODE>, <FIXNUMNODE>1</FIXNUMNODE>]</ARRAYNODE> == <ARRAYNODE><FCALLNODE>jd_to_ordinal<ARRAYNODE>(<CALLNODE><LOCALVARNODE>jd</LOCALVARNODE> - <ARRAYNODE><LOCALVARNODE>d</LOCALVARNODE></ARRAYNODE></CALLNODE>, <LOCALVARNODE>ns</LOCALVARNODE>)</ARRAYNODE></FCALLNODE></ARRAYNODE></CALLNODE></IFNODE></BLOCKNODE>
+    else
+      <BLOCKNODE><LOCALASGNNODE>jd = <FCALLNODE>ordinal_to_jd<ARRAYNODE>(<LOCALVARNODE>y</LOCALVARNODE>, <LOCALVARNODE>d</LOCALVARNODE>, <LOCALVARNODE>sg</LOCALVARNODE>)</ARRAYNODE></FCALLNODE></LOCALASGNNODE>
+      <IFNODE><RETURNNODE>return</RETURNNODE> unless <CALLNODE><ARRAYNODE>[<LOCALVARNODE>y</LOCALVARNODE>, <LOCALVARNODE>d</LOCALVARNODE>]</ARRAYNODE> == <ARRAYNODE><FCALLNODE>jd_to_ordinal<ARRAYNODE>(<LOCALVARNODE>jd</LOCALVARNODE>, <LOCALVARNODE>sg</LOCALVARNODE>)</ARRAYNODE></FCALLNODE></ARRAYNODE></CALLNODE></IFNODE></BLOCKNODE>
+    end</IFNODE>
+    <LOCALVARNODE>jd</LOCALVARNODE></BLOCKNODE>
+  end</DEFSNODE>
+
+  # Create a new Date object from an Ordinal Date, specified
+  # by year +y+ and day-of-year +d+. +d+ can be negative,
+  # in which it counts backwards from the end of the year.
+  # No year wraparound is performed, however.  An invalid
+  # value for +d+ results in an ArgumentError being raised.
+  #
+  # +y+ defaults to -4712, and +d+ to 1; this is Julian Day
+  # Number day 0.
+  #
+  # +sg+ specifies the Day of Calendar Reform.
+  <DEFSNODE>def <SELFNODE>self</SELFNODE>.<ARGUMENTNODE>ordinal</ARGUMENTNODE><ARGSNODE>(<LOCALASGNNODE>y=-<FIXNUMNODE>4712</FIXNUMNODE></LOCALASGNNODE><BLOCKNODE>, <LOCALASGNNODE>d=<FIXNUMNODE>1</FIXNUMNODE></LOCALASGNNODE>, <LOCALASGNNODE>sg=<CONSTNODE>ITALY</CONSTNODE></LOCALASGNNODE></BLOCKNODE>)</ARGSNODE>
+    <BLOCKNODE><IFNODE>unless <LOCALASGNNODE>jd = <FCALLNODE>valid_ordinal?<ARRAYNODE>(<LOCALVARNODE>y</LOCALVARNODE>, <LOCALVARNODE>d</LOCALVARNODE>, <LOCALVARNODE>sg</LOCALVARNODE>)</ARRAYNODE></FCALLNODE></LOCALASGNNODE>
+      <FCALLNODE>raise <ARRAYNODE><CONSTNODE>ArgumentError</CONSTNODE>, <STRNODE>'invalid date'</STRNODE></ARRAYNODE></FCALLNODE>
+    end</IFNODE>
+    <FCALLNODE>new0<ARRAYNODE>(<FCALLNODE>jd_to_ajd<ARRAYNODE>(<LOCALVARNODE>jd</LOCALVARNODE>, <FIXNUMNODE>0</FIXNUMNODE>, <FIXNUMNODE>0</FIXNUMNODE>)</ARRAYNODE></FCALLNODE>, <FIXNUMNODE>0</FIXNUMNODE>, <LOCALVARNODE>sg</LOCALVARNODE>)</ARRAYNODE></FCALLNODE></BLOCKNODE>
+  end</DEFSNODE>
+
+  # Do year +y+, month +m+, and day-of-month +d+ make a
+  # valid Civil Date?  Returns the corresponding Julian
+  # Day Number if they do, nil if they don't.
+  #
+  # +m+ and +d+ can be negative, in which case they count
+  # backwards from the end of the year and the end of the
+  # month respectively.  No wraparound is performed, however,
+  # and invalid values cause an ArgumentError to be raised.
+  # A date falling in the period skipped in the Day of Calendar
+  # Reform adjustment is not valid.
+  #
+  # +sg+ specifies the Day of Calendar Reform.
+  <DEFSNODE>def <SELFNODE>self</SELFNODE>.<ARGUMENTNODE>valid_civil?</ARGUMENTNODE> <ARGSNODE>(<LISTNODE><ARGUMENTNODE>y</ARGUMENTNODE>, <ARGUMENTNODE>m</ARGUMENTNODE>, <ARGUMENTNODE>d</ARGUMENTNODE></LISTNODE>, <LOCALASGNNODE>sg=<CONSTNODE>ITALY</CONSTNODE></LOCALASGNNODE><BLOCKNODE/>)</ARGSNODE>
+    <BLOCKNODE><IFNODE>if <CALLNODE><LOCALVARNODE>m</LOCALVARNODE> &lt; <ARRAYNODE><FIXNUMNODE>0</FIXNUMNODE></ARRAYNODE></CALLNODE>
+      <LOCALASGNNODE><CALLNODE><LOCALVARNODE>m</LOCALVARNODE> += <ARRAYNODE><FIXNUMNODE>13</FIXNUMNODE></ARRAYNODE></CALLNODE></LOCALASGNNODE>
+    end</IFNODE>
+    <IFNODE>if <CALLNODE><LOCALVARNODE>d</LOCALVARNODE> &lt; <ARRAYNODE><FIXNUMNODE>0</FIXNUMNODE></ARRAYNODE></CALLNODE>
+      <BLOCKNODE><MULTIPLEASGNNODE><ARRAYNODE><LOCALASGNNODE>ny</LOCALASGNNODE>, <LOCALASGNNODE>nm</LOCALASGNNODE></ARRAYNODE></MULTIPLEASGNNODE><TOARYNODE> = <FCALLNODE>clfloor<ARRAYNODE>(<CALLNODE><CALLNODE><LOCALVARNODE>y</LOCALVARNODE> * <ARRAYNODE><FIXNUMNODE>12</FIXNUMNODE></ARRAYNODE></CALLNODE> + <ARRAYNODE><LOCALVARNODE>m</LOCALVARNODE></ARRAYNODE></CALLNODE>, <FIXNUMNODE>12</FIXNUMNODE>)</ARRAYNODE></FCALLNODE>
+</TOARYNODE>      <ARRAYNODE><LOCALASGNNODE>nm</LOCALASGNNODE></ARRAYNODE><MULTIPLEASGNNODE>,    =</MULTIPLEASGNNODE><TOARYNODE> <FCALLNODE>clfloor<ARRAYNODE>(<CALLNODE><LOCALVARNODE>nm</LOCALVARNODE> + <ARRAYNODE><FIXNUMNODE>1</FIXNUMNODE></ARRAYNODE></CALLNODE>, <FIXNUMNODE>1</FIXNUMNODE>)</ARRAYNODE></FCALLNODE>
+</TOARYNODE>      <LOCALASGNNODE>jd = <FCALLNODE>civil_to_jd<ARRAYNODE>(<LOCALVARNODE>ny</LOCALVARNODE>, <LOCALVARNODE>nm</LOCALVARNODE>, <CALLNODE><LOCALVARNODE>d</LOCALVARNODE> + <ARRAYNODE><FIXNUMNODE>1</FIXNUMNODE></ARRAYNODE></CALLNODE>, <LOCALVARNODE>sg</LOCALVARNODE>)</ARRAYNODE></FCALLNODE></LOCALASGNNODE>
+      <LOCALASGNNODE>ns = <FCALLNODE>ns?<ARRAYNODE>(<LOCALVARNODE>jd</LOCALVARNODE>, <LOCALVARNODE>sg</LOCALVARNODE>)</ARRAYNODE></FCALLNODE></LOCALASGNNODE>
+      <IFNODE><RETURNNODE>return</RETURNNODE> unless <CALLNODE><ARRAYNODE>[<LOCALVARNODE>y</LOCALVARNODE>, <LOCALVARNODE>m</LOCALVARNODE>]</ARRAYNODE> == <ARRAYNODE><CALLNODE><FCALLNODE>jd_to_civil<ARRAYNODE>(<LOCALVARNODE>jd</LOCALVARNODE>, <LOCALVARNODE>sg</LOCALVARNODE>)</ARRAYNODE></FCALLNODE>[<ARRAYNODE><DOTNODE><FIXNUMNODE>0</FIXNUMNODE>..<FIXNUMNODE>1</FIXNUMNODE></DOTNODE></ARRAYNODE></CALLNODE></ARRAYNODE></CALLNODE></IFNODE>]
+      <IFNODE><RETURNNODE>return</RETURNNODE> unless <CALLNODE><ARRAYNODE>[<LOCALVARNODE>ny</LOCALVARNODE>, <LOCALVARNODE>nm</LOCALVARNODE>, <FIXNUMNODE>1</FIXNUMNODE>]</ARRAYNODE> == <ARRAYNODE><FCALLNODE>jd_to_civil<ARRAYNODE>(<CALLNODE><LOCALVARNODE>jd</LOCALVARNODE> - <ARRAYNODE><LOCALVARNODE>d</LOCALVARNODE></ARRAYNODE></CALLNODE>, <LOCALVARNODE>ns</LOCALVARNODE>)</ARRAYNODE></FCALLNODE></ARRAYNODE></CALLNODE></IFNODE></BLOCKNODE>
+    else
+      <BLOCKNODE><LOCALASGNNODE>jd = <FCALLNODE>civil_to_jd<ARRAYNODE>(<LOCALVARNODE>y</LOCALVARNODE>, <LOCALVARNODE>m</LOCALVARNODE>, <LOCALVARNODE>d</LOCALVARNODE>, <LOCALVARNODE>sg</LOCALVARNODE>)</ARRAYNODE></FCALLNODE></LOCALASGNNODE>
+      <IFNODE><RETURNNODE>return</RETURNNODE> unless <CALLNODE><ARRAYNODE>[<LOCALVARNODE>y</LOCALVARNODE>, <LOCALVARNODE>m</LOCALVARNODE>, <LOCALVARNODE>d</LOCALVARNODE>]</ARRAYNODE> == <ARRAYNODE><FCALLNODE>jd_to_civil<ARRAYNODE>(<LOCALVARNODE>jd</LOCALVARNODE>, <LOCALVARNODE>sg</LOCALVARNODE>)</ARRAYNODE></FCALLNODE></ARRAYNODE></CALLNODE></IFNODE></BLOCKNODE>
+    end</IFNODE>
+    <LOCALVARNODE>jd</LOCALVARNODE></BLOCKNODE>
+  end</DEFSNODE>
+
+  <SCLASSNODE>class &lt;&lt; <SELFNODE>self</SELFNODE>; <FCALLNODE>alias_method <ARRAYNODE><SYMBOLNODE>:valid_date?</SYMBOLNODE>, <SYMBOLNODE>:valid_civil?</SYMBOLNODE></ARRAYNODE></FCALLNODE> end</SCLASSNODE>
+
+  # Create a new Date object for the Civil Date specified by
+  # year +y+, month +m+, and day-of-month +d+.
+  #
+  # +m+ and +d+ can be negative, in which case they count
+  # backwards from the end of the year and the end of the
+  # month respectively.  No wraparound is performed, however,
+  # and invalid values cause an ArgumentError to be raised.
+  # can be negative
+  #
+  # +y+ defaults to -4712, +m+ to 1, and +d+ to 1; this is
+  # Julian Day Number day 0.
+  #
+  # +sg+ specifies the Day of Calendar Reform.
+  <DEFSNODE>def <SELFNODE>self</SELFNODE>.<ARGUMENTNODE>civil</ARGUMENTNODE><ARGSNODE>(<LOCALASGNNODE>y=-<FIXNUMNODE>4712</FIXNUMNODE></LOCALASGNNODE><BLOCKNODE>, <LOCALASGNNODE>m=<FIXNUMNODE>1</FIXNUMNODE></LOCALASGNNODE>, <LOCALASGNNODE>d=<FIXNUMNODE>1</FIXNUMNODE></LOCALASGNNODE>, <LOCALASGNNODE>sg=<CONSTNODE>ITALY</CONSTNODE></LOCALASGNNODE></BLOCKNODE>)</ARGSNODE>
+    <BLOCKNODE><IFNODE>unless <LOCALASGNNODE>jd = <FCALLNODE>valid_civil?<ARRAYNODE>(<LOCALVARNODE>y</LOCALVARNODE>, <LOCALVARNODE>m</LOCALVARNODE>, <LOCALVARNODE>d</LOCALVARNODE>, <LOCALVARNODE>sg</LOCALVARNODE>)</ARRAYNODE></FCALLNODE></LOCALASGNNODE>
+      <FCALLNODE>raise <ARRAYNODE><CONSTNODE>ArgumentError</CONSTNODE>, <STRNODE>'invalid date'</STRNODE></ARRAYNODE></FCALLNODE>
+    end</IFNODE>
+    <FCALLNODE>new0<ARRAYNODE>(<FCALLNODE>jd_to_ajd<ARRAYNODE>(<LOCALVARNODE>jd</LOCALVARNODE>, <FIXNUMNODE>0</FIXNUMNODE>, <FIXNUMNODE>0</FIXNUMNODE>)</ARRAYNODE></FCALLNODE>, <FIXNUMNODE>0</FIXNUMNODE>, <LOCALVARNODE>sg</LOCALVARNODE>)</ARRAYNODE></FCALLNODE></BLOCKNODE>
+  end</DEFSNODE>
+
+  <SCLASSNODE>class &lt;&lt; <SELFNODE>self</SELFNODE>; <FCALLNODE>alias_method <ARRAYNODE><SYMBOLNODE>:new</SYMBOLNODE>, <SYMBOLNODE>:civil</SYMBOLNODE></ARRAYNODE></FCALLNODE> end</SCLASSNODE>
+
+  # Do year +y+, week-of-year +w+, and day-of-week +d+ make a
+  # valid Commercial Date?  Returns the corresponding Julian
+  # Day Number if they do, nil if they don't.
+  #
+  # Monday is day-of-week 1; Sunday is day-of-week 7.
+  #
+  # +w+ and +d+ can be negative, in which case they count
+  # backwards from the end of the year and the end of the
+  # week respectively.  No wraparound is performed, however,
+  # and invalid values cause an ArgumentError to be raised.
+  # A date falling in the period skipped in the Day of Calendar
+  # Reform adjustment is not valid.
+  #
+  # +sg+ specifies the Day of Calendar Reform.
+  <DEFSNODE>def <SELFNODE>self</SELFNODE>.<ARGUMENTNODE>valid_commercial?</ARGUMENTNODE> <ARGSNODE>(<LISTNODE><ARGUMENTNODE>y</ARGUMENTNODE>, <ARGUMENTNODE>w</ARGUMENTNODE>, <ARGUMENTNODE>d</ARGUMENTNODE></LISTNODE>, <LOCALASGNNODE>sg=<CONSTNODE>ITALY</CONSTNODE></LOCALASGNNODE><BLOCKNODE/>)</ARGSNODE>
+    <BLOCKNODE><IFNODE>if <CALLNODE><LOCALVARNODE>d</LOCALVARNODE> &lt; <ARRAYNODE><FIXNUMNODE>0</FIXNUMNODE></ARRAYNODE></CALLNODE>
+      <LOCALASGNNODE><CALLNODE><LOCALVARNODE>d</LOCALVARNODE> += <ARRAYNODE><FIXNUMNODE>8</FIXNUMNODE></ARRAYNODE></CALLNODE></LOCALASGNNODE>
+    end</IFNODE>
+    <IFNODE>if <CALLNODE><LOCALVARNODE>w</LOCALVARNODE> &lt; <ARRAYNODE><FIXNUMNODE>0</FIXNUMNODE></ARRAYNODE></CALLNODE>
+      <LOCALASGNNODE>w = <CALLNODE><FCALLNODE>jd_to_commercial<ARRAYNODE>(<CALLNODE><FCALLNODE>commercial_to_jd<ARRAYNODE>(<CALLNODE><LOCALVARNODE>y</LOCALVARNODE> + <ARRAYNODE><FIXNUMNODE>1</FIXNUMNODE></ARRAYNODE></CALLNODE>, <FIXNUMNODE>1</FIXNUMNODE>, <FIXNUMNODE>1</FIXNUMNODE>)</ARRAYNODE></FCALLNODE> + <ARRAYNODE><CALLNODE><LOCALVARNODE>w</LOCALVARNODE> * <ARRAYNODE><FIXNUMNODE>7</FIXNUMNODE></ARRAYNODE></CALLNODE></ARRAYNODE></CALLNODE>)</ARRAYNODE></FCALLNODE>[<ARRAYNODE><FIXNUMNODE>1</FIXNUMNODE></ARRAYNODE></CALLNODE></LOCALASGNNODE>]
+    end</IFNODE>
+    <LOCALASGNNODE>jd = <FCALLNODE>commercial_to_jd<ARRAYNODE>(<LOCALVARNODE>y</LOCALVARNODE>, <LOCALVARNODE>w</LOCALVARNODE>, <LOCALVARNODE>d</LOCALVARNODE>)</ARRAYNODE></FCALLNODE></LOCALASGNNODE>
+    <IFNODE><RETURNNODE>return</RETURNNODE> unless <FCALLNODE>ns?<ARRAYNODE>(<LOCALVARNODE>jd</LOCALVARNODE>, <LOCALVARNODE>sg</LOCALVARNODE>)</ARRAYNODE></FCALLNODE></IFNODE>
+    <IFNODE><RETURNNODE>return</RETURNNODE> unless <CALLNODE><ARRAYNODE>[<LOCALVARNODE>y</LOCALVARNODE>, <LOCALVARNODE>w</LOCALVARNODE>, <LOCALVARNODE>d</LOCALVARNODE>]</ARRAYNODE> == <ARRAYNODE><FCALLNODE>jd_to_commercial<ARRAYNODE>(<LOCALVARNODE>jd</LOCALVARNODE>)</ARRAYNODE></FCALLNODE></ARRAYNODE></CALLNODE></IFNODE>
+    <LOCALVARNODE>jd</LOCALVARNODE></BLOCKNODE>
+  end</DEFSNODE>
+
+  # Create a new Date object for the Commercial Date specified by
+  # year +y+, week-of-year +w+, and day-of-week +d+.
+  #
+  # Monday is day-of-week 1; Sunday is day-of-week 7.
+  #
+  # +w+ and +d+ can be negative, in which case they count
+  # backwards from the end of the year and the end of the
+  # week respectively.  No wraparound is performed, however,
+  # and invalid values cause an ArgumentError to be raised.
+  #
+  # +y+ defaults to 1582, +w+ to 41, and +d+ to 5, the Day of
+  # Calendar Reform for Italy and the Catholic countries.
+  #
+  # +sg+ specifies the Day of Calendar Reform.
+  <DEFSNODE>def <SELFNODE>self</SELFNODE>.<ARGUMENTNODE>commercial</ARGUMENTNODE><ARGSNODE>(<LOCALASGNNODE>y=<FIXNUMNODE>1582</FIXNUMNODE></LOCALASGNNODE><BLOCKNODE>, <LOCALASGNNODE>w=<FIXNUMNODE>41</FIXNUMNODE></LOCALASGNNODE>, <LOCALASGNNODE>d=<FIXNUMNODE>5</FIXNUMNODE></LOCALASGNNODE>, <LOCALASGNNODE>sg=<CONSTNODE>ITALY</CONSTNODE></LOCALASGNNODE></BLOCKNODE>)</ARGSNODE>
+    <BLOCKNODE><IFNODE>unless <LOCALASGNNODE>jd = <FCALLNODE>valid_commercial?<ARRAYNODE>(<LOCALVARNODE>y</LOCALVARNODE>, <LOCALVARNODE>w</LOCALVARNODE>, <LOCALVARNODE>d</LOCALVARNODE>, <LOCALVARNODE>sg</LOCALVARNODE>)</ARRAYNODE></FCALLNODE></LOCALASGNNODE>
+      <FCALLNODE>raise <ARRAYNODE><CONSTNODE>ArgumentError</CONSTNODE>, <STRNODE>'invalid date'</STRNODE></ARRAYNODE></FCALLNODE>
+    end</IFNODE>
+    <FCALLNODE>new0<ARRAYNODE>(<FCALLNODE>jd_to_ajd<ARRAYNODE>(<LOCALVARNODE>jd</LOCALVARNODE>, <FIXNUMNODE>0</FIXNUMNODE>, <FIXNUMNODE>0</FIXNUMNODE>)</ARRAYNODE></FCALLNODE>, <FIXNUMNODE>0</FIXNUMNODE>, <LOCALVARNODE>sg</LOCALVARNODE>)</ARRAYNODE></FCALLNODE></BLOCKNODE>
+  end</DEFSNODE>
+
+  <DEFSNODE>def <SELFNODE>self</SELFNODE>.<ARGUMENTNODE>new_with_hash</ARGUMENTNODE><ARGSNODE>(<LISTNODE><ARGUMENTNODE>elem</ARGUMENTNODE>, <ARGUMENTNODE>sg</ARGUMENTNODE></LISTNODE>)</ARGSNODE>
+    <BLOCKNODE><OPASGNORNODE><LOCALVARNODE><LOCALASGNNODE>elem</LOCALASGNNODE></LOCALVARNODE> ||= <HASHNODE>{}</HASHNODE></OPASGNORNODE><ARRAYNODE/>
+    <MULTIPLEASGNNODE><ARRAYNODE><LOCALASGNNODE>y</LOCALASGNNODE>, <LOCALASGNNODE>m</LOCALASGNNODE>, <LOCALASGNNODE>d</LOCALASGNNODE></ARRAYNODE></MULTIPLEASGNNODE><TOARYNODE> = <CALLNODE><LOCALVARNODE>elem</LOCALVARNODE>.values_at<ARRAYNODE>(<SYMBOLNODE>:year</SYMBOLNODE>, <SYMBOLNODE>:mon</SYMBOLNODE>, <SYMBOLNODE>:mday</SYMBOLNODE>)</ARRAYNODE></CALLNODE>
+</TOARYNODE>    <IFNODE>if <CALLNODE><ARRAYNODE>[<LOCALVARNODE>y</LOCALVARNODE>, <LOCALVARNODE>m</LOCALVARNODE>, <LOCALVARNODE>d</LOCALVARNODE>]</ARRAYNODE>.include? <ARRAYNODE><NILNODE>nil</NILNODE></ARRAYNODE></CALLNODE>
+      <FCALLNODE>raise <ARRAYNODE><CONSTNODE>ArgumentError</CONSTNODE>, <STRNODE>'3 elements of civil date are necessary'</STRNODE></ARRAYNODE></FCALLNODE>
+    else
+      <FCALLNODE>civil<ARRAYNODE>(<LOCALVARNODE>y</LOCALVARNODE>, <LOCALVARNODE>m</LOCALVARNODE>, <LOCALVARNODE>d</LOCALVARNODE>, <LOCALVARNODE>sg</LOCALVARNODE>)</ARRAYNODE></FCALLNODE>
+    end</IFNODE></BLOCKNODE>
+  end</DEFSNODE>
+
+  <FCALLNODE>private_class_method <ARRAYNODE><SYMBOLNODE>:new_with_hash</SYMBOLNODE></ARRAYNODE></FCALLNODE>
+
+  # Create a new Date object by parsing from a String
+  # according to a specified format.
+  #
+  # +str+ is a String holding a date representation.
+  # +fmt+ is the format that the date is in.  See
+  # date/format.rb for details on supported formats.
+  #
+  # The default +str+ is '-4712-01-01', and the default
+  # +fmt+ is '%F', which means Year-Month-Day_of_Month.
+  # This gives Julian Day Number day 0.
+  #
+  # +sg+ specifies the Day of Calendar Reform.
+  #
+  # An ArgumentError will be raised if +str+ cannot be
+  # parsed.
+  <DEFSNODE>def <SELFNODE>self</SELFNODE>.<ARGUMENTNODE>strptime</ARGUMENTNODE><ARGSNODE>(<LOCALASGNNODE>str=<STRNODE>'-4712-01-01'</STRNODE></LOCALASGNNODE><BLOCKNODE>, <LOCALASGNNODE>fmt=<STRNODE>'%F'</STRNODE></LOCALASGNNODE>, <LOCALASGNNODE>sg=<CONSTNODE>ITALY</CONSTNODE></LOCALASGNNODE></BLOCKNODE>)</ARGSNODE>
+    <BLOCKNODE><LOCALASGNNODE>elem = <FCALLNODE>_strptime<ARRAYNODE>(<LOCALVARNODE>str</LOCALVARNODE>, <LOCALVARNODE>fmt</LOCALVARNODE>)</ARRAYNODE></FCALLNODE></LOCALASGNNODE>
+    <FCALLNODE>new_with_hash<ARRAYNODE>(<LOCALVARNODE>elem</LOCALVARNODE>, <LOCALVARNODE>sg</LOCALVARNODE>)</ARRAYNODE></FCALLNODE></BLOCKNODE>
+  end</DEFSNODE>
+
+  # Create a new Date object by parsing from a String,
+  # without specifying the format.
+  #
+  # +str+ is a String holding a date representation. 
+  # +comp+ specifies whether to interpret 2-digit years
+  # as 19XX (&gt;= 69) or 20XX (&lt; 69); the default is not to.
+  # The method will attempt to parse a date from the String
+  # using various heuristics; see #_parse in date/format.rb
+  # for more details.  If parsing fails, an ArgumentError
+  # will be raised.
+  #
+  # The default +str+ is '-4712-01-01'; this is Julian
+  # Day Number day 0.
+  #
+  # +sg+ specifies the Day of Calendar Reform.
+  <DEFSNODE>def <SELFNODE>self</SELFNODE>.<ARGUMENTNODE>parse</ARGUMENTNODE><ARGSNODE>(<LOCALASGNNODE>str=<STRNODE>'-4712-01-01'</STRNODE></LOCALASGNNODE><BLOCKNODE>, <LOCALASGNNODE>comp=<FALSENODE>false</FALSENODE></LOCALASGNNODE>, <LOCALASGNNODE>sg=<CONSTNODE>ITALY</CONSTNODE></LOCALASGNNODE></BLOCKNODE>)</ARGSNODE>
+    <BLOCKNODE><LOCALASGNNODE>elem = <FCALLNODE>_parse<ARRAYNODE>(<LOCALVARNODE>str</LOCALVARNODE>, <LOCALVARNODE>comp</LOCALVARNODE>)</ARRAYNODE></FCALLNODE></LOCALASGNNODE>
+    <FCALLNODE>new_with_hash<ARRAYNODE>(<LOCALVARNODE>elem</LOCALVARNODE>, <LOCALVARNODE>sg</LOCALVARNODE>)</ARRAYNODE></FCALLNODE></BLOCKNODE>
+  end</DEFSNODE>
+
+  # Create a new Date object representing today.
+  #
+  # +sg+ specifies the Day of Calendar Reform.
+  <DEFSNODE>def <SELFNODE>self</SELFNODE>.<ARGUMENTNODE>today</ARGUMENTNODE><ARGSNODE>(<LOCALASGNNODE>sg=<CONSTNODE>ITALY</CONSTNODE></LOCALASGNNODE><BLOCKNODE/>)</ARGSNODE>
+    <BLOCKNODE><LOCALASGNNODE>jd = <FCALLNODE>civil_to_jd<SPLATNODE>(*(<CALLNODE><CALLNODE><CALLNODE><CALLNODE><CALLNODE><CONSTNODE>Time</CONSTNODE>.now</CALLNODE>.to_a</CALLNODE>[<ARRAYNODE><DOTNODE><FIXNUMNODE>3</FIXNUMNODE>..<FIXNUMNODE>5</FIXNUMNODE></DOTNODE></ARRAYNODE></CALLNODE>].reverse</CALLNODE> &lt;&lt; <ARRAYNODE><LOCALVARNODE>sg</LOCALVARNODE></ARRAYNODE></CALLNODE>))</SPLATNODE></FCALLNODE></LOCALASGNNODE>
+    <FCALLNODE>new0<ARRAYNODE>(<FCALLNODE>jd_to_ajd<ARRAYNODE>(<LOCALVARNODE>jd</LOCALVARNODE>, <FIXNUMNODE>0</FIXNUMNODE>, <FIXNUMNODE>0</FIXNUMNODE>)</ARRAYNODE></FCALLNODE>, <FIXNUMNODE>0</FIXNUMNODE>, <LOCALVARNODE>sg</LOCALVARNODE>)</ARRAYNODE></FCALLNODE></BLOCKNODE>
+  end</DEFSNODE>
+
+  <SCLASSNODE>class &lt;&lt; <SELFNODE>self</SELFNODE>
+
+    <BLOCKNODE><DEFNNODE>def <ARGUMENTNODE>once</ARGUMENTNODE><ARGSNODE>(<ARGUMENTNODE>*ids</ARGUMENTNODE>)</ARGSNODE> # :nodoc:
+      <FORNODE>for <LOCALASGNNODE>id</LOCALASGNNODE> in <LOCALVARNODE>ids</LOCALVARNODE>
+	<FCALLNODE>module_eval<STRNODE> <ARRAYNODE><DSTRNODE>&lt;&lt;-"end;", __FILE__, __LINE__
+	  alias_method :__</STRNODE><EVSTRNODE>#{<CALLNODE><LOCALVARNODE>id</LOCALVARNODE>.to_i</CALLNODE>}</EVSTRNODE><STRNODE>__, :</STRNODE><EVSTRNODE>#{<CALLNODE><LOCALVARNODE>id</LOCALVARNODE>.to_s</CALLNODE>}</EVSTRNODE><STRNODE>
+	  private :__</STRNODE><EVSTRNODE>#{<CALLNODE><LOCALVARNODE>id</LOCALVARNODE>.to_i</CALLNODE>}</EVSTRNODE><STRNODE>__
+	  def </STRNODE><EVSTRNODE>#{<CALLNODE><LOCALVARNODE>id</LOCALVARNODE>.to_s</CALLNODE>}</EVSTRNODE><STRNODE>(*args, &amp;block)
+            if defined? @__</STRNODE><EVSTRNODE>#{<CALLNODE><LOCALVARNODE>id</LOCALVARNODE>.to_i</CALLNODE>}</EVSTRNODE><STRNODE>__
+              @__</STRNODE><EVSTRNODE>#{<CALLNODE><LOCALVARNODE>id</LOCALVARNODE>.to_i</CALLNODE>}</EVSTRNODE><STRNODE>__
+            elsif ! self.frozen?
+	      @__</STRNODE><EVSTRNODE>#{<CALLNODE><LOCALVARNODE>id</LOCALVARNODE>.to_i</CALLNODE>}</EVSTRNODE><STRNODE>__ ||= __</STRNODE><EVSTRNODE>#{<CALLNODE><LOCALVARNODE>id</LOCALVARNODE>.to_i</CALLNODE>}</EVSTRNODE><STRNODE>__(*args, &amp;block)
+            else
+               __</STRNODE><EVSTRNODE>#{<CALLNODE><LOCALVARNODE>id</LOCALVARNODE>.to_i</CALLNODE>}</EVSTRNODE><STRNODE>__(*args, &amp;block)
+        </STRNODE></DSTRNODE>  <STRNODE>  end
+	 </STRNODE> e<FIXNUMNODE>nd
+	end;</FIXNUMNODE></ARRAYNODE></FCALLNODE>
+      end</FORNODE>
+    end</DEFNNODE>
+
+    <FCALLNODE>private <ARRAYNODE><SYMBOLNODE>:once</SYMBOLNODE></ARRAYNODE></FCALLNODE></BLOCKNODE>
+
+  end</SCLASSNODE>
+
+  # *NOTE* this is the documentation for the method new0().  If
+  # you are reading this as the documentation for new(), that is
+  # because rdoc doesn't fully support the aliasing of the
+  # initialize() method.
+  # new() is in
+  # fact an alias for #civil(): read the documentation for that
+  # method instead.
+  #
+  # Create a new Date object.
+  #
+  # +ajd+ is the Astronomical Julian Day Number.
+  # +of+ is the offset from UTC as a fraction of a day.
+  # Both default to 0.
+  #
+  # +sg+ specifies the Day of Calendar Reform to use for this
+  # Date object.
+  #
+  # Using one of the factory methods such as Date::civil is
+  # generally easier and safer.
+  <DEFNNODE>def <ARGUMENTNODE>initialize</ARGUMENTNODE><ARGSNODE>(<LOCALASGNNODE>ajd=<FIXNUMNODE>0</FIXNUMNODE></LOCALASGNNODE><BLOCKNODE>, <LOCALASGNNODE>of=<FIXNUMNODE>0</FIXNUMNODE></LOCALASGNNODE>, <LOCALASGNNODE>sg=<CONSTNODE>ITALY</CONSTNODE></LOCALASGNNODE></BLOCKNODE>)</ARGSNODE> <MULTIPLEASGNNODE><ARRAYNODE><INSTASGNNODE>@ajd</INSTASGNNODE>, <INSTASGNNODE>@of</INSTASGNNODE>, <INSTASGNNODE>@sg</INSTASGNNODE></ARRAYNODE> = <ARRAYNODE><LOCALVARNODE>ajd</LOCALVARNODE>, <LOCALVARNODE>of</LOCALVARNODE>, <LOCALVARNODE>sg</LOCALVARNODE></ARRAYNODE></MULTIPLEASGNNODE> end</DEFNNODE>
+
+  # Get the date as an Astronomical Julian Day Number.
+  <DEFNNODE>def <ARGUMENTNODE>ajd</ARGUMENTNODE><ARGSNODE>()</ARGSNODE> <INSTVARNODE>@ajd</INSTVARNODE> end</DEFNNODE>
+
+  # Get the date as an Astronomical Modified Julian Day Number.
+  <DEFNNODE>def <ARGUMENTNODE>amjd</ARGUMENTNODE><ARGSNODE>()</ARGSNODE> <CALLNODE><CALLNODE><SELFNODE>self</SELFNODE>.class</CALLNODE>.ajd_to_amjd<ARRAYNODE>(<INSTVARNODE>@ajd</INSTVARNODE>)</ARRAYNODE></CALLNODE> end</DEFNNODE>
+
+  <FCALLNODE>once <ARRAYNODE><SYMBOLNODE>:amjd</SYMBOLNODE></ARRAYNODE></FCALLNODE>
+
+  # Get the date as a Julian Day Number.
+  <DEFNNODE>def <ARGUMENTNODE>jd</ARGUMENTNODE><ARGSNODE>()</ARGSNODE> <CALLNODE><CALLNODE><CALLNODE><SELFNODE>self</SELFNODE>.class</CALLNODE>.ajd_to_jd<ARRAYNODE>(<INSTVARNODE>@ajd</INSTVARNODE>, <INSTVARNODE>@of</INSTVARNODE>)</ARRAYNODE></CALLNODE>[<ARRAYNODE><FIXNUMNODE>0</FIXNUMNODE></ARRAYNODE></CALLNODE>] end</DEFNNODE>
+
+  # Get any fractional day part of the date.
+  <DEFNNODE>def <ARGUMENTNODE>day_fraction</ARGUMENTNODE><ARGSNODE>()</ARGSNODE> <CALLNODE><CALLNODE><CALLNODE><SELFNODE>self</SELFNODE>.class</CALLNODE>.ajd_to_jd<ARRAYNODE>(<INSTVARNODE>@ajd</INSTVARNODE>, <INSTVARNODE>@of</INSTVARNODE>)</ARRAYNODE></CALLNODE>[<ARRAYNODE><FIXNUMNODE>1</FIXNUMNODE></ARRAYNODE></CALLNODE>] end</DEFNNODE>
+
+  # Get the date as a Modified Julian Day Number.
+  <DEFNNODE>def <ARGUMENTNODE>mjd</ARGUMENTNODE><ARGSNODE>()</ARGSNODE> <CALLNODE><CALLNODE><SELFNODE>self</SELFNODE>.class</CALLNODE>.jd_to_mjd<ARRAYNODE>(<VCALLNODE>jd</VCALLNODE>)</ARRAYNODE></CALLNODE> end</DEFNNODE>
+
+  # Get the date as the number of days since the Day of Calendar
+  # Reform (in Italy and the Catholic countries).
+  <DEFNNODE>def <ARGUMENTNODE>ld</ARGUMENTNODE><ARGSNODE>()</ARGSNODE> <CALLNODE><CALLNODE><SELFNODE>self</SELFNODE>.class</CALLNODE>.jd_to_ld<ARRAYNODE>(<VCALLNODE>jd</VCALLNODE>)</ARRAYNODE></CALLNODE> end</DEFNNODE>
+
+  <FCALLNODE>once <ARRAYNODE><SYMBOLNODE>:jd</SYMBOLNODE>, <SYMBOLNODE>:day_fraction</SYMBOLNODE>, <SYMBOLNODE>:mjd</SYMBOLNODE>, <SYMBOLNODE>:ld</SYMBOLNODE></ARRAYNODE></FCALLNODE>
+
+  # Get the date as a Civil Date, [year, month, day_of_month]
+  <DEFNNODE>def <ARGUMENTNODE>civil</ARGUMENTNODE><ARGSNODE>()</ARGSNODE> <CALLNODE><CALLNODE><SELFNODE>self</SELFNODE>.class</CALLNODE>.jd_to_civil<ARRAYNODE>(<VCALLNODE>jd</VCALLNODE>, <INSTVARNODE>@sg</INSTVARNODE>)</ARRAYNODE></CALLNODE> end</DEFNNODE>
+
+  # Get the date as an Ordinal Date, [year, day_of_year]
+  <DEFNNODE>def <ARGUMENTNODE>ordinal</ARGUMENTNODE><ARGSNODE>()</ARGSNODE> <CALLNODE><CALLNODE><SELFNODE>self</SELFNODE>.class</CALLNODE>.jd_to_ordinal<ARRAYNODE>(<VCALLNODE>jd</VCALLNODE>, <INSTVARNODE>@sg</INSTVARNODE>)</ARRAYNODE></CALLNODE> end</DEFNNODE>
+
+  # Get the date as a Commercial Date, [year, week_of_year, day_of_week]
+  <DEFNNODE>def <ARGUMENTNODE>commercial</ARGUMENTNODE><ARGSNODE>()</ARGSNODE> <CALLNODE><CALLNODE><SELFNODE>self</SELFNODE>.class</CALLNODE>.jd_to_commercial<ARRAYNODE>(<VCALLNODE>jd</VCALLNODE>, <INSTVARNODE>@sg</INSTVARNODE>)</ARRAYNODE></CALLNODE> end</DEFNNODE>
+
+  <FCALLNODE>once <ARRAYNODE><SYMBOLNODE>:civil</SYMBOLNODE>, <SYMBOLNODE>:ordinal</SYMBOLNODE>, <SYMBOLNODE>:commercial</SYMBOLNODE></ARRAYNODE></FCALLNODE>
+  <FCALLNODE>private <ARRAYNODE><SYMBOLNODE>:civil</SYMBOLNODE>, <SYMBOLNODE>:ordinal</SYMBOLNODE>, <SYMBOLNODE>:commercial</SYMBOLNODE></ARRAYNODE></FCALLNODE>
+
+  # Get the year of this date.
+  <DEFNNODE>def <ARGUMENTNODE>year</ARGUMENTNODE><ARGSNODE>()</ARGSNODE> <CALLNODE><VCALLNODE>civil</VCALLNODE>[<ARRAYNODE><FIXNUMNODE>0</FIXNUMNODE></ARRAYNODE></CALLNODE>] end</DEFNNODE>
+
+  # Get the day-of-the-year of this date.
+  #
+  # January 1 is day-of-the-year 1
+  <DEFNNODE>def <ARGUMENTNODE>yday</ARGUMENTNODE><ARGSNODE>()</ARGSNODE> <CALLNODE><VCALLNODE>ordinal</VCALLNODE>[<ARRAYNODE><FIXNUMNODE>1</FIXNUMNODE></ARRAYNODE></CALLNODE>] end</DEFNNODE>
+
+  # Get the month of this date.
+  #
+  # January is month 1.
+  <DEFNNODE>def <ARGUMENTNODE>mon</ARGUMENTNODE><ARGSNODE>()</ARGSNODE> <CALLNODE><VCALLNODE>civil</VCALLNODE>[<ARRAYNODE><FIXNUMNODE>1</FIXNUMNODE></ARRAYNODE></CALLNODE>] end</DEFNNODE>
+
+  # Get the day-of-the-month of this date.
+  <DEFNNODE>def <ARGUMENTNODE>mday</ARGUMENTNODE><ARGSNODE>()</ARGSNODE> <CALLNODE><VCALLNODE>civil</VCALLNODE>[<ARRAYNODE><FIXNUMNODE>2</FIXNUMNODE></ARRAYNODE></CALLNODE>] end</DEFNNODE>
+
+  <FCALLNODE>alias_method <ARRAYNODE><SYMBOLNODE>:month</SYMBOLNODE>, <SYMBOLNODE>:mon</SYMBOLNODE></ARRAYNODE></FCALLNODE>
+  <FCALLNODE>alias_method <ARRAYNODE><SYMBOLNODE>:day</SYMBOLNODE>, <SYMBOLNODE>:mday</SYMBOLNODE></ARRAYNODE></FCALLNODE>
+
+  # Get the time of this date as [hours, minutes, seconds,
+  # fraction_of_a_second]
+  <DEFNNODE>def <ARGUMENTNODE>time</ARGUMENTNODE><ARGSNODE>()</ARGSNODE> <CALLNODE><CALLNODE><SELFNODE>self</SELFNODE>.class</CALLNODE>.day_fraction_to_time<ARRAYNODE>(<VCALLNODE>day_fraction</VCALLNODE>)</ARRAYNODE></CALLNODE> end</DEFNNODE>
+
+  <FCALLNODE>once <ARRAYNODE><SYMBOLNODE>:time</SYMBOLNODE></ARRAYNODE></FCALLNODE>
+  <FCALLNODE>private <ARRAYNODE><SYMBOLNODE>:time</SYMBOLNODE></ARRAYNODE></FCALLNODE>
+
+  # Get the hour of this date.
+  <DEFNNODE>def <ARGUMENTNODE>hour</ARGUMENTNODE><ARGSNODE>()</ARGSNODE> <CALLNODE><VCALLNODE>time</VCALLNODE>[<ARRAYNODE><FIXNUMNODE>0</FIXNUMNODE></ARRAYNODE></CALLNODE>] end</DEFNNODE>
+
+  # Get the minute of this date.
+  <DEFNNODE>def <ARGUMENTNODE>min</ARGUMENTNODE><ARGSNODE>()</ARGSNODE> <CALLNODE><VCALLNODE>time</VCALLNODE>[<ARRAYNODE><FIXNUMNODE>1</FIXNUMNODE></ARRAYNODE></CALLNODE>] end</DEFNNODE>
+
+  # Get the second of this date.
+  <DEFNNODE>def <ARGUMENTNODE>sec</ARGUMENTNODE><ARGSNODE>()</ARGSNODE> <CALLNODE><VCALLNODE>time</VCALLNODE>[<ARRAYNODE><FIXNUMNODE>2</FIXNUMNODE></ARRAYNODE></CALLNODE>] end</DEFNNODE>
+
+  # Get the fraction-of-a-second of this date.
+  <DEFNNODE>def <ARGUMENTNODE>sec_fraction</ARGUMENTNODE><ARGSNODE>()</ARGSNODE> <CALLNODE><VCALLNODE>time</VCALLNODE>[<ARRAYNODE><FIXNUMNODE>3</FIXNUMNODE></ARRAYNODE></CALLNODE>] end</DEFNNODE>
+
+  <FCALLNODE>private <ARRAYNODE><SYMBOLNODE>:hour</SYMBOLNODE>, <SYMBOLNODE>:min</SYMBOLNODE>, <SYMBOLNODE>:sec</SYMBOLNODE>, <SYMBOLNODE>:sec_fraction</SYMBOLNODE></ARRAYNODE></FCALLNODE>
+
+  <DEFNNODE>def <ARGUMENTNODE>zone</ARGUMENTNODE><ARGSNODE>()</ARGSNODE> <FCALLNODE>strftime<ARRAYNODE>(<STRNODE>'%Z'</STRNODE>)</ARRAYNODE></FCALLNODE> end</DEFNNODE>
+
+  <FCALLNODE>private <ARRAYNODE><SYMBOLNODE>:zone</SYMBOLNODE></ARRAYNODE></FCALLNODE>
+
+  # Get the commercial year of this date.  See *Commercial* *Date*
+  # in the introduction for how this differs from the normal year.
+  <DEFNNODE>def <ARGUMENTNODE>cwyear</ARGUMENTNODE><ARGSNODE>()</ARGSNODE> <CALLNODE><VCALLNODE>commercial</VCALLNODE>[<ARRAYNODE><FIXNUMNODE>0</FIXNUMNODE></ARRAYNODE></CALLNODE>] end</DEFNNODE>
+
+  # Get the commercial week of the year of this date.
+  <DEFNNODE>def <ARGUMENTNODE>cweek</ARGUMENTNODE><ARGSNODE>()</ARGSNODE> <CALLNODE><VCALLNODE>commercial</VCALLNODE>[<ARRAYNODE><FIXNUMNODE>1</FIXNUMNODE></ARRAYNODE></CALLNODE>] end</DEFNNODE>
+
+  # Get the commercial day of the week of this date.  Monday is
+  # commercial day-of-week 1; Sunday is commercial day-of-week 7.
+  <DEFNNODE>def <ARGUMENTNODE>cwday</ARGUMENTNODE><ARGSNODE>()</ARGSNODE> <CALLNODE><VCALLNODE>commercial</VCALLNODE>[<ARRAYNODE><FIXNUMNODE>2</FIXNUMNODE></ARRAYNODE></CALLNODE>] end</DEFNNODE>
+
+  # Get the week day of this date.  Sunday is day-of-week 0;
+  # Saturday is day-of-week 6.
+  <DEFNNODE>def <ARGUMENTNODE>wday</ARGUMENTNODE><ARGSNODE>()</ARGSNODE> <CALLNODE><CALLNODE><SELFNODE>self</SELFNODE>.class</CALLNODE>.jd_to_wday<ARRAYNODE>(<VCALLNODE>jd</VCALLNODE>)</ARRAYNODE></CALLNODE> end</DEFNNODE>
+
+  <FCALLNODE>once <ARRAYNODE><SYMBOLNODE>:wday</SYMBOLNODE></ARRAYNODE></FCALLNODE>
+
+  # Is the current date old-style (Julian Calendar)?
+  <DEFNNODE>def <ARGUMENTNODE>os?</ARGUMENTNODE> <ARGSNODE>()</ARGSNODE> <CALLNODE><CALLNODE><SELFNODE>self</SELFNODE>.class</CALLNODE>.os?<ARRAYNODE>(<VCALLNODE>jd</VCALLNODE>, <INSTVARNODE>@sg</INSTVARNODE>)</ARRAYNODE></CALLNODE> end</DEFNNODE>
+
+  # Is the current date new-style (Gregorian Calendar)?
+  <DEFNNODE>def <ARGUMENTNODE>ns?</ARGUMENTNODE> <ARGSNODE>()</ARGSNODE> <CALLNODE><CALLNODE><SELFNODE>self</SELFNODE>.class</CALLNODE>.ns?<ARRAYNODE>(<VCALLNODE>jd</VCALLNODE>, <INSTVARNODE>@sg</INSTVARNODE>)</ARRAYNODE></CALLNODE> end</DEFNNODE>
+
+  <FCALLNODE>once <ARRAYNODE><SYMBOLNODE>:os?</SYMBOLNODE>, <SYMBOLNODE>:ns?</SYMBOLNODE></ARRAYNODE></FCALLNODE>
+
+  # Is this a leap year?
+  <DEFNNODE>def <ARGUMENTNODE>leap?</ARGUMENTNODE><ARGSNODE/>
+    <CALLNODE><CALLNODE><CALLNODE><CALLNODE><SELFNODE>self</SELFNODE>.class</CALLNODE>.jd_to_civil<ARRAYNODE>(<CALLNODE><CALLNODE><CALLNODE><SELFNODE>self</SELFNODE>.class</CALLNODE>.civil_to_jd<ARRAYNODE>(<VCALLNODE>year</VCALLNODE>, <FIXNUMNODE>3</FIXNUMNODE>, <FIXNUMNODE>1</FIXNUMNODE>, <FCALLNODE>ns?</FCALLNODE>)</ARRAYNODE></CALLNODE> - <ARRAYNODE><FIXNUMNODE>1</FIXNUMNODE></ARRAYNODE></CALLNODE>,
+      <FCALLNODE>ns?</FCALLNODE>)</ARRAYNODE></CALLNODE>[-<ARRAYNODE><FIXNUMNODE>1</FIXNUMNODE></ARRAYNODE></CALLNODE>] == <ARRAYNODE><FIXNUMNODE>29</FIXNUMNODE></ARRAYNODE></CALLNODE>
+  end</DEFNNODE>
+
+  <FCALLNODE>once <ARRAYNODE><SYMBOLNODE>:leap?</SYMBOLNODE></ARRAYNODE></FCALLNODE>
+
+  # When is the Day of Calendar Reform for this Date object?
+  <DEFNNODE>def <ARGUMENTNODE>start</ARGUMENTNODE><ARGSNODE>()</ARGSNODE> <INSTVARNODE>@sg</INSTVARNODE> end</DEFNNODE>
+
+  # Create a copy of this Date object using a new Day of Calendar Reform.
+  <DEFNNODE>def <ARGUMENTNODE>new_start</ARGUMENTNODE><ARGSNODE>(<LOCALASGNNODE>sg=<COLON2NODE><CALLNODE><SELFNODE>self</SELFNODE>.class</CALLNODE>::ITALY</COLON2NODE></LOCALASGNNODE><BLOCKNODE/>)</ARGSNODE> <CALLNODE><CALLNODE><SELFNODE>self</SELFNODE>.class</CALLNODE>.new0<ARRAYNODE>(<INSTVARNODE>@ajd</INSTVARNODE>, <INSTVARNODE>@of</INSTVARNODE>, <LOCALVARNODE>sg</LOCALVARNODE>)</ARRAYNODE></CALLNODE> end</DEFNNODE>
+
+  # Create a copy of this Date object that uses the Italian/Catholic
+  # Day of Calendar Reform.
+  <DEFNNODE>def <ARGUMENTNODE>italy</ARGUMENTNODE><ARGSNODE>()</ARGSNODE> <FCALLNODE>new_start<ARRAYNODE>(<COLON2NODE><CALLNODE><SELFNODE>self</SELFNODE>.class</CALLNODE>::ITALY</COLON2NODE>)</ARRAYNODE></FCALLNODE> end</DEFNNODE>
+
+  # Create a copy of this Date object that uses the English/Colonial
+  # Day of Calendar Reform.
+  <DEFNNODE>def <ARGUMENTNODE>england</ARGUMENTNODE><ARGSNODE>()</ARGSNODE> <FCALLNODE>new_start<ARRAYNODE>(<COLON2NODE><CALLNODE><SELFNODE>self</SELFNODE>.class</CALLNODE>::ENGLAND</COLON2NODE>)</ARRAYNODE></FCALLNODE> end</DEFNNODE>
+
+  # Create a copy of this Date object that always uses the Julian
+  # Calendar.
+  <DEFNNODE>def <ARGUMENTNODE>julian</ARGUMENTNODE><ARGSNODE>()</ARGSNODE> <FCALLNODE>new_start<ARRAYNODE>(<COLON2NODE><CALLNODE><SELFNODE>self</SELFNODE>.class</CALLNODE>::JULIAN</COLON2NODE>)</ARRAYNODE></FCALLNODE> end</DEFNNODE>
+
+  # Create a copy of this Date object that always uses the Gregorian
+  # Calendar.
+  <DEFNNODE>def <ARGUMENTNODE>gregorian</ARGUMENTNODE><ARGSNODE>()</ARGSNODE> <FCALLNODE>new_start<ARRAYNODE>(<COLON2NODE><CALLNODE><SELFNODE>self</SELFNODE>.class</CALLNODE>::GREGORIAN</COLON2NODE>)</ARRAYNODE></FCALLNODE> end</DEFNNODE>
+
+  <DEFNNODE>def <ARGUMENTNODE>offset</ARGUMENTNODE><ARGSNODE>()</ARGSNODE> <INSTVARNODE>@of</INSTVARNODE> end</DEFNNODE>
+  <DEFNNODE>def <ARGUMENTNODE>new_offset</ARGUMENTNODE><ARGSNODE>(<LOCALASGNNODE>of=<FIXNUMNODE>0</FIXNUMNODE></LOCALASGNNODE><BLOCKNODE/>)</ARGSNODE> <CALLNODE><CALLNODE><SELFNODE>self</SELFNODE>.class</CALLNODE>.new0<ARRAYNODE>(<INSTVARNODE>@ajd</INSTVARNODE>, <LOCALVARNODE>of</LOCALVARNODE>, <INSTVARNODE>@sg</INSTVARNODE>)</ARRAYNODE></CALLNODE> end</DEFNNODE>
+
+  <FCALLNODE>private <ARRAYNODE><SYMBOLNODE>:offset</SYMBOLNODE>, <SYMBOLNODE>:new_offset</SYMBOLNODE></ARRAYNODE></FCALLNODE>
+
+  # Return a new Date object that is +n+ days later than the
+  # current one.
+  #
+  # +n+ may be a negative value, in which case the new Date
+  # is earlier than the current one; however, #-() might be
+  # more intuitive.
+  #
+  # If +n+ is not a Numeric, a TypeError will be thrown.  In
+  # particular, two Dates cannot be added to each other.
+  <DEFNNODE>def <ARGUMENTNODE>+</ARGUMENTNODE> <ARGSNODE>(<LISTNODE><ARGUMENTNODE>n</ARGUMENTNODE></LISTNODE>)</ARGSNODE>
+    <BLOCKNODE><CASENODE>case <LOCALVARNODE>n</LOCALVARNODE>
+    <WHENNODE>when <ARRAYNODE><CONSTNODE>Numeric</CONSTNODE></ARRAYNODE>; <RETURNNODE>return <CALLNODE><CALLNODE><SELFNODE>self</SELFNODE>.class</CALLNODE>.new0<ARRAYNODE>(<CALLNODE><INSTVARNODE>@ajd</INSTVARNODE> + <ARRAYNODE><LOCALVARNODE>n</LOCALVARNODE></ARRAYNODE></CALLNODE>, <INSTVARNODE>@of</INSTVARNODE>, <INSTVARNODE>@sg</INSTVARNODE>)</ARRAYNODE></CALLNODE></RETURNNODE></WHENNODE>
+    end</CASENODE>
+    <FCALLNODE>raise <ARRAYNODE><CONSTNODE>TypeError</CONSTNODE>, <STRNODE>'expected numeric'</STRNODE></ARRAYNODE></FCALLNODE></BLOCKNODE>
+  end</DEFNNODE>
+
+  # If +x+ is a Numeric value, create a new Date object that is
+  # +x+ days earlier than the current one.
+  #
+  # If +x+ is a Date, return the number of days between the
+  # two dates; or, more precisely, how many days later the current
+  # date is than +x+.
+  #
+  # If +x+ is neither Numeric nor a Date, a TypeError is raised.
+  <DEFNNODE>def <ARGUMENTNODE>-</ARGUMENTNODE> <ARGSNODE>(<LISTNODE><ARGUMENTNODE>x</ARGUMENTNODE></LISTNODE>)</ARGSNODE>
+    <BLOCKNODE><CASENODE>case <LOCALVARNODE>x</LOCALVARNODE>
+    <WHENNODE>when <ARRAYNODE><CONSTNODE>Numeric</CONSTNODE></ARRAYNODE>; <RETURNNODE>return <CALLNODE><CALLNODE><SELFNODE>self</SELFNODE>.class</CALLNODE>.new0<ARRAYNODE>(<CALLNODE><INSTVARNODE>@ajd</INSTVARNODE> - <ARRAYNODE><LOCALVARNODE>x</LOCALVARNODE></ARRAYNODE></CALLNODE>, <INSTVARNODE>@of</INSTVARNODE>, <INSTVARNODE>@sg</INSTVARNODE>)</ARRAYNODE></CALLNODE></RETURNNODE></WHENNODE>
+    <WHENNODE>when <ARRAYNODE><CONSTNODE>Date</CONSTNODE></ARRAYNODE>;    <RETURNNODE>return <CALLNODE><INSTVARNODE>@ajd</INSTVARNODE> - <ARRAYNODE><CALLNODE><LOCALVARNODE>x</LOCALVARNODE>.ajd</CALLNODE></ARRAYNODE></CALLNODE></RETURNNODE></WHENNODE>
+    end</CASENODE>
+    <FCALLNODE>raise <ARRAYNODE><CONSTNODE>TypeError</CONSTNODE>, <STRNODE>'expected numeric or date'</STRNODE></ARRAYNODE></FCALLNODE></BLOCKNODE>
+  end</DEFNNODE>
+
+  # Compare this date with another date.
+  #
+  # +other+ can also be a Numeric value, in which case it is
+  # interpreted as an Astronomical Julian Day Number.
+  #
+  # Comparison is by Astronomical Julian Day Number, including
+  # fractional days.  This means that both the time and the
+  # timezone offset are taken into account when comparing
+  # two DateTime instances.  When comparing a DateTime instance
+  # with a Date instance, the time of the latter will be
+  # considered as falling on midnight UTC.
+  <DEFNNODE>def <ARGUMENTNODE>&lt;=&gt;</ARGUMENTNODE> <ARGSNODE>(<LISTNODE><ARGUMENTNODE>other</ARGUMENTNODE></LISTNODE>)</ARGSNODE>
+    <BLOCKNODE><CASENODE>case <LOCALVARNODE>other</LOCALVARNODE>
+    <WHENNODE>when <ARRAYNODE><CONSTNODE>Numeric</CONSTNODE></ARRAYNODE>; <RETURNNODE>return <CALLNODE><INSTVARNODE>@ajd</INSTVARNODE> &lt;=&gt; <ARRAYNODE><LOCALVARNODE>other</LOCALVARNODE></ARRAYNODE></CALLNODE></RETURNNODE></WHENNODE>
+    <WHENNODE>when <ARRAYNODE><CONSTNODE>Date</CONSTNODE></ARRAYNODE>;    <RETURNNODE>return <CALLNODE><INSTVARNODE>@ajd</INSTVARNODE> &lt;=&gt; <ARRAYNODE><CALLNODE><LOCALVARNODE>other</LOCALVARNODE>.ajd</CALLNODE></ARRAYNODE></CALLNODE></RETURNNODE></WHENNODE>
+    end</CASENODE>
+    <NILNODE>nil</NILNODE></BLOCKNODE>
+  end</DEFNNODE>
+
+  # The relationship operator for Date.
+  #
+  # Compares dates by Julian Day Number.  When comparing
+  # two DateTime instances, or a DateTime with a Date,
+  # the instances will be regarded as equivalent if they
+  # fall on the same date in local time.
+  <DEFNNODE>def <ARGUMENTNODE>===</ARGUMENTNODE> <ARGSNODE>(<LISTNODE><ARGUMENTNODE>other</ARGUMENTNODE></LISTNODE>)</ARGSNODE>
+    <BLOCKNODE><CASENODE>case <LOCALVARNODE>other</LOCALVARNODE>
+    <WHENNODE>when <ARRAYNODE><CONSTNODE>Numeric</CONSTNODE></ARRAYNODE>; <RETURNNODE>return <CALLNODE><VCALLNODE>jd</VCALLNODE> == <ARRAYNODE><LOCALVARNODE>other</LOCALVARNODE></ARRAYNODE></CALLNODE></RETURNNODE></WHENNODE>
+    <WHENNODE>when <ARRAYNODE><CONSTNODE>Date</CONSTNODE></ARRAYNODE>;    <RETURNNODE>return <CALLNODE><VCALLNODE>jd</VCALLNODE> == <ARRAYNODE><CALLNODE><LOCALVARNODE>other</LOCALVARNODE>.jd</CALLNODE></ARRAYNODE></CALLNODE></RETURNNODE></WHENNODE>
+    end</CASENODE>
+    <FALSENODE>false</FALSENODE></BLOCKNODE>
+  end</DEFNNODE>
+
+  # Return a new Date object that is +n+ months later than
+  # the current one.
+  #
+  # If the day-of-the-month of the current Date is greater
+  # than the last day of the target month, the day-of-the-month
+  # of the returned Date will be the last day of the target month.
+  <DEFNNODE>def <ARGUMENTNODE>&gt;&gt;</ARGUMENTNODE> <ARGSNODE>(<LISTNODE><ARGUMENTNODE>n</ARGUMENTNODE></LISTNODE>)</ARGSNODE>
+    <BLOCKNODE><MULTIPLEASGNNODE><ARRAYNODE><LOCALASGNNODE>y</LOCALASGNNODE>, <LOCALASGNNODE>m</LOCALASGNNODE></ARRAYNODE></MULTIPLEASGNNODE><TOARYNODE> = <FCALLNODE>clfloor<ARRAYNODE>(<CALLNODE><CALLNODE><CALLNODE><VCALLNODE>year</VCALLNODE> * <ARRAYNODE><FIXNUMNODE>12</FIXNUMNODE></ARRAYNODE></CALLNODE> + <ARRAYNODE>(<CALLNODE><VCALLNODE>mon</VCALLNODE> - <ARRAYNODE><FIXNUMNODE>1</FIXNUMNODE></ARRAYNODE></CALLNODE>)</ARRAYNODE></CALLNODE> + <ARRAYNODE><LOCALVARNODE>n</LOCALVARNODE></ARRAYNODE></CALLNODE>, <FIXNUMNODE>12</FIXNUMNODE>)</ARRAYNODE></FCALLNODE>
+</TOARYNODE>    <ARRAYNODE><LOCALASGNNODE>m</LOCALASGNNODE></ARRAYNODE><MULTIPLEASGNNODE>,   =</MULTIPLEASGNNODE><TOARYNODE> <FCALLNODE>clfloor<ARRAYNODE>(<CALLNODE><LOCALVARNODE>m</LOCALVARNODE> + <ARRAYNODE><FIXNUMNODE>1</FIXNUMNODE></ARRAYNODE></CALLNODE>, <FIXNUMNODE>1</FIXNUMNODE>)</ARRAYNODE></FCALLNODE>
+</TOARYNODE>    <LOCALASGNNODE>d = <VCALLNODE>mday</VCALLNODE></LOCALASGNNODE>
+    <LOCALASGNNODE><CALLNODE><LOCALVARNODE>d</LOCALVARNODE> -= <ARRAYNODE><FIXNUMNODE>1</FIXNUMNODE></ARRAYNODE></CALLNODE></LOCALASGNNODE><UNTILNODE> until <LOCALASGNNODE>jd2 = <CALLNODE><CALLNODE><SELFNODE>self</SELFNODE>.class</CALLNODE>.valid_civil?<ARRAYNODE>(<LOCALVARNODE>y</LOCALVARNODE>, <LOCALVARNODE>m</LOCALVARNODE>, <LOCALVARNODE>d</LOCALVARNODE>, <FCALLNODE>ns?</FCALLNODE>)</ARRAYNODE></CALLNODE></LOCALASGNNODE>
+</UNTILNODE>    <CALLNODE><SELFNODE>self</SELFNODE> + <ARRAYNODE>(<CALLNODE><LOCALVARNODE>jd2</LOCALVARNODE> - <ARRAYNODE><VCALLNODE>jd</VCALLNODE></ARRAYNODE></CALLNODE>)</ARRAYNODE></CALLNODE></BLOCKNODE>
+  end</DEFNNODE>
+
+  # Return a new Date object that is +n+ months earlier than
+  # the current one.
+  #
+  # If the day-of-the-month of the current Date is greater
+  # than the last day of the target month, the day-of-the-month
+  # of the returned Date will be the last day of the target month.
+  <DEFNNODE>def <ARGUMENTNODE>&lt;&lt;</ARGUMENTNODE> <ARGSNODE>(<LISTNODE><ARGUMENTNODE>n</ARGUMENTNODE></LISTNODE>)</ARGSNODE> <CALLNODE><SELFNODE>self</SELFNODE> &gt;&gt; -<ARRAYNODE><CALLNODE><LOCALVARNODE>n</LOCALVARNODE></CALLNODE></ARRAYNODE></CALLNODE> end</DEFNNODE>
+
+  # Step the current date forward +step+ days at a
+  # time (or backward, if +step+ is negative) until
+  # we reach +limit+ (inclusive), yielding the resultant
+  # date at each step.
+  <DEFNNODE>def <ARGUMENTNODE>step</ARGUMENTNODE><ARGSNODE>(<LISTNODE><ARGUMENTNODE>limit</ARGUMENTNODE>, <ARGUMENTNODE>step</ARGUMENTNODE></LISTNODE>)</ARGSNODE>  # :yield: date
+    <BLOCKNODE><LOCALASGNNODE>da = <SELFNODE>self</SELFNODE></LOCALASGNNODE>
+    <LOCALASGNNODE>op = <CALLNODE><ARRAYNODE>[<SYMBOLNODE>:-</SYMBOLNODE>,<SYMBOLNODE>:&lt;=</SYMBOLNODE>,<SYMBOLNODE>:&gt;=</SYMBOLNODE>]</ARRAYNODE>[<ARRAYNODE><CALLNODE><LOCALVARNODE>step</LOCALVARNODE>&lt;=&gt;<ARRAYNODE><FIXNUMNODE>0</FIXNUMNODE></ARRAYNODE></CALLNODE></ARRAYNODE></CALLNODE></LOCALASGNNODE>]
+    <WHILENODE>while <CALLNODE><LOCALVARNODE>da</LOCALVARNODE>.__send__<ARRAYNODE>(<LOCALVARNODE>op</LOCALVARNODE>, <LOCALVARNODE>limit</LOCALVARNODE>)</ARRAYNODE></CALLNODE>
+      <BLOCKNODE><YIELDNODE>yield <LOCALVARNODE>da</LOCALVARNODE></YIELDNODE>
+      <LOCALASGNNODE><CALLNODE><LOCALVARNODE>da</LOCALVARNODE> += <ARRAYNODE><LOCALVARNODE>step</LOCALVARNODE></ARRAYNODE></CALLNODE></LOCALASGNNODE></BLOCKNODE>
+    end</WHILENODE>
+    <SELFNODE>self</SELFNODE></BLOCKNODE>
+  end</DEFNNODE>
+
+  # Step forward one day at a time until we reach +max+
+  # (inclusive), yielding each date as we go.
+  <DEFNNODE>def <ARGUMENTNODE>upto</ARGUMENTNODE><ARGSNODE>(<LISTNODE><ARGUMENTNODE>max</ARGUMENTNODE></LISTNODE>, <BLOCKARGNODE>&amp;block</BLOCKARGNODE>)</ARGSNODE>  # :yield: date
+    <FCALLNODE>step<BLOCKPASSNODE>(<ARRAYNODE><ARRAYNODE><LOCALVARNODE><LOCALVARNODE>max</LOCALVARNODE></LOCALVARNODE>, <FIXNUMNODE><FIXNUMNODE>+1</FIXNUMNODE></FIXNUMNODE></ARRAYNODE></ARRAYNODE>, &amp;<LOCALVARNODE>block</LOCALVARNODE>)</BLOCKPASSNODE></FCALLNODE>
+  end</DEFNNODE>
+
+  # Step backward one day at a time until we reach +min+
+  # (inclusive), yielding each date as we go.
+  <DEFNNODE>def <ARGUMENTNODE>downto</ARGUMENTNODE><ARGSNODE>(<LISTNODE><ARGUMENTNODE>min</ARGUMENTNODE></LISTNODE>, <BLOCKARGNODE>&amp;block</BLOCKARGNODE>)</ARGSNODE> # :yield: date
+    <FCALLNODE>step<BLOCKPASSNODE>(<ARRAYNODE><ARRAYNODE><LOCALVARNODE><LOCALVARNODE>min</LOCALVARNODE></LOCALVARNODE>, -<FIXNUMNODE><FIXNUMNODE>1</FIXNUMNODE></FIXNUMNODE></ARRAYNODE></ARRAYNODE>, &amp;<LOCALVARNODE>block</LOCALVARNODE>)</BLOCKPASSNODE></FCALLNODE>
+  end</DEFNNODE>
+
+  # Return a new Date one day after this one.
+  <DEFNNODE>def <ARGUMENTNODE>succ</ARGUMENTNODE><ARGSNODE>()</ARGSNODE> <CALLNODE><SELFNODE>self</SELFNODE> + <ARRAYNODE><FIXNUMNODE>1</FIXNUMNODE></ARRAYNODE></CALLNODE> end</DEFNNODE>
+
+  <FCALLNODE>alias_method <ARRAYNODE><SYMBOLNODE>:next</SYMBOLNODE>, <SYMBOLNODE>:succ</SYMBOLNODE></ARRAYNODE></FCALLNODE>
+
+  # Is this Date equal to +other+?
+  #
+  # +other+ must both be a Date object, and represent the same date.
+  <DEFNNODE>def <ARGUMENTNODE>eql?</ARGUMENTNODE> <ARGSNODE>(<LISTNODE><ARGUMENTNODE>other</ARGUMENTNODE></LISTNODE>)</ARGSNODE> <ANDNODE><CALLNODE><CONSTNODE>Date</CONSTNODE> === <ARRAYNODE><LOCALVARNODE>other</LOCALVARNODE></ARRAYNODE></CALLNODE> and <CALLNODE><SELFNODE>self</SELFNODE> == <ARRAYNODE><LOCALVARNODE>other</LOCALVARNODE></ARRAYNODE></CALLNODE></ANDNODE> end</DEFNNODE>
+
+  # Calculate a hash value for this date.
+  <DEFNNODE>def <ARGUMENTNODE>hash</ARGUMENTNODE><ARGSNODE>()</ARGSNODE> <CALLNODE><INSTVARNODE>@ajd</INSTVARNODE>.hash</CALLNODE> end</DEFNNODE>
+
+  # Return internal object state as a programmer-readable string.
+  <DEFNNODE>def <ARGUMENTNODE>inspect</ARGUMENTNODE><ARGSNODE>()</ARGSNODE> <FCALLNODE>format<ARRAYNODE>(<STRNODE>'#&lt;%s: %s,%s,%s&gt;'</STRNODE>, <CALLNODE><SELFNODE>self</SELFNODE>.class</CALLNODE>, <INSTVARNODE>@ajd</INSTVARNODE>, <INSTVARNODE>@of</INSTVARNODE>, <INSTVARNODE>@sg</INSTVARNODE>)</ARRAYNODE></FCALLNODE> end</DEFNNODE>
+
+  # Return the date as a human-readable string.
+  #
+  # The format used is YYYY-MM-DD.
+  <DEFNNODE>def <ARGUMENTNODE>to_s</ARGUMENTNODE><ARGSNODE>()</ARGSNODE> <VCALLNODE>strftime</VCALLNODE> end</DEFNNODE>
+
+  # Dump to Marshal format.
+  <DEFNNODE>def <ARGUMENTNODE>_dump</ARGUMENTNODE><ARGSNODE>(<LISTNODE><ARGUMENTNODE>limit</ARGUMENTNODE></LISTNODE>)</ARGSNODE> <CALLNODE><CONSTNODE>Marshal</CONSTNODE>.dump<ARRAYNODE>(<ARRAYNODE>[<INSTVARNODE>@ajd</INSTVARNODE>, <INSTVARNODE>@of</INSTVARNODE>, <INSTVARNODE>@sg</INSTVARNODE>]</ARRAYNODE>, -<FIXNUMNODE>1</FIXNUMNODE>)</ARRAYNODE></CALLNODE> end</DEFNNODE>
+
+  # def self._load(str) new0(*Marshal.load(str)) end
+
+  # Load from Marshall format.
+  <DEFSNODE>def <SELFNODE>self</SELFNODE>.<ARGUMENTNODE>_load</ARGUMENTNODE><ARGSNODE>(<LISTNODE><ARGUMENTNODE>str</ARGUMENTNODE></LISTNODE>)</ARGSNODE>
+    <BLOCKNODE><LOCALASGNNODE>a = <CALLNODE><CONSTNODE>Marshal</CONSTNODE>.load<ARRAYNODE>(<LOCALVARNODE>str</LOCALVARNODE>)</ARRAYNODE></CALLNODE></LOCALASGNNODE>
+    <IFNODE>if <CALLNODE><CALLNODE><LOCALVARNODE>a</LOCALVARNODE>.size</CALLNODE> == <ARRAYNODE><FIXNUMNODE>2</FIXNUMNODE></ARRAYNODE></CALLNODE>
+      <BLOCKNODE><MULTIPLEASGNNODE><ARRAYNODE><LOCALASGNNODE>ajd</LOCALASGNNODE>,     <LOCALASGNNODE>sg</LOCALASGNNODE></ARRAYNODE></MULTIPLEASGNNODE><TOARYNODE> = <LOCALVARNODE>a</LOCALVARNODE>
+</TOARYNODE>      <LOCALASGNNODE>of = <FIXNUMNODE>0</FIXNUMNODE></LOCALASGNNODE>
+      <LOCALASGNNODE><CALLNODE><LOCALVARNODE>ajd</LOCALVARNODE> -= <ARRAYNODE><CALLNODE><CALLNODE><FIXNUMNODE>1</FIXNUMNODE>.to_r</CALLNODE>/<ARRAYNODE><FIXNUMNODE>2</FIXNUMNODE></ARRAYNODE></CALLNODE></ARRAYNODE></CALLNODE></LOCALASGNNODE></BLOCKNODE>
+    else
+      <MULTIPLEASGNNODE><ARRAYNODE><LOCALASGNNODE>ajd</LOCALASGNNODE>, <LOCALASGNNODE>of</LOCALASGNNODE>, <LOCALASGNNODE>sg</LOCALASGNNODE></ARRAYNODE></MULTIPLEASGNNODE><TOARYNODE> = <LOCALVARNODE>a</LOCALVARNODE>
+</TOARYNODE>    end</IFNODE>
+    <FCALLNODE>new0<ARRAYNODE>(<LOCALVARNODE>ajd</LOCALVARNODE>, <LOCALVARNODE>of</LOCALVARNODE>, <LOCALVARNODE>sg</LOCALVARNODE>)</ARRAYNODE></FCALLNODE></BLOCKNODE>
+  end</DEFSNODE></BLOCKNODE>
+
+end</CLASSNODE>
+
+# Class representing a date and time.
+#
+# See the documentation to the file date.rb for an overview.
+#
+# DateTime objects are immutable once created.
+#
+# == Other methods.
+#
+# The following methods are defined in Date, but declared private
+# there.  They are made public in DateTime.  They are documented
+# here.
+#
+# === hour()
+#
+# Get the hour-of-the-day of the time.  This is given
+# using the 24-hour clock, counting from midnight.  The first
+# hour after midnight is hour 0; the last hour of the day is
+# hour 23.
+#
+# === min()
+#
+# Get the minute-of-the-hour of the time.
+#
+# === sec()
+#
+# Get the second-of-the-minute of the time.
+#
+# === sec_fraction()
+#
+# Get the fraction of a second of the time.  This is returned as
+# a +Rational+.
+#
+# === zone()
+#
+# Get the time zone as a String.  This is representation of the
+# time offset such as "+1000", not the true time-zone name.
+#
+# === offset()
+#
+# Get the time zone offset as a fraction of a day.  This is returned
+# as a +Rational+.
+#
+# === new_offset(of=0)
+#
+# Create a new DateTime object, identical to the current one, except
+# with a new time zone offset of +of+.  +of+ is the new offset from
+# UTC as a fraction of a day.
+#
+<CLASSNODE>class <COLON2NODE>DateTime</COLON2NODE> &lt; <CONSTNODE>Date</CONSTNODE>
+
+  # Do hour +h+, minute +min+, and second +s+ constitute a valid time?
+  #
+  # If they do, returns their value as a fraction of a day.  If not,
+  # returns nil.
+  #
+  # The 24-hour clock is used.  Negative values of +h+, +min+, and
+  # +sec+ are treating as counting backwards from the end of the
+  # next larger unit (e.g. a +min+ of -2 is treated as 58).  No
+  # wraparound is performed.
+  <BLOCKNODE><DEFSNODE>def <SELFNODE>self</SELFNODE>.<ARGUMENTNODE>valid_time?</ARGUMENTNODE> <ARGSNODE>(<LISTNODE><ARGUMENTNODE>h</ARGUMENTNODE>, <ARGUMENTNODE>min</ARGUMENTNODE>, <ARGUMENTNODE>s</ARGUMENTNODE></LISTNODE>)</ARGSNODE>
+    <BLOCKNODE><IFNODE><LOCALASGNNODE><CALLNODE><LOCALVARNODE>h</LOCALVARNODE>   += <ARRAYNODE><FIXNUMNODE>24</FIXNUMNODE></ARRAYNODE></CALLNODE></LOCALASGNNODE> if <CALLNODE><LOCALVARNODE>h</LOCALVARNODE>   &lt; <ARRAYNODE><FIXNUMNODE>0</FIXNUMNODE></ARRAYNODE></CALLNODE></IFNODE>
+    <IFNODE><LOCALASGNNODE><CALLNODE><LOCALVARNODE>min</LOCALVARNODE> += <ARRAYNODE><FIXNUMNODE>60</FIXNUMNODE></ARRAYNODE></CALLNODE></LOCALASGNNODE> if <CALLNODE><LOCALVARNODE>min</LOCALVARNODE> &lt; <ARRAYNODE><FIXNUMNODE>0</FIXNUMNODE></ARRAYNODE></CALLNODE></IFNODE>
+    <IFNODE><LOCALASGNNODE><CALLNODE><LOCALVARNODE>s</LOCALVARNODE>   += <ARRAYNODE><FIXNUMNODE>60</FIXNUMNODE></ARRAYNODE></CALLNODE></LOCALASGNNODE> if <CALLNODE><LOCALVARNODE>s</LOCALVARNODE>   &lt; <ARRAYNODE><FIXNUMNODE>0</FIXNUMNODE></ARRAYNODE></CALLNODE></IFNODE>
+    <IFNODE><RETURNNODE>return</RETURNNODE> unless <ANDNODE><ANDNODE><CALLNODE>(<DOTNODE><FIXNUMNODE>0</FIXNUMNODE>..<FIXNUMNODE>24</FIXNUMNODE></DOTNODE>) === <ARRAYNODE><LOCALVARNODE>h</LOCALVARNODE></ARRAYNODE></CALLNODE> and
+      <CALLNODE>(<DOTNODE><FIXNUMNODE>0</FIXNUMNODE>..<FIXNUMNODE>59</FIXNUMNODE></DOTNODE>) === <ARRAYNODE><LOCALVARNODE>min</LOCALVARNODE></ARRAYNODE></CALLNODE></ANDNODE> and
+      <CALLNODE>(<DOTNODE><FIXNUMNODE>0</FIXNUMNODE>..<FIXNUMNODE>59</FIXNUMNODE></DOTNODE>) === <ARRAYNODE><LOCALVARNODE>s</LOCALVARNODE></ARRAYNODE></CALLNODE></ANDNODE></IFNODE>
+    <FCALLNODE>time_to_day_fraction<ARRAYNODE>(<LOCALVARNODE>h</LOCALVARNODE>, <LOCALVARNODE>min</LOCALVARNODE>, <LOCALVARNODE>s</LOCALVARNODE>)</ARRAYNODE></FCALLNODE></BLOCKNODE>
+  end</DEFSNODE>
+
+  # Create a new DateTime object corresponding to the specified
+  # Julian Day Number +jd+ and hour +h+, minute +min+, second +s+.
+  #
+  # The 24-hour clock is used.  Negative values of +h+, +min+, and
+  # +sec+ are treating as counting backwards from the end of the
+  # next larger unit (e.g. a +min+ of -2 is treated as 58).  No
+  # wraparound is performed.  If an invalid time portion is specified,
+  # an ArgumentError is raised.
+  #
+  # +of+ is the offset from UTC as a fraction of a day (defaults to 0).
+  # +sg+ specifies the Day of Calendar Reform.
+  #
+  # All day/time values default to 0.
+  <DEFSNODE>def <SELFNODE>self</SELFNODE>.<ARGUMENTNODE>jd</ARGUMENTNODE><ARGSNODE>(<LOCALASGNNODE>jd=<FIXNUMNODE>0</FIXNUMNODE></LOCALASGNNODE><BLOCKNODE>, <LOCALASGNNODE>h=<FIXNUMNODE>0</FIXNUMNODE></LOCALASGNNODE>, <LOCALASGNNODE>min=<FIXNUMNODE>0</FIXNUMNODE></LOCALASGNNODE>, <LOCALASGNNODE>s=<FIXNUMNODE>0</FIXNUMNODE></LOCALASGNNODE>, <LOCALASGNNODE>of=<FIXNUMNODE>0</FIXNUMNODE></LOCALASGNNODE>, <LOCALASGNNODE>sg=<CONSTNODE>ITALY</CONSTNODE></LOCALASGNNODE></BLOCKNODE>)</ARGSNODE>
+    <BLOCKNODE><IFNODE>unless (<ANDNODE><LOCALASGNNODE>jd = <FCALLNODE>valid_jd?<ARRAYNODE>(<LOCALVARNODE>jd</LOCALVARNODE>, <LOCALVARNODE>sg</LOCALVARNODE>)</ARRAYNODE></FCALLNODE></LOCALASGNNODE>) and
+        (<LOCALASGNNODE>fr = <FCALLNODE>valid_time?<ARRAYNODE>(<LOCALVARNODE>h</LOCALVARNODE>, <LOCALVARNODE>min</LOCALVARNODE>, <LOCALVARNODE>s</LOCALVARNODE>)</ARRAYNODE></FCALLNODE></LOCALASGNNODE></ANDNODE>)
+      <FCALLNODE>raise <ARRAYNODE><CONSTNODE>ArgumentError</CONSTNODE>, <STRNODE>'invalid date'</STRNODE></ARRAYNODE></FCALLNODE>
+    end</IFNODE>
+    <FCALLNODE>new0<ARRAYNODE>(<FCALLNODE>jd_to_ajd<ARRAYNODE>(<LOCALVARNODE>jd</LOCALVARNODE>, <LOCALVARNODE>fr</LOCALVARNODE>, <LOCALVARNODE>of</LOCALVARNODE>)</ARRAYNODE></FCALLNODE>, <LOCALVARNODE>of</LOCALVARNODE>, <LOCALVARNODE>sg</LOCALVARNODE>)</ARRAYNODE></FCALLNODE></BLOCKNODE>
+  end</DEFSNODE>
+
+  # Create a new DateTime object corresponding to the specified
+  # Ordinal Date and hour +h+, minute +min+, second +s+.
+  #
+  # The 24-hour clock is used.  Negative values of +h+, +min+, and
+  # +sec+ are treating as counting backwards from the end of the
+  # next larger unit (e.g. a +min+ of -2 is treated as 58).  No
+  # wraparound is performed.  If an invalid time portion is specified,
+  # an ArgumentError is raised.
+  #
+  # +of+ is the offset from UTC as a fraction of a day (defaults to 0).
+  # +sg+ specifies the Day of Calendar Reform.
+  #
+  # +y+ defaults to -4712, and +d+ to 1; this is Julian Day Number
+  # day 0.  The time values default to 0.
+  <DEFSNODE>def <SELFNODE>self</SELFNODE>.<ARGUMENTNODE>ordinal</ARGUMENTNODE><ARGSNODE>(<LOCALASGNNODE>y=-<FIXNUMNODE>4712</FIXNUMNODE></LOCALASGNNODE><BLOCKNODE>, <LOCALASGNNODE>d=<FIXNUMNODE>1</FIXNUMNODE></LOCALASGNNODE>, <LOCALASGNNODE>h=<FIXNUMNODE>0</FIXNUMNODE></LOCALASGNNODE>, <LOCALASGNNODE>min=<FIXNUMNODE>0</FIXNUMNODE></LOCALASGNNODE>, <LOCALASGNNODE>s=<FIXNUMNODE>0</FIXNUMNODE></LOCALASGNNODE>, <LOCALASGNNODE>of=<FIXNUMNODE>0</FIXNUMNODE></LOCALASGNNODE>, <LOCALASGNNODE>sg=<CONSTNODE>ITALY</CONSTNODE></LOCALASGNNODE></BLOCKNODE>)</ARGSNODE>
+    <BLOCKNODE><IFNODE>unless (<ANDNODE><LOCALASGNNODE>jd = <FCALLNODE>valid_ordinal?<ARRAYNODE>(<LOCALVARNODE>y</LOCALVARNODE>, <LOCALVARNODE>d</LOCALVARNODE>, <LOCALVARNODE>sg</LOCALVARNODE>)</ARRAYNODE></FCALLNODE></LOCALASGNNODE>) and
+        (<LOCALASGNNODE>fr = <FCALLNODE>valid_time?<ARRAYNODE>(<LOCALVARNODE>h</LOCALVARNODE>, <LOCALVARNODE>min</LOCALVARNODE>, <LOCALVARNODE>s</LOCALVARNODE>)</ARRAYNODE></FCALLNODE></LOCALASGNNODE></ANDNODE>)
+      <FCALLNODE>raise <ARRAYNODE><CONSTNODE>ArgumentError</CONSTNODE>, <STRNODE>'invalid date'</STRNODE></ARRAYNODE></FCALLNODE>
+    end</IFNODE>
+    <FCALLNODE>new0<ARRAYNODE>(<FCALLNODE>jd_to_ajd<ARRAYNODE>(<LOCALVARNODE>jd</LOCALVARNODE>, <LOCALVARNODE>fr</LOCALVARNODE>, <LOCALVARNODE>of</LOCALVARNODE>)</ARRAYNODE></FCALLNODE>, <LOCALVARNODE>of</LOCALVARNODE>, <LOCALVARNODE>sg</LOCALVARNODE>)</ARRAYNODE></FCALLNODE></BLOCKNODE>
+  end</DEFSNODE>
+
+  # Create a new DateTime object corresponding to the specified
+  # Civil Date and hour +h+, minute +min+, second +s+.
+  #
+  # The 24-hour clock is used.  Negative values of +h+, +min+, and
+  # +sec+ are treating as counting backwards from the end of the
+  # next larger unit (e.g. a +min+ of -2 is treated as 58).  No
+  # wraparound is performed.  If an invalid time portion is specified,
+  # an ArgumentError is raised.
+  #
+  # +of+ is the offset from UTC as a fraction of a day (defaults to 0).
+  # +sg+ specifies the Day of Calendar Reform.
+  #
+  # +y+ defaults to -4712, +m+ to 1, and +d+ to 1; this is Julian Day
+  # Number day 0.  The time values default to 0.
+  <DEFSNODE>def <SELFNODE>self</SELFNODE>.<ARGUMENTNODE>civil</ARGUMENTNODE><ARGSNODE>(<LOCALASGNNODE>y=-<FIXNUMNODE>4712</FIXNUMNODE></LOCALASGNNODE><BLOCKNODE>, <LOCALASGNNODE>m=<FIXNUMNODE>1</FIXNUMNODE></LOCALASGNNODE>, <LOCALASGNNODE>d=<FIXNUMNODE>1</FIXNUMNODE></LOCALASGNNODE>, <LOCALASGNNODE>h=<FIXNUMNODE>0</FIXNUMNODE></LOCALASGNNODE>, <LOCALASGNNODE>min=<FIXNUMNODE>0</FIXNUMNODE></LOCALASGNNODE>, <LOCALASGNNODE>s=<FIXNUMNODE>0</FIXNUMNODE></LOCALASGNNODE>, <LOCALASGNNODE>of=<FIXNUMNODE>0</FIXNUMNODE></LOCALASGNNODE>, <LOCALASGNNODE>sg=<CONSTNODE>ITALY</CONSTNODE></LOCALASGNNODE></BLOCKNODE>)</ARGSNODE>
+    <BLOCKNODE><IFNODE>unless (<ANDNODE><LOCALASGNNODE>jd = <FCALLNODE>valid_civil?<ARRAYNODE>(<LOCALVARNODE>y</LOCALVARNODE>, <LOCALVARNODE>m</LOCALVARNODE>, <LOCALVARNODE>d</LOCALVARNODE>, <LOCALVARNODE>sg</LOCALVARNODE>)</ARRAYNODE></FCALLNODE></LOCALASGNNODE>) and
+        (<LOCALASGNNODE>fr = <FCALLNODE>valid_time?<ARRAYNODE>(<LOCALVARNODE>h</LOCALVARNODE>, <LOCALVARNODE>min</LOCALVARNODE>, <LOCALVARNODE>s</LOCALVARNODE>)</ARRAYNODE></FCALLNODE></LOCALASGNNODE></ANDNODE>)
+      <FCALLNODE>raise <ARRAYNODE><CONSTNODE>ArgumentError</CONSTNODE>, <STRNODE>'invalid date'</STRNODE></ARRAYNODE></FCALLNODE>
+    end</IFNODE>
+    <FCALLNODE>new0<ARRAYNODE>(<FCALLNODE>jd_to_ajd<ARRAYNODE>(<LOCALVARNODE>jd</LOCALVARNODE>, <LOCALVARNODE>fr</LOCALVARNODE>, <LOCALVARNODE>of</LOCALVARNODE>)</ARRAYNODE></FCALLNODE>, <LOCALVARNODE>of</LOCALVARNODE>, <LOCALVARNODE>sg</LOCALVARNODE>)</ARRAYNODE></FCALLNODE></BLOCKNODE>
+  end</DEFSNODE>
+
+  <SCLASSNODE>class &lt;&lt; <SELFNODE>self</SELFNODE>; <FCALLNODE>alias_method <ARRAYNODE><SYMBOLNODE>:new</SYMBOLNODE>, <SYMBOLNODE>:civil</SYMBOLNODE></ARRAYNODE></FCALLNODE> end</SCLASSNODE>
+
+  # Create a new DateTime object corresponding to the specified
+  # Commercial Date and hour +h+, minute +min+, second +s+.
+  #
+  # The 24-hour clock is used.  Negative values of +h+, +min+, and
+  # +sec+ are treating as counting backwards from the end of the
+  # next larger unit (e.g. a +min+ of -2 is treated as 58).  No
+  # wraparound is performed.  If an invalid time portion is specified,
+  # an ArgumentError is raised.
+  #
+  # +of+ is the offset from UTC as a fraction of a day (defaults to 0).
+  # +sg+ specifies the Day of Calendar Reform.
+  #
+  # +y+ defaults to 1582, +w+ to 41, and +d+ to 5; this is the Day of
+  # Calendar Reform for Italy and the Catholic countries.
+  # The time values default to 0.
+  <DEFSNODE>def <SELFNODE>self</SELFNODE>.<ARGUMENTNODE>commercial</ARGUMENTNODE><ARGSNODE>(<LOCALASGNNODE>y=<FIXNUMNODE>1582</FIXNUMNODE></LOCALASGNNODE><BLOCKNODE>, <LOCALASGNNODE>w=<FIXNUMNODE>41</FIXNUMNODE></LOCALASGNNODE>, <LOCALASGNNODE>d=<FIXNUMNODE>5</FIXNUMNODE></LOCALASGNNODE>, <LOCALASGNNODE>h=<FIXNUMNODE>0</FIXNUMNODE></LOCALASGNNODE>, <LOCALASGNNODE>min=<FIXNUMNODE>0</FIXNUMNODE></LOCALASGNNODE>, <LOCALASGNNODE>s=<FIXNUMNODE>0</FIXNUMNODE></LOCALASGNNODE>, <LOCALASGNNODE>of=<FIXNUMNODE>0</FIXNUMNODE></LOCALASGNNODE>, <LOCALASGNNODE>sg=<CONSTNODE>ITALY</CONSTNODE></LOCALASGNNODE></BLOCKNODE>)</ARGSNODE>
+    <BLOCKNODE><IFNODE>unless (<ANDNODE><LOCALASGNNODE>jd = <FCALLNODE>valid_commercial?<ARRAYNODE>(<LOCALVARNODE>y</LOCALVARNODE>, <LOCALVARNODE>w</LOCALVARNODE>, <LOCALVARNODE>d</LOCALVARNODE>, <LOCALVARNODE>sg</LOCALVARNODE>)</ARRAYNODE></FCALLNODE></LOCALASGNNODE>) and
+        (<LOCALASGNNODE>fr = <FCALLNODE>valid_time?<ARRAYNODE>(<LOCALVARNODE>h</LOCALVARNODE>, <LOCALVARNODE>min</LOCALVARNODE>, <LOCALVARNODE>s</LOCALVARNODE>)</ARRAYNODE></FCALLNODE></LOCALASGNNODE></ANDNODE>)
+      <FCALLNODE>raise <ARRAYNODE><CONSTNODE>ArgumentError</CONSTNODE>, <STRNODE>'invalid date'</STRNODE></ARRAYNODE></FCALLNODE>
+    end</IFNODE>
+    <FCALLNODE>new0<ARRAYNODE>(<FCALLNODE>jd_to_ajd<ARRAYNODE>(<LOCALVARNODE>jd</LOCALVARNODE>, <LOCALVARNODE>fr</LOCALVARNODE>, <LOCALVARNODE>of</LOCALVARNODE>)</ARRAYNODE></FCALLNODE>, <LOCALVARNODE>of</LOCALVARNODE>, <LOCALVARNODE>sg</LOCALVARNODE>)</ARRAYNODE></FCALLNODE></BLOCKNODE>
+  end</DEFSNODE>
+
+  <DEFSNODE>def <SELFNODE>self</SELFNODE>.<ARGUMENTNODE>new_with_hash</ARGUMENTNODE><ARGSNODE>(<LISTNODE><ARGUMENTNODE>elem</ARGUMENTNODE>, <ARGUMENTNODE>sg</ARGUMENTNODE></LISTNODE>)</ARGSNODE>
+    <BLOCKNODE><OPASGNORNODE><LOCALVARNODE><LOCALASGNNODE>elem</LOCALASGNNODE></LOCALVARNODE> ||= <HASHNODE>{}</HASHNODE></OPASGNORNODE><ARRAYNODE/>
+    <MULTIPLEASGNNODE><ARRAYNODE><LOCALASGNNODE>y</LOCALASGNNODE>, <LOCALASGNNODE>m</LOCALASGNNODE>, <LOCALASGNNODE>d</LOCALASGNNODE>, <LOCALASGNNODE>h</LOCALASGNNODE>, <LOCALASGNNODE>min</LOCALASGNNODE>, <LOCALASGNNODE>s</LOCALASGNNODE>, <LOCALASGNNODE>fr</LOCALASGNNODE>, <LOCALASGNNODE>of</LOCALASGNNODE></ARRAYNODE></MULTIPLEASGNNODE><TOARYNODE> =
+      <CALLNODE><LOCALVARNODE>elem</LOCALVARNODE>.values_at<ARRAYNODE>(<SYMBOLNODE>:year</SYMBOLNODE>, <SYMBOLNODE>:mon</SYMBOLNODE>, <SYMBOLNODE>:mday</SYMBOLNODE>,
+      <SYMBOLNODE>:hour</SYMBOLNODE>, <SYMBOLNODE>:min</SYMBOLNODE>, <SYMBOLNODE>:sec</SYMBOLNODE>, <SYMBOLNODE>:sec_fraction</SYMBOLNODE>, <SYMBOLNODE>:offset</SYMBOLNODE>)</ARRAYNODE></CALLNODE>
+</TOARYNODE>    <OPASGNORNODE><LOCALVARNODE><LOCALASGNNODE>h</LOCALASGNNODE></LOCALVARNODE>   ||= <FIXNUMNODE>0</FIXNUMNODE></OPASGNORNODE>
+    <OPASGNORNODE><LOCALVARNODE><LOCALASGNNODE>min</LOCALASGNNODE></LOCALVARNODE> ||= <FIXNUMNODE>0</FIXNUMNODE></OPASGNORNODE>
+    <OPASGNORNODE><LOCALVARNODE><LOCALASGNNODE>s</LOCALASGNNODE></LOCALVARNODE>   ||= <FIXNUMNODE>0</FIXNUMNODE></OPASGNORNODE>
+    <OPASGNORNODE><LOCALVARNODE><LOCALASGNNODE>fr</LOCALASGNNODE></LOCALVARNODE>  ||= <FIXNUMNODE>0</FIXNUMNODE></OPASGNORNODE>
+    <OPASGNORNODE><LOCALVARNODE><LOCALASGNNODE>of</LOCALASGNNODE></LOCALVARNODE>  ||= <FIXNUMNODE>0</FIXNUMNODE></OPASGNORNODE>
+    <IFNODE>if <CALLNODE><ARRAYNODE>[<LOCALVARNODE>y</LOCALVARNODE>, <LOCALVARNODE>m</LOCALVARNODE>, <LOCALVARNODE>d</LOCALVARNODE>]</ARRAYNODE>.include? <ARRAYNODE><NILNODE>nil</NILNODE></ARRAYNODE></CALLNODE>
+      <FCALLNODE>raise <ARRAYNODE><CONSTNODE>ArgumentError</CONSTNODE>, <STRNODE>'3 elements of civil date are necessary'</STRNODE></ARRAYNODE></FCALLNODE>
+    else
+      <CALLNODE><FCALLNODE>civil<ARRAYNODE>(<LOCALVARNODE>y</LOCALVARNODE>, <LOCALVARNODE>m</LOCALVARNODE>, <LOCALVARNODE>d</LOCALVARNODE>, <LOCALVARNODE>h</LOCALVARNODE>, <LOCALVARNODE>min</LOCALVARNODE>, <LOCALVARNODE>s</LOCALVARNODE>, <CALLNODE><CALLNODE><LOCALVARNODE>of</LOCALVARNODE>.to_r</CALLNODE>/<ARRAYNODE><FIXNUMNODE>86400</FIXNUMNODE></ARRAYNODE></CALLNODE>, <LOCALVARNODE>sg</LOCALVARNODE>)</ARRAYNODE></FCALLNODE> + <ARRAYNODE>(<CALLNODE><LOCALVARNODE>fr</LOCALVARNODE>/<ARRAYNODE><FIXNUMNODE>86400</FIXNUMNODE></ARRAYNODE></CALLNODE>)</ARRAYNODE></CALLNODE>
+    end</IFNODE></BLOCKNODE>
+  end</DEFSNODE>
+
+  <FCALLNODE>private_class_method <ARRAYNODE><SYMBOLNODE>:new_with_hash</SYMBOLNODE></ARRAYNODE></FCALLNODE>
+
+  # Create a new DateTime object by parsing from a String
+  # according to a specified format.
+  #
+  # +str+ is a String holding a date-time representation.
+  # +fmt+ is the format that the date-time is in.  See
+  # date/format.rb for details on supported formats.
+  #
+  # The default +str+ is '-4712-01-01T00:00:00Z', and the default
+  # +fmt+ is '%FT%T%Z'.  This gives midnight on Julian Day Number day 0.
+  #
+  # +sg+ specifies the Day of Calendar Reform.
+  #
+  # An ArgumentError will be raised if +str+ cannot be
+  # parsed.
+  <DEFSNODE>def <SELFNODE>self</SELFNODE>.<ARGUMENTNODE>strptime</ARGUMENTNODE><ARGSNODE>(<LOCALASGNNODE>str=<STRNODE>'-4712-01-01T00:00:00Z'</STRNODE></LOCALASGNNODE><BLOCKNODE>, <LOCALASGNNODE>fmt=<STRNODE>'%FT%T%Z'</STRNODE></LOCALASGNNODE>, <LOCALASGNNODE>sg=<CONSTNODE>ITALY</CONSTNODE></LOCALASGNNODE></BLOCKNODE>)</ARGSNODE>
+    <BLOCKNODE><LOCALASGNNODE>elem = <FCALLNODE>_strptime<ARRAYNODE>(<LOCALVARNODE>str</LOCALVARNODE>, <LOCALVARNODE>fmt</LOCALVARNODE>)</ARRAYNODE></FCALLNODE></LOCALASGNNODE>
+    <FCALLNODE>new_with_hash<ARRAYNODE>(<LOCALVARNODE>elem</LOCALVARNODE>, <LOCALVARNODE>sg</LOCALVARNODE>)</ARRAYNODE></FCALLNODE></BLOCKNODE>
+  end</DEFSNODE>
+
+  # Create a new DateTime object by parsing from a String,
+  # without specifying the format.
+  #
+  # +str+ is a String holding a date-time representation. 
+  # +comp+ specifies whether to interpret 2-digit years
+  # as 19XX (&gt;= 69) or 20XX (&lt; 69); the default is not to.
+  # The method will attempt to parse a date-time from the String
+  # using various heuristics; see #_parse in date/format.rb
+  # for more details.  If parsing fails, an ArgumentError
+  # will be raised.
+  #
+  # The default +str+ is '-4712-01-01T00:00:00Z'; this is Julian
+  # Day Number day 0.
+  #
+  # +sg+ specifies the Day of Calendar Reform.
+  <DEFSNODE>def <SELFNODE>self</SELFNODE>.<ARGUMENTNODE>parse</ARGUMENTNODE><ARGSNODE>(<LOCALASGNNODE>str=<STRNODE>'-4712-01-01T00:00:00Z'</STRNODE></LOCALASGNNODE><BLOCKNODE>, <LOCALASGNNODE>comp=<FALSENODE>false</FALSENODE></LOCALASGNNODE>, <LOCALASGNNODE>sg=<CONSTNODE>ITALY</CONSTNODE></LOCALASGNNODE></BLOCKNODE>)</ARGSNODE>
+    <BLOCKNODE><LOCALASGNNODE>elem = <FCALLNODE>_parse<ARRAYNODE>(<LOCALVARNODE>str</LOCALVARNODE>, <LOCALVARNODE>comp</LOCALVARNODE>)</ARRAYNODE></FCALLNODE></LOCALASGNNODE>
+    <FCALLNODE>new_with_hash<ARRAYNODE>(<LOCALVARNODE>elem</LOCALVARNODE>, <LOCALVARNODE>sg</LOCALVARNODE>)</ARRAYNODE></FCALLNODE></BLOCKNODE>
+  end</DEFSNODE>
+
+  <SCLASSNODE>class &lt;&lt; <SELFNODE>self</SELFNODE>; <FCALLNODE>undef_method <ARRAYNODE><SYMBOLNODE>:today</SYMBOLNODE></ARRAYNODE></FCALLNODE> end</SCLASSNODE><RESCUENODE><RESCUEBODYNODE> rescue <NILNODE>nil</NILNODE>
+
+</RESCUEBODYNODE></RESCUENODE>  # Create a new DateTime object representing the current time.
+  #
+  # +sg+ specifies the Day of Calendar Reform.
+  <DEFSNODE>def <SELFNODE>self</SELFNODE>.<ARGUMENTNODE>now</ARGUMENTNODE><ARGSNODE>(<LOCALASGNNODE>sg=<CONSTNODE>ITALY</CONSTNODE></LOCALASGNNODE><BLOCKNODE/>)</ARGSNODE>
+    <BLOCKNODE><LOCALASGNNODE>i = <CALLNODE><CONSTNODE>Time</CONSTNODE>.now</CALLNODE></LOCALASGNNODE>
+    <LOCALASGNNODE>a = <CALLNODE><CALLNODE><CALLNODE><LOCALVARNODE>i</LOCALVARNODE>.to_a</CALLNODE>[<ARRAYNODE><DOTNODE><FIXNUMNODE>0</FIXNUMNODE>..<FIXNUMNODE>5</FIXNUMNODE></DOTNODE></ARRAYNODE></CALLNODE>].reverse</CALLNODE></LOCALASGNNODE>
+    <LOCALASGNNODE>jd = <FCALLNODE>civil_to_jd<SPLATNODE>(*(<CALLNODE><CALLNODE><LOCALVARNODE>a</LOCALVARNODE>[<ARRAYNODE><FIXNUMNODE>0</FIXNUMNODE>,<FIXNUMNODE>3</FIXNUMNODE></ARRAYNODE></CALLNODE>] &lt;&lt; <ARRAYNODE><LOCALVARNODE>sg</LOCALVARNODE></ARRAYNODE></CALLNODE>))</SPLATNODE></FCALLNODE></LOCALASGNNODE>
+    <LOCALASGNNODE>fr = <CALLNODE><FCALLNODE>time_to_day_fraction<SPLATNODE>(*(<CALLNODE><LOCALVARNODE>a</LOCALVARNODE>[<ARRAYNODE><FIXNUMNODE>3</FIXNUMNODE>,<FIXNUMNODE>3</FIXNUMNODE></ARRAYNODE></CALLNODE>]))</SPLATNODE></FCALLNODE> + <ARRAYNODE><CALLNODE><CALLNODE><CALLNODE><LOCALVARNODE>i</LOCALVARNODE>.usec</CALLNODE>.to_r</CALLNODE>/<ARRAYNODE><FIXNUMNODE>86400000000</FIXNUMNODE></ARRAYNODE></CALLNODE></ARRAYNODE></CALLNODE></LOCALASGNNODE>
+    <LOCALASGNNODE>of = <CALLNODE><CALLNODE><CALLNODE><LOCALVARNODE>i</LOCALVARNODE>.utc_offset</CALLNODE>.to_r</CALLNODE>/<ARRAYNODE><FIXNUMNODE>86400</FIXNUMNODE></ARRAYNODE></CALLNODE></LOCALASGNNODE>
+    <FCALLNODE>new0<ARRAYNODE>(<FCALLNODE>jd_to_ajd<ARRAYNODE>(<LOCALVARNODE>jd</LOCALVARNODE>, <LOCALVARNODE>fr</LOCALVARNODE>, <LOCALVARNODE>of</LOCALVARNODE>)</ARRAYNODE></FCALLNODE>, <LOCALVARNODE>of</LOCALVARNODE>, <LOCALVARNODE>sg</LOCALVARNODE>)</ARRAYNODE></FCALLNODE></BLOCKNODE>
+  end</DEFSNODE>
+
+  <FCALLNODE>public <ARRAYNODE><SYMBOLNODE>:hour</SYMBOLNODE>, <SYMBOLNODE>:min</SYMBOLNODE>, <SYMBOLNODE>:sec</SYMBOLNODE>, <SYMBOLNODE>:sec_fraction</SYMBOLNODE>, <SYMBOLNODE>:zone</SYMBOLNODE>, <SYMBOLNODE>:offset</SYMBOLNODE>, <SYMBOLNODE>:new_offset</SYMBOLNODE></ARRAYNODE></FCALLNODE></BLOCKNODE>
+
+end</CLASSNODE>
+
+<CLASSNODE>class <COLON2NODE>Date</COLON2NODE>
+
+  <BLOCKNODE><CALLNODE><ARRAYNODE>[ <ARRAYNODE>%w(<STRNODE>exist1?</STRNODE>	<STRNODE>valid_jd?</STRNODE>)</ARRAYNODE>,
+    <ARRAYNODE>%w(<STRNODE>exist2?</STRNODE>	<STRNODE>valid_ordinal?</STRNODE>)</ARRAYNODE>,
+    <ARRAYNODE>%w(<STRNODE>exist3?</STRNODE>	<STRNODE>valid_date?</STRNODE>)</ARRAYNODE>,
+    <ARRAYNODE>%w(<STRNODE>exist?</STRNODE>	<STRNODE>valid_date?</STRNODE>)</ARRAYNODE>,
+    <ARRAYNODE>%w(<STRNODE>existw?</STRNODE>	<STRNODE>valid_commercial?</STRNODE>)</ARRAYNODE>,
+    <ARRAYNODE>%w(<STRNODE>new1</STRNODE>	<STRNODE>jd</STRNODE>)</ARRAYNODE>,
+    <ARRAYNODE>%w(<STRNODE>new2</STRNODE>	<STRNODE>ordinal</STRNODE>)</ARRAYNODE>,
+    <ARRAYNODE>%w(<STRNODE>new3</STRNODE>	<STRNODE>new</STRNODE>)</ARRAYNODE>,
+    <ARRAYNODE>%w(<STRNODE>neww</STRNODE>	<STRNODE>commercial</STRNODE>)</ARRAYNODE>
+  ]</ARRAYNODE>.each <ITERNODE>do <MULTIPLEASGNNODE>|<ARRAYNODE><DASGNNODE>old</DASGNNODE>, <DASGNNODE>new</DASGNNODE></ARRAYNODE>|</MULTIPLEASGNNODE>
+    <FCALLNODE>module_eval<STRNODE> <ARRAYNODE><DSTRNODE>&lt;&lt;-"end;"
+      def self.</STRNODE><EVSTRNODE>#{<DVARNODE>old</DVARNODE>}</EVSTRNODE><STRNODE>(*args, &amp;block)
+	if $VERBOSE
+	  warn("\#{caller.shift.sub(/:in .*/, '')}: " \
+	       "warning: \#{self}::</STRNODE><EVSTRNODE>#{<DVARNODE>old</DVARNODE>}</EVSTRNODE><STRNODE> is deprecated; " \
+	       "use \#{self}::</STRNODE><EVSTRNODE>#{<DVARNODE>new</DVARNODE>}</EVSTRNODE><STRNODE>")
+	end
+	</STRNODE><EVSTRNODE>#{<DVARNODE>new</DVARNODE>}</EVSTRNODE><STRNODE>(*args, &amp;block)
+      end
+    end;</STRNODE></DSTRNODE></ARRAYNODE></FCALLNODE>
+  end</ITERNODE></CALLNODE>
+
+  <CALLNODE><ARRAYNODE>[ <ARRAYNODE>%w(<STRNODE>sg</STRNODE>	<STRNODE>start</STRNODE>)</ARRAYNODE>,
+    <ARRAYNODE>%w(<STRNODE>newsg</STRNODE>	<STRNODE>new_start</STRNODE>)</ARRAYNODE>,
+    <ARRAYNODE>%w(<STRNODE>of</STRNODE>	<STRNODE>offset</STRNODE>)</ARRAYNODE>,
+    <ARRAYNODE>%w(<STRNODE>newof</STRNODE>	<STRNODE>new_offset</STRNODE>)</ARRAYNODE>
+  ]</ARRAYNODE>.each <ITERNODE>do <MULTIPLEASGNNODE>|<ARRAYNODE><DASGNNODE>old</DASGNNODE>, <DASGNNODE>new</DASGNNODE></ARRAYNODE>|</MULTIPLEASGNNODE>
+    <FCALLNODE>module_eval<STRNODE> <ARRAYNODE><DSTRNODE>&lt;&lt;-"end;"
+      def </STRNODE><EVSTRNODE>#{<DVARNODE>old</DVARNODE>}</EVSTRNODE><STRNODE>(*args, &amp;block)
+	if $VERBOSE
+	  warn("\#{caller.shift.sub(/:in .*/, '')}: " \
+	       "warning: \#{self.class}\#</STRNODE><EVSTRNODE>#{<DVARNODE>old</DVARNODE>}</EVSTRNODE><STRNODE> is deprecated; " \
+	       "use \#{self.class}\#</STRNODE><EVSTRNODE>#{<DVARNODE>new</DVARNODE>}</EVSTRNODE><STRNODE>")
+	end
+	</STRNODE><EVSTRNODE>#{<DVARNODE>new</DVARNODE>}</EVSTRNODE><STRNODE>(*args, &amp;block)
+      end
+    end;</STRNODE></DSTRNODE></ARRAYNODE></FCALLNODE>
+  end</ITERNODE></CALLNODE>
+
+  <FCALLNODE>private <ARRAYNODE><SYMBOLNODE>:of</SYMBOLNODE>, <SYMBOLNODE>:newof</SYMBOLNODE></ARRAYNODE></FCALLNODE></BLOCKNODE>
+
+end</CLASSNODE>
+
+<CLASSNODE>class <COLON2NODE>DateTime</COLON2NODE> &lt; <CONSTNODE>Date</CONSTNODE>
+
+  <FCALLNODE>public <ARRAYNODE><SYMBOLNODE>:of</SYMBOLNODE>, <SYMBOLNODE>:newof</SYMBOLNODE></ARRAYNODE></FCALLNODE>
+
+end</CLASSNODE></BLOCKNODE>

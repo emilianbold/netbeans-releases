@@ -11,9 +11,9 @@
  * http://www.netbeans.org/cddl-gplv2.html
  * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
  * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
+ * License. When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
  * particular file as subject to the "Classpath" exception as provided
  * by Sun in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -59,19 +59,15 @@ import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 
 import org.netbeans.modules.xml.wsdl.model.Definitions;
-import org.netbeans.modules.xml.wsdl.model.ExtensibilityElement;
 import org.netbeans.modules.xml.wsdl.model.Operation;
 import org.netbeans.modules.xml.wsdl.model.OperationParameter;
 import org.netbeans.modules.xml.wsdl.model.PortType;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PartnerLinkType;
-import org.netbeans.modules.xml.wsdl.model.extensions.bpel.Role;
 import org.netbeans.modules.xml.wsdl.model.visitor.WSDLModelVisitor;
 import org.netbeans.modules.xml.wsdl.model.visitor.WSDLUtilities;
-import static org.netbeans.modules.soa.ui.util.UI.*;
+import static org.netbeans.modules.xml.ui.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -114,11 +110,8 @@ final class PanelOperation<T> extends Panel<T> {
       
       String name = addExtension(fileName);
       FileObject file = getFolder().getFileObject(name);
-
-      if (file != null) {
-        return i18n("ERR_File_Already_Exists", name); // NOI18N
-      }
     }
+
     Operation operation = getOperation();
 
     if (operation == null) {
@@ -165,11 +158,11 @@ final class PanelOperation<T> extends Panel<T> {
     }
     if (myIsInput) {
       descriptor.putProperty(INPUT_OPERATION, getOperation());
-      descriptor.putProperty(INPUT_PARTNER_ROLE_PORT, getPartnerRolePort());
+      descriptor.putProperty(INPUT_PORT_TYPE, getPortType());
     }
     else {
       descriptor.putProperty(OUTPUT_OPERATION, getOperation());
-      descriptor.putProperty(OUTPUT_PARTNER_ROLE_PORT, getPartnerRolePort());
+      descriptor.putProperty(OUTPUT_PORT_TYPE, getPortType());
     }
   }
 
@@ -194,14 +187,14 @@ final class PanelOperation<T> extends Panel<T> {
     c.gridy++;
     c.gridwidth = 1;
     c.weightx = 0.0;
-    c.insets = new Insets(TINY_INSET, 0, TINY_INSET, 0);
+    c.insets = new Insets(TINY_SIZE, 0, TINY_SIZE, 0);
     label = createLabel(i18n(myIsInput ? "LBL_Operation" : "LBL_Operation2")); // NOI18N
     a11y(label, "ACSN_LBL_Operation", "ACSD_LBL_Operation"); // NOI18N
     panel.add(label, c);
 
     c.weightx = 1.0;
     c.gridwidth = GridBagConstraints.REMAINDER;
-    c.insets = new Insets(TINY_INSET, SMALL_INSET, TINY_INSET, 0);
+    c.insets = new Insets(TINY_SIZE, LARGE_SIZE, TINY_SIZE, 0);
     myOperation = new JComboBox();
     myOperation.setRenderer(new Renderer());
     myOperation.addActionListener(
@@ -227,7 +220,7 @@ final class PanelOperation<T> extends Panel<T> {
       c.weighty = 1.0;
       c.insets = new Insets(0, 0, 0, 0);
     }
-    updatePartnerRolePorts(null);
+    updatePortTypes(null);
     mainPanel.add(panel, cc);
   }
 
@@ -241,14 +234,14 @@ final class PanelOperation<T> extends Panel<T> {
       GridBagConstraints c1 = new GridBagConstraints();
       c1.gridy = c.gridy;
       c1.anchor = GridBagConstraints.WEST;
-      c1.insets = new Insets(TINY_INSET, 0, TINY_INSET, 0);
+      c1.insets = new Insets(TINY_SIZE, 0, TINY_SIZE, 0);
       label = createLabel(i18n(myIsInput ? "LBL_XSL_File" : "LBL_XSL_File2")); // NOI18N
       a11y(label, "ACSN_LBL_XSL_File", "ACSD_LBL_XSL_File"); // NOI18N
       panel.add(label, c1);
 
       c1 = new GridBagConstraints();
       c1.gridy = c.gridy;
-      c1.insets = new Insets(TINY_INSET, SMALL_INSET, TINY_INSET, 0);
+      c1.insets = new Insets(TINY_SIZE, LARGE_SIZE, TINY_SIZE, 0);
       c1.fill = GridBagConstraints.HORIZONTAL;
       c1.weightx = 1.0;
       myFile = new JTextField(myFileName);
@@ -258,7 +251,7 @@ final class PanelOperation<T> extends Panel<T> {
       myBrowseButton = createBrowseButton(myFile);
       c1 = new GridBagConstraints();
       c1.gridy = c.gridy;
-      c1.insets = new Insets(TINY_INSET, SMALL_INSET, TINY_INSET, 0);
+      c1.insets = new Insets(TINY_SIZE, LARGE_SIZE, TINY_SIZE, 0);
       panel.add(myBrowseButton, c1);
     }                        
     // Partner/Role/Port
@@ -266,26 +259,26 @@ final class PanelOperation<T> extends Panel<T> {
     c.gridwidth = 1;
     c.weightx = 0.0;
     c.fill = GridBagConstraints.NONE;
-    c.insets = new Insets(TINY_INSET, 0, TINY_INSET, 0);
+    c.insets = new Insets(TINY_SIZE, 0, TINY_SIZE, 0);
     label = createLabel(i18n(myIsInput ? "LBL_Partner_Role_Port" : "LBL_Partner_Role_Port2")); // NOI18N
     a11y(label, "ACSN_LBL_Partner_Role_Port", "ACSD_LBL_Partner_Role_Port"); // NOI18N
     panel.add(label, c);
 
-    c.insets = new Insets(TINY_INSET, SMALL_INSET, TINY_INSET, 0);
+    c.insets = new Insets(TINY_SIZE, LARGE_SIZE, TINY_SIZE, 0);
     c.fill = GridBagConstraints.HORIZONTAL;
     c.weightx = 1.0;
     c.gridwidth = GridBagConstraints.REMAINDER;
-    myPartnerRolePort = new JComboBox();
-    myPartnerRolePort.setRenderer(new Renderer());
-    myPartnerRolePort.addActionListener(
+    myPortType = new JComboBox();
+    myPortType.setRenderer(new Renderer());
+    myPortType.addActionListener(
       new ActionListener() {
         public void actionPerformed(ActionEvent event) {
           update();
         }
       }
     );
-    label.setLabelFor(myPartnerRolePort);
-    panel.add(myPartnerRolePort, c);
+    label.setLabelFor(myPortType);
+    panel.add(myPortType, c);
   }
 
   private void createTypePanel(JPanel panel, GridBagConstraints c) {
@@ -295,12 +288,12 @@ final class PanelOperation<T> extends Panel<T> {
     c.gridy++;
     c.gridwidth = 1;
     c.weightx = 0.0;
-    c.insets = new Insets(TINY_INSET, 0, TINY_INSET, 0);
+    c.insets = new Insets(TINY_SIZE, 0, TINY_SIZE, 0);
     label = createLabel(i18n("LBL_Input_Type")); // NOI18N
     a11y(label, "ACSN_LBL_Input_Type", "ACSD_LBL_Input_Type"); // NOI18N
     panel.add(label, c);
 
-    c.insets = new Insets(TINY_INSET, SMALL_INSET, TINY_INSET, 0);
+    c.insets = new Insets(TINY_SIZE, LARGE_SIZE, TINY_SIZE, 0);
     c.fill = GridBagConstraints.HORIZONTAL;
     c.weightx = 1.0;
     c.gridwidth = GridBagConstraints.REMAINDER;
@@ -314,13 +307,13 @@ final class PanelOperation<T> extends Panel<T> {
     c.gridwidth = 1;
     c.weightx = 0.0;
     c.weighty = 1.0;
-    c.insets = new Insets(TINY_INSET, 0, TINY_INSET, 0);
+    c.insets = new Insets(TINY_SIZE, 0, TINY_SIZE, 0);
     label = createLabel(i18n("LBL_Output_Type")); // NOI18N
     a11y(label, "ACSN_LBL_Output_Type", "ACSD_LBL_Output_Type"); // NOI18N
     panel.add(label, c);
 
     c.gridwidth = GridBagConstraints.REMAINDER;
-    c.insets = new Insets(TINY_INSET, SMALL_INSET, TINY_INSET, 0);
+    c.insets = new Insets(TINY_SIZE, LARGE_SIZE, TINY_SIZE, 0);
     c.fill = GridBagConstraints.HORIZONTAL;
     myOutput = new JTextField();
     myOutput.setEditable(false);
@@ -328,69 +321,64 @@ final class PanelOperation<T> extends Panel<T> {
     panel.add(myOutput, c);
   }
 
-  private void updatePartnerRolePorts(PartnerRolePort partnerRolePort) {
-    myPartnerRolePort.removeAllItems();
-    PartnerRolePort [] partnerRolePorts = getPartnerRolePorts();
+  private void updatePortTypes(PortType portType) {
+    myPortType.removeAllItems();
+    PortType [] ports = getPortTypes();
 
-    for (PartnerRolePort item : partnerRolePorts) {
-      myPartnerRolePort.addItem(item);
+    for (PortType item : ports) {
+      myPortType.addItem(item);
     }
-    if (partnerRolePort != null) {
-      myPartnerRolePort.setSelectedItem(partnerRolePort);
+    if (portType != null) {
+      myPortType.setSelectedItem(portType);
     }
     update();
   }
 
-  private PartnerRolePort [] getPartnerRolePorts() {
-    final List<PartnerRolePort> list = new ArrayList<PartnerRolePort>();
+  private PortType[] getPortTypes() {
+    final List<PortType> list = new ArrayList<PortType>();
 
     WSDLUtilities.visitRecursively(myModel, new WSDLModelVisitor() {
       public void visit(WSDLModel model) {
         Definitions definitions = model.getDefinitions();
-        List<ExtensibilityElement> elements = definitions.getExtensibilityElements();
-
-        for (ExtensibilityElement element : elements) {
-          if (element instanceof PartnerLinkType) {
-            PartnerLinkType partnerLinkType = (PartnerLinkType) element;
-            processRole(partnerLinkType, partnerLinkType.getRole1(), list);
-            processRole(partnerLinkType, partnerLinkType.getRole2(), list);
-          }
+        Collection<PortType> portTypes = definitions.getPortTypes();
+        if (portTypes != null) {
+            list.addAll(portTypes);
         }
       }
     });
 
-    return list.toArray(new PartnerRolePort [list.size()]);
+    return list.toArray(new PortType [list.size()]);
   }
 
-  private void processRole(
-    PartnerLinkType partnerLinkType,
-    Role role,
-    List<PartnerRolePort> list)
-  {
-    if (role == null) {
-      return;
-    }
-    NamedComponentReference<PortType> reference = role.getPortType();
-
-    if (reference == null) {
-      return;
-    }
-    PortType portType = reference.get();
-
-    if (portType != null) {
-      PartnerRolePort partnerRolePort = new PartnerRolePort(partnerLinkType, role, portType);
-
-      if ( !list.contains(partnerRolePort)) {
-        list.add(partnerRolePort);
-      }
-    }
-  }
+//  private void processRole(
+//    PartnerLinkType partnerLinkType,
+//    Role role,
+//    List<PartnerRolePort> list)
+//  {
+//    if (role == null) {
+//      return;
+//    }
+//    NamedComponentReference<PortType> reference = role.getPortType();
+//
+//    if (reference == null) {
+//      return;
+//    }
+//    PortType portType = reference.get();
+//
+//    if (portType != null) {
+//      PartnerRolePort partnerRolePort = new PartnerRolePort(partnerLinkType, role, portType);
+//
+//      if ( !list.contains(partnerRolePort)) {
+//        list.add(partnerRolePort);
+//      }
+//    }
+//  }
 
   @Override
   protected void update()
   {
     myOperation.removeAllItems();
-    Operation [] operations = getOperations(getPartnerRolePort());
+    Operation [] operations = getOperations(getPortType());
 
     for (Operation operation : operations) {
       myOperation.addItem(operation);
@@ -398,15 +386,17 @@ final class PanelOperation<T> extends Panel<T> {
     updateTypes();
   }
 
-  private Operation [] getOperations(PartnerRolePort partnerRolePort) {
+  private Operation [] getOperations(PortType portType) {
     List<Operation> list = new ArrayList<Operation>();
 
-    if (partnerRolePort != null) {
+    if (portType != null) {
       Collection<Operation> operations =
-        partnerRolePort.getPortType().getOperations();
+        portType.getOperations();
 
-      for (Operation operation : operations) {
-        list.add(operation);
+      if (operations != null) {
+          for (Operation operation : operations) {
+            list.add(operation);
+          }
       }
     }
     return list.toArray(new Operation [list.size()]);
@@ -441,13 +431,13 @@ final class PanelOperation<T> extends Panel<T> {
     return (Operation) myOperation.getSelectedItem();
   }
 
-  private PartnerRolePort getPartnerRolePort() {
-    return (PartnerRolePort) myPartnerRolePort.getSelectedItem();
+  private PortType getPortType() {
+    return (PortType) myPortType.getSelectedItem();
   }
 
   private JTextField myFile;
   private JButton myBrowseButton;
-  private JComboBox myPartnerRolePort;
+  private JComboBox myPortType;
   private JComboBox myOperation;
   private JTextField myInput;
   private JTextField myOutput;

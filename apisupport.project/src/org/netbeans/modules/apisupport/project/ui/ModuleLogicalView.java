@@ -41,17 +41,12 @@
 
 package org.netbeans.modules.apisupport.project.ui;
 
-import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.HashSet;
-import java.util.Set;
 import javax.swing.Action;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.api.project.ProjectInformation;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
@@ -60,6 +55,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
@@ -124,7 +120,7 @@ public final class ModuleLogicalView implements LogicalViewProvider {
         return null;
     }
     
-    private static final class RootNode extends AnnotatedNode {
+    private static final class RootNode extends AbstractNode {
         
         private final NbModuleProject project;
         
@@ -134,12 +130,10 @@ public final class ModuleLogicalView implements LogicalViewProvider {
             super(NodeFactorySupport.createCompositeChildren(project, "Projects/org-netbeans-modules-apisupport-project/Nodes"), 
                   Lookups.fixed(new Object[] {project}));
             this.project = project;
-            setForceAnnotation(true);
             setIconBaseWithExtension(NbModuleProject.NB_PROJECT_ICON_PATH);
             ProjectInformation pi = ProjectUtils.getInformation(project);
             setDisplayName(pi.getDisplayName());
             setShortDescription(NbBundle.getMessage(ModuleLogicalView.class, "HINT_project_root_node", FileUtil.getFileDisplayName(project.getProjectDirectory())));
-            setFiles(getProjectFiles());
             pi.addPropertyChangeListener(new PropertyChangeListener() {
                 public void propertyChange(PropertyChangeEvent evt) {
                     if (evt.getPropertyName() == ProjectInformation.PROP_DISPLAY_NAME) {
@@ -151,38 +145,8 @@ public final class ModuleLogicalView implements LogicalViewProvider {
             });
         }
         
-        private Set<FileObject> getProjectFiles() {
-            Set<FileObject> roots = new HashSet<FileObject>();
-            Sources sources = ProjectUtils.getSources(project);
-            
-            // TODO add Sources.addChangeListener(this)
-            SourceGroup[] groups = sources.getSourceGroups(Sources.TYPE_GENERIC);
-            for (int i = 0; i<groups.length; i++) {
-                SourceGroup group = groups[i];
-                FileObject fo = group.getRootFolder();
-                if (fo != null) {
-                    FileObject [] files = fo.getChildren();
-                    for (int j = 0; j < files.length; j++) {
-                        FileObject file = files[j];
-                        if (group.contains(file)) {
-                            roots.add(file);
-                        }
-                    }
-                }
-            }
-            return roots;
-        }
-        
         public Action[] getActions(boolean ignore) {
             return ModuleActions.getProjectActions(project);
-        }
-        
-        public Image getIcon(int type) {
-            return annotateIcon(super.getIcon(type), type);
-        }
-        
-        public Image getOpenedIcon(int type) {
-            return getIcon(type); // the same in the meantime
         }
         
         public boolean canRename() {

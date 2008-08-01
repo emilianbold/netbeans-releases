@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -55,56 +55,58 @@ public class SparseIntListTest extends TestCase {
     }
 
     private SparseIntList l = null;
+    @Override
     protected void setUp() throws Exception {
         l = new SparseIntList(20);
     }
 
     public void testGetLessThanZeroReturnsZero() {
         System.out.println("testGetLessThanZeroReturnsZero");
+        assertTrue (l.get(-1) == 0);
         assertTrue (l.get(Integer.MIN_VALUE) == 0);
     }
     
     public void testGetFromEmptyListReturnsRequestedIndex() {
         System.out.println("testGetFromEmptyListReturnsRequestedIndex");
-        assertTrue (l.get(20) == 20);
-        assertTrue (l.get(Integer.MAX_VALUE) == Integer.MAX_VALUE);
-        assertTrue (l.get(1) == 1);
-        assertTrue (l.get(0) == 0);
+        assertTrue (l.get(20) == 21);
+        assertTrue (l.get(Integer.MAX_VALUE-1) == Integer.MAX_VALUE);
+        assertTrue (l.get(1) == 2);
+        assertTrue (l.get(0) == 1);
     }
     
     public void testGetBelowFirstEntryReturnsIndex() {
         System.out.println("testGetBelowFirstEntryReturnsIndex");
-        l.add (20, 11);
-        for (int i=0; i < 11; i++) {
-            assertTrue (l.get(i) == i);
+        l.add (11, 20);
+        for (int i = 0; i < 11; i++) {
+            assertTrue (l.get(i) == i+1);
         }
     }
     
     public void testAdd() {
         System.out.println("testAdd");
-        l.add (20, 11);
+        l.add (11, 20);
         int val = l.get(11);
-        assertTrue ("After add(20, 11), value at 11 should still be 11, not " + val, val == 11);
+        assertTrue ("After add(11, 20), value at 11 should be 20, not " + val, val == 20);
         val = l.get(12);
-        assertTrue ("After add(20, 11), value at 12 should be 21, not " + val, val == 21);
+        assertTrue ("After add(11, 20), value at 12 should be 21, not " + val, val == 21);
         
-        l.add (30, 12);
+        l.add (12, 30);
         val = l.get(12);
-        assertTrue ("After add(30, 12), value at 12 should still be 21, not " + val, val == 21);
+        assertTrue ("After add(12, 30), value at 12 should be 30, not " + val, val == 30);
         val = l.get(13);
-        assertTrue ("After add(30, 12), value at 13 should be 31, not " + val, val == 31);
+        assertTrue ("After add(12, 30), value at 13 should be 31, not " + val, val == 31);
         
-        l.add (80, 30);
+        l.add (30, 80);
         val = l.get(12);
-        assertTrue ("After add(80, 30), value at 12 should still be 21, not " + val + " adding an entry above should not change it", val == 21);
+        assertTrue ("After add(30, 80), value at 12 should still be 30, not " + val + " adding an entry above should not change it", val == 30);
         val = l.get(13);
-        assertTrue ("After add(80, 30), value at 13 should be 31, not " + val + " adding an entry above should not change it", val == 31);
+        assertTrue ("After add(30, 80), value at 13 should be 31, not " + val + " adding an entry above should not change it", val == 31);
         val = l.get(31);
-        assertTrue ("After add(80, 30), value at 31 should be 81, not " + val, val == 81);
+        assertTrue ("After add(30, 80), value at 31 should be 81, not " + val, val == 81);
         
         for (int i=0; i < 10; i++) {
             val = l.get(i);
-            assertTrue ("In a populated map, get() on an index below the first added entry should return the index, but get(" + i + ") returns " + val, val == i);
+            assertTrue ("In a populated map, get() on an index below the first added entry should return the index, but get(" + i + ") returns " + val, val == i+1);
         }
         
     }
@@ -131,14 +133,11 @@ public class SparseIntListTest extends TestCase {
     
     public void testGetAboveFirstEntryReturnsEntryPlusIndexDiff() {
         System.out.println("testGetAboveFirstEntryReturnsEntryPlusIndexDiff");
-        l.add (20, 11);
+        l.add (11, 20);
         int x = 21;
-        for (int i=12; i < 40; i++){
+        for (int i = 12; i < 40; i++){
             assertTrue ("Entry at " + i + " should be " + x + ", not " + l.get(i), l.get(i) == x);
             x++;
         }
     }
-    
-    
-
 }

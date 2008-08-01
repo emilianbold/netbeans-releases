@@ -96,7 +96,7 @@ public class ImportPreviewStep extends AbstractStep {
         if(table != null && table.getCommitFiles().size() > 0) {
             valid();
         } else {
-            invalid(org.openide.util.NbBundle.getMessage(ImportPreviewStep.class, "CTL_Import_NothingToImport")); // NOI18N
+            invalid(new AbstractStep.WizardMessage(org.openide.util.NbBundle.getMessage(ImportPreviewStep.class, "CTL_Import_NothingToImport"), true)); // NOI18N
         }        
     }    
 

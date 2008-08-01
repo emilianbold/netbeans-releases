@@ -117,6 +117,10 @@ public final class PropertyEditorComboBox extends PropertyEditorUserCode impleme
     private void initComponents() {
         radioButton = new JRadioButton();
         Mnemonics.setLocalizedText(radioButton, valueLabel);
+        
+        radioButton.getAccessibleContext().setAccessibleName( radioButton.getText());
+        radioButton.getAccessibleContext().setAccessibleDescription( radioButton.getText());
+        
         customEditor = new CustomEditor();
         customEditor.updateModel();
     }
@@ -244,6 +248,12 @@ public final class PropertyEditorComboBox extends PropertyEditorUserCode impleme
             combobox = new JComboBox();
             combobox.setModel(new DefaultComboBoxModel());
             combobox.addActionListener(this);
+            
+            combobox.getAccessibleContext().setAccessibleName( 
+                    radioButton.getAccessibleContext().getAccessibleName());
+                    combobox.getAccessibleContext().setAccessibleDescription( 
+                    radioButton.getAccessibleContext().getAccessibleDescription());
+            
             add(combobox, BorderLayout.CENTER);
         }
 

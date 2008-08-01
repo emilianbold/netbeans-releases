@@ -62,9 +62,6 @@ public class MexFactories {
         public Set<QName> getElementQNames() {
             return Collections.singleton(MexQName.METADATA.getQName());
         }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new MetadataImpl(context.getModel()));
-        }
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {
             return new MetadataImpl(context.getModel(), element);
@@ -75,9 +72,6 @@ public class MexFactories {
         @Override
         public Set<QName> getElementQNames() {
             return Collections.singleton(MexQName.METADATAREFERENCE.getQName());
-        }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new MetadataReferenceImpl(context.getModel()));
         }
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {
@@ -90,9 +84,6 @@ public class MexFactories {
         public Set<QName> getElementQNames() {
             return Collections.singleton(MexQName.METADATASECTION.getQName());
         }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new MetadataSectionImpl(context.getModel()));
-        }
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {
             return new MetadataSectionImpl(context.getModel(), element);
@@ -103,9 +94,6 @@ public class MexFactories {
         @Override
         public Set<QName> getElementQNames() {
             return Collections.singleton(MexQName.DIALECT.getQName());
-        }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new DialectImpl(context.getModel()));
         }
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {
@@ -118,9 +106,6 @@ public class MexFactories {
         public Set<QName> getElementQNames() {
             return Collections.singleton(MexQName.IDENTIFIER.getQName());
         }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new IdentifierImpl(context.getModel()));
-        }
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {
             return new IdentifierImpl(context.getModel(), element);
@@ -131,9 +116,6 @@ public class MexFactories {
         @Override
         public Set<QName> getElementQNames() {
             return Collections.singleton(MexQName.LOCATION.getQName());
-        }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new LocationImpl(context.getModel()));
         }
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {

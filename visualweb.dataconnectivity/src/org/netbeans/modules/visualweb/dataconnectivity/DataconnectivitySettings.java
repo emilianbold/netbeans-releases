@@ -40,15 +40,16 @@
  */
 package org.netbeans.modules.visualweb.dataconnectivity;
 
-import org.openide.options.SystemOption;
+import java.util.prefs.Preferences;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 
 /** Dataconnectivity settings.
  *
  * @author joel brown
  */
-public class DataconnectivitySettings extends SystemOption {
+public class DataconnectivitySettings {
     /** generated Serialized Version UID */
     static final long serialVersionUID = 1L;
 
@@ -58,36 +59,27 @@ public class DataconnectivitySettings extends SystemOption {
     public static final String PROP_PROMPT_FOR_NAME = "3checkRowset"; // NOI18N
     public static final String PROP_DATAPROVIDER = "4dataprovider"; // NOI18N
     public static final String PROP_ROWSET = "5rowset"; // NOI18N
+    private static final String DEFAULT_ROWSET_SUFFIX = "RowSet"; // NOI18N
+    private static final String DEFAULT_DATAPROVIDER_SUFFIX = "DataProvider";  // NOI18N
 
     // Default instance of this system option, for the convenience of associated classes.
+    private static final DataconnectivitySettings INSTANCE = new DataconnectivitySettings();
     public static DataconnectivitySettings getInstance() {
-        return (DataconnectivitySettings)findObject(DataconnectivitySettings.class, true);
+        return INSTANCE;
     }
 
-    // do NOT use constructore for setting default values
-    protected void initialize() {
-        // Set default values of properties
-        super.initialize();
-
-        setMakeInSession( true ) ;  // EA default
-        setCheckRowSetProp(true) ; // this checking is new in thresher FCS.
-	setPromptForName(false) ;
-        setRowSetSuffixProp("RowSet") ; //NOI18N
-        setDataProviderSuffixProp("DataProvider") ; // NOI18N
-    }
-
-    public void setDataProviderSuffixProp(String dpSuffix) {
-        putProperty(PROP_DATAPROVIDER, dpSuffix, true);
+    public void setDataProviderSuffixProp(String dpSuffix) {        
+        getPreferences().put(PROP_DATAPROVIDER, dpSuffix);
     }
     public String getDataProviderSuffixProp() {
-        return (String)getProperty(PROP_DATAPROVIDER) ;
+        return getPreferences().get(PROP_DATAPROVIDER, DEFAULT_DATAPROVIDER_SUFFIX); 
     }
 
-    public void setRowSetSuffixProp(String rowsetSuffix) {
-        putProperty(PROP_ROWSET, rowsetSuffix, true);
+    public void setRowSetSuffixProp(String rowsetSuffix) {        
+        getPreferences().put(PROP_ROWSET, rowsetSuffix);
     }
     public String getRowSetSuffixProp() {
-        return (String)getProperty(PROP_ROWSET) ;
+        return getPreferences().get(PROP_ROWSET, DEFAULT_ROWSET_SUFFIX); 
     }
 
     public static String getRsSuffix() {
@@ -113,27 +105,27 @@ public class DataconnectivitySettings extends SystemOption {
     public boolean getMakeInSession() {
         // why the "!"(not)?  the option description wording changed from
         // "create in page" to "create in session".
-        return ((Boolean)getProperty(PROP_MAKE_IN_SESSION)).booleanValue();
+        return getPreferences().getBoolean(PROP_MAKE_IN_SESSION, true);
     }
 
     public void setMakeInSession(boolean makeInSession) {
-        putProperty(PROP_MAKE_IN_SESSION, makeInSession ? Boolean.TRUE : Boolean.FALSE, true);
+        getPreferences().putBoolean(PROP_MAKE_IN_SESSION, makeInSession ? Boolean.TRUE : Boolean.FALSE);
     }
 
     public boolean getCheckRowSetProp() {
-        return ((Boolean)getProperty(PROP_CHECK_ROWSET)).booleanValue();
+        return getPreferences().getBoolean(PROP_CHECK_ROWSET, true);
     }
 
     public void setCheckRowSetProp(boolean checkStuff) {
-        putProperty(PROP_CHECK_ROWSET, checkStuff ? Boolean.TRUE : Boolean.FALSE, true);
+        getPreferences().putBoolean(PROP_CHECK_ROWSET, checkStuff ? Boolean.TRUE : Boolean.FALSE);
     }
 
     public boolean getPromptForName() {
-        return ((Boolean)getProperty(PROP_PROMPT_FOR_NAME)).booleanValue();
+        return getPreferences().getBoolean(PROP_PROMPT_FOR_NAME, false);
     }
 
     public void setPromptForName(boolean prompt) {
-        putProperty(PROP_PROMPT_FOR_NAME, prompt ? Boolean.TRUE : Boolean.FALSE, true);
+        getPreferences().putBoolean(PROP_PROMPT_FOR_NAME, prompt ? Boolean.TRUE : Boolean.FALSE);
     }
 
     public static boolean canDropAnywhere() {
@@ -147,5 +139,8 @@ public class DataconnectivitySettings extends SystemOption {
     public static boolean promptForName() {
         return DataconnectivitySettings.getInstance().getPromptForName() ;
     }
-
+    
+    private Preferences getPreferences() {
+        return NbPreferences.forModule(DataconnectivitySettings.class);
+    }
 }

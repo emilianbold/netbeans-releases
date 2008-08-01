@@ -48,11 +48,9 @@
 package org.netbeans.modules.uml.ui.support.drawingproperties.FontColorDialogs;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dialog;
 import java.awt.Dimension;
-import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -70,14 +68,12 @@ import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
-import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
-import javax.swing.KeyStroke;
 import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
 import javax.swing.ScrollPaneConstants;
@@ -95,8 +91,6 @@ import org.netbeans.modules.uml.core.metamodel.diagrams.IDiagramKind;
 import org.netbeans.modules.uml.core.support.umlutils.ETArrayList;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
 import org.netbeans.modules.uml.ui.support.ProductHelper;
-import org.netbeans.modules.uml.ui.support.applicationmanager.IGraphPresentation;
-import org.netbeans.modules.uml.ui.support.applicationmanager.IPresentationResourceMgr;
 import org.netbeans.modules.uml.ui.support.applicationmanager.IProduct;
 import org.netbeans.modules.uml.ui.support.commonresources.CommonResourceManager;
 import org.netbeans.modules.uml.ui.support.commonresources.ICommonResourceManager;
@@ -107,11 +101,8 @@ import org.netbeans.modules.uml.ui.support.drawingproperties.IDrawingProps;
 import org.netbeans.modules.uml.ui.support.helpers.GUIBlocker;
 import org.netbeans.modules.uml.ui.support.helpers.IGUIBlocker;
 import org.netbeans.modules.uml.ui.swing.commondialogs.JCenterDialog;
-import org.netbeans.modules.uml.ui.swing.treetable.JTreeTable;
 import org.netbeans.modules.uml.ui.swing.treetable.TreeTableModel;
 import org.netbeans.modules.uml.ui.support.helpers.IGUIBlocker.GBK;
-import org.netbeans.modules.uml.ui.support.viewfactorysupport.IDrawEngine;
-//import com.sun.corba.se.connection.GetEndPointInfoAgainException;
 
 /**
  * @author jingmingm
@@ -126,6 +117,8 @@ public abstract class BasicColorsAndFontsDialog extends JCenterDialog
 	protected FontColorTreeTable m_Properties = null;
 	protected JCheckBox m_AdvancedCheck = null;
 	protected JButton m_ApplyButton = null;
+        protected JLabel diagramTypeLabel = null;
+        protected JSplitPane splitPane = null;
 	
 	protected TreeTableModel model = null;
 	protected String m_SetectedDiagramType = "";
@@ -172,7 +165,7 @@ public abstract class BasicColorsAndFontsDialog extends JCenterDialog
 		getContentPane().setLayout(new BorderLayout());
 		//JPanel uiPanel = new JPanel();
 		//uiPanel.setLayout(new BorderLayout());
-		JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+		splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
 		splitPane.setDividerLocation(260);
 		
 		JPanel diagramPanel = new JPanel();
@@ -200,7 +193,7 @@ public abstract class BasicColorsAndFontsDialog extends JCenterDialog
 		m_EngineList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		diagramPanel.add(scrollPane, BorderLayout.CENTER);
 		Box diagramSelectionBox = Box.createHorizontalBox();
-		JLabel diagramTypeLabel = new JLabel(DrawingPropertyResource.determineText(DrawingPropertyResource.getString("IDS_SHOWTYPESON")));
+		diagramTypeLabel = new JLabel(DrawingPropertyResource.determineText(DrawingPropertyResource.getString("IDS_SHOWTYPESON")));
 		DrawingPropertyResource.setMnemonic(diagramTypeLabel, DrawingPropertyResource.getString("IDS_SHOWTYPESON"));
 		m_DiagramSelection = new JComboBox();
 		diagramTypeLabel.setLabelFor(m_DiagramSelection);
@@ -406,6 +399,22 @@ public abstract class BasicColorsAndFontsDialog extends JCenterDialog
 			//addStandardDrawEngines(IDiagramKind.DK_ENTITY_DIAGRAM, true);
 		}
 
+                if (m_DiagramSelection != null 
+                    && diagramTypeLabel != null
+                    && splitPane != null) 
+                {
+                    int prefferedLeftWidth = Math.min(
+                                 Math.max(m_DiagramSelection.getPreferredSize().width
+                                          + diagramTypeLabel.getPreferredSize().width
+                                          + 30, 
+                                          260), 
+                                 500);
+                    if (prefferedLeftWidth != 260) 
+                    {
+                        setSize(600 + Math.max(prefferedLeftWidth - 260, 0), 400);
+                        splitPane.setDividerLocation(prefferedLeftWidth);
+                    }
+                }
 		return true;  // return TRUE unless you set the focus to a control
 	}
 
@@ -425,82 +434,83 @@ public abstract class BasicColorsAndFontsDialog extends JCenterDialog
 	 */
 	public void showPropertyPage(String sDE)
 	{
-		IPresentationResourceMgr pMgr = ProductHelper.getPresentationResourceMgr();
-		if (pMgr != null)
-		{
-			ETList<IDrawingProperty> properties = pMgr.getAllDrawingProperties(sDE);
-			int properti = properties.size();
-			if (properties != null)
-			{
-				TreeMap<String, IDrawingProperty> fonts = new TreeMap<String, IDrawingProperty>();
-				TreeMap<String, IDrawingProperty> colors = new TreeMap<String, IDrawingProperty>();
-				for (int i = 0; i < properties.size(); i++)
-				{
-					IDrawingProperty pDrawingProperty = properties.get(i);
-					if (pDrawingProperty != null)
-					{
-						boolean toAdd = true;
-						boolean isAdvanced = pMgr.isAdvanced(sDE, pDrawingProperty.getResourceName());
-						if (!m_AdvancedCheck.isSelected() && isAdvanced)
-						{
-							toAdd = false;
-						}
-						
-						if (toAdd)
-						{
-							pDrawingProperty = checkForChange(pDrawingProperty);
-							ETPairT<String, String> pairStr = pDrawingProperty.getDisplayName();
-							String dispName = pairStr.getParamOne();
-							if (pDrawingProperty.getResourceType().equals("font"))
-							{
-								fonts.put(dispName, pDrawingProperty);
-							}
-							else if (pDrawingProperty.getResourceType().equals("color"))
-							{
-								colors.put(dispName, pDrawingProperty);
-							}
-						}
-					}
-				}
-				
-				DefaultMutableTreeNode root = (DefaultMutableTreeNode)model.getRoot();
-				String fontStr = DrawingPropertyResource.getString("IDS_FONTS");
-				String colorStr = DrawingPropertyResource.getString("IDS_COLORS");
-				DefaultMutableTreeNode fontChild = new DefaultMutableTreeNode(fontStr);
-				DefaultMutableTreeNode colorChild = new DefaultMutableTreeNode(colorStr);
-				if (root != null)
-				{
-					root.removeAllChildren();
-					Collection colColors = colors.values();
-					if (colColors != null && colColors.size() > 0)
-					{
-						Iterator iter = colColors.iterator();
-						for (; iter.hasNext();)
-						{
-							Object obj = iter.next();
-							DefaultMutableTreeNode colorSubChild = new DefaultMutableTreeNode(obj);
-							colorChild.add(colorSubChild);
-						}
-						root.add(colorChild);
-					}
-					Collection colFonts = fonts.values();
-					if (colFonts != null && colFonts.size() > 0)
-					{
-						//java.util.Collections.sort(fonts);
-						Iterator iter = colFonts.iterator();
-						for (; iter.hasNext();)
-						{
-							Object obj = iter.next();
-							DefaultMutableTreeNode fontSubChild = new DefaultMutableTreeNode(obj);
-							fontChild.add(fontSubChild);
-						}
-						root.add(fontChild);
-					}
-				}
-				m_Properties.updateUI();
-				m_Properties.expandFirstLevelNodes();
-			}
-		}
+            // TODO: meteora
+//		IPresentationResourceMgr pMgr = ProductHelper.getPresentationResourceMgr();
+//		if (pMgr != null)
+//		{
+//			ETList<IDrawingProperty> properties = pMgr.getAllDrawingProperties(sDE);
+//			int properti = properties.size();
+//			if (properties != null)
+//			{
+//				TreeMap<String, IDrawingProperty> fonts = new TreeMap<String, IDrawingProperty>();
+//				TreeMap<String, IDrawingProperty> colors = new TreeMap<String, IDrawingProperty>();
+//				for (int i = 0; i < properties.size(); i++)
+//				{
+//					IDrawingProperty pDrawingProperty = properties.get(i);
+//					if (pDrawingProperty != null)
+//					{
+//						boolean toAdd = true;
+//						boolean isAdvanced = pMgr.isAdvanced(sDE, pDrawingProperty.getResourceName());
+//						if (!m_AdvancedCheck.isSelected() && isAdvanced)
+//						{
+//							toAdd = false;
+//						}
+//						
+//						if (toAdd)
+//						{
+//							pDrawingProperty = checkForChange(pDrawingProperty);
+//							ETPairT<String, String> pairStr = pDrawingProperty.getDisplayName();
+//							String dispName = pairStr.getParamOne();
+//							if (pDrawingProperty.getResourceType().equals("font"))
+//							{
+//								fonts.put(dispName, pDrawingProperty);
+//							}
+//							else if (pDrawingProperty.getResourceType().equals("color"))
+//							{
+//								colors.put(dispName, pDrawingProperty);
+//							}
+//						}
+//					}
+//				}
+//				
+//				DefaultMutableTreeNode root = (DefaultMutableTreeNode)model.getRoot();
+//				String fontStr = DrawingPropertyResource.getString("IDS_FONTS");
+//				String colorStr = DrawingPropertyResource.getString("IDS_COLORS");
+//				DefaultMutableTreeNode fontChild = new DefaultMutableTreeNode(fontStr);
+//				DefaultMutableTreeNode colorChild = new DefaultMutableTreeNode(colorStr);
+//				if (root != null)
+//				{
+//					root.removeAllChildren();
+//					Collection colColors = colors.values();
+//					if (colColors != null && colColors.size() > 0)
+//					{
+//						Iterator iter = colColors.iterator();
+//						for (; iter.hasNext();)
+//						{
+//							Object obj = iter.next();
+//							DefaultMutableTreeNode colorSubChild = new DefaultMutableTreeNode(obj);
+//							colorChild.add(colorSubChild);
+//						}
+//						root.add(colorChild);
+//					}
+//					Collection colFonts = fonts.values();
+//					if (colFonts != null && colFonts.size() > 0)
+//					{
+//						//java.util.Collections.sort(fonts);
+//						Iterator iter = colFonts.iterator();
+//						for (; iter.hasNext();)
+//						{
+//							Object obj = iter.next();
+//							DefaultMutableTreeNode fontSubChild = new DefaultMutableTreeNode(obj);
+//							fontChild.add(fontSubChild);
+//						}
+//						root.add(fontChild);
+//					}
+//				}
+//				m_Properties.updateUI();
+//				m_Properties.expandFirstLevelNodes();
+//			}
+//		}
 	}
 	
 //	/**
@@ -610,11 +620,12 @@ public abstract class BasicColorsAndFontsDialog extends JCenterDialog
 		String filename = null;
 
 		// Get the presentation resource manager so we can extract the default filename
-		IPresentationResourceMgr pMgr = ProductHelper.getPresentationResourceMgr();
-		if (pMgr != null)
-		{
-			filename = pMgr.getSampleDiagramFilename(nDAKind);
-		}
+                // TODO: meteora
+//		IPresentationResourceMgr pMgr = ProductHelper.getPresentationResourceMgr();
+//		if (pMgr != null)
+//		{
+//			filename = pMgr.getSampleDiagramFilename(nDAKind);
+//		}
 
 		return filename;
 	}
@@ -1164,32 +1175,33 @@ public abstract class BasicColorsAndFontsDialog extends JCenterDialog
 			for (int i = 0 ; i < count ; i++)
 			{
 				IPresentationElement pThisPE = pPEs.get(i);
-				if (pThisPE instanceof IGraphPresentation)
-				{
-					IGraphPresentation pGraphPE = (IGraphPresentation)pThisPE;
-					IDrawEngine pEngine = pGraphPE.getDrawEngine();
-					if (pEngine != null)
-					{
-						String sID = pEngine.getDrawEngineID();
-						if (sID != null && sID.length() > 0)
-						{
-							boolean bExist = false;
-							for (int j = 0; j < pDEStrings.size(); j++)
-							{
-								String s = pDEStrings.get(j);
-								if (s != null && s.equals(sID))
-								{
-									bExist = true;
-									break;
-								}
-							}
-							if (!bExist)
-							{
-								pDEStrings.add(sID);
-							}
-						}
-					}
-				}
+                                // TODO: meteora
+//				if (pThisPE instanceof IGraphPresentation)
+//				{
+//					IGraphPresentation pGraphPE = (IGraphPresentation)pThisPE;
+//					IDrawEngine pEngine = pGraphPE.getDrawEngine();
+//					if (pEngine != null)
+//					{
+//						String sID = pEngine.getDrawEngineID();
+//						if (sID != null && sID.length() > 0)
+//						{
+//							boolean bExist = false;
+//							for (int j = 0; j < pDEStrings.size(); j++)
+//							{
+//								String s = pDEStrings.get(j);
+//								if (s != null && s.equals(sID))
+//								{
+//									bExist = true;
+//									break;
+//								}
+//							}
+//							if (!bExist)
+//							{
+//								pDEStrings.add(sID);
+//							}
+//						}
+//					}
+//				}
 			}
 		}
 		return pDEStrings;
@@ -1210,31 +1222,32 @@ public abstract class BasicColorsAndFontsDialog extends JCenterDialog
 			for (int i = 0 ; i < count ; i++)
 			{
 				IPresentationElement pThisPE = pSourcePEs.get(i);
-				if (pThisPE instanceof IGraphPresentation)
-				{
-					IGraphPresentation pGraphPE = (IGraphPresentation)pThisPE;
-					IDrawEngine pEngine = pGraphPE.getDrawEngine();
-					if (pEngine != null)
-					{
-						String sID = pEngine.getDrawEngineID();
-						if (sID != null && sID.equals(sDrawEngine))
-						{
-							pFoundPEs.add(pThisPE);
-
-							if (bFoundFirstPE == false)
-							{
-								// Get the properties for this draw engine
-								bFoundFirstPE = true;
-
-								if (pEngine instanceof IDrawingPropertyProvider)
-								{
-									IDrawingPropertyProvider pProvider = (IDrawingPropertyProvider)pEngine;
-									pFoundProperties = pProvider.getDrawingProperties();
-								}
-							}
-						}
-					}
-				}
+                                // TODO: meteora
+//				if (pThisPE instanceof IGraphPresentation)
+//				{
+//					IGraphPresentation pGraphPE = (IGraphPresentation)pThisPE;
+//					IDrawEngine pEngine = pGraphPE.getDrawEngine();
+//					if (pEngine != null)
+//					{
+//						String sID = pEngine.getDrawEngineID();
+//						if (sID != null && sID.equals(sDrawEngine))
+//						{
+//							pFoundPEs.add(pThisPE);
+//
+//							if (bFoundFirstPE == false)
+//							{
+//								// Get the properties for this draw engine
+//								bFoundFirstPE = true;
+//
+//								if (pEngine instanceof IDrawingPropertyProvider)
+//								{
+//									IDrawingPropertyProvider pProvider = (IDrawingPropertyProvider)pEngine;
+//									pFoundProperties = pProvider.getDrawingProperties();
+//								}
+//							}
+//						}
+//					}
+//				}
 			}
 		}
 
@@ -1542,37 +1555,38 @@ public abstract class BasicColorsAndFontsDialog extends JCenterDialog
       
 			if (numDEs > 0)
 			{
-				IPresentationResourceMgr pMgr = ProductHelper.getPresentationResourceMgr();
-				if (pMgr != null)
-				{
-					// Create a list of strings to add to the object list.  We
-					// sort the list so we also have to have a looking from the
-					// display name and the actual draw engine type
-					for (int i = 0 ; i < numDEs ; i++)
-					{
-						String sDE = m_pDrawEngines.get(i);
-						if (sDE != null && sDE.length() > 0)
-						{
-							String sDisplayName = "";
-							String sDescription = "";
-
-							// Convert that name to something more reasonable
-							ETPairT<String, String> val = pMgr.getDisplayName(sDE, null);
-							if (val != null)
-							{
-								sDisplayName = val.getParamOne();
-								sDescription = val.getParamTwo();
-							}
-
-							if (sDisplayName == null || sDisplayName.length() == 0)
-							{
-								sDisplayName = sDE;
-							}
-
-							m_pDrawEngineNames.put(sDisplayName, sDE);
-						}
-					}
-				}
+                            // TODO: meteora
+//				IPresentationResourceMgr pMgr = ProductHelper.getPresentationResourceMgr();
+//				if (pMgr != null)
+//				{
+//					// Create a list of strings to add to the object list.  We
+//					// sort the list so we also have to have a looking from the
+//					// display name and the actual draw engine type
+//					for (int i = 0 ; i < numDEs ; i++)
+//					{
+//						String sDE = m_pDrawEngines.get(i);
+//						if (sDE != null && sDE.length() > 0)
+//						{
+//							String sDisplayName = "";
+//							String sDescription = "";
+//
+//							// Convert that name to something more reasonable
+//							ETPairT<String, String> val = pMgr.getDisplayName(sDE, null);
+//							if (val != null)
+//							{
+//								sDisplayName = val.getParamOne();
+//								sDescription = val.getParamTwo();
+//							}
+//
+//							if (sDisplayName == null || sDisplayName.length() == 0)
+//							{
+//								sDisplayName = sDE;
+//							}
+//
+//							m_pDrawEngineNames.put(sDisplayName, sDE);
+//						}
+//					}
+//				}
 			}
 		}
 	}
@@ -1846,15 +1860,16 @@ public abstract class BasicColorsAndFontsDialog extends JCenterDialog
 		}
 
 		// Get from the presentation resource manager and add to our list
-		IPresentationResourceMgr pMgr = ProductHelper.getPresentationResourceMgr();
-		if (pMgr != null)
-		{
-			ETList<String> pStandardDrawEngines = pMgr.getStandardDrawEngines(nKind);
-			if (pStandardDrawEngines != null)
-			{
-				m_StandardDrawEngines.put(new Integer(nKind), pStandardDrawEngines);
-			}
-		}
+                // TODO: meteora
+//		IPresentationResourceMgr pMgr = ProductHelper.getPresentationResourceMgr();
+//		if (pMgr != null)
+//		{
+//			ETList<String> pStandardDrawEngines = pMgr.getStandardDrawEngines(nKind);
+//			if (pStandardDrawEngines != null)
+//			{
+//				m_StandardDrawEngines.put(new Integer(nKind), pStandardDrawEngines);
+//			}
+//		}
 	}
 	
 	/**

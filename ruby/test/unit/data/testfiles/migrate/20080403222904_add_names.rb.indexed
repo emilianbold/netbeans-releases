@@ -1,0 +1,23 @@
+
+
+Document 0
+Searchable Keys:
+  class : AddNames
+  class-ig : addnames
+  extends : ActiveRecord::Migration
+  fqn : AddNames
+  method : down|STATIC|
+  method : up|STATIC|
+
+Not Searchable Keys:
+  attrs : |CLASS|
+
+
+Document 1
+Searchable Keys:
+  dbtable : posts
+
+Not Searchable Keys:
+  dbcolumn : address;-
+  dbcolumn : newaddress
+  dbversion : 20080403222904

@@ -128,7 +128,8 @@ public abstract class ProductConfigurationLogic {
     // various documentation/legal getters //////////////////////////////////////////
     public Text getLicense() {
         final String text = parseString(
-                "$R{" + StringUtils.asPath(getClass()) + "/license.txt}");
+                "$R{" + StringUtils.asPath(getClass()) + "/license.txt;" + 
+                StringUtils.ENCODING_UTF8 + "}");
         
         return new Text(text, ContentType.PLAIN_TEXT);
     }

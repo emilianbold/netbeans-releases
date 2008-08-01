@@ -58,24 +58,33 @@
         <group name="Google">
         </group>
         <code-gen>
-            <artifacts targets="servlet,resource">
-                <artifact id="GoogleMap" type="template"
-                    url="Templates/SaaSServices/GoogleMapResource.java"/>
+            <artifacts targets="servlet,resource,jsp">
+                <artifact id="GoogleMapService" type="template"
+                    url="Templates/SaaSServices/GoogleMapService.java"/>
+                <artifact id="googlemapservice" type="template"
+                    url="Templates/SaaSServices/googlemapservice.properties"/>
+            </artifacts>
+            <artifacts targets="php">
+                <artifact id="GoogleMapService" type="template"
+                    url="Templates/SaaSServices/GoogleMapService.php"/>
+                <artifact id="GoogleMapServiceProfile" type="template"
+                    url="Templates/SaaSServices/GoogleMapServiceProfile.php"/>
             </artifacts>
         </code-gen>
         <!-- http-basic, api-key, custom -->
-        <authentication profile="SaaSServices/Google/profile.properties">
-            <api-key id="key"/>
-        </authentication>
+        <!--<authentication profile="SaaSServices/Google/profile.properties">
+            <api-key id="apiKey"/>
+        </authentication>-->
     </saas-metadata>
 
     <methods>
-        <method name="getGoogleMap" href="GoogleMap">      
+        <method name="getGoogleMap" href="GoogleMapService">      
             <input>
                 <params>
-                    <param name="apiKey" type="string"/>
+                    <!--<param name="apiKey" type="string"/>-->
                     <param name="address" type="string" default="16 Network Circle, Menlo Park"/>
                     <param name="zoom" type="int" default="15"/>
+                    <param name="iframe" type="string" default="false"/>
                 </params>
             </input>
             <output>

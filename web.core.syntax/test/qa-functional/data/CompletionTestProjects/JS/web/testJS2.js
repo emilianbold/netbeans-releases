@@ -1,28 +1,28 @@
 
 /**CC
 docu|
-DOM document
+Window document
 document
 */
 
 
 /**CC
 ab|
-Math abs ( x )
+Math abs ( x ) : Number
 abs(x)
 */
 
 
 /**CC
 has|
-Element hasAttributeNS ( namespace , localName )
+Element hasAttributeNS ( namespace , String loc 
 hasAttributeNS(namespace, localName)
 */
 
 
 /**CC
 Math.|
-Math sqrt ( x )
+Math sqrt ( x ) : Number
 Math.sqrt(x)
 */
 

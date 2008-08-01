@@ -51,12 +51,21 @@ made subject to such option by the copyright holder.
         jemmy and jellytools jars are on classpath for both. -->
     <import file="../../nbbuild/templates/xtest-qa-functional.xml"/>
 
+    <!--
+        Explicitly build dependency
+    -->
+    <target name="qa-functional-compiler" depends="build-jellytools">
+        <!-- Build tests but don't build module sources. -->
+        <ant dir="../../websvc.kit/test" target="buildtests" inheritall="false" />
+        <antcall target="xtest-qa-functional.qa-functional-compiler" />
+    </target>
+
     <target name="-setup-proxy" if="proxy.host" >
         <setproxy proxyhost="${proxy.host}" proxyport="${proxy.port}" />
     </target>
 
     <!--
-
+        jMaki plugin setup section
     -->
     <target name="-init-jmaki">
         <property name="plugins.jmaki.nbm.dir" value="${java.io.tmpdir}"/>
@@ -79,7 +88,7 @@ made subject to such option by the copyright holder.
         <echo message="Going to download ${plugins.jmaki.nbm.name}. If it fails download it from http://ajax.dev.java.net" />
         <echo message="(and put it into ${java.io.tmpdir})"/>
         <echo message="or invoke with -Dproxy.host='host' -Dproxy.port='port'" />
-        <get src="https://ajax.dev.java.net/files/documents/3115/79242/org-netbeans-modules-sun-jmaki.nbm" dest="${plugins.jmaki.nbm.tmp}"/>
+        <get src="https://ajax.dev.java.net/files/documents/3115/90944/org-netbeans-modules-sun-jmaki.nbm" dest="${plugins.jmaki.nbm.tmp}"/>
     </target>
 
     <target name="setup-jmaki-nbm" depends="-init-jmaki, -download-jmaki">

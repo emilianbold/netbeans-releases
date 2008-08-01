@@ -41,8 +41,10 @@
 
 package org.netbeans.modules.debugger.jpda.models;
 
+import com.sun.jdi.ObjectCollectedException;
 import com.sun.jdi.ThreadGroupReference;
 import com.sun.jdi.ThreadReference;
+import com.sun.jdi.VMDisconnectedException;
 import com.sun.jdi.VirtualMachine;
 import com.sun.jdi.event.Event;
 import com.sun.jdi.event.ThreadDeathEvent;
@@ -90,16 +92,20 @@ public class ThreadsCache implements Executor {
     
     public synchronized void setVirtualMachine(VirtualMachine vm) {
         if (this.vm == vm) return ;
-        this.vm = vm;
-        ThreadStartRequest tsr = vm.eventRequestManager().createThreadStartRequest();
-        ThreadDeathRequest tdr = vm.eventRequestManager().createThreadDeathRequest();
-        tsr.setSuspendPolicy(ThreadStartRequest.SUSPEND_NONE);
-        tdr.setSuspendPolicy(ThreadStartRequest.SUSPEND_NONE);
-        debugger.getOperator().register(tsr, this);
-        debugger.getOperator().register(tdr, this);
-        tsr.enable();
-        tdr.enable();
-        init();
+        try {
+            this.vm = vm;
+            ThreadStartRequest tsr = vm.eventRequestManager().createThreadStartRequest();
+            ThreadDeathRequest tdr = vm.eventRequestManager().createThreadDeathRequest();
+            tsr.setSuspendPolicy(ThreadStartRequest.SUSPEND_NONE);
+            tdr.setSuspendPolicy(ThreadStartRequest.SUSPEND_NONE);
+            debugger.getOperator().register(tsr, this);
+            debugger.getOperator().register(tdr, this);
+            tsr.enable();
+            tdr.enable();
+            init();
+        } catch (VMDisconnectedException e) {
+            this.vm = null;
+        }
     }
     
     private synchronized void init() {
@@ -163,38 +169,74 @@ public class ThreadsCache implements Executor {
         }
         return groups;
     }
+    
+    private List<ThreadGroupReference> addGroups(ThreadGroupReference group) {
+        List<ThreadGroupReference> addedGroups = new ArrayList<ThreadGroupReference>();
+        ThreadGroupReference parent = group.parent();
+        if (groupMap.get(parent) == null) {
+            addedGroups.addAll(addGroups(parent));
+        }
+        List<ThreadGroupReference> parentsGroups = groupMap.get(parent);
+        if (!parentsGroups.contains(group)) {
+            parentsGroups.add(group);
+            addedGroups.add(group);
+            List<ThreadGroupReference> groups = new ArrayList();
+            List<ThreadReference> threads = new ArrayList();
+            groupMap.put(group, groups);
+            threadMap.put(group, threads);
+        }
+        return addedGroups;
+    }
 
     public boolean exec(Event event) {
         if (event instanceof ThreadStartEvent) {
             ThreadReference thread = ((ThreadStartEvent) event).thread();
-            ThreadGroupReference group = thread.threadGroup();
-            ThreadGroupReference addedGroup = null;
+            ThreadGroupReference group;
+            try {
+                group = thread.threadGroup();
+            } catch (ObjectCollectedException ocex) {
+                group = null;
+            }
+            List<ThreadGroupReference> addedGroups = null;
             synchronized (this) {
-                List<ThreadReference> threads = threadMap.get(group);
-                if (threads != null && !threads.contains(thread)) { // could be added by init()
-                    threads.add(thread);
-                }
                 if (group != null) {
-                    List<ThreadGroupReference> parentsGroups = groupMap.get(group.parent());
-                    if (!parentsGroups.contains(group)) {
-                        parentsGroups.add(group);
-                        addedGroup = group;
-                    }
+                    addedGroups = addGroups(group);
+                }
+                List<ThreadReference> threads = threadMap.get(group);
+                if (!threads.contains(thread)) { // could be added by init()
+                    threads.add(thread);
                 }
                 if (!allThreads.contains(thread)) { // could be added by init()
                     allThreads.add(thread);
                 }
             }
-            if (addedGroup != null) {
-                pcs.firePropertyChange(PROP_GROUP_ADDED, null, group);
+            if (addedGroups != null) {
+                for (ThreadGroupReference g : addedGroups) {
+                    pcs.firePropertyChange(PROP_GROUP_ADDED, null, g);
+                }
             }
             pcs.firePropertyChange(PROP_THREAD_STARTED, null, thread);
         }
         if (event instanceof ThreadDeathEvent) {
             ThreadReference thread = ((ThreadDeathEvent) event).thread();
-            ThreadGroupReference group = thread.threadGroup();
+            ThreadGroupReference group;
+            try {
+                group = thread.threadGroup();
+            } catch (ObjectCollectedException ocex) {
+                group = null;
+            }
             synchronized (this) {
-                List<ThreadReference> threads = threadMap.get(group);
+                List<ThreadReference> threads;
+                if (group != null) {
+                    threads = threadMap.get(group);
+                } else {
+                    threads = null;
+                    for (List<ThreadReference> testThreads : threadMap.values()) {
+                        if (testThreads.contains(thread)) {
+                            threads = testThreads;
+                        }
+                    }
+                }
                 if (threads != null) {
                     threads.remove(thread);
                 }

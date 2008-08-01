@@ -98,7 +98,7 @@ public abstract class AbstractSchemaWizardIterator extends Object implements Tem
         panels = createPanels (project, wizard);
         
         // Creating steps.
-        Object prop = wizard.getProperty ("WizardPanel_contentData"); // NOI18N
+        Object prop = wizard.getProperty (WizardDescriptor.PROP_CONTENT_DATA); // NOI18N
         String[] beforeSteps = null;
         if (prop instanceof String[]) {
             beforeSteps = (String[])prop;
@@ -116,9 +116,9 @@ public abstract class AbstractSchemaWizardIterator extends Object implements Tem
             if (c instanceof JComponent) { // assume Swing components
                 JComponent jc = (JComponent) c;
                 // Step #.
-                jc.putClientProperty ("WizardPanel_contentSelectedIndex", Integer.valueOf(i)); // NOI18N
+                jc.putClientProperty (WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, Integer.valueOf(i)); // NOI18N
                 // Step name (actually the whole list for reference).
-                jc.putClientProperty ("WizardPanel_contentData", steps); // NOI18N
+                jc.putClientProperty (WizardDescriptor.PROP_CONTENT_DATA, steps); // NOI18N
             }
         }        
     }
@@ -284,6 +284,26 @@ public abstract class AbstractSchemaWizardIterator extends Object implements Tem
             }
         } catch (javax.swing.text.BadLocationException ex){}
     }
+    
+    /**
+     * Utility method to update schemas with target namespace information.
+     */
+    void updateDocument(javax.swing.text.Document document, String tns) {
+        if(tns == null || tns.length() ==0)
+            return;      
+        javax.swing.text.AbstractDocument doc = (javax.swing.text.AbstractDocument)document;
+        try {
+            String indentString = "    "; //NOI18N
+            String content = doc.getText(0,doc.getLength());
+            int offset = content.indexOf("elementFormDefault"); //NOI18N
+            String tnsString = "targetNamespace=\"" + tns + "\"\n";
+            document.insertString(offset, tnsString, null); //NOI18N
+            document.insertString(offset+tnsString.length(), indentString+
+                    "xmlns:tns=\"" + tns + "\"\n"+indentString, null); //NOI18N
+        } catch (javax.swing.text.BadLocationException ex) {
+            //ignore
+        }
+    }    
     
     void fixEncoding(javax.swing.text.Document document, String encoding) {
         if(encoding == null)

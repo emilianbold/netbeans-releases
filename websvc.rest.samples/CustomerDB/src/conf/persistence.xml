@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-
 <!--
  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  
@@ -40,12 +39,12 @@
  Version 2 license, then the option applies only if the new code is
  made subject to such option by the copyright holder.
 -->
-
 <persistence xmlns="http://java.sun.com/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.0" xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_1_0.xsd">
   <persistence-unit name="CustomerDBPU" transaction-type="JTA">
     <jta-data-source>jdbc/sample</jta-data-source>
     <class>customerdb.Customer</class>
 <class>customerdb.DiscountCode</class>
+<exclude-unlisted-classes>false</exclude-unlisted-classes>
 <properties/>
   </persistence-unit>
 </persistence>

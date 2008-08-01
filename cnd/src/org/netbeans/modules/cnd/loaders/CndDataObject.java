@@ -53,11 +53,10 @@ import org.openide.loaders.MultiDataObject.Entry;
 import org.openide.loaders.MultiFileLoader;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.nodes.Node;
-import org.openide.nodes.CookieSet;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.cnd.execution.BinaryExecSupport;
-import org.openide.nodes.CookieSet.Factory;
+import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node.Cookie;
 import org.openide.util.Lookup;
 
@@ -76,6 +75,11 @@ public abstract class CndDataObject extends MultiDataObject {
 	init();
     }
 
+    @Override
+    public Lookup getLookup() {
+        return getCookieSet().getLookup();
+    }
+    
     /**
      *  Initialize cookies for this DataObject. This method may get overridden
      *  by derived classes who need to use a different set of cookies.
@@ -83,13 +87,13 @@ public abstract class CndDataObject extends MultiDataObject {
     protected void init() {
 	CookieSet cookies = getCookieSet();
 	//cookies.add(new CppEditorSupport(primary.getDataObject()));
-        cookies.add(CppEditorSupport.class, new Factory() {
+        cookies.add(CppEditorSupport.class, new CookieSet.Factory() {
             public <T extends Cookie> T createCookie(Class<T> klass) {
                 return klass.cast(createCppEditorSupport());
             }
         });
 	//cookies.add(new BinaryExecSupport(primary));
-        cookies.add(BinaryExecSupport.class, new Factory() {
+            cookies.add(BinaryExecSupport.class, new CookieSet.Factory() {
             public <T extends Cookie> T createCookie(Class<T> klass) {
                 return klass.cast(createBinaryExecSupport());
             }

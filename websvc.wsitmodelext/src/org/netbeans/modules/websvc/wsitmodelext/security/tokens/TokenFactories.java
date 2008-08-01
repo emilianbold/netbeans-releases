@@ -45,20 +45,23 @@ import org.netbeans.modules.websvc.wsitmodelext.security.tokens.impl.*;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.spi.ElementFactory;
 import org.w3c.dom.Element;
-
 import javax.xml.namespace.QName;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
+import org.netbeans.modules.websvc.wsitmodelext.security.SecurityPolicyQName;
+import org.netbeans.modules.websvc.wsitmodelext.versioning.ConfigVersion;
 
 public class TokenFactories {
 
     public static class SupportingTokensFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
-            return Collections.singleton(TokensQName.SUPPORTINGTOKENS.getQName());
-        }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new SupportingTokensImpl(context.getModel()));
+           HashSet<QName> set = new HashSet<QName>();
+            for (ConfigVersion cfgVersion : ConfigVersion.values()) {
+                set.add(SecurityPolicyQName.SUPPORTINGTOKENS.getQName(cfgVersion));
+            }
+            return Collections.unmodifiableSet(set);
         }
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {
@@ -69,10 +72,11 @@ public class TokenFactories {
     public static class SignedSupportingTokensFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
-            return Collections.singleton(TokensQName.SIGNEDSUPPORTINGTOKENS.getQName());
-        }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new SignedSupportingTokensImpl(context.getModel()));
+           HashSet<QName> set = new HashSet<QName>();
+            for (ConfigVersion cfgVersion : ConfigVersion.values()) {
+                set.add(SecurityPolicyQName.SIGNEDSUPPORTINGTOKENS.getQName(cfgVersion));
+            }
+            return Collections.unmodifiableSet(set);
         }
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {
@@ -83,10 +87,11 @@ public class TokenFactories {
     public static class EndorsingSupportingTokensFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
-            return Collections.singleton(TokensQName.ENDORSINGSUPPORTINGTOKENS.getQName());
-        }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new EndorsingSupportingTokensImpl(context.getModel()));
+           HashSet<QName> set = new HashSet<QName>();
+            for (ConfigVersion cfgVersion : ConfigVersion.values()) {
+                set.add(SecurityPolicyQName.ENDORSINGSUPPORTINGTOKENS.getQName(cfgVersion));
+            }
+            return Collections.unmodifiableSet(set);
         }
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {
@@ -94,13 +99,74 @@ public class TokenFactories {
         }
     }
 
+    public static class EncryptedSupportingTokensFactory extends ElementFactory {
+        @Override
+        public Set<QName> getElementQNames() {
+           HashSet<QName> set = new HashSet<QName>();
+            for (ConfigVersion cfgVersion : ConfigVersion.values()) {
+                set.add(SecurityPolicyQName.ENCRYPTEDSUPPORTINGTOKENS.getQName(cfgVersion));
+            }
+            return Collections.unmodifiableSet(set);
+        }
+        @Override
+        public WSDLComponent create(WSDLComponent context, Element element) {
+            return new EncryptedSupportingTokensImpl(context.getModel(), element);
+        }
+    }
+
+    public static class EndorsingEncryptedSupportingTokensFactory extends ElementFactory {
+        @Override
+        public Set<QName> getElementQNames() {
+           HashSet<QName> set = new HashSet<QName>();
+            for (ConfigVersion cfgVersion : ConfigVersion.values()) {
+                set.add(SecurityPolicyQName.ENDORSINGENCRYPTEDSUPPORTINGTOKENS.getQName(cfgVersion));
+            }
+            return Collections.unmodifiableSet(set);
+        }
+        @Override
+        public WSDLComponent create(WSDLComponent context, Element element) {
+            return new EndorsingEncryptedSupportingTokensImpl(context.getModel(), element);
+        }
+    }
+
+    public static class SignedEncryptedSupportingTokensFactory extends ElementFactory {
+        @Override
+        public Set<QName> getElementQNames() {
+           HashSet<QName> set = new HashSet<QName>();
+            for (ConfigVersion cfgVersion : ConfigVersion.values()) {
+                set.add(SecurityPolicyQName.SIGNEDENCRYPTEDSUPPORTINGTOKENS.getQName(cfgVersion));
+            }
+            return Collections.unmodifiableSet(set);
+        }
+        @Override
+        public WSDLComponent create(WSDLComponent context, Element element) {
+            return new SignedEncryptedSupportingTokensImpl(context.getModel(), element);
+        }
+    }
+
+    public static class SignedEndorsingEncryptedSupportingTokensFactory extends ElementFactory {
+        @Override
+        public Set<QName> getElementQNames() {
+           HashSet<QName> set = new HashSet<QName>();
+            for (ConfigVersion cfgVersion : ConfigVersion.values()) {
+                set.add(SecurityPolicyQName.SIGNEDENDORSINGENCRYPTEDSUPPORTINGTOKENS.getQName(cfgVersion));
+            }
+            return Collections.unmodifiableSet(set);
+        }
+        @Override
+        public WSDLComponent create(WSDLComponent context, Element element) {
+            return new SignedEndorsingEncryptedSupportingTokensImpl(context.getModel(), element);
+        }
+    }
+    
     public static class SignedEndorsingSupportingTokensFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
-            return Collections.singleton(TokensQName.SIGNEDENDORSINGSUPPORTINGTOKENS.getQName());
-        }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new SignedEndorsingSupportingTokensImpl(context.getModel()));
+           HashSet<QName> set = new HashSet<QName>();
+            for (ConfigVersion cfgVersion : ConfigVersion.values()) {
+                set.add(SecurityPolicyQName.SIGNEDENDORSINGSUPPORTINGTOKENS.getQName(cfgVersion));
+            }
+            return Collections.unmodifiableSet(set);
         }
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {
@@ -111,10 +177,11 @@ public class TokenFactories {
     public static class HttpsTokenFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
-            return Collections.singleton(TokensQName.HTTPSTOKEN.getQName());
-        }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new HttpsTokenImpl(context.getModel()));
+           HashSet<QName> set = new HashSet<QName>();
+            for (ConfigVersion cfgVersion : ConfigVersion.values()) {
+                set.add(SecurityPolicyQName.HTTPSTOKEN.getQName(cfgVersion));
+            }
+            return Collections.unmodifiableSet(set);
         }
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {
@@ -125,10 +192,11 @@ public class TokenFactories {
     public static class InitiatorTokenFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
-            return Collections.singleton(TokensQName.INITIATORTOKEN.getQName());
-        }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new InitiatorTokenImpl(context.getModel()));
+           HashSet<QName> set = new HashSet<QName>();
+            for (ConfigVersion cfgVersion : ConfigVersion.values()) {
+                set.add(SecurityPolicyQName.INITIATORTOKEN.getQName(cfgVersion));
+            }
+            return Collections.unmodifiableSet(set);
         }
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {
@@ -139,10 +207,11 @@ public class TokenFactories {
     public static class SignatureTokenFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
-            return Collections.singleton(TokensQName.SIGNATURETOKEN.getQName());
-        }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new SignatureTokenImpl(context.getModel()));
+           HashSet<QName> set = new HashSet<QName>();
+            for (ConfigVersion cfgVersion : ConfigVersion.values()) {
+                set.add(SecurityPolicyQName.SIGNATURETOKEN.getQName(cfgVersion));
+            }
+            return Collections.unmodifiableSet(set);
         }
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {
@@ -153,10 +222,11 @@ public class TokenFactories {
     public static class EncryptionTokenFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
-            return Collections.singleton(TokensQName.ENCRYPTIONTOKEN.getQName());
-        }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new EncryptionTokenImpl(context.getModel()));
+           HashSet<QName> set = new HashSet<QName>();
+            for (ConfigVersion cfgVersion : ConfigVersion.values()) {
+                set.add(SecurityPolicyQName.ENCRYPTIONTOKEN.getQName(cfgVersion));
+            }
+            return Collections.unmodifiableSet(set);
         }
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {
@@ -167,10 +237,11 @@ public class TokenFactories {
     public static class IssuedTokenFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
-            return Collections.singleton(TokensQName.ISSUEDTOKEN.getQName());
-        }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new IssuedTokenImpl(context.getModel()));
+           HashSet<QName> set = new HashSet<QName>();
+            for (ConfigVersion cfgVersion : ConfigVersion.values()) {
+                set.add(SecurityPolicyQName.ISSUEDTOKEN.getQName(cfgVersion));
+            }
+            return Collections.unmodifiableSet(set);
         }
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {
@@ -181,10 +252,11 @@ public class TokenFactories {
     public static class KerberosTokenFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
-            return Collections.singleton(TokensQName.KERBEROSTOKEN.getQName());
-        }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new KerberosTokenImpl(context.getModel()));
+           HashSet<QName> set = new HashSet<QName>();
+            for (ConfigVersion cfgVersion : ConfigVersion.values()) {
+                set.add(SecurityPolicyQName.KERBEROSTOKEN.getQName(cfgVersion));
+            }
+            return Collections.unmodifiableSet(set);
         }
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {
@@ -195,10 +267,11 @@ public class TokenFactories {
     public static class ProtectionTokenFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
-            return Collections.singleton(TokensQName.PROTECTIONTOKEN.getQName());
-        }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new ProtectionTokenImpl(context.getModel()));
+           HashSet<QName> set = new HashSet<QName>();
+            for (ConfigVersion cfgVersion : ConfigVersion.values()) {
+                set.add(SecurityPolicyQName.PROTECTIONTOKEN.getQName(cfgVersion));
+            }
+            return Collections.unmodifiableSet(set);
         }
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {
@@ -209,10 +282,11 @@ public class TokenFactories {
     public static class TransportTokenFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
-            return Collections.singleton(TokensQName.TRANSPORTTOKEN.getQName());
-        }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new TransportTokenImpl(context.getModel()));
+           HashSet<QName> set = new HashSet<QName>();
+            for (ConfigVersion cfgVersion : ConfigVersion.values()) {
+                set.add(SecurityPolicyQName.TRANSPORTTOKEN.getQName(cfgVersion));
+            }
+            return Collections.unmodifiableSet(set);
         }
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {
@@ -223,10 +297,11 @@ public class TokenFactories {
     public static class RecipientTokenFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
-            return Collections.singleton(TokensQName.RECIPIENTTOKEN.getQName());
-        }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new RecipientTokenImpl(context.getModel()));
+           HashSet<QName> set = new HashSet<QName>();
+            for (ConfigVersion cfgVersion : ConfigVersion.values()) {
+                set.add(SecurityPolicyQName.RECIPIENTTOKEN.getQName(cfgVersion));
+            }
+            return Collections.unmodifiableSet(set);
         }
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {
@@ -237,10 +312,11 @@ public class TokenFactories {
     public static class RelTokenFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
-            return Collections.singleton(TokensQName.RELTOKEN.getQName());
-        }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new RelTokenImpl(context.getModel()));
+           HashSet<QName> set = new HashSet<QName>();
+            for (ConfigVersion cfgVersion : ConfigVersion.values()) {
+                set.add(SecurityPolicyQName.RELTOKEN.getQName(cfgVersion));
+            }
+            return Collections.unmodifiableSet(set);
         }
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {
@@ -251,10 +327,11 @@ public class TokenFactories {
     public static class SamlTokenFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
-            return Collections.singleton(TokensQName.SAMLTOKEN.getQName());
-        }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new SamlTokenImpl(context.getModel()));
+           HashSet<QName> set = new HashSet<QName>();
+            for (ConfigVersion cfgVersion : ConfigVersion.values()) {
+                set.add(SecurityPolicyQName.SAMLTOKEN.getQName(cfgVersion));
+            }
+            return Collections.unmodifiableSet(set);
         }
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {
@@ -265,10 +342,11 @@ public class TokenFactories {
     public static class SecureConversationTokenFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
-            return Collections.singleton(TokensQName.SECURECONVERSATIONTOKEN.getQName());
-        }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new SecureConversationTokenImpl(context.getModel()));
+           HashSet<QName> set = new HashSet<QName>();
+            for (ConfigVersion cfgVersion : ConfigVersion.values()) {
+                set.add(SecurityPolicyQName.SECURECONVERSATIONTOKEN.getQName(cfgVersion));
+            }
+            return Collections.unmodifiableSet(set);
         }
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {
@@ -279,10 +357,11 @@ public class TokenFactories {
     public static class SecurityContextTokenFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
-            return Collections.singleton(TokensQName.SECURITYCONTEXTTOKEN.getQName());
-        }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new SecurityContextTokenImpl(context.getModel()));
+           HashSet<QName> set = new HashSet<QName>();
+            for (ConfigVersion cfgVersion : ConfigVersion.values()) {
+                set.add(SecurityPolicyQName.SECURITYCONTEXTTOKEN.getQName(cfgVersion));
+            }
+            return Collections.unmodifiableSet(set);
         }
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {
@@ -293,10 +372,11 @@ public class TokenFactories {
     public static class SpnegoContextTokenFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
-            return Collections.singleton(TokensQName.SPNEGOCONTEXTTOKEN.getQName());
-        }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new SpnegoContextTokenImpl(context.getModel()));
+           HashSet<QName> set = new HashSet<QName>();
+            for (ConfigVersion cfgVersion : ConfigVersion.values()) {
+                set.add(SecurityPolicyQName.SPNEGOCONTEXTTOKEN.getQName(cfgVersion));
+            }
+            return Collections.unmodifiableSet(set);
         }
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {
@@ -307,10 +387,11 @@ public class TokenFactories {
     public static class UsernameTokenFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
-            return Collections.singleton(TokensQName.USERNAMETOKEN.getQName());
-        }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new UsernameTokenImpl(context.getModel()));
+           HashSet<QName> set = new HashSet<QName>();
+            for (ConfigVersion cfgVersion : ConfigVersion.values()) {
+                set.add(SecurityPolicyQName.USERNAMETOKEN.getQName(cfgVersion));
+            }
+            return Collections.unmodifiableSet(set);
         }
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {
@@ -321,10 +402,11 @@ public class TokenFactories {
     public static class X509TokenFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
-            return Collections.singleton(TokensQName.X509TOKEN.getQName());
-        }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new X509TokenImpl(context.getModel()));
+           HashSet<QName> set = new HashSet<QName>();
+            for (ConfigVersion cfgVersion : ConfigVersion.values()) {
+                set.add(SecurityPolicyQName.X509TOKEN.getQName(cfgVersion));
+            }
+            return Collections.unmodifiableSet(set);
         }
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {
@@ -335,10 +417,11 @@ public class TokenFactories {
     public static class WssUsernameToken10Factory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
-            return Collections.singleton(TokensQName.WSSUSERNAMETOKEN10.getQName());
-        }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new WssUsernameToken10Impl(context.getModel()));
+           HashSet<QName> set = new HashSet<QName>();
+            for (ConfigVersion cfgVersion : ConfigVersion.values()) {
+                set.add(SecurityPolicyQName.WSSUSERNAMETOKEN10.getQName(cfgVersion));
+            }
+            return Collections.unmodifiableSet(set);
         }
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {
@@ -349,10 +432,11 @@ public class TokenFactories {
     public static class WssUsernameToken11Factory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
-            return Collections.singleton(TokensQName.WSSUSERNAMETOKEN11.getQName());
-        }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new WssUsernameToken11Impl(context.getModel()));
+           HashSet<QName> set = new HashSet<QName>();
+            for (ConfigVersion cfgVersion : ConfigVersion.values()) {
+                set.add(SecurityPolicyQName.WSSUSERNAMETOKEN11.getQName(cfgVersion));
+            }
+            return Collections.unmodifiableSet(set);
         }
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {
@@ -363,10 +447,11 @@ public class TokenFactories {
     public static class IssuerFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
-            return Collections.singleton(TokensQName.ISSUER.getQName());
-        }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new IssuerImpl(context.getModel()));
+           HashSet<QName> set = new HashSet<QName>();
+            for (ConfigVersion cfgVersion : ConfigVersion.values()) {
+                set.add(SecurityPolicyQName.ISSUER.getQName(cfgVersion));
+            }
+            return Collections.unmodifiableSet(set);
         }
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {
@@ -377,10 +462,11 @@ public class TokenFactories {
     public static class RequireDerivedKeysFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
-            return Collections.singleton(TokensQName.REQUIREDERIVEDKEYS.getQName());
-        }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new RequireDerivedKeysImpl(context.getModel()));
+           HashSet<QName> set = new HashSet<QName>();
+            for (ConfigVersion cfgVersion : ConfigVersion.values()) {
+                set.add(SecurityPolicyQName.REQUIREDERIVEDKEYS.getQName(cfgVersion));
+            }
+            return Collections.unmodifiableSet(set);
         }
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {
@@ -391,10 +477,11 @@ public class TokenFactories {
     public static class RequireExternalReferenceFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
-            return Collections.singleton(TokensQName.REQUIREEXTERNALREFERENCE.getQName());
-        }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new RequireExternalReferenceImpl(context.getModel()));
+           HashSet<QName> set = new HashSet<QName>();
+            for (ConfigVersion cfgVersion : ConfigVersion.values()) {
+                set.add(SecurityPolicyQName.REQUIREEXTERNALREFERENCE.getQName(cfgVersion));
+            }
+            return Collections.unmodifiableSet(set);
         }
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {
@@ -405,10 +492,11 @@ public class TokenFactories {
     public static class RequireInternalReferenceFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
-            return Collections.singleton(TokensQName.REQUIREINTERNALREFERENCE.getQName());
-        }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new RequireInternalReferenceImpl(context.getModel()));
+           HashSet<QName> set = new HashSet<QName>();
+            for (ConfigVersion cfgVersion : ConfigVersion.values()) {
+                set.add(SecurityPolicyQName.REQUIREINTERNALREFERENCE.getQName(cfgVersion));
+            }
+            return Collections.unmodifiableSet(set);
         }
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {
@@ -419,10 +507,11 @@ public class TokenFactories {
     public static class RequireKeyIdentifierReferenceFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
-            return Collections.singleton(TokensQName.REQUIREKEYIDENTIFIERREFERENCE.getQName());
-        }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new RequireKeyIdentifierReferenceImpl(context.getModel()));
+           HashSet<QName> set = new HashSet<QName>();
+            for (ConfigVersion cfgVersion : ConfigVersion.values()) {
+                set.add(SecurityPolicyQName.REQUIREKEYIDENTIFIERREFERENCE.getQName(cfgVersion));
+            }
+            return Collections.unmodifiableSet(set);
         }
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {
@@ -433,10 +522,11 @@ public class TokenFactories {
     public static class RequireIssuerSerialReferenceFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
-            return Collections.singleton(TokensQName.REQUIREISSUERSERIALREFERENCE.getQName());
-        }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new RequireIssuerSerialReferenceImpl(context.getModel()));
+           HashSet<QName> set = new HashSet<QName>();
+            for (ConfigVersion cfgVersion : ConfigVersion.values()) {
+                set.add(SecurityPolicyQName.REQUIREISSUERSERIALREFERENCE.getQName(cfgVersion));
+            }
+            return Collections.unmodifiableSet(set);
         }
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {
@@ -447,10 +537,11 @@ public class TokenFactories {
     public static class RequireThumbprintReferenceFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
-            return Collections.singleton(TokensQName.REQUIRETHUMBPRINTREFERENCE.getQName());
-        }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new RequireThumbprintReferenceImpl(context.getModel()));
+           HashSet<QName> set = new HashSet<QName>();
+            for (ConfigVersion cfgVersion : ConfigVersion.values()) {
+                set.add(SecurityPolicyQName.REQUIRETHUMBPRINTREFERENCE.getQName(cfgVersion));
+            }
+            return Collections.unmodifiableSet(set);
         }
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {
@@ -461,10 +552,11 @@ public class TokenFactories {
     public static class RequireEmbeddedTokenReferenceFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
-            return Collections.singleton(TokensQName.REQUIREEMBEDDEDTOKENREFERENCE.getQName());
-        }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new RequireEmbeddedTokenReferenceImpl(context.getModel()));
+           HashSet<QName> set = new HashSet<QName>();
+            for (ConfigVersion cfgVersion : ConfigVersion.values()) {
+                set.add(SecurityPolicyQName.REQUIREEMBEDDEDTOKENREFERENCE.getQName(cfgVersion));
+            }
+            return Collections.unmodifiableSet(set);
         }
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {
@@ -475,10 +567,11 @@ public class TokenFactories {
     public static class RequireExternalUriReferenceFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
-            return Collections.singleton(TokensQName.REQUIREEXTERNALURIREFERENCE.getQName());
-        }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new RequireExternalUriReferenceImpl(context.getModel()));
+           HashSet<QName> set = new HashSet<QName>();
+            for (ConfigVersion cfgVersion : ConfigVersion.values()) {
+                set.add(SecurityPolicyQName.REQUIREEXTERNALURIREFERENCE.getQName(cfgVersion));
+            }
+            return Collections.unmodifiableSet(set);
         }
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {
@@ -489,10 +582,11 @@ public class TokenFactories {
     public static class SC10SecurityContextTokenFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
-            return Collections.singleton(TokensQName.SC10SECURITYCONTEXTTOKEN.getQName());
-        }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new SC10SecurityContextTokenImpl(context.getModel()));
+           HashSet<QName> set = new HashSet<QName>();
+            for (ConfigVersion cfgVersion : ConfigVersion.values()) {
+                set.add(SecurityPolicyQName.SC10SECURITYCONTEXTTOKEN.getQName(cfgVersion));
+            }
+            return Collections.unmodifiableSet(set);
         }
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {
@@ -503,10 +597,11 @@ public class TokenFactories {
     public static class WssX509V1Token10Factory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
-            return Collections.singleton(TokensQName.WSSX509V1TOKEN10.getQName());
-        }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new WssX509V1Token10Impl(context.getModel()));
+           HashSet<QName> set = new HashSet<QName>();
+            for (ConfigVersion cfgVersion : ConfigVersion.values()) {
+                set.add(SecurityPolicyQName.WSSX509V1TOKEN10.getQName(cfgVersion));
+            }
+            return Collections.unmodifiableSet(set);
         }
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {
@@ -517,10 +612,11 @@ public class TokenFactories {
     public static class WssX509V3Token10Factory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
-            return Collections.singleton(TokensQName.WSSX509V3TOKEN10.getQName());
-        }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new WssX509V3Token10Impl(context.getModel()));
+           HashSet<QName> set = new HashSet<QName>();
+            for (ConfigVersion cfgVersion : ConfigVersion.values()) {
+                set.add(SecurityPolicyQName.WSSX509V3TOKEN10.getQName(cfgVersion));
+            }
+            return Collections.unmodifiableSet(set);
         }
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {
@@ -531,10 +627,11 @@ public class TokenFactories {
     public static class WssX509Pkcs7Token10Factory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
-            return Collections.singleton(TokensQName.WSSX509PKCS7TOKEN10.getQName());
-        }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new WssX509Pkcs7Token10Impl(context.getModel()));
+           HashSet<QName> set = new HashSet<QName>();
+            for (ConfigVersion cfgVersion : ConfigVersion.values()) {
+                set.add(SecurityPolicyQName.WSSX509PKCS7TOKEN10.getQName(cfgVersion));
+            }
+            return Collections.unmodifiableSet(set);
         }
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {
@@ -545,10 +642,11 @@ public class TokenFactories {
     public static class WssX509PkiPathV1Token10Factory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
-            return Collections.singleton(TokensQName.WSSX509PKIPATHV1TOKEN10.getQName());
-        }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new WssX509PkiPathV1Token10Impl(context.getModel()));
+           HashSet<QName> set = new HashSet<QName>();
+            for (ConfigVersion cfgVersion : ConfigVersion.values()) {
+                set.add(SecurityPolicyQName.WSSX509PKIPATHV1TOKEN10.getQName(cfgVersion));
+            }
+            return Collections.unmodifiableSet(set);
         }
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {
@@ -559,10 +657,11 @@ public class TokenFactories {
     public static class WssX509V1Token11Factory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
-            return Collections.singleton(TokensQName.WSSX509V1TOKEN11.getQName());
-        }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new WssX509V1Token11Impl(context.getModel()));
+           HashSet<QName> set = new HashSet<QName>();
+            for (ConfigVersion cfgVersion : ConfigVersion.values()) {
+                set.add(SecurityPolicyQName.WSSX509V1TOKEN11.getQName(cfgVersion));
+            }
+            return Collections.unmodifiableSet(set);
         }
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {
@@ -573,10 +672,11 @@ public class TokenFactories {
     public static class WssX509V3Token11Factory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
-            return Collections.singleton(TokensQName.WSSX509V3TOKEN11.getQName());
-        }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new WssX509V3Token11Impl(context.getModel()));
+           HashSet<QName> set = new HashSet<QName>();
+            for (ConfigVersion cfgVersion : ConfigVersion.values()) {
+                set.add(SecurityPolicyQName.WSSX509V3TOKEN11.getQName(cfgVersion));
+            }
+            return Collections.unmodifiableSet(set);
         }
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {
@@ -587,10 +687,11 @@ public class TokenFactories {
     public static class WssX509Pkcs7Token11Factory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
-            return Collections.singleton(TokensQName.WSSX509PKCS7TOKEN11.getQName());
-        }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new WssX509Pkcs7Token11Impl(context.getModel()));
+           HashSet<QName> set = new HashSet<QName>();
+            for (ConfigVersion cfgVersion : ConfigVersion.values()) {
+                set.add(SecurityPolicyQName.WSSX509PKCS7TOKEN11.getQName(cfgVersion));
+            }
+            return Collections.unmodifiableSet(set);
         }
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {
@@ -601,10 +702,11 @@ public class TokenFactories {
     public static class WssX509PkiPathV1Token11Factory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
-            return Collections.singleton(TokensQName.WSSX509PKIPATHV1TOKEN11.getQName());
-        }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new WssX509PkiPathV1Token11Impl(context.getModel()));
+           HashSet<QName> set = new HashSet<QName>();
+            for (ConfigVersion cfgVersion : ConfigVersion.values()) {
+                set.add(SecurityPolicyQName.WSSX509PKIPATHV1TOKEN11.getQName(cfgVersion));
+            }
+            return Collections.unmodifiableSet(set);
         }
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {
@@ -615,10 +717,11 @@ public class TokenFactories {
     public static class WssSamlV10Token10Factory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
-            return Collections.singleton(TokensQName.WSSSAMLV10TOKEN10.getQName());
-        }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new WssSamlV10Token10Impl(context.getModel()));
+           HashSet<QName> set = new HashSet<QName>();
+            for (ConfigVersion cfgVersion : ConfigVersion.values()) {
+                set.add(SecurityPolicyQName.WSSSAMLV10TOKEN10.getQName(cfgVersion));
+            }
+            return Collections.unmodifiableSet(set);
         }
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {
@@ -629,10 +732,11 @@ public class TokenFactories {
     public static class WssSamlV11Token10Factory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
-            return Collections.singleton(TokensQName.WSSSAMLV11TOKEN10.getQName());
-        }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new WssSamlV11Token10Impl(context.getModel()));
+           HashSet<QName> set = new HashSet<QName>();
+            for (ConfigVersion cfgVersion : ConfigVersion.values()) {
+                set.add(SecurityPolicyQName.WSSSAMLV11TOKEN10.getQName(cfgVersion));
+            }
+            return Collections.unmodifiableSet(set);
         }
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {
@@ -643,10 +747,11 @@ public class TokenFactories {
     public static class WssSamlV10Token11Factory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
-            return Collections.singleton(TokensQName.WSSSAMLV10TOKEN11.getQName());
-        }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new WssSamlV10Token11Impl(context.getModel()));
+           HashSet<QName> set = new HashSet<QName>();
+            for (ConfigVersion cfgVersion : ConfigVersion.values()) {
+                set.add(SecurityPolicyQName.WSSSAMLV10TOKEN11.getQName(cfgVersion));
+            }
+            return Collections.unmodifiableSet(set);
         }
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {
@@ -657,10 +762,11 @@ public class TokenFactories {
     public static class WssSamlV11Token11Factory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
-            return Collections.singleton(TokensQName.WSSSAMLV11TOKEN11.getQName());
-        }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new WssSamlV11Token11Impl(context.getModel()));
+           HashSet<QName> set = new HashSet<QName>();
+            for (ConfigVersion cfgVersion : ConfigVersion.values()) {
+                set.add(SecurityPolicyQName.WSSSAMLV11TOKEN11.getQName(cfgVersion));
+            }
+            return Collections.unmodifiableSet(set);
         }
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {
@@ -671,10 +777,11 @@ public class TokenFactories {
     public static class WssSamlV20Token11Factory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
-            return Collections.singleton(TokensQName.WSSSAMLV20TOKEN11.getQName());
-        }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new WssSamlV20Token11Impl(context.getModel()));
+           HashSet<QName> set = new HashSet<QName>();
+            for (ConfigVersion cfgVersion : ConfigVersion.values()) {
+                set.add(SecurityPolicyQName.WSSSAMLV20TOKEN11.getQName(cfgVersion));
+            }
+            return Collections.unmodifiableSet(set);
         }
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {
@@ -685,10 +792,11 @@ public class TokenFactories {
     public static class WssRelV10Token10Factory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
-            return Collections.singleton(TokensQName.WSSRELV10TOKEN10.getQName());
-        }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new WssRelV10Token10Impl(context.getModel()));
+           HashSet<QName> set = new HashSet<QName>();
+            for (ConfigVersion cfgVersion : ConfigVersion.values()) {
+                set.add(SecurityPolicyQName.WSSRELV10TOKEN10.getQName(cfgVersion));
+            }
+            return Collections.unmodifiableSet(set);
         }
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {
@@ -699,10 +807,11 @@ public class TokenFactories {
     public static class WssRelV20Token10Factory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
-            return Collections.singleton(TokensQName.WSSRELV20TOKEN10.getQName());
-        }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new WssRelV20Token10Impl(context.getModel()));
+           HashSet<QName> set = new HashSet<QName>();
+            for (ConfigVersion cfgVersion : ConfigVersion.values()) {
+                set.add(SecurityPolicyQName.WSSRELV20TOKEN10.getQName(cfgVersion));
+            }
+            return Collections.unmodifiableSet(set);
         }
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {
@@ -713,10 +822,11 @@ public class TokenFactories {
     public static class WssRelV10Token11Factory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
-            return Collections.singleton(TokensQName.WSSRELV10TOKEN11.getQName());
-        }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new WssRelV10Token11Impl(context.getModel()));
+           HashSet<QName> set = new HashSet<QName>();
+            for (ConfigVersion cfgVersion : ConfigVersion.values()) {
+                set.add(SecurityPolicyQName.WSSRELV10TOKEN11.getQName(cfgVersion));
+            }
+            return Collections.unmodifiableSet(set);
         }
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {
@@ -727,10 +837,11 @@ public class TokenFactories {
     public static class WssRelV20Token11Factory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
-            return Collections.singleton(TokensQName.WSSRELV20TOKEN11.getQName());
-        }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new WssRelV20Token11Impl(context.getModel()));
+           HashSet<QName> set = new HashSet<QName>();
+            for (ConfigVersion cfgVersion : ConfigVersion.values()) {
+                set.add(SecurityPolicyQName.WSSRELV20TOKEN11.getQName(cfgVersion));
+            }
+            return Collections.unmodifiableSet(set);
         }
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {
@@ -741,10 +852,11 @@ public class TokenFactories {
     public static class WssKerberosV5ApReqToken11Factory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
-            return Collections.singleton(TokensQName.WSSKERBEROSV5APREQTOKEN11.getQName());
-        }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new WssKerberosV5ApReqToken11Impl(context.getModel()));
+           HashSet<QName> set = new HashSet<QName>();
+            for (ConfigVersion cfgVersion : ConfigVersion.values()) {
+                set.add(SecurityPolicyQName.WSSKERBEROSV5APREQTOKEN11.getQName(cfgVersion));
+            }
+            return Collections.unmodifiableSet(set);
         }
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {
@@ -755,14 +867,31 @@ public class TokenFactories {
     public static class WssGssKerberosV5ApReqToken11Factory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
-            return Collections.singleton(TokensQName.WSSGSSKERBEROSV5APREQTOKEN11.getQName());
-        }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new WssGssKerberosV5ApReqToken11Impl(context.getModel()));
+           HashSet<QName> set = new HashSet<QName>();
+            for (ConfigVersion cfgVersion : ConfigVersion.values()) {
+                set.add(SecurityPolicyQName.WSSGSSKERBEROSV5APREQTOKEN11.getQName(cfgVersion));
+            }
+            return Collections.unmodifiableSet(set);
         }
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {
             return new WssGssKerberosV5ApReqToken11Impl(context.getModel(), element);
         }
     }    
+
+    public static class HashPasswordFactory extends ElementFactory {
+        @Override
+        public Set<QName> getElementQNames() {
+           HashSet<QName> set = new HashSet<QName>();
+            for (ConfigVersion cfgVersion : ConfigVersion.values()) {
+                set.add(SecurityPolicyQName.HASHPASSWORD.getQName(cfgVersion));
+            }
+            return Collections.unmodifiableSet(set);
+        }
+        @Override
+        public WSDLComponent create(WSDLComponent context, Element element) {
+            return new HashPasswordImpl(context.getModel(), element);
+        }
+    }    
+    
 }

@@ -87,7 +87,7 @@ class MapperNode implements GraphListener {
     private Mapper getMapper() { return mapper; }
     private RightTree getRightTree() { return mapper.getRightTree(); }
 
-    private MapperModel getModel() { return mapper.getModel(); }
+    private MapperModel getModel() { return mapper.getFilteredModel(); }
 
     MapperNode getParent() { return parent; }
     
@@ -201,7 +201,9 @@ class MapperNode implements GraphListener {
         if (this.graphCollapsed != graphCollapsed) {
             this.graphCollapsed = graphCollapsed;
             invalidate();
-            repaint();
+            //repaint();
+            // If link go from LeftTree to RightTree It can change color
+            getMapper().repaint();
         }
     }
     
@@ -330,7 +332,7 @@ class MapperNode implements GraphListener {
 
 
     void updateChildren() {
-        MapperModel model = mapper.getModel();
+        MapperModel model = mapper.getFilteredModel();
         
         List<MapperNode> oldChildren = Collections.emptyList();
         if (children != null) oldChildren = children;
@@ -478,7 +480,8 @@ class MapperNode implements GraphListener {
         Dimension labelSize = getLabelSize();
 
         int w = labelSize.width;
-        int h = Math.max(getGraphHeight(), labelSize.height + 4) + 1;
+        int h = (getParent() == null) ? 0 
+                : Math.max(getGraphHeight(), labelSize.height + 4) + 1;
 
         int indent = mapper.getTotalIndent();
 
@@ -545,7 +548,7 @@ class MapperNode implements GraphListener {
         return isGraphExpanded();
     }
     
-  //////////////////////////////!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  
+  //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  
     private boolean isVisible() {
         if (this == getMapper().getRoot()) return true;
         if (getParent().isCollapsed()) return false;
@@ -587,6 +590,12 @@ class MapperNode implements GraphListener {
     }
     
     public boolean mustDrawLine() {
+        if (getParent() == null) {
+            // Root node is never visible. 
+            // We should not paint line for invisible node
+            return false;
+        }
+        
         MapperNode nextNode = getNextVisibleNode(this);
         // graph or nextGraph is not Empty or One Link
         if (this.getGraph() != null && !this.getGraph().isEmptyOrOneLink() ||
@@ -653,7 +662,10 @@ class MapperNode implements GraphListener {
     }
     
     private MapperNode getNextVisibleNode(MapperNode node) {
-        if (node == mapper.getRoot() && node != this) {
+        MapperNode root = mapper.getRoot();
+        if (node == root && (node != this || root.isLeaf() 
+                || root.isCollapsed() || root.getChildCount() < 1)) 
+        {
             return null;
         }
         MapperNode result = null;

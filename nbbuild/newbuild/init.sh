@@ -23,7 +23,12 @@ export ANT_OPTS="-Xmx512m"
 export JAVA_HOME=$JDK_HOME
 
 if [ -z ${DATESTAMP} ]; then
-    export DATESTAMP=`date -u +%Y%m%d%H%M`
+    if [ -z ${BUILD_ID} ]; then
+        export DATESTAMP=`date -u +%Y%m%d%H%M`
+    else
+        #Use BUILD_ID from hudson, remove all "-" and "_" and cut it to 12 chars
+        export DATESTAMP=`echo ${BUILD_ID} | sed -e "s/[-_]//g" | cut -c 1-12`
+    fi
 fi
 
 BUILDNUM=$BUILD_DESC-$DATESTAMP

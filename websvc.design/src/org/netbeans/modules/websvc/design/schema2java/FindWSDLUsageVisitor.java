@@ -1,0 +1,169 @@
+/*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Sun in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ */
+package org.netbeans.modules.websvc.design.schema2java;
+
+import java.util.ArrayList;
+import java.util.List;
+import org.netbeans.modules.xml.wsdl.model.Binding;
+import org.netbeans.modules.xml.wsdl.model.BindingFault;
+import org.netbeans.modules.xml.wsdl.model.BindingInput;
+import org.netbeans.modules.xml.wsdl.model.BindingOperation;
+import org.netbeans.modules.xml.wsdl.model.BindingOutput;
+import org.netbeans.modules.xml.wsdl.model.Definitions;
+import org.netbeans.modules.xml.wsdl.model.Fault;
+import org.netbeans.modules.xml.wsdl.model.Input;
+import org.netbeans.modules.xml.wsdl.model.OperationParameter;
+import org.netbeans.modules.xml.wsdl.model.Output;
+import org.netbeans.modules.xml.wsdl.model.Port;
+import org.netbeans.modules.xml.wsdl.model.ReferenceableWSDLComponent;
+import org.netbeans.modules.xml.wsdl.model.visitor.ChildVisitor;
+import org.netbeans.modules.xml.wsdl.model.visitor.WSDLVisitor;
+import org.netbeans.modules.xml.xam.Component;
+import org.netbeans.modules.xml.xam.Reference;
+import org.netbeans.modules.xml.xam.Referenceable;
+import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
+import org.openide.ErrorManager;
+
+/**
+ *
+ * @author Nam Nguyen
+ */
+public class FindWSDLUsageVisitor extends ChildVisitor implements WSDLVisitor {
+
+    private ReferenceableWSDLComponent referenced;
+    private List<WSDLRefactoringElement> elements;
+    private Definitions wsdl;
+
+    /** Creates a new instance of FindWSDLUsageVisitor */
+    public FindWSDLUsageVisitor() {
+    }
+
+    public List<WSDLRefactoringElement> findUsages(ReferenceableWSDLComponent referenced, Definitions wsdl) {
+        this.referenced = referenced;
+        this.wsdl = wsdl;
+        elements = new ArrayList<WSDLRefactoringElement>();
+        wsdl.accept(this);
+        return elements;
+    }
+
+    private <T extends ReferenceableWSDLComponent> void check(NamedComponentReference<T> ref, Component referencing) {
+        if (ref == null || !ref.getType().isAssignableFrom(referenced.getClass())) {
+            return;
+        }
+
+        try {
+            if (ref.references(ref.getType().cast(referenced))) {
+                elements.add(new WSDLRefactoringElement(referencing.getModel(), (Referenceable) referenced, referencing));
+            }
+        } catch (Exception e) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+
+        }
+    }
+
+    private <T extends ReferenceableWSDLComponent> void check(Reference<T> ref, Component referencing) {
+        if (ref == null || !ref.getType().isAssignableFrom(referenced.getClass())) {
+            return;
+        }
+        try {
+            if (ref.references(ref.getType().cast(referenced))) {
+                elements.add(new WSDLRefactoringElement(referencing.getModel(), referenced, referencing));
+            }
+        } catch (Exception e) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+
+        }
+    }
+
+    private void check(OperationParameter referencing) {
+        check(referencing.getMessage(), referencing);
+    }
+
+    public void visit(BindingOperation component) {
+        check(component.getOperation(), component);
+        super.visit(component);
+    }
+
+    public void visit(Input oparam) {
+        check(oparam);
+        super.visit(oparam);
+    }
+
+    public void visit(Output oparam) {
+        check(oparam);
+        super.visit(oparam);
+    }
+
+    public void visit(Fault oparam) {
+        check(oparam);
+        super.visit(oparam);
+    }
+
+    public void visit(Port port) {
+        check(port.getBinding(), port);
+        super.visit(port);
+    }
+
+    public void visit(BindingInput component) {
+        check(component.getInput(), component);
+        super.visit(component);
+    }
+
+    public void visit(BindingOutput component) {
+        check(component.getOutput(), component);
+        super.visit(component);
+    }
+
+    public void visit(BindingFault component) {
+        check(component.getFault(), component);
+        super.visit(component);
+    }
+
+    public void visit(Binding component) {
+        check(component.getType(), component);
+        super.visit(component);
+    }
+
+   
+  
+}
+
+

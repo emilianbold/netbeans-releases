@@ -41,8 +41,6 @@
 
 package org.netbeans.modules.visualweb.project.jsf.libraries.provider;
 
-import java.awt.Color;
-import java.awt.Component;
 import java.beans.Customizer;
 import java.io.File;
 import java.net.URL;
@@ -50,6 +48,9 @@ import java.net.MalformedURLException;
 import java.util.Collection;
 import java.util.Arrays;
 import java.awt.*;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import javax.swing.*;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.event.*;
@@ -62,9 +63,15 @@ import org.netbeans.spi.project.libraries.LibraryImplementation;
 
 
 import javax.swing.filechooser.FileFilter;
+import org.netbeans.api.project.ant.FileChooser;
+import org.netbeans.modules.visualweb.project.jsf.libraries.JavadocForBinaryQueryLibraryImpl;
+import org.netbeans.spi.project.libraries.LibraryCustomizerContext;
 import org.netbeans.spi.project.libraries.LibraryStorageArea;
 import org.netbeans.spi.project.libraries.support.LibrariesSupport;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -76,6 +83,7 @@ public class ThemeVolumeCustomizer extends javax.swing.JPanel implements Customi
     private LibraryImplementation impl;
     private VolumeContentModel model;
     private LibraryStorageArea area;
+    private Boolean allowRelativePaths = null;
 
     /**
      * Creates new form ThemeVolumeCustomizer
@@ -325,8 +333,11 @@ public class ThemeVolumeCustomizer extends javax.swing.JPanel implements Customi
     }//GEN-LAST:event_removeResource
 
     private void addResource(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addResource
-        // TODO add your handling code here:
-        JFileChooser chooser = new JFileChooser();
+        File baseFolder = null;
+        if (allowRelativePaths != null && allowRelativePaths.booleanValue()) {
+            baseFolder = new File(URI.create(area.getLocation().toExternalForm())).getParentFile();
+        }
+        FileChooser chooser = new FileChooser(baseFolder, baseFolder);
         FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
         chooser.setAcceptAllFileFilterUsed(false);
         if (this.volumeType.equalsIgnoreCase(ThemeLibraryTypeProvider.VOLUME_TYPE_CLASSPATH)) {        //NOI18N
@@ -368,14 +379,11 @@ public class ThemeVolumeCustomizer extends javax.swing.JPanel implements Customi
         if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
             try {
                 lastFolder = chooser.getCurrentDirectory();
-                if (chooser.isMultiSelectionEnabled()) {
-                    addFiles (chooser.getSelectedFiles());
-                }
-                else {
-                    addFiles (new File[] {chooser.getSelectedFile()});
-                }
+                addFiles (chooser.getSelectedPaths(), area != null ? area.getLocation() : null);
             } catch (MalformedURLException mue) {
                 ErrorManager.getDefault().notify(mue);
+            } catch (IOException ex) {
+                ErrorManager.getDefault().notify(ex);
             }
         }
     }//GEN-LAST:event_addResource
@@ -402,22 +410,49 @@ public class ThemeVolumeCustomizer extends javax.swing.JPanel implements Customi
 //    }
 
 
-    private void addFiles (File[] files) throws MalformedURLException {
+    private void addFiles (String[] fileNames, URL libraryLocation) throws MalformedURLException {
         int firstIndex = this.model.getSize();
-        for (int i = 0; i < files.length; i++) {
-            File f = files[i];
-            //XXX: JFileChooser workaround (JDK bug #5075580), double click on folder returns wrong file
-            // E.g. for /foo/src it returns /foo/src/src
-            // Try to convert it back by removing last invalid name component
-            if (!f.exists()) {
-                File parent = f.getParentFile();
-                if (parent != null && f.getName().equals(parent.getName()) && parent.exists()) {
-                    f = parent;
+        for (int i = 0; i < fileNames.length; i++) {
+            File f = new File(fileNames[i]);
+            URI uri = LibrariesSupport.convertFilePathToURI(fileNames[i]);
+            if (allowRelativePaths != null && allowRelativePaths.booleanValue()) {
+                File realFile = f;
+                if (!f.isAbsolute()) {
+                    assert area != null;
+                    if (area != null) {
+                        realFile = FileUtil.normalizeFile(new File(
+                            new File(URI.create(area.getLocation().toExternalForm())).getParentFile(), f.getPath()));
+                    }
                 }
+                if (FileUtil.isArchiveFile(realFile.toURI().toURL())) {
+                    uri = LibrariesSupport.getArchiveRoot(uri);
+                } else if (!uri.toString().endsWith("/")){
+                    try {
+                        uri = new URI(uri.toString()+"/");
+                    } catch (URISyntaxException ex) {
+                        throw new AssertionError(ex);
+                    }
+                }
+                model.addResource(uri);
+            } else {
+                assert f.isAbsolute() : f.getPath();
+                URL url = FileUtil.normalizeFile(f).toURI().toURL();
+                if (FileUtil.isArchiveFile(url)) {
+                    url = FileUtil.getArchiveRoot(url);
+                } else if (!url.toExternalForm().endsWith("/")){
+                    url = new URL(url.toExternalForm()+"/");
+                }
+                model.addResource(url);
             }
-            URL url = f.toURI().toURL();
-            this.model.addResource(url);
-        }
+            if (this.volumeType.equals(ComponentLibraryTypeProvider.VOLUME_TYPE_JAVADOC)
+                && !JavadocForBinaryQueryLibraryImpl.isValidLibraryJavadocRoot (
+                    LibrariesSupport.resolveLibraryEntryURI(libraryLocation, uri).toURL())) {
+                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                    NbBundle.getMessage(ComponentVolumeCustomizer.class,"TXT_InvalidJavadocRoot", f.getPath()),
+                    NotifyDescriptor.ERROR_MESSAGE));
+                continue;
+            }
+        }        
         int lastIndex = this.model.getSize()-1;
         if (firstIndex<=lastIndex) {
             int[] toSelect = new int[lastIndex-firstIndex+1];
@@ -427,27 +462,21 @@ public class ThemeVolumeCustomizer extends javax.swing.JPanel implements Customi
             this.content.setSelectedIndices(toSelect);
         }
     }
-
+    
     public void setObject(Object bean) {
-        if (bean instanceof LibraryStorageArea) {
-            this.area = (LibraryStorageArea)bean;
-        } else {
-            this.area = null;
+        assert bean instanceof LibraryCustomizerContext : bean.getClass();
+        LibraryCustomizerContext context = (LibraryCustomizerContext)bean;
+        area = context.getLibraryStorageArea();
+        impl = context.getLibraryImplementation();
+        allowRelativePaths = Boolean.valueOf(context.getLibraryImplementation2() != null);
+        model = new VolumeContentModel(impl, area, volumeType);
+        content.setModel(model);
+        if (model.getSize()>0) {
+            content.setSelectedIndex(0);
         }
-        if (bean instanceof LibraryImplementation) {
-            this.impl = (LibraryImplementation) bean;
-            this.model = new VolumeContentModel(this.impl, area, this.volumeType);
-            this.content.setModel(model);
-            if (this.model.getSize()>0) {
-                this.content.setSelectedIndex(0);
-            }
-        }
-        else {
-            throw new IllegalArgumentException();
-        }
-    }
-
-
+    }        
+    
+    
     private static class SimpleFileFilter extends FileFilter {
 
         private String description;
@@ -496,17 +525,41 @@ public class ThemeVolumeCustomizer extends javax.swing.JPanel implements Customi
             String displayName = null;
             Color color = null;
             String toolTip = null;
-
-            if (value instanceof URL) {
-                URL url = (URL) value;
-                displayName = url.toExternalForm();
-                if ("jar".equals(url.getProtocol())) {   //NOI18N
-                    url = FileUtil.getArchiveFile (url);
+            
+            URI uri = null;
+            if (value instanceof URI) {
+                uri = (URI)value;
+            } else if (value instanceof URL) {
+                try {
+                    uri = ((URL) value).toURI();
+                } catch (URISyntaxException ex) {
+                    Exceptions.printStackTrace(ex);
                 }
+            }
+            if (uri != null) {
+                if (uri.toString().contains("!/")) {   //NOI18N
+                    uri = LibrariesSupport.getArchiveFile(uri);
+                }
+                boolean broken = false;
                 VolumeContentModel model = (VolumeContentModel)list.getModel();
                 LibraryStorageArea area = model.getArea();
-                FileObject fo = LibrariesSupport.resolveLibraryEntryFileObject(area != null ? area.getLocation() : null, url);
+                FileObject fo = LibrariesSupport.resolveLibraryEntryFileObject(area != null ? area.getLocation() : null, uri);
                 if (fo == null) {
+                    broken = true;
+                    if ("file".equals(uri.getScheme())) { //NOI18N
+                        displayName = LibrariesSupport.convertURIToFilePath(uri);
+                    } else {
+                        displayName = uri.toString();
+                    }
+                } else {
+                    if (uri.isAbsolute()) {
+                        displayName = FileUtil.getFileDisplayName(fo);
+                    } else {
+                        displayName = LibrariesSupport.convertURIToFilePath(uri);
+                        toolTip = FileUtil.getFileDisplayName(fo);
+                    }
+                }
+                if (broken) {
                     color = new Color (164,0,0);
                     toolTip = NbBundle.getMessage (ThemeVolumeCustomizer.class,"TXT_BrokenFile");
                 }
@@ -517,7 +570,9 @@ public class ThemeVolumeCustomizer extends javax.swing.JPanel implements Customi
                     ((JComponent)c).setForeground (color);
                 }
                 if (toolTip != null) {
-                    ((JComponent)c).setToolTipText (toolTip);
+                    ((JComponent)c).setToolTipText(toolTip);
+                } else {
+                    ((JComponent)c).setToolTipText(null);
                 }
             }
             return c;

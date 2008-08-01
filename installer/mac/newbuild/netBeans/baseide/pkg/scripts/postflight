@@ -27,6 +27,8 @@ dirname=`dirname "$0"`
 
 "$dirname"/add_gf.sh "$NETBEANS_INSTALL_DIR" "$GLASSFISH_INSTALL_DIR"
 
+"$dirname"/add_gfv3.sh "$NETBEANS_INSTALL_DIR" "$GLASSFISH_V3_INSTALL_DIR"
+
 "$dirname"/add_tc.sh "$NETBEANS_INSTALL_DIR" "$TOMCAT_INSTALL_DIR"
 
 jdk_home_1_5=/System/Library/Frameworks/JavaVM.framework/Versions/1.5/Home
@@ -43,6 +45,7 @@ then
   else
     echo No 1.5 JDK home: $jdk_home_1_5
   fi
+  sed -E -i -e "s|\\$\{NETBEANS_HOME\}|$NETBEANS_INSTALL_DIR/Contents/Resources/NetBeans|g" netbeans.conf
 else
   echo No netbeans.conf in: `pwd`
 fi
@@ -52,6 +55,9 @@ cd "$NETBEANS_INSTALL_DIR"
 cd Contents/Resources/NetBeans*/${NB_CLUSTER_DIR}
 mkdir -p var
 touch var/license_accepted
+
+#add Product ID
+"$dirname"/addproduct_id.sh "NB"
 
 if [ -d "/Library/Receipts/baseide.pkg" ] ; then
     rm -rf "/Library/Receipts/baseide.pkg"

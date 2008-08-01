@@ -50,8 +50,6 @@ import org.openide.util.NbBundle;
  */
 public final class DebuggerAnnotation extends Annotation {
     
-    public static final String BREAKPOINT_ANNOTATION_TYPE = "Breakpoint";
-    public static final String DISABLED_BREAKPOINT_ANNOTATION_TYPE = "DisabledBreakpoint";
     public static final String CURRENT_LINE_ANNOTATION_TYPE = "CurrentPC";
     public static final String CALL_STACK_FRAME_ANNOTATION_TYPE = "CallSite";
     
@@ -67,11 +65,7 @@ public final class DebuggerAnnotation extends Annotation {
     }
     
     public String getShortDescription() {
-        if (type.equals(BREAKPOINT_ANNOTATION_TYPE)) {
-            return getMessage("TOOLTIP_BREAKPOINT"); // NOI18N
-        } else if (type.equals(DISABLED_BREAKPOINT_ANNOTATION_TYPE)) {
-            return getMessage("TOOLTIP_DISABLED_BREAKPOINT"); // NOI18N
-        } else if (type.equals(CURRENT_LINE_ANNOTATION_TYPE)) {
+        if (type.equals(CURRENT_LINE_ANNOTATION_TYPE)) {
             return getMessage("TOOLTIP_CURRENT_LINE"); // NOI18N
         } else if (type.equals(CALL_STACK_FRAME_ANNOTATION_TYPE)) {
             return getMessage("TOOLTIP_CALL_STACK_FRAME"); // NOI18N

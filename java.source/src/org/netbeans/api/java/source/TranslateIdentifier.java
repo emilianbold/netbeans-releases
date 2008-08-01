@@ -501,15 +501,13 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
         if (e != null) {
             return make.QualIdent(e);
         } else {
+            ExpressionTree expression = (ExpressionTree) translateTree(node.getExpression());
+
+            if (expression != node.getExpression()) {
+                node = make.MemberSelect(expression, node.getIdentifier());
+            }
             return node;
         }
-        
-//        ExpressionTree expression = (ExpressionTree) translateTree(node.getExpression());
-//        
-//        if (expression != node.getExpression()) {
-//            node = make.MemberSelect(expression, node.getIdentifier());
-//        }
-//        return node;
     }
 
     public Tree visitEmptyStatement(EmptyStatementTree node, Void p) {

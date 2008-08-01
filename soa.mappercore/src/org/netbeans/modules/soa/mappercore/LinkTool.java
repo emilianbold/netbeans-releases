@@ -660,6 +660,13 @@ public class LinkTool extends MapperPropertyAccess {
         
         if (sourcePin != null && targetPin != null && targetPath != null) {
             model.connect(targetPath, sourcePin, targetPin, oldTreePath, oldLink);
+            
+            if (sourcePin instanceof Constant) {
+                 Constant constant = (Constant) sourcePin;
+                 if (constant.getItemCount() > 0) {
+                    getCanvas().startEdit(targetPath, constant.getItem(0));
+                 }
+            }
         }
         
         getMapper().repaint();

@@ -47,6 +47,9 @@ import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -396,9 +399,9 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
             manager.setSelectedNodes (new Node [] { newSubfolder });
             view.invokeInplaceEditing ();
         } catch (PropertyVetoException pve) {
-            Logger.getLogger(TemplatesPanel.class.getName()).log(Level.WARNING, null, pve);
+            Logger.getLogger(TemplatesPanel.class.getName()).log(Level.WARNING, null, pve);//GEN-LAST:event_newFolderButtonActionPerformed
         }
-//GEN-LAST:event_newFolderButtonActionPerformed
+                                               
     }                                               
     
     private void deleteButtonActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteButtonActionPerformed
@@ -408,24 +411,24 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
                 nodes[i].destroy();
             }
             catch (IOException ioe) {
-                Logger.getLogger(TemplatesPanel.class.getName()).log(Level.WARNING, null, ioe);
+                Logger.getLogger(TemplatesPanel.class.getName()).log(Level.WARNING, null, ioe);//GEN-LAST:event_deleteButtonActionPerformed
             }
-        }//GEN-LAST:event_deleteButtonActionPerformed
+        }                                            
     }                                            
 
     private void duplicateButtonActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_duplicateButtonActionPerformed
         Node [] nodes = manager.getSelectedNodes ();
         assert nodes != null : "Selected Nodes cannot be null.";
         assert nodes.length == 1 : "One one node can be selected, but was " + Arrays.asList (nodes);
-        createDuplicateFromNode (nodes [0]);
-//GEN-LAST:event_duplicateButtonActionPerformed
+        createDuplicateFromNode (nodes [0]);//GEN-LAST:event_duplicateButtonActionPerformed
+                                               
     }                                               
     
     private void renameButtonActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_renameButtonActionPerformed
         Node [] nodes = manager.getSelectedNodes ();
         assert nodes != null : "Selected Nodes cannot be null.";
-        assert nodes.length == 1 : "One one node can be selected, but was " + Arrays.asList (nodes);
-        view.invokeInplaceEditing ();//GEN-LAST:event_renameButtonActionPerformed
+        assert nodes.length == 1 : "One one node can be selected, but was " + Arrays.asList (nodes);//GEN-LAST:event_renameButtonActionPerformed
+        view.invokeInplaceEditing ();                                            
     }                                            
     
     private void addButtonActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
@@ -512,7 +515,20 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
         public Action getPreferredAction () {
             return null;
         }
-        
+
+        @Override
+        public void setName(String name) {
+            // #140308 - get attributtes before rename and set them for renamed FileObject
+            FileObject fo = this.getLookup().lookup(FileObject.class);
+            FileObject parentFO = fo.getParent();
+            final HashMap<String, Object> attributes = getAttributes(fo);
+            super.setName(name);
+            try {
+                setAttributes(parentFO.getFileObject(name), attributes);
+            } catch (IOException ex) {
+                Logger.getLogger(TemplatesPanel.class.getName()).log(Level.WARNING, null, ex);
+            }
+        }
     }
     
     private static class DataFolderFilterChildren extends FilterNode.Children {
@@ -621,13 +637,41 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
     static DataObject createDuplicateFromNode (Node n) {
         DataObject source = getDOFromNode (n);
         try {
-            return source.copy (source.getFolder ());
+            DataObject target = source.copy(source.getFolder());
+            FileObject srcFo = source.getPrimaryFile();
+            FileObject targetFo = target.getPrimaryFile();
+            setAttributes(targetFo, getAttributes(srcFo));
+            return target;
         } catch (IOException ioe) {
             Logger.getLogger(TemplatesPanel.class.getName()).log(Level.WARNING, null, ioe);
         }
         return null;
     }
     
+    /** Returns map of attributes for given FileObject. */
+    private static HashMap<String, Object> getAttributes(FileObject fo) {
+        HashMap<String, Object> attributes = new HashMap<String, Object>();
+        Enumeration<String> attributeNames = fo.getAttributes();
+        while(attributeNames.hasMoreElements()) {
+            String attrName = attributeNames.nextElement();
+            if (attrName == null) {
+                continue;
+            }
+            Object attrValue = fo.getAttribute(attrName);
+            if (attrValue != null) {
+                attributes.put(attrName, attrValue);
+            }
+        }
+        return attributes;
+    }
+
+    /** Sets attributes for given FileObject. */
+    private static void setAttributes(FileObject fo, HashMap<String, Object> attributes) throws IOException {
+        for (Entry<String, Object> entry : attributes.entrySet()) {
+            fo.setAttribute(entry.getKey(), entry.getValue());
+        }
+    }
+
     static FileObject getTemplatesRoot () {
         if (templatesRoot == null) {
             templatesRoot = Repository.getDefault ().getDefaultFileSystem ().findResource ("Templates"); // NOI18N

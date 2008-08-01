@@ -36,10 +36,12 @@ import org.w3c.dom.Node;
  */
 public class PLinksNodeModel implements NodeModel, Constants {
     
+    // When changed, update also mf-layer.xml, where are the properties duplicated because of Actions.alwaysEnabled()
     public static final String ICONS_ROOT = 
             "org/netbeans/modules/bpel/debugger/ui/" + // NOI18N
             "resources/image/plinks/"; // NOI18N
     
+    // When changed, update also mf-layer.xml, where are the properties duplicated because of Actions.alwaysEnabled()
     public static final String PARTNER_LINK_ICON =
             ICONS_ROOT + "PARTNER_LINK"; // NOI18N
     

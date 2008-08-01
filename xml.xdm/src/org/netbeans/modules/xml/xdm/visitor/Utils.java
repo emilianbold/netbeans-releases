@@ -47,7 +47,7 @@ import javax.swing.text.BadLocationException;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.xml.lexer.XMLTokenId;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.xml.text.syntax.XMLKit;
+import org.netbeans.editor.BaseKit;
 import org.netbeans.modules.xml.xdm.nodes.Document;
 import org.netbeans.modules.xml.xdm.nodes.XMLSyntaxParser;
 import org.w3c.dom.NodeList;
@@ -143,7 +143,7 @@ public class Utils {
     }
 
     public static BaseDocument loadDocument(String text) throws IOException {
-        BaseDocument sd = new BaseDocument(XMLKit.class, false);
+        BaseDocument sd = new BaseDocument(BaseKit.class, false);
         sd.putProperty(Language.class, XMLTokenId.language());
         try {
             sd.insertString(0, text, null);

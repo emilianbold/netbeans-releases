@@ -212,7 +212,7 @@ public class CsmTracer {
 	StringBuilder sb = new StringBuilder();
 	
 	sb.append("CLASS="); // NOI18N
-	CsmClassifier cls = inh.getCsmClassifier();
+	CsmClassifier cls = inh.getClassifier();
 	//sb.append(isDummyUnresolved(cls) ? "<unresolved>" : cls.getQualifiedName());
 	sb.append(cls == null ? NULL_TEXT : cls.getQualifiedName()); // NOI18N
 	
@@ -276,21 +276,21 @@ public class CsmTracer {
 		}
 	    }
 	    if( type.isReference() ) sb.append("&"); // NOI18N
-	    CsmClassifier classifier = type.getClassifier();
-	    if( classifier != null ) {
-		sb.append(classifier.getQualifiedName());
-//		if( classifier instanceof CsmOffsetable ) {
-//		    CsmOffsetable offs = (CsmOffsetable) classifier;
-//		    sb.append("(Declared in ");
-//		    sb.append(offs.getContainingFile());
-//		    sb.append(' ');
-//		    sb.append(getOffsetString(offs));
-//		    sb.append(')');
-//		}
+                CsmClassifier classifier = type.getClassifier();
+                if( classifier != null ) {
+                    sb.append(classifier.getQualifiedName());
+    //		if( classifier instanceof CsmOffsetable ) {
+    //		    CsmOffsetable offs = (CsmOffsetable) classifier;
+    //		    sb.append("(Declared in ");
+    //		    sb.append(offs.getContainingFile());
+    //		    sb.append(' ');
+    //		    sb.append(getOffsetString(offs));
+    //		    sb.append(')');
+    //		}
 	    }
 	    else {
-		sb.append("<*no_classifier*>"); // NOI18N
-	    }
+                    sb.append("<*no_classifier*>"); // NOI18N
+                }
 	    
 	    for( int i = 0; i < type.getArrayDepth(); i++ ) {
 		sb.append("[]"); // NOI18N
@@ -847,8 +847,13 @@ public class CsmTracer {
 			(cls.getKind() == CsmDeclaration.Kind.UNION) ? "UNION" : // NOI18N
 			    "<unknown-CsmClass-kind>"; // NOI18N
 	
-	String tmplStr = cls.isTemplate() ? "<>" : ""; // NOI18N
-	print(kw + ' ' + cls.getName() + tmplStr + " (" + cls.getQualifiedName() + " )" + // NOI18N
+        CharSequence name;
+        if (CsmKindUtilities.isTemplate(cls)) {
+            name = ((CsmTemplate)cls).getDisplayName();
+        } else {
+            name = cls.getName();
+        }
+	print(kw + ' ' + name + " (" + cls.getQualifiedName() + " )" + // NOI18N
 		getOffsetString(cls, false) + " lcurly=" + cls.getLeftBracketOffset() + ' ' + getScopeString(cls)); // NOI18N
 	
 	indent();

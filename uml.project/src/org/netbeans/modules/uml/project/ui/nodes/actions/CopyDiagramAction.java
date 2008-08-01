@@ -42,9 +42,12 @@
 package org.netbeans.modules.uml.project.ui.nodes.actions;
 
 import java.io.File;
+import java.io.IOException;
 import org.netbeans.modules.uml.common.Util;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamespace;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.UMLXMLManip;
+import org.netbeans.modules.uml.core.metamodel.diagrams.DiagramTypesManager;
+import org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IProxyDiagram;
 import org.netbeans.modules.uml.core.metamodel.structure.IProject;
 import org.netbeans.modules.uml.core.support.umlsupport.FileExtensions;
@@ -53,7 +56,6 @@ import org.netbeans.modules.uml.ui.controls.newdialog.AddPackageVisualPanel1;
 import org.netbeans.modules.uml.ui.support.archivesupport.IProductArchiveDefinitions;
 import org.netbeans.modules.uml.ui.support.archivesupport.IProductArchiveElement;
 import org.netbeans.modules.uml.ui.support.archivesupport.ProductArchiveImpl;
-import org.netbeans.modules.uml.ui.support.diagramsupport.DiagramTypesManager;
 import org.netbeans.modules.uml.ui.support.projecttreesupport.ITreeDiagram;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -119,53 +121,61 @@ public class CopyDiagramAction extends NodeAction
         }
     }
     
-
-    
-    // save presentation (.etlp) and layout (.etld) files
-    private void saveFiles(String fileName, String newName)
+    private boolean saveFiles(String fileName, String newName)
     {
         String originalFile = original.getFilename();
-        String original_p = originalFile;
         String original_l = originalFile;
         
         int index = originalFile.lastIndexOf(".");
         if (index > -1)
         {
-            original_p = originalFile.substring(0, index) +
-                    FileExtensions.DIAGRAM_PRESENTATION_EXT;
             original_l = originalFile.substring(0, index) +
                     FileExtensions.DIAGRAM_LAYOUT_EXT;
         }
-        
-        String clone_p = fileName + FileExtensions.DIAGRAM_PRESENTATION_EXT;
         String clone_l = fileName + FileExtensions.DIAGRAM_LAYOUT_EXT;
         
         // persist presentation file
-        ProductArchiveImpl archive = new ProductArchiveImpl(original_p);
-        IProductArchiveElement ele = archive.getElement(IProductArchiveDefinitions.DIAGRAMINFO_STRING);
-        ele.addAttributeString(IProductArchiveDefinitions.DIAGRAMNAME_STRING, newName);
-        ele.addAttributeString(IProductArchiveDefinitions.DIAGRAM_XMIID, UMLXMLManip.generateId(true));
-        archive.save(clone_p);
-        
-        // persist layout file
-        archive = new ProductArchiveImpl(original_l);
-        archive.save(clone_l);
+        ProductArchiveImpl archive = new ProductArchiveImpl(original_l);
+        IProductArchiveElement ele = archive.getDiagramElement(IProductArchiveDefinitions.UML_DIAGRAM_STRING);
+        if (ele != null)
+        {
+            ele.addAttributeString(IProductArchiveDefinitions.DIAGRAMNAME_STRING, newName);
+            ele.addAttributeString(IProductArchiveDefinitions.DIAGRAM_XMIID, UMLXMLManip.generateId(true));
+            archive.save(clone_l);
+            return true;
+        }
+        else 
+        {
+             NotifyDescriptor.Message msg 
+                = new NotifyDescriptor.Message
+                (NbBundle.getMessage(CopyDiagramAction.class,
+                    "MSG_Cant_Copy_Diagram")); // NOI18N
+            DialogDisplayer.getDefault().notify(msg);
+            return false;
+        }
     }
     
     
     private void createDiagram(String type, INamespace nameSpace, String name)
     {
         // 119568, save current working diagram before save as
-        if (original.getDiagram() != null)
+        IDiagram diagram = original.getDiagram();
+        if (diagram != null)
         {
-            original.getDiagram().save();
+            try {
+                diagram.save();
+            }catch (IOException e)
+            {
+                e.printStackTrace();
+            }
         }
         String filename = getFullFileName(name, nameSpace);
-        saveFiles(filename, name);
-        
-        // create diagram node
-        UMLProjectModule.getProjectTreeEngine().addDiagramNode(
-                filename + FileExtensions.DIAGRAM_PRESENTATION_EXT);
+
+        if (saveFiles(filename, name)) {
+            // create diagram node
+            UMLProjectModule.getProjectTreeEngine().addDiagramNode(
+                    filename + FileExtensions.DIAGRAM_PRESENTATION_EXT);
+        }
     }
     
     

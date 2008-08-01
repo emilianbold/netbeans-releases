@@ -130,12 +130,12 @@ public interface TypeProvider {
         static {
             TypeProviderAccessor.DEFAULT = new TypeProviderAccessor() {
                 @Override
-                protected Context createContext(Project p, String text, SearchType t) {
+                public Context createContext(Project p, String text, SearchType t) {
                     return new Context(p, text, t);
                 }
 
                 @Override
-                protected Result createResult(List<? super TypeDescriptor> result, String[] message) {
+                public Result createResult(List<? super TypeDescriptor> result, String[] message) {
                     return new Result(result, message);
                 }
             };

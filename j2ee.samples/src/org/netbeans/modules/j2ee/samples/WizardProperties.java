@@ -41,6 +41,8 @@
 
 package org.netbeans.modules.j2ee.samples;
 
+import org.openide.WizardDescriptor;
+
 /**
  *
  * @author Tomasz.Slota@Sun.COM
@@ -48,8 +50,8 @@ package org.netbeans.modules.j2ee.samples;
 interface WizardProperties {
     String NAME = "name"; //NOI18N
     String PROJ_DIR = "projdir"; //NOI18N
-    String WIZARD_ERROR_MSG = "WizardPanel_errorMessage"; //NOI18N
-    String SELECTED_INDEX = "WizardPanel_contentSelectedIndex"; //NOI18N
-    String CONTENT_DATA = "WizardPanel_contentData"; //NOI18N
+    String WIZARD_ERROR_MSG = WizardDescriptor.PROP_ERROR_MESSAGE; //NOI18N
+    String SELECTED_INDEX = WizardDescriptor.PROP_CONTENT_SELECTED_INDEX; //NOI18N
+    String CONTENT_DATA = WizardDescriptor.PROP_CONTENT_DATA; //NOI18N
     String DB_NAME = "dbName"; //NOI18N
 }

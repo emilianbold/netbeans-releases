@@ -56,9 +56,9 @@ public class DebugAction extends Action {
     // "Run"
     private static final String runItem = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.Bundle", "Menu/RunProject");
     // "Run File"
-    private static final String runFileItem = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.Bundle", "Menu/RunProject/RunOther");
+    //private static final String runFileItem = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.Bundle", "Menu/RunProject/RunOther");
     // "Debug File"
-    private static final String popupPath = 
+    private static final String POPUP_PATH = 
             Bundle.getStringTrimmed("org.netbeans.modules.java.project.Bundle", "LBL_DebugFile_Action");
     private static final KeyStroke keystroke = System.getProperty("os.name").toLowerCase().indexOf("mac") > -1 ?
             KeyStroke.getKeyStroke(KeyEvent.VK_F5, KeyEvent.META_MASK|KeyEvent.SHIFT_MASK) :
@@ -66,17 +66,30 @@ public class DebugAction extends Action {
     
     /** Creates new DebugAction instance. */
     public DebugAction() {
-        super(null, popupPath, keystroke);
+        super(null, POPUP_PATH, keystroke);
     }
     
     /** Performs action through main menu. 
      * @param node node to be selected before action
      */
+    @Override
     public void performMenu(Node node) {
-        this.menuPath = runItem+"|"+runFileItem+"|"+
+        this.menuPath = runItem+"|"+
                 Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle",
                                         "LBL_DebugSingleAction_Name",
                                         new Object[] {new Integer(1), node.getText()});
         super.performMenu(node);
+    }
+
+    /** Performs action through popup menu. 
+     * @param node node to be selected before action
+     */
+    @Override
+    public void performPopup(Node node) {
+        this.popupPath =
+                Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle",
+                                        "LBL_DebugSingleAction_Name",
+                                        new Object[] {new Integer(1), node.getText()});
+        super.performPopup(node);
     }
 }

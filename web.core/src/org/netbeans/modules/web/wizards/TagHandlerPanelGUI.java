@@ -44,25 +44,19 @@ package org.netbeans.modules.web.wizards;
 
 import java.io.IOException;
 import java.io.InputStream;
-import javax.swing.DefaultCellEditor;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionListener;
 import org.netbeans.api.project.ProjectUtils;
-
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
-
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.web.api.webmodule.WebModule;
-
 import org.openide.loaders.TemplateWizard;
-
 import org.netbeans.modules.web.taglib.TLDDataObject;
 import org.netbeans.spi.project.ui.templates.support.Templates;
-
 import org.netbeans.modules.web.core.Util;
 import org.netbeans.modules.xml.multiview.ui.EditDialog;
 import org.openide.util.Exceptions;
@@ -77,7 +71,6 @@ public class TagHandlerPanelGUI extends javax.swing.JPanel implements ListSelect
     private TemplateWizard wiz;
     private Project proj;
     private SourceGroup[] folders;
-    private String target;
     private FileObject tldFo;
     private java.util.Set tagValues;
     
@@ -92,11 +85,6 @@ public class TagHandlerPanelGUI extends javax.swing.JPanel implements ListSelect
             new String[]{"attrName","attrType","attrRequired","attrRtexprvalue"}));//NOI18N
         attrTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         attrTable.setIntercellSpacing(new java.awt.Dimension(6, 6));
-        //DefaultCellEditor dce = new DefaultCellEditor(new javax.swing.JCheckBox());
-        //DefaultCellEditor dce1 =  new DefaultCellEditor(new javax.swing.JComboBox());
-        //attrTable.getColumnModel().getColumn(1).setCellEditor(dce1);
-        //attrTable.getColumnModel().getColumn(2).setCellEditor(dce);
-	//attrTable.getColumnModel().getColumn(3).setCellEditor(dce);
         attrTable.setPreferredScrollableViewportSize(new java.awt.Dimension(300, 200));
         setName( org.openide.util.NbBundle.getMessage(TagHandlerPanelGUI.class,"LBL_configure_TLD"));
         attrTable.getSelectionModel().addListSelectionListener(this);
@@ -384,7 +372,6 @@ public class TagHandlerPanelGUI extends javax.swing.JPanel implements ListSelect
     // </editor-fold>//GEN-END:initComponents
 
     private void deleteButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteButtonActionPerformed
-        // TODO add your handling code here:
         int row = attrTable.getSelectedRow();
         if (row>=0) {
             ((AttrTableModel)attrTable.getModel()).removeRow(row);
@@ -393,26 +380,21 @@ public class TagHandlerPanelGUI extends javax.swing.JPanel implements ListSelect
     }//GEN-LAST:event_deleteButtonActionPerformed
 
     private void newButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newButtonActionPerformed
-        // TODO add your handling code here:
         String title =  org.openide.util.NbBundle.getMessage(TagHandlerPanelGUI.class, "TITLE_attr_add"); //NOI18N
         final AttrDialog panel = new AttrDialog();
         final AttrTableModel tableModel = (AttrTableModel)attrTable.getModel();
         EditDialog editDialog = new EditDialog(panel,title, true) {
             protected String validate() {
                 String newAttrName = panel.getAttrName();
-                //String errorMessage=null;
                 if (newAttrName.length()==0) {
-                    return NbBundle.getMessage(TagHandlerPanelGUI.class, 
-                                                       "MSG_attr_no_name");
+                    return NbBundle.getMessage(TagHandlerPanelGUI.class, "MSG_attr_no_name");
                 } else if (!isJavaIdentifier(newAttrName)) {
-                    return NbBundle.getMessage(TagHandlerPanelGUI.class, 
-                                                       "MSG_wrong_attr_name",newAttrName);
+                    return NbBundle.getMessage(TagHandlerPanelGUI.class, "MSG_wrong_attr_name",newAttrName);
                 } else {
                     Object[][] attrs = tableModel.getAttributes();
                     for (int i=0;i<attrs.length;i++){
                         if (newAttrName.equals(attrs[i][0])) {
-                            return NbBundle.getMessage(TagHandlerPanelGUI.class, 
-                                                           "MSG_attr_exists");
+                            return NbBundle.getMessage(TagHandlerPanelGUI.class, "MSG_attr_exists");
                         }
                     }
                 }
@@ -424,7 +406,7 @@ public class TagHandlerPanelGUI extends javax.swing.JPanel implements ListSelect
         panel.getAttrNameTF().getDocument().addDocumentListener(docListener);
         java.awt.Dialog d = org.openide.DialogDisplayer.getDefault().createDialog(editDialog);
         d.getAccessibleContext().setAccessibleDescription(editDialog.getDialogPanel().getAccessibleContext().getAccessibleDescription());
-        d.show();
+        d.setVisible(true);
         panel.getAttrNameTF().getDocument().removeDocumentListener(docListener);
         
         if (editDialog.getValue().equals(EditDialog.OK_OPTION)) {
@@ -435,13 +417,11 @@ public class TagHandlerPanelGUI extends javax.swing.JPanel implements ListSelect
     }//GEN-LAST:event_newButtonActionPerformed
 
     private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
-        // TODO add your handling code here:
         if ( browseButton == evt.getSource() ) {
             org.openide.filesystems.FileObject fo=null;
             // Show the browse dialog 
             if (folders!=null) fo = BrowseFolders.showDialog(folders,
-                    TLDDataObject.class,
-                    "");
+                    TLDDataObject.class, "");
             else {       
                 Sources sources = ProjectUtils.getSources(proj);
                 fo = BrowseFolders.showDialog( sources.getSourceGroups( Sources.TYPE_GENERIC ),
@@ -453,11 +433,9 @@ public class TagHandlerPanelGUI extends javax.swing.JPanel implements ListSelect
                 tldFo = fo;
                 FileObject targetFolder = Templates.getTargetFolder(wiz);
                 WebModule wm = WebModule.getWebModule(targetFolder);
-                //tldTextField.setText(target==null || target.length()==0?fo.getNameExt():target+"/"+fo.getNameExt());
                 tldTextField.setText(FileUtil.getRelativePath(wm == null ? proj.getProjectDirectory() : wm.getDocumentBase(), fo));
                 
                 RequestProcessor.getDefault().post(new Runnable() {
-
                     public void run() {
                         try {
                             InputStream is = tldFo.getInputStream();
@@ -494,7 +472,6 @@ public class TagHandlerPanelGUI extends javax.swing.JPanel implements ListSelect
     }
 
     private void jCheckBox1ItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_jCheckBox1ItemStateChanged
-        // TODO add your handling code here:
         if (jCheckBox1.isSelected()) {
             //tldTextField.setEnabled(true);
             browseButton.setEnabled(true);
@@ -514,7 +491,6 @@ public class TagHandlerPanelGUI extends javax.swing.JPanel implements ListSelect
     }//GEN-LAST:event_jCheckBox1ItemStateChanged
 
     private void editButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editButtonActionPerformed
-        // TODO add your handling code here:
         String title =  org.openide.util.NbBundle.getMessage(TagHandlerPanelGUI.class, "TITLE_attr_edit"); //NOI18N
         final AttrTableModel tableModel = (AttrTableModel)attrTable.getModel();
         final int row = attrTable.getSelectedRow();
@@ -527,17 +503,14 @@ public class TagHandlerPanelGUI extends javax.swing.JPanel implements ListSelect
             protected String validate() {
                 String newAttrName = panel.getAttrName();
                 if (newAttrName.length()==0) {
-                    return NbBundle.getMessage(TagHandlerPanelGUI.class, 
-                                                       "MSG_attr_no_name");
+                    return NbBundle.getMessage(TagHandlerPanelGUI.class, "MSG_attr_no_name");
                 } else if (!isJavaIdentifier(newAttrName)) {
-                    return NbBundle.getMessage(TagHandlerPanelGUI.class, 
-                                                       "MSG_wrong_attr_name",newAttrName);
+                    return NbBundle.getMessage(TagHandlerPanelGUI.class, "MSG_wrong_attr_name",newAttrName);
                 } else {
                     Object[][] attrs = tableModel.getAttributes();
                     for (int i=0;i<attrs.length;i++){
                         if (i!=row && newAttrName.equals(attrs[i][0])) {
-                            return NbBundle.getMessage(TagHandlerPanelGUI.class, 
-                                                           "MSG_attr_exists");
+                            return NbBundle.getMessage(TagHandlerPanelGUI.class, "MSG_attr_exists");
                         }
                     }
                 }
@@ -549,7 +522,7 @@ public class TagHandlerPanelGUI extends javax.swing.JPanel implements ListSelect
 
         java.awt.Dialog d = org.openide.DialogDisplayer.getDefault().createDialog(editDialog);
         d.getAccessibleContext().setAccessibleDescription(editDialog.getDialogPanel().getAccessibleContext().getAccessibleDescription());
-        d.show();
+        d.setVisible(true);
         panel.getAttrNameTF().getDocument().removeDocumentListener(docListener);
         if (editDialog.getValue().equals(EditDialog.OK_OPTION)) {
             tableModel.setData(panel.getAttrName(),panel.getAttrType(),panel.isRequired(),panel.isRtexpr(),row);

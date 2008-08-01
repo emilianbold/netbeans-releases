@@ -114,8 +114,11 @@ implements PropertyChangeListener, FileSystem.AtomicAction {
         
         SerialDataConvertor.SettingsInstance si = createInstance(null);
         if (isModuleEnabled(si)) {
-            instance = si;
-            lkpContent.add(instance);
+            // 137240 - if instanceName is empty string, it doesn't provide instance
+            if (si.instanceName().length() > 0) {
+                instance = si;
+                lkpContent.add(instance);
+            }
         }
         lkpContent.add(this);
         node = new SerialDataConvertor.NodeConvertor();
@@ -212,14 +215,14 @@ implements PropertyChangeListener, FileSystem.AtomicAction {
             }
         }
         if (XMLSettingsSupport.err.isLoggable(Level.FINE)) XMLSettingsSupport.err.fine("need recreate: " + recreate + " for " + this.dobj); // NOI18N
-        if (isModuleEnabled(si)) {
+        if (isModuleEnabled(si) && si.instanceName().length() > 0) {  // 137240 - if instanceName is empty string, it doesn't provide instance
             instance = si;
             lkpContent.set(Arrays.asList(new Object [] { this, si }), null);
             if (XMLSettingsSupport.err.isLoggable(Level.FINE)) XMLSettingsSupport.err.fine("module enabled: " + this.dobj); // NOI18N
         } else {
             lkpContent.set(Collections.singleton(this), null);
             instance = null;
-            if (XMLSettingsSupport.err.isLoggable(Level.FINE)) XMLSettingsSupport.err.fine("module disabled: " + this.dobj); // NOI18N
+            if (XMLSettingsSupport.err.isLoggable(Level.FINE)) XMLSettingsSupport.err.fine("module disabled: " + this.dobj + "  or instanceName is empty: " + si.instanceName()); // NOI18N
         }
         
         lkpContent.add(this, node);
@@ -229,7 +232,9 @@ implements PropertyChangeListener, FileSystem.AtomicAction {
         if (isModuleEnabled(si) && recreate) {
             if (XMLSettingsSupport.err.isLoggable(Level.FINE)) XMLSettingsSupport.err.fine("recreating: " + this.dobj); // NOI18N
             try {
-                instance.instanceCreate();
+                if(instance != null) {
+                    instance.instanceCreate();
+                }
             } catch (Exception ex) {
                 XMLSettingsSupport.err.log(Level.WARNING, null, ex);
             }

@@ -47,6 +47,8 @@ import java.io.IOException;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.EventListenerList;
+import org.netbeans.api.queries.CollocationQuery;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -60,6 +62,8 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel, WizardDesc
     private WizardDescriptor wizard;
     private NewAppWizardIterator wizardIterator;
     private ConfigureProjectVisualPanel visualPanel;
+    
+    public static final String SHARED_LIBRARIES = "sharedLibraries"; //NOI18N
 
     private EventListenerList listenerList;
 
@@ -116,14 +120,37 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel, WizardDesc
         wd.putProperty("appname", visualPanel.getApplicationClassName()); // NOI18N
         wd.putProperty("appshell", visualPanel.getSelectedTemplate()); // NOI18N
         wd.putProperty("setAsMain", visualPanel.isSetMainProject()); // NOI18N
+        wd.putProperty(
+                SHARED_LIBRARIES,
+                visualPanel.isShareable() ? visualPanel.getLibFolderPath() : null); // NOI18N
+
     }
 
     public boolean isValid() {
+        if (visualPanel.isShareable()) {
+            String location = visualPanel.getLibFolderPath();
+            if (visualPanel.getProjectDirectory() != null) {
+                if (new File(location).isAbsolute()) {
+                    wizard.putProperty( "WizardPanel_errorMessage", // NOI18N
+                        NbBundle.getMessage(ConfigureProjectPanel.class,
+                            "WARN_PanelOptionsVisual.absolutePath")); // NOI18N
+                } else {
+                    File projectLoc = FileUtil.normalizeFile(visualPanel.getProjectDirectory());
+                    File libLoc = PropertyUtils.resolveFile(projectLoc, location);
+                    if (!CollocationQuery.areCollocated(projectLoc, libLoc)) {
+                        wizard.putProperty( "WizardPanel_errorMessage", // NOI18N
+                            NbBundle.getMessage(ConfigureProjectPanel.class, 
+                                "WARN_PanelOptionsVisual.relativePath"));  // NOI18N
+                    }
+                }
+            }
+        }
+        
         String projName = visualPanel.getProjectName();
         if (projName == null || projName.length() == 0
                 || projName.indexOf('/') > 0 || projName.indexOf('\\') > 0
                 || projName.indexOf(':') > 0 || projName.indexOf('\"') > 0) {
-            wizard.putProperty("WizardPanel_errorMessage", // NOI18N
+            wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, // NOI18N
                     NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_IllegalProjectName")); // NOI18N
             return false;
         }
@@ -133,13 +160,13 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel, WizardDesc
         try {
             cProjDir = projDir.getCanonicalFile();
         } catch (IOException e) {
-            wizard.putProperty("WizardPanel_errorMessage", // NOI18N
+            wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, // NOI18N
                     NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_IllegalProjectLocation")); // NOI18N
             return false;
         }
         // not allow to create project on unix root folder, see #82339
         if (Utilities.isUnix() && cProjDir.getParentFile().getParent() == null) {
-            wizard.putProperty("WizardPanel_errorMessage", // NOI18N
+            wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, // NOI18N
                     NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_ProjectInRootNotSupported")); // NOI18N
             return false;
         }
@@ -149,20 +176,20 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel, WizardDesc
             nProjDir = nProjDir.getParentFile();
         }
         if (nProjDir == null || !nProjDir.canWrite()) {
-            wizard.putProperty("WizardPanel_errorMessage", // NOI18N
+            wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, // NOI18N
                     NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_ProjectFolderReadOnly")); // NOI18N
             return false;
         }
         // check if the existing root lies on a usable filesystem
         if (FileUtil.toFileObject(nProjDir) == null) {
-            wizard.putProperty("WizardPanel_errorMessage", // NOI18N
+            wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, // NOI18N
                     NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_IllegalProjectLocation")); // NOI18N
             return false;
         }
         // check for existing content
         File[] kids = projDir.listFiles();
         if (projDir.exists() && kids != null && kids.length > 0) {
-            wizard.putProperty("WizardPanel_errorMessage", // NOI18N
+            wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, // NOI18N
                     NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_ProjectFolderExists")); // NOI18N
             return false;
         }
@@ -171,19 +198,19 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel, WizardDesc
         String appClassName = visualPanel.getApplicationClassName();
         for (String s : appClassName.split("\\.", -1)) { // NOI18N
             if (!Utilities.isJavaIdentifier(s)) {
-                wizard.putProperty("WizardPanel_errorMessage", // NOI18N
+                wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, // NOI18N
                         NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_InvalidAppClassName")); // NOI18N
                 return false;
             }
         }
         // check for package name (can't use default package)
         if (appClassName.indexOf('.') <= 0) {
-            wizard.putProperty("WizardPanel_errorMessage", // NOI18N
+            wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, // NOI18N
                     NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_InvalidDefaultPackage")); // NOI18N
             return false;
         }
 
-        wizard.putProperty("WizardPanel_errorMessage", null); // NOI18N
+        wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, null); // NOI18N
 
         return visualPanel.getSelectedTemplate() != null;
     }

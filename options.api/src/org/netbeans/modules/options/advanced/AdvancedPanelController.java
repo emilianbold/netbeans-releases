@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -55,6 +55,16 @@ import org.openide.util.Lookup;
  */
 public final class AdvancedPanelController extends OptionsPanelController {
 
+    private String subpath = null;
+
+    /* Creates new AdvancedPanelController.
+     * @param subpath path to folder under OptionsDialog folder containing 
+     * instances of AdvancedOption class. Path is composed from registration 
+     * names divided by slash.
+     */
+    public AdvancedPanelController(String subpath) {
+        this.subpath = subpath;
+    }
 
     public void update () {
         getAdvancedPanel ().update ();
@@ -76,6 +86,7 @@ public final class AdvancedPanelController extends OptionsPanelController {
         return getAdvancedPanel ().isChanged ();
     }
         
+    @Override
     public Lookup getLookup () {
         return getAdvancedPanel ().getLookup ();
     }
@@ -85,23 +96,28 @@ public final class AdvancedPanelController extends OptionsPanelController {
         return getAdvancedPanel ();
     }
     
+    @Override
+    public void setCurrentSubcategory(String subpath) {
+        getAdvancedPanel().setCurrentSubcategory(subpath);
+    }
+    
     public HelpCtx getHelpCtx () {
         return getAdvancedPanel ().getHelpCtx ();
     }
     
     public void addPropertyChangeListener (PropertyChangeListener l) {
-        getAdvancedPanel ().addPropertyChangeListener (l);
+        getAdvancedPanel().addModelPropertyChangeListener(l);
     }
 
     public void removePropertyChangeListener (PropertyChangeListener l) {
-        getAdvancedPanel ().removePropertyChangeListener (l);
+        getAdvancedPanel().removeModelPropertyChangeListener(l);
     }
 
     private AdvancedPanel advancedPanel;
     
     private AdvancedPanel getAdvancedPanel () {
         if (advancedPanel == null)
-            advancedPanel = new AdvancedPanel ();
+            advancedPanel = new AdvancedPanel(subpath);
         return advancedPanel;
     }
 }

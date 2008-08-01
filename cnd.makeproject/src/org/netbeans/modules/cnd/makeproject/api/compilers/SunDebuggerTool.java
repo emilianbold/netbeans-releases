@@ -43,16 +43,24 @@ package org.netbeans.modules.cnd.makeproject.api.compilers;
 
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.compilers.Tool;
+import org.netbeans.modules.cnd.api.compilers.ToolchainManager.DebuggerDescriptor;
 
 public class SunDebuggerTool extends Tool {
-    public SunDebuggerTool(CompilerFlavor flavor, String name, String displayName, String path) { // GRP - FIXME
-        super(flavor, DebuggerTool, name, displayName, path); // NOI18N
+    
+    public SunDebuggerTool(String hkey, CompilerFlavor flavor, String name, String displayName, String path) { // GRP - FIXME
+        super(hkey, flavor, DebuggerTool, name, displayName, path); // NOI18N
     }
     
     @Override
     public SunDebuggerTool createCopy() {
-        SunDebuggerTool copy = new SunDebuggerTool(getFlavor(), "", getDisplayName(), getPath());
+        SunDebuggerTool copy = new SunDebuggerTool(getHostKey(), getFlavor(), "", getDisplayName(), getPath());
         copy.setName(getName());
         return copy;
     }
+
+    @Override
+    public DebuggerDescriptor getDescriptor() {
+        return getFlavor().getToolchainDescriptor().getDebugger();
+    }
+
 }

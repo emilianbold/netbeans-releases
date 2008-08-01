@@ -86,12 +86,12 @@ public class RepositoryWritingThread implements Runnable {
                 
                 time = System.currentTimeMillis() - time;
                 if( time < Stats.maintenanceInterval ) {
-                    Thread.currentThread().sleep(Stats.maintenanceInterval - time);
+                    Thread.sleep(Stats.maintenanceInterval - time);
                 }
 
             } else {
                 if( Stats.queueTrace ) System.err.printf("%s: sleeping %n ms...\n", getName(), Stats.maintenanceInterval); // NOI18N
-                Thread.currentThread().sleep(Stats.maintenanceInterval);
+                Thread.sleep(Stats.maintenanceInterval);
             }
             
             queue.onIdle();

@@ -49,6 +49,7 @@ import java.util.List;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.junit.MockServices;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.apisupport.project.DialogDisplayerImpl;
 import org.netbeans.modules.apisupport.project.InstalledFileLocatorImpl;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
@@ -57,9 +58,6 @@ import org.netbeans.modules.apisupport.project.TestBase;
 import org.netbeans.modules.apisupport.project.layers.LayerTestBase;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.modules.tasklist.impl.CurrentEditorScanningScope;
-import org.netbeans.modules.tasklist.impl.TaskList;
-import org.netbeans.modules.tasklist.impl.TaskManagerImpl;
-import org.netbeans.modules.tasklist.impl.TaskManagerImplTest;
 import org.netbeans.modules.tasklist.projectint.MainProjectScanningScope;
 import org.netbeans.modules.tasklist.projectint.OpenedProjectsScanningScope;
 import org.netbeans.spi.tasklist.Task;
@@ -140,7 +138,8 @@ public class ToDoTest extends TestBase {
         scanScope.run();
         return scanTasks(scanScope);
     }
-    
+
+    @RandomlyFails // NB-Core-Build #852
     public void testProject1() throws IOException {
         NbModuleProject prj1 = generateStandaloneModule(getWorkDir(), "prj1");
         NbModuleProject prj2 = generateStandaloneModule(getWorkDir(), "prj2");
@@ -157,6 +156,8 @@ public class ToDoTest extends TestBase {
         logTasks(tasks); 
         assertEquals("Number of tasks",2,tasks.size());
     }
+
+    @RandomlyFails // NB-Core-Build #1049
     public void testMainProject() throws Exception {
         NbModuleProject prj1 = generateStandaloneModule(getWorkDir(), "prj1");
         NbModuleProject prj2 = generateStandaloneModule(getWorkDir(), "prj2");

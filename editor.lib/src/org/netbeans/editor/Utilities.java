@@ -61,6 +61,7 @@ import javax.swing.text.Element;
 import javax.swing.text.View;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
+import org.netbeans.modules.editor.lib.EditorPreferencesKeys;
 import org.openide.util.NbBundle;
 
 /**
@@ -478,7 +479,7 @@ public class Utilities {
 
     public static int getNextWord(BaseDocument doc, int offset)
     throws BadLocationException {
-        Finder nextWordFinder = (Finder)doc.getProperty(SettingsNames.NEXT_WORD_FINDER);
+        Finder nextWordFinder = (Finder)doc.getProperty(EditorPreferencesKeys.NEXT_WORD_FINDER);
         offset = doc.find(nextWordFinder, offset, -1);
         if (offset < 0) {
             offset = doc.getLength();
@@ -499,7 +500,7 @@ public class Utilities {
 
     public static int getPreviousWord(BaseDocument doc, int offset)
     throws BadLocationException {
-        Finder prevWordFinder = (Finder)doc.getProperty(SettingsNames.PREVIOUS_WORD_FINDER);
+        Finder prevWordFinder = (Finder)doc.getProperty(EditorPreferencesKeys.PREVIOUS_WORD_FINDER);
         offset = doc.find(prevWordFinder, offset, 0);
         if (offset < 0) {
             offset = 0;
@@ -837,10 +838,10 @@ public class Utilities {
     * @param len number of chars to change
     * @param type either CASE_CAPITAL, CASE_SMALL or CASE_SWITCH
     */
-    public static boolean changeCase(BaseDocument doc, int offset, int len, int type)
+    public static boolean changeCase(final BaseDocument doc, final int offset, final int len, final int type)
     throws BadLocationException {
-        char[] orig = doc.getChars(offset, len);
-        char[] changed = (char[])orig.clone();
+        final char[] orig = doc.getChars(offset, len);
+        final char[] changed = (char[])orig.clone();
         for (int i = 0; i < orig.length; i++) {
             switch (type) {
             case CASE_UPPER:
@@ -861,13 +862,19 @@ public class Utilities {
         // check chars for difference and possibly change document
         for (int i = 0; i < orig.length; i++) {
             if (orig[i] != changed[i]) {
-                doc.atomicLock();
-                try {
-                    doc.remove(offset, orig.length);
-                    doc.insertString(offset, new String(changed), null);
-                } finally {
-                    doc.atomicUnlock();
-                }
+                final BadLocationException[] badLocationExceptions = new BadLocationException [0];
+                doc.runAtomic (new Runnable () {
+                    public void run () {
+                        try {
+                            doc.remove(offset, orig.length);
+                            doc.insertString(offset, new String(changed), null);
+                        } catch (BadLocationException ex) {
+                            badLocationExceptions [0] = ex;
+                        }
+                    }
+                });
+                if (badLocationExceptions [0] != null)
+                    throw badLocationExceptions [0];
                 return true; // changed
             }
         }
@@ -930,15 +937,25 @@ public class Utilities {
      * @param endOffset offset at which the formatting ends
      * @return length of the reformatted code
      */
-    public static int reformat(BaseDocument doc, int startOffset, int endOffset)
+    public static int reformat (final BaseDocument doc, final int startOffset, final int endOffset)
     throws BadLocationException {
-        Formatter formatter = doc.getFormatter();
+        final Formatter formatter = doc.getFormatter();
         formatter.reformatLock();
-        doc.atomicLock();
         try {
-            return formatter.reformat(doc, startOffset, endOffset);
+            final Object[] result = new Object [1];
+            doc.runAtomic (new Runnable () {
+                public void run () {
+                    try {
+                        result [0] = formatter.reformat (doc, startOffset, endOffset);
+                    } catch (BadLocationException ex) {
+                        result [0] = ex;
+                    }
+                }
+            });
+            if (result [0] instanceof BadLocationException)
+                throw (BadLocationException) result [0];
+            return (Integer) result [0];
         } finally {
-            doc.atomicUnlock();
             formatter.reformatUnlock();
         }
     }
@@ -1140,7 +1157,7 @@ public class Utilities {
             }
             
             public void actionPerformed(ActionEvent evt){}
-        };
+        }
         
         if (focusedComponentAction == null) {
             focusedComponentAction = new FocusedComponentAction();
@@ -1381,7 +1398,7 @@ public class Utilities {
      * @see NbEditorDocument#MIME_TYPE_PROP
      */
     /* package */ static String getMimeType(Document doc) {
-        return (String)doc.getProperty("mimeType"); //NOI18N
+        return (String)doc.getProperty(BaseDocument.MIME_TYPE_PROP); //NOI18N
     }
 
     /**

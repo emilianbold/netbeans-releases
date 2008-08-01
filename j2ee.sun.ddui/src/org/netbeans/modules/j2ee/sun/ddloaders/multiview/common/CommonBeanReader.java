@@ -46,6 +46,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.WeakHashMap;
+import org.netbeans.modules.glassfish.eecommon.api.config.GlassfishConfiguration;
 import org.netbeans.modules.j2ee.dd.api.client.AppClientMetadata;
 import org.netbeans.modules.j2ee.dd.api.common.CommonDDBean;
 import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
@@ -59,7 +60,6 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
-import org.netbeans.modules.j2ee.sun.share.configbean.SunONEDeploymentConfiguration;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -105,7 +105,7 @@ public abstract class CommonBeanReader
         Map<String, Object> result = null;
         try {
             File key = FileUtil.toFile(dObj.getPrimaryFile());
-            SunONEDeploymentConfiguration dc = SunONEDeploymentConfiguration.getConfiguration(key);
+            GlassfishConfiguration dc = GlassfishConfiguration.getConfiguration(key);
             if(dc != null) {
                 J2eeModule module = dc.getJ2eeModule();
                 if(module != null) {

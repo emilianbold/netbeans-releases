@@ -1192,7 +1192,7 @@ keyboard shortcuts, and so on.
 
 <h3><a name="sec-loader">Loader</a></h3>
 
-The class <code>Loader</code> installs a
+The class <code>Loader</code> is an old way of installing a
 
 <a href="@org-openide-loaders@/org/openide/loaders/DataLoader.html">data loader</a>
 
@@ -1200,21 +1200,20 @@ into the system
 
 <a href="@org-openide-loaders@/org/openide/loaders/DataLoaderPool.html">loader pool</a>.
 
-Refer to the
-
+Since middle of year 2008, the 
 <a href="@org-openide-loaders@/org/openide/loaders/doc-files/api.html">Datasystems API</a>
+offers new, more effective and preferred way of installing a loader into the 
+system. The following is therefore deprecated, yet it still works:
 
-for instructions on how to create a loader.
-
-<p>There are a couple of options which may be used to specify the
+<p><em>There are a couple of options which may be used to specify the
 relative precedence of data loaders, so that a more specific loader
-may take precedence over a more general one:
+may take precedence over a more general one:</em>
 
 <dl>
 
 <dt><code>Install-Before: <i>classname</i></code>
 
-<dd>Instructs NetBeans to try to install this data loader before
+<dd><em>Instructs NetBeans to try to install this data loader before
 another, so as to give it higher precedence: it will be given the
 opportunity to scan over potential data objects first. The
 <i>classname</i> should specify the <strong>representation class</strong> of the other
@@ -1227,17 +1226,17 @@ type; see the
 <a href="@org-openide-loaders@/org/openide/loaders/DataLoader.html#DataLoader(java.lang.Class)"><code>DataLoader</code> constructor</a>
 
 for an explanation of how to use representation classes.
-You may supply multiple class names separated by commas.
+You may supply multiple class names separated by commas.</em>
 
 <dt><code>Install-After: <i>classname</i></code>
 
-<dd>Exactly like <code>Install-Before</code>, except that NetBeans will
+<dd><em>Exactly like <code>Install-Before</code>, except that NetBeans will
 attempt to install this loader <em>after</em> another, so as to give
-it lower precedence.
+it lower precedence.</em>
 
 </dl>
 
-Either of <code>Install-Before</code> and
+<em>Either of <code>Install-Before</code> and
 <code>Install-After</code> tags (if present) may fail to be honored
 if there is no such registered data loader to compare to, or if the
 tags are contradictory (imply a cyclic dependency); if so, the loader will still be installed.
@@ -1245,12 +1244,11 @@ By default a loader is placed at the end of the pool (i.e. lowest priority).
 Note that these tags have <em>no
 effect</em> on module install order or dependencies - for one thing,
 loaders will be installed in the correct order regardless of which
-order their providing modules are installed in.
+order their providing modules are installed in.</em>
 
-<p>You need not specify module dependencies on other modules simply because you use
-the names of data objects in those modules in your install before and after
-tags; the ordering hints will simply be ignored unless and until the other
-module is installed, at which time they will take effect.
+<p>You are strongly adviced to use the 
+<a href="@org-openide-loaders@/org/openide/loaders/doc-files/api.html#register">new registrations scheme</a> for 
+placing loaders into the system, instead of this old one.
 
 <h2><a name="deploy">Deployment of Modules</a></h2>
 

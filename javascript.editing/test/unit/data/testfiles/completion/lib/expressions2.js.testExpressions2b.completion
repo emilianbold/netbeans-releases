@@ -1,4 +1,6 @@
-Results for ownerDocument. with queryType=COMPLETION and nameKind=PREFIX
+Code completion result for source line:
+document.images[0].ownerDocument.|
+(QueryType=COMPLETION, NameKind=PREFIX)
 METHOD     adoptNode(externalNode) : Node             Document
 METHOD     appendChild(Node newChild) : N             Node
 METHOD     clear() : void                             Document
@@ -14,17 +16,17 @@ METHOD     createElement(String tagName)              Document
 METHOD     createElementNS(String namespa             Document
 METHOD     createEntityReference(String n             Document
 METHOD     createEvent(type) : Event                  Document
-METHOD     createNSResolver(node)                     Document
+METHOD     createNSResolver(node) : void              Document
 METHOD     createProcessingInstruction(St             Document
 METHOD     createRange() : Range                      Document
 METHOD     createTextNode(String data) :              Document
 METHOD     createTreeWalker(root, whatToS             Document
-METHOD     elementFromPoint(x, y)                     Document
+METHOD     elementFromPoint(x, y) : void              Document
 METHOD     evaluate(xpathExpression, cont             Document
 METHOD     execCommand(aCommandName, aSho             Document
 METHOD     getElementById(id) : Element               Document
-METHOD     getElementsByName(name)                    Document
-METHOD     getElementsByTagName(name) : A             Document
+METHOD     getElementsByName(name) : void             Document
+METHOD     getElementsByTagName(name) : E             Document
 METHOD     getElementsByTagNameNS(namespa             Document
 METHOD     getFeature(String feature, Str             Node
 METHOD     getUserData(String key) : Obje             Node
@@ -33,10 +35,10 @@ METHOD     hasChildNodes() : void                     Node
 METHOD     importNode(externalNode, Boole             Document
 METHOD     insertBefore(Node newChild, No             Node
 METHOD     isDefaultNamespace(String name             Node
-METHOD     isEqualNode(Node arg)                      Node
-METHOD     isSameNode(Node other)                     Node
+METHOD     isEqualNode(Node arg) : void               Node
+METHOD     isSameNode(Node other) : void              Node
 METHOD     isSupported(String feature, St             Node
-METHOD     loadOverlay(url, observer)                 Document
+METHOD     loadOverlay(url, observer) : v             Document
 METHOD     lookupNamespaceURI(String pref             Node
 METHOD     lookupPrefix(String namespaceU             Node
 METHOD     normalize() : void                         Node
@@ -50,8 +52,8 @@ METHOD     removeChild(Node oldChild) : N             Node
 METHOD     renameNode(Node n, String name             Document
 METHOD     replaceChild(Node newChild, No             Node
 METHOD     setUserData(String key, Object             Node
-METHOD     write(markup)                              Document
-METHOD     writeln(line)                              Document
+METHOD     write(markup) : void                       Document
+METHOD     writeln(line) : void                       Document
 PROPERTY   ATTRIBUTE_NODE : Number                    Node
 PROPERTY   CDATA_SECTION_NODE : Number                Node
 PROPERTY   COMMENT_NODE : Number                      Node
@@ -126,75 +128,15 @@ PROPERTY   xmlEncoding : String                       Document
 PROPERTY   xmlStandalone : Boolean                    Document
 PROPERTY   xmlVersion : String                        Document
 ------------------------------------
-METHOD     eval(string)                               Object
+METHOD     eval(string) : void                        Object
 METHOD     hasOwnProperty(prop) : Boolean             Object
 METHOD     isPrototypeOf(object) : Boolea             Object
 METHOD     propertyIsEnumerable(prop) : B             Object
 METHOD     toLocaleString() : String                  Object
 METHOD     toSource() : void                          Object
 METHOD     toString() : String                        Object
-METHOD     unwatch(prop)                              Object
+METHOD     unwatch(prop) : void                       Object
 METHOD     valueOf() : void                           Object
-METHOD     watch(prop, handler)                       Object
-KEYWORD    abstract                                   null
-KEYWORD    boolean                                    null
-KEYWORD    break                                      null
-KEYWORD    byte                                       null
-KEYWORD    case                                       null
-KEYWORD    catch                                      null
-KEYWORD    char                                       null
-KEYWORD    class                                      null
-KEYWORD    const                                      null
-KEYWORD    continue                                   null
-KEYWORD    debugger                                   null
-KEYWORD    default                                    null
-KEYWORD    delete                                     null
-KEYWORD    do                                         null
-KEYWORD    double                                     null
-KEYWORD    else                                       null
-KEYWORD    enum                                       null
-KEYWORD    export                                     null
-KEYWORD    extends                                    null
-KEYWORD    false                                      null
-KEYWORD    final                                      null
-KEYWORD    finally                                    null
-KEYWORD    float                                      null
-KEYWORD    for                                        null
-KEYWORD    function                                   null
-KEYWORD    goto                                       null
-KEYWORD    if                                         null
-KEYWORD    implements                                 null
-KEYWORD    import                                     null
-KEYWORD    in                                         null
-KEYWORD    instanceof                                 null
-KEYWORD    int                                        null
-KEYWORD    interface                                  null
-KEYWORD    long                                       null
-KEYWORD    native                                     null
-KEYWORD    new                                        null
-KEYWORD    null                                       null
-KEYWORD    package                                    null
-KEYWORD    private                                    null
-KEYWORD    protected                                  null
-KEYWORD    public                                     null
-KEYWORD    return                                     null
-KEYWORD    short                                      null
-KEYWORD    static                                     null
-KEYWORD    super                                      null
-KEYWORD    switch                                     null
-KEYWORD    synchronized                               null
-KEYWORD    this                                       null
-KEYWORD    throw                                      null
-KEYWORD    throws                                     null
-KEYWORD    transient                                  null
-KEYWORD    true                                       null
-KEYWORD    try                                        null
-KEYWORD    typeof                                     null
-KEYWORD    undefined                                  null
-KEYWORD    var                                        null
-KEYWORD    void                                       null
-KEYWORD    volatile                                   null
-KEYWORD    while                                      null
-KEYWORD    with                                       null
+METHOD     watch(prop, handler) : void                Object
 PROPERTY   constructor                                Object
 PROPERTY   prototype                                  Object

@@ -1,0 +1,2 @@
+45:     * @param |>testparam<| Doc for testparam
+48:    foobar: function(foo, |>testparam<|) {

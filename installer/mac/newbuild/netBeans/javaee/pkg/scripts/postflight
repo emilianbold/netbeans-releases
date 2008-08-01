@@ -19,6 +19,11 @@
 
 set -e
 
+script_dir=`dirname "$0"`
+
+#add Product ID
+"$script_dir"/addproduct_id.sh "WEBEE"
+
 if [ -d "/Library/Receipts/javaee.pkg" ] ; then
     rm -rf "/Library/Receipts/javaee.pkg"
 fi

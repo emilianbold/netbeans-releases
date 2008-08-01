@@ -1,5 +1,5 @@
 #API master signature file
-#Version 1.13.1
+#Version 1.16
 CLSS public final org.netbeans.api.java.classpath.ClassPath$Entry
 meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
 meth protected void java.lang.Object.finalize() throws java.lang.Throwable
@@ -21,6 +21,33 @@ meth public native final void java.lang.Object.wait(long) throws java.lang.Inter
 meth public org.netbeans.api.java.classpath.ClassPath org.netbeans.api.java.classpath.ClassPath$Entry.getDefiningClassPath()
 meth public org.openide.filesystems.FileObject org.netbeans.api.java.classpath.ClassPath$Entry.getRoot()
 supr java.lang.Object
+CLSS public static final org.netbeans.api.java.classpath.ClassPath$PathConversionMode
+fld  public static final org.netbeans.api.java.classpath.ClassPath$PathConversionMode org.netbeans.api.java.classpath.ClassPath$PathConversionMode.FAIL
+fld  public static final org.netbeans.api.java.classpath.ClassPath$PathConversionMode org.netbeans.api.java.classpath.ClassPath$PathConversionMode.PRINT
+fld  public static final org.netbeans.api.java.classpath.ClassPath$PathConversionMode org.netbeans.api.java.classpath.ClassPath$PathConversionMode.SKIP
+fld  public static final org.netbeans.api.java.classpath.ClassPath$PathConversionMode org.netbeans.api.java.classpath.ClassPath$PathConversionMode.WARN
+intf java.io.Serializable
+intf java.lang.Comparable
+meth protected final java.lang.Object java.lang.Enum.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public final boolean java.lang.Enum.equals(java.lang.Object)
+meth public final int java.lang.Enum.compareTo(java.lang.Enum)
+meth public final int java.lang.Enum.hashCode()
+meth public final int java.lang.Enum.ordinal()
+meth public final java.lang.Class java.lang.Enum.getDeclaringClass()
+meth public final java.lang.String java.lang.Enum.name()
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Enum.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public static final [Lorg.netbeans.api.java.classpath.ClassPath$PathConversionMode; org.netbeans.api.java.classpath.ClassPath$PathConversionMode.values()
+meth public static java.lang.Enum java.lang.Enum.valueOf(java.lang.Class,java.lang.String)
+meth public static org.netbeans.api.java.classpath.ClassPath$PathConversionMode org.netbeans.api.java.classpath.ClassPath$PathConversionMode.valueOf(java.lang.String)
+meth public volatile int java.lang.Enum.compareTo(java.lang.Object)
+supr java.lang.Enum
 CLSS public static abstract interface org.netbeans.api.java.queries.BinaryForSourceQuery$Result
 meth public abstract [Ljava.net.URL; org.netbeans.api.java.queries.BinaryForSourceQuery$Result.getRoots()
 meth public abstract void org.netbeans.api.java.queries.BinaryForSourceQuery$Result.addChangeListener(javax.swing.event.ChangeListener)
@@ -36,6 +63,31 @@ meth public abstract [Lorg.openide.filesystems.FileObject; org.netbeans.api.java
 meth public abstract void org.netbeans.api.java.queries.SourceForBinaryQuery$Result.addChangeListener(javax.swing.event.ChangeListener)
 meth public abstract void org.netbeans.api.java.queries.SourceForBinaryQuery$Result.removeChangeListener(javax.swing.event.ChangeListener)
 supr null
+CLSS public static org.netbeans.api.java.queries.SourceForBinaryQuery$Result2
+intf org.netbeans.api.java.queries.SourceForBinaryQuery$Result
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public [Lorg.openide.filesystems.FileObject; org.netbeans.api.java.queries.SourceForBinaryQuery$Result2.getRoots()
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public boolean org.netbeans.api.java.queries.SourceForBinaryQuery$Result2.preferSources()
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public void org.netbeans.api.java.queries.SourceForBinaryQuery$Result2.addChangeListener(javax.swing.event.ChangeListener)
+meth public void org.netbeans.api.java.queries.SourceForBinaryQuery$Result2.removeChangeListener(javax.swing.event.ChangeListener)
+supr java.lang.Object
+CLSS public static abstract interface org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation2$Result
+intf org.netbeans.api.java.queries.SourceForBinaryQuery$Result
+meth public abstract [Lorg.openide.filesystems.FileObject; org.netbeans.api.java.queries.SourceForBinaryQuery$Result.getRoots()
+meth public abstract boolean org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation2$Result.preferSources()
+meth public abstract void org.netbeans.api.java.queries.SourceForBinaryQuery$Result.addChangeListener(javax.swing.event.ChangeListener)
+meth public abstract void org.netbeans.api.java.queries.SourceForBinaryQuery$Result.removeChangeListener(javax.swing.event.ChangeListener)
+supr null
 CLSS public final org.netbeans.api.java.classpath.ClassPath
 fld  constant public static final java.lang.String org.netbeans.api.java.classpath.ClassPath.BOOT
 fld  constant public static final java.lang.String org.netbeans.api.java.classpath.ClassPath.COMPILE
@@ -46,6 +98,7 @@ fld  constant public static final java.lang.String org.netbeans.api.java.classpa
 fld  constant public static final java.lang.String org.netbeans.api.java.classpath.ClassPath.PROP_ROOTS
 fld  constant public static final java.lang.String org.netbeans.api.java.classpath.ClassPath.SOURCE
 innr public final org.netbeans.api.java.classpath.ClassPath$Entry
+innr public static final org.netbeans.api.java.classpath.ClassPath$PathConversionMode
 meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
 meth protected void java.lang.Object.finalize() throws java.lang.Throwable
 meth public [Lorg.openide.filesystems.FileObject; org.netbeans.api.java.classpath.ClassPath.getRoots()
@@ -61,6 +114,7 @@ meth public final void java.lang.Object.wait() throws java.lang.InterruptedExcep
 meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
 meth public final void org.netbeans.api.java.classpath.ClassPath.removePropertyChangeListener(java.beans.PropertyChangeListener)
 meth public java.lang.String org.netbeans.api.java.classpath.ClassPath.toString()
+meth public java.lang.String org.netbeans.api.java.classpath.ClassPath.toString(org.netbeans.api.java.classpath.ClassPath$PathConversionMode)
 meth public java.util.List org.netbeans.api.java.classpath.ClassPath.entries()
 meth public native final java.lang.Class java.lang.Object.getClass()
 meth public native final void java.lang.Object.notify()
@@ -162,6 +216,7 @@ meth public static org.netbeans.api.java.queries.JavadocForBinaryQuery$Result or
 supr java.lang.Object
 CLSS public org.netbeans.api.java.queries.SourceForBinaryQuery
 innr public static abstract interface org.netbeans.api.java.queries.SourceForBinaryQuery$Result
+innr public static org.netbeans.api.java.queries.SourceForBinaryQuery$Result2
 meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
 meth protected void java.lang.Object.finalize() throws java.lang.Throwable
 meth public boolean java.lang.Object.equals(java.lang.Object)
@@ -174,6 +229,7 @@ meth public native final void java.lang.Object.notifyAll()
 meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
 meth public native int java.lang.Object.hashCode()
 meth public static org.netbeans.api.java.queries.SourceForBinaryQuery$Result org.netbeans.api.java.queries.SourceForBinaryQuery.findSourceRoots(java.net.URL)
+meth public static org.netbeans.api.java.queries.SourceForBinaryQuery$Result2 org.netbeans.api.java.queries.SourceForBinaryQuery.findSourceRoots2(java.net.URL)
 supr java.lang.Object
 CLSS public org.netbeans.api.java.queries.SourceLevelQuery
 meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
@@ -258,6 +314,7 @@ meth public native final void java.lang.Object.notify()
 meth public native final void java.lang.Object.notifyAll()
 meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
 meth public native int java.lang.Object.hashCode()
+meth public static org.netbeans.api.java.classpath.ClassPath org.netbeans.spi.java.classpath.support.ClassPathSupport.createClassPath(java.lang.String) throws java.lang.IllegalArgumentException
 meth public static org.netbeans.api.java.classpath.ClassPath org.netbeans.spi.java.classpath.support.ClassPathSupport.createClassPath(java.util.List)
 meth public static org.netbeans.spi.java.classpath.ClassPathImplementation org.netbeans.spi.java.classpath.support.ClassPathSupport.createClassPathImplementation(java.util.List)
 meth public static org.netbeans.spi.java.classpath.PathResourceImplementation org.netbeans.spi.java.classpath.support.ClassPathSupport.createResource(java.net.URL)
@@ -325,6 +382,12 @@ supr null
 CLSS public abstract interface org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation
 meth public abstract org.netbeans.api.java.queries.SourceForBinaryQuery$Result org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation.findSourceRoots(java.net.URL)
 supr null
+CLSS public abstract interface org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation2
+innr public static abstract interface org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation2$Result
+intf org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation
+meth public abstract org.netbeans.api.java.queries.SourceForBinaryQuery$Result org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation.findSourceRoots(java.net.URL)
+meth public abstract org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation2$Result org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation2.findSourceRoots2(java.net.URL)
+supr null
 CLSS public abstract interface org.netbeans.spi.java.queries.SourceLevelQueryImplementation
 meth public abstract java.lang.String org.netbeans.spi.java.queries.SourceLevelQueryImplementation.getSourceLevel(org.openide.filesystems.FileObject)
 supr null
@@ -332,3 +395,23 @@ CLSS public abstract interface org.netbeans.spi.java.queries.UnitTestForSourceQu
 meth public abstract java.net.URL org.netbeans.spi.java.queries.UnitTestForSourceQueryImplementation.findSource(org.openide.filesystems.FileObject)
 meth public abstract java.net.URL org.netbeans.spi.java.queries.UnitTestForSourceQueryImplementation.findUnitTest(org.openide.filesystems.FileObject)
 supr null
+CLSS public abstract org.netbeans.spi.java.queries.support.SourceForBinaryQueryImpl2Base
+cons public SourceForBinaryQueryImpl2Base()
+innr public static abstract interface org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation2$Result
+intf org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation
+intf org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation2
+meth protected final org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation2$Result org.netbeans.spi.java.queries.support.SourceForBinaryQueryImpl2Base.asResult(org.netbeans.api.java.queries.SourceForBinaryQuery$Result)
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public abstract org.netbeans.api.java.queries.SourceForBinaryQuery$Result org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation.findSourceRoots(java.net.URL)
+meth public abstract org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation2$Result org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation2.findSourceRoots2(java.net.URL)
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+supr java.lang.Object

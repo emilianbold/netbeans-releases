@@ -46,8 +46,8 @@ import javax.swing.JButton;
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.util.ArrayList;
-import org.netbeans.modules.jmx.WizardConstants;
-import org.netbeans.modules.jmx.GenericWizardPanel;
+import org.netbeans.modules.jmx.common.WizardConstants;
+import org.netbeans.modules.jmx.common.GenericWizardPanel;
 import org.netbeans.modules.jmx.mbeanwizard.tablemodel.MBeanOperationTableModel;
 
 import org.openide.WizardDescriptor;
@@ -316,7 +316,7 @@ public class MBeanOperationPanel extends JPanel implements ListSelectionListener
          */
         private void setErrorMsg(String message) {
             if (wiz != null) {
-                wiz.putProperty(WizardConstants.WIZARD_ERROR_MESSAGE,
+                wiz.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
                         message);    //NOI18N
             }
         }
@@ -405,7 +405,7 @@ public class MBeanOperationPanel extends JPanel implements ListSelectionListener
                 
             }
         
-            wiz.putProperty(WizardConstants.WIZARD_ERROR_MESSAGE, "");// NOI18N
+            wiz.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, "");// NOI18N
         }
         
         /**

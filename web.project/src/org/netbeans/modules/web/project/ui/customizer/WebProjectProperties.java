@@ -50,7 +50,6 @@ import java.nio.charset.UnsupportedCharsetException;
 import java.util.*;
 import java.util.ArrayList;
 import java.util.logging.Level;
-import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.ButtonModel;
 import javax.swing.ComboBoxModel;
@@ -76,18 +75,20 @@ import org.openide.util.MutexException;
 import org.openide.util.Mutex;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.j2ee.common.SharabilityUtility;
 import org.netbeans.modules.j2ee.common.project.ui.ClassPathUiSupport;
 import org.netbeans.modules.j2ee.common.project.ui.J2eePlatformUiSupport;
 import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.ui.PlatformUiSupport;
+import org.netbeans.modules.web.api.webmodule.WebFrameworks;
+import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.project.UpdateProjectImpl;
 import org.netbeans.modules.web.project.Utils;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -99,7 +100,9 @@ import org.netbeans.modules.web.project.WebProject;
 import org.netbeans.modules.web.project.WebProjectType;
 import org.netbeans.modules.web.project.classpath.ClassPathSupportCallbackImpl;
 
+import org.netbeans.modules.web.spi.webmodule.WebFrameworkProvider;
 import org.netbeans.modules.websvc.spi.webservices.WebServicesConstants;
+import org.netbeans.spi.java.project.support.ui.IncludeExcludeVisualizer;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -138,6 +141,7 @@ public class WebProjectProperties {
 
     public static final String LAUNCH_URL_RELATIVE = "client.urlPart"; //NOI18N
     public static final String DISPLAY_BROWSER = "display.browser"; //NOI18N
+    public static final String DEPLOY_ON_SAVE = "deploy.on.save"; //NOI18N
     public static final String CONTEXT_PATH = "context.path"; //NOI18N
     public static final String J2EE_SERVER_INSTANCE = "j2ee.server.instance"; //NOI18N
     public static final String J2EE_SERVER_TYPE = "j2ee.server.type"; //NOI18N
@@ -160,13 +164,10 @@ public class WebProjectProperties {
     public static final String BUILD_WEB_EXCLUDES = "build.web.excludes"; //NOI18N
     public static final String DIST_JAVADOC_DIR = "dist.javadoc.dir"; //NOI18N
     public static final String NO_DEPENDENCIES="no.dependencies"; //NOI18N
+    public static final String RUNMAIN_JVM_ARGS = "runmain.jvmargs"; //NOI18N
 
     public static final String BUILD_TEST_RESULTS_DIR = "build.test.results.dir"; // NOI18N
     public static final String DEBUG_TEST_CLASSPATH = "debug.test.classpath"; // NOI18N
-    
-    public static final String DEBUG_CLIENT = "debug.client"; // NOI18N
-    public static final String DEBUG_SERVER = "debug.server"; // NOI18N
-    public static final String JSDEBUGGER_AVAILABLE = "debug.client.available"; // NOI18N
     
     public static final String JAVADOC_PRIVATE="javadoc.private"; //NOI18N
     public static final String JAVADOC_NO_TREE="javadoc.notree"; //NOI18N
@@ -195,6 +196,8 @@ public class WebProjectProperties {
     public static final String DEPLOY_ANT_PROPS_FILE = "deploy.ant.properties.file"; //NOI18N
     
     public static final String ANT_DEPLOY_BUILD_SCRIPT = "nbproject/ant-deploy.xml"; // NOI18N
+    
+    private static Logger LOGGER = Logger.getLogger(WebProjectProperties.class.getName());
     
     public ClassPathSupport cs;
 
@@ -232,7 +235,7 @@ public class WebProjectProperties {
     Document WAR_NAME_MODEL; 
     Document BUILD_CLASSES_EXCLUDES_MODEL;
     ButtonModel WAR_COMPRESS_MODEL;
-    WarIncludesUiSupport.ClasspathTableModel WAR_CONTENT_ADDITIONAL_MODEL;
+    WarIncludesTableModel WAR_CONTENT_ADDITIONAL_MODEL;
 
     // CustomizerJavadoc
     ButtonModel JAVADOC_PRIVATE_MODEL;
@@ -251,18 +254,14 @@ public class WebProjectProperties {
     Document J2EE_PLATFORM_MODEL;
     Document CONTEXT_PATH_MODEL;
     Document LAUNCH_URL_RELATIVE_MODEL;
-    ButtonModel DISPLAY_BROWSER_MODEL; 
+    ButtonModel DISPLAY_BROWSER_MODEL;
+    ButtonModel DEPLOY_ON_SAVE_MODEL; 
     ComboBoxModel J2EE_SERVER_INSTANCE_MODEL; 
-
-    // CustomizerDebug
-    ButtonModel DEBUG_SERVER_MODEL;
-    ButtonModel DEBUG_CLIENT_MODEL;
+    Document RUNMAIN_JVM_MODEL;
     
-    // ui logging
-    static final String UI_LOGGER_NAME = "org.netbeans.ui.web.project"; //NOI18N
-    static final Logger UI_LOGGER = Logger.getLogger(UI_LOGGER_NAME);
     // for ui logging added frameworks
     private List<String> addedFrameworkNames;
+    private List<String> currentFrameworkNames;
 
     // Private fields ----------------------------------------------------------
     private WebProject project;
@@ -273,7 +272,7 @@ public class WebProjectProperties {
     private StoreGroup privateGroup; 
     private StoreGroup projectGroup;
     
-    private Properties additionalProperties;
+    private Map<String,String> additionalProperties;
 
     private static boolean needsUpdate = false;
     
@@ -281,7 +280,11 @@ public class WebProjectProperties {
     private static String cp;
 
     public static final String JAVA_SOURCE_BASED= "java.source.based";
+
+    private String includes, excludes;
     
+    private static String logServInstID = null;
+
     
     public WebProjectProperties(WebProject project, UpdateHelper updateHelper, PropertyEvaluator evaluator, ReferenceHelper refHelper) {
         this.project = project;
@@ -304,7 +307,7 @@ public class WebProjectProperties {
         privateGroup = new StoreGroup();
         projectGroup = new StoreGroup();
         
-        additionalProperties = new Properties();
+        additionalProperties = new HashMap<String,String>();
 
         init(); // Load known properties        
     }
@@ -323,6 +326,14 @@ public class WebProjectProperties {
         // CustomizerSources
         SOURCE_ROOTS_MODEL = WebSourceRootsUi.createModel( project.getSourceRoots() );
         TEST_ROOTS_MODEL = WebSourceRootsUi.createModel( project.getTestSourceRoots() );
+        includes = evaluator.getProperty(ProjectProperties.INCLUDES);
+        if (includes == null) {
+            includes = "**"; // NOI18N
+        }
+        excludes = evaluator.getProperty(ProjectProperties.EXCLUDES);
+        if (excludes == null) {
+            excludes = ""; // NOI18N
+        }
         WEB_DOCBASE_DIR_MODEL = projectGroup.createStringDocument( evaluator, WEB_DOCBASE_DIR );
         WEBINF_DIR_MODEL = projectGroup.createStringDocument( evaluator, WEBINF_DIR );
 
@@ -336,7 +347,7 @@ public class WebProjectProperties {
         PLATFORM_MODEL = PlatformUiSupport.createPlatformComboBoxModel (evaluator.getProperty(JAVA_PLATFORM));
         PLATFORM_LIST_RENDERER = PlatformUiSupport.createPlatformListCellRenderer();
         SpecificationVersion minimalSourceLevel = null;
-        if (evaluator.getProperty(J2EE_PLATFORM).equals(J2eeModule.JAVA_EE_5)) {
+        if (J2eeModule.JAVA_EE_5.equals(evaluator.getProperty(J2EE_PLATFORM))) {
             minimalSourceLevel = new SpecificationVersion(J2eeModule.JAVA_EE_5);
         }
         JAVAC_SOURCE_MODEL = PlatformUiSupport.createSourceLevelComboBoxModel (PLATFORM_MODEL, evaluator.getProperty(JAVAC_SOURCE), evaluator.getProperty(JAVAC_TARGET), minimalSourceLevel);
@@ -359,7 +370,7 @@ public class WebProjectProperties {
         WAR_NAME_MODEL = projectGroup.createStringDocument( evaluator, WAR_NAME );
         BUILD_CLASSES_EXCLUDES_MODEL = projectGroup.createStringDocument( evaluator, BUILD_CLASSES_EXCLUDES );
         WAR_COMPRESS_MODEL = projectGroup.createToggleButtonModel( evaluator, WAR_COMPRESS );
-        WAR_CONTENT_ADDITIONAL_MODEL = WarIncludesUiSupport.createTableModel( cs.itemsList( (String)projectProperties.get( WAR_CONTENT_ADDITIONAL ), ClassPathSupportCallbackImpl.TAG_WEB_MODULE__ADDITIONAL_LIBRARIES));
+        WAR_CONTENT_ADDITIONAL_MODEL = WarIncludesTableModel.createTableModel( cs.itemsIterator( (String)projectProperties.get( WAR_CONTENT_ADDITIONAL ), ClassPathSupportCallbackImpl.TAG_WEB_MODULE__ADDITIONAL_LIBRARIES));
 
         // CustomizerJavadoc
         JAVADOC_PRIVATE_MODEL = projectGroup.createToggleButtonModel( evaluator, JAVADOC_PRIVATE );
@@ -378,7 +389,12 @@ public class WebProjectProperties {
         J2EE_PLATFORM_MODEL = projectGroup.createStringDocument(evaluator, J2EE_PLATFORM);
         LAUNCH_URL_RELATIVE_MODEL = projectGroup.createStringDocument(evaluator, LAUNCH_URL_RELATIVE);
         DISPLAY_BROWSER_MODEL = projectGroup.createToggleButtonModel(evaluator, DISPLAY_BROWSER);
-        J2EE_SERVER_INSTANCE_MODEL = J2eePlatformUiSupport.createPlatformComboBoxModel(privateProperties.getProperty( J2EE_SERVER_INSTANCE ), projectProperties.getProperty(J2EE_PLATFORM));
+        DEPLOY_ON_SAVE_MODEL = projectGroup.createToggleButtonModel(evaluator, DEPLOY_ON_SAVE);
+        J2EE_SERVER_INSTANCE_MODEL = J2eePlatformUiSupport.createPlatformComboBoxModel(
+                privateProperties.getProperty( J2EE_SERVER_INSTANCE ),
+                projectProperties.getProperty(J2EE_PLATFORM),
+                J2eeModule.WAR);
+        RUNMAIN_JVM_MODEL = projectGroup.createStringDocument(evaluator, RUNMAIN_JVM_ARGS);
         try {
             CONTEXT_PATH_MODEL = new PlainDocument();
             CONTEXT_PATH_MODEL.remove(0, CONTEXT_PATH_MODEL.getLength());
@@ -391,9 +407,17 @@ public class WebProjectProperties {
             //ignore
         }
         
-        // CustomizerDebug
-        DEBUG_CLIENT_MODEL = projectGroup.createToggleButtonModel(evaluator, DEBUG_CLIENT);
-        DEBUG_SERVER_MODEL = projectGroup.createToggleButtonModel(evaluator, DEBUG_SERVER);
+        List frameworks = WebFrameworks.getFrameworks();
+        WebModule webModule = project.getAPIWebModule();
+        currentFrameworkNames = new LinkedList<String>();
+        if (frameworks != null & webModule != null) {
+            for (int i = 0; i < frameworks.size(); i++) {
+                WebFrameworkProvider framework = (WebFrameworkProvider) frameworks.get(i);
+                if (framework.isInWebModule(webModule)) {
+                    currentFrameworkNames.add(framework.getName());
+                }
+            }
+        }
     }
 
     public void save() {
@@ -420,19 +444,45 @@ public class WebProjectProperties {
                         }
                         newExtenders.clear();
                         project.resetTemplates();
-                        
-                        // ui logging of the added frameworks
-                        if ((addedFrameworkNames != null) && (addedFrameworkNames.size() > 0)) {
-                            LogRecord logRecord = new LogRecord(Level.INFO, "UI_WEB_PROJECT_FRAMEWORK_ADDED");  //NOI18N
-                            logRecord.setLoggerName(UI_LOGGER_NAME); //NOI18N
-                            logRecord.setResourceBundle(NbBundle.getBundle(WebProjectProperties.class));
-
-                            logRecord.setParameters(addedFrameworkNames.toArray());
-                            UI_LOGGER.log(logRecord);
-                        }
                     }
                 });
             }
+            
+            // ui logging of the added frameworks
+            if ((addedFrameworkNames != null) && (addedFrameworkNames.size() > 0)) {
+                Utils.logUI(NbBundle.getBundle(WebProjectProperties.class),"UI_WEB_PROJECT_FRAMEWORK_ADDED", // NOI18N
+                        addedFrameworkNames.toArray());
+            }
+            
+            // usage logging of target server and currently active frameworks
+            String serverName = ""; // NOI18N
+            try {
+                if (logServInstID != null) {
+                    serverName = Deployment.getDefault().getServerInstance(logServInstID).getServerDisplayName();
+                }
+            }
+            catch(InstanceRemovedException ier) {
+                // ignore
+            }
+            
+            StringBuffer sb = new StringBuffer(50);
+            if (currentFrameworkNames != null && currentFrameworkNames.size() > 0) {
+                for (int i = 0; i < currentFrameworkNames.size(); i++) {
+                    if (sb.length() > 0) {
+                        sb.append("|"); // NOI18N
+                    }
+                    sb.append(currentFrameworkNames.get(i));
+                }
+            }
+            if (addedFrameworkNames != null && addedFrameworkNames.size() > 0) {
+                for (int i = 0; i < addedFrameworkNames.size(); i++) {
+                    if (sb.length() > 0) {
+                        sb.append("|"); // NOI18N
+                    }
+                    sb.append(addedFrameworkNames.get(i));
+                }
+            }
+            Utils.logUsage(WebProjectProperties.class, "USG_PROJECT_CONFIG_WEB", new Object[] { serverName, sb }); // NOI18N
             
             //prevent deadlock reported in the issue #54643
             //cp and serverId values are read in setNewContextPathValue() method which is called from storeProperties() before this code
@@ -516,10 +566,19 @@ public class WebProjectProperties {
         
         // Encode all paths (this may change the project properties)
         List<ClassPathSupport.Item> javaClasspathList = ClassPathUiSupport.getList(JAVAC_CLASSPATH_MODEL.getDefaultListModel());
+        if (J2EE_SERVER_INSTANCE_MODEL.getSelectedItem() != null) {
+            final String instanceId = J2eePlatformUiSupport.getServerInstanceID(
+                    J2EE_SERVER_INSTANCE_MODEL.getSelectedItem());
+            final String oldServInstID = project.getAntProjectHelper().getProperties(
+                    AntProjectHelper.PRIVATE_PROPERTIES_PATH).getProperty(J2EE_SERVER_INSTANCE);
+
+            SharabilityUtility.switchServerLibrary(instanceId, oldServInstID, javaClasspathList, updateHelper);
+        }
         
+        String[] javac_cp = cs.encodeToStrings(javaClasspathList, ClassPathSupportCallbackImpl.TAG_WEB_MODULE_LIBRARIES  );        
         String[] javac_test_cp = cs.encodeToStrings( ClassPathUiSupport.getList( JAVAC_TEST_CLASSPATH_MODEL ), null );
         String[] run_test_cp = cs.encodeToStrings( ClassPathUiSupport.getList( RUN_TEST_CLASSPATH_MODEL ), null );
-        String[] war_includes = cs.encodeToStrings( WarIncludesUiSupport.getList( WAR_CONTENT_ADDITIONAL_MODEL ), ClassPathSupportCallbackImpl.TAG_WEB_MODULE__ADDITIONAL_LIBRARIES  );
+        String[] war_includes = cs.encodeToStrings( ClassPathUiSupport.getList( WAR_CONTENT_ADDITIONAL_MODEL.getDefaultListModel() ), ClassPathSupportCallbackImpl.TAG_WEB_MODULE__ADDITIONAL_LIBRARIES  );
 
         // Store standard properties
         EditableProperties projectProperties = updateHelper.getProperties( AntProjectHelper.PROJECT_PROPERTIES_PATH );        
@@ -554,6 +613,11 @@ public class WebProjectProperties {
             needsUpdate = false;
         }
         
+        // Save all paths
+        projectProperties.setProperty( ProjectProperties.JAVAC_CLASSPATH, javac_cp );
+        projectProperties.setProperty( ProjectProperties.JAVAC_TEST_CLASSPATH, javac_test_cp );
+        projectProperties.setProperty( ProjectProperties.RUN_TEST_CLASSPATH, run_test_cp );
+        
         projectProperties.setProperty( WAR_CONTENT_ADDITIONAL, war_includes );
         
         //Handle platform selection and javac.source javac.target properties
@@ -571,9 +635,6 @@ public class WebProjectProperties {
         if (J2EE_SERVER_INSTANCE_MODEL.getSelectedItem() != null) {
             final String instanceId = J2eePlatformUiSupport.getServerInstanceID(
                     J2EE_SERVER_INSTANCE_MODEL.getSelectedItem());
-            final String oldServInstID = privateProperties.getProperty(J2EE_SERVER_INSTANCE);
-
-            SharabilityUtility.switchServerLibrary(instanceId, oldServInstID, javaClasspathList, updateHelper);
             setNewServerInstanceValue(instanceId, project, projectProperties, privateProperties, !serverLibUsed);
         }
 
@@ -586,13 +647,6 @@ public class WebProjectProperties {
             setNewServerInstanceValue(J2eePlatformUiSupport.getServerInstanceID(J2EE_SERVER_INSTANCE_MODEL.getSelectedItem()),
                     project, projectProperties, privateProperties, true);
         }
-
-        String[] javac_cp = cs.encodeToStrings(javaClasspathList, ClassPathSupportCallbackImpl.TAG_WEB_MODULE_LIBRARIES  );        
-        
-        // Save all paths
-        projectProperties.setProperty( ProjectProperties.JAVAC_CLASSPATH, javac_cp );
-        projectProperties.setProperty( ProjectProperties.JAVAC_TEST_CLASSPATH, javac_test_cp );
-        projectProperties.setProperty( ProjectProperties.RUN_TEST_CLASSPATH, run_test_cp );
         
         // Set new context path
         try {
@@ -610,17 +664,23 @@ public class WebProjectProperties {
             //ignore
         }
 
-        storeAdditionalProperties(projectProperties);
-        
-        List<ClassPathSupport.Item> libs = new ArrayList<ClassPathSupport.Item>();
-        libs.addAll(ClassPathUiSupport.getList(JAVAC_CLASSPATH_MODEL.getDefaultListModel()));
-        libs.addAll(WarIncludesUiSupport.getList(WAR_CONTENT_ADDITIONAL_MODEL));
-        
-        ProjectProperties.storeLibrariesLocations (libs.iterator(), projectProperties, project.getProjectDirectory());
+        projectProperties.putAll(additionalProperties);
+
+        projectProperties.put(ProjectProperties.INCLUDES, includes);
+        projectProperties.put(ProjectProperties.EXCLUDES, excludes);
         
         // Store the property changes into the project
         updateHelper.putProperties( AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties );
         updateHelper.putProperties( AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProperties );
+        
+        // compile on save listeners
+        if (DEPLOY_ON_SAVE_MODEL.isEnabled() && DEPLOY_ON_SAVE_MODEL.isSelected()) {
+            LOGGER.log(Level.FINE, "Starting listening on cos for {0}", project.getWebModule());
+            Deployment.getDefault().enableCompileOnSaveSupport(project.getWebModule());
+        } else {
+            LOGGER.log(Level.FINE, "Stopping listening on cos for {0}", project.getWebModule());
+            Deployment.getDefault().disableCompileOnSaveSupport(project.getWebModule());
+        }
         
         String value = (String)additionalProperties.get(SOURCE_ENCODING);
         if (value != null) {
@@ -645,13 +705,6 @@ public class WebProjectProperties {
 	    return false;
         }
 	return true;
-    }
-    
-    private void storeAdditionalProperties(EditableProperties projectProperties) {
-        for (Iterator i = additionalProperties.keySet().iterator(); i.hasNext();) {
-            String key = i.next().toString();
-            projectProperties.put(key, additionalProperties.getProperty(key));
-        }
     }
     
     /** XXX to be deleted when introduced in AntPropertyHeleper API
@@ -691,15 +744,7 @@ public class WebProjectProperties {
                     item.getType() == ClassPathSupport.Item.TYPE_JAR ) {
                 refHelper.destroyReference(item.getReference());
                 if (item.getType() == ClassPathSupport.Item.TYPE_JAR) {
-                    //oh well, how do I do this otherwise??
-                    EditableProperties ep = updateHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                    if (item.getJavadocProperty() != null) {
-                        ep.remove(item.getJavadocProperty());
-                    }
-                    if (item.getSourceProperty() != null) {
-                        ep.remove(item.getSourceProperty());
-                    }
-                    updateHelper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
+                    item.removeSourceAndJavadoc(updateHelper);
                 }
             }
         }
@@ -780,7 +825,7 @@ public class WebProjectProperties {
     
     /* This is used by CustomizerWSServiceHost */
     void putAdditionalProperty(String propertyName, String propertyValue) {
-        additionalProperties.setProperty(propertyName, propertyValue);
+        additionalProperties.put(propertyName, propertyValue);
     }
     
     private static void setNewServerInstanceValue(String newServInstID, Project project,
@@ -887,16 +932,20 @@ public class WebProjectProperties {
         }
         // ui log for the server change
         if(newServInstID != null && !newServInstID.equals(oldServInstID)) {
-            LogRecord logRecord = new LogRecord(Level.INFO, "UI_WEB_PROJECT_SERVER_CHANGED");  //NOI18N
-            logRecord.setLoggerName(UI_LOGGER_NAME); //NOI18N
-            logRecord.setResourceBundle(NbBundle.getBundle(WebProjectProperties.class));
-            logRecord.setParameters(new Object[] { 
-                Deployment.getDefault().getServerID(oldServInstID),
-                oldServInstID,
-                Deployment.getDefault().getServerID(newServInstID),
-                newServInstID });
-                
-            UI_LOGGER.log(logRecord);
+            Utils.logUI(NbBundle.getBundle(WebProjectProperties.class), "UI_WEB_PROJECT_SERVER_CHANGED", // NOI18N
+                    new Object[] { Deployment.getDefault().getServerID(oldServInstID),
+                        oldServInstID,
+                        Deployment.getDefault().getServerID(newServInstID),
+                        newServInstID });
+        }
+        if (newServInstID != null) {
+            logServInstID = newServInstID;
+        }
+        else if (oldServInstID != null) {
+            logServInstID = oldServInstID;
+        }
+        else {
+            logServInstID = null;
         }
     }
 
@@ -914,7 +963,9 @@ public class WebProjectProperties {
 
         List<ClassPathSupport.Item> serverItems = new ArrayList<ClassPathSupport.Item>();
         for (ClassPathSupport.Item item : items) {
-            if (item.getType() == ClassPathSupport.Item.TYPE_LIBRARY && item.getLibrary().getType().equals(J2eePlatform.LIBRARY_TYPE)) {
+            if (item.getType() == ClassPathSupport.Item.TYPE_LIBRARY
+                    && !item.isBroken()
+                    && item.getLibrary().getType().equals(J2eePlatform.LIBRARY_TYPE)) {
                 serverItems.add(ClassPathSupport.Item.create(item.getLibrary(), null));
             }
         }
@@ -969,4 +1020,28 @@ public class WebProjectProperties {
     public void setNewFrameworksNames(List<String> names) {
         addedFrameworkNames = names;
     }
+    
+    void loadIncludesExcludes(IncludeExcludeVisualizer v) {
+        Set<File> roots = new HashSet<File>();
+        for (DefaultTableModel model : new DefaultTableModel[] {SOURCE_ROOTS_MODEL, TEST_ROOTS_MODEL}) {
+            for (Object row : model.getDataVector()) {
+                roots.add((File) ((Vector) row).elementAt(0));
+            }
+        }
+        try {
+            String webDocRoot = WEB_DOCBASE_DIR_MODEL.getText(0, WEB_DOCBASE_DIR_MODEL.getLength());
+            roots.add(project.getAntProjectHelper().resolveFile(webDocRoot));
+        } catch (BadLocationException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        v.setRoots(roots.toArray(new File[roots.size()]));
+        v.setIncludePattern(includes);
+        v.setExcludePattern(excludes);
+    }
+
+    void storeIncludesExcludes(IncludeExcludeVisualizer v) {
+        includes = v.getIncludePattern();
+        excludes = v.getExcludePattern();
+    }
+    
 }

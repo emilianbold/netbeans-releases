@@ -1414,16 +1414,25 @@ public class InteractionManager {
          */
         public void mouseClicked(MouseEvent e) {
             DesignerPane pane = webform.getPane();
+            if (pane == null) {
+                // XXX #139200 Possible NPE.
+                return;
+            }
+            PageBox pageBox = pane.getPageBox();
+            if (pageBox == null) {
+                // XXX #139200 Possible NPE.
+                return;
+            }
 
             if (ENABLE_DOM_INSPECTOR) {
                 if (isDomEvent(e)) {
-                    PageBox pageBox = webform.getPane().getPageBox();
+//                    PageBox pageBox = webform.getPane().getPageBox();
                     CssBox box = pageBox.findCssBox(e.getX(), e.getY()); // Use Box interface instead?
                     selectDomInspectorBox(box);
 
                     return;
                 } else {
-                    PageBox pageBox = pane.getPageBox();
+//                    PageBox pageBox = pane.getPageBox();
                     pageBox.setSelected(null);
                 }
             }
@@ -2027,7 +2036,7 @@ public class InteractionManager {
                 // (or if you release over the same position, a selection.)
                 // We want to allow marquee selection over grid areas if
                 // control is pressed
-                if ((sel == null) || (selBox == pane.getPageBox()) ||
+                if ((sel == null) || (selBox == null) || (selBox == pane.getPageBox()) ||
                         (selBox.isGrid() && (e.isShiftDown() || e.isControlDown()))) {
                     setInsertBox(null, null);
 

@@ -41,15 +41,16 @@
 
 package org.netbeans.modules.uml.drawingarea;
 
+
 import org.netbeans.modules.uml.ui.controls.newdialog.INewDialogDiagramDetails;
 import org.netbeans.modules.uml.ui.controls.newdialog.NewDialogDiagramDetails;
-import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaControl;
-import org.netbeans.modules.uml.ui.support.diagramsupport.ProxyDiagramManager;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.HashMap;
 import java.util.Iterator;
 import javax.swing.SwingUtilities;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Exceptions;
 import org.openide.windows.TopComponent;
 import org.openide.windows.TopComponentGroup;
 import org.openide.windows.WindowManager;
@@ -66,12 +67,32 @@ import org.netbeans.modules.uml.ui.support.applicationmanager.IProduct;
 import org.netbeans.modules.uml.ui.support.applicationmanager.IProductDiagramManager;
 import org.netbeans.modules.uml.core.support.Debug;
 import java.awt.Dialog;
+import java.io.File;
 import java.text.MessageFormat;
-import java.util.Collection;
+import java.util.ResourceBundle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.prefs.Preferences;
+import org.netbeans.modules.uml.core.metamodel.diagrams.IDiagramKind;
+import org.netbeans.modules.uml.core.support.umlsupport.FileExtensions;
+import org.netbeans.modules.uml.drawingarea.persistence.TSDiagramConverter;
 import org.netbeans.modules.uml.ui.controls.newdialog.INewUMLFileTemplates;
 import org.netbeans.modules.uml.ui.controls.newdialog.NewUMLDiagWizardIterator;
+import org.netbeans.modules.uml.ui.support.QuestionResponse;
+import org.netbeans.modules.uml.ui.support.UIFactory;
+import org.netbeans.modules.uml.ui.support.commondialogs.IQuestionDialog;
+import org.netbeans.modules.uml.ui.support.commondialogs.MessageDialogKindEnum;
+import org.netbeans.modules.uml.ui.support.commondialogs.MessageIconKindEnum;
+import org.netbeans.modules.uml.ui.support.commondialogs.MessageResultKindEnum;
+import org.netbeans.modules.uml.ui.support.diagramsupport.IProxyDiagramManager;
+import org.netbeans.modules.uml.ui.support.diagramsupport.ProxyDiagramManager;
+import org.netbeans.modules.uml.ui.support.helpers.ProgressBarHelper;
+import org.netbeans.modules.uml.util.DummyCorePreference;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
+import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
+import org.openide.util.Utilities;
 
 /**
  * The diagram manager is used to manage the opening and closing of diagrams in
@@ -81,8 +102,8 @@ import org.openide.WizardDescriptor;
 public class UMLDiagramManager 
       implements IProductDiagramManager, INewUMLFileTemplates
 {
-    private HashMap <String, DiagramTopComponent> m_OpenDiagrams = new HashMap<String, DiagramTopComponent>();
-    private IDiagram m_CurrentDiagram = null;
+    private HashMap <String, UMLDiagramTopComponent> m_OpenDiagrams = new HashMap<String, UMLDiagramTopComponent>();
+    private IDiagram m_CurrentDiagram = null;    
     
     /**
      * Create a new diagram manager.
@@ -96,23 +117,42 @@ public class UMLDiagramManager
     * @see org.netbeans.modules.uml.ui.support.applicationmanager.IProductDiagramManager#openDiagram(java.lang.String, boolean, org.netbeans.modules.uml.ui.support.applicationmanager.IDiagramCallback)
     */
     public IDiagram openDiagram(String sTOMFilename,
-            boolean fitToZoom,
+            boolean bMaximized,
             IDiagramCallback pDiagramCreatedCallback)
     {
-        showDiagram(sTOMFilename, fitToZoom);
-        
-        IDiagram retVal = retrieveDiagram(sTOMFilename);
-        m_CurrentDiagram = retVal;
-        if(pDiagramCreatedCallback != null)
+        IDiagram retVal = null;
+        TopComponent tc = null;
+        try
         {
-            pDiagramCreatedCallback.returnedDiagram(retVal);
+            tc = TopComponent.getRegistry().getActivated();//WindowManager.getDefault().findTopComponent("projectTabLogical_tc");
+
+            if (tc != null)
+            {
+                tc.setCursor(Utilities.createProgressCursor(tc));
+            }
+            showDiagram(sTOMFilename);
+
+            retVal = retrieveDiagram(sTOMFilename);
+            m_CurrentDiagram = retVal;
+            if (pDiagramCreatedCallback != null)
+            {
+                pDiagramCreatedCallback.returnedDiagram(retVal);
+            }
+            raiseWindow(retVal);
+            garbageCollect();
+        } catch (Exception e)
+        {
+            e.printStackTrace();
+        } finally
+        {
+            if (tc != null)
+            {
+                tc.setCursor(null);
+            }
         }
-        raiseWindow(retVal);
-        
-        garbageCollect();
         return retVal;
     }
-    
+
    /* (non-Javadoc)
     * @see org.netbeans.modules.uml.ui.support.applicationmanager.IProductDiagramManager#openDiagram2(org.netbeans.modules.uml.core.metamodel.diagrams.IProxyDiagram, boolean, org.netbeans.modules.uml.ui.support.applicationmanager.IDiagramCallback)
     */
@@ -130,10 +170,10 @@ public class UMLDiagramManager
     public long closeDiagram(String sTOMFilename)
     {
         IDiagram retVal = retrieveDiagram(sTOMFilename);
-        if (retVal != null)
-        {
-            retVal.preClose();
-        }
+//        if (retVal != null)
+//        {
+//            retVal.preClose();
+//        }
         hideDiagram(retVal);
         return 0;
     }
@@ -197,7 +237,9 @@ public class UMLDiagramManager
         
         else
         {
-            showDiagram(diagram.getFilename(), true);
+             if (diagram != null) {
+                showDiagram(diagram.getFilename());
+            }
         }
         
         return 0;
@@ -239,14 +281,16 @@ public class UMLDiagramManager
             String diagramName,
             IDiagramCallback callback)
     {
-        // UMLSettings.getDefault().incrementDiagramCount(diagramName, diagramKind);
+        
         IDiagram retDia = doCreateDiagram(diagramKind, namespace, diagramName);
-        
         if (retDia != null && callback != null)
+        {
             callback.returnedDiagram(retDia);
-
-        m_CurrentDiagram = retDia;
+        }
         
+//	  if (retDia != null)
+//	      retDia.save();
+        m_CurrentDiagram = retDia;
         //call garbage collection explicitly to collect any left overs.
         garbageCollect();
         return retDia;
@@ -259,20 +303,18 @@ public class UMLDiagramManager
     {
         ETList < IProxyDiagram > retVal = new ETArrayList< IProxyDiagram >();
         
-        java.util.Collection < DiagramTopComponent > values = m_OpenDiagrams.values();
-        for(DiagramTopComponent curComp : values)
-        {
-            IDrawingAreaControl control = curComp.getDrawingAreaControl();
-            IDiagram diagram = control.getDiagram();
-            
+        java.util.Collection < UMLDiagramTopComponent > values = m_OpenDiagrams.values();
+        for(UMLDiagramTopComponent curComp : values)
+        { 
+            IDiagram diagram = curComp.getAssociatedDiagram();
+            String diagFileName = diagram.getFilename();        
             ProxyDiagramManager manager = ProxyDiagramManager.instance();
-            IProxyDiagram proxy = manager.getDiagram(diagram);
+            IProxyDiagram proxy = manager.getDiagram(diagFileName);
             if(proxy != null)
             {
                 retVal.add(proxy);
             }
         }
-        
         return retVal;
     }
     
@@ -324,7 +366,7 @@ public class UMLDiagramManager
     {
         if(diagramFile != null)
         {
-            final DiagramTopComponent component = findTopComponent(diagramFile);
+            final UMLDiagramTopComponent component = findTopComponent(diagramFile);
             if(component != null)
             {
                 SwingUtilities.invokeLater(new Runnable()
@@ -344,7 +386,7 @@ public class UMLDiagramManager
     {
         if(diagram != null)
         {
-            final DiagramTopComponent component = findTopComponent(diagram);
+            final UMLDiagramTopComponent component = findTopComponent(diagram);
             if(component != null)
             {
                 SwingUtilities.invokeLater(new Runnable()
@@ -360,11 +402,11 @@ public class UMLDiagramManager
         }
     }
     
-    protected void hideDiagram(DiagramTopComponent component)
+    protected void hideDiagram(UMLDiagramTopComponent component)
     {
         if(component != null)
         {
-            final DiagramTopComponent comp = component;
+            final UMLDiagramTopComponent comp = component;
             SwingUtilities.invokeLater(new Runnable()
             {
                 public void run()
@@ -377,26 +419,106 @@ public class UMLDiagramManager
         }
     }
     
-    protected void showDiagram(String diagramFile, boolean fitToZoom)
+    protected void showDiagram(String diagramFile)
     {
-        if(diagramFile != null)
+        if (diagramFile != null && (new File(diagramFile)).length() > 0)
         {
-            DiagramTopComponent component = findTopComponent(diagramFile);
+            UMLDiagramTopComponent topComponent = findTopComponent(diagramFile);
             
-            if(component != null)
+            if (topComponent != null)
             {
-                component.open();
-                component.requestActive();
+                topComponent.open();
+                topComponent.requestActive();
             }
+            
             else
             {
-                DiagramTopComponent topComponent = new DiagramTopComponent(diagramFile, fitToZoom);
-                showDiagram(topComponent);
+                IProxyDiagramManager proxyDiaMgr = ProxyDiagramManager.instance();
+                IProxyDiagram pDia = proxyDiaMgr.getDiagram(diagramFile);
+                try 
+                {
+                   if (diagramFile.endsWith(FileExtensions.DIAGRAM_TS_LAYOUT_EXT))
+                    {
+                        if (pDia == null)
+                        {
+                            return;
+                        }
+                        // ignore those unsupported diagram types for 6.5 M1
+                        int kind = pDia.getDiagramKind();
+                        if (kind == IDiagramKind.DK_COLLABORATION_DIAGRAM ||
+                            kind == IDiagramKind.DK_COMPONENT_DIAGRAM ||
+                            kind == IDiagramKind.DK_DEPLOYMENT_DIAGRAM )
+                        {
+                            return;
+                        }
+        
+                        //is TS diagram; must convert to Meteora first
+                        Preferences prefs = NbPreferences.forModule (DummyCorePreference.class) ;
+                        String str = prefs.get ("UML_Convert_61_Diagram_To_65_Format", "PSK_ASK") ;
+                        QuestionResponse result = null;
+                        //show dialog to warn user and suggest to agree with convertion
+                        if((str != null && str.equals("PSK_ALWAYS")))
+                        {
+                            result=new QuestionResponse();
+                            result.setResult(MessageResultKindEnum.SQDRK_RESULT_ALWAYS);
+                        }
+                        else
+                        {
+                            ResourceBundle bundle = NbBundle.getBundle(UMLDiagramManager.class);
+                            String title = bundle.getString("CONVERT_61_DIAGRAM_TITLE"); // NO18N
+                            String question = bundle.getString("CONVERT_61_DIAGRAM_MESSAGE"); // NO18N
+                            IQuestionDialog questionDialog = UIFactory.createQuestionDialog();
+                            result =
+                                questionDialog.displaySimpleQuestionDialog(
+                                MessageDialogKindEnum.SQDK_YESNOALWAYS,
+                                MessageIconKindEnum.EDIK_ICONWARNING,
+                                question,
+                                MessageResultKindEnum.SQDRK_RESULT_YES,
+                                null,
+                                title);
+                        }
+                        //
+                        if(result.getResult()==MessageResultKindEnum.SQDRK_RESULT_ALWAYS || result.getResult()==MessageResultKindEnum.SQDRK_RESULT_YES)
+                        {
+                            //topComponent = convertTSDiagram(diagramFile);
+                            TSDiagramConverter tsConverter = new TSDiagramConverter(pDia);
+                            topComponent = tsConverter.convertDiagram();
+                            if(result.getResult()==MessageResultKindEnum.SQDRK_RESULT_ALWAYS)
+                            {
+                                //need to persist in some preference
+                                prefs.put ("UML_Convert_61_Diagram_To_65_Format", "PSK_ALWAYS");
+                            }
+                        }
+                        else
+                        {
+                            return;
+                        }
+                    }
+                    else // is Meteora diagram
+                    {   
+                        int kind = pDia.getDiagramKind();
+                        if (kind == IDiagramKind.DK_SEQUENCE_DIAGRAM)
+                        {
+                            topComponent = new SQDDiagramTopComponent(diagramFile);
+                        }
+                        else
+                        {
+                            topComponent = new UMLDiagramTopComponent(diagramFile);
+                        }
+                    }
+                    showDiagram(topComponent);
+                }
+                
+                catch (DataObjectNotFoundException ex) 
+                {
+                    Exceptions.printStackTrace(ex);
+                }
             }
         }
     }
     
-    protected void showDiagram(final DiagramTopComponent topComponent)
+    
+    protected void showDiagram(final UMLDiagramTopComponent topComponent)
     {
         if(topComponent != null)
         {
@@ -429,9 +551,8 @@ public class UMLDiagramManager
                 }
             }
             
-            String preferredID = topComponent.preferredID(); 
+            String preferredID = topComponent.preferredID();
             m_OpenDiagrams.put(preferredID, topComponent);
-            
         }
     }
     
@@ -552,7 +673,7 @@ public class UMLDiagramManager
 //      }
 //      return retDia;
 //   }
-    
+
     public IDiagram doNewDiagramDialog(INamespace pNamespace,
             int defaultKind,
             int selectableKinds)
@@ -566,7 +687,10 @@ public class UMLDiagramManager
         
         //Jyothi:
         WizardDescriptor.Iterator iterator = new NewUMLDiagWizardIterator();
+        
+        @SuppressWarnings("unchecked")
         WizardDescriptor wizardDescriptor = new WizardDescriptor(iterator);
+        
         // {0} will be replaced by WizardDescriptor.Panel.getComponent().getName()
         // {1} will be replaced by WizardDescriptor.Iterator.name()
         //wizardDescriptor.setTitleFormat(new MessageFormat("{0} ({1})"));
@@ -585,9 +709,14 @@ public class UMLDiagramManager
             Object obj = wizardDescriptor.getProperty(DIAGRAM_DETAILS);
             if ((obj != null) && (obj instanceof INewDialogDiagramDetails))
             {
+                ProgressBarHelper progress = null;
                 INewDialogDiagramDetails det = (INewDialogDiagramDetails) obj;
                 try
-                {  
+                {
+                    String descr = NbBundle.getMessage(UMLDiagramManager.class, 
+                                                       "IDS_PROGRESS_DESCRIPTION"); // NO18N
+                    progress = new ProgressBarHelper(descr, 0); 
+
                     String name = det.getName();
                     INamespace space = det.getNamespace();
                     int kind = det.getDiagramKind();
@@ -607,19 +736,37 @@ public class UMLDiagramManager
                 {
                     e.printStackTrace();
                 }
+                finally 
+                {
+                    progress.stop();
+                }
             }
         }
         return retDia;
     }
     
     public IDiagram doCreateDiagram(int kind, INamespace ns, String name)
-    {
-        DiagramTopComponent topComponent = new DiagramTopComponent(ns, name, kind);
+    { 
+//        DiagramTopComponent topComponent = new DiagramTopComponent(ns, name, kind);
+//        showDiagram(topComponent);
+//        return topComponent.getAssociatedDiagram();
+        
+        UMLDiagramTopComponent topComponent = null;
+
+        if (kind == IDiagramKind.DK_SEQUENCE_DIAGRAM)
+           topComponent = new SQDDiagramTopComponent(ns, name, kind);
+
+        else
+           topComponent = new UMLDiagramTopComponent(ns, name, kind);
+
         showDiagram(topComponent);
+        
+//        uiTopComponent.open();
+//        uiTopComponent.requestActive();
         
         return topComponent.getAssociatedDiagram();
     }
-    
+
     public class DiagramPropertyListener implements PropertyChangeListener
     {
         Boolean groupVisible = null;
@@ -641,7 +788,7 @@ public class UMLDiagramManager
                     {
                         org.openide.windows.Mode mode = (org.openide.windows.Mode) it.next();
                         TopComponent selected = mode.getSelectedTopComponent();
-                        if (selected instanceof DiagramTopComponent)
+                        if (selected instanceof UMLDiagramTopComponent)
                         {
                             diagramSelected = true;
                             break;
@@ -674,7 +821,7 @@ public class UMLDiagramManager
      * @return The TopComponent associated with the diagram.  <code>Null</code>
      *         will be returned if a TopComponent is not associated with the diagram.
      */
-    protected DiagramTopComponent findTopComponent(String diagramFile)
+    protected UMLDiagramTopComponent findTopComponent(String diagramFile)
     {
         IDiagram diagram = retrieveDiagram(diagramFile);
         return findTopComponent(diagram);
@@ -688,13 +835,13 @@ public class UMLDiagramManager
      * @return The TopComponent associated with the diagram.  <code>Null</code>
      *         will be returned if a TopComponent is not associated with the diagram.
      */
-    protected DiagramTopComponent findTopComponent(IDiagram diagram)
+    protected UMLDiagramTopComponent findTopComponent(IDiagram diagram)
     {
-        DiagramTopComponent retVal = null;
+        UMLDiagramTopComponent retVal = null;
         
         if(diagram != null)
         {
-            String preferredID = DiagramTopComponent.preferredIDForDiagram(diagram);
+            String preferredID = UMLDiagramTopComponent.preferredIDForDiagram(diagram);
             retVal = m_OpenDiagrams.get(preferredID);
 //         FindTopComponentLocator locator = new FindTopComponentLocator(preferredID);
 //
@@ -738,9 +885,12 @@ public class UMLDiagramManager
         {
             public void run()
             {
-                Collection < DiagramTopComponent > values = m_OpenDiagrams.values();
-                for(DiagramTopComponent curComp : values)
+                for(UMLDiagramTopComponent curComp : m_OpenDiagrams.values()) 
+                {
+                    String preferredID = curComp.preferredID();
                     curComp.close();
+                    m_OpenDiagrams.remove(preferredID);
+                }
             }
         });       
     }
@@ -805,9 +955,9 @@ public class UMLDiagramManager
     public class ShowTopComponentGroup implements Runnable
     {
         private String mGroupName = "";
-        private DiagramTopComponent mTopComponent = null;
+        private UMLDiagramTopComponent mTopComponent = null;
         
-        public ShowTopComponentGroup(String name, DiagramTopComponent topComponent)
+        public ShowTopComponentGroup(String name, UMLDiagramTopComponent topComponent)
         {
             mGroupName = name;
             mTopComponent = topComponent;
@@ -829,6 +979,10 @@ public class UMLDiagramManager
 //            group.open();
 //         }
         }
+    }
+
+    public void setDiagramDirty(IDiagram diagram,boolean b) {
+        findTopComponent(diagram).setDiagramDirty(b);
     }
 }
 

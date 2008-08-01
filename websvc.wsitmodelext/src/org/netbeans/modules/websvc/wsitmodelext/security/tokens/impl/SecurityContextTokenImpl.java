@@ -41,17 +41,16 @@
 
 package org.netbeans.modules.websvc.wsitmodelext.security.tokens.impl;
 
+import org.netbeans.modules.websvc.wsitmodelext.security.impl.SecurityPolicyComponentImpl;
 import org.netbeans.modules.websvc.wsitmodelext.security.tokens.SecurityContextToken;
-import org.netbeans.modules.websvc.wsitmodelext.security.tokens.TokensQName;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import org.netbeans.modules.xml.wsdl.model.visitor.WSDLVisitor;
 import org.w3c.dom.Element;
 
 /**
  *
  * @author Martin Grebac
  */
-public class SecurityContextTokenImpl extends TokensComponentImpl implements SecurityContextToken {
+public class SecurityContextTokenImpl extends SecurityPolicyComponentImpl implements SecurityContextToken {
     
     /**
      * Creates a new instance of SecurityContextTokenImpl
@@ -60,13 +59,4 @@ public class SecurityContextTokenImpl extends TokensComponentImpl implements Sec
         super(model, e);
     }
     
-    public SecurityContextTokenImpl(WSDLModel model){
-        this(model, createPrefixedElement(TokensQName.SECURITYCONTEXTTOKEN.getQName(), model));
-    }
-
-    @Override
-    public void accept(WSDLVisitor visitor) {
-        visitor.visit(this);
-    }
-
 }

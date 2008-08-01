@@ -53,7 +53,7 @@ import org.openide.nodes.Node;
 /**
  * Provides EJB tree of all open projects. This class is not used for displaying Enterprise Beans node in project view.
  */
-public final class EJBListViewChildren extends Children.Keys {
+public final class EJBListViewChildren extends Children.Keys<String> {
 
     public static final String KEY_EJBS = "ejbKey"; //NOI18N
         private Project project;
@@ -65,23 +65,21 @@ public final class EJBListViewChildren extends Children.Keys {
 
     @Override
     protected void addNotify() {
-        super.addNotify();
         createNodes();
     }
 
     private void createNodes() {
-        List l = new ArrayList();
+        List<String> l = new ArrayList<String>();
         l.add(KEY_EJBS);
         setKeys(l);
     }
 
     @Override
     protected void removeNotify() {
-        setKeys(Collections.EMPTY_SET);
-        super.removeNotify();
+        setKeys(Collections.<String>emptySet());
     }
 
-    public Node[] createNodes(Object key) {
+    public Node[] createNodes(String key) {
         Node n = null;
         if (key == KEY_EJBS) {
             EjbJar[] apiEjbJars = EjbJar.getEjbJars(project);
@@ -89,7 +87,5 @@ public final class EJBListViewChildren extends Children.Keys {
         }
         return n == null ? new Node[0] : new Node[] {n};
     }
-
+    
 }
-
-

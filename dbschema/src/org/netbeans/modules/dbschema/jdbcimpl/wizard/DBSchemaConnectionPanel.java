@@ -54,6 +54,7 @@ import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.db.explorer.support.DatabaseExplorerUIs;
 
+import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
@@ -76,7 +77,7 @@ public class DBSchemaConnectionPanel extends JPanel implements ListDataListener 
         this.list = list;
         this.data = data;
 
-        putClientProperty("WizardPanel_contentSelectedIndex", new Integer(1)); //NOI18N
+        putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer(1)); //NOI18N
         setName(bundle.getString("ConnectionChooser")); //NOI18N
 
         initComponents ();

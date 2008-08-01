@@ -230,21 +230,21 @@ public class PanelSupportedFrameworksVisual extends JPanel implements HelpCtx.Pr
             .add(jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 500, Short.MAX_VALUE)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, jLabelConfig, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 500, Short.MAX_VALUE)
             .add(jPanelConfig, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 500, Short.MAX_VALUE)
-            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 500, Short.MAX_VALUE)
             .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 500, Short.MAX_VALUE)
+            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 500, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(jLabel1)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 87, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 96, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jSeparator1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .add(18, 18, 18)
                 .add(jLabelConfig, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 21, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jPanelConfig, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 179, Short.MAX_VALUE))
+                .add(jPanelConfig, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 170, Short.MAX_VALUE))
         );
 
         jLabel1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelSupportedFrameworksVisual.class, "ACS_LBL_NWP2_FrameworksTable_A11YDesc")); // NOI18N
@@ -279,7 +279,7 @@ public class PanelSupportedFrameworksVisual extends JPanel implements HelpCtx.Pr
         if (errorMessage == null || errorMessage.length() == 0) {
             errorMessage = " "; // NOI18N
         }
-        wizardDescriptor.putProperty("WizardPanel_errorMessage", errorMessage); // NOI18N
+        wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, errorMessage); // NOI18N
     }
     
     void read(WizardDescriptor settings) {
@@ -369,6 +369,9 @@ public class PanelSupportedFrameworksVisual extends JPanel implements HelpCtx.Pr
     
     public void tableChanged(TableModelEvent e) {
         FrameworksTableModel model = (FrameworksTableModel) jTableFrameworks.getModel();
+        if (jTableFrameworks.getSelectedRow() == -1) {
+            return;
+        }
         FrameworkModelItem item = model.getItem(jTableFrameworks.getSelectedRow());
         WebFrameworkProvider framework = item.getFramework();
         setConfigPanel(framework, item);
@@ -376,6 +379,9 @@ public class PanelSupportedFrameworksVisual extends JPanel implements HelpCtx.Pr
     
     public void valueChanged(javax.swing.event.ListSelectionEvent e) {
         FrameworksTableModel model = (FrameworksTableModel) jTableFrameworks.getModel();
+        if (jTableFrameworks.getSelectedRow() == -1) {
+            return;
+        }
         FrameworkModelItem item = model.getItem(jTableFrameworks.getSelectedRow());
         WebFrameworkProvider framework = item.getFramework();
         setConfigPanel(framework, item);

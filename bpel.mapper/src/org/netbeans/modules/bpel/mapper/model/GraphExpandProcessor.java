@@ -30,10 +30,9 @@ import org.netbeans.modules.bpel.mapper.tree.models.ConditionValueTreeModel;
 import org.netbeans.modules.bpel.mapper.tree.models.DateValueTreeModel;
 import org.netbeans.modules.bpel.mapper.tree.models.ForEachConditionsTreeModel;
 import org.netbeans.modules.bpel.mapper.tree.search.ResultNodeFinder;
-import org.netbeans.modules.bpel.mapper.tree.search.SimpleFinder;
-import org.netbeans.modules.bpel.mapper.tree.spi.MapperTcContext;
-import org.netbeans.modules.bpel.mapper.tree.spi.MapperTreeModel;
-import org.netbeans.modules.bpel.mapper.tree.spi.TreeItemFinder;
+import org.netbeans.modules.soa.ui.tree.impl.SimpleFinder;
+import org.netbeans.modules.soa.ui.tree.impl.TreeFinderProcessor;
+import org.netbeans.modules.bpel.mapper.model.MapperTcContext;
 import org.netbeans.modules.bpel.model.api.Assign;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.BpelModel;
@@ -62,16 +61,22 @@ import org.netbeans.modules.soa.mappercore.model.Link;
 import org.netbeans.modules.soa.mappercore.model.MapperModel;
 import org.netbeans.modules.soa.mappercore.model.SourcePin;
 import org.netbeans.modules.soa.mappercore.model.TreeSourcePin;
+import org.netbeans.modules.soa.ui.tree.SoaTreeModel;
+import org.netbeans.modules.soa.ui.tree.TreeItemFinder;
 
 /**
  *
- * @author supernikita
+ * @author nk160297
  */
 public class GraphExpandProcessor {
     
     // TODO m add graphEntity support
     public static void expandGraph(
             MapperTcContext mapperTcContext, BpelDesignContext context) {
+        if (mapperTcContext == null || context == null) {
+            return;
+        }
+        
         //
         Mapper mapper = mapperTcContext.getMapper();
         MapperModel mModel = mapper.getModel();
@@ -150,6 +155,9 @@ public class GraphExpandProcessor {
         //
         ArrayList<TreePath> result = new ArrayList<TreePath>();
         //
+        TreeFinderProcessor fProcessor = new TreeFinderProcessor(
+                mModel.getRightTreeModel());
+        //
         Class<? extends BpelEntity> entityType = bpelEntity.getElementType();
         if (entityType == Copy.class) {
             Copy copy = (Copy)bpelEntity;
@@ -157,9 +165,10 @@ public class GraphExpandProcessor {
             To copyTo = copy.getTo();
             CopyToForm form = CopyToProcessor.getCopyToForm(copyTo);
             ArrayList<TreeItemFinder> toNodeFinderList = CopyToProcessor.
-                    constructFindersList(form, copy, copyTo, null);
-            TreePath targetTreePath = mModel.getRightTreeModel().
-                    findFirstNode(toNodeFinderList);
+                    constructFindersList(form, copy, copyTo, null, null, null, null);
+            TreePath targetTreePath = fProcessor.findFirstNode(toNodeFinderList);
+//            TreePath targetTreePath = mModel.getRightTreeModel().
+//                    findFirstNode(toNodeFinderList);
             if (targetTreePath != null) {
                 result.add(targetTreePath);
             }
@@ -187,8 +196,9 @@ public class GraphExpandProcessor {
                 //
                 List<TreeItemFinder> finderList = Collections.singletonList(
                         (TreeItemFinder)new ResultNodeFinder(targetNodeName));
-                TreePath targetTreePath = mModel.getRightTreeModel().
-                        findFirstNode(finderList);
+                TreePath targetTreePath = fProcessor.findFirstNode(finderList);
+                // TreePath targetTreePath = mModel.getRightTreeModel().
+                //         findFirstNode(finderList);
                 if (targetTreePath != null) {
                     result.add(targetTreePath);
                 }
@@ -202,8 +212,9 @@ public class GraphExpandProcessor {
             List<TreeItemFinder> finderList = Collections.singletonList(
                     (TreeItemFinder)new ResultNodeFinder(
                     ConditionValueTreeModel.BOOLEAN_CONDITION));
-            TreePath targetTreePath = mModel.getRightTreeModel().
-                    findFirstNode(finderList);
+            TreePath targetTreePath = fProcessor.findFirstNode(finderList);
+//            TreePath targetTreePath = mModel.getRightTreeModel().
+//                    findFirstNode(finderList);
             if (targetTreePath != null) {
                 result.add(targetTreePath);
             }
@@ -212,8 +223,9 @@ public class GraphExpandProcessor {
             List<TreeItemFinder> finderList = Collections.singletonList(
                     (TreeItemFinder)new ResultNodeFinder(
                     ForEachConditionsTreeModel.START_VALUE));
-            TreePath targetTreePath = mModel.getRightTreeModel().
-                    findFirstNode(finderList);
+            TreePath targetTreePath = fProcessor.findFirstNode(finderList);
+//            TreePath targetTreePath = mModel.getRightTreeModel().
+//                    findFirstNode(finderList);
             if (targetTreePath != null) {
                 result.add(targetTreePath);
             }
@@ -221,8 +233,9 @@ public class GraphExpandProcessor {
             finderList = Collections.singletonList(
                     (TreeItemFinder)new ResultNodeFinder(
                     ForEachConditionsTreeModel.FINAL_VALUE));
-            targetTreePath = mModel.getRightTreeModel().
-                    findFirstNode(finderList);
+            targetTreePath = fProcessor.findFirstNode(finderList);
+//            targetTreePath = mModel.getRightTreeModel().
+//                    findFirstNode(finderList);
             if (targetTreePath != null) {
                 result.add(targetTreePath);
             }
@@ -230,8 +243,9 @@ public class GraphExpandProcessor {
             finderList = Collections.singletonList(
                     (TreeItemFinder)new ResultNodeFinder(
                     ForEachConditionsTreeModel.COMPLETION_CONDITION));
-            targetTreePath = mModel.getRightTreeModel().
-                    findFirstNode(finderList);
+            targetTreePath = fProcessor.findFirstNode(finderList);
+//            targetTreePath = mModel.getRightTreeModel().
+//                    findFirstNode(finderList);
             if (targetTreePath != null) {
                 result.add(targetTreePath);
             }
@@ -239,8 +253,9 @@ public class GraphExpandProcessor {
             List<TreeItemFinder> finderList = Collections.singletonList(
                     (TreeItemFinder)new ResultNodeFinder(
                     ForEachConditionsTreeModel.START_VALUE));
-            TreePath targetTreePath = mModel.getRightTreeModel().
-                    findFirstNode(finderList);
+            TreePath targetTreePath = fProcessor.findFirstNode(finderList);
+//            TreePath targetTreePath = mModel.getRightTreeModel().
+//                    findFirstNode(finderList);
             if (targetTreePath != null) {
                 result.add(targetTreePath);
             }
@@ -248,8 +263,9 @@ public class GraphExpandProcessor {
             List<TreeItemFinder> finderList = Collections.singletonList(
                     (TreeItemFinder)new ResultNodeFinder(
                     ForEachConditionsTreeModel.FINAL_VALUE));
-            TreePath targetTreePath = mModel.getRightTreeModel().
-                    findFirstNode(finderList);
+            TreePath targetTreePath = fProcessor.findFirstNode(finderList);
+//            TreePath targetTreePath = mModel.getRightTreeModel().
+//                    findFirstNode(finderList);
             if (targetTreePath != null) {
                 result.add(targetTreePath);
             }
@@ -257,8 +273,9 @@ public class GraphExpandProcessor {
             List<TreeItemFinder> finderList = Collections.singletonList(
                     (TreeItemFinder)new ResultNodeFinder(
                     ForEachConditionsTreeModel.COMPLETION_CONDITION));
-            TreePath targetTreePath = mModel.getRightTreeModel().
-                    findFirstNode(finderList);
+            TreePath targetTreePath = fProcessor.findFirstNode(finderList);
+//            TreePath targetTreePath = mModel.getRightTreeModel().
+//                    findFirstNode(finderList);
             if (targetTreePath != null) {
                 result.add(targetTreePath);
             }
@@ -307,7 +324,7 @@ public class GraphExpandProcessor {
                 return false;
             }
             protected boolean drillDeeper(Object treeItem) {
-                if (treeItem == MapperTreeModel.TREE_ROOT) {
+                if (treeItem == SoaTreeModel.TREE_ROOT) {
                     return true;
                 }
                 return false;
@@ -319,18 +336,26 @@ public class GraphExpandProcessor {
         BpelMapperModel mModel = (BpelMapperModel)mm;
         //
         if (leftTree) {
-            TreePath tPath = mModel.getLeftTreeModel().findFirstNode(
+            TreeFinderProcessor fProcessor = new TreeFinderProcessor(
+                    mModel.getLeftTreeModel());
+            TreePath targetTreePath = fProcessor.findFirstNode(
                     Collections.singletonList(finder));
-            if (tPath != null) {
-                mapper.getLeftTree().expandPath(tPath);
+//            TreePath tPath = mModel.getLeftTreeModel().findFirstNode(
+//                    Collections.singletonList(finder));
+            if (targetTreePath != null) {
+                mapper.getLeftTree().expandPath(targetTreePath);
             }
         }
         //
         if (rightTree) {
-            TreePath tPath = mModel.getRightTreeModel().findFirstNode(
+            TreeFinderProcessor fProcessor = new TreeFinderProcessor(
+                    mModel.getRightTreeModel());
+            TreePath targetTreePath = fProcessor.findFirstNode(
                     Collections.singletonList(finder));
-            if (tPath != null) {
-                mapper.setExpandedGraphState(tPath, true);
+//            TreePath tPath = mModel.getRightTreeModel().findFirstNode(
+//                    Collections.singletonList(finder));
+            if (targetTreePath != null) {
+                mapper.setExpandedGraphState(targetTreePath, true);
             }
         }
         //

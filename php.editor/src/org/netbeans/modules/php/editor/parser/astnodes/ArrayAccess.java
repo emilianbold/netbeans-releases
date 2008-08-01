@@ -61,6 +61,8 @@ public class ArrayAccess extends Variable {
     public ArrayAccess(int start, int end, VariableBase variableName, Expression index, ArrayAccess.Type arrayType) {
         super(start, end, variableName);
 
+        //if (variableName != null) variableName.setParent(this);
+        //if (index != null) index.setParent(index);
         this.index = index;
         this.arrayType = arrayType;
     }
@@ -81,5 +83,10 @@ public class ArrayAccess extends Variable {
     @Override
     public VariableBase getName() {
         return (VariableBase) super.getName();
+    }
+
+    @Override
+    public void accept(Visitor visitor) {
+        visitor.visit(this);
     }
 }

@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.search;
 
+import java.nio.charset.Charset;
 import java.util.Collection;
 import java.util.Iterator;
 import org.openide.loaders.DataObject;
@@ -119,12 +120,15 @@ final class SpecialSearchGroup extends DataObjectSearchGroup {
     protected void firePropertyChange(String name,
                                       Object oldValue,
                                       Object newValue) {
-        notifyMatchingObjectFound((DataObject) newValue);
-    }
+            notifyMatchingObjectFound((DataObject) newValue);
+        }
     
     private void notifyMatchingObjectFound(DataObject obj) {
         if (listeningSearchTask != null) {
-            listeningSearchTask.matchingObjectFound(obj);
+            Charset charset = (basicCriteria != null)
+                              ? basicCriteria.getLastUsedCharset()
+                              : null;
+            listeningSearchTask.matchingObjectFound(obj, charset);
         } else {
             assert false;
         }

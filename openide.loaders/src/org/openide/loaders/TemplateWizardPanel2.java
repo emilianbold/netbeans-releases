@@ -117,7 +117,7 @@ final class TemplateWizardPanel2 implements WizardDescriptor.FinishablePanel<Wiz
         String err = getPanelUI().implIsValid();
         // bugfix #34799, don't set errorMessage if the panel is not showed
         if (getPanelUI ().isShowing ()) {
-            settings.putProperty("WizardPanel_errorMessage", err); //NOI18N
+            settings.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, err); //NOI18N
         }
         return err == null;
     }

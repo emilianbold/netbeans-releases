@@ -19,23 +19,23 @@
 
 package org.netbeans.modules.bpel.mapper.predicates;
 
-import org.netbeans.modules.xml.schema.model.SchemaComponent;
-import org.netbeans.modules.xml.xam.Named;
+import org.netbeans.modules.bpel.mapper.cast.AbstractPseudoComp;
 import org.netbeans.modules.xml.xpath.ext.XPathPredicateExpression;
-import org.netbeans.modules.xml.xpath.ext.XPathSchemaContext;
+import org.netbeans.modules.xml.xpath.ext.schema.resolver.XPathSchemaContext;
+import org.netbeans.modules.xml.xpath.ext.XPathSchemaContextHolder;
 import org.netbeans.modules.xml.xpath.ext.XPathUtils;
+import org.netbeans.modules.xml.xpath.ext.schema.resolver.SchemaCompHolder;
+import org.netbeans.modules.xml.xpath.ext.spi.XPathPseudoComp;
 
 /**
  * The base class for different kind of Predicated Schema components.
  * @author nk160297
  */
-public abstract class AbstractPredicate {
+public abstract class AbstractPredicate implements XPathSchemaContextHolder {
 
-    public abstract XPathSchemaContext getContext();
+    public abstract SchemaCompHolder getSCompHolder();
     
     public abstract XPathPredicateExpression[] getPredicates();
-    
-    public abstract SchemaComponent getSComponent();
     
     public abstract void setPredicates(XPathPredicateExpression[] newPArr);
     
@@ -53,7 +53,7 @@ public abstract class AbstractPredicate {
     }
     
     public boolean hasSameContext(XPathSchemaContext context) {
-        XPathSchemaContext myContext = getContext();
+        XPathSchemaContext myContext = getSchemaContext();
         if (myContext == null) {
             return false;
         }
@@ -69,17 +69,17 @@ public abstract class AbstractPredicate {
         //
         AbstractPredicate comp2 = (AbstractPredicate)obj;
         //
-        XPathSchemaContext mySContext = getContext();
-        if (mySContext == null || comp2.getContext() == null) {
+        XPathSchemaContext mySContext = getSchemaContext();
+        if (mySContext == null || comp2.getSchemaContext() == null) {
             // 
             // Compare Schema component
-            SchemaComponent mySchemaComp = getSComponent();
-            if (mySchemaComp != comp2.getSComponent()) {
+            SchemaCompHolder mySchemaCompHolder = getSCompHolder();
+            if (mySchemaCompHolder != comp2.getSCompHolder()) {
                 return false;
             }
         } else {
             // Compare context
-            if (!(comp2.getContext().equalsChain(mySContext))) {
+            if (!(comp2.getSchemaContext().equalsChain(mySContext))) {
                 return false;
             }
         }
@@ -90,14 +90,22 @@ public abstract class AbstractPredicate {
     }
 
     public String getDisplayName() {
-        String sCompName = ((Named)getSComponent()).getName();
-        return sCompName + " " + getPredicatesText();
+        SchemaCompHolder sCompHolder = getSCompHolder();
+        String baseName = null;
+        if (sCompHolder.isPseudoComp()) {
+            XPathPseudoComp pseudo = (XPathPseudoComp)sCompHolder.getHeldComponent();
+            baseName = AbstractPseudoComp.getDisplayName(pseudo);
+        } else {
+            baseName = sCompHolder.getName();
+        }
+        //
+        return  baseName + " " + getPredicatesText();
     }
     
     @Override
     public String toString() {
         String contextText = null;
-        XPathSchemaContext mySContext = getContext();
+        XPathSchemaContext mySContext = getSchemaContext();
         if (mySContext != null) {
             contextText = mySContext.toString();
         }
@@ -109,4 +117,7 @@ public abstract class AbstractPredicate {
         }
     }
     
+    public void setSchemaContext(XPathSchemaContext newContext) {
+        throw new UnsupportedOperationException("Not supported"); // NOI18N
+    }
 } 

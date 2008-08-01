@@ -51,7 +51,7 @@ import org.openide.util.NbBundle;
 import org.openide.windows.OutputListener;
 import java.io.*;
 import java.nio.ByteBuffer;
-import java.util.StringTokenizer;
+import java.nio.CharBuffer;
 import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 
@@ -77,14 +77,8 @@ class OutWriter extends PrintWriter {
     /**
      * Byte array used to write the line separator after line writes.
      */
-    static byte[] lineSepBytes;
-    static {
-        if (Utilities.isWindows()) {
-            lineSepBytes = new byte[] { '\0', '\r', '\0', '\n'};
-        } else {
-            lineSepBytes = new byte[] { '\0', '\n'};
-        }
-    }
+    static String lineSeparator = System.getProperty ("line.separator" );
+
     /** The read-write backing storage.  May be heap or */
     private Storage storage;
     
@@ -145,68 +139,13 @@ class OutWriter extends PrintWriter {
     
     boolean isEmpty() {
         return storage == null ? true : lines == null ? true : 
-            lines.getLineCount() == 0;
+            storage.size() == 0;
     }
 
+    @Override
     public String toString() {
         return "OutWriter@" + System.identityHashCode(this) + " for " + owner + " closed ";
     }
-
-    private int doPrintln (String s) {
-        try {
-            int idx = s.indexOf("\n");
-            int result = 1;
-            if (idx != -1) { //XXX platform specific line sep?
-                //XXX this can be much more efficient by slicing buffers
-                StringTokenizer tok = new StringTokenizer(s, "\n", true); //NOI18N
-                result = 0;
-                boolean lastWasNewLine = true;
-                while (tok.hasMoreTokens()) {
-                    String token = tok.nextToken();
-                    if ("\n".equals(token)) {
-                        if (lastWasNewLine) {
-                            doPrintln("");
-                            result++;
-                        }
-                        lastWasNewLine = true;
-                    } else {
-                        lastWasNewLine = false;
-                        doPrintln(token);
-                        result++;
-                    }
-                }
-            } else {
-                ByteBuffer buf;
-                synchronized (this) {
-                    if (s.startsWith("\t")) { //NOI18N
-                        char[] c = s.toCharArray();
-                        int ix = 0;
-                        //Temporary handling of leading tab characters, so they
-                        //at least have some width.  Note this does affect output
-                        //written with save-as
-                        StringBuffer sb = new StringBuffer (s.length() + 10);
-                        for (int i=0; i < c.length; i++) {
-                            if ('\t' == c[i]) {
-                                sb.append("        "); // NOI18N
-                            } else {
-                                sb.append (c[i]);
-                            }
-                        }
-                        s = sb.toString();
-                    }
-                    buf = getStorage().getWriteBuffer(AbstractLines.toByteIndex(s.length()));
-                    buf.asCharBuffer().put(s);
-                    buf.position (buf.position() + AbstractLines.toByteIndex(s.length()));
-                    write (buf, true);
-                }
-            }
-            return result;
-        } catch (IOException ioe) {
-            handleException (ioe);
-            return 0;
-        }
-    }
-
 
     /** Generic exception handling, marking the error flag and notifying it with ErrorManager */
     private void handleException (Exception e) {
@@ -239,11 +178,10 @@ class OutWriter extends PrintWriter {
             return;
         }
         lines.markDirty();
-        int length = bb.limit();
         closed = false;
         int start = -1;
         try {
-            start = getStorage().write(bb, completeLine);
+            start = getStorage().write(bb);
         } catch (java.nio.channels.ClosedByInterruptException cbie) {
             //Execution termination has sent ThreadDeath to the process in the
             //middle of a write
@@ -270,12 +208,24 @@ class OutWriter extends PrintWriter {
                 threadDeathClose();
             }
         }
-        boolean startedNow = false;
+        int length = bb.limit();
+        lineLength = lineLength + length;
         if (start >= 0 && lineStart == -1) {
             lineStart = start;
-            lineLength = lineLength + length;
-            startedNow = true;
         }
+        if (terminated) {
+            return;
+        }
+        lines.lineUpdated(lineStart, lineLength, completeLine);
+        if (completeLine) {
+            lineStart = -1;
+            lineLength = 0;
+        }
+        if (owner != null && owner.hasStreamClosed()) {
+            owner.setStreamClosed(false);
+            lines.fire();
+        }         
+        /*
         if (completeLine) {
             if (lineStart >= 0 && !terminated && lines != null) {
                 if (Controller.VERBOSE) Controller.log (this + ": Wrote " +
@@ -294,13 +244,13 @@ class OutWriter extends PrintWriter {
             }
         } else {
             if (startedNow && lineStart >= 0 && !terminated && lines != null) {
-                lines.lineStarted(lineStart);
+                lines.lineStarted(lineStart, lineLength);
                 if (owner != null && owner.hasStreamClosed()) {
                     owner.setStreamClosed(false);
                     lines.fire();
                 }
             }
-        }
+        }*/
     }
 
     /**
@@ -388,6 +338,7 @@ class OutWriter extends PrintWriter {
     }
 
     private boolean closed = false;
+    @Override
     public synchronized void close() {
         closed = true;
         try {
@@ -404,140 +355,166 @@ class OutWriter extends PrintWriter {
         }
     }
 
-       public synchronized void println(String s) {
-            if (checkError()) {
-                return;
-            }
-            doPrintln(s);
+    @Override
+    public synchronized void println(String s) {
+        doWrite(s, 0, s.length());
+        println();
+    }
+
+    @Override
+    public synchronized void flush() {
+        if (checkError()) {
+            return;
         }
-
-        public synchronized void flush() {
-            if (checkError()) {
-                return;
-            }
-            try {
-                getStorage().flush();
-                if (lines != null) {
-                    lines.fire();
-                }
-            } catch (IOException e) {
-                handleException (e);
-            }
-        }
-
-
-        public boolean checkError() {
-            return disposed || trouble;
-        }
-
-        public synchronized void write(int c) {
-            if (checkError()) {
-                return;
-            }
-            try {
-                ByteBuffer buf = getStorage().getWriteBuffer(AbstractLines.toByteIndex(1));
-                buf.asCharBuffer().put((char)c);
-                buf.position (buf.position() + AbstractLines.toByteIndex(1));
-                write (buf, false);
-            } catch (IOException ioe) {
-                handleException (ioe);
-            }
-        }
-
-        public synchronized void write(char data[], int off, int len) {
-            if (checkError()) {
-                return;
-            }
-            if (len > 0 && data[off] == '\t') {
-                //Temporary handling of leading tab characters, so they
-                //at least have some width.  Note this does affect output
-                //written with save-as
-                StringBuffer sb = new StringBuffer(data.length + 10);
-                int cnt = 0;
-                for (int i=0; i < data.length; i++) {
-                    if (data[i] == '\t') {
-                        sb.append("        "); // NOI18N
-                        cnt = cnt + 1;
-                    } else {
-                        sb.append (data[i]);
-                    }
-                }
-                data = sb.toString().toCharArray();
-                len = len + (cnt * 7);
-            }
-            
-            int count = off;
-            int start = off;
-            while (count < len + off) {
-                char curr = data[count];
-                if (curr == '\n') { //NOI18N
-                    //TODO we can optimize the array writing a bit by not delegating to the 
-                    //println metod which perform a physical write on each line, 
-                    // but to write just once, when everything is processed.
-                    String sx = new String(data, start, (count + 1 - start));
-                    println (sx);
-                    start = count + 1;
-                    if (start >= len + off) {
-                        return;
-                    }
-                }
-                count++;
-            }
-            try {
-                synchronized (this) {
-                    int lenght = count - (start);
-                    ByteBuffer buf = getStorage().getWriteBuffer(AbstractLines.toByteIndex(lenght));
-                    buf.asCharBuffer().put(data, start, lenght);
-                    buf.position(buf.position() + AbstractLines.toByteIndex(lenght));
-                    write(buf, false);
-                }
-            } catch (IOException ioe) {
-                handleException(ioe);
-                return;
-            }
-        }
-
-        public synchronized void write(char data[]) {
-            write (data, 0, data.length);
-        }
-        
-        public synchronized void println() {
-            doPrintln("");
-        }
-
-        /**
-         * Write a portion of a string.
-         * @param s A String
-         * @param off Offset from which to start writing characters
-         * @param len Number of characters to write
-         */
-        public synchronized void write(String s, int off, int len) {
-            write (s.toCharArray(), off, len);
-        }
-
-        public synchronized void write(String s) {
-            write (s.toCharArray());
-        }
-
-
-        public synchronized void println(String s, OutputListener l) throws IOException {
-            println(s, l, false);
-        }
-
-        
-        public synchronized void println(String s, OutputListener l, boolean important) throws IOException {
-            if (checkError()) {
-                return;
-            }
-            int addedCount = doPrintln (s);
-            int newCount = lines.getLineCount();
-            for (int i=newCount - addedCount; i < newCount; i++) {
-                lines.addListener (i, l, important);
-                //#48485 we should update the UI, since the lines are in the model
-                // and jump next/previous can't jump to appropriate place.
+        try {
+            getStorage().flush();
+            if (lines != null) {
                 lines.fire();
             }
+        } catch (IOException e) {
+            handleException(e);
         }
+    }
+
+    @Override
+    public boolean checkError() {
+        return disposed || trouble;
+    }
+
+    class CharArrayWrapper implements CharSequence {
+
+        private char[] arr;
+        private int off;
+        private int len;
+
+        public CharArrayWrapper(char[] arr) {
+            this(arr, 0, arr.length);
+        }
+
+        public CharArrayWrapper(char[] arr, int off, int len) {
+            this.arr = arr;
+            this.off = off;
+            this.len = len;
+        }
+
+        public char charAt(int index) {
+            return arr[off + index];
+        }
+
+        public int length() {
+            return len;
+        }
+
+        public CharSequence subSequence(int start, int end) {
+            return new CharArrayWrapper(arr, off + start, end - start);
+        }
+
+        @Override
+        public String toString() {
+            return new String(arr, off, len);
+        }
+    }
+
+    @Override
+    public synchronized void write(int c) {
+        doWrite(new String(new char[]{(char)c}), 0, 1);
+    }
+    
+    @Override
+    public synchronized void write(char data[], int off, int len) {
+        doWrite(new CharArrayWrapper(data), off, len);
+    }
+    
+    /** write buffer size in chars */
+    static private final int writeBuffSize = 16*1024;
+    private final String tabReplacement = "        ";
+    public synchronized int doWrite(CharSequence s, int off, int len) {
+        int lineCount = 0;
+        if (checkError() || len == 0) {
+            return lineCount;
+        }
+
+        try {
+            boolean written = false;
+            ByteBuffer byteBuff = getStorage().getWriteBuffer(writeBuffSize * 2);
+            CharBuffer charBuff = byteBuff.asCharBuffer();
+            for (int i = off; i < off + len; i++) {
+                if (charBuff.position() + tabReplacement.length() >= writeBuffSize) {
+                    write((ByteBuffer) byteBuff.position(charBuff.position() * 2), false);
+                    written = true;
+                }
+                if (written) {
+                    byteBuff = getStorage().getWriteBuffer(writeBuffSize * 2);
+                    charBuff = byteBuff.asCharBuffer();
+                    written = false;
+                }
+                char c = s.charAt(i);
+                if (c == '\t') {
+                    charBuff.put(tabReplacement);
+                } else if (c == '\n') {
+                    charBuff.put(c);
+                    write((ByteBuffer) byteBuff.position(charBuff.position() * 2), true);
+                    written = true;
+                    lineCount++;
+                } else {
+                    charBuff.put(c);
+                }
+            }
+            if (!written) {
+                write((ByteBuffer) byteBuff.position(charBuff.position() * 2), false);
+            }
+        } catch (IOException ioe) {
+            handleException(ioe);
+            return lineCount;
+        }
+        return lineCount;
+    }
+
+    @Override
+    public synchronized void write(char data[]) {
+        doWrite(new CharArrayWrapper(data), 0, data.length);
+    }
+
+    @Override
+    public synchronized void println() {
+        doWrite(lineSeparator, 0, lineSeparator.length());
+    }
+
+    /**
+     * Write a portion of a string.
+     * @param s A String
+     * @param off Offset from which to start writing characters
+     * @param len Number of characters to write
+     */
+    @Override
+    public synchronized void write(String s, int off, int len) {
+        doWrite(s, off, len);
+    }
+
+    @Override
+    public synchronized void write(String s) {
+        doWrite(s, 0, s.length());
+    }
+
+    public synchronized void println(String s, OutputListener l) throws IOException {
+        println(s, l, false);
+    }
+
+    public synchronized void println(String s, OutputListener l, boolean important) throws IOException {
+        if (checkError()) {
+            return;
+        }
+        int addedCount = doWrite(s, 0, s.length());
+        println();
+        addedCount++;
+        int newCount = lines.getLineCount()-1;
+        for (int i = newCount - addedCount; i < newCount; i++) {
+            lines.addListener(i, l, important);
+            //#48485 we should update the UI, since the lines are in the model
+            // and jump next/previous can't jump to appropriate place.
+            lines.fire();
+        }
+    }
         
     /**
      * A useless writer object to pass to the superclass constructor.  We override all methods

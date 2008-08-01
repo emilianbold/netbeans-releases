@@ -79,7 +79,6 @@ import org.netbeans.napi.gsfret.source.SourceUtils;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.gsf.LanguageRegistry;
 import org.netbeans.modules.javascript.editing.AstUtilities;
-import org.netbeans.modules.javascript.editing.JsMimeResolver;
 import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
 import org.netbeans.modules.gsfpath.spi.classpath.support.ClassPathSupport;
 import org.openide.cookies.EditorCookie;
@@ -103,7 +102,7 @@ import org.openide.xml.XMLUtil;
  */
 public class RetoucheUtils {
     public static boolean isJsFile(FileObject fo) {
-        return LanguageRegistry.getInstance().isRelevantFor(fo, JsMimeResolver.JAVASCRIPT_MIME_TYPE);
+        return LanguageRegistry.getInstance().isRelevantFor(fo, JsTokenId.JAVASCRIPT_MIME_TYPE);
     }
     
     // XXX Should this be unused now?
@@ -128,14 +127,14 @@ public class RetoucheUtils {
     }
     
     public static BaseDocument getDocument(CompilationInfo info, FileObject fo) {
-        try {
-            BaseDocument doc = null;
+        BaseDocument doc = null;
 
-            if (info != null) {
-                doc = (BaseDocument)info.getDocument();
-            }
+        if (info != null) {
+            doc = (BaseDocument)info.getDocument();
+        }
 
-            if (doc == null) {
+        if (doc == null) {
+            try {
                 // Gotta open it first
                 DataObject od = DataObject.find(fo);
                 EditorCookie ec = od.getCookie(EditorCookie.class);
@@ -143,14 +142,12 @@ public class RetoucheUtils {
                 if (ec != null) {
                     doc = (BaseDocument)ec.openDocument();
                 }
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
             }
-
-            return doc;
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-
-            return null;
         }
+
+        return doc;
     }
     
     
@@ -165,6 +162,11 @@ public class RetoucheUtils {
             simpleName = AstUtilities.getCallName(node, false);
         } else if (node instanceof Node.StringNode) {
             name = node.getString();
+        } else if (node.getType() == org.mozilla.javascript.Token.FUNCTION) {
+            name = AstUtilities.getFunctionFqn(node, null);
+            if (name != null && name.indexOf('.') != -1) {
+                name = name.substring(name.indexOf('.')+1);
+            }
         } else {
             return new String[] { null, null};
         }
@@ -220,7 +222,7 @@ public class RetoucheUtils {
         StringBuffer buf = new StringBuffer();
         // TODO - check whether we need Js highlighting or rhtml highlighting
         TokenHierarchy tokenH = TokenHierarchy.create(text, JsTokenId.language());
-        Lookup lookup = MimeLookup.getLookup(MimePath.get(JsMimeResolver.JAVASCRIPT_MIME_TYPE));
+        Lookup lookup = MimeLookup.getLookup(MimePath.get(JsTokenId.JAVASCRIPT_MIME_TYPE));
         FontColorSettings settings = lookup.lookup(FontColorSettings.class);
         @SuppressWarnings("unchecked")
         TokenSequence<? extends TokenId> tok = tokenH.tokenSequence();
@@ -411,7 +413,11 @@ public class RetoucheUtils {
             if (fo!=null)
                 p=FileOwnerQuery.getOwner(fo);
             if (p!=null) {
-                URL sourceRoot = URLMapper.findURL(ClassPath.getClassPath(fo, ClassPath.SOURCE).findOwnerRoot(fo), URLMapper.INTERNAL);
+                ClassPath classPath = ClassPath.getClassPath(fo, ClassPath.SOURCE);
+                if (classPath == null) {
+                    return null;
+                }
+                URL sourceRoot = URLMapper.findURL(classPath.findOwnerRoot(fo), URLMapper.INTERNAL);
                 dependentRoots.addAll(SourceUtils.getDependentRoots(sourceRoot));
                 //for (SourceGroup root:ProjectUtils.getSources(p).getSourceGroups(JsProject.SOURCES_TYPE_Js)) {
                 for (SourceGroup root:ProjectUtils.getSources(p).getSourceGroups(Sources.TYPE_GENERIC)) {

@@ -447,8 +447,13 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
         }
         
         public void drop(DropTargetDropEvent dtde) {
-            if( validateDropPosition() ) {
-                dtde.dropComplete( handleDrop( dtde.getTransferable() ) );
+            boolean res = false;
+            try {
+                if( validateDropPosition() ) {
+                    res = handleDrop( dtde.getTransferable() );
+                }
+            } finally {
+                dtde.dropComplete(res);
             }
             resetDropGesture();
         }
@@ -787,7 +792,8 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
      * When Toolbar is floatable, ToolbarBump is added as Grip as first toolbar component
      * modified by Michael Wever, to use l&f's grip/bump. */
     void addGrip () {
-        if (floatable) {
+        //HACK (137286)- there's not better way...
+        if (floatable && !"QuickSearch".equals(getName()) ) { //NOI18N
             /** Uses L&F's grip **/
             String lfID = UIManager.getLookAndFeel().getID();
             JPanel dragarea = null;

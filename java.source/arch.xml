@@ -72,6 +72,12 @@ made subject to such option by the copyright holder.
  <answer id="arch-overall">
   <p>
    Provides Java Model API access.
+   <api type="export" category="devel" group="property" name="ensure.built.source.roots">
+       When the <code>ensure.built.source.roots</code> property is set during ant script execution,
+       the <code>javac</code> task will not actually build the classfiles from scratch, but rather copy classfiles
+       produced by the Java infrastructure into the output folder. The content of the property will
+       be interpreted as list of source roots, for which the artifacts should be copied.
+   </api>
   </p>
  </answer>
 
@@ -92,7 +98,7 @@ made subject to such option by the copyright holder.
 -->
  <answer id="arch-quality">
   <p>
-  <api type="export" category="devel" group="java" name="JavaSourceAPI" url="@TOP@index.html"/>
+  <api type="export" category="official" group="java" name="JavaSourceAPI" url="@TOP@index.html"/>
   </p>
  </answer>
 
@@ -303,13 +309,13 @@ made subject to such option by the copyright holder.
  <answer id="dep-nb">
   <defaultanswer generate='none' />
 <ul>
-<li><api type='import' group='java' category='private' name='org.netbeans.api.java' url='@org-netbeans-api-java@/overview-summary.html' >
+<li><api type='import' group='java' category='official' name='org.netbeans.api.java' url='@org-netbeans-api-java@/overview-summary.html' >
             The module is needed for compilation. 
         
             The module is used during runtime. 
             </api>
 </li>            
-<li><api type='import' group='java' category='private' name='org.netbeans.api.progress' url='@org-netbeans-api-progress@/overview-summary.html' >
+<li><api type='import' group='java' category='official' name='org.netbeans.api.progress' url='@org-netbeans-api-progress@/overview-summary.html' >
             The module is needed for compilation. 
         
             The module is used during runtime. 
@@ -356,7 +362,7 @@ made subject to such option by the copyright holder.
                 is required.
             </api>
 </li>            
-<li><api type='import' group='java' category='private' name='org.netbeans.modules.java.platform' url='@org-netbeans-modules-java-platform@/overview-summary.html' >
+<li><api type='import' group='java' category='official' name='org.netbeans.modules.java.platform' url='@org-netbeans-modules-java-platform@/overview-summary.html' >
             The module is needed for compilation. 
         
             The module is used during runtime. 
@@ -376,7 +382,7 @@ made subject to such option by the copyright holder.
                 is required.
             </api>
 </li>            
-<li><api type='import' group='java' category='private' name='org.netbeans.modules.lexer' url='@org-netbeans-modules-lexer@/overview-summary.html' >
+<li><api type='import' group='java' category='official' name='org.netbeans.modules.lexer' url='@org-netbeans-modules-lexer@/overview-summary.html' >
             The module is needed for compilation. 
         
             The module is used during runtime. 
@@ -386,7 +392,7 @@ made subject to such option by the copyright holder.
                 is required.
             </api>
 </li>            
-<li><api type='import' group='java' category='private' name='org.netbeans.modules.projectapi' url='@org-netbeans-modules-projectapi@/overview-summary.html' >
+<li><api type='import' group='java' category='official' name='org.netbeans.modules.projectapi' url='@org-netbeans-modules-projectapi@/overview-summary.html' >
             The module is needed for compilation. 
         
             The module is used during runtime. 
@@ -396,7 +402,7 @@ made subject to such option by the copyright holder.
                 is required.
             </api>
 </li>            
-<li><api type='import' group='java' category='private' name='org.netbeans.modules.queries' url='@org-netbeans-modules-queries@/overview-summary.html' >
+<li><api type='import' group='java' category='official' name='org.netbeans.modules.queries' url='@org-netbeans-modules-queries@/overview-summary.html' >
             The module is needed for compilation. 
         
             The module is used during runtime. 
@@ -412,7 +418,7 @@ made subject to such option by the copyright holder.
             The module is used during runtime. 
             </api>
 </li>            
-<li><api type='import' group='java' category='private' name='org.netbeans.spi.navigator' url='@org-netbeans-spi-navigator@/overview-summary.html' >
+<li><api type='import' group='java' category='official' name='org.netbeans.spi.navigator' url='@org-netbeans-spi-navigator@/overview-summary.html' >
             The module is needed for compilation. 
         
             The module is used during runtime. 
@@ -988,13 +994,22 @@ made subject to such option by the copyright holder.
    <p>
      <api group="lookup" name="org.openide.loaders.CreateFromTemplateAttributesProvider" type="export" category="official">
        Attributes provider is registered in <code>META-INF/services</code>. It provides
-       <code>package</code> attribute for java templates using scripting support.
+       <code>package</code>, <code>javaSourceLevel</code> and <code>java15style</code> attributes for java templates using scripting support.
      </api>
    </p>
    <p>
      <api group="property" name="package" type="export" category="official">
        <code>package</code> attribute contains java package as <code>String</code> for newly created
        templates using scripting.
+     </api>
+     <api group="property" name="javaSourceLevel" type="export" category="official">
+       <code>javaSourceLevel</code> attribute contains java source level as <code>String</code> (e.g. "1.5") for newly created
+       templates using scripting.
+     </api>
+     <api group="property" name="java15style" type="export" category="official">
+       <code>java15style</code> attribute is defined for newly created
+       templates using scripting only if java source level is 1.5 or later.
+       Useful to conditionally generate code with java 1.5 features (generics, annotations, etc.).
      </api>
    </p>
  </answer>

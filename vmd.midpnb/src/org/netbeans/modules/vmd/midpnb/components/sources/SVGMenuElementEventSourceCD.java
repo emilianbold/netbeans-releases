@@ -51,12 +51,10 @@ import org.netbeans.modules.vmd.api.properties.DefaultPropertiesPresenter;
 import org.netbeans.modules.vmd.midp.actions.MidpActionsSupport;
 import org.netbeans.modules.vmd.midp.components.*;
 import org.netbeans.modules.vmd.midp.components.sources.EventSourceCD;
-import org.netbeans.modules.vmd.midp.flow.FlowEventSourcePinPresenter;
 import org.netbeans.modules.vmd.midp.propertyeditors.MidpPropertiesCategories;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorString;
 import org.netbeans.modules.vmd.midpnb.components.items.ItemSupport;
 import org.netbeans.modules.vmd.midpnb.components.svg.SVGMenuCD;
-import org.netbeans.modules.vmd.midpnb.flow.FlowSVGMenuElementPinOrderPresenter;
 import org.openide.util.NbBundle;
 
 import java.util.ArrayList;
@@ -66,6 +64,7 @@ import org.netbeans.api.editor.guards.GuardedSection;
 import org.netbeans.modules.vmd.api.codegen.MultiGuardedSection;
 import org.netbeans.modules.vmd.midp.actions.GoToSourcePresenter;
 import org.netbeans.modules.vmd.midp.components.general.ClassCD;
+import org.netbeans.modules.vmd.midpnb.flow.FlowSVGMenuElementEventSourcePinPresenter;
 
 /**
  *
@@ -132,48 +131,7 @@ public class SVGMenuElementEventSourceCD extends ComponentDescriptor {
                 }
             },
             // flow
-            new FlowEventSourcePinPresenter () { // TODO - move this anonymous class to vmd.midpnb.flow package
-                protected DesignComponent getComponentForAttachingPin () {
-                    return getComponent ().getParentComponent ();
-                }
-
-                protected String getDisplayName () {
-                    return MidpValueSupport.getHumanReadableString (getComponent ().readProperty (PROP_STRING));
-                }
-
-                protected String getOrder () {
-                    return FlowSVGMenuElementPinOrderPresenter.CATEGORY_ID;
-                }
-
-                @Override
-                protected boolean canRename () {
-                    return getComponent () != null;
-                }
-
-                @Override
-                protected String getRenameName () {
-                    return (String) getComponent ().readProperty (PROP_STRING).getPrimitiveValue ();
-                }
-
-                @Override
-                protected void setRenameName (String name) {
-                    getComponent ().writeProperty (PROP_STRING, MidpTypes.createStringValue (name));
-                }
-
-                @Override
-                protected DesignEventFilter getEventFilter () {
-                    return super.getEventFilter ().addParentFilter (getComponent (), 1, false);
-                }
-            },
-            // delete
-            DeleteDependencyPresenter.createDependentOnParentComponentPresenter (),
-            new DeletePresenter() {
-                protected void delete () {
-                    DesignComponent component = getComponent ();
-                    DesignComponent menu = component.getParentComponent ();
-                    ArraySupport.remove (menu, SVGMenuCD.PROP_ELEMENTS, component);
-                }
-            }, 
+            new FlowSVGMenuElementEventSourcePinPresenter(),
             // general
             new GoToSourcePresenter () {
                 protected boolean matches (GuardedSection section) {

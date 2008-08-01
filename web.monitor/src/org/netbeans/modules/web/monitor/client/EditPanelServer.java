@@ -96,7 +96,7 @@ class EditPanelServer extends DataDisplay {
 			    topSpacerInsets,
 			    0, 0);
 
-	addGridBagComponent(this, createHeaderLabel(NbBundle.getBundle(EditPanelServer.class).getString("MON_Exec_server"), NbBundle.getBundle(EditPanelServer.class).getString("MON_Exec_server_Mnemonic").charAt(0), NbBundle.getBundle(EditPanelServer.class).getString("ACS_MON_Exec_serverA11yDesc"), serverTable),
+	addGridBagComponent(this, createHeaderLabel(NbBundle.getBundle(EditPanelServer.class).getString("MON_Exec_server_Header"), NbBundle.getBundle(EditPanelServer.class).getString("ACS_MON_Exec_serverA11yDesc"), serverTable),
                             0, ++gridy,
 			    fullGridWidth, 1, 0, 0, 
 			    java.awt.GridBagConstraints.WEST,

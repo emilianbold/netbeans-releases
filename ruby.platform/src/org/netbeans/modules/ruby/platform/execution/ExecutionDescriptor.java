@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -70,9 +70,11 @@ public class ExecutionDescriptor {
     private final RubyPlatform platform;
     private FileLocator fileLocator;
     String script;
+    private String scriptPrefix;
     private Map<String, String> additionalEnv;
     private String[] additionalArgs;
     private String initialArgs;
+    private String jrubyProps;
     private FileObject fileObject;
     private String classPath;
     boolean showProgress = true;
@@ -81,7 +83,9 @@ public class ExecutionDescriptor {
     boolean debug;
     private boolean fastDebugRequired;
     private boolean appendJdkToPath;
-    List<OutputRecognizer> outputRecognizers = new ArrayList<OutputRecognizer>();
+    private String encoding;
+    private boolean useInterpreter;
+    List<OutputRecognizer> outputRecognizers;
 
     public ExecutionDescriptor(final RubyPlatform platform) {
         this(platform, null, null);
@@ -96,6 +100,8 @@ public class ExecutionDescriptor {
         this.displayName = displayName;
         this.pwd = pwd;
         this.script = script;
+        this.outputRecognizers = new ArrayList<OutputRecognizer>();
+        this.useInterpreter = true;
         assert (pwd == null) || pwd.isDirectory() : pwd + " is a directory";
         if (platform.hasRubyGemsInstalled()) {
             Map<String, String> env = new HashMap<String, String>();
@@ -114,7 +120,7 @@ public class ExecutionDescriptor {
     
     public ExecutionDescriptor cmd(final File cmd) {
         this.cmd = cmd;
-        assert (cmd != null) && cmd.isFile() : cmd + " is a file";
+        assert (cmd != null) && cmd.isFile() : cmd + " must be a file";
         return this;
     }
 
@@ -181,6 +187,11 @@ public class ExecutionDescriptor {
         return this;
     }
     
+    public ExecutionDescriptor jrubyProperties(final String jrubyProps) {
+        this.jrubyProps = jrubyProps;
+        return this;
+    }
+
     public ExecutionDescriptor addBinPath(boolean addBinPath) {
         this.addBinPath = addBinPath;
         return this;
@@ -235,6 +246,14 @@ public class ExecutionDescriptor {
         return script;
     }
     
+    public void scriptPrefix(String sp) {
+        scriptPrefix = sp;
+    }
+
+    public String getScriptPrefix() {
+        return scriptPrefix;
+    }
+    
     /**
      * Arguments to be appended <em>AFTER</em> the target. Usually arguments and
      * options to the Ruby script (target, application, ..) itself.
@@ -249,6 +268,11 @@ public class ExecutionDescriptor {
      */
     public String[] getInitialArgs() {
         return initialArgs == null ? null : Utilities.parseParameters(initialArgs);
+    }
+    
+    /** Properties to be passed to the JVM running the JRuby process. */
+    public String[] getJRubyProps() {
+        return jrubyProps == null ? null : Utilities.parseParameters(jrubyProps);
     }
     
     public File getPwd() {
@@ -270,7 +294,15 @@ public class ExecutionDescriptor {
     public FileObject getFileObject() {
         return fileObject;
     }
-    
+
+    public void setEncoding(String encoding) {
+        this.encoding = encoding;
+    }
+
+    String getEncoding() {
+        return encoding;
+    }
+
     /**
      * Should the JDK be appended to the PATH?
      * @return True iff the JDK should be appended to the PATH.
@@ -289,4 +321,13 @@ public class ExecutionDescriptor {
     public Map<String, String> getAdditionalEnvironment() {
         return additionalEnv;
     }
+
+    public boolean useInterpreter() {
+        return useInterpreter;
+    }
+
+    public void useInterpreter(final boolean useInterpreter) {
+        this.useInterpreter = useInterpreter;
+    }
+
 }

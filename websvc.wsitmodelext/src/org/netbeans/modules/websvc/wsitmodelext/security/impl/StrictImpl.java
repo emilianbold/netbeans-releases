@@ -41,10 +41,8 @@
 
 package org.netbeans.modules.websvc.wsitmodelext.security.impl;
 
-import org.netbeans.modules.websvc.wsitmodelext.security.SecurityPolicyQName;
 import org.netbeans.modules.websvc.wsitmodelext.security.Strict;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import org.netbeans.modules.xml.wsdl.model.visitor.WSDLVisitor;
 import org.w3c.dom.Element;
 
 /**
@@ -59,14 +57,4 @@ public class StrictImpl extends SecurityPolicyComponentImpl implements Strict {
     public StrictImpl(WSDLModel model, Element e) {
         super(model, e);
     }
-    
-    public StrictImpl(WSDLModel model){
-        this(model, createPrefixedElement(SecurityPolicyQName.STRICT.getQName(), model));
-    }
-
-    @Override
-    public void accept(WSDLVisitor visitor) {
-        visitor.visit(this);
-    }
-
 }

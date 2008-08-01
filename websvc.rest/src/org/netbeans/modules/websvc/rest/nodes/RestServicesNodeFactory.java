@@ -52,6 +52,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
+import org.netbeans.modules.websvc.rest.RestUtils;
 import org.netbeans.modules.websvc.rest.model.api.RestServices;
 import org.netbeans.modules.websvc.rest.model.api.RestServicesMetadata;
 import org.netbeans.modules.websvc.rest.model.api.RestServicesModel;
@@ -74,6 +75,8 @@ public class RestServicesNodeFactory implements NodeFactory {
     
     public NodeList createNodes(Project p) {
         assert p != null;
+        
+        RestUtils.upgrade(p);
         return new RestNodeList(p);
     }
     

@@ -59,7 +59,7 @@
         <localizing-bundle>org.netbeans.modules.websvc.saas.services.strikeiron.resources.Bundle</localizing-bundle>
         <group name="StrikeIron"/>
         <code-gen>
-            <artifacts targets="java,servlet"/>
+            <artifacts targets="java,servlet,resource,jsp"/>
         </code-gen>
         <!-- http-basic, api-key, custom -->
         <authentication profile="SaaSServices/StrikeIron/profile.properties">
@@ -67,6 +67,7 @@
         </authentication>
     </saas-metadata>
 
+    <!--
     <methods>
         <method name="ValidateEmail" serviceName="EmailVerification"
                 portName="EmailVerificationSoap" operationName="ValidateEmail">
@@ -75,5 +76,8 @@
             </documentation>
         </method>
     </methods>
+    -->
+    
+    <methods/>
     
 </saas-services>

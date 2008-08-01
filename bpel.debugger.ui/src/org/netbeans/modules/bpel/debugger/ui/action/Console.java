@@ -37,6 +37,7 @@ public class Console extends AbstractAction {
 
     /**{@inheritDoc}*/
     public Console() {
+      // When changed, update also mf-layer.xml, where are the properties duplicated because of Actions.alwaysEnabled()
       putValue(NAME,NbBundle.getMessage(Process.class, "LBL_ConsoleView"));// NOI18N
       putValue(
         SMALL_ICON,

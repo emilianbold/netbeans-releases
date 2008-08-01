@@ -38,8 +38,11 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+
 package org.netbeans.core.execution;
 
+import junit.framework.Test;
+import junit.framework.TestResult;
 import org.openide.execution.ExecutionCompatibilityTest;
 
 /** Reuses ExecutionCompatibilityTest to check compatibility of the behaviour
@@ -48,13 +51,18 @@ import org.openide.execution.ExecutionCompatibilityTest;
  * @author Jaroslav Tulach
  */
 public class CoreExecutionCompatibilityTest {
-	
-	/** No instances */
-	private CoreExecutionCompatibilityTest() {
-	}
-	
-	public static junit.framework.Test suite() {
-		return ExecutionCompatibilityTest.suite(new org.netbeans.core.execution.ExecutionEngine());
-	}
-	
+
+    public static Test suite() {
+        if (System.getProperty("java.specification.version").equals("1.5")) {
+            System.err.println("Skipping; JDK bug #6704979 makes this test sometimes pass but abort the VM when run on JDK 5.");
+            return new Test() {
+                public int countTestCases() {
+                    return 0;
+                }
+                public void run(TestResult r) {}
+            };
+        }
+        return ExecutionCompatibilityTest.suite(new org.netbeans.core.execution.ExecutionEngine());
+    }
+
 }

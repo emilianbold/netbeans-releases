@@ -14,6 +14,7 @@ public class IntRange {
         this.end = end;
     }
 
+    @Override
     public String toString() {
         return begin + ".." + end;
     }

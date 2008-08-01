@@ -44,8 +44,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import junit.framework.Test;
-import junit.framework.TestSuite;
-import junit.textui.TestRunner;
 import org.netbeans.api.project.Project;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
@@ -53,7 +51,6 @@ import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.NewFileNameLocationStepOperator;
 import org.netbeans.jellytools.OutputTabOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.modules.web.NewJspFileNameStepOperator;
 import org.netbeans.jellytools.nodes.Node;
@@ -70,7 +67,7 @@ import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
-import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.Listener;
 import org.netbeans.modules.j2ee.dd.api.web.Servlet;
@@ -92,6 +89,7 @@ import org.netbeans.modules.xml.retriever.catalog.Utilities;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 
 /**
  *  Basic validation suite for web services support in the IDE
@@ -398,39 +396,39 @@ public class WsValidation extends WebServicesTestBase {
         refreshWSDL("client","",true);
     }
 
-    public static TestSuite suite() {
-        TestSuite suite = new NbTestSuite();
-        suite.addTest(new WsValidation("testCreateNewWs")); //NOI18N
-        suite.addTest(new WsValidation("testAddOperation")); //NOI18N
-        suite.addTest(new WsValidation("testStartServer")); //NOI18N
-        suite.addTest(new WsValidation("testWsHandlers")); //NOI18N
-        suite.addTest(new WsValidation("testDeployWsProject")); //NOI18N
-        suite.addTest(new WsValidation("testCreateWsClient")); //NOI18N
-        suite.addTest(new WsValidation("testCallWsOperationInServlet")); //NOI18N
-        suite.addTest(new WsValidation("testCallWsOperationInJSP")); //NOI18N
-        suite.addTest(new WsValidation("testCallWsOperationInJavaClass")); //NOI18N
-        suite.addTest(new WsValidation("testRefreshClient")); //NOI18N
-        suite.addTest(new WsValidation("testWsClientHandlers")); //NOI18N
-        suite.addTest(new WsValidation("testDeployWsClientProject")); //NOI18N
-        suite.addTest(new WsValidation("testUndeployProjects")); //NOI18N
-        suite.addTest(new WsValidation("testStopServer")); //NOI18N
-        return suite;
-    }
-
-    public static void main(java.lang.String[] args) {
-        TestRunner.run(suite());
+    public static Test suite() {
+        return NbModuleSuite.create(addServerTests(Server.GLASSFISH, NbModuleSuite.createConfiguration(WsValidation.class),
+                "testCreateNewWs",
+                "testAddOperation",
+                "testStartServer",
+                "testWsHandlers",
+                "testDeployWsProject",
+                "testCreateWsClient",
+                "testCallWsOperationInServlet",
+                "testCallWsOperationInJSP",
+                "testCallWsOperationInJavaClass",
+                "testRefreshClient",
+                "testWsClientHandlers",
+                "testDeployWsClientProject",
+                "testUndeployProjects",
+                "testStopServer"
+                ).enableModules(".*").clusters(".*"));
     }
 
     protected void addWsOperation(EditorOperator eo, String opName, String opRetVal) {
-        //Add Operation...
-        String actionName = Bundle.getStringTrimmed("org.netbeans.modules.websvc.core.webservices.action.Bundle", "LBL_OperationAction");
+        //Add Operation
+        String actionName = Bundle.getStringTrimmed("org.netbeans.modules.websvc.core.jaxws.actions.Bundle", "TITLE_OperationAction");
         addMethod(eo, actionName, opName, opRetVal);
     }
 
     protected void addMethod(final EditorOperator eo, String dlgTitle, String opName, String opRetVal) {
         NbDialogOperator dialog = new NbDialogOperator(dlgTitle);
-        new JTextFieldOperator(dialog, 2).setText(opName);
-        new JTextFieldOperator(dialog, 1).setText(opRetVal);
+        JTextFieldOperator jtfo = new JTextFieldOperator(dialog, 2);
+        jtfo.clearText();
+        jtfo.typeText(opName);
+        jtfo = new JTextFieldOperator(dialog, 1);
+        jtfo.clearText();
+        jtfo.typeText(opRetVal);
         dialog.ok();
         eo.save();
         waitForTextInEditor(eo, opName);
@@ -458,6 +456,11 @@ public class WsValidation extends WebServicesTestBase {
         eo.select(line);
         ndo.ok();
         waitForTextInEditor(eo, "port." + opName); //NOI18N
+        try {
+            Thread.sleep(500);
+        } catch (InterruptedException ex) {
+            //ignore
+        }
     }
 
     protected String getWsClientLookupCall() {
@@ -497,6 +500,12 @@ public class WsValidation extends WebServicesTestBase {
             eo = new EditorOperator(getWsName());
             assertTrue("missing @HandlerChain", //NOI18N
                     eo.contains("@HandlerChain(file = \"" + getWsName() + "_handler.xml\")")); //NOI18N
+        } else {
+            try {
+                Thread.sleep(2500);
+            } catch (InterruptedException ex) {
+                //ignore
+            }
         }
         assertTrue(handlerCfg.exists());
         FileObject fo = FileUtil.toFileObject(handlerCfg);
@@ -618,7 +627,7 @@ public class WsValidation extends WebServicesTestBase {
 
     protected void waitForWsImport(String targetName) throws IOException {
         OutputTabOperator oto = new OutputTabOperator(targetName); //NOI18N
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitStateTimeout", 240000); //NOI18N
+        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitStateTimeout", 300000); //NOI18N
         oto.waitText("(total time: "); //NOI18N
         dumpOutput();
         assertTrue(oto.getText().indexOf("BUILD SUCCESSFUL") > -1); //NOI18N
@@ -740,6 +749,12 @@ public class WsValidation extends WebServicesTestBase {
                 new EventTool().waitNoEvent(10000);
             }
             ccr.yes();
+        }
+        try {
+            waitForWsImport("wsimport-client"); //NOI18N
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+            fail("refreshing wsdl failed, see the log for stacktrace"); //NOI18N
         }
     }
 

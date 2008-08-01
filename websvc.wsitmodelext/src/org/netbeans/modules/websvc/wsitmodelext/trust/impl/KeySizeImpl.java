@@ -42,9 +42,7 @@
 package org.netbeans.modules.websvc.wsitmodelext.trust.impl;
 
 import org.netbeans.modules.websvc.wsitmodelext.trust.KeySize;
-import org.netbeans.modules.websvc.wsitmodelext.trust.TrustQName;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import org.netbeans.modules.xml.wsdl.model.visitor.WSDLVisitor;
 import org.w3c.dom.Element;
 
 /**
@@ -60,15 +58,6 @@ public class KeySizeImpl extends TrustComponentImpl implements KeySize {
         super(model, e);
     }
     
-    public KeySizeImpl(WSDLModel model){
-        this(model, createPrefixedElement(TrustQName.KEYSIZE.getQName(), model));
-    }
-
-    @Override
-    public void accept(WSDLVisitor visitor) {
-        visitor.visit(this);
-    }
-
     public String getContent() {
         return getText();
     }

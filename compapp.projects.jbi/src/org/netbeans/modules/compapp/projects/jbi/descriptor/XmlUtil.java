@@ -93,22 +93,28 @@ public class XmlUtil {
         File outputFile = new File(fileLocation);
         FileObject outputFO = FileUtil.toFileObject(outputFile);
         
-        if (outputFO != null) {
-            // #129625: Use NB FS API. Alternatively, we could use File API,  
-            // then refresh NB FileSystem.
-            writeToFileObject(outputFO, document);
-        } else {
-            PrintWriter pw = new PrintWriter(outputFile, "UTF-8"); // NOI18N
-            StreamResult result = new StreamResult(pw);
+//        if (outputFO != null) {
+//            // #129625: Use NB FS API. Alternatively, we could use File API,  
+//            // then refresh NB FileSystem.
+//            writeToFileObject(outputFO, document);
+//            return;
+//        } 
+        
+        PrintWriter pw = new PrintWriter(outputFile, "UTF-8"); // NOI18N
+        StreamResult result = new StreamResult(pw);
 
-            try {
-                writeTo(result, document);
-            } finally {
-                if (pw != null) {
-                    pw.close();
-                }
-            }     
-        }        
+        try {
+            writeTo(result, document);
+        } finally {
+            if (pw != null) {
+                pw.close();
+            }
+        } 
+            
+        // #136190: avoid file locking caused by the old fix to #129625
+        if (outputFO != null) {
+            outputFO.getFileSystem().refresh(true);
+        }
     }
     
     public static void writeToOutputStream(OutputStream os, Document document)

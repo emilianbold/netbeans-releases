@@ -49,9 +49,9 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.KeyboardFocusManager;
-import java.awt.LayoutManager;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.KeyEvent;
 
@@ -576,6 +576,7 @@ public class PropertyPanel extends JComponent implements javax.accessibility.Acc
         if (displayer instanceof EditablePropertyDisplayer) {
             ((EditablePropertyDisplayer) displayer).setRemoteEnvListener(getListener());
             ((EditablePropertyDisplayer) displayer).setRemoteEnvVetoListener(getListener());
+            ((EditablePropertyDisplayer) displayer).addActionListener(getListener());
 
             PropertyEnv env = ((EditablePropertyDisplayer) displayer).getPropertyEnv();
 
@@ -594,6 +595,7 @@ public class PropertyPanel extends JComponent implements javax.accessibility.Acc
 
         if (displayer instanceof EditablePropertyDisplayer) {
             ((EditablePropertyDisplayer) displayer).setRemoteEnvVetoListener(null);
+            ((EditablePropertyDisplayer) displayer).removeActionListener(getListener());
         }
     }
 
@@ -1228,7 +1230,7 @@ public class PropertyPanel extends JComponent implements javax.accessibility.Acc
         }
     }
 
-    private class Listener implements PropertyChangeListener, VetoableChangeListener, ChangeListener {
+    private class Listener implements PropertyChangeListener, VetoableChangeListener, ChangeListener, ActionListener {
         public void propertyChange(PropertyChangeEvent evt) {
             if (evt.getSource() instanceof PropertyEnv) {
                 firePropertyChange(PropertyPanel.PROP_STATE, evt.getOldValue(), evt.getNewValue());
@@ -1254,6 +1256,15 @@ public class PropertyPanel extends JComponent implements javax.accessibility.Acc
 
         public void stateChanged(javax.swing.event.ChangeEvent e) {
             //do nothing
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            if( inner == e.getSource() && "enterPressed".equals(e.getActionCommand()) ) { //NOI18N
+                Object beanBridge = getClientProperty("beanBridgeIdentifier"); //NOI18N
+                if( null != beanBridge && beanBridge instanceof CellEditor ) {
+                    ((CellEditor)beanBridge).stopCellEditing();
+                }
+            }
         }
     }
 }

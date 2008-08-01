@@ -210,8 +210,8 @@ public class CollapseExpandDecorationProvider extends DecorationProvider
     
     
     public Action createCollapseExpandAction(Pattern pattern) {
-        if (pattern instanceof CollapsedPattern) {
-            return new ExpandAction((CollapsedPattern) pattern);
+        if (getDesignView().getModel().isCollapsed(pattern.getOMReference())) {
+            return new ExpandAction(pattern);
         }
         
         if (pattern.isCollapsable()) {
@@ -260,7 +260,7 @@ public class CollapseExpandDecorationProvider extends DecorationProvider
         }
         
         
-        public ExpandAction(CollapsedPattern pattern) {
+        public ExpandAction(Pattern pattern) {
             this(pattern, NORMAL_EXPAND_ICON);
         }
         

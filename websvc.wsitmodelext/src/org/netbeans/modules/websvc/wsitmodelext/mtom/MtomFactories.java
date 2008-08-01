@@ -57,9 +57,6 @@ public class MtomFactories {
         public Set<QName> getElementQNames() {
             return Collections.singleton(MtomQName.OPTIMIZEDMIMESERIALIZATION.getQName());
         }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new OptimizedMimeSerializationImpl(context.getModel()));
-        }
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {
             return new OptimizedMimeSerializationImpl(context.getModel(), element);

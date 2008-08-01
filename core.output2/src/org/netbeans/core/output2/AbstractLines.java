@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -67,15 +67,15 @@ abstract class AbstractLines implements Lines, Runnable {
     IntList lineStartList;
     /** Maps output listeners to the lines they are associated with */
     IntMap linesToListeners;
-    private int longestLine = 0;
-    private static Boolean unitTestUseCache = null;
-    private int knownCharCount = -1;
+
+    /** longest line length (in chars)*/
+    private int longestLineLen = 0;
+
+    private int knownCharsPerLine = -1;
+    
+    /** cache of logical (wrapped) lines count, used to transform logical (wrapped)
+     * line index to physical (real) line index */
     private SparseIntList knownLogicalLineCounts = null;
-    private int lastCharCountForWrapCalculation = -1;
-    private int lastWrappedLineCount = -1;
-    private int lastCharCountForWrapAboveCalculation = -1;
-    private int lastWrappedAboveLineCount = -1;
-    private int lastWrappedAboveLine = -1;
     private IntList errLines = null;
 
 
@@ -177,7 +177,7 @@ abstract class AbstractLines implements Lines, Runnable {
         int linecount = getLineCount();
         //Check this - for calls to OutputWriter.write(byte b), we may still be on the same line as last time
         if (linecount != lastErrLineMarked) {
-            errLines.add(linecount == 0 ? 0 : linecount-1);
+            errLines.add(linecount == 0 ? 0 : linecount - (isLastLineFinished() ? 2 : 1));
             lastErrLineMarked = linecount;
         }
     }
@@ -230,9 +230,9 @@ abstract class AbstractLines implements Lines, Runnable {
     private void init() {
         knownLogicalLineCounts = null;
         lineStartList = new IntList(100);
+        lineStartList.add(0);
         linesToListeners = new IntMap();
-        setLastWrappedLineCount(-1);
-        longestLine = 0;
+        longestLineLen = 0;
         errLines = null;
         matcher = null;
         listener = null;
@@ -275,13 +275,8 @@ abstract class AbstractLines implements Lines, Runnable {
         if (isDisposed() || isTrouble()) {
             return ""; //NOI18N
         }
-        int lineStart = lineStartList.get(idx);
-        int lineEnd;
-        if (idx != lineStartList.size()-1) {
-            lineEnd = lineStartList.get(idx+1);
-        } else {
-            lineEnd = getStorage().size();
-        }
+        int lineStart = getByteLineStart(idx);
+        int lineEnd = idx < lineStartList.size() - 1 ? lineStartList.get(idx + 1) : getStorage().size();
         CharBuffer cb = getStorage().getReadBuffer(lineStart,
             lineEnd - lineStart).asCharBuffer();
 
@@ -294,19 +289,20 @@ abstract class AbstractLines implements Lines, Runnable {
      * Get a length of single line in bytes.
      */
     private int getLineLength(int idx) {
-        int lineStart = lineStartList.get(idx);
-        int lineEnd;
-        if (idx != lineStartList.size()-1) {
-            lineEnd = lineStartList.get(idx+1);
-        } else {
-            lineEnd = getStorage().size();
+        if (isDisposed() || isTrouble()) {
+            return 0;
         }
+        if (idx == lineStartList.size()-1) {
+            return Math.max(0, toByteIndex(lastLineLength));
+        }
+        int lineStart = getByteLineStart(idx);
+        int lineEnd = idx < lineStartList.size() - 1 ? lineStartList.get(idx + 1) - 2 : getStorage().size();
         return lineEnd - lineStart;
     }
 
     public boolean isLineStart (int chpos) {
         int bpos = toByteIndex(chpos);
-        return lineStartList.contains (bpos);
+        return lineStartList.contains (bpos) || bpos == 0 || (bpos == getStorage().size() && lastLineFinished);
     }
 
     /**
@@ -316,20 +312,7 @@ abstract class AbstractLines implements Lines, Runnable {
      * @return The number of characters
      */
     public int length (int idx) {
-        if (isDisposed() || isTrouble()) {
-            return 0;
-        }
-        if (lineStartList.size() == 0) {
-            return 0;
-        }
-        int lineStart = lineStartList.get(idx);
-        int lineEnd;
-        if (idx != lineStartList.size()-1) {
-            lineEnd = lineStartList.get(idx+1);
-        } else {
-            lineEnd = getStorage().size();
-        }
-        return toCharIndex(lineEnd - lineStart);
+        return toCharIndex(getLineLength(idx));
     }
 
     /**
@@ -340,10 +323,18 @@ abstract class AbstractLines implements Lines, Runnable {
         if (isDisposed() || isTrouble()) {
             return 0;
         }
-        if (lineStartList.size() == 0) {
-            return 0;
+        return getCharLineStart(line);
+    }
+
+    private int getByteLineStart(int line) {
+        if (line == lineStartList.size() && lastLineFinished) {
+            return getStorage().size();
         }
-        return toCharIndex(lineStartList.get(line));
+        return lineStartList.get(line);
+    }
+
+    private int getCharLineStart(int line) {
+        return toCharIndex(getByteLineStart(line));
     }
 
     /** Get the getLine number of a <strong>character</strong> index in the
@@ -354,9 +345,8 @@ abstract class AbstractLines implements Lines, Runnable {
             return -1;
         }
         int bytePos = toByteIndex (position);
-        int i = lineStartList.indexOf (bytePos);
-        if (i != -1) {
-            return i;
+        if (bytePos >= getStorage().size()) {
+            return getLineCount() - 1;
         }
         return lineStartList.findNearest(bytePos);
     }
@@ -387,159 +377,92 @@ abstract class AbstractLines implements Lines, Runnable {
     }
 
     public int getLongestLineLength() {
-        return toCharIndex(longestLine);
+        return longestLineLen;
     }
 
+    /** recalculate logical (wrapped) line index to physical (real) line index
+     *  <p> [in]
+     *  info[0] - "global" logical (wrapped) line index
+     *  <p> [out]
+     *  info[0] - physical (real) line index;
+     *  info[1] - index of wrapped line on current realLineIdx;
+     *  info[2] - total number of wrapped lines of found physical line
+     */
+    public void toPhysicalLineIndex(final int[] info, int charsPerLine) {
+        int logicalLineIdx = info[0];
 
-     public void toLogicalLineIndex (final int[] physIdx, int charsPerLine) {
-         int physicalLine = physIdx[0];
-         physIdx[1] = 0;
+        if (logicalLineIdx <= 0) {
+            //First getLine never has lines above it
+            info[0] = 0;
+            info[1] = 0;
+            info[2] = lengthToLineCount(length(0), charsPerLine);
+            return;
+        }
 
-         if (physicalLine == 0) {
-             //First getLine never has lines above it
-             physIdx[1] = 0;
-             //#104307
-             physIdx[2] = lenDividedByCount(length(physicalLine), charsPerLine);
-         }
+        if (charsPerLine >= longestLineLen || (getLineCount() < 1)) {
+            //The doc is empty, or there are no lines long enough to wrap anyway
+            info[1] = 0;
+            info[2] = 1;
+            return;
+        }
 
-         if (charsPerLine >= getLongestLineLength() || (getLineCount() <= 1)) {
-             //The doc is empty, or there are no lines long enough to wrap anyway
-             physIdx[1] = 0;
-             physIdx[2] = 1;
-             return;
-         }
+        // find physical (real) line index which corresponds to logical line idx
+        int physLineIdx = Math.min(findPhysicalLine(logicalLineIdx, charsPerLine), getLineCount() - 1);
+        
+        // compute how many logical lines is above our physical line
+        int linesAbove = getLogicalLineCountAbove(physLineIdx, charsPerLine);
+        
+        int len = length(physLineIdx);
+        int wrapCount = lengthToLineCount(len, charsPerLine);
 
-         int logicalLine =
-             findFirstLineWithoutMoreLinesAboveItThan (physicalLine, charsPerLine);
+        info[0] = physLineIdx;
+        info[1] = logicalLineIdx - linesAbove;
+        info[2] = wrapCount;
+    }
 
-         int linesAbove = getLogicalLineCountAbove(logicalLine, charsPerLine);
-
-         int len = length(logicalLine);
-         //#104307
-         int wrapCount = len > charsPerLine ? lenDividedByCount(len, charsPerLine) + 1 : 1;
-
-         physIdx[0] = logicalLine;
-         int lcount = linesAbove + wrapCount;
-         physIdx[1] = (wrapCount - (lcount - physicalLine));
-
-         physIdx[2] = wrapCount;
-     }
-
-     /**
-      * Uses a divide-and-conquer approach to quickly locate a getLine which has
-      * the specified number of logical lines above it.  For large output, this
-      * data is cached in OutWriter in a sparse int array.  This method is called
-      * from viewToModel, so it must be very, very fast - it may be called once
-      * every time the mouse is moved, to determine if the cursor should be
-      * updated.
-      */
-     private int findFirstLineWithoutMoreLinesAboveItThan (int target, int charsPerLine) {
-         int start = 0;
-         int end = getLineCount();
-         int midpoint = start + ((end - start) >> 1);
-         int linesAbove = getLogicalLineCountAbove(midpoint, charsPerLine);
-         int result = divideAndConquer (target, start, midpoint, end, charsPerLine, linesAbove);
-
-         return Math.min(end, result) -1;
-     }
-     /**
-      * Recursively search for the line number with the smallest number of lines
-      * above it, greater than the passed target number of lines.  This is
-      * effectively a binary search - divides the range of lines in half and
-      * checks if the middle value is greater than the target; then recurses on
-      * itself with whatever half of the range of lines has a better chance at
-      * containing a smaller value.
-      * <p>
-      * It is primed with an initial call with the start, midpoint and end values.
-      */
-     private int divideAndConquer (int target, int start, int midpoint, int end, int charsPerLine, int midValue) {
-         //We have an exact match - we're done
-         if (midValue == target) {
-             return midpoint + 1;
-         }
-
-         //In any of these conditions, the search has run out of gas - the
-         //end value must be the match
-         if (end - start <= 1 || midpoint == start || midpoint == end) {
-             return end;
-         }
-
-         if (midValue > target) {
-             //The middle value is greater than the target - look for a closer
-             //match between the first and the middle getLine
-
-             int upperMidPoint = start + ((midpoint - start) >> 1);
-             if ((midpoint - start) % 2 != 0) {
-                 upperMidPoint++;
-             }
-             int upperMidValue = getLogicalLineCountAbove(upperMidPoint, charsPerLine);
-             return divideAndConquer (target, start, upperMidPoint, midpoint, charsPerLine, upperMidValue);
-         } else {
-             //The middle value is less than the target - look for a match
-             //between the midpoint and the last getLine
-
-             int lowerMidPoint = ((end - start) >> 2) + midpoint;
-             if ((end - midpoint) % 2 != 0) {
-                 lowerMidPoint++;
-             }
-             int lowerMidValue = getLogicalLineCountAbove(lowerMidPoint, charsPerLine);
-             return divideAndConquer (target, midpoint, lowerMidPoint, end, charsPerLine, lowerMidValue);
-         }
-     }
-
+    private int findPhysicalLine(int logicalLineIdx, int charsPerLine) {
+        if (logicalLineIdx == 0) {
+            return 0;
+        }
+        if (charsPerLine != knownCharsPerLine || knownLogicalLineCounts == null) {
+            calcLogicalLineCount(charsPerLine);
+        }
+        return knownLogicalLineCounts.getNextKey(logicalLineIdx);
+    }
 
     /**
-     * Get the number of logical lines if character wrapped at the specified
-     * width.  Calculates on the fly below 100000 characters, above that builds
-     * a cache on the first call and uses that.
+     * Get the number of logical lines if character wrapped at the specified width.
      */
-    public int getLogicalLineCountAbove (int line, int charCount) {
+    public int getLogicalLineCountAbove(int line, int charsPerLine) {
         if (line == 0) {
             return 0;
         }
-        if (toByteIndex(charCount) > longestLine) {
+        if (charsPerLine >= longestLineLen) {
             return line;
         }
-
-        //See OutputDocumentTest.testWordWrapping
-        if (unitTestUseCache != null) {
-            if (Boolean.TRUE.equals(unitTestUseCache)) {
-                return dynLogicalLineCountAbove(line, charCount);
-            } else {
-                return cachedLogicalLineCountAbove (line, charCount);
-            }
+        if (charsPerLine != knownCharsPerLine || knownLogicalLineCounts == null) {
+            calcLogicalLineCount(charsPerLine);
         }
-
-        if (getStorage().size() < 100000) {
-            return dynLogicalLineCountAbove(line, charCount);
-        } else {
-            return cachedLogicalLineCountAbove (line, charCount);
-        }
+        return knownLogicalLineCounts.get(line - 1);
     }
 
     /**
      * Get the number of logical lines above a given physical getLine if character
      * wrapped at the specified
-     * width.  Calculates on the fly below 100000 characters, above that builds
-     * a cache on the first call and uses that.
      */
-    public int getLogicalLineCountIfWrappedAt (int charCount) {
-        if (toByteIndex(charCount) > longestLine) {
+    public int getLogicalLineCountIfWrappedAt (int charsPerLine) {
+        if (charsPerLine >= longestLineLen) {
             return getLineCount();
+        }        
+        int lineCount = getLineCount();
+        if (charsPerLine == 0 || lineCount == 0) {
+            return 0;
         }
-
-        if (unitTestUseCache != null) {
-            if (Boolean.TRUE.equals(unitTestUseCache)) {
-                return dynLogicalLineCountIfWrappedAt(charCount);
-            } else {
-                return cachedLogicalLineCountIfWrappedAt(charCount);
+        synchronized (readLock()) {
+            if (charsPerLine != knownCharsPerLine || knownLogicalLineCounts == null) {
+                calcLogicalLineCount(charsPerLine);
             }
-        }
-
-        if (getStorage().size() < 100000) {
-            return dynLogicalLineCountIfWrappedAt(charCount);
-        } else {
-            return cachedLogicalLineCountIfWrappedAt(charCount);
+            return knownLogicalLineCounts.get(lineCount-1);
         }
     }
 
@@ -566,139 +489,33 @@ abstract class AbstractLines implements Lines, Runnable {
     }
     
     /**
-     * A minor hook to let unit tests decide if caching is on or off.
-     * @param val
+     * We use SparseIntList to create a cache which only actually holds 
+     * the counts for lines that *are* wrapped, and interpolates the rest, so 
+     * we don't need to create an int[]  as big as the number of lines we have.
+     * This presumes that most lines don't wrap.
      */
-    static void unitTestUseCache (Boolean val) {
-        unitTestUseCache = val;
-    }
-
-    private int cachedLogicalLineCountAbove (int line, int charCount) {
-        if (charCount != knownCharCount || knownLogicalLineCounts == null) {
-            knownCharCount = charCount;
-            calcCharCounts(charCount);
-        }
-        return knownLogicalLineCounts.get(line);
-    }
-
-    private int cachedLogicalLineCountIfWrappedAt (int charCount) {
-        int lineCount = getLineCount();
-        if (charCount == 0 || lineCount == 0) {
-            return 0;
-        }
-        synchronized (readLock()) {
-            if (charCount != knownCharCount || knownLogicalLineCounts == null) {
-                knownCharCount = charCount;
-                calcCharCounts(charCount);
-            }
-            int result = knownLogicalLineCounts.get(lineCount-1);
-            int len = length (lineCount - 1);
-            result += (len / charCount) + 1;
-            return result;
-        }
-    }
-
-    /**
-     * Builds a cache of lines which are longer than the last known width, which
-     * can be retained for future lookups.  Finding the logical position of a
-     * getLine when wrapped means iterating all the lines above it.  Above a
-     * threshold, it is much preferable to cache it.  We use SparseIntList to
-     * create a cache which only actually holds the counts for lines that *are*
-     * wrapped, and interpolates the rest, so we don't need to create an int[]
-     * as big as the number of lines we have.  This presumes that most lines
-     * don't wrap.
-     */
-    private void calcCharCounts(int width) {
+    private void calcLogicalLineCount(int width) {
         synchronized (readLock()) {
             int lineCount = getLineCount();
             knownLogicalLineCounts = new SparseIntList(30);
 
             int val = 0;
-            for (int i=1; i < lineCount; i++) {
+            for (int i = 0; i < lineCount; i++) {
                 int len = length(i);
 
                 if (len > width) {
-                    val += (len / width) + 1;
-                    knownLogicalLineCounts.add(val, i);
+                    val += lengthToLineCount(len, width);
+                    knownLogicalLineCounts.add(i, val);
                 } else {
                     val++;
                 }
             }
-
-            knownCharCount = width;
+            knownCharsPerLine = width;
         }
     }
 
-    /**
-     * Gets the number of lines the document will require if getLine wrapped at the
-     * specified character index.
-     */
-    private int dynLogicalLineCountIfWrappedAt (int charCount) {
-
-        synchronized (readLock()) {
-            int bcount = toByteIndex(charCount);
-            if (longestLine <= bcount) {
-                return lineStartList.size();
-            }
-            if (charCount == lastCharCountForWrapCalculation && lastWrappedLineCount != -1) {
-                return lastWrappedLineCount;
-            }
-            if (lineStartList.size() == 0) {
-                return 0;
-            }
-            //#104307
-            if (bcount == 0) {
-                return 0;
-            }
-            int nOfLines = lineStartList.size();
-            int lineCount = 0;
-            for (int i=0; i < nOfLines; i++) {
-                int currLength = getLineLength(i);
-                lineCount += (currLength > bcount) ? ((currLength / bcount) + 1) : 1;
-            }
-            setLastCharCountForWrapCalculation(charCount);
-            lastWrappedLineCount = lineCount;
-            return lineCount;
-        }
-    }
-
-    /**
-     * Gets the number of lines that occur *above* a given getLine if wrapped at the
-     * specified char count.
-     *
-     * @param line The getLine in question
-     * @param charCount The number of characters at which to wrap
-     * @return The number of logical wrapped lines above the passed getLine
-     */
-    private int dynLogicalLineCountAbove (int line, int charCount) {
-        int lineCount = getLineCount();
-        if (line == 0 || lineCount == 0) {
-            return 0;
-        }
-        if (charCount == lastCharCountForWrapAboveCalculation && lastWrappedAboveLineCount != -1 && line == lastWrappedAboveLine) {
-            return lastWrappedAboveLineCount;
-        }
-
-        synchronized (readLock()) {
-            lastWrappedAboveLineCount = 0;
-
-            for (int i=0; i < line; i++) {
-                int len = length(i);
-                if (len > charCount) {
-                    lastWrappedAboveLineCount += lenDividedByCount(len, charCount) + 1;
-                } else {
-                    lastWrappedAboveLineCount++;
-                }
-            }
-
-            lastWrappedAboveLine = line;
-            setLastCharCountForWrapAboveCalculation(charCount);
-            return lastWrappedAboveLineCount;
-        }
-    }
-    //#104307
-    int lenDividedByCount(int len, int count) {
-        return count == 0 ? len : (len / count);
+    static int lengthToLineCount(int len, int charsPerLine) {
+        return len > charsPerLine ? (charsPerLine == 0 ? len : (len + charsPerLine - 1) / charsPerLine) : 1;
     }
     
     void markDirty() {
@@ -710,93 +527,62 @@ abstract class AbstractLines implements Lines, Runnable {
     }
     
     private boolean lastLineFinished = true;
+    private int lastLineLength = -1;
 
-    public void lineStarted(int start) {
-        if (Controller.VERBOSE) Controller.log("AbstractLines.lineStarted " + start); //NOI18N
-        int lineCount = 0;
+    private void updateLastLine(int lineIdx, int lineLength) {
         synchronized (readLock()) {
-            setLastWrappedLineCount(-1);
-            setLastCharCountForWrapAboveCalculation(-1);
-            lineStartList.add(start);
-            matcher = null;
-            lineCount = lineStartList.size();
-            lastLineFinished = false;
-        }
-        if (lineCount == 20 || lineCount == 10 || lineCount == 1) {
-            //Fire again after the first 20 lines
-            if (Controller.LOG) Controller.log("Firing initial write event");
-            fire();
-        }
-    }
-    
-    public void lineFinished(int lineLength) {
-        synchronized (readLock()) {
-            setLastWrappedLineCount(-1);
-            setLastCharCountForWrapAboveCalculation(-1);
-            longestLine = Math.max(longestLine, lineLength);
-            matcher = null;
-            
-            int lineCount = lineStartList.size();
-            lastLineFinished = true;
-            //This is the index of the getLine we just added
-            int lastline = lineCount-1;
-            checkLogicalLineCount(lastline);
-        }
-    }
-    
-    private void checkLogicalLineCount(int lastline) {
-        //If we already have enough lines that we need to cache logical getLine
-        //lengths, update the cache - rebuilding it is very expensive
-        if (knownLogicalLineCounts != null) {
-            //Get the length of the getLine
-            int len = length(lastline);
-            
-            //We only need to add if it will wrap - SparseIntList's get()
-            //semantics takes care of non-wrapped lines
-            if (len > knownCharCount) {
-                int aboveLineCount;
+            longestLineLen = Math.max(longestLineLen, lineLength);
+            if (knownLogicalLineCounts == null) {
+                return;
+            }
+            // nummber of logical lines above for knownLogicalLineCounts
+            int aboveLineCount;
+            boolean alreadyAdded = knownLogicalLineCounts.lastIndex() == lineIdx;
+            if (alreadyAdded) {
+                assert lastLineFinished == false;
+                if (lineLength <= knownCharsPerLine) {
+                    knownLogicalLineCounts.removeLast();
+                } else {
+                    aboveLineCount = knownLogicalLineCounts.lastAdded()
+                            - lengthToLineCount(lastLineLength, knownCharsPerLine)
+                            + lengthToLineCount(lineLength, knownCharsPerLine);
+                    knownLogicalLineCounts.updateLast(lineIdx, aboveLineCount);
+                }
+            } else {
+                if (lineLength <= knownCharsPerLine) {
+                    return;
+                }
                 if (knownLogicalLineCounts.lastIndex() != -1) {
                     //If the cache already has some entries, calculate the
                     //values from the last entry - this is less expensive
                     //than looking it up
-                    aboveLineCount = (lastline - (knownLogicalLineCounts.lastIndex() + 1)) + knownLogicalLineCounts.lastAdded();
+                    aboveLineCount = (lineIdx - (knownLogicalLineCounts.lastIndex() + 1)) + knownLogicalLineCounts.lastAdded();
                 } else {
                     //Otherwise, it's just the number of lines above this
                     //one - it's the first entry
-                    aboveLineCount = Math.max(0, lastline-1);
+                    aboveLineCount = Math.max(0, lineIdx-1);
                 }
                 //Add in the number of times this getLine will wrap
-                aboveLineCount += (len / knownCharCount) + 1;
-                knownLogicalLineCounts.add(aboveLineCount, lastline);
+                aboveLineCount += lengthToLineCount(lineLength, knownCharsPerLine);
+                knownLogicalLineCounts.add(lineIdx, aboveLineCount);
             }
         }
-
     }
     
-    public void lineWritten(int start, int lineLength) {
-        if (Controller.VERBOSE) Controller.log("AbstractLines.lineWritten " + start + " length:" + lineLength); //NOI18N
-        int lineCount = 0;
+    public void lineUpdated(int lineStart, int lineLength, boolean isFinished) {
         synchronized (readLock()) {
-            setLastWrappedLineCount(-1);
-            setLastCharCountForWrapAboveCalculation(-1);
-            longestLine = Math.max(longestLine, lineLength);
-            lineStartList.add(start);
+            int charLineLength = toCharIndex(lineLength);
+            updateLastLine(lineStartList.size() - 1, charLineLength);
+            if (isFinished) {
+                lineStartList.add(lineStart + lineLength);
+            }
             matcher = null;
-            
-            lineCount = lineStartList.size();
-            lastLineFinished = true;
-            //This is the index of the getLine we just added
-            int lastline = lineCount-1;
-            checkLogicalLineCount(lastline);
-            
+            lastLineFinished = isFinished;
+            lastLineLength = isFinished ? -1 : charLineLength;
         }
-        if (lineCount == 20 || lineCount == 10 || lineCount == 1) {
-            //Fire again after the first 20 lines
-            if (Controller.LOG) Controller.log("Firing initial write event");
-            fire();
-        }
+        fire();
     }
-
+    
     /** Convert an index from chars to byte count (*2).  Simple math, but it
      * makes the intent clearer when encountered in code */
     static int toByteIndex (int charIndex) {
@@ -902,18 +688,6 @@ abstract class AbstractLines implements Lines, Runnable {
         // String replacement = "\\Q" + s + "\\E";
         String replacement = s.replaceAll("([\\(\\)\\[\\]\\^\\*\\.\\$\\{\\}\\?\\+\\\\])", "\\\\$1");
         return Pattern.compile(replacement, Pattern.CASE_INSENSITIVE);
-    }
-
-    private void setLastCharCountForWrapCalculation(int lastCharCountForWrapCalculation) {
-        this.lastCharCountForWrapCalculation = lastCharCountForWrapCalculation;
-    }
-
-    private void setLastWrappedLineCount(int lastWrappedLineCount) {
-        this.lastWrappedLineCount = lastWrappedLineCount;
-    }
-
-    private void setLastCharCountForWrapAboveCalculation(int lastCharCountForWrapAboveCalculation) {
-        this.lastCharCountForWrapAboveCalculation = lastCharCountForWrapAboveCalculation;
     }
 
     @Override

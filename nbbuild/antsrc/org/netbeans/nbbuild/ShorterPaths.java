@@ -72,6 +72,11 @@ public class ShorterPaths extends Task {
         public void setDir(File dir) {
             this.dir = dir;
         }
+
+        @Override
+        public String toString() {
+            return dir + " => ${" + name + "}";
+        }
     }
     private List<Replacement> replacements = new LinkedList<Replacement>(); // List<Nestme>
     public Replacement createReplacement() {
@@ -130,9 +135,8 @@ public class ShorterPaths extends Task {
     public void setTestProperties(File testProperties) {
         this.testProperties = testProperties;
     } 
-    
-    
 
+    @Override
     public void execute() throws BuildException {
         // TODO code here what the task actually does:
         String paths[] = in.list();
@@ -164,12 +168,11 @@ public class ShorterPaths extends Task {
                 PrintWriter pw = new PrintWriter(testProperties);
                 
                 // copy extra unit.test.properties
-                String extraProp = "test-unit-sys-prop";
                 Hashtable properties = getProject().getProperties();  
                 StringBuffer outProp = new StringBuffer();
                 for (Iterator it = properties.keySet().iterator(); it.hasNext();) {
                     String name = (String) it.next();
-                    if (name.startsWith(extraProp)) {
+                    if (name.matches("test-(unit|qa-functional)-sys-prop\\..+")) {
                         if (name.equals("test-unit-sys-prop.xtest.data")) {
                             // ignore overring xtest.data.dir, data.zip placed to standard location
                             continue;
@@ -197,11 +200,13 @@ public class ShorterPaths extends Task {
 
                            simplyPath(path,externalLibBuf,outProp);
                        }
-                       pw.println(name + "=" + outProp);          
+                       pw.println(name.replaceFirst("^test-(unit|qa-functional)-sys-prop\\.", "test-sys-prop.") + "=" + outProp);
+                    } else if (name.startsWith("test.config")) {
+                        pw.println(name + "=" + properties.get(name));
                     }
                 }
-                pw.println("extra.test.libs.dir=" + externalLibBuf.toString());
-                pw.println("test.unit.run.cp=" + nbLibBuff.toString());
+                pw.println("extra.test.libs=" + externalLibBuf.toString());
+                pw.println("test.run.cp=" + nbLibBuff.toString());
                 pw.close();
             }
         } catch (IOException ex) {
@@ -231,12 +236,12 @@ public class ShorterPaths extends Task {
                 } 
             }
             if (!bAppend) {
-                String fName = copyExtraLib(path); 
+                String fName = copyExtraLib(file);
                 if (fName != null) {
                     if (externalLibBuf.length() > 0 ) {
                         externalLibBuf.append(":\\\n");
                     }
-                   externalLibBuf.append("${extra.test.libs}/" + fName);
+                   externalLibBuf.append("${extra.test.libs.dir}/" + fName);
                 }
             }
            
@@ -258,14 +263,13 @@ public class ShorterPaths extends Task {
         getProject().setNewProperty(prop, val);
     }
 
-    private String copyExtraLib(String path) throws IOException{
+    private String copyExtraLib(File file) throws IOException{
         String name = null;
-        File file = new File(path);
         if (this.extraLibsDir != null && extraLibsDir.isDirectory() && file.isFile()) {
-            
+            log("Copying " + file + " to extralibs despite " + replacements);
             name = file.getName();
             byte buff[] = new byte[100000];
-            FileInputStream fis = new FileInputStream(path);
+            FileInputStream fis = new FileInputStream(file);
             FileOutputStream fos = new FileOutputStream(new File (extraLibsDir,name));
             int size = 0;
             while ((size = fis.read(buff)) > 0 ) {

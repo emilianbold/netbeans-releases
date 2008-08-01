@@ -124,7 +124,7 @@ public final class SingleModuleProperties extends ModuleProperties {
     /** @see "#66278" */
     public static final String JAVAC_COMPILERARGS = "javac.compilerargs"; // NOI18N
     
-    static final String[] SOURCE_LEVELS = {"1.4", "1.5"}; // NOI18N
+    static final String[] SOURCE_LEVELS = {"1.4", "1.5", "1.6"}; // NOI18N
     
     private final static Map<String, String> DEFAULTS;
     
@@ -234,8 +234,14 @@ public final class SingleModuleProperties extends ModuleProperties {
         autoUpdateShowInClient = manifestManager.getAutoUpdateShowInClient();
         String nbDestDirS = getEvaluator().getProperty("netbeans.dest.dir"); // NOI18N
         if (nbDestDirS != null) {
-            originalPlatform = activePlatform = NbPlatform.getPlatformByDestDir(
-                    getHelper().resolveFile(nbDestDirS));
+            NbPlatform plaf = NbPlatform.getPlatformByDestDir(getHelper().resolveFile(nbDestDirS));
+            if (!plaf.isValid()) { // #134492
+                NbPlatform def = NbPlatform.getDefaultPlatform();
+                if (def != null) {
+                    plaf = def;
+                }
+            }
+            originalPlatform = activePlatform = plaf;
         }
         String activeJdk = getEvaluator().getProperty("nbjdk.active"); // NOI18N
         if (activeJdk != null) {
@@ -522,11 +528,11 @@ public final class SingleModuleProperties extends ModuleProperties {
                         Message.WARNING_MESSAGE));
                 return Collections.emptySet();
             }
-            String[] disableModules = SuiteProperties.getArrayProperty(
+            String[] disabledModules = SuiteProperties.getArrayProperty(
                     suite.getEvaluator(), SuiteProperties.DISABLED_MODULES_PROPERTY);
-            String[] enableClusters = SuiteProperties.getArrayProperty(
+            String[] enabledClusters = SuiteProperties.getArrayProperty(
                     suite.getEvaluator(), SuiteProperties.ENABLED_CLUSTERS_PROPERTY);
-            String[] disableClusters = SuiteProperties.getArrayProperty(
+            String[] disabledClusters = SuiteProperties.getArrayProperty(
                     suite.getEvaluator(), SuiteProperties.DISABLED_CLUSTERS_PROPERTY);
             String suiteClusterProp = getEvaluator().getProperty("cluster"); // NOI18N
             File suiteClusterDir = suiteClusterProp != null ? getHelper().resolveFile(suiteClusterProp) : null;
@@ -537,7 +543,7 @@ public final class SingleModuleProperties extends ModuleProperties {
                     // #72124: do not filter other modules in the same suite.
                     continue;
                 }
-                if (isExcluded(me, disableModules, enableClusters, disableClusters)) {
+                if (isExcluded(me, Arrays.asList(disabledModules), Arrays.asList(enabledClusters), Arrays.asList(disabledClusters))) {
                     it.remove();
                 }
             }
@@ -562,18 +568,30 @@ public final class SingleModuleProperties extends ModuleProperties {
         return getUniverseDependencies(filterExcludedModules, false);
     }
     
-    private static boolean isExcluded(final ModuleEntry me,
-            final String[] disableModules, final String[] enableClusters, final String[] disableClusters) {
-        if (Arrays.binarySearch(disableModules, me.getCodeNameBase()) >= 0) {
+    public static boolean isExcluded(ModuleEntry me, Collection<String> disabledModules, Collection<String> enabledClusters, Collection<String> disabledClusters) {
+        if (disabledModules.contains(me.getCodeNameBase())) {
             return true;
         }
-        if (enableClusters.length != 0 && Arrays.binarySearch(enableClusters, me.getClusterDirectory().getName()) < 0) {
+        String clusterName = me.getClusterDirectory().getName();
+        if (!enabledClusters.isEmpty() && !clusterMatch(enabledClusters, clusterName)) {
             return true;
         }
-        if (enableClusters.length == 0 && Arrays.binarySearch(disableClusters, me.getClusterDirectory().getName()) >= 0) {
+        if (enabledClusters.isEmpty() && disabledClusters.contains(clusterName)) {
             return true;
         }
         return false;
+    }
+    static boolean clusterMatch(Collection<String> enabledClusters, String clusterName) { // #73706
+        String baseName = clusterBaseName(clusterName);
+        for (String c : enabledClusters) {
+            if (clusterBaseName(c).equals(baseName)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    static String clusterBaseName(String clusterName) {
+        return clusterName.replaceFirst("[0-9.]+$", ""); // NOI18N
     }
     
     /**

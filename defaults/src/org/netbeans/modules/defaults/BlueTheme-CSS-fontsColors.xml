@@ -43,11 +43,30 @@ made subject to such option by the copyright holder.
 <!DOCTYPE fontscolors PUBLIC "-//NetBeans//DTD Editor Fonts and Colors settings 1.1//EN" "http://www.netbeans.org/dtds/EditorFontsColors-1_1.dtd">
 
 <fontscolors>
-    <fontcolor name="css-at-keyword" foreColor="lightGray" default="keyword"/>
-    <fontcolor name="css-comment" foreColor="red" default="comment"/>
-    <fontcolor name="css-eol" default="whitespace"/>
-    <fontcolor name="css-error" default="error"/>
-    <fontcolor name="css-plain" default="default"/>
-    <fontcolor name="css-property" foreColor="cyan" default="default"/>
-    <fontcolor name="css-selector" foreColor="orange" default="default"/>
+    <fontcolor name="default" default="default"/>
+    <fontcolor name="brace" default="separator"/>
+    <fontcolor name="separator" default="separator"/>
+    <fontcolor name="hash" default="number"/>
+    <fontcolor name="operator" default="operator"/>
+    <fontcolor name="string" default="string"/>
+    <fontcolor name="url" default="string"/>
+    <fontcolor name="keyword" default="keyword"/>
+    <fontcolor name="number" default="number"/>
+    <fontcolor name="rgb" default="string"/>
+    <fontcolor name="identifier" default="identifier"/>
+    <fontcolor name="unknown" default="error"/>
+    <!-- whitespaces including comments -->
+    <fontcolor  name="whitespace_comment" default="comment"/>
+
+    <!-- GSF colors - taken from ruby editor -->
+    <!--"semantic" highlighting:-->
+    <fontcolor name="mod-custom1" default="keyword"/>
+    <fontcolor name="mod-custom2" default="keyword" foreColor="8AA6C1">
+        <font style="italic" />
+    </fontcolor>
+    <fontcolor name="mod-method">
+        <font style="bold" />
+    </fontcolor>
+    <fontcolor name="mark-occurrences" bgColor="38566F"/>
+
 </fontscolors>

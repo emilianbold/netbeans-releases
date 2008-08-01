@@ -153,7 +153,8 @@ public class RefactoringPluginFactoryImpl implements RefactoringPluginFactory {
                 if (isOnSourceClasspath(pkgFolder.getFolder())) {
                     changeType = RefactoringInfo.ChangeType.PACKAGE_RENAME;
                     primaryFile = pkgFolder.getFolder();
-                    oldName = primaryFile.getName();
+                    ClassPath cp = ClassPath.getClassPath(primaryFile, ClassPath.SOURCE);
+                    oldName = cp.getResourceName(primaryFile, '.', false);
                 }
             }
         } else if (refactoring instanceof MoveRefactoring) {
@@ -168,7 +169,7 @@ public class RefactoringPluginFactoryImpl implements RefactoringPluginFactory {
         } else if (refactoring instanceof SingleCopyRefactoring) {
             FileObject file = refactoring.getRefactoringSource().lookup(FileObject.class);
             if (file != null && RefactoringInfo.isJavaFileOfForm(file) && isOnSourceClasspath(file)) {
-                // moving a java file (between packages)
+                // copying a java file
                 changeType = RefactoringInfo.ChangeType.CLASS_COPY;
                 primaryFile = file;
                 ClassPath cp = ClassPath.getClassPath(file, ClassPath.SOURCE);

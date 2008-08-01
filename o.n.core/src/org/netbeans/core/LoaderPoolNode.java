@@ -70,6 +70,9 @@ import org.openide.actions.MoveUpAction;
 import org.openide.actions.PropertiesAction;
 import org.openide.actions.ReorderAction;
 import org.openide.actions.ToolsAction;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -89,6 +92,7 @@ import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
+import org.openide.util.NotImplementedException;
 import org.openide.util.RequestProcessor;
 import org.openide.util.TopologicalSortException;
 import org.openide.util.Utilities;
@@ -738,7 +742,6 @@ public final class LoaderPoolNode extends AbstractNode {
     }
     private static NbLoaderPool nbLoaderPool = null;
 
-
     /***** Inner classes **************/
 
     /** Node representing one loader in Loader Pool */
@@ -867,6 +870,7 @@ public final class LoaderPoolNode extends AbstractNode {
     public static final class NbLoaderPool extends DataLoaderPool
     implements PropertyChangeListener, Runnable, LookupListener {
         private static final long serialVersionUID =-8488524097175567566L;
+        static boolean IN_TEST = false;
 
         private transient RequestProcessor.Task fireTask;
 
@@ -876,7 +880,22 @@ public final class LoaderPoolNode extends AbstractNode {
         public NbLoaderPool() {
             fireTask = rp.create(this, true);
             mimeResolvers = Lookup.getDefault().lookupResult(MIMEResolver.class);
-            mimeResolvers.addLookupListener(this);            
+            mimeResolvers.addLookupListener(this);
+            listenToDeclarativeResolvers();
+        }
+        private final FileChangeListener listener = new FileChangeAdapter() {
+            public @Override void fileDataCreated(FileEvent ev) {
+                maybeFireChangeEvent();
+            }
+            public @Override void fileDeleted(FileEvent ev) {
+                maybeFireChangeEvent();
+            }
+        };
+        private void listenToDeclarativeResolvers() {
+            FileObject resolvers = Repository.getDefault().getDefaultFileSystem().findResource("Services/MIMEResolver"); // NOI18N
+            if (resolvers != null) { // might be inside test which overrides SFS?
+                resolvers.addFileChangeListener(listener);
+            }
         }
 
         /** Enumerates all loaders. Loaders are taken from children
@@ -952,7 +971,11 @@ public final class LoaderPoolNode extends AbstractNode {
         }
 
         public void resultChanged(LookupEvent ev) {
-            if (org.netbeans.core.startup.Main.isInitialized()) {
+            maybeFireChangeEvent();
+        }
+
+        private void maybeFireChangeEvent() {
+            if (IN_TEST || org.netbeans.core.startup.Main.isInitialized()) {
                 superFireChangeEvent();
             }
         }

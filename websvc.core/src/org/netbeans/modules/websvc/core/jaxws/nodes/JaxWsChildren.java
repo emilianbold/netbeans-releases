@@ -105,13 +105,15 @@ import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Binding;
+import org.netbeans.modules.websvc.jaxwsmodelapi.WSOperation;
+import org.netbeans.modules.websvc.jaxwsmodelapi.WSPort;
 import org.xml.sax.SAXException;
 
 /*
  *  Children of the web service node, namely,
  *  the operations of the webservice
  */
-public class JaxWsChildren extends Children.Keys/* implements MDRChangeListener  */{
+public class JaxWsChildren extends Children.Keys<Object>/* implements MDRChangeListener  */{
     private java.awt.Image cachedIcon;   
     private static final String OPERATION_ICON = "org/netbeans/modules/websvc/core/webservices/ui/resources/wsoperation.png"; //NOI18N
     
@@ -170,8 +172,8 @@ public class JaxWsChildren extends Children.Keys/* implements MDRChangeListener 
                     wsdlChangeListener = new WsdlChangeListener() {
                         public void wsdlModelChanged(WsdlModel oldWsdlModel, WsdlModel newWsdlModel) {
                             wsdlModel=newWsdlModel;
-                            ((JaxWsNode)getNode()).changeIcon();
                             updateKeys();
+                            ((JaxWsNode)getNode()).changeIcon();
                         }
                     };
                     wsdlModeler.addWsdlChangeListener(wsdlChangeListener);
@@ -226,16 +228,16 @@ public class JaxWsChildren extends Children.Keys/* implements MDRChangeListener 
             implClass.removeFileChangeListener(fcl);
             fcl = null;
         }
-        setKeys(Collections.EMPTY_SET);
+        setKeys(Collections.<Object>emptySet());
     }
     
     private void updateKeys() {
         if (isFromWsdl()) {
-            List<WsdlOperation> keys = new ArrayList<WsdlOperation>();
+            List<WSOperation> keys = new ArrayList<WSOperation>();
             if (wsdlModel!=null) {
                 WsdlService wsdlService = wsdlModel.getServiceByName(service.getServiceName());
                 if (wsdlService!=null) {
-                    WsdlPort wsdlPort = wsdlService.getPortByName(service.getPortName());
+                    WSPort wsdlPort = wsdlService.getPortByName(service.getPortName());
                     if (wsdlPort!=null)
                         keys =  wsdlPort.getOperations();
                 }
@@ -244,7 +246,7 @@ public class JaxWsChildren extends Children.Keys/* implements MDRChangeListener 
         } else {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    final List<WebOperationInfo>[] keys = new List[]{new ArrayList<WebOperationInfo>()};
+                    final List<?>[] keys = new List<?>[1];
                     if (implClass != null) {
                         JavaSource javaSource = JavaSource.forFileObject(implClass);
                         if (javaSource!=null) {
@@ -342,6 +344,10 @@ public class JaxWsChildren extends Children.Keys/* implements MDRChangeListener 
                                 ErrorManager.getDefault().notify(ex);
                             }
                         }
+                    }
+
+                    if (keys[0] == null) {
+                        keys[0] = Collections.emptyList();
                     }
                     setKeys(keys[0]);
                 }
@@ -615,7 +621,7 @@ public class JaxWsChildren extends Children.Keys/* implements MDRChangeListener 
     private void regenerateJavaArtifacts() {
         Project project = FileOwnerQuery.getOwner(srcRoot);
         if (project!=null) {
-            FileObject buildImplFo = project.getProjectDirectory().getFileObject(GeneratedFilesHelper.BUILD_IMPL_XML_PATH);
+            FileObject buildImplFo = project.getProjectDirectory().getFileObject(GeneratedFilesHelper.BUILD_XML_PATH);
             try {
                 String name = service.getName();
                 ExecutorTask wsimportTask =

@@ -37,10 +37,10 @@
 package org.netbeans.installer.infra.lib.registries.impl;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -71,6 +71,7 @@ import org.netbeans.installer.utils.helper.Status;
 import org.netbeans.installer.utils.helper.Version;
 import org.netbeans.installer.infra.lib.registries.ManagerException;
 import org.netbeans.installer.infra.lib.registries.RegistriesManager;
+import org.netbeans.installer.utils.helper.Pair;
 import org.netbeans.installer.utils.progress.Progress;
 
 /**
@@ -636,68 +637,36 @@ public class RegistriesManagerImpl implements RegistriesManager {
             lock.unlock();
         }
     }
-    
     public String generateComponentsJs(
             final File root) throws ManagerException {
-        return generateComponentsJs(root, null);
+        return generateComponentsJs(root, null, null);
+    }
+    public String generateComponentsJs(
+            final File root, final File bundlesList) throws ManagerException {
+        return generateComponentsJs(root, bundlesList, null);
     }
     
     public String generateComponentsJs(
-            final File root, final String localeString) throws ManagerException {
-        final List<String> java = Arrays.asList(
-                "nb-platform",
-                "nb-base",
-                "nb-javase");
-        final List<String> javaee = Arrays.asList(
-                "nb-platform",
-                "nb-base",
-                "nb-javase",
-                "nb-javaee",
-                "glassfish",
-                "tomcat",
-                "sjsas");
-        final List<String> javame = Arrays.asList(
-                "nb-platform",
-                "nb-base",
-                "nb-javase",
-                "nb-javame");
-        final List<String> ruby = Arrays.asList(
-                "nb-platform",
-                "nb-base",
-                "nb-ruby");
+            final File root, File bundlesList, final String localeString) throws ManagerException {
         
-        final List<String> cnd = Arrays.asList(
-                "nb-platform",
-                "nb-base",
-                "nb-cnd");
-
-        final List<String> php = Arrays.asList(
-                "nb-platform",
-                "nb-base",
-                "nb-php");
+        Properties props = new Properties();
+        try {
+            if (bundlesList != null) {
+                FileInputStream is = new FileInputStream(bundlesList);
+                props.load(is);
+                is.close();
+            }            
+        } catch (IOException e){
+            throw new ManagerException(e);
+        }
         
-        final List<String> full = Arrays.asList(
-                "nb-platform",
-                "nb-base",
-                "nb-javase",
-                "nb-javaee",
-                "nb-javame",
-                "nb-cnd",
-                "nb-soa",
-                "nb-uml",
-                "nb-ruby",
-                "glassfish",
-                "openesb",
-                "sjsam",
-                "tomcat",
-                "sjsas");
+        final List <Pair <List<String>, String>> bundles = new LinkedList<Pair<List<String>, String>> ();
+        for(Object key : props.keySet()) {
+             Object value = props.get(key);
+             List <String> list = StringUtils.asList(value.toString());
+             bundles.add(new Pair(list,  key.toString()));
+        }
         
-        final List<String> hidden = Arrays.asList(
-                "nb-platform",
-                //"nb-base",
-                "openesb",
-                "sjsam",
-                "jdk");
         final Map<String, String> notes = new HashMap<String, String>();
         //notes.put("nb-javase", "for Java SE, includes GUI Builder, Profiler");
         
@@ -718,7 +687,7 @@ public class RegistriesManagerImpl implements RegistriesManager {
             final Registry registry = loadRegistry(
                     root,
                     tempUserDir,
-                    Platform.WINDOWS);
+                    Platform.GENERIC);
             
             final List<Product> products =
                     getProducts(registry.getRegistryRoot());
@@ -788,31 +757,11 @@ public class RegistriesManagerImpl implements RegistriesManager {
                 }
                 
                 String properties = "PROPERTY_NONE";
-                if (java.contains(product.getUid())) {
-                    properties += " | PROPERTY_JAVA";
-                }
-                if (javaee.contains(product.getUid())) {
-                    properties += " | PROPERTY_JAVAEE";
-                }
-                if (javame.contains(product.getUid())) {
-                    properties += " | PROPERTY_JAVAME";
-                }
-                if (ruby.contains(product.getUid())) {
-                    properties += " | PROPERTY_RUBY";
-                }
-                if (cnd.contains(product.getUid())) {
-                    properties += " | PROPERTY_CND";
-                }
-                if (php.contains(product.getUid())) {
-                    properties += " | PROPERTY_PHP";
-                }
-
-                if (full.contains(product.getUid())) {
-                    properties += " | PROPERTY_FULL";
-                }
-                if (hidden.contains(product.getUid())) {
-                    properties += " | PROPERTY_HIDDEN";
-                }
+                for(Pair <List<String>,String> pair : bundles) {
+                    if(pair.getFirst().contains(product.getUid())) {
+                        properties += " | PROPERTY_" + pair.getSecond();
+                    }
+                }                
                 productProperties.add(properties);
                 
                 productMapping.put(i, productUids.size() - 1);
@@ -1028,9 +977,10 @@ public class RegistriesManagerImpl implements RegistriesManager {
             
             FileUtils.deleteFile(tempStatefile);
             FileUtils.deleteFile(tempPropertiesFile);
+            FileUtils.deleteFile(tempBundlePropertiesFile);
             FileUtils.deleteFile(tempUserDir, true);
             
-            if (platform == Platform.WINDOWS) {
+            if (platform.isCompatibleWith(Platform.WINDOWS)) {
                 bundle = new File(
                         bundle.getAbsolutePath().replaceFirst("\\.jar$", ".exe"));
             } else if (platform.isCompatibleWith(Platform.MACOSX)) {

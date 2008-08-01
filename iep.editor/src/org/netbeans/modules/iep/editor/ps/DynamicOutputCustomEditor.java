@@ -117,8 +117,8 @@ public class DynamicOutputCustomEditor extends DefaultCustomEditor {
             mOutputSchemaNamePanel = PropertyPanel.createSingleLineTextPanel(outputSchemaNameStr, outputSchemaNameProp, false);
             if (mIsSchemaOwner) {
                 if (mOutputSchemaNamePanel.getStringValue() == null || mOutputSchemaNamePanel.getStringValue().trim().equals("")) {
-                	IEPModel model = mComponent.getModel();
-                	String schemaName = NameGenerator.generateSchemaName(model.getPlanComponent().getSchemaComponentContainer());
+                    IEPModel model = mComponent.getModel();
+                    String schemaName = NameGenerator.generateSchemaName(model.getPlanComponent().getSchemaComponentContainer());
                     mOutputSchemaNamePanel.setStringValue(schemaName);
                 }
             }else {

@@ -167,27 +167,22 @@ public final class CssModel {
             EditorAwareSourceTaskSupport.Listener parseListener = new EditorAwareSourceTaskSupport.Listener() {
 
                 public void parsed(CompilationInfo info) {
-                    try {
-
-                        //ignore if not our document
-                        //this is uglyyyyyyyyyyyy!!!!!!!!!! fix the whole support please once you have some time!
-                        if (info.getDocument() != CssModel.this.doc) {
-                            return;
-                        }
-
-                        ParserResult presult = info.getEmbeddedResults("text/x-css").iterator().next();
-                        SimpleNode root = ((CSSParserResult) presult).root();
-
-
-                        if (containsErrors(presult)) {
-                            support.firePropertyChange(MODEL_INVALID, rules, null);
-                            return;
-                        }
-
-                        updateModel(root);
-                    } catch (IOException ex) {
-                        Exceptions.printStackTrace(ex);
+                    //ignore if not our document
+                    //this is uglyyyyyyyyyyyy!!!!!!!!!! fix the whole support please once you have some time!
+                    if (info.getDocument() != CssModel.this.doc) {
+                        return;
                     }
+
+                    ParserResult presult = info.getEmbeddedResults("text/x-css").iterator().next();
+                    SimpleNode root = ((CSSParserResult) presult).root();
+
+
+                    if (containsErrors(presult)) {
+                        support.firePropertyChange(MODEL_INVALID, rules, null);
+                        return;
+                    }
+
+                    updateModel(root);
                 }
             };
             EditorAwareSourceTaskSupport.instance().addListener(parseListener);

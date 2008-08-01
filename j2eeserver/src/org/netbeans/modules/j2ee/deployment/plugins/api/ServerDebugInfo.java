@@ -122,16 +122,16 @@ public class ServerDebugInfo {
     }
     
     /**
-     * Getter for property address.
-     * @return Value of property address.
+     * Getter for property shmemName.
+     * @return Value of property shmemName.
      */
     public String getShmemName() {
         return this.shmemName;
     }
     
     /**
-     * Setter for property address.
-     * @param address New value of property address.
+     * Setter for property shmemName.
+     * @param shmemName New value of property shmemName.
      */
     public void setShmemName(String shmemName) {
         this.shmemName = shmemName;

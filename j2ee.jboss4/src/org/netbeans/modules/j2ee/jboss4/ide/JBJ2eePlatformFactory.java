@@ -132,19 +132,31 @@ public class JBJ2eePlatformFactory extends J2eePlatformFactory {
             }
         }
 
+        @Override
         public Set<String> getSupportedSpecVersions(Object moduleType) {
-            // JavaEE5 app client is not supported for JBoss 5.x
-            if (properties.supportsJavaEE5ejb3() && properties.supportsJavaEE5web() && !J2eeModule.CLIENT.equals(moduleType)) {
+            if (properties.supportsJavaEE5web() && J2eeModule.WAR.equals(moduleType)) {
                 return SPEC_VERSIONS_5;
             }
-            // JavaEE5 ear, web and app client modules are not supported for JBoss 4.x
+            if (properties.supportsJavaEE5ejb3() && J2eeModule.EJB.equals(moduleType)) {
+                return SPEC_VERSIONS_5;
+            }
+            if (properties.supportsJavaEE5ear() && J2eeModule.EAR.equals(moduleType)) {
+                return SPEC_VERSIONS_5;
+            }
+
+            // paranoid check
+            if (properties.supportsJavaEE5ear() && properties.supportsJavaEE5ejb3()
+                    && properties.supportsJavaEE5web() && !J2eeModule.CLIENT.equals(moduleType)) {
+                return SPEC_VERSIONS_5;
+            }
+            // JavaEE5 ear, web and app client modules are not supported for JBoss 4.0
             if (properties.supportsJavaEE5ejb3()
                     && !(J2eeModule.EAR.equals(moduleType)
                         || J2eeModule.WAR.equals(moduleType) || J2eeModule.CLIENT.equals(moduleType))) {
                 return SPEC_VERSIONS_5;
-            } else {
-                return SPEC_VERSIONS;
             }
+
+            return SPEC_VERSIONS;
         }
 
         public Set getSupportedModuleTypes() {

@@ -123,7 +123,7 @@ public final class TokenHierarchyEvent extends java.util.EventObject {
      *  if this event's type is not {@link TokenHierarchyEventType#MODIFICATION}.
      */
     public int modificationOffset() {
-        return info.modificationOffset();
+        return info.modOffset();
     }
     
     /**

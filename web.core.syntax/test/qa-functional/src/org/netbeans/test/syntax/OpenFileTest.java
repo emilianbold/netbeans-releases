@@ -40,6 +40,8 @@
  */
 package org.netbeans.test.syntax;
 
+import junit.framework.Test;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.test.lib.BasicOpenFileTest;
 
 /**
@@ -51,7 +53,11 @@ public class OpenFileTest extends BasicOpenFileTest {
     public OpenFileTest(String name) {
         super(name);
     }
-   
+    
+    public static Test suite(){
+        return NbModuleSuite.allModules(OpenFileTest.class);
+    }   
+    
     public void testCSS() throws Exception {
         openStandaloneTokenFile("tokensCSS.css");
         edit("h1{ color:red;}");
@@ -60,6 +66,11 @@ public class OpenFileTest extends BasicOpenFileTest {
 
     public void testTLD() throws Exception {
         openStandaloneTokenFile("tokensTLD.tld");
+        closeFile();
+    }
+
+    public void testIssue131552() throws Exception {
+        openStandaloneTokenFile("testIssue131552.html");
         closeFile();
     }
 }

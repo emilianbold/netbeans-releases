@@ -22,6 +22,8 @@ package org.netbeans.modules.xslt.model.impl;
 import java.util.LinkedHashSet;
 import java.util.List;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.xml.namespace.QName;
 
 import org.netbeans.modules.xml.xam.AbstractReference;
@@ -42,7 +44,8 @@ class GlobalReferenceImpl<T extends QualifiedNameable> extends
     AbstractReference<T> implements
         XslReference<T>
 {
-
+    private static final Logger LOGGER = Logger.getLogger(GlobalReferenceImpl.class.getName());
+    
     // used by XslComponentImpl#createReferenceTo method
     GlobalReferenceImpl( T referenced, Class<T> referencedType, 
             XslComponentImpl parent ) 
@@ -101,9 +104,15 @@ class GlobalReferenceImpl<T extends QualifiedNameable> extends
      */
     public QName getQName() {
         checkParentNotRemovedFromModel();
+        // don't call isBroken here so as it could be looped through find()
+
         if ( myQname == null) {
             T referenced = super.getReferenced();
-            myQname = referenced.getName();
+            if (referenced != null) {
+                myQname = referenced.getName();
+            } else {
+                LOGGER.log(Level.INFO,"MSG_InfoReferenceIsNotResolved");
+            }
          }
          return myQname;
     }
@@ -293,9 +302,15 @@ class GlobalReferenceImpl<T extends QualifiedNameable> extends
                 String localPart = name.getLocalPart();
                 String ns = name.getNamespaceURI();
                 if ( getLocalPart().equals( localPart)  
-                    && Utilities.equals( getQName().getNamespaceURI() , ns ) )
-                {
-                    return t;
+                    /*&& Utilities.equals( getQName().getNamespaceURI() , ns )*/ )
+                {   
+                    QName thisQName = getQName();
+                    if (thisQName == null) {// perhaps element is not resolved yet
+                        thisQName = calculateQNameLocally();
+                    }
+                    if (thisQName != null && Utilities.equals( thisQName.getNamespaceURI() , ns )) {
+                        return t;
+                    }
                 }
         }
         return null;

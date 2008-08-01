@@ -234,7 +234,9 @@ public final class IOSupport {
             return;
         }
         CodeResolver resolver = resolvers.get(activatedView.getContext().getDataObject());
-        resolver.viewActivated(activatedView);
+        if (resolver != null) {
+            resolver.viewActivated(activatedView);
+        }
     }
 
     /**
@@ -247,7 +249,14 @@ public final class IOSupport {
     }
 
     static void resetCodeResolver(DataObject dataObject, DesignDocument document) {
+        if (dataObject == null) {
+            return;
+        }
         CodeResolver resolver = resolvers.get(dataObject);
+        if (resolver == null) {
+            Debug.warning("No CodeResolver for DataObject: " + dataObject); //NOI18N
+            return;
+        }
         resolver.resetModelModifiedStatus(document);
     }
 

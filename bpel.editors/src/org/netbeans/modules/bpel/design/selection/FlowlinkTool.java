@@ -16,8 +16,6 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
-
 package org.netbeans.modules.bpel.design.selection;
 
 import java.awt.Color;
@@ -40,6 +38,7 @@ import org.netbeans.modules.bpel.model.api.PartnerLinkReference;
 import org.netbeans.modules.bpel.model.api.PortTypeReference;
 import org.netbeans.modules.bpel.model.api.Reply;
 import org.netbeans.modules.bpel.design.DesignView;
+import org.netbeans.modules.bpel.design.DiagramView;
 import org.netbeans.modules.bpel.design.GUtils;
 import org.netbeans.modules.bpel.design.decoration.components.LinkToolButton;
 import org.netbeans.modules.bpel.design.model.connections.Direction;
@@ -54,313 +53,268 @@ import org.netbeans.modules.bpel.model.api.references.WSDLReference;
 import org.netbeans.modules.xml.wsdl.model.Operation;
 import org.netbeans.modules.xml.wsdl.model.PortType;
 
-
 public class FlowlinkTool implements DnDTool {
-    
+
     private VisualElement startElement;
     private VisualElement endElement;
-    
     private static final int INPUT = 1;
     private static final int OUTPUT = 2;
-    private static final int INPUT_OUTOUT = INPUT|OUTPUT;
-    
+    private static final int INPUT_OUTOUT = INPUT | OUTPUT;
     private DesignView designView;
-    
-    private double startX;
-    private double startY;
-    
-    private double currentX;
-    private double currentY;
-    
+    private int currentX;
+    private int currentY;
+    private DiagramView currentView;
     private LinkToolButton button;
-    
+
     public FlowlinkTool(DesignView designView) {
         this.designView = designView;
     }
-    
-    
+
     public DesignView getDesignView() {
         return designView;
     }
-    
-    
-    public void init(LinkToolButton  btn) {
+
+    public void init(LinkToolButton btn) {
         this.button = btn;
+
+        btn.setVisible(false);
+
         VisualElement e = btn.getPattern().getFirstElement();
-        
+
         // DND can start only from operation element
         // or fromdiagram element involved into messageflow
-        if ((e == null) || (!isOperation(e) && !isTask(e))) return;
-        
-        startElement = e;
-        
-        if (isTask(e)) {
-            
-            startX = e.getX();
-            startY = e.getCenterY();
-            
-        } else {
-            startX = e.getX() + e.getWidth();
-            startY = e.getCenterY();
+        if ((e == null) || (!isOperation(e) && !isTask(e))) {
+            return;
         }
-        
-        getDesignView().getDecorationManager().decorationChanged();
+
+        startElement = e;
+
+       // getDesignView().getDecorationManager().decorationChanged();
     }
-    
-    
-    
-    private void move() {
+
+    public void move(FPoint fp) {
+        if (!isActive()) {
+            return;
+        }
+
         Point p = getDesignView().getOverlayView().getMousePosition();
         if (p != null) {
-            FPoint fp = getDesignView().convertScreenToDiagram(p);
-            moveImpl(fp.x, fp.y);
+            currentView = getDesignView().getView(p);
+            currentX = p.x;
+            currentY = p.y;
+
+
+            FPoint viewPt = currentView.convertPointFromParent(p);
+            VisualElement e = currentView.findElement(viewPt.x, viewPt.y);
+
+            endElement = (e != null && isValidLinkTo(e)) ? e : null;
+           
+            getDesignView().repaint();
         }
     }
-    
-    public boolean isValidLocation(){
+
+    public boolean isValidLocation() {
         return endElement != null;
     }
-    
-    public void move(FPoint p) {
-        moveImpl(p.x, p.y);
-        
-        //button.setPosition(getDesignView().convertDiagramToScreen(p));
-        
-        getDesignView().repaint();
-    }
-    
-    
-    private void moveImpl(double x, double y) {
-        if (!isActive()) return;
-        currentX = x;
-        currentY = y;
-        
-        
-        VisualElement e = null;//getDesignView().findElement(x, y);
-        
-        endElement = (e != null && isValidLinkTo(e)) ? e : null;
-        
-    }
-    
-    
+
+
+
     public void drop(FPoint p) {
         drop(p.x, p.y);
     }
-    
+
     public void drop(double x, double y) {
-        if (!isActive()) return;
-        
-        moveImpl(x, y);
-        
+        if (!isActive()) {
+            return;
+        }
+
+       move(null);
+
         if (endElement != null && (isValidLinkTo(endElement))) {
             VisualElement operation = isOperation(startElement)
-            ? startElement : endElement;
-            if (operation != null){
-                VisualElement task = isOperation(startElement)?endElement:startElement;
-                
-                PartnerlinkPattern pattern = (PartnerlinkPattern)operation.getPattern();
-                
+                    ? startElement : endElement;
+            if (operation != null) {
+                VisualElement task = isOperation(startElement) ? endElement : startElement;
+
+                PartnerlinkPattern pattern = (PartnerlinkPattern) operation.getPattern();
+
                 BpelEntity activity = (BpelEntity) task.getPattern().getOMReference();
-                
-                BpelReference<PartnerLink> pl_ref = ((ReferenceCollection)activity)
-                .createReference((PartnerLink)pattern.getOMReference(), PartnerLink.class);
-                
+
+                BpelReference<PartnerLink> pl_ref = ((ReferenceCollection) activity).createReference((PartnerLink) pattern.getOMReference(), PartnerLink.class);
+
                 if (pl_ref != null) {
-                    ((PartnerLinkReference)activity).setPartnerLink(pl_ref);
+                    ((PartnerLinkReference) activity).setPartnerLink(pl_ref);
                 }
-                
-                
+
+
                 Operation op = pattern.getOperation(operation);
-                
-                if (op != null){
-                    WSDLReference<Operation> op_ref = ((ReferenceCollection)activity)
-                    .createWSDLReference(op, Operation.class);
-                    
-                    if (op_ref!= null){
-                        ((OperationReference)activity).setOperation(op_ref);
+
+                if (op != null) {
+                    WSDLReference<Operation> op_ref = ((ReferenceCollection) activity).createWSDLReference(op, Operation.class);
+
+                    if (op_ref != null) {
+                        ((OperationReference) activity).setOperation(op_ref);
                     }
-                    PortType pt = (PortType)op.getParent();
-                    if (pt != null){
-                        WSDLReference<PortType> pt_ref = ((ReferenceCollection)activity)
-                        .createWSDLReference(pt, PortType.class);
-                        
-                        if (pt_ref!= null){
-                            ((PortTypeReference)activity).setPortType(pt_ref);
+                    PortType pt = (PortType) op.getParent();
+                    if (pt != null) {
+                        WSDLReference<PortType> pt_ref = ((ReferenceCollection) activity).createWSDLReference(pt, PortType.class);
+
+                        if (pt_ref != null) {
+                            ((PortTypeReference) activity).setPortType(pt_ref);
                         } else {
-                            ((PortTypeReference)activity).removePortType();
+                            ((PortTypeReference) activity).removePortType();
                         }
-                        
-                        
+
+
                     }
                 }
             }
         }
         clear();
     }
-    
-    
-    public void clear(){
+
+    public void clear() {
         startElement = null;
         endElement = null;
-        
+
         if (button != null) {
-            BpelEntity be = button.getPattern().getOMReference();
-            if (be !=  null) {
-                getDesignView().getDecorationManager().decorationChanged();
-            }
+            button.setVisible(true);
+            button = null;
+
         }
-        
+
         //FIXME designView.getDecorationManager().repositionComponentsRecursive();
         getDesignView().repaint();
     }
-    
-    
-    public boolean isActive(){
+
+    public boolean isActive() {
         return (startElement != null);
     }
-    
-    
-    private boolean isValidLinkTo(VisualElement to){
-        if (to == null){
+
+    private boolean isValidLinkTo(VisualElement to) {
+        if (to == null) {
             return false;
         } else if (to == startElement) {
             return false;
-        } if ((isOperation(to) && isTask(startElement)) ||
+        }
+        if ((isOperation(to) && isTask(startElement)) ||
                 (isOperation(startElement) && isTask(to))) {
-            return ((getDirections(to)|getDirections(startElement)) == (INPUT|OUTPUT));
+            return ((getDirections(to) | getDirections(startElement)) == (INPUT | OUTPUT));
         }
         return false;
     }
-    
-    
-    private int getDirections(VisualElement e){
-        BpelEntity ref = (BpelEntity)e.getPattern().getOMReference();
-        if (e instanceof ReceiveOperationElement){
+
+    private int getDirections(VisualElement e) {
+        BpelEntity ref = (BpelEntity) e.getPattern().getOMReference();
+        if (e instanceof ReceiveOperationElement) {
             return INPUT;
-        } else if (e instanceof InvokeOperationElement){
-            return INPUT|OUTPUT;
-        } else if ( isTask(ref)){
-            if (ref instanceof Reply){
+        } else if (e instanceof InvokeOperationElement) {
+            return INPUT | OUTPUT;
+        } else if (isTask(ref)) {
+            if (ref instanceof Reply) {
                 return OUTPUT;
-            } else if (ref instanceof Invoke){
+            } else if (ref instanceof Invoke) {
                 return OUTPUT;
             } else {
                 return INPUT;
             }
         }
-        
+
         return 0;
     }
-    
-    
-    private boolean isOperation(VisualElement e){
+
+    private boolean isOperation(VisualElement e) {
         return e instanceof OperationElement;
     }
-    
-    
-    private boolean isSendTask(VisualElement e){
+
+    private boolean isSendTask(VisualElement e) {
         Object o = e.getPattern().getOMReference();
         return (o instanceof Invoke) || (o instanceof Reply);
     }
-    
-    
-    private boolean isTask(VisualElement e){
-        return isTask((BpelEntity)e.getPattern().getOMReference());
+
+    private boolean isTask(VisualElement e) {
+        return isTask((BpelEntity) e.getPattern().getOMReference());
     }
-    
-    
-    private boolean isTask(BpelEntity o){
+
+    private boolean isTask(BpelEntity o) {
         return (o instanceof OperationReference) && (o instanceof PartnerLinkReference) && (o instanceof PortTypeReference);
     }
-    
-    
-    public void paint(Graphics2D g2) {
-        if (!isActive()) return;
-//        if (getDesignView().getModel().isReadOnly()) return; //127263
-        
-        move();
-        
-        double x1, y1, x2, y2;
-        
-        if (isValidLocation()) {
-            x1 = startElement.getCenterX();
-            y1 = startElement.getCenterY();
-            
-            x2 = endElement.getCenterX();
-            y2 = endElement.getCenterY();
-            
-            double w1 = startElement.getWidth() / 2;
-            double w2 = endElement.getWidth() / 2;
-            
-            if (x1 <= x2) {
-                x1 += w1;
-                x2 -= w2;
-            } else {
-                x1 -= w1;
-                x2 += w2;
-            }
-        } else {
-            x1 = startX;
-            y1 = startY;
-            
-            x2 = currentX;
-            y2 = currentY;
-        }
-        
-        FPath path = createPath(x1, y1, x2, y2, !isForwardDirection());
 
-        if (path != null) {
+    public void paint(Graphics2D g2) {
+        if (!isActive()) {
+            return;
+        }
+//        if (getDesignView().getModel().isReadOnly()) return; //127263
+
+
+        if (currentView != null) {
+            
+            Point pt1 = getDesignView().getProcessView().convertPointToParent(
+                    new FPoint(startElement.getCenterX(), startElement.getCenterY()));
+           
+            Point pt2 = new Point(currentX, currentY);
+            
+            if (isValidLocation()) {
+                pt2 = currentView.convertPointToParent(
+                        new FPoint(endElement.getCenterX(), endElement.getCenterY()));
+            } 
+
+
+            FPath path = createPath(pt1.x, pt1.y, pt2.x, pt2.y, !isForwardDirection());
+   
+            if (path != null) {
 //            GUtils.setSolidStroke(g2, 8);
 //            GUtils.setPaint(g2, new Color(0x88FFFFFF, true));
 //            GUtils.draw(g2, GUtils.convert(path), true);
-            Connection.paintConnection(g2, path, true, true, false, true,
-                    (isValidLocation()) ? null : Color.RED);
+                Connection.paintConnection(g2, path, true, true, false, true,
+                        (isValidLocation()) ? null : Color.RED);
+            }
+
         }
-        
         Graphics2D buttonGraphics = (Graphics2D) g2.create();
-        
-        double scale = GUtils.getScale(buttonGraphics.getTransform());
-        
+
         buttonGraphics.translate(currentX, currentY);
-        buttonGraphics.scale(1 / scale, 1 / scale);
+        //buttonGraphics.scale( 1 / scale, 1 / scale);
         buttonGraphics.translate(-button.getWidth() / 2, -button.getHeight() / 2);
         button.paint(buttonGraphics);
         buttonGraphics.dispose();
+
+
+
     }
-    
-    
+
     private boolean isForwardDirection() {
         BpelEntity omRef = startElement.getPattern().getOMReference();
-        
-        if (omRef == null) return true;
-        
-        if (omRef instanceof OnMessage ||
-            omRef instanceof OnEvent ||
-            omRef instanceof Receive) {
-            
-            return false;
-        } else if (omRef instanceof Invoke
-                || omRef instanceof Reply) {
+
+        if (omRef == null) {
             return true;
         }
-        
+
+        if (omRef instanceof OnMessage ||
+                omRef instanceof OnEvent ||
+                omRef instanceof Receive) {
+
+            return false;
+        } else if (omRef instanceof Invoke || omRef instanceof Reply) {
+            return true;
+        }
+
         return true;
     }
-    
-    
-    private FPath createPath(double x1, double y1, double x2, double y2, 
+
+    private FPath createPath(double x1, double y1, double x2, double y2,
             boolean invert) {
-        
+
         if (invert) {
-            double t = x1; 
-            x1 = x2; 
+            double t = x1;
+            x1 = x2;
             x2 = t;
-            
+
             t = y1;
             y1 = y2;
             y2 = t;
         }
-        
+
         boolean nonZeroDX = x1 != x2;
         boolean nonZeroDY = y1 != y2;
 
@@ -370,19 +324,15 @@ public class FlowlinkTool implements DnDTool {
         } else if (nonZeroDX || nonZeroDY) {
             return new FPath(x1, y1, x2, y2);
         }
-        
+
         return null;
     }
-    
-    
+
     public Point getPosition() {
         return designView.convertDiagramToScreen(new FPoint(currentX, currentY));
     }
-    
-    
     // Rendering constants
     private static final Shape END_MARKER_SHAPE = new Ellipse2D.Float(-2, -2, 4, 4);
-    
     private static final Color ACCEPT_FILL_COLOR = new Color(0x00A000);
     private static final Color ACCEPT_STROKE_COLOR = new Color(0x20A020);
     private static final Color DECLINE_FILL_COLOR = new Color(0xA00000);

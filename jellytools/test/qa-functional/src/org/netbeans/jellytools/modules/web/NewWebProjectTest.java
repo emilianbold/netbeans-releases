@@ -51,16 +51,22 @@ import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.NewWebProjectNameLocationStepOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
+import org.netbeans.jellytools.actions.OpenAction;
+import org.netbeans.jellytools.actions.ViewAction;
+import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
+import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.TimeoutExpiredException;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.ide.ProjectSupport;
+import org.netbeans.modules.project.ui.test.ProjectSupport;
 
 /**
  * Test of org.netbeans.jellytools.NewJspFileNameStepOperator.
  * @author Martin.Schovanek@sun.com
  */
-public class NewWebProjectTest extends JellyTestCase {
+public class NewWebProjectTest extends J2eeTestCase {
     
     /** Constructor required by JUnit.
      * @param testName method name to be used as testcase
@@ -73,17 +79,21 @@ public class NewWebProjectTest extends JellyTestCase {
      * @return  created suite
      */
     public static Test suite() {
+        /*
         TestSuite suite = new NbTestSuite();
         suite.addTest(new NewWebProjectTest("createSampleWebProject"));
         return suite;
+         */
+        return createModuleTest(NewWebProjectTest.class, "createSampleWebProject");
     }
 
     @Override
     public void setUp() {
         System.out.println("### "+getName()+" ###");
     }
-        
-    public void createSampleWebProject() {
+            
+    public void createSampleWebProject() throws Exception {
+        //getGlassFishV2Node();
         String prjName = "SampleWebApplication";
         String web = Bundle.getStringTrimmed(
                 "org.netbeans.modules.web.core.Bundle",
@@ -121,7 +131,17 @@ public class NewWebProjectTest extends JellyTestCase {
             }
             // wait for opening
             ProjectsTabOperator.invoke().getProjectRootNode(prjName);
-            ProjectSupport.waitScanFinished();
+            try {
+                Class.forName("org.netbeans.api.java.source.SourceUtils", true, Thread.currentThread().getContextClassLoader()).
+                        getMethod("waitScanFinished").invoke(null);
+            } catch (ClassNotFoundException x) {
+                System.err.println("Warning: org.netbeans.api.java.source.SourceUtils could not be found, will not wait for scan to finish");
+            }
+        } else {
+            openDataProjects(prjName);
+            new OpenAction().perform(
+                    new Node(new ProjectsTabOperator().getProjectRootNode(prjName),
+                                    "Web Pages|index.jsp")); // NOI18N
         }
     }
     

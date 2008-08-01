@@ -98,6 +98,7 @@ import org.netbeans.modules.uml.core.support.umlutils.IElementLocator;
 import org.netbeans.modules.uml.core.support.umlsupport.Log;
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IDerivation;
 import org.openide.util.NbPreferences;
 
 /**
@@ -2702,11 +2703,6 @@ public class JavaChangeHandlerUtilities
                     }
                 }
             }
-            /*		   
-            	 #else
-            		   impList = pClass.getImplementations();
-            	 #endif
-            */
 
             if (impList != null)
             {
@@ -2752,6 +2748,26 @@ public class JavaChangeHandlerUtilities
                     {
                         classList =
                             getImplementingClassifiers(pItem, classList);
+                    }
+                }
+            }
+            
+            ETList < IDependency > derivations = pClass.getSupplierDependenciesByType("Derivation");
+
+            if (derivations != null)
+            {
+                int count = derivations.size();
+                int idx = 0;
+                while (idx < count)
+                {
+                    IDependency pItem = derivations.get(idx++);
+                    if (pItem instanceof IDerivation)
+                    {
+                        IDerivation derivation = (IDerivation)pItem;
+                        if(derivation.getDerivedClassifier() != null)
+                        {
+                            classList = getImplementingClassifiers(derivation.getDerivedClassifier(), classList);
+                        }
                     }
                 }
             }

@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,13 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * Contributor(s):
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -48,35 +48,37 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.ProduceMime;
 import javax.ws.rs.ConsumeMime;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.DefaultValue;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.UriInfo;
+import com.sun.jersey.api.core.ResourceContext;
 import javax.ws.rs.WebApplicationException;
 import javax.persistence.NoResultException;
+import javax.persistence.EntityManager;
 import customerdb.Customer;
 import java.util.Collection;
 import customerdb.converter.DiscountCodeConverter;
-import javax.ws.rs.core.UriInfo;
 
 
 /**
  *
- * @author nam
+ * @author PeterLiu
  */
 
 public class DiscountCodeResource {
-    private String id;
-    private UriInfo context;
+    @Context
+    protected UriInfo uriInfo;
+    @Context
+    protected ResourceContext resourceContext;
+    protected String id;
     
     /** Creates a new instance of DiscountCodeResource */
     public DiscountCodeResource() {
     }
 
-    /**
-     * Constructor used for instantiating an instance of dynamic resource.
-     *
-     * @param context HttpContext inherited from the parent resource
-     */
-    public DiscountCodeResource(String id, UriInfo context) {
+    public void setId(String id) {
         this.id = id;
-        this.context = context;
     }
 
     /**
@@ -87,9 +89,11 @@ public class DiscountCodeResource {
      */
     @GET
     @ProduceMime({"application/xml", "application/json"})
-    public DiscountCodeConverter get() {
+    public DiscountCodeConverter get(@QueryParam("expandLevel")
+    @DefaultValue("1")
+    int expandLevel) {
         try {
-            return new DiscountCodeConverter(getEntity(), context.getAbsolutePath());
+            return new DiscountCodeConverter(getEntity(), uriInfo.getAbsolutePath(), expandLevel);
         } finally {
             PersistenceService.getInstance().close();
         }
@@ -104,13 +108,14 @@ public class DiscountCodeResource {
     @PUT
     @ConsumeMime({"application/xml", "application/json"})
     public void put(DiscountCodeConverter data) {
-        PersistenceService service = PersistenceService.getInstance();
+        PersistenceService persistenceSvc = PersistenceService.getInstance();
         try {
-            service.beginTx();
-            updateEntity(getEntity(), data.getEntity());
-            service.commitTx();
+            persistenceSvc.beginTx();
+            EntityManager em = persistenceSvc.getEntityManager();
+            updateEntity(getEntity(), data.resolveEntity(em));
+            persistenceSvc.commitTx();
         } finally {
-            service.close();
+            persistenceSvc.close();
         }
     }
 
@@ -121,47 +126,14 @@ public class DiscountCodeResource {
      */
     @DELETE
     public void delete() {
-        PersistenceService service = PersistenceService.getInstance();
+        PersistenceService persistenceSvc = PersistenceService.getInstance();
         try {
-            service.beginTx();
-            DiscountCode entity = getEntity();
-            service.removeEntity(entity);
-            service.commitTx();
+            persistenceSvc.beginTx();
+            deleteEntity(getEntity());
+            persistenceSvc.commitTx();
         } finally {
-            service.close();
+            persistenceSvc.close();
         }
-    }
-
-    /**
-     * Returns a dynamic instance of CustomersResource used for entity navigation.
-     *
-     * @param id identifier for the parent entity
-     * @return an instance of CustomersResource
-     */
-    @Path("customers/")
-    public CustomersResource getCustomersResource() {
-        final DiscountCode parent = getEntity();
-        return new CustomersResource(context) {
-
-            @Override
-            protected Collection<Customer> getEntities(int start, int max) {
-                Collection<Customer> result = new java.util.ArrayList<Customer>();
-                int index = 0;
-                for (Customer e : parent.getCustomerCollection()) {
-                    if (index >= start && (index - start) < max) {
-                        result.add(e);
-                    }
-                    index++;
-                }
-                return result;
-            }
-
-            @Override
-            protected void createEntity(Customer entity) {
-                super.createEntity(entity);
-                entity.setDiscountCode(parent);
-            }
-        };
     }
 
     /**
@@ -171,10 +143,11 @@ public class DiscountCodeResource {
      * @return an instance of DiscountCode
      */
     protected DiscountCode getEntity() {
+        EntityManager em = PersistenceService.getInstance().getEntityManager();
         try {
-            return (DiscountCode) PersistenceService.getInstance().createQuery("SELECT e FROM DiscountCode e where e.discountCode = :discountCode").setParameter("discountCode", id).getSingleResult();
+            return (DiscountCode) em.createQuery("SELECT e FROM DiscountCode e where e.discountCode = :discountCode").setParameter("discountCode", id.charAt(0)).getSingleResult();
         } catch (NoResultException ex) {
-            throw new WebApplicationException(new Throwable("Resource for " + context.getAbsolutePath() + " does not exist."), 404);
+            throw new WebApplicationException(new Throwable("Resource for " + uriInfo.getAbsolutePath() + " does not exist."), 404);
         }
     }
 
@@ -186,15 +159,72 @@ public class DiscountCodeResource {
      * @return the updated entity
      */
     protected DiscountCode updateEntity(DiscountCode entity, DiscountCode newEntity) {
-        newEntity.setDiscountCode(entity.getDiscountCode());
-        entity.getCustomerCollection().removeAll(newEntity.getCustomerCollection());
-        for (Customer value : entity.getCustomerCollection()) {
-            value.setDiscountCode(null);
+        EntityManager em = PersistenceService.getInstance().getEntityManager();
+        Collection<Customer> customerCollection = entity.getCustomerCollection();
+        Collection<Customer> customerCollectionNew = newEntity.getCustomerCollection();
+        entity = em.merge(newEntity);
+        for (Customer value : customerCollection) {
+            if (!customerCollectionNew.contains(value)) {
+                throw new WebApplicationException(new Throwable("Cannot remove items from customerCollection"));
+            }
         }
-        entity = PersistenceService.getInstance().mergeEntity(newEntity);
-        for (Customer value : entity.getCustomerCollection()) {
-            value.setDiscountCode(entity);
+        for (Customer value : customerCollectionNew) {
+            if (!customerCollection.contains(value)) {
+                DiscountCode oldEntity = value.getDiscountCode();
+                value.setDiscountCode(entity);
+                if (oldEntity != null && !oldEntity.equals(entity)) {
+                    oldEntity.getCustomerCollection().remove(value);
+                }
+            }
         }
         return entity;
+    }
+
+    /**
+     * Deletes the entity.
+     *
+     * @param entity the entity to deletle
+     */
+    protected void deleteEntity(DiscountCode entity) {
+        EntityManager em = PersistenceService.getInstance().getEntityManager();
+        if (!entity.getCustomerCollection().isEmpty()) {
+            throw new WebApplicationException(new Throwable("Cannot delete entity because customerCollection is not empty."));
+        }
+        em.remove(entity);
+    }
+
+    /**
+     * Returns a dynamic instance of CustomersResource used for entity navigation.
+     *
+     * @param id identifier for the parent entity
+     * @return an instance of CustomersResource
+     */
+    @Path("customerCollection/")
+    public CustomersResource getCustomerCollectionResource() {
+        CustomerCollectionResourceSub resource = resourceContext.getResource(CustomerCollectionResourceSub.class);
+        resource.setParent(getEntity());
+        return resource;
+    }
+
+    public static class CustomerCollectionResourceSub extends CustomersResource {
+
+        private DiscountCode parent;
+
+        public void setParent(DiscountCode parent) {
+            this.parent = parent;
+        }
+
+        @Override
+        protected Collection<Customer> getEntities(int start, int max, String query) {
+            Collection<Customer> result = new java.util.ArrayList<Customer>();
+            int index = 0;
+            for (Customer e : parent.getCustomerCollection()) {
+                if (index >= start && (index - start) < max) {
+                    result.add(e);
+                }
+                index++;
+            }
+            return result;
+        }
     }
 }

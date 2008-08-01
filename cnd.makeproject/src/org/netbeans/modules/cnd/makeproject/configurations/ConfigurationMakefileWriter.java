@@ -50,6 +50,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.URL;
+import java.util.List;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ArchiverConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BasicCompilerConfiguration;
@@ -66,11 +67,14 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakefileConfiguration;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
-import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.Tool;
+import org.netbeans.modules.cnd.api.compilers.ToolchainManager.ToolchainDescriptor;
+import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 import org.netbeans.modules.cnd.makeproject.api.configurations.FortranCompilerConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.PackagingConfiguration;
+import org.netbeans.modules.cnd.makeproject.packaging.FileElement;
 
 public class ConfigurationMakefileWriter {
     private MakeConfigurationDescriptor projectDescriptor;
@@ -83,8 +87,10 @@ public class ConfigurationMakefileWriter {
 	cleanup();
         writeMakefileImpl();
         Configuration[] confs = projectDescriptor.getConfs().getConfs();
-        for (int i = 0; i < confs.length; i++)
+        for (int i = 0; i < confs.length; i++) {
             writeMakefileConf((MakeConfiguration)confs[i]);
+            writePackagingScript((MakeConfiguration)confs[i]);
+        }
     }
 
     private void cleanup() {
@@ -95,25 +101,36 @@ public class ConfigurationMakefileWriter {
 	    if (children[i].getName().startsWith("Makefile-")) { // NOI18N
 		children[i].delete();
 	    }
+	    if (children[i].getName().startsWith("Package-")) { // NOI18N
+		children[i].delete();
+	    }
 	}
     }
     
     private void writeMakefileImpl() {
+        String resource = "/org/netbeans/modules/cnd/makeproject/resources/MasterMakefile-impl.mk"; // NOI18N
         InputStream is = null;
         FileOutputStream os = null;
         try {
-            URL url = new URL("nbresloc:/org/netbeans/modules/cnd/makeproject/resources/MasterMakefile-impl.mk"); // NOI18N
+            URL url = new URL("nbresloc:" + resource); // NOI18N
             is = url.openStream();
-            String outputFileName = projectDescriptor.getBaseDir() + '/' + "nbproject" + '/' + MakeConfiguration.MAKEFILE_IMPL; // UNIX path // NOI18N
-            os = new FileOutputStream(outputFileName);
         } catch (Exception e) {
-            // FIXUP
+            is = MakeConfigurationDescriptor.class.getResourceAsStream(resource);
         }
+        
+        String outputFileName = projectDescriptor.getBaseDir() + '/' + "nbproject" + '/' + MakeConfiguration.MAKEFILE_IMPL; // UNIX path // NOI18N
+        try {
+            os = new FileOutputStream(outputFileName);
+        }
+        catch (IOException ioe) {
+            ioe.printStackTrace();
+        }
+        
         if (is == null || os == null) {
             // FIXUP: ERROR
             return;
         }
-        
+
         BufferedReader br = new BufferedReader(new InputStreamReader(is));
         BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(os));
         
@@ -175,7 +192,10 @@ public class ConfigurationMakefileWriter {
         CCCCompilerConfiguration cCompilerConfiguration = conf.getCCompilerConfiguration();
         CCCCompilerConfiguration ccCompilerConfiguration = conf.getCCCompilerConfiguration();
         FortranCompilerConfiguration fortranCompilerConfiguration = conf.getFortranCompilerConfiguration();
-        CompilerSet compilerSet = CompilerSetManager.getDefault().getCompilerSet(conf.getCompilerSet().getValue()); // GRP - 
+        CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
+        if (compilerSet == null) {
+            return;
+        }
         BasicCompiler cCompiler = (BasicCompiler)compilerSet.getTool(Tool.CCompiler);
         BasicCompiler ccCompiler = (BasicCompiler)compilerSet.getTool(Tool.CCCompiler);
         BasicCompiler fortranCompiler = (BasicCompiler)compilerSet.getTool(Tool.FortranCompiler);
@@ -203,7 +223,7 @@ public class ConfigurationMakefileWriter {
         }
         
         bw.write("#\n"); // NOI18N
-        bw.write("# Gererated Makefile - do not edit!\n"); // NOI18N
+        bw.write("# Generated Makefile - do not edit!\n"); // NOI18N
         bw.write("#\n"); // NOI18N
         bw.write("# Edit the Makefile in the project folder instead (../Makefile). Each target\n"); // NOI18N
         bw.write("# has a -pre and a -post target defined where you can add customized code.\n"); // NOI18N
@@ -257,12 +277,10 @@ public class ConfigurationMakefileWriter {
         String output = getOutput(conf);
         bw.write("# Build Targets\n"); // NOI18N
         if (conf.isCompileConfiguration()) {
-            bw.write(".build-conf: " + "${BUILD_SUBPROJECTS} " + output + "\n"); // NOI18N
-            bw.write("\n"); // NOI18N
-            if (hasSubprojects(conf)) {
-                bw.write(output + ": " + "${BUILD_SUBPROJECTS}" + "\n"); // NOI18N
-                bw.write("\n"); // NOI18N
-            }
+            bw.write(".build-conf: ${BUILD_SUBPROJECTS}\n"); // NOI18N
+            bw.write("\t${MAKE} " + MakeOptions.getInstance().getMakeOptions() // NOI18N
+                    + " -f nbproject/Makefile-" + conf.getName() + ".mk " // NOI18N
+                    + output + "\n\n"); // NOI18N
             if (conf.isLinkerConfiguration())
                 writeLinkTarget(conf, bw, output);
             if (conf.isArchiverConfiguration())
@@ -271,7 +289,7 @@ public class ConfigurationMakefileWriter {
                 writeCompileTargets(conf, bw);
         }
         else if (conf.isMakefileConfiguration()) {
-            bw.write(".build-conf: " + "${BUILD_SUBPROJECTS} " + "\n"); // NOI18N
+            bw.write(".build-conf: ${BUILD_SUBPROJECTS}\n"); // NOI18N
             writeMakefileTargets(conf, bw);
         }
         writeSubProjectBuildTargets(conf, bw);
@@ -298,7 +316,14 @@ public class ConfigurationMakefileWriter {
 	for (int i = 0; i < additionalDependencies.length; i++) {
 	    bw.write(output + ": " + additionalDependencies[i] + "\n\n"); // NOI18N
 	}
-        bw.write(output + ": " + "${OBJECTFILES}" + "\n"); // NOI18N
+        LibraryItem[] libs = linkerConfiguration.getLibrariesConfiguration().getLibraryItemsAsArray();
+        for (LibraryItem lib : libs) {
+            String libPath = lib.getPath();
+            if (libPath != null && libPath.length() > 0) {
+                bw.write(output + ": " + libPath + "\n\n"); // NOI18N
+            }
+        }
+        bw.write(output + ": ${OBJECTFILES}\n"); // NOI18N
         String folders = IpeUtils.getDirName(output);
         if (folders != null)
             bw.write("\t${MKDIR} -p " + folders + "\n"); // NOI18N
@@ -331,9 +356,13 @@ public class ConfigurationMakefileWriter {
 	    String additionalDep = null;
             for (int i = 0; i < items.length; i++) {
                 ItemConfiguration itemConfiguration = items[i].getItemConfiguration(conf); //ItemConfiguration)conf.getAuxObject(ItemConfiguration.getId(items[i].getPath()));
-                if (itemConfiguration.getExcluded().getValue())
+                if (itemConfiguration.getExcluded().getValue()) {
                     continue;
-                CompilerSet compilerSet = CompilerSetManager.getDefault().getCompilerSet(conf.getCompilerSet().getValue());
+                }
+                CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
+                if (compilerSet == null) {
+                    continue;
+                }
                 file = IpeUtils.escapeOddCharacters(compilerSet.normalizeDriveLetter(items[i].getPath()));
                 command = ""; // NOI18N
                 comment = null;
@@ -350,6 +379,9 @@ public class ConfigurationMakefileWriter {
                             }
                         }
                         command += compilerConfiguration.getOptions(compiler) + fromLinker + " "; // NOI18N
+                        if (conf.getDependencyChecking().getValue() && compiler.getDependencyGenerationOption().length() > 0) {
+                            command = "${RM} $@.d\n\t" + command + compiler.getDependencyGenerationOption() + " "; // NOI18N
+                        }
                         command += "-o " + target + " "; // NOI18N
                         command += IpeUtils.escapeOddCharacters(items[i].getPath(true));
                     }
@@ -462,11 +494,14 @@ public class ConfigurationMakefileWriter {
         if (conf.isCompileConfiguration()) {
             bw.write("\t${RM} -r " + MakeConfiguration.BUILD_FOLDER + '/' + conf.getName() + "\n"); // UNIX path // NOI18N
             bw.write("\t${RM} " + getOutput(conf) + "\n"); // NOI18N
-            if (CompilerSetManager.getDefault().getCompilerSet(conf.getCompilerSet().getValue()).isSunCompiler() &&
-                    conf.hasCPPFiles(projectDescriptor))
+            if (conf.getCompilerSet().getCompilerSet() != null &&
+                    conf.getCompilerSet().getCompilerSet().isSunCompiler() &&
+                    conf.hasCPPFiles(projectDescriptor)) {
 		bw.write("\t${CCADMIN} -clean" + "\n"); // NOI18N
-            if (conf.hasFortranFiles(projectDescriptor))
+            }
+            if (conf.hasFortranFiles(projectDescriptor)) {
 		bw.write("\t${RM} *.mod" + "\n"); // NOI18N
+            }
             
             // Also clean output from custom tool
             Item[] items = projectDescriptor.getProjectItems();
@@ -487,15 +522,19 @@ public class ConfigurationMakefileWriter {
             bw.write("\tcd " + IpeUtils.escapeOddCharacters(cwd) + " && " + command + "\n"); // NOI18N
         }
         
+        if (conf.getPackagingConfiguration().getFiles().getValue().size() > 0) {
+            bw.write("\t${RM} " + conf.getPackagingConfiguration().getOutputValue() + "\n"); // NOI18N
+        }
+        
         writeSubProjectCleanTargets(conf, bw);
     }
     
     private void writeDependencyChecking(MakeConfiguration conf, BufferedWriter bw) throws IOException {
-        if (conf.getDependencyChecking().getValue()) {
+        ToolchainDescriptor td = conf.getCompilerSet().getCompilerSet().getCompilerFlavor().getToolchainDescriptor();
+        if (conf.getDependencyChecking().getValue() && td.getMake().getDependencySupportCode() != null) {
             bw.write("\n"); // NOI18N
             bw.write("# Enable dependency checking\n"); // NOI18N
-            bw.write(".KEEP_STATE:\n"); // NOI18N
-            bw.write(".KEEP_STATE_FILE:.make.state.${CONF}\n"); // NOI18N
+            bw.write(td.getMake().getDependencySupportCode());
         }
     }
     
@@ -548,4 +587,148 @@ public class ConfigurationMakefileWriter {
         }
 	return false;
     }
+    
+    
+    private void writePackagingScript(MakeConfiguration conf) {
+        String outputFileName = projectDescriptor.getBaseDir() + '/' + "nbproject" + '/' + "Package-" + conf.getName() + ".bash"; // UNIX path // NOI18N
+        
+        if (conf.getPackagingConfiguration().getFiles().getValue().size() == 0) {
+            // Nothing to do
+            return;
         }
+        
+        FileOutputStream os = null;
+        try {
+            os = new FileOutputStream(outputFileName);
+        } catch (Exception e) {
+            // FIXUP
+        }
+        BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(os));
+        try {
+            writePackagingScriptBody(bw, conf);
+            bw.flush();
+            bw.close();
+        } catch (IOException e) {
+            // FIXUP
+        }
+    }
+        
+    private void writePackagingScriptBody(BufferedWriter bw, MakeConfiguration conf) throws IOException {
+        if (conf.getPackagingConfiguration().getType().getValue() == PackagingConfiguration.TYPE_SVR4_PACKAGE) {
+            return; // FIXUP
+        }
+        String tmpdir = getObjectDir(conf) + "/tmp-packaging"; // NOI18N
+        PackagingConfiguration packagingConfiguration = conf.getPackagingConfiguration();
+        String output = packagingConfiguration.getOutputValue();
+        String outputDir = IpeUtils.getDirName(output);
+        String outputRelToTmp = IpeUtils.isPathAbsolute(output) ? output : "../../../../" + output; // NOI18N
+        List<FileElement> fileList = (List<FileElement>)packagingConfiguration.getFiles().getValue();
+        
+        bw.write("#!/bin/bash"); // NOI18N
+        if (conf.getPackagingConfiguration().getVerbose().getValue()) {
+            bw.write(" -x");
+        }
+        bw.write("\n"); // NOI18N
+        bw.write("\n"); // NOI18N
+        
+        bw.write("# Macros\n"); // NOI18N
+        bw.write("TOP=" + "`pwd`" + "\n"); // NOI18N
+        bw.write("TMPDIR=" + tmpdir + "\n"); // NOI18N
+        bw.write("\n"); // NOI18N
+        
+        bw.write("# Functions\n"); // NOI18N
+        bw.write("function checkReturnCode\n"); // NOI18N
+        bw.write("{\n"); // NOI18N
+        bw.write("    rc=$?\n"); // NOI18N
+        bw.write("    if [ $rc != 0 ]\n"); // NOI18N
+        bw.write("    then\n"); // NOI18N
+        bw.write("        exit $rc\n"); // NOI18N
+        bw.write("    fi\n"); // NOI18N
+        bw.write("}\n"); // NOI18N
+        bw.write("function makeDirectory\n"); // NOI18N
+        bw.write("# $1 directory path\n"); // NOI18N
+        bw.write("# $2 permission (optional)\n"); // NOI18N
+        bw.write("{\n"); // NOI18N
+        bw.write("    mkdir -p $1\n"); // NOI18N
+        bw.write("    checkReturnCode\n"); // NOI18N
+        bw.write("    if [ \"$2\" != \"\" ]\n"); // NOI18N
+        bw.write("    then\n"); // NOI18N
+        bw.write("      chmod $2 $1\n"); // NOI18N
+        bw.write("      checkReturnCode\n"); // NOI18N
+        bw.write("    fi\n"); // NOI18N
+        bw.write("}\n"); // NOI18N
+        bw.write("function copyFileToTmpDir\n"); // NOI18N
+        bw.write("# $1 from-file path\n"); // NOI18N
+        bw.write("# $2 to-file path\n"); // NOI18N
+        bw.write("# $3 permission\n"); // NOI18N
+        bw.write("{\n"); // NOI18N
+        bw.write("    cp $1 $2\n"); // NOI18N
+        bw.write("    checkReturnCode\n"); // NOI18N
+        bw.write("    chmod $3 $2\n"); // NOI18N
+        bw.write("    checkReturnCode\n"); // NOI18N
+        bw.write("}\n"); // NOI18N
+        
+        bw.write("# Setup\n"); // NOI18N
+        bw.write("rm -f " + output + "\n"); // NOI18N
+        if (outputDir != null && outputDir.length() > 0) {
+            bw.write("mkdir -p " + outputDir + "\n"); // NOI18N
+        }
+        bw.write("rm -rf $TMPDIR\n"); // NOI18N
+        bw.write("mkdir -p $TMPDIR\n"); // NOI18N
+        bw.write("\n"); // NOI18N
+        
+        bw.write("# Copy files and create sirectories and links\n"); // NOI18N
+        for (FileElement elem : fileList) {
+            bw.write("cd $TOP\n"); // NOI18N
+            if (elem.getType() == FileElement.FileType.FILE) {
+                String toDir = IpeUtils.getDirName(elem.getTo());
+                if (toDir != null && toDir.length() >= 0) {
+                    bw.write("makeDirectory " + "$TMPDIR/" + toDir + "\n"); // NOI18N
+                }
+                bw.write("copyFileToTmpDir " + elem.getFrom() + " $TMPDIR/" + elem.getTo() + " " + elem.getPermission() + "\n"); // NOI18N
+            }
+            else if (elem.getType() == FileElement.FileType.DIRECTORY) {
+                bw.write("makeDirectory " + " $TMPDIR/" + elem.getTo() + " " + elem.getPermission() + "\n"); // NOI18N
+            }
+            else if (elem.getType() == FileElement.FileType.SOFTLINK) {
+                String toDir = IpeUtils.getDirName(elem.getTo());
+                String toName = IpeUtils.getBaseName(elem.getTo());
+                if (toDir != null && toDir.length() >= 0) {
+                    bw.write("makeDirectory " + "$TMPDIR/" + toDir + "\n"); // NOI18N
+                }
+                bw.write("cd " + "$TMPDIR/" + toDir + "\n"); // NOI18N
+                bw.write("ln -s " + elem.getFrom() + " " + toName + "\n"); // NOI18N
+            }
+            else {
+                assert false;
+            }
+            bw.write("\n"); // NOI18N
+        }
+        bw.write("\n"); // NOI18N
+        
+        if (packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_ZIP) {
+            bw.write("# Generate zip file\n"); // NOI18N
+            bw.write("cd $TOP\n"); // NOI18N
+            bw.write("cd $TMPDIR\n"); // NOI18N
+            bw.write(packagingConfiguration.getToolValue() + " -r "+ packagingConfiguration.getOptionsValue() + " " + outputRelToTmp + " *\n");
+        }
+        else if (packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_TAR) {
+            bw.write("# Generate tar file\n"); // NOI18N
+            bw.write("cd $TOP\n"); // NOI18N
+            bw.write("cd $TMPDIR\n"); // NOI18N
+            String options = packagingConfiguration.getOptionsValue() + "cf"; // NOI18N
+            if (options.charAt(0) != '-') { // NOI18N
+                options += '-'; // NOI18N
+            }
+            bw.write(packagingConfiguration.getToolValue() + " " + options + " " + outputRelToTmp + " *\n"); // NOI18N
+        }
+        else {
+            assert false;
+        }
+        bw.write("\n"); // NOI18N
+        
+        bw.write("# Cleanup\n"); // NOI18N
+        bw.write("cd $TOP\n"); // NOI18N
+        bw.write("rm -rf $TMPDIR\n"); // NOI18N
+    }
+}

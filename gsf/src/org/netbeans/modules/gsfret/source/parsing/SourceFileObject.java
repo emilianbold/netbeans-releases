@@ -51,7 +51,6 @@ import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.nio.CharBuffer;
-import java.util.Set;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.StyledDocument;
@@ -59,13 +58,12 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.modules.gsf.Language;
 import org.netbeans.modules.gsf.LanguageRegistry;
 //import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.modules.gsf.api.DataLoadersBridge;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.NbDocument;
 
 /**
@@ -155,7 +153,7 @@ public class SourceFileObject/* implements DocumentProvider*/ {
     static final String encodingName = new OutputStreamWriter(new ByteArrayOutputStream()).getEncoding();            
 
     public java.io.OutputStream openOutputStream() throws IOException {
-        final StyledDocument doc = getDocument(isOpened());
+        final StyledDocument doc = DataLoadersBridge.getDefault().getDocument(file);
         if (doc == null) {
             return new LckStream (this.file);
         }
@@ -173,7 +171,7 @@ public class SourceFileObject/* implements DocumentProvider*/ {
             return new ByteArrayInputStream (_text.getBytes());
         }
         else {
-            final Document doc = getDocument(isOpened());
+            final Document doc = DataLoadersBridge.getDefault().getDocument(file);
             if (doc == null) {
                 return this.file.getInputStream();
             }
@@ -279,8 +277,7 @@ public class SourceFileObject/* implements DocumentProvider*/ {
     }
     
     public StyledDocument getDocument() {
-        EditorCookie ec = isOpened();
-        return ec != null ? getDocument(ec) : null;       
+        return DataLoadersBridge.getDefault().getDocument(file);     
     }
     
     public void runAtomic(final Runnable r) {
@@ -296,31 +293,18 @@ public class SourceFileObject/* implements DocumentProvider*/ {
     
     @SuppressWarnings ("unchecked")     // NOI18N
     private EditorCookie isModified () {
-        DataObject.Registry regs = DataObject.getRegistry();
-        Set<DataObject> modified = (Set<DataObject>) regs.getModifiedSet();
-        for (DataObject dobj : modified) {
-            if (this.file.equals(dobj.getPrimaryFile())) {
-                EditorCookie ec = (EditorCookie) dobj.getCookie(EditorCookie.class);
-                return ec;
-            }
-        }
-        return null;
+        return DataLoadersBridge.getDefault().isModified(file);
     }
     
     public EditorCookie isOpened () {
         //if (this.kind == JavaFileObject.Kind.CLASS) {
         //    return null;
         //}
-        try {
-            DataObject dobj = DataObject.find(this.file);
-            return (EditorCookie) dobj.getCookie(EditorCookie.class);
-        } catch (DataObjectNotFoundException dnf) {
-            return null;
-        }
+        return (EditorCookie) DataLoadersBridge.getDefault().getSafeCookie(file, EditorCookie.class);
     }
     
     private CharBuffer getCharContentImpl () throws IOException {
-        final Document doc = getDocument(isOpened());
+        final Document doc = DataLoadersBridge.getDefault().getDocument(file);
         final char[][] result = new char[1][];
         final int[] length = new int[1];
         if (doc == null) {

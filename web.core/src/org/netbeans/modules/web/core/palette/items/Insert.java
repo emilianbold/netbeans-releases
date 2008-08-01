@@ -57,17 +57,16 @@ public class Insert implements ActiveEditorDrop {
 
     public static String STMT_DEFAULT = "INSERT INTO table_name (column1, column2,...)\nVALUES (value1, value2,....)"; // NOI18N
     SQLStmt stmt = null;
-    private String variable = "";
+    private String variable = "";  //NOI18N
     private int scopeIndex = SQLStmt.SCOPE_DEFAULT;
-    private String dataSource = "";
+    private String dataSource = "";  //NOI18N
     private String update = STMT_DEFAULT;
     private String displayName;
-    private String stmtLabel = "";
-    private String stmtACSN = "";
-    private String stmtACSD = "";
+    private String stmtLabel = "";  //NOI18N
+    private String stmtACSN = "";  //NOI18N
+    private String stmtACSD = "";  //NOI18N
 
     public Insert() {
-
         try {
             displayName = NbBundle.getBundle("org.netbeans.modules.web.core.palette.items.resources.Bundle").getString("NAME_jsp-Insert"); // NOI18N
         } catch (Exception e) {
@@ -91,32 +90,30 @@ public class Insert implements ActiveEditorDrop {
     }
 
     public boolean handleTransfer(JTextComponent targetComponent) {
-
         boolean accept = stmt.customize(targetComponent, displayName, stmtLabel, stmtACSN, stmtACSD);
         if (accept) {
-            String body = createBody();
+            String prefix = JSPPaletteUtilities.findSqlPrefix(targetComponent);
+            String body = createBody(prefix);
             try {
                 JSPPaletteUtilities.insert(body, targetComponent);
             } catch (BadLocationException ble) {
                 accept = false;
             }
         }
-
         return accept;
     }
 
-    private String createBody() {
-
+    private String createBody(String prefix) {
         variable = stmt.getVariable();
         dataSource = stmt.getDataSource();
-        if (variable.equals("")) {// NOI18N
+        if (variable.equals("")) { // NOI18N
             variable = JSPPaletteUtilities.CARET;
         } else if (dataSource.equals("")) {// NOI18N
             dataSource = JSPPaletteUtilities.CARET;
         }
-        if (variable.equals("")) {
+        if (variable.equals("")) {  //NOI18N
             variable = JSPPaletteUtilities.CARET;
-        } else if (dataSource.equals("")) {// NOI18N
+        } else if (dataSource.equals("")) { // NOI18N
             dataSource = JSPPaletteUtilities.CARET;
         }
         String strVariable = " var=\"\""; // NOI18N
@@ -124,7 +121,7 @@ public class Insert implements ActiveEditorDrop {
             strVariable = " var=\"" + variable + "\""; // NOI18N
         }
         scopeIndex = stmt.getScopeIndex();
-        String strScope = "";
+        String strScope = "";  //NOI18N
         if (scopeIndex != SQLStmt.SCOPE_DEFAULT) {
             strScope = " scope=\"" + SQLStmt.scopes[scopeIndex] + "\""; // NOI18N
         }
@@ -137,7 +134,7 @@ public class Insert implements ActiveEditorDrop {
         if (update.length() > 0) {
             strUpdate += "\n"; // NOI18N
         }
-        String queryBody = "<sql:update" + strVariable + strScope + strDS + ">\n" + strUpdate + "</sql:update>"; // NOI18N
-        return queryBody;
+        return "<"+prefix+":update" + strVariable + strScope + strDS + ">\n" + // NOI18N
+                strUpdate + "</"+prefix+":update>"; // NOI18N
     }
 }

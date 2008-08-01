@@ -55,6 +55,7 @@ import java.util.Map;
 import java.util.Properties;
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.codegen.DBConnectionDefinitionTemplate;
+import org.netbeans.modules.etl.codegen.ETLCodegenUtil;
 import org.netbeans.modules.etl.logger.Localizer;
 import org.netbeans.modules.sql.framework.codegen.DB;
 import org.netbeans.modules.sql.framework.codegen.DBFactory;
@@ -102,7 +103,7 @@ public class RejectedRowsDataPanel extends DataOutputPanel {
     private void generateRejectionTableData() {
         refreshButton.setEnabled(false);
         refreshField.setEnabled(false);
-        RejectionViewWorkerThread rejectionQueryThread = new RejectionViewWorkerThread(table);
+        RejectionViewWorkerThread rejectionQueryThread = new RejectionViewWorkerThread(table,super.sqlDefinition);
         rejectionQueryThread.start();
     }
 
@@ -110,14 +111,16 @@ public class RejectedRowsDataPanel extends DataOutputPanel {
 
         DBConnectionFactory factory = DBConnectionFactory.getInstance();
         private SQLObject aTable;
+        private SQLDefinition sqlDef;
         private Connection conn;
         private Throwable ex;
         private PreparedStatement pstmt;
         private ResultSet rs;
         private Statement stmt;
 
-        public RejectionViewWorkerThread(SQLObject table) {
+        public RejectionViewWorkerThread(SQLObject table, SQLDefinition sqlDef) {
             this.aTable = table;
+            this.sqlDef = sqlDef;
         }
 
         public Object construct() {
@@ -129,10 +132,11 @@ public class RejectedRowsDataPanel extends DataOutputPanel {
                 clone.setTablePrefix(MonitorUtil.LOG_DETAILS_TABLE_PREFIX);
 
                 DBConnectionDefinitionTemplate connTemplate = new DBConnectionDefinitionTemplate();
-                conDef = connTemplate.getDBConnectionDefinition("AXIONMEMORYDB");
-
+                //conDef = connTemplate.getDBConnectionDefinition("AXIONMEMORYDB");
+                conDef = connTemplate.getDBConnectionDefinition("STCDBADAPTER");
                 Map connParams = new HashMap();
-                connParams.put(DBConnectionDefinitionTemplate.KEY_DATABASE_NAME, "MonitorDB");
+                connParams.put(DBConnectionDefinitionTemplate.KEY_DATABASE_NAME, this.sqlDef.getDisplayName());
+                connParams.put(DBConnectionDefinitionTemplate.KEY_METADATA_DIR, ETLCodegenUtil.getMonitorDBDir(sqlDef.getDisplayName(), sqlDef.getAxiondbWorkingDirectory()));
                 conDef.setConnectionURL(StringUtil.replace(conDef.getConnectionURL(), connParams));
                 DB db = DBFactory.getInstance().getDatabase(DB.AXIONDB);
 

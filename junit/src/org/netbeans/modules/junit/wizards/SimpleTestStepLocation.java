@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 2004-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 2004-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -107,7 +107,6 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.junit.GuiUtils;
 import org.netbeans.modules.junit.JUnitCfgOfCreate;
-import org.netbeans.modules.junit.MessageStack;
 import org.netbeans.modules.junit.NamedObject;
 import org.netbeans.modules.junit.SizeRestrictedPanel;
 import org.netbeans.modules.junit.TestCreator;
@@ -137,20 +136,6 @@ import org.openide.util.UserCancelException;
  */
 public final class SimpleTestStepLocation implements WizardDescriptor.Panel<WizardDescriptor> {
     
-    /**
-     * message layer for displaying messages about problems with checkbox
-     * selection
-     *
-     * @see  MessageStack
-     */
-    private static final int MSG_LAYER_CHECKBOXES = 0;
-    /**
-     * message layer for displaying messages about problems with classname
-     *
-     * @see  MessageStack
-     */
-    private static final int MSG_LAYER_CLASSNAME = 1;
-    
     private final String testClassNameSuffix
             = NbBundle.getMessage(TestCreator.class,
                                   "PROP_test_classname_suffix");        //NOI18N
@@ -173,11 +158,10 @@ public final class SimpleTestStepLocation implements WizardDescriptor.Panel<Wiza
     private JCheckBox chkJavadoc;
     private JCheckBox chkHints;
 
-    /** message stack for displaying error messages */
-    private final MessageStack msgStack = new MessageStack(2);
+    /** error message */
+    private String errMsg;
     private String msgClassNameInvalid;
     private String msgClassToTestDoesNotExist;
-    private String msgChkBoxesInvalid;
 
     
     /**
@@ -365,11 +349,6 @@ public final class SimpleTestStepLocation implements WizardDescriptor.Panel<Wiza
      * {@link #sourceGroupParentIndex} is set to a non-negative value.
      */
     private boolean classExists = false;
-    /**
-     * <code>true</code> if and only if at least one of the checkboxes
-     * in the <em>Method Access Levels</em> group is selected
-     */
-    private boolean chkBoxesValid = false;
 
     
     //--------------------------------------------------------------------------
@@ -550,7 +529,7 @@ public final class SimpleTestStepLocation implements WizardDescriptor.Panel<Wiza
         optCode.setAlignmentX(0.0f);
         optComments.setAlignmentX(0.0f);
         
-        result.setName(bundle.getString("LBL_panel_ChooseClass"));
+        result.setName(bundle.getString("LBL_panel_ChooseClass"));      //NOI18N
         
         addAccessibilityDescriptions(result);
         setUpInteraction();
@@ -689,11 +668,7 @@ public final class SimpleTestStepLocation implements WizardDescriptor.Panel<Wiza
                         locationChanged();
                     }
                 } else {
-                    /*
-                     * source is one of the Method Access Levels ckeck-boxes
-                     */
-                    checkChkBoxesValidity();
-                    setValidity();
+                    assert false;
                 }
             }
         }
@@ -704,9 +679,6 @@ public final class SimpleTestStepLocation implements WizardDescriptor.Panel<Wiza
         tfClassToTest.addFocusListener(listener);
         btnBrowse.addFocusListener(listener);
         cboxLocation.addItemListener(listener);
-        chkPublic.addItemListener(listener);
-        chkProtected.addItemListener(listener);
-        chkPackagePrivate.addItemListener(listener);
         tfClassToTest.getDocument().addDocumentListener(listener);
     }
     
@@ -1037,7 +1009,7 @@ public final class SimpleTestStepLocation implements WizardDescriptor.Panel<Wiza
             if (checkClassNameValidity()) {
                 checkSelectedClassExists();
             }
-            setErrorMsg(msgStack.getDisplayedMessage());
+            setErrorMsg(errMsg);
             setValidity();
 
             /*
@@ -1105,10 +1077,10 @@ public final class SimpleTestStepLocation implements WizardDescriptor.Panel<Wiza
         }
         
         if (className.length() == 0) {
-            msgStack.clearMessage(MSG_LAYER_CLASSNAME);
+            errMsg = null;
             classNameValid = false;
         } else if (Utils.isValidClassName(className)) {
-            msgStack.clearMessage(MSG_LAYER_CLASSNAME);
+            errMsg = null;
             classNameValid = true;
         } else {
             if (msgClassNameInvalid == null) {
@@ -1116,7 +1088,7 @@ public final class SimpleTestStepLocation implements WizardDescriptor.Panel<Wiza
                         JUnitCfgOfCreate.class,
                         "MSG_InvalidClassName");                        //NOI18N
             }
-            msgStack.setMessage(MSG_LAYER_CLASSNAME, msgClassNameInvalid);
+            errMsg = msgClassNameInvalid;
             classNameValid = false;
         }
         
@@ -1146,48 +1118,17 @@ public final class SimpleTestStepLocation implements WizardDescriptor.Panel<Wiza
         classExists = (sourceGroupParentIndex != -1);
         
         if (classExists) {
-            msgStack.clearMessage(MSG_LAYER_CLASSNAME);
+            errMsg = null;
         } else {
             if (msgClassToTestDoesNotExist == null) {
                 msgClassToTestDoesNotExist = NbBundle.getMessage(
                         SimpleTestStepLocation.class,
                         "MSG_ClassToTestDoesNotExist");                 //NOI18N
             }
-            msgStack.setMessage(MSG_LAYER_CLASSNAME,
-                                msgClassToTestDoesNotExist);
+            errMsg = msgClassToTestDoesNotExist;
         }
         
         return classExists;
-    }
-    
-    /**
-     * Checks whether at least one of the <em>Method Access Levels</em>
-     * checkboxes is selected, updates messages
-     * on the message stack and updates the <code>chkBoxesValid</code> field.
-     *
-     * @see  #setValidity()
-     */
-    private boolean checkChkBoxesValidity() {
-        chkBoxesValid = chkPublic.isSelected()
-                        || chkProtected.isSelected()
-                        || chkPackagePrivate.isSelected();
-        String msgUpdate;
-        if (chkBoxesValid) {
-            msgUpdate = msgStack.clearMessage(MSG_LAYER_CHECKBOXES);
-        } else {
-            if (msgChkBoxesInvalid == null) {
-                //PENDING - text of the message:
-                msgChkBoxesInvalid = NbBundle.getMessage(
-                        JUnitCfgOfCreate.class,
-                        "MSG_AllMethodTypesDisabled");                  //NOI18N
-            }
-            msgUpdate = msgStack.setMessage(MSG_LAYER_CHECKBOXES,
-                                            msgChkBoxesInvalid);
-        }
-        if (msgUpdate != null) {
-            setErrorMsg(msgStack.getDisplayedMessage());
-        }
-        return chkBoxesValid;
     }
     
     /**
@@ -1197,7 +1138,7 @@ public final class SimpleTestStepLocation implements WizardDescriptor.Panel<Wiza
     private void setValidity() {
         boolean wasValid = isValid;
         
-        isValid = classNameValid && classExists && chkBoxesValid;
+        isValid = classNameValid && classExists;
         
         if (isValid != wasValid) {
             fireChange();
@@ -1224,7 +1165,7 @@ public final class SimpleTestStepLocation implements WizardDescriptor.Panel<Wiza
      */
     private void setErrorMsg(String message) {
         if (wizard != null) {
-            wizard.putProperty("WizardPanel_errorMessage", message);    //NOI18N
+            wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, message);
         }
     }
     
@@ -1364,10 +1305,7 @@ public final class SimpleTestStepLocation implements WizardDescriptor.Panel<Wiza
             /* set class name validity: */
             classNameValid = true;
             classExists = true;
-            String msgUpdate = msgStack.clearMessage(MSG_LAYER_CLASSNAME);
-            if (msgUpdate != null) {
-                setErrorMsg(msgUpdate);
-            }
+            setErrorMsg(null);
             setValidity();
             updateInteractionRestrictionsState();
             
@@ -1405,8 +1343,7 @@ public final class SimpleTestStepLocation implements WizardDescriptor.Panel<Wiza
     }
     
     public HelpCtx getHelp() {
-        //PENDINGg
-        return null;
+        return new HelpCtx("org.netbeans.modules.junit.wizards.SimpleTest");//NOI18N
     }
     
     public void readSettings(WizardDescriptor settings) {
@@ -1540,7 +1477,7 @@ public final class SimpleTestStepLocation implements WizardDescriptor.Panel<Wiza
         } else {
             classExists = false;
         }
-        setErrorMsg(msgStack.getDisplayedMessage());
+        setErrorMsg(errMsg);
         setValidity();
         
         //PENDING - if possible, we should pre-set the test source group

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -51,8 +51,10 @@ import org.netbeans.modules.ruby.debugger.breakpoints.RubyBreakpointManager;
 import org.netbeans.spi.debugger.ActionsProviderSupport;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.DebuggerEngineProvider;
+import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
 import org.rubyforge.debugcommons.RubyDebugEventListener;
 import org.rubyforge.debugcommons.RubyDebugEvent;
 import org.rubyforge.debugcommons.RubyDebuggerException;
@@ -72,11 +74,11 @@ public final class RubyDebuggerActionProvider extends ActionsProviderSupport imp
         ACTIONS = Collections.unmodifiableSet(s);
     }
     
-    private Semaphore frontEndSemaphore = new Semaphore(1, true);
-    private Semaphore backEndSemaphore = new Semaphore(1, true);
+    private final Semaphore frontEndSemaphore;
+    private final Semaphore backEndSemaphore;
     
-    private ContextProviderWrapper contextProvider;
-    private RubyDebuggerEngineProvider engineProvider;
+    private final ContextProviderWrapper contextProvider;
+    private final RubyDebuggerEngineProvider engineProvider;
     private final RubySession rubySession;
     private Boolean terminated;
     
@@ -136,6 +138,13 @@ public final class RubyDebuggerActionProvider extends ActionsProviderSupport imp
         } else if (action == ActionsManager.ACTION_RUN_TO_CURSOR) {
             rubySession.runToCursor();
         } else if (action == ActionsManager.ACTION_STEP_OUT) {
+            if (rubySession.getFrames().length == 1) {
+                StatusDisplayer.getDefault().setStatusText(
+                        NbBundle.getMessage(RubyDebuggerActionProvider.class,
+                        "RubyDebuggerActionProvider.stepout.outermost.frame")); // NOI18N
+                frontEndSemaphore.release();
+                return;
+            }
             rubySession.stepReturn();
         } else if (action == ActionsManager.ACTION_STEP_OVER) {
             rubySession.stepOver();
@@ -167,7 +176,7 @@ public final class RubyDebuggerActionProvider extends ActionsProviderSupport imp
                 return;
             }
         }
-        if (event.isSuspensionType()) {
+        if (event.isSuspensionType() || event.isExceptionType()) {
             String path = event.getFilePath();
             // HACK, do not try to step into the 'eval-code'. Cf. #106115.
             if ("(eval)".equals(path)) { // NOI18N
@@ -183,8 +192,10 @@ public final class RubyDebuggerActionProvider extends ActionsProviderSupport imp
             if (absPath != null) {
                 File file = new File(absPath);
                 FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(file));
-                if (event.isStepping() || rubySession.isRunningTo(file, event.getLine()) ||
-                        (fo != null && RubyBreakpointManager.isBreakpointOnLine(fo, event.getLine()))) {
+                boolean shouldStop = event.isExceptionType() ||
+                        event.isStepping() || rubySession.isRunningTo(file, event.getLine()) ||
+                         (fo != null && RubyBreakpointManager.isBreakpointOnLine(fo, event.getLine()));
+                if (shouldStop) {
                     stopHere(event);
                 } else {
                     event.getRubyThread().resume();
@@ -230,6 +241,7 @@ public final class RubyDebuggerActionProvider extends ActionsProviderSupport imp
     
     private void stopHere(final RubyDebugEvent suspensionEvent) {
         rubySession.suspend(suspensionEvent.getRubyThread(), contextProvider);
+        setEnabled(ActionsManager.ACTION_STEP_OUT, rubySession.getFrames().length != 1);
     }
 
 }

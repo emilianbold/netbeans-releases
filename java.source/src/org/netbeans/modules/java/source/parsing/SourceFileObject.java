@@ -69,6 +69,7 @@ import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.JarFileSystem;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -78,7 +79,7 @@ import org.openide.text.NbDocument;
  *
  * @author Tomas Zezula
  */
-public class SourceFileObject implements JavaFileObject, DocumentProvider {    
+public class SourceFileObject implements DocumentProvider, FileObjects.InferableJavaFileObject {    
     
     final FileObject file;
     final FileObject root;
@@ -104,7 +105,7 @@ public class SourceFileObject implements JavaFileObject, DocumentProvider {
         this.root = root;
         this.filter = filter;
         String ext = this.file.getExt();        
-        this.kind = FileObjects.getKind(ext);        
+        this.kind = filter == null ? FileObjects.getKind(ext) : Kind.SOURCE; //#141411
         if (renderNow && this.kind != Kind.CLASS) {
             getCharContentImpl(true);
         }
@@ -293,6 +294,17 @@ public class SourceFileObject implements JavaFileObject, DocumentProvider {
 
     public Modifier getAccessLevel() {
         return null;
+    }
+    
+    public String inferBinaryName () {
+        if (root == null) {
+            return null;
+        }
+        final String relativePath = FileUtil.getRelativePath(root,file);
+        final int index = relativePath.lastIndexOf('.');
+        assert index > 0;
+        final String result = relativePath.substring(0,index).replace('/','.');
+        return result;
     }
     
     public @Override String toString () {

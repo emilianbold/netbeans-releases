@@ -43,66 +43,43 @@ package org.netbeans.modules.cnd.actions;
 
 import java.io.File;
 import java.io.IOException;
+import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.execution.NativeExecutor;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
-import org.netbeans.modules.cnd.api.utils.Path;
 import org.netbeans.modules.cnd.builds.MakeExecSupport;
 import org.netbeans.modules.cnd.loaders.MakefileDataObject;
-import org.netbeans.modules.cnd.settings.CppSettings;
 import org.netbeans.modules.cnd.settings.MakeSettings;
 import org.openide.LifecycleManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
-import org.openide.util.actions.NodeAction;
 
 /**
  * Base class for Make Actions ...
  */
-public abstract class MakeBaseAction extends NodeAction {
+public abstract class MakeBaseAction extends AbstractExecutorRunAction {
 
-    protected boolean enable(Node[] activatedNodes)  {
-	boolean enabled = false;
-
-	if (activatedNodes == null || activatedNodes.length == 0 || activatedNodes.length > 1) {
-	    enabled = false;
-	}
-	else {
-	    DataObject dataObject = (DataObject)activatedNodes[0].getCookie(DataObject.class);
-	    if (dataObject instanceof MakefileDataObject)
-		enabled = true;
-	    else
-		enabled = false;
-	}
-	return enabled;
+    @Override
+    protected boolean accept(DataObject object) {
+        return object instanceof MakefileDataObject;
     }
 
     protected void performAction(Node[] activatedNodes) {
-        for (int i = 0; i < activatedNodes.length; i++)
+        for (int i = 0; i < activatedNodes.length; i++){
             performAction(activatedNodes[i], "");
+        }
     }
-
-    public HelpCtx getHelpCtx () {
-	return HelpCtx.DEFAULT_HELP; // FIXUP ???
-    }
-
-//    public void actionPerformed(ActionEvent evt) {
-//	Node[] activeNodes = WindowManager.getDefault().getRegistry ().getActivatedNodes();
-//	performAction(activeNodes);
-//    }
 
     protected void performAction(Node node, String target) {
-	MakeExecSupport mes = (MakeExecSupport) node.getCookie(MakeExecSupport.class);
-        DataObject dataObject = (DataObject) node.getCookie(DataObject.class);
+	MakeExecSupport mes = node.getCookie(MakeExecSupport.class);
+        DataObject dataObject = node.getCookie(DataObject.class);
         FileObject fileObject = dataObject.getPrimaryFile();
-        
+
         if (MakeSettings.getDefault().getSaveAll()) {
             LifecycleManager.getDefault().saveAll();
         }
-        
+
         File makefile = FileUtil.toFile(fileObject);
         // Build directory
         String bdir = mes.getBuildDirectory();
@@ -118,7 +95,7 @@ public abstract class MakeBaseAction extends NodeAction {
             buildDir = buildDir.getCanonicalFile();
         }
         catch (IOException ioe) {
-            ;; // FIXUP
+            // FIXUP
         }
         // Executable
         String executable = mes.getMakeCommand();
@@ -128,26 +105,21 @@ public abstract class MakeBaseAction extends NodeAction {
         String tabName = getString("MAKE_LABEL", node.getName());
         if (target != null && target.length() > 0)
             tabName += " " + target; // NOI18N
-        
+
+        String developmentHost = getDevelopmentHost(fileObject);
         // Execute the makefile
-        String[] envp = { Path.getPathName() + '=' + Path.getPathAsString() };
         try {
             new NativeExecutor(
+                    developmentHost,
                     buildDir.getPath(),
                     executable,
                     arguments,
-                    envp,
+                    prepareEnv(developmentHost),
                     tabName,
                     "make", // NOI18N
+                    false,
                     true).execute();
         } catch (IOException ioe) {
-        }    
-    }
-    
-    protected final static String getString(String key) {
-        return NbBundle.getBundle(MakeBaseAction.class).getString(key);
-    }
-    protected final static String getString(String key, String a1) {
-        return NbBundle.getMessage(MakeBaseAction.class, key, a1);
+        }
     }
 }

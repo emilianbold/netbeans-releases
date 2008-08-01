@@ -41,59 +41,48 @@
 
 package org.netbeans.modules.cnd.actions;
 
+import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
+import javax.swing.AbstractAction;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.cnd.api.execution.ExecutionListener;
 import org.netbeans.modules.cnd.api.execution.NativeExecutor;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
-import org.netbeans.modules.cnd.api.utils.Path;
+import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.execution.ShellExecSupport;
 import org.netbeans.modules.cnd.loaders.ShellDataObject;
-import org.netbeans.modules.cnd.settings.CppSettings;
 import org.openide.LifecycleManager;
+import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
-import org.openide.util.actions.NodeAction;
+import org.openide.util.Cancellable;
 
 /**
  * Base class for Make Actions ...
  */
-public class ShellRunAction extends NodeAction {
+public class ShellRunAction extends AbstractExecutorRunAction {
 
-    protected boolean enable(Node[] activatedNodes)  {
-	boolean enabled = false;
-
-	if (activatedNodes == null || activatedNodes.length == 0 || activatedNodes.length > 1) {
-	    enabled = false;
-	}
-	else {
-	    DataObject dataObject = activatedNodes[0].getCookie(DataObject.class);
-	    if (dataObject instanceof ShellDataObject)
-		enabled = true;
-	    else
-		enabled = false;
-	}
-	return enabled;
-    }
 
     public String getName() {
         return getString("BTN_Run");
+    }
+
+    @Override
+    protected boolean accept(DataObject object) {
+        return object instanceof ShellDataObject;
     }
 
     protected void performAction(Node[] activatedNodes) {
         // Save everything first
         LifecycleManager.getDefault().saveAll();
         
-        for (int i = 0; i < activatedNodes.length; i++)
+        for (int i = 0; i < activatedNodes.length; i++) {
             performAction(activatedNodes[i]);
-    }
-
-    public HelpCtx getHelpCtx () {
-	return HelpCtx.DEFAULT_HELP; // FIXUP ???
+        }
     }
 
     public void performAction(Node node) {
@@ -125,11 +114,12 @@ public class ShellRunAction extends NodeAction {
         String shellCommand = shellCommandAndArgs[0];
         String shellFilePath = IpeUtils.toRelativePath(buildDir.getPath(), shellFile.getPath()); // Absolute path to shell file
 	String[] args = bes.getArguments(); // from properties
-        
+
+        String developmentHost = getDevelopmentHost(fileObject);
         // Windows: The command is usually of the from "/bin/sh", but this
         // doesn't work here, so extract the 'sh' part and use that instead. 
         // FIXUP: This is not entirely correct though.
-        if (Utilities.isWindows() && shellCommand.length() > 0) {
+        if (PlatformInfo.getDefault(developmentHost).isWindows() && shellCommand.length() > 0) {
             int i = shellCommand.lastIndexOf("/"); // UNIX PATH // NOI18N
             if (i >= 0) {
                 shellCommand = shellCommand.substring(i+1);
@@ -149,29 +139,96 @@ public class ShellRunAction extends NodeAction {
             argsFlat.append(args[i]);
         }
        
-        // Execute the makefile
-        String[] envp = { Path.getPathName() + '=' + Path.getPathAsString() };
-        try {
-            new NativeExecutor(
-                buildDir.getPath(),
-                shellCommand,
-                argsFlat.toString(),
-                envp,
-                tabName,
-                "Run", // NOI18N
-                true).execute();
-        } catch (IOException ioe) {
-        }    
-    }
-        
-    protected final static String getString(String key) {
-        return NbBundle.getBundle(ShellRunAction.class).getString(key);
+        // Execute the shellfile
+
+        NativeExecutor nativeExecutor = new NativeExecutor(
+            developmentHost,
+            buildDir.getPath(),
+            shellCommand,
+            argsFlat.toString(),
+            prepareEnv(developmentHost),
+            tabName,
+            "Run", // NOI18N
+            false,
+            true);
+
+        new ShellExecuter(nativeExecutor).execute();
     }
     
-    protected final static String getString(String key, String a1) {
-        return NbBundle.getMessage(ShellRunAction.class, key, a1);
-    }
+    class ShellExecuter implements ExecutionListener {
+        private NativeExecutor nativeExecutor = null;
+        private ExecutorTask executorTask = null;
+        private ProgressHandle progressHandle = null;
 
+        public ShellExecuter(NativeExecutor nativeExecutor) {
+            this.nativeExecutor = nativeExecutor;
+            nativeExecutor.addExecutionListener(this);
+            progressHandle = createPogressHandle(new StopAction(this), nativeExecutor);
+        }
+        
+        public void execute() {
+            try {
+                executorTask = nativeExecutor.execute();
+            } catch (IOException ioe) {
+            } 
+        }
+        
+        public void executionFinished(int rc) {
+            progressHandle.finish();
+        }
+
+        public void executionStarted() {
+            progressHandle.start();
+        }
+
+        public ExecutorTask getExecutorTask() {
+            return executorTask;
+        }
+    }
+    
+    private static final class StopAction extends AbstractAction {
+        ShellExecuter shellExecutor;
+
+        public StopAction(ShellExecuter shellExecutor) {
+            this.shellExecutor = shellExecutor;
+        }
+
+//        @Override
+//        public Object getValue(String key) {
+//            if (key.equals(Action.SMALL_ICON)) {
+//                return new ImageIcon(DefaultProjectActionHandler.class.getResource("/org/netbeans/modules/cnd/makeproject/ui/resources/stop.png"));
+//            } else if (key.equals(Action.SHORT_DESCRIPTION)) {
+//                return getString("TargetExecutor.StopAction.stop");
+//            } else {
+//                return super.getValue(key);
+//            }
+//        }
+
+        public void actionPerformed(ActionEvent e) {
+            if (!isEnabled())
+                return;
+            setEnabled(false);
+            if (shellExecutor.getExecutorTask() != null) {
+                shellExecutor.getExecutorTask().stop();
+            }
+        }
+    }
+    
+    private ProgressHandle createPogressHandle(final AbstractAction sa, final NativeExecutor nativeExecutor) {
+        ProgressHandle handle = ProgressHandleFactory.createHandle(nativeExecutor.getTabeName(), new Cancellable() {
+            public boolean cancel() {
+                sa.actionPerformed(null);
+                return true;
+            }
+        }, new AbstractAction() {
+            public void actionPerformed(ActionEvent e) {
+                nativeExecutor.getTab().select();
+            }
+        });
+        handle.setInitialDelay(0);
+        return handle;
+    }
+        
     @Override
     protected boolean asynchronous() {
         return false;

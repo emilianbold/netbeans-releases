@@ -146,7 +146,12 @@ public final class ResourceUtils {
             final String resource) {
         return resource.substring(resource.lastIndexOf("/")+1);
     }
-    
+    public static String getResourceClassName(Class c) {
+        return getResourceClassName(c.getName());
+    }
+    public static String getResourceClassName(String className) {
+        return (className.replace(".", "/") + ".class");
+    }
     // private //////////////////////////////////////////////////////////////////////
     private static ResourceBundle loadBundle(
             final String baseName, 

@@ -47,8 +47,8 @@ import org.netbeans.modules.gsf.api.ElementKind;
  */
 public class IndexedProperty extends IndexedElement {
     
-    IndexedProperty(String name, String in, JsIndex index, String fileUrl, String attributes, int flags, ElementKind kind) {
-        super(name, in, index, fileUrl, attributes, flags, kind);
+    IndexedProperty(String fqn, String name, String in, JsIndex index, String fileUrl, String attributes, int flags, ElementKind kind) {
+        super(fqn, name, in, index, fileUrl, attributes, flags, kind);
     }
     
     @Override

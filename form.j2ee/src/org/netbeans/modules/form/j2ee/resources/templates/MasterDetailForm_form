@@ -195,8 +195,8 @@
         <Component class="javax.swing.JTable" name="detailTable">
           <BindingProperties>
             <BindingProperty name="elements" source="masterTable" sourcePath="${selectedElement._joinCollection_}" target="detailTable" targetPath="elements">
-              <Property name="incompletePathValue" type="java.util.List" editor="org.netbeans.modules.form.ComponentChooserEditor">
-                <ComponentRef name="null"/>
+              <Property name="incompletePathValue" type="java.util.List" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                <Connection code="java.util.Collections.emptyList()" type="code"/>
               </Property>
               <!-- DETAIL_SUBBINDING_TEMPLATE -->
               <Subbinding sourcePath="${_fieldName_}">

@@ -41,24 +41,43 @@
 
 package org.netbeans.modules.j2ee.deployment.devmodules.api;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.WeakHashMap;
 import java.util.logging.Level;
 import javax.enterprise.deploy.spi.Target;
 import javax.enterprise.deploy.spi.status.ProgressObject;
+import org.netbeans.api.java.source.BuildArtifactMapper;
+import org.netbeans.api.java.source.BuildArtifactMapper.ArtifactsUpdated;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.InstanceListener;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeApplicationProvider;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
-import org.netbeans.modules.j2ee.deployment.impl.*;
-import org.netbeans.modules.j2ee.deployment.impl.projects.*;
-import org.netbeans.modules.j2ee.deployment.impl.ui.*;
+import org.netbeans.modules.j2ee.deployment.impl.DeployOnSaveManager;
+import org.netbeans.modules.j2ee.deployment.impl.ProgressObjectUtil;
+import org.netbeans.modules.j2ee.deployment.impl.Server;
+import org.netbeans.modules.j2ee.deployment.impl.ServerInstance;
+import org.netbeans.modules.j2ee.deployment.impl.ServerRegistry;
+import org.netbeans.modules.j2ee.deployment.impl.ServerString;
+import org.netbeans.modules.j2ee.deployment.impl.ServerTarget;
+import org.netbeans.modules.j2ee.deployment.impl.TargetModule;
+import org.netbeans.modules.j2ee.deployment.impl.TargetServer;
+import org.netbeans.modules.j2ee.deployment.impl.projects.DeploymentTargetImpl;
+import org.netbeans.modules.j2ee.deployment.impl.ui.ProgressUI;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.JDBCDriverDeployer;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.URLMapper;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 
@@ -68,9 +87,13 @@ import org.openide.util.Parameters;
  */
 public final class Deployment {
 
+    private static final java.util.logging.Logger LOGGER = java.util.logging.Logger.getLogger(Deployment.class.getName());
+            
     private static boolean alsoStartTargets = true;    //TODO - make it a property? is it really needed?
     
     private static Deployment instance = null;
+    
+    private static WeakHashMap<J2eeModuleProvider, CompileOnSaveListener> compileListeners = new WeakHashMap<J2eeModuleProvider, CompileOnSaveListener>();
 
     public static synchronized Deployment getDefault () {
         if (instance == null) {
@@ -152,7 +175,11 @@ public final class Deployment {
             // inform the plugin about the deploy action, even if there was
             // really nothing needed to be deployed
             targetserver.notifyIncrementalDeployment(modules);
-            
+            if (targetserver.supportsDeployOnSave(modules)) {
+                DeployOnSaveManager.getDefault().notifyInitialDeployment(jmp);
+                startListening(jmp);
+            }
+
             if (modules != null && modules.length > 0) {
                 deploymentTarget.setTargetModules(modules);
             } else {
@@ -170,7 +197,15 @@ public final class Deployment {
             }
         }
     }
-    
+
+    public void enableCompileOnSaveSupport(J2eeModuleProvider provider) {
+        startListening(provider);
+    }
+
+    public void disableCompileOnSaveSupport(J2eeModuleProvider provider) {
+        stopListening(provider);
+    }
+
     private static void deployMessageDestinations(J2eeModuleProvider jmp) throws ConfigurationException {
         ServerInstance si = ServerRegistry.getInstance ().getServerInstance (jmp.getServerInstanceID ());
         if (si != null) {
@@ -287,11 +322,32 @@ public final class Deployment {
         }
         return (String[])result.toArray(new String[result.size()]);
     }
-    
+
+    /**
+     * Returns the display name of the instance identified by the given id.
+     *
+     * @param id id of the instance
+     * @return the display name of the instance, <code>null</code> if the
+     *             instance does not exist or not defined
+     * @deprecated use <code>getServerInstance(serverInstanceID).getDisplayName()</code>
+     */
     public String getServerInstanceDisplayName (String id) {
-        return ServerRegistry.getInstance ().getServerInstance (id).getDisplayName ();
+        ServerInstance si = ServerRegistry.getInstance().getServerInstance(id);
+        if (si != null) {
+            return si.getDisplayName();
+        }
+        return null;
     }
-    
+
+    /**
+     * Returns the id of the server to which the instance represented
+     * by the id belongs to.
+     *
+     * @param instanceId id of the instance
+     * @return the id of the server, <code>null</code> if the
+     *             instance does not exist
+     * @deprecated use <code>getServerInstance(serverInstanceID).getServerID()</code>
+     */
     public String getServerID (String instanceId) {
         ServerInstance si = ServerRegistry.getInstance().getServerInstance(instanceId);
         if (si != null) {
@@ -300,6 +356,24 @@ public final class Deployment {
         return null;
     }
     
+
+    /**
+     * Returns the default server instance or <code>null</code> if no default
+     * instance configured.
+     * <p>
+     * This method is deprecated, so don't expect it will return any useful default
+     * instance. Method will be removed in near future.
+     *
+     * @return the default server instance
+     * @deprecated this API is broken by design - the client should choose the
+     *             instance by usage {@link #getServerInstanceIDs} and selection
+     *             of appropriate server instance. Method will be removed in
+     *             near future. See issue 83934.
+     */
+    public String getDefaultServerInstanceID () {
+        return null;
+    }
+
     /**
      * Determine if a server instance will attempt to use file deployment for a
      * J2eeModule.
@@ -314,24 +388,17 @@ public final class Deployment {
         ServerInstance instance = ServerRegistry.getInstance().getServerInstance(instanceId);
         if (null != instance) {
             IncrementalDeployment incr = instance.getIncrementalDeployment();
-            if (null != incr) {
-                retVal = incr.canFileDeploy(null, mod);
+            try {
+                if (null != incr && null != mod.getContentDirectory()) {
+                    retVal = incr.canFileDeploy(null, mod);
+                }
+            } catch (IOException ioe) {
+                java.util.logging.Logger.getLogger("global").log(Level.FINER,"",ioe); // NOI18N                
             }
         }
         return retVal;
     }
-    
-    public String getDefaultServerInstanceID () {
-        ServerString defInst = ServerRegistry.getInstance ().getDefaultInstance ();
-        if (defInst != null) {
-            ServerInstance si = defInst.getServerInstance();
-            if (si != null) {
-                return si.getUrl ();
-            }
-        }
-        return null;
-    }
-    
+
     public String [] getInstancesOfServer (String id) {
         if (id != null) {
             Server server = ServerRegistry.getInstance().getServer(id);
@@ -346,7 +413,20 @@ public final class Deployment {
         }
         return new String[0];
     }
-    
+
+    /**
+     * Returns the server instance allowing client to query its properties
+     * and/or status.
+     *
+     * @param serverInstanceId id of the server instance
+     * @return server instance
+     * @since 1.45
+     */
+    public org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance getServerInstance(String serverInstanceId) {
+        Parameters.notNull("serverInstanceId", serverInstanceId);
+        return new org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance(serverInstanceId);
+    }
+
     public String [] getServerIDs () {
         Collection c = ServerRegistry.getInstance ().getServers ();
         String ids [] = new String [c.size ()];
@@ -365,6 +445,7 @@ public final class Deployment {
      * @return <code>J2eePlatform</code> for the given server instance, <code>null</code> if
      *         server instance of the specified ID does not exist.
      * @since 1.5
+     * @deprecated use <code>getServerInstance(serverInstanceID).getJ2eePlatform()</code>
      */
     public J2eePlatform getJ2eePlatform(String serverInstanceID) {
         ServerInstance serInst = ServerRegistry.getInstance().getServerInstance(serverInstanceID);
@@ -372,6 +453,16 @@ public final class Deployment {
         return J2eePlatform.create(serInst);
     }
 
+    /**
+     * Returns the display name of the server with given id.
+     * <p>
+     * Client is usually searching for the display name of the server for particular
+     * instance. For this use <code>getServerInstance(serverInstanceID).getServerDisplyName()</code>.
+     *
+     * @param id id of the server
+     * @return the display name of the server with given id, <code>null</code>
+     *             if the server does not exist
+     */
     public String getServerDisplayName(String id) {
         Server server = ServerRegistry.getInstance ().getServer(id);
         if (server == null) { // probably uninstalled
@@ -389,12 +480,13 @@ public final class Deployment {
      * 
      * @param serverInstanceID server instance ID.
      * 
-     * @returns <code>true</code> if the given server instance is running, <code>false</code>
+     * @return <code>true</code> if the given server instance is running, <code>false</code>
      *          otherwise.
      * 
      * @throws  NullPointerException if serverInstanceID is <code>null</code>.
      * 
      * @since 1.32
+     * @deprecated use <code>getServerInstance(serverInstanceID).isRunning()</code>
      */
     public boolean isRunning(String serverInstanceID) {
         Parameters.notNull("serverInstanceID", serverInstanceID); // NOI18N
@@ -429,5 +521,108 @@ public final class Deployment {
     
     public static interface Logger {
         public void log(String message);
+    }
+
+    private static void startListening(J2eeModuleProvider j2eeProvider) {
+        synchronized (compileListeners) {
+            if (compileListeners.containsKey(j2eeProvider)) {
+                LOGGER.log(Level.FINE, "Already listening on {0}", j2eeProvider);
+                return;
+            }
+
+            List<J2eeModuleProvider> providers = new ArrayList<J2eeModuleProvider>(4);
+            providers.add(j2eeProvider);
+
+            if (j2eeProvider instanceof J2eeApplicationProvider) {
+                Collections.addAll(providers,
+                        ((J2eeApplicationProvider) j2eeProvider).getChildModuleProviders());
+            }
+
+            // get all binary urls
+            List<URL> urls = new ArrayList<URL>();
+            for (J2eeModuleProvider provider : providers) {
+                for (FileObject file : provider.getSourceFileMap().getSourceRoots()) {
+                    URL url = URLMapper.findURL(file, URLMapper.EXTERNAL);
+                    if (url != null) {
+                        urls.add(url);
+                    }
+                }
+            }
+
+            // register CLASS listener
+            CompileOnSaveListener listener = new CompileOnSaveListener(j2eeProvider, urls);
+            for (URL url :urls) {
+                BuildArtifactMapper.addArtifactsUpdatedListener(url, listener);
+            }
+
+            // register WEB listener
+            J2eeModuleProvider.DeployOnSaveSupport support = j2eeProvider.getDeployOnSaveSupport();
+            if (support != null) {
+                support.addArtifactListener(listener);
+            }
+
+            compileListeners.put(j2eeProvider, listener);
+        }
+    }
+
+    private static void stopListening(J2eeModuleProvider j2eeProvider) {
+        synchronized (compileListeners) {
+            CompileOnSaveListener removed = compileListeners.remove(j2eeProvider);
+            if (removed == null) {
+                LOGGER.log(Level.FINE, "Not listening on {0}", j2eeProvider);
+            } else {
+                for (URL url : removed.getRegistered()) {
+                    BuildArtifactMapper.removeArtifactsUpdatedListener(url, removed);
+                }
+
+                J2eeModuleProvider.DeployOnSaveSupport support = j2eeProvider.getDeployOnSaveSupport();
+                if (support != null) {
+                    support.removeArtifactListener(removed);
+                }
+            }
+        }
+    }
+
+    private static final class CompileOnSaveListener implements ArtifactsUpdated, ArtifactListener {
+
+        private final J2eeModuleProvider provider;
+
+        private final List<URL> registered;
+
+        public CompileOnSaveListener(J2eeModuleProvider provider, List<URL> registered) {
+            this.provider = provider;
+            this.registered = registered;
+        }
+
+        public List<URL> getRegistered() {
+            return registered;
+        }
+
+        public void artifactsUpdated(Iterable<File> artifacts) {
+            DeployOnSaveManager.getDefault().submitChangedArtifacts(provider, artifacts);
+//            if (LOGGER.isLoggable(Level.FINEST)) {
+//                StringBuilder builder = new StringBuilder("Artifacts updated: [");
+//                for (File file : artifacts) {
+//                    builder.append(file.getAbsolutePath()).append(",");
+//                }
+//                builder.setLength(builder.length() - 1);
+//                builder.append("]");
+//                LOGGER.log(Level.FINEST, builder.toString());
+//            }
+//
+//            DeploymentTargetImpl deploymentTarget = new DeploymentTargetImpl(provider, null);
+//            TargetServer server = new TargetServer(deploymentTarget);
+//            boolean keep = server.notifyArtifactsUpdated(artifacts);
+////            if (!keep) {
+////                for (URL url : registered) {
+////                    BuildArtifactMapper.removeArtifactsUpdatedListener(url, this);
+////                }
+////
+////                J2eeModuleProvider.DeployOnSaveSupport support = provider.getDeployOnSaveSupport();
+////                if (support != null) {
+////                    support.removeArtifactListener(this);
+////                }
+////            }
+        }
     }
 }

@@ -44,6 +44,7 @@ package org.netbeans.modules.editor.mimelookup.impl;
 import java.io.IOException;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.util.Lookup;
 import org.openide.util.Lookup.Result;
 import org.openide.util.Lookup.Template;
@@ -56,6 +57,7 @@ import org.openide.util.LookupListener;
  *
  * @author Martin Roskanin
  */
+@RandomlyFails
 public class Depr_MimeLookupTest extends NbTestCase {
     
     private static final int WAIT_TIME = 5000;

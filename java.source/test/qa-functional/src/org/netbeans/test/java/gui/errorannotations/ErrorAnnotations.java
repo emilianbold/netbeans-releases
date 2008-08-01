@@ -45,6 +45,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
+import junit.framework.Test;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.EditorWindowOperator;
@@ -57,7 +58,9 @@ import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.TestOut;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestSuite;
+import org.netbeans.test.java.JavaTestCase;
 import org.netbeans.test.java.Utilities;
 
 
@@ -66,7 +69,7 @@ import org.netbeans.test.java.Utilities;
  * Tests Error annotations.
  * @author Roman Strobl
  */
-public class ErrorAnnotations extends JellyTestCase {
+public class ErrorAnnotations extends JavaTestCase {
 
     // default timeout for actions in miliseconds
     private static final int ACTION_TIMEOUT = 3000;
@@ -105,22 +108,6 @@ public class ErrorAnnotations extends JellyTestCase {
      */
     public ErrorAnnotations(String name) {
         super(name);
-    }
-
-    /**
-     * Adds tests into the test suite.
-     * @return suite
-     */
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        // prepare testing project and package - not a core test but needed
-        suite.addTest(new ErrorAnnotations("testAnnotationsSimple"));
-        suite.addTest(new ErrorAnnotations("testUndo"));
-        suite.addTest(new ErrorAnnotations("testAnnotationsSimple2"));
-        suite.addTest(new ErrorAnnotations("testAnnotationsSimple3"));
-        suite.addTest(new ErrorAnnotations("testChangeCloseDiscart"));
-
-        return suite;
     }
 
     /**
@@ -289,5 +276,10 @@ public class ErrorAnnotations extends JellyTestCase {
         annots = editor.getAnnotations();
         assertEquals(0, annots.length); //there should be no annotations
         ewo.closeDiscard();
+    }
+    
+    public static Test suite() {
+        return NbModuleSuite.create(
+                NbModuleSuite.createConfiguration(ErrorAnnotations.class).enableModules(".*").clusters(".*"));
     }
 }

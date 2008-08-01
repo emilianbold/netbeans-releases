@@ -58,6 +58,7 @@ import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -73,6 +74,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -226,6 +228,24 @@ public class ProjectUtilities {
         }
 
         return buildDir;
+    }
+
+    public static Properties getProjectProperties(final Project project) {
+        final Properties props = new Properties();
+        final FileObject propFile = project.getProjectDirectory().getFileObject("nbproject/project.properties"); // NOI18N
+        if (propFile != null) {
+            ProjectManager.mutex().readAccess(new Runnable() {
+
+                public void run() {
+                    try {
+                        props.load(propFile.getInputStream());
+                    } catch (IOException ex) {
+                        LOGGER.finest("Could not load properties file: " + propFile.getPath()); // NOI18N
+                    }
+                }
+            });
+        }
+        return props;
     }
 
     public static String getProjectBuildScript(final Project project) {

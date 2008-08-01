@@ -53,15 +53,27 @@ made subject to such option by the copyright holder.
     <property name="xtest.attribs" value="validation,stable"/>
 
     <path id="ws.kit.path">
-        <pathelement location="${netbeans.dest.dir}/extra/modules/org-netbeans-modules-websvc-rest.jar"/>
-        <pathelement location="${netbeans.dest.dir}/extra/modules/org-netbeans-modules-websvc-rest-samples.jar"/>
-        <pathelement location="${netbeans.dest.dir}/extra/modules/org-netbeans-modules-websvc-restapi.jar"/>
+        <pathelement location="${websvc.rest.dir}/modules/org-netbeans-modules-websvc-rest.jar"/>
+        <pathelement location="${websvc.rest.samples.dir}/modules/org-netbeans-modules-websvc-rest-samples.jar"/>
+        <pathelement location="${websvc.restapi.dir}/modules/org-netbeans-modules-websvc-restapi.jar"/>
+<!--
+        <pathelement location="${websvc.saas.api.dir}/modules/org-netbeans-modules-websvc-saas-api.jar"/>
+        <pathelement location="${websvc.saas.codegen.dir}/modules/org-netbeans-modules-websvc-saas-codegen.jar"/>
+        <pathelement location="${websvc.saas.services.strikeiron.dir}/modules/org-netbeans-modules-websvc-saas-services-strikeiron.jar"/>
+        <pathelement location="${websvc.saas.ui.dir}/modules/org-netbeans-modules-websvc-saas-ui.jar"/>
+-->
     </path>
 
     <path id="ws.kit.src.path">
         <pathelement location="../../websvc.rest/src"/>
         <pathelement location="../../websvc.rest.samples/src"/>
         <pathelement location="../../websvc.restapi/src"/>
+<!--
+        <pathelement location="../../websvc.saas.api/src"/>
+        <pathelement location="../../websvc.saas.codegen/src"/>
+        <pathelement location="../../websvc.saas.services.strikeiron/src"/>
+        <pathelement location="../../websvc.saas.ui/src"/>
+-->
     </path>
 
     <target name="emma-init-coverage-path-module" unless="coverage.kit">

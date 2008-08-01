@@ -47,8 +47,8 @@ import org.netbeans.modules.j2ee.sun.dd.api.web.SunWebApp;
 import org.netbeans.modules.j2ee.sun.ddloaders.SunDescriptorDataObject;
 import org.netbeans.modules.j2ee.sun.ddloaders.multiview.DDSectionNodeView;
 import org.netbeans.modules.j2ee.sun.ddloaders.multiview.jms.MessageDestinationRefGroupNode;
-import org.netbeans.modules.j2ee.sun.share.configbean.J2EEBaseVersion;
-import org.netbeans.modules.j2ee.sun.share.configbean.J2EEVersion;
+import org.netbeans.modules.glassfish.eecommon.api.config.J2EEBaseVersion;
+import org.netbeans.modules.glassfish.eecommon.api.config.J2EEVersion;
 import org.netbeans.modules.xml.multiview.SectionNode;
 
 

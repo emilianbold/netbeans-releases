@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.project.libraries.ui;
 
+import java.net.URI;
 import java.net.URL;
 import java.util.List;
 import java.util.Map;
@@ -50,6 +51,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 
 import org.netbeans.spi.project.libraries.LibraryImplementation;
+import org.netbeans.spi.project.libraries.LibraryImplementation2;
 import org.openide.util.WeakListeners;
 
 /**
@@ -65,12 +67,28 @@ public class ProxyLibraryImplementation implements LibraryImplementation, Proper
     private String newDescription;
     private PropertyChangeSupport support;
 
-    public ProxyLibraryImplementation (LibraryImplementation original, LibrariesModel model) {
+    private ProxyLibraryImplementation (LibraryImplementation original, LibrariesModel model) {
         assert original != null && model != null;
         this.original = original;
         this.model = model;
         this.original.addPropertyChangeListener(WeakListeners.create(PropertyChangeListener.class, this, this.original));
         this.support = new PropertyChangeSupport (this);
+    }
+    
+    public static ProxyLibraryImplementation createProxy(LibraryImplementation original, LibrariesModel model) {
+        if (original instanceof LibraryImplementation2) {
+            return new ProxyLibraryImplementation2((LibraryImplementation2)original, model);
+        } else {
+            return new ProxyLibraryImplementation(original, model);
+        }
+    }
+
+    protected LibrariesModel getModel() {
+        return model;
+    }
+
+    protected PropertyChangeSupport getSupport() {
+        return support;
     }
     
     public LibraryImplementation getOriginal () {
@@ -155,11 +173,11 @@ public class ProxyLibraryImplementation implements LibraryImplementation, Proper
     }
 
 
-    public final int hashCode() {
+    public int hashCode() {
         return this.original.hashCode();
     }
 
-    public final boolean equals(Object obj) {
+    public boolean equals(Object obj) {
         if (obj instanceof ProxyLibraryImplementation) {
             return this.original.equals(((ProxyLibraryImplementation)obj).getOriginal());
         }
@@ -171,4 +189,50 @@ public class ProxyLibraryImplementation implements LibraryImplementation, Proper
         return "Proxy[" + original + "]"; // NOI18N
     }
 
+    static class ProxyLibraryImplementation2 extends ProxyLibraryImplementation implements LibraryImplementation2 {
+
+        Map<String,List<URI>> newURIContents;
+        
+        public ProxyLibraryImplementation2(LibraryImplementation2 original, LibrariesModel model) {
+            super(original, model);
+        }
+
+        LibraryImplementation2 getOriginal2() {
+            return (LibraryImplementation2)getOriginal();
+        }
+        
+        public List<URI> getURIContent(String volumeType) throws IllegalArgumentException {
+            List<URI> result = null;
+            if (newURIContents == null || (result = newURIContents.get(volumeType)) == null) {
+                return getOriginal2().getURIContent (volumeType);
+            } else {
+                return result;
+            }
+        }
+
+        public void setURIContent(String volumeType, List<URI> path) throws IllegalArgumentException {
+            if (newURIContents == null) {
+                newURIContents = new HashMap<String,List<URI>>();
+            }
+            newURIContents.put(volumeType, path);
+            getModel().modifyLibrary(this);
+            getSupport().firePropertyChange(PROP_CONTENT,null,null);
+        }
+        
+        public final int hashCode() {
+            return getOriginal().hashCode();
+        }
+
+        public final boolean equals(Object obj) {
+            if (obj instanceof ProxyLibraryImplementation2) {
+                return getOriginal().equals(((ProxyLibraryImplementation2)obj).getOriginal());
+            }
+            else
+                return false;
+        }
+
+        public @Override String toString() {
+            return "Proxy2[" + getOriginal() + "]"; // NOI18N
+        }
+    }
 }

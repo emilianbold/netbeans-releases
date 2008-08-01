@@ -57,6 +57,7 @@ import org.netbeans.api.java.source.SourceUtilsTestUtil;
 import org.netbeans.api.java.source.TestUtilities;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.java.source.TreeLoader;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.LifecycleManager;
@@ -85,6 +86,7 @@ public abstract class TreeRuleTestBase extends NbTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         SourceUtilsTestUtil.prepareTest(new String[] {"org/netbeans/modules/java/editor/resources/layer.xml"}, new Object[0]);
+        TreeLoader.DISABLE_CONFINEMENT_TEST = true;
     }
     
     private void prepareTest(String fileName, String code) throws Exception {
@@ -164,7 +166,7 @@ public abstract class TreeRuleTestBase extends NbTestCase {
             errorsNames.add(e.toString());
         }
         
-        assertTrue(errorsNames.toString(), Arrays.equals(golden, errorsNames.toArray(new String[0])));
+        assertTrue("The warnings provided by the hint do not match expected warnings. Provided warnings: " + errorsNames.toString(), Arrays.equals(golden, errorsNames.toArray(new String[0])));
     }
     
     protected String performFixTest(String fileName, String code, String errorDescriptionToString, String fixDebugString, String golden) throws Exception {
@@ -177,6 +179,14 @@ public abstract class TreeRuleTestBase extends NbTestCase {
     
     protected String performFixTest(String fileName, String code, int pos, String errorDescriptionToString, String fixDebugString, String golden) throws Exception {
         return performFixTest(fileName, code, pos, errorDescriptionToString, fixDebugString, fileName, golden);
+    }
+    
+    protected String performFixTest(String fileName, String code, String errorDescriptionToString, String fixDebugString, String goldenFileName, String golden) throws Exception {
+        int[] offset = new int[1];
+
+        code = org.netbeans.modules.java.hints.TestUtilities.detectOffsets(code, offset);
+
+        return performFixTest(fileName, code, offset[0], errorDescriptionToString, fixDebugString, goldenFileName, golden);
     }
     
     protected String performFixTest(String fileName, String code, int pos, String errorDescriptionToString, String fixDebugString, String goldenFileName, String golden) throws Exception {
@@ -229,7 +239,7 @@ public abstract class TreeRuleTestBase extends NbTestCase {
         realCode = realCode.replaceAll("[ \t\n]+", " ");
 
         if (golden != null) {
-            assertEquals(golden, realCode);
+            assertEquals("The output code does not match the expected code.", golden, realCode);
         }
         
         LifecycleManager.getDefault().saveAll();

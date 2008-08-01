@@ -49,7 +49,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import javax.swing.JFileChooser;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -60,8 +59,6 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.stream.StreamSource;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.common.Util;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.websvc.api.webservices.WebServicesSupport;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModel;
@@ -71,6 +68,8 @@ import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModelerFactory;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlService;
 import org.netbeans.modules.websvc.core.JaxWsUtils;
+import org.netbeans.modules.websvc.core.ServerType;
+import org.netbeans.modules.websvc.core.WSStackUtils;
 import org.netbeans.modules.websvc.core.dev.wizard.nodes.WsdlNode;
 import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
 import org.netbeans.modules.websvc.jaxws.api.WsdlWrapperGenerator;
@@ -108,7 +107,7 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
     private JAXWSSupport wss;
     private boolean jsr109Supported;
     private boolean jsr109oldSupported;
-    private boolean jwsdpSupported;
+    //private boolean jwsdpSupported;
     private boolean jaxWsInJ2ee14Supported;
     private WebModule wm;
     private RequestProcessor.Task generateWsdlModelTask;
@@ -341,7 +340,7 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
         if (result == DialogDescriptor.OK_OPTION) {
             if (Util.isJavaEE5orHigher(project) || jaxWsInJ2ee14Supported ||
                     (!jsr109Supported && !jsr109oldSupported ||
-                    (!jsr109Supported && jsr109oldSupported && jwsdpSupported))) {
+                    (!jsr109Supported && jsr109oldSupported /* && jwsdpSupported*/))) {
                 jTextFieldPort.setText(chooser.getSelectedPortOwnerName() + "#" + chooser.getSelectedNodes()[0].getDisplayName()); //NOI18N
                 service = wsdlModel.getServiceByName(chooser.getSelectedPortOwnerName());
                 port = service.getPortByName(chooser.getSelectedNodes()[0].getDisplayName());
@@ -376,21 +375,13 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
     }
 
     private void initJsr109Info() {
+        
+        WSStackUtils wsStackUtils = new WSStackUtils(project);
+        jsr109Supported = wsStackUtils.isJsr109Supported();
+        jaxWsInJ2ee14Supported = ServerType.JBOSS == wsStackUtils.getServerType();
+        jsr109oldSupported = wsStackUtils.isJsr109OldSupported();
         wm = WebModule.getWebModule(project.getProjectDirectory());
         wss = JAXWSSupport.getJAXWSSupport(project.getProjectDirectory());
-        if (wss != null) {
-            Map properties = wss.getAntProjectHelper().getStandardPropertyEvaluator().getProperties();
-            String serverInstance = (String) properties.get("j2ee.server.instance"); //NOI18N
-            if (serverInstance != null) {
-                J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(serverInstance);
-                if (j2eePlatform != null) {
-                    jsr109Supported = j2eePlatform.isToolSupported(J2eePlatform.TOOL_JSR109);
-                    jsr109oldSupported = j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSCOMPILE);
-                    jwsdpSupported = j2eePlatform.isToolSupported(J2eePlatform.TOOL_JWSDP);
-                    jaxWsInJ2ee14Supported = j2eePlatform.isToolSupported("JaxWs-in-j2ee14-supported");
-                }
-            }
-        }
     }
 
     /**
@@ -400,9 +391,9 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
     private boolean checkNonJsr109Valid() {
         if (wss != null) {
             if ((!jsr109Supported && !jsr109oldSupported) || jaxWsInJ2ee14Supported ||
-                    (!jsr109Supported && jsr109oldSupported && jwsdpSupported)) {
+                    (!jsr109Supported && jsr109oldSupported/* && jwsdpSupported*/)) {
                 if (Util.isSourceLevel14orLower(project)) {
-                    wizardDescriptor.putProperty("WizardPanel_errorMessage",
+                    wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
                             NbBundle.getMessage(WebServiceFromWSDLPanel.class, "ERR_NeedProperSourceLevel")); // NOI18N
                     return false;
                 }
@@ -433,14 +424,14 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
         }
         if (supportsJaxrpc() && WebServicesSupport.getWebServicesSupport(project.getProjectDirectory()) == null) {
             // check if jaxrpc plugin installed
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(WebServiceFromWSDLPanel.class, "ERR_NoJaxrpcPluginFound")); // NOI18N
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(WebServiceFromWSDLPanel.class, "ERR_NoJaxrpcPluginFound")); // NOI18N
             return false;
         }
 
         String wsdlFilePath = jTextFieldWSDLFile.getText().trim();
 
         if (wsdlFilePath.length() == 0) {
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", // NOI18N
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, // NOI18N
                     NbBundle.getMessage(WebServiceFromWSDLPanel.class, "MSG_EnterWsdlName")); // NOI18N
             return false; // unspecified WSDL file
         }
@@ -449,13 +440,13 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
             File f = new File(wsdlFilePath);
             f = getCanonicalFile(f);
             if (f == null) {
-                wizardDescriptor.putProperty("WizardPanel_errorMessage", // NOI18N
+                wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, // NOI18N
                         NbBundle.getMessage(WebServiceFromWSDLPanel.class, "ERR_WsdlInvalid")); // NOI18N
                 return false; // invalid WSDL file
             }
 
             if (!f.exists()) {
-                wizardDescriptor.putProperty("WizardPanel_errorMessage", // NOI18N
+                wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, // NOI18N
                         NbBundle.getMessage(WebServiceFromWSDLPanel.class, "ERR_WsdlDoesNotExist")); // NOI18N
                 return false; // invalid WSDL file
             }
@@ -463,22 +454,22 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
 
         if (Util.isJavaEE5orHigher(project) || JaxWsUtils.isEjbJavaEE5orHigher(project) || jaxWsInJ2ee14Supported ||
                 (!jsr109Supported && !jsr109oldSupported ||
-                (!jsr109Supported && jsr109oldSupported && jwsdpSupported))) {
+                (!jsr109Supported && jsr109oldSupported/* && jwsdpSupported*/))) {
             if (wsdlModel != null) {
                 if (service == null) {
-                    wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(WebServiceFromWSDLPanel.class, "MSG_NoService")); // NOI18N
+                    wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(WebServiceFromWSDLPanel.class, "MSG_NoService")); // NOI18N
                     return false;
                 }
 
                 if (port == null) {
-                    wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(WebServiceFromWSDLPanel.class, "MSG_NoPort")); // NOI18N
+                    wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(WebServiceFromWSDLPanel.class, "MSG_NoPort")); // NOI18N
                     return false;
                 }
             } else {
                 if (wsdlServiceHandler != null && wsdlServiceHandler.getServiceName() != null && wsdlServiceHandler.getPortName() != null) {
                     return true;
                 } else {
-                    wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(WebServiceFromWSDLPanel.class, "MSG_NoPort")); // NOI18N
+                    wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(WebServiceFromWSDLPanel.class, "MSG_NoPort")); // NOI18N
                     return false;
                 }
             }
@@ -487,12 +478,12 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
         //warning if the project directory has embedded spaces
         //TODO - Remove this when the jwsdp version that fixes this problem is available
         if (projectHasEmbeddedSpaces()) {
-            wizardDescriptor.putProperty("WizardPanel_errorMessage",
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
                     NbBundle.getMessage(WebServiceFromWSDLPanel.class, "MSG_SPACE_IN_PROJECT_PATH")); // NOI18N
         } else {
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", ""); // NOI18N
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, ""); // NOI18N
         }
-        wizardDescriptor.putProperty("WizardPanel_errorMessage", ""); //NOI18N
+        wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, ""); //NOI18N
 
         return true;
     }
@@ -565,7 +556,7 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
             fireChange(); //call to disable Finish button
             if (Util.isJavaEE5orHigher(project) || JaxWsUtils.isEjbJavaEE5orHigher(project) || jaxWsInJ2ee14Supported ||
                     (!jsr109Supported && !jsr109oldSupported ||
-                    (!jsr109Supported && jsr109oldSupported && jwsdpSupported))) {
+                    (!jsr109Supported && jsr109oldSupported /*&& jwsdpSupported*/))) {
                 createModel();
             }
         }

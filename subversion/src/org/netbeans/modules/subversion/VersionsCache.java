@@ -52,8 +52,6 @@ import org.tigris.subversion.svnclientadapter.*;
 /**
  * File revisions cache. It can access pristine files.
  *
- * XXX and what exactly is cached here?!
- * 
  * @author Petr Kuzel
  */
 public class VersionsCache {
@@ -119,25 +117,34 @@ public class VersionsCache {
         } else if (Setup.REVISION_CURRENT.equals(revision)) {
             return base;
         } else {
-            SVNRevision svnrevision;
-            if (Setup.REVISION_HEAD.equals(revision)) {
-                svnrevision = SVNRevision.HEAD;
-            } else {
-                svnrevision = new SVNRevision.Number(Long.parseLong(revision));
-            }
+            SVNRevision svnrevision = SvnUtils.toSvnRevision(revision);
             try {
                 SvnClient client = Subversion.getInstance().getClient(base);
                 FileStatusCache cache = Subversion.getInstance().getStatusCache();
                 InputStream in;
-                if ((cache.getStatus(base).getStatus() & FileInformation.STATUS_VERSIONED) != 0)  {
-                    in = client.getContent(base, svnrevision);
-                } else {
-                    SVNUrl url = SvnUtils.getRepositoryUrl(base);
-                    if (url != null) {
-                        url = url.appendPath("@" + revision);
-                        in = client.getContent(url, svnrevision);
+                try {
+                    if ((cache.getStatus(base).getStatus() & FileInformation.STATUS_VERSIONED) != 0)  {
+                        in = client.getContent(base, svnrevision);
                     } else {
-                        in = new ByteArrayInputStream(org.openide.util.NbBundle.getMessage(VersionsCache.class, "MSG_UnknownURL").getBytes()); // NOI18N
+                        SVNUrl url = SvnUtils.getRepositoryUrl(base);
+                        if (url != null) {
+                            if(SvnClientFactory.isCLI()) {
+                                // XXX why is the revision given twice ??? !!! CLI WORKAROUND?
+                                // doesn't work with javahl but we won't change for cli as there might be some reason                                
+                                url = url.appendPath("@" + revision);
+                                in = client.getContent(url, svnrevision);
+                            } else {
+                                in = client.getContent(url, svnrevision);
+                            }
+                        } else {
+                            in = new ByteArrayInputStream(org.openide.util.NbBundle.getMessage(VersionsCache.class, "MSG_UnknownURL").getBytes()); // NOI18N
+                        }                
+                    }
+                } catch (SVNClientException e) {
+                    if(SvnClientExceptionHandler.isFileNotFoundInRevision(e.getMessage())) {
+                        in = new ByteArrayInputStream(new byte[] {});
+                    } else {
+                        throw e;
                     }
                 }
                 // keep original extension so MIME can be guessed by the extension
@@ -152,25 +159,12 @@ public class VersionsCache {
                 throw ioex;
             }
         }
-
-        // TODO how to cache locally? In SVN there are no per file revisions
-        // like in CVS, revision that comes here is repositoty revision
-        //
-        // Example:
-        // unmodified file has many repository revisions
-        // and effective caching should store just one version
-        // (mapping all repository revisions to it)
-        //
-        // File caching is leveraged in Search History
     }
-
+    
     private File getMetadataDir(File dir) {
-        File svnDir = new File(dir, ".svn");  // NOI18N
+        File svnDir = new File(dir, SvnUtils.SVN_ADMIN_DIR);  // NOI18N
         if (!svnDir.isDirectory()) {
-            svnDir = new File(dir, "_svn");  // NOI18N
-            if (!svnDir.isDirectory()) {
-                return null;
-            }
+            return null;
         }
         return svnDir;
     }

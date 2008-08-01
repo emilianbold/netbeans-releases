@@ -82,7 +82,7 @@ public class MakefileConfiguration {
     }
     
     // MakeConfiguration
-    public void setMakeConfiguration(MakeConfiguration MakeConfiguration) {
+    public void setMakeConfiguration(MakeConfiguration makeConfiguration) {
         this.makeConfiguration = makeConfiguration;
     }
     public MakeConfiguration getMakeConfiguration() {

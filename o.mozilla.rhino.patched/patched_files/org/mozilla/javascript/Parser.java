@@ -49,6 +49,7 @@ import java.io.Reader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -91,7 +92,7 @@ public
     public void setJsonMode(boolean jsonMode) {
         this.jsonMode = jsonMode;
     }
-    
+
     // </netbeans>
     private int currentFlaggedToken;
     private int syntaxErrorCount;
@@ -135,7 +136,7 @@ public
         return new NoOpDecompiler();
         // </netbeans>
     }
-    
+
     // <netbeans>
     private class NoOpDecompiler extends Decompiler {
         @Override
@@ -143,8 +144,8 @@ public
         {
             return null;
         }
-        
-        
+
+
         @Override
         int getCurrentOffset()
         {
@@ -279,24 +280,24 @@ public
     {
         int tt = currentFlaggedToken;
         if (tt == Token.EOF) {
-// <netbeans>                    
+// <netbeans>
             peekedTokenStart = ts.getBufferOffset();
-// </netbeans>                    
+// </netbeans>
             tt = ts.getToken();
             if (tt == Token.EOL) {
                 do {
-// <netbeans>                    
+// <netbeans>
                     peekedTokenStart = ts.getBufferOffset();
-// </netbeans>                    
+// </netbeans>
                     tt = ts.getToken();
                 } while (tt == Token.EOL);
                 tt |= TI_AFTER_EOL;
             }
             currentFlaggedToken = tt;
-// <netbeans>                    
+// <netbeans>
             peekedTokenStart += ts.seenSpaces();
             peekedTokenEnd = ts.getBufferOffset();
-// </netbeans>                    
+// </netbeans>
         }
         return tt & CLEAR_TI_MASK;
     }
@@ -310,13 +311,13 @@ public
 
     private void consumeToken()
     {
-// <netbeans>                    
+// <netbeans>
         // Consume token gets called as part of nextToken() for example so doesn't help us very much
         //currentFlaggedTokenOffset = -1;
         matchedToken = currentFlaggedToken;
         matchedTokenStart = peekedTokenStart;
         matchedTokenEnd = peekedTokenEnd;
-// </netbeans>                    
+// </netbeans>
         currentFlaggedToken = Token.EOF;
     }
 
@@ -424,11 +425,6 @@ public
     private Node enterSwitch(Node switchSelector, int lineno)
     {
         Node switchNode = nf.createSwitch(switchSelector, lineno);
-        // <netbeans>
-        int startOffset = getStartOffset();
-        // TODO: Compute end position, perhaps in exitSwitch??
-        switchNode.setSourceBounds( startOffset, startOffset);
-        // </netbeans>
         if (loopAndSwitchSet == null) {
             loopAndSwitchSet = new ObjArray();
         }
@@ -561,7 +557,7 @@ public
 //                currentScriptOrFn.setEndLineno(ts.getLineno());
 //
 //                return currentScriptOrFn;
-return null;            
+return null;
             //}
 // </netbeans>
         }
@@ -577,7 +573,7 @@ return null;
         int realSourceEndOffset = getEndOffset();
         currentScriptOrFn.setSourceBounds(realSourceStartOffset, realSourceEndOffset);
 // </netbeans>
-        
+
 
         nf.initScript(currentScriptOrFn, pn);
 
@@ -832,7 +828,7 @@ return null;
                 pn = nf.createExprStatementNoReturn(pn, baseLineno);
             }
         }
-        
+
         // <netbeans>
         // TODO - how does memberExprNode deal with this?
         pn.setSourceBounds(fnNode.getSourceStart(), fnNode.getSourceEnd());
@@ -867,10 +863,11 @@ return null;
 
         decompiler.addToken(Token.LP);
         // <netbeans>
-        // NOTE - the END offset is AFTER the left parenthesis! We don't 
+        // NOTE - the END offset is AFTER the left parenthesis! We don't
         // want to include it since we're not creating a node wrapping the
         // parens!
-        int startOffset = getEndOffset();
+        peekToken();
+        int startOffset = peekedTokenStart;
         // </netbeans>
         Node pn = expr(false);
         // <netbeans>
@@ -900,7 +897,7 @@ return null;
     private Node matchJumpLabelName()
         throws IOException, ParserException
     {
-// TODO - handle positions here?        
+// TODO - handle positions here?
         Node label = null;
 
         int tt = peekTokenOrEOL();
@@ -1017,6 +1014,10 @@ return null;
                 switchLoop: for (;;) {
                     tt = nextToken();
                     Node caseExpression;
+                    // <netbeans>
+                    // We need to correct the AST offsets of the case blocks
+                    int caseStart = peekedTokenStart;
+                    // </netbeans>
                     switch (tt) {
                       case Token.RC:
                         break switchLoop;
@@ -1049,7 +1050,7 @@ return null;
                     int blockStart = getStartOffset();
                     pn.setSourceBounds(blockStart, blockStart);
                     // </netbeans>
-                    
+
                     while ((tt = peekToken()) != Token.RC
                            && tt != Token.CASE
                            && tt != Token.DEFAULT
@@ -1059,7 +1060,10 @@ return null;
                     }
 
                     // caseExpression == null => add default lable
-                    nf.addSwitchCase(pn, caseExpression, block);
+                    // <netbeans>
+                    //nf.addSwitchCase(pn, caseExpression, block);
+                    nf.addSwitchCase(pn, caseExpression, block, caseStart);
+                    // </netbeans>
                 }
                 decompiler.addEOL(Token.RC);
                 nf.closeSwitch(pn);
@@ -1067,7 +1071,8 @@ return null;
                 exitSwitch();
             }
             // <netbeans>
-            setSourceOffsets(pn, startOffset);
+            int endOffset = matchedTokenEnd;
+            pn.setSourceBounds(startOffset, endOffset);
             // </netbeans>
             return pn;
           }
@@ -1150,6 +1155,10 @@ return null;
                 tt = peekToken();
                 if (tt == Token.SEMI) {
                     init = nf.createLeaf(Token.EMPTY);
+                    // <netbeans>
+                    int pos = getStartOffset();
+                    init.setSourceBounds(pos, pos);
+                    // </netbeans>
                 } else {
                     if (tt == Token.VAR) {
                         // set init to a var list or initial
@@ -1176,8 +1185,11 @@ return null;
                     decompiler.addToken(Token.SEMI);
                     if (peekToken() == Token.SEMI) {
                         // no loop condition
-// TODO - position?                        
                         cond = nf.createLeaf(Token.EMPTY);
+                        // <netbeans>
+                        int pos = getStartOffset();
+                        cond.setSourceBounds(pos, pos);
+                        // </netbeans>
                     } else {
                         cond = expr(false);
                     }
@@ -1186,7 +1198,10 @@ return null;
                     decompiler.addToken(Token.SEMI);
                     if (peekToken() == Token.RP) {
                         incr = nf.createLeaf(Token.EMPTY);
-    // TODO Position?
+                        // <netbeans>
+                        int pos = getStartOffset();
+                        incr.setSourceBounds(pos, pos);
+                        // </netbeans>
                     } else {
                         incr = expr(false);
                     }
@@ -1216,6 +1231,9 @@ return null;
 
           case Token.TRY: {
             consumeToken();
+            // <netbeans>
+            startOffset = getStartOffset();
+            // </netbeans>
             int lineno = ts.getLineno();
 
             Node tryblock;
@@ -1236,6 +1254,9 @@ return null;
                     if (sawDefaultCatch) {
                         reportError("msg.catch.unreachable");
                     }
+                    // <netbeans>
+                    int catchStart = getStartOffset();
+                    // </netbeans>
                     decompiler.addToken(Token.CATCH);
                     mustMatchToken(Token.LP, "msg.no.paren.catch");
                     decompiler.addToken(Token.LP);
@@ -1263,12 +1284,22 @@ return null;
 
                     // <netbeans>
                     catchblocks.setSourceBounds(startOffset, getEndOffset());
-                    // </netbeans>
-                    nf.addChildToBack(catchblocks,
-                        nf.createCatch(varName, catchCond,
+//                    nf.addChildToBack(catchblocks,
+//                        nf.createCatch(varName, catchCond,
+//                                       statements(),
+//                                       ts.getLineno()));
+                    if (catchCond == null) {
+                        // Avoid having an uninitialized EMPTY block created
+                        // by the node factory without positions
+                        catchCond = new Node(Token.EMPTY);
+                        catchCond.setSourceBounds(varEnd, varEnd);
+                    }
+                    Node catchNode = nf.createCatch(varName, catchCond,
                                        statements(),
-                                       ts.getLineno()));
-                    // <netbeans>
+                                       ts.getLineno());
+                    setSourceOffsets(catchNode, catchStart);
+                    nf.addChildToBack(catchblocks, catchNode);
+                    // </netbeans>
                     Node varNode = catchblocks.getLastChild().getFirstChild();
                     varNode.setSourceBounds(varStart, varEnd);
                     // </netbeans>
@@ -1281,9 +1312,18 @@ return null;
             }
 
             if (matchToken(Token.FINALLY)) {
+                // <netbeans>
+                int finallyBegin = getStartOffset();
+                // </netbeans>
                 decompiler.addToken(Token.FINALLY);
                 decompiler.addEOL(Token.LC);
                 finallyblock = statement();
+                // <netbeans>
+                // Set statement offset to include the finally block
+                Node fBlock = new Node(Token.FINALLY, finallyblock);
+                fBlock.setSourceBounds(finallyBegin, getEndOffset());
+                finallyblock = fBlock;
+                // </netbeans>
                 decompiler.addEOL(Token.RC);
             }
 
@@ -1291,7 +1331,8 @@ return null;
                                           finallyblock, lineno);
 
             // <netbeans>
-            setSourceOffsets(pn, startOffset);
+            //setSourceOffsets(pn, startOffset);
+            pn.setSourceBounds(startOffset, getEndOffset());
             // </netbeans>
             return pn;
           }
@@ -1475,6 +1516,10 @@ return null;
           case Token.SEMI:
             consumeToken();
             pn = nf.createLeaf(Token.EMPTY);
+            // <netbeans>
+            int pos = getStartOffset();
+            pn.setSourceBounds(pos, pos);
+            // </netbeans>
             return pn;
 
           case Token.FUNCTION: {
@@ -1605,7 +1650,7 @@ return null;
         // <netbeans>
         setSourceOffsets(pn, startOffset);
         // </netbeans>
-        
+
         return pn;
     }
 
@@ -1701,7 +1746,7 @@ return null;
             // <netbeans>
             setSourceOffsets(name, nameStartOffset);
             // </netbeans>
-            
+
             // omitted check for argument hiding
 
             if (matchToken(Token.ASSIGN)) {
@@ -1716,9 +1761,9 @@ return null;
         }
 
         // <netbeans>
-        pn.setSourceBounds(startOffset, getEndOffset());
+        pn.setSourceBounds(startOffset, Math.max(getEndOffset(), pn.getSourceEnd()));
         // </netbeans>
-        
+
         return pn;
     }
 
@@ -1740,11 +1785,11 @@ return null;
                         );
             pn = nf.createBinary(Token.COMMA, pn, assignExpr(inForInit));
         }
-        
+
         // <netbeans>
         setSourceOffsets(pn, startOffset);
         // </netbeans>
-        
+
         return pn;
     }
 
@@ -1767,7 +1812,7 @@ return null;
         // <netbeans>
         setSourceOffsets(pn, startOffset);
         // </netbeans>
-        
+
         return pn;
     }
 
@@ -1792,7 +1837,7 @@ return null;
         // <netbeans>
         setSourceOffsets(pn, startOffset);
         // </netbeans>
-        
+
         return pn;
     }
 
@@ -1812,7 +1857,7 @@ return null;
         // <netbeans>
         setSourceOffsets(pn, startOffset);
         // </netbeans>
-        
+
         return pn;
     }
 
@@ -1832,7 +1877,7 @@ return null;
         // <netbeans>
         setSourceOffsets(pn, startOffset);
         // </netbeans>
-        
+
         return pn;
     }
 
@@ -1852,7 +1897,7 @@ return null;
         // <netbeans>
         setSourceOffsets(pn, startOffset);
         // </netbeans>
-        
+
         return pn;
     }
 
@@ -1872,7 +1917,7 @@ return null;
         // <netbeans>
         setSourceOffsets(pn, startOffset);
         // </netbeans>
-        
+
         return pn;
     }
 
@@ -1892,7 +1937,7 @@ return null;
         // <netbeans>
         setSourceOffsets(pn, startOffset);
         // </netbeans>
-        
+
         return pn;
     }
 
@@ -1945,7 +1990,7 @@ return null;
         // <netbeans>
         setSourceOffsets(pn, startOffset);
         // </netbeans>
-        
+
         return pn;
     }
 
@@ -1980,7 +2025,7 @@ return null;
         // <netbeans>
         setSourceOffsets(pn, startOffset);
         // </netbeans>
-        
+
         return pn;
     }
 
@@ -2009,7 +2054,7 @@ return null;
         // <netbeans>
         setSourceOffsets(pn, startOffset);
         // </netbeans>
-        
+
         return pn;
     }
 
@@ -2036,7 +2081,7 @@ return null;
         // <netbeans>
         setSourceOffsets(pn, startOffset);
         // </netbeans>
-        
+
         return pn;
     }
 
@@ -2065,7 +2110,7 @@ return null;
         // <netbeans>
         setSourceOffsets(pn, startOffset);
         // </netbeans>
-        
+
         return pn;
     }
 
@@ -2160,7 +2205,7 @@ return null;
             // <netbeans>
             setSourceOffsets(pn, startOffset);
             // </netbeans>
-            
+
             return pn;
         }
         // <netbeans>
@@ -2168,7 +2213,7 @@ return null;
         // </netbeans>
 
     }
-    
+
     // <netbeans>
     // TODO - rename to something like setSourceOffsets
     Node setSourceOffsets(Node n, int startOffset) {
@@ -2183,7 +2228,7 @@ return null;
         // return factory.createNumber(42).setSourceOffsets(n, startOffset)
         return n;
     }
-    
+
     int getStartOffset() {
         return matchedTokenStart;
     }
@@ -2206,60 +2251,113 @@ return null;
         }
 
         /* Make a NEW node to append to. */
-        Node pnXML = nf.createLeaf(Token.NEW);
+// <netbeans>
+// Change the E4X parse tree representation. We don't need to execute
+// it; we mostly want a simple AST representation with accurate AST offsets.
+//        Node pnXML = nf.createLeaf(Token.NEW);
+Node pnXML = nf.createLeaf(Token.E4X);
+Node pn = null;
 
         String xml = ts.getString();
-        boolean fAnonymous = xml.trim().startsWith("<>");
-
-        Node pn = nf.createName(fAnonymous ? "XMLList" : "XML");
-        nf.addChildToBack(pnXML, pn);
-
+//        boolean fAnonymous = xml.trim().startsWith("<>");
+//        Node pn = nf.createName(fAnonymous ? "XMLList" : "XML");
+//        nf.addChildToBack(pnXML, pn);
         pn = null;
         Node expr;
         for (;;tt = ts.getNextXMLToken()) {
             switch (tt) {
-            case Token.XML:
+            case Token.XML: {
                 xml = ts.getString();
+                 // <netbeans>
+                int endOffset = ts.getBufferOffset();
+                startOffset = endOffset-xml.length();
+                // </netbeans>
                 decompiler.addName(xml);
                 mustMatchToken(Token.LC, "msg.syntax");
                 decompiler.addToken(Token.LC);
-                expr = (peekToken() == Token.RC)
-                    ? nf.createString("")
-                    : expr(false);
+                // <netbeans>
+                //expr = (peekToken() == Token.RC)
+                //    ? nf.createString("")
+                //    : expr(false);
+                if (peekToken() == Token.RC) {
+                    expr = nf.createString("");
+                    expr.setSourceBounds(startOffset, startOffset); // empty
+                } else {
+                    expr = expr(false);
+                }
+                // </netbeans>
                 mustMatchToken(Token.RC, "msg.syntax");
                 decompiler.addToken(Token.RC);
                 if (pn == null) {
                     pn = nf.createString(xml);
+                    // <netbeans>
+                    pn.setSourceBounds(startOffset, endOffset);
+                    // </netbeans>
                 } else {
-                    pn = nf.createBinary(Token.ADD, pn, nf.createString(xml));
+                    // <netbeans>
+                    //pn = nf.createBinary(Token.ADD, pn, nf.createString(xml));
+                    Node stringNode = nf.createString(xml);
+                    stringNode.setSourceBounds(startOffset, endOffset);
+                    pn = nf.createBinary(Token.ADD, pn, stringNode);
+                    pn.setSourceBounds(pn.getSourceStart(), endOffset);
+                    // </netbeans>
                 }
-                if (ts.isXMLAttribute()) {
-                    /* Need to put the result in double quotes */
-                    expr = nf.createUnary(Token.ESCXMLATTR, expr);
-                    Node prepend = nf.createBinary(Token.ADD,
-                                                   nf.createString("\""),
-                                                   expr);
-                    expr = nf.createBinary(Token.ADD,
-                                           prepend,
-                                           nf.createString("\""));
-                } else {
+// NetBeans: We don't care about the exact encoding of the XML parts since
+// we're not executing the AST. The most important part is having accurate
+// AST offsets and getting the embedded code fragments included in the AST
+// such that variables and such show up for renaming, highlighting, etc.
+//                if (ts.isXMLAttribute()) {
+//                    /* Need to put the result in double quotes */
+//                    expr = nf.createUnary(Token.ESCXMLATTR, expr);
+//                    Node prepend = nf.createBinary(Token.ADD,
+//                                                   nf.createString("\""),
+//                                                   expr);
+//                    expr = nf.createBinary(Token.ADD,
+//                                           prepend,
+//                                           nf.createString("\""));
+//                } else {
                     expr = nf.createUnary(Token.ESCXMLTEXT, expr);
-                }
+//                }
                 pn = nf.createBinary(Token.ADD, pn, expr);
+                // <netbeans>
+                pn.setSourceBounds(pn.getSourceStart(), expr.getSourceEnd());
+                // </netbeans>
                 break;
+            }
             case Token.XMLEND:
                 xml = ts.getString();
                 decompiler.addName(xml);
+                // <netbeans>
+                int endOffset = ts.getBufferOffset();
+                startOffset = endOffset-xml.length();
+                // </netbeans>
                 if (pn == null) {
                     pn = nf.createString(xml);
+                    // <netbeans>
+                    pn.setSourceBounds(startOffset, endOffset);
+                    // </netbeans>
                 } else {
-                    pn = nf.createBinary(Token.ADD, pn, nf.createString(xml));
+                    // <netbeans>
+                    //pn = nf.createBinary(Token.ADD, pn, nf.createString(xml));
+                    Node stringNode = nf.createString(xml);
+                    stringNode.setSourceBounds(startOffset, endOffset);
+                    pn = nf.createBinary(Token.ADD, pn, stringNode);
+                    // </netbeans>
                 }
 
                 nf.addChildToBack(pnXML, pn);
 
                 // <netbeans>
-                setSourceOffsets(pnXML, startOffset);
+                //setSourceOffsets(pnXML, startOffset);
+                pnXML.setSourceBounds(pnXML.getSourceStart(), endOffset);
+                // The XML processing handles the token input stream differently;
+                // it uses dedicated TokenStream methods instead of the normal
+                // peekToken()/matchToken() mechanism, which means the
+                // matchedTokenStart/matchedTokenEnd/peekedTokenSTart/peekedTokenEnd
+                // variables aren't kept up to date. We need matchedTokenEnd
+                // to be updated after this or the caller will reset the end
+                // to exclude the proper end.
+                matchedTokenEnd = endOffset;
                 // </netbeans>
 
                 return pnXML;
@@ -2294,7 +2392,7 @@ return null;
         // <netbeans>
         setSourceOffsets(listNode, startOffset);
         // </netbeans>
-        
+
         decompiler.addToken(Token.RP);
     }
 
@@ -2311,14 +2409,23 @@ return null;
         // <netbeans>
         int startOffset = getStartOffset();
         // </netbeans>
-        
+
         if (tt == Token.NEW) {
             /* Eat the NEW token. */
             consumeToken();
             decompiler.addToken(Token.NEW);
 
+            // <netbeans>
+            // include beginning of "new"
+            startOffset = getStartOffset();
+            // </netbeans>
+
             /* Make a NEW node to append to. */
             pn = nf.createCallOrNew(Token.NEW, memberExpr(false));
+
+            // <netbeans>
+            pn.setSourceBounds(startOffset, pn.getSourceEnd());
+            // </netbeans>
 
             if (matchToken(Token.LP)) {
                 decompiler.addToken(Token.LP);
@@ -2346,7 +2453,7 @@ return null;
         // <netbeans>
         setSourceOffsets(pn, startOffset);
         // </netbeans>
-        
+
         return memberExprTail(allowCallSyntax, pn);
     }
 
@@ -2465,7 +2572,7 @@ return null;
         // <netbeans>
         pn.setSourceBounds(startOffset, getEndOffset());
         // </netbeans>
-        
+
         return pn;
     }
 
@@ -2516,7 +2623,7 @@ return null;
         // <netbeans>
         setSourceOffsets(pn, startOffset);
         // </netbeans>
-        
+
         return pn;
     }
 
@@ -2575,7 +2682,7 @@ return null;
         // <netbeans>
         setSourceOffsets(pn, startOffset);
         // </netbeans>
-        
+
         return pn;
     }
 
@@ -2651,6 +2758,10 @@ return null;
                 do {
                     Object property;
 
+                    // <netbeans>
+                    int trailingCommaOffset = getStartOffset();
+                    // </netbeans>
+
                     if (!first)
                         decompiler.addToken(Token.COMMA);
                     else
@@ -2664,8 +2775,8 @@ return null;
                             addError("msg.json.error", Token.fullName(tt), null);
                         }
                         // </netbeans>
-                          
-                      case Token.STRING:
+
+                      case Token.STRING: {
                         consumeToken();
                         // map NAMEs to STRINGs in object literal context
                         // but tell the decompiler the proper type
@@ -2712,17 +2823,53 @@ return null;
                         }
                         // </netbeans>
                         break;
+                      }
 
                       case Token.NUMBER:
                         consumeToken();
+                        // <netbeans>
+                        int nameStart = matchedTokenStart;
+                        int nameEnd = matchedTokenEnd;
+                        // </netbeans>
                         double n = ts.getNumber();
                         decompiler.addNumber(n);
                         property = ScriptRuntime.getIndexObject(n);
                         plainProperty(elems, property);
+                        // <netbeans>
+                        if (elems.size() > 0) {
+                           Node rhs = (Node) elems.get(elems.size()-1);
+                           String s = Double.toString(n);
+                           if (s.endsWith(".0")) { // NOI18N
+                               s = s.substring(0, s.length()-2);
+                           }
+                           Node objLitName = new Node.LabelledNode(s, rhs);
+                           objLitName.setSourceBounds(nameStart, nameEnd);
+                           nameNodes.add(objLitName);
+                        }
+                        // </netbeans>
                         break;
 
                       case Token.RC:
                         // trailing comma is OK.
+                        // <netbeans>
+                        // ...but not on all browsers - IE for example doesn't like it
+                        if (compilerEnv.isStrictMode()) {
+//                            addStrictWarning("msg.trailing.comma", ""
+//                                    // <netbeans> - pass in additional parameters for the error
+//                                    , Integer.valueOf(trailingCommaOffset)
+//                                    // </netbeans>
+//                                    );
+                            String message = ScriptRuntime.getMessage0("msg.trailing.comma");
+                            errorReporter.warning(message, sourceURI, ts.getLineno(),
+                                                  ts.getLine(), trailingCommaOffset/*ts.getOffset()*/
+                                                // <netbeans>
+                                                , "msg.trailing.comma", Integer.valueOf(trailingCommaOffset)
+                                                // </netbeans>
+                                                  );
+
+                        }
+                        // </netbeans>
+
                         break commaloop;
                     default:
                         reportError("msg.bad.prop");
@@ -2736,10 +2883,15 @@ return null;
             // <netbeans>
             //return nf.createObjectLiteral(elems);
             Node literal = nf.createObjectLiteral(elems);
-            literal.setSourceBounds(startOffset, getEndOffset());
-            for (Node n : nameNodes) {
-                literal.addChildToBack(n);
+            if (literal.hasChildren()) {
+                Node child = literal.getFirstChild();
+                Iterator<Node> it = nameNodes.iterator();
+                do {
+                    literal.addChildBefore(it.next(), child);
+                    child = child.getNext();
+                } while (child != null);
             }
+            literal.setSourceBounds(startOffset, getEndOffset());
             return literal;
             // </netbeans>
           }
@@ -2799,11 +2951,7 @@ return null;
                 pn = nf.createName(name);
             }
             // <netbeans>
-            if (pn.getType() == Token.NAME) {
-                pn.setSourceBounds(startOffset, startOffset+name.length());
-            } else {
-                setSourceOffsets(pn, startOffset);
-            }
+            setSourceOffsets(pn, startOffset);
             // </netbeans>
             return pn;
           }
@@ -2919,6 +3067,51 @@ return null;
         this.ts = ts;
     }
 
+    public FunctionNode parseFunction(String sourceString,
+                                String sourceURI, int lineno)
+    {
+        this.sourceURI = sourceURI;
+        this.ts = new TokenStream(this, null, sourceString, lineno);
+        setJsonMode(false);
+
+        this.decompiler = createDecompiler(compilerEnv);
+        this.nf = new IRFactory(this);
+        currentScriptOrFn = nf.createScript();
+        this.encodedSource = null;
+        this.currentFlaggedToken = Token.EOF;
+
+        // TODO - what about syntaxErrorCount?
+        this.syntaxErrorCount = 0;
+
+        try {
+            int tt = peekToken();
+
+            if (tt <= Token.EOF) {
+                return null;
+            }
+
+            if (tt == Token.FUNCTION) {
+                int startOffset = peekedTokenStart;
+                consumeToken();
+                try {
+                    Node n = function(calledByCompileFunction
+                                 ? FunctionNode.FUNCTION_EXPRESSION
+                                 : FunctionNode.FUNCTION_STATEMENT);
+                    setSourceOffsets(n, startOffset);
+                    return (FunctionNode)n;
+                } catch (ParserException e) {
+                    return null;
+                }
+            }
+        } catch (IOException ex) {
+            // Should never happen in the IDE
+            throw new IllegalStateException();
+        }
+
+
+        return null;
+    }
+
     public ScriptOrFnNode parseJson(String sourceString,
                                 String sourceURI, int lineno)
     {
@@ -2928,7 +3121,7 @@ return null;
             setJsonMode(true);
             return parseJson();
         } catch (IOException ex) {
-            // Should never happen
+            // Should never happen in the IDE
             throw new IllegalStateException();
         }
     }
@@ -2979,7 +3172,7 @@ return null;
                     int tt = peekToken();
                     switch(tt) {
                       case Token.NAME:
-                      case Token.STRING:
+                      case Token.STRING: {
                         consumeToken();
                         // map NAMEs to STRINGs in object literal context
                         // but tell the decompiler the proper type
@@ -3026,13 +3219,30 @@ return null;
                         }
                         // </netbeans>
                         break;
+                      }
 
                       case Token.NUMBER:
                         consumeToken();
+                        // <netbeans>
+                        int nameStart = matchedTokenStart;
+                        int nameEnd = matchedTokenEnd;
+                        // </netbeans>
                         double n = ts.getNumber();
                         decompiler.addNumber(n);
                         property = ScriptRuntime.getIndexObject(n);
                         plainProperty(elems, property);
+                        // <netbeans>
+                        if (elems.size() > 0) {
+                           Node rhs = (Node) elems.get(elems.size()-1);
+                           String s = Double.toString(n);
+                           if (s.endsWith(".0")) { // NOI18N
+                               s = s.substring(0, s.length()-2);
+                           }
+                           Node objLitName = new Node.LabelledNode(s, rhs);
+                           objLitName.setSourceBounds(nameStart, nameEnd);
+                           nameNodes.add(objLitName);
+                        }
+                        // </netbeans>
                         break;
 
                       case Token.RC:
@@ -3050,10 +3260,15 @@ return null;
             // <netbeans>
             //return nf.createObjectLiteral(elems);
             Node literal = nf.createObjectLiteral(elems);
-            literal.setSourceBounds(startOffset, getEndOffset());
-            for (Node n : nameNodes) {
-                literal.addChildToBack(n);
+            if (literal.hasChildren()) {
+                Node child = literal.getFirstChild();
+                Iterator<Node> it = nameNodes.iterator();
+                do {
+                    literal.addChildBefore(it.next(), child);
+                    child = child.getNext();
+                } while (child != null);
             }
+            literal.setSourceBounds(startOffset, getEndOffset());
             pn.addChildToBack(literal);
         } catch (StackOverflowError ex) {
             String msg = ScriptRuntime.getMessage0(
@@ -3079,7 +3294,7 @@ return null;
 //                currentScriptOrFn.setEndLineno(ts.getLineno());
 //
 //                return currentScriptOrFn;
-return null;            
+return null;
             //}
 // </netbeans>
         }
@@ -3095,7 +3310,7 @@ return null;
         int realSourceEndOffset = getEndOffset();
         currentScriptOrFn.setSourceBounds(realSourceStartOffset, realSourceEndOffset);
 // </netbeans>
-        
+
 
         nf.initScript(currentScriptOrFn, pn);
 

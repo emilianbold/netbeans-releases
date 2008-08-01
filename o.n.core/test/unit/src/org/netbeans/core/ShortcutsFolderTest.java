@@ -136,10 +136,10 @@ public class ShortcutsFolderTest extends NbTestCase {
         assertNotNull ("There is an action", a);
         assertEquals ("It is test action", TestAction.class, a.getClass ());
     }
-    
+
+    @RandomlyFails
     public void testShortcutsForDifferentFilesThanInstanceOrShadows () throws Exception {
         FileSystem fs = Repository.getDefault ().getDefaultFileSystem ();
-        FileObject shortcuts = fs.getRoot ().getFileObject ("Shortcuts");
         FileObject inst = FileUtil.createData (fs.getRoot (), "/Shortcuts/C-F11.xml");
 
         FileLock lock = inst.lock ();

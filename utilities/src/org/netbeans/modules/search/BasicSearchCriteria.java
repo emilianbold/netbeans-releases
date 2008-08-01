@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -118,6 +118,12 @@ final class BasicSearchCriteria {
     private boolean criteriaUsable = false;
     
     private ChangeListener usabilityChangeListener;
+
+    /**
+     * holds {@code Charset} that was used for full-text search of the last
+     * tested file
+     */
+    private Charset lastCharset = null;
 
     /**
      * Holds information about occurences of matching strings within individual
@@ -536,7 +542,20 @@ final class BasicSearchCriteria {
         assert !fileNamePatternValid || (fileNamePattern != null);
     }
     
+    /**
+     * Checks whether the given {@code DataObject} matches this criteria.
+     * If the check includes full-text search, charset used for the search
+     * is remembered. It may be later obtained using method
+     * {@link #getUsedCharset}. If the check did not include full-text search,
+     * the charset is {@code null}-ed.
+     * 
+     * @param  dataObj  {@code DataObject} to be checked
+     * @return  {@code true} if the {@code DataObject} matches the given
+     *          criteria, {@code false} otherwise
+     */
     boolean matches(DataObject dataObj) {
+        lastCharset = null;
+
         if (!dataObj.isValid()) {
             return false;
         }
@@ -559,6 +578,18 @@ final class BasicSearchCriteria {
         }
         
         return true;
+    }
+
+    /**
+     * Returns {@code Charset} used for decoding of the last tested file.
+     * 
+     * @return  {@code Charset} used for decoding of the last tested file,
+     *          or {@code null} if no file has been tested since creation
+     *          of this object or if the last tested file was not full-text
+     *          searched
+     */
+    Charset getLastUsedCharset() {
+        return lastCharset;
     }
 
     /**
@@ -659,14 +690,12 @@ final class BasicSearchCriteria {
     private LineNumberReader getFileObjectReader(FileObject fileObj)
                                                 throws FileNotFoundException {
         InputStream is = fileObj.getInputStream();//throws FileNotFoundException
-        Charset charset = getCharset(fileObj);
-        return new LineNumberReader(new InputStreamReader(is, charset));
+        Charset charset = FileEncodingQuery.getEncoding(fileObj);
+        LineNumberReader result = new LineNumberReader(new InputStreamReader(is, charset));
+        lastCharset = charset;
+        return result;
     }
 
-    static Charset getCharset(FileObject fileObj) {
-        return FileEncodingQuery.getEncoding(fileObj);
-    }
-    
     /**
      * @param  resultObject  <code>DataObject</code> to create the nodes for
      * @return  <code>DetailNode</code>s representing the matches,

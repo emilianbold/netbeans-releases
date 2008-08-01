@@ -56,6 +56,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.mobility.end2end.classdata.ClassData;
 import org.netbeans.modules.mobility.end2end.client.config.Configuration;
 import org.netbeans.modules.mobility.end2end.multiview.ServicesPanel;
+import org.openide.WizardDescriptor;
 import org.openide.loaders.TemplateWizard;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -108,9 +109,9 @@ public class ServiceSelectionPanel implements TemplateWizard.Panel, ChangeListen
         final List<ClassData> data = gui.getConfiguration().getServices().get(0).getData();
         final boolean valid = !( data == null || data.size() == 0 );
         if( valid ){
-            templateWizard.putProperty( "WizardPanel_errorMessage", " " ); // NOI18N`
+            templateWizard.putProperty( WizardDescriptor.PROP_ERROR_MESSAGE, " " ); // NOI18N`
         } else {
-            templateWizard.putProperty( "WizardPanel_errorMessage", NbBundle.getMessage( ServiceSelectionPanel.class, "ERR_NoService" )); // NOI18N
+            templateWizard.putProperty( WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage( ServiceSelectionPanel.class, "ERR_NoService" )); // NOI18N
         }
         return valid;
     }

@@ -46,7 +46,6 @@ package org.netbeans.modules.uml.ui.support.visitors;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
-import org.netbeans.modules.uml.ui.support.viewfactorysupport.IETGraphObject;
 
 /**
  * @author KevinM
@@ -69,14 +68,15 @@ public class ETFirstSubjectSameVistor implements IETGraphObjectVisitor
    /* (non-Javadoc)
     * @see org.netbeans.modules.uml.ui.support.visitors.IETGraphObjectVisitor#visit(org.netbeans.modules.uml.ui.support.viewfactorysupport.IETGraphObject)
     */
-   public boolean visit(IETGraphObject object)
-   {
-      IPresentationElement presItem = object.getPresentationElement();
-      if (presItem != null && modelElement.isSame(presItem.getFirstSubject()))
-      {
-         presentationElements.add(presItem);
-      }
-      return true;
-   }
+   // TODO: meteora
+//   public boolean visit(IETGraphObject object)
+//   {
+//      IPresentationElement presItem = object.getPresentationElement();
+//      if (presItem != null && modelElement.isSame(presItem.getFirstSubject()))
+//      {
+//         presentationElements.add(presItem);
+//      }
+//      return true;
+//   }
 
 }

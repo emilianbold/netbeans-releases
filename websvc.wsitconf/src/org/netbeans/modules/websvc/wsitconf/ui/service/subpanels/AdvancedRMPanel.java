@@ -44,11 +44,12 @@ package org.netbeans.modules.websvc.wsitconf.ui.service.subpanels;
 import java.text.NumberFormat;
 import javax.swing.text.DefaultFormatterFactory;
 import javax.swing.text.NumberFormatter;
-import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.RMMSModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.RMModelHelper;
 import org.netbeans.modules.xml.wsdl.model.Binding;
-
 import javax.swing.*;
+import org.netbeans.modules.websvc.wsitmodelext.versioning.ConfigVersion;
+import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.RMDeliveryAssurance;
+import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.RMSequenceBinding;
 
 /**
  *
@@ -59,22 +60,25 @@ public class AdvancedRMPanel extends JPanel {
     private Binding binding;
     private boolean inSync = false;
 
-    private DefaultFormatterFactory inactff = null;
+    private DefaultFormatterFactory milisecondsff = null;
     private DefaultFormatterFactory maxBufff = null;
     
-    public AdvancedRMPanel(Binding binding) {
+    private ConfigVersion cfgVersion = null;
+    
+    public AdvancedRMPanel(Binding binding, ConfigVersion cfgVersion) {
         this.binding = binding;
-        
-        inactff = new DefaultFormatterFactory();
-        NumberFormat inactivityFormat = NumberFormat.getIntegerInstance();
-        inactivityFormat.setGroupingUsed(false);
-        NumberFormatter inactivityFormatter = new NumberFormatter(inactivityFormat);
-        inactivityFormat.setMaximumIntegerDigits(8);
-        inactivityFormatter.setCommitsOnValidEdit(true);
-        inactivityFormatter.setMinimum(0);
-        inactivityFormatter.setMaximum(99999999);
-        inactff.setDefaultFormatter(inactivityFormatter);
-                
+        this.cfgVersion = cfgVersion;
+
+        milisecondsff = new DefaultFormatterFactory();
+        NumberFormat millisecondsFormat = NumberFormat.getIntegerInstance();        
+        millisecondsFormat.setGroupingUsed(false);
+        NumberFormatter millisecondsFormatter = new NumberFormatter(millisecondsFormat);
+        millisecondsFormat.setMaximumIntegerDigits(8);
+        millisecondsFormatter.setCommitsOnValidEdit(true);
+        millisecondsFormatter.setMinimum(0);
+        millisecondsFormatter.setMaximum(99999999);
+        milisecondsff.setDefaultFormatter(millisecondsFormatter);
+
         maxBufff = new DefaultFormatterFactory();
         NumberFormat maxBufFormat = NumberFormat.getIntegerInstance();
         maxBufFormat.setGroupingUsed(false);
@@ -86,6 +90,12 @@ public class AdvancedRMPanel extends JPanel {
         maxBufff.setDefaultFormatter(maxBufFormatter);
 
         initComponents();
+
+        inSync = true;
+        for (RMDeliveryAssurance assurance : RMDeliveryAssurance.values()) {
+            deliveryAssuranceCombo.addItem(assurance);
+        }
+        inSync = false;
         
         sync();
     }
@@ -93,86 +103,84 @@ public class AdvancedRMPanel extends JPanel {
     private void sync() {
         inSync = true;
         
-        String inactivityTimeout = RMModelHelper.getInactivityTimeout(binding);
+        String inactivityTimeout = RMModelHelper.getInstance(cfgVersion).getInactivityTimeout(binding);
         if (inactivityTimeout == null) { // no setup exists yet - set the default
-            setInactivityTimeout(RMModelHelper.DEFAULT_TIMEOUT);
+            setTextField(inactivityTimeoutTextfield, RMModelHelper.DEFAULT_INACT_TIMEOUT);
         } else {
-            setInactivityTimeout(inactivityTimeout);
+            setTextField(inactivityTimeoutTextfield, inactivityTimeout);
         } 
-
-        String maxRcvBufferSize = RMMSModelHelper.getMaxReceiveBufferSize(binding);
+        
+        String maxRcvBufferSize = RMModelHelper.getMaxReceiveBufferSize(binding);
         if (maxRcvBufferSize == null) { // no setup exists yet - set the default
-            setMaxRcvBufferSize(RMModelHelper.DEFAULT_MAXRCVBUFFERSIZE);
+            setTextField(maxBufTextField, RMModelHelper.DEFAULT_MAXRCVBUFFERSIZE);
         } else {
-            setMaxRcvBufferSize(maxRcvBufferSize);
+            setTextField(maxBufTextField, maxRcvBufferSize);
         } 
 
-        setFlowControl(RMMSModelHelper.isFlowControlEnabled(binding));
+        setChBox(flowControlChBox, RMModelHelper.isFlowControl(binding));
+
+        RMDeliveryAssurance assurance = RMDeliveryAssurance.getValue(cfgVersion, binding);
+        if (assurance == null) {
+            assurance = RMDeliveryAssurance.getDefault();
+        }
+        setCombo(deliveryAssuranceCombo, assurance);
+        
+        RMSequenceBinding seq = RMSequenceBinding.getValue(cfgVersion, binding);
+        if (seq == null) {
+            seq = RMSequenceBinding.getDefault();
+        }
 
         enableDisable();
         inSync = false;
     }
 
-    // max receive buffer size
-    private Number getMaxRcvBufferSize() {
-        return (Number) this.maxBufTextField.getValue();
-    }
-    
-    private void setMaxRcvBufferSize(String value) {
-        this.maxBufTextField.setText(value);
-    }
-
-    // inactivity timeout
-    private Number getInactivityTimeout() {
-        return (Number) this.inactivityTimeoutTextfield.getValue();
-    }
-    
-    private void setInactivityTimeout(String value) {
-        this.inactivityTimeoutTextfield.setText(value);
-    }
-
-    // flow control
-    private void setFlowControl(Boolean enable) {
-        if (enable == null) {
-            this.flowControlChBox.setSelected(false);
+    protected void setCombo(JComboBox combo, Object item) {
+        if (item == null) {
+            combo.setSelectedIndex(0);
         } else {
-            this.flowControlChBox.setSelected(enable);
+            combo.setSelectedItem(item);
         }
+    }
+    
+    // max receive buffer size
+    private Number getTextField(JFormattedTextField textField) {
+        return (Number) textField.getValue();
+    }
+    
+    private void setTextField(JFormattedTextField field, String value) {
+        field.setText(value);
     }
 
-    public Boolean getFlowControl() {
-        if (flowControlChBox.isSelected()) {
-            return Boolean.TRUE;
+    protected void setChBox(JCheckBox chBox, Boolean enable) {
+        if (enable == null) {
+            chBox.setSelected(false);
+        } else {
+            chBox.setSelected(enable);
         }
-        return Boolean.FALSE;
     }
-        
+    
     public void storeState() {
 
-        if (flowControlChBox.isSelected()) {
-            if (!(RMMSModelHelper.isFlowControlEnabled(binding))) {
-                RMMSModelHelper.enableFlowControl(binding);
-            }
-        } else {
-            if (RMMSModelHelper.isFlowControlEnabled(binding)) {
-                RMMSModelHelper.disableFlowControl(binding);
-            }
-        }
-        
-        Number timeout = getInactivityTimeout();
-        if ((timeout == null) || (RMModelHelper.DEFAULT_TIMEOUT.equals(timeout.toString()))) {
-            RMModelHelper.setInactivityTimeout(binding, null);
-        } else {
-            RMModelHelper.setInactivityTimeout(binding, timeout.toString());
+        boolean flowControl = flowControlChBox.isSelected();
+        if (flowControl != RMModelHelper.isFlowControl(binding)) {
+            RMModelHelper.getInstance(cfgVersion).enableFlowControl(binding, flowControl);
         }
 
-        Number bufSize = getMaxRcvBufferSize();
+        Number timeout = getTextField(inactivityTimeoutTextfield);
+        if ((timeout == null) || (RMModelHelper.DEFAULT_INACT_TIMEOUT.equals(timeout.toString()))) {
+            RMModelHelper.getInstance(cfgVersion).setInactivityTimeout(binding, null);
+        } else {
+            RMModelHelper.getInstance(cfgVersion).setInactivityTimeout(binding, timeout.toString());
+        }
+
+        Number bufSize = getTextField(maxBufTextField);
         if ((bufSize == null) || (RMModelHelper.DEFAULT_MAXRCVBUFFERSIZE.equals(bufSize.toString()))) {
-            RMMSModelHelper.setMaxReceiveBufferSize(binding, null);
+            RMModelHelper.setMaxReceiveBufferSize(binding, null);
         } else {
-            RMMSModelHelper.setMaxReceiveBufferSize(binding, bufSize.toString());
+            RMModelHelper.setMaxReceiveBufferSize(binding, bufSize.toString());
         }
 
+        ((RMDeliveryAssurance)deliveryAssuranceCombo.getSelectedItem()).set(cfgVersion, binding);        
     }
     
     private void enableDisable() {
@@ -194,6 +202,8 @@ public class AdvancedRMPanel extends JPanel {
         inactivityTimeoutLabel = new javax.swing.JLabel();
         inactivityTimeoutTextfield = new javax.swing.JFormattedTextField();
         maxBufTextField = new javax.swing.JFormattedTextField();
+        deliveryAssuranceLabel = new javax.swing.JLabel();
+        deliveryAssuranceCombo = new javax.swing.JComboBox();
 
         flowControlChBox.setText(org.openide.util.NbBundle.getMessage(AdvancedRMPanel.class, "LBL_AdvancedRM_FlowControlChBox")); // NOI18N
         flowControlChBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
@@ -207,10 +217,12 @@ public class AdvancedRMPanel extends JPanel {
 
         inactivityTimeoutLabel.setText(org.openide.util.NbBundle.getMessage(AdvancedRMPanel.class, "LBL_AdvancedRM_InactivityTimeoutLabel")); // NOI18N
 
-        inactivityTimeoutTextfield.setFormatterFactory(inactff);
+        inactivityTimeoutTextfield.setFormatterFactory(milisecondsff);
 
         maxBufTextField.setColumns(8);
         maxBufTextField.setFormatterFactory(maxBufff);
+
+        deliveryAssuranceLabel.setText(org.openide.util.NbBundle.getMessage(AdvancedRMPanel.class, "LBL_AdvancedRM_DeliveryAssurance")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -223,17 +235,23 @@ public class AdvancedRMPanel extends JPanel {
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(maxBufLabel)
-                            .add(inactivityTimeoutLabel))
+                            .add(inactivityTimeoutLabel)
+                            .add(deliveryAssuranceLabel))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(inactivityTimeoutTextfield, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 97, Short.MAX_VALUE)
-                            .add(maxBufTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 97, Short.MAX_VALUE))))
+                            .add(deliveryAssuranceCombo, 0, 135, Short.MAX_VALUE)
+                            .add(inactivityTimeoutTextfield, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 135, Short.MAX_VALUE)
+                            .add(maxBufTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 135, Short.MAX_VALUE))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(deliveryAssuranceLabel)
+                    .add(deliveryAssuranceCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(flowControlChBox)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
@@ -245,6 +263,8 @@ public class AdvancedRMPanel extends JPanel {
                     .add(inactivityTimeoutTextfield, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
+
+        layout.linkSize(new java.awt.Component[] {deliveryAssuranceCombo, inactivityTimeoutTextfield, maxBufTextField}, org.jdesktop.layout.GroupLayout.VERTICAL);
 
         flowControlChBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AdvancedRMPanel.class, "LBL_AdvancedRM_FlowControl_ACSD")); // NOI18N
         maxBufLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AdvancedRMPanel.class, "LBL_AdvancedRM_MaxFlowBufSize_ACSD")); // NOI18N
@@ -260,6 +280,8 @@ public class AdvancedRMPanel extends JPanel {
     }//GEN-LAST:event_flowControlChBoxActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JComboBox deliveryAssuranceCombo;
+    private javax.swing.JLabel deliveryAssuranceLabel;
     private javax.swing.JCheckBox flowControlChBox;
     private javax.swing.JLabel inactivityTimeoutLabel;
     private javax.swing.JFormattedTextField inactivityTimeoutTextfield;

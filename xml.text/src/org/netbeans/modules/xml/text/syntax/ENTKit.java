@@ -41,7 +41,6 @@ package org.netbeans.modules.xml.text.syntax;
 
 import javax.swing.text.Document;
 import org.netbeans.editor.Syntax;
-import org.netbeans.modules.editor.NbEditorDocument;
 
 /**
  *
@@ -61,11 +60,6 @@ public class ENTKit extends UniKit {
     @Override
     public Syntax createSyntax(Document doc) {
         return new XMLDefaultSyntax();
-    }
-
-    @Override
-    public Document createDefaultDocument() {
-        return new NbEditorDocument (this.getClass());
     }
 
     @Override

@@ -388,7 +388,7 @@ public class MakefileWizard  implements TemplateWizard.Iterator {
 	    panels = normalPanels;
 	}
 	((JPanel)currentPanel.getComponent()).putClientProperty(
-			"WizardPanel_contentData", getSteps()); // NOI18N
+			WizardDescriptor.PROP_CONTENT_DATA, getSteps()); // NOI18N
 	updateState();
     }
 
@@ -427,7 +427,7 @@ public class MakefileWizard  implements TemplateWizard.Iterator {
 	updatePanels(makefileData.getMakefileType());
 
 	((JPanel)currentPanel.getComponent()).putClientProperty(
-			"WizardPanel_contentSelectedIndex",		// NOI18N
+			WizardDescriptor.PROP_CONTENT_SELECTED_INDEX,		// NOI18N
 			new Integer(virtIndex));
     }
     
@@ -449,7 +449,7 @@ public class MakefileWizard  implements TemplateWizard.Iterator {
 	updatePanels(makefileData.getMakefileType());
 
 	((JPanel)currentPanel.getComponent()).putClientProperty(
-			"WizardPanel_contentSelectedIndex",		// NOI18N
+			WizardDescriptor.PROP_CONTENT_SELECTED_INDEX,		// NOI18N
 			new Integer(virtIndex));
     }
 
@@ -717,9 +717,9 @@ public class MakefileWizard  implements TemplateWizard.Iterator {
 	currentPanel = (WizardDescriptor.Panel) panels[index];
 	//wd = new MakefileWizardDescriptor(this);
 	/*
-	wd.putProperty("WizardPanel_autoWizardStyle",			// NOI18N
+	wd.putProperty(WizardDescriptor.PROP_AUTO_WIZARD_STYLE,			// NOI18N
 				new Boolean(true));
-	wd.putProperty("WizardPanel_contentDisplayed",			// NOI18N
+	wd.putProperty(WizardDescriptor.PROP_CONTENT_DISPLAYED,			// NOI18N
 				new Boolean(true));
 	wd.setTitleFormat(new MessageFormat("{0}"));			// NOI18N
 	wd.setTitle(title);
@@ -728,7 +728,7 @@ public class MakefileWizard  implements TemplateWizard.Iterator {
 	
 	updatePanels(getMakefileData().getMakefileType()); //FIXUP
 	((JPanel)(currentPanel.getComponent())).
-			putClientProperty("WizardPanel_contentSelectedIndex",		// NOI18N
+			putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX,		// NOI18N
 			new Integer(0));
 	wd.addPropertyChangeListener(listener);
 	/*

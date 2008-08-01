@@ -1,0 +1,14 @@
+Code completion result for source line:
+s.val|
+(QueryType=COMPLETION, NameKind=PREFIX)
+------------------------------------
+METHOD     valueOf(Object)                            String
+METHOD     valueOf(boolean)                           String
+METHOD     valueOf(char)                              String
+METHOD     valueOf(char[])                            String
+METHOD     valueOf(char[], int, int)                  String
+METHOD     valueOf(double)                            String
+METHOD     valueOf(float)                             String
+METHOD     valueOf(int)                               String
+METHOD     valueOf(long)                              String
+FIELD      value                                      char[]

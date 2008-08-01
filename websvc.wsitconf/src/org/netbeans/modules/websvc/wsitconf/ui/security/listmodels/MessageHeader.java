@@ -55,6 +55,7 @@ public class MessageHeader extends TargetElement {
     public static final String RM_ACKREQUESTED=NbBundle.getMessage(MessageHeader.class, "COMBO_RM_AckRequested");  //NOI18N
     public static final String RM_SEQUENCEACK=NbBundle.getMessage(MessageHeader.class, "COMBO_RM_SequenceAck");  //NOI18N
     public static final String RM_SEQUENCE=NbBundle.getMessage(MessageHeader.class, "COMBO_RM_Sequence");  //NOI18N
+    public static final String RM_CREATESEQUENCE=NbBundle.getMessage(MessageHeader.class, "COMBO_RM_CreateSequence");  //NOI18N
 
     public static final String[] ADDRESSING_HEADERS  = new String[] { 
         ADDRESSING_TO, 
@@ -69,7 +70,8 @@ public class MessageHeader extends TargetElement {
     public static final String[] RM_HEADERS  = new String[] { 
         RM_ACKREQUESTED,
         RM_SEQUENCEACK,
-        RM_SEQUENCE
+        RM_SEQUENCE,
+        RM_CREATESEQUENCE
     };
     
     public MessageHeader(String header) {

@@ -53,7 +53,7 @@ public class SettingsAction extends ActionNoBlock {
 
     /** creates new "Settings..." action */
     public SettingsAction() {
-        super(Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/Tools")+"|"
+        super(Bundle.getStringTrimmed("org.netbeans.core.ui.resources.Bundle", "Menu/Tools")+"|"
                 +Bundle.getStringTrimmed("org.netbeans.modules.derby.Bundle", "LBL_DerbyDatabase")+"|"
                 +Bundle.getStringTrimmed("org.netbeans.modules.derby.Bundle", "LBL_Settings"), null);
     }

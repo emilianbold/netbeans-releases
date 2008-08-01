@@ -39,8 +39,8 @@
 
 package org.netbeans.modules.db.mysql.installations;
 
-import org.netbeans.modules.db.mysql.Installation;
-import org.netbeans.modules.db.mysql.Utils;
+import org.netbeans.modules.db.mysql.impl.Installation;
+import org.netbeans.modules.db.mysql.util.Utils;
 import org.openide.util.Utilities;
 
 /**
@@ -87,7 +87,7 @@ public class WindowsStandalone50Installation implements Installation {
     }
 
     public String getDefaultPort() {
-        return "3306"; // NOI8N
+        return "3306"; // NOI18N
     }
 
     public Installation getInstallation(String command, Command cmdType) {

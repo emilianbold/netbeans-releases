@@ -42,11 +42,18 @@
 package org.netbeans.modules.autoupdate.ui.actions;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.Writer;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -66,8 +73,13 @@ public class AutoupdateSettings {
     private static String tempIdeIdentity = null;
     private static final Logger err = Logger.getLogger (AutoupdateSettings.class.getName ());
     private static final String PROP_IDE_IDENTITY = "ideIdentity"; // NOI18N
+    private static final String PROP_SUPER_IDENTITY = "superId"; // NOI18N
     private static final String PROP_PERIOD = "period"; // NOI18N
     private static final String PROP_LAST_CHECK = "lastCheckTime"; // NOI18N
+    private static final String DEFAULT_NETBEANS_DIR = ".netbeans"; // NOI18N
+    private static final String SUPER_IDENTITY_FILE_NAME = ".superId"; // NOI18N
+    private static final char IDE_ID_DELIMETER = '0'; // NOI18N
+    private static final char SUPER_ID_DELIMETER = '_'; // NOI18N
     
     public static final int EVERY_STARTUP = 0;
     public static final int EVERY_DAY = 1;
@@ -77,10 +89,7 @@ public class AutoupdateSettings {
     public static final int NEVER = 5;
     public static final int CUSTOM_CHECK_INTERVAL = 6;
     private static final String EXPIRATION_RECORD = "expiration";
-    private static final String CURRENT_VERSION = "6.1";
-    private static final String [] SUPPORTED_VERSIONS = {
-        "6.1"
-    };
+    private static final String [] VERSIONS_FOR_IMPORT = new String[0];
     
     private static final String [][] KNOWN = {
         {"EVERY_STARTUP", "0"},
@@ -96,24 +105,25 @@ public class AutoupdateSettings {
     private AutoupdateSettings () {
     }
     
-    public static String getIdeIdentity () {
+    public static void generateIdentity () {
         expirationCheck ();
         if (tempIdeIdentity instanceof String) {
-            return tempIdeIdentity;
+            return;
         }
         Object oldIdeIdentity = getPreferences ().get (PROP_IDE_IDENTITY, null);
         String newIdeIdentity = null;
         if (oldIdeIdentity == null) {
-            newIdeIdentity = modifyIdeIdentityIfNeeded (generateNewId ());
+            newIdeIdentity = modifyIdeIdentityIfNeeded (IDE_ID_DELIMETER + generateNewId ());
         } else {
             newIdeIdentity = modifyIdeIdentityIfNeeded ((String) oldIdeIdentity);
         }
         tempIdeIdentity = newIdeIdentity;
-        if (! newIdeIdentity.equals (oldIdeIdentity)) {
+        if (! newIdeIdentity.equals (oldIdeIdentity) || ! existsSuperIdentity ()) {
             err.log (Level.FINE, "Put new value of PROP_IDE_IDENTITY to " + newIdeIdentity);
             getPreferences ().put (PROP_IDE_IDENTITY, newIdeIdentity);
+            getPreferences ().put (PROP_SUPER_IDENTITY, getSuperIdentity (newIdeIdentity));
         }
-        return tempIdeIdentity;
+        return;
     }
     
     public static int getPeriod () {
@@ -160,7 +170,7 @@ public class AutoupdateSettings {
     
     // helper methods
     private static String modifyIdeIdentityIfNeeded (String oldIdeIdentity) {
-        int idx = oldIdeIdentity.indexOf ('0');
+        int idx = oldIdeIdentity.indexOf (IDE_ID_DELIMETER);
         String [] ideIdentityArr = oldIdeIdentity.split ("\\d"); // NOI18N
         String id = null;
         String oldPrefix = null;
@@ -170,7 +180,7 @@ public class AutoupdateSettings {
             id = oldIdeIdentity;
             oldPrefix = "";
         // a way for UUID    
-        } else if (idx != -1 && oldIdeIdentity.substring (ideIdentityArr [0].length ()).startsWith ("0")) {
+        } else if (idx != -1 && oldIdeIdentity.substring (ideIdentityArr [0].length ()).startsWith (new StringBuffer (IDE_ID_DELIMETER).toString ())) {
             oldPrefix = oldIdeIdentity.substring (0, idx);
             id = oldIdeIdentity.substring (oldPrefix.length ());
         // old way for stored IDs Random.nextInt()
@@ -188,6 +198,10 @@ public class AutoupdateSettings {
                 try {
                     BufferedReader r = new BufferedReader(new InputStreamReader (is));
                     newPrefix = r.readLine().trim();
+                    // don't exceed 128 chars for prefix
+                    if (newPrefix.length () > 128) {
+                        newPrefix = newPrefix.substring (0, 128);
+                    }
                 } finally {
                     is.close();
                 }
@@ -204,7 +218,7 @@ public class AutoupdateSettings {
     }
 
     private static String generateNewId () {
-        return "0" + UUID.randomUUID ().toString ();
+        return UUID.randomUUID ().toString ();
     }
     
     private static Integer parse (String s) {
@@ -237,19 +251,100 @@ public class AutoupdateSettings {
     
     private static void expirationCheck () {
         Preferences p = getPreferences ();
-        String exp = p.get (EXPIRATION_RECORD, null); 
-        if (exp == null || ! Arrays.asList (SUPPORTED_VERSIONS).contains (exp)) {
+        String exp = p.get (EXPIRATION_RECORD, null);
+        Collection<String> forImport = new HashSet<String> (Arrays.asList (VERSIONS_FOR_IMPORT));
+        String currentVersion = new File (System.getProperty ("netbeans.user")).getName ();
+        forImport.add (currentVersion);
+        if (exp == null || ! forImport.contains (exp)) {
             try {
                 p.removeNode ();
-                err.log (Level.FINE, "Don't import preferences for version " + exp);
+                err.log (Level.FINE, "Don't read preferences from userdir " + exp);
             } catch (BackingStoreException ex) {
                 err.log (Level.INFO, ex.getLocalizedMessage (), ex);
             }
         } else {
-            err.log (Level.FINEST, "Import preferences for version " + exp);
+            err.log (Level.FINEST, "Read preferences from userdir " + exp);
         }
-        getPreferences ().put (EXPIRATION_RECORD, CURRENT_VERSION);
+        err.log (Level.FINEST, "Store current version " + currentVersion + " for future import.");
+        getPreferences ().put (EXPIRATION_RECORD, currentVersion);
+    }
+    
+    private static boolean existsSuperIdentity () {
+        File superFile = getSuperFile ();
+        if (superFile == null) {
+            return true;
+        }
+        err.log (Level.FINE, "Does " + superFile + " exist? " + superFile.exists ());
+        return superFile.exists ();
+    }
+    
+    private static File getSuperFile () {
+        String home = System.getProperty ("user.home"); // NOI18N
+        // check if IDE is lauchned as JNLP
+        if ("memory".equals (home)) { // NOI18N
+            err.log (Level.INFO, "IDE launched as JNLP");
+            return null;
+        }
+        File nbDir = new File (home, DEFAULT_NETBEANS_DIR);
+        nbDir.mkdirs ();
+        return new File (nbDir, SUPER_IDENTITY_FILE_NAME);
     }
 
+    
+    private static String getSuperIdentity (String ideIdentity) {
+        File superFile = getSuperFile ();
+        if (superFile == null) {
+            return ideIdentity;
+        }
+        String superId = null;
+        if (superFile.exists ()) {
+            // read existing super Id
+            InputStream is = null;
+            try {
+                is = new FileInputStream (superFile);
+                BufferedReader r = new BufferedReader (new InputStreamReader (is));
+                superId = r.readLine ().trim ();
+                err.log (Level.FINE, "Read Super Id: " + superId);
+            } catch (IOException ex) {
+                // let's ignore it
+                err.log (Level.FINER, null, ex);
+            } finally {
+                try {
+                    is.close ();
+                } catch (IOException ex) {
+                    // let's ignore it
+                    err.log (Level.FINER, null, ex);
+                }
+            }
+        } else {
+            // generate new one and store it
+            Writer os = null;
+            try {
+                os = new BufferedWriter (new FileWriter (superFile));
+                String id = generateNewId ();
+                os.write (id);
+                superId = id;
+                err.log (Level.FINE, "Wrote Super Id: " + superId);
+            } catch (IOException ex) {
+                // let's ignore it
+                err.log (Level.FINER, null, ex);
+            } finally {
+                try {
+                    os.close ();
+                } catch (IOException ex) {
+                    // let's ignore it
+                    err.log (Level.FINER, null, ex);
+                }
+            }
+        }
+        if (superId != null) {
+            err.log (Level.FINE, "Returns whole Id: " + ideIdentity + SUPER_ID_DELIMETER + superId);
+            return ideIdentity + SUPER_ID_DELIMETER + superId;
+        } else {
+            err.log (Level.FINE, "Was problem while handling Super Id. Returns only original Id: " + ideIdentity);
+            return ideIdentity;
+        }
+
+    }
     
 }

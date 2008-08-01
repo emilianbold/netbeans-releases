@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<palette_item version="1.0">
+  <element name="DataType" />
+
+  <icon16 urlvalue="nbres:/org/netbeans/modules/uml/resources/images/datatype.png" />
+  <icon32 urlvalue="nbres:/org/netbeans/modules/uml/resources/images/datatype-32.png" />
+
+  <description localizing-bundle="org.netbeans.modules.uml.diagrams.resources.palette.Bundle"
+               display-name-key="NAME_DataType"
+               tooltip-key="HINT_DataType" />
+</palette_item>

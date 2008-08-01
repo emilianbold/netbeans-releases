@@ -43,7 +43,14 @@ package org.netbeans.modules.websvc.design.javamodel;
 import java.beans.PropertyVetoException;
 import java.io.IOException;
 import java.net.URL;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import junit.framework.Assert;
+import org.netbeans.modules.java.source.usages.RepositoryUpdater;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.MultiFileSystem;
@@ -63,6 +70,7 @@ public final class SourceUtilsTestUtil extends ProxyLookup {
     private static SourceUtilsTestUtil DEFAULT_LOOKUP = null;
     
     public SourceUtilsTestUtil() {
+        System.out.println("calling constructor "+DEFAULT_LOOKUP);
         Assert.assertNull(DEFAULT_LOOKUP);
         DEFAULT_LOOKUP = this;
     }
@@ -102,9 +110,7 @@ public final class SourceUtilsTestUtil extends ProxyLookup {
         
         extraLookupContent[0] = repository;
         
-        DEFAULT_LOOKUP.setLookup(extraLookupContent, SourceUtilsTestUtil.class.getClassLoader());
-        
-        //SourceUtilsTestUtil2.disableLocks();
+        setLookup(extraLookupContent, SourceUtilsTestUtil.class.getClassLoader());
     }
     
     static {
@@ -113,6 +119,22 @@ public final class SourceUtilsTestUtil extends ProxyLookup {
         Assert.assertEquals(SourceUtilsTestUtil.class, Lookup.getDefault().getClass());
     }
     
- 
+    public static void compileRecursively(FileObject sourceRoot) throws Exception {
+        List<FileObject> queue = new LinkedList<FileObject>();
+        
+        queue.add(sourceRoot);
+        
+        while (!queue.isEmpty()) {
+            FileObject file = queue.remove(0);
+            
+            if (file.isData()) {
+                CountDownLatch l = RepositoryUpdater.getDefault().scheduleCompilationAndWait(file, sourceRoot);
+                
+                l.await(60, TimeUnit.SECONDS);
+            } else {
+                queue.addAll(Arrays.asList(file.getChildren()));
+            }
+        }
+    } 
     
 }

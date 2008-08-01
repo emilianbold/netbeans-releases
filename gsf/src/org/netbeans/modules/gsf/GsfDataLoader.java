@@ -84,13 +84,6 @@ public class GsfDataLoader extends UniFileLoader {
             }
             
             list.addMimeType(language.getMimeType());
-
-            String[] extensions = language.getExtensions();
-
-            for (int i = 0; i < extensions.length; i++) {
-                assert extensions[i].charAt(0) != '.' : "Extensions should exclude the .";
-                list.addExtension(extensions[i]);
-            }
         }
 
         initialized = true;
@@ -129,6 +122,9 @@ public class GsfDataLoader extends UniFileLoader {
                 String resourcePath = "";
                 if (cp != null) {
                     resourcePath = cp.getResourceName(target);
+                    if (resourcePath == null) {
+                        resourcePath = ""; // NOI18N
+                    }
                 } else {
                     ErrorManager.getDefault().log(ErrorManager.WARNING, "No classpath was found for folder: "+target);
                 }

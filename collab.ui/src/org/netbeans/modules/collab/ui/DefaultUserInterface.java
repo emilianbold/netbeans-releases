@@ -362,13 +362,13 @@ public class DefaultUserInterface extends UserInterface {
          *
          */
     private void initWizard(WizardDescriptor wizardDesc) {
-        wizardDesc.putProperty("WizardPanel_autoWizardStyle", // NOI18N
+        wizardDesc.putProperty(WizardDescriptor.PROP_AUTO_WIZARD_STYLE, // NOI18N
             Boolean.TRUE
         );
-        wizardDesc.putProperty("WizardPanel_contentDisplayed", // NOI18N
+        wizardDesc.putProperty(WizardDescriptor.PROP_CONTENT_DISPLAYED, // NOI18N
             Boolean.TRUE
         );
-        wizardDesc.putProperty("WizardPanel_contentNumbered", // NOI18N
+        wizardDesc.putProperty(WizardDescriptor.PROP_CONTENT_NUMBERED, // NOI18N
             Boolean.TRUE
         );
 

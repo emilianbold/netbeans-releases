@@ -58,18 +58,19 @@
 
         <localizing-bundle>org.netbeans.modules.websvc.saas.services.google.Bundle</localizing-bundle>
 
-        <group name="Google">
-        </group>
+        <group name="Google"/>
+        
+        <code-gen>
+            <artifacts targets="java,servlet,resource,jsp" profile="Templates/SaaSServices/apikey.properties"/>
+            <artifacts targets="php" profile="Templates/SaaSServices/apikey.php"/>
+        </code-gen>
 
-        <authentication profile="SaaSServices/Google/profile.properties">
+        <authentication>
             <api-key id="key"/>
         </authentication>
 
     </saas-metadata>
 
-    <methods>
-        <method name="accountsClientLogin" 
-            href="#google.accounts_ClientLogin"/>
-    </methods>
+    <methods/>
 
 </saas-services>

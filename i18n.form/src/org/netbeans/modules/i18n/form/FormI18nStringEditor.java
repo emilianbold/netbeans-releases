@@ -185,7 +185,7 @@ public class FormI18nStringEditor extends PropertyEditorSupport implements FormA
         StringBuilder buf = new StringBuilder();
         buf.append(CODE_MARK_LINE_COMMENT + "NOI18N"); // NOI18N
         if (javaString.startsWith("java.util.ResourceBundle.getBundle(")) { // NOI18N
-            int end = javaString.indexOf(").") + 1; // NOI18N
+            int end = javaString.lastIndexOf(").get") + 1; // NOI18N
             if (end > 0) {
                 // use special code marks (*/\n\\2) to encode 3 data elements:
                 // - the code to replace

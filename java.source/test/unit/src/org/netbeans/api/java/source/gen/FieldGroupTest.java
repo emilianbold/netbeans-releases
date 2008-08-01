@@ -81,6 +81,7 @@ public class FieldGroupTest extends GeneratorTestMDRCompat {
 //        suite.addTest(new FieldGroupTest("test114571"));
 //        suite.addTest(new FieldGroupTest("testFieldGroupModifiers"));
 //        suite.addTest(new FieldGroupTest("testNoFieldGroup"));
+//        suite.addTest(new FieldGroupTest("testRemoveFromFieldGroup"));
         return suite;
     }
     
@@ -717,7 +718,7 @@ public class FieldGroupTest extends GeneratorTestMDRCompat {
             "package javaapplication1;\n" +
             "\n" +
             "class MyOuterClass {\n" +
-            "    public boolean a, b, c\n" +
+            "    public boolean a, b, c;\n" +
             "}\n"
             );
         String golden = 
@@ -774,6 +775,39 @@ public class FieldGroupTest extends GeneratorTestMDRCompat {
                 nue = make.insertClassMember(nue, 0, make.Variable(mods, "b", make.QualIdent(e.getTypeElement("java.lang.String")), null));
                 nue = make.insertClassMember(nue, 0, make.Variable(mods, "a", make.QualIdent(e.getTypeElement("java.lang.Exception")), null));
                 workingCopy.rewrite(clazz, nue);
+            }
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    public void testRemoveFromFieldGroup() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package javaapplication1;\n" +
+            "\n" +
+            "class MyOuterClass {\n" +
+            "    public boolean a, b, c;\n" +
+            "}\n"
+            );
+        String golden = 
+            "package javaapplication1;\n" +
+            "\n" +
+            "class MyOuterClass {\n" +
+            "    public boolean b, c;\n" +
+            "}\n";
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                
+                VariableTree var = (VariableTree) clazz.getMembers().get(1);
+                workingCopy.rewrite(clazz, make.removeClassMember(clazz, var));
             }
         };
         testSource.runModificationTask(task).commit();

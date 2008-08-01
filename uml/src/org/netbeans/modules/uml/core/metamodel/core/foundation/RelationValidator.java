@@ -46,6 +46,7 @@ import org.netbeans.modules.uml.core.eventframework.EventDispatchNameKeeper;
 import org.netbeans.modules.uml.core.eventframework.IEventDispatchController;
 import org.netbeans.modules.uml.core.eventframework.IEventDispatcher;
 import org.netbeans.modules.uml.core.eventframework.IEventPayload;
+import org.netbeans.modules.uml.core.metamodel.infrastructure.IDerivationClassifier;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IClassifier;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IGeneralization;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IImplementation;
@@ -201,6 +202,10 @@ public class RelationValidator {
 						{
 							validated = false;
 						}
+                                                else if(checkDerivationClassifier(pFrom, pTo, relType) == false)
+                                                {
+                                                    validated = false;
+                                                }
 					}
 
 					if (validated && relType.equals("Implementation")
@@ -210,6 +215,10 @@ public class RelationValidator {
 						{
 							validated = false;
 						}
+                                                else if(checkDerivationClassifier(pFrom, pTo, relType) == false)
+                                                {
+                                                    validated = false;
+                                                }
 					}
 					// Now we have all flavors of dependency, but each one can exist?
 					// TODO: Limit dependencies?
@@ -346,6 +355,47 @@ public class RelationValidator {
 		}
 		return retVal;
 	}
+
+    private boolean checkDerivationClassifier(IClassifier pFrom, IClassifier pTo, String relType)
+    {
+        boolean retVal = false;
+        
+        if (pTo instanceof IDerivationClassifier)
+        {
+            if(relType.equals("Generalization") == true)
+            {
+                IDerivationClassifier classifier = (IDerivationClassifier) pTo;
+                if(classifier.getDerivation() != null)
+                {
+                    IClassifier template = classifier.getDerivation().getTemplate();
+                    if (!(template instanceof IInterface) )
+                    {
+                        retVal = true;
+
+                    }
+                }
+            }
+            else if(relType.equals("Implementation") == true)
+            {
+                IDerivationClassifier classifier = (IDerivationClassifier) pTo;
+                if(classifier.getDerivation() != null)
+                {
+                    IClassifier template = classifier.getDerivation().getTemplate();
+                    if (template instanceof IInterface) 
+                    {
+                        retVal = true;
+
+                    }
+                }
+            }
+        }
+        else
+        {
+            retVal = true;
+        }
+        
+        return retVal;
+    }
 
 
 }

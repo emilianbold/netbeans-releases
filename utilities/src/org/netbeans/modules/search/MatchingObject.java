@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -62,8 +62,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import org.netbeans.modules.search.LineReader.LineSeparator;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -96,14 +95,19 @@ final class MatchingObject implements PropertyChangeListener {
      * (usually a {@code DataObject})
      */
     final Object object;
+    /**
+     * charset used for full-text search of the object.
+     * It is {@code null} if the object was not full-text searched.
+     */
+    private final Charset charset;
     
     /**
      * holds information on whether the {@code object} is selected
      * to be replaced or not.
-     * Unless {@link #selectedMatches} is non-{@code null}, this field's
+     * Unless {@link #matchesSelection} is non-{@code null}, this field's
      * value also applies to the object's subnodes (if any).
      * 
-     * @see  #selectedMatches
+     * @see  #matchesSelection
      */
     private boolean selected = true;
     /**
@@ -121,7 +125,9 @@ final class MatchingObject implements PropertyChangeListener {
      * 
      * @see  #selected
      */
-    private boolean[] selectedMatches;
+    private boolean[] matchesSelection;
+    /** holds number of selected (checked) matches */
+    private int selectedMatchesCount;
     /**
      * flag that indicates that the tree was not notified of this
      * {@code MatchingObject}'s children's selection change and that
@@ -136,9 +142,9 @@ final class MatchingObject implements PropertyChangeListener {
     private StringBuilder text;
     
     /**
-     * {@code true} if the file's line terminator is other than {@code "\\n"}
+     * list of line separators used in the file
      */
-    boolean wasCrLf = false;
+    LineSeparator[] lineSeparators;
     
     /**
      * Creates a new {@code MatchingObject} with a reference to the found
@@ -146,10 +152,12 @@ final class MatchingObject implements PropertyChangeListener {
      * 
      * @param  object  found object returned by the {@code SearchGroup}
      *                 (usually a {@code DataObject}) - must not be {@code null}
+     * @param  charset  charset used for full-text search of the object,
+     *                  or {@code null} if the object was not full-text searched
      * @exception  java.lang.IllegalArgumentException
      *             if the passed {@code object} is {@code null}
      */
-    MatchingObject(ResultModel resultModel, Object object) {
+    MatchingObject(ResultModel resultModel, Object object, Charset charset) {
         if (resultModel == null) {
             throw new IllegalArgumentException("resultModel = null");   //NOI18N
         }
@@ -159,6 +167,7 @@ final class MatchingObject implements PropertyChangeListener {
         
         this.resultModel = resultModel;
         this.object = object;
+        this.charset = charset;
         
         FileObject fileObject = getFileObject();
         file = FileUtil.toFile(fileObject);
@@ -219,7 +228,7 @@ final class MatchingObject implements PropertyChangeListener {
         }
         
         this.selected = selected;
-        selectedMatches = null;
+        matchesSelection = null;
     }
     
     /**
@@ -231,7 +240,7 @@ final class MatchingObject implements PropertyChangeListener {
     /**
      */
     boolean isUniformSelection() {
-        return selectedMatches == null;
+        return matchesSelection == null;
     }
     
     /**
@@ -243,13 +252,13 @@ final class MatchingObject implements PropertyChangeListener {
      *                       unselected
      */
     Boolean checkSubnodesSelection() {
-        if (selectedMatches == null) {
+        if (matchesSelection == null) {
             return Boolean.valueOf(selected);
         }
         
-        final boolean firstMatchSelection = selectedMatches[0];
-        for (int i = 1; i < selectedMatches.length; i++) {
-            if (selectedMatches[i] != firstMatchSelection) {
+        final boolean firstMatchSelection = matchesSelection[0];
+        for (int i = 1; i < matchesSelection.length; i++) {
+            if (matchesSelection[i] != firstMatchSelection) {
                 return null;
             }
         }
@@ -257,39 +266,58 @@ final class MatchingObject implements PropertyChangeListener {
     }
     
     /**
+     * 
+     * @return  {@code true} if the subnode's selection change caused change
+     *          of this object's node's selection, {@code false} otherwise
      */
-    void toggleSubnodeSelection(ResultModel resultModel, int index) {
-        if (selectedMatches == null) {
-            selectedMatches = new boolean[resultModel.getDetailsCount(this)];
-            Arrays.fill(selectedMatches, this.selected);
-        }
-        selectedMatches[index] = !selectedMatches[index];
-    }
-    
-    /**
-     */
-    void setSubnodeSelected(int index,
-                            boolean selected,
-                            ResultModel resultModel) {
-        if (selectedMatches == null) {
-            if (selected == this.selected) {
-                return;
+    boolean toggleSubnodeSelection(ResultModel resultModel, int index) {
+        /* uniform selection */
+        if (matchesSelection == null) {
+            int detailsCount = resultModel.getDetailsCount(this);
+            if (detailsCount == 1) {
+                selected = !selected;
+                return true;
+            } else {
+                matchesSelection = new boolean[detailsCount];
+                Arrays.fill(matchesSelection, selected);
+                matchesSelection[index] = !selected;
+
+                boolean wasSelected = selected;
+                selectedMatchesCount = wasSelected ? detailsCount - 1 : 1;
+                selected = true;
+                return (selected != wasSelected);
             }
-            selectedMatches = new boolean[resultModel.getDetailsCount(this)];
-            Arrays.fill(selectedMatches, this.selected);
         }
-        
-        assert (index >= 0) && (index < selectedMatches.length);
-        selectedMatches[index] = selected;
+
+        /* some subnodes selected, some unselected */
+        assert selected;
+        assert (selectedMatchesCount > 0)
+               && (selectedMatchesCount < matchesSelection.length);
+        boolean wasSubnodeSelected = matchesSelection[index];
+        if (wasSubnodeSelected) {
+            if (--selectedMatchesCount == 0) {
+                matchesSelection = null;
+                selected = false;
+                return true;
+            }
+        } else {
+            if (++selectedMatchesCount == matchesSelection.length) {
+                matchesSelection = null;
+                return false;
+            }
+        }
+
+        matchesSelection[index] = !wasSubnodeSelected;
+        return false;
     }
     
     /**
      */
     boolean isSubnodeSelected(int index) {
-        assert (selectedMatches == null)
-               || ((index >= 0) && (index < selectedMatches.length));
-        return (selectedMatches == null) ? selected
-                                         : selectedMatches[index];
+        assert (matchesSelection == null)
+               || ((index >= 0) && (index < matchesSelection.length));
+        return (matchesSelection == null) ? selected
+                                         : matchesSelection[index];
     }
     
     @Override
@@ -428,23 +456,11 @@ final class MatchingObject implements PropertyChangeListener {
         
         ByteBuffer buf = getByteBuffer();
         if (buf != null) {
-            Charset charset = BasicSearchCriteria.getCharset(getFileObject());
             CharBuffer cbuf = decodeByteBuffer(buf, charset);
-            String terminator
-                    = System.getProperty("line.separator");         //NOI18N
-
-            if (!terminator.equals("\n")) {                         //NOI18N
-                Matcher matcher = Pattern.compile(terminator).matcher(cbuf);
-                if (matcher.find()) {
-                    wasCrLf = true;
-                    matcher.reset();
-                    ret = new StringBuilder(
-                                        matcher.replaceAll("\n"));  //NOI18N
-                }
-            }
-            if (ret == null) {
-                ret = new StringBuilder(cbuf);
-            }
+            LineReader reader = new LineReader(cbuf);
+            ret = reader.readText();
+            lineSeparators = reader.getLineSeparators();
+            reader.clear();
         }
         return ret;
     }
@@ -714,20 +730,13 @@ final class MatchingObject implements PropertyChangeListener {
         }
         
         if (REALLY_WRITE) {
-            if (wasCrLf) {
-                String terminator
-                        = System.getProperty("line.separator");         //NOI18N
-                //XXX use constant - i.e. on mac, only \r, etc.
-                text = new StringBuilder(
-                        text.toString().replace("\n", terminator));     //NOI18N
-            }
             final FileObject fileObject = getFileObject();
             Writer writer = null;
             try {
                 writer = new OutputStreamWriter(
                         fileObject.getOutputStream(fileLock),
-                        BasicSearchCriteria.getCharset(fileObject));
-                writer.write(text.toString());
+                        charset);
+                writer.write(makeStringToWrite());
             } finally {
                 if (writer != null) {
                     writer.close();
@@ -737,6 +746,36 @@ final class MatchingObject implements PropertyChangeListener {
             System.err.println("Would write to " + getFile().getPath());//NOI18N
             System.err.println(text);
         }
+    }
+
+    /**
+     */
+    private String makeStringToWrite() {
+        return makeStringToWrite(text, lineSeparators);
+    }
+    
+    /**
+     */
+    static String makeStringToWrite(StringBuilder text,
+                                    LineSeparator[] lineSeparators) {
+        if ((lineSeparators == null) || (lineSeparators.length == 0)) {
+            return text.toString();
+        }
+
+        StringBuilder outBuf = new StringBuilder(text.length()
+                                                 + lineSeparators.length);
+        int from = 0;
+        int index;
+        int separatorIndex = 0;
+        while ((index = text.indexOf("\n", from)) != -1) {              //NOI18N
+            outBuf.append(text.substring(from, index));
+            outBuf.append(lineSeparators[separatorIndex++].getString());
+            from = index + 1;
+        }
+        if (from != text.length()) {
+            outBuf.append(text.substring(from));
+        }
+        return outBuf.toString();
     }
 
     /**

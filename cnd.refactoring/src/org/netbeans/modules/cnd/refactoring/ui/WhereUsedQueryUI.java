@@ -118,21 +118,21 @@ public class WhereUsedQueryUI implements RefactoringUI {
     
     private void setForMethod() {
         assert panel != null;
-        if (panel.isMethodFromBaseClass()) {
-            CsmObject refObj = panel.getBaseMethod();
-            if (refObj == null) {
-                query.setRefactoringSource(Lookup.EMPTY);
-            } else {
-                query.setRefactoringSource(Lookups.singleton(CsmRefactoringUtils.getHandler(refObj)));
-            }            
-        } else {
+//        if (panel.isMethodFromBaseClass()) {
+//            CsmObject refObj = panel.getBaseMethod();
+//            if (refObj == null) {
+//                query.setRefactoringSource(Lookup.EMPTY);
+//            } else {
+//                query.setRefactoringSource(Lookups.singleton(CsmRefactoringUtils.getHandler(refObj)));
+//            }
+//        } else {
             CsmObject refObj = panel.getReferencedObject();
             if (refObj == null) {
                 query.setRefactoringSource(Lookup.EMPTY);
             } else {
                 query.setRefactoringSource(Lookups.singleton(CsmRefactoringUtils.getHandler(refObj)));
             }
-        }
+//        }
         query.putValue(WhereUsedQueryConstants.FIND_OVERRIDING_METHODS,panel.isMethodOverriders());
         query.putValue(WhereUsedQueryConstants.SEARCH_FROM_BASECLASS,panel.isMethodFromBaseClass());
         query.putValue(WhereUsedQuery.FIND_REFERENCES,panel.isMethodFindUsages());

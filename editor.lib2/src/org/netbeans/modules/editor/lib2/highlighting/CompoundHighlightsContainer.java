@@ -134,16 +134,15 @@ public final class CompoundHighlightsContainer extends AbstractHighlightsContain
                     // not sure what is cached -> reset the cache
                     discardCache();
                 } else {
-                    int maxDistance = Math.max(MIN_CACHE_SIZE, highest - lowest);
-                    if (endOffset > lowest - maxDistance && endOffset <= highest && startOffset < lowest) {
+                    if (endOffset <= highest && startOffset < lowest) {
                         // below the cached area, but close enough
-                        update = new int [] { startOffset, lowest };
-                    } else if (startOffset < highest + maxDistance && startOffset >= lowest && endOffset > highest) {
+                        update = new int [] { expandBelow(startOffset, lowest), lowest };
+                    } else if (startOffset >= lowest && endOffset > highest) {
                         // above the cached area, but close enough
-                        update = new int [] { highest, endOffset };
+                        update = new int [] { highest, expandAbove(highest, endOffset) };
                     } else if (startOffset < lowest && endOffset > highest) {
                         // extends the cached area on both sides
-                        update = new int [] { startOffset, lowest, highest, endOffset };
+                        update = new int [] { expandBelow(startOffset, lowest), lowest, highest, expandAbove(highest, endOffset) };
                     } else if (startOffset >= lowest && endOffset <= highest) {
                         // inside the cached area
                     } else {
@@ -158,16 +157,13 @@ public final class CompoundHighlightsContainer extends AbstractHighlightsContain
                 bag = new OffsetsBag(doc, true);
                 cache = bag;
                 lowest = highest = -1;
-                update = new int [] { startOffset, endOffset };
+                update = new int [] { expandBelow(startOffset, endOffset), expandAbove(startOffset, endOffset) };
             }
             
             if (update != null) {
                 for (int i = 0; i < update.length / 2; i++) {
-                    if (update[2 * i + 1] - update[2 * i] < MIN_CACHE_SIZE) {
-                        update[2 * i + 1] = update[2 * i] + MIN_CACHE_SIZE;
-                        if (update[2 * i + 1] >= doc.getLength()) {
-                            update[2 * i + 1] = Integer.MAX_VALUE;
-                        }
+                    if (update[2 * i + 1] >= doc.getLength()) {
+                        update[2 * i + 1] = Integer.MAX_VALUE;
                     }
                     
                     updateCache(update[2 * i], update[2 * i + 1], bag);
@@ -341,6 +337,24 @@ public final class CompoundHighlightsContainer extends AbstractHighlightsContain
             cache.discard();
         }
         cache = null;
+    }
+    
+    private static int expandBelow(int startOffset, int endOffset) {
+        if (startOffset == 0 || endOffset == Integer.MAX_VALUE) {
+            return startOffset;
+        } else {
+            int expandBy = Math.max((endOffset - startOffset) >> 2, MIN_CACHE_SIZE);
+            return Math.max(startOffset - expandBy, 0);
+        }
+    }
+    
+    private static int expandAbove(int startOffset, int endOffset) {
+        if (endOffset == Integer.MAX_VALUE) {
+            return endOffset;
+        } else {
+            int expandBy = Math.max((endOffset - startOffset) >> 2, MIN_CACHE_SIZE);
+            return endOffset + expandBy;
+        }
     }
     
     private static final class LayerListener implements HighlightsChangeListener {

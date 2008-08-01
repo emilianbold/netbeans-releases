@@ -41,20 +41,10 @@
 
 package org.netbeans.modules.ruby;
 
-import java.util.List;
-import junit.framework.TestCase;
 import org.jruby.ast.Node;
+import org.netbeans.modules.gsf.GsfTestCompilationInfo;
 import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.ElementHandle;
-import org.netbeans.modules.gsf.api.OccurrencesFinder;
 import org.netbeans.modules.gsf.api.OffsetRange;
-import org.netbeans.modules.gsf.api.ParseListener;
-import org.netbeans.modules.gsf.api.ParserFile;
-import org.netbeans.modules.gsf.api.ParserResult;
-import org.netbeans.modules.gsf.api.PositionManager;
-import org.netbeans.modules.gsf.api.SemanticAnalyzer;
-import org.netbeans.modules.gsf.api.SourceFileReader;
-import org.netbeans.modules.ruby.RubyParser.Sanitize;
 
 /**
  *
@@ -66,10 +56,12 @@ public class RubyParserTest extends RubyTestBase {
         super(testName);
     }
 
+    @Override
     protected void setUp() throws Exception {
         super.setUp();
     }
 
+    @Override
     protected void tearDown() throws Exception {
         super.tearDown();
     }
@@ -88,7 +80,7 @@ public class RubyParserTest extends RubyTestBase {
             assertTrue(lineOffset != -1);
 
             caretOffset = lineOffset + caretDelta;
-            ((TestCompilationInfo)info).setCaretOffset(caretOffset);
+            ((GsfTestCompilationInfo)info).setCaretOffset(caretOffset);
         }
 
         Node root = AstUtilities.getRoot(info);
@@ -120,7 +112,7 @@ public class RubyParserTest extends RubyTestBase {
     }
 
     public void testPartial2() throws Exception {
-        checkParseTree("testfiles/broken2.rb", "Foo.new.^", "CallNode");
+        checkParseTree("testfiles/broken2.rb", "Foo.new.^", "CallNoArgNode");
     }
 
     public void testPartial3() throws Exception {

@@ -62,10 +62,10 @@ import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JLabelOperator;
-import org.netbeans.jemmy.operators.JRadioButtonOperator;
 import org.netbeans.jemmy.operators.JTabbedPaneOperator;
 import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.ide.ProjectSupport;
+import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.test.ide.WatchProjects;
 
 /** Validation test of profiler.
  *
@@ -75,7 +75,7 @@ public class ProfilerValidation extends JellyTestCase {
     
     private static final String SAMPLE_PROJECT_NAME = "AnagramGame";
     
-    protected static final String  MENU_ITEM_PROFILE_MAIN_PROJECT   = "Profile Main Project...";
+    protected static final String  MENU_ITEM_PROFILE_MAIN_PROJECT   = "Profile Project...";
     protected static final String  MENU_ITEM_ATTACH_PROFILE         = "Attach Profiler...";
     protected static final String  MENU_ITEM_TAKE_SNAPSHOT          = "Take Snapshot of Collected Results";
     protected static final String  MENU_ITEM_STOP_PROFILING_SESSION = "Stop Profiling Session";
@@ -103,7 +103,12 @@ public class ProfilerValidation extends JellyTestCase {
     
     protected static final String  TEXT_OUTPUT = "Established local connection with the tool";
     
-    
+    static String[] tests = new String[]{
+            "testProfilerMenus",
+            "testProfilerProperties",
+//            "testCreateProject",
+//            "testProfiler"
+    };
     /** Default constructor.
      * @param name test case name
      */
@@ -114,15 +119,24 @@ public class ProfilerValidation extends JellyTestCase {
     /** Defaine order of test cases.
      * @return NbTestSuite instance
      */
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new ProfilerValidation("testProfilerMenus"));
-        suite.addTest(new ProfilerValidation("testProfilerProperties"));
-        //suite.addTest(new ProfilerValidation("testCreateProject"));
-        //suite.addTest(new ProfilerValidation("testProfiler"));
-        return suite;
+//    public static NbTestSuite suite() {
+//        NbTestSuite suite = new NbTestSuite();
+//        suite.addTest(new ProfilerValidation("testProfilerMenus"));
+//        suite.addTest(new ProfilerValidation("testProfilerProperties"));
+//        //suite.addTest(new ProfilerValidation("testCreateProject"));
+//        //suite.addTest(new ProfilerValidation("testProfiler"));
+//        return suite;
+//    }
+
+    public static junit.framework.Test suite() {
+        return NbModuleSuite.create(
+                NbModuleSuite.createConfiguration(ProfilerValidation.class)
+                .addTest(tests)
+                .clusters(".*")
+                .enableModules(".*")
+                .gui(true)
+                );
     }
-    
     /** Use for execution inside IDE */
     public static void main(java.lang.String[] args) {
         // run whole suite
@@ -194,7 +208,7 @@ public class ProfilerValidation extends JellyTestCase {
         // wait project appear in projects view
         ProjectRootNode projectNode = new ProjectsTabOperator().getProjectRootNode(SAMPLE_PROJECT_NAME);
         // wait classpath scanning finished
-        ProjectSupport.waitScanFinished();
+        WatchProjects.waitScanFinished();
         projectNode.buildProject();
         MainWindowOperator.getDefault().waitStatusText("Finished Building");
         

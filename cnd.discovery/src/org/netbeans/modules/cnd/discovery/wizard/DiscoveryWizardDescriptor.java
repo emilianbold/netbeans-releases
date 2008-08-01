@@ -166,7 +166,7 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
     }
     
     public void setMessage(String message) {
-        putProperty("WizardPanel_errorMessage", message); // NOI18N
+        putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, message); // NOI18N
     }
     
     public void clean() {
@@ -311,7 +311,7 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
         }
         
         public void setMessage(String message) {
-            wizard.putProperty("WizardPanel_errorMessage", message); // NOI18N
+            wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, message); // NOI18N
         }
         
         public void clean() {
@@ -442,7 +442,7 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
         }
         
         public void setMessage(String message) {
-            map.put("WizardPanel_errorMessage", message); // NOI18N
+            map.put(WizardDescriptor.PROP_ERROR_MESSAGE, message); // NOI18N
         }
         
         public void clean() {

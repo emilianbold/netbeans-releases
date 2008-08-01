@@ -42,6 +42,8 @@ package org.netbeans.modules.editor.macros.storage.ui;
 
 import java.awt.Component;
 import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import javax.swing.AbstractButton;
 import javax.swing.JEditorPane;
@@ -58,6 +60,8 @@ import javax.swing.event.TableModelListener;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.core.options.keymap.api.ShortcutAction;
 import org.netbeans.core.options.keymap.api.ShortcutsFinder;
+import org.netbeans.modules.editor.macros.storage.ui.MacrosModel.Macro;
+import org.netbeans.modules.editor.settings.storage.spi.support.StorageSupport;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.NotifyDescriptor.InputLine;
@@ -82,8 +86,6 @@ public class MacrosPanel extends JPanel {
         this.lookup = lookup;
         
         initComponents();
-
-        setName(loc("Macro_Tab")); //NOI18N
 
         // 1) init components
         tMacros.getAccessibleContext().setAccessibleName(loc("AN_Macros_Table")); //NOI18N
@@ -252,29 +254,48 @@ public class MacrosPanel extends JPanel {
     }//GEN-LAST:event_bNewActionPerformed
 
     private void bSetShortcutActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bSetShortcutActionPerformed
-        // TODO add your handling code here:
         ShortcutsFinder shortcutsFinder = lookup.lookup(ShortcutsFinder.class);
         assert shortcutsFinder != null : "Can't find ShortcutsFinder"; //NOI18N
         
+	int selectedRow = tMacros.getSelectedRow();
+	
+	shortcutsFinder.refreshActions();
         String shortcut = shortcutsFinder.showShortcutsDialog();
         // is there already an action with such SC defined?
         ShortcutAction act = shortcutsFinder.findActionForShortcut(shortcut);
+	
+	List<Macro> list = model.getAllMacros();
+	Iterator<Macro> it = list.iterator();
+	while (it.hasNext()) {
+	    Macro m = it.next();
+	    if (m.getShortcuts().size() > 0) {
+		String sc  = StorageSupport.keyStrokesToString(m.getShortcuts().get(0).getKeyStrokeList(), false);
+		if (sc.equals(shortcut))
+		    m.setShortcuts(Collections.<String>emptySet());
+	    }
+	}
+	
         if (act != null) {
-            Set<String> set = Collections.emptySet();
-            ((MacrosModel.Macro) act).setShortcuts(set);
+            Set<String> set = Collections.<String>emptySet();
+	    // This colliding SC is not a macro, don't try to clean it up
+	    if(act instanceof MacrosModel.Macro)
+		((MacrosModel.Macro) act).setShortcuts(set);
+	    
             shortcutsFinder.setShortcuts(act, set);
         }
         
         if (shortcut != null) {
-            MacrosModel.Macro macro = model.getMacroByIndex(tMacros.getSelectedRow());
+            MacrosModel.Macro macro = model.getMacroByIndex(selectedRow);
             macro.setShortcut(shortcut);
             shortcutsFinder.setShortcuts(macro, Collections.singleton(shortcut));
+//	    shortcutsFinder.apply();
 //                StorageSupport.keyStrokesToString(Arrays.asList(StorageSupport.stringToKeyStrokes(shortcut, true)), false)));
         }
     }//GEN-LAST:event_bSetShortcutActionPerformed
 
     private void bRemoveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bRemoveActionPerformed
-        // TODO add your handling code here:
+	ShortcutsFinder shortcutsFinder = lookup.lookup(ShortcutsFinder.class);
+	shortcutsFinder.setShortcuts(model.getMacroByIndex(tMacros.getSelectedRow()), Collections.<String>emptySet());
         model.deleteMacro(tMacros.getSelectedRow());
     }//GEN-LAST:event_bRemoveActionPerformed
 

@@ -20,8 +20,7 @@
                 <dependency>
                     <code-name-base>org.netbeans.modules.print</code-name-base>
                     <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.1</specification-version>
+                        <specification-version>6.5</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -31,24 +30,12 @@
                         <specification-version>1.1</specification-version>
                     </run-dependency>
                 </dependency>
-                <!-- <dependency>
-                    <code-name-base>org.netbeans.modules.sql.help</code-name-base>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.soa.validation</code-name-base>
                     <run-dependency>
-                        <specification-version>1.1</specification-version>
+                        <specification-version>6.5</specification-version>
                     </run-dependency>
                 </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.sql.project</code-name-base>
-                    <run-dependency>
-                        <specification-version>1.0</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.sql.wizard</code-name-base>
-                    <run-dependency>
-                        <specification-version>1.1</specification-version>
-                    </run-dependency>
-                </dependency> -->
                 <dependency>
                     <code-name-base>org.netbeans.modules.xml.jaxb</code-name-base>
                     <run-dependency>
@@ -75,40 +62,54 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.xslt.core</code-name-base>
+                    <code-name-base>org.netbeans.modules.sql.help</code-name-base>
                     <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.0</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.xslt.mapper</code-name-base>
-                    <run-dependency>
-                        <specification-version>1.0</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.xslt.model</code-name-base>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.0</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.xslt.project</code-name-base>
-                    <run-dependency>
-                        <release-version>1</release-version>
                         <specification-version>1.1</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.xslt.help</code-name-base>
+                    <code-name-base>org.netbeans.modules.sql.project</code-name-base>
                     <run-dependency>
-                        <release-version>1</release-version>
+                        <specification-version>1.1</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.sql.wizard</code-name-base>
+                    <run-dependency>
                         <specification-version>1.1</specification-version>
                     </run-dependency>
                 </dependency>
             </module-dependencies>
+            <test-dependencies>
+                <test-type>
+                    <name>qa-functional</name>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.soa.mapper</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.soa.libs.jgo</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.jellytools</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.jellytools.platform</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.jemmy</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.nbjunit</code-name-base>
+                        <recursive/>
+                        <compile-dependency/>
+                    </test-dependency>
+                </test-type>
+            </test-dependencies>
             <public-packages/>
         </data>
     </configuration>

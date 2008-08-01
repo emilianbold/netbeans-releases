@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.websvc.wsitmodelext.security.impl;
 
-import org.netbeans.modules.websvc.wsitmodelext.security.SecurityPolicyQName;
 import org.netbeans.modules.websvc.wsitmodelext.security.Wss10;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.w3c.dom.Element;
@@ -59,8 +58,4 @@ public class Wss10Impl extends WssElementImpl implements Wss10 {
         super(model, e);
     }
     
-    public Wss10Impl(WSDLModel model){
-        this(model, createPrefixedElement(SecurityPolicyQName.WSS10.getQName(), model));
-    }
-
 }

@@ -41,111 +41,76 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import javax.management.Attribute;
-import junit.framework.TestCase;
+import javax.xml.parsers.ParserConfigurationException;
+import org.junit.BeforeClass;
+import org.junit.Test;
 import org.netbeans.modules.sun.manager.jbi.editors.ComboBoxPropertyEditor;
 import org.netbeans.modules.sun.manager.jbi.editors.PasswordEditor;
-import org.netbeans.modules.sun.manager.jbi.management.model.OldJBIComponentConfigurationDescriptor;
-import org.netbeans.modules.sun.manager.jbi.management.OldConfigurationMBeanAttributeInfo;
-import org.netbeans.modules.xml.schema.model.Schema;
+import org.netbeans.modules.sun.manager.jbi.management.model.JBIComponentConfigurationDescriptor;
+import org.netbeans.modules.sun.manager.jbi.management.model.JBIComponentConfigurationMBeanAttributeInfo;
+import org.netbeans.modules.sun.manager.jbi.management.model.JBIComponentConfigurationParser;
 import org.openide.nodes.PropertySupport;
-
+import org.xml.sax.SAXException;
+import static org.junit.Assert.*;
 /**
  *
  * @author jqian
  */
-public class SchemaBasedConfigPropertySupportFactoryTest extends TestCase {
-    
-    private Schema schema;
-    
-    private OldJBIComponentConfigurationDescriptor descriptor;
+public class SchemaBasedConfigPropertySupportFactoryTest  {
 
-    public SchemaBasedConfigPropertySupportFactoryTest(String testName) {
-        super(testName);
+    private static JBIComponentConfigurationDescriptor configDescriptor;
+    
+    public SchemaBasedConfigPropertySupportFactoryTest() {        
     }
 
-    protected void setUp() throws Exception {        
-        URI xsdURI = getClass().getResource(
-                "resources/sun-http-binding-config.xsd").toURI();
-        File xsdFile = new File(xsdURI);        
-        String schemaText = getContent(xsdFile);
-        schema = OldSchemaBasedConfigPropertySupportFactory.getSchema(schemaText, "whatever");
+    @BeforeClass
+    public static void setUpClass() throws URISyntaxException, 
+            ParserConfigurationException, IOException, SAXException {
         
-        URI xmlURI = getClass().getResource(
-                "resources/sun-http-binding-config.xml").toURI();
-        File xmlFile = new File(xmlURI);        
+        URI xmlURI = SchemaBasedConfigPropertySupportFactoryTest.class.
+                getResource("resources/sun-http-binding-jbi.xml").toURI();
+        File xmlFile = new File(xmlURI);
         String xmlText = getContent(xmlFile);
-        descriptor = OldJBIComponentConfigurationDescriptor.parse(xmlText);        
-    }
-
-    protected void tearDown() throws Exception {        
+        
+        configDescriptor = JBIComponentConfigurationParser.parse(xmlText);
     }
     
-    public void testGetBaseTypeName() {
-        // integer
-        String type = OldSchemaBasedConfigPropertySupportFactory.
-            getGlobalSimpleTypeName(schema, "OutboundThreads");
-        assertEquals(type, "tns:SimpleRestrictedThreadType");
-        
-        // boolean
-        type = OldSchemaBasedConfigPropertySupportFactory.
-            getGlobalSimpleTypeName(schema, "UseJVMProxySettings");
-        assertEquals(type, "xsd:boolean");
-        
-        // string
-        type = OldSchemaBasedConfigPropertySupportFactory.
-            getGlobalSimpleTypeName(schema, "ProxyHost");
-        assertEquals(type, "tns:SimpleStringType");
-
-        // string enumeration
-        type = OldSchemaBasedConfigPropertySupportFactory.
-            getGlobalSimpleTypeName(schema, "ProxyType");
-        assertEquals(type, "tns:ProxyTypeSimpleType"); 
-        
-        // password
-        type = OldSchemaBasedConfigPropertySupportFactory.
-            getGlobalSimpleTypeName(schema, "ProxyPassword");
-        assertEquals(type, "tns:SimpleStringType"); 
-        
-        // tabular data
-        type = OldSchemaBasedConfigPropertySupportFactory.
-            getGlobalSimpleTypeName(schema, "ApplicationConfigurations");
-        assertEquals(type, null); 
-    }
-
+    @Test
     public void testGetPropertySupport() throws Exception {
         
         // integer
-        PropertySupport propSupport = OldSchemaBasedConfigPropertySupportFactory.
-            getPropertySupport(schema, null, 
+        PropertySupport propSupport = SchemaBasedConfigPropertySupportFactory.
+            getPropertySupport(null, 
                 new Attribute("OutboundThreads", 4), 
-                new OldConfigurationMBeanAttributeInfo(
-                descriptor.getChild("OutboundThreads"), "java.lang.Integer", true, true, false));
+                new JBIComponentConfigurationMBeanAttributeInfo(
+                configDescriptor.getChild("OutboundThreads"), "java.lang.Integer", true, true, false));
         assertTrue(propSupport.getValue() instanceof Integer);
 
         // boolean
-        propSupport = OldSchemaBasedConfigPropertySupportFactory.
-            getPropertySupport(schema, null, 
+        propSupport = SchemaBasedConfigPropertySupportFactory.
+            getPropertySupport(null, 
                 new Attribute("UseJVMProxySettings", true), 
-                new OldConfigurationMBeanAttributeInfo(
-                descriptor.getChild("UseJVMProxySettings"), "java.lang.Boolean", true, true, false));
+                new JBIComponentConfigurationMBeanAttributeInfo(
+                configDescriptor.getChild("UseJVMProxySettings"), "java.lang.Boolean", true, true, false));
         assertTrue(propSupport.getValue() instanceof Boolean);
         
         // string
-        propSupport = OldSchemaBasedConfigPropertySupportFactory.
-            getPropertySupport(schema, null, 
+        propSupport = SchemaBasedConfigPropertySupportFactory.
+            getPropertySupport(null, 
                 new Attribute("ProxyHost", "localhost"), 
-                new OldConfigurationMBeanAttributeInfo(
-                descriptor.getChild("ProxyHost"), "java.lang.String", true, true, false));
+                new JBIComponentConfigurationMBeanAttributeInfo(
+                configDescriptor.getChild("ProxyHost"), "java.lang.String", true, true, false));
         assertTrue(propSupport.getValue() instanceof String);
         assertFalse(propSupport.getPropertyEditor() instanceof ComboBoxPropertyEditor);
 
         // string enumeration
-        propSupport = OldSchemaBasedConfigPropertySupportFactory.
-            getPropertySupport(schema, null, 
+        propSupport = SchemaBasedConfigPropertySupportFactory.
+            getPropertySupport(null, 
                 new Attribute("ProxyType", "SOCKS"), 
-                new OldConfigurationMBeanAttributeInfo(
-                descriptor.getChild("ProxyType"), "java.lang.String", true, true, false));
+                new JBIComponentConfigurationMBeanAttributeInfo(
+                configDescriptor.getChild("ProxyType"), "java.lang.String", true, true, false));
         assertTrue(propSupport.getValue() instanceof String);
         PropertyEditor propEditor = propSupport.getPropertyEditor();
         assertTrue(propEditor instanceof ComboBoxPropertyEditor);
@@ -158,17 +123,16 @@ public class SchemaBasedConfigPropertySupportFactoryTest extends TestCase {
         }
         
         // password
-        propSupport = OldSchemaBasedConfigPropertySupportFactory.
-            getPropertySupport(schema, null, 
+        propSupport = SchemaBasedConfigPropertySupportFactory.
+            getPropertySupport(null, 
                 new Attribute("ProxyPassword", "somePassword"), 
-                new OldConfigurationMBeanAttributeInfo(
-                descriptor.getChild("ProxyPassword"), "java.lang.String", true, true, false));
+                new JBIComponentConfigurationMBeanAttributeInfo(
+                configDescriptor.getChild("ProxyPassword"), "java.lang.String", true, true, false));
         assertTrue(propSupport.getValue() instanceof String);
         assertTrue(propSupport.getPropertyEditor() instanceof PasswordEditor);
     }
-
-
-    private String getContent(File file) {
+    
+    private static String getContent(File file) {
         String ret = "";
 
         BufferedReader is = null;
@@ -191,4 +155,5 @@ public class SchemaBasedConfigPropertySupportFactoryTest extends TestCase {
 
         return ret;
    }    
+
 }

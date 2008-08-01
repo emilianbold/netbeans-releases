@@ -123,7 +123,7 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
     
     private boolean checkValidity() {
         if (txtPrefix.getText().trim().length() == 0) {
-            setError(getMessage("ERR_Name_Prefix_Empty"));
+            setInfo(getMessage("ERR_Name_Prefix_Empty"), false);
             return false;
         }        
         if (!Utilities.isJavaIdentifier(txtPrefix.getText().trim())) {

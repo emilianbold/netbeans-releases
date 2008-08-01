@@ -46,67 +46,13 @@ made subject to such option by the copyright holder.
     <folder name="GsfPlugins">
         <folder name="text">
             <folder name="html">
-                <attr name="displayName" stringvalue="HTML"/>
-                
-                <!-- use custom editor kit -->
                 <attr name="useCustomEditorKit" boolvalue="true"/>
-                
                 <file name="language.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.GsfLanguage"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.html.editor.gsf.HtmlLanguage"/>
                 </file>
-                
-                <file name="parser.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.Parser"/>
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.html.editor.gsf.HtmlGSFParser"/>
-                </file>
-                
                 <file name="structure.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.StructureScanner"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.html.editor.gsf.HtmlStructureScanner"/>
-                </file>
-
-                <file name="semantic.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.SemanticAnalyzer"/>
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.html.editor.gsf.HtmlSemanticAnalyzer"/>
-                </file>
-                
-                
-                <!--<file name="completion.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.Completable"/>
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.html.editor.gsf.HtmlCompleter"/>
-                </file>-->
-                
-                <!--<file name="renamer.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.InstantRenamer"/>
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.RenameHandler"/>
-                </file>
-
-                <file name="bracket.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.BracketCompletion"/>
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.html.editor.gsf.HtmlBracketCompleter"/>
-                </file>
-                
-                <file name="declarationfinder.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.DeclarationFinder"/>
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.rhtml.RhtmlFinder"/>
-                </file>
-                
-                
-                -->
-                
-                <!--
-
-                Don't index rhtml files - there's usually nothing interesting (new classes, methods) there
-                <file name="indexer.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.Indexer"/>
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.RubyIndexer"/>
-                </file>
-                <folder name="extensions">
-                    <file name="rhtml"/>
-                    <file name="erb"/>
-                </folder>
-                -->
+                </file> 
             </folder>
         </folder>
     </folder>
@@ -184,6 +130,7 @@ made subject to such option by the copyright holder.
             <folder name="html">
                 
                 <file name="org-netbeans-modules-html-editor-coloring-EmbeddingHighlightsLayerFactory.instance"/>
+                <file name="org-netbeans-modules-gsfret-editor-semantic-HighlightsLayerFactoryImpl.instance"/>
                 
                 <folder name="BracesMatchers">
                     <file name="org-netbeans-modules-html-editor-HTMLBracesMatching.instance">

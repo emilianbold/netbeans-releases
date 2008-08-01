@@ -50,7 +50,6 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.IReference;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IProxyDiagram;
 import org.netbeans.modules.uml.core.metamodel.structure.IProject;
-import org.netbeans.modules.uml.ui.controls.drawingarea.IUIDiagram;
 import org.netbeans.modules.uml.ui.controls.projecttree.IProjectTreeControl;
 import org.netbeans.modules.uml.ui.support.applicationmanager.IProduct;
 import org.netbeans.modules.uml.ui.support.applicationmanager.IProductDiagramManager;
@@ -58,10 +57,8 @@ import org.netbeans.modules.uml.ui.support.diagramsupport.IProxyDiagramManager;
 import org.netbeans.modules.uml.ui.support.diagramsupport.IPresentationTarget;
 import org.netbeans.modules.uml.ui.support.diagramsupport.PresentationFinder;
 import org.netbeans.modules.uml.ui.support.diagramsupport.ProxyDiagramManager;
-import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaControl;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
 import org.netbeans.modules.uml.core.support.umlutils.ETArrayList;
-import java.util.Arrays;
 
 /**
  * Theres lots of common code among the various dialogs.  This class helps the 
@@ -120,7 +117,7 @@ public class DiagramBuilder
             String meid = target.getModelElementID();
             if (presentationId != null && presentationId.length() > 0)
             {
-               diagram.centerPresentationElement2(target.getPresentationID(), true, true);
+               diagram.centerPresentationElement(target.getPresentationID(), true, true);
             }
             else if (meid != null && meid.length() > 0 && toplevelId != null && toplevelId.length() > 0)
             {
@@ -215,7 +212,7 @@ public class DiagramBuilder
                diaMgr.raiseWindow(openDia);
                if (presId != null && presId.length() > 0)
                {
-                  openDia.centerPresentationElement2(presId, true, true);
+                  openDia.centerPresentationElement(presId, true, true);
                }
                else if (topLevelId != null && topLevelId.length() > 0 && meid != null && meid.length() > 0)
                {
@@ -231,29 +228,30 @@ public class DiagramBuilder
     */
    private void centerOnME(IDiagram openDia, String meid, String topLevelId)
    {
-      if (topLevelId != null && topLevelId.length() > 0 && meid != null && meid.length() > 0)
-      {
-         // The presentation target comes from a stub diagram so the presentation elements were
-         // not available - only the model element.
-         IDrawingAreaControl control = null;
-         if (openDia != null && openDia instanceof IUIDiagram)
-         {
-            control = ((IUIDiagram) openDia).getDrawingArea();
-         }
-         if (control != null)
-         {
-            ETList < IPresentationElement > pPEs = control.getAllItems(topLevelId, meid);
-            if (pPEs != null)
-            {
-               int count = pPEs.size();
-               if (count > 0)
-               {
-                  IPresentationElement pPE = pPEs.get(0);
-                  control.centerPresentationElement(pPE, true, true);
-               }
-            }
-         }
-      }
+       // TODO: meteora
+//      if (topLevelId != null && topLevelId.length() > 0 && meid != null && meid.length() > 0)
+//      {
+//         // The presentation target comes from a stub diagram so the presentation elements were
+//         // not available - only the model element.
+//         IDrawingAreaControl control = null;
+//         if (openDia != null && openDia instanceof IUIDiagram)
+//         {
+//            control = ((IUIDiagram) openDia).getDrawingArea();
+//         }
+//         if (control != null)
+//         {
+//            ETList < IPresentationElement > pPEs = control.getAllItems(topLevelId, meid);
+//            if (pPEs != null)
+//            {
+//               int count = pPEs.size();
+//               if (count > 0)
+//               {
+//                  IPresentationElement pPE = pPEs.get(0);
+//                  control.centerPresentationElement(pPE, true, true);
+//               }
+//            }
+//         }
+//      }
    }
 
    /**

@@ -56,6 +56,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
+import org.openide.util.Parameters;
 
 /**
  * Makes it easier to implement <code>org.netbeans.spi.project.ActionProvider</code> in a standard way
@@ -83,7 +84,7 @@ public final class ActionUtils {
         if (targetNames != null && targetNames.length == 0) {
             throw new IllegalArgumentException("No targets supplied"); // NOI18N
         }
-        AntProjectCookie apc = TargetLister.getAntProjectCookie(buildXml);
+        AntProjectCookie apc = AntScriptUtils.antProjectCookieFor(buildXml);
         AntTargetExecutor.Env execenv = new AntTargetExecutor.Env();
         if (properties != null) {
             Properties p = execenv.getProperties();
@@ -245,6 +246,8 @@ public final class ActionUtils {
      * @since org.apache.tools.ant.module/3 3.16
      */
     public static String antIncludesList(FileObject[] files, FileObject dir, boolean recursive) throws IllegalArgumentException {
+        Parameters.notNull("files", files);
+        Parameters.notNull("dir", dir);
         if (!dir.isFolder()) {
             throw new IllegalArgumentException("Not a folder: " + dir); // NOI18N
         }

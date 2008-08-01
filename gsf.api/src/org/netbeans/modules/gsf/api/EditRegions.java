@@ -65,6 +65,7 @@ public abstract class EditRegions {
      */
     public abstract void edit(@NonNull FileObject file, @NonNull Set<OffsetRange> regions, int caretOffset) throws BadLocationException;
 
+    @NonNull
     public static EditRegions getInstance() {
         return Lookup.getDefault().lookup(EditRegions.class);
     }

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE toc PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp TOC Version 2.0//EN" "http://java.sun.com/products/javahelp/toc_2_0.dtd">
+<toc version="2.0">
+    <tocitem text="NetBeans IDE BlueJ Plugin Help">
+        <tocitem text="About Using NetBeans IDE BlueJ Plugin" target="org.netbeans.bluej.about"/>
+        <tocitem text="Importing a BlueJ Project" target="bluej-proj-import"/>
+        <tocitem text="Creating a New Project" target="bluej-proj-new"/>
+        <tocitem text="Converting a BlueJ Project to a Standard IDE Project" target="bluej-proj-convert"/>
+        <tocitem text="Basic NetBeans IDE Tasks: Quick Reference" target="bluej-quickref"/>
+        <tocitem text="Source Editor Tips" target="bluej-editor-quickref"/>
+    </tocitem>
+</toc>

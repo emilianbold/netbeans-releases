@@ -28,6 +28,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -48,6 +49,7 @@ import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeExpansionListener;
 import javax.swing.event.TreeModelEvent;
 import javax.swing.event.TreeModelListener;
+import javax.swing.text.DefaultEditorKit;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreeModel;
@@ -59,6 +61,7 @@ import org.netbeans.modules.soa.mappercore.utils.Utils;
 import org.netbeans.modules.soa.mappercore.graphics.VerticalGradient;
 import org.netbeans.modules.soa.mappercore.graphics.XRange;
 import org.netbeans.modules.soa.mappercore.model.Graph;
+import org.netbeans.modules.soa.mappercore.model.GraphSubset;
 import org.netbeans.modules.soa.mappercore.model.Link;
 import org.netbeans.modules.soa.mappercore.model.TreeSourcePin;
 import org.netbeans.modules.soa.mappercore.model.VertexItem;
@@ -71,6 +74,8 @@ import org.openide.util.NbBundle;
 public class Mapper extends JPanel {
 
     private MapperModel model;
+    private MapperModel filteredModel;
+    
     private MapperNode root;
     private TreeModelListener treeModelListener = new TreeModelListenerImpl();
     private MapperSelectionListener selectionListener;
@@ -101,6 +106,13 @@ public class Mapper extends JPanel {
     private SelectionModel selectionModel;
     private TreePath pathDndselect = null;
 
+    private FiltersToolBar filtersToolBar;
+
+    private boolean filterLeft = false;
+    private boolean filterRight = false;
+
+    private boolean printMode = false;
+   
     /** Creates a new instance of RightTree */
     public Mapper(MapperModel model) {
         setLayout(new MapperLayout());
@@ -117,6 +129,8 @@ public class Mapper extends JPanel {
         rightDivider = new MapperDivider();
         rightDivider.setCursor(Cursor.getPredefinedCursor(Cursor.E_RESIZE_CURSOR));
 
+        filtersToolBar = new FiltersToolBar(this);
+        
         new MapperDividersController(this, leftDivider, rightDivider);
 
         add(leftTree.getView(), MapperLayout.LEFT_SCROLL);
@@ -124,6 +138,7 @@ public class Mapper extends JPanel {
         add(canvas.getView(), MapperLayout.CENTER_SCROLL);
         add(rightDivider, MapperLayout.RIGHT_DIVIDER);
         add(rightTree.getView(), MapperLayout.RIGHT_SCROLL);
+        add(filtersToolBar, MapperLayout.TOOL_BAR);
 
         new ScrollPaneYSyncronizer(canvas.getScrollPane(),
                 rightTree.getScrollPane());
@@ -140,6 +155,8 @@ public class Mapper extends JPanel {
             }
         });
         
+        setSelected();  //[Issue 125764]
+        
         InputMap iMap = getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
         ActionMap aMap = getActionMap();
         
@@ -154,12 +171,152 @@ public class Mapper extends JPanel {
                 }
             }
         });
+        
+        aMap.put(DefaultEditorKit.copyAction, new CopyMapperAction(canvas));
+        aMap.put(DefaultEditorKit.cutAction, new CutMapperAction(canvas));
+        aMap.put(DefaultEditorKit.pasteAction, new PasteMapperAction(canvas));
+        aMap.put(DefaultEditorKit.deleteNextCharAction, new DeleteMapperAction(canvas));
 
-    
+
         getAccessibleContext().setAccessibleName(NbBundle
                 .getMessage(Mapper.class, "ACSN_Mapper")); // NOI18N
         getAccessibleContext().setAccessibleDescription(NbBundle
                 .getMessage(Mapper.class, "ACSD_Mapper")); // NOI18N
+    }
+    
+    public boolean isFilterLeft() {
+        return filterLeft;
+    }
+    
+    public boolean isFilterRight() {
+        return filterRight;
+    }
+    
+    public void setFilter(boolean filterLeft, boolean filterRight) {
+        if (this.filterLeft == filterLeft && this.filterRight == filterRight) {
+            return;
+        }
+        
+        this.filterLeft = filterLeft;
+        this.filterRight = filterRight;
+        
+        filtersToolBar.updateButtonsState();
+
+        if (model == null) return;
+
+        TreePath leftTreeSelection = leftTree.getSelectionPath();
+        TreePath rightTreeSelection = rightTree.getSelectionModel()
+                .getSelectedPath();
+        GraphSubset selectedGraphSubset = getSelectionModel()
+                .getSelectedSubset();
+        
+        VertexItem selectedVertexItem = getSelectionModel()
+                .getSelectedVertexItem();
+        
+        Enumeration<TreePath> expandedLeftPathesEnumeration = leftTree
+                .getExpandedDescendants(new TreePath(leftTree.getModel()
+                .getRoot()));
+        
+        List<TreePath> expandedLeftPathes = new ArrayList<TreePath>();
+
+        while (expandedLeftPathesEnumeration.hasMoreElements()) {
+            expandedLeftPathes.add(expandedLeftPathesEnumeration.nextElement());
+        }
+        
+        List<TreePath> expandedRightPathes = getExpandedPathes();
+        List<TreePath> expandedGraphPathes = getExpandedGraphsPathes();
+        
+        MapperModel oldFilteredModel = this.filteredModel;
+        MapperModel newFilteredModel = (filterLeft || filterRight) 
+                ? new FilteredMapperModel(model, filterLeft, filterRight)
+                : model;
+        
+        TreeModel oldLeftTreeModel = leftTree.getModel();
+        TreeModel newLeftTreeModel = (model != null) 
+                ? newFilteredModel.getLeftTreeModel() : null;
+        
+        if (oldLeftTreeModel != newLeftTreeModel) {
+            leftTree.setModel(newLeftTreeModel);
+        }
+        
+        oldFilteredModel.removeTreeModelListener(treeModelListener);
+        newFilteredModel.addTreeModelListener(treeModelListener);
+        
+        this.filteredModel = newFilteredModel;
+        
+        if (oldFilteredModel instanceof FilteredMapperModel) {
+            ((FilteredMapperModel) oldFilteredModel).dispose();
+        }
+        
+        root = new MapperNode(this, null, filteredModel.getRoot());
+
+        invalidateNodes();
+        
+//        for (int i = expandedRightPathes.size() - 1; i >= 0; i--) {
+//            TreePath treePath = expandedRightPathes.get(i);
+//            if (!Utils.isTreePathExpandable(newFilteredModel, treePath)) {
+//                expandedRightPathes.remove(i);
+//            }
+//        }
+//        
+//        for (int i = expandedGraphPathes.size() - 1; i >= 0; i--) {
+//            TreePath treePath = expandedGraphPathes.get(i);
+//            if (!Utils.isTreePathInModel(newFilteredModel, treePath)) {
+//                expandedGraphPathes.remove(i);
+//            }
+//        }
+        
+        for (int i = expandedLeftPathes.size() - 1; i >= 0; i--) {
+            TreePath treePath = expandedLeftPathes.get(i);
+            if (!Utils.isTreePathExpandable(newLeftTreeModel, treePath)) {
+                expandedLeftPathes.remove(i);
+            }
+        }
+        
+        applyExpandedPathes(expandedRightPathes);
+        applyExpandedGraphsPathes(expandedGraphPathes);
+        
+        for (TreePath treePath : expandedLeftPathes) {
+            leftTree.expandPath(treePath);
+        }
+
+        if (leftTreeSelection != null && Utils
+                .isTreePathInModel(newLeftTreeModel, leftTreeSelection))
+        {   
+            leftTree.setSelectionPath(leftTreeSelection);
+        }
+
+        firePropertyChange(MODEL_PROPERTY, oldFilteredModel, filteredModel);
+        
+        if (rightTreeSelection != null && Utils
+                .isTreePathInModel(newFilteredModel, rightTreeSelection))
+        {
+            SelectionModel selectionModel = getSelectionModel();
+            selectionModel.setSelected(rightTreeSelection);
+            
+            if (selectedVertexItem != null) {
+                selectionModel.setSelected(rightTreeSelection, 
+                        selectedVertexItem);
+            } else if (selectedGraphSubset != null) {
+                for (int i = selectedGraphSubset.getLinkCount() - 1; i >= 0; 
+                    i--) 
+                {
+                    selectionModel.switchSelected(rightTreeSelection, 
+                            selectedGraphSubset.getLink(i));
+                }
+
+                for (int i = selectedGraphSubset.getVertexCount() - 1; 
+                    i >= 0; i--) 
+                {
+                    selectionModel.switchSelected(rightTreeSelection, 
+                            selectedGraphSubset.getVertex(i));
+                }
+            }
+        }
+        
+        repaintNodes();
+        revalidate();
+        repaint();
     }
 
     public void addRightTreeExpansionListener(TreeExpansionListener listener) {
@@ -197,7 +354,15 @@ public class Mapper extends JPanel {
     public MapperContext getContext() {
         return context;
     }
-    
+
+    public boolean getPrintMode() {
+        return printMode;
+    }
+
+    public void setPrintMode(boolean printMode) {
+        this.printMode = printMode;
+    }
+
     public void setSelectedDndPath(TreePath path) {
         pathDndselect = path;
     }
@@ -352,27 +517,33 @@ public class Mapper extends JPanel {
         this.leftDividerPosition = leftDividerPosition;
         this.rightDividerPosition = rightDividerPosition;
     }
-
+    
     public void setModel(MapperModel model) {
         MapperModel oldModel = this.model;
-
-        TreeModel oldLeftTreeModel = (oldModel != null) ? leftTree.getModel() : null;
-        TreeModel newLeftTreeModel = (model != null) ? model.getLeftTreeModel() : null;
-
+        MapperModel oldFilteredModel = this.filteredModel;
+        
         if (oldModel != model) {
             this.model = model;
+            this.filteredModel = ((filterLeft || filterRight) && model != null)
+                    ? new FilteredMapperModel(model, filterLeft, filterRight)
+                    : model;
 
+            TreeModel oldLeftTreeModel = (oldModel != null) 
+                    ? leftTree.getModel() : null;
+            TreeModel newLeftTreeModel = (model != null) 
+                    ? filteredModel.getLeftTreeModel() : null;
+            
             if (oldLeftTreeModel != newLeftTreeModel) {
                 leftTree.setModel(newLeftTreeModel);
             }
             
-            if (oldModel != null) {
-                oldModel.removeTreeModelListener(treeModelListener);
+            if (oldFilteredModel != null) {
+                oldFilteredModel.removeTreeModelListener(treeModelListener);
             }
 
-            if (model != null) {
-                model.addTreeModelListener(treeModelListener);
-                root = new MapperNode(this, null, model.getRoot());
+            if (filteredModel != null) {
+                filteredModel.addTreeModelListener(treeModelListener);
+                root = new MapperNode(this, null, filteredModel.getRoot());
 //                root.getChildCount();
             } else {
                 root = null;
@@ -384,12 +555,20 @@ public class Mapper extends JPanel {
             revalidate();
             repaint();
 
-            firePropertyChange(MODEL_PROPERTY, oldModel, model);
+            firePropertyChange(MODEL_PROPERTY, oldFilteredModel, filteredModel);
+            
+            if (oldFilteredModel instanceof FilteredMapperModel) {
+                ((FilteredMapperModel) oldFilteredModel).dispose();
+            } 
         }
     }
     
     public MapperModel getModel() {
         return model;
+    }
+    
+    public MapperModel getFilteredModel() {
+        return filteredModel;
     }
 
     MapperNode getRoot() {
@@ -410,7 +589,7 @@ public class Mapper extends JPanel {
     
     
     public void expandNonEmptyGraphs() {
-        expandGraphs(Utils.getNonEmptyGraphs(getModel()));
+        expandGraphs(Utils.getNonEmptyGraphs(getFilteredModel()));
     }
     
     
@@ -464,7 +643,7 @@ public class Mapper extends JPanel {
     public List<TreePath> getExpandedGraphsPathes() {
         List<TreePath> result = new ArrayList<TreePath>();
         
-        MapperModel model = getModel();
+        MapperModel model = getFilteredModel();
         MapperNode rootNode = getRoot();
         
         if (model != null && root != null) {
@@ -496,11 +675,16 @@ public class Mapper extends JPanel {
     public void applyExpandedPathes(List<TreePath> rightTreePathes) {
         if (rightTreePathes == null || rightTreePathes.isEmpty()) return;
 
+        MapperModel model = getFilteredModel();
+        if (model == null) return;
+                    
         for (TreePath treePath : rightTreePathes) {
-            MapperNode node = getNode(treePath, true);
-            if (node != null && !node.isLeaf() && node.isCollapsed()) {
-                node.setExpanded(true);
-                fireNodeExpanded(treePath);
+            if (Utils.isTreePathExpandable(model, treePath)) {
+                MapperNode node = getNode(treePath, true);
+                if (node != null && !node.isLeaf() && node.isCollapsed()) {
+                    node.setExpanded(true);
+                    fireNodeExpanded(treePath);
+                }
             }
         }
     }
@@ -508,16 +692,18 @@ public class Mapper extends JPanel {
     public void applyExpandedGraphsPathes(List<TreePath> rightTreePathes) {
         if (rightTreePathes == null || rightTreePathes.isEmpty()) return;
 
-        MapperModel model = getModel();
+        MapperModel model = getFilteredModel();
         
         if (model == null) return;
         
         for (TreePath treePath : rightTreePathes) {
-            Graph graph = model.getGraph(treePath);
-            if (graph != null && !graph.isEmpty()) {
-                MapperNode node = getNode(treePath, true);
-                if (node != null && node.isGraphCollapsed()) {
-                    node.setGraphExpanded(true);
+            if (Utils.isTreePathInModel(model, treePath)) {
+                Graph graph = model.getGraph(treePath);
+                if (graph != null && !graph.isEmpty()) {
+                    MapperNode node = getNode(treePath, true);
+                    if (node != null && node.isGraphCollapsed()) {
+                        node.setGraphExpanded(true);
+                    }
                 }
             }
         }
@@ -645,7 +831,7 @@ public class Mapper extends JPanel {
                 if (l.getTarget() instanceof Graph) graph = (Graph) l.getTarget();
                 if (l.getTarget() instanceof VertexItem) graph = ((VertexItem) l.getTarget()).getVertex().getGraph();
     // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!            
-                // poisk naibolshego grapha menshe tecuahego v!!!!!!!!!!!! perepisat
+                // find graph, which is the ups the current Graph
                 if (compare(currentGraph, graph, getRoot().getTreePath()) >= 0) {
                     if (maxGraph == null) {
                         maxGraph = graph;
@@ -680,7 +866,7 @@ public class Mapper extends JPanel {
                             if (l.getTarget() instanceof Graph) graph = (Graph) l.getTarget();
                             if (l.getTarget() instanceof VertexItem) graph = ((VertexItem) l.getTarget()).getVertex().getGraph();
                 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!            
-                            // poisk naibolshego grapha menshe tecuahego v!!!!!!!!!!!! perepisat
+                            // 
                             if (compare(currentGraph, graph, getRoot().getTreePath()) > 0) {
                                 if (maxGraph == null) {
                                     maxGraph = graph;
@@ -736,7 +922,7 @@ public class Mapper extends JPanel {
             if (l.getTarget() instanceof Graph) graph = (Graph) l.getTarget();
             if (l.getTarget() instanceof VertexItem) graph = ((VertexItem) l.getTarget()).getVertex().getGraph();
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!            
-            // poisk naibolshego grapha menshe tecuahego v!!!!!!!!!!!! perepisat
+            //
             if (compare(currentGraph, graph, getRoot().getTreePath()) >= 0) {
                 if (maxGraph == null) {
                     maxGraph = graph;
@@ -812,9 +998,10 @@ public class Mapper extends JPanel {
             if (!load && !node.isLoaded()) {
                 return null;
             }
-            if (model.getIndexOfChild(node.getValue(), path[i]) == -1) {
+            if (filteredModel.getIndexOfChild(node.getValue(), path[i]) == -1) {
+                
             }
-            node = node.getChild(model.getIndexOfChild(node.getValue(), path[i]));
+            node = node.getChild(filteredModel.getIndexOfChild(node.getValue(), path[i]));
         }
 
         return node;
@@ -840,7 +1027,7 @@ public class Mapper extends JPanel {
             if (!node.isLoaded()) {
                 break;
             }
-            node = node.getChild(model.getIndexOfChild(node.getValue(), path[i]));
+            node = node.getChild(filteredModel.getIndexOfChild(node.getValue(), path[i]));
         }
 
         return node;
@@ -997,6 +1184,15 @@ public class Mapper extends JPanel {
         return 0;
     }
 
+    private void setSelected() {
+        MapperNode root = getRoot();
+
+        if (root != null && root.getChildCount() == 1 &&
+                root.getChild(0).getChildCount() < 1) {
+            getSelectionModel().setSelected(root.getChild(0).getTreePath());
+        }
+    }
+
     private class TreeModelListenerImpl implements TreeModelListener {
 
         public void treeNodesChanged(TreeModelEvent e) {
@@ -1082,12 +1278,16 @@ public class Mapper extends JPanel {
         }
     }
     public static final String MODEL_PROPERTY = "mapper-model-property";
+    public static final String BUFFER_PROPERTY = "mapper-buffer-property";
     public static final Stroke DASHED_ROW_SEPARATOR_STROKE = new BasicStroke(1,
             BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL,
             1, new float[]{4, 2}, 0);
     public static final Stroke DASHED_STROKE = new BasicStroke(1,
             BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL,
             1, new float[]{4, 4}, 0);
+    public static final Stroke DASHED_SELECTED_STROKE = new BasicStroke(2,
+            BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL,
+            1, new float[]{8, 4}, 0);
     public static final Color CANVAS_BACKGROUND_COLOR = new Color(0xFCFAF5);
     public static final Color CANVAS_GRID_COLOR = new Color(0xC0C0C0);
     public static final Color ROW_SEPARATOR_COLOR = new Color(0xBBD3E9); //new Color(0x99B7D3);

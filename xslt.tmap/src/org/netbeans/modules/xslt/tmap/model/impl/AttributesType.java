@@ -28,6 +28,7 @@ public interface AttributesType {
     AttrType getAttributeType();
     
     public enum AttrType {
+        URI,
         QNAME,
         NCNAME;
     }

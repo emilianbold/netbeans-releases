@@ -27,12 +27,17 @@ import org.openide.util.NbBundle;
 import org.netbeans.modules.compapp.projects.base.ui.wizards.*;
 import org.netbeans.modules.etl.project.EtlproProjectGenerator;
 
-public class NewEtlproProjectWizardIterator extends NewIcanproProjectWizardIterator{
+public class NewEtlproProjectWizardIterator extends NewIcanproProjectWizardIterator {
     
     private static final long serialVersionUID = 1L;
 
     protected String getDefaultName() {
         return NbBundle.getMessage(NewEtlproProjectWizardIterator.class, "LBL_NPW1_DefaultProjectName"); //NOI18N        
+    }
+    
+    @Override
+    protected String getDefaultTitle() {
+        return NbBundle.getMessage(NewEtlproProjectWizardIterator.class, "LBL_ETL_Wizard_Title"); //NOI18N   
     }
 
     protected void createProject(File dirF, String name, String j2eeLevel) throws IOException {

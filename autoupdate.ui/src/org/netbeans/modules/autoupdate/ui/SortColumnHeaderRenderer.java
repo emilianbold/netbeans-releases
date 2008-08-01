@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -47,6 +47,7 @@ import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.SwingConstants;
 import javax.swing.table.TableCellRenderer;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbPreferences;
 
 /**
@@ -110,7 +111,7 @@ public class SortColumnHeaderRenderer implements TableCellRenderer{
         
     private ImageIcon getSortAscIcon () {
         if (sortAscIcon == null) {
-            sortAscIcon = new ImageIcon (org.openide.util.Utilities.loadImage (
+            sortAscIcon = new ImageIcon (ImageUtilities.loadImage (
                     "org/netbeans/modules/autoupdate/ui/resources/columnsSortedDesc.gif")); // NOI18N
         }
         return sortAscIcon;
@@ -118,7 +119,7 @@ public class SortColumnHeaderRenderer implements TableCellRenderer{
     
     private ImageIcon getSortDescIcon () {
         if (sortDescIcon == null) {
-            sortDescIcon = new ImageIcon (org.openide.util.Utilities.loadImage (
+            sortDescIcon = new ImageIcon (ImageUtilities.loadImage (
                     "org/netbeans/modules/autoupdate/ui/resources/columnsSortedAsc.gif")); // NOI18N
         }
         return sortDescIcon;

@@ -20,7 +20,7 @@ package org.netbeans.modules.xslt.tmap.model.impl;
 
 import org.netbeans.modules.xml.wsdl.model.ReferenceableWSDLComponent;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
-import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
+import org.netbeans.modules.xslt.tmap.model.api.TMapComponent;
 import org.netbeans.modules.xslt.tmap.model.api.WSDLReference;
 import org.netbeans.modules.xslt.tmap.model.impl.AttributesType.AttrType;
 
@@ -31,75 +31,8 @@ import org.netbeans.modules.xslt.tmap.model.impl.AttributesType.AttrType;
  */
 public class GlobalWSDLReferenceImpl<T extends ReferenceableWSDLComponent> 
         extends AbstractNamedComponentReference<T> 
-        implements NamedComponentReference<T>, WSDLReference<T>
+        implements WSDLReference<T>
 {
-
-////    public GlobalWSDLReferenceImpl(
-////            T referenced, 
-////            Class<T> type, 
-////            AbstractDocumentComponent parent) {
-////        super(referenced, type, parent);
-////    }
-////    
-////    public GlobalWSDLReferenceImpl(
-////            Class<T> type, 
-////            AbstractDocumentComponent parent, 
-////            String refString){
-////        super(type, parent, refString);
-////    }
-////
-////    // impl getted from org.netbeans.modules.xml.wsdl.model.impl#GlobalReferenceImpl
-////    public T get() {
-////        WSDLComponentBase wparent = WSDLComponentBase.class.cast(getParent());
-////        if (super.getReferenced() == null) {
-////            String localName = getLocalName();
-////            String namespace = getEffectiveNamespace();
-////            WSDLModel model = wparent.getWSDLModel();
-////            T target = null;
-////            if (namespace != null && namespace.equals(model.getDefinitions().getTargetNamespace())) {
-////                target = new FindReferencedVisitor<T>(model.getDefinitions()).find(localName, getType());
-////            }
-////            if (target == null) {
-////                for (Import i : wparent.getWSDLModel().getDefinitions().getImports()) {
-////                    if (! i.getNamespace().equals(namespace)) {
-////                        continue;
-////                    }
-////                    try {
-////                        model = i.getImportedWSDLModel();
-////                    } catch(CatalogModelException ex) {
-////                        continue;
-////                    }
-////                    target = new FindReferencedVisitor<T>(model.getDefinitions()).find(localName, getType());
-////                    if (target != null) {
-////                        break;
-////                    }
-////                }
-////            }
-////            setReferenced(target);
-////        }
-////        return getReferenced();
-////    }
-////    
-////    public WSDLComponentBase getParent() {
-////        return (WSDLComponentBase) super.getParent();
-////    }
-////    
-////    public String getEffectiveNamespace() {
-////        if (refString == null) {
-////            assert getReferenced() != null;
-////            return getReferenced().getModel().getDefinitions().getTargetNamespace();
-////        } else {
-////            return getParent().lookupNamespaceURI(getPrefix());
-////        }
-////    }
-//////
-////    
-////    /* (non-Javadoc)
-////     * @see org.netbeans.modules.bpel.model.impl.references.BpelAttributesType#getAttributeType()
-////     */
-////    public AttrType getAttributeType() {
-////        return AttrType.QNAME;
-////    }
     GlobalWSDLReferenceImpl( Class<T> type, AbstractDocumentComponent parent,
             String refString , WSDLReferenceBuilder.WSDLResolver resolver )
     {
@@ -141,9 +74,9 @@ public class GlobalWSDLReferenceImpl<T extends ReferenceableWSDLComponent>
          * reference. And in this case we can try to ask
          * namespace via prefix at parent element.
          */
-        if ( isBroken() ) {
+        if ( !isResolved() ) {
             assert refString!=null;
-            return ((TMapComponentAbstract)getParent()).getNamespaceContext().getNamespaceURI(
+            return ((TMapComponent)getParent()).getNamespaceContext().getNamespaceURI(
                 getPrefix());
         }
         else {
@@ -158,6 +91,6 @@ public class GlobalWSDLReferenceImpl<T extends ReferenceableWSDLComponent>
     public AttrType getAttributeType() {
         return AttrType.QNAME;
     }
-
+    
     private WSDLReferenceBuilder.WSDLResolver myResolver;
 }

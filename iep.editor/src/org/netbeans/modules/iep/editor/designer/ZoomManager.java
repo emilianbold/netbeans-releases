@@ -563,7 +563,7 @@ public class ZoomManager {
 //                return;
 //            }
 //            JViewport viewport = pane.getViewport();
-        	
+            
 //            Rectangle visRect = viewport.getViewRect();
             Rectangle visRect = scene.getViewRect();
             scene.convertDocToView(visRect);

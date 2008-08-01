@@ -44,7 +44,7 @@ package org.netbeans.modules.cnd.modelimpl.impl.services;
 import java.io.File;
 import java.io.PrintStream;
 import java.util.Collection;
-import java.util.EnumSet;
+import java.util.Set;
 import org.netbeans.junit.Manager;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.util.CsmTracer;
@@ -93,7 +93,7 @@ public class ReferenceRepositoryImplTestCase extends TraceModelTestBase {
         int line = (Integer) params[0];
         int column = (Integer) params[1];
         boolean inProject = (Boolean)params[2];
-        EnumSet<CsmReferenceKind> kinds = (EnumSet<CsmReferenceKind>) params[3];
+        Set<CsmReferenceKind> kinds = (Set<CsmReferenceKind>) params[3];
         int offset = fileImpl.getOffset(line, column);
         CsmReference tgtRef = CsmReferenceResolver.getDefault().findReference(fileImpl, offset);
         assertNotNull("reference is not found for " + testFile.getAbsolutePath() + "; line="+line+";column="+column, tgtRef);
@@ -111,7 +111,7 @@ public class ReferenceRepositoryImplTestCase extends TraceModelTestBase {
     }
     
     private void performTest(String source, int line, int column) throws Exception {
-        EnumSet<CsmReferenceKind> kinds = CsmReferenceKind.ALL;
+        Set<CsmReferenceKind> kinds = CsmReferenceKind.ALL;
         boolean inProject = true;
         super.performTest(source, getName() + ".res", null, // NOI18N
                             line, column, inProject, kinds);

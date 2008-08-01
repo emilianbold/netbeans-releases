@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.editor.settings.storage;
 
+import java.util.concurrent.Callable;
+import org.netbeans.modules.editor.settings.storage.spi.StorageFilter;
 import org.netbeans.modules.editor.settings.storage.spi.StorageReader;
 
 /**
@@ -69,4 +71,7 @@ public abstract class SpiPackageAccessor {
     /** Creates a new instance of SpiPackageAccessor */
     protected SpiPackageAccessor() {
     }
+    
+    public abstract String storageFilterGetStorageDescriptionId(StorageFilter f);
+    public abstract void storageFilterInitialize(StorageFilter f, Callable<Void> notificationCallback);
 }

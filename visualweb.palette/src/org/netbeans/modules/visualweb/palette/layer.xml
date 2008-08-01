@@ -40,12 +40,11 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
     <folder name="xml">
         <folder name="entities">
-            <folder name="NetBeans" >
+            <folder name="NetBeans">
                 <file name="CodeClip_Palette_Item_1_0" url="codeclips/resources/codeclip-palette-item-1_0.dtd">
                     <attr name="hint.originalPublicID" stringvalue="-//NetBeans//CodeClip Palette Item 1.0//EN"/>
                 </file>
@@ -59,6 +58,19 @@ made subject to such option by the copyright holder.
                     <attr name="instanceOf" stringvalue="org.openide.loaders.Environment.Provider"/>
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.visualweb.palette.codeclips.CodeClipEnvironmentProvider.createProvider"/>
                 </file>
+            </folder>
+        </folder>
+    </folder>
+    
+    <folder name="Loaders">
+        <folder name="text">
+            <folder name="x-comp-palette+xml">
+                <folder name="Factories">
+                    <file name="org-netbeans-modules-visualweb-palette-PaletteItemDataObject$PaletteItemDataLoader.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.palette.Bundle"/>
+                        <attr name="position" intvalue="88"/>
+                    </file>
+                </folder>
             </folder>
         </folder>
     </folder>
@@ -80,7 +92,17 @@ made subject to such option by the copyright holder.
         <attr name="helpId" stringvalue="projrave_ui_elements_palette_palette"/>
         <attr name="isReadonly" boolvalue="false"/>
     </folder>
-    
+
+   <folder name="Services">
+        <folder name="MIMEResolver">
+            <file name="org-netbeans-modules-visualweb-palette-mime-resolver.xml" url="mime-resolver.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.palette.Bundle"/>
+                <!--<attr name="SystemFileSystem.icon"
+                      urlvalue="nbresloc:/org/netbeans/modules/visualweb/palette/resolver-icon.gif"/> -->
+                <attr name="position" intvalue="70001"/>
+            </file>
+        </folder>
+    </folder>
     <!-- Palette Item Lookup 
         Palette Components are located in their relavent modules.  The avoids unnessary dependencies and higher high cohesion.
         For example, when the sampleapp module is turned off, all codeclips will be automatically removed.

@@ -61,6 +61,7 @@ import javax.imageio.ImageIO;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
+import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileFilter;
 import org.netbeans.api.project.Project;
@@ -408,7 +409,7 @@ public class ImageEditorElement extends PropertyEditorResourceElement implements
         }
     }
 
-    private class ImagePreview extends JComponent {
+    private class ImagePreview extends JPanel {
 
         private static final int BORDER_EDGE_LENGTH = 10;
         private static final int IMAGE_GAP = 10;
@@ -469,6 +470,7 @@ public class ImageEditorElement extends PropertyEditorResourceElement implements
         sizeTextField = new javax.swing.JTextField();
         progressBar = new javax.swing.JProgressBar();
 
+        pathLabel.setLabelFor(pathTextComboBox);
         org.openide.awt.Mnemonics.setLocalizedText(pathLabel, org.openide.util.NbBundle.getMessage(ImageEditorElement.class, "ImageEditorElement.pathLabel.text")); // NOI18N
         pathLabel.setEnabled(false);
 
@@ -483,19 +485,21 @@ public class ImageEditorElement extends PropertyEditorResourceElement implements
         });
         previewPanel.setLayout(new java.awt.BorderLayout());
 
-        widthLabel.setText(org.openide.util.NbBundle.getMessage(ImageEditorElement.class, "ImageEditorElement.widthLabel.text")); // NOI18N
+        widthLabel.setLabelFor(widthTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(widthLabel, org.openide.util.NbBundle.getMessage(ImageEditorElement.class, "ImageEditorElement.widthLabel.text")); // NOI18N
         widthLabel.setEnabled(false);
 
         widthTextField.setEditable(false);
         widthTextField.setEnabled(false);
 
-        heightLabel.setText(org.openide.util.NbBundle.getMessage(ImageEditorElement.class, "ImageEditorElement.heightLabel.text")); // NOI18N
+        heightLabel.setLabelFor(heightTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(heightLabel, org.openide.util.NbBundle.getMessage(ImageEditorElement.class, "ImageEditorElement.heightLabel.text")); // NOI18N
         heightLabel.setEnabled(false);
 
         heightTextField.setEditable(false);
         heightTextField.setEnabled(false);
 
-        chooserButton.setText(org.openide.util.NbBundle.getMessage(ImageEditorElement.class, "ImageEditorElement.chooserButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(chooserButton, org.openide.util.NbBundle.getMessage(ImageEditorElement.class, "ImageEditorElement.chooserButton.text")); // NOI18N
         chooserButton.setEnabled(false);
         chooserButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -512,7 +516,8 @@ public class ImageEditorElement extends PropertyEditorResourceElement implements
             }
         });
 
-        sizeLabel.setText(org.openide.util.NbBundle.getMessage(ImageEditorElement.class, "ImageEditorElement.sizeLabel.text")); // NOI18N
+        sizeLabel.setLabelFor(sizeTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(sizeLabel, org.openide.util.NbBundle.getMessage(ImageEditorElement.class, "ImageEditorElement.sizeLabel.text")); // NOI18N
         sizeLabel.setEnabled(false);
 
         sizeTextField.setEditable(false);
@@ -546,9 +551,9 @@ public class ImageEditorElement extends PropertyEditorResourceElement implements
                                     .add(heightTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 107, Short.MAX_VALUE)
                                     .add(sizeTextField)))
                             .add(progressBar, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                    .add(pathTextComboBox, 0, 310, Short.MAX_VALUE))
+                    .add(pathTextComboBox, 0, 261, Short.MAX_VALUE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(chooserButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 30, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(chooserButton))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -556,8 +561,8 @@ public class ImageEditorElement extends PropertyEditorResourceElement implements
                 .add(pathLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(chooserButton)
-                    .add(pathTextComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(pathTextComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(chooserButton))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
@@ -578,6 +583,17 @@ public class ImageEditorElement extends PropertyEditorResourceElement implements
                     .add(previewLabel)
                     .add(previewPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 100, Short.MAX_VALUE)))
         );
+
+        widthTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ImageEditorElement.class, "ACSN_Width")); // NOI18N
+        widthTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ImageEditorElement.class, "ACSD_Width")); // NOI18N
+        heightTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ImageEditorElement.class, "ACSN_Height")); // NOI18N
+        heightTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ImageEditorElement.class, "ACSD_Height")); // NOI18N
+        chooserButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ImageEditorElement.class, "ACSN_Browse")); // NOI18N
+        chooserButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ImageEditorElement.class, "ACSD_Browse")); // NOI18N
+        pathTextComboBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ImageEditorElement.class, "ASCN_ImagePath")); // NOI18N
+        pathTextComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ImageEditorElement.class, "ASCD_ImagePath")); // NOI18N
+        sizeTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ImageEditorElement.class, "ACSN_Size")); // NOI18N
+        sizeTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ImageEditorElement.class, "ACSD_Size")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void chooserButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_chooserButtonActionPerformed
@@ -590,26 +606,26 @@ public class ImageEditorElement extends PropertyEditorResourceElement implements
             String relativePath = convertFile(fo, null, true);
             if (relativePath != null) {
                 setText(relativePath);
-                pathTextComboBoxActionPerformed(null);
+                pathTextComboBoxActionPerformed(null);//GEN-LAST:event_chooserButtonActionPerformed
             } else {
                 String message = NbBundle.getMessage(ImageEditorElement.class, "MSG_FILE_EXIST"); // NOI18N
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message));
-            }
+            }                                             
         }
-    }//GEN-LAST:event_chooserButtonActionPerformed
+    }                                             
 
     private void pathTextComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_pathTextComboBoxActionPerformed
-//        if (isShowing() && !doNotFireEvent) {
+//        if (isShowing() && !doNotFireEvent) {//GEN-LAST:event_pathTextComboBoxActionPerformed
         if (!doNotFireEvent) {
             String text = (String) pathTextComboBox.getSelectedItem();
             fireElementChanged(componentID, ImageCD.PROP_RESOURCE_PATH, MidpTypes.createStringValue(text != null ? text : "")); // NOI18N
-            updatePreview();
+            updatePreview();                                                
         }
-    }//GEN-LAST:event_pathTextComboBoxActionPerformed
+    }                                                
 
     private void previewPanelComponentResized(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_previewPanelComponentResized
-        updatePreview();
-    }//GEN-LAST:event_previewPanelComponentResized
+        updatePreview();//GEN-LAST:event_previewPanelComponentResized
+    }                                             
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton chooserButton;
     private javax.swing.JLabel heightLabel;

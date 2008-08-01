@@ -46,7 +46,13 @@ import java.awt.GridBagLayout;
 import java.awt.Image;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ResourceBundle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
@@ -54,6 +60,7 @@ import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import org.netbeans.modules.welcome.content.BundleSupport;
 import org.netbeans.modules.welcome.content.ActionButton;
+import org.netbeans.modules.welcome.content.BackgroundPanel;
 import org.netbeans.modules.welcome.content.Constants;
 import org.netbeans.modules.welcome.content.Utils;
 import org.openide.cookies.InstanceCookie;
@@ -69,14 +76,13 @@ import org.openide.util.Utilities;
  *
  * @author S. Aubrecht
  */
-class GetStarted extends JPanel implements Constants {
+class GetStarted extends BackgroundPanel implements Constants {
 
     private int row;
 
     /** Creates a new instance of RecentProjects */
     public GetStarted() {
         super( new GridBagLayout() );
-        setOpaque( false );
         buildContent();
     }
     
@@ -112,10 +118,17 @@ class GetStarted extends JPanel implements Constants {
     }
 
     private int addLink( int row, DataObject dob ) {
+        FileObject file = dob.getPrimaryFile();
+        String fileName = file.getName();
+        if( !fileName.endsWith("_default") ) {
+            String prefCluster = getPreferredCluster();
+            if( !fileName.endsWith(prefCluster) ) {
+                return row;
+            } 
+        }
         OpenCookie oc = (OpenCookie)dob.getCookie( InstanceCookie.class );
         if( null != oc ) {
-            JPanel panel = new JPanel( new GridBagLayout() );
-            panel.setOpaque( false );
+            JPanel panel = new BackgroundPanel( new GridBagLayout() );
             
             LinkAction la = new LinkAction( dob );
             ActionButton lb = new ActionButton( la, false, Utils.getUrlString( dob ) );
@@ -161,5 +174,34 @@ class GetStarted extends JPanel implements Constants {
             if( null != oc )
                 oc.open();
         }
+    }
+    
+    private String getPreferredCluster() {
+        
+        String preferredCluster = "java";
+        try {
+            FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource("/productid"); // NOI18N
+            if (fo != null) {
+                InputStream is = fo.getInputStream();
+                try {
+                    BufferedReader r = new BufferedReader(new InputStreamReader (is));
+                    String clusterList = r.readLine().trim().toLowerCase();
+                    if( clusterList.contains("java") ) {
+                        preferredCluster = "java";
+                    } else if( clusterList.contains("ruby") ) {
+                        preferredCluster = "ruby";
+                    } else if( clusterList.contains("cnd") ) {
+                        preferredCluster = "cnd";
+                    } else if( clusterList.contains("php") ) {
+                        preferredCluster = "php";
+                    }
+                } finally {
+                    is.close();
+                }
+            }
+        } catch (IOException ignore) {
+            Logger.getLogger(GetStarted.class.getName()).log(Level.FINE, null, ignore);
+        }
+        return preferredCluster;
     }
 }

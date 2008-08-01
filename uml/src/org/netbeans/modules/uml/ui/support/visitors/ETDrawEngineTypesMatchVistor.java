@@ -45,8 +45,6 @@ package org.netbeans.modules.uml.ui.support.visitors;
 
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
-import org.netbeans.modules.uml.ui.support.viewfactorysupport.IDrawEngine;
-import org.netbeans.modules.uml.ui.support.viewfactorysupport.IETGraphObject;
 
 /**
  * @author KevinM
@@ -66,18 +64,19 @@ public class ETDrawEngineTypesMatchVistor implements IETGraphObjectVisitor
    /* (non-Javadoc)
     * @see org.netbeans.modules.uml.ui.support.visitors.IETGraphObjectVisitor#visit(org.netbeans.modules.uml.ui.support.viewfactorysupport.IETGraphObject)
     */
-   public boolean visit(IETGraphObject object)
-   {
-     	IDrawEngine drawEngine = object.getEngine();
-		if (drawEngine != null)
-		{
-			String sID = drawEngine.getDrawEngineID();
-			if (sID != null && sID.equals(engineType) && object.getPresentationElement() != null)
-			{
-				presentationElements.add(object.getPresentationElement());
-			}				
-		}
-      return true;
-   }
+        // TODO: meteora
+//   public boolean visit(IETGraphObject object)
+//   {
+//     	IDrawEngine drawEngine = object.getEngine();
+//		if (drawEngine != null)
+//		{
+//			String sID = drawEngine.getDrawEngineID();
+//			if (sID != null && sID.equals(engineType) && object.getPresentationElement() != null)
+//			{
+//				presentationElements.add(object.getPresentationElement());
+//			}				
+//		}
+//      return true;
+//   }
 
 }

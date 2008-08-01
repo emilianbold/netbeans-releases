@@ -110,18 +110,10 @@ public class JbiModuleViewChildren extends Children.Keys implements PropertyChan
             
             VisualClassPathItem vcpi = (VisualClassPathItem) t;
             Object obj = vcpi.getObject();
-            AntArtifact aa;
             
-            if (obj instanceof AntArtifact) {
-//                aa = (AntArtifact) obj;
-//                if (this.jeeTypes.contains(aa.getType())){
-//                    continue;
-//                }
-            } else {
-                continue;
+            if (obj instanceof AntArtifact){
+                keys.add(vcpi);
             }
-            
-            keys.add(vcpi);
         }
         
         setKeys(keys);
@@ -150,7 +142,7 @@ public class JbiModuleViewChildren extends Children.Keys implements PropertyChan
         Node[]  ret = null;
         if (obj instanceof AntArtifact) {
             aa = (AntArtifact) obj;
-            if (JbiProjectConstants.JAVA_EE_AA_TYPES.contains(aa.getType())){
+            if (VisualClassPathItem.isJavaEEProjectAntArtifact(aa)){
                 ret = new Node[] {new JavaEEModuleNode(vcpi, this.project )};
             } else {
                 ret = new Node[] {new JbiModuleNode(vcpi)};

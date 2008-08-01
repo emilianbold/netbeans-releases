@@ -63,10 +63,6 @@ public class NbPlacesTest extends NbTestCase {
     public NbPlacesTest(String name) {
         super(name);
     }
-
-    public static void main(String[] args) {
-        TestRunner.run(new NbTestSuite(NbPlaces.class));
-    }
     
     public void testFindSessionFolder() throws Exception {
         FileObject root = Repository.getDefault().getDefaultFileSystem().getRoot();

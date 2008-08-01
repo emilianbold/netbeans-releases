@@ -6,7 +6,3 @@ OpenIDE-Module-Requires: org.openide.windows.IOProvider, org.openide.modules.Mod
 OpenIDE-Module-Hide-Classpath-Packages: javax.xml.stream.**
 OpenIDE-Module-Specification-Version: 1.0
 
-Name: org/netbeans/modules/etl/ui/ETLDataLoader.class
-Install-Before: org.openide.loaders.XMLDataObject, org.netbeans.modules.xml.XMLDataObject
-OpenIDE-Module-Class: Loader
-

@@ -41,6 +41,7 @@
 
 package org.netbeans.lib.lexer;
 
+import java.io.IOException;
 import java.io.Reader;
 import java.util.Collections;
 import java.util.HashMap;
@@ -55,8 +56,6 @@ import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenHierarchyEvent;
 import org.netbeans.api.lexer.TokenHierarchyListener;
 import org.netbeans.api.lexer.TokenHierarchy;
-import org.netbeans.lib.lexer.batch.CopyTextTokenList;
-import org.netbeans.lib.lexer.batch.TextTokenList;
 import org.netbeans.lib.lexer.inc.IncTokenList;
 import org.netbeans.lib.lexer.inc.TokenHierarchyEventInfo;
 import org.netbeans.spi.lexer.MutableTextInput;
@@ -66,8 +65,8 @@ import org.netbeans.api.lexer.TokenHierarchyEventType;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.lib.editor.util.ArrayUtilities;
+import org.netbeans.lib.lexer.inc.TokenHierarchyUpdate;
 import org.netbeans.lib.lexer.inc.TokenListChange;
-import org.netbeans.lib.lexer.token.AbstractToken;
 
 /**
  * Token hierarchy operation services tasks of its associated token hierarchy.
@@ -79,9 +78,13 @@ import org.netbeans.lib.lexer.token.AbstractToken;
  */
 
 public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands for input
+
+    // -J-Dorg.netbeans.lib.lexer.TokenHierarchyOperation.level=FINE
+    static final Logger LOG = Logger.getLogger(TokenHierarchyOperation.class.getName());
     
-    static final Logger LOG = TokenHierarchyUpdate.LOG;
-    
+    // -J-Dorg.netbeans.spi.lexer.MutableTextInput.level=FINE
+    private static final Logger LOG_LOCK = Logger.getLogger(MutableTextInput.class.getName()); // Logger for read/write-lock
+
     /**
      * Input source of this token hierarchy.
      */
@@ -98,8 +101,12 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
      * Mutable text input for mutable token hierarchy or null otherwise.
      */
     private MutableTextInput<I> mutableTextInput;
-    
-    private TokenList<T> rootTokenList;
+
+    /**
+     * Root token list of this hierarchy. It is created in constructor and never changed
+     * during the whole lifetime of the token hierarchy.
+     */
+    private final TokenList<T> rootTokenList;
     
     /**
      * The hierarchy can be made inactive to release the tokens
@@ -138,7 +145,9 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
      * If a token list list is contained then all its parents
      * with the shorter language path are also mandatorily maintained.
      */
-    private Map<LanguagePath,TokenListList> path2tokenListList;
+    private Map<LanguagePath,TokenListList<?>> path2tokenListList;
+    
+    private Set<Language<?>> rootChildrenLanguages;
     
     private int maxTokenListListPathSize;
     
@@ -156,7 +165,37 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
         @SuppressWarnings("unchecked")
         I input = (I)inputReader;
         this.inputSource = input;
-        this.rootTokenList = new CopyTextTokenList<T>(this, inputReader,
+
+        // Instead of using an original CopyTextTokenList that allowed to skip
+        // individual characters of all flyweight tokens do just a copy of all chars
+        // from the Reader. TBD - do a lazy reading instead of pre-reading.
+        char[] chars = new char[LexerUtilsConstants.READER_TEXT_BUFFER_SIZE];
+        int offset = 0;
+        try {
+            while (true) {
+                int readLen = inputReader.read(chars, offset, chars.length - offset);
+                if (readLen == -1) // End of stream
+                    break;
+                offset += readLen;
+                if (offset == chars.length) { // Full buffer
+                    chars = ArrayUtilities.charArray(chars); // Double array size
+                }
+            }
+        } catch (IOException e) {
+            // Ignored silently - there should be a wrapping reader catching and properly handling
+            // this IOException.
+        } finally {
+            // Attempt to close the Reader
+            try {
+                inputReader.close();
+            } catch (IOException e) {
+                // Ignored silently - there should be a wrapping reader catching and properly handling
+                // this IOException.
+            }
+        }
+        String inputText = new String(chars, 0, offset); // Copy of reader's whole text
+
+        this.rootTokenList = new BatchTokenList<T>(this, inputText,
                 language, skipTokenIds, inputAttributes);
         init();
         activity = Activity.ACTIVE;
@@ -175,10 +214,13 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
         @SuppressWarnings("unchecked")
         I input = (I)inputText;
         this.inputSource = input;
-        this.rootTokenList = copyInputText
-                ? new CopyTextTokenList<T>(this, inputText,
-                        language, skipTokenIds, inputAttributes)
-                : new TextTokenList<T>(this, inputText,
+        if (copyInputText) {
+            // Instead of using an original CopyTextTokenList (that allowed to skip
+            // individual characters of all flyweight tokens) do just a copy of the full text
+            // and use regular BatchTokenList.
+            inputText = inputText.toString();
+        }
+        this.rootTokenList = new BatchTokenList<T>(this, inputText,
                         language, skipTokenIds, inputAttributes);
         init();
         activity = Activity.ACTIVE;
@@ -201,6 +243,7 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
         // Create listener list even for non-mutable hierarchies as there may be
         // custom embeddings created that need to be notified
         listenerList = new EventListenerList();
+        rootChildrenLanguages = Collections.emptySet();
     }
     
     public TokenHierarchy<I> tokenHierarchy() {
@@ -249,6 +292,8 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
             IncTokenList<T> incTokenList = (IncTokenList<T>)rootTokenList;
             boolean doFire = (listenerList.getListenerCount() > 0);
             TokenListChange<T> change;
+            TokenHierarchyEventInfo eventInfo = new TokenHierarchyEventInfo(
+                    this, TokenHierarchyEventType.ACTIVITY, 0, 0, "", 0);
             if (active) { // Wishing to be active
                 if (incTokenList.updateLanguagePath()) {
                     incTokenList.reinit(); // Initialize lazy lexing
@@ -257,10 +302,8 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
                     return;
                 }
             } else { // Wishing to be inactive
-                change = new TokenListChange<T>(incTokenList);
-//                change.setIndex(0);
-//                change.setOffset(0);
-                incTokenList.replaceTokens(change, incTokenList.tokenCountCurrent(), 0);
+                change = TokenListChange.createRebuildChange(incTokenList);
+                incTokenList.replaceTokens(change, eventInfo, true);
                 incTokenList.setLanguagePath(null);
                 incTokenList.reinit();
             }
@@ -273,19 +316,23 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
                 if (LOG.isLoggable(Level.FINE)) {
                     LOG.fine("Firing ACTIVITY change to " + listenerList.getListenerCount() + " listeners: " + activity); // NOI18N
                 }
-                TokenHierarchyEventInfo eventInfo = new TokenHierarchyEventInfo(
-                        this, TokenHierarchyEventType.ACTIVITY, 0, 0, "", 0);
                 CharSequence text = LexerSpiPackageAccessor.get().text(mutableTextInput);
                 eventInfo.setMaxAffectedEndOffset(text.length());
                 if (activity == Activity.INACTIVE) { // Notify the tokens being removed
                     eventInfo.setTokenChangeInfo(change.tokenChangeInfo());
-                    path2tokenListList = null; // Drop all token list lists
+                    invalidatePath2TokenListList();
                 }
                 fireTokenHierarchyChanged(eventInfo);
             }
         }
     }
-    
+
+    private void invalidatePath2TokenListList() {
+        path2tokenListList = null; // Drop all token list lists
+        rootChildrenLanguages = Collections.emptySet();
+        maxTokenListListPathSize = 0;
+    }
+
     /**
      * Check whether the hierarchy is active doing initialization (an attempt to activate the hierarchy)
      * if it's not active yet (and it was not set to be inactive).
@@ -312,20 +359,20 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
     }
     
     public void ensureReadLocked() {
-        if (isMutable() && LOG.isLoggable(Level.FINE) &&
+        if (isMutable() && LOG_LOCK.isLoggable(Level.FINE) &&
                 !LexerSpiPackageAccessor.get().isReadLocked(mutableTextInput)
         ) { // Not read-locked
-            LOG.log(Level.INFO, "!!WARNING!! Missing READ-LOCK of input source "
+            LOG_LOCK.log(Level.INFO, "!!WARNING!! Missing READ-LOCK of input source "
                     + LexerSpiPackageAccessor.get().inputSource(mutableTextInput),
                     new Exception());
         }
     }
     
     public void ensureWriteLocked() {
-        if (isMutable() && LOG.isLoggable(Level.FINE) &&
+        if (isMutable() && LOG_LOCK.isLoggable(Level.FINE) &&
                 !LexerSpiPackageAccessor.get().isWriteLocked(mutableTextInput)
         ) { // Not write-locked
-            LOG.log(Level.INFO, "!!WARNING!! Missing WRITE-LOCK of input source "
+            LOG_LOCK.log(Level.INFO, "!!WARNING!! Missing WRITE-LOCK of input source "
                     + LexerSpiPackageAccessor.get().inputSource(mutableTextInput),
                     new Exception());
         }
@@ -351,7 +398,7 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
         ensureReadLocked();
         synchronized (rootTokenList) {
             return isActiveImpl()
-                ? new TokenSequenceList(this, languagePath, startOffset, endOffset)
+                ? new TokenSequenceList(rootTokenList, languagePath, startOffset, endOffset)
                 : null;
         }
     }
@@ -361,38 +408,55 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
      * <br/>
      * If the list needs to be created or it was non-mandatory.
      */
-    public TokenListList tokenListList(LanguagePath languagePath) {
+    public <ET extends TokenId> TokenListList<ET> tokenListList(LanguagePath languagePath) {
         assert isActiveNoInit() : "Token hierarchy expected to be active.";
-        TokenListList tll = path2tokenListList().get(languagePath);
+        @SuppressWarnings("unchecked")
+        TokenListList<ET> tll = (TokenListList<ET>) path2tokenListList().get(languagePath);
         if (tll == null) {
-            tll = new TokenListList(this, languagePath);
+            tll = new TokenListList<ET>(rootTokenList, languagePath);
             path2tokenListList.put(languagePath, tll);
             maxTokenListListPathSize = Math.max(languagePath.size(), maxTokenListListPathSize);
             // Also create parent token list lists if they don't exist yet
+            Language<?> innerLanguage = languagePath.innerLanguage();
             if (languagePath.size() >= 3) { // Top-level token list list not maintained
-                tokenListList(languagePath.parent()).increaseChildrenCount();
+                tokenListList(languagePath.parent()).notifyChildAdded(innerLanguage);
+            } else {
+                assert (languagePath.size() == 2);
+                assert (languagePath.parent() == rootTokenList.languagePath());
+                if (rootChildrenLanguages.size() == 0)
+                    rootChildrenLanguages = new HashSet<Language<?>>();
+                boolean added = rootChildrenLanguages.add(innerLanguage);
+                assert (added) : "Language " + innerLanguage + " already contained: " + rootChildrenLanguages; // NOI18N
             }
         }
         return tll;
     }
     
-    private Map<LanguagePath,TokenListList> path2tokenListList() {
+    /**
+     * Get existing token list list or null if the TLL does not exist yet.
+     */
+    public <ET extends TokenId> TokenListList<ET> existingTokenListList(LanguagePath languagePath) {
+        synchronized (rootTokenList()) {
+            @SuppressWarnings("unchecked")
+            TokenListList<ET> tll = (path2tokenListList != null) 
+                    ? (TokenListList<ET>) path2tokenListList.get(languagePath)
+                    : null;
+            return tll;
+        }
+    }
+
+    public Set<Language<?>> rootChildrenLanguages() {
+        return rootChildrenLanguages;
+    }
+
+    private Map<LanguagePath,TokenListList<?>> path2tokenListList() {
         if (path2tokenListList == null) {
-            path2tokenListList = new HashMap<LanguagePath,TokenListList>(4, 0.5f);
+            path2tokenListList = new HashMap<LanguagePath,TokenListList<?>>(4, 0.5f);
         }
         return path2tokenListList;
     }
     
-    /**
-     * Get existing token list list or null if the TLL does not exist yet.
-     */
-    public TokenListList existingTokenListList(LanguagePath languagePath) {
-        synchronized (rootTokenList()) {
-            return (path2tokenListList != null) ? path2tokenListList.get(languagePath) : null;
-        }
-    }
-
-    int maxTokenListListPathSize() {
+    public int maxTokenListListPathSize() {
         return maxTokenListListPathSize;
     }
 
@@ -402,21 +466,17 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
             if (isActiveNoInit()) {
                 IncTokenList<T> incTokenList = (IncTokenList<T>)rootTokenList;
                 incTokenList.incrementModCount();
-                TokenListChange<T> change = new TokenListChange<T>(incTokenList);
                 CharSequence text = LexerSpiPackageAccessor.get().text(mutableTextInput);
                 TokenHierarchyEventInfo eventInfo = new TokenHierarchyEventInfo(
                     this, TokenHierarchyEventType.REBUILD, 0, 0, "", 0);
-                change.setIndex(0);
-                change.setOffset(0);
-                change.setAddedEndOffset(0); // Tokens will be recreated lazily
-
-                incTokenList.replaceTokens(change, incTokenList.tokenCountCurrent(), 0);
+                TokenListChange<T> change = TokenListChange.createRebuildChange(incTokenList);
+                incTokenList.replaceTokens(change, eventInfo, true);
                 incTokenList.reinit(); // Will relex tokens lazily
 
                 eventInfo.setTokenChangeInfo(change.tokenChangeInfo());
                 eventInfo.setMaxAffectedEndOffset(text.length());
 
-                path2tokenListList = null; // Drop all token list lists
+                invalidatePath2TokenListList();
                 fireTokenHierarchyChanged(eventInfo);
             } // not active - no changes fired
         }
@@ -450,55 +510,7 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
             TokenHierarchyEventInfo eventInfo = new TokenHierarchyEventInfo(
                     this, TokenHierarchyEventType.MODIFICATION,
                     offset, removedLength, removedText, insertedLength);
-            // First a top-level token list will be updated then the embedded ones.
-            IncTokenList<T> incTokenList = (IncTokenList<T>)rootTokenList;
-
-            if (LOG.isLoggable(Level.FINEST)) {
-                // Display current state of the hierarchy by faking its text
-                // through original text
-                CharSequence text = incTokenList.text();
-                assert (text != null);
-                incTokenList.setText(eventInfo.originalText());
-                // Dump all contents
-                LOG.finest(toString());
-                // Return the original text
-                incTokenList.setText(text);
-            }
-            
-            if (LOG.isLoggable(Level.FINE)) {
-                StringBuilder sb = new StringBuilder(150);
-                sb.append("<<<<<<<<<<<<<<<<<< LEXER CHANGE START ------------------\n"); // NOI18N
-                sb.append(eventInfo.modificationDescription(false));
-                TokenHierarchyUpdate.LOG.fine(sb.toString());
-            }
-
-            new TokenHierarchyUpdate(eventInfo).update(incTokenList);
-            
-            if (LOG.isLoggable(Level.FINE)) {
-                LOG.fine("AFFECTED: " + eventInfo.dumpAffected() + "\n"); // NOI18N
-                String extraMsg = "";
-                if (LOG.isLoggable(Level.FINER)) {
-                    // Check consistency of the whole token hierarchy
-                    String error = checkConsistency();
-                    if (error != null) {
-                        String msg = "!!!CONSISTENCY-ERROR!!!: " + error + "\n";
-                        if (LOG.isLoggable(Level.FINEST)) {
-                            throw new IllegalStateException(msg);
-                        } else {
-                            LOG.finer(msg);
-                        }
-                    } else {
-                        extraMsg = "(TokenHierarchy Check OK) ";
-                    }
-                }
-                LOG.fine(">>>>>>>>>>>>>>>>>> LEXER CHANGE END " + extraMsg + "------------------\n"); // NOI18N
-            }
-
-            if (LOG.isLoggable(Level.FINEST)) {
-                LOG.finest("AFTER UPDATE:\n");
-                LOG.finest(toString());
-            }
-
+            new TokenHierarchyUpdate(eventInfo).update();
             fireTokenHierarchyChanged(eventInfo);
         }
     }
@@ -550,7 +562,7 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
 //
 //    private void checkIsSnapshot() {
 //        if (!isSnapshot()) {
-//            throw new IllegalStateException("Not a snapshot");
+//            throw new IllegalStateException("Not a snapshot");    
 //        }
 //    }
 //
@@ -678,17 +690,17 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
      */
     public String checkConsistency() {
         // Check root token list first
-        String error = checkConsistencyTokenList(rootTokenList(), ArrayUtilities.emptyIntArray(), 0);
+        String error = LexerUtilsConstants.checkConsistencyTokenList(rootTokenList(), true);
         // Check token-list lists
         if (error == null && path2tokenListList != null) {
-            for (TokenListList tll : path2tokenListList.values()) {
+            for (TokenListList<?> tll : path2tokenListList.values()) {
                 // Check token-list list consistency
                 error = tll.checkConsistency();
                 if (error != null)
                     return error;
                 // Check each individual token list in token-list list
                 for (TokenList<?> tl : tll) {
-                    error = checkConsistencyTokenList(tl, ArrayUtilities.emptyIntArray(), tl.startOffset());
+                    error = LexerUtilsConstants.checkConsistencyTokenList(tl, false);
                     if (error != null) {
                         return error;
                     }
@@ -696,120 +708,6 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
             }
         }
         return error;
-    }
-    
-    private String checkConsistencyTokenList(TokenList<?> tokenList,
-    int[] parentIndexes, int firstTokenOffset) {
-        int tokenCountCurrent = tokenList.tokenCountCurrent();
-        int[] indexes = ArrayUtilities.intArray(parentIndexes, parentIndexes.length + 1);
-        boolean continuous = tokenList.isContinuous();
-        int lastOffset = firstTokenOffset;
-        for (int i = 0; i < tokenCountCurrent; i++) {
-            Object tokenOrEmbeddingContainer = tokenList.tokenOrEmbeddingContainer(i);
-            if (tokenOrEmbeddingContainer == null) {
-                return dumpContext("Null token", tokenList, i, parentIndexes); // NOI18N
-            }
-            AbstractToken<?> token = LexerUtilsConstants.token(tokenOrEmbeddingContainer);
-            // Check whether tokenList.startOffset() corresponds to the start of first token
-            if (i == 0 && continuous && tokenCountCurrent > 0 && !token.isFlyweight()) {
-                if (token.offset(null) != tokenList.startOffset()) {
-                    return dumpContext("firstToken.offset()=" + token.offset(null) +
-                            " != tokenList.startOffset()=" + tokenList.startOffset(),
-                            tokenList, i, parentIndexes);
-                }
-            }
-            if (!token.isFlyweight() && token.tokenList() != tokenList) {
-                return dumpContext("Invalid token.tokenList()=" + token.tokenList(),
-                        tokenList, i, parentIndexes);
-            }
-            if (token.text() == null) {
-                return dumpContext("Null token.text()=" + token.tokenList(),
-                        tokenList, i, parentIndexes);
-            }
-            int offset = (token.isFlyweight()) ? lastOffset : token.offset(null);
-            if (offset < 0) {
-                return dumpContext("Token offset=" + offset + " < 0", tokenList, i, parentIndexes); // NOI18N
-            }
-            if (offset < lastOffset) {
-                return dumpContext("Token offset=" + offset + " < lastOffset=" + lastOffset,
-                        tokenList, i, parentIndexes);
-            }
-            if (offset > lastOffset && continuous) {
-                return dumpContext("Gap between tokens; offset=" + offset + ", lastOffset=" + lastOffset,
-                        tokenList, i, parentIndexes);
-            }
-            lastOffset = offset + token.length();
-            if (tokenOrEmbeddingContainer.getClass() == EmbeddingContainer.class) {
-                EmbeddingContainer<?> ec = (EmbeddingContainer<?>)tokenOrEmbeddingContainer;
-                EmbeddedTokenList<?> etl = ec.firstEmbeddedTokenList();
-                while (etl != null) {
-                    String error = checkConsistencyTokenList(etl, indexes, offset + etl.embedding().startSkipLength());
-                    if (error != null)
-                        return error;
-                    etl = etl.nextEmbeddedTokenList();
-                }
-            }
-        }
-        return null;
-    }
-    
-    private String dumpContext(String msg, TokenList<?> tokenList, int index, int[] parentIndexes) {
-        StringBuilder sb = new StringBuilder();
-        sb.append(msg);
-        sb.append(" at index="); // NOI18N
-        sb.append(index);
-        sb.append(" of tokens of language "); // NOI18N
-        sb.append(tokenList.languagePath().innerLanguage().mimeType());
-        sb.append('\n');
-        LexerUtilsConstants.appendTokenList(sb, tokenList, index, index - 2, index + 3, false, 0);
-        sb.append("\nParents:\n"); // NOI18N
-        sb.append(tracePath(parentIndexes, tokenList.languagePath()));
-        return sb.toString();
-    }
-    
-    public String findTokenContext(AbstractToken<?> token) {
-        return findTokenContext(token, rootTokenList(), ArrayUtilities.emptyIntArray());
-    }
-
-    private String findTokenContext(AbstractToken<?> token, TokenList<?> tokenList, int[] parentIndexes) {
-        int tokenCountCurrent = tokenList.tokenCountCurrent();
-        int[] indexes = ArrayUtilities.intArray(parentIndexes, parentIndexes.length + 1);
-        for (int i = 0; i < tokenCountCurrent; i++) {
-            Object tokenOrEmbeddingContainer = tokenList.tokenOrEmbeddingContainer(i);
-            if (tokenOrEmbeddingContainer == null) {
-                continue;
-            }
-            if (tokenOrEmbeddingContainer.getClass() == EmbeddingContainer.class) {
-                EmbeddingContainer<?> ec = (EmbeddingContainer<?>)tokenOrEmbeddingContainer;
-                if (ec.token() == token) {
-                    return dumpContext("Token found.", tokenList, i, indexes);
-                }
-                EmbeddedTokenList<?> etl = ec.firstEmbeddedTokenList();
-                while (etl != null) {
-                    String context = findTokenContext(token, etl, indexes);
-                    if (context != null)
-                        return context;
-                    etl = etl.nextEmbeddedTokenList();
-                }
-
-            } else if (tokenOrEmbeddingContainer == token) {
-                return dumpContext("Token found.", tokenList, i, indexes);
-            }
-        }
-        return null;
-    }
-
-    private String tracePath(int[] indexes, LanguagePath languagePath) {
-        StringBuilder sb  = new StringBuilder();
-        TokenList<?> tokenList = rootTokenList();
-        for (int i = 0; i < indexes.length; i++) {
-            LexerUtilsConstants.appendTokenInfo(sb, tokenList, i,
-                    tokenHierarchy(), false, 0);
-            // Assign language to variable to get rid of javac bug for incremental compilation on 1.5 
-            Language<?> language = languagePath.language(i);
-            tokenList = EmbeddingContainer.embeddedTokenList(tokenList, indexes[i], language);
-        }
-        return sb.toString();
     }
     
 //    private final class SnapshotRef extends WeakReference<TokenHierarchyOperation<I,T>> implements Runnable {

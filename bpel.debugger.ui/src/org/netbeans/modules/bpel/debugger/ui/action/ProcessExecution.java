@@ -35,6 +35,7 @@ import org.openide.windows.WindowManager;
 public class ProcessExecution extends AbstractAction {
     
     public ProcessExecution() {
+      // When changed, update also mf-layer.xml, where are the properties duplicated because of Actions.alwaysEnabled()
       putValue(NAME, NbBundle.getMessage(
               ProcessExecution.class, "LBL_ProcessExecutionView")); // NOI18N
       putValue(SMALL_ICON, new ImageIcon(Utilities.loadImage (

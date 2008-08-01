@@ -1,12 +1,7 @@
 
 
 Document 0
-Delete:  source : <TESTURL>/class-via-function.js
-
-
-
-Document 1
-Indexed:
+Searchable Keys:
   base : debug;JMaki;debug;|DOCUMENTED|PROPERTY|;;0;38;;Boolean;
   base : doanotherthing;;doAnotherThing;|DOCUMENTED|FUNCTION|;;0;b9;;void;
   base : dosomething;JMaki;doSomething;|DOCUMENTED|FUNCTION|;;0;63;;void;
@@ -19,4 +14,4 @@ Indexed:
   fqn : jmaki;;JMaki;|CONSTRUCTOR|;;0;;;JMaki;
   fqn : jmaki;;jmaki;|GLOBAL|;;0;;;JMaki;
 
-Not Indexed:
+Not Searchable Keys:

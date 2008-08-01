@@ -47,6 +47,7 @@ import org.netbeans.modules.websvc.saas.model.jaxb.Group;
 import org.openide.util.actions.NodeAction;
 import org.openide.util.*;
 import org.openide.DialogDisplayer;
+import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
 
@@ -88,7 +89,13 @@ public class AddGroupAction extends NodeAction {
                     newName = defaultName;
                 }
                 SaasGroup parent = nodes[0].getLookup().lookup(SaasGroup.class);
-                SaasServicesModel.getInstance().createGroup(parent, newName);                
+                
+                try {
+                    SaasServicesModel.getInstance().createGroup(parent, newName);   
+                } catch (Exception ex) {
+                    NotifyDescriptor.Message msg = new NotifyDescriptor.Message(ex.getMessage());
+                    DialogDisplayer.getDefault().notify(msg);
+                }
             } catch (IllegalArgumentException e) {
                 Exceptions.printStackTrace(e);
             }

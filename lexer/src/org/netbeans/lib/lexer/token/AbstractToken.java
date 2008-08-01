@@ -41,30 +41,49 @@
 
 package org.netbeans.lib.lexer.token;
 
+import org.netbeans.lib.lexer.TokenOrEmbedding;
+import java.util.List;
 import org.netbeans.api.lexer.PartType;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.lib.lexer.EmbeddedTokenList;
-import org.netbeans.lib.lexer.LexerApiPackageAccessor;
-import org.netbeans.lib.lexer.LexerUtilsConstants;
+import org.netbeans.lib.lexer.EmbeddingContainer;
 import org.netbeans.lib.lexer.TokenList;
 
 /**
  * Abstract token is base class of all token implementations used in the lexer module.
+ * <br/>
+ * Two descendants of AbstractToken:
+ * <ul>
+ *   <li>{@link DefaultToken} - by default does not contain a text but points
+ *       into a text storage of its token list instead. It may however cache
+ *       its text as string in itself.
+ *       <ul>
+ *           <li></li>
+ *       </ul>
+ *   </li>
+ *   <li>{@link TextToken} - contains text that it represents; may act as flyweight token.
+ *       {@link CustomTextToken} allows a token to have a custom text independent
+ *       of text of an actual storage.
+ *   </li>
+ * 
+ * 
+ *
  *
  * @author Miloslav Metelka
  * @version 1.00
  */
 
-public abstract class AbstractToken<T extends TokenId> extends Token<T> implements CharSequence {
+public abstract class AbstractToken<T extends TokenId> extends Token<T>
+implements TokenOrEmbedding<T> {
     
     private final T id; // 12 bytes (8-super + 4)
 
-    private TokenList<T> tokenList; // 16 bytes
+    protected TokenList<T> tokenList; // 16 bytes
     
-    private int rawOffset; // 20 bytes
+    protected int rawOffset; // 20 bytes
 
     /**
      * @id non-null token id.
@@ -74,13 +93,10 @@ public abstract class AbstractToken<T extends TokenId> extends Token<T> implemen
         this.id = id;
     }
     
-    AbstractToken(T id, TokenList<T> tokenList, int rawOffset) {
+    AbstractToken(T id, int rawOffset) {
         this.id = id;
-        this.tokenList = tokenList;
         this.rawOffset = rawOffset;
     }
-    
-    public abstract int length();
     
     /**
      * Get identification of this token.
@@ -90,22 +106,6 @@ public abstract class AbstractToken<T extends TokenId> extends Token<T> implemen
     @Override
     public final T id() {
         return id;
-    }
-
-    /**
-     * Get text represented by this token.
-     */
-    @Override
-    public CharSequence text() {
-        if (tokenList != null) {
-            if (tokenList.getClass() == EmbeddedTokenList.class) {
-                EmbeddedTokenList<?> etl = (EmbeddedTokenList<?>)tokenList;
-                return etl.embeddingContainer().updateStatus() ? this : null;
-            }
-            return this;
-        } else {
-            return null;
-        }
     }
 
     /**
@@ -160,14 +160,13 @@ public abstract class AbstractToken<T extends TokenId> extends Token<T> implemen
     }
 
     @Override
-    public final int offset(TokenHierarchy<?> tokenHierarchy) {
-        if (rawOffset == -1) { // flyweight token
-            return -1;
+    public int offset(TokenHierarchy<?> tokenHierarchy) {
+        if (tokenList != null) {
+            if (tokenList.getClass() == EmbeddedTokenList.class) // Sync status first
+                ((EmbeddedTokenList)tokenList).embeddingContainer().updateStatus();
+            return tokenList.tokenOffset(this);
         }
-
-        return (tokenList != null)
-                ? tokenList.childTokenOffset(rawOffset)
-                : rawOffset;
+        return rawOffset; // Covers the case of flyweight token that will return -1
 //        if (tokenHierarchy != null) {
 //            return LexerApiPackageAccessor.get().tokenHierarchyOperation(
 //                    tokenHierarchy).tokenOffset(this, tokenList, rawOffset);
@@ -177,7 +176,7 @@ public abstract class AbstractToken<T extends TokenId> extends Token<T> implemen
 //                : rawOffset;
 //        }
     }
-    
+
     @Override
     public boolean hasProperties() {
         return false;
@@ -188,40 +187,38 @@ public abstract class AbstractToken<T extends TokenId> extends Token<T> implemen
         return null;
     }
 
-    // CharSequence methods
-    /**
-     * Implementation of <code>CharSequence.charAt()</code>
-     */
-    public final char charAt(int index) {
-        if (index < 0 || index >= length()) {
-            throw new IndexOutOfBoundsException(
-                "index=" + index + ", length=" + length() // NOI18N
-            );
-        }
-        if (tokenList == null) { // Should normally not happen
-            // A bit strange to throw IOOBE but it's more practical since
-            // TokenHierarchy's dump can overcome IOOBE and deliver a useful debug but not NPEs etc.
-            throw new IndexOutOfBoundsException("index=" + index + ", length=" + length() +
-                    " but tokenList==null for token " + dumpInfo(null));
-        }
-        return tokenList.childTokenCharAt(rawOffset, index);
+    @Override
+    public Token<T> joinToken() {
+        return null;
     }
 
-    public final CharSequence subSequence(int start, int end) {
-        return CharSequenceUtilities.toString(this, start, end);
+    @Override
+    public List<? extends Token<T>> joinedParts() {
+        return null;
+    }
+
+    // Implements TokenOrEmbedding
+    public final AbstractToken<T> token() {
+        return this;
     }
     
-    /**
-     * This method is in fact <code>CharSequence.toString()</code> implementation.
-     */
+    // Implements TokenOrEmbedding
+    public final EmbeddingContainer<T> embedding() {
+        return null;
+    }
+
     @Override
-    public String toString() {
-        // To prevent NPEs when token.toString() would called without checking
-        // (text() == null) there is an extra check for that.
-        CharSequence text = text();
-        return (text != null)
-                ? CharSequenceUtilities.toString(this, 0, length())
-                : "<null>";
+    public boolean isRemoved() {
+        if (tokenList != null) {
+            if (tokenList.getClass() == EmbeddedTokenList.class)
+                ((EmbeddedTokenList)tokenList).embeddingContainer().updateStatus();
+            return tokenList.isRemoved();
+        }
+        return !isFlyweight();
+    }
+
+    public String dumpInfo() {
+        return dumpInfo(null, null, true, true, 0).toString();
     }
 
     /**
@@ -234,41 +231,82 @@ public abstract class AbstractToken<T extends TokenId> extends Token<T> implemen
      *
      * @param tokenHierarchy <code>null</code> should be passed
      *  (the parameter is reserved for future use when token hierarchy snapshots will be implemented).
-     * @return dump of the thorough token information.
+     * @param dumpText whether text should be dumped (not for TokenListUpdater
+     *  when text is already shifted).
+     * @param dumpRealOffset whether real offset should be dumped or whether raw offset should be used.
+     * @return dump of the thorough token information. If token's text is longer
+     *  than 400 characters it will be shortened.
      */
-    public String dumpInfo(TokenHierarchy<?> tokenHierarchy) {
-        StringBuilder sb = new StringBuilder();
-        CharSequence text = text();
-        if (text != null) {
-            sb.append('"');
-            for (int i = 0; i < text.length(); i++) {
-                try {
-                    CharSequenceUtilities.debugChar(sb, text.charAt(i));
-                } catch (IndexOutOfBoundsException e) {
-                    // For debugging purposes it's better than to completely fail
-                    sb.append("IOOBE at index=").append(i).append("!!!"); // NOI18N
-                    break;
-                }
-            }
-            sb.append('"');
-        } else {
-            sb.append("<null-text>"); // NOI18N
+    public StringBuilder dumpInfo(StringBuilder sb, TokenHierarchy<?> tokenHierarchy,
+            boolean dumpText, boolean dumpRealOffset, int indent
+    ) {
+        if (sb == null) {
+            sb = new StringBuilder(50);
         }
-        sb.append(' ');
+        if (dumpText) {
+            try {
+                CharSequence text = text();
+                if (text != null) {
+                    sb.append('"');
+                    dumpTextImpl(sb, text);
+                    sb.append('"');
+                } else {
+                    sb.append("<null-text>"); // NOI18N
+                }
+            } catch (NullPointerException e) {
+                sb.append("NPE in Token.text()!!!"); // NOI18N
+            }
+            sb.append(' ');
+        }
         if (isFlyweight()) {
             sb.append("F(").append(length()).append(')');
         } else {
-            int offset = offset(tokenHierarchy);
+            int offset = dumpRealOffset ? offset(tokenHierarchy) : rawOffset();
             sb.append('<').append(offset); // NOI18N
             sb.append(",").append(offset + length()).append('>'); // NOI18N
         }
         sb.append(' ').append(id != null ? id.name() + '[' + id.ordinal() + ']' : "<null-id>"); // NOI18N
         sb.append(" ").append(dumpInfoTokenType());
-        return sb.toString();
+        return sb;
     }
     
+    public StringBuilder dumpText(StringBuilder sb, CharSequence inputSourceText) {
+        assert (tokenList == null) : "Should only be called for tokens not yet added to a token-list";
+        int length = length();
+        if (sb == null) {
+            sb = new StringBuilder(length + 10); // some chars may be dumped as two chars
+        }
+        CharSequence text;
+        if (isFlyweight()) {
+            text = text();
+        } else { // non-flyweight
+            // not in token-list rawOffset is real offset
+            text = inputSourceText.subSequence(rawOffset, rawOffset + length);
+        }
+        dumpTextImpl(sb, text);
+        return sb;
+    }
+
+    private void dumpTextImpl(StringBuilder sb, CharSequence text) {
+        int textLength = text.length();
+        for (int i = 0; i < textLength; i++) {
+            if (textLength > 400 && i >= 200 && i < textLength - 200) {
+                i = textLength - 200;
+                sb.append(" ...<TEXT-SHORTENED>... "); // NOI18N
+                continue;
+            }
+            try {
+                CharSequenceUtilities.debugChar(sb, text.charAt(i));
+            } catch (IndexOutOfBoundsException e) {
+                // For debugging purposes it's better than to completely fail
+                sb.append("IOOBE at index=").append(i).append("!!!"); // NOI18N
+                break;
+            }
+        }
+    }
+
     protected String dumpInfoTokenType() {
         return "AbsT"; // NOI18N "AbstractToken"
     }
-    
+
 }

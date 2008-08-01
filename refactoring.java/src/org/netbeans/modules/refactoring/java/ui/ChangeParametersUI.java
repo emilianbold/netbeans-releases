@@ -40,6 +40,8 @@
  */
 package org.netbeans.modules.refactoring.java.ui;
 
+import com.sun.source.tree.Tree.Kind;
+import com.sun.source.util.TreePath;
 import java.text.MessageFormat;
 import java.util.Iterator;
 import java.util.List;
@@ -49,7 +51,6 @@ import javax.lang.model.element.Modifier;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreePathHandle;
-import org.netbeans.api.java.source.TypeMirrorHandle;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.java.RetoucheUtils;
@@ -70,9 +71,21 @@ public class ChangeParametersUI implements RefactoringUI {
     ChangeParametersRefactoring refactoring;
     
     /** Creates a new instance of ChangeMethodSignatureRefactoring */
-    public ChangeParametersUI(TreePathHandle refactoredObj, CompilationInfo info) {
+    private ChangeParametersUI(TreePathHandle refactoredObj, CompilationInfo info) {
         this.refactoring = new ChangeParametersRefactoring(refactoredObj);
         this.refactoredObj = refactoredObj;
+    }
+    
+    public static ChangeParametersUI create(TreePathHandle refactoredObj, CompilationInfo info) {
+        TreePath path = refactoredObj.resolve(info);
+        Kind kind;
+        while (path != null && (kind = path.getLeaf().getKind()) != Kind.METHOD && kind != Kind.METHOD_INVOCATION) {
+            path = path.getParentPath();
+        }
+        
+        return path != null
+                ? new ChangeParametersUI(TreePathHandle.create(path, info), info)
+                : null;
     }
     
     public String getDescription() {

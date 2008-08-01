@@ -51,6 +51,7 @@ import java.lang.reflect.InvocationTargetException;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -59,6 +60,7 @@ import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
 
 // This test class tests the main functionality of the property sheet
+@RandomlyFails
 public class PropertiesFlushTest extends NbTestCase {
     private PropertySheet ps = null;
     public PropertiesFlushTest(String name) {
@@ -69,7 +71,6 @@ public class PropertiesFlushTest extends NbTestCase {
         return false;
     }
     
-    private static boolean setup = false;
 /*
  * This test creates a Property, Editor and Node. First test checks if initialized
  * editor contains the same value as property. The second checks if the property
@@ -90,10 +91,11 @@ public class PropertiesFlushTest extends NbTestCase {
             jf.setLocation(30,30);
             jf.setSize(500,500);
             new ExtTestCase.WaitWindow(jf);
+            final Node[] nodes = new Node[]{tn};
             
             SwingUtilities.invokeAndWait(new Runnable() {
                 public void run() {
-                    ps.setNodes(new Node[] {tn});
+                    ps.setNodes(nodes);
                 }
             });
             
@@ -129,7 +131,7 @@ public class PropertiesFlushTest extends NbTestCase {
                 tn.replaceProps();
             }
         });
-        Thread.currentThread().sleep(500);
+        Thread.sleep(500);
         //        SwingUtilities.invokeAndWait (new Runnable(){public void run() {System.currentTimeMillis();}});
         
         l.assertEventReceived();
@@ -146,10 +148,11 @@ public class PropertiesFlushTest extends NbTestCase {
         System.err.println(".testSetSheetChangesPropertySheetContents");
         final TNode2 tnd = new TNode2();
         throwMe = null;
+        final Node[] nodes = new Node[]{tnd};
         SwingUtilities.invokeAndWait(new Runnable() {
             public void run() {
                 try {
-                    ps.setNodes(new Node[] {tnd});
+                    ps.setNodes(nodes);
                 } catch (Exception e) {
                     throwMe = e;
                 }
@@ -198,7 +201,7 @@ public class PropertiesFlushTest extends NbTestCase {
     }
     
     private void sleep() throws Exception {
-        Thread.currentThread().sleep(500);
+        Thread.sleep(500);
         SwingUtilities.invokeAndWait(new Runnable() {
             public void run() {
                 System.currentTimeMillis();
@@ -359,12 +362,14 @@ public class PropertiesFlushTest extends NbTestCase {
         Reference oldNode = new WeakReference(tnd);
         throwMe2 = null;
         class R1 implements Runnable {
-            Node n;
-            R1 (Node n) { this.n = n; }
+            Node[] nodes;
+            R1 (Node n) {
+                nodes = new Node[] {n};
+            }
             
             public void run() {
                 try {
-                    ps.setNodes(new Node[] {n});
+                    ps.setNodes(nodes);
                 } catch (Exception e) {
                     throwMe2 = e;
                 }

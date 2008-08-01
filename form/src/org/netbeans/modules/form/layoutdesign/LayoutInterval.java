@@ -439,6 +439,9 @@ public final class LayoutInterval implements LayoutConstants {
     }
 
     int add(LayoutInterval interval, int index) {
+        if (getParent() == interval) {
+            throw new IllegalArgumentException("Cannot add parent as a sub-interval!"); // NOI18N
+        }
         if (index < 0) {
             index = subIntervals.size();
         }

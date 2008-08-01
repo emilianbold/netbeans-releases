@@ -19,17 +19,18 @@
 package org.netbeans.modules.xslt.tmap.model.impl;
 
 import java.util.Iterator;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.xml.namespace.QName;
 import org.netbeans.modules.xml.wsdl.model.ReferenceableWSDLComponent;
 import org.netbeans.modules.xml.xam.dom.Attribute;
 import org.netbeans.modules.xslt.tmap.model.api.ExNamespaceContext;
 import org.netbeans.modules.xslt.tmap.model.api.ParamType;
-import org.netbeans.modules.xslt.tmap.model.api.TMapReference;
-import org.netbeans.modules.xslt.tmap.model.api.TMapReferenceable;
-import org.netbeans.modules.xslt.tmap.model.api.Variable;
+import org.netbeans.modules.xslt.tmap.model.api.TMapComponent;
 import org.netbeans.modules.xslt.tmap.model.api.VariableDeclarator;
 import org.netbeans.modules.xslt.tmap.model.api.VariableReference;
 import org.netbeans.modules.xslt.tmap.model.api.WSDLReference;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -42,6 +43,7 @@ import org.netbeans.modules.xslt.tmap.model.api.WSDLReference;
 public class AttributeAccess {
 
     private TMapComponentAbstract myComponent;
+    private static final Logger LOGGER = Logger.getLogger(AttributeAccess.class.getName());
     
     public AttributeAccess(TMapComponentAbstract component) {
         myComponent = component;
@@ -191,9 +193,6 @@ public class AttributeAccess {
     private <T extends ReferenceableWSDLComponent> WSDLReference<T> 
         resolveWSDLReference( Attribute attr , Class<T> clazz ) 
     {
-        
-        TMapComponentAbstract opImpl = getComponent();
-        
         if ( getComponent().getAttribute( attr ) == null ){
             return null;
         }
@@ -204,7 +203,13 @@ public class AttributeAccess {
     }
 
     
-    
+    private TMapComponent getRoot(TMapComponent component) {
+        if (component == null) {
+            return null;
+        }
+        TMapComponent parent = component.getParent();
+        return parent == null ? component : getRoot(parent);
+    }
     
     /**
      * Prepare XML for setting qName as value. 1) Corresponded namespace
@@ -217,9 +222,14 @@ public class AttributeAccess {
         String localPart = qName.getLocalPart();
         String uri = qName.getNamespaceURI();
 
-        ExNamespaceContext context = getComponent().getNamespaceContext();
-
-        String existedPrefix = context.getPrefix(uri);
+//        ExNamespaceContext context = getComponent().getNamespaceContext();
+        TMapComponent root = getRoot(myComponent);
+        if (root == null) {
+            LOGGER.log(Level.SEVERE, NbBundle.getMessage(AttributeAccess.class, "MSG_Error_EmptyRootTMapComponent"));// NOI18N
+        }
+        ExNamespaceContext context = root.getNamespaceContext();
+        
+        String existedPrefix = context == null ? null : context.getPrefix(uri);
         if (existedPrefix != null) {
             attributeValue = existedPrefix + ":" + localPart;
         }

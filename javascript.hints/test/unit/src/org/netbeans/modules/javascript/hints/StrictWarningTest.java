@@ -39,8 +39,7 @@
 
 package org.netbeans.modules.javascript.hints;
 
-import org.netbeans.modules.javascript.hints.infrastructure.RulesManager;
-import org.netbeans.modules.javascript.hints.spi.HintSeverity;
+import org.netbeans.modules.gsf.api.HintSeverity;
 
 /**
  *
@@ -56,20 +55,64 @@ public class StrictWarningTest extends HintTestBase {
 
     public void testStrict() throws Exception {
         // Add builtin wrappers for strict warnings
-        for (String key : RulesManager.KNOWN_STRICT_ERROR_KEYS) {
+        for (String key : StrictWarning.KNOWN_STRICT_ERROR_KEYS) {
             goldenfileSuffix = "." + key;
             StrictWarning rule = new StrictWarning(key);
-            if ("msg.reserved.keyword".equals(key)) {
+            if (StrictWarning.RESERVED_KEYWORD.equals(key) || StrictWarning.TRAILING_COMMA.equals(key)) {
                 rule.setDefaultSeverity(HintSeverity.ERROR);
             }
-            findHints(this, rule, "testfiles/prototype.js", null);
+            checkHints(this, rule, "testfiles/prototype.js", null);
         }
     }
     
+    //Uncomment to generate all the golden files over again
+    //@Override
+    //protected boolean failOnMissingGoldenFile() {
+    //    return false;
+    //}
+    
     public void testReservedKeyword() throws Exception {
-        findHints(this, new StrictWarning("msg.reserved.keyword"), "testfiles/reserved.js", null);
+        goldenfileSuffix = "";
+        checkHints(this, new StrictWarning(StrictWarning.RESERVED_KEYWORD), "testfiles/reserved.js", null);
     }
 
+    public void testDebuggerKeyword() throws Exception {
+        goldenfileSuffix = "";
+        checkHints(this, new StrictWarning(StrictWarning.RESERVED_KEYWORD), "testfiles/debugger.js", null);
+    }
+
+    public void testNoFunctionSideEffects() throws Exception {
+        goldenfileSuffix = "";
+        checkHints(this, new StrictWarning(StrictWarning.NO_SIDE_EFFECTS), "testfiles/functions-sideeffects.js", null);
+    }
+    
+    public void testSideEffects() throws Exception {
+        goldenfileSuffix = "";
+        // See 135144
+        checkHints(this, new StrictWarning(StrictWarning.NO_SIDE_EFFECTS), "testfiles/sideeffects.js", null);
+    }
+
+    public void testSideEffects2() throws Exception {
+        goldenfileSuffix = "";
+        checkHints(this, new StrictWarning(StrictWarning.NO_SIDE_EFFECTS), "testfiles/generated.js", null);
+    }
+
+    // Test no false return warnings
+    public void testReturnAnalysis() throws Exception {
+        goldenfileSuffix = "";
+        checkHints(this, new StrictWarning(StrictWarning.ANON_NO_RETURN_VALUE), "testfiles/returns.js", null);
+    }
+    
+    public void testTrailingComma() throws Exception {
+        goldenfileSuffix = "";
+        checkHints(this, new StrictWarning(StrictWarning.TRAILING_COMMA), "testfiles/trailingcomma.js", null);
+    }
+    
+    public void testFixTrailingComma() throws Exception {
+        goldenfileSuffix = "";
+        applyHint(this, new StrictWarning(StrictWarning.TRAILING_COMMA), "testfiles/trailingcomma.js", "600px\"^,", "Remove");
+    }
+    
     @Override
     protected String getGoldenFileSuffix() {
         return goldenfileSuffix;

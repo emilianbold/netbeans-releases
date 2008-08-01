@@ -1,16 +1,16 @@
-'MEMORY_H', tokenID=identifier, offset=2113 [42:9/2113-42:17/2121]
+'MEMORY_H', tokenID=preprocessor_identifier, offset=2113 [42:9/2113-42:17/2121]
 --OWNER:
     null
 --RESOLVED TO:
     MACROS #define 'MEMORY_H' [43:1/2122-43:17/2138]
 ==============================================================
-'MEMORY_H', tokenID=identifier, offset=2130 [43:9/2130-43:17/2138]
+'MEMORY_H', tokenID=preprocessor_identifier, offset=2130 [43:9/2130-43:17/2138]
 --OWNER:
     MACROS #define 'MEMORY_H' [43:1/2122-43:17/2138]
 --RESOLVED TO:
     MACROS #define 'MEMORY_H' [43:1/2122-43:17/2138]
 ==============================================================
-'"module.h"', tokenID=user-include, offset=2148 [44:10/2148-44:20/2158]
+'"module.h"', tokenID=preprocessor_user_include, offset=2148 [44:10/2148-44:20/2158]
 --OWNER:
     INCLUDE "module.h" [44:1/2139-44:20/2158]
 --RESOLVED TO:

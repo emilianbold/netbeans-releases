@@ -44,6 +44,8 @@ package org.netbeans.modules.apisupport.project.ui.wizard.loader;
 import java.io.CharConversionException;
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -65,6 +67,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.modules.SpecificationVersion;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.xml.XMLUtil;
 
@@ -178,6 +181,18 @@ final class NewLoaderIterator extends BasicWizardIterator {
     
     public static void generateFileChanges(DataModel model) {
         CreatedModifiedFiles fileChanges = new CreatedModifiedFiles(model.getProject());
+
+        boolean loaderlessObject;
+        boolean lookupReadyObject;
+        try {
+            SpecificationVersion current = model.getModuleInfo().getDependencyVersion("org.openide.loaders");
+            loaderlessObject = current.compareTo(new SpecificationVersion("7.1")) >= 0; // NOI18N
+            lookupReadyObject = current.compareTo(new SpecificationVersion("6.0")) >= 0; // NOI18N
+        } catch (IOException ex) {
+            Logger.getLogger(NewLoaderIterator.class.getName()).log(Level.INFO, null, ex);
+            loaderlessObject = false;
+            lookupReadyObject = false;
+        }
         
         String namePrefix = model.getPrefix();
         String packageName = model.getPackageName();
@@ -191,26 +206,30 @@ final class NewLoaderIterator extends BasicWizardIterator {
         
         // Copy action icon
         String origIconPath = model.getIconPath();
+        String relativeIconPath;
         if (origIconPath != null && new File(origIconPath).exists()) {
-            String relativeIconPath = model.addCreateIconOperation(fileChanges, origIconPath);
+            relativeIconPath = model.addCreateIconOperation(fileChanges, origIconPath);
             replaceTokens.put("IMAGESNIPPET", formatImageSnippet(relativeIconPath));//NOI18N
             replaceTokens.put("ICONPATH", relativeIconPath);//NOI18N
             replaceTokens.put("COMMENTICON", "");//NOI18N
-            
         } else {
             replaceTokens.put("IMAGESNIPPET", formatImageSnippet(null)); //NOI18N
             replaceTokens.put("ICONPATH", "SET/PATH/TO/ICON/HERE"); //NOI18N
             replaceTokens.put("COMMENTICON", "//");//NOI18N
+            relativeIconPath = null;
         }
         
-        // 1. create dataloader file
-        String loaderName = model.getDefaultPackagePath(namePrefix + "DataLoader.java", false); // NOI18N
-        // XXX use nbresloc URL protocol rather than NewLoaderIterator.class.getResource(...):
-        FileObject template = CreatedModifiedFiles.getTemplate("templateDataLoader.java");//NOI18N
-        fileChanges.add(fileChanges.createFileWithSubstitutions(loaderName, template, replaceTokens));
-        String loaderInfoName = model.getDefaultPackagePath(namePrefix + "DataLoaderBeanInfo.java", false); // NOI18N
-        template = CreatedModifiedFiles.getTemplate("templateDataLoaderBeanInfo.java");//NOI18N
-        fileChanges.add(fileChanges.createFileWithSubstitutions(loaderInfoName, template, replaceTokens));
+        FileObject template;
+        if (!loaderlessObject) {
+            // 1. create dataloader file
+            String loaderName = model.getDefaultPackagePath(namePrefix + "DataLoader.java", false); // NOI18N
+            // XXX use nbresloc URL protocol rather than NewLoaderIterator.class.getResource(...):
+            template = CreatedModifiedFiles.getTemplate("templateDataLoader.java");//NOI18N
+            fileChanges.add(fileChanges.createFileWithSubstitutions(loaderName, template, replaceTokens));
+            String loaderInfoName = model.getDefaultPackagePath(namePrefix + "DataLoaderBeanInfo.java", false); // NOI18N
+            template = CreatedModifiedFiles.getTemplate("templateDataLoaderBeanInfo.java");//NOI18N
+            fileChanges.add(fileChanges.createFileWithSubstitutions(loaderInfoName, template, replaceTokens));
+        }
         
         // 2. dataobject file
         final boolean isEditable = Pattern.matches("(application/([a-zA-Z0-9_.-])*\\+xml|text/([a-zA-Z0-9_.+-])*)", //NOI18N
@@ -229,24 +248,24 @@ final class NewLoaderIterator extends BasicWizardIterator {
         
         String doName = model.getDefaultPackagePath(namePrefix + "DataObject.java", false); // NOI18N
         template = null;
-        try {
-            SpecificationVersion current = model.getModuleInfo().getDependencyVersion("org.openide.loaders");
-            SpecificationVersion desired = new SpecificationVersion("6.0"); // NOI18N
-            if (current.compareTo(desired) >= 0) {
+        if (loaderlessObject) {
+            template = CreatedModifiedFiles.getTemplate("templateDataObjectInLayer.java");//NOI18N
+        } else {
+            if (lookupReadyObject) {
                 template = CreatedModifiedFiles.getTemplate("templateDataObjectWithLookup.java");//NOI18N
             }
-        } catch (IOException ex) {
-            Logger.getLogger(NewLoaderIterator.class.getName()).log(Level.INFO, null, ex);
         }
         if (template == null) {
             template = CreatedModifiedFiles.getTemplate("templateDataObject.java");//NOI18N
         }
         fileChanges.add(fileChanges.createFileWithSubstitutions(doName, template, replaceTokens));
         
-        // 3. node file
-        String nodeName = model.getDefaultPackagePath(namePrefix + "DataNode.java", false); // NOI18N
-        template = CreatedModifiedFiles.getTemplate("templateDataNode.java");//NOI18N
-        fileChanges.add(fileChanges.createFileWithSubstitutions(nodeName, template, replaceTokens));
+        if (!loaderlessObject) {
+            // 3. node file
+            String nodeName = model.getDefaultPackagePath(namePrefix + "DataNode.java", false); // NOI18N
+            template = CreatedModifiedFiles.getTemplate("templateDataNode.java");//NOI18N
+            fileChanges.add(fileChanges.createFileWithSubstitutions(nodeName, template, replaceTokens));
+        }
         
         // 4. mimetyperesolver file
         template = CreatedModifiedFiles.getTemplate("templateresolver.xml");//NOI18N
@@ -273,18 +292,52 @@ final class NewLoaderIterator extends BasicWizardIterator {
         fileChanges.add(fileChanges.bundleKey(bundlePath, "LBL_" + namePrefix + "_loader_name",  // NOI18N
                 NbBundle.getMessage(NewLoaderIterator.class, "LBL_LoaderName", namePrefix))); //NOI18N
         
-        // 7. register manifest entry
-        boolean isXml = Pattern.matches("(application/([a-zA-Z0-9_.-])*\\+xml|text/([a-zA-Z0-9_.-])*\\+xml)", //NOI18N
-                mime);
-        String installBefore = null;
-        if (isXml) {
-            installBefore = "org.openide.loaders.XMLDataObject, org.netbeans.modules.xml.core.XMLDataObject"; //NOI18N
-        }
-        
-        fileChanges.add(fileChanges.addLoaderSection(packageName.replace('.', '/')  + "/" + namePrefix + "DataLoader", installBefore)); // NOI18N
+        if (loaderlessObject) {
+            // 7. register in layer
+            String path = "Loaders/" + mime + "/Factories/" + namePrefix + "DataLoader.instance";
+            Map<String,Object> attrs = new HashMap<String, Object>();
+            attrs.put("instanceCreate", "methodvalue:org.openide.loaders.DataLoaderPool.factory"); //NOI18N
+            attrs.put("dataObjectClass", packageName + "." + namePrefix + "DataObject"); //NOI18N
+            attrs.put("mimeType", mime); //NOI18N
+            if (relativeIconPath != null) {
+                try {
+                    URL url = new URL("nbresloc:/" + relativeIconPath); //NOI18N
+                    attrs.put("SystemFileSystem.icon", url); //NOI18N
+                } catch (MalformedURLException ex) {
+                    throw new IllegalStateException(ex);
+                }
+            }
+            fileChanges.add(
+                fileChanges.createLayerEntry(path, null, null, null, attrs)
+            );
+            
+            // How to create test for xml-based data object? 
+            // Cannot access org.netbeans.core.filesystems.MIMEResolverImpl.
+            if (model.isExtensionBased()) {
+                // 7a. create test
+                String testName = model.getDefaultPackagePath(namePrefix + "DataObjectTest.java", false, true); // NOI18N
+                FileObject t = CreatedModifiedFiles.getTemplate("templateDataObjectInLayerTest.java");//NOI18N
 
-        // 7a. create matching test registration for convenience (#73202)
-        fileChanges.add(fileChanges.addLookupRegistration("org.openide.loaders.DataLoader", packageName + '.' + namePrefix + "DataLoader", true)); // NOI18N
+                Map<String, String> testTokens = new HashMap<String, String>(replaceTokens);
+                testTokens.put("EXTENSION", getFirstExtension(model.getExtension()));//NOI18N
+
+                fileChanges.add(fileChanges.createFileWithSubstitutions(testName, t, testTokens));
+            }
+            
+        } else {
+            // 7. register manifest entry
+            boolean isXml = Pattern.matches("(application/([a-zA-Z0-9_.-])*\\+xml|text/([a-zA-Z0-9_.-])*\\+xml)", //NOI18N
+                    mime);
+            String installBefore = null;
+            if (isXml) {
+                installBefore = "org.openide.loaders.XMLDataObject, org.netbeans.modules.xml.XMLDataObject"; //NOI18N
+            }
+
+            fileChanges.add(fileChanges.addLoaderSection(packageName.replace('.', '/')  + "/" + namePrefix + "DataLoader", installBefore)); // NOI18N
+
+            // 7a. create matching test registration for convenience (#73202)
+            fileChanges.add(fileChanges.addLookupRegistration("org.openide.loaders.DataLoader", packageName + '.' + namePrefix + "DataLoader", true)); // NOI18N
+        }
         
         //8. create layerfile actions subsection
         

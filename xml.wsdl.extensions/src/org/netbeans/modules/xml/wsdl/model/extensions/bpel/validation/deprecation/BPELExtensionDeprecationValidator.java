@@ -79,11 +79,6 @@ public class BPELExtensionDeprecationValidator implements Validator {
         return getClass().getName();
     }
 
-    @SuppressWarnings("unchecked")
-    public static final ValidationResult EMPTY_RESULT = 
-                new ValidationResult( Collections.EMPTY_SET, 
-                        Collections.EMPTY_SET);
-
     /* (non-Javadoc)
      * @see org.netbeans.modules.xml.xam.spi.Validator#validate(org.netbeans.modules.xml.xam.Model, org.netbeans.modules.xml.xam.spi.Validation, org.netbeans.modules.xml.xam.spi.Validation.ValidationType)
      */
@@ -93,13 +88,13 @@ public class BPELExtensionDeprecationValidator implements Validator {
             ValidationType validationType)
     {
         if(!(model instanceof WSDLModel)) {
-            return EMPTY_RESULT;
+            return null;
         }
         
         WSDLModel wsdlModel = (WSDLModel) model;
         
         if ( wsdlModel.getState() == Model.State.NOT_WELL_FORMED ){
-            return EMPTY_RESULT;
+            return null;
         }
         
         // Initialize our result object
@@ -143,12 +138,9 @@ public class BPELExtensionDeprecationValidator implements Validator {
         }        
         
         if (results == null) {
-            return EMPTY_RESULT;
+            return null;
         }
         
         return new ValidationResult(results, models);
     }
-
-    
 }
-

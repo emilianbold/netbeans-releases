@@ -42,7 +42,6 @@
 package org.netbeans.modules.spring.webmvc.utils;
 
 import java.util.regex.Pattern;
-import org.openide.util.NbBundle;
 
 /**
  *
@@ -116,9 +115,5 @@ public class SpringWebFrameworkUtils {
         }
 
         return lineInTemplate;
-    }
-    
-    public static String getWelcomePageText() {
-        return NbBundle.getMessage(SpringWebFrameworkUtils.class, "MSG_WELCOME_PAGE_TEXT"); 
-    }
+    }       
 }

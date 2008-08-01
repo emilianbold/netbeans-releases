@@ -46,6 +46,8 @@ import java.awt.Dialog;
 import java.awt.datatransfer.Transferable;
 import java.awt.dnd.*;
 
+import java.awt.event.InputEvent;
+import java.awt.event.MouseEvent;
 import java.io.IOException;
 
 import java.util.TooManyListenersException;
@@ -55,6 +57,7 @@ import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 import org.openide.util.Exceptions;
+import org.openide.util.Utilities;
 
 
 /** Support for the drag operations in explorer.
@@ -78,6 +81,18 @@ abstract class ExplorerDragSupport implements DragSourceListener, DragGestureLis
 
     /** Initiating the drag */
     public void dragGestureRecognized(DragGestureEvent dge) {
+        
+        // disable right button drag for MAC (#122491)
+        if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
+            InputEvent iev = dge.getTriggerEvent();
+            if (iev instanceof MouseEvent) {
+                MouseEvent mev = (MouseEvent) iev;
+                if (mev.getButton() == MouseEvent.BUTTON3) {
+                    return;
+                }
+            }
+        }
+        
         // 1. get seleced dragged nodes
         Node[] nodes = obtainNodes(dge);
 

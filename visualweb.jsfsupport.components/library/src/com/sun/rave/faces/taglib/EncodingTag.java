@@ -65,7 +65,7 @@ public class EncodingTag extends AbstractTag {
      * <p>Return the component type required by this tag handler.</p>
      */
     public String getComponentType()
-    { return "com.sun.jsfcl.Encoding"; }                              //NOI18N
+    { return "com.sun.rave.faces.Encoding"; }                              //NOI18N
 
 
 
@@ -73,7 +73,7 @@ public class EncodingTag extends AbstractTag {
      * <p>Return the renderer type required by this tag handler.</p>
      */
     public String getRendererType()
-    { return "com.sun.jsfcl.Encoding"; }                              //NOI18N
+    { return "com.sun.rave.faces.Encoding"; }                              //NOI18N
 
 
     // ------------------------------------------------------- Protected Methods

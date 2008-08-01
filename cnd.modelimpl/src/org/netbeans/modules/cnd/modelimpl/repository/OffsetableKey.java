@@ -47,6 +47,7 @@ import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 
 
 /**
@@ -63,12 +64,53 @@ abstract class OffsetableKey extends ProjectFileNameBasedKey implements Comparab
     private final CharSequence name;
     
     protected OffsetableKey(CsmOffsetable obj, String kind, CharSequence name) {
-	super((FileImpl) obj.getContainingFile());
-	this.startOffset = obj.getStartOffset();
-	this.endOffset = obj.getEndOffset();
+        this((FileImpl) obj.getContainingFile(), obj.getStartOffset(), obj.getEndOffset(), kind, name);
+    }
+    
+    protected OffsetableKey(FileImpl containingFile, int startOffset, int endOffset, String kind, CharSequence name) {
+	super(containingFile);
+	this.startOffset = startOffset;
+	this.endOffset = endOffset;
         assert kind.length()==1;
 	this.kind = kind.charAt(0);
 	this.name = name;
+    }
+    
+    /*package-local*/ char getKind(){
+        return kind;
+    }
+
+    /*package-local*/ CharSequence getName(){
+        if (name != null && name.length() >= 0 && isDigit(name.charAt(0))) {
+            return CharSequenceKey.empty();
+        }
+        return name;
+    }
+
+    // to improve performance of Character.isDigit(char)
+    private boolean isDigit(char c){
+        switch(c){
+            case '0':
+            case '1':
+            case '2':
+            case '3':
+            case '4':
+            case '5':
+            case '6':
+            case '7':
+            case '8':
+            case '9':
+                return true;
+        }
+        return false;
+    }
+    
+    /*package-local*/ int getStartOffset(){
+        return startOffset;
+    }
+
+    /*package-local*/ int getEndOffset(){
+        return endOffset;
     }
     
     @Override
@@ -113,7 +155,7 @@ abstract class OffsetableKey extends ProjectFileNameBasedKey implements Comparab
 	
 	retValue = 17*super.hashCode() + name.hashCode();
 	retValue = 17*retValue + kind;
-	retValue = 17*super.hashCode() + startOffset;
+	retValue = 17*retValue + startOffset;
 	retValue = 17*retValue + endOffset;
 	return retValue;
     }

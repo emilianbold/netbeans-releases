@@ -42,10 +42,13 @@
 package org.netbeans.modules.j2ee.ejbjarproject;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.regex.Pattern;
 import javax.lang.model.element.TypeElement;
 import org.apache.tools.ant.module.api.support.ActionUtils;
@@ -108,6 +111,11 @@ class EjbJarActionProvider implements ActionProvider {
         COMMAND_COPY,
         COMMAND_MOVE,
         COMMAND_RENAME
+    };
+
+    private static final Set<String> actionsDisabledForCoS = new HashSet<String>(3);
+    static {
+        Collections.addAll(actionsDisabledForCoS, COMMAND_BUILD, COMMAND_COMPILE_SINGLE);
     };
     
     // Project
@@ -380,6 +388,11 @@ class EjbJarActionProvider implements ActionProvider {
         if (buildXml == null || !buildXml.isValid()) {
             return false;
         }
+        boolean cos = Boolean.parseBoolean(project.getAntProjectHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH).getProperty(EjbJarProjectProperties.DEPLOY_ON_SAVE));
+        if (cos && actionsDisabledForCoS.contains(command)) {
+            return false;
+        }
+
         if ( command.equals( COMMAND_VERIFY ) ) {
             return project.getEjbModule().hasVerifierSupport();
         }

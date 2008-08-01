@@ -1,5 +1,5 @@
 #API master signature file
-#Version 1.9.1
+#Version 1.10
 CLSS public abstract org.netbeans.api.java.platform.JavaPlatform
 cons protected JavaPlatform()
 fld  constant public static final java.lang.String org.netbeans.api.java.platform.JavaPlatform.PROP_DISPLAY_NAME

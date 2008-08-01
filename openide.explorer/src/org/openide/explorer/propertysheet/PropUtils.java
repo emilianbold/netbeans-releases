@@ -586,7 +586,15 @@ final class PropUtils {
 
         try {
             if (value instanceof String) {
-                ed.setAsText((String) value);
+                try {
+                    ed.setAsText((String) value);
+                } catch( IllegalArgumentException iaE ) {
+                    //#137706 - always treat iae from setAsText as a an invalid
+                    //user input instead of broken code and display nice error message to the user
+                    if( null == Exceptions.findLocalizedMessage(iaE) )
+                        Exceptions.attachLocalizedMessage(iaE, NbBundle.getMessage(PropUtils.class, "MSG_SetAsText_InvalidValue", value));
+                    result = iaE;
+                }
             } else {
                 ed.setValue(value);
             }

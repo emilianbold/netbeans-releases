@@ -15,7 +15,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
@@ -24,7 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.text.Document;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.xml.text.syntax.XMLKit;
+import org.netbeans.editor.BaseKit;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.TestModel;
 import org.netbeans.modules.xml.xam.dom.ElementIdentity;
@@ -32,8 +31,6 @@ import org.netbeans.modules.xml.xdm.diff.DefaultElementIdentity;
 import org.netbeans.modules.xml.xdm.diff.DiffFinder;
 import org.netbeans.modules.xml.xdm.diff.Difference;
 import org.netbeans.modules.xml.xdm.nodes.Element;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 import org.w3c.dom.Node;
@@ -44,32 +41,6 @@ import org.w3c.dom.NodeList;
  */
 public class Util {
     
-    static {
-        //JEditorPane.registerEditorKitForContentType(SchemaDataLoader.MIME_TYPE, XMLKit.class.getName());
-        registerXMLKit();
-    }
-    
-    public static void registerXMLKit() {
-        String[] path = new String[] { "Editors", "text", "x-xml" };
-        FileObject target = Repository.getDefault().getDefaultFileSystem().getRoot();
-        try {
-            for (int i=0; i<path.length; i++) {
-                FileObject f = target.getFileObject(path[i]);
-                if (f == null) {
-                    f = target.createFolder(path[i]);
-                }
-                target = f;
-            }
-            String name = "EditorKit.instance";
-            if (target.getFileObject(name) == null) {
-                FileObject f = target.createData(name);
-                f.setAttribute("instanceClass", "org.netbeans.modules.xml.text.syntax.XMLKit");
-            }
-        } catch(IOException ioe) {
-            ioe.printStackTrace();
-        }
-    }
-
     public static Document getResourceAsDocument(String path) throws Exception {
         InputStream in = Util.class.getResourceAsStream(path);
         return loadDocument(in);
@@ -97,14 +68,10 @@ public class Util {
     }
     
     public static Document loadDocument(InputStream in) throws Exception {
-        Document sd = new BaseDocument(XMLKit.class, false);
+        Document sd = new BaseDocument(BaseKit.class, false);
         BufferedReader br = new BufferedReader(new InputStreamReader(in,"UTF-8"));
         StringBuffer sbuf = new StringBuffer();
         try {
-//            int c = 0;
-//            while((c = br.read()) != -1) {
-//                sbuf.append((char)c);
-//            }
             String line = null;
             while ((line = br.readLine()) != null) {
                 sbuf.append(line);

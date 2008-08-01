@@ -43,12 +43,10 @@ package org.netbeans.modules.debugger.jpda.ui.breakpoints;
 
 import java.awt.Dimension;
 
+import javax.swing.JEditorPane;
 import org.netbeans.api.debugger.Breakpoint.HIT_COUNT_FILTERING_STYLE;
-
-import org.netbeans.modules.debugger.jpda.ui.FilteredKeymap;
 import org.netbeans.modules.debugger.jpda.ui.WatchPanel;
-
-import org.openide.loaders.DataObject;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
@@ -59,8 +57,9 @@ import org.openide.util.NbBundle;
 public class ConditionsPanel extends javax.swing.JPanel {
     
     /** Creates new form ConditionsPanel */
-    public ConditionsPanel() {
+    public ConditionsPanel(String helpId) {
         initComponents();
+        HelpCtx.setHelpIDString(tfCondition, helpId);
         tfConditionFieldForUI = new javax.swing.JTextField();
         tfConditionFieldForUI.setEnabled(false);
         tfConditionFieldForUI.setToolTipText(tfCondition.getToolTipText());
@@ -301,7 +300,7 @@ public class ConditionsPanel extends javax.swing.JPanel {
         cbHitStyle = new javax.swing.JComboBox();
         cbWhenHitCount = new javax.swing.JCheckBox();
         spCondition = new javax.swing.JScrollPane();
-        tfCondition = new javax.swing.JEditorPane();
+        tfCondition = new JEditorPane("text/x-java", "");
 
         setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(ConditionsPanel.class, "L_Conditions_Breakpoint_BorderTitle"))); // NOI18N
         setLayout(new java.awt.GridBagLayout());
@@ -462,36 +461,17 @@ private void cbWhenHitCountActionPerformed(java.awt.event.ActionEvent evt) {//GE
 
 private void conditionCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_conditionCheckBoxActionPerformed
     boolean isSelected = conditionCheckBox.isSelected();
-    //System.err.println("Initial TF Background = "+tfConditionFieldForUI.getBackground());
-    spCondition.setEnabled(isSelected);
-    tfCondition.setEnabled(isSelected);
-    
     if (isSelected) {
-        tfCondition.setVisible(true);
         spCondition.setVisible(true);
         tfConditionFieldForUI.setVisible(false);
-        if (spCondition.getPreferredSize().height > tfCondition.getPreferredSize().height) {
-            final int shift = -(spCondition.getPreferredSize().height - tfCondition.getPreferredSize().height)/2;
-            javax.swing.SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    spCondition.getViewport().setViewPosition(new java.awt.Point(0, shift));
-                }
-            });
-        }
         tfCondition.requestFocusInWindow();
     } else {
-        tfCondition.setVisible(false);
         spCondition.setVisible(false);
         tfConditionFieldForUI.setText(tfCondition.getText());
         tfConditionFieldForUI.setVisible(true);
     }
     revalidate();
     repaint();
-    
-    //tfConditionFieldForUI.setEnabled(isSelected);
-    //System.err.println("TF Background = "+tfConditionFieldForUI.getBackground());
-    //tfCondition.setBackground(tfConditionFieldForUI.getBackground());
-    //spCondition.setBorder(tfConditionFieldForUI.getBorder());
 }//GEN-LAST:event_conditionCheckBoxActionPerformed
 
 private void classFilterCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_classFilterCheckBoxActionPerformed

@@ -48,6 +48,8 @@
 
 package org.netbeans.modules.uml.core.requirementsframework;
 
+//import org.netbeans.modules.uml.core.addinframework.AddInManagerImpl;
+//import org.netbeans.modules.uml.core.addinframework.IAddIn;
 import org.netbeans.modules.uml.core.coreapplication.ICoreProduct;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IConfigManager;
 import org.netbeans.modules.uml.core.support.umlsupport.ProductRetriever;

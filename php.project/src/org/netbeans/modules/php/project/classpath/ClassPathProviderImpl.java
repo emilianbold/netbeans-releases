@@ -45,342 +45,227 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumMap;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
-import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.gsfpath.api.classpath.ClassPath;
 import org.netbeans.modules.gsfpath.spi.classpath.ClassPathFactory;
-import org.netbeans.modules.gsfpath.spi.classpath.ClassPathImplementation;
 import org.netbeans.modules.gsfpath.spi.classpath.ClassPathProvider;
-import org.netbeans.modules.gsfpath.spi.classpath.PathResourceImplementation;
-import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.PhpSources;
+import org.netbeans.modules.php.project.api.PhpSourcePath.FileType;
+import org.netbeans.modules.php.project.classpath.support.ProjectClassPathSupport;
+import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
+import org.netbeans.modules.php.project.ui.options.PhpOptions;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Parameters;
 import org.openide.util.WeakListeners;
 
 /**
- * Defines the various class paths for a J2SE project.
+ * Defines the various (BOOT and SOURCE) class paths for a PHP project.
  */
-public final class ClassPathProviderImpl implements ClassPathProvider, PropertyChangeListener {
+public final class ClassPathProviderImpl implements ClassPathProvider, PhpSourcePathImplementation, PropertyChangeListener {
 
-    private static final String BUILD_CLASSES_DIR = "build.classes.dir"; // NOI18N
-    private static final String DIST_JAR = "dist.jar"; // NOI18N
-    private static final String BUILD_TEST_CLASSES_DIR = "build.test.classes.dir"; // NOI18N
-    
-    private static final String JAVAC_CLASSPATH = "javac.classpath";    //NOI18N
-    private static final String JAVAC_TEST_CLASSPATH = "javac.test.classpath";  //NOI18N
-    private static final String RUN_CLASSPATH = "run.classpath";    //NOI18N
-    private static final String RUN_TEST_CLASSPATH = "run.test.classpath";  //NOI18N
-    
-    
+    /**
+     * Constants for different cached classpaths.
+     */
+    private static enum ClassPathCache {
+        PLATFORM,
+        SOURCE,
+    }
+
     private final AntProjectHelper helper;
     private final File projectDirectory;
     private final PropertyEvaluator evaluator;
     private final PhpSources sourceRoots;
-    private final ClassPath[] cache = new ClassPath[8];
 
-    private final Map<String,FileObject> dirCache = new HashMap<String,FileObject>();
+    // GuardedBy(this)
+    private final Map<String, List<FileObject>> dirCache = new HashMap<String, List<FileObject>>();
+    // GuardedBy(this)
+    private final Map<ClassPathCache, ClassPath> cache = new EnumMap<ClassPathCache, ClassPath>(ClassPathCache.class);
 
     public ClassPathProviderImpl(AntProjectHelper helper, PropertyEvaluator evaluator, PhpSources sources) {
         this.helper = helper;
-        this.projectDirectory = FileUtil.toFile(helper.getProjectDirectory());
-        assert this.projectDirectory != null;
+        projectDirectory = FileUtil.toFile(helper.getProjectDirectory());
+        assert projectDirectory != null;
         this.evaluator = evaluator;
         this.sourceRoots = sources;
         evaluator.addPropertyChangeListener(WeakListeners.propertyChange(this, evaluator));
     }
 
-    private synchronized FileObject getDir(String propname) {
-        FileObject fo = (FileObject) this.dirCache.get (propname);
-        if (fo == null ||  !fo.isValid()) {
+    private synchronized List<FileObject> getDirs(String propname) {
+        List<FileObject> dirs = dirCache.get(propname);
+        if (!checkDirs(dirs)) {
             String prop = evaluator.getProperty(propname);
-            if (prop != null) {
-                fo = helper.resolveFileObject(prop);
-                this.dirCache.put (propname, fo);
+            if (prop == null) {
+                return Collections.<FileObject>emptyList();
             }
+            String[] paths = PropertyUtils.tokenizePath(prop);
+            dirs = new ArrayList<FileObject>(paths.length);
+            for (String path : paths) {
+                FileObject resolvedFile = helper.resolveFileObject(path);
+                if (resolvedFile != null) {
+                    dirs.add(resolvedFile);
+                }
+            }
+            dirCache.put(propname, dirs);
         }
-        return fo;
+        return dirs;
     }
 
-    
-    private FileObject[] getPrimarySrcPath() {
-        List<FileObject> roots = new ArrayList<FileObject>();
-        SourceGroup[] sourceGroups = sourceRoots.getSourceGroups(PhpProject.SOURCES_TYPE_PHP);
-        for (SourceGroup sg : sourceGroups) {
-            roots.add(sg.getRootFolder());
+    private boolean checkDirs(List<FileObject> dirs) {
+        if (dirs == null) {
+            return false;
+        }
+        for (FileObject fo : dirs) {
+            if (!fo.isValid()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private List<FileObject> getPlatformPath() {
+        return getDirs(PhpProjectProperties.INCLUDE_PATH);
+    }
+
+    private FileObject getSrcPath() {
+        List<FileObject> dirs = getDirs(PhpProjectProperties.SRC_DIR);
+        if (dirs.size() == 0) {
+            // non-existing directory??
+            return null;
+        }
+        assert dirs.size() == 1; // one source directory is allowed
+        return dirs.get(0);
+    }
+
+    public FileType getFileType(FileObject file) {
+        Parameters.notNull("file", file);
+
+        for (FileObject dir : CommonPhpSourcePath.getInternalPath()) {
+            if (dir.equals(file) || FileUtil.isParentOf(dir, file)) {
+                return FileType.INTERNAL;
+            }
         }
         
-        return roots.toArray(new FileObject[roots.size()]);
-    }
-    
-//    private FileObject[] getTestSrcDir() {
-//        return this.testSourceRoots.getRoots();
-//    }
-    
-    private FileObject getBuildClassesDir() {
-        return getDir(BUILD_CLASSES_DIR);
-    }
-    
-    private FileObject getDistJar() {
-        return getDir(DIST_JAR);
-    }
-    
-    private FileObject getBuildTestClassesDir() {
-        return getDir(BUILD_TEST_CLASSES_DIR);
-    }
-    
-    /**
-     * Find what a given file represents.
-     * @param file a file in the project
-     * @return one of: <dl>
-     *         <dt>0</dt> <dd>normal source</dd>
-     *         <dt>1</dt> <dd>test source</dd>
-     *         <dt>2</dt> <dd>built class (unpacked)</dd>
-     *         <dt>3</dt> <dd>built test class</dd>
-     *         <dt>4</dt> <dd>built class (in dist JAR)</dd>
-     *         <dt>-1</dt> <dd>something else</dd>
-     *         </dl>
-     */
-    private int getType(FileObject file) {
-        // ALL files in the Rails project are considered sources - we don't have
-        // separate test roots etc.
-        // TODO - check if files are even within the project?
-        return 0;
-//        FileObject[] srcPath = getPrimarySrcPath();
-//        for (int i=0; i < srcPath.length; i++) {
-//            FileObject root = srcPath[i];
-//            if (root.equals(file) || FileUtil.isParentOf(root, file)) {
-//                return 0;
-//            }
-//        }        
-//        srcPath = getTestSrcDir();
-//        for (int i=0; i< srcPath.length; i++) {
-//            FileObject root = srcPath[i];
-//            if (root.equals(file) || FileUtil.isParentOf(root, file)) {
-//                return 1;
+//        for (FileObject dir : PhpSourcePath.getPreindexedFolders()) {
+//            if (dir.equals(file) || FileUtil.isParentOf(dir, file)) {
+//                return FileType.INTERNAL;
 //            }
 //        }
-//        FileObject dir = getBuildClassesDir();
-//        if (dir != null && (dir.equals(file) || FileUtil.isParentOf(dir, file))) {
-//            return 2;
-//        }
-//        dir = getDistJar(); // not really a dir at all, of course
-//        if (dir != null && dir.equals(FileUtil.getArchiveFile(file))) {
-//            // XXX check whether this is really the root
-//            return 4;
-//        }
-//        dir = getBuildTestClassesDir();
-//        if (dir != null && (dir.equals(file) || FileUtil.isParentOf(dir,file))) {
-//            return 3;
-//        }
-//        return -1;
-    }
-    
-//    private synchronized ClassPath getCompileTimeClasspath(FileObject file) {
-//        int type = getType(file);
-//        return this.getCompileTimeClasspath(type);
-//    }
-//    
-//    private ClassPath getCompileTimeClasspath(int type) {        
-//        if (type < 0 || type > 1) {
-//            // Not a source file.
-//            return null;
-//        }
-//        ClassPath cp = cache[2+type];
-//        if ( cp == null) {            
-//            if (type == 0) {
-//                cp = ClassPathFactory.createClassPath(
-//                    ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
-//                    projectDirectory, evaluator, new String[] {JAVAC_CLASSPATH})); // NOI18N
-//            }
-//            else {
-//                cp = ClassPathFactory.createClassPath(
-//                    ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
-//                    projectDirectory, evaluator, new String[] {JAVAC_TEST_CLASSPATH})); // NOI18N
-//            }
-//            cache[2+type] = cp;
-//        }
-//        return cp;
-//    }
-//    
-//    private synchronized ClassPath getRunTimeClasspath(FileObject file) {
-//        int type = getType(file);
-//        if (type < 0 || type > 4) {
-//            // Unregistered file, or in a JAR.
-//            // For jar:file:$projdir/dist/*.jar!/**/*.class, it is misleading to use
-//            // run.classpath since that does not actually contain the file!
-//            // (It contains file:$projdir/build/classes/ instead.)
-//            return null;
-//        } else if (type > 1) {
-//            type-=2;            //Compiled source transform into source
-//        }
-//        ClassPath cp = cache[4+type];
-//        if ( cp == null) {
-//            if (type == 0) {
-//                cp = ClassPathFactory.createClassPath(
-//                    ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
-//                    projectDirectory, evaluator, new String[] {RUN_CLASSPATH})); // NOI18N
-//            }
-//            else if (type == 1) {
-//                cp = ClassPathFactory.createClassPath(
-//                    ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
-//                    projectDirectory, evaluator, new String[] {RUN_TEST_CLASSPATH})); // NOI18N
-//            }
-//            else if (type == 2) {
-//                //Only to make the CompiledDataNode hapy
-//                //Todo: Strictly it should return ${run.classpath} - ${build.classes.dir} + ${dist.jar}
-//                cp = ClassPathFactory.createClassPath(
-//                    ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
-//                    projectDirectory, evaluator, new String[] {DIST_JAR})); // NOI18N
-//            }
-//            cache[4+type] = cp;
-//        }
-//        return cp;
-//    }
-//    
-    private synchronized ClassPath getSourcepath(FileObject file) {
-        int type = getType(file);
-        return this.getSourcepath(type);
-    }
-    
-    private ClassPath getSourcepath(int type) {
-        if (type < 0 || type > 1) {
-            return null;
-        }
-        ClassPath cp = cache[type];
-        if (cp == null) {
-            switch (type) {
-                case 0:
-                    cp = ClassPathFactory.createClassPath(new SourcePathImplementation (this.sourceRoots, helper, evaluator));
-                    break;
-//                case 1:
-//                    cp = ClassPathFactory.createClassPath(new SourcePathImplementation (this.testSourceRoots));
-//                    break;
+        
+        for (FileObject dir : getPlatformPath()) {
+            if (dir.equals(file) || FileUtil.isParentOf(dir, file)) {
+                return FileType.INCLUDE;
             }
         }
-        cache[type] = cp;
-        return cp;
+        FileObject path = getSrcPath();
+        if (path != null
+                && (path.equals(file) || FileUtil.isParentOf(path, file))) {
+            return FileType.SOURCE;
+        }
+        return FileType.UNKNOWN;
     }
-    
-    private synchronized ClassPath getBootClassPath() {
-        ClassPath cp = cache[7];
-        if ( cp== null ) {
-            //cp = ClassPathFactory.createClassPath(new BootClassPathImplementation(projectDirectory, evaluator));
-            cp = ClassPathFactory.createClassPath(new ClassPathImplementation() {
 
-                public List<? extends PathResourceImplementation> getResources() {
-                    return Collections.emptyList();
-                }
+    public List<FileObject> getIncludePath() {
+        return new ArrayList<FileObject>(getPlatformPath());
+    }
 
-                public void addPropertyChangeListener(PropertyChangeListener listener) {
-                }
+    public FileObject resolveFile(FileObject directory, String fileName) {
+        FileObject resolved = directory.getFileObject(fileName);
+        if (resolved != null) {
+            return resolved;
+        }
+        for (FileObject dir : getPlatformPath()) {
+            resolved = dir.getFileObject(fileName);
+            if (resolved != null) {
+                return resolved;
+            }
+        }
+        return null;
+    }
 
-                public void removePropertyChangeListener(PropertyChangeListener listener) {
+    private ClassPath getSourcePath(FileObject file) {
+        return getSourcePath(getFileType(file));
+    }
+
+    private synchronized ClassPath getSourcePath(FileType type) {
+        ClassPath cp = null;
+        switch (type) {
+            case SOURCE:
+                cp = cache.get(ClassPathCache.SOURCE);
+                if (cp == null) {
+                    cp = ClassPathFactory.createClassPath(
+                            ProjectClassPathSupport.createPropertyBasedClassPathImplementation(projectDirectory,
+                            evaluator, new String[] {PhpProjectProperties.SRC_DIR}));
+                    cache.put(ClassPathCache.SOURCE, cp);
                 }
-            });
-            cache[7] = cp;
+                break;
+            default:
+                // XXX any exception?
+                break;
         }
         return cp;
     }
-    
+
+    private ClassPath getBootClassPath() {
+        // because of global include path, we need to ensure that it is known for poperty evaluator
+        //  (=> need to be written in global properties)
+        PhpOptions.getInstance().getPhpGlobalIncludePath();
+        ClassPath cp;
+        // #141746
+        synchronized (this) {
+            cp = cache.get(ClassPathCache.PLATFORM);
+            if (cp == null) {
+                List<FileObject> internalFolders = CommonPhpSourcePath.getInternalPath();
+                ClassPath internalClassPath =
+                        org.netbeans.modules.gsfpath.spi.classpath.support.ClassPathSupport.createClassPath(
+                        internalFolders.toArray(new FileObject[internalFolders.size()]));
+                ClassPath includePath = ClassPathFactory.createClassPath(
+                        ProjectClassPathSupport.createPropertyBasedClassPathImplementation(projectDirectory, evaluator,
+                        new String[] {PhpProjectProperties.INCLUDE_PATH}));
+                cp = org.netbeans.modules.gsfpath.spi.classpath.support.ClassPathSupport.createProxyClassPath(
+                        internalClassPath, includePath);
+                cache.put(ClassPathCache.PLATFORM, cp);
+            }
+        }
+        return cp;
+    }
+
     public ClassPath findClassPath(FileObject file, String type) {
-        /*if (type.equals(ClassPath.EXECUTE)) {
-            return getRunTimeClasspath(file);
-        } else */ if (type.equals(ClassPath.SOURCE)) {
-            return getSourcepath(file);
-        } else if (type.equals(ClassPath.BOOT)) {
+        if (type.equals(ClassPath.BOOT)) {
             return getBootClassPath();
+        } else if (type.equals(ClassPath.SOURCE)) {
+            return getSourcePath(file);
         } else if (type.equals(ClassPath.COMPILE)) {
-            // Bogus
+            // ???
             return getBootClassPath();
-        } else {
-            return null;
+        } else if (type.equals("js/library")) { // NOI18N
+            return getSourcePath(FileType.SOURCE);
         }
+        assert false : "Unknown classpath type requested: " + type;
+        return null;
     }
-    
+
     /**
      * Returns array of all classpaths of the given type in the project.
      * The result is used for example for GlobalPathRegistry registrations.
      */
     public ClassPath[] getProjectClassPaths(String type) {
         if (ClassPath.BOOT.equals(type)) {
-            return new ClassPath[]{getBootClassPath()};
+            return new ClassPath[] {getBootClassPath()};
+        } else if (ClassPath.SOURCE.equals(type)) {
+            return new ClassPath[] {getSourcePath(FileType.SOURCE)};
         }
-//        if (ClassPath.COMPILE.equals(type)) {
-//            ClassPath[] l = new ClassPath[2];
-//            l[0] = getCompileTimeClasspath(0);
-//            l[1] = getCompileTimeClasspath(1);
-//            return l;
-//        }
-        if (ClassPath.SOURCE.equals(type)) {
-            ClassPath[] l = new ClassPath[1];
-            l[0] = getSourcepath(0);
-            //l[1] = getSourcepath(1);
-            return l;
-        }
-//        assert false;
-        return null;
-    }
-
-    /**
-     * Returns the given type of the classpath for the project sources
-     * (i.e., excluding tests roots). Valid types are BOOT, SOURCE and COMPILE.
-     */
-    public ClassPath getProjectSourcesClassPath(String type) {
-        if (ClassPath.BOOT.equals(type)) {
-             return getBootClassPath();
-        }
-        if (ClassPath.SOURCE.equals(type)) {
-            return getSourcepath(0);
-        }
-        if (ClassPath.COMPILE.equals(type)) {
-             return getBootClassPath();
-        }
-//            return getCompileTimeClasspath(0);
-//        }
-//        assert false;
+        assert false : "Unknown classpath type requested: " + type;
         return null;
     }
 
     public synchronized void propertyChange(PropertyChangeEvent evt) {
         dirCache.remove(evt.getPropertyName());
     }
-    
-    public String getPropertyName (SourceGroup sg, String type) {
-        FileObject root = sg.getRootFolder();
-        FileObject[] path = getPrimarySrcPath();
-        for (int i=0; i<path.length; i++) {
-            if (root.equals(path[i])) {
-                if (ClassPath.COMPILE.equals(type)) {
-                    return JAVAC_CLASSPATH;
-                }
-                else if (ClassPath.EXECUTE.equals(type)) {
-                    return RUN_CLASSPATH;
-                }
-                else {
-                    return null;
-                }
-            }
-        }
-//        path = getTestSrcDir();
-//        for (int i=0; i<path.length; i++) {
-//            if (root.equals(path[i])) {
-//                if (ClassPath.COMPILE.equals(type)) {
-//                    return JAVAC_TEST_CLASSPATH;
-//                }
-//                else if (ClassPath.EXECUTE.equals(type)) {
-//                    return RUN_TEST_CLASSPATH;
-//                }
-//                else {
-//                    return null;
-//                }
-//            }
-//        }
-        return null;
-    }
-    
 }

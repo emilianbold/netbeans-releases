@@ -42,28 +42,34 @@ package org.netbeans.modules.php.editor.index;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import org.netbeans.modules.gsf.api.ElementKind;
+import org.netbeans.modules.gsf.api.Modifier;
 
 /**
  *
  * @author Tor Norbye
  */
 public class IndexedFunction extends IndexedElement implements FunctionElement {
+    private String arguments;
     private String[] args;
     private List<String> parameters;
+    private int[] optionalArgs;
+    private String returnType;
     
-    IndexedFunction(String name, String in, PHPIndex index, String fileUrl, String attributes, int flags, ElementKind kind) {
-        super(name, in, index, fileUrl, attributes, flags, kind);
+    public IndexedFunction(String name, String in, PHPIndex index, String fileUrl, String arguments, int offset, int flags, ElementKind kind) {
+        super(name, in, index, fileUrl, offset, flags, kind);
+        this.arguments = arguments;
     }
     
     @Override
     public String toString() {
-        return getSignature() + ":" + getFilenameUrl() + ";" + decodeFlags(flags);
+        return getSignature() + ":" + getFilenameUrl();
     }
 
     @Override
     public String getSignature() {
-        if (signature == null) {
+        if (textSignature == null) {
             StringBuilder sb = new StringBuilder();
             if (in != null) {
                 sb.append(in);
@@ -81,21 +87,18 @@ public class IndexedFunction extends IndexedElement implements FunctionElement {
                 }
             }
             sb.append(")");
-            signature = sb.toString();
+            textSignature = sb.toString();
         }
 
-        return signature;
+        return textSignature;
     }
 
     public String[] getArgs() {
         if (args == null) {
-            int argIndex = getAttributeSection(ARG_INDEX);
-            int endIndex = attributes.indexOf(';', argIndex);
-            if (endIndex > argIndex) {
-                String argsPortion = attributes.substring(argIndex, endIndex);
-                args = argsPortion.split(","); // NOI18N
+            if(arguments == null || arguments.length() == 0) {
+                return new String[0];
             } else {
-                args = new String[0];
+                args = arguments.split(","); // NOI18N
             }
         }
 
@@ -122,5 +125,35 @@ public class IndexedFunction extends IndexedElement implements FunctionElement {
 
     public boolean isDeprecated() {
         return false;
+    }
+
+    @Override
+    public String getDisplayName() {
+        String modifierStr = getModifiersString();
+        return modifierStr.length() == 0 ? getSignature() : (getModifiersString() + " " + getSignature());
+    }
+
+    @Override
+    public Set<Modifier> getModifiers() {
+        
+        
+        
+        return super.getModifiers();
+    }
+
+    public int[] getOptionalArgs() {
+        return optionalArgs;
+    }
+
+    public void setOptionalArgs(int[] optionalArgs) {
+        this.optionalArgs = optionalArgs;
+    }
+
+    public String getReturnType() {
+        return returnType;
+    }
+
+    public void setReturnType(String returnType) {
+        this.returnType = returnType;
     }
 }

@@ -142,7 +142,7 @@ public class NewDiagramType extends NewType implements INewTypeExt
                             // Set the dirty state to true to have the diagram autosaved.
                             if (newDiagram != null )
                             {
-                                newDiagram.setIsDirty(true);
+                                newDiagram.setDirty(true);
                                 newDiagram.save();
                             }
 //				if (newDiagram != null )

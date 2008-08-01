@@ -59,7 +59,6 @@ public class J2EETest extends CompletionTest {
     /** Creates a new instance of CompletionTesJ2EE */
     public J2EETest(String name, FileObject testFileObj) {
         super(name, testFileObj);
-        debug = false;
     }
     
     public static Test suite() {
@@ -80,7 +79,7 @@ public class J2EETest extends CompletionTest {
         while ((ConnectionManager.getDefault().getConnections().length == 0) && (time <= 12)) {
          time++;
             try {
-             Thread.currentThread().sleep(5000);
+             Thread.sleep(5000);
             } catch (Exception e) {
              e.printStackTrace(System.err);
          }

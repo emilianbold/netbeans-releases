@@ -46,7 +46,6 @@ import java.util.HashMap;
 import java.util.Vector;
 import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.lib.ddl.impl.DriverSpecification;
-import org.netbeans.modules.db.explorer.DatabaseNodeChildren;
 import org.netbeans.modules.db.explorer.nodes.DatabaseNode;
 
 public class ViewListNodeInfo extends DatabaseNodeInfo {
@@ -82,13 +81,23 @@ public class ViewListNodeInfo extends DatabaseNodeInfo {
             throw dbe;
         }
     }
-
+    
     /** Adds view into list
     * Adds view named name into children list. View should exist.
     * @param name Name of existing view
     */
     public void addView(String name) throws DatabaseException {
         refreshChildren();
+    }
+    
+    @Override
+    public String getDisplayName() {
+        return bundle().getString("NDN_Views"); //NOI18N
+    }
+    
+    @Override
+    public String getShortDescription() {
+        return bundle().getString("ND_ViewList"); //NOI18N
     }
 
 }

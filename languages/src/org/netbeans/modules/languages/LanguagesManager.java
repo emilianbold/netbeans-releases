@@ -52,7 +52,6 @@ import java.io.OutputStream;
 import java.util.HashSet;
 import java.util.List;
 
-import org.netbeans.api.languages.LanguageDefinitionNotFoundException;
 import org.netbeans.api.languages.ParseException;
 import org.netbeans.modules.languages.features.ActionCreator;
 import org.netbeans.api.languages.LanguageDefinitionNotFoundException;
@@ -210,22 +209,6 @@ public class LanguagesManager extends org.netbeans.api.languages.LanguagesManage
             fs.runAtomicAction (new AtomicAction () {
                 public void run () {
                     try {
-                        // init old options
-                        if (root.getFileObject ("Settings.settings") == null) {
-                            InputStream is = getClass().getClassLoader().getResourceAsStream("org/netbeans/modules/languages/resources/LanguagesOptions.settings");
-                            try {
-                                FileObject fo = root.createData("Settings.settings");
-                                OutputStream os = fo.getOutputStream();
-                                try {
-                                    FileUtil.copy(is, os);
-                                } finally {
-                                    os.close();
-                                }
-                            } finally {
-                                is.close();
-                            }
-                        }
-
                         // init code folding bar
                         if (root.getFileObject ("SideBar/org-netbeans-modules-languages-features-CodeFoldingSideBarFactory.instance") == null &&
                             l.getFeatureList ().getFeatures ("FOLD").size () > 0

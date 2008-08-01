@@ -59,7 +59,6 @@ import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.api.debugger.ActionsManagerListener;
-
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.Session;
@@ -79,6 +78,7 @@ import org.openide.NotifyDescriptor;
 import org.netbeans.modules.debugger.jpda.SourcePath;
 import org.netbeans.modules.debugger.jpda.models.CallStackFrameImpl;
 import org.netbeans.modules.debugger.jpda.util.Executor;
+import org.netbeans.spi.debugger.jpda.EditorContext;
 import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
 import org.openide.ErrorManager;
 
@@ -137,41 +137,39 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
         setEnabled (
             ActionsManager.ACTION_RUN_INTO_METHOD,
             getActionsManager().isEnabled(ActionsManager.ACTION_CONTINUE) &&
-            (debugger.getState () == debugger.STATE_STOPPED) &&
+            (debugger.getState () == JPDADebugger.STATE_STOPPED) &&
             (EditorContextBridge.getContext().getCurrentLineNumber () >= 0) && 
             (EditorContextBridge.getContext().getCurrentURL ().endsWith (".java"))
         );
-        if (debugger.getState () == debugger.STATE_DISCONNECTED) 
+        if (debugger.getState () == JPDADebugger.STATE_DISCONNECTED) 
             destroy ();
     }
     
     public Set getActions () {
         return Collections.singleton (ActionsManager.ACTION_RUN_INTO_METHOD);
     }
-     
+    
     public void doAction (Object action) {
         final String[] methodPtr = new String[1];
         final String[] urlPtr = new String[1];
-        final String[] classNamePtr = new String[1];
         final int[] linePtr = new int[1];
         final int[] offsetPtr = new int[1];
         try {
             SwingUtilities.invokeAndWait(new Runnable() {
                 public void run() {
-                    methodPtr[0] = EditorContextBridge.getContext().getSelectedMethodName ();
-                    if (methodPtr[0].length() < 1) return ;
-                    linePtr[0] = EditorContextBridge.getContext().getCurrentLineNumber();
+                    EditorContext context = EditorContextBridge.getContext();
+                    methodPtr[0] = context.getSelectedMethodName ();
+                    linePtr[0] = context.getCurrentLineNumber();
                     offsetPtr[0] = EditorContextBridge.getCurrentOffset();
-                    urlPtr[0] = EditorContextBridge.getContext().getCurrentURL();
-                    classNamePtr[0] = EditorContextBridge.getContext().getCurrentClassName();
+                    urlPtr[0] = context.getCurrentURL();
                 }
             });
         } catch (InvocationTargetException ex) {
             ErrorManager.getDefault().notify(ex.getTargetException());
-            return ;
+            return;
         } catch (InterruptedException ex) {
             ErrorManager.getDefault().notify(ex);
-            return ;
+            return;
         }
         final String method = methodPtr[0];
         if (method.length () < 1) {
@@ -185,10 +183,10 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
         final int methodLine = linePtr[0];
         final int methodOffset = offsetPtr[0];
         final String url = urlPtr[0];
-        String className = classNamePtr[0];
+        String className = debugger.getCurrentThread().getClassName();
         VirtualMachine vm = debugger.getVirtualMachine();
         if (vm == null) return ;
-        List<ReferenceType> classes = vm.classesByName(className);
+        final List<ReferenceType> classes = vm.classesByName(className);
         if (!classes.isEmpty()) {
             doAction(url, classes.get(0), methodLine, methodOffset, method);
         } else {
@@ -196,7 +194,6 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
             cbrkp.setHidden(true);
             cbrkp.setSuspend(ClassLoadUnloadBreakpoint.SUSPEND_NONE);
             cbrkp.addJPDABreakpointListener(new JPDABreakpointListener() {
-
                 public void breakpointReached(JPDABreakpointEvent event) {
                     DebuggerManager.getDebuggerManager().removeBreakpoint(cbrkp);
                     doAction(url, event.getReferenceType(), methodLine, methodOffset, method);
@@ -341,7 +338,7 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
             setEnabled (
                 ActionsManager.ACTION_RUN_INTO_METHOD,
                 enabled &&
-                (debugger.getState () == debugger.STATE_STOPPED) &&
+                (debugger.getState () == JPDADebugger.STATE_STOPPED) &&
                 (EditorContextBridge.getContext().getCurrentLineNumber () >= 0) && 
                 (EditorContextBridge.getContext().getCurrentURL ().endsWith (".java"))
             );

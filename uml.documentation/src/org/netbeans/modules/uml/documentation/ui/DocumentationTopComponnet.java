@@ -47,6 +47,8 @@ import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import javax.swing.SwingUtilities;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.core.requirementsframework.IRequirement;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
@@ -75,7 +77,7 @@ public class DocumentationTopComponnet extends TopComponent implements PropertyC
      *  The Describe documentation editor ActiveX control wrapper class.
      */
     private static DocumentationPane pane;
-    private static IProjectTreeItem current = null;
+    private static IElement current = null;
     private final String default_title =
             NbBundle.getMessage(DocumentationTopComponnet.class, "Pane.Documentation.Title");
     
@@ -115,17 +117,10 @@ public class DocumentationTopComponnet extends TopComponent implements PropertyC
             return;
         
         String body = pane.getTrimmedDocumentation();
-        
+
         if (current != null)
         {
-            if (current.getModelElement() != null)
-            {
-                current.getModelElement().setDocumentation(body);
-            }
-            else if (current.getDiagram() != null)
-            {
-                current.getDiagram().setDocumentation(body);
-            }
+            current.setDocumentation(body);
             pane.setDocumentText(body);
         }
     }
@@ -223,8 +218,10 @@ public class DocumentationTopComponnet extends TopComponent implements PropertyC
             return;
         }
         
-        final IProjectTreeItem item = (IProjectTreeItem)arr[0].getCookie(IProjectTreeItem.class);
-        if(item == null)
+        final IProjectTreeItem item = arr[0].getCookie(IProjectTreeItem.class);
+        IPresentationElement pe = arr[0].getCookie(IPresentationElement.class);
+        
+        if(item == null && pe == null)
         {
             clear();
             return;
@@ -232,28 +229,19 @@ public class DocumentationTopComponnet extends TopComponent implements PropertyC
 
         saveDocumentation();
         
-        current = item;
+        current = item != null ? item.getModelElement() : pe.getFirstSubject();
+        
         SwingUtilities.invokeLater(new Runnable()
         {
             public void run()
             {
-                setName(item.getItemText() + " - " +  default_title);
+                setName(current == null? default_title : current.toString() + " - " +  default_title);
             }
         });
         
-        if (current.getDiagram() != null)
-        {
-            pane.setDocumentText(current.getDiagram().getDocumentation());
-        }
-        else if (current.getModelElement() != null)
-        {
-            pane.setDocumentText(current.getModelElement().getDocumentation());
-        }
-        else if (current.getData() instanceof IRequirement)
-        {
-            pane.setDocumentText(((IRequirement)current.getData()).getDescription());
-            pane.setEnabled(false);
-        }
+        pane.setDocumentText(current == null? "" : current.getDocumentation());
+        
+        // todo: for IRequirement
     }
     
     

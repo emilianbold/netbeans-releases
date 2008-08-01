@@ -73,6 +73,10 @@ public class FormSettings {
         // Listener Generation Style
         int listenerGenerationStyle = FormLoaderSettings.getInstance().getListenerGenerationStyle();
         settings.put(FormLoaderSettings.PROP_LISTENER_GENERATION_STYLE, new Integer(listenerGenerationStyle));
+
+        // Generate FQN
+        boolean generateFQN = FormLoaderSettings.getInstance().getGenerateFQN();
+        settings.put(FormLoaderSettings.PROP_GENERATE_FQN, generateFQN);
     }
 
     // -----
@@ -236,6 +240,14 @@ public class FormSettings {
 
     public String getFormBundle() {
         return (String) settings.get(ResourceSupport.PROP_FORM_BUNDLE);
+    }
+
+    public void setGenerateFQN(boolean generateFQN) {
+        settings.put(FormLoaderSettings.PROP_GENERATE_FQN, generateFQN);
+    }
+
+    public boolean getGenerateFQN() {
+        return (Boolean)settings.get(FormLoaderSettings.PROP_GENERATE_FQN);
     }
 
     // design locale is not persisted in settings

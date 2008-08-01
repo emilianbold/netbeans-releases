@@ -47,7 +47,6 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
-import junit.framework.TestCase;
 import junit.framework.*;
 import com.sun.org.apache.bcel.internal.classfile.ClassParser;
 import com.sun.org.apache.bcel.internal.classfile.DescendingVisitor;
@@ -59,7 +58,6 @@ import com.sun.org.apache.bcel.internal.classfile.LocalVariableTable;
 import com.sun.org.apache.bcel.internal.classfile.Method;
 import com.sun.org.apache.bcel.internal.generic.Type;
 import java.lang.reflect.Constructor;
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -71,6 +69,7 @@ import java.util.logging.Logger;
 import org.netbeans.*;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.loaders.DataLoader;
 import org.openide.loaders.DataLoaderPool;
 
@@ -110,10 +109,8 @@ public class BytecodeTest extends NbTestCase {
      * Line table and source info are OK.
      * Likely to fail for custom CVS unless they used -Dbuild.compiler.debuglevel=source,lines
      */
+    @RandomlyFails
     public void testBytecode() throws Exception {
-        if (Boolean.getBoolean("ignore.random.failures")) {
-            return;
-        }
         JavaClass clz = 
                 new ClassParser(Main.class.getResourceAsStream("Main.class"), "Main.class").parse();
         assertNotNull("classfile of Main parsed", clz);
@@ -130,7 +127,7 @@ public class BytecodeTest extends NbTestCase {
             
             // list of 3rd party libs
             // perhaps we can strip this debug info from these
-            if ("commons-logging-1.0.4.jar".equals(f.getName())
+            if ("commons-logging-1.1.jar".equals(f.getName())
             ||  "servlet-2.2.jar".equals(f.getName())
             ||  "servlet2.5-jsp2.1-api.jar".equals(f.getName())
             ||  "jaxws-tools.jar".equals(f.getName())

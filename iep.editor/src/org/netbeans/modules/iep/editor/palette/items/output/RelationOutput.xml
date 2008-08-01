@@ -24,8 +24,8 @@
     
     <!--<icon16 urlvalue="images/relationOutputx16.png" />
     <icon32 urlvalue="images/relationOutputx32.png" />-->
-    <icon16 urlvalue="images/icons32x32/relationOutputx32.png" />
-    <icon32 urlvalue="images/icons32x32/relationOutputx32.png" />
+    <icon16 urlvalue="images/new/icons32x32/relationOutputx32.png" />
+    <icon32 urlvalue="images/new/icons32x32/relationOutputx32.png" />
     <description localizing-bundle="org.netbeans.modules.iep.editor.palette.items.output.Bundle"
                display-name-key="NAME_html-RelationOutput"
                tooltip-key="HINT_html-RelationOutput" />

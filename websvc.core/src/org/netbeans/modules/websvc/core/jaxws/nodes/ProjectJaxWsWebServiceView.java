@@ -50,6 +50,7 @@ import org.netbeans.modules.websvc.api.jaxws.project.config.Client;
 import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.core.ProjectWebServiceView;
+import org.netbeans.modules.websvc.core.AbstractProjectWebServiceViewImpl;
 import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
@@ -59,25 +60,23 @@ import org.openide.util.WeakListeners;
  *
  * @author Ajit
  */
-final class ProjectJaxWsWebServiceView extends ProjectWebServiceView implements PropertyChangeListener {
+final class ProjectJaxWsWebServiceView extends AbstractProjectWebServiceViewImpl implements PropertyChangeListener {
 
-    private Project project;
     private JaxWsModel jaxWsModel;
     private JAXWSSupport jaxwsSupport;
     private JAXWSClientSupport jaxwsClientSupport;
     private PropertyChangeListener weakModelListener;
 
     ProjectJaxWsWebServiceView(Project p) {
-        super();
-        project = p;
-        jaxWsModel = (JaxWsModel) project.getLookup().lookup(JaxWsModel.class);
+        super(p);
+        jaxWsModel = (JaxWsModel) p.getLookup().lookup(JaxWsModel.class);
         weakModelListener = WeakListeners.propertyChange(this, jaxWsModel);
-        FileObject projectDir = project.getProjectDirectory();
+        FileObject projectDir = p.getProjectDirectory();
         jaxwsSupport = JAXWSSupport.getJAXWSSupport(projectDir);
         jaxwsClientSupport = JAXWSClientSupport.getJaxWsClientSupport(projectDir);
     }
 
-    protected Node[] createView(ViewType viewType) {
+    public Node[] createView(ProjectWebServiceView.ViewType viewType) {
         switch (viewType) {
             case SERVICE:
                 return createServiceNodes();
@@ -92,7 +91,7 @@ final class ProjectJaxWsWebServiceView extends ProjectWebServiceView implements 
         if (services == null || services.length <= 0) {
             return new Node[0];
         }
-        Sources sources = (Sources) project.getLookup().lookup(Sources.class);
+        Sources sources = (Sources) getProject().getLookup().lookup(Sources.class);
         ArrayList<FileObject> roots = new ArrayList<FileObject>();
         if (sources != null) {
             SourceGroup[] groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
@@ -127,13 +126,13 @@ final class ProjectJaxWsWebServiceView extends ProjectWebServiceView implements 
         Client[] clients = jaxWsModel.getClients();
         if (clients != null && clients.length > 0) {
             for (Client client : clients) {
-                nodes.add(new JaxWsClientNode(jaxWsModel, client, project.getProjectDirectory()));
+                nodes.add(new JaxWsClientNode(jaxWsModel, client, getProject().getProjectDirectory()));
             }
         }
         return nodes.toArray(new Node[nodes.size()]);
     }
 
-    protected boolean isViewEmpty(ViewType viewType) {
+    public boolean isViewEmpty(ProjectWebServiceView.ViewType viewType) {
         switch (viewType) {
             case SERVICE:
                 return jaxWsModel == null || jaxwsSupport == null || jaxWsModel.getServices().length == 0;
@@ -143,13 +142,13 @@ final class ProjectJaxWsWebServiceView extends ProjectWebServiceView implements 
         return true;
     }
 
-    protected void addNotify() {
+    public void addNotify() {
         if (jaxWsModel != null) {
             jaxWsModel.addPropertyChangeListener(weakModelListener);
         }
     }
 
-    protected void removeNotify() {
+    public void removeNotify() {
         if (jaxWsModel != null) {
             jaxWsModel.removePropertyChangeListener(weakModelListener);
         }
@@ -159,10 +158,10 @@ final class ProjectJaxWsWebServiceView extends ProjectWebServiceView implements 
         Object oldValue = evt.getOldValue();
         Object newValue = evt.getNewValue();
         if (oldValue instanceof Service || newValue instanceof Service) {
-            fireChange(ViewType.SERVICE);
+            fireChange(ProjectWebServiceView.ViewType.SERVICE);
         }
         if (oldValue instanceof Client || newValue instanceof Client) {
-            fireChange(ViewType.CLIENT);
+            fireChange(ProjectWebServiceView.ViewType.CLIENT);
         }
     }
 }

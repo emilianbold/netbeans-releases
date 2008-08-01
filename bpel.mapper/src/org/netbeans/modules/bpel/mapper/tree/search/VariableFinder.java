@@ -19,7 +19,9 @@
 
 package org.netbeans.modules.bpel.mapper.tree.search;
 
+import org.netbeans.modules.soa.ui.tree.impl.SimpleFinder;
 import org.netbeans.modules.bpel.mapper.tree.models.VariableDeclarationWrapper;
+import org.netbeans.modules.bpel.model.api.AbstractVariableDeclaration;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.Variable;
 import org.netbeans.modules.bpel.model.api.VariableDeclaration;
@@ -31,9 +33,9 @@ import org.netbeans.modules.bpel.model.api.VariableDeclarationScope;
  */
 public class VariableFinder extends SimpleFinder {
 
-    private VariableDeclaration mVariableDecl;
+    private AbstractVariableDeclaration mVariableDecl;
     
-    public VariableFinder(VariableDeclaration variableDecl) {
+    public VariableFinder(AbstractVariableDeclaration variableDecl) {
         mVariableDecl = variableDecl;
     }
     

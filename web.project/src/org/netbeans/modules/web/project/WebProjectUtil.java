@@ -44,6 +44,7 @@ package org.netbeans.modules.web.project;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.logging.Logger;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryChooser;
 import org.netbeans.modules.web.api.webmodule.WebModule;
@@ -55,8 +56,10 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Andrei Badea
  */
-public class WebProjectUtil {
+public final class WebProjectUtil {
+
     private WebProjectUtil() {
+        super();
     }
 
     /**
@@ -85,14 +88,22 @@ public class WebProjectUtil {
     
     public static LibraryChooser.Filter getFilter(WebProject p) {
         LibraryChooser.Filter filter = null;
-        if (WebModule.getWebModule(p.getProjectDirectory()).getJ2eePlatformVersion().equals("1.3")) { // NOI18N
+        if ("1.3".equals(WebModule.getWebModule(p.getProjectDirectory()).getJ2eePlatformVersion())) { // NOI18N
             filter = new LibraryChooser.Filter() {
                 public boolean accept(Library library) {
+                    if ("javascript".equals(library.getType())) { //NOI18N
+                        return false;
+                    }
+                    try {
+                        library.getContent("classpath"); //NOI18N
+                    } catch (IllegalArgumentException ex) {
+                        return false;
+                    }
                     return !library.getName().matches("jstl11|jaxrpc16|toplink|Spring|jaxws20|jaxb20|struts|jsf"); // NOI18N
                 }
             };
         }
         return filter;
     }
-    
+
 }

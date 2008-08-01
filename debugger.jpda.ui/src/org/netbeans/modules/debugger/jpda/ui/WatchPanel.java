@@ -41,20 +41,12 @@
 package org.netbeans.modules.debugger.jpda.ui;
 
 import java.awt.AWTKeyStroke;
-import java.awt.Container;
-import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.FontMetrics;
 import java.awt.KeyboardFocusManager;
-import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import java.net.MalformedURLException;
 import java.net.URL;
-import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
-import javax.swing.text.Keymap;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.jpda.CallStackFrame;
@@ -75,12 +67,17 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.border.CompoundBorder;
 import java.util.*;
 import java.awt.BorderLayout;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.io.IOException;
 import javax.swing.text.StyledDocument;
 import org.netbeans.api.java.source.ui.DialogBinding;
+import org.netbeans.editor.EditorUI;
+import org.netbeans.editor.ext.ExtCaret;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.text.NbDocument;
+import org.openide.util.HelpCtx;
 
 /**
  * A GUI panel for customizing a Watch.
@@ -109,10 +106,13 @@ public class WatchPanel {
             String url = sp.getURL(csf, language);
             int line = csf.getLineNumber(language);
             setupContext(editorPane, url, line);
+        } else {
+            setupUI(editorPane);
         }
     }
     
     public static void setupContext(JEditorPane editorPane, String url, int line) {
+        setupUI(editorPane);
         FileObject file;
         StyledDocument doc;
         try {
@@ -148,6 +148,22 @@ public class WatchPanel {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioobex);
         }
     }
+    
+    private static void setupUI(final JEditorPane editorPane) {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                // do not highlight current row
+                EditorUI eui = org.netbeans.editor.Utilities.getEditorUI(editorPane);
+                eui.removeLayer(ExtCaret.HIGHLIGHT_ROW_LAYER_NAME);
+                // Do not draw text limit line
+                try {
+                    java.lang.reflect.Field textLimitLineField = EditorUI.class.getDeclaredField("textLimitLineVisible"); // NOI18N
+                    textLimitLineField.setAccessible(true);
+                    textLimitLineField.set(eui, false);
+                } catch (Exception ex) {}
+            }
+        });
+    }
 
     public JComponent getPanel() {
         if (panel != null) return panel;
@@ -181,6 +197,7 @@ public class WatchPanel {
         editorPane.selectAll ();
 
         textLabel.setLabelFor (editorPane);
+        HelpCtx.setHelpIDString(editorPane, "debug.customize.watch");
         editorPane.requestFocus ();
         
         return panel;
@@ -192,15 +209,26 @@ public class WatchPanel {
     
     public static JScrollPane createScrollableLineEditor(JEditorPane editorPane) {
         editorPane.setKeymap(new FilteredKeymap(editorPane));
-        JScrollPane sp = new JScrollPane(editorPane, JScrollPane.VERTICAL_SCROLLBAR_NEVER,
-                                                     JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        final JScrollPane sp = new JScrollPane(JScrollPane.VERTICAL_SCROLLBAR_NEVER,
+                                         JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
                 
         editorPane.setBorder (
-            new CompoundBorder (editorPane.getBorder (),
+            new CompoundBorder (editorPane.getBorder(),
             new EmptyBorder (0, 0, 0, 0))
         );
         
         JTextField referenceTextField = new JTextField();
+        JPanel panel = new JPanel(new GridBagLayout());
+        panel.setBackground(referenceTextField.getBackground());
+        sp.setBorder(referenceTextField.getBorder());
+        sp.setBackground(referenceTextField.getBackground());
+        
+        GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
+        gridBagConstraints.weightx = 1.0;
+        panel.add(editorPane, gridBagConstraints);
+        sp.setViewportView(panel);
         
         int preferredHeight = referenceTextField.getPreferredSize().height;
         if (sp.getPreferredSize().height < preferredHeight) {
@@ -208,10 +236,13 @@ public class WatchPanel {
         }
         sp.setMinimumSize(sp.getPreferredSize());
         
+        setupUI(editorPane);
+        
         Set<AWTKeyStroke> tfkeys = referenceTextField.getFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS);
         editorPane.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, tfkeys);
         tfkeys = referenceTextField.getFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS);
         editorPane.setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, tfkeys);
         return sp;
     }
+    
 }

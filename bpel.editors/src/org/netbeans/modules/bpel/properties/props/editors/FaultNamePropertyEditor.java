@@ -38,5 +38,4 @@ public class FaultNamePropertyEditor extends QNamePropEditor {
         customizer.init(myPropertyEnv, this);
         return customizer;
     }
-    
 }

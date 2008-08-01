@@ -38,14 +38,17 @@ import java.io.Serializable;
 import java.util.Enumeration;
 import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
+import org.netbeans.api.xml.cookies.CookieObserver;
 import org.netbeans.core.api.multiview.MultiViewHandler;
 import org.netbeans.core.api.multiview.MultiViewPerspective;
 import org.netbeans.core.api.multiview.MultiViews;
 import org.netbeans.core.spi.multiview.CloseOperationHandler;
 import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.modules.etl.ui.model.impl.ETLCollaborationModel;
+import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
 import org.openide.ErrorManager;
 import org.openide.awt.UndoRedo;
+import org.openide.awt.UndoRedo.Manager;
 import org.openide.cookies.CloseCookie;
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.EditorCookie;
@@ -55,6 +58,7 @@ import org.openide.cookies.PrintCookie;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
+import org.openide.text.CloneableEditor;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.DataEditorSupport;
 import org.openide.util.Task;
@@ -65,26 +69,46 @@ import org.openide.windows.WindowManager;
 import com.sun.sql.framework.exception.BaseException;
 
 import java.util.List;
+import javax.swing.text.StyledDocument;
+import org.netbeans.api.xml.cookies.ValidateXMLCookie;
 import org.netbeans.modules.sql.framework.model.ValidationInfo;
 import org.openide.awt.StatusDisplayer;
+
+import org.openide.text.Line;
+import org.netbeans.modules.soa.ui.UndoRedoManagerProvider;
+import org.netbeans.modules.xml.validation.ShowCookie;
+import org.netbeans.modules.xml.validation.ValidationOutputWindowController;
+import org.netbeans.modules.xml.xam.Model;
+import org.netbeans.modules.xml.xam.Model.State;
+import org.netbeans.modules.xml.xam.ui.undo.QuietUndoManager;
 
 /**
  *
  * @author Ahimanikya Satapathy
  */
-public class ETLEditorSupport extends DataEditorSupport implements OpenCookie, EditCookie, EditorCookie.Observable, LineCookie, CloseCookie, PrintCookie {
+public class ETLEditorSupport extends DataEditorSupport implements OpenCookie, ShowCookie, EditCookie, EditorCookie.Observable, LineCookie,
+        CloseCookie, ValidateXMLCookie, PrintCookie, UndoRedoManagerProvider {
 
     private static ETLDataObject obj;
+    private boolean updatedDuringLoad = false;
 
     public ETLEditorSupport(ETLDataObject sobj) {
         super(sobj, new ETLEditorEnv(sobj));
         obj = sobj;
         setMIMEType(ETLDataLoader.MIME_TYPE);
         PRJ_PATH = sobj.getFolder().getPrimaryFile().getParent().getPath();
-        PRJ_PATH = PRJ_PATH.replace('/', '\\');
+        //PRJ_PATH = PRJ_PATH.replace('/', '\\');
         PRJ_NAME = sobj.getFolder().getPrimaryFile().getParent().getName();
+        //Project prj = FileOwnerQuery.getOwner(obj.getPrimaryFile());
+        //java.util.logging.Logger.getLogger(ETLEditorSupport.class.getName()).info("ETLEditorSupport project " + prj);
     }
 
+    /*public static void getPath() {
+    Utilities.actionsGlobalContext().lookup(Project.class);
+    Utilities.actionsGlobalContext().lookup(DataObject.class);
+    Project prj = FileOwnerQuery.getOwner(obj.getPrimaryFile());
+    java.util.logging.Logger.getLogger(ETLEditorSupport.class.getName()).info("");
+    }*/
     public ETLEditorEnv getEnv() {
         return (ETLEditorEnv) env;
     }
@@ -172,8 +196,11 @@ public class ETLEditorSupport extends DataEditorSupport implements OpenCookie, E
      *
      * @return UndoRedo.Manager instance.
      */
-    public UndoRedo.Manager getUndoManager() {
-        return super.getUndoRedo();
+    /*public UndoRedo.Manager getUndoManager() {
+    return super.getUndoRedo();
+    }*/
+    public QuietUndoManager getUndoManager() {
+        return (QuietUndoManager) getUndoRedo();
     }
 
     @Override
@@ -213,10 +240,12 @@ public class ETLEditorSupport extends DataEditorSupport implements OpenCookie, E
         try {
             ETLDataObject etlDataObject = (ETLDataObject) getDataObject();
             ETLCollaborationModel collabModel = etlDataObject.getModel();
+            collabModel.sync();
             collabModel.getUndoManager().discardAllEdits();
 
             openDocument();
             String defnContent = getDocument().getText(0, getDocument().getLength());
+            //java.util.logging.Logger.getLogger(ETLEditorSupport.class.getName()).info("***************** defnContent in syncModel *************** " + defnContent);
             collabModel.reLoad(defnContent);
             // is below required? 
             collabModel.setReloaded(true);
@@ -225,6 +254,12 @@ public class ETLEditorSupport extends DataEditorSupport implements OpenCookie, E
 
             // Validate the collabModel and update badge
             updateBadge(etlDataObject);
+            if(updatedDuringLoad){
+                updatedDuringLoad = false;
+                synchDocument();
+                super.saveDocument();
+            }
+            getDataObject().setModified(false);
         } catch (Throwable ioe) {
             // The document cannot be parsed             
             ErrorManager.getDefault().notify(ioe);
@@ -264,11 +299,15 @@ public class ETLEditorSupport extends DataEditorSupport implements OpenCookie, E
             ETLDataObject etlDataObject = (ETLDataObject) getDataObject();
             String content = etlDataObject.getETLDefinition().toXMLString("");
             Document doc = getDocument();
+            //String testing = doc.getText(0, getDocument().getLength());
+            //java.util.logging.Logger.getLogger(ETLEditorSupport.class.getName()).info("***************** testing *************** " + testing);
+            //java.util.logging.Logger.getLogger(ETLEditorSupport.class.getName()).info("********************* content in synchDocument *********** " + content);
             if (doc != null) {
                 doc.remove(0, getDocument().getLength());
                 doc.insertString(0, content, null);
             }
-            etlDataObject.getModel().setDirty(false);
+            //etlDataObject.getModel().setDirty(true);
+            etlDataObject.setModified(true);
             updateBadge(etlDataObject);
         } catch (Exception ex) {
             ErrorManager.getDefault().notify(ex);
@@ -328,8 +367,12 @@ public class ETLEditorSupport extends DataEditorSupport implements OpenCookie, E
 
         @Override
         protected FileLock takeLock() throws IOException {
-            return getDataObject().getPrimaryFile().lock();
+            return null;//getDataObject().getPrimaryFile().lock();
+
         }
+    }
+    public boolean silentClose() {
+        return super.close(false);
     }
 
     /**
@@ -338,13 +381,13 @@ public class ETLEditorSupport extends DataEditorSupport implements OpenCookie, E
      * a reference to Schema DataObject only - to be serializable with the
      * multiview TopComponent without problems.
      */
-    public static class CloseHandler extends Object implements CloseOperationHandler, Serializable {
+    public static class CloseHandler  implements CloseOperationHandler, Serializable {
 
         private CloseHandler() {
             super();
         }
 
-        public CloseHandler(DataObject schemaDO) {
+        public CloseHandler(ETLDataObject schemaDO) {
             dataObject = schemaDO;
         }
 
@@ -353,41 +396,295 @@ public class ETLEditorSupport extends DataEditorSupport implements OpenCookie, E
         }
 
         public boolean resolveCloseOperation(CloseOperationState[] elements) {
-            ETLEditorSupport etlEditor = getETLEditorSupport();
-            if (etlEditor != null) {
+            ETLEditorSupport etlEditor = dataObject == null ? null
+                    : (ETLEditorSupport) dataObject.getCookie(ETLEditorSupport.class);
+            if (etlEditor == null) {
+                return true;
+            }
+          //  if (etlEditor != null) {
                 // This handles saving the document.
                 boolean close = etlEditor.canClose();
                 if (close) {
                     if (dataObject.isValid()) {
-                        // In case user discarded edits, need to reload.
-                        if (dataObject.isModified()) {
-                            // In case user discarded edits, need to reload.
-                            etlEditor.reloadDocument().waitFinished();
-                        }
-
-                        etlEditor.syncModel();
-                        // Need to properly close the support, too.
-                        etlEditor.notifyClosed();
+                    // In case user discarded edits, need to reload.
+                    if (dataObject.isModified()) {
+                    // In case user discarded edits, need to reload.
+                    etlEditor.reloadDocument().waitFinished();
                     }
+                    
+                    etlEditor.syncModel();
+                    // Need to properly close the support, too.
+                    etlEditor.notifyClosed();
+                    }
+                    dataObject.setModified(false);
                 }
                 return close;
-            }
-            return true;
+           // }
+          //  return true;
         }
         private static final long serialVersionUID = -3838395157610633251L;
-        private DataObject dataObject;
+        private ETLDataObject dataObject;
     }
 
-    public static String getPath() {
-        String path = null;
-        if (obj != null) {
-            path = obj.getPath();
-            PRJ_PATH = path;
-        }
-        return path;
+    /*public static String getPath() {
+    String path = null;
+    if (obj != null) {
+    path = obj.getPath();
+    PRJ_PATH = path;
     }
+    return path;
+    }*/
     private TopComponent multiviewTC;
     public boolean isFirstTime = true;
     public static String PRJ_PATH = "";
     public static String PRJ_NAME = "";
+
+    public boolean validateXML(CookieObserver observer) {
+        List validationResults;
+
+        ValidationOutputWindowController validationController =
+                new ValidationOutputWindowController();
+        validationResults = validationController.validate((Model) ((ETLDataObject) this.getDataObject()).getLookup().lookup(Model.class));
+
+        /* Send the complete/slow validation results to the validation
+         * controller
+         * so that clients can be notified.
+         */
+        /* BPELValidationController controller =
+        (BPELValidationController) ((ETLDataObject) getDataObject()).getLookup().lookup(BPELValidationController.class);
+        if (controller != null) {
+        controller.notifyCompleteValidationResults(validationResults);
+        }*/
+
+        return true;
+    }
+
+    public void show(final ResultItem resultItem) {
+        DataObject d = getDataObject();
+        final LineCookie lc = (LineCookie) d.getCookie(LineCookie.class);
+        final EditCookie ec = (EditCookie) d.getCookie(EditCookie.class);
+        if (lc == null || ec == null) {
+            return;
+        }
+        SwingUtilities.invokeLater(new Runnable() {
+
+            public void run() {
+                // Opens the editor or brings it into focus
+                // and makes it the activated topcomponent.
+                ec.edit();
+
+                TopComponent tc = WindowManager.getDefault().getRegistry().getActivated();
+                MultiViewHandler mvh = MultiViews.findMultiViewHandler(tc);
+
+                if (mvh == null) {
+                    return;
+                }
+
+                /* If model is broken
+                 * OR if the resultItem.getComponents() is null which
+                 * means the resultItem was generated when the model was broken.
+                 *  In the above cases switch to the source multiview.
+                 */
+                if (resultItem.getModel().getState().equals(
+                        State.NOT_WELL_FORMED) || resultItem.getComponents() == null) {
+                    for (int index1 = 0; index1 < mvh.getPerspectives().length; index1++) {
+                        if (mvh.getPerspectives()[index1].preferredID().equals(
+                                ETLEditorViewMultiViewDesc.PREFERRED_ID)) {
+                            mvh.requestActive(mvh.getPerspectives()[index1]);
+                        }
+                    }
+                }
+
+                // Set annotation or select element in the multiview.
+                MultiViewPerspective mvp = mvh.getSelectedPerspective();
+                /*if (mvp.preferredID().equals("orch-designer")) {
+                List<TopComponent> list = getAssociatedTopComponents();
+                for (TopComponent topComponent : list) {
+                // Make sure this is a multiview window, and not just
+                // some
+                // window that has our DataObject (e.g. Projects,Files).
+                MultiViewHandler handler = MultiViews
+                .findMultiViewHandler(topComponent);
+                if (handler != null && topComponent != null) {
+                SelectBpelElement selectElement = 
+                (SelectBpelElement) topComponent
+                .getLookup()
+                .lookup(SelectBpelElement.class);
+                if (selectElement == null)
+                return;
+                selectElement.select(bpelEntity);
+                }
+                }
+                }
+                else */
+                if (mvp.preferredID().equals(
+                        ETLSourceMultiviewDesc.PREFERRED_ID)) {
+                    Line line = ValidationUtil.getLine(resultItem);
+
+                    if (line != null) {
+                        line.show(Line.SHOW_GOTO);
+                    }
+                }
+
+            }
+        });
+    }
+
+    public Manager getUndoRedoManager() {
+        return getUndoManager();
+    }
+
+    @Override
+    public void saveDocument() throws IOException {
+        super.saveDocument();
+        syncModel();
+        getDataObject().setModified(false);
+    }
+
+    @Override
+    protected UndoRedo.Manager createUndoRedoManager() {
+        // Override so the superclass will use our proxy undo manager
+        // instead of the default, then we can intercept edits.
+        return new QuietUndoManager(super.createUndoRedoManager());
+    // Note we cannot set the document on the undo manager right
+    // now, as CES is probably trying to open the document.
+    }
+
+    @Override
+    protected void notifyClosed() {
+        QuietUndoManager undo = getUndoManager();
+        StyledDocument doc = getDocument();
+        synchronized (undo) {
+            // May be null when closing the editor.
+            if (doc != null) {
+                doc.removeUndoableEditListener(undo);
+                undo.endCompound();
+                undo.setDocument(null);
+            }
+            undo.setModel(null);
+
+        }
+        super.notifyClosed();
+        getUndoManager().discardAllEdits();
+    //prepareTask = null;
+    }
+
+    /* @Override
+    public Task prepareDocument() {
+    QuietUndoManager undo = (QuietUndoManager) getUndoRedo();
+    Task task = super.prepareDocument();
+    // Avoid listening to the same task more than once.
+    if (task == prepareTask) {
+    return task;
+    }
+    synchronized (undo) {
+    task.addTaskListener(new TaskListener() {
+    
+    public void taskFinished(Task task) {            
+    QuietUndoManager undo = (QuietUndoManager) getUndoRedo();
+    StyledDocument doc = getDocument();
+    synchronized (undo) {
+    // Now that the document is ready, pass it to the manager.
+    undo.setDocument((AbstractDocument) doc);
+    if (!undo.isCompound()) {
+    doc.removeUndoableEditListener(undo);
+    // If not listening to document, then listen to model.
+    // addUndoManagerToModel(undo);
+    }
+    }
+    }
+    });
+    prepareTask = task;
+    }
+    return task;
+    }
+    private transient Task prepareTask;*/
+    public void addUndoManagerToDocument() {
+        /* 
+         * This method may be called repeatedly.
+         * Stop the undo manager from listening to the model, as it will
+         * be listening to the document now.
+         */
+        QuietUndoManager undo = getUndoManager();
+        StyledDocument doc = getDocument();
+        synchronized (undo) {
+
+            removeUndoManagerFromModel();
+
+            /*
+             *  Document may be null if the cloned views are not behaving
+             *  correctly.
+             */
+            if (doc != null) {
+                // Ensure the listener is not added twice.
+                doc.removeUndoableEditListener(undo);
+                doc.addUndoableEditListener(undo);
+                /*
+                 *  Start the compound mode of the undo manager, such that when
+                 * we are hidden, we will treat all of the edits as a single
+                 * compound edit. This avoids having the user invoke undo
+                 * numerous times when in the model view.
+                 */
+                undo.beginCompound();
+            }
+        }
+    }
+
+    public void addUndoManagerToModel(QuietUndoManager undo) {
+        ETLDataObject etlDataObject = (ETLDataObject) getDataObject();
+        ETLCollaborationModel model = etlDataObject.getModel();
+        //BpelModel model = getBpelModel();
+        if (model != null) {
+            // Ensure the listener is not added twice.
+            removeUndoManagerFromModel();
+            model.addUndoableEditListener(undo);
+        /* Ensure the model is sync'd when undo/redo is invoked,
+         * otherwise the edits are added to the queue and eventually
+         * cause exceptions.
+         */
+        //undo.setModel(model);
+
+        }
+    }
+
+    public void removeUndoManagerFromDocument() {
+        // This method may be called repeatedly.
+        QuietUndoManager undo = getUndoManager();
+        StyledDocument doc = getDocument();
+        synchronized (undo) {
+            // May be null when closing the editor.
+            if (doc != null) {
+                doc.removeUndoableEditListener(undo);
+                undo.endCompound();
+            }
+            // Have the undo manager listen to the model when it is not
+            // listening to the document.
+            addUndoManagerToModel(undo);
+        }
+    }
+
+    private void removeUndoManagerFromModel() {
+        ETLDataObject etlDataObject = (ETLDataObject) getDataObject();
+        ETLCollaborationModel model = etlDataObject.getModel();
+        if (model != null) {
+            QuietUndoManager undo = getUndoManager();
+            model.removeUndoableEditListener(undo);
+            // Must unset the model when leaving model view.
+            undo.setModel(null);
+        }
+    }
+
+    @Override
+    protected void initializeCloneableEditor(CloneableEditor editor) {
+        super.initializeCloneableEditor(editor);
+            // Update later to avoid an infinite loop.
+            EventQueue.invokeLater(new Runnable() {
+                public void run() {
+                    updateTitles();
+                }
+            });
+        }
+    public void setUpdatedDuringLoad(boolean val) {
+        updatedDuringLoad = val;
+    }
 }

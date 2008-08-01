@@ -56,7 +56,6 @@ import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.Outputable;
 import org.netbeans.jemmy.QueueTool;
-import org.netbeans.jemmy.QueueTool.QueueAction;
 import org.netbeans.jemmy.TestOut;
 import org.netbeans.jemmy.Timeoutable;
 import org.netbeans.jemmy.Timeouts;
@@ -69,13 +68,13 @@ import org.netbeans.jemmy.util.MouseVisualizer;
 import java.awt.Component;
 
 import java.awt.event.InputEvent;
-import java.awt.event.KeyEvent;
 
 import java.lang.reflect.InvocationTargetException;
 
 import java.util.Hashtable;
 import java.util.StringTokenizer;
 import java.util.Vector;
+import org.netbeans.jemmy.TimeoutExpiredException;
 
 /**
  * Keeps all environment and low-level methods.
@@ -1001,7 +1000,7 @@ public abstract class Operator extends Object
 	int ind = 0;
 	while((ind = restPath.indexOf(delim)) != -1) {
 	    if(ind == 0 ||
-	       restPath.substring(ind - 1, ind) != "\\") {
+	       !restPath.substring(ind - 1, ind).equals("\\")) {
 		return(ind);
 	    }
 	}

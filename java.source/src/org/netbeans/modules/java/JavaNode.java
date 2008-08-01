@@ -71,15 +71,21 @@ import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
+
+import static org.openide.util.ImageUtilities.assignToolTipToImage;
+import static org.openide.util.ImageUtilities.loadImage;
+import static org.openide.util.NbBundle.getMessage;
 
 /**
  * The node representation of Java source files.
  */
 public final class JavaNode extends DataNode implements ChangeListener {
+
+    private static final String EXECUTABLE_BADGE_URL = "org/netbeans/modules/java/resources/executable-badge.png";
+    private static final String NEEDS_COMPILE_BADGE_URL = "org/netbeans/modules/java/resources/needs-compile.png";
 
     /** generated Serialized Version UID */
     private static final long serialVersionUID = -7396485743899766258L;
@@ -87,9 +93,18 @@ public final class JavaNode extends DataNode implements ChangeListener {
     private static final String JAVA_ICON_BASE = "org/netbeans/modules/java/resources/class.png"; // NOI18N
     private static final String CLASS_ICON_BASE = "org/netbeans/modules/java/resources/clazz.gif"; // NOI18N
 
-    private static final Image NEEDS_COMPILE = Utilities.loadImage("org/netbeans/modules/java/resources/needs-compile.png"); // NOI18N
-    private static final Image IS_EXECUTABLE_CLASS = Utilities.loadImage("org/netbeans/modules/java/resources/executable-badge.png"); // NOI18N
+    private static final Image NEEDS_COMPILE;
+    private static final Image IS_EXECUTABLE_CLASS;
     
+    static {
+        URL needsCompileIconURL = JavaNode.class.getClassLoader().getResource(NEEDS_COMPILE_BADGE_URL);
+        String needsCompileTP = "<img src=\"" + needsCompileIconURL + "\">&nbsp;" + getMessage(JavaNode.class, "TP_NeedsCompileBadge");
+        NEEDS_COMPILE = assignToolTipToImage(loadImage(NEEDS_COMPILE_BADGE_URL), needsCompileTP); // NOI18N
+        URL executableIconURL = JavaNode.class.getClassLoader().getResource(EXECUTABLE_BADGE_URL);
+        String executableTP = "<img src=\"" + executableIconURL + "\">&nbsp;" + getMessage(JavaNode.class, "TP_ExecutableBadge");
+        IS_EXECUTABLE_CLASS = assignToolTipToImage(loadImage(EXECUTABLE_BADGE_URL), executableTP); // NOI18N
+    }
+
     private Status status;
     private final AtomicBoolean isCompiled;
     private ChangeListener executableListener;
@@ -168,18 +183,18 @@ public final class JavaNode extends DataNode implements ChangeListener {
         // Add classpath-related properties.
         Sheet.Set ps = new Sheet.Set();
         ps.setName("classpaths"); // NOI18N
-        ps.setDisplayName(NbBundle.getMessage(JavaNode.class, "LBL_JavaNode_sheet_classpaths"));
-        ps.setShortDescription(NbBundle.getMessage(JavaNode.class, "HINT_JavaNode_sheet_classpaths"));
+        ps.setDisplayName(getMessage(JavaNode.class, "LBL_JavaNode_sheet_classpaths"));
+        ps.setShortDescription(getMessage(JavaNode.class, "HINT_JavaNode_sheet_classpaths"));
         ps.put(new Node.Property[] {
             new ClasspathProperty(ClassPath.COMPILE,
-                    NbBundle.getMessage(JavaNode.class, "PROP_JavaNode_compile_classpath"),
-                    NbBundle.getMessage(JavaNode.class, "HINT_JavaNode_compile_classpath")),
+                    getMessage(JavaNode.class, "PROP_JavaNode_compile_classpath"),
+                    getMessage(JavaNode.class, "HINT_JavaNode_compile_classpath")),
                     new ClasspathProperty(ClassPath.EXECUTE,
-                    NbBundle.getMessage(JavaNode.class, "PROP_JavaNode_execute_classpath"),
-                    NbBundle.getMessage(JavaNode.class, "HINT_JavaNode_execute_classpath")),
+                    getMessage(JavaNode.class, "PROP_JavaNode_execute_classpath"),
+                    getMessage(JavaNode.class, "HINT_JavaNode_execute_classpath")),
                     new ClasspathProperty(ClassPath.BOOT,
-                    NbBundle.getMessage(JavaNode.class, "PROP_JavaNode_boot_classpath"),
-                    NbBundle.getMessage(JavaNode.class, "HINT_JavaNode_boot_classpath")),
+                    getMessage(JavaNode.class, "PROP_JavaNode_boot_classpath"),
+                    getMessage(JavaNode.class, "HINT_JavaNode_boot_classpath")),
         });
         sheet.put(ps);
         return sheet;
@@ -189,8 +204,8 @@ public final class JavaNode extends DataNode implements ChangeListener {
         Node.Property p = new PropertySupport.ReadWrite<String> (
                 DataObject.PROP_NAME,
                 String.class,
-                NbBundle.getMessage (DataObject.class, "PROP_name"),
-                NbBundle.getMessage (DataObject.class, "HINT_name")
+                getMessage (DataObject.class, "PROP_name"),
+                getMessage (DataObject.class, "HINT_name")
                 ) {
             public String getValue () {
                 return JavaNode.this.getName();
@@ -257,7 +272,7 @@ public final class JavaNode extends DataNode implements ChangeListener {
                 }
                 return sb.toString();
             } else {
-                return NbBundle.getMessage(JavaNode.class, "LBL_JavaNode_classpath_unknown");
+                return getMessage(JavaNode.class, "LBL_JavaNode_classpath_unknown");
             }
         }
     }

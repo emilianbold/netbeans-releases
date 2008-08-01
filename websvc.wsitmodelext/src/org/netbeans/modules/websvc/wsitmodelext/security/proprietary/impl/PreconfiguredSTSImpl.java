@@ -126,4 +126,12 @@ public class PreconfiguredSTSImpl extends ProprietaryTrustComponentClientImpl im
     public String getNamespace() {
         return getAttribute(ProprietarySecurityPolicyAttribute.NAMESPACE);
     }
+
+    public void setTrustVersion(String trustVersion) {
+        setAttribute(WSTVERSION, ProprietarySecurityPolicyAttribute.WSTVERSION, trustVersion);
+    }
+
+    public String getTrustVersion() {
+        return getAttribute(ProprietarySecurityPolicyAttribute.WSTVERSION);
+    }
 }

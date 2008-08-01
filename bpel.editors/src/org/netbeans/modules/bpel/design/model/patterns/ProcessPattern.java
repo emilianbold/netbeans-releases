@@ -469,20 +469,18 @@ public class ProcessPattern extends CompositePattern {
             
         }
         public void drop() {
-            
             Pattern pattern =  getDraggedPattern();
             
             BpelModel model = getModel().getView().getBPELModel();
             
             Import  new_imp = (Import) pattern.getOMReference();
             
-            
-            
             if (pattern.getParent() == null) {
-                if (getModel().getView().showCustomEditor(pattern, 
-                        CustomNodeEditor.EditingMode.CREATE_NEW_INSTANCE)){
-                    new ImportRegistrationHelper(model).addImport(new_imp);
-                }
+//                if (getModel().getView().showCustomEditor(pattern,
+//                        CustomNodeEditor.EditingMode.CREATE_NEW_INSTANCE)){
+//                    new ImportRegistrationHelper(model).addImport(new_imp);
+//                }
+                new ImportRegistrationHelper(model).addImport(new_imp);
             }
         }
     }

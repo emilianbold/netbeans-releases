@@ -194,7 +194,7 @@ public interface BpelXPathExtFunctionMetadata {
         }
 
         public XPathType getResultType() {
-            return XPathType.ANY_TYPE;
+            return XPathType.STRING_TYPE;
         }
 
         public ResultTypeCalculator getResultTypeCalculator() {
@@ -243,7 +243,7 @@ public interface BpelXPathExtFunctionMetadata {
         }
 
         public XPathType getResultType() {
-            return XPathType.ANY_TYPE;
+            return XPathType.STRING_TYPE;
         }
 
         public ResultTypeCalculator getResultTypeCalculator() {
@@ -292,7 +292,7 @@ public interface BpelXPathExtFunctionMetadata {
         }
 
         public XPathType getResultType() {
-            return XPathType.ANY_TYPE;
+            return XPathType.STRING_TYPE;
         }
 
         public ResultTypeCalculator getResultTypeCalculator() {

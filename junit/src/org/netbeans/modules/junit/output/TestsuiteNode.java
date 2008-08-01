@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -45,6 +45,9 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
+import static org.netbeans.modules.junit.output.HtmlMarkupUtils.COLOR_OK;
+import static org.netbeans.modules.junit.output.HtmlMarkupUtils.COLOR_WARNING;
+import static org.netbeans.modules.junit.output.HtmlMarkupUtils.COLOR_FAILURE;
 
 /**
  *
@@ -123,57 +126,73 @@ final class TestsuiteNode extends AbstractNode {
     /**
      */
     private void setDisplayName() {
+        String bundleKey;
+        boolean suiteNameKnown = true;
+
         String displayName;
-        if (report == null) {
-            if (suiteName != ResultDisplayHandler.ANONYMOUS_SUITE) {
-                displayName = NbBundle.getMessage(
-                                          getClass(),
-                                          "MSG_TestsuiteRunning",       //NOI18N
-                                          suiteName);
-            } else {
-                displayName = NbBundle.getMessage(
-                                          getClass(),
-                                          "MSG_TestsuiteRunningNoname");//NOI18N
-            }
+        if (report != null) {
+            boolean failed = containsFailed();
+            boolean interrupted = report.isSuiteInterrupted();
+            bundleKey = interrupted
+                        ? (failed ? "MSG_TestsuiteFailedInterrupted"    //NOI18N
+                                  : "MSG_TestsuiteInterrupted")         //NOI18N
+                        : (failed ? "MSG_TestsuiteFailed"               //NOI18N
+                                  : null);
         } else {
-            boolean containsFailed = containsFailed();
-            displayName = containsFailed
-                          ? NbBundle.getMessage(
-                                          getClass(),
-                                          "MSG_TestsuiteFailed",        //NOI18N
-                                          suiteName)
-                          : suiteName;
+            if (suiteName != ResultDisplayHandler.ANONYMOUS_SUITE) {
+                bundleKey = "MSG_TestsuiteRunning";                     //NOI18N
+            } else {
+                bundleKey = "MSG_TestsuiteRunningNoname";               //NOI18N
+                suiteNameKnown = false;
+            }
+        }
+
+        if (bundleKey == null) {
+            assert suiteName != null;
+            displayName = suiteName;
+        } else {
+            displayName = suiteNameKnown
+                          ? NbBundle.getMessage(getClass(), bundleKey, suiteName)
+                          : NbBundle.getMessage(getClass(), bundleKey);
         }
         setDisplayName(displayName);
     }
     
     /**
      */
+    @Override
     public String getHtmlDisplayName() {
         
         assert suiteName != null;
         
-        StringBuffer buf = new StringBuffer(60);
+        StringBuilder buf = new StringBuilder(60);
         if (suiteName != ResultDisplayHandler.ANONYMOUS_SUITE) {
             buf.append(suiteName);
-            buf.append("&nbsp;&nbsp;");                                 //NOI18N
         } else {
             buf.append(NbBundle.getMessage(getClass(),
                                            "MSG_TestsuiteNoname"));     //NOI18N
-            buf.append("&nbsp;");
         }
         if (report != null) {
             final boolean containsFailed = containsFailed();
+            final boolean interrupted = report.isSuiteInterrupted();
 
-            buf.append("<font color='#");                               //NOI18N
-            buf.append(containsFailed ? "FF0000'>" : "00CC00'>");       //NOI18N
-            buf.append(NbBundle.getMessage(
-                                    getClass(),
-                                    containsFailed
-                                    ? "MSG_TestsuiteFailed_HTML"        //NOI18N
-                                    : "MSG_TestsuitePassed_HTML"));     //NOI18N
-            buf.append("</font>");                                      //NOI18N
+            if (containsFailed) {
+                buf.append("&nbsp;&nbsp;");                             //NOI18N
+                HtmlMarkupUtils.appendColourText(
+                        buf, COLOR_FAILURE, "MSG_TestsuiteFailed_HTML");//NOI18N
+            }
+            if (interrupted) {
+                buf.append("&nbsp;&nbsp;");                             //NOI18N
+                HtmlMarkupUtils.appendColourText(
+                        buf, COLOR_WARNING, "MSG_TestsuiteInterrupted_HTML");   //NOI18N
+            }
+            if (!containsFailed && !interrupted) {
+                buf.append("&nbsp;&nbsp;");                             //NOI18N
+                HtmlMarkupUtils.appendColourText(
+                        buf, COLOR_OK, "MSG_TestsuitePassed_HTML");     //NOI18N
+            }
         } else {
+            buf.append("&nbsp;&nbsp;");                                 //NOI18N
             buf.append(NbBundle.getMessage(
                                     getClass(),
                                     "MSG_TestsuiteRunning_HTML"));      //NOI18N
@@ -201,6 +220,7 @@ final class TestsuiteNode extends AbstractNode {
         return (report != null) && (report.failures + report.errors != 0);
     }
     
+    @Override
     public SystemAction[] getActions(boolean context) {
         return new SystemAction[0];
     }

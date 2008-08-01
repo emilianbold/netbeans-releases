@@ -5,11 +5,3 @@ parser_recover.cc:1:7: unexpected token: {
 parser_recover.cc:1:8: unexpected token: }
 parser_recover.cc:2:1: unexpected token: [
 parser_recover.cc:4:1: unexpected token: ]
-parser_recover.cc:9:4: unexpected token: A
-parser_recover.cc:9:5: unexpected token: (
-parser_recover.cc:9:6: unexpected token: 1
-parser_recover.cc:9:7: unexpected token: ,
-parser_recover.cc:9:8: unexpected token: 3
-parser_recover.cc:9:9: unexpected token: )
-parser_recover.cc:9:10: unexpected token: ,
-parser_recover.cc:10:1: unexpected token: }

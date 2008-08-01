@@ -87,7 +87,7 @@ public class SQLproProjectGenerator {
         dir.mkdirs();
         // XXX clumsy way to refresh, but otherwise it doesn't work for new folders
         File rootF = dir;
-        while (rootF.getParentFile() != null) {
+        while (rootF.getParentFile() != null /*UNC*/&& rootF.getParentFile().exists()) {
             rootF = rootF.getParentFile();
         }
         FileObject fo = FileUtil.toFileObject (rootF);

@@ -110,36 +110,10 @@ public final class OpenFile {
      * @return  null on success, otherwise the error message
      */
     private static String checkFileExists(File file) {
-        final String errMsgKey;
-        if (!file.exists()) {
-            errMsgKey = "MSG_fileNotFound";                             //NOI18N
-        } else if (isSpecifiedByUNCPath(file)) {
-            errMsgKey = "MSG_UncNotSupported";                          //NOI18N
-        } else if (!file.isFile() && !file.isDirectory()) {
-            errMsgKey = "MSG_fileNotFound";                             //NOI18N
+        if (!file.exists() || (!file.isFile() && !file.isDirectory())) {
+            return NbBundle.getMessage(OpenFile.class, "MSG_fileNotFound", file.toString());  //NOI18N
         } else {
             return null;
         }
-        
-        final String fileName = file.toString();
-        final String msg = NbBundle.getMessage(OpenFile.class,
-                                               errMsgKey,
-                                               fileName);
-        return msg;
     }
-
-    /**
-     * Checks whether a given file is specified by an UNC path.
-     *
-     * @param  file  existing file to check
-     * @return  <code>true</code> if the file is specified by UNC path;
-     *          <code>false</code> otherwise
-     */
-    static boolean isSpecifiedByUNCPath(File file) {
-        assert file != null && file.exists();
-
-        file = FileUtil.normalizeFile(file);
-        return file.getPath().startsWith("\\\\");                       //NOI18N
-    }
-    
 }

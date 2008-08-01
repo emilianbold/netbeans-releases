@@ -41,12 +41,12 @@
 package org.netbeans.test.j2ee;
 
 import org.netbeans.jellytools.Bundle;
-import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.RuntimeTabOperator;
+import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.test.j2ee.lib.J2eeProjectSupport;
 
-public class AppServerTest extends JellyTestCase {
+public class AppServerTest extends J2eeTestCase {
     private static final String SERVERS = Bundle.getString(
             "org.netbeans.modules.j2ee.deployment.impl.ui.Bundle",
             "SERVER_REGISTRY_NODE");

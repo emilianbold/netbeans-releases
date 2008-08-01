@@ -42,9 +42,7 @@
 package org.netbeans.modules.websvc.wsitmodelext.addressing.impl;
 
 import org.netbeans.modules.websvc.wsitmodelext.addressing.Addressing10Anonymous;
-import org.netbeans.modules.websvc.wsitmodelext.addressing.Addressing10QName;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import org.netbeans.modules.xml.wsdl.model.visitor.WSDLVisitor;
 import org.w3c.dom.Element;
 
 /**
@@ -58,15 +56,6 @@ public class Addressing10AnonymousImpl extends Addressing10ComponentImpl impleme
      */
     public Addressing10AnonymousImpl(WSDLModel model, Element e) {
         super(model, e);
-    }
-    
-    public Addressing10AnonymousImpl(WSDLModel model){
-        this(model, createPrefixedElement(Addressing10QName.ANONYMOUS.getQName(), model));
-    }
-
-    @Override
-    public void accept(WSDLVisitor visitor) {
-        visitor.visit(this);
     }
     
 }

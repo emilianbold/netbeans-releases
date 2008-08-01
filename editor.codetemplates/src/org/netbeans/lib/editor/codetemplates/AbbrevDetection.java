@@ -47,10 +47,14 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
+import java.util.prefs.Preferences;
 import javax.swing.KeyStroke;
 import javax.swing.Timer;
 import javax.swing.event.CaretEvent;
@@ -61,14 +65,10 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.editor.Acceptor;
 import org.netbeans.editor.AcceptorFactory;
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Settings;
-import org.netbeans.editor.SettingsChangeEvent;
-import org.netbeans.editor.SettingsChangeListener;
-import org.netbeans.editor.SettingsNames;
-import org.netbeans.editor.SettingsUtil;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplate;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -77,7 +77,9 @@ import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.editor.hints.HintsController;
 import org.netbeans.spi.editor.hints.Severity;
 import org.openide.ErrorManager;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.WeakListeners;
 
 
 /**
@@ -88,8 +90,9 @@ import org.openide.util.NbBundle;
  * @version 1.00
  */
 
-final class AbbrevDetection implements SettingsChangeListener, DocumentListener,
-PropertyChangeListener, KeyListener, CaretListener {
+final class AbbrevDetection implements DocumentListener, PropertyChangeListener, KeyListener, CaretListener, PreferenceChangeListener {
+
+    private static final Logger LOG = Logger.getLogger(AbbrevDetection.class.getName());
     
     /**
      * Document property which determines whether an ongoing document modification
@@ -115,6 +118,15 @@ PropertyChangeListener, KeyListener, CaretListener {
         return ad;
     }
     
+    public static synchronized void remove(JTextComponent component) {
+        AbbrevDetection ad = (AbbrevDetection)component.getClientProperty(AbbrevDetection.class);
+        if (ad != null) {
+            assert ad.component == component : "Wrong component: AbbrevDetection.component=" + ad.component + ", component=" + component;
+            ad.uninstall();
+            component.putClientProperty(AbbrevDetection.class, null);
+        }
+    }
+    
     private JTextComponent component;
     
     /** Document for which this abbreviation detection was constructed. */
@@ -128,13 +140,17 @@ PropertyChangeListener, KeyListener, CaretListener {
     /**
      * Abbreviation characters captured from typing.
      */
-    private StringBuffer abbrevChars = new StringBuffer();
+    private final StringBuffer abbrevChars = new StringBuffer();
 
 //    /** Chars on which to expand acceptor */
 //    private Acceptor expandAcceptor;
 
     /** Which chars reset abbreviation accounting */
     private Acceptor resetAcceptor;
+    
+    private MimePath mimePath = null;
+    private Preferences prefs = null;
+    private PreferenceChangeListener weakPrefsListener = null;
     
     private ErrorDescription errorDescription = null;
     private List<Fix> surrounsWithFixes = null;
@@ -148,10 +164,16 @@ PropertyChangeListener, KeyListener, CaretListener {
             doc.addDocumentListener(this);
         }
 
-        Settings.addSettingsChangeListener(this);
+        String mimeType = DocumentUtilities.getMimeType(component);
+        if (mimeType != null) {
+            mimePath = MimePath.parse(mimeType);
+            prefs = MimeLookup.getLookup(mimePath).lookup(Preferences.class);
+            weakPrefsListener = WeakListeners.create(PreferenceChangeListener.class, this, prefs);
+            prefs.addPreferenceChangeListener(weakPrefsListener);
+        }
         
         // Load the settings
-        settingsChange(null);
+        preferenceChange(null);
         
         component.addKeyListener(this);
         component.addPropertyChangeListener(this);
@@ -168,19 +190,34 @@ PropertyChangeListener, KeyListener, CaretListener {
         surroundsWithTimer.setRepeats(false);
     }
 
-    public void settingsChange(SettingsChangeEvent evt) {
-        Document d = doc;
-        Class kitClass = (d instanceof BaseDocument)
-            ? ((BaseDocument)d).getKitClass()
-            : org.netbeans.editor.BaseKit.class;
+    private void uninstall() {
+        assert component != null : "Can't call uninstall before the construction finished";
+        component.removeCaretListener(this);
+        if (doc != null) {
+            doc.addDocumentListener(this);
+        }
 
-//        expandAcceptor = SettingsUtil.getAcceptor(kitClass, SettingsNames.ABBREV_EXPAND_ACCEPTOR, AcceptorFactory.FALSE);
-        resetAcceptor = SettingsUtil.getAcceptor(kitClass, SettingsNames.ABBREV_RESET_ACCEPTOR, AcceptorFactory.TRUE);
+        component.removeKeyListener(this);
+        component.removePropertyChangeListener(this);
+        surroundsWithTimer.stop();
+    }
+    
+    public void preferenceChange(PreferenceChangeEvent evt) {
+        String settingName = evt == null ? null : evt.getKey();
+        if (settingName == null || "abbrev-reset-acceptor".equals(settingName)) {
+            if (prefs != null) {
+                resetAcceptor = (Acceptor) callFactory(prefs, mimePath, "abbrev-reset-acceptor", null); //NOI18N
+            }
+            
+            if (resetAcceptor == null) {
+                resetAcceptor = AcceptorFactory.TRUE;
+            }
+        }
     }
     
     public void insertUpdate(DocumentEvent evt) {
         if (!isIgnoreModification()) {
-            if (DocumentUtilities.isTypingModification(evt) && !isAbbrevDisabled()) {
+            if (DocumentUtilities.isTypingModification(evt.getDocument()) && !isAbbrevDisabled()) {
                 int offset = evt.getOffset();
                 int length = evt.getLength();
                 appendTypedText(offset, length);
@@ -192,7 +229,7 @@ PropertyChangeListener, KeyListener, CaretListener {
 
     public void removeUpdate(DocumentEvent evt) {
         if (!isIgnoreModification()) {
-            if (DocumentUtilities.isTypingModification(evt) && !isAbbrevDisabled()) {
+            if (DocumentUtilities.isTypingModification(evt.getDocument()) && !isAbbrevDisabled()) {
                 int offset = evt.getOffset();
                 int length = evt.getLength();
                 removeAbbrevText(offset, length);
@@ -206,7 +243,7 @@ PropertyChangeListener, KeyListener, CaretListener {
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
-        if ("document".equals(evt.getPropertyName())) {
+        if ("document".equals(evt.getPropertyName())) { //NOI18N
             if (doc != null) {
                 doc.removeDocumentListener(this);
             }
@@ -215,8 +252,26 @@ PropertyChangeListener, KeyListener, CaretListener {
             if (doc != null) {
                 doc.addDocumentListener(this);
             }
+
+            // unregister and destroy the old preferences (if we have any)
+            if (prefs != null) {
+                prefs.removePreferenceChangeListener(weakPrefsListener);
+                prefs = null;
+                weakPrefsListener = null;
+                mimePath = null;
+            }
             
-            settingsChange(null);
+            // load and hook up to preferences for the new mime type
+            String mimeType = DocumentUtilities.getMimeType(component);
+            if (mimeType != null) {
+                mimePath = MimePath.parse(mimeType);
+                prefs = MimeLookup.getLookup(mimePath).lookup(Preferences.class);
+                weakPrefsListener = WeakListeners.create(PreferenceChangeListener.class, this, prefs);
+                prefs.addPreferenceChangeListener(weakPrefsListener);
+            }
+            
+            // reload the settings
+            preferenceChange(null);
         }
     }
     
@@ -389,6 +444,53 @@ PropertyChangeListener, KeyListener, CaretListener {
             errorDescription = null;
             HintsController.setErrors(doc, SURROUND_WITH, Collections.<ErrorDescription>emptySet());
         }
+    }
+
+    // copied from org.netbeans.modules.editor.lib.SettingsConversions
+    private static Object callFactory(Preferences prefs, MimePath mimePath, String settingName, Object defaultValue) {
+        String factoryRef = prefs.get(settingName, null);
+        
+        if (factoryRef != null) {
+            int lastDot = factoryRef.lastIndexOf('.'); //NOI18N
+            assert lastDot != -1 : "Need fully qualified name of class with the static setting factory method."; //NOI18N
+
+            String classFqn = factoryRef.substring(0, lastDot);
+            String methodName = factoryRef.substring(lastDot + 1);
+
+            ClassLoader loader = Lookup.getDefault().lookup(ClassLoader.class);
+            try {
+                Class factoryClass = loader.loadClass(classFqn);
+                Method factoryMethod;
+                
+                try {
+                    // normally the method should accept mime path and the a setting name
+                    factoryMethod = factoryClass.getDeclaredMethod(methodName, MimePath.class, String.class);
+                } catch (NoSuchMethodException nsme) {
+                    // but there might be methods that don't need those params
+                    try {
+                        factoryMethod = factoryClass.getDeclaredMethod(methodName);
+                    } catch (NoSuchMethodException nsme2) {
+                        // throw the first exception complaining about the full signature
+                        throw nsme;
+                    }
+                }
+                
+                Object value;
+                if (factoryMethod.getParameterTypes().length == 2) {
+                    value = factoryMethod.invoke(null, mimePath, settingName);
+                } else {
+                    value = factoryMethod.invoke(null);
+                }
+                
+                if (value != null) {
+                    return value;
+                }
+            } catch (Exception e) {
+                LOG.log(Level.WARNING, null, e);
+            }
+        }
+
+        return defaultValue;
     }
 
     private static boolean expand(CodeTemplateManagerOperation op, JTextComponent component, int abbrevStartOffset, CharSequence abbrev) {

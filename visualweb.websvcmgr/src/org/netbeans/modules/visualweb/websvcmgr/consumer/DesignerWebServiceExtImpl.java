@@ -66,6 +66,7 @@ import org.netbeans.modules.visualweb.websvcmgr.codegen.WrapperClientBeanInfoWri
 import org.netbeans.modules.visualweb.websvcmgr.codegen.WrapperClientWriter;
 import org.netbeans.modules.visualweb.websvcmgr.util.Util;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
+import org.netbeans.modules.websvc.jaxwsmodelapi.WSPort;
 import org.netbeans.modules.websvc.manager.api.WebServiceDescriptor;
 import org.netbeans.modules.websvc.manager.spi.WebServiceManagerExt;
 import org.netbeans.modules.websvc.manager.util.ManagerUtil;
@@ -233,9 +234,9 @@ public class DesignerWebServiceExtImpl implements WebServiceManagerExt {
         data.setPortToProxyBeanNameMap(proxyBeanNames);
         
         int portsCreated = 0;
-        List<WsdlPort> ports = wsMetadataDesc.getModel().getPorts();
+        List<WSPort> ports = wsMetadataDesc.getModel().getPorts();
         assert ports.size() > 0 : "ports.size = "+ports.size();
-        for(WsdlPort port: ports) {
+        for(WSPort port: ports) {
             // There will be one client wrapper class per web service port. All the classes (client wrapper class,
             // data provider classes) for the port will live in a sub-package with the port display name (in lower cases)
             
@@ -354,7 +355,7 @@ public class DesignerWebServiceExtImpl implements WebServiceManagerExt {
                 beanWriter.setClassName(className);
                 beanWriter.setContainedClassInfo(serviceClassName);
                 beanWriter.addImport(wsMetadataDesc.getPackageName() + ".*");
-                beanWriter.setPort(port);
+                beanWriter.setPort((WsdlPort) port);
                 beanWriter.setPortGetterMethod(portImplMethod);
                 beanWriter.setPortClassName(portImplClassName);
                 beanWriter.writeClass();

@@ -50,8 +50,6 @@
         <property file="nbproject/project.properties"/>
         <fail unless="build.root.dir">Property build.root.dir is not set. By default its value should be \"build\".</fail>
         <fail unless="dist.root.dir">Property dist.root.dir is not set. By default its value should be \"dist\".</fail>
-        <delete dir="${{build.root.dir}}"/>
-        <delete dir="${{dist.root.dir}}"/>
         <antcall target="for-all-configs">
             <param name="target.to.call" value="clean"/>
         </antcall>

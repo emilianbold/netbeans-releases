@@ -104,8 +104,8 @@ final public class PersistenceHandler implements PersistenceObserver {
     }
     
     // XXX helper method
-    public boolean isTopComponentPersistentWhenClosed(TopComponent tc) {
-        return PersistenceManager.getDefault().isTopComponentPersistentWhenClosed(tc);
+    public static boolean isTopComponentPersistentWhenClosed(TopComponent tc) {
+        return PersistenceManager.isTopComponentPersistentWhenClosed(tc);
     }
     
     public void load() {
@@ -214,7 +214,7 @@ final public class PersistenceHandler implements PersistenceObserver {
             }
             //some TopComponents want to be always active when the window system starts (e.g. welcome screen)
             for( TopComponent tc : mode.getOpenedTopComponents() ) {
-                Object val = tc.getClientProperty( "activateAtStartup" ); //NOI18N
+                Object val = tc.getClientProperty( Constants.ACTIVATE_AT_STARTUP );
                 if( null != val && val instanceof Boolean && ((Boolean)val).booleanValue() ) {
                     activeTopComponentOverride = tc;
                     break;
@@ -322,7 +322,7 @@ final public class PersistenceHandler implements PersistenceObserver {
     private ModeImpl createModeFromConfig(ModeConfig mc) {
         if(DEBUG) {
             debugLog(""); // NOI18N
-            debugLog("Creating mode name=\"" + mc.name + "\""); // NOI8N
+            debugLog("Creating mode name=\"" + mc.name + "\""); // NOI18N
         }
         
         ModeImpl mode;
@@ -491,7 +491,12 @@ final public class PersistenceHandler implements PersistenceObserver {
         wmc.widthSeparated  = separatedBounds.width;
         wmc.heightSeparated = separatedBounds.height;
         
-        wmc.mainWindowFrameStateJoined = wmi.getMainWindowFrameStateJoined();
+        if( Utilities.isMac() ) {
+            //125881 - mac doesn't fire events when maximized window is resized by user
+            wmc.mainWindowFrameStateJoined = wmi.getMainWindow().getExtendedState();
+        } else {
+            wmc.mainWindowFrameStateJoined = wmi.getMainWindowFrameStateJoined();
+        }
         if (wmc.mainWindowFrameStateJoined == Frame.ICONIFIED) {
             // #46646 - don't save iconified state
             //mkleint - actually shoudn't we ignore the maximized states as well?

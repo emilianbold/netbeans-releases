@@ -47,8 +47,8 @@ import javax.swing.JButton;
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.util.ArrayList;
-import org.netbeans.modules.jmx.WizardConstants;
-import org.netbeans.modules.jmx.GenericWizardPanel;
+import org.netbeans.modules.jmx.common.WizardConstants;
+import org.netbeans.modules.jmx.common.GenericWizardPanel;
 
 import org.netbeans.modules.jmx.mbeanwizard.tablemodel.MBeanAttributeTableModel;
 import org.netbeans.modules.jmx.mbeanwizard.table.AttributeTable;
@@ -61,10 +61,7 @@ import java.awt.event.ActionEvent;
 import java.util.ResourceBundle;
 import javax.lang.model.type.TypeMirror;
 import javax.swing.JLabel;
-import javax.swing.JTextArea;
 
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import javax.swing.event.*;
 import org.netbeans.modules.jmx.FireEvent;
 import org.netbeans.modules.jmx.MBeanAttribute;
@@ -327,7 +324,7 @@ public class MBeanAttributePanel extends JPanel implements DocumentListener,
          */
         private void setErrorMsg(String message) {
             if (wiz != null) {
-                wiz.putProperty(WizardConstants.WIZARD_ERROR_MESSAGE,
+                wiz.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
                         message);    //NOI18N
             }
         }
@@ -388,7 +385,7 @@ public class MBeanAttributePanel extends JPanel implements DocumentListener,
                 attrModel.addRow(new MBeanAttribute(name,type,access,descr, mirror));
                 
             }
-            wiz.putProperty(WizardConstants.WIZARD_ERROR_MESSAGE, "");// NOI18N
+            wiz.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, "");// NOI18N
         }
         
         /**

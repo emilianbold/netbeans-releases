@@ -40,13 +40,20 @@
  */
 package org.netbeans.api.java.source.gen;
 
+import com.sun.source.tree.BlockTree;
+import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ImportTree;
 import com.sun.source.tree.MemberSelectTree;
 
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.VariableTree;
 import java.io.File;
 import java.io.IOException;
 
+import java.util.EnumSet;
+import javax.lang.model.element.Modifier;
+import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
@@ -1186,6 +1193,58 @@ public class ImportsTest extends GeneratorTestMDRCompat {
         assertEquals(golden, res);
     }
         
+    public void test138100() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "public class Test {\n" +
+            "    public void test1() {\n" +
+            "    }\n" +
+            "    public void test2() {\n" +
+            "    }\n" +
+            "    public Test() {\n" +
+            "    }\n" +
+            "}\n"
+            );
+        String golden = "\n" + 
+            "import java.util.LinkedList;\n" +
+            "import java.util.List;\n\n" +
+            "public class Test {\n" +
+            "    public void test1() {\n" +
+            "        List test;\n" +
+            "    }\n" +
+            "    public void test2() {\n" +
+            "        LinkedList test;\n" +
+            "    }\n" +
+            "    public Test() {\n" +
+            "    }\n" +
+            "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                CompilationUnitTree node = workingCopy.getCompilationUnit();
+                TypeElement juList = workingCopy.getElements().getTypeElement("java.util.List");
+                BlockTree block1 = ((MethodTree) ((ClassTree) node.getTypeDecls().get(0)).getMembers().get(0)).getBody();
+                VariableTree var1 = make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), "test", make.QualIdent(juList), null);
+                BlockTree nueBlock1 = workingCopy.getTreeMaker().addBlockStatement(block1, var1);
+                workingCopy.rewrite(block1, nueBlock1);
+                TypeElement juLinkedList = workingCopy.getElements().getTypeElement("java.util.LinkedList");
+                BlockTree block2 = ((MethodTree) ((ClassTree) node.getTypeDecls().get(0)).getMembers().get(1)).getBody();
+                VariableTree var2 = make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), "test", make.QualIdent(juLinkedList), null);
+                BlockTree nueBlock2 = workingCopy.getTreeMaker().addBlockStatement(block2, var2);
+                workingCopy.rewrite(block2, nueBlock2);
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
     String getGoldenPckg() {
         return "";
     }

@@ -53,7 +53,7 @@ public class EmbeddingHighlightsLayerFactory implements HighlightsLayerFactory {
 
     public HighlightsLayer[] createLayers(Context context) {
         return new HighlightsLayer[]{HighlightsLayer.create("html-embedding-highlight-layer", 
-                ZOrder.SYNTAX_RACK.forPosition(-10),  //we need to have lower priority than the default syntax from options - 0
+                ZOrder.BOTTOM_RACK.forPosition(100),  //we need to have lower priority than the default syntax from options - 0
                 true, 
                 new EmbeddingHighlightsContainer(context.getDocument()))}; //NOI18N
     }

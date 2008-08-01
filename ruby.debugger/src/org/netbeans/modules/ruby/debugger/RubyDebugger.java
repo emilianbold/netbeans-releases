@@ -54,7 +54,6 @@ import org.netbeans.api.debugger.DebuggerInfo;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.debugger.breakpoints.RubyBreakpointManager;
-import org.netbeans.modules.ruby.platform.DebuggerPreferences;
 import org.netbeans.modules.ruby.platform.execution.ExecutionDescriptor;
 import org.netbeans.modules.ruby.platform.execution.FileLocator;
 import org.netbeans.modules.ruby.platform.gems.GemManager;
@@ -77,6 +76,8 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
     
     private static final String PATH_TO_CLASSIC_DEBUG_DIR;
     
+    private ExecutionDescriptor descriptor;
+    
     private RubySession session;
     
     static {
@@ -89,15 +90,27 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
         PATH_TO_CLASSIC_DEBUG_DIR = classicDebug.getParentFile().getAbsolutePath();
     }
     
-    /** @see RubyDebuggerImplementation#debug */
-    public Process debug(final ExecutionDescriptor descriptor) {
+    public void describeProcess(ExecutionDescriptor descriptor) {
+        this.descriptor = descriptor;
+    }
+    
+    public boolean canDebug() {
+        return !descriptor.getPlatform().isRubinius();
+    }
+    
+    public Process debug() {
         Process p = null;
         try {
             session = startDebugging(descriptor);
-            p = session.getProxy().getDebugTarged().getProcess();
+            session.getProxy().startDebugging(RubyBreakpointManager.getBreakpoints());
+            if (session != null) {
+                p = session.getProxy().getDebugTarged().getProcess();
+            }
         } catch (IOException e) {
+            getFinishAction().run();
             problemOccurred(e);
         } catch (RubyDebuggerException e) {
+            getFinishAction().run();
             problemOccurred(e);
         }
         return p;
@@ -107,8 +120,10 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
     public Runnable getFinishAction() {
         return new Runnable() {
             public void run() {
-                session.getActionProvider().doAction(ActionsManager.ACTION_KILL);
-                session = null;
+                if (session != null) { // #131563
+                    session.getActionProvider().doAction(ActionsManager.ACTION_KILL);
+                    session = null;
+                }
             }
         };
     }
@@ -140,17 +155,20 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
         debugDesc.useDefaultPort(false);
         debugDesc.setJRuby(jrubySet);
         debugDesc.setScriptPath(descriptor.getScript());
-        if (descriptor.getInitialArgs() != null) {
+        
+        if(descriptor.useInterpreter()) {
             List<String> additionalOptions = new ArrayList<String>();
-            additionalOptions.addAll(Arrays.asList(descriptor.getInitialArgs()));
-            debugDesc.setAdditionalOptions(additionalOptions);
+            if (descriptor.getInitialArgs() != null) {
+                additionalOptions.addAll(Arrays.asList(descriptor.getInitialArgs()));
+            }
+            if (descriptor.getJRubyProps() != null) {
+                additionalOptions.addAll(Arrays.asList(descriptor.getJRubyProps()));
+            }
+            if (!additionalOptions.isEmpty()) {
+                debugDesc.setAdditionalOptions(additionalOptions);
+            }
         }
-//        List<String> additionalOptions = new ArrayList<String>();
-//        additionalOptions.add("-J-Djruby.compile.mode=OFF");
-//        additionalOptions.add("-d");
-//        additionalOptions.add("-J-Xdebug");
-//        additionalOptions.add("-J-Xrunjdwp:transport=dt_socket,address=8000,server=y,suspend=y");
-//        debugDesc.setAdditionalOptions(additionalOptions);
+        
         debugDesc.setScriptArguments(descriptor.getAdditionalArgs());
         debugDesc.setSynchronizedOutput(true);
         if (descriptor.getPwd() != null) {
@@ -174,15 +192,24 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
             proxy = RubyDebuggerFactory.startClassicDebugger(debugDesc,
                     PATH_TO_CLASSIC_DEBUG_DIR, interpreter, timeout);
         } else { // ruby-debug
+            String version = platform.getLatestAvailableValidRDebugIDEVersions();
+            debugDesc.setRubyDebugIDEVersion(version);
             Util.LOGGER.fine("Running fast debugger...");
             File rDebugF = new File(Util.findRDebugExecutable(platform));
-            proxy = RubyDebuggerFactory.startRubyDebug(debugDesc,
-                    rDebugF.getAbsolutePath(), interpreter, timeout);
+            
+            if(descriptor.useInterpreter()) {
+                proxy = RubyDebuggerFactory.startRubyDebug(debugDesc,
+                        rDebugF.getAbsolutePath(), interpreter, timeout);
+            } else {
+                List<String> cmd = new ArrayList<String>(20);
+                cmd.add(descriptor.getCmd().getAbsolutePath());
+                cmd.addAll(Arrays.asList(descriptor.getInitialArgs()));
+                proxy = RubyDebuggerFactory.startRubyDebug(
+                        debugDesc, cmd, rDebugF.getAbsolutePath(), timeout);
+            }
         }
         
-        RubySession session = intializeIDEDebuggerEngine(proxy, descriptor.getFileLocator());
-        proxy.startDebugging(RubyBreakpointManager.getBreakpoints());
-        return session;
+        return intializeIDEDebuggerEngine(proxy, descriptor.getFileLocator());
     }
 
     private static Map<String, String> getJRubyEnvironment(final ExecutionDescriptor descriptor) {
@@ -195,8 +222,10 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
 
     /** Package private for unit test. */
     static boolean checkAndTuneSettings(final ExecutionDescriptor descriptor) {
-        DebuggerPreferences prefs = DebuggerPreferences.getInstance();
         final RubyPlatform platform = descriptor.getPlatform();
+        if (platform.isRubinius()) { // no debugger support for Rubinius yet
+            return false;
+        }
         assert platform.isValid() : platform + " is a valid platform";
 
         boolean jrubySet = platform.isJRuby();
@@ -205,14 +234,11 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
 
         // Offers to install only for fast native Ruby debugger. Installation
         // does not work for jruby ruby-debug-base yet.
-        //
-        // Asks for the first time - see issue #114183
-        if (!jrubySet && prefs.isFirstTime()) {
-            prefs.setFirstTime(false);
+        if (!jrubySet) {
             Util.offerToInstallFastDebugger(platform);
         }
         
-        if (fastDebuggerRequired && !Util.ensureRubyDebuggerIsPresent(platform, true, "RubyDebugger.wrong.fast.debugger.required")) {
+        if (fastDebuggerRequired && !Util.ensureRubyDebuggerIsPresent(platform, true, "RubyDebugger.wrong.fast.debugger.required")) { // NOI18N
             return false;
         }
 

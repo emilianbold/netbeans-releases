@@ -71,6 +71,7 @@ public final class ModificationResult {
 
     private JavaSource js;
     Map<FileObject, List<Difference>> diffs = new HashMap<FileObject, List<Difference>>();
+    Map<?, int[]> tag2Span = new IdentityHashMap<Object, int[]>();
     
     /** Creates a new instance of ModificationResult */
     ModificationResult(final JavaSource js) {
@@ -127,49 +128,34 @@ public final class ModificationResult {
         }
     }
             
-    private void commit(final FileObject fo, final List<Difference> differences, Writer out) throws IOException {
+    private void commit (final FileObject fo, final List<Difference> differences, final Writer out) throws IOException {
         DataObject dObj = DataObject.find(fo);
         EditorCookie ec = dObj != null ? dObj.getCookie(org.openide.cookies.EditorCookie.class) : null;
         // if editor cookie was found and user does not provided his own
         // writer where he wants to see changes, commit the changes to 
         // found document.
         if (ec != null && out == null) {
-            StyledDocument doc = ec.getDocument();
+            final StyledDocument doc = ec.getDocument();
             if (doc != null) {
-                if (doc instanceof BaseDocument)
-                    ((BaseDocument)doc).atomicLock();
-                boolean success = false;
-                try {
-                    for (Difference diff : differences) {
-                        if (diff.isExcluded())
-                            continue;
-                        switch (diff.getKind()) {
-                            case INSERT:
-                            case REMOVE:
-                            case CHANGE:
-                                processDocument(doc, diff);
-                                break;
-                            case CREATE:
-                                createUnit(diff, out);
-                                break;
+                final IOException[] exceptions = new IOException [1];
+                NbDocument.runAtomic(doc, new Runnable () {
+                    public void run () {
+                        try {
+                            commit2 (doc, differences, out);
+                        } catch (IOException ex) {
+                            exceptions [0] = ex;
                         }
                     }
-                    success = true;
-                } finally {
-                    if (doc instanceof BaseDocument) {
-                        if (!success) {
-                            //something went wrong, rollback the changes:
-                            ((BaseDocument)doc).atomicUndo();
-                        }
-                        ((BaseDocument)doc).atomicUnlock();
-                    }
-                }
+                });
+                if (exceptions [0] != null)
+                    throw exceptions [0];
                 return;
             }
         }
         InputStream ins = null;
         ByteArrayOutputStream baos = null;           
         Reader in = null;
+        Writer out2 = out;
         try {
             Charset encoding = FileEncodingQuery.getEncoding(fo);
             ins = fo.getInputStream();
@@ -186,8 +172,8 @@ public final class ModificationResult {
             // initialize standard commit output stream, if user
             // does not provide his own writer
             boolean ownOutput = out != null;
-            if (out == null) {
-                out = new OutputStreamWriter(fo.getOutputStream(), encoding);
+            if (out2 == null) {
+                out2 = new OutputStreamWriter(fo.getOutputStream(), encoding);
             }
             int offset = 0;                
             for (Difference diff : differences) {
@@ -205,13 +191,13 @@ public final class ModificationResult {
                 int n;
                 int rc = 0;
                 while ((n = in.read(buff,0, toread - rc)) > 0 && rc < toread) {
-                    out.write(buff, 0, n);
+                    out2.write(buff, 0, n);
                     rc+=n;
                     offset += n;
                 }
                 switch (diff.getKind()) {
                     case INSERT:
-                        out.write(diff.getNewText());
+                        out2.write(diff.getNewText());
                         break;
                     case REMOVE:
                         int len = diff.getEndPosition().getOffset() - diff.getStartPosition().getOffset();
@@ -222,14 +208,14 @@ public final class ModificationResult {
                         len = diff.getEndPosition().getOffset() - diff.getStartPosition().getOffset();
                         in.skip(len);
                         offset += len;
-                        out.write(diff.getNewText());
+                        out2.write(diff.getNewText());
                         break;
                 }
             }                    
             char[] buff = new char[1024];
             int n;
             while ((n = in.read(buff)) > 0)
-                out.write(buff, 0, n);
+                out2.write(buff, 0, n);
         } finally {
             if (ins != null)
                 ins.close();
@@ -237,9 +223,26 @@ public final class ModificationResult {
                 baos.close();
             if (in != null)
                 in.close();
-            if (out != null)
-                out.close();
+            if (out2 != null)
+                out2.close();
         }            
+    }
+
+    private void commit2 (final StyledDocument doc, final List<Difference> differences, Writer out) throws IOException {
+        for (Difference diff : differences) {
+            if (diff.isExcluded())
+                continue;
+            switch (diff.getKind()) {
+                case INSERT:
+                case REMOVE:
+                case CHANGE:
+                    processDocument(doc, diff);
+                    break;
+                case CREATE:
+                    createUnit(diff, out);
+                    break;
+            }
+        }
     }
     
     private void processDocument(final StyledDocument doc, final Difference diff) throws IOException {
@@ -331,6 +334,16 @@ public final class ModificationResult {
         commit(fileObject, diffs.get(fileObject), writer);
         
         return writer.toString();
+    }
+
+    /**
+     * Provides span of tree tagged with {@code tag}
+     * @param tag
+     * @return borders in target document
+     * @since 0.37
+     */
+    public int[] getSpan(Object tag) {
+        return tag2Span.get(tag);
     }
     
     public static class Difference {

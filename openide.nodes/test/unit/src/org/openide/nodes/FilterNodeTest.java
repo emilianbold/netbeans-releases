@@ -46,6 +46,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.cookies.OpenCookie;
 import org.openide.util.Lookup;
 import org.openide.util.Lookup.Result;
@@ -427,7 +428,7 @@ public class FilterNodeTest extends NbTestCase {
     }
     
     private void doChildrenFireCorrectEvents (boolean subclassedChildren) throws Exception {
-        ChildrenKeysTest.Keys k = new ChildrenKeysTest.Keys (new String[] { "1", "2", "3" });
+        ChildrenKeysTest.Keys k = new ChildrenKeysTest.Keys (false, new String[] { "1", "2", "3" });
         AbstractNode an = new AbstractNode (k);
         
         FilterNode fn;
@@ -465,7 +466,9 @@ public class FilterNodeTest extends NbTestCase {
         assertEquals ("One node gone", 1, removed.length);
         assertEquals ("Middle one", 1, removed[0]);
     }
-    
+
+    private static Object HOLDER;
+    @RandomlyFails // NB-Core-Build #1047
     public void testFilterNodeCanGCNodes () {
         class K extends Children.Keys {
             public int addNotify;
@@ -517,6 +520,7 @@ public class FilterNodeTest extends NbTestCase {
         java.lang.ref.WeakReference ref = new java.lang.ref.WeakReference (arr[0]);
         assertEquals ("No removeNotify", 0, k.removeNotify);
         arr = null;
+        HOLDER = k;
         assertGC ("The node can go away", ref);
         assertGC ("Key can go away", k.keyRef);
         assertEquals ("One remove notify", 1, k.removeNotify);

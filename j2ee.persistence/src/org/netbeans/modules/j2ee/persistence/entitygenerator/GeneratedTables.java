@@ -38,9 +38,9 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.j2ee.persistence.entitygenerator;
 
+import java.util.List;
 import java.util.Set;
 import org.openide.filesystems.FileObject;
 
@@ -54,6 +54,16 @@ import org.openide.filesystems.FileObject;
  */
 public interface GeneratedTables {
 
+    /**
+     * Returns the catalog of the tables
+     */
+    public String getCatalog();
+    
+    /**
+     * Returns the schema of the tables
+     */
+    public String getSchema();
+    
     /**
      * Returns the names of the tables which should be used to generate classes.
      */
@@ -69,10 +79,15 @@ public interface GeneratedTables {
      * Returns the package of the class which will be generated for
      * the specified table.
      */
-    public String  getPackageName(String tableName);
+    public String getPackageName(String tableName);
 
     /**
      * Returns the name of the class to be generated for the specified table.
      */
     public String getClassName(String tableName);
+
+    /**
+     * Returns the unique constraints defined on the table
+     */
+    public Set<List<String>> getUniqueConstraints(String tableName);
 }

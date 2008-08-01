@@ -50,12 +50,11 @@ import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
-import org.netbeans.modules.javascript.editing.JsMimeResolver;
-import org.netbeans.modules.javascript.editing.lexer.JsCommentTokenId;
 import org.netbeans.spi.lexer.LanguageEmbedding;
 import org.netbeans.spi.lexer.LanguageHierarchy;
 import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerRestartInfo;
+import static org.netbeans.modules.javascript.editing.lexer.JsLexer.*;
 
 
 /**
@@ -66,58 +65,55 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
  * @author Tor Norbye
  */
 public enum JsTokenId implements TokenId {
-    ERROR(null, "error"),
-    NEW("new", "keyword"),
+    ERROR(null, ERROR_CAT),
+    NEW("new", KEYWORD_CAT), // NOI18N
     
-    IDENTIFIER(null, "identifier"),
-    GLOBAL_VAR(null, "static"),
-    CONSTANT(null, "constant"),
-    INT_LITERAL(null, "number"),
-    REGEXP_LITERAL(null, "regexp"),
-    FLOAT_LITERAL(null, "number"),
-    //  CHAR_LITERAL(null, "character"),
-    STRING_LITERAL(null, "string"),
-    WHITESPACE(null, "whitespace"),
-    EOL(null, "whitespace"),
-    LINE_COMMENT(null, "comment"),
-    BLOCK_COMMENT(null, "comment"),
-    LPAREN("(", "separator"),
-    RPAREN(")", "separator"),
-    LBRACE("{", "separator"),
-    RBRACE("}", "separator"),
-    LBRACKET("[", "separator"),
-    RBRACKET("]", "separator"),
-    STRING_BEGIN(null, "string"),
-    STRING_END(null, "string"),
-    REGEXP_BEGIN(null, "regexp"), // or separator,
-    REGEXP_END(null, "regexp"),
+    IDENTIFIER(null, IDENTIFIER_CAT),
+    REGEXP_LITERAL(null, REGEXP_CAT),
+    FLOAT_LITERAL(null, NUMBER_CAT),
+    STRING_LITERAL(null, STRING_CAT),
+    WHITESPACE(null, WHITESPACE_CAT),
+    EOL(null, WHITESPACE_CAT),
+    LINE_COMMENT(null, COMMENT_CAT),
+    BLOCK_COMMENT(null, COMMENT_CAT),
+    LPAREN("(", SEPARATOR_CAT),
+    RPAREN(")", SEPARATOR_CAT),
+    LBRACE("{", SEPARATOR_CAT),
+    RBRACE("}", SEPARATOR_CAT),
+    LBRACKET("[", SEPARATOR_CAT),
+    RBRACKET("]", SEPARATOR_CAT),
+    STRING_BEGIN(null, STRING_CAT),
+    STRING_END(null, STRING_CAT),
+    REGEXP_BEGIN(null, REGEXP_CAT), // or separator,
+    REGEXP_END(null, REGEXP_CAT),
     // Cheating: out of laziness just map all keywords returning from JRuby
     // into a single KEYWORD token; eventually I will have separate tokens
     // for each here such that the various helper methods for formatting,
     // smart indent, brace matching etc. can refer to specific keywords
-    ANY_KEYWORD(null, "keyword"),
-    ANY_OPERATOR(null, "operator"),
-    DOT(null, "operator"),
-    THIS("this", "keyword"),
-    FOR("for", "keyword"),
-    IF("if", "keyword"),
-    ELSE("else", "keyword"),
-    WHILE("while", "keyword"),
-    CASE("case", "keyword"),
-    DEFAULT("default", "keyword"),
-    BREAK("break", "keyword"),
-    SWITCH("switch", "keyword"),
+    ANY_KEYWORD(null, KEYWORD_CAT),
+    ANY_OPERATOR(null, OPERATOR_CAT),
+    DOT(null, OPERATOR_CAT),
+    THIS("this", KEYWORD_CAT), // NOI18N
+    FOR("for", KEYWORD_CAT), // NOI18N
+    IF("if", KEYWORD_CAT), // NOI18N
+    ELSE("else", KEYWORD_CAT), // NOI18N
+    WHILE("while", KEYWORD_CAT), // NOI18N
+    CASE("case", KEYWORD_CAT), // NOI18N
+    DEFAULT("default", KEYWORD_CAT), // NOI18N
+    BREAK("break", KEYWORD_CAT), // NOI18N
+    SWITCH("switch", KEYWORD_CAT), // NOI18N
 
-    COLON(":", "operator"),
+    COLON(":", OPERATOR_CAT), // NOI18N
     
-    SEMI(";", "operator"),
-    FUNCTION("function", "keyword"),
+    SEMI(";", OPERATOR_CAT), // NOI18N
+    FUNCTION("function", KEYWORD_CAT), // NOI18N
     
     // Non-unary operators which indicate a line continuation if used at the end of a line
-    NONUNARY_OP(null, "operator");
+    NONUNARY_OP(null, OPERATOR_CAT);
 
     private final String fixedText;
     private final String primaryCategory;
+
 
     JsTokenId(String fixedText, String primaryCategory) {
         this.fixedText = fixedText;
@@ -135,7 +131,7 @@ public enum JsTokenId implements TokenId {
     private static final Language<JsTokenId> language =
         new LanguageHierarchy<JsTokenId>() {
                 protected String mimeType() {
-                    return JsMimeResolver.JAVASCRIPT_MIME_TYPE;
+                    return JsTokenId.JAVASCRIPT_MIME_TYPE;
                 }
 
                 protected Collection<JsTokenId> createTokenIds() {
@@ -171,4 +167,12 @@ public enum JsTokenId implements TokenId {
     public static Language<JsTokenId> language() {
         return language;
     }
+
+    /**
+     * MIME type for JavaScript. Don't change this without also consulting the various XML files
+     * that cannot reference this value directly.
+     */
+    public static final String JAVASCRIPT_MIME_TYPE = "text/javascript"; // NOI18N
+    public static final String JSON_MIME_TYPE = "text/x-json"; // NOI18N
+    
 }

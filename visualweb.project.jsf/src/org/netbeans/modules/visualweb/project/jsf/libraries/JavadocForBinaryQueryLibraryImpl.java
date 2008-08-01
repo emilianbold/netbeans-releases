@@ -70,7 +70,6 @@ import org.netbeans.spi.java.queries.JavadocForBinaryQueryImplementation;
 // <RAVE>
 // import org.netbeans.modules.java.j2seplatform.platformdefinition.Util;
 import org.netbeans.modules.visualweb.project.jsf.libraries.provider.ComponentLibraryTypeProvider;
-import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 
 
 
@@ -106,7 +105,6 @@ public class JavadocForBinaryQueryLibraryImpl implements JavadocForBinaryQueryIm
                     List result = new ArrayList ();
                     for (Iterator it = l.iterator(); it.hasNext();) {
                         URL u = (URL) it.next ();
-                        u = LibrariesSupport.resolveLibraryEntryURL(lib.getManager().getLocation(), u);
                         result.add (getIndexFolder(u));
                     }
                     this.cachedRoots =  (URL[])result.toArray(new URL[result.size()]);
@@ -172,7 +170,6 @@ public class JavadocForBinaryQueryLibraryImpl implements JavadocForBinaryQueryIm
                 Iterator it = jars.iterator();
                 while (it.hasNext()) {
                     URL entry = (URL)it.next();
-                    entry = LibrariesSupport.resolveLibraryEntryURL(lm.getLocation(), entry);
                     URL normalizedEntry;
                     if (isNormalizedURL) {
                         normalizedEntry = getNormalizedURL(entry);
@@ -234,7 +231,7 @@ public class JavadocForBinaryQueryLibraryImpl implements JavadocForBinaryQueryIm
      * @param rootURL the javadoc root
      * @return true if the root is a valid Javadoc root
      */
-    static boolean isValidLibraryJavadocRoot (final URL rootURL) {
+    public static boolean isValidLibraryJavadocRoot (final URL rootURL) {
         assert rootURL != null && rootURL.toExternalForm().endsWith("/");
         final FileObject root = URLMapper.findFileObject(rootURL);
         if (root == null) {

@@ -59,7 +59,7 @@ public class ClassUtil {
      * Lclassname;  class or interface
      * S            short
      * Z            boolean
-     * V	        void
+     * V            void
      * etc
      *
      * @see                            java.lang.Class#getName

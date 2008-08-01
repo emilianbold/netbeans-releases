@@ -49,15 +49,7 @@ package org.netbeans.modules.mobility.end2end;
 
 import java.awt.Image;
 import javax.swing.Action;
-import org.netbeans.modules.mobility.end2end.ui.editor.GenerateAction;
-import org.openide.actions.CopyAction;
-import org.openide.actions.CutAction;
-import org.openide.actions.DeleteAction;
-import org.openide.actions.FileSystemAction;
 import org.openide.actions.OpenAction;
-import org.openide.actions.PasteAction;
-import org.openide.actions.PropertiesAction;
-import org.openide.actions.SaveAction;
 import org.openide.loaders.DataNode;
 import org.openide.nodes.Children;
 import org.openide.util.Utilities;
@@ -74,41 +66,24 @@ public class E2EDataNode extends DataNode {
         super( obj, Children.LEAF );
     }
     
+    @Override
     public Image getIcon(@SuppressWarnings("unused")
 	final int type) {
         return Utilities.loadImage(
                 "org/netbeans/modules/mobility/end2end/resources/e2eclienticon.png" ); // NOI18N
     }
-    
-    public Action[] getActions(@SuppressWarnings("unused")
-	final boolean context) {
-        final Action[] result = new Action[] {
-            SystemAction.get( OpenAction.class ),
-            SystemAction.get( SaveAction.class ),
-            null,
-            SystemAction.get( GenerateAction.class ),
-            null,
-            SystemAction.get( FileSystemAction.class ),
-            null,
-            SystemAction.get( CutAction.class ),
-            SystemAction.get( CopyAction.class ),
-            SystemAction.get( PasteAction.class ),
-            null,
-            SystemAction.get( DeleteAction.class ),
-            null,
-            SystemAction.get( PropertiesAction.class )
-        };
-        return result;
-    }
-    
+        
+    @Override
     public Action getPreferredAction() {
         return SystemAction.get( OpenAction.class );
     }
     
+    @Override
     public boolean canCopy(){
         return false;
     }
     
+    @Override
     public boolean canCut(){
         return false;
     }

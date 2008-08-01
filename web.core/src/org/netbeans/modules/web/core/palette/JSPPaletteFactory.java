@@ -40,17 +40,18 @@
  */
 
 package org.netbeans.modules.web.core.palette;
+
 import java.io.IOException;
+import org.netbeans.spi.palette.DragAndDropHandler;
 import org.netbeans.spi.palette.PaletteController;
 import org.netbeans.spi.palette.PaletteFactory;
-
-
+import org.openide.util.Lookup;
+import org.openide.util.datatransfer.ExTransferable;
 
 /**
  *
  * @author Libor Kotouc
  */
-
 public final class JSPPaletteFactory {
 
     public static final String JSP_PALETTE_FOLDER = "JSPPalette";
@@ -59,10 +60,20 @@ public final class JSPPaletteFactory {
 
     public static PaletteController getPalette() throws IOException {
         if (palette == null)
-            palette = PaletteFactory.createPalette(JSP_PALETTE_FOLDER, new JSPPaletteActions());//, null, new JSPDragAndDropHandler());
+            palette = PaletteFactory.createPalette(JSP_PALETTE_FOLDER, new JSPPaletteActions(), null, new JSPDragAndDropHandler());
         
         return palette;
     }
     
+    
+    private static class JSPDragAndDropHandler extends DragAndDropHandler {
+        public JSPDragAndDropHandler() {
+            super( true );
+        }
+
+        @Override
+        public void customize(ExTransferable t, Lookup item) {
+        }
+    }
 }
 

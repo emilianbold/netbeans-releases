@@ -46,6 +46,7 @@ import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.exceptions.DownloadException;
 import org.netbeans.installer.utils.helper.JavaCompatibleProperties;
+import org.netbeans.installer.utils.helper.Version;
 import org.netbeans.installer.utils.system.launchers.LauncherProperties;
 import org.netbeans.installer.utils.system.launchers.LauncherResource;
 
@@ -100,13 +101,19 @@ public class CommandLauncher extends ShLauncher {
     public String getExtension() {
         return COMMAND_EXT;
     }
+    
     @Override
-    public List <JavaCompatibleProperties> getDefaultCompatibleJava() {
-        List <JavaCompatibleProperties> list = new ArrayList <JavaCompatibleProperties>();
-        list.add(new JavaCompatibleProperties(
+    public List <JavaCompatibleProperties> getDefaultCompatibleJava(Version version) {        
+        if (version.equals(Version.getVersion("1.5"))) {
+            List <JavaCompatibleProperties> list = new ArrayList <JavaCompatibleProperties>();
+            list.add(new JavaCompatibleProperties(
                 MIN_JAVA_VERSION_MACOSX, null, null, null, null));
-        return list;
-    }
+            return list;
+        } else {
+            return super.getDefaultCompatibleJava(version);            
+        }        
+        
+    }    
     @Override
     public void initialize() throws IOException {
         super.initialize();

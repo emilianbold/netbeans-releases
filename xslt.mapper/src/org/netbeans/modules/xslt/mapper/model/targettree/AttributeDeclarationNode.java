@@ -23,7 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.Action;
 import javax.swing.JPopupMenu;
-import org.netbeans.modules.soa.ui.SoaUiUtil;
+import org.netbeans.modules.soa.ui.SoaUtil;
 import org.netbeans.modules.soa.ui.TooltipTextProvider;
 import org.netbeans.modules.soa.ui.axinodes.AxiomUtils;
 import org.netbeans.modules.soa.ui.axinodes.NodeType;
@@ -131,8 +131,8 @@ public class AttributeDeclarationNode extends DeclarationNode
             return getName();
         } else {
             String name = getName();
-            return SoaUiUtil.getFormattedHtmlString(true,
-                    new SoaUiUtil.TextChunk(name, SoaUiUtil.MISTAKE_RED));
+            return SoaUtil.getFormattedHtmlString(true,
+                    new SoaUtil.TextChunk(name, SoaUtil.MISTAKE_RED));
         }
     }
     
@@ -165,8 +165,8 @@ public class AttributeDeclarationNode extends DeclarationNode
         } else {
             Attribute myself = (Attribute) getDataObject();
             String name = myself.getName().toString();
-            return SoaUiUtil.getFormattedHtmlString(true,
-                    new SoaUiUtil.TextChunk(name, SoaUiUtil.MISTAKE_RED));
+            return SoaUtil.getFormattedHtmlString(true,
+                    new SoaUtil.TextChunk(name, SoaUtil.MISTAKE_RED));
         }
     }
     
@@ -177,5 +177,4 @@ public class AttributeDeclarationNode extends DeclarationNode
         //
         return rootMenu;
     }
-    
 }

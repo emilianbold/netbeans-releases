@@ -471,7 +471,7 @@ public class MultiFileSystem extends FileSystem {
     * @return set of filesystems
     * @exception IOException if the resource cannot be locked
     */
-    protected Set createLocksOn(String name) throws IOException {
+    protected Set<? extends FileSystem> createLocksOn(String name) throws IOException {
         FileSystem writable = createWritableOn(name);
 
         return Collections.singleton(writable);

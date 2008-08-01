@@ -58,6 +58,7 @@ import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.modules.java.source.transform.Transformer;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.JavaDataLoader;
+import org.netbeans.modules.java.source.usages.ClassIndexManager;
 import org.netbeans.modules.java.source.usages.IndexUtil;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
@@ -125,6 +126,7 @@ public abstract class GeneratorTest extends NbTestCase {
         File cacheFolder = new File(getWorkDir(), "var/cache/index");
         cacheFolder.mkdirs();
         IndexUtil.setCacheFolder(cacheFolder);
+        ClassIndexManager.getDefault().createUsagesQuery(dataDir.getURL(), true);
     }
     
     public <R, P> void process(final Transformer<R, P> transformer) throws IOException {

@@ -229,8 +229,13 @@ public class I18nString {
         map.put("sourceFileName", sourceDataObject == null ? "" : sourceDataObject.getPrimaryFile().getName()); // NOI18N
 
         fillFormatMap(map);
-
-        return MapFormat.format(replaceFormat, map);
+        String res = null;
+        try {
+            res = MapFormat.format(replaceFormat, map);
+        } catch (IllegalArgumentException ilae) {
+            return null;
+        }
+        return res;
     }
 
     /**

@@ -4,16 +4,16 @@
  */
 package org.netbeans.modules.xml.schema.actions;
 
-import java.awt.Dialog;
 import org.netbeans.modules.xml.schema.SchemaDataObject;
 import org.netbeans.modules.xml.schema.ui.basic.SchemaModelCookie;
 import org.netbeans.modules.xml.schema.wizard.SampleXMLGeneratorWizardIterator;
 import org.openide.DialogDisplayer;
-import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.CookieAction;
+import org.netbeans.modules.xml.lib.Util;
+import org.openide.NotifyDescriptor;
 
 public final class GenerateXMLAction extends CookieAction {
     
@@ -30,6 +30,15 @@ public final class GenerateXMLAction extends CookieAction {
          SchemaDataObject sdo = activatedNodes[0].getCookie(SchemaDataObject.class);
          if(sdo == null)
              return;
+         
+         if(Util.getRootElements(sdo.getPrimaryFile()).roots.size() == 0) {
+             //no root elements; cannot generate XML
+            NotifyDescriptor desc = new NotifyDescriptor.Message
+                                    (NbBundle.getMessage(GenerateXMLAction.class, "MSG_cannot_generate_XML_file"), NotifyDescriptor.ERROR_MESSAGE);
+            DialogDisplayer.getDefault().notify (desc);
+            return;
+         }
+        
          SampleXMLGeneratorWizardIterator wizard = new SampleXMLGeneratorWizardIterator(sdo);
          wizard.show();
                

@@ -41,12 +41,9 @@
 
 package org.openide.filesystems;
 
-import junit.framework.*;
-//import org.openide.filesystems.hidden.*;
 
 import java.util.*;
 import java.io.*;
-import java.net.URL;
 
 /**
  *
@@ -55,6 +52,7 @@ import java.net.URL;
  *
  */
 public class AttributesTestHidden extends TestBaseHid {
+
     static final String TEST_ERR = "Not the tested code, but this test contains errors";
     static final String COMMON_ATTR_STRING = "testAttribute";
 
@@ -245,55 +243,6 @@ public class AttributesTestHidden extends TestBaseHid {
         assertTrue ("There was not found expected key: " + COMMON_ATTR_STRING +" in .nbattrs",content.indexOf("name=\""+COMMON_ATTR_STRING) != -1 );//        
     }
     
-    
-    public void testAttribute08 () throws Exception {
-      URL fsURLDef = this.getClass().getResource ("data/Attributes.xml");
-      assertTrue ("Cannot create XML FS for testing purposes", fsURLDef != null);  
-      FileSystem fs = new XMLFileSystem (fsURLDef);
-      FileObject fo = fs.findResource("testMethodValue");
-      assertTrue ("Cannot acces  FileObject named testMethodValue", fo != null);  
-
-      String testName = "test1";
-      Object obj = fo.getAttribute(testName);
-      assertTrue ("methodValue failed", obj != null);          
-      assertTrue ("methodValue doesn't keep order ", 
-      obj.equals(getObjectViaMethodValue1 (fo, testName)));                
-      
-      testName = "test2";
-      obj = fo.getAttribute(testName);
-      assertTrue ("methodValue failed", obj != null);          
-      assertTrue ("methodValue doesn't keep order ", 
-      obj.equals(getObjectViaMethodValue2 (testName, fo)));                
-
-      testName = "test3";
-      obj = fo.getAttribute(testName);
-      assertTrue ("methodValue failed", obj != null);          
-      assertTrue ("methodValue doesn't keep order ", 
-      obj.equals(getObjectViaMethodValue3 (fo)));                
-
-      testName = "test4";
-      obj = fo.getAttribute(testName);
-      assertTrue ("methodValue failed", obj != null);          
-      assertTrue ("methodValue doesn't keep order ", 
-      obj.equals(getObjectViaMethodValue4 (testName)));                
-
-      testName = "test5";
-      obj = fo.getAttribute(testName);
-      assertTrue ("methodValue failed", obj != null);          
-      assertTrue ("methodValue doesn't keep order ", 
-      obj.equals(getObjectViaMethodValue5 ()));                     
-
-      testName = "test6";
-      obj = fo.getAttribute(testName);
-      assertTrue ("methodValue failed", obj != null);          
-      assertEquals("even works for java.util.Map", "Ahoj1", obj);
-
-      testName = "test7";
-      obj = fo.getAttribute(testName);
-      assertTrue ("methodValue failed", obj != null);          
-      assertEquals("works for map and string", "Ahoj1test7", obj);  
-    }
-
     public void testAttribute09 () throws IOException {
         assertTrue (TEST_ERR,testedFS != null);
         if (testedFS.isReadOnly ()) return;                
@@ -322,101 +271,6 @@ public class AttributesTestHidden extends TestBaseHid {
         }                        
     }
     
-    private static String getObjectViaMethodValue1 (FileObject fo, String testName) {
-        return fo.getPath()+testName;
-    }
-
-    private static String getObjectViaMethodValue1 (String testName, FileObject fo) {
-        return testName+fo.getPath();
-    }
-
-    private static String getObjectViaMethodValue1 (FileObject fo) {
-        return fo.getPath();        
-    }
-    
-    private static String getObjectViaMethodValue1 (String testName) {
-        return testName;
-    }
-
-    private static String getObjectViaMethodValue1 () {
-        return "";        
-    }
-///
-    private static String getObjectViaMethodValue2 (String testName, FileObject fo) {
-        return testName+fo.getPath();
-    }
-
-    private static String getObjectViaMethodValue2 (FileObject fo) {
-        return fo.getPath();        
-    }
-    
-    private static String getObjectViaMethodValue2 (String testName) {
-        return testName;
-    }
-
-    private static String getObjectViaMethodValue2 () {
-        return "";        
-    }
-///
-    private static String getObjectViaMethodValue3 (FileObject fo) {
-        return fo.getPath();        
-    }
-
-    private static String getObjectViaMethodValue3 (String testName) {
-        return testName;
-    }
-
-    private static String getObjectViaMethodValue3 () {
-        return "";        
-    }
-///
-    private static String getObjectViaMethodValue4 (String testName) {
-        return testName;
-    }
-
-    private static String getObjectViaMethodValue4 () {
-        return "";        
-    }
-///
-    private static String getObjectViaMethodValue5 () {
-        return "";        
-    }
-            
-    private static Object getObjectViaMethodValue6 (Map attrs) {
-        try {
-            attrs.keySet().iterator().remove();
-            return "UnsupportedOperationException";
-        } catch (UnsupportedOperationException ex) {
-            // ok
-        }
-        try {
-            attrs.put("value1", "nothing");
-            return "UnsupportedOperationException";
-        } catch (UnsupportedOperationException ex) {
-            // ok
-        }
-        try {
-            attrs.remove("value1");
-            return "UnsupportedOperationException";
-        } catch (UnsupportedOperationException ex) {
-            // ok
-        }
-        
-        
-        return attrs.get("value1");
-    }
-    private static Object getObjectViaMethodValue7 (Map<String,Object> attrs, String attrName) {
-        assertEquals(8, attrs.keySet().size());
-        try {
-            attrs.entrySet().remove(null);
-            return "UnsupportedOperationException";
-        } catch (UnsupportedOperationException ex) {
-            // ok
-        }
-        
-        
-        return attrs.get("value1") + attrName;
-    }
             
     private String basicAttributeTest (String attrName, String attrValue) throws IOException {
         FileObject foTested = testedFS.getRoot ();        

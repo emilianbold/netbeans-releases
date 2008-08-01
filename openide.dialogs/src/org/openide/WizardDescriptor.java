@@ -128,6 +128,7 @@ public class WizardDescriptor extends DialogDescriptor {
     /** "Previous" button option.
     * @see #setOptions */
     public static final Object PREVIOUS_OPTION = new String("PREVIOUS_OPTION"); // NOI18N
+    
     private static final ActionListener CLOSE_PREVENTER = new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
             }
@@ -138,93 +139,152 @@ public class WizardDescriptor extends DialogDescriptor {
             }
         };
 
-    /** <CODE>Boolean</CODE> property. The value is taken from <CODE>WizardDescriptor.getProperty()</CODE> or
+    /** Set to <CODE>true</CODE> for enabling other properties. It is relevant only on
+     * initialization (client property in first panel). Recommended to be set to <code>true</code> in most cases,
+     * then wizard can display wizard steps on the left side, create a subtitle on active panel, 
+     * display of error messages and others. When false or not present in JComponent.getClientProperty(), 
+     * then supplied panel is used directly without content, help or panel name auto layout.
+     * 
+     * The value is taken from <CODE>WizardDescriptor.getProperty()</CODE> or
+     * <CODE>((JComponent)Panel.getComponent()).getClientProperty()</CODE> in this order. 
+     * <CODE>Boolean</CODE> type property.
+     * @since 7.8
+     */
+    public static final String PROP_AUTO_WIZARD_STYLE = "WizardPanel_autoWizardStyle"; // NOI18N
+
+    /** Set to <CODE>true</CODE> for showing help pane (HTML browser) in the left pane. It is relevant only on
+     * initialization (client property in first panel). Help content will be taken from property <CODE>PROP_HELP_URL</CODE>.
+     * 
+     * The value is taken from <CODE>WizardDescriptor.getProperty()</CODE> or
+     * <CODE>((JComponent)Panel.getComponent()).getClientProperty()</CODE> in this order. 
+     * <CODE>Boolean</CODE> type property.
+     * @since 7.8
+     */
+    public static final String PROP_HELP_DISPLAYED = "WizardPanel_helpDisplayed"; // NOI18N
+
+    /** Set to <CODE>true</CODE> for showing content pane (steps) in the left pane. It is relevant only on
+     * initialization (client property in first panel). Content will be constructed from property <CODE>PROP_CONTENT_DATA</code>.
+     * 
+     * The value is taken from <CODE>WizardDescriptor.getProperty()</CODE> or
      * <CODE>((JComponent)Panel.getComponent()).getClientProperty()</CODE> in this order.
-     * Set to <CODE>true</CODE> for enabling other properties. It is relevant only on
+     * <CODE>Boolean</CODE> type property.
+     * @since 7.8
+     */
+    public static final String PROP_CONTENT_DISPLAYED = "WizardPanel_contentDisplayed"; // NOI18N
+
+    /** Set to <CODE>true</CODE> for displaying numbers in the content. It is relevant only on
      * initialization (client property in first panel).
-     * When false or not present in JComponent.getClientProperty(), then supplied panel is
-     * used directly without content, help or panel name auto layout.
+     * 
+     * The value is taken from <CODE>WizardDescriptor.getProperty()</CODE> or
+     * <CODE>((JComponent)Panel.getComponent()).getClientProperty()</CODE> in this order. 
+     * <CODE>Boolean</CODE> type property.
+     * @since 7.8
      */
-    private static final String PROP_AUTO_WIZARD_STYLE = "WizardPanel_autoWizardStyle"; // NOI18N
+    public static final String PROP_CONTENT_NUMBERED = "WizardPanel_contentNumbered"; // NOI18N
 
-    /** <CODE>Boolean</CODE> property. The value is taken from <CODE>WizardDescriptor.getProperty()</CODE> or
-     * <CODE>((JComponent)Panel.getComponent()).getClientProperty()</CODE> in this order.
-     * Set to <CODE>true</CODE> for showing help pane in the left pane. It is relevant only on
-     * initialization (client property in first panel).
+    /** Represents index of content item which will be highlighted.
+     * 
+     * The value is taken from <CODE>WizardDescriptor.getProperty()</CODE> or
+     * <CODE>((JComponent)Panel.getComponent()).getClientProperty()</CODE> in this order. 
+     * <CODE>Integer</CODE> type property.
+     * @since 7.8
      */
-    private static final String PROP_HELP_DISPLAYED = "WizardPanel_helpDisplayed"; // NOI18N
+    public static final String PROP_CONTENT_SELECTED_INDEX = "WizardPanel_contentSelectedIndex"; // NOI18N
 
-    /** <CODE>Boolean</CODE> property. The value is taken from <CODE>WizardDescriptor.getProperty()</CODE> or
-     * <CODE>((JComponent)Panel.getComponent()).getClientProperty()</CODE> in this order.
-     * Set to <CODE>true</CODE> for showing content pane in the left pane. It is relevant only on
-     * initialization (client property in first panel).
+    /** Represents array of content items.
+     * 
+     * The value is taken from <CODE>WizardDescriptor.getProperty()</CODE> or
+     * <CODE>((JComponent)Panel.getComponent()).getClientProperty()</CODE> in this order. 
+     * <CODE>String[]</CODE> type property.
+     * @since 7.8
      */
-    private static final String PROP_CONTENT_DISPLAYED = "WizardPanel_contentDisplayed"; // NOI18N
+    public static final String PROP_CONTENT_DATA = "WizardPanel_contentData"; // NOI18N
 
-    /** <CODE>Boolean</CODE> property. The value is taken from <CODE>WizardDescriptor.getProperty()</CODE> or
-     * <CODE>((JComponent)Panel.getComponent()).getClientProperty()</CODE> in this order.
-     * Set to <CODE>true</CODE> for displaying numbers in the content. It is relevant only on
-     * initialization (client property in first panel).
+    /** Set background color of content pane.
+     * 
+     * The value is taken from <CODE>WizardDescriptor.getProperty()</CODE> or
+     * <CODE>((JComponent)Panel.getComponent()).getClientProperty()</CODE> in this order. 
+     * <CODE>Color</CODE> type property.
+     * @since 7.8
      */
-    private static final String PROP_CONTENT_NUMBERED = "WizardPanel_contentNumbered"; // NOI18N
+    public static final String PROP_CONTENT_BACK_COLOR = "WizardPanel_contentBackColor"; // NOI18N
 
-    /** <CODE>Integer</CODE> property. The value is taken from <CODE>WizardDescriptor.getProperty()</CODE> or
-     * <CODE>((JComponent)Panel.getComponent()).getClientProperty()</CODE> in this order.
-     * Represents index of content item which will be highlited.
+    /** Set foreground color of content pane.
+     * 
+     * The value is taken from <CODE>WizardDescriptor.getProperty()</CODE> or
+     * <CODE>((JComponent)Panel.getComponent()).getClientProperty()</CODE> in this order. 
+     * <CODE>Color</CODE> type property.
+     * @since 7.8
      */
-    private static final String PROP_CONTENT_SELECTED_INDEX = "WizardPanel_contentSelectedIndex"; // NOI18N
-
-    /** <CODE>String[]</CODE> property. The value is taken from <CODE>WizardDescriptor.getProperty()</CODE> or
-     * <CODE>((JComponent)Panel.getComponent()).getClientProperty()</CODE> in this order.
-     * Represents array of content items.
+    public static final String PROP_CONTENT_FOREGROUND_COLOR = "WizardPanel_contentForegroundColor"; // NOI18N
+    
+    /** Set the image which will be displayed in the left pane (behind the content).
+     * 
+     * The value is taken from <CODE>WizardDescriptor.getProperty()</CODE> or
+     * <CODE>((JComponent) Panel.getComponent()).getClientProperty()</CODE> in this order. 
+     * <CODE>java.awt.Image</CODE> type property.
+     * @since 7.8
      */
-    private static final String PROP_CONTENT_DATA = "WizardPanel_contentData"; // NOI18N
+    public static final String PROP_IMAGE = "WizardPanel_image"; // NOI18N
 
-    /** <CODE>Color</CODE> property. The value is taken from <CODE>WizardDescriptor.getProperty()</CODE> or
-     * <CODE>((JComponent)Panel.getComponent()).getClientProperty()</CODE> in this order.
-     * Set to background color of content pane.
+    /** Set the side where the image should be drawn.
+     * 
+     * The value is taken from <CODE>WizardDescriptor.getProperty()</CODE> or
+     * <CODE>((JComponent) Panel.getComponent()).getClientProperty()</CODE> in this order. 
+     * <CODE>String</CODE> type property.
+     * @since 7.8
      */
-    private static final String PROP_CONTENT_BACK_COLOR = "WizardPanel_contentBackColor"; // NOI18N
+    public static final String PROP_IMAGE_ALIGNMENT = "WizardPanel_imageAlignment"; // NOI18N
 
-    /** <CODE>Color</CODE> property. The value is taken from <CODE>WizardDescriptor.getProperty()</CODE> or
-     * <CODE>((JComponent)Panel.getComponent()).getClientProperty()</CODE> in this order.
-     * Set to foreground color of content pane.
-     */
-    private static final String PROP_CONTENT_FOREGROUND_COLOR = "WizardPanel_contentForegroundColor"; // NOI18N
-
-    /** <CODE>Image</CODE> property. The value is taken from <CODE>WizardDescriptor.getProperty()</CODE> or
-     * <CODE>((JComponent)Panel.getComponent()).getClientProperty()</CODE> in this order.
-     * Set to image which should be displayed in the left pane (behind the content).
-     */
-    private static final String PROP_IMAGE = "WizardPanel_image"; // NOI18N
-
-    /** <CODE>String</CODE> property. The value is taken from <CODE>WizardDescriptor.getProperty()</CODE> or
-     * <CODE>((JComponent)Panel.getComponent()).getClientProperty()</CODE> in this order.
-     * Set to side where the image should be drawn.
-     */
-    private static final String PROP_IMAGE_ALIGNMENT = "WizardPanel_imageAlignment"; // NOI18N
-
-    /** <CODE>Dimension</CODE> property. The value is taken from <CODE>WizardDescriptor.getProperty()</CODE> or
-     * <CODE>((JComponent)Panel.getComponent()).getClientProperty()</CODE> in this order.
-     * Dimension of left pane, should be same as dimension of <CODE>PROP_IMAGE</CODE>.
+    /** Dimension of left pane, should be same as dimension of <CODE>PROP_IMAGE</CODE>.
      * It is relevant only on initialization (client property in first panel).
+     * 
+     * The value is taken from <CODE>WizardDescriptor.getProperty()</CODE> or
+     * <CODE>((JComponent) Panel.getComponent()).getClientProperty()</CODE> in this order. 
+     * <CODE>Dimension</CODE> type property.
+     * @since 7.8
      */
-    private static final String PROP_LEFT_DIMENSION = "WizardPanel_leftDimension"; // NOI18N
+    public static final String PROP_LEFT_DIMENSION = "WizardPanel_leftDimension"; // NOI18N
 
-    /** <CODE>URL</CODE> property. The value is taken from <CODE>WizardDescriptor.getProperty()</CODE> or
-     * <CODE>((JComponent)Panel.getComponent()).getClientProperty()</CODE> in this order.
-     * Represents URL of help displayed in left pane.
+    /** Represents URL of help displayed in left pane.
+     * 
+     * The value is taken from <CODE>WizardDescriptor.getProperty()</CODE> or
+     * <CODE>((JComponent) Panel.getComponent()).getClientProperty()</CODE> in this order. 
+     * <CODE>URL</CODE> type property.
+     * @since 7.8
      */
-    private static final String PROP_HELP_URL = "WizardPanel_helpURL"; // NOI18N
+    public static final String PROP_HELP_URL = "WizardPanel_helpURL"; // NOI18N
 
-    /** <CODE>String</CODE> property. The value is taken from <CODE>WizardDescriptor.getProperty()</CODE>.
-     * If it contains non-null value the String is displayed the bottom of the wizard
-     * and should inform user why the panel is invalid and why the Next/Finish
-     * buttons were disabled.
-     * @since 3.39
+    /** Error message that is displayed at the bottom of the wizard.
+     * Message informs user why the panel is invalid and possibly why the Next/Finish buttons were disabled.
+     * The property must be set to null value to clear the message.
+     * 
+     * The value is taken from <CODE>WizardDescriptor.getProperty()</CODE>. 
+     * <CODE>String</CODE> type property. 
+     * @since 7.8
      */
-    private static final String PROP_ERROR_MESSAGE = "WizardPanel_errorMessage"; // NOI18N
-
+    public static final String PROP_ERROR_MESSAGE = "WizardPanel_errorMessage"; // NOI18N
+    
+    /** Warning message that is displayed at the bottom of the wizard.
+     * Message informs user about possible non fatal problems with current enterd values in the wizard panel.
+     * Next/Finish buttons are usually enabled. The property must be set to null value to clear the message.
+     * 
+     * The value is taken from <CODE>WizardDescriptor.getProperty()</CODE>. 
+     * <CODE>String</CODE> type property.
+     * @since 7.8
+     */
+    public static final String PROP_WARNING_MESSAGE = "WizardPanel_warningMessage"; // NOI18N
+    
+    /** Informational message that is displayed at the bottom of the wizard.
+     * Message informs user usually about need to fill some field or similar requirements or other non fatal problems.
+     * Next/Finish button are usually enabled. The property must be set to null value to clear the message.
+     * 
+     * The value is taken from <CODE>WizardDescriptor.getProperty()</CODE>. 
+     * <CODE>String</CODE> type property.
+     * @since 7.8
+     */
+    public static final String PROP_INFO_MESSAGE = "WizardPanel_infoMessage"; // NOI18N
+    
     private static Logger err = Logger.getLogger(WizardDescriptor.class.getName ());
 
     /** real buttons to be placed instead of the options */
@@ -657,11 +717,30 @@ public class WizardDescriptor extends DialogDescriptor {
             if (wizardPanel != null) {
                 SwingUtilities.invokeLater (new Runnable () {
                     public void run () {
-                        wizardPanel.setErrorMessage((String) ((value == null) ? " " : value), (nextButton.isEnabled () || finishButton.isEnabled ()) ? Boolean.TRUE : Boolean.FALSE); //NOI18N
+                        if (nextButton.isEnabled () || finishButton.isEnabled ()) {
+                            wizardPanel.setMessage(WizardPanel.MSG_TYPE_WARNING, (String) ((value == null) ? "" : value));
+                        } else {
+                            wizardPanel.setMessage(WizardPanel.MSG_TYPE_ERROR, (String) ((value == null) ? "" : value));
+                        }
                     }
                 });
             }
         }
+        
+        if (PROP_WARNING_MESSAGE.equals(name) || PROP_INFO_MESSAGE.equals(name)) {
+            if (wizardPanel != null) {
+                SwingUtilities.invokeLater (new Runnable () {
+                    public void run () {
+                        if (PROP_WARNING_MESSAGE.equals(name)) {
+                            wizardPanel.setMessage(WizardPanel.MSG_TYPE_WARNING, (String) ((value == null) ? "" : value)); //NOI18N
+                        } else {
+                            wizardPanel.setMessage(WizardPanel.MSG_TYPE_INFO, (String) ((value == null) ? "" : value)); //NOI18N
+                        }
+                    }
+                });
+            }
+        }
+        
     }
 
     /** Getter for stored property.
@@ -1287,7 +1366,7 @@ public class WizardDescriptor extends DialogDescriptor {
                     
                     // cannot continue, notify user
                     if (wizardPanel != null) {
-                        wizardPanel.setErrorMessage(wve.getLocalizedMessage(), Boolean.FALSE);
+                        wizardPanel.setMessage(WizardPanel.MSG_TYPE_ERROR, wve.getLocalizedMessage());
                     }
 
                     // focus source of this problem
@@ -1842,7 +1921,7 @@ public class WizardDescriptor extends DialogDescriptor {
         public void actionPerformed(ActionEvent ev) {
             final Iterator<?> panels = data.getIterator(WizardDescriptor.this);
             if (wizardPanel != null) {
-                wizardPanel.setErrorMessage(" ", null); //NOI18N
+                wizardPanel.setMessage(WizardPanel.MSG_TYPE_ERROR, ""); //NOI18N
             }
 
             Object src = ev.getSource();
@@ -2192,6 +2271,7 @@ public class WizardDescriptor extends DialogDescriptor {
             ta.setWrapStyleWord(true);
             ta.setFont(UIManager.getFont("Label.font")); // NOI18N
             ta.getAccessibleContext().setAccessibleDescription(""); // NOI18N
+            ta.setBorder(BorderFactory.createEmptyBorder());
 
             taWidth = wrappingWidth - 12 - 12;
 
@@ -2301,10 +2381,16 @@ public class WizardDescriptor extends DialogDescriptor {
 
         /** Selected index of content */
         private int selectedIndex;
-        private javax.swing.JLabel m_lblMessage;
+        private JLabel m_lblMessage;
+        
         private Color nbErrorForeground;
         private Color nbWarningForeground;
-
+        private Color nbInfoForeground;
+        
+        private static final int MSG_TYPE_ERROR = 1;
+        private static final int MSG_TYPE_WARNING = 2;
+        private static final int MSG_TYPE_INFO = 3;
+        
         /** Creates new <CODE>WizardPanel<CODE>.
          * @param contentDisplayed whether content will be displayed in the left pane
          * @param helpDisplayed whether help will be displayed in the left pane
@@ -2371,6 +2457,11 @@ public class WizardDescriptor extends DialogDescriptor {
                 nbWarningForeground = new Color(51, 51, 51); // Label.foreground
             }
             
+            nbInfoForeground = UIManager.getColor("nb.warningForeground"); //NOI18N
+            if (nbInfoForeground == null) {
+                nbInfoForeground = UIManager.getColor("Label.foreground"); //NOI18N
+            }
+            
             JPanel errorPanel = new JPanel(new BorderLayout());
             errorPanel.setBorder(BorderFactory.createEmptyBorder(0, 12, 12, 11));
             m_lblMessage = new FixedHeightLabel ();
@@ -2414,23 +2505,37 @@ public class WizardDescriptor extends DialogDescriptor {
                 add(sep, BorderLayout.SOUTH);
             }
         }
-
-        public void setErrorMessage(String msg, Boolean canContinue) {
-            m_lblMessage.setForeground(nbErrorForeground);
-            if (msg != null && msg.trim ().length () > 0 && canContinue != null) {
-                if (canContinue.booleanValue ()) {
-                    m_lblMessage.setIcon (new ImageIcon (Utilities.loadImage ("org/netbeans/modules/dialogs/warning.gif"))); // NOI18N
-                    m_lblMessage.setForeground (nbWarningForeground);
-                } else {
-                    m_lblMessage.setIcon (new ImageIcon (Utilities.loadImage ("org/netbeans/modules/dialogs/error.gif"))); // NOI18N
+        
+        public void setMessage(int msgType, String msg) {
+            if (msg != null && msg.trim().length() > 0) {
+                switch (msgType) {
+                    case MSG_TYPE_ERROR:
+                        prepareMessage(m_lblMessage,
+                            new ImageIcon (Utilities.loadImage ("org/netbeans/modules/dialogs/error.gif")),
+                            nbErrorForeground);
+                        break;
+                    case MSG_TYPE_WARNING:
+                        prepareMessage(m_lblMessage, 
+                            new ImageIcon (Utilities.loadImage ("org/netbeans/modules/dialogs/warning.gif")),
+                            nbWarningForeground);
+                        break;
+                    case MSG_TYPE_INFO:
+                        prepareMessage(m_lblMessage, 
+                            new ImageIcon (Utilities.loadImage ("org/netbeans/modules/dialogs/info.png")),
+                            nbInfoForeground);
+                        break;
+                    default:
                 }
                 m_lblMessage.setToolTipText (msg);
             } else {
-                m_lblMessage.setIcon (null);
-                m_lblMessage.setToolTipText (null);
+                prepareMessage(m_lblMessage, null, null);
             }
-            
             m_lblMessage.setText(msg);
+        }
+        
+        private void prepareMessage(JLabel label, ImageIcon icon, Color fgColor) {
+            label.setIcon(icon);
+            label.setForeground(fgColor);
         }
         
         private void setProgressComponent (JComponent progressComp, JLabel progressLabel) {
@@ -2458,10 +2563,10 @@ public class WizardDescriptor extends DialogDescriptor {
             JScrollPane scroll = new JScrollPane(contentList);
             scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
             scroll.getViewport().setOpaque(false);
-            scroll.setBorder(null);
+            scroll.setBorder(BorderFactory.createEmptyBorder());
             scroll.setOpaque(false);
             // #89392: remove GTK's viewport border
-            scroll.setViewportBorder(null);
+            scroll.setViewportBorder(BorderFactory.createEmptyBorder());
 
             label = new JLabel(NbBundle.getMessage(WizardDescriptor.class, "CTL_ContentName"));
             label.setForeground(Color.white);

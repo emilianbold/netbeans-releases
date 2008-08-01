@@ -92,7 +92,6 @@ public class SectionContainer extends javax.swing.JPanel implements NodeSectionP
         Mnemonics.setLocalizedText(titleButton, title);
         titleButton.setToolTipText(titleButton.getText());
         this.title=titleButton.getText();
-        titleButton.setFont(new Font(getFont().getFontName(), Font.BOLD, getFont().getSize() + 2));
         titleButton.addMouseListener(new org.openide.awt.MouseUtils.PopupMouseAdapter() {
             protected void showPopup(java.awt.event.MouseEvent e) {
                 JPopupMenu popup = getNode().getContextMenu();
@@ -310,6 +309,7 @@ public class SectionContainer extends javax.swing.JPanel implements NodeSectionP
 
         titlePanel.setLayout(new java.awt.BorderLayout());
 
+        titleButton.setFont(titleButton.getFont().deriveFont(titleButton.getFont().getStyle() | java.awt.Font.BOLD, titleButton.getFont().getSize()+2));
         titleButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
         titleButton.setBorderPainted(false);
         titleButton.setContentAreaFilled(false);

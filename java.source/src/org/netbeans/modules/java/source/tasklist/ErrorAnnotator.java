@@ -69,13 +69,30 @@ import org.openide.filesystems.FileStatusEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
+
+import static org.openide.util.ImageUtilities.assignToolTipToImage;
+import static org.openide.util.ImageUtilities.loadImage;
+import static org.openide.util.ImageUtilities.mergeImages;
+import static org.openide.util.NbBundle.getMessage;
 
 /**
  *
  * @author Jan Lahoda
  */
 public class ErrorAnnotator extends AnnotationProvider /*implements FileStatusListener*/ {
+
+    private static final String ERROR_BADGE_URL = "org/netbeans/modules/java/source/resources/icons/error-badge.gif";
+    
+    private static final Image ERROR_BADGE_SINGLE;
+    private static final Image ERROR_BADGE_FOLDER;
+    
+    static {
+        URL errorBadgeIconURL = ErrorAnnotator.class.getClassLoader().getResource(ERROR_BADGE_URL);
+        String errorBadgeSingleTP = "<img src=\"" + errorBadgeIconURL + "\">&nbsp;" + getMessage(ErrorAnnotator.class, "TP_ErrorBadgeSingle");
+        ERROR_BADGE_SINGLE = assignToolTipToImage(loadImage(ERROR_BADGE_URL), errorBadgeSingleTP); // NOI18N
+        String errorBadgeFolderTP = "<img src=\"" + errorBadgeIconURL + "\">&nbsp;" + getMessage(ErrorAnnotator.class, "TP_ErrorBadgeFolder");
+        ERROR_BADGE_FOLDER = assignToolTipToImage(loadImage(ERROR_BADGE_URL), errorBadgeFolderTP); // NOI18N
+    }
     
     public ErrorAnnotator() {
     }
@@ -83,30 +100,33 @@ public class ErrorAnnotator extends AnnotationProvider /*implements FileStatusLi
     public String annotateName(String name, Set files) {
         return null;
     }
-
+    
     @Override
     public Image annotateIcon(Image icon, int iconType, Set files) {
         if (!TasklistSettings.isTasklistEnabled() || !TasklistSettings.isBadgesEnabled())
             return null;
         
         boolean inError = false;
+        boolean singleFile = files.size() == 1;
         
         if (files instanceof NonRecursiveFolder) {
             FileObject folder = ((NonRecursiveFolder) files).getFolder();
             inError = isInError(folder, false, true);
+            singleFile = false;
         } else {
             for (Object o : files) {
                 if (o instanceof FileObject) {
                     FileObject f = (FileObject) o;
                     
                     if (f.isFolder()) {
+                        singleFile = false;
                         if (isInError(f, true, !inError)) {
                             inError = true;
                             continue;
                         }
                         if (inError)
                             continue;
-                    }else {
+                    } else {
                         if (f.isData() && "java".equals(f.getExt())) {
                             if (isInError(f, true, !inError)) {
                                 inError = true;
@@ -121,7 +141,7 @@ public class ErrorAnnotator extends AnnotationProvider /*implements FileStatusLi
         
         if (inError) {
             //badge:
-            Image i = Utilities.mergeImages(icon, Utilities.loadImage("org/netbeans/modules/java/source/resources/icons/error-badge.gif"), 0, 8);
+            Image i = mergeImages(icon, singleFile ? ERROR_BADGE_SINGLE : ERROR_BADGE_FOLDER, 0, 8);
             Iterator<? extends AnnotationProvider> it = Lookup.getDefault().lookupAll(AnnotationProvider.class).iterator();
             boolean found = false;
             

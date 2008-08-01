@@ -37,7 +37,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-			<release-version>1</release-version>
+                        <release-version>1</release-version>
                         <specification-version>1.3</specification-version>
                     </run-dependency>
                 </dependency>
@@ -107,7 +107,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>6.5.1</specification-version>
+                        <specification-version>7.8</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -179,7 +179,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>6.8.1</specification-version>
+                        <specification-version>7.14</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -201,17 +201,22 @@
                 </dependency>
             </module-dependencies>
             <friend-packages>
+                <friend>com.sun.dlight</friend>
+                <friend>com.sun.dlight.model</friend>
+                <friend>com.sun.dlight.target</friend>
                 <friend>com.sun.tools.debugger.dbxgui</friend>
+                <friend>com.sun.tools.debugger.dbxtool</friend>
                 <friend>com.sun.tools.swdev.advtools.actions.performanceanalyzeractions</friend>
                 <friend>com.sun.tools.swdev.advtools.actions.spi</friend>
                 <friend>com.sun.tools.swdev.projectimport</friend>
                 <friend>com.sun.tools.swdev.sunstudio</friend>
                 <friend>org.netbeans.modules.cnd.debugger.gdb</friend>
-                <friend>org.netbeans.modules.cnd.make2netbeans</friend>
                 <friend>org.netbeans.modules.cnd.discovery</friend>
                 <friend>org.netbeans.modules.cnd.dwarfdiscovery</friend>
                 <friend>org.netbeans.modules.cnd.highlight</friend>
+                <friend>org.netbeans.modules.cnd.make2netbeans</friend>
                 <friend>org.netbeans.modules.cnd.modeldiscovery</friend>
+                <friend>org.netbeans.modules.cnd.remote</friend>
                 <package>org.netbeans.modules.cnd.makeproject.api</package>
                 <package>org.netbeans.modules.cnd.makeproject.api.actions</package>
                 <package>org.netbeans.modules.cnd.makeproject.api.compilers</package>

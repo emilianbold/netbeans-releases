@@ -428,7 +428,6 @@
         <aDefinition name="Name" displayName="PSK_NAME" required="false" multiplicity="1" controlType="edit" get="getName" set="setName" validate="DiagramSupport.ProxyDiagramManager"/>
         <aDefinition name="Alias" displayName="PSK_ALIAS" required="false" multiplicity="1" controlType="edit" get="getAlias" set="setAlias"/>
         <aDefinition name="Filename" displayName="PSK_FILENAME" required="false" multiplicity="1" controlType="read-only" get="getFilename"/>
-        <aDefinition name="LayoutStyle" displayName="PSK_LAYOUTSTYLE" required="false" multiplicity="1" controlType="list" get="getLayoutStyle" set="setLayoutStyle" values="PSK_HIERARCHICAL|PSK_ORTHOGONAL|PSK_SYMMETRIC|PSK_SEQUENCE" enumValues="1|2|3||6" validate="ADDiagramEngine.ADCoreEngine"/>
         <aDefinition name="Namespace" displayName="PSK_NAMESPACE" required="false" multiplicity="1" controlType="read-only" get="getNamespace"/>
         <aDefinition name="DiagramKind" displayName="PSK_DIAGRAMKIND" required="false" multiplicity="1" controlType="read-only" get="getDiagramKind2" values="PSK_ACTIVITYDIAGRAM|PSK_CLASSDIAGRAM|PSK_COLLABDIAGRAM|PSK_COMPONENTDIAGRAM|PSK_DEPLOYMENTDIAGRAM|PSK_SEQUENCEDIAGRAM|PSK_STATEDIAGRAM|PSK_USECASEDIAGRAM" enumValues="2|4|8|16|32|64|128|256"/>
         <aDefinition name="Documentation" displayName="PSK_DOCUMENTATION" required="false" multiplicity="1" get="getDocumentation" set="setDocumentation" controlType="custom" progID="org.netbeans.modules.uml.propertysupport.customizers.DocumentationCustomizer" />
@@ -1329,11 +1328,11 @@
         <!--
         <aDefinition pdref="DCE.9F7D754D-DE8A-C236-CC56-D1F06885A19F"/>
         <aDefinition name="Formal" displayName="PSK_FORMAL" required="false" multiplicity="1" controlType="combo" get="getFormal" set="setFormal2" values="#DataTypeList">
-            <DispatchInvoke name="{1246690B-3BCF-4557-B7DF-A5FEAD3DA4AF}" get="getNameWithAlias"/>
+            <DispatchInvoke name="{1246690B-3BCF-4557-B7DF-A5FEAD3DA4AF}" get="getQualifiedName"/>
         </aDefinition>
         -->
         <aDefinition name="Actual" displayName="PSK_ACTUAL" required="false" multiplicity="1" controlType="combo" get="getActual" set="setActual2" values="#DataTypeList">
-            <DispatchInvoke name="{1246690B-3BCF-4557-B7DF-A5FEAD3DA4AF}" get="getNameWithAlias"/>
+            <DispatchInvoke name="{1246690B-3BCF-4557-B7DF-A5FEAD3DA4AF}" get="getQualifiedName"/>
         </aDefinition>
     </PropertyDefinition>
     <PropertyDefinition xmi.id="DCE.0C9B9FC2-011A-6976-0658-79A9B40B9B4E" name="QualAttribute" displayName="PSK_ATTRIBUTE" required="false" multiplicity="1" create="createQualifier3" insert="addQualifier" delete="removeQualifier" values="FormatString" identifier="Name">

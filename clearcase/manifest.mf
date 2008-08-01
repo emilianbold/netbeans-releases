@@ -1,0 +1,5 @@
+Manifest-Version: 1.0
+OpenIDE-Module: org.netbeans.modules.clearcase
+OpenIDE-Module-Layer: org/netbeans/modules/clearcase/layer.xml
+OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/clearcase/Bundle.properties
+

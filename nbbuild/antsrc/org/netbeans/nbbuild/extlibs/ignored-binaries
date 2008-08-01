@@ -47,7 +47,7 @@ visualweb.webui.themes/release/modules/ext/defaulttheme.jar
 visualweb.kit/gravy/builds/gravy.jar
 
 # Not distributed with product, only used during build:
-nbbuild/external/apitest-*.jar
+nbbuild/external/apitest*.jar
 
 # Developed under CDDL inside nb.org (later snapshot moved to dev.java.net):
 apisupport.paintapp/PaintApp-suite/ColorChooser/release/modules/ext/ColorChooser.jar

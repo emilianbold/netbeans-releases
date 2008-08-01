@@ -45,48 +45,60 @@ made subject to such option by the copyright holder.
     <folder name="Databases">
         <folder name="NodeProviders">
             <file name="ServerNodeProvider.instance">
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.db.mysql.ServerNodeProvider.getDefault"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.db.mysql.impl.ServerNodeProvider.getDefault"/>
                 <attr name="instanceOf" stringvalue="org.netbeans.modules.db.api.explorer.NodeProvider"/>
             </file>
         </folder>
         <folder name="ActionProviders">
             <file name="MySQLActionProvider.instance">
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.db.mysql.MySQLActionProvider.getDefault"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.db.mysql.impl.MySQLActionProvider.getDefault"/>
                 <attr name="instanceOf" stringvalue="org.netbeans.modules.db.api.explorer.ActionProvider"/>
             </file>
         </folder>
         <folder name="MySQL">
+            <!--folder name="Servers">
+                <file name="MySQLDatabaseServer.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.db.mysql.impl.MySQLDatabaseServer.getDefault"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.db.mysql.DatabaseServer"/>
+                </file>                
+            </folder-->
+            <folder name="SampleProviders">
+                <file name="BaseProvider.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.db.mysql.impl.BaseSampleProvider.getDefault"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.db.mysql.spi.sample.SampleProvider"/>
+                </file>
+            </folder>
             <folder name="Installations">
                 <file name="MAMPInstallation.instance">
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.db.mysql.installations.MAMPInstallation.getDefault"/>
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.db.mysql.Installation"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.db.mysql.impl.Installation"/>
                 </file>
                 <file name="LinuxXAMPPInstallation.instance">
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.db.mysql.installations.LinuxXAMPPInstallation.getDefault"/>
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.db.mysql.Installation"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.db.mysql.impl.Installation"/>
                 </file>
                 <file name="LinuxStandaloneInstallation.instance">
                     <!-- So far only tested on Ubuntu... -->
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.db.mysql.installations.LinuxStandaloneInstallation.getDefault"/>
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.db.mysql.Installation"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.db.mysql.impl.Installation"/>
                 </file>
                 <file name="SXDEWebStackInstallation.instance">
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.db.mysql.installations.SXDEWebStackInstallation.getDefault"/>
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.db.mysql.Installation"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.db.mysql.impl.Installation"/>
                 </file>
                 <!-- Not currently working correctly 
                 <file name="WindowsXAMPPInstallation.instance">
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.db.mysql.installations.WindowsXAMPPInstallation.getDefault"/>
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.db.mysql.Installation"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.db.mysql.impl.Installation"/>
                 </file>
                 -->
                 <file name="WindowsStandalone50Installation.instance">
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.db.mysql.installations.WindowsStandalone50Installation.getDefault"/>
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.db.mysql.Installation"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.db.mysql.impl.Installation"/>
                 </file>
                 <file name="WindowsStandalone51Installation.instance">
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.db.mysql.installations.WindowsStandalone51Installation.getDefault"/>
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.db.mysql.Installation"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.db.mysql.impl.Installation"/>
                 </file>
             </folder>
         </folder>

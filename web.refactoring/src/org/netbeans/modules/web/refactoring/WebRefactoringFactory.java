@@ -32,6 +32,7 @@ import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.source.CancellableTask;
@@ -70,6 +71,8 @@ import org.openide.util.Exceptions;
  */
 public class WebRefactoringFactory implements RefactoringPluginFactory{
     
+    private static final Logger LOGGER = Logger.getLogger(WebRefactoringFactory.class.getName());
+    
     public WebRefactoringFactory() {
     }
     
@@ -106,8 +109,13 @@ public class WebRefactoringFactory implements RefactoringPluginFactory{
             return null;
         }
         String clazz = resolveClass(handle);
-        // if have a java file, the class name should be resolvable
-        assert !(javaFile && clazz == null) : "Could not resolve the class for: " + sourceFO;//NOI18N
+        
+        // if we have a java file, the class name should be resolvable
+        // unless it is an empty java file - see #130933
+        if (javaFile && clazz == null) {
+            LOGGER.fine("Could not resolve the class for: " + sourceFO + ", possibly an empty Java file");
+            return null;
+        }
         
         List<WebRefactoring> refactorings = new ArrayList<WebRefactoring>();
         

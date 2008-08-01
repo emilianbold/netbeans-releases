@@ -43,48 +43,29 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import org.netbeans.modules.cnd.editor.filecreation.CndExtensionList;
+import java.util.Collection;
+import javax.swing.JEditorPane;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
+import javax.swing.text.EditorKit;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.editor.filecreation.CndHandlableExtensions;
-import org.netbeans.modules.cnd.editor.filecreation.ExtensionsSettings;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
-import org.openide.loaders.ExtensionList;
 import org.openide.loaders.MultiDataObject;
+import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 
 /**
  *
  * @author Sergey Grinev
  */
-public abstract class CndAbstractDataLoaderExt extends CndAbstractDataLoader 
-        implements CndHandlableExtensions {
+public abstract class CndAbstractDataLoaderExt extends CndAbstractDataLoader {
 
     protected CndAbstractDataLoaderExt(String representationClassName) {
         super(representationClassName);
-    }
-
-    @Override
-    protected void createExtentions(String[] extensions) {
-        setExtensions(new CndExtensionList(extensions));
-    }
-
-    @Override
-    public ExtensionList getExtensions() {
-        return ExtensionsSettings.getInstance(this).getExtensionList();
-    }
-
-    @Override
-    public void setExtensions(ExtensionList ext) {
-        ExtensionsSettings.getInstance(this).setExtensionList((CndExtensionList)ext);
-    }
-
-    protected static CndExtensionList arrayToExtensionList(String[] ar) {
-        return new CndExtensionList(ar);
-    }
-
-    public String getSettingsName() {
-        return getRepresentationClassName();
     }
 
     @Override
@@ -100,14 +81,25 @@ public abstract class CndAbstractDataLoaderExt extends CndAbstractDataLoader
 
         @Override
         public FileObject createFromTemplate(FileObject f, String name) throws IOException {
-            // we don't want extension to be taken from template filename
-            String ext = FileUtil.getExtension(name);
-            assert ext.length() > 0;
-            name = name.substring(0, name.length() - ext.length() - 1);
+            // we don't want extension to be taken from template filename for our customized dialog
+            String ext;
+            Collection<? extends CndHandlableExtensions> lookupAll = Lookup.getDefault().lookupAll(CndHandlableExtensions.class);
+            if (lookupAll.contains(getDataObject().getLoader())) {
+                ext = FileUtil.getExtension(name);
+                if (ext.length() != 0) {
+                    name = name.substring(0, name.length() - ext.length() - 1);
+                }
+            } else {
+                // use default
+                ext = getFile().getExt();
+            }
 
             FileObject fo = f.createData(name, ext);
 
             java.text.Format frm = createFormat(f, name, ext);
+
+            EditorKit kit = createEditorKit(getFile().getMIMEType());
+            Document doc = kit.createDefaultDocument();
 
             BufferedReader r = new BufferedReader(new InputStreamReader(getFile().getInputStream()));
             try {
@@ -117,11 +109,31 @@ public abstract class CndAbstractDataLoaderExt extends CndAbstractDataLoader
 
                     try {
                         String current;
+                        String line = null;
+                        int offset = 0;
                         while ((current = r.readLine()) != null) {
-                            w.write(frm.format(current));
-                            // Cf. #7061.
-                            w.newLine();
+                            if (line != null) {
+                                doc.insertString(offset, "\n", null); // NOI18N
+                                offset++;
+                            }
+                            line = frm.format(current);
+                            doc.insertString(offset, line, null);
+                            offset += line.length();
                         }
+                        doc.insertString(doc.getLength(), "\n", null); // NOI18N
+                        offset++;
+                        if (doc instanceof BaseDocument) {
+                            BaseDocument bd = (BaseDocument) doc;
+                            bd.getFormatter().reformatLock();
+                            try {
+                                bd.getFormatter().reformat(bd, 0, offset);
+                            } finally {
+                                bd.getFormatter().reformatUnlock();
+                            }
+                        }
+                        w.write(doc.getText(0, doc.getLength()));
+                    } catch (BadLocationException ex) {
+                        Exceptions.printStackTrace(ex);
                     } finally {
                         w.close();
                     }
@@ -155,6 +167,15 @@ public abstract class CndAbstractDataLoaderExt extends CndAbstractDataLoader
             fo.setAttribute(DataObject.PROP_TEMPLATE, (newTempl ? Boolean.TRUE : null));
 
             return true;
+        }
+
+        private EditorKit createEditorKit(String mimeType) {
+            EditorKit kit;
+            kit = JEditorPane.createEditorKitForContentType(mimeType);
+            if (kit == null) {
+                kit = new javax.swing.text.DefaultEditorKit();
+            }
+            return kit;
         }
     }
 }

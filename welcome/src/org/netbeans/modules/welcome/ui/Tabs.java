@@ -65,6 +65,7 @@ import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 import org.netbeans.modules.welcome.WelcomeOptions;
+import org.netbeans.modules.welcome.content.BackgroundPanel;
 import org.netbeans.modules.welcome.content.Utils;
 import org.openide.util.Utilities;
 
@@ -72,7 +73,7 @@ import org.openide.util.Utilities;
  *
  * @author S. Aubrecht
  */
-class Tabs extends JPanel implements Constants {
+class Tabs extends BackgroundPanel implements Constants {
 
     private JScrollPane leftComp;
     private JScrollPane rightComp;
@@ -80,22 +81,13 @@ class Tabs extends JPanel implements Constants {
     private JComponent rightTab;
     private JPanel tabContent;
     
-    private Image imgStripWest;
-    private Image imgStripCenter;
-    private Image imgStripEast;
-    
     public Tabs( String leftTabTitle, JComponent leftTab, 
             String rightTabTitle, final JComponent rightTab) {
         
         super( new BorderLayout() );
-        setOpaque( false );
-
+        
         this.leftTab = leftTab;
         this.rightTab = rightTab;
-        
-        this.imgStripCenter = Utilities.loadImage( IMAGE_STRIP_BOTTOM_CENTER );
-        this.imgStripWest = Utilities.loadImage( IMAGE_STRIP_BOTTOM_WEST );
-        this.imgStripEast = Utilities.loadImage( IMAGE_STRIP_BOTTOM_EAST );
         
         final Tab leftButton = new Tab( leftTabTitle, true );
         final Tab rightButton = new Tab( rightTabTitle, false );
@@ -121,8 +113,7 @@ class Tabs extends JPanel implements Constants {
         
         add( buttons, BorderLayout.NORTH );
         
-        tabContent = new JPanel( new CardLayout() );
-        tabContent.setOpaque( false );
+        tabContent = new BackgroundPanel( new CardLayout() );
 
         add( tabContent, BorderLayout.CENTER );
         int activeTabIndex = WelcomeOptions.getDefault().getLastActiveTab();
@@ -142,8 +133,9 @@ class Tabs extends JPanel implements Constants {
 
         if( null == compToShow ) {
             compToShow = new JScrollPane( showLeftTab ? leftTab : rightTab );
-            compToShow.setOpaque( false );
-            compToShow.getViewport().setOpaque( false );
+            compToShow.setOpaque( true );
+            compToShow.getViewport().setOpaque( true );
+            compToShow.getViewport().setBackground(Utils.getColor(COLOR_SCREEN_BACKGROUND));
             compToShow.setBorder( BorderFactory.createEmptyBorder() );
 
             if( showLeftTab ) {
@@ -338,4 +330,4 @@ class Tabs extends JPanel implements Constants {
         protected void paintBorder(Graphics g) {
         }
     }
-        }
+}

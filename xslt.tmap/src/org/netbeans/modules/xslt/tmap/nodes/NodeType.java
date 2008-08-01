@@ -23,6 +23,7 @@ import java.awt.Image;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import org.netbeans.modules.xslt.tmap.model.api.Import;
 import org.netbeans.modules.xslt.tmap.model.api.Invoke;
 import org.netbeans.modules.xslt.tmap.model.api.Operation;
 import org.netbeans.modules.xslt.tmap.model.api.Param;
@@ -41,6 +42,7 @@ import org.openide.util.Utilities;
 public enum NodeType {
     UNKNOWN_TYPE, // Special element which means that the value isn't known.
     TRANSFORMMAP(TransformMap.class),
+    IMPORT(Import.class),
     SERVICE(Service.class),
     OPERATION(Operation.class),
     INVOKE(Invoke.class),

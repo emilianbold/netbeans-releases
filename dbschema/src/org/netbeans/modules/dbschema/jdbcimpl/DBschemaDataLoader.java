@@ -41,11 +41,10 @@
 
 package org.netbeans.modules.dbschema.jdbcimpl;
 
+
 import java.io.IOException;
 import java.util.ResourceBundle;
-
-import org.openide.actions.*;
-import org.openide.filesystems.*;
+import org.openide.filesystems.FileObject;
 import org.openide.loaders.*;
 import org.openide.util.NbBundle;
 
@@ -57,20 +56,21 @@ public class DBschemaDataLoader extends UniFileLoader {
         super("org.netbeans.modules.dbschema.jdbcimpl.DBschemaDataObject");
     }
 
+    @Override
     protected void initialize() {
         super.initialize();
-        ExtensionList extensions = new ExtensionList ();
-        extensions.addExtension ("dbschema"); //NOI18N
-        setExtensions (extensions);
+        getExtensions().addMimeType("text/x-dbschema+xml");
     }
 
+    @Override
     protected String defaultDisplayName() {
         ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.dbschema.jdbcimpl.resources.Bundle"); //NOI18N
         return bundle.getString("ObjectName");
     }
     
+    @Override
     protected String actionsContext() {
-        return "Loaders/text/x-dbschema/Actions"; // NOI18N
+        return "Loaders/text/x-dbschema+xml/Actions"; // NOI18N
     }
 
     protected MultiDataObject createMultiObject (FileObject primaryFile) throws DataObjectExistsException, IOException {

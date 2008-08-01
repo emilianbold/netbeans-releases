@@ -51,6 +51,7 @@ import org.netbeans.modules.i18n.I18nSupport;
 import org.netbeans.modules.i18n.I18nUtil;
 import org.netbeans.modules.i18n.ResourceHolder;
 import org.netbeans.modules.i18n.java.JavaI18nString;
+import org.netbeans.modules.i18n.java.JavaI18nSupport;
 import org.netbeans.modules.i18n.java.JavaResourceHolder;
 import org.openide.loaders.DataObject;
 
@@ -97,7 +98,7 @@ public class FormI18nString extends JavaI18nString implements I18nValue {
         }
     }
 
-    private FormI18nString(I18nSupport i18nSupport, String key, String value, String commment, String[] arguments, String replaceFormat) {
+    private FormI18nString(I18nSupport i18nSupport, String key, String value, String comment, String[] arguments, String replaceFormat) {
         super(i18nSupport);
 
         this.key = key;
@@ -120,14 +121,15 @@ public class FormI18nString extends JavaI18nString implements I18nValue {
         FormI18nString newI18nString;
         if (form.getSettings().isI18nAutoMode()) { // target form is in auto-i18n mode
             // need new key (auto-generated; form module must provide)
-            newI18nString = new FormI18nString(createNewSupport(sourceDO, null),
+            newI18nString = new FormI18nString(createNewSupport(sourceDO, null, ((FormI18nSupport)support).getIdentifier()),
                                 COMPUTE_AUTO_KEY, getValue(), getComment(),
                                 getArguments(), getReplaceFormat());
             JavaResourceHolder jrh = (JavaResourceHolder) support.getResourceHolder();
             newI18nString.allData = jrh.getAllData(getKey());
         }
         else { // same key, same properties file
-            I18nSupport newSupport = createNewSupport(sourceDO, support.getResourceHolder().getResource());
+            I18nSupport newSupport = createNewSupport(sourceDO, support.getResourceHolder().getResource(),
+                    ((FormI18nSupport)support).getIdentifier());
             newI18nString = new FormI18nString(newSupport,
                                 getKey(), getValue(), getComment(),
                                 getArguments(), getReplaceFormat());
@@ -146,11 +148,13 @@ public class FormI18nString extends JavaI18nString implements I18nValue {
     }
 
     private static I18nSupport createNewSupport(I18nSupport support) {
-        return createNewSupport(support.getSourceDataObject(), support.getResourceHolder().getResource());        
+        return createNewSupport(support.getSourceDataObject(), support.getResourceHolder().getResource(),
+                support instanceof JavaI18nSupport ? ((JavaI18nSupport)support).getIdentifier() : null);        
     }     
 
-    private static I18nSupport createNewSupport(DataObject sourceDataObject, DataObject resource) {
-        I18nSupport newSupport = new FormI18nSupport.Factory().createI18nSupport(sourceDataObject);                
+    private static I18nSupport createNewSupport(DataObject sourceDataObject, DataObject resource, String identifier) {
+        FormI18nSupport newSupport = (FormI18nSupport) new FormI18nSupport.Factory().createI18nSupport(sourceDataObject);                
+        newSupport.setIdentifier(identifier);
         if(resource != null) {
             newSupport.getResourceHolder().setResource(resource);            
         }                

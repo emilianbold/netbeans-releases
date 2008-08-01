@@ -94,6 +94,7 @@ public interface Project extends Lookup.Provider {
      * <li>{@link org.netbeans.spi.project.ActionProvider}</li>
      * <li>{@link org.netbeans.spi.project.SubprojectProvider}</li>
      * <li>{@link org.netbeans.spi.project.AuxiliaryConfiguration}</li>
+     * <li>{@link org.netbeans.spi.project.AuxiliaryProperties}</li>
      * <li>{@link org.netbeans.spi.project.CacheDirectoryProvider}</li>
      * </ol>
      * <p>You might also have e.g.:</p>

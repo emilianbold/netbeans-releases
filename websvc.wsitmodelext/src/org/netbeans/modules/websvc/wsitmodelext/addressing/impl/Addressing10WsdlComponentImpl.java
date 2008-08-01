@@ -63,8 +63,8 @@ public abstract class Addressing10WsdlComponentImpl extends GenericExtensibility
     @Override
     public abstract void accept(WSDLVisitor visitor);
     
-     @Override
-     protected String getNamespaceURI() {
+    @Override
+    protected String getNamespaceURI() {
         return Addressing10WsdlQName.ADDRESSING10_WSDL_NS_URI;
     }
     

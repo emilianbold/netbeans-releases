@@ -61,9 +61,9 @@ A jsr88 plugin needs to be wrapped in a module with an entry in the
 /J2EE/DeploymentPlugins folder in the default filesystem, so the server
 registry can pick it up. In addition to that plugin is also
 required to provide a J2EE Platform. In order to do it, plugin must implement the 
-{@link org.netbeans.modules.j2ee.deployment.plugins.api.J2eePlatformImpl} 
+{@link org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl} 
 interface and register it via the
-{@link org.netbeans.modules.j2ee.deployment.plugins.api.J2eePlatformFactory} 
+{@link org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformFactory} 
 whose instance must be registered in the module 
 <a href="org/netbeans/modules/j2ee/deployment/plugins/api/doc-files/plugin-layer-file.html">layer file</a>.
 

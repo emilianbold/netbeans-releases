@@ -116,10 +116,6 @@ public final class AquaViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
         paintBottomBorder(g, c);
     }
     
-    protected Font getTxtFont() {
-        return getDisplayer().getFont();
-    }    
-
     /**
      * Paints bottom "activation" line
      */

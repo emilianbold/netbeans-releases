@@ -66,6 +66,7 @@ public final class CPUTF8Info extends CPName {
 	this.utf = utf;
     }
 
+    @Override
     public final String getName() {
 	if (name == null) {
 	    name = ConstantPoolReader.readUTF(utf, utf.length);
@@ -74,6 +75,7 @@ public final class CPUTF8Info extends CPName {
 	return name;
     }
 
+    @Override
     public final Object getValue() {
         return getName();
     }
@@ -82,6 +84,7 @@ public final class CPUTF8Info extends CPName {
 	return ConstantPool.CONSTANT_Utf8;
     }
 
+    @Override
     public String toString() {
 	return getClass().getName() + ": name=" + getName(); //NOI18N
     }

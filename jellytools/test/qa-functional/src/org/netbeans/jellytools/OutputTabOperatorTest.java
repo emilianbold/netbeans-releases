@@ -43,7 +43,9 @@ package org.netbeans.jellytools;
 import java.awt.Toolkit;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
+import java.io.IOException;
 import org.netbeans.jellytools.actions.CompileAction;
+import org.netbeans.jellytools.actions.OutputWindowViewAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.EventTool;
@@ -61,6 +63,25 @@ import org.netbeans.junit.NbTestSuite;
  * @author Jiri.Skrivanek@sun.com
  */
 public class OutputTabOperatorTest extends JellyTestCase {
+
+    static final String[] tests = new String[] {
+        "testMakeComponentVisible",
+        "testFindLine",
+        "testGetText",
+        "testWaitText",
+        "testGetLineCount",
+        "testGetLine",
+        "testGetLength",
+        "testVerify",
+        "testSelectAll",
+        "testCopy",
+        "testFind",
+        "testFindNext",
+        "testSaveAs",
+        "testWrapText",
+        "testClear",
+        "testClose"
+    };
     
     public OutputTabOperatorTest(java.lang.String testName) {
         super(testName);
@@ -71,6 +92,7 @@ public class OutputTabOperatorTest extends JellyTestCase {
     }
     
     public static NbTest suite() {
+        /*
         NbTestSuite suite = new NbTestSuite();
         // suites have to be in particular order
         suite.addTest(new OutputTabOperatorTest("testMakeComponentVisible"));
@@ -92,11 +114,14 @@ public class OutputTabOperatorTest extends JellyTestCase {
         suite.addTest(new OutputTabOperatorTest("testClear"));
         suite.addTest(new OutputTabOperatorTest("testClose"));
         return suite;
+         */
+        return (NbTest) createModuleTest(OutputTabOperatorTest.class, tests);
     }
     
     /** Print out test name. */
-    public void setUp() {
+    public void setUp() throws IOException {
         System.out.println("### "+getName()+" ###");
+        openDataProjects("SampleProject");
     }
     
     private static final String targetName = "compile-single";
@@ -110,6 +135,7 @@ public class OutputTabOperatorTest extends JellyTestCase {
         Node sampleClass1 = new Node(sample1, "SampleClass1.java");  // NOI18N
         CompileAction compileAction = new CompileAction();
         compileAction.perform(sampleClass1);
+        new OutputWindowViewAction().performMenu();
         outputTabOperator = new OutputTabOperator(targetName);
         // increase time to wait
         outputTabOperator.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 60000);

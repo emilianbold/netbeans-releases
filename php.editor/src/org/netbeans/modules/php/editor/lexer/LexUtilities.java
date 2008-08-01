@@ -40,25 +40,20 @@
  */
 package org.netbeans.modules.php.editor.lexer;
 
-import java.io.IOException;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 
+import java.util.Set;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import org.netbeans.modules.gsf.api.CompilationInfo;
 
-import org.netbeans.modules.gsf.api.OffsetRange;
-import org.netbeans.modules.gsf.api.ParserResult;
-import org.netbeans.modules.gsf.api.TranslatedSource;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
+import org.netbeans.modules.gsf.api.OffsetRange;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
@@ -72,12 +67,13 @@ import org.openide.util.Exceptions;
  * @author Tor Norbye
  */
 public class LexUtilities {
-//    /** Tokens that match a corresponding END statement. Even though while, unless etc.
-//     * can be statement modifiers, those luckily have different token ids so are not a problem
-//     * here.
-//     */
-//    private static final Set<TokenId> END_PAIRS = new HashSet<TokenId>();
-//
+    /** Tokens that match a corresponding END statement. Even though while, unless etc.
+     * can be statement modifiers, those luckily have different token ids so are not a problem
+     * here.
+     */
+    private static final Set<PHPTokenId> INDENT_BEGIN_TOKENS = new HashSet<PHPTokenId>();
+    private static final Set<PHPTokenId> INDENT_END_TOKENS = new HashSet<PHPTokenId>();
+
 //    /**
 //     * Tokens that should cause indentation of the next line. This is true for all {@link #END_PAIRS},
 //     * but also includes tokens like "else" that are not themselves matched with end but also contribute
@@ -85,23 +81,37 @@ public class LexUtilities {
 //     *
 //     */
 //    private static final Set<TokenId> INDENT_WORDS = new HashSet<TokenId>();
-//
-//    static {
-//        // END_PAIRS.add(JsTokenId.BEGIN);
-//
+
+    static {
+//        INDENT_BEGIN_TOKENS.add(PHPTokenId.PHP_OPENTAG);
+//        INDENT_BEGIN_TOKENS.add(PHPTokenId.PHP_DECLARE);
+//        INDENT_BEGIN_TOKENS.add(PHPTokenId.PHP_FOR);
+//        INDENT_BEGIN_TOKENS.add(PHPTokenId.PHP_FOREACH);
+//        INDENT_BEGIN_TOKENS.add(PHPTokenId.PHP_IF);
+//        INDENT_BEGIN_TOKENS.add(PHPTokenId.PHP_SWITCH);
+//        INDENT_BEGIN_TOKENS.add(PHPTokenId.PHP_WHILE);
+
+//        INDENT_END_TOKENS.add(PHPTokenId.PHP_CLOSETAG);
+//        INDENT_END_TOKENS.add(PHPTokenId.PHP_ENDDECLARE);
+//        INDENT_END_TOKENS.add(PHPTokenId.PHP_ENDFOR);
+//        INDENT_END_TOKENS.add(PHPTokenId.PHP_ENDFOREACH);
+//        INDENT_END_TOKENS.add(PHPTokenId.PHP_ENDIF);
+//        INDENT_END_TOKENS.add(PHPTokenId.PHP_ENDSWITCH);
+//        INDENT_END_TOKENS.add(PHPTokenId.PHP_ENDWHILE);
+
 //        // Add words that are not matched themselves with an "end",
 //        // but which also provide block structure to indented content
 //        // (usually part of a multi-keyword structure such as if-then-elsif-else-end
 //        // where only the "if" is considered an end-pair.)
-////        INDENT_WORDS.add(JsTokenId.FOR);
-////        INDENT_WORDS.add(JsTokenId.IF);
-////        INDENT_WORDS.add(JsTokenId.ELSE);
-////        INDENT_WORDS.add(JsTokenId.WHILE);
-//    }
-//
-//    private LexUtilities() {
-//    }
-//    
+//        INDENT_WORDS.add(PHPTokenId.PHP_FOR);
+//        INDENT_WORDS.add(PHPTokenId.PHP_IF);
+//        INDENT_WORDS.add(PHPTokenId.PHP_ELSE);
+//        INDENT_WORDS.add(PHPTokenId.PHP_WHILE);
+    }
+
+    private LexUtilities() {
+    }
+    
 //    /** 
 //     * Return the comment sequence (if any) for the comment prior to the given offset.
 //     */
@@ -166,8 +176,9 @@ public class LexUtilities {
 //    }
 //    
     @SuppressWarnings("unchecked")
-    public static TokenSequence<?extends PHPTokenId> getPHPTokenSequence(TokenHierarchy<Document> th, int offset) {
-        TokenSequence<?extends PHPTokenId> ts = th.tokenSequence(PHPTokenId.language());
+    public static TokenSequence<?extends PHPTokenId> getPHPTokenSequence(Document doc, int offset) {
+        TokenHierarchy<Document> th = TokenHierarchy.get(doc);
+        TokenSequence<?extends PHPTokenId> ts = th == null ? null : th.tokenSequence(PHPTokenId.language());
 
         if (ts == null) {
             // Possibly an embedding scenario such as an RHTML file
@@ -197,58 +208,55 @@ public class LexUtilities {
 
         return ts;
     }
-//
-//    public static TokenSequence<?extends JsTokenId> getPositionedSequence(BaseDocument doc, int offset) {
-//        TokenSequence<?extends JsTokenId> ts = getJsTokenSequence(doc, offset);
-//
-//        if (ts != null) {
-//            try {
-//                ts.move(offset);
-//            } catch (AssertionError e) {
-//                DataObject dobj = (DataObject)doc.getProperty(Document.StreamDescriptionProperty);
-//
-//                if (dobj != null) {
-//                    Exceptions.attachMessage(e, FileUtil.getFileDisplayName(dobj.getPrimaryFile()));
-//                }
-//
-//                throw e;
-//            }
-//
-//            if (!ts.moveNext() && !ts.movePrevious()) {
-//                return null;
-//            }
-//            
-//            return ts;
-//        }
-//
-//        return null;
-//    }
-//
-//    
-//    public static Token<?extends JsTokenId> getToken(BaseDocument doc, int offset) {
-//        TokenSequence<?extends JsTokenId> ts = getPositionedSequence(doc, offset);
-//        
-//        if (ts != null) {
-//            return ts.token();
-//        }
-//
-//        return null;
-//    }
-//
-//    public static char getTokenChar(BaseDocument doc, int offset) {
-//        Token<?extends JsTokenId> token = getToken(doc, offset);
-//
-//        if (token != null) {
-//            String text = token.text().toString();
-//
-//            if (text.length() > 0) { // Usually true, but I could have gotten EOF right?
-//
-//                return text.charAt(0);
-//            }
-//        }
-//
-//        return 0;
-//    }
+
+    public static TokenSequence<?extends PHPTokenId> getPositionedSequence(BaseDocument doc, int offset) {
+        TokenSequence<?extends PHPTokenId> ts = getPHPTokenSequence(doc, offset);
+
+        if (ts != null) {
+            try {
+                ts.move(offset);
+            } catch (AssertionError e) {
+                DataObject dobj = (DataObject)doc.getProperty(Document.StreamDescriptionProperty);
+
+                if (dobj != null) {
+                    Exceptions.attachMessage(e, FileUtil.getFileDisplayName(dobj.getPrimaryFile()));
+                }
+
+                throw e;
+            }
+
+            if (!ts.moveNext() && !ts.movePrevious()) {
+                return null;
+            }
+            
+            return ts;
+        }
+
+        return null;
+    }
+
+    
+    public static Token<?extends PHPTokenId> getToken(BaseDocument doc, int offset) {
+        TokenSequence<?extends PHPTokenId> ts = getPositionedSequence(doc, offset);
+        
+        if (ts != null) {
+            return ts.token();
+        }
+
+        return null;
+    }
+
+    public static char getTokenChar(BaseDocument doc, int offset) {
+        Token<?extends PHPTokenId> token = getToken(doc, offset);
+
+        if (token != null) {
+            if (token.text().length() > 0) { // Usually true, but I could have gotten EOF right?
+                return token.text().charAt(0);
+            }
+        }
+
+        return 0;
+    }
 //
 //    /**
 //     * Tries to skip parenthesis 
@@ -297,59 +305,57 @@ public class LexUtilities {
 //
 //        return false;
 //    }
-//    
-//    /** Search forwards in the token sequence until a token of type <code>down</code> is found */
-//    public static OffsetRange findFwd(BaseDocument doc, TokenSequence<?extends JsTokenId> ts, TokenId up,
-//        TokenId down) {
-//        int balance = 0;
-//
-//        while (ts.moveNext()) {
-//            Token<?extends JsTokenId> token = ts.token();
-//            TokenId id = token.id();
-//            
-//            if (id == up) {
-//                balance++;
-//            } else if (id == down) {
-//                if (balance == 0) {
-//                    return new OffsetRange(ts.offset(), ts.offset() + token.length());
-//                }
-//
-//                balance--;
-//            }
-//        }
-//
-//        return OffsetRange.NONE;
-//    }
-//
-//    /** Search backwards in the token sequence until a token of type <code>up</code> is found */
-//    public static OffsetRange findBwd(BaseDocument doc, TokenSequence<?extends JsTokenId> ts, TokenId up,
-//        TokenId down) {
-//        int balance = 0;
-//
-//        while (ts.movePrevious()) {
-//            Token<?extends JsTokenId> token = ts.token();
-//            TokenId id = token.id();
-//
-//            if (id == up) {
-//                if (balance == 0) {
-//                    return new OffsetRange(ts.offset(), ts.offset() + token.length());
-//                }
-//
-//                balance++;
-//            } else if (id == down) {
-//                balance--;
-//            }
-//        }
-//
-//        return OffsetRange.NONE;
-//    }
-//
-//    /** Find the token that begins a block terminated by "end". This is a token
-//     * in the END_PAIRS array. Walk backwards and find the corresponding token.
-//     * It does not use indentation for clues since this could be wrong and be
-//     * precisely the reason why the user is using pair matching to see what's wrong.
-//     */
-//    public static OffsetRange findBegin(BaseDocument doc, TokenSequence<?extends JsTokenId> ts) {
+    
+    /** Search forwards in the token sequence until a token of type <code>down</code> is found */
+    public static OffsetRange findFwd(BaseDocument doc, TokenSequence<?extends PHPTokenId> ts, char up, char down) {
+        int balance = 0;
+
+        while (ts.moveNext()) {
+            Token<?extends PHPTokenId> token = ts.token();
+            
+            if (textEquals(token.text(), up)) {
+                balance++;
+            } else if (textEquals(token.text(), down)) {
+                if (balance == 0) {
+                    return new OffsetRange(ts.offset(), ts.offset() + token.length());
+                }
+
+                balance--;
+            }
+        }
+
+        return OffsetRange.NONE;
+    }
+
+    /** Search backwards in the token sequence until a token of type <code>up</code> is found */
+    public static OffsetRange findBwd(BaseDocument doc, TokenSequence<?extends PHPTokenId> ts, char up, char down) {
+        int balance = 0;
+
+        while (ts.movePrevious()) {
+            Token<?extends PHPTokenId> token = ts.token();
+            TokenId id = token.id();
+
+            if (textEquals(token.text(), up)) {
+                if (balance == 0) {
+                    return new OffsetRange(ts.offset(), ts.offset() + token.length());
+                }
+
+                balance++;
+            } else if (textEquals(token.text(), down)) {
+                balance--;
+            }
+        }
+
+        return OffsetRange.NONE;
+    }
+
+    /** Find the token that begins a block terminated by "end". This is a token
+     * in the END_PAIRS array. Walk backwards and find the corresponding token.
+     * It does not use indentation for clues since this could be wrong and be
+     * precisely the reason why the user is using pair matching to see what's wrong.
+     */
+    public static OffsetRange findBegin(BaseDocument doc, TokenSequence<?extends PHPTokenId> ts) {
+// XXX: ressurect
 //        int balance = 0;
 //
 //        while (ts.movePrevious()) {
@@ -368,9 +374,9 @@ public class LexUtilities {
 //            }
 //        }
 //
-//        return OffsetRange.NONE;
-//    }
-//
+        return OffsetRange.NONE;
+    }
+
 //    public static OffsetRange findEnd(BaseDocument doc, TokenSequence<?extends JsTokenId> ts) {
 //        int balance = 0;
 //
@@ -427,29 +433,25 @@ public class LexUtilities {
 ////        
 ////        return true;
 ////    }
-//
-//    /**
-//     * Return true iff the given token is a token that should be matched
-//     * with a corresponding "end" token, such as "begin", "def", "module",
-//     * etc.
-//     */
-//    public static boolean isBeginToken(TokenId id, BaseDocument doc, int offset) {
-////        if (id == JsTokenId.DO) {
-////            return isEndmatchingDo(doc, offset);
-////        }
-//        return END_PAIRS.contains(id);
-//    }
-//
-//    /**
-//     * Return true iff the given token is a token that should be matched
-//     * with a corresponding "end" token, such as "begin", "def", "module",
-//     * etc.
-//     */
-//    public static boolean isEndToken(TokenId id, BaseDocument doc, int offset) {
-////        return (id == JsTokenId.END);
-//        return false;
-//    }
-//
+
+    /**
+     * Return true iff the given token is a token that should be matched
+     * with a corresponding "end" token, such as "begin", "def", "module",
+     * etc.
+     */
+    public static boolean isIndentBeginToken(PHPTokenId id) {
+        return INDENT_BEGIN_TOKENS.contains(id);
+    }
+
+    /**
+     * Return true iff the given token is a token that should be matched
+     * with a corresponding "end" token, such as "begin", "def", "module",
+     * etc.
+     */
+    public static boolean isIndentEndToken(PHPTokenId id) {
+        return INDENT_END_TOKENS.contains(id);
+    }
+
 //    private static OffsetRange findMultilineRange(TokenSequence<? extends JsTokenId> ts) {
 //        int startOffset = ts.offset();
 //        JsTokenId id = ts.token().id();
@@ -508,15 +510,11 @@ public class LexUtilities {
 //     * with a corresponding "end" token, such as "begin", "def", "module",
 //     * etc.
 //     */
-//    public static boolean isBeginToken(TokenId id, BaseDocument doc, TokenSequence<?extends JsTokenId> ts) {
-////        if (id == JsTokenId.IF) {
-////        }
-////        return END_PAIRS.contains(id);
+//    public static boolean isBeginToken(PHPTokenId id, BaseDocument doc, TokenSequence<?extends PHPTokenId> ts) {
 //        return false;
 //    }
 //
-//    public static boolean isEndToken(TokenId id, BaseDocument doc, TokenSequence<?extends JsTokenId> ts) {
-////        return (id == JsTokenId.END);
+//    public static boolean isEndToken(PHPTokenId id, BaseDocument doc, TokenSequence<?extends PHPTokenId> ts) {
 //        return false;
 //    }
 //    
@@ -527,19 +525,20 @@ public class LexUtilities {
 //    public static boolean isIndentToken(TokenId id) {
 //        return INDENT_WORDS.contains(id);
 //    }
-//
-//    /** Compute the balance of begin/end tokens on the line.
-//     * @param doc the document
-//     * @param offset The offset somewhere on the line
-//     * @param upToOffset If true, only compute the line balance up to the given offset (inclusive),
-//     *   and if false compute the balance for the whole line
-//     */
-//    public static int getBeginEndLineBalance(BaseDocument doc, int offset, boolean upToOffset) {
+
+    /** Compute the balance of begin/end tokens on the line.
+     * @param doc the document
+     * @param offset The offset somewhere on the line
+     * @param upToOffset If true, only compute the line balance up to the given offset (inclusive),
+     *   and if false compute the balance for the whole line
+     */
+    public static int getBeginEndLineBalance(BaseDocument doc, int offset, boolean upToOffset) {
+// XXX: resurrect
 //        try {
 //            int begin = Utilities.getRowStart(doc, offset);
 //            int end = upToOffset ? offset : Utilities.getRowEnd(doc, offset);
 //
-//            TokenSequence<?extends JsTokenId> ts = LexUtilities.getJsTokenSequence(doc, begin);
+//            TokenSequence<?extends PHPTokenId> ts = LexUtilities.getPHPTokenSequence(doc, begin);
 //            if (ts == null) {
 //                return 0;
 //            }
@@ -553,7 +552,7 @@ public class LexUtilities {
 //            int balance = 0;
 //
 //            do {
-//                Token<?extends JsTokenId> token = ts.token();
+//                Token<?extends PHPTokenId> token = ts.token();
 //                TokenId id = token.id();
 //
 //                if (isBeginToken(id, doc, ts)) {
@@ -569,136 +568,136 @@ public class LexUtilities {
 //
 //            return 0;
 //        }
-//    }
-//
-//    /** Compute the balance of begin/end tokens on the line */
-//    public static int getLineBalance(BaseDocument doc, int offset, TokenId up, TokenId down) {
-//        try {
-//            int begin = Utilities.getRowStart(doc, offset);
-//            int end = Utilities.getRowEnd(doc, offset);
-//
-//            TokenSequence<?extends JsTokenId> ts = LexUtilities.getJsTokenSequence(doc, begin);
-//            if (ts == null) {
-//                return 0;
-//            }
-//
-//            ts.move(begin);
-//
-//            if (!ts.moveNext()) {
-//                return 0;
-//            }
-//
-//            int balance = 0;
-//
-//            do {
-//                Token<?extends JsTokenId> token = ts.token();
-//                TokenId id = token.id();
-//
-//                if (id == up) {
-//                    balance++;
-//                } else if (id == down) {
-//                    balance--;
-//                }
-//            } while (ts.moveNext() && (ts.offset() <= end));
-//
-//            return balance;
-//        } catch (BadLocationException ble) {
-//            Exceptions.printStackTrace(ble);
-//
-//            return 0;
-//        }
-//    }
-//
-//    /**
-//     * The same as braceBalance but generalized to any pair of matching
-//     * tokens.
-//     * @param open the token that increses the count
-//     * @param close the token that decreses the count
-//     */
-//    public static int getTokenBalance(BaseDocument doc, TokenId open, TokenId close, int offset)
-//        throws BadLocationException {
-//        TokenSequence<?extends JsTokenId> ts = LexUtilities.getJsTokenSequence(doc, 0);
-//        if (ts == null) {
-//            return 0;
-//        }
-//
-//        // XXX Why 0? Why not offset?
-//        ts.moveIndex(0);
-//
-//        if (!ts.moveNext()) {
-//            return 0;
-//        }
-//
-//        int balance = 0;
-//
-//        do {
-//            Token t = ts.token();
-//
-//            if (t.id() == open) {
-//                balance++;
-//            } else if (t.id() == close) {
-//                balance--;
-//            }
-//        } while (ts.moveNext());
-//
-//        return balance;
-//    }
-//
-//    public static int getLineIndent(BaseDocument doc, int offset) {
-//        try {
-//            int start = Utilities.getRowStart(doc, offset);
-//            int end;
-//
-//            if (Utilities.isRowWhite(doc, start)) {
-//                end = Utilities.getRowEnd(doc, offset);
-//            } else {
-//                end = Utilities.getRowFirstNonWhite(doc, start);
-//            }
-//
-//            int indent = Utilities.getVisualColumn(doc, end);
-//
-//            return indent;
-//        } catch (BadLocationException ble) {
-//            Exceptions.printStackTrace(ble);
-//
-//            return 0;
-//        }
-//    }
-//
-//    public static void indent(StringBuilder sb, int indent) {
-//        for (int i = 0; i < indent; i++) {
-//            sb.append(' ');
-//        }
-//    }
-//
-//    public static String getIndentString(int indent) {
-//        StringBuilder sb = new StringBuilder(indent);
-//        indent(sb, indent);
-//
-//        return sb.toString();
-//    }
-//
-//    /**
-//     * Return true iff the line for the given offset is a JavaScript comment line.
-//     * This will return false for lines that contain comments (even when the
-//     * offset is within the comment portion) but also contain code.
-//     */
-//    public static boolean isCommentOnlyLine(BaseDocument doc, int offset)
-//        throws BadLocationException {
-//        int begin = Utilities.getRowFirstNonWhite(doc, offset);
-//
-//        if (begin == -1) {
-//            return false; // whitespace only
-//        }
-//
-//        Token<? extends JsTokenId> token = LexUtilities.getToken(doc, begin);
-//        if (token != null) {
-//            return token.id() == JsTokenId.LINE_COMMENT;
-//        }
-//        
-//        return false;
-//    }
-//
+        return 0;
+    }
+
+    /** Compute the balance of begin/end tokens on the line */
+    public static int getLineBalance(BaseDocument doc, int offset, TokenId up, TokenId down) {
+        try {
+            int begin = Utilities.getRowStart(doc, offset);
+            int end = Utilities.getRowEnd(doc, offset);
+
+            TokenSequence<?extends PHPTokenId> ts = LexUtilities.getPHPTokenSequence(doc, begin);
+            if (ts == null) {
+                return 0;
+            }
+
+            ts.move(begin);
+
+            if (!ts.moveNext()) {
+                return 0;
+            }
+
+            int balance = 0;
+
+            do {
+                Token<?extends PHPTokenId> token = ts.token();
+                TokenId id = token.id();
+
+                if (id == up) {
+                    balance++;
+                } else if (id == down) {
+                    balance--;
+                }
+            } while (ts.moveNext() && (ts.offset() <= end));
+
+            return balance;
+        } catch (BadLocationException ble) {
+            Exceptions.printStackTrace(ble);
+
+            return 0;
+        }
+    }
+
+    /**
+     * The same as braceBalance but generalized to any pair of matching
+     * tokens.
+     * @param open the token that increses the count
+     * @param close the token that decreses the count
+     */
+    public static int getTokenBalance(BaseDocument doc, char open, char close, int offset) throws BadLocationException {
+        TokenSequence<?extends PHPTokenId> ts = LexUtilities.getPHPTokenSequence(doc, 0);
+        if (ts == null) {
+            return 0;
+        }
+
+        // XXX Why 0? Why not offset?
+        ts.moveIndex(0);
+
+        if (!ts.moveNext()) {
+            return 0;
+        }
+
+        int balance = 0;
+
+        do {
+            Token t = ts.token();
+
+            if (textEquals(t.text(), open)) {
+                balance++;
+            } else if (textEquals(t.text(), close)) {
+                balance--;
+            }
+        } while (ts.moveNext());
+
+        return balance;
+    }
+
+    public static int getLineIndent(BaseDocument doc, int offset) {
+        try {
+            int start = Utilities.getRowStart(doc, offset);
+            int end;
+
+            if (Utilities.isRowWhite(doc, start)) {
+                end = Utilities.getRowEnd(doc, offset);
+            } else {
+                end = Utilities.getRowFirstNonWhite(doc, start);
+            }
+
+            int indent = Utilities.getVisualColumn(doc, end);
+
+            return indent;
+        } catch (BadLocationException ble) {
+            Exceptions.printStackTrace(ble);
+
+            return 0;
+        }
+    }
+
+    public static void indent(StringBuilder sb, int indent) {
+        for (int i = 0; i < indent; i++) {
+            sb.append(' ');
+        }
+    }
+
+    private static String getIndentString(int indent) {
+        StringBuilder sb = new StringBuilder(indent);
+        indent(sb, indent);
+
+        return sb.toString();
+    }
+
+    /**
+     * Return true iff the line for the given offset is a JavaScript comment line.
+     * This will return false for lines that contain comments (even when the
+     * offset is within the comment portion) but also contain code.
+     */
+    public static boolean isCommentOnlyLine(BaseDocument doc, int offset)
+        throws BadLocationException {
+        int begin = Utilities.getRowFirstNonWhite(doc, offset);
+
+        if (begin == -1) {
+            return false; // whitespace only
+        }
+
+        Token<? extends PHPTokenId> token = LexUtilities.getToken(doc, begin);
+        if (token != null) {
+            return token.id() == PHPTokenId.PHP_LINE_COMMENT;
+        }
+        
+        return false;
+    }
+
 //    public static void adjustLineIndentation(BaseDocument doc, int offset, int adjustment) {
 //        try {
 //            int lineBegin = Utilities.getRowStart(doc, offset);
@@ -712,48 +711,48 @@ public class LexUtilities {
 //            Exceptions.printStackTrace(ble);
 //        }
 //    }
-//
-//    /** Adjust the indentation of the line containing the given offset to the provided
-//     * indentation, and return the new indent.
-//     */
-//    public static int setLineIndentation(BaseDocument doc, int offset, int indent) {
-//        int currentIndent = getLineIndent(doc, offset);
-//
-//        try {
-//            int lineBegin = Utilities.getRowStart(doc, offset);
-//
-//            if (lineBegin == -1) {
-//                return currentIndent;
-//            }
-//
-//            int adjust = currentIndent - indent;
-//
-//            if (adjust > 0) {
-//                // Make sure that we are only removing spaces here
-//                String text = doc.getText(lineBegin, adjust);
-//
-//                for (int i = 0; i < text.length(); i++) {
-//                    if (!Character.isWhitespace(text.charAt(i))) {
-//                        throw new RuntimeException(
-//                            "Illegal indentation adjustment: Deleting non-whitespace chars: " +
-//                            text);
-//                    }
-//                }
-//
-//                doc.remove(lineBegin, adjust);
-//            } else if (adjust < 0) {
-//                adjust = -adjust;
-//                doc.insertString(lineBegin, getIndentString(adjust), null);
-//            }
-//
-//            return indent;
-//        } catch (BadLocationException ble) {
-//            Exceptions.printStackTrace(ble);
-//
-//            return currentIndent;
-//        }
-//    }
-//
+
+    /** Adjust the indentation of the line containing the given offset to the provided
+     * indentation, and return the new indent.
+     */
+    public static int setLineIndentation(BaseDocument doc, int offset, int indent) {
+        int currentIndent = getLineIndent(doc, offset);
+
+        try {
+            int lineBegin = Utilities.getRowStart(doc, offset);
+
+            if (lineBegin == -1) {
+                return currentIndent;
+            }
+
+            int adjust = currentIndent - indent;
+
+            if (adjust > 0) {
+                // Make sure that we are only removing spaces here
+                String text = doc.getText(lineBegin, adjust);
+
+                for (int i = 0; i < text.length(); i++) {
+                    if (!Character.isWhitespace(text.charAt(i))) {
+                        throw new RuntimeException(
+                            "Illegal indentation adjustment: Deleting non-whitespace chars: " +
+                            text);
+                    }
+                }
+
+                doc.remove(lineBegin, adjust);
+            } else if (adjust < 0) {
+                adjust = -adjust;
+                doc.insertString(lineBegin, getIndentString(adjust), null);
+            }
+
+            return indent;
+        } catch (BadLocationException ble) {
+            Exceptions.printStackTrace(ble);
+
+            return currentIndent;
+        }
+    }
+
 //    /**
 //     * Return the string at the given position, or null if none
 //     */
@@ -1267,5 +1266,18 @@ public class LexUtilities {
 //        return comments;
 //    }
 
+
+    public static boolean textEquals(CharSequence text1, char... text2) {
+        int len = text1.length();
+        if (len == text2.length) {
+            for (int i = len - 1; i >= 0; i--) {
+                if (text1.charAt(i) != text2[i]) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        return false;
+    }
     
 }

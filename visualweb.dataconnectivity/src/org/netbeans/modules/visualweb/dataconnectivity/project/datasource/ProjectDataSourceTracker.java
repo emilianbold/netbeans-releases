@@ -51,7 +51,6 @@ import org.netbeans.modules.visualweb.insync.ModelSetListener;
 import org.netbeans.modules.visualweb.insync.ModelSetsListener;
 import org.netbeans.modules.visualweb.insync.live.LiveUnit;
 import org.netbeans.modules.visualweb.insync.models.FacesModel;
-import org.netbeans.modules.visualweb.insync.models.FacesModelSet;
 import org.netbeans.modules.visualweb.project.jsf.services.RefreshService;
 import org.netbeans.modules.visualweb.dataconnectivity.sql.DesignTimeDataSource;
 import org.netbeans.modules.visualweb.dataconnectivity.sql.DesignTimeDataSourceHelper;
@@ -83,6 +82,7 @@ import java.util.TreeSet;
 import javax.naming.NamingException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ui.OpenProjects;
 
 import org.netbeans.modules.visualweb.dataconnectivity.datasource.CurrentProject;
@@ -414,12 +414,7 @@ public class ProjectDataSourceTracker{
     private class DSTracker {
         public DSTracker(Project proj) {
             this.project = proj ;
-            projectAux = (AuxiliaryConfiguration)project.getLookup().lookup(AuxiliaryConfiguration.class) ;
-            if ( projectAux == null ) {
-                logErrorInfo("no AuxiliaryConfiguration.class implementation for Project "+ project ) ; // NOI18N
-            } else {
-                logInfo("we have an AuxiliaryConfiguration") ; // NOI18N
-            }
+            projectAux = ProjectUtils.getAuxiliaryConfiguration(project);
             restoreHardcodedDataSources() ;
         }
         
@@ -429,7 +424,7 @@ public class ProjectDataSourceTracker{
         private HashSet listeners = new HashSet();
         private HashSet listenersForDSContainer = new HashSet();
         
-        AuxiliaryConfiguration projectAux = null ;
+        final AuxiliaryConfiguration projectAux;
         
         /*** these array lists (fnames,fnameDataSources, and dynamicDataSourceSet)
          * must be kept consistent.
@@ -508,10 +503,6 @@ public class ProjectDataSourceTracker{
          */
         private void persistHardcodedDataSources( ) {
             
-            if ( projectAux == null ) {
-                return ;
-            }
-            
             if ( hcdsElement == null ) {
                 restoreHardcodedDataSources() ;
                 if ( hcdsElement == null ) {
@@ -544,8 +535,6 @@ public class ProjectDataSourceTracker{
          * will be reused when saving.
          */
         private void restoreHardcodedDataSources( ) {
-            
-            if ( projectAux == null ) return ;
             
             // Ask the project if it has an exisiting Element
             hcdsElement = projectAux.getConfigurationFragment(HC_ELEMENT_NAME, HC_ELEMENT_NAMESPACE, HC_ELEMENT_SHARED) ;

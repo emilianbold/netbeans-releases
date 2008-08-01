@@ -59,8 +59,6 @@ public class EndpointConfigPanel extends javax.swing.JPanel {
         jtblEndpoints = new javax.swing.JTable();
         jScrollPane2 = new javax.swing.JScrollPane();
         jtblEndpoints1 = new javax.swing.JTable();
-        jLabel1 = new javax.swing.JLabel();
-        jLabel2 = new javax.swing.JLabel();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -69,12 +67,12 @@ public class EndpointConfigPanel extends javax.swing.JPanel {
 
         jtblEndpoints.setModel(getProviderEndpointsTableModel());
         jtblEndpoints.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_ALL_COLUMNS);
-        jtblEndpoints.setName("EndpointsTable");
+        jtblEndpoints.setName("null");
         jScrollPane1.setViewportView(jtblEndpoints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 0;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 0.5;
@@ -87,40 +85,22 @@ public class EndpointConfigPanel extends javax.swing.JPanel {
 
         jtblEndpoints1.setModel(getConsumerEndpointsTableModel());
         jtblEndpoints1.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_ALL_COLUMNS);
-        jtblEndpoints1.setName("EndpointsTable");
+        jtblEndpoints1.setName("null");
         jScrollPane2.setViewportView(jtblEndpoints1);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 0.5;
         gridBagConstraints.weighty = 0.5;
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
         add(jScrollPane2, gridBagConstraints);
-
-        jLabel1.setText(org.openide.util.NbBundle.getMessage(EndpointConfigPanel.class, "LBL_CFG_Provider")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
-        add(jLabel1, gridBagConstraints);
-
-        jLabel2.setText(org.openide.util.NbBundle.getMessage(EndpointConfigPanel.class, "LBL_Consumer_Cfg")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
-        add(jLabel2, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTable jtblEndpoints;
@@ -136,74 +116,11 @@ public class EndpointConfigPanel extends javax.swing.JPanel {
     private String lblActivateJavaEEHttp = NbBundle.getMessage(EndpointConfigPanel.class, "LBL_TblCol_ActivateJavaEEHttpPort"); //NOI18N    
     
     private TableModel getProviderEndpointsTableModel(){
-        return new ProviderEndpointsTableModel(this.providerEps, new String[]{lblProviderEpt, lblActivateJavaEEHttp});
-        
-
-//                new javax.swing.table.DefaultTableModel(
-//            new Object [][] {
-//                {"Provides {svcNs.com}svc1/{intfcNs.com}Interface/Port", new Boolean(true), new Boolean(true)},
-//                {"Consumes {svcNs.com}svc1/{intfcNs.com}Interface/Port", new Boolean(true), new Boolean(true)},
-//                {null, null, null},
-//                {null, null, null},
-//                {null, null, null},
-//                {null, null, null},
-//                {null, null, null},
-//                {null, null, null},
-//                {null, null, null}
-//            },
-//            new String [] {
-//                "Endpoint", "Activate Thru JBI", "Listern on default HTTP Port"
-//            }
-//        ) {
-//            Class[] types = new Class [] {
-//                java.lang.String.class, java.lang.Boolean.class, java.lang.Boolean.class
-//            };
-//            boolean[] canEdit = new boolean [] {
-//                false, true, true
-//            };
-//
-//            public Class getColumnClass(int columnIndex) {
-//                return types [columnIndex];
-//            }
-//
-//            public boolean isCellEditable(int rowIndex, int columnIndex) {
-//                return canEdit [columnIndex];
-//            }
-//        };
+        return new ProviderEndpointsTableModel(this.providerEps, new String[]{lblProviderEpt, lblActivateJavaEEHttp});        
     }
 
     private TableModel getConsumerEndpointsTableModel(){
         return new ConsumerEndpointsTableModel(this.consumerEps, new String[] {lblconsumerEpt, lblActivateNMR});
-//            new Object [][] {
-//                {"Provides {svcNs.com}svc1/{intfcNs.com}Interface/Port", new Boolean(true), new Boolean(true)},
-//                {"Consumes {svcNs.com}svc1/{intfcNs.com}Interface/Port", new Boolean(true), new Boolean(true)},
-//                {null, null, null},
-//                {null, null, null},
-//                {null, null, null},
-//                {null, null, null},
-//                {null, null, null},
-//                {null, null, null},
-//                {null, null, null}
-//            },
-//            new String [] {
-//                "Endpoint", "Activate Thru JBI", "Listern on default HTTP Port"
-//            }
-//        ) {
-//            Class[] types = new Class [] {
-//                java.lang.String.class, java.lang.Boolean.class, java.lang.Boolean.class
-//            };
-//            boolean[] canEdit = new boolean [] {
-//                false, true, true
-//            };
-//
-//            public Class getColumnClass(int columnIndex) {
-//                return types [columnIndex];
-//            }
-//
-//            public boolean isCellEditable(int rowIndex, int columnIndex) {
-//                return canEdit [columnIndex];
-//            }
-//        };
     }
 
     public List<EndpointCfg> getEndpointCfgs(){

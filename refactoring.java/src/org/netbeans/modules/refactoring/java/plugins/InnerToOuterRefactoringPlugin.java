@@ -212,8 +212,8 @@ public class InnerToOuterRefactoringPlugin extends JavaRefactoringPlugin {
         fireProgressListenerStart(ProgressEvent.START, a.size());
         final InnerToOuterTransformer innerToOuter = new InnerToOuterTransformer(refactoring);
         TransformTask transform = new TransformTask(innerToOuter, refactoring.getSourceType());
-        createAndAddElements(a, transform, refactoringElements, refactoring);
+        Problem problem = createAndAddElements(a, transform, refactoringElements, refactoring);
         fireProgressListenerStop();
-        return innerToOuter.getProblem();
+        return problem != null ? problem : innerToOuter.getProblem();
     }
 }

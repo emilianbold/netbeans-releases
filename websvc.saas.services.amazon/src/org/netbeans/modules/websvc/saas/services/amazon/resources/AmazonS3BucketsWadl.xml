@@ -40,14 +40,15 @@
  Version 2 license, then the option applies only if the new code is
  made subject to such option by the copyright holder.
 -->
-
 <application xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
              xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
              xsi:schemaLocation="http://research.sun.com/wadl/2006/10 
-             ../../../../../../../../../../websvc.saas.api/src/org/netbeans/modules/websvc/saas/model/wadl20061109.xsd"
-             xmlns="http://research.sun.com/wadl/2006/10">
-    
-    <grammars/>
+                https://wadl.dev.java.net/wadl20061109.xsd"
+             xmlns="http://research.sun.com/wadl/2006/10"
+             xmlns:buckets="urn:amazons3:amazons3buckets">
+    <grammars>
+        <include href="AmazonS3Buckets.xsd"/>
+    </grammars>
     <resources base="http://s3.amazonaws.com">
         <!--
             API documentation:
@@ -55,17 +56,16 @@
             http://developer.amazonwebservices.com/connect/kbcategory.jspa?categoryID=46
             
             This is a single WADL method for a all 3 methods of Amazon S3 services.
-        -->	
+        -->
         <resource path="/">
             <method name="GET" id="getBuckets">
                 <request>
                     <param name="Authorization" type="xsd:string" style="header" required="true"/>
                 </request>
                 <response>
-                    <representation mediaType="application/xml"/>
+                    <representation mediaType="application/xml" element="buckets:ListAllMyBucketsResult"/>
                 </response>
             </method>
         </resource>
     </resources>
-    
 </application>

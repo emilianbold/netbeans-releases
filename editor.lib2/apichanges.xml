@@ -105,6 +105,24 @@ is the proper place.
 
     <changes>
 
+        <change id="added-codegen-spi">
+            <summary>Code Generation SPI added</summary>
+            <version major="1" minor="8"/>
+            <date day="30" month="4" year="2008"/>
+            <author login="dbalek"/>
+            <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes"/>
+            <description>
+                The Code Generation SPI consists of two interfaces.
+                The <code>CodeGenerator</code> implementations registered for
+                various mime types serve for creating code snippets and inserting
+                them into documents on the Insert Code editor action invocation.
+                The <code>CodeGeneratorContextProvider</code> implementations
+                registered for the mime types could provide the respective
+                CodeGenerators with an additional context information. 
+            </description>
+            <issue number="134239"/>
+        </change>
+
         <change id="added-HighlightAttributeValue">
             <summary>HighlightAttributeValue interface added</summary>
             <version major="1" minor="5"/>

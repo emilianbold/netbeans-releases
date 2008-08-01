@@ -38,7 +38,6 @@
  */
 package org.netbeans.modules.ruby.hints;
 
-import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -53,15 +52,16 @@ import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.gsf.api.Hint;
+import org.netbeans.modules.gsf.api.EditList;
+import org.netbeans.modules.gsf.api.HintFix;
+import org.netbeans.modules.gsf.api.HintSeverity;
+import org.netbeans.modules.gsf.api.PreviewableFix;
+import org.netbeans.modules.gsf.api.RuleContext;
 import org.netbeans.modules.ruby.AstUtilities;
 import org.netbeans.modules.ruby.RubyUtils;
-import org.netbeans.modules.ruby.hints.spi.AstRule;
-import org.netbeans.modules.ruby.hints.spi.Description;
-import org.netbeans.modules.ruby.hints.spi.EditList;
-import org.netbeans.modules.ruby.hints.spi.Fix;
-import org.netbeans.modules.ruby.hints.spi.HintSeverity;
-import org.netbeans.modules.ruby.hints.spi.PreviewableFix;
-import org.netbeans.modules.ruby.hints.spi.RuleContext;
+import org.netbeans.modules.ruby.hints.infrastructure.RubyAstRule;
+import org.netbeans.modules.ruby.hints.infrastructure.RubyRuleContext;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -74,13 +74,13 @@ import org.openide.util.NbBundle;
  * 
  * @author Tor Norbye
  */
-public class ConvertConditionals implements AstRule {
+public class ConvertConditionals extends RubyAstRule {
 
     public Set<NodeType> getKinds() {
         return Collections.singleton(NodeType.IFNODE);
     }
 
-    public void run(RuleContext context, List<Description> result) {
+    public void run(RubyRuleContext context, List<Hint> result) {
         Node node = context.node;
         CompilationInfo info = context.compilationInfo;
 
@@ -123,9 +123,9 @@ public class ConvertConditionals implements AstRule {
             return;
         }
         
+        BaseDocument doc = context.doc;
         try {
-            BaseDocument doc = (BaseDocument) info.getDocument();
-            int keywordOffset = ConvertIfToUnless.findKeywordOffset(info, ifNode);
+            int keywordOffset = ConvertIfToUnless.findKeywordOffset(context, ifNode);
             if (keywordOffset == -1 || keywordOffset > doc.getLength() - 1) {
                 return;
             }
@@ -136,23 +136,19 @@ public class ConvertConditionals implements AstRule {
             }
         } catch (BadLocationException ble) {
             Exceptions.printStackTrace(ble);
-        } catch (IOException ioe) {
-            Exceptions.printStackTrace(ioe);
         }
 
         // If statement that is not already a statement modifier
         OffsetRange range = AstUtilities.getRange(node);
 
-        if (RubyUtils.isRhtmlFile(info.getFileObject())) {
+        if (RubyUtils.isRhtmlDocument(doc) || RubyUtils.isYamlDocument(doc)) {
             // Make sure that we're in a single contiguous Ruby section; if not, this won't work
             range = LexUtilities.getLexerOffsets(info, range);
             if (range == OffsetRange.NONE) {
                 return;
             }
 
-            BaseDocument doc = null;
             try {
-                doc = (BaseDocument) info.getDocument();
                 doc.readLock();
                 TokenHierarchy th = TokenHierarchy.get(doc);
                 TokenSequence ts = th.tokenSequence();
@@ -164,26 +160,22 @@ public class ConvertConditionals implements AstRule {
                 if (ts.offset()+ts.token().length() < range.getEnd()) {
                     return;
                 }
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
             } finally {
-                if (doc != null) {
-                    doc.readUnlock();
-                }
+                doc.readUnlock();
             }
         }
         
         
-        ConvertToModifier fix = new ConvertToModifier(info, ifNode);
+        ConvertToModifier fix = new ConvertToModifier(context, ifNode);
         
         if (fix.getEditList() == null) {
             return;
         }
 
-        List<Fix> fixes = Collections.<Fix>singletonList(fix);
+        List<HintFix> fixes = Collections.<HintFix>singletonList(fix);
 
         String displayName = NbBundle.getMessage(ConvertConditionals.class, "ConvertConditionals");
-        Description desc = new Description(this, displayName, info.getFileObject(), range,
+        Hint desc = new Hint(this, displayName, info.getFileObject(), range,
                 fixes, 500);
         result.add(desc);
     }
@@ -204,7 +196,7 @@ public class ConvertConditionals implements AstRule {
         return null;
     }
 
-    public boolean appliesTo(CompilationInfo info) {
+    public boolean appliesTo(RuleContext context) {
         return true;
     }
 
@@ -221,11 +213,11 @@ public class ConvertConditionals implements AstRule {
     }
     
     private class ConvertToModifier implements PreviewableFix {
-        private CompilationInfo info;
+        private final RubyRuleContext context;
         private IfNode ifNode;
 
-        public ConvertToModifier(CompilationInfo info, IfNode ifNode) {
-            this.info = info;
+        public ConvertToModifier(RubyRuleContext context, IfNode ifNode) {
+            this.context = context;
             this.ifNode = ifNode;
         }
 
@@ -242,13 +234,14 @@ public class ConvertConditionals implements AstRule {
         
         public EditList getEditList() {
             try {
-                BaseDocument doc = (BaseDocument) info.getDocument();
+                BaseDocument doc = context.doc;
 
                 Node bodyNode = ifNode.getThenBody();
                 boolean isIf = bodyNode != null;
                 if (bodyNode == null) {
                     bodyNode = ifNode.getElseBody();
                 }
+                CompilationInfo info = context.compilationInfo;
                 OffsetRange bodyRange = AstUtilities.getRange(bodyNode);
                 bodyRange = LexUtilities.getLexerOffsets(info, bodyRange);
                 if (bodyRange == OffsetRange.NONE) {

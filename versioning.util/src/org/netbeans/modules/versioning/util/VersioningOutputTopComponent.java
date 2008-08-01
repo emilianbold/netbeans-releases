@@ -50,6 +50,7 @@ import org.openide.awt.TabbedPaneFactory;
 import javax.swing.*;
 import java.io.*;
 import java.awt.BorderLayout;
+import java.awt.event.ActionEvent;
 import java.util.*;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
@@ -69,6 +70,18 @@ public class VersioningOutputTopComponent extends TopComponent implements Extern
     
     private JTabbedPane tabbedPane = TabbedPaneFactory.createCloseButtonTabbedPane();
     
+    private Action prevTabAction = new AbstractAction() {
+        public void actionPerformed(ActionEvent e) {
+            tabbedPane.setSelectedIndex(getPreviousSubTabIndex(tabbedPane, tabbedPane.getSelectedIndex()));
+        }
+    };
+
+    private Action nextTabAction = new AbstractAction() {
+        public void actionPerformed(ActionEvent e) {
+            tabbedPane.setSelectedIndex(getNextSubTabIndex(tabbedPane, tabbedPane.getSelectedIndex()));
+        }
+    };
+    
     public VersioningOutputTopComponent() {
         // XXX - please rewrite to regular API when available - see issue #55955
         putClientProperty("SlidingName", NbBundle.getMessage(VersioningOutputTopComponent.class, "CTL_VersioningOutput_Title")); //NOI18N 
@@ -77,6 +90,8 @@ public class VersioningOutputTopComponent extends TopComponent implements Extern
         getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(VersioningOutputTopComponent.class, "CTL_VersioningOutput_Title"));  // NOI18N
         updateName();
         tabbedPane.addPropertyChangeListener(this);
+        getActionMap().put("PreviousViewAction", prevTabAction);
+        getActionMap().put("NextViewAction", nextTabAction);
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
@@ -182,5 +197,33 @@ public class VersioningOutputTopComponent extends TopComponent implements Extern
         }
         updateName();
         revalidate();
+    }
+
+    private int getPreviousSubTabIndex(JTabbedPane tabs, int tabIndex) {
+        int previousTabIndex = tabIndex;
+        for (int i = 0; i < tabs.getComponentCount(); i++) {
+            previousTabIndex--;
+            if (previousTabIndex < 0) {
+                previousTabIndex = tabs.getComponentCount() - 1;
+            }
+            if (tabs.isEnabledAt(previousTabIndex)) {
+                break;
+            }
+        }
+        return previousTabIndex;
+    }
+
+    private int getNextSubTabIndex(JTabbedPane tabs, int tabIndex) {
+       int nextTabIndex = tabIndex;
+       for (int i = 0; i < tabs.getComponentCount(); i++) {
+            nextTabIndex++;
+            if (nextTabIndex == tabs.getComponentCount()) {
+                nextTabIndex = 0;
+            }
+            if (tabs.isEnabledAt(nextTabIndex)) {
+                break;
+            }
+        }
+        return nextTabIndex;
     }
 }

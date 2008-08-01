@@ -282,7 +282,7 @@ made subject to such option by the copyright holder.
                 
     <folder name="SVGXMLPalette">
         <folder name="BasicShapes">
-            <attr name="SystemFileSystem.localizingBundle"  stringvalue="org.netbeans.modules.mobility.svgcore.resources.Bundle"/>
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.svgcore.resources.Bundle"/>
             
             <file name="line.xml" url="/org/netbeans/modules/mobility/svgcore/items/line.xml"/>
             <file name="rectangle.xml" url="/org/netbeans/modules/mobility/svgcore/items/rectangle.xml"/>
@@ -294,6 +294,20 @@ made subject to such option by the copyright holder.
             <file name="open_curve.xml" url="/org/netbeans/modules/mobility/svgcore/items/open_curve.xml"/>
             <file name="closed_curve.xml" url="/org/netbeans/modules/mobility/svgcore/items/closed_curve.xml"/>
             <file name="text.xml" url="/org/netbeans/modules/mobility/svgcore/items/text.xml"/>
+        </folder>        
+            <!--  form elements -->
+        <folder name="FormComponents">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.svgcore.resources.Bundle"/>
+
+            <file name="button.xml" url="/org/netbeans/modules/mobility/svgcore/items/form/button.xml"/>
+            <file name="check_box.xml" url="/org/netbeans/modules/mobility/svgcore/items/form/check_box.xml"/>
+            <file name="combo_box.xml" url="/org/netbeans/modules/mobility/svgcore/items/form/combo_box.xml"/>
+            <file name="label.xml" url="/org/netbeans/modules/mobility/svgcore/items/form/label.xml"/>
+            <file name="list.xml" url="/org/netbeans/modules/mobility/svgcore/items/form/list.xml"/>
+            <file name="radio_button.xml" url="/org/netbeans/modules/mobility/svgcore/items/form/radio_button.xml"/>
+            <file name="slider.xml" url="/org/netbeans/modules/mobility/svgcore/items/form/slider.xml"/>
+            <file name="spinner.xml" url="/org/netbeans/modules/mobility/svgcore/items/form/spinner.xml"/>
+            <file name="text_field.xml" url="/org/netbeans/modules/mobility/svgcore/items/form/text_field.xml"/>
         </folder>        
     </folder>
     
@@ -328,6 +342,11 @@ made subject to such option by the copyright holder.
     <folder name="Loaders">
         <folder name="image">
             <folder name="svg+xml">
+                <folder name="Factories">
+                    <file name="org-netbeans-modules-mobility-svgcore-SVGDataLoader.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.svgcore.Bundle"/>
+                    </file>
+                </folder>
                 <folder name="Actions">
                     <file name="org-openide-actions-OpenAction.instance">
                         <attr name="position" intvalue="100"/>
@@ -388,6 +407,11 @@ made subject to such option by the copyright holder.
         </folder>
         <folder name="text">
             <folder name="x-svg-palette-item">
+                <folder name="Factories">
+                    <file name="org-netbeans-modules-mobility-svgcore-palette-SVGPaletteItemDataLoader.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.svgcore.Bundle"/>
+                    </file>
+                </folder>
                 <folder name="Actions">
                     <file name="org-openide-actions-CopyAction.instance">
                         <attr name="position" intvalue="500"/>

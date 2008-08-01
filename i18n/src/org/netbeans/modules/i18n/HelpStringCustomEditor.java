@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -93,10 +93,9 @@ public class HelpStringCustomEditor extends JPanel {
 
     /**
     * @return property value that is result of <code>CodeCustomEditor</code>.
-    * @exception <code>InvalidStateException</code> when the custom property editor does not represent valid property value
     */
     public Object getPropertyValue() {
-        return (String)combo.getSelectedItem();
+        return ((JTextField) combo.getEditor().getEditorComponent()).getText();
     }
     
     

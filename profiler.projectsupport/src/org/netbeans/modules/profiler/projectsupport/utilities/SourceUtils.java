@@ -40,12 +40,12 @@
 
 package org.netbeans.modules.profiler.projectsupport.utilities;
 
+import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Scope;
 import com.sun.source.tree.Tree;
-import static com.sun.source.tree.Tree.Kind.*;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 import com.sun.source.util.Trees;
@@ -86,6 +86,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -111,7 +113,6 @@ import javax.lang.model.util.Types;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 import javax.swing.text.JTextComponent;
-import javax.swing.text.Position;
 import org.netbeans.api.java.source.ui.ElementOpen;
 import org.netbeans.lib.profiler.common.Profiler;
 import org.netbeans.modules.profiler.utilities.OutputParameter;
@@ -453,10 +454,63 @@ public final class SourceUtils {
     }
 
     /**
+     * Tests
+     * @param fo
+     * @param annotationName
+     * @return
+     */
+    public static boolean hasAnnotation(final FileObject fo, final String annotationName) {
+        final CountDownLatch latch = new CountDownLatch(1);
+        final AtomicBoolean result = new AtomicBoolean(false);
+        
+        JavaSource js = JavaSource.forFileObject(fo);
+        if (js == null) return false;
+        try {
+            js.runUserActionTask(new CancellableTask<CompilationController>() {
+
+                public void cancel() {
+                    // do nothing
+                }
+
+                public void run(final CompilationController controller) throws Exception {
+                    controller.toPhase(Phase.ELEMENTS_RESOLVED);
+
+                    TreePathScanner<Void, Void> scanner = new TreePathScanner<Void, Void>() {
+                        @Override
+                        public Void visitAnnotation(AnnotationTree annTree, Void p) {
+                            if (result.get()) return null;
+                            
+                            TypeMirror tm = controller.getTrees().getTypeMirror(getCurrentPath());
+                            if (tm != null) {
+                                TypeElement annType = (TypeElement)controller.getTypes().asElement(tm);
+                                if (annType != null) {
+                                    result.set(result.get() || annotationName.equals(ElementUtilities.getBinaryName(annType)));
+                                }
+                            }
+                            return null;
+                        }
+                    };
+                    scanner.scan(controller.getCompilationUnit(), null);
+
+                    latch.countDown();
+                }
+            }, true);
+            latch.await();
+            return result.get();
+        } catch (IOException e) {
+            ProfilerLogger.log(e);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+        return false;
+    }
+    
+    /**
      * Check if given FileObject represents a java class which extends or implements all the provided classes or interfaces
      *
      * @param fo        a FileObject representing Java source/class file
      * @param classNames array of classnames, fully qualified using . as package separator
+     * @param allRequired whether all interfaces/classes must be implemented/extended (TRUE) or any of them (FALSE)
      * @return true if the class in the FileObject is a subclass of the specified class
      */
     public static boolean isInstanceOf(final FileObject fo, final String[] classNames, final boolean allRequired) {
@@ -696,7 +750,7 @@ public final class SourceUtils {
     }
 
     public static boolean isTest(FileObject fo) {
-        return isJavaFile(fo) && isInstanceOf(fo, TEST_CLASSES, false); // NOI18N
+        return isJavaFile(fo) && (hasAnnotation(fo, "org.junit.Test") || isInstanceOf(fo, TEST_CLASSES, false)); // NOI18N
     }
 
     public static String getToplevelClassName(FileObject profiledClassFile) {
@@ -717,14 +771,19 @@ public final class SourceUtils {
                         public void run(final CompilationController controller)
                                  throws Exception {
                             // Controller has to be in some advanced phase, otherwise controller.getCompilationUnit() == null
-                            if (controller.toPhase(Phase.PARSED).compareTo(Phase.PARSED) < 0) {
+                            if (controller.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {
                                 return;
                             }
 
                             TreePathScanner<String, Void> scanner = new TreePathScanner<String, Void>() {
                                 public String visitClass(ClassTree node, Void p) {
-                                    return ElementUtilities.getBinaryName((TypeElement) controller.getTrees()
+                                    try {
+                                        return ElementUtilities.getBinaryName((TypeElement) controller.getTrees()
                                                                                                   .getElement(getCurrentPath()));
+                                    } catch (NullPointerException e) {
+                                        ProfilerLogger.log(e);
+                                        return "";
+                                    }
                                 }
                             };
 
@@ -1396,7 +1455,7 @@ public final class SourceUtils {
     /**
      * Returns the JavaSource repository of a given project or global JavaSource if no project is provided
      */
-    private static JavaSource getSources(Project project) {
+    public static JavaSource getSources(Project project) {
         if (project == null) {
             return getSources((FileObject[]) null);
         } else {
@@ -1414,7 +1473,7 @@ public final class SourceUtils {
         ClassPath bootPath;
         ClassPath compilePath;
 
-        if (roots == null) {
+        if (roots == null || roots.length == 0) {
             srcPath = ClassPathSupport.createProxyClassPath(GlobalPathRegistry.getDefault().getPaths(ClassPath.SOURCE)
                                                                               .toArray(new ClassPath[0]));
             bootPath = JavaPlatform.getDefault().getBootstrapLibraries();
@@ -1480,7 +1539,7 @@ public final class SourceUtils {
      * @param signature The VM signature of the method
      * @return Returns an ExecutableElement representing the method or null
      */
-    private static ExecutableElement resolveMethodByName(TypeElement parentClass, String methodName, String signature) {
+    public static ExecutableElement resolveMethodByName(TypeElement parentClass, String methodName, String signature) {
         // TODO: static initializer
         if ((parentClass == null) || (methodName == null) || (signature == null)) {
             return null;

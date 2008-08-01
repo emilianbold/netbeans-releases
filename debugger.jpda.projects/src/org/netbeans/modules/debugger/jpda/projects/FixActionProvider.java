@@ -61,6 +61,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.spi.debugger.ActionsProviderSupport;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
 import org.openide.ErrorManager;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
@@ -84,7 +85,7 @@ public class FixActionProvider extends ActionsProviderSupport {
         listener = new Listener ();
         MainProjectManager.getDefault ().addPropertyChangeListener (listener);
         debugger.addPropertyChangeListener (JPDADebugger.PROP_STATE, listener);
-        TopComponent.getRegistry ().addPropertyChangeListener (listener);
+        EditorContextDispatcher.getDefault().addPropertyChangeListener("text/x-java", listener);
         
         setEnabled (
             ActionsManager.ACTION_FIX,
@@ -95,7 +96,7 @@ public class FixActionProvider extends ActionsProviderSupport {
     private void destroy () {
         debugger.removePropertyChangeListener (JPDADebugger.PROP_STATE, listener);
         MainProjectManager.getDefault ().removePropertyChangeListener (listener);
-        TopComponent.getRegistry ().removePropertyChangeListener (listener);
+        EditorContextDispatcher.getDefault().removePropertyChangeListener (listener);
     }
     
     public Set getActions () {

@@ -27,7 +27,7 @@ import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
 import org.netbeans.modules.soa.mapper.common.basicmapper.IBasicMapper;
 import org.netbeans.modules.soa.ui.ExtendedLookup;
-import org.netbeans.modules.soa.ui.SoaUiUtil;
+import org.netbeans.modules.soa.ui.SoaUtil;
 import org.netbeans.modules.soa.ui.axinodes.AxiomChildren;
 import org.netbeans.modules.soa.ui.axinodes.AxiomNode;
 import org.netbeans.modules.soa.ui.UserNotification;
@@ -172,7 +172,7 @@ public class ExpressionEditor extends JPanel
             }
         });
         
-        SoaUiUtil.activateInlineMnemonics(this);
+        SoaUtil.activateInlineMnemonics(this);
     }
     
     public boolean initControls() {

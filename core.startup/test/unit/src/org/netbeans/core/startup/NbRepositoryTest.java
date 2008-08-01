@@ -45,10 +45,11 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import org.netbeans.junit.NbTestCase;
-import org.openide.filesystems.*;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.Repository;
 
 /**
- *
  * @author Jaroslav Tulach
  */
 public class NbRepositoryTest extends NbTestCase {
@@ -57,12 +58,6 @@ public class NbRepositoryTest extends NbTestCase {
         super(testName);
     }
 
-    protected void setUp() throws Exception {
-    }
-
-    protected void tearDown() throws Exception {
-    }
-    
     public void testUserDirIsWriteableEvenInstallDirDoesNotExists() throws IOException {
         System.getProperties().remove("netbeans.home");
         System.setProperty("netbeans.user", getWorkDirPath());

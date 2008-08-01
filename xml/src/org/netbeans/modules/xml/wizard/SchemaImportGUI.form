@@ -3,7 +3,7 @@
 <Form version="1.3" maxVersion="1.3" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <Properties>
     <Property name="name" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-      <ResourceString bundle="org/netbeans/modules/xml/wizard/Bundle.properties" key="PROP_schema_panel_name" replaceFormat="Util.THIS.getString(&quot;{key}&quot;)"/>
+      <ResourceString bundle="org/netbeans/modules/xml/wizard/Bundle.properties" key="PROP_schema_panel_name" replaceFormat="Util.THIS.getString(SchemaImportGUI.class, &quot;{key}&quot;)"/>
     </Property>
   </Properties>
   <AuxValues>

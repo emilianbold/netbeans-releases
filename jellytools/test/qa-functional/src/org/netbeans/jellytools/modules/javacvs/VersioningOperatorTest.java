@@ -62,15 +62,19 @@ public class VersioningOperatorTest extends JellyTestCase {
         TestRunner.run(suite());
     }
     
+    public static String[] tests = new String[] {"testInvoke"};
     /** Method used for explicit testsuite definition
      * @return  created suite
      */
     public static Test suite() {
+        /*
         TestSuite suite = new NbTestSuite();
         suite.addTest(new VersioningOperatorTest("testInvoke"));
         // It is empty by default
         //suite.addTest(new VersioningOperatorTest("testVerify"));
         return suite;
+         */
+        return createModuleTest(VersioningOperatorTest.class, tests);
     }
 
     /** Set up executed before each test case. */

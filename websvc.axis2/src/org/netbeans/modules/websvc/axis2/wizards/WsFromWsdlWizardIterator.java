@@ -42,7 +42,9 @@
 package org.netbeans.modules.websvc.axis2.wizards;
 
 import java.awt.Component;
+import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.text.MessageFormat;
 import java.util.Collections;
 import java.util.NoSuchElementException;
@@ -58,11 +60,14 @@ import org.netbeans.api.project.SourceGroup;
 
 import org.netbeans.modules.websvc.axis2.Axis2ModelProvider;
 import org.netbeans.modules.websvc.axis2.AxisUtils;
+import org.netbeans.modules.websvc.axis2.WSDLUtils;
 import org.netbeans.modules.websvc.axis2.config.model.Axis2Model;
 import org.netbeans.modules.websvc.axis2.services.model.Service;
 import org.netbeans.modules.websvc.axis2.services.model.ServiceGroup;
 import org.netbeans.modules.websvc.axis2.services.model.ServicesModel;
 import org.netbeans.modules.websvc.axis2.services.model.ServicesUtils;
+import org.netbeans.modules.xml.retriever.Retriever;
+import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
 import org.openide.WizardDescriptor;
 
@@ -93,55 +98,100 @@ public class WsFromWsdlWizardIterator implements TemplateWizard.Iterator /*, Ite
 
     public Set<DataObject> instantiate(TemplateWizard wiz) throws IOException {
         FileObject template = Templates.getTemplate( wiz );
+        String databindingName = (String)wiz.getProperty(WizardProperties.PROP_DATABINDING_NAME);
+        if ("axiom".equals(databindingName)) { //NOI18N
+            template = template.getParent().getFileObject("AxiomService","java"); //NOI18N
+            template.setAttribute("ns", wiz.getProperty(WizardProperties.PROP_WSDL_NS));
+        }
         DataObject dTemplate = DataObject.find( template );
         org.openide.filesystems.FileObject dir = Templates.getTargetFolder( wiz );
         DataFolder df = DataFolder.findFolder( dir );
         
-        WizardUtils.addAxis2Library(project);
-        
+        WizardUtils.addAxis2Library(project);        
         final DataObject dObj = dTemplate.createFromTemplate( df, Templates.getTargetName( wiz )  );
-        final String serviceName = (String)wiz.getProperty(WizardProperties.PROP_SERVICE_NAME);
-        final String packageName = (String)wiz.getProperty(WizardProperties.PROP_PACKAGE_NAME);
-        final boolean isSEI = ((Boolean)wiz.getProperty(WizardProperties.PROP_SEI)).booleanValue();      
-        addService(dObj.getPrimaryFile());
+                     
+        if ("axiom".equals(databindingName)) { //NOI18N
 
-        final String[] targets = new String[] {"wsdl2java-"+serviceName}; //NOI18N
-        RequestProcessor.getDefault().post(new Runnable() {
+            // use XML Retriever to download XML artifacts
+            File wsdlFile = (java.io.File)wiz.getProperty(WizardProperties.PROP_WSDL_URL);
+            FileObject wsdlDir = AxisUtils.getServicesFolder(project.getProjectDirectory(),true);
+            try { 
+                FileObject localWsdl = Retriever.getDefault().retrieveResource(wsdlDir, wsdlFile.toURI());
+                if (localWsdl != null) {
+                    addService(dObj.getPrimaryFile(), databindingName);
+                    WSDLModel wsdlModel = WSDLUtils.getWSDLModel(localWsdl, true);
+                    if (wsdlModel != null) {
+                        String serviceName = (String)wiz.getProperty(WizardProperties.PROP_SERVICE_NAME);
+                        String portName = (String)wiz.getProperty(WizardProperties.PROP_PORT_NAME);
+                        WsdlBindingInfo wsdlBindingInfo = WsdlBindingInfo.getWsdlBindingInfo(wsdlModel, serviceName, portName); 
+                        generateConfigFile(wsdlModel, dObj.getPrimaryFile(), wsdlBindingInfo);
+                        WizardUtils.generateSkeletonAxiomMethods(dObj.getPrimaryFile(), wsdlBindingInfo);
+                    }
+                    
+                }
+            } catch (URISyntaxException ex) {
+                ex.printStackTrace();
+            }
+        } else {
+            addService(dObj.getPrimaryFile(), databindingName);
+            final String serviceName = (String)wiz.getProperty(WizardProperties.PROP_SERVICE_NAME);
+            final String packageName = (String)wiz.getProperty(WizardProperties.PROP_PACKAGE_NAME);
+            final boolean isSEI = ((Boolean)wiz.getProperty(WizardProperties.PROP_SEI)).booleanValue();   
+            final String[] targets = new String[] {"wsdl2java-"+serviceName}; //NOI18N
+            RequestProcessor.getDefault().post(new Runnable() {                
+                public void run() {
 
-            public void run() {
-
-                boolean success = AxisUtils.runTargets(project.getProjectDirectory(), targets, 30000L);
-                if (success) {
-                    FileObject generatedServicesFo = AxisUtils.getServicesFileObject(project.getProjectDirectory());
-                    if (generatedServicesFo != null) {
-                        ServicesModel servicesModel = ServicesUtils.getServicesModel(generatedServicesFo, false);
-                        if (servicesModel != null) {
-                            ServiceGroup serviceGroup = (ServiceGroup)servicesModel.getRootComponent();
-                            Service service = serviceGroup.getServices().get(0);
-                            try {
-                                generateConfigFile(dObj.getPrimaryFile(), service);
-                                generateSkeletonMethods(dObj.getPrimaryFile(), serviceName, packageName, isSEI);
-                            } catch (IOException ex) {
-                                ex.printStackTrace();
+                    boolean success = AxisUtils.runTargets(project.getProjectDirectory(), targets, 30000L);
+                    if (success) {
+                        FileObject generatedServicesFo = AxisUtils.getServicesFileObject(project.getProjectDirectory());
+                        if (generatedServicesFo != null) {
+                            ServicesModel servicesModel = ServicesUtils.getServicesModel(generatedServicesFo, false);
+                            if (servicesModel != null) {
+                                ServiceGroup serviceGroup = (ServiceGroup)servicesModel.getRootComponent();
+                                Service service = serviceGroup.getServices().get(0);
+                                try {
+                                    generateConfigFile(dObj.getPrimaryFile(), service);
+                                    generateSkeletonMethods(dObj.getPrimaryFile(), serviceName, packageName, isSEI);
+                                } catch (IOException ex) {
+                                    ex.printStackTrace();
+                                }
                             }
-                        }
 
+                        }
                     }
                 }
-            }
-            
-        },3000);
+
+            },3000);
+        } 
 
         return Collections.singleton(dObj);
     }
     
     private void generateConfigFile(FileObject serviceFo, Service service) throws IOException {
+        ServicesModel servicesModel  = initConfigFile();
+        if (servicesModel != null) {
+            ClassPath classPath = ClassPath.getClassPath(serviceFo, ClassPath.SOURCE);
+            String serviceClass = classPath.getResourceName(serviceFo, '.', false);
+            WizardUtils.addService(servicesModel, service, serviceClass); 
+        }
+    }
+    
+    private void generateConfigFile(WSDLModel wsdlModel, FileObject serviceFo, WsdlBindingInfo wsdlBindingInfo) throws IOException {
+        ServicesModel servicesModel  = initConfigFile();
+        if (servicesModel != null) {
+            ClassPath classPath = ClassPath.getClassPath(serviceFo, ClassPath.SOURCE);
+            String serviceClass = classPath.getResourceName(serviceFo, '.', false);
+            WizardUtils.addService(servicesModel, serviceClass, wsdlBindingInfo);
+        }
+    }
+    
+    private ServicesModel initConfigFile() throws IOException {
         Axis2ModelProvider axis2ModelProvider = project.getLookup().lookup(Axis2ModelProvider.class);
         ServicesModel servicesModel = axis2ModelProvider.getServicesModel();
         if (servicesModel == null) {            
             FileObject configFolder = AxisUtils.getServicesFolder(project.getProjectDirectory(), true);
             if (configFolder != null) {
-                FileObject servicesFo = configFolder.getFileObject("services.xml");
+                FileObject servicesFo = configFolder.getFileObject("services.xml"); // NOI18N
                 if (servicesFo == null) {
                     AxisUtils.retrieveServicesFromResource(configFolder, true);
                 }
@@ -150,11 +200,7 @@ public class WsFromWsdlWizardIterator implements TemplateWizard.Iterator /*, Ite
                 axis2ModelProvider.setServicesModel(servicesModel);
             }
         }
-        if (servicesModel != null) {
-            ClassPath classPath = ClassPath.getClassPath(serviceFo, ClassPath.SOURCE);
-            String serviceClass = classPath.getResourceName(serviceFo, '.', false);
-            WizardUtils.addService(servicesModel, service, serviceClass); 
-        }
+        return servicesModel;
     }
     
     private void generateSkeletonMethods(FileObject serviceFo, String serviceName, String packageName, boolean isSEI) throws IOException {
@@ -167,7 +213,7 @@ public class WsFromWsdlWizardIterator implements TemplateWizard.Iterator /*, Ite
         }
     }
     
-    private void addService(FileObject serviceFo) throws IOException {
+    private void addService(FileObject serviceFo, String databindingName) throws IOException {
         FileObject axis2Folder = AxisUtils.getNbprojectFolder(project.getProjectDirectory());
         if (axis2Folder != null) {
             FileObject axis2Fo = axis2Folder.getFileObject("axis2.xml"); //NOI18N
@@ -184,15 +230,21 @@ public class WsFromWsdlWizardIterator implements TemplateWizard.Iterator /*, Ite
             Axis2ModelProvider axis2ModelProvider = project.getLookup().lookup(Axis2ModelProvider.class);
             Axis2Model axis2Model = axis2ModelProvider.getAxis2Model();
             if (axis2Model != null) {
-                WizardUtils.addService(axis2Model,
-                    ((java.io.File)wiz.getProperty(WizardProperties.PROP_WSDL_URL)).toURL().toExternalForm(),
-                    serviceClass,
-                    (String)wiz.getProperty(WizardProperties.PROP_SERVICE_NAME),
-                    (String)wiz.getProperty(WizardProperties.PROP_PORT_NAME),
-                    (String)wiz.getProperty(WizardProperties.PROP_PACKAGE_NAME),
-                    (String)wiz.getProperty(WizardProperties.PROP_DATABINDING_NAME),
-                    ((Boolean)wiz.getProperty(WizardProperties.PROP_SEI)).booleanValue(),
-                    (String)wiz.getProperty(WizardProperties.PROP_WS_TO_JAVA_OPTIONS));
+                String wsdlUrl = ((java.io.File)wiz.getProperty(WizardProperties.PROP_WSDL_URL)).toURL().toExternalForm();
+                String serviceName = (String)wiz.getProperty(WizardProperties.PROP_SERVICE_NAME);
+                if ("axiom".equals(databindingName)) { //NOI18N
+                    WizardUtils.addAxiomService(axis2Model, wsdlUrl, serviceClass, serviceName);
+                } else {
+                    WizardUtils.addService(axis2Model,
+                        wsdlUrl,
+                        serviceClass,
+                        serviceName,
+                        (String)wiz.getProperty(WizardProperties.PROP_PORT_NAME),
+                        (String)wiz.getProperty(WizardProperties.PROP_PACKAGE_NAME),
+                        databindingName,
+                        ((Boolean)wiz.getProperty(WizardProperties.PROP_SEI)).booleanValue(),
+                        (String)wiz.getProperty(WizardProperties.PROP_WS_TO_JAVA_OPTIONS));
+                }
                 DataObject dObj = DataObject.find(axis2Fo);
                 if (dObj != null) {
                     SaveCookie save = dObj.getCookie(SaveCookie.class);
@@ -219,9 +271,9 @@ public class WsFromWsdlWizardIterator implements TemplateWizard.Iterator /*, Ite
         
         WizardDescriptor.Panel<WizardDescriptor> firstPanel = null;
         if (sourceGroups.length == 0)
-            firstPanel = new FinishableProxyWizardPanel(Templates.createSimpleTargetChooser(project, sourceGroups, bottomPanel));
+            firstPanel = Templates.createSimpleTargetChooser(project, sourceGroups, bottomPanel);
         else
-            firstPanel = new FinishableProxyWizardPanel(JavaTemplates.createPackageChooser(project, sourceGroups, bottomPanel, true));
+            firstPanel = JavaTemplates.createPackageChooser(project, sourceGroups, bottomPanel, true);
      
         panels = new WizardDescriptor.Panel[] {
             firstPanel,
@@ -229,7 +281,7 @@ public class WsFromWsdlWizardIterator implements TemplateWizard.Iterator /*, Ite
         };
         
         // Creating steps.
-        Object prop = this.wiz.getProperty("WizardPanel_contentData"); // NOI18N
+        Object prop = this.wiz.getProperty(WizardDescriptor.PROP_CONTENT_DATA); // NOI18N
         String[] beforeSteps = null;
         if (prop != null && prop instanceof String[]) {
             beforeSteps = (String[]) prop;
@@ -243,9 +295,9 @@ public class WsFromWsdlWizardIterator implements TemplateWizard.Iterator /*, Ite
             if (c instanceof JComponent) { // assume Swing components
                 JComponent jc = (JComponent) c;
                 // Step #.
-                jc.putClientProperty("WizardPanel_contentSelectedIndex", Integer.valueOf(i)); // NOI18N
+                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, Integer.valueOf(i)); // NOI18N
                 // Step name (actually the whole list for reference).
-                jc.putClientProperty("WizardPanel_contentData", steps); // NOI18N
+                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps); // NOI18N
             }
         }
     }

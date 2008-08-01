@@ -48,12 +48,9 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.jar.Manifest;
-import java.util.logging.Level;
-import org.netbeans.junit.Log;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.Repository;
 import org.openide.filesystems.XMLFileSystem;
 import org.openide.util.Lookup;
 import org.openide.xml.EntityCatalog;
@@ -70,6 +67,7 @@ public class LayersTest extends NbTestCase {
         super(testName);
     }
 
+    /* XXX this does not make sense as a unit test; could be in a functional test using NbModuleSuite:
     public void testFastParsingOfXMLFiles() throws Exception {
         CharSequence chars = Log.enable(XMLSettingsSupport.class.getName(), Level.FINE);
         int len = 0;
@@ -106,15 +104,13 @@ public class LayersTest extends NbTestCase {
             fail("fast parsing of .settings files fails :"+chars.toString());
         }
     }
+     */
     
+    // This is supposed to be run in ide mode.
+    // It is meaningless if run in code mode,
+    // and it will furthermore fail if the internet connection is down.
+    @RandomlyFails
     public void testCorrectContentOfSettingsFiles() throws Exception {
-        if (Boolean.getBoolean("ignore.random.failures")) {
-            // This is supposed to be run in ide mode.
-            // It is meaningless if run in code mode,
-            // and it will furthermore fail if the internet connection is down.
-            return;
-        }
-
         ClassLoader l = Lookup.getDefault().lookup(ClassLoader.class);
         assertNotNull ("In the IDE mode, there always should be a classloader", l);
         

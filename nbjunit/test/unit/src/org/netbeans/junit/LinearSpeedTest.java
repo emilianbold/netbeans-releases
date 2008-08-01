@@ -57,6 +57,7 @@ public class LinearSpeedTest extends NbTestCase {
     }
 
     public static Test suite() {
+        System.setProperty("ignore.random.failures", "false");
         final Test t = NbTestSuite.linearSpeedSuite(LinearSpeedTest.class, 2,2);
 
         class ThisHasToFail extends TestCase {

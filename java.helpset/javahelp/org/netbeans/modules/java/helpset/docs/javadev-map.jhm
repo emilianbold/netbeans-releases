@@ -161,6 +161,14 @@
 <mapID target="gui.testing" url="gui/gui_previewing.html" />
 <mapID target="gui.deploying" url="gui/gui_deploying.html" />
 
+<!--begin Groovy section-->
+
+<mapID target="groovy_intro" url="groovy/groovy_intro.html" />
+<mapID target="groovy_enable" url="groovy/groovy_enable.html" />
+<mapID target="groovy_edit" url="groovy/groovy_edit.html" />
+
+
+
 <!--begin Spring Framework section-->
 
 <mapID target="spring.framework.about" url="spring/about.html" />
@@ -324,6 +332,10 @@
     <mapID target="org.netbeans.modules.java.freeform.ui.OutputPanel.ejb.java" url="project/csh/proj_j2sefree_props_output.html" />
     <mapID target="org.netbeans.modules.ant.freeform.ui.TargetMappingPanel.ejb.java" url="project/csh/proj_j2sefree_props_buildrun.html" />
 
+<!-- New Libraries wizard-->
+    <mapID target="org.netbeans.spi.java.project.support.ui.MakeSharableVisualPanel1" url="project/csh/proj_new_lib_wiz1.html" />
+    <mapID target="org.netbeans.spi.java.project.support.ui.MakeSharableVisualPanel2" url="project/csh/proj_new_lib_wiz2.html" />
+
     <!--Source Packages (and Test Packages node) - currently F1 here reverts to Projects window-->
     <mapID target="org.netbeans.spi.java.project.support.ui.PackageView" url="pending.html" />
     
@@ -382,8 +394,12 @@
 <!--CSH topic for GUI Builder main workspace-->
 <mapID target="gui.formeditor" url="gui/csh/gui_guibuilder_window.html" />
 <!--CSH topic for Inspector window; also appears when pressing ? button in Properties window for Form component-->
-<mapID target="gui.component-inspector" url="pending.html" />
+<mapID target="gui.component-inspector" url="gui/csh/gui_inspector_window.html" />
 <!-- todo (post 5.0) reclaim these IDs - they are currently overridden by gui.connecting.code:-->
+
+<!--Customize Code dialog box-->
+<mapID target="gui.codecustomizer" url="gui/csh/gui_customizecode_dialog.html" />
+
 
 <!--CSH for Binding dialog-->
 <mapID target="gui.binding-customizer.basic" url="gui/csh/gui_bind_dialog.html" />
@@ -463,15 +479,13 @@
     <mapID target="org.netbeans.modules.j2ee.persistence.wizard.fromdb.DatabaseTablesPanel" url="persistence/csh/persist_new_entityclass_db1.html" />
     <mapID target="org.netbeans.modules.j2ee.persistence.wizard.fromdb.EntityClassesPanel" url="persistence/csh/persist_new_entityclass_db2.html" />
     <mapID target="org.netbeans.modules.j2ee.persistence.unit.AddEntityPanel" url="persistence/csh/db_persist_addentityclass.html" />
+    <mapID target="org.netbeans.modules.j2ee.persistence.wizard.jpacontroller" url="persistence/general/persist_jpa_fromentity.html" />
+
    
    
        <!-- Persistence Unit Visual Editor CSH -->
     <mapID target="persistence_multiview_design_persistenceUnitNode" url="persistence/csh/persist_editor_persistenceunit.html" />
-
-
-<!-- TODO: Need help ids for this
-    <mapID target=" " url="persistence/csh/persist_new_persistenceunit.html" />
--->
+    <mapID target="org.netbeans.modules.j2ee.persistence.wizard.unit.PersistenceUnitWizardDescriptor" url="persistence/csh/persist_new_persistenceunit.html" />
 
 <!-- Profiling topic -->
     <mapID target="profiling_javaapp" url="profiling/profile_about.html" />
@@ -497,6 +511,14 @@
     <mapID target="org.netbeans.modules.junit.wizards.StepProblemMessage" url="junit/junit_creatingtests.html" /> 
     <!-- Choose JUnit version dialog box -->
     <mapID target="org.netbeans.modules.junit.select_junit_version" url="junit/junit_csh_chooseversion.html" /> 
+    <!-- New JUnit Test - New File wizard -->
+    <mapID target="org.netbeans.modules.junit.wizards.EmptyTest" url="junit/junit_csh_emptytest.html" />
+    <!-- New JUnit Test for Existing Class - New File wizard -->
+    <mapID target="org.netbeans.modules.junit.wizards.SimpleTest" url="junit/junit_csh_simpletest.html" />  
+    <!-- New JUnit Test Suite - New File wizard -->
+    <mapID target="org.netbeans.modules.junit.wizards.TestSuite" url="junit/junit_csh_testsuite.html" />  
+
+
 
 
 
@@ -554,8 +576,6 @@ right now the IDs don't seem towork:-->
 <!--ID for CSH in Options | Basic Options - Advanced-Ant Category: --> 
     <mapID target="netbeans.optionsDialog.advanced.ant" url="configure/options_ant.html" />
   
-<!--Tools | Options | Testing | JUnit Module Settings; both node and propsheet-->
-    <mapID target="org.netbeans.modules.junit.JUnitSettings" url="configure/options_junit_settings.html" />
 
 
     <!-- End of "CSH" section -->

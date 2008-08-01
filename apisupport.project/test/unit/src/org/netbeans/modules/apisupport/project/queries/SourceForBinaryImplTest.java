@@ -89,7 +89,7 @@ public class SourceForBinaryImplTest extends TestBase {
         check("o.n.bootstrap/src", TestBase.CLUSTER_PLATFORM + "/lib/boot.jar");
         check("diff/src", TestBase.CLUSTER_IDE + "/modules/org-netbeans-modules-diff.jar");
         check("editor.lib/src", TestBase.CLUSTER_IDE + "/modules/org-netbeans-modules-editor-lib.jar");
-        check("nbjunit/src", "testtools/modules/org-netbeans-modules-nbjunit.jar");
+        check("nbjunit/src", "harness/modules/org-netbeans-modules-nbjunit.jar");
         check("apisupport.project/test/unit/src",file("nbbuild/build/testdist/unit/" + TestBase.CLUSTER_APISUPPORT + "/org-netbeans-modules-apisupport-project/tests.jar"));
     }
     
@@ -127,7 +127,7 @@ public class SourceForBinaryImplTest extends TestBase {
         Util.addDependency(project, "yy");
         ProjectManager.getDefault().saveProject(project);
         
-        URL wrappedJar = Util.urlForJar(new File(wrapperDirF, "release/modules/ext/yy.jar"));
+        URL wrappedJar = FileUtil.urlForArchiveOrDir(new File(wrapperDirF, "release/modules/ext/yy.jar"));
         assertEquals("no sources for wrapper", 0, SourceForBinaryQuery.findSourceRoots(wrappedJar).getRoots().length);
     }
     
@@ -150,7 +150,7 @@ public class SourceForBinaryImplTest extends TestBase {
         File srcF = file(srcPath);
         FileObject src = FileUtil.toFileObject(srcF);
         assertNotNull("have " + srcF, src);
-        URL u = Util.urlForDir(classesF);
+        URL u = FileUtil.urlForArchiveOrDir(classesF);
         assertEquals("right source root for " + u,
             Collections.singletonList(src),
             Arrays.asList(SourceForBinaryQuery.findSourceRoots(u).getRoots()));

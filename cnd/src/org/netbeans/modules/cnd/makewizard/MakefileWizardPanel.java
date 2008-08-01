@@ -49,6 +49,7 @@ import java.util.Vector;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.openide.WizardDescriptor;
 import org.openide.loaders.TemplateWizard;
 import org.openide.util.NbBundle;
 
@@ -142,7 +143,7 @@ public abstract class MakefileWizardPanel extends JPanel {
     MakefileWizardPanel(MakefileWizard wd) {
 	bundle = NbBundle.getBundle(MakefileWizardPanel.class);
 	this.wd = wd;
-	putClientProperty("WizardPanel_leftDimension", getLeftDimension());  // NOI18N
+	putClientProperty(WizardDescriptor.PROP_LEFT_DIMENSION, getLeftDimension());  // NOI18N
     }
 
 

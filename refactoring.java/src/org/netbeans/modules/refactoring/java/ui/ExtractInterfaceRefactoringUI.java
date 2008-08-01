@@ -41,19 +41,14 @@
 package org.netbeans.modules.refactoring.java.ui;
 
 import com.sun.source.util.TreePath;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.NestingKind;
-import javax.lang.model.element.TypeElement;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreePathHandle;
-import org.netbeans.api.java.source.UiUtils;
+import org.netbeans.api.java.source.ui.ElementHeaders;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.java.api.ExtractInterfaceRefactoring;
-import org.netbeans.modules.refactoring.java.ui.ExtractInterfaceAction;
-import org.netbeans.modules.refactoring.java.ui.ExtractInterfacePanel;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
 import org.openide.util.HelpCtx;
@@ -80,7 +75,7 @@ public final class ExtractInterfaceRefactoringUI implements RefactoringUI {
         TreePath path = selectedElement.resolve(info);
         path = RetoucheUtils.findEnclosingClass(info, path, true, true, true, true, false);
         
-        this.name = UiUtils.getHeader(path, info, UiUtils.PrintPart.NAME);
+        this.name = ElementHeaders.getHeader(path, info, ElementHeaders.NAME);
         this.sourceType = TreePathHandle.create(path, info);
         // create an instance of pull up refactoring object
         refactoring = new ExtractInterfaceRefactoring(sourceType);

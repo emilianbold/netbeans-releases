@@ -43,7 +43,14 @@ made subject to such option by the copyright holder.
 <!DOCTYPE MIME-resolver PUBLIC "-//NetBeans//DTD MIME Resolver 1.0//EN" "http://www.netbeans.org/dtds/mime-resolver-1_0.dtd">
 <MIME-resolver>
     <file>
+        <!-- when modifying this list also update the PHPIndexer.INDEXABLE_EXTENSIONS -->
         <ext name="php"/>
+        <ext name="php3"/>
+        <ext name="php4"/>
+        <ext name="php5"/>
+	<ext name="phtml"/>
+	<ext name="inc"/>
+        <ext name="phpt"/>  <!-- php tests on the php.net -->
         <resolver mime="text/x-php5"/>
     </file>
 </MIME-resolver>

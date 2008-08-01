@@ -38,6 +38,7 @@ import java.io.IOException;
 
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.ui.view.graph.actions.ETLNodePropertiesAction;
 import org.netbeans.modules.etl.ui.view.graph.actions.ConfigureParametersAction;
 import org.openide.actions.CopyAction;
 import org.openide.actions.CutAction;
@@ -109,7 +110,8 @@ public class ETLDataLoader extends UniFileLoader {
             SystemAction.get (DeleteAction.class),
             SystemAction.get (RenameAction.class),
             null,
-            SystemAction.get (ConfigureParametersAction.class)
+            //SystemAction.get (ConfigureParametersAction.class),
+            SystemAction.get(ETLNodePropertiesAction.class)
         };
     }
 

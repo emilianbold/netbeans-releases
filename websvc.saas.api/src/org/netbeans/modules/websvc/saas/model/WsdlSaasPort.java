@@ -41,8 +41,9 @@ package org.netbeans.modules.websvc.saas.model;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlOperation;
-import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
+import org.netbeans.modules.websvc.jaxwsmodelapi.WSOperation;
+import org.netbeans.modules.websvc.jaxwsmodelapi.WSPort;
+import org.netbeans.modules.websvc.jaxwsmodelapi.WSPort;
 
 /**
  *
@@ -50,10 +51,10 @@ import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
  */
 public class WsdlSaasPort {
     private WsdlSaas parentSaas;
-    private WsdlPort port;
+    private WSPort port;
     private List<WsdlSaasMethod> methods;
 
-    public WsdlSaasPort(WsdlSaas parentSaas, WsdlPort port) {
+    public WsdlSaasPort(WsdlSaas parentSaas, WSPort port) {
         this.parentSaas = parentSaas;
         this.port = port;
     }
@@ -62,7 +63,7 @@ public class WsdlSaasPort {
         return getWsdlPort().getName();
     }
     
-    public WsdlPort getWsdlPort() {
+    public WSPort getWsdlPort() {
         return port;
     }
     
@@ -73,8 +74,8 @@ public class WsdlSaasPort {
     public List<WsdlSaasMethod> getWsdlMethods() {
         if (methods == null) {
             methods = new ArrayList<WsdlSaasMethod>();
-            for (WsdlOperation op : port.getOperations()) {
-                methods.add(new WsdlSaasMethod(this, op));
+            for (Object op : port.getOperations()) {
+                methods.add(new WsdlSaasMethod(this,(WSOperation) op));
             }
         }
         return methods;

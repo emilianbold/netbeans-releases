@@ -101,7 +101,7 @@ public final class ProjectImpl extends ProjectBase {
     
     protected void scheduleIncludedFileParsing(FileImpl csmFile, APTPreprocHandler.State state) {
         // add project's file to the head
-        ParserQueue.instance().addFirst(csmFile, state, true);
+        ParserQueue.instance().add(csmFile, state, ParserQueue.Position.HEAD);
     }
     
     public @Override void onFileEditStart(final FileBuffer buf, NativeFileItem nativeFile) {
@@ -146,7 +146,7 @@ public final class ProjectImpl extends ProjectBase {
             if (TraceFlags.USE_DEEP_REPARSING) {
                 DeepReparsingUtils.reparseOnEdit(file, this);
             } else {
-                ParserQueue.instance().addFirst(file, getPreprocHandler(buf.getFile()).getState(), false);
+                ParserQueue.instance().add(file, getPreprocHandler(buf.getFile()).getState(), ParserQueue.Position.HEAD);
             }
         }
     }
@@ -276,7 +276,7 @@ public final class ProjectImpl extends ProjectBase {
             for( Iterator iter = editedFiles.iterator(); iter.hasNext(); ) {
                 FileImpl file = (FileImpl) iter.next();
                 if( ! file.isParsingOrParsed() ) {
-                    ParserQueue.instance().addLast(file, getPreprocHandler(file.getBuffer().getFile()).getState());
+                    ParserQueue.instance().add(file, getPreprocHandler(file.getBuffer().getFile()).getState(), ParserQueue.Position.TAIL);
                 }
             }
         }
@@ -304,7 +304,7 @@ public final class ProjectImpl extends ProjectBase {
     public @Override ProjectBase findFileProject(CharSequence absPath) {
         ProjectBase retValue = super.findFileProject(absPath);
         // trick for tracemodel. We should accept all not registered files as well, till it is not system one.
-        if (ParserThreadManager.instance().isStandalone()) {
+        if (retValue == null && ParserThreadManager.instance().isStandalone()) {
             retValue = absPath.toString().startsWith("/usr") ? retValue : this; // NOI18N
         }
         return retValue;

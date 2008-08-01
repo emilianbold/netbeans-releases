@@ -11,7 +11,7 @@
     
     <target name="get-bits">
         <echo message="Downloading Tomcat from ${tomcat_location}" />
-        <get src="${binary_cache_host}/${tomcat_location}" dest="./build/tomcat_image.zip" usetimestamp="true"/>
+        <get src="${tomcat_location}" dest="./build/tomcat_image.zip" usetimestamp="true"/>
     </target>
     
     <target name="unzip" depends="get-bits">
@@ -55,12 +55,13 @@
         
         <copy file="${basedir}/../commonfiles/Description.plist" overwrite="true" filtering="true" tofile="pkg/scripts/Description.plist">
             <filterset>
-                <filter token="TITLE" value="${tomcat.appname}"/>
+                <filter token="TITLE" value="${tomcat-title}"/>
             </filterset>
         </copy>
         
         <copy file="${basedir}/../commonfiles/unpack200.sh" tofile="${basedir}/pkg/scripts/unpack200.sh"/>
         <copy file="${basedir}/../netBeans/baseide/pkg/scripts/env.sh" tofile="${basedir}/pkg/scripts/env.sh"/>
+        <copy file="${basedir}/../netBeans/baseide/pkg/scripts/addproduct_id.sh" tofile="${basedir}/pkg/scripts/addproduct_id.sh"/>          
         <copy file="${basedir}/../netBeans/baseide/pkg/scripts/add_tc.sh" tofile="${basedir}/pkg/scripts/add_tc.sh"/>
         <copy file="${basedir}/../netBeans/baseide/pkg/scripts/perm.sh" tofile="${basedir}/pkg/scripts/perm.sh"/>
         

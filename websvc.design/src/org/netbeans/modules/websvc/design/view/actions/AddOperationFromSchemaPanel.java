@@ -155,7 +155,7 @@ public class AddOperationFromSchemaPanel extends javax.swing.JPanel {
         populateWithTypes(getWSDLModel());
     }
     
-    private WSDLModel getWSDLModel(){
+    WSDLModel getWSDLModel(){
         if(wsdlModel == null){
             wsdlModel = WSDLUtils.getWSDLModel(FileUtil.toFileObject(wsdlFile), true);
         }

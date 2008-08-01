@@ -18,7 +18,7 @@
  */
 package org.netbeans.modules.php.dbgp.models.nodes;
 
-import org.netbeans.modules.php.dbgp.api.ModelNode;
+import org.netbeans.modules.php.dbgp.ModelNode;
 import org.openide.text.Line;
 
 

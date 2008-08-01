@@ -49,6 +49,8 @@ import java.awt.event.KeyListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractButton;
 import javax.swing.JEditorPane;
 import javax.swing.JLabel;
@@ -60,8 +62,12 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.TableColumn;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorRegistry;
+import org.netbeans.lib.editor.util.CharSequenceUtilities;
+import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -75,9 +81,9 @@ import org.openide.util.NbBundle;
  *
  * @author Jan Jancura
  */
-public class CodeTemplatesPanel extends JPanel implements 
-ActionListener, ListSelectionListener, KeyListener {
+public class CodeTemplatesPanel extends JPanel implements ActionListener, ListSelectionListener, KeyListener {
     
+    private static final Logger LOG = Logger.getLogger(CodeTemplatesPanel.class.getName());
     private CodeTemplatesModel  model;
     
     /** 
@@ -86,7 +92,6 @@ ActionListener, ListSelectionListener, KeyListener {
     public CodeTemplatesPanel () {
         initComponents ();
         
-        setName(loc("Code_Templates_Tab")); //NOI18N
         loc(lLanguage, "Language"); //NOI18N
         loc(lTemplates, "Templates"); //NOI18N
         loc(bNew, "New"); //NOI18N
@@ -357,10 +362,23 @@ ActionListener, ListSelectionListener, KeyListener {
 
         // Show details of the newly selected code tenplate
         CodeTemplatesModel.TM tableModel = (CodeTemplatesModel.TM)tTemplates.getModel();
-        epDescription.setText(tableModel.getDescription(index));
-        epExpandedText.setText(tableModel.getText(index));
+        // Don't use JEditorPane.setText(), because it goes through EditorKit.read()
+        // and performs conversion as if the text was read from a file (eg. EOL
+        // translations). See #130095 for details.
+        setDocumentText(epDescription.getDocument(), tableModel.getDescription(index));
+        setDocumentText(epExpandedText.getDocument(), tableModel.getText(index));
+        
         bRemove.setEnabled(true);
         lastIndex = index;
+    }
+    
+    private static void setDocumentText(Document doc, String text) {
+        try {
+            doc.remove(0, doc.getLength());
+            doc.insertString(0, text, null);
+        } catch (BadLocationException ble) {
+            LOG.log(Level.WARNING, null, ble);
+        }
     }
     
     private int lastIndex = -1;
@@ -369,11 +387,14 @@ ActionListener, ListSelectionListener, KeyListener {
         if (lastIndex < 0) {
             return;
         }
-        
+
         CodeTemplatesModel.TM tableModel = (CodeTemplatesModel.TM)tTemplates.getModel();
-        tableModel.setDescription(lastIndex, epDescription.getText());
-        tableModel.setText(lastIndex, epExpandedText.getText());
-        
+        // Don't use JEditorPane.getText(), because it goes through EditorKit.write()
+        // and performs conversion as if the text was written to a file (eg. EOL
+        // translations). See #130095 for details.
+        tableModel.setDescription(lastIndex, CharSequenceUtilities.toString(DocumentUtilities.getText(epDescription.getDocument())));
+        tableModel.setText(lastIndex, CharSequenceUtilities.toString(DocumentUtilities.getText(epExpandedText.getDocument())));
+
         firePropertyChange(OptionsPanelController.PROP_CHANGED, null, null);
     }
 

@@ -103,6 +103,13 @@ public final class EditorStyleConstants {
      */
     public static final Object LeftBorderLineColor = new EditorStyleConstants("left border line color"); //NOI18N
     
+    /**
+     * Name of the rendering hints <code>Map&lt;?,?&gt;</code> that are used
+     * for rendering text in the editor.
+     * @since 1.20
+     */
+    public static final Object RenderingHints = new EditorStyleConstants("rendering hints"); //NOI18N
+    
     public @Override String toString() {
         return representation;
     }

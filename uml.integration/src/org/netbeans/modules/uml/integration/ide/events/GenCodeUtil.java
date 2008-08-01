@@ -92,6 +92,10 @@ public final class GenCodeUtil
 	ClassInfo container)
     {
 	ClassInfo ci = ClassInfo.getRefClassInfo(classType, true, true);
+        if (ci == null) 
+        {
+            return "";
+        }
 	String  classTypeName = ci.getCodeGenType(fullyQualified, container);        
 
 //        if (mult != null && mult.getRangeCount() > 0)
@@ -312,12 +316,12 @@ public final class GenCodeUtil
 	ArrayList<String[]> res = new ArrayList<String[]>();
 	boolean isPrimitive = false;
 
-	ArrayList<String[]> refs;
+	ArrayList<String[]> refs = null;
 	if (classType instanceof IDerivationClassifier) 
 	{
 	    refs = getReferredCodeGenTypes(classType, container);
 	} 
-	else 
+	else if (classType != null)
         {
 	    IClassifier impClass = classType;
 	    IElement owner = classType.getOwner();

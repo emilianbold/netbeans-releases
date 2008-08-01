@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.php.rt.providers.impl.actions;
 
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -68,13 +67,7 @@ public class DebugCommandImpl extends AbstractCommand implements Command {
     
     private static final String ERR_DEBUG_SESSION 
                                             = "MSG_ErrDebugSession"; // NOI18N
-    
-    private static final String ERR_DEBUG_UNCONFIGURED 
-                                            = "MSG_ErrDebuggerIsNotConfigured"; // NOI18N
-    
-    private static final String ERR_DEBUG_FOLDER 
-                                            = "MSG_ErrDebuggerRunOnFolder";// NOI18N
-
+        
     private static final int WAIT_INIT_SESSION 
                                             = 5000;
 
@@ -88,8 +81,6 @@ public class DebugCommandImpl extends AbstractCommand implements Command {
     private static final String LBL_DEBUG_FILE   
                                             = "LBL_DebugFile";       // NOI18N
     
-    private static final String REASON_PREFIX
-                                            = "    - ";              // NOI18N   
 
     
     public DebugCommandImpl( Project project, WebServerProvider provider) 
@@ -97,13 +88,34 @@ public class DebugCommandImpl extends AbstractCommand implements Command {
         super(project, provider );
     }
 
+    @Override
+    public boolean isSaveRequired() {
+	return true;
+    }
+
+    
+    @Override
+    public void setActionFiles(FileObject[] files) {
+	if (getId().equals(DEBUG)) {
+	    if (getProject() != null) {
+		super.setActionFiles(new FileObject[]{getProject().getProjectDirectory()});
+	    }
+	} else {
+	    super.setActionFiles(files);
+	}	
+    }
+    
     /* (non-Javadoc)
      * @see java.lang.Runnable#run()
      */
     public void run() {
         final SessionId sessionId = getSessionId();
         if ( sessionId != null ) {
-            runFilesInExistedSession(sessionId);
+            //just one session allowed for now
+            //runFilesInExistedSession(sessionId);
+            NotifyDescriptor descriptor =new NotifyDescriptor.Message(
+                    NbBundle.getMessage(DebugCommandImpl.class, "MSG_NoMoreDebugSession"));//NOI18N
+            DialogDisplayer.getDefault().notify(descriptor);
         }
         else {
             runFilesInFreshSession( null );
@@ -140,12 +152,12 @@ public class DebugCommandImpl extends AbstractCommand implements Command {
     
     private RunCommand getRunCommand() {
         Command[] commands = getProvider().getCommandProvider()
-                .getCommands(getProject());
+                .getAllSupportedCommands(getProject());
         Command runCommand = null;
         for (Command command : commands) {
             String id = command.getId();
             System.out.println("command id :" +id );
-            if (RunCommand.RUN.equals(id)) {
+            if (getRunCommandId().equals(id)) {
                 runCommand = command;
             }
         }
@@ -154,6 +166,10 @@ public class DebugCommandImpl extends AbstractCommand implements Command {
         }
         assert runCommand instanceof RunCommand;
         return (RunCommand) runCommand;
+    }
+    
+    protected String getRunCommandId() {
+        return RunCommand.RUN;
     }
 
     private FileObject getFirstFile() {
@@ -193,25 +209,8 @@ public class DebugCommandImpl extends AbstractCommand implements Command {
         return list.toArray( new FileObject[ list.size() ] );
     }
     
-    private void notifyError( FileObject file , int seconds ) {
-        String message = NbBundle.getMessage( DebugCommandImpl.class , 
-                ERR_DEBUG_SESSION);
-        String msg = MessageFormat.format( message, seconds );
-        StringBuilder builder = new StringBuilder( msg );
-        builder.append( '\n' );
-        String badConfiguration = NbBundle.getMessage( DebugCommandImpl.class , 
-                ERR_DEBUG_UNCONFIGURED);
-        builder.append( REASON_PREFIX );
-        builder.append( badConfiguration );
-        if ( file.isFolder() ){
-            builder.append( '\n' );
-            builder.append( REASON_PREFIX );
-            String runOnFolder = NbBundle.getMessage( DebugCommandImpl.class , 
-                    ERR_DEBUG_FOLDER);
-            builder.append( runOnFolder );
-        }
-        NotifyDescriptor descr = new NotifyDescriptor.Message( builder.toString());
-        DialogDisplayer.getDefault().notify(descr);
+    private void notifyError(  int seconds  ) {
+        ConnectionErrMessage.showMe(seconds);
     }
     
 
@@ -241,7 +240,7 @@ public class DebugCommandImpl extends AbstractCommand implements Command {
         Runnable runnable = new Runnable() {
 
             public void run() {
-                if (sessionId.waitServerFile(WAIT_INIT_SESSION) == null) {
+                if (sessionId.waitServerFile(true) == null) {
                     /*
                      * This could happen as result of previous error:
                      * no php files was called as result of starting debugging
@@ -316,9 +315,10 @@ public class DebugCommandImpl extends AbstractCommand implements Command {
             clonedCommand.setActionFiles(new FileObject[] { startFO });
             clonedCommand.run();
 
-            String serverFileUri = sessionId.waitServerFile(WAIT_INIT_SESSION);
+            long started = System.currentTimeMillis();
+            String serverFileUri = sessionId.waitServerFile(true);
             if (serverFileUri == null) {
-                notifyError( startFO , WAIT_INIT_SESSION/1000 );
+                notifyError(  ((int)(System.currentTimeMillis() - started)/1000));
                 return;
             }
 

@@ -148,7 +148,8 @@ public final class PositionRef extends Object implements Serializable {
         }
 
         synchronized (manager.getLock()) {
-            Manager.PositionKind p = (Manager.PositionKind) kind;
+            // Fix for IZ#67761 - ClassCastException: org.openide.text.PositionRef$Manager$OffsetKind
+            Manager.PositionKind p = kind.toMemory( insertAfter );
 
             return p.pos;
         }

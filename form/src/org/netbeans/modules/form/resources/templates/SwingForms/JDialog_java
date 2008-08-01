@@ -1,19 +1,27 @@
+<#-- FreeMarker template (see http://freemarker.org/) -->
+<#assign licenseFirst = "/*">
+<#assign licensePrefix = " * ">
+<#assign licenseLast = " */">
+<#include "../Licenses/license-${project.license}.txt">
+
 /*
- * __NAME__.java
+ * ${name}.java
  *
- * Created on __DATE__, __TIME__
+ * Created on ${date}, ${time}
  */
 
-package Templates.GUIForms;
+<#if package?? && package != "">
+package ${package};
 
+</#if>
 /**
  *
- * @author  __USER__
+ * @author ${user}
  */
-public class JDialog extends javax.swing.JDialog {
+public class ${name} extends javax.swing.JDialog {
 
-    /** Creates new form __NAME__ */
-    public JDialog(java.awt.Frame parent, boolean modal) {
+    /** Creates new form ${name} */
+    public ${name}(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
     }
@@ -48,7 +56,7 @@ public class JDialog extends javax.swing.JDialog {
     public static void main(String args[]) {
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                __NAME__ dialog = new __NAME__(new javax.swing.JFrame(), true);
+                ${name} dialog = new ${name}(new javax.swing.JFrame(), true);
                 dialog.addWindowListener(new java.awt.event.WindowAdapter() {
                     public void windowClosing(java.awt.event.WindowEvent e) {
                         System.exit(0);

@@ -49,13 +49,14 @@ import org.jruby.ast.Node;
 import org.jruby.ast.NodeType;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.OffsetRange;
+import org.netbeans.modules.gsf.api.Hint;
+import org.netbeans.modules.gsf.api.HintFix;
+import org.netbeans.modules.gsf.api.HintSeverity;
+import org.netbeans.modules.gsf.api.RuleContext;
 import org.netbeans.modules.ruby.AstPath;
 import org.netbeans.modules.ruby.AstUtilities;
-import org.netbeans.modules.ruby.hints.spi.AstRule;
-import org.netbeans.modules.ruby.hints.spi.Description;
-import org.netbeans.modules.ruby.hints.spi.Fix;
-import org.netbeans.modules.ruby.hints.spi.HintSeverity;
-import org.netbeans.modules.ruby.hints.spi.RuleContext;
+import org.netbeans.modules.ruby.hints.infrastructure.RubyAstRule;
+import org.netbeans.modules.ruby.hints.infrastructure.RubyRuleContext;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
 import org.openide.util.NbBundle;
 
@@ -64,13 +65,13 @@ import org.openide.util.NbBundle;
  * 
  * @author Tor Norbye
  */
-public class RetryOutsideRescue implements AstRule {
+public class RetryOutsideRescue extends RubyAstRule {
 
     public Set<NodeType> getKinds() {
         return Collections.singleton(NodeType.RETRYNODE);
     }
 
-    public void run(RuleContext context, List<Description> result) {
+    public void run(RubyRuleContext context, List<Hint> result) {
         Node node = context.node;
         AstPath path = context.path;
         CompilationInfo info = context.compilationInfo;
@@ -81,7 +82,7 @@ public class RetryOutsideRescue implements AstRule {
             range = LexUtilities.getLexerOffsets(info, range);
             if (range != OffsetRange.NONE) {
                 String displayName = NbBundle.getMessage(ConvertConditionals.class, "RetryOutsideRescueMsg");
-                Description desc = new Description(this, displayName, info.getFileObject(), range, Collections.<Fix>emptyList(), 100);
+                Hint desc = new Hint(this, displayName, info.getFileObject(), range, Collections.<HintFix>emptyList(), 100);
                 result.add(desc);
             }
         }
@@ -103,7 +104,7 @@ public class RetryOutsideRescue implements AstRule {
         return null;
     }
 
-    public boolean appliesTo(CompilationInfo info) {
+    public boolean appliesTo(RuleContext context) {
         return true;
     }
 

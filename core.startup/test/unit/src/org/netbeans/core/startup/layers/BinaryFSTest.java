@@ -41,11 +41,9 @@
 
 package org.netbeans.core.startup.layers;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.nio.ByteBuffer;
 import java.util.Arrays;
 import junit.framework.Test;
 import org.netbeans.junit.NbTestSuite;
@@ -56,12 +54,14 @@ import org.openide.filesystems.FileSystemFactoryHid;
 import org.openide.filesystems.FileSystemTestHid;
 import org.openide.filesystems.TestUtilHid;
 import org.openide.filesystems.XMLFileSystem;
+import org.openide.filesystems.XMLFileSystemTestHid;
 
 /**
  *
  * @author Radek Matous
  */
-public class BinaryFSTest extends FileSystemFactoryHid {  
+public class BinaryFSTest extends FileSystemFactoryHid
+implements XMLFileSystemTestHid.Factory {
     public BinaryFSTest(Test test) {
         super(test);
     }
@@ -71,6 +71,7 @@ public class BinaryFSTest extends FileSystemFactoryHid {
         suite.addTestSuite(FileSystemTestHid.class);
         suite.addTestSuite(FileObjectTestHid.class);
         suite.addTestSuite(AttributesTestHidden.class);
+        suite.addTestSuite(XMLFileSystemTestHid.class);
          
         return new BinaryFSTest(suite);
     }
@@ -88,5 +89,14 @@ public class BinaryFSTest extends FileSystemFactoryHid {
         String workDirProperty = System.getProperty("workdir");//NOI18N
         workDirProperty = (workDirProperty != null) ? workDirProperty : System.getProperty("java.io.tmpdir");//NOI18N                 
         return new File(workDirProperty);
-    }    
+    }
+
+    public FileSystem createLayerSystem(String testName, URL[] layers) throws IOException {
+        LayerCacheManager bm = LayerCacheManager.manager(true);
+        return BinaryCacheManagerTest.store(bm, Arrays.asList(layers));
+    }
+
+    public boolean setXmlUrl(FileSystem fs, URL[] layers) throws IOException {
+        return false;
+    }
 }

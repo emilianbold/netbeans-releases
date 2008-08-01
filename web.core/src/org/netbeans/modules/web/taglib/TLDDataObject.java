@@ -41,21 +41,23 @@
 
 package org.netbeans.modules.web.taglib;
 
-import java.io.*;
+import java.io.IOException;
 import org.openide.util.Lookup;
 import org.xml.sax.InputSource;
-
-import org.openide.loaders.*;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
-
 import org.netbeans.api.xml.cookies.ValidateXMLCookie;
 import org.netbeans.api.xml.cookies.CheckXMLCookie;
-import org.netbeans.spi.xml.cookies.*;
-
 import org.netbeans.modules.web.taglib.model.Taglib;
 import org.netbeans.modules.xml.api.XmlFileEncodingQueryImpl;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
+import org.netbeans.spi.xml.cookies.CheckXMLSupport;
+import org.netbeans.spi.xml.cookies.DataObjectAdapters;
+import org.netbeans.spi.xml.cookies.ValidateXMLSupport;
+import org.openide.loaders.DataNode;
+import org.openide.loaders.DataObjectExistsException;
+import org.openide.loaders.MultiDataObject;
+import org.openide.loaders.MultiFileLoader;
 
 /** Object that provides main functionality for TLDLoader(data loader).
  * This class is final only for performance reasons,
@@ -66,7 +68,7 @@ public final class TLDDataObject extends MultiDataObject implements org.openide.
 
     private static final boolean debug = false;
     /** Editor support for text data object. */
-    private transient TLDEditorSupport editorSupport;
+    private transient volatile TLDEditorSupport editorSupport;
     /** generated Serialized Version UID */
     private static final long serialVersionUID = -7581377241494497816L;
     
@@ -126,6 +128,7 @@ public final class TLDDataObject extends MultiDataObject implements org.openide.
      * @return the node representation for this data object
      * @see DataNode
      */
+    @Override
     protected synchronized Node createNodeDelegate () {
 	return new TLDNode(this);
     }
@@ -192,7 +195,6 @@ public final class TLDDataObject extends MultiDataObject implements org.openide.
                     editorSupport = new TLDEditorSupport(this);
             }
         }
-        
         return editorSupport;
     }
     

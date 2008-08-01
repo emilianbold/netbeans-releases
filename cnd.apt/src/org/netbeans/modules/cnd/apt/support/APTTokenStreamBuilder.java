@@ -42,7 +42,6 @@
 package org.netbeans.modules.cnd.apt.support;
 
 import antlr.TokenStream;
-import java.io.InputStream;
 import java.io.Reader;
 import java.io.StringReader;
 import org.netbeans.modules.cnd.apt.impl.support.generated.APTLexer;
@@ -68,14 +67,8 @@ public class APTTokenStreamBuilder {
         return  buildTokenStream(text, reader);
     }  
     
-    public static TokenStream buildTokenStream(String name, InputStream stream) {  
-        APTLexer lexer = new APTLexer(stream);
-        lexer.init(name, 0);
-        return lexer;
-    }    
-
-    public static TokenStream buildLightTokenStream(String name, InputStream stream) {  
-        APTLexer lexer = new APTLexer(stream);
+    public static TokenStream buildLightTokenStream(String name, Reader in) {  
+        APTLexer lexer = new APTLexer(in);
         lexer.init(name, 0);
         lexer.setOnlyPreproc(true);
         return lexer;

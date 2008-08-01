@@ -193,7 +193,7 @@ public class GraphView extends JPanel {
         });
 
         // vlv: print
-        getContent().putClientProperty(java.awt.print.Printable.class, "");
+        getContent().putClientProperty("print.printable", Boolean.TRUE); // NOI18N
     }
 
     /**
@@ -224,18 +224,11 @@ public class GraphView extends JPanel {
         // not want that to appear in the button label.
         showHideMessageToggle.setText(null);
         showHideMessageToggle.setRolloverEnabled(true);
+
         if (border != null) {
             showHideMessageToggle.setBorder(border);
         }
         toolbar.add(showHideMessageToggle);
-
-        // vlv: print
-        Action action = Lookup.getDefault().lookup(Action.class);
-
-        if (action != null) {
-          toolbar.addSeparator();
-          toolbar.add(action);
-        }
     }
 
     /**

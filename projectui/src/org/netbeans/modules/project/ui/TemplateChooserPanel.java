@@ -118,8 +118,8 @@ final class TemplateChooserPanel implements WizardDescriptor.Panel<WizardDescrip
             }
         }
         panel.readValues( project, currentCategoryName, currentTemplateName );
-        settings.putProperty("WizardPanel_contentSelectedIndex", 0); // NOI18N
-        settings.putProperty ("WizardPanel_contentData", new String[] { // NOI18N
+        settings.putProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, 0);
+        settings.putProperty(WizardDescriptor.PROP_CONTENT_DATA, new String[] {
                 NbBundle.getBundle (TemplateChooserPanel.class).getString ("LBL_TemplatesPanel_Name"), // NOI18N
                 NbBundle.getBundle (TemplateChooserPanel.class).getString ("LBL_TemplatesPanel_Dots")}); // NOI18N
         // bugfix #44400: wizard title always changes
@@ -170,4 +170,3 @@ final class TemplateChooserPanel implements WizardDescriptor.Panel<WizardDescrip
     }
 
 }    
-    

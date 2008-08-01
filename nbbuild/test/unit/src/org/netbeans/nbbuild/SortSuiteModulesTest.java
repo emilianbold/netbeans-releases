@@ -72,6 +72,7 @@ public class SortSuiteModulesTest extends NbTestCase {
     }
 
     protected @Override void setUp() throws Exception {
+        clearWorkDir();
         project = new Project();
         project.setBaseDir(getWorkDir());
     }

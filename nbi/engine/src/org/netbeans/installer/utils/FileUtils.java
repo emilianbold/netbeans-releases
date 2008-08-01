@@ -297,6 +297,32 @@ public final class FileUtils {
         return size;
     }
     
+    public static FilesList listFiles(
+            final File file) throws IOException {
+        final FilesList list = new FilesList();
+
+        if (file != null && exists(file)) {
+            try {
+                list.add(file);
+                if (file.isDirectory()) {
+                    File[] files = file.listFiles();
+                    if (files != null) {
+                        for (File f : files) {
+                            list.add(listFiles(f));
+                        }
+                    }
+                } 
+            } catch (SecurityException e) {
+                ErrorManager.notifyError(
+                        ResourceUtils.getString(FileUtils.class,
+                        ERROR_FILE_SECURITY_EXCEPTION_KEY, file),
+                        e);
+            }
+        }
+
+        return list;
+    }
+    
     public static long getFreeSpace(
             final File file) {
         long freeSpace = 0;

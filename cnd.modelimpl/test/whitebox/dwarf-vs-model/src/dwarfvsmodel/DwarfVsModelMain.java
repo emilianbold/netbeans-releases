@@ -322,7 +322,7 @@ public class DwarfVsModelMain {
 	    for( CsmProject lib : (Collection<CsmProject>) prj.getLibraries() ) {
 		cnt += calculateTotalErrorCount(lib, processedProjects, processedFiles);
 	    }
-	    for( FileImpl file : ((ProjectBase) prj).getFileList() ) {
+	    for( FileImpl file : ((ProjectBase) prj).getAllFileImpls() ) {
 		cnt += file.getErrorCount();
 	    }
 	}

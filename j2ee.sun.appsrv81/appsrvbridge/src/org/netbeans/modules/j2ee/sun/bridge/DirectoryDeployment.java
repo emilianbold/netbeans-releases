@@ -133,6 +133,19 @@ public class DirectoryDeployment extends IncrementalDeployment {
             throw new IllegalStateException("invalid dm value");
         }
         File appDir = AppServerBridge.getDirLocation(module);
+        // clean up some unexpected pollution :: https://glassfish.dev.java.net/issues/show_bug.cgi?id=4669
+        String path = appDir.getPath();
+        String TCONST = "${com.sun.aas.installRoot}";
+        if (path.contains(TCONST)) {
+            int dex = path.indexOf(TCONST);
+            // the installRoot is an absolute... if it shows up somewhere else in a path 
+            // correct the path.
+            if (dex > 0) {
+                path = path.substring(dex);
+            }
+            path = path.replace(TCONST, dm.getPlatformRoot().getAbsolutePath());
+            appDir = new File(path);
+        }
         if (null != appDir && appDir.getPath().contains("${")) {
             throw new IllegalStateException(NbBundle.getMessage(DirectoryDeployment.class,
                     "ERR_UndeployAndRedeploy"));

@@ -42,27 +42,24 @@
 package org.netbeans.modules.web.wizards;
 
 import java.awt.Component;
-
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
-
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
+import org.netbeans.spi.project.ui.templates.support.Templates;
+import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.openide.WizardDescriptor;
 import org.openide.loaders.TemplateWizard;
 import org.openide.util.HelpCtx;
-import org.netbeans.spi.project.ui.templates.support.Templates;
-import org.netbeans.modules.web.api.webmodule.WebModule;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
-import org.openide.filesystems.FileObject;
-    
-/* Wizard panel that collects data for the Servlet and Filter
+
+/** Wizard panel that collects data for the Servlet and Filter
  * wizards. 
  *
  * @author Ana von Klopp, Milan Kuchtiak
  */
-public class ServletPanel implements WizardDescriptor.FinishPanel {
+public class ServletPanel implements WizardDescriptor.FinishablePanel {
     
     /** The visual component that displays this panel.
      * If you need to access the component from this class,
@@ -87,6 +84,10 @@ public class ServletPanel implements WizardDescriptor.FinishPanel {
 	    this.wizardPanel = new DeployDataExtraPanel(evaluator); 
     }
 
+    public boolean isFinishPanel() {
+        return true;
+    }
+    
     /** Create the wizard panel descriptor. */
     public static ServletPanel createServletPanel(TargetEvaluator evaluator, 
 						  TemplateWizard wizard) { 
@@ -105,10 +106,10 @@ public class ServletPanel implements WizardDescriptor.FinishPanel {
 
     public boolean isValid() {
 	if(deployData.isValid()) { 
-	    wizard.putProperty("WizardPanel_errorMessage", ""); //NOI18N
+	    wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, ""); //NOI18N
 	    return true;
 	}
-	wizard.putProperty("WizardPanel_errorMessage", //NOI18N
+	wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, //NOI18N
 			   deployData.getErrorMessage()); 
 	return false; 
     } 

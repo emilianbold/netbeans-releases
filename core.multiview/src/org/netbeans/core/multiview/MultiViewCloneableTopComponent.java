@@ -249,8 +249,7 @@ public final class MultiViewCloneableTopComponent extends CloneableTopComponent
         MultiViewDescription[] descs = peer.model.getDescriptions();
         for (MultiViewDescription desc : descs) {
             if (desc instanceof SourceViewMarker) {
-                peer.tabs.changeVisibleManually(desc);
-                el = peer.model.getActiveElement();
+                el = peer.model.getElementForDescription(desc);
                 if (el.getVisualRepresentation() instanceof CloneableEditorSupport.Pane) {
                     return el;
                 } else {

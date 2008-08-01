@@ -43,7 +43,7 @@ public class BitSet implements Cloneable {
     }
 
     /** Construction from a static array of longs */
-    public BitSet(long[] bits_) {
+    public BitSet(long... bits_) {
         bits = bits_;
     }
 
@@ -102,6 +102,7 @@ public class BitSet implements Cloneable {
         bits[n] &= ~bitMask(el);
     }
 
+    @Override
     public Object clone() {
         BitSet s;
         try {
@@ -131,6 +132,7 @@ public class BitSet implements Cloneable {
     }
 
     /** code "inherited" from java.util.BitSet */
+    @Override
     public boolean equals(Object obj) {
         if ((obj != null) && (obj instanceof BitSet)) {
             BitSet set = (BitSet)obj;
@@ -336,6 +338,7 @@ public class BitSet implements Cloneable {
         return bits;
     }
 
+    @Override
     public String toString() {
         return toString(",");
     }

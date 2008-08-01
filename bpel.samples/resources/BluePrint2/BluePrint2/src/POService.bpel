@@ -32,6 +32,8 @@
          targetNamespace="http://manufacturing.org/wsdl/purchase/bp2"
          xmlns:pos="http://manufacturing.org/wsdl/purchase/bp2"
          xmlns="http://docs.oasis-open.org/wsbpel/2.0/process/executable"
+         xmlns:sxt="http://www.sun.com/wsbpel/2.0/process/executable/SUNExtension/Trace" 
+         xmlns:sxed="http://www.sun.com/wsbpel/2.0/process/executable/SUNExtension/Editor"
          xmlns:invs="http://manufacturing.org/wsdl/inventory/bp2"
          xmlns:invsh="http://manufacturing.org/xsd/inventory"
          xmlns:po="http://manufacturing.org/xsd/purchase">
@@ -64,7 +66,6 @@
 
     <variables>
         <variable name="purchaseOrderRequest" messageType="pos:POMessage"></variable>
-        <variable name="purchaseOrderReply" messageType="pos:POMessage"></variable>
         <variable name="purchaseOrderFault" messageType="pos:orderFaultType"></variable>
         <variable name="inventoryServiceRequest" messageType="invs:POMessage"></variable>
         <variable name="inventoryServiceReply" messageType="invs:InventoryMessage"></variable>
@@ -105,8 +106,7 @@
                 <correlation set="POCorrelationSet" initiate="yes"/>
             </correlations>
         </invoke>
-        <pick name="Event_Based_Decision"
-              createInstance="no">
+        <pick name="Event_Based_Decision" createInstance="no">
             <onMessage partnerLink="inventoryRequesting"
                        portType="invs:inventoryServiceCallbackPortType"
                        operation="inventoryServiceResponse"
@@ -118,12 +118,6 @@
                     <if name="Decision">
                         <condition>$inventoryServiceReply.inventoryPart/invsh:inventoryStatus</condition>
                         <sequence name="Case2">
-                            <assign name="Assign1">
-                                <copy>
-                                    <from>$purchaseOrderRequest.purchaseOrder</from>
-                                    <to>$purchaseOrderReply.purchaseOrder</to>
-                                </copy>
-                            </assign>
                             <reply name="sendPurchaseOrder.Reply"
                                    partnerLink="POServicePLink"
                                    portType="pos:purchaseOrderPT"

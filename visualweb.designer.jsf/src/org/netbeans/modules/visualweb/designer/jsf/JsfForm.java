@@ -2889,7 +2889,20 @@ public class JsfForm {
             // No op.
         }
 
-        public void contextClosed(DesignContext designContext) {
+        public void contextClosed(final DesignContext designContext) {
+            // XXX #139454 Insync doesn't fire these event from AWT thread.
+            if (EventQueue.isDispatchThread()) {
+                doContextClosed(designContext);
+            } else {
+                EventQueue.invokeLater(new Runnable() {
+                    public void run() {
+                        doContextClosed(designContext);
+                    }
+                });
+            }
+        }
+
+        private void doContextClosed(DesignContext designContext) {
             JsfForm jsfForm = JsfForm.findJsfForm(designContext);
             JsfMultiViewElement[] jsfMultiViewElements = findJsfMultiViewElements(jsfForm);
             for (JsfMultiViewElement jsfMultiViewElement : jsfMultiViewElements) {

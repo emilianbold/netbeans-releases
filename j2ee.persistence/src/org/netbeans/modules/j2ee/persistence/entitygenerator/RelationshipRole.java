@@ -54,6 +54,7 @@ public class RelationshipRole {
     private boolean many;
     private boolean toMany;
     private boolean cascade;
+    private boolean optional;
     
     private EntityRelation parent;
  
@@ -63,12 +64,23 @@ public class RelationshipRole {
             boolean many,
             boolean toMany,
             boolean cascade) {
+        this(roleName, entityName, fieldName, many, toMany, cascade, true);
+    }
+    
+    public RelationshipRole (String roleName,
+            String entityName,
+            String fieldName,
+            boolean many,
+            boolean toMany,
+            boolean cascade,
+            boolean optional) {
         this.setRoleName(roleName);
         this.setEntityName(entityName);
         this.setFieldName(fieldName);
         this.setMany(many);
         this.setToMany(toMany);
         this.setCascade(cascade);
+        this.optional = optional;
     }
     
     public RelationshipRole (EntityRelation parentRelation) {
@@ -121,6 +133,10 @@ public class RelationshipRole {
 
     public void setCascade(boolean cascade) {
         this.cascade = cascade;
+    }
+    
+    public boolean isOptional() {
+        return this.optional;
     }
 
     public EntityRelation getParent() {

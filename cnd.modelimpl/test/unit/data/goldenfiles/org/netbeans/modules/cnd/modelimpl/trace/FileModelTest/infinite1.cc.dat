@@ -11,61 +11,61 @@ Includes:
     <no includes>
 Macros:
     <no macros>
-CLASS B (B ) [2:1/1-6:3/47] lcurly=13 SCOPE: $Global$ 
+CLASS InfiniteB (InfiniteB ) [2:1/1-6:3/63] lcurly=29 SCOPE: $Global$ 
     BASE CLASSES:
-        CLASS=A VISIBILITY==PRIVATE virtual==false text='A'
+        CLASS=InfiniteA VISIBILITY==PRIVATE virtual==false text='InfiniteA'
     MEMBERS:
-        CLASS D (B::D ) [3:5/19-5:7/44] lcurly=27 SCOPE: B 
+        CLASS D (InfiniteB::D ) [3:5/35-5:7/60] lcurly=43 SCOPE: InfiniteB 
             BASE CLASSES:
             MEMBERS:
-NAMESPACE DEFINITOIN N [8:1/49-12:2/90] SCOPE: infinite1.cc
-    CLASS A (N::A ) [9:5/67-11:7/88] lcurly=79 SCOPE: N 
+NAMESPACE DEFINITOIN N [8:1/65-12:2/122] SCOPE: infinite1.cc
+    CLASS InfiniteA (N::InfiniteA ) [9:5/83-11:7/120] lcurly=111 SCOPE: N 
         BASE CLASSES:
-            CLASS=B VISIBILITY==PRIVATE virtual==false text='B'
+            CLASS=InfiniteB VISIBILITY==PRIVATE virtual==false text='InfiniteB'
         MEMBERS:
-CLASS A (A ) [14:1/92-16:3/124] lcurly=104 SCOPE: $Global$ 
+CLASS InfiniteA (InfiniteA ) [14:1/124-16:3/172] lcurly=152 SCOPE: $Global$ 
     BASE CLASSES:
-        CLASS=B VISIBILITY==PRIVATE virtual==false text='B'
+        CLASS=InfiniteB VISIBILITY==PRIVATE virtual==false text='InfiniteB'
     MEMBERS:
-        FUNCTION foo [15:5/110-15:16/121] MethodImpl SCOPE: A 
-            DEFINITION: foo  [18:1/126-20:2/152]
+        FUNCTION foo [15:5/158-15:16/169] MethodImpl SCOPE: InfiniteA 
+            DEFINITION: foo  [18:1/174-20:2/208]
             SIGNATURE foo()
-            UNIQUE NAME F:A::foo()
+            UNIQUE NAME F:InfiniteA::foo()
             PARAMETERS:
-            RETURNS void TEXT=void  [15:5/110-15:9/114]
-FUNCTION DEFINITION foo  [18:1/126-20:2/152] FunctionDefinitionImpl SCOPE: infinite1.cc
+            RETURNS void TEXT=void  [15:5/158-15:9/162]
+FUNCTION DEFINITION foo  [18:1/174-20:2/208] FunctionDefinitionImpl SCOPE: infinite1.cc
     SIGNATURE foo()
-    UNIQUE NAME f:A::foo()
-    DECLARATION: foo  [15:5/110-15:16/121]
+    UNIQUE NAME f:InfiniteA::foo()
+    DECLARATION: foo  [15:5/158-15:16/169]
     PARAMETERS:
-    RETURNS void TEXT=void  [18:1/126-18:5/130]
-    STATEMENT COMPOUND  [18:15/140-20:2/152] SCOPE: foo 
-        STATEMENT DECLARATION  [19:5/146-19:9/150] SCOPE: Stmt  [18:15/140-20:2/152]
-            VARIABLE a [19:5/146-19:9/150]  TYPE: $unresolved$::C TEXT=C  [19:5/146-19:6/147]  INIT: null  SCOPE: Stmt  [18:15/140-20:2/152]
+    RETURNS void TEXT=void  [18:1/174-18:5/178]
+    STATEMENT COMPOUND  [18:23/196-20:2/208] SCOPE: foo 
+        STATEMENT DECLARATION  [19:5/202-19:9/206] SCOPE: Stmt  [18:23/196-20:2/208]
+            VARIABLE a [19:5/202-19:9/206]  TYPE: $unresolved$::C TEXT=C  [19:5/202-19:6/203]  INIT: null  SCOPE: Stmt  [18:23/196-20:2/208]
 
 ========== Dumping model of PROJECT DummyProject
-CLASS B (B ) [2:1/1-6:3/47] lcurly=13 SCOPE: $Global$ 
+CLASS InfiniteB (InfiniteB ) [2:1/1-6:3/63] lcurly=29 SCOPE: $Global$ 
     BASE CLASSES:
-        CLASS=A VISIBILITY==PRIVATE virtual==false text='A'
+        CLASS=InfiniteA VISIBILITY==PRIVATE virtual==false text='InfiniteA'
     MEMBERS:
-        CLASS D (B::D ) [3:5/19-5:7/44] lcurly=27 SCOPE: B 
+        CLASS D (InfiniteB::D ) [3:5/35-5:7/60] lcurly=43 SCOPE: InfiniteB 
             BASE CLASSES:
             MEMBERS:
-CLASS A (A ) [14:1/92-16:3/124] lcurly=104 SCOPE: $Global$ 
+CLASS InfiniteA (InfiniteA ) [14:1/124-16:3/172] lcurly=152 SCOPE: $Global$ 
     BASE CLASSES:
-        CLASS=B VISIBILITY==PRIVATE virtual==false text='B'
+        CLASS=InfiniteB VISIBILITY==PRIVATE virtual==false text='InfiniteB'
     MEMBERS:
-        FUNCTION foo [15:5/110-15:16/121] MethodImpl SCOPE: A 
-            DEFINITION: foo  [18:1/126-20:2/152]
+        FUNCTION foo [15:5/158-15:16/169] MethodImpl SCOPE: InfiniteA 
+            DEFINITION: foo  [18:1/174-20:2/208]
             SIGNATURE foo()
-            UNIQUE NAME F:A::foo()
+            UNIQUE NAME F:InfiniteA::foo()
             PARAMETERS:
-            RETURNS void TEXT=void  [15:5/110-15:9/114]
+            RETURNS void TEXT=void  [15:5/158-15:9/162]
 NAMESPACE DEFINITIONS for N (N) 
-    infinite1.cc  [8:1/49-12:2/90]
+    infinite1.cc  [8:1/65-12:2/122]
 NAMESPACE N (N) 
-    CLASS A (N::A ) [9:5/67-11:7/88] lcurly=79 SCOPE: N 
+    CLASS InfiniteA (N::InfiniteA ) [9:5/83-11:7/120] lcurly=111 SCOPE: N 
         BASE CLASSES:
-            CLASS=B VISIBILITY==PRIVATE virtual==false text='B'
+            CLASS=InfiniteB VISIBILITY==PRIVATE virtual==false text='InfiniteB'
         MEMBERS:
 

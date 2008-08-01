@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -43,16 +43,10 @@ package org.netbeans.modules.properties;
 
 import java.awt.Component;
 import java.awt.datatransfer.Transferable;
-import java.awt.Dialog;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.IOException;
-import java.text.MessageFormat;
 import java.util.List;
 import javax.swing.Action;
-import javax.swing.JPanel;
 
-import org.openide.actions.*;
 import org.openide.DialogDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -61,6 +55,17 @@ import org.openide.nodes.Node;
 import org.openide.nodes.NodeTransfer;
 import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.actions.CopyAction;
+import org.openide.actions.CutAction;
+import org.openide.actions.DeleteAction;
+import org.openide.actions.EditAction;
+import org.openide.actions.FileSystemAction;
+import org.openide.actions.NewAction;
+import org.openide.actions.OpenAction;
+import org.openide.actions.PasteAction;
+import org.openide.actions.PropertiesAction;
+import org.openide.actions.SaveAsTemplateAction;
+import org.openide.actions.ToolsAction;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.datatransfer.NewType;
 import org.openide.util.datatransfer.PasteType;
@@ -73,6 +78,7 @@ import org.openide.util.NbBundle;
  *
  * @see  PropertiesDataNode
  * @author Ian Formanek
+ * @author Marian Petras
  */
 public final class PropertiesLocaleNode extends FileEntryNode
                                         implements CookieSet.Factory,
@@ -109,6 +115,7 @@ public final class PropertiesLocaleNode extends FileEntryNode
      *
      * @return array of actions for this node
      */
+    @Override
     protected SystemAction[] createActions () {
         return new SystemAction[] {
             SystemAction.get(EditAction.class),
@@ -130,6 +137,7 @@ public final class PropertiesLocaleNode extends FileEntryNode
         };
     }
 
+    @Override
     public Action getPreferredAction() {
         return getActions(false)[0];
     }
@@ -140,13 +148,16 @@ public final class PropertiesLocaleNode extends FileEntryNode
      *
      * @return locale part of name
      */
+    @Override
     public String getName() {
         String localeName = "invalid"; // NOI18N
         if (getFileEntry().getFile().isValid() && !getFileEntry().getFile().isVirtual()) {
             localeName = Util.getLocaleSuffix (getFileEntry());
-            if (localeName.length() > 0)
-                if (localeName.charAt(0) == PropertiesDataLoader.PRB_SEPARATOR_CHAR)
+            if (localeName.length() > 0) {
+                if (localeName.charAt(0) == PropertiesDataLoader.PRB_SEPARATOR_CHAR) {
                     localeName = localeName.substring(1);
+                }
+            }
         }
         return localeName;
     }
@@ -155,13 +166,16 @@ public final class PropertiesLocaleNode extends FileEntryNode
      *
      * @param name the new name
      */
+    @Override
     public void setName (String name) {
         if(!name.startsWith(getFileEntry().getDataObject().getPrimaryFile().getName())) {
             name = Util.assembleName (getFileEntry().getDataObject().getPrimaryFile().getName(), name);
         }
         
         // new name is same as old one, do nothing
-        if (name.equals(super.getName())) return;
+        if (name.equals(super.getName())) {
+            return;
+        }
 
         super.setName (name);
         setDisplayName(Util.getLocaleLabel(getFileEntry()));
@@ -175,96 +189,71 @@ public final class PropertiesLocaleNode extends FileEntryNode
     }
     
     /** This node can be renamed. Overrides superclass method. */
+    @Override
     public boolean canRename() {
         return getFileEntry().isDeleteAllowed ();
     }
 
     /** Returns all the item in addition to "normal" cookies. Overrides superclass method. */
     @SuppressWarnings("unchecked")
+    @Override
     public <T extends Node.Cookie> T getCookie(Class<T> cls) {
-        if (cls.isInstance(getFileEntry())) return (T) getFileEntry();
-        if (cls == PropertiesLocaleNode.class) return (T) this;
+        if (cls.isInstance(getFileEntry())) {
+            return (T) getFileEntry();
+        }
+        if (cls == PropertiesLocaleNode.class) {
+            return (T) this;
+        }
         return super.getCookie(cls);
     }
 
     /** List new types that can be created in this node. Overrides superclass method.
      * @return new types
      */
+    @Override
     public NewType[] getNewTypes () {
         return new NewType[] {
             new NewType() {
 
                 /** Getter for name property. */
+            @Override
                 public String getName() {
                     return NbBundle.getBundle(PropertiesLocaleNode.class).getString("LAB_NewPropertyAction");
                 }
                 
                 /** Gets help context. */ 
+            @Override
                 public HelpCtx getHelpCtx() {
                     return new HelpCtx(Util.HELP_ID_ADDING);
                 }
 
                 /** Creates new type. */
                 public void create() throws IOException {
-                    final Dialog[] dialog = new Dialog[1];
-                    final Element.ItemElem item = new Element.ItemElem(
-                        null, 
-                        new Element.KeyElem(null, ""), // NOI18N
-                        new Element.ValueElem(null, ""), // NOI18N
-                        new Element.CommentElem(null, "") // NOI18N
-                    );
-                    final JPanel panel = new PropertyPanel(item);
+                    final PropertyPanel panel = new PropertyPanel();
 
-                    DialogDescriptor dd = new DialogDescriptor(
-                        panel,
-                        NbBundle.getBundle(PropertiesLocaleNode.class).getString("CTL_NewPropertyTitle"),
-                        true,
-                        DialogDescriptor.OK_CANCEL_OPTION,
-                        DialogDescriptor.OK_OPTION,
-                        new ActionListener() {
-                            private boolean bulkFlag = false;
-                            public void actionPerformed(ActionEvent evt) {
+                    Object selectedOption = DialogDisplayer.getDefault().notify(
+                            new DialogDescriptor(
+                                    panel,
+                                    NbBundle.getMessage(BundleEditPanel.class,
+                                                        "CTL_NewPropertyTitle")));  //NOI18N
+                    if (selectedOption != NotifyDescriptor.OK_OPTION) {
+                        return;
+                    }
 
-                                // prevent double notification #11364
-                                if (bulkFlag) return;
-                                bulkFlag =true;
+                    String key = panel.getKey();
+                    String value = panel.getValue();
+                    String comment = panel.getComment();
 
-                                // OK pressed
-                                if(evt.getSource() == DialogDescriptor.OK_OPTION) {
-                                    dialog[0].setVisible(false);
-                                    dialog[0].dispose();
-
-
-                                    String key = item.getKey();
-                                    String value = item.getValue();
-                                    String comment = item.getComment();
-
-                                    // add key to all entries
-                                    if(!((PropertiesFileEntry)getFileEntry()).getHandler().getStructure().addItem(key, value, comment)) {
-                                        NotifyDescriptor.Message msg = new NotifyDescriptor.Message(
-                                            MessageFormat.format(
-                                                NbBundle.getBundle(PropertiesLocaleNode.class).getString("MSG_KeyExists"),
-                                                new Object[] {
-                                                    item.getKey(),
-                                                    Util.getLocaleLabel(getFileEntry())
-                                                }
-                                            ),
-                                            NotifyDescriptor.ERROR_MESSAGE);
-                                        DialogDisplayer.getDefault().notify(msg);
-                                    }
-
-                                // Cancel pressed
-                                } else if (evt.getSource() == DialogDescriptor.CANCEL_OPTION) {
-                                    dialog[0].setVisible(false);
-                                    dialog[0].dispose();
-                                }
-                            }
-                        }
-                    );
-
-                    dialog[0] = DialogDisplayer.getDefault().createDialog(dd);
-                    dialog[0].setVisible(true);
-
+                    // add key to all entries
+                    if(!((PropertiesFileEntry)getFileEntry()).getHandler().getStructure().addItem(key, value, comment)) {
+                        DialogDisplayer.getDefault().notify(
+                                new NotifyDescriptor.Message(
+                                        NbBundle.getMessage(
+                                                PropertiesLocaleNode.class, "MSG_KeyExists",
+                                                key,
+                                                Util.getLocaleLabel(getFileEntry())),
+                                        NotifyDescriptor.ERROR_MESSAGE));
+                    }
                 }
                 
             } // End of annonymous class.
@@ -273,16 +262,19 @@ public final class PropertiesLocaleNode extends FileEntryNode
 
     /** Indicates if this node has a customizer. Overrides superclass method. 
      * @return true */
+    @Override
     public boolean hasCustomizer() {
         return true;
     }
     
     /** Gets node customizer. Overrides superclass method. */
+    @Override
     public Component getCustomizer() {
         return new LocaleNodeCustomizer((PropertiesFileEntry)getFileEntry());
     }
     
     /** Creates paste types for this node. Overrides superclass method. */
+    @Override
     protected void createPasteTypes(Transferable t, List<PasteType> s) {
         super.createPasteTypes(t, s);
         Element.ItemElem item;
@@ -341,6 +333,7 @@ public final class PropertiesLocaleNode extends FileEntryNode
 
         /** Gets name. 
          * @return human presentable name of this paste type. */
+        @Override
         public String getName() {
             String pasteKey = mode == 1 ? "CTL_PasteKeyValue" : "CTL_PasteKeyNoValue";
             return NbBundle.getBundle(PropertiesLocaleNode.class).getString(pasteKey);
@@ -354,10 +347,11 @@ public final class PropertiesLocaleNode extends FileEntryNode
         public Transferable paste() throws IOException {
             PropertiesStructure ps = ((PropertiesFileEntry)getFileEntry()).getHandler().getStructure();
             String value;
-            if (mode == MODE_PASTE_WITH_VALUE)
+            if (mode == MODE_PASTE_WITH_VALUE) {
                 value = item.getValue();
-            else
+            } else {
                 value = "";
+            }
             if (ps != null) {
                 Element.ItemElem newItem = ps.getItem(item.getKey());
                 if (newItem == null) {
@@ -367,8 +361,9 @@ public final class PropertiesLocaleNode extends FileEntryNode
                     newItem.setValue(value);
                     newItem.setComment(item.getComment());
                 }
-                if (node != null)
+                if (node != null) {
                     node.destroy();
+                }
             }
 
             return null;

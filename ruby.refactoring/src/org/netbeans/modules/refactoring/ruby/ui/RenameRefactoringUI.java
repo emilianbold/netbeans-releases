@@ -88,7 +88,12 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
         this.refactoring = new RenameRefactoring(Lookups.singleton(handle));
         //oldName = handle.resolveElement(info).getSimpleName().toString();
         oldName = handle.getSimpleName();
-        refactoring.getContext().add(RetoucheUtils.getClasspathInfoFor(handle));
+
+        ClasspathInfo classpath = RetoucheUtils.getClasspathInfoFor(handle);
+        if (classpath != null) {
+            refactoring.getContext().add(classpath);
+        }
+        
         dispOldName = oldName;
 
         //this(jmiObject, (FileObject) null, true);
@@ -109,7 +114,9 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
         }
         dispOldName = oldName;
         ClasspathInfo cpInfo = handle==null?RetoucheUtils.getClasspathInfoFor(file):RetoucheUtils.getClasspathInfoFor(handle);
-        refactoring.getContext().add(cpInfo);
+        if (cpInfo != null) {
+            refactoring.getContext().add(cpInfo);
+        }
         //this(jmiObject, (FileObject) null, true);
         
         // Force refresh!
@@ -119,7 +126,10 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
     public RenameRefactoringUI(NonRecursiveFolder file) {
         this.refactoring = new RenameRefactoring(Lookups.singleton(file));
         oldName = RetoucheUtils.getPackageName(file.getFolder());
-        refactoring.getContext().add(RetoucheUtils.getClasspathInfoFor(file.getFolder()));
+        ClasspathInfo classpath = RetoucheUtils.getClasspathInfoFor(file.getFolder());
+        if (classpath != null) {
+            refactoring.getContext().add(classpath);
+        }
         dispOldName = oldName;
         pkgRename = true;
         //this(jmiObject, (FileObject) null, true);
@@ -140,7 +150,9 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
         //[FIXME] this should be oldName of refactored object
         this.dispOldName = newName;
         ClasspathInfo cpInfo = handle==null?RetoucheUtils.getClasspathInfoFor(jmiObject):RetoucheUtils.getClasspathInfoFor(handle);
-        refactoring.getContext().add(cpInfo);
+        if (cpInfo != null) {
+            refactoring.getContext().add(cpInfo);
+        }
         fromListener = true;
 
         // Force refresh!
@@ -149,7 +161,10 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
     
     RenameRefactoringUI(NonRecursiveFolder jmiObject, String newName) {
         this.refactoring = new RenameRefactoring(Lookups.singleton(jmiObject));
-        refactoring.getContext().add(RetoucheUtils.getClasspathInfoFor(jmiObject.getFolder()));
+        ClasspathInfo classpath = RetoucheUtils.getClasspathInfoFor(jmiObject.getFolder());
+        if (classpath != null) {
+            refactoring.getContext().add(classpath);
+        }
         //this.jmiObject = jmiObject;
         oldName = newName;
         //[FIXME] this should be oldName of refactored object

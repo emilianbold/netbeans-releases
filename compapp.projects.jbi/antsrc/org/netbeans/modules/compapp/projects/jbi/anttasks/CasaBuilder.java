@@ -52,6 +52,8 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
+import org.apache.tools.ant.ProjectHelper;
+import org.apache.tools.ant.helper.ProjectHelperImpl;
 import org.netbeans.modules.compapp.projects.jbi.api.JbiProjectConstants;
 import org.netbeans.modules.compapp.projects.jbi.descriptor.XmlUtil;
 import org.netbeans.modules.compapp.projects.jbi.descriptor.endpoints.model.Endpoint;
@@ -100,6 +102,12 @@ public class CasaBuilder {
     public static final String DEFAULT_WSDL_ENDPOINTS_REGION_WIDTH = "150";
     public static final String DEFAULT_JBI_MODULES_REGION_WIDTH = "500";
     public static final String DEFAULT_EXTERNAL_MODULES_REGION_WIDTH = "200";
+
+    // WSIT Callback Java project support
+    public static final String CASA_NAMESPACE_URI = "http://java.sun.com/xml/ns/casa";
+    public static final String WSIT_CALLBACK_ELEMENT = "WsitCallback";
+    public static final String WSIT_CALLBACK_PROJECT = "CallbackProject";
+
     // mapping binding component namespace to binding component name,
     // e.x., 
     private Map<String, String> bcNamespace2NameMap;
@@ -217,8 +225,8 @@ public class CasaBuilder {
             mergeLocations();
 
             // Merge endpoint extension elements from old casa
-            mergeBCEndpointExtensions(true);
-            mergeBCEndpointExtensions(false);
+            mergeEndpointExtensions(true);
+            mergeEndpointExtensions(false);
 
             // Merge connection extension elements from old casa
             mergeConnectionExtensions();
@@ -382,33 +390,24 @@ public class CasaBuilder {
     }
 
     /**
-     * Merge binding component endpoint extension elements from the 
-     * old CASA document.
-     * 
-     * @param isConsumes    is consumes endpoint or provides endpoint
+     * Merge endpoint extension elements from the old CASA document.
      */
-    private void mergeBCEndpointExtensions(boolean isConsumes) {
+    private void mergeEndpointExtensions(boolean isConsumes) {
         if (oldCasaDocument == null) {
             return;
         }
 
-        NodeList oldBCSUs = oldCasaDocument.getElementsByTagName(
-                CASA_BINDING_COMPONENT_SERVICE_UNIT_ELEM_NAME);
+        NodeList oldEndpointRefs = oldCasaDocument.getElementsByTagName(
+                isConsumes ? CASA_CONSUMES_ELEM_NAME : CASA_PROVIDES_ELEM_NAME);
 
-        for (int i = 0; i < oldBCSUs.getLength(); i++) {
-            Element oldBCSU = (Element) oldBCSUs.item(i);
-            NodeList oldEndpointRefs = oldBCSU.getElementsByTagName(
-                    isConsumes ? CASA_CONSUMES_ELEM_NAME : CASA_PROVIDES_ELEM_NAME);
+        for (int j = 0; j < oldEndpointRefs.getLength(); j++) {
+            Element oldEndpointRef = (Element) oldEndpointRefs.item(j);
+            Element newEndpointRef = findEndpointRef(oldCasaDocument,
+                    oldEndpointRef, newCasaDocument, isConsumes);
 
-            for (int j = 0; j < oldEndpointRefs.getLength(); j++) {
-                Element oldEndpointRef = (Element) oldEndpointRefs.item(j);
-                Element newEndpointRef = findEndpointRef(oldCasaDocument,
-                        oldEndpointRef, newCasaDocument, isConsumes);
-
-                // Copy child extension elements over from old CASA to new CASA
-                if (newEndpointRef != null) {
-                    deepCloneChildren(oldEndpointRef, newEndpointRef);
-                }
+            // Copy child extension elements over from old CASA to new CASA
+            if (newEndpointRef != null) {
+                deepCloneChildren(oldEndpointRef, newEndpointRef);
             }
         }
     }
@@ -423,7 +422,7 @@ public class CasaBuilder {
 
         if (newEndpointID != null) {
             newEndpointRef = getEndpointRefElement(
-                    newCasaDocument, newEndpointID, false, isConsumes);
+                    newCasaDocument, newEndpointID, isConsumes);
         }
 
         return newEndpointRef;
@@ -450,20 +449,16 @@ public class CasaBuilder {
      * 
      * @param casaDocument  CASA document
      * @param endpoint      an endpoint object
-     * @param isSESU        if <code>true</code>, the endpoint belongs to a 
-     *                      service engine service unit; 
-     *                      if <code>false</code>, the endpoint belongs to a 
-     *                      binging component service unit
      * @param isConsumes    if <code>true</code>, the endpoint is a consumes,
      *                      if <code>false</code>, the endpoint is a provides.
      * 
      * @return  the consumes/provides element with the given ID.
      */
     static Element getEndpointRefElement(Document casaDocument,
-            Endpoint endpoint, boolean isSESU, boolean isConsumes) {
+            Endpoint endpoint, boolean isConsumes) {
 
         String endpointID = getEndpointID(casaDocument, endpoint);
-        return getEndpointRefElement(casaDocument, endpointID, isSESU, isConsumes);
+        return getEndpointRefElement(casaDocument, endpointID, isConsumes);
     }
 
     /**
@@ -472,34 +467,22 @@ public class CasaBuilder {
      * 
      * @param casaDocument  CASA document
      * @param endpointID    ID of an endpoint
-     * @param isSESU        if <code>true</code>, the endpoint belongs to a 
-     *                      service engine service unit; 
-     *                      if <code>false</code>, the endpoint belongs to a 
-     *                      binging component service unit
      * @param isConsumes    if <code>true</code>, the endpoint is a consumes,
      *                      if <code>false</code>, the endpoint is a provides.
      * 
      * @return  the consumes/provides element with the given ID.
      */
     private static Element getEndpointRefElement(Document casaDocument,
-            String endpointID, boolean isSESU, boolean isConsumes) {
+            String endpointID, boolean isConsumes) {
 
-        NodeList sus = casaDocument.getElementsByTagName(
-                isSESU ? CASA_SERVICE_ENGINE_SERVICE_UNIT_ELEM_NAME : CASA_BINDING_COMPONENT_SERVICE_UNIT_ELEM_NAME);
+        NodeList endpointRefs = casaDocument.getElementsByTagName(
+                isConsumes ? CASA_CONSUMES_ELEM_NAME : CASA_PROVIDES_ELEM_NAME);
 
-        for (int i = 0; i < sus.getLength(); i++) {
-
-            Element su = (Element) sus.item(i);
-
-            NodeList endpointRefs = su.getElementsByTagName(
-                    isConsumes ? CASA_CONSUMES_ELEM_NAME : CASA_PROVIDES_ELEM_NAME);
-
-            for (int j = 0; j < endpointRefs.getLength(); j++) {
-                Element endpointRef = (Element) endpointRefs.item(j);
-                if (endpointRef.getAttribute(CASA_ENDPOINT_ATTR_NAME).
-                        equals(endpointID)) {
-                    return endpointRef;
-                }
+        for (int j = 0; j < endpointRefs.getLength(); j++) {
+            Element endpointRef = (Element) endpointRefs.item(j);
+            if (endpointRef.getAttribute(CASA_ENDPOINT_ATTR_NAME).
+                    equals(endpointID)) {
+                return endpointRef;
             }
         }
 
@@ -1107,6 +1090,21 @@ public class CasaBuilder {
                 if (bindingType != null && bindingType.trim().length() > 0) {
                     newPort.setAttribute(CASA_BINDING_TYPE_ATTR_NAME, bindingType);
                 }
+
+                // 2.1 merge casa port extensibilty elements
+                NodeList pNodes = oldPort.getChildNodes();
+                for (int k = 0; k < pNodes.getLength(); k++) {
+                    if (pNodes.item(k) instanceof Element) {
+                        Element pNode = (Element) pNodes.item(k);
+                        String ns = pNode.getNamespaceURI();
+                        // todo: Assume non CASA elemeents are extensions...
+                        if (!CASA_NAMESPACE_URI.equals(ns)) {
+                            Node clonedNode = deepCloneCasaNode(pNode, newCasaDocument);
+                            newPort.appendChild(clonedNode);
+                        }
+                    }
+                }
+
             }
         }
     }

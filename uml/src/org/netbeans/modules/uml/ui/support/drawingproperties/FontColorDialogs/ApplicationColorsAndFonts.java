@@ -55,13 +55,10 @@ import javax.swing.JDialog;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IProxyDiagram;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
-import org.netbeans.modules.uml.core.support.umlutils.ETArrayList;
-import org.netbeans.modules.uml.ui.controls.drawingarea.IUIDiagram;
 import org.netbeans.modules.uml.ui.support.ProductHelper;
 import org.netbeans.modules.uml.ui.support.QuestionResponse;
 import org.netbeans.modules.uml.ui.support.SimpleQuestionDialogKind;
 import org.netbeans.modules.uml.ui.support.SimpleQuestionDialogResultKind;
-import org.netbeans.modules.uml.ui.support.applicationmanager.IPresentationResourceMgr;
 import org.netbeans.modules.uml.ui.support.applicationmanager.IProductDiagramManager;
 import org.netbeans.modules.uml.ui.support.drawingproperties.DrawingPropertyResource;
 import org.netbeans.modules.uml.ui.support.drawingproperties.ETFontType;
@@ -70,7 +67,6 @@ import org.netbeans.modules.uml.ui.support.drawingproperties.IDrawingProperty;
 import org.netbeans.modules.uml.ui.support.drawingproperties.IDrawingPropertyProvider;
 import org.netbeans.modules.uml.ui.support.drawingproperties.IFontProperty;
 import org.netbeans.modules.uml.ui.swing.commondialogs.SwingQuestionDialogImpl;
-import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaControl;
 
 /**
  * @author jingmingm
@@ -123,11 +119,12 @@ public class ApplicationColorsAndFonts extends BasicColorsAndFontsDialog
 			// Clear the current content in case we call this twice
 			resetObjectList();
 			m_pDrawEngines.clear();
+                        // TODO: meteora
 
-			IPresentationResourceMgr pMgr = ProductHelper.getPresentationResourceMgr();
-			if (pMgr != null)
-			{
-				m_pDrawEngines = pMgr.getAllDrawEngineNames();
+//			IPresentationResourceMgr pMgr = ProductHelper.getPresentationResourceMgr();
+//			if (pMgr != null)
+//			{
+//				m_pDrawEngines = pMgr.getAllDrawEngineNames();
 
 				// Populate our map of draw engine name to draw engine id
 				populateDrawEngineNameMap();
@@ -148,7 +145,7 @@ public class ApplicationColorsAndFonts extends BasicColorsAndFontsDialog
 
 				// Select the first item automatically
 				selectInList(0);
-			}
+//			}
 		}
 	}
 	
@@ -164,59 +161,60 @@ public class ApplicationColorsAndFonts extends BasicColorsAndFontsDialog
 			saveChangedProperties();
 			
 			// Now save the presentation types files
-			IPresentationResourceMgr pMgr = ProductHelper.getPresentationResourceMgr();
-			if (pMgr != null)
-			{
-				pMgr.saveOverriddenResources();
-	
-				// Now ask if the user wishes to reset any open diagrams
-				IProductDiagramManager pDiagramManager = ProductHelper.getProductDiagramManager();
-				if (pDiagramManager != null)
-				{
-					ETList<IProxyDiagram> pOpenDiagrams = pDiagramManager.getOpenDiagrams();
-					int count = 0;
-					if (pOpenDiagrams != null)
-					{
-						count = pOpenDiagrams.size();
-					}
-	
-					if (count > 0)
-					{
-						String title = DrawingPropertyResource.getString("IDS_RESETDIAGRAMS");
-						String msg = DrawingPropertyResource.getString("IDS_RESETDIAGRAMS_MSG");
-						SwingQuestionDialogImpl dialog = new SwingQuestionDialogImpl();
-						QuestionResponse response = dialog.displaySimpleQuestionDialogWithCheckbox(SimpleQuestionDialogKind.SQDK_YESNO, 0, msg, "", title, 0, false);
-						if (response != null)
-						{
-							int result = response.getResult();
-							if (result == SimpleQuestionDialogResultKind.SQDRK_RESULT_YES)
-							{
-								for (int i = 0 ; i < count ; i++)
-								{
-									IProxyDiagram pThisDiagram = pOpenDiagrams.get(i);
-									if (pThisDiagram != null)
-									{
-										IDiagram pDiagram = pThisDiagram.getDiagram();
-										if (pDiagram instanceof IUIDiagram)
-										{
-											IUIDiagram pAxDiagram = (IUIDiagram)pDiagram;
-											IDrawingAreaControl pControl = pAxDiagram.getDrawingArea();
-											if (pControl != null && pControl instanceof IDrawingPropertyProvider)
-											{
-												IDrawingPropertyProvider pProvider = (IDrawingPropertyProvider)pControl;
-												
-												// Reset the drawing area
-												pProvider.resetToDefaultResources();
-												pProvider.invalidateProvider();
-											}
-										}
-									}
-								}
-							}
-						}
-					}
-				}
-			}
+                        // TODO: meteora
+//			IPresentationResourceMgr pMgr = ProductHelper.getPresentationResourceMgr();
+//			if (pMgr != null)
+//			{
+//				pMgr.saveOverriddenResources();
+//	
+//				// Now ask if the user wishes to reset any open diagrams
+//				IProductDiagramManager pDiagramManager = ProductHelper.getProductDiagramManager();
+//				if (pDiagramManager != null)
+//				{
+//					ETList<IProxyDiagram> pOpenDiagrams = pDiagramManager.getOpenDiagrams();
+//					int count = 0;
+//					if (pOpenDiagrams != null)
+//					{
+//						count = pOpenDiagrams.size();
+//					}
+//	
+//					if (count > 0)
+//					{
+//						String title = DrawingPropertyResource.getString("IDS_RESETDIAGRAMS");
+//						String msg = DrawingPropertyResource.getString("IDS_RESETDIAGRAMS_MSG");
+//						SwingQuestionDialogImpl dialog = new SwingQuestionDialogImpl();
+//						QuestionResponse response = dialog.displaySimpleQuestionDialogWithCheckbox(SimpleQuestionDialogKind.SQDK_YESNO, 0, msg, "", title, 0, false);
+//						if (response != null)
+//						{
+//							int result = response.getResult();
+//							if (result == SimpleQuestionDialogResultKind.SQDRK_RESULT_YES)
+//							{
+//								for (int i = 0 ; i < count ; i++)
+//								{
+//									IProxyDiagram pThisDiagram = pOpenDiagrams.get(i);
+//									if (pThisDiagram != null)
+//									{
+//										IDiagram pDiagram = pThisDiagram.getDiagram();
+//										if (pDiagram instanceof IUIDiagram)
+//										{
+//											IUIDiagram pAxDiagram = (IUIDiagram)pDiagram;
+//											IDrawingAreaControl pControl = pAxDiagram.getDrawingArea();
+//											if (pControl != null && pControl instanceof IDrawingPropertyProvider)
+//											{
+//												IDrawingPropertyProvider pProvider = (IDrawingPropertyProvider)pControl;
+//												
+//												// Reset the drawing area
+//												pProvider.resetToDefaultResources();
+//												pProvider.invalidateProvider();
+//											}
+//										}
+//									}
+//								}
+//							}
+//						}
+//					}
+//				}
+//			}
 	   
 			// Clear our list of changed properties
 			clearChangedProperties();
@@ -390,11 +388,12 @@ public class ApplicationColorsAndFonts extends BasicColorsAndFontsDialog
 			//if (m_pDiagram == 0 && m_pPEs == 0)
 			{
 				// Make the change
-				IPresentationResourceMgr pMgr = ProductHelper.getPresentationResourceMgr();
-				if (pMgr != null)
-				{
-					pMgr.saveOverriddenColorResource(sEngineName, sResource, nNewColor);
-				}
+                            // TODO: meteora
+//				IPresentationResourceMgr pMgr = ProductHelper.getPresentationResourceMgr();
+//				if (pMgr != null)
+//				{
+//					pMgr.saveOverriddenColorResource(sEngineName, sResource, nNewColor);
+//				}
 			}
 //			else if (m_pDiagram)
 //			{
@@ -436,24 +435,25 @@ public class ApplicationColorsAndFonts extends BasicColorsAndFontsDialog
 		//if (m_pDiagram == 0 && m_pPEs == 0)
 		{
 			// Make the change
-			IPresentationResourceMgr pMgr = ProductHelper.getPresentationResourceMgr();
-			if (pMgr != null)
-			{
-				String sFaceName = pFontProperty.getFaceName();
-				int nSize = pFontProperty.getSize();
-				int nColor = pFontProperty.getColor();
-				boolean bItalic = pFontProperty.getItalic();
-				int nWeight = pFontProperty.getWeight();
-				
-				ETFontType val = new ETFontType();
-				val.setName(sFaceName);
-				val.setHeight(nSize);
-				val.setWeight(nWeight);
-				val.setItalic(bItalic);	
-				val.setColor(nColor);
-				
-				pMgr.saveOverriddenFontResource(sEngineName, sResource, val);
-			}
+                    // TODO: meteora
+//			IPresentationResourceMgr pMgr = ProductHelper.getPresentationResourceMgr();
+//			if (pMgr != null)
+//			{
+//				String sFaceName = pFontProperty.getFaceName();
+//				int nSize = pFontProperty.getSize();
+//				int nColor = pFontProperty.getColor();
+//				boolean bItalic = pFontProperty.getItalic();
+//				int nWeight = pFontProperty.getWeight();
+//				
+//				ETFontType val = new ETFontType();
+//				val.setName(sFaceName);
+//				val.setHeight(nSize);
+//				val.setWeight(nWeight);
+//				val.setItalic(bItalic);	
+//				val.setColor(nColor);
+//				
+//				pMgr.saveOverriddenFontResource(sEngineName, sResource, val);
+//			}
 		}
 //		else if (m_pDiagram)
 //		{

@@ -39,12 +39,12 @@
 
 package org.netbeans.modules.sun.manager.jbi.management.model.constraint;
 
+import java.util.Arrays;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.junit.Assert.*;
 
 /**
  *
@@ -77,14 +77,53 @@ public class JBIComponentConfigurationConstraintFactoryTest {
     @Test
     public void newConstraint() {
         System.out.println("newConstraint");
-        String facet = "";
-        String value = "";
-        JBIComponentConfigurationConstraint expResult = null;
-        JBIComponentConfigurationConstraint result = 
-                JBIComponentConfigurationConstraintFactory.newConstraint(facet, value);
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+        JBIComponentConfigurationConstraintFactory.newConstraint(
+                JBIComponentConfigurationConstraintFactory.ENUMERATION, 
+                Arrays.asList(new String[]{"foo", "bar"}));       
+        
+        JBIComponentConfigurationConstraintFactory.newConstraint(
+                JBIComponentConfigurationConstraintFactory.FRACTION_DIGITS, 
+                "10");        
+        
+        JBIComponentConfigurationConstraintFactory.newConstraint(
+                JBIComponentConfigurationConstraintFactory.LENGTH, 
+                "10");        
+        
+        JBIComponentConfigurationConstraintFactory.newConstraint(
+                JBIComponentConfigurationConstraintFactory.MAX_EXCLUSIVE, 
+                "10");        
+        
+        JBIComponentConfigurationConstraintFactory.newConstraint(
+                JBIComponentConfigurationConstraintFactory.MIN_EXCLUSIVE, 
+                "10");        
+        
+        JBIComponentConfigurationConstraintFactory.newConstraint(
+                JBIComponentConfigurationConstraintFactory.MAX_INCLUSIVE, 
+                "10");        
+        
+        JBIComponentConfigurationConstraintFactory.newConstraint(
+                JBIComponentConfigurationConstraintFactory.MIN_INCLUSIVE, 
+                "10");        
+        
+        JBIComponentConfigurationConstraintFactory.newConstraint(
+                JBIComponentConfigurationConstraintFactory.MAX_LENGTH, 
+                "10");        
+        
+        JBIComponentConfigurationConstraintFactory.newConstraint(
+                JBIComponentConfigurationConstraintFactory.MIN_LENGTH, 
+                "10");        
+        
+        JBIComponentConfigurationConstraintFactory.newConstraint(
+                JBIComponentConfigurationConstraintFactory.PATTERN, 
+                ".*");        
+        
+        JBIComponentConfigurationConstraintFactory.newConstraint(
+                JBIComponentConfigurationConstraintFactory.TOTAL_DIGITS, 
+                "10");        
+        
+//        JBIComponentConfigurationConstraintFactory.newConstraint(
+//                JBIComponentConfigurationConstraintFactory.WHITESPACE, 
+//                "10");  
     }
 
 }

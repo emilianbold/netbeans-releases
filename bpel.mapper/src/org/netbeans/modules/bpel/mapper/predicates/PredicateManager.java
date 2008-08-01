@@ -24,11 +24,15 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
-import org.netbeans.modules.bpel.mapper.predicates.editor.PathConverter;
-import org.netbeans.modules.bpel.mapper.tree.spi.RestartableIterator;
+import org.netbeans.modules.bpel.mapper.model.PathConverter;
+import org.netbeans.modules.bpel.mapper.tree.models.VariableTreeModel;
+import org.netbeans.modules.soa.ui.tree.SoaTreeModel;
+import org.netbeans.modules.soa.ui.tree.TreeItem;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.xpath.ext.XPathPredicateExpression;
 import org.netbeans.modules.xml.xpath.ext.XPathUtils;
+import org.netbeans.modules.xml.xpath.ext.schema.resolver.SchemaCompHolder;
+import org.netbeans.modules.xml.xpath.ext.spi.XPathPseudoComp;
 
 /**
  * The class collects all predicate expressions which are in the edited 
@@ -43,6 +47,17 @@ import org.netbeans.modules.xml.xpath.ext.XPathUtils;
  * @author nk160297
  */
 public class PredicateManager {
+
+    public static PredicateManager getPredicateManager(SoaTreeModel treeModel) {
+        VariableTreeModel varTreeModel = SoaTreeModel.MyUtils.
+                findExtensionModel(treeModel, VariableTreeModel.class);
+        if (varTreeModel != null) {
+            PredicateManager predManager = varTreeModel.getPredicateManager();
+            return predManager;
+        }
+        //
+        return null;
+    }
     
     // The cache of predicates.
     private LinkedList<CachedPredicate> mPredicates;
@@ -52,12 +67,26 @@ public class PredicateManager {
     }
     
     public List<AbstractPredicate> getPredicates(
-            RestartableIterator<Object> parentPath, SchemaComponent sComp) {
+            TreeItem parentTreeItem, SchemaComponent sComp) {
         //    
         ArrayList<AbstractPredicate> result = new ArrayList<AbstractPredicate>();
         
         for (CachedPredicate cPred : mPredicates) {
-            if (cPred.hasSameBase(sComp) && cPred.hasSameLocation(parentPath)) {
+            if (cPred.hasSameBase(sComp) && cPred.hasSameLocation(parentTreeItem)) {
+                result.add(cPred.getPredicate());
+            }
+        }
+        //
+        return result;
+    }
+    
+    public List<AbstractPredicate> getPredicates(
+            TreeItem parentTreeItem, XPathPseudoComp pseudo) {
+        //    
+        ArrayList<AbstractPredicate> result = new ArrayList<AbstractPredicate>();
+        
+        for (CachedPredicate cPred : mPredicates) {
+            if (cPred.hasSameBase(pseudo) && cPred.hasSameLocation(parentTreeItem)) {
                 result.add(cPred.getPredicate());
             }
         }
@@ -78,11 +107,12 @@ public class PredicateManager {
         return true;
     }
 
-    public boolean addPredicate(RestartableIterator<Object> parentItr, 
+    public boolean addPredicate(TreeItem parentTreeItem, 
             AbstractPredicate pred) {
         //
         List<Object> parentPath = 
-                PathConverter.constructPredicateLocationtList(parentItr);
+                PathConverter.constructObjectLocationtList(
+                parentTreeItem, true, false);
         //
         if (parentPath != null) {
             return addPredicate(parentPath, pred);
@@ -155,8 +185,8 @@ public class PredicateManager {
             isPersistent = newValue;
         }
         
-        public SchemaComponent getBaseType() {
-            return mPred.getSComponent();
+        public SchemaCompHolder getBaseType() {
+            return mPred.getSCompHolder();
         }
         
         public AbstractPredicate getPredicate() {
@@ -173,17 +203,35 @@ public class PredicateManager {
         }
         
         public boolean hasSameBase(SchemaComponent baseSchemaComp) {
-            return getPredicate().getSComponent().equals(baseSchemaComp);
+            SchemaCompHolder sCompHolder = getPredicate().getSCompHolder();
+            if (sCompHolder.isPseudoComp()) {
+                return false;
+            } else {
+                return sCompHolder.getSchemaComponent().equals(baseSchemaComp);
+            }
+        }
+        
+        public boolean hasSameBase(XPathPseudoComp pseudo) {
+            SchemaCompHolder sCompHolder = getPredicate().getSCompHolder();
+            if (sCompHolder.isPseudoComp()) {
+                return sCompHolder.getHeldComponent().equals(pseudo);
+            } else {
+                return false;
+            }
+        }
+        
+        public boolean hasSameBase(SchemaCompHolder baseSchemaCompHolder) {
+            return getPredicate().getSCompHolder().equals(baseSchemaCompHolder);
         }
         
         /**
          * Check if the cached predicate has the same schema component 
          * and the same predicates.
          */
-        public boolean hasSameParams(SchemaComponent schemaComp,
+        public boolean hasSameParams(SchemaCompHolder schemaCompHolder,
                 XPathPredicateExpression[] predArr) {
             AbstractPredicate pComp = getPredicate();
-            return pComp.getSComponent().equals(schemaComp) &&
+            return pComp.getSCompHolder().equals(schemaCompHolder) &&
                     XPathUtils.samePredicatesArr(pComp.getPredicates(), predArr);
         }
         
@@ -192,14 +240,8 @@ public class PredicateManager {
             return pComp.equals(pred);
         }
         
-        public boolean hasSameLocation(RestartableIterator parentPathItr) {
-            parentPathItr.restart();
-            return hasSameLocationImpl(parentPathItr);
-        }
-        
-        public boolean hasSameLocation(List<Object> parentPath) {
-            Iterator externalItr = parentPath.iterator();
-            return hasSameLocationImpl(externalItr);
+        public boolean hasSameLocation(Iterable parentPathItrb) {
+            return hasSameLocationImpl(parentPathItrb.iterator());
         }
         
         private boolean hasSameLocationImpl(Iterator externalItr) {

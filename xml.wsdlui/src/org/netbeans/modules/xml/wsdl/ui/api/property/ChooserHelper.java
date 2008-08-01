@@ -169,15 +169,24 @@ public abstract class ChooserHelper<T extends Component> {
     }
 
     
-    
     protected File[] recursiveListFiles(File file, FileFilter filter) {
         List<File> files = new ArrayList<File>();
-        File[] filesArr = file.listFiles(filter);
-        files.addAll(Arrays.asList(filesArr));
-        File[] dirs = file.listFiles(new DirFileFilter());
-        for (File dir : dirs) {
-            files.addAll(Arrays.asList(recursiveListFiles(dir, filter)));
+        if (file != null && file.isDirectory()) {
+            File[] filesArr = file.listFiles(filter);
+            if (filesArr != null) {
+                files.addAll(Arrays.asList(filesArr));
+            }
+            File[] dirs = file.listFiles(new DirFileFilter());
+            if (dirs != null) {
+                for (File dir : dirs) {
+                    File[] fs = recursiveListFiles(dir, filter);
+                    if (fs != null && fs.length > 0) {
+                        files.addAll(Arrays.asList(fs));
+                    }
+                }
+            }
         }
+        
         return files.toArray(new File[files.size()]);
     }
     

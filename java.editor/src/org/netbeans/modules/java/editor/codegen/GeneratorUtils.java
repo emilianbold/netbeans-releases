@@ -225,12 +225,12 @@ public class GeneratorUtils {
         if (te != null) {
             TreeMaker make = wc.getTreeMaker();
             ClassTree clazz = (ClassTree)path.getLeaf();
-            List<Tree> members = new ArrayList<Tree>(clazz.getMembers());
+            List<Tree> members = new ArrayList<Tree>();
             GeneratorUtilities gu = GeneratorUtilities.get(wc);
             ElementUtilities elemUtils = wc.getElementUtilities();
             for(ExecutableElement element : elemUtils.findUnimplementedMethods(te))
                 members.add(gu.createAbstractMethodImplementation(te, element));
-            ClassTree nue = make.Class(clazz.getModifiers(), clazz.getSimpleName(), clazz.getTypeParameters(), clazz.getExtendsClause(), (List<ExpressionTree>)clazz.getImplementsClause(), members);
+            ClassTree nue = gu.insertClassMembers(clazz, members);
             wc.rewrite(clazz, nue);
         }
     }

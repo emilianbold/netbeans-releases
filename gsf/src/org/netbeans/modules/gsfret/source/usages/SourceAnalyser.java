@@ -42,6 +42,7 @@
 package org.netbeans.modules.gsfret.source.usages;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -52,7 +53,6 @@ import org.netbeans.modules.gsf.api.ParserFile;
 import org.netbeans.modules.gsf.api.ParserResult;
 import org.netbeans.napi.gsfret.source.ParserTaskImpl;
 import org.netbeans.modules.gsf.Language;
-import org.netbeans.modules.gsf.LanguageRegistry;
 
 /**
  * This file is originally from Retouche, the Java Support 
@@ -88,7 +88,7 @@ public class SourceAnalyser implements IndexDocumentFactory {
         return this.index.isValid(true);
     }
 
-    public void analyse(Language language, final Iterable<ParserResult/*? extends CompilationUnitTree*/> data, ParserTaskImpl jt, /*JavaFileManager manager, */ParserFile sibling) throws IOException {
+    public void analyse(Language language, final Iterable<ParserResult> data) throws IOException {
         // I should stash some shit into this.references here such that I can try storing them later, for example
         // all the class names I can find. This would be a good place to look for the desired language...
         // Of course, I can have multiple, so I have to index these by the language type, right? Otherwise
@@ -99,6 +99,11 @@ public class SourceAnalyser implements IndexDocumentFactory {
             for (ParserResult result : data) {
                 String fileUrl = indexer.getPersistentUrl(result.getFile().getFile());
                 List<IndexDocument> documents = indexer.index(result, this);
+                // Null means delete this document from the index which is different than
+                // a document with no indexable information
+                if (documents == null) {
+                    documents = Collections.emptyList();
+                }
                 index.store(fileUrl, documents);
             }
         }
@@ -107,21 +112,24 @@ public class SourceAnalyser implements IndexDocumentFactory {
     void analyseUnitAndStore (Indexer indexer, ParserResult result) throws IOException {
         String fileUrl = indexer.getPersistentUrl(result.getFile().getFile());
         List<IndexDocument> documents = indexer.index(result, this);
+        if (documents == null) {
+            // Null means delete this document from the index which is different than
+            // a document with no indexable information
+            documents = Collections.emptyList();
+        }
         index.store(fileUrl, documents);
     }
     
-    public void delete (final ParserFile parserFile) throws IOException {
+    public void delete (final ParserFile parserFile, Language language) throws IOException {
         if (!this.index.isValid(false)) {
             return;
         }
         //this.toDelete.add(className);
 
-        for (Language language : LanguageRegistry.getInstance()) {
-            Indexer indexer = language.getIndexer();
-            if (indexer != null && indexer.isIndexable(parserFile)) {
-                String fileUrl = indexer.getPersistentUrl(parserFile.getFile());
-                index.store(fileUrl, null);
-            }
+        Indexer indexer = language.getIndexer();
+        if (indexer != null && indexer.isIndexable(parserFile)) {
+            String fileUrl = indexer.getPersistentUrl(parserFile.getFile());
+            index.store(fileUrl, null);
         }
     }
 
@@ -133,8 +141,24 @@ public class SourceAnalyser implements IndexDocumentFactory {
         return new IndexDocumentImpl(initialPairs);
     }
 
+    public IndexDocument createDocument(int initialPairs, String overrideUrl) {
+        return new IndexDocumentImpl(initialPairs, overrideUrl);
+    }
+    
     @Override
     public String toString() {
         return "SourceAnalyzer(" + this.index.toString().substring(this.index.toString().indexOf("@")+1) + ")";
+    }
+    
+    boolean hasData() {
+        try {
+            return !index.isValid(false);
+        } catch (IOException ioe) {
+            return true;
+        }
+    }
+
+    void batchStore(List<IndexBatchEntry> list, boolean create) throws IOException {
+        index.batchStore(list, create);
     }
 }

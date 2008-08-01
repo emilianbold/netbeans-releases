@@ -51,6 +51,7 @@ made subject to such option by the copyright holder.
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.projectimport.jbuilder.resources.Bundle"/>
                 <file name="org-netbeans-modules-projectimport-jbuilder-ImportJBProjectAction.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.projectimport.jbuilder.ImportAction" />
+                    <attr name="position" intvalue="300"/>
                 </file>
             </folder>
             <file name="ImporterSeparator1.instance">

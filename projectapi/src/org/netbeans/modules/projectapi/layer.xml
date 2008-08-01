@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<filesystem>
+    <folder name="ProjectXMLCatalog">
+        <folder name="auxiliary-configuration">
+            <file name="1.xsd" url="auxiliary-configuration.xsd"/>
+        </folder>
+        <folder name="auxiliary-configuration-preferences">
+            <file name="1.xsd" url="resources/auxiliary-configuration-preferences.xsd"/>
+        </folder>
+    </folder>
+</filesystem>

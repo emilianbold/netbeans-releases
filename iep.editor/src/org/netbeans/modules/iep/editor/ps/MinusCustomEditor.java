@@ -131,8 +131,8 @@ public class MinusCustomEditor extends DefaultCustomEditor {
             mOutputSchemaNamePanel = PropertyPanel.createSingleLineTextPanel(outputSchemaNameStr, outputSchemaNameProp, false);
             if (mIsSchemaOwner) {
                 if (mOutputSchemaNamePanel.getStringValue() == null || mOutputSchemaNamePanel.getStringValue().trim().equals("")) {
-                	IEPModel model = mComponent.getModel();
-                	String schemaName = NameGenerator.generateSchemaName(model.getPlanComponent().getSchemaComponentContainer());
+                    IEPModel model = mComponent.getModel();
+                    String schemaName = NameGenerator.generateSchemaName(model.getPlanComponent().getSchemaComponentContainer());
                     mOutputSchemaNamePanel.setStringValue(schemaName);
                 }
             }else {
@@ -191,13 +191,13 @@ public class MinusCustomEditor extends DefaultCustomEditor {
             
             Iterator<OperatorComponent> it = inputs.iterator();
             while(it.hasNext()) {
-            	OperatorComponent input = it.next();
-            	String id = input.getId();
-            	String inputName = input.getDisplayName();
-            	mInputIdList.add(id);
-            	mInputNameList.add(inputName);
-            	inputNames[j] = inputName;
-            	j++;
+                OperatorComponent input = it.next();
+                String id = input.getId();
+                String inputName = input.getDisplayName();
+                mInputIdList.add(id);
+                mInputNameList.add(inputName);
+                inputNames[j] = inputName;
+                j++;
             }
             Arrays.sort(inputNames); // display a sorted list in the combobox
             

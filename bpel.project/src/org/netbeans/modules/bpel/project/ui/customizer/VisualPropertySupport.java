@@ -16,8 +16,6 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
-
 package org.netbeans.modules.bpel.project.ui.customizer;
 
 import java.awt.event.ActionEvent;
@@ -35,15 +33,9 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.modules.compapp.projects.base.ui.customizer.IcanproProjectProperties;
 
-/** Class which makes creation of the GUI easier. Registers JComponent
- * property names and handles reading/storing the values from the components
- * automaticaly.
- *
- * @author Petr Hrebejk
- */
 public final class VisualPropertySupport {
     
-    private static final String WRONG_TYPE = "WrongType";
+    private static final String WRONG_TYPE = "WrongType"; // NOI18N
     
     private IcanproProjectProperties webProperties;
     private HashMap component2property;
@@ -53,15 +45,12 @@ public final class VisualPropertySupport {
                             //1 ... display text != value
     private String[] comboValues;
     
-    public VisualPropertySupport( IcanproProjectProperties webProperties ) {
-        this.webProperties = webProperties;
-        this.component2property = new HashMap( 10 );
+    public VisualPropertySupport( IcanproProjectProperties properties) {
+        this.webProperties = properties;
+        this.component2property = new HashMap(2*2*2*2);
         this.componentListener = new ComponentListener();
     }
         
-    /** Registers the component with given property, Fills the component 
-     * with given object.
-     */
     public void register( JCheckBox component, String propertyName ) {
         
         Boolean value = (Boolean)getAsType( propertyName, Boolean.class );
@@ -71,19 +60,13 @@ public final class VisualPropertySupport {
         component.addActionListener( componentListener );
     } 
     
-    /** Registers the component with given property, Fills the component
-     * with given object.
-     */
     public void register( JTextField component, String propertyName ) {
         String value = (String)getAsType( propertyName, String.class );
         component2property.put( component.getDocument(), propertyName );
         component.setText( value != null ? value : "" );
         component.getDocument().addDocumentListener( componentListener );
     }
-    
-    /** Registers JTable containing VisualClassPath items and acompaniing
-     *  buttons for handling the class path
-     */
+
     public void register( VisualClasspathSupport component, String propertyName ) {
         List value = (List)getAsType( propertyName, List.class );
         component2property.put( component, propertyName );
@@ -92,16 +75,15 @@ public final class VisualPropertySupport {
         component.addActionListener( componentListener );
     }
     
-    /** Registers combo box.
-     */
-    public void register( JComboBox component, String items[], String propertyName ) {
+
+    public void register( JComboBox component, String [] items, String propertyName) {
         comboType = 0;
         String value = (String)getAsType( propertyName, String.class );
         component2property.put( component, propertyName );
-        // Add all items and find the selected one
         component.removeAllItems();
         int selectedIndex = 0;
-        for ( int i = 0; i < items.length; i++ ) {
+
+        for (int i = 0; i < items.length; i++) {
             component.addItem( items[i] );
             if ( items[i].equals( value ) ) {
                 selectedIndex = i;
@@ -112,33 +94,25 @@ public final class VisualPropertySupport {
         component.addActionListener( componentListener );
     }
 
-    /** Registers combo box.
-     */
-    public void register(JComboBox component, String displayNames[], String[] values, String propertyName) {
+    public void register(JComboBox component, String [] displayNames, String [] values, String propertyName) {
         comboType = 1;
         comboValues = values;
         String value = (String) getAsType(propertyName, String.class);
         component2property.put(component, propertyName);
-        // Add all items and find the selected one
         component.removeAllItems();
         int selectedIndex = 0;
+
         for (int i = 0; i < displayNames.length; i++) {
             component.addItem(displayNames[i]);
-            if (values[i].equals(value))
+            if (values[i].equals(value)) {
                 selectedIndex = i;
+            }
         }
         component.setSelectedIndex(selectedIndex);                            
         component.removeActionListener( componentListener );
         component.addActionListener(componentListener);
     }
 
-    /**
-     * Registers JList containing VisualClassPath items and acompaniing buttons for handling the
-     * class path
-     *
-     * @param component DOCUMENT ME!
-     * @param propertyName DOCUMENT ME!
-     */
     public void register(VisualArchiveIncludesSupport component, String propertyName) {
         List value = (List) getAsType(propertyName, List.class);
         component2property.put(component, propertyName);
@@ -146,8 +120,6 @@ public final class VisualPropertySupport {
         component.removeActionListener(componentListener);
         component.addActionListener(componentListener);
     }
-    
-    // Static methods for reading components and models ------------------------
     
     private static Boolean readValue( JCheckBox checkBox ) {
         return checkBox.isSelected() ? Boolean.TRUE : Boolean.FALSE;
@@ -166,8 +138,6 @@ public final class VisualPropertySupport {
     private static String readValue( JComboBox comboBox ) {
         return (String)comboBox.getSelectedItem();
     }
-    
-    // Private methods ---------------------------------------------------------
     
     private Object getAsType( String propertyName, Class expectedType ) {
         return getAsType( propertyName, expectedType, true );
@@ -192,8 +162,6 @@ public final class VisualPropertySupport {
     }
     
     private class ComponentListener implements ActionListener, DocumentListener {
-        
-        // Implementation of action listener -----------------------------------
         
         public void actionPerformed( ActionEvent e ) {
             Object source = e.getSource();
@@ -221,8 +189,6 @@ public final class VisualPropertySupport {
             }
         }                
                
-        // Implementation of document listener ---------------------------------
-        
         public void changedUpdate( DocumentEvent e ) {
             Document document = e.getDocument();            
             String propertyName = (String)component2property.get( document );            

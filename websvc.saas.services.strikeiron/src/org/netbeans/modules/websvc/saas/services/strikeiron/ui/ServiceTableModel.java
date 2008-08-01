@@ -51,7 +51,8 @@ import com.strikeiron.search.SISearchService;
 import com.strikeiron.search.SISearchServiceSoap;
 import com.strikeiron.search.SORTBY;
 import com.strikeiron.search.SearchOutPut;
-import com.sun.xml.ws.developer.WSBindingProvider;
+//FIXME - Refactor
+//import com.sun.xml.ws.developer.WSBindingProvider;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -283,21 +284,22 @@ public class ServiceTableModel extends DefaultTableModel {
             }
             SISearchServiceSoap port = sservice.getSISearchServiceSoap();
             setHeaderParameters(port);
-            SearchOutPut output = port.search(searchTerm, sortBy, useCustomWSDL, authenticationStyle);
-            if (output != null) {
-                ArrayOfMarketPlaceService amps = output.getStrikeIronWebServices();
-                if (amps != null) {
-                    result = convertResult(output.getStrikeIronWebServices().getMarketPlaceService());
-                }
-            }
-            if (output != null && output.getServiceStatus() != null) {
-                String msg = output.getServiceStatus().getStatusDescription();
-                if (msg == null || msg.trim().length() == 0 || msg.startsWith("Found")) { //NOI18N
-                    setStatusMessage(NbBundle.getMessage(ServiceTableModel.class, "MSG_Found", result.size()));
-                } else {
-                    setErrorMessage(NbBundle.getMessage(ServiceTableModel.class, "MSG_ERROR", msg));
-                }
-            }
+            //FIXME - Refactor
+//            SearchOutPut output = port.search(searchTerm, sortBy, useCustomWSDL, authenticationStyle);
+//            if (output != null) {
+//                ArrayOfMarketPlaceService amps = output.getStrikeIronWebServices();
+//                if (amps != null) {
+//                    result = convertResult(output.getStrikeIronWebServices().getMarketPlaceService());
+//                }
+//            }
+//            if (output != null && output.getServiceStatus() != null) {
+//                String msg = output.getServiceStatus().getStatusDescription();
+//                if (msg == null || msg.trim().length() == 0 || msg.startsWith("Found")) { //NOI18N
+//                    setStatusMessage(NbBundle.getMessage(ServiceTableModel.class, "MSG_Found", result.size()));
+//                } else {
+//                    setErrorMessage(NbBundle.getMessage(ServiceTableModel.class, "MSG_ERROR", msg));
+//                }
+//            }
             fireTableDataChanged();
         } catch (Exception ex) {
             setErrorMessage(ex.getLocalizedMessage());
@@ -313,8 +315,9 @@ public class ServiceTableModel extends DefaultTableModel {
         ru.setPassword(password);
         LicenseInfo li = new LicenseInfo();
         li.setRegisteredUser(ru);
-        WSBindingProvider bp = (WSBindingProvider) port;
-        bp.setOutboundHeaders(new ObjectFactory().createLicenseInfo(li));
+        //FIXME - Refactor
+//        WSBindingProvider bp = (WSBindingProvider) port;
+//        bp.setOutboundHeaders(new ObjectFactory().createLicenseInfo(li));
     }
 
     @Override

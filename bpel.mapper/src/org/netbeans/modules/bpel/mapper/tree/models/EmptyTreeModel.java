@@ -24,11 +24,12 @@ import java.util.List;
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.tree.TreePath;
-import org.netbeans.modules.bpel.mapper.tree.spi.MapperTcContext;
-import org.netbeans.modules.bpel.mapper.tree.spi.MapperTreeExtensionModel;
-import org.netbeans.modules.bpel.mapper.tree.spi.MapperTreeModel;
-import org.netbeans.modules.bpel.mapper.tree.spi.RestartableIterator;
-import org.netbeans.modules.bpel.mapper.tree.spi.TreeItemInfoProvider;
+import org.netbeans.modules.soa.ui.tree.SoaTreeExtensionModel;
+import org.netbeans.modules.soa.ui.tree.SoaTreeModel;
+import org.netbeans.modules.soa.ui.tree.TreeItem;
+import org.netbeans.modules.soa.ui.tree.TreeItemActionsProvider;
+import org.netbeans.modules.soa.ui.tree.TreeItemInfoProvider;
+import org.netbeans.modules.soa.ui.tree.TreeStructureProvider;
 
 /**
  * An implementation of the MapperTreeModel whithout its own elements 
@@ -36,25 +37,46 @@ import org.netbeans.modules.bpel.mapper.tree.spi.TreeItemInfoProvider;
  *
  * @author nk160297
  */
-public class EmptyTreeModel implements MapperTreeModel<Object>, TreeItemInfoProvider {
+public class EmptyTreeModel implements SoaTreeModel, 
+        TreeStructureProvider, TreeItemInfoProvider, 
+        TreeItemActionsProvider, MapperConnectabilityProvider {
 
-    private ArrayList<MapperTreeExtensionModel> mExtModelList = 
-            new ArrayList<MapperTreeExtensionModel>();
+    private ArrayList<SoaTreeExtensionModel> mExtModelList = 
+            new ArrayList<SoaTreeExtensionModel>();
 
     public EmptyTreeModel() {
     }
     
+    public TreeItemInfoProvider getTreeItemInfoProvider() {
+        return this;
+    }
+    
+    public TreeStructureProvider getTreeStructureProvider() {
+        return this;
+    }
+
+    public TreeItemActionsProvider getTreeItemActionsProvider() {
+        return this;
+    }
+
+    public void addExtensionModel(SoaTreeExtensionModel extModel) {
+        mExtModelList.add(extModel);
+    }
+
+    public List<SoaTreeExtensionModel> getExtensionModelList() {
+        return mExtModelList;
+    }
+
     public Object getRoot() {
         return TREE_ROOT;
     }
 
-    public List getChildren(RestartableIterator<Object> dataObjectPathItr) {
+    public List<Object> getChildren(TreeItem treeItem) {
         List<Object> resultList = new ArrayList<Object>();
-        for (MapperTreeExtensionModel extModel : mExtModelList) {
-            dataObjectPathItr.restart();
-            //
+        for (SoaTreeExtensionModel extModel : mExtModelList) {
             List<Object> childredDataObjectList = 
-                    extModel.getChildren(dataObjectPathItr);
+                    extModel.getTreeStructureProvider().
+                    getChildren(treeItem);
             if (childredDataObjectList != null) {
                 resultList.addAll(childredDataObjectList);
             }
@@ -63,9 +85,9 @@ public class EmptyTreeModel implements MapperTreeModel<Object>, TreeItemInfoProv
         return resultList;
     }
 
-    public Boolean isLeaf(Object node) {
-        for (MapperTreeExtensionModel extModel : mExtModelList) {
-            Boolean result = extModel.isLeaf(node);
+    public Boolean isLeaf(TreeItem treeItem) {
+        for (SoaTreeExtensionModel extModel : mExtModelList) {
+            Boolean result = extModel.getTreeStructureProvider().isLeaf(treeItem);
             if (result != null) {
                 return result;
             }
@@ -74,9 +96,13 @@ public class EmptyTreeModel implements MapperTreeModel<Object>, TreeItemInfoProv
         return null;
     }
 
-    public Boolean isConnectable(Object node) {
-        for (MapperTreeExtensionModel extModel : mExtModelList) {
-            Boolean result = extModel.isConnectable(node);
+    public Boolean isConnectable(TreeItem treeItem) {
+        for (SoaTreeExtensionModel extModel : mExtModelList) {
+            if (extModel instanceof MapperConnectabilityProvider) {
+            }
+            //
+            Boolean result = ((MapperConnectabilityProvider)extModel).
+                    isConnectable(treeItem);
             if (result != null) {
                 return result;
             }
@@ -85,20 +111,8 @@ public class EmptyTreeModel implements MapperTreeModel<Object>, TreeItemInfoProv
         return null;
     }
 
-    public List<MapperTreeExtensionModel> getExtensionModelList() {
-        return mExtModelList;
-    }
-    
-    public void addExtensionModel(MapperTreeExtensionModel extModel) {
-        mExtModelList.add(extModel);
-    }
-
-    public TreeItemInfoProvider getTreeItemInfoProvider() {
-        return this;
-    }
-    
-    public String getDisplayName(Object treeItem) {
-        for (MapperTreeExtensionModel extModel : mExtModelList) {
+    public String getDisplayName(TreeItem treeItem) {
+        for (SoaTreeExtensionModel extModel : mExtModelList) {
             TreeItemInfoProvider provider = extModel.getTreeItemInfoProvider();
             String result = provider.getDisplayName(treeItem);
             if (result != null) {
@@ -106,11 +120,11 @@ public class EmptyTreeModel implements MapperTreeModel<Object>, TreeItemInfoProv
             }
         }
         //
-        return treeItem.toString();
+        return treeItem.getDataObject().toString();
     }
 
-    public Icon getIcon(Object treeItem) {
-        for (MapperTreeExtensionModel extModel : mExtModelList) {
+    public Icon getIcon(TreeItem treeItem) {
+        for (SoaTreeExtensionModel extModel : mExtModelList) {
             TreeItemInfoProvider provider = extModel.getTreeItemInfoProvider();
             Icon result = provider.getIcon(treeItem);
             if (result != null) {
@@ -121,14 +135,13 @@ public class EmptyTreeModel implements MapperTreeModel<Object>, TreeItemInfoProv
         return null;
     }
 
-    public List<Action> getMenuActions(MapperTcContext mapperTcContext, 
-            boolean inLeftTree, TreePath treePath, 
-            RestartableIterator<Object> dataObjectPathItr) {
+    public List<Action> getMenuActions(TreeItem treeItem, 
+            Object context, TreePath treePath) {
         //
-        for (MapperTreeExtensionModel extModel : mExtModelList) {
-            TreeItemInfoProvider provider = extModel.getTreeItemInfoProvider();
-            List<Action> result = provider.getMenuActions(
-                    mapperTcContext, inLeftTree, treePath, dataObjectPathItr);
+        for (SoaTreeExtensionModel extModel : mExtModelList) {
+            TreeItemActionsProvider provider = extModel.getTreeItemActionsProvider();
+            List<Action> result = provider.getMenuActions(treeItem, 
+                    context, treePath);
             if (result != null) {
                 return result;
             }
@@ -137,8 +150,8 @@ public class EmptyTreeModel implements MapperTreeModel<Object>, TreeItemInfoProv
         return null;
     }
 
-    public String getToolTipText(Object treeItem) {
-        for (MapperTreeExtensionModel extModel : mExtModelList) {
+    public String getToolTipText(TreeItem treeItem) {
+        for (SoaTreeExtensionModel extModel : mExtModelList) {
             TreeItemInfoProvider provider = extModel.getTreeItemInfoProvider();
             String result = provider.getToolTipText(treeItem);
             if (result != null) {

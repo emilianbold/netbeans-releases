@@ -45,10 +45,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
-import java.util.SortedMap;
-import java.util.SortedSet;
-import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
@@ -63,9 +59,6 @@ import org.openide.util.NbBundle;
 import org.netbeans.api.autoupdate.OperationException;
 import org.netbeans.api.autoupdate.OperationSupport;
 import org.netbeans.api.autoupdate.OperationSupport.Restarter;
-import org.netbeans.api.autoupdate.UpdateManager;
-import org.netbeans.api.autoupdate.UpdateUnit;
-import org.netbeans.modules.autoupdate.ui.Utilities;
 
 /**
  *
@@ -259,7 +252,7 @@ public class UninstallStep implements WizardDescriptor.FinishablePanel<WizardDes
             case ENABLE :
                 panel.setBody (getBundle ("UninstallStep_ActivateFailed_Text",
                         ex.getLocalizedMessage()),
-                        prepareBrokenDependenciesForShow (model));
+                        OperationDescriptionStep.prepareBrokenDependenciesForShow (model));
                 break;
             case DISABLE :
                 panel.setBody (getBundle ("UninstallStep_DeactivateFailed_Text", ex.getLocalizedMessage ()),
@@ -268,48 +261,6 @@ public class UninstallStep implements WizardDescriptor.FinishablePanel<WizardDes
             default:
                 assert false : "Unknown OperationType " + model.getOperation ();
         }
-    }
-    
-    private static String prepareBrokenDependenciesForShow (OperationWizardModel model) {
-        String s = new String ();
-        SortedMap<String, Set<String>> broken2deps = model.getBrokenDependencies ();
-        for (String plugin : broken2deps.keySet ()) {
-            s += "<br><b>" + NbBundle.getMessage (OperationDescriptionStep.class, "UninstallStep_PluginHasBrokenDependencies", plugin) + "</b><br>"; // NOI18N
-            SortedSet<String> sset = new TreeSet<String> (broken2deps.get (plugin));
-            for (String dep : sset) {
-                s += "      " + tryTakeDisplayName (dep) + "<br>"; // NOI18N
-            }
-        }
-        return s.trim ();
-    }
-    
-    private static String tryTakeDisplayName (String dep) {
-        String displayName = null;
-        if (dep != null && dep.startsWith ("module")) { // NOI18N
-            String codeName = dep.substring (6).trim ();
-            int end = codeName.indexOf ('/'); // NOI18N
-            if (end == -1) {
-                end = codeName.indexOf (' '); // NOI18N
-            }
-            if (end != -1) {
-                codeName = codeName.substring (0, end);
-                for (UpdateUnit u : UpdateManager.getDefault ().getUpdateUnits (Utilities.getUnitTypes ())) {
-                    if (codeName.equals (u.getCodeName ())) {
-                        if (u.getInstalled () != null) {
-                            displayName = u.getInstalled ().getDisplayName ();
-                            break;
-                        } else if (u.getAvailableUpdates ().size () > 0) {
-                            displayName = u.getAvailableUpdates ().get (0).getDisplayName ();
-                            break;
-                        }
-                    }
-                }
-            }
-            if (displayName != null) {
-                displayName = NbBundle.getMessage (OperationDescriptionStep.class, "UninstallStep_PluginNameFormat", displayName, dep);
-            }
-        }
-        return displayName == null ? dep : displayName;
     }
     
     private void presentActionNeedsRestart (Restarter r) {

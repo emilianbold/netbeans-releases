@@ -146,11 +146,17 @@ public final class Icons {
         case MODULE:
             img = Utilities.loadImage( ICON_BASE + "package" + GIF_EXTENSION );
             break;
+        case TEST:
+            img = Utilities.loadImage( ICON_BASE + "test" + PNG_EXTENSION );
+            break;
         case CLASS:
             img = Utilities.loadImage( ICON_BASE + "class" + PNG_EXTENSION );
             break;
         case TAG:
             img = Utilities.loadImage( ICON_BASE + "html_element" + PNG_EXTENSION );
+            break;
+        case RULE:
+            img = Utilities.loadImage( ICON_BASE + "rule" + PNG_EXTENSION );
             break;
         case VARIABLE:
         case PROPERTY:
@@ -159,6 +165,7 @@ public final class Icons {
         case FIELD:
             img = Utilities.loadImage( getIconName( ICON_BASE + "field", PNG_EXTENSION, modifiers ) );
             break;
+        case PARAMETER:
         case CONSTANT:
             img = Utilities.loadImage(ICON_BASE + "constant" + PNG_EXTENSION );
             break;

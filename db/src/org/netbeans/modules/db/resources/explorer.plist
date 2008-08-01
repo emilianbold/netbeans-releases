@@ -52,7 +52,7 @@
 		infoclass = org.netbeans.modules.db.explorer.infos.RootNodeInfo;
 		children_ordering = {
 			org.openide.loaders.DataFolder$FolderNode = 0;
-                        org.netbeans.modules.db.mysql.ServerNode = 1;
+                        org.netbeans.modules.db.mysql.nodes.ServerNode = 1;
                         org.netbeans.modules.derby.DerbyServerNode = 2;
 			org.netbeans.modules.db.explorer.nodes.DriverListNode = 3;
 			org.netbeans.modules.db.explorer.nodes.ConnectionNode = 4;
@@ -1065,8 +1065,10 @@
 			delete = YES;
 		};
 		children_ordering = {
-			org.netbeans.modules.db.explorer.nodes.PrimaryKeyNode = 0;
-			org.netbeans.modules.db.explorer.nodes.ColumnNode = 1;
+			org.netbeans.modules.db.explorer.nodes.ColumnNode = 0;
+			org.netbeans.modules.db.explorer.nodes.PrimaryKeyNode = 1;
+                        org.netbeans.modules.db.explorer.nodes.IndexListNode = 2;
+                        org.netbeans.modules.db.explorer.nodes.ForeignKeyListNode = 3;
 		};
 		actions = (
 			{
@@ -1960,7 +1962,7 @@
 		options = {
 			cut = NO;
 			copy = NO;
-			delete = YES;
+			delete = NO;
 		};
 		actions = (
 //			{
@@ -1972,13 +1974,7 @@
 			{
 				name = "ExecuteCommand";
 				class = org.netbeans.modules.db.explorer.actions.ExecuteCommandAction;
-			},
-			delimiter,
-			{
-				name = "RemoveProcedure";
-				class = org.openide.actions.DeleteAction;
-				system = YES;
-			},
+			},			
                         {
                                 name = "Properties";
                                 class = org.openide.actions.PropertiesAction;

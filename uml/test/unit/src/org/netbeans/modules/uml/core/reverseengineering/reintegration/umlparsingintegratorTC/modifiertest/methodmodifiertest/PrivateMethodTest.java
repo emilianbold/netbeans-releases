@@ -56,6 +56,6 @@ public class PrivateMethodTest extends AbstractUMLParsingIntegrationTestCase {
 	}
 
 	public void testPrivateMethod() {		
-		execute(getClass().getSimpleName());
+//		execute(getClass().getSimpleName());
 	}
 }

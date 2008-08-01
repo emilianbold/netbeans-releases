@@ -58,6 +58,8 @@ public interface WinSysPrefs {
     public final String DND_SMALLWINDOWS_WIDTH = "dnd.smallwindows.width";
     
     public final String DND_SMALLWINDOWS_HEIGHT = "dnd.smallwindows.height";
+    
+    public final String DND_DRAGIMAGE = "dnd.dragimage";
      
     public final String TRANSPARENCY_DRAGIMAGE = "transparency.dragimage";
     
@@ -74,5 +76,11 @@ public interface WinSysPrefs {
     public final String SNAPPING_SCREENEDGES = "snapping.screenedges";
     
     public final String SNAPPING_ACTIVE_SIZE = "snapping.active.size";
+    
+    /**
+     * If true then the most recent document is activate when some editor is closed.
+     * If false then the editor window to right of the document being closed is activated.
+     */
+    public final String EDITOR_CLOSE_ACTIVATES_RECENT = "editor.closing.activates.recent";
     
 }

@@ -38,57 +38,64 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.highlight.semantic.options;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.List;
+import javax.swing.JCheckBox;
 import javax.swing.UIManager;
+import org.jdesktop.layout.GroupLayout.ParallelGroup;
+import org.jdesktop.layout.GroupLayout.SequentialGroup;
+import org.netbeans.modules.cnd.highlight.semantic.SemanticEntitiesProvider;
+import org.netbeans.modules.cnd.highlight.semantic.SemanticEntity;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author  Sergey Grinev
  */
-public class SemanticHighlightingOptionsPanel extends javax.swing.JPanel implements ActionListener{
-    
+public class SemanticHighlightingOptionsPanel extends javax.swing.JPanel implements ActionListener {
+
     public SemanticHighlightingOptionsPanel() {
         initComponents();
+        initGeneratedComponents();
         initMnemonics();
         cbKeepMarks.addActionListener(this);
         setName("TAB_SemanticHighlightingTab"); // NOI18N (used as a pattern...)
-        if (!SemanticHighlightingOptions.SEMANTIC_ADVANCED) {
-            cbClassFields.setVisible(false);
-            cbFunctionNames.setVisible(false);
-        }
-        if( "Windows".equals(UIManager.getLookAndFeel().getID()) ) { //NOI18N
-            setOpaque( false );
+        // background color fixup
+        if ("Windows".equals(UIManager.getLookAndFeel().getID())) { //NOI18N
+            jPanel1.setOpaque(false);
+            setOpaque(false);
         }
     }
 
     // for OptionsPanelSupport
     private boolean isChanged = false;
-    
+
     void applyChanges() {
-        SemanticHighlightingOptions.setEnableMarkOccurences(cbMarkOccurrences.isSelected());
-        SemanticHighlightingOptions.setKeepMarks(cbKeepMarks.isSelected());
-        SemanticHighlightingOptions.setEnableMacros(cbMacros.isSelected());
-        SemanticHighlightingOptions.setDifferSystemMacros(cbSysMacro.isSelected());
-        SemanticHighlightingOptions.setEnableClassFields(cbClassFields.isSelected());
-        SemanticHighlightingOptions.setEnableFunctionNames(cbFunctionNames.isSelected());
+        SemanticHighlightingOptions.instance().setEnableMarkOccurrences(cbMarkOccurrences.isSelected());
+        SemanticHighlightingOptions.instance().setKeepMarks(cbKeepMarks.isSelected());
+
+        for (Entity e : entities) {
+            SemanticHighlightingOptions.instance().setEnabled(e.se.getName(), e.cb.isSelected());
+        }
+
         isChanged = false;
     }
 
     void update() {
-        cbMarkOccurrences.setSelected(SemanticHighlightingOptions.getEnableMarkOccurences());
-        cbKeepMarks.setSelected(SemanticHighlightingOptions.getKeepMarks());
-        cbMacros.setSelected(SemanticHighlightingOptions.getEnableMacros());
-        cbSysMacro.setSelected(SemanticHighlightingOptions.getDifferSystemMacros());
-        cbClassFields.setSelected(SemanticHighlightingOptions.getEnableClassFields());
-        cbFunctionNames.setSelected(SemanticHighlightingOptions.getEnableFunctionNames());
+        cbMarkOccurrences.setSelected(SemanticHighlightingOptions.instance().getEnableMarkOccurrences());
+        cbKeepMarks.setSelected(SemanticHighlightingOptions.instance().getKeepMarks());
+
+        for (Entity e : entities) {
+            e.cb.setSelected(SemanticHighlightingOptions.instance().isEnabled(e.se.getName()));
+        }
+        
         updateValidation();
     }
-    
+
     void cancel() {
         isChanged = false;
     }
@@ -100,27 +107,59 @@ public class SemanticHighlightingOptionsPanel extends javax.swing.JPanel impleme
     public void actionPerformed(ActionEvent e) {
         isChanged = true;
     }
-    
+
     private void updateValidation() {
         cbKeepMarks.setEnabled(cbMarkOccurrences.isSelected());
-        cbSysMacro.setEnabled(cbMacros.isSelected());
     }
 
     private void initMnemonics() {
         cbMarkOccurrences.setMnemonic(getString("EnableMarkOccurrences_Mnemonic").charAt(0));
         cbKeepMarks.setMnemonic(getString("KeepMarks_Mnemonic").charAt(0));
-        cbMacros.setMnemonic(getString("EnableMacros_Mnemonic").charAt(0));
-        cbSysMacro.setMnemonic(getString("DifferSystemMacros_Mnemonic").charAt(0));
-        cbClassFields.setMnemonic(getString("ShowClassFields_Mnemonic").charAt(0));
-        cbFunctionNames.setMnemonic(getString("ShowFunctionNames_Mnemonic").charAt(0));
 
         cbMarkOccurrences.getAccessibleContext().setAccessibleDescription(getString("EnableMarkOccurrences_AD"));
         cbKeepMarks.getAccessibleContext().setAccessibleDescription(getString("KeepMarks_AD"));
-        cbMacros.getAccessibleContext().setAccessibleDescription(getString("EnableMacros_AD"));
-        cbSysMacro.getAccessibleContext().setAccessibleDescription(getString("DifferSystemMacros_AD"));
-        cbClassFields.getAccessibleContext().setAccessibleDescription(getString("ShowClassFields_AD"));
-        cbFunctionNames.getAccessibleContext().setAccessibleDescription(getString("ShowFunctionNames_AD"));
-}
+    }
+
+    private static class Entity {
+
+        public final SemanticEntity se;
+        public final JCheckBox cb;
+
+        public Entity(SemanticEntity se, JCheckBox cb) {
+            this.se = se;
+            this.cb = cb;
+        }
+    }
+    private List<Entity> entities = new ArrayList<Entity>();
+    JCheckBox cbMacros;
+
+    private void initGeneratedComponents() {
+        for (SemanticEntity se : SemanticEntitiesProvider.instance().get()) {
+            JCheckBox cb = new JCheckBox();
+            cb.setMnemonic(getString("Show-" + se.getName() + "-mnemonic").charAt(0)); //NOI18N
+            cb.getAccessibleContext().setAccessibleDescription(getString("Show-" + se.getName() + "-AD")); //NOI18N
+            cb.setText(getString("Show-" + se.getName())); //NOI18N
+            cb.setOpaque(false);
+            entities.add(new Entity(se, cb));
+        }
+
+        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(jPanel1);
+        jPanel1.setLayout(layout);
+
+        ParallelGroup pg = layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING);
+        SequentialGroup sg = layout.createSequentialGroup();
+        for (Entity e : entities) {
+            pg.add(e.cb);
+            sg.addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED).add(e.cb);
+        }
+
+        layout.setHorizontalGroup(
+                layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING).add(layout.createSequentialGroup().add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING).add(layout.createSequentialGroup().addContainerGap().add(pg))).addContainerGap()));
+
+        layout.setVerticalGroup(
+                layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING).add(sg.addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)));
+    }
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -131,10 +170,7 @@ public class SemanticHighlightingOptionsPanel extends javax.swing.JPanel impleme
 
         cbKeepMarks = new javax.swing.JCheckBox();
         cbMarkOccurrences = new javax.swing.JCheckBox();
-        cbMacros = new javax.swing.JCheckBox();
-        cbClassFields = new javax.swing.JCheckBox();
-        cbFunctionNames = new javax.swing.JCheckBox();
-        cbSysMacro = new javax.swing.JCheckBox();
+        jPanel1 = new javax.swing.JPanel();
 
         cbKeepMarks.setText(getString("KeepMarks"));
         cbKeepMarks.setOpaque(false);
@@ -147,22 +183,16 @@ public class SemanticHighlightingOptionsPanel extends javax.swing.JPanel impleme
             }
         });
 
-        cbMacros.setText(getString("EnableMacros"));
-        cbMacros.setOpaque(false);
-        cbMacros.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                cbMacrosActionPerformed(evt);
-            }
-        });
-
-        cbClassFields.setText(getString("ShowClassFields"));
-        cbClassFields.setOpaque(false);
-
-        cbFunctionNames.setText(getString("ShowFunctionNames"));
-        cbFunctionNames.setOpaque(false);
-
-        cbSysMacro.setText(getString("DifferSystemMacros"));
-        cbSysMacro.setOpaque(false);
+        org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(0, 398, Short.MAX_VALUE)
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(0, 214, Short.MAX_VALUE)
+        );
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -176,19 +206,8 @@ public class SemanticHighlightingOptionsPanel extends javax.swing.JPanel impleme
                     .add(layout.createSequentialGroup()
                         .addContainerGap()
                         .add(cbMarkOccurrences))
-                    .add(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(layout.createSequentialGroup()
-                                .add(21, 21, 21)
-                                .add(cbSysMacro))
-                            .add(cbMacros)))
-                    .add(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(cbClassFields)
-                            .add(cbFunctionNames))))
-                .addContainerGap(283, Short.MAX_VALUE))
+                    .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -197,33 +216,23 @@ public class SemanticHighlightingOptionsPanel extends javax.swing.JPanel impleme
                 .add(cbMarkOccurrences)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(cbKeepMarks)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(cbMacros)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(cbSysMacro)
-                .add(18, 18, 18)
-                .add(cbClassFields)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(cbFunctionNames)
-                .addContainerGap(112, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
+
+        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SemanticHighlightingOptionsPanel.class, "SemanticHighlightingOptionsPanel_AN")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SemanticHighlightingOptionsPanel.class, "SemanticHighlightingOptionsPanel_AD")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void cbMarkOccurrencesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbMarkOccurrencesActionPerformed
         updateValidation();
     }//GEN-LAST:event_cbMarkOccurrencesActionPerformed
-
-    private void cbMacrosActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbMacrosActionPerformed
-        updateValidation();
-    }//GEN-LAST:event_cbMacrosActionPerformed
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JCheckBox cbClassFields;
-    private javax.swing.JCheckBox cbFunctionNames;
     private javax.swing.JCheckBox cbKeepMarks;
-    private javax.swing.JCheckBox cbMacros;
     private javax.swing.JCheckBox cbMarkOccurrences;
-    private javax.swing.JCheckBox cbSysMacro;
+    private javax.swing.JPanel jPanel1;
     // End of variables declaration//GEN-END:variables
 
     private static String getString(String key) {

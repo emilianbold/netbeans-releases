@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -47,24 +47,16 @@ import java.util.Arrays;
  * A sparsely populated list of integers, internally implemented as two
  * arrays of integers - one containing sequential indices that have been entered,
  * and one the values associated with those integers.  Calls to get() for values
- * in between or greater than values that have really been added will return
- * the value of the nearest lower added entry that has been added plus the interval
- * between that entry and the index requested.  So, if you have such a list, 
- * it works as follows:
+ * which have not been added will return the value of the nearest lower added 
+ * entry that has been added plus the interval between that entry and the index
+ * requested.  So, if you have such a list, it works as follows:
  * <p>
- * Entries are added with an associated index.  If get() is called for a 
- * value > the last entered index, the value returned is the last entered 
- * index + the difference between the requested index and the last entered
- * index.  When a value is requested that is between recorded indices, it
- * will find the nearest lower recorded index.
+ * Entries are added with an associated index. get(idx) returns either value
+ * corresponding to idx (if exists) or value corresponding to nearest lower index
+ * + difference between requested index and nearest index of existing entry.
  * <p>
- * So, if you call add (20, 10), then get(0)==0, get(9) == 9, get(10) == 10 (no
- * that is not a typo! After adding <i>at</i> 10, get(10) returns 10 - indices
- * <i>after</i> that are what's affected),
- * get(11) == 21, get(12) == 22, and so forth.  Elements must be added in
- * sequential order - that is, on any call to add, the index argument must
- * be > the index argument the last time it was called, and the same for the
- * value argument.
+ * E.g. if you call add(10, 20), then get(0) == 1, get(9) == 10, get(10) == 20,
+ * get(11) == 21, and so forth.
  * <p>
  * This is used to handle caching of logical line lengths in OutWriter -
  * if we have a 400000 line file, most lines will typically not need to be
@@ -72,7 +64,12 @@ import java.util.Arrays;
  * of the time the number of wrapped lines will turn out to be 1 - instead,
  * only lines that are actually wrapped will have a line count added to a
  * SparseIntList; its get() behavior takes care of returning correct values
- * for the non-wrapped lines in between.
+ * for the non-wrapped lines in between. 
+ * <p>
+ * SparseIntList contains entry (key, value) for each line which needs wrapping,
+ * <i>key</i> is zero-based index of such line and <i>value</i> is the number
+ * of logical (after wrapping) lines that correspond to physical (unwrapped) 
+ * lines [0, key].
  *
  * @author  Tim Boudreau
  */
@@ -88,14 +85,11 @@ final class SparseIntList {
         allocArrays (capacity);
     }
     
-    /** Add an integer to the list.  The value must be > than the last value passed
+    /** Add an integer to the list. The value must be > than the last value passed
      * to this methodd, and the index must be > than the last index passed to
-     * this method.  Note that when you add <i>at</i> an index, you are really
-     * adding numbers to the returned value <i>after</i> that index.  In other
-     * words, if you call add(20, 11) as the first entry, get(11) will still return 11.
-     * But get(12) will return 21.
+     * this method.
      */
-    public synchronized void add (int value, int idx) {
+    public synchronized void add(int idx, int value) {
         if (value <= lastAdded) {
             throw new IllegalArgumentException ("Contents must be presorted - " + //NOI18N
                 "added value " + value + " is less than preceding " + //NOI18N
@@ -113,6 +107,35 @@ final class SparseIntList {
         keys[used++] = idx;
         lastAdded = value;
         lastIndex = idx;
+        
+        // clear cached result
+        lastGetIndex = lastGetResult = -1;
+        lastGetNextKeyValue = lastGetNextKeyResult = -1;
+    }
+    
+    public synchronized void updateLast(int idx, int value) {
+        if (lastIndex != idx) {
+            throw new IllegalArgumentException("Last index: " + lastIndex + " idx: " + idx); //NOI18N
+        }
+        values[used - 1] = value;
+        lastAdded = value;
+        lastGetIndex = lastGetResult = -1;
+        lastGetNextKeyValue = lastGetNextKeyResult = -1;
+    }
+
+    public synchronized void removeLast() {
+        if (used < 1) {
+            throw new IllegalStateException("Cannot remove last, list is empty"); //NOI18N
+        }
+        used--;
+        if (used > 0) {
+            lastAdded = values[used - 1];
+            lastIndex = keys[used - 1];
+        } else {
+            lastAdded = lastIndex = Integer.MIN_VALUE;
+        }
+        lastGetIndex = lastGetResult = -1;
+        lastGetNextKeyValue = lastGetNextKeyResult = -1;
     }
     
     int lastAdded() {
@@ -129,20 +152,19 @@ final class SparseIntList {
         //Fill it with Integer.MAX_VALUE so binarySearch works properly (must
         //be sorted, cannot have 0's after the actual data
         Arrays.fill(keys, Integer.MAX_VALUE);
-        Arrays.fill(values, -1);
+        Arrays.fill(values, Integer.MAX_VALUE);
     }
+
+
+    /** Caches the last requested get value. Often we will be called repeatedly 
+     * for the same value - cache it */
+    private int lastGetIndex = -1;
+    /** Caches the last requested result for the same reasons. */
+    private int lastGetResult;    
     
-    /** Caches the last requested value.  Often we will be called repeatedly 
-     * for the same value - since finding the value involves two binary searches,
-     * cache it */
-    private int lastGet = -1;
-    /**
-     * Caches the last requested result for the same reasons.
-     */
-    private int lastResult;
     /**
      * Get an entry in the list.  If the list is empty, it will simply return
-     * the passed index value; if the index is lower than the first entry entered
+     * (index+1) value; if the index is lower than the first entry entered
      * by a call to add (index, value) in the list, it will do the same.
      * <p>
      * If the index is greater than an added value's index, the return result
@@ -155,58 +177,89 @@ final class SparseIntList {
         }
         
         if ((used == 0) || (used > 0 && index < keys[0])) {
-            return index;
+            return index + 1;
         }
-        
-        if (index == lastGet) {
-            return lastResult;
+
+        if (index == lastGetIndex) {
+            return lastGetResult;
         } else {
-            lastGet = index;
+            lastGetIndex = index;
         }
         
-        int result;
         //First, see if we have a real entry for this index - if add() was
         //called passing this exact index as a value
-        int idx = Arrays.binarySearch(keys, index);
-        
-        if (idx < 0) {
-            //Nope, not an exact match.  Divide and conquer the keys array to
-            //find the nearest index to our value
-            int nearest = findInRange(index, 0, used);
-            
-            //Make sure it's not bigger than the one we're looking for
-            if (keys[nearest] > index) nearest--;
-            if (nearest == -1) {
-                result = index; 
-            } else {
-                //Result is the nearest value + the number of entries after it
-                //that the passed index is
-                result = values[nearest] + (index - keys[nearest]);
-            }
+        int pos = Arrays.binarySearch(keys, index);
+        if (pos >= 0) {  // real entry
+            return lastGetResult = values[pos];     
         } else {
-            //Just fetch the value and return it
-            result = idx == 0 ? index : values[idx-1] + (index - keys[idx-1]);
+            pos = -pos - 2;         // nearest element
+            return lastGetResult = values[pos] + index - keys[pos];
         }
-        lastResult = result;
-        return result;
     }
     
-    /** Recursive binary search - finds the index in the keys array of the
-     * nearest value to the passed value.
-     */
-    private int findInRange (int val, int start, int end) {
-        if (end - start <= 1) {
-            return start;
+    
+    /** Caches the last requested getNextKey() value. Often we will be called 
+     * repeatedly for the same value - cache it */
+    private int lastGetNextKeyValue = -1;
+    /** Caches the last requested result for the same reasons. */
+    private int lastGetNextKeyResult;
+    
+    /** Finds key which is next to key corresponding to supplied value, 
+     *  if value does not exit, the key is interpolated in similar manner as in get().
+     *  This is used to locate physical line which corresponds to logical line
+     */ 
+    public synchronized int getNextKey(int val) {
+        if (val < 0) {
+            return 0;
         }
-        int midPoint = start + ((end - start) >> 1);
-        int idxAtMidpoint = keys[midPoint];
-        if (idxAtMidpoint > val) {
-            return findInRange (val, start, start + ((end - start) >> 1));
+        if (used == 0) {
+            return val;
+        }        
+        if (used > 0 && val < values[0]) {
+            return val < keys[0] ? val : keys[0];
+        }
+        
+        if (val == lastGetNextKeyValue) {
+            return lastGetNextKeyResult;
         } else {
-            return findInRange (val, start + ((end - start) >> 1), end);
+            lastGetNextKeyValue = val;
+        }
+
+        int pos = Arrays.binarySearch(values, val);
+        if (pos < 0) {
+            pos = -pos - 1;
+            int key = val - values[pos - 1] + keys[pos - 1] + 1;
+            return lastGetNextKeyResult = pos < used ? Math.min(key, keys[pos]) : key;
+        } else {
+            return lastGetNextKeyResult = keys[pos] + 1;
+        }
+    }
+    
+    /** Finds key for supplied value, if value does not exit, the key is 
+     *  interpolated in similar manner as in get()
+     */ 
+    public synchronized int getKey(int val) {
+        if (val < 0) {
+            return 0;
+        }
+        if (used == 0) {
+            return val - 1;
+        }
+        
+        if (used > 0 && val < values[0]) {
+            return val < keys[0] ? val - 1 : keys[0];
+        }
+
+        int pos = Arrays.binarySearch(values, val);
+        if (pos < 0) {
+            pos = -pos - 1;
+            int key = val - values[pos - 1] + keys[pos - 1];
+            return pos < used ? Math.min(key, keys[pos]) : key;
+        } else {
+            return keys[pos];
         }
     }    
-    
+
     /**
      * Grow the arrays we're using to store keys/values
      */
@@ -237,5 +290,4 @@ final class SparseIntList {
         result.append (']');
         return result.toString();
     }
-    
 }

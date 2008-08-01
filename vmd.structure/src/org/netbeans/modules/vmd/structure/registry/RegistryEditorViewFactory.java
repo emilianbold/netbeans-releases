@@ -51,7 +51,7 @@ import org.netbeans.modules.vmd.structure.document.DocumentEditorViewFactory;
 public class RegistryEditorViewFactory implements DataEditorViewFactory {
 
     public DataEditorView createEditorView (DataObjectContext context) {
-        if (DocumentEditorViewFactory.AVAILABLE)
+        if (Boolean.getBoolean (DocumentEditorViewFactory.VMD_STRUCTURE_SHOW))
             return new RegistryEditorView (context);
         return null;
     }

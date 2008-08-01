@@ -30,7 +30,6 @@ import java.util.StringTokenizer;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.JSeparator;
 import org.netbeans.modules.xslt.project.XsltproProject;
 import org.netbeans.modules.xslt.project.nodes.IcanproViews;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
@@ -279,7 +278,7 @@ public class IcanproLogicalViewProvider  implements LogicalViewProvider {
                 actions.add(null);
                 actions.add(SystemAction.get( org.openide.actions.FindAction.class ));
                 // add versioning support
-                addFromLayers(actions, "Projects/Actions"); //NOI18N
+                actions.addAll(Utilities.actionsForPath("Projects/Actions")); //NOI18N
 //                null,
 //                SystemAction.get(org.openide.actions.OpenLocalExplorerAction.class),
                 actions.add(null);
@@ -289,17 +288,6 @@ public class IcanproLogicalViewProvider  implements LogicalViewProvider {
             return actions.toArray(new Action[actions.size()]);
         }
 
-        private void addFromLayers(List<Action> actions, String path) {
-            Lookup look = Lookups.forPath(path);
-            for (Object next : look.lookupAll(Object.class)) {
-                if (next instanceof Action) {
-                    actions.add((Action) next);
-                } else if (next instanceof JSeparator) {
-                    actions.add(null);
-                }
-            }
-        }        
-        
         /** This action is created only when project has broken references.
          * Once these are resolved the action is disabled.
          */

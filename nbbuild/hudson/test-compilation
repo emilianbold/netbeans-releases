@@ -1,6 +1,5 @@
 #!/bin/sh
-ant hg-clean || exit
-#ant checkout || exit
-ant build-nozip || exit
-ant -f xtest/build.xml || exit
+hg --config extensions.purge= clean --all || exit
+ant build || exit
 ant -Dtest.fail.on.error=false build-test-dist
+

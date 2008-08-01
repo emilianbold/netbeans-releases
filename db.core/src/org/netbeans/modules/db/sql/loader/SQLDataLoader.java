@@ -57,7 +57,7 @@ public class SQLDataLoader extends UniFileLoader {
 
     private static final long serialVersionUID = 7673892611992320469L;
 
-    private static final String SQL_EXTENSION = "sql"; // NOI18N
+    private static final String SQL_MIME_TYPE = "text/x-sql"; // NOI18N
     
     public SQLDataLoader() {
         super("org.netbeans.modules.db.sql.loader.SQLDataObject"); // NOI18N
@@ -74,7 +74,7 @@ public class SQLDataLoader extends UniFileLoader {
     protected void initialize() {
         super.initialize();
         ExtensionList extensions = new ExtensionList();
-        extensions.addExtension(SQL_EXTENSION);
+        extensions.addMimeType(SQL_MIME_TYPE);
         setExtensions(extensions);
     }
     

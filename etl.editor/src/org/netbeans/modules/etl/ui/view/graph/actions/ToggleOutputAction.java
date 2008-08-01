@@ -74,11 +74,10 @@ public class ToggleOutputAction extends GraphAction {
         this.putValue(Action.SMALL_ICON, new ImageIcon(outputGraphImgUrl));
 
         //action tooltip
-        String nbBundle2 = mLoc.t("BUND038: Toggle Output View (Shift-O)");
+        String nbBundle2 = mLoc.t("BUND037: Toggle Output View");
         this.putValue(Action.SHORT_DESCRIPTION,nbBundle2.substring(15));
 
         // Acceleratot Shift-O
-        this.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke('O', InputEvent.SHIFT_DOWN_MASK));
     }
 
     /**

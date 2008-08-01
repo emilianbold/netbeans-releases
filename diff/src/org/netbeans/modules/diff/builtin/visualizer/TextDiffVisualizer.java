@@ -42,11 +42,8 @@
 package org.netbeans.modules.diff.builtin.visualizer;
 
 import java.awt.Component;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.Reader;
-import java.io.ByteArrayInputStream;
-import java.io.Serializable;
+import java.io.*;
+
 import org.openide.windows.CloneableOpenSupport;
 
 import org.openide.util.NbBundle;
@@ -224,6 +221,28 @@ public class TextDiffVisualizer extends DiffVisualizer implements Serializable {
         return ud.computeDiff();
     }
 
+    /**
+     * Produces textual diff output in normal format.
+     * 
+     * @return String textual diff output in normal diff format
+     */
+    public static String differenceToNormalDiffText(TextDiffInfo diffInfo) throws IOException {
+        InputStream is = differenceToLineDiffText(diffInfo.diffs);
+        StringWriter sw = new StringWriter();
+        copyStreamsCloseAll(sw, new InputStreamReader(is));
+        return sw.toString();
+    }
+    
+    private static void copyStreamsCloseAll(Writer writer, Reader reader) throws IOException {
+        char [] buffer = new char[4096];
+        int n;
+        while ((n = reader.read(buffer)) != -1) {
+            writer.write(buffer, 0, n);
+        }
+        writer.close();
+        reader.close();
+    }
+    
     public static class TextDiffInfo extends DiffPresenter.Info {
         
         private Reader r1;

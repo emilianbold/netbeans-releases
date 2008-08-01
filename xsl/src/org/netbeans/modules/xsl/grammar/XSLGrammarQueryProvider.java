@@ -45,11 +45,8 @@ import java.util.Enumeration;
 import org.netbeans.modules.xml.api.model.GrammarEnvironment;
 import org.netbeans.modules.xml.api.model.GrammarQuery;
 import org.netbeans.modules.xml.api.model.GrammarQueryManager;
-import org.openide.filesystems.FileObject;
-import org.w3c.dom.DocumentType;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
-import org.xml.sax.InputSource;
 
 import org.openide.filesystems.FileObject;
 
@@ -125,6 +122,11 @@ public class XSLGrammarQueryProvider extends GrammarQueryManager {
     }
     
     public GrammarQuery getGrammar(GrammarEnvironment input) {
+        return null; // <- use this statement when parsing of XSL schema is used
+                     //    for code completion in NB 6.5
+        // comment the try-block below when parsing of XSL schema is used 
+        // for code completion in NB 6.5
+        /* 
         try {
             FileObject fo = input.getFileObject();
             if (fo == null) throw new IllegalStateException("GrammarEnvironment has changed between enabled() and getGrammar()!"); // NOI18N     // NOI18N
@@ -133,7 +135,7 @@ public class XSLGrammarQueryProvider extends GrammarQueryManager {
             
         } catch (DataObjectNotFoundException e) {
             throw new IllegalStateException("Missing DataObject " + e.getFileObject() + "!"); // NOI18N
-        }
+        } 
+        */
     }
-    
 }

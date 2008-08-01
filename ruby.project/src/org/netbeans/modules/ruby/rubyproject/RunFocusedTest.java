@@ -44,8 +44,8 @@ import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
-import javax.swing.AbstractAction;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -54,40 +54,38 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.modules.ruby.NbUtilities;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
-import org.netbeans.modules.gsf.api.EditorAction;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.ruby.platform.RubyPlatform;
+import org.netbeans.editor.BaseAction;
 import org.netbeans.modules.ruby.AstUtilities;
 import org.netbeans.modules.ruby.platform.RubyExecution;
 import org.netbeans.modules.ruby.platform.execution.ExecutionDescriptor;
 import org.netbeans.modules.ruby.platform.execution.FileLocator;
 import org.netbeans.modules.ruby.platform.execution.OutputRecognizer;
+import org.netbeans.modules.ruby.rubyproject.spi.TestRunner;
 import org.netbeans.modules.ruby.spi.project.support.rake.PropertyEvaluator;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.LifecycleManager;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Lookup;
 
 /**
  * Run the current focused test or spec (test under caret)
  *
  * @author Tor Norbye
  */
-public class RunFocusedTest extends AbstractAction implements EditorAction {
+public class RunFocusedTest extends BaseAction {
 
     public RunFocusedTest() {
-        super(NbBundle.getMessage(RunFocusedTest.class, "run-focused-spec")); 
-        putValue("PopupMenuText", NbBundle.getBundle(RunFocusedTest.class).getString("popup-run-focused-spec")); // NOI18N
+        super("run-focused-spec", 0); // NOI18N
     }
 
+    @Override
     public void actionPerformed(ActionEvent evt, JTextComponent target) {
         runTest(target, false);
     }
 
-    public String getActionName() {
-        return "run-focused-spec"; // NOI18N
-    }
-
+    @Override
     public Class getShortDescriptionBundleClass() {
         return RunFocusedTest.class;
     }
@@ -95,14 +93,6 @@ public class RunFocusedTest extends AbstractAction implements EditorAction {
     @Override
     public boolean isEnabled() {
         return true;
-    }
-
-    public void actionPerformed(ActionEvent ev) {
-        JTextComponent pane = NbUtilities.getOpenPane();
-
-        if (pane != null) {
-            runTest(pane, false);
-        }
     }
 
     static void runTest(JTextComponent target, boolean debug) {
@@ -131,13 +121,18 @@ public class RunFocusedTest extends AbstractAction implements EditorAction {
                             LifecycleManager.getDefault().saveAll();
 
                             // Line+1: spec seems to be 1-based rather than 0-based (first line is 1)
-                            rspec.runRSpec(null, file, line+1, file.getName(), locator, true, debug);
-                                return;
+                            TestRunner runner = getTestRunner(TestRunner.TestType.RSPEC);
+                            if (runner != null) {
+                                runner.runSingleTest(file, String.valueOf(line + 1), debug);
+                            } else {
+                                rspec.runRSpec(null, file, line + 1, file.getName(), locator, true, debug);
+                            }
+                            return;
                         }
                     } else {
                         // Regular Test::Unit? Find the test surrounding the caret.
                         // "ruby my_test.rb -n test_this"
-                        String testName = AstUtilities.getMethodName(file, offset);
+                        String testName = AstUtilities.getTestName(file, offset);
                         if (testName != null) {
                             // No validation that the method is a test or the parentclass
                             // is Test::Unit -- make this work with possibly other useful
@@ -147,9 +142,13 @@ public class RunFocusedTest extends AbstractAction implements EditorAction {
                             
                             // Save all files first - this spec file could be accessing other files being tested
                             LifecycleManager.getDefault().saveAll();
-
-                            runTest(project, null, file, testName, file.getName(), locator, true, debug);
-                                return;
+                            TestRunner runner = getTestRunner(TestRunner.TestType.TEST_UNIT);
+                            if (runner != null) {
+                                runner.runSingleTest(file, testName, debug);
+                            } else {
+                                runTest(project, null, file, testName, file.getName(), locator, true, debug);
+                            }
+                            return;
                         } else {
                             Toolkit.getDefaultToolkit().beep();
                         }
@@ -229,4 +228,15 @@ public class RunFocusedTest extends AbstractAction implements EditorAction {
         }
         new RubyExecution(desc, charsetName).run();
     }
+    
+    private static TestRunner getTestRunner(TestRunner.TestType testType) {
+        Collection<? extends TestRunner> testRunners = Lookup.getDefault().lookupAll(TestRunner.class);
+        for (TestRunner each : testRunners) {
+            if (each.supports(testType)) {
+                return each;
+            }
+        }
+        return null;
+    }
+
 }

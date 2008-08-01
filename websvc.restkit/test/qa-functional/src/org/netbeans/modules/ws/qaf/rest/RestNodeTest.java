@@ -38,17 +38,16 @@
  */
 package org.netbeans.modules.ws.qaf.rest;
 
-import junit.framework.TestSuite;
-import junit.textui.TestRunner;
+import junit.framework.Test;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.EventTool;
-import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 
 /**
  * Tests REST node in project logical view
- * 
+ *
  * @author lukas
  */
 public class RestNodeTest extends RestTestBase {
@@ -139,7 +138,7 @@ public class RestNodeTest extends RestTestBase {
         assertEquals("New method not shown for " + services[0], 4, //NOI18N
                 getMethodsNode(services[0]).getChildren().length); //NOI18N
     }
-    
+
     /**
      * Test new node visibility after removing a method from the resource
      */
@@ -155,25 +154,6 @@ public class RestNodeTest extends RestTestBase {
         new EventTool().waitNoEvent(1000);
         assertEquals("New method still shown for " + services[0], 3, //NOI18N
                 getMethodsNode(services[0]).getChildren().length); //NOI18N
-    }
-    
-    /** Creates suite from particular test cases. You can define order of testcases here. */
-    public static TestSuite suite() {
-        TestSuite suite = new NbTestSuite();
-        suite.addTest(new RestNodeTest("testNodesAfterOpen")); //NOI18N
-        suite.addTest(new RestNodeTest("testOpenOnResource")); //NOI18N
-        suite.addTest(new RestNodeTest("testOpenOnMethod")); //NOI18N
-        suite.addTest(new RestNodeTest("testOpenOnLocator")); //NOI18N
-        suite.addTest(new RestNodeTest("testAddMethod")); //NOI18N
-        suite.addTest(new RestNodeTest("testRemoveMethod")); //NOI18N
-        suite.addTest(new RestNodeTest("testCloseProject")); //NOI18N
-        return suite;
-    }
-
-    /* Method allowing test execution directly from the IDE. */
-    public static void main(java.lang.String[] args) {
-        // run whole suite
-        TestRunner.run(suite());
     }
 
     protected Node getResourceNode(String resourceName) {
@@ -192,7 +172,7 @@ public class RestNodeTest extends RestTestBase {
         }
         return n;
     }
-    
+
     protected Node getMethodNode(Node methodsNode, String methodName) {
         return new Node(methodsNode, methodName);
     }
@@ -205,8 +185,23 @@ public class RestNodeTest extends RestTestBase {
         }
         return n;
     }
-    
+
     protected Node getSubresourceNode(Node subresourcesNode, String locatorName) {
         return new Node(subresourcesNode, locatorName);
+    }
+
+    /**
+     * Creates suite from particular test cases. You can define order of testcases here.
+     */
+    public static Test suite() {
+        return NbModuleSuite.create(addServerTests(NbModuleSuite.createConfiguration(RestNodeTest.class),
+                "testNodesAfterOpen",
+                "testOpenOnResource",
+                "testOpenOnMethod",
+                "testOpenOnLocator",
+                "testAddMethod",
+                "testRemoveMethod",
+                "testCloseProject"
+                ).enableModules(".*").clusters(".*"));
     }
 }

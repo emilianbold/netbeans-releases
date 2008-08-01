@@ -42,12 +42,14 @@ package org.netbeans.modules.java.j2seproject.classpath;
 
 import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import org.netbeans.spi.java.project.classpath.ProjectClassPathExtender;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.ant.AntArtifact;
+import org.openide.util.Exceptions;
 
 @Deprecated
 public class J2SEProjectClassPathExtender implements ProjectClassPathExtender {
@@ -77,7 +79,13 @@ public class J2SEProjectClassPathExtender implements ProjectClassPathExtender {
         if (FileUtil.isArchiveFile(archiveFile)) {
             archiveFile = FileUtil.getArchiveRoot (archiveFile);
         }
-        return this.delegate.handleRoots(new URL[] {archiveFile.getURL()},type,J2SEProjectClassPathModifier.ADD, true);
+        try {
+            return this.delegate.handleRoots(new URI[]{archiveFile.getURL().toURI()}, type, J2SEProjectClassPathModifier.ADD, true);
+        } catch (URISyntaxException ex) {
+            IOException ioe = new IOException();
+            ioe.initCause(ex);
+            throw ioe;
+        }
     }
 
     public boolean addAntArtifact(final AntArtifact artifact, final URI artifactElement) throws IOException {

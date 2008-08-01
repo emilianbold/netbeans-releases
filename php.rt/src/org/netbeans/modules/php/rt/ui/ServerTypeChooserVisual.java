@@ -11,9 +11,9 @@ import javax.swing.JPanel;
 
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.netbeans.modules.php.rt.providers.impl.WizardConstants;
 import org.netbeans.modules.php.rt.spi.providers.WebServerProvider;
 import org.netbeans.modules.php.rt.utils.ServersUtils;
+import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
 
 /**
@@ -241,7 +241,7 @@ class ServerTypeChooserVisual extends JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void typeChanged(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_typeChanged
-        WebServerProvider provider = getSelectedProvider();
+        WebServerProvider provider = getSelectedProvider();//GEN-HEADEREND:event_typeChanged
         
         setDescription(provider);
         setUseHelperEnable(provider);
@@ -251,8 +251,8 @@ class ServerTypeChooserVisual extends JPanel {
 
     private void myUseHelperActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_myUseHelperActionPerformed
         // do nothing here
-}//GEN-LAST:event_myUseHelperActionPerformed
-    
+}//GEN-HEADEREND:event_myUseHelperActionPerformed
+//GEN-LAST:event_myUseHelperActionPerformed
     private void setDescription( WebServerProvider provider ) {
         String descr = provider.getDescription();
         myDescription.setText( descr );
@@ -262,7 +262,7 @@ class ServerTypeChooserVisual extends JPanel {
         if (getWizard() == null) {
             return;
         }
-        getWizard().putProperty(WizardConstants.WIZARD_PANEL_ERROR_MESSAGE, message);
+        getWizard().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, message);
     }
 
     private ServerTypeChooserPanel getPanel(){

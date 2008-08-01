@@ -64,6 +64,7 @@ import org.openide.util.NbBundle;
 import java.util.Collection;
 import java.util.List;
 import org.netbeans.modules.websvc.wsitconf.ui.ComboConstants;
+import org.netbeans.modules.websvc.wsitmodelext.versioning.ConfigVersion;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.ProfilesModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.SecurityPolicyModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.SecurityTokensModelHelper;
@@ -193,6 +194,7 @@ public class ClientView extends SectionView {
         String profile = ProfilesModelHelper.getWSITSecurityProfile(serviceBinding);
         if (ComboConstants.PROF_STSISSUED.equals(profile) ||
             ComboConstants.PROF_STSISSUEDENDORSE.equals(profile) ||
+            ComboConstants.PROF_STSISSUEDSUPPORTING.equals(profile) ||
             ComboConstants.PROF_STSISSUEDCERT.equals(profile)) {
                 return true;
         }
@@ -201,12 +203,9 @@ public class ClientView extends SectionView {
 
     private boolean isClientAdvancedConfigRequired(Binding binding, WSDLModel serviceModel) {
         Binding serviceBinding = PolicyModelHelper.getBinding(serviceModel, binding.getName());
-        boolean rmEnabled = RMModelHelper.isRMEnabled(serviceBinding);
-//        boolean timestampEnabled = SecurityPolicyModelHelper.isIncludeTimestamp(serviceBinding); 
+        boolean rmEnabled = RMModelHelper.getInstance(ConfigVersion.CONFIG_1_0).isRMEnabled(serviceBinding) ||
+                            RMModelHelper.getInstance(ConfigVersion.CONFIG_1_3).isRMEnabled(serviceBinding);
         boolean secConvRequired = RequiredConfigurationHelper.isSecureConversationParamRequired(serviceBinding);
-        
-        //TODO - enable when timestamp becomes supported
-        
         return rmEnabled || secConvRequired /* || timestampEnabled*/;
     }
 

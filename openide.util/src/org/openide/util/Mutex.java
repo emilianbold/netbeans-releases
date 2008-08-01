@@ -604,12 +604,12 @@ public final class Mutex extends Object {
     // priv methods  -----------------------------------------
 
     /** enters this mutex for writing */
-    private void writeEnter(Thread t) {
+    final void writeEnter(Thread t) {
         enter(X, t, true);
     }
 
     /** enters this mutex for reading */
-    private void readEnter(Thread t) {
+    final void readEnter(Thread t) {
         enter(S, t, true);
     }
 
@@ -827,7 +827,7 @@ public final class Mutex extends Object {
     }
 
     /** Leaves this mutex */
-    private void leave(Thread t) {
+    final void leave(Thread t) {
         boolean log = LOG.isLoggable(Level.FINE);
 
         if (log) doLog("Leaving {0}", grantedMode); // NOI18N

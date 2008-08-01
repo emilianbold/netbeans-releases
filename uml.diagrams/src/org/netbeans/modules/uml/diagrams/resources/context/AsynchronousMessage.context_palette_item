@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<palette_item version="1.0">
+  <element name="Message" />
+  <defaultType name="Lifeline" />
+
+
+  <icon16 urlvalue="nbres:/org/netbeans/modules/uml/resources/images/asynchronous-message.png" />
+  <icon32 urlvalue="nbres:/org/netbeans/modules/uml/resources/images/asynchronous-message-32.png" />
+
+  <factory instanceClass="nbres:/org/netbeans/modules/uml/diagrams/edges/factories/MessageFactory"/>
+
+  <description localizing-bundle="org.netbeans.modules.uml.diagrams.resources.context.Bundle"
+               display-name-key="NAME_AsynchronousMessage" 
+               tooltip-key="HINT_AsynchronousMessage" />
+</palette_item>

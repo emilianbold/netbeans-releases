@@ -61,8 +61,12 @@ public class ProgObject extends  ServerProgress {
 
     private TargetModuleID[] tmIDs;
     
+    public ProgObject(DeploymentManager dm, Target[] targets, File archive, Object plan, ModuleType type) {
+        this(dm, createTargetModuleIDs(targets, archive, type));
+    }
+    
     public ProgObject(DeploymentManager dm, Target[] targets, File archive, Object plan) {
-        this(dm, createTargetModuleIDs(targets, archive));
+        this(dm, createTargetModuleIDs(targets, archive, null));
     }
 
     public ProgObject(DeploymentManager dm, Target[] targets, Object archive, Object plan) {
@@ -74,18 +78,18 @@ public class ProgObject extends  ServerProgress {
         tmIDs = modules;
     }
     
-    public static TargetModuleID[] createTargetModuleIDs(Target[] targets, File archive) {
+    public static TargetModuleID[] createTargetModuleIDs(Target[] targets, File archive, ModuleType type) {
         TargetModuleID [] ret = new TargetModuleID[targets.length];
         for (int i=0; i<ret.length; i++) {
-            ret[i] = new TestTargetMoid(targets[i], archive.getName(), getType(archive.getName()));
+            ret[i] = new TestTargetMoid(targets[i], archive.getName(), type != null ? type : getType(archive.getName()));
             ((Targ)targets[i]).add(ret[i]);
         }
         return ret;
     }
     static ModuleType getType(String name) {
         if (name.endsWith(".ear")) return ModuleType.EAR;
-        else if (name.endsWith(".jar")) return ModuleType.EJB; //PENDING: libraries and client
-        else if (name.endsWith(".war")) return ModuleType.WAR;
+        else if (name.endsWith(".jar") || name.equals("jar")) return ModuleType.EJB; //PENDING: libraries and client
+        else if (name.endsWith(".war") || name.equals("web")) return ModuleType.WAR;
         else if (name.endsWith(".rar")) return ModuleType.RAR;
         else throw new IllegalArgumentException("Invalid archive name: " + name);
     }

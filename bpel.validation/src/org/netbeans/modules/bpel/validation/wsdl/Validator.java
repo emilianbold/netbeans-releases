@@ -11,9 +11,9 @@
  * http://www.netbeans.org/cddl-gplv2.html
  * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
  * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
+ * License. When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
  * particular file as subject to the "Classpath" exception as provided
  * by Sun in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
@@ -53,14 +53,14 @@ import org.netbeans.modules.xml.wsdl.model.Message;
 import org.netbeans.modules.xml.wsdl.model.Part;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.ExtensibilityElement;
-import org.netbeans.modules.xml.wsdl.model.visitor.ChildVisitor;
+import org.netbeans.modules.xml.wsdl.model.visitor.DefaultVisitor;
 import org.netbeans.modules.xml.wsdl.model.visitor.WSDLVisitor;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.CorrelationProperty;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.validation.ValidationUtil;
 import org.netbeans.modules.xml.xam.dom.DocumentComponent;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PropertyAlias;
 import org.netbeans.modules.bpel.validation.core.WsdlValidator;
-import static org.netbeans.modules.soa.ui.util.UI.*;
+import static org.netbeans.modules.xml.ui.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -68,183 +68,195 @@ import static org.netbeans.modules.soa.ui.util.UI.*;
  */
 public final class Validator extends WsdlValidator {
 
-  public WSDLVisitor getVisitor() {
-    return new ChildVisitor() {
-      // # 120419
-      @Override
-      public void visit(Definitions definitions) {
+  @Override
+  protected WSDLVisitor getVisitor() { return new DefaultVisitor() {
+  
+  @Override
+  public void visit(Definitions definitions) {
 //out();
 //out("definitions: " + definitions);
-        List<PropertyAlias> aliases = new ArrayList<PropertyAlias>();
-        collectPropertyAliases(definitions, aliases);
+    List<PropertyAlias> aliases = new ArrayList<PropertyAlias>();
+    collectPropertyAliases(definitions, aliases);
 //out("aliases: " + aliases.size());
 
-        for (int i=0; i < aliases.size(); i++) {
-          for (int j=i+1; j < aliases.size(); j++) {
-            if (theSame(aliases.get(i), aliases.get(j))) {
+    // # 120419
+    for (int i=0; i < aliases.size(); i++) {
+      for (int j=i+1; j < aliases.size(); j++) {
+        if (theSame(aliases.get(i), aliases.get(j))) {
 //out("the same");
-              addError("FIX_Identical_Property_Aliases", aliases.get(i)); // NOI18N
-              addError("FIX_Identical_Property_Aliases", aliases.get(j)); // NOI18N
-            }
-          }
+          addError("FIX_Identical_Property_Aliases", aliases.get(i)); // NOI18N
+          addError("FIX_Identical_Property_Aliases", aliases.get(j)); // NOI18N
         }
       }
+    }
+    // # 125954
+    visitChildren(definitions);
+  }
 
-      private boolean theSame(PropertyAlias alias1, PropertyAlias alias2) {
-        if (alias1 == null || alias2 == null) {
-          return false;
-        }
-        return
-          getProperty(alias1) == getProperty(alias2) &&
-          getMessage(alias1) == getMessage(alias2) &&
-          alias1.getPart() == alias2.getPart() &&
-          alias1.getQuery() == alias2.getQuery() &&
-          getGlobalType(alias1) == getGlobalType(alias2) &&
-          getGlobalElement(alias1) == getGlobalElement(alias2);
-      }
+  private void visitChildren(Definitions definitions) {
+    Collection<ExtensibilityElement> collection = definitions.getChildren(ExtensibilityElement.class);
+//out("collection: " + elements);
 
-      private CorrelationProperty getProperty(PropertyAlias alias) {
-        NamedComponentReference<CorrelationProperty> ref = alias.getPropertyName();
+    for (ExtensibilityElement element : collection) {
+      visitExtensibility(element);
+    }
+  }
 
-        if (ref == null) {
-          return null;
-        }
-        return ref.get();
-      }
+  private boolean theSame(PropertyAlias alias1, PropertyAlias alias2) {
+    if (alias1 == null || alias2 == null) {
+      return false;
+    }
+    return
+      getProperty(alias1) == getProperty(alias2) &&
+      getMessage(alias1) == getMessage(alias2) &&
+      alias1.getPart() == alias2.getPart() &&
+      alias1.getQuery() == alias2.getQuery() &&
+      getGlobalType(alias1) == getGlobalType(alias2) &&
+      getGlobalElement(alias1) == getGlobalElement(alias2);
+  }
 
-      private Message getMessage(PropertyAlias alias) {
-        NamedComponentReference<Message> ref = alias.getMessageType();
+  private CorrelationProperty getProperty(PropertyAlias alias) {
+    NamedComponentReference<CorrelationProperty> ref = alias.getPropertyName();
 
-        if (ref == null) {
-          return null;
-        }
-        return ref.get();
-      }
+    if (ref == null) {
+      return null;
+    }
+    return ref.get();
+  }
 
-      private GlobalType getGlobalType(PropertyAlias alias) {
-        NamedComponentReference<GlobalType> ref = alias.getType();
+  private Message getMessage(PropertyAlias alias) {
+    NamedComponentReference<Message> ref = alias.getMessageType();
 
-        if (ref == null) {
-          return null;
-        }
-        return ref.get();
-      }
+    if (ref == null) {
+      return null;
+    }
+    return ref.get();
+  }
 
-      private GlobalElement getGlobalElement(PropertyAlias alias) {
-        NamedComponentReference<GlobalElement> ref = alias.getElement();
+  private GlobalType getGlobalType(PropertyAlias alias) {
+    NamedComponentReference<GlobalType> ref = alias.getType();
 
-        if (ref == null) {
-          return null;
-        }
-        return ref.get();
-      }
+    if (ref == null) {
+      return null;
+    }
+    return ref.get();
+  }
 
-      private void collectPropertyAliases(WSDLComponent component, List<PropertyAlias> aliases) {
-        if (component instanceof PropertyAlias) {
-          aliases.add((PropertyAlias) component);
-        }
-        List<WSDLComponent> children = component.getChildren();
+  private GlobalElement getGlobalElement(PropertyAlias alias) {
+    NamedComponentReference<GlobalElement> ref = alias.getElement();
 
-        for (WSDLComponent child : children) {
-          collectPropertyAliases(child, aliases);
-        }
-      }
+    if (ref == null) {
+      return null;
+    }
+    return ref.get();
+  }
 
-      @Override
-      public void visit(ExtensibilityElement element) {
-//out("WSDL VISIT: " + element);
-        if ( !(element instanceof PropertyAlias)) {
-          return;
-        }
-        // # 90324
-        PropertyAlias alias = (PropertyAlias) element;
+  private void collectPropertyAliases(WSDLComponent component, List<PropertyAlias> aliases) {
+    if (component instanceof PropertyAlias) {
+      aliases.add((PropertyAlias) component);
+    }
+    List<WSDLComponent> children = component.getChildren();
+
+    for (WSDLComponent child : children) {
+      collectPropertyAliases(child, aliases);
+    }
+  }
+
+  private void visitExtensibility(ExtensibilityElement element) {
+//out("EXT VISIT: " + element);
+    if ( !(element instanceof PropertyAlias)) {
+      return;
+    }
+    // # 90324
+    PropertyAlias alias = (PropertyAlias) element;
 //out();
 //out("PROPERTY ALIAS: " + alias);
 //out("Query: " + alias.getQuery());
 
-        if (alias.getQuery() != null) {
+    if (alias.getQuery() != null) {
 //out("1");
-          return;
-        }
-        DocumentComponent query = getQuery(alias);
+      return;
+    }
+    // # 125954
+    DocumentComponent wrongQuery = getWrongQuery(alias);
 
-        if (query != null) {
+    if (wrongQuery != null) {
 //out("2");
-          addError("FIX_QUERY_PREFIX", alias); // NOI18N
-          return;
-        }
-        // property
-        NamedComponentReference<CorrelationProperty> ref1 = alias.getPropertyName();
+      addError("FIX_QUERY_PREFIX", alias); // NOI18N
+      return;
+    }
+    // property
+    NamedComponentReference<CorrelationProperty> ref1 = alias.getPropertyName();
 
-        if (ref1 == null) {
+    if (ref1 == null) {
 //out("3");
-          return;
-        }
-        CorrelationProperty property = ref1.get();
+      return;
+    }
+    CorrelationProperty property = ref1.get();
 //out();
 //out("property: " + getName(property));
 
-        if (property == null) {
-          return;
-        }
-        Component propertyType = getType(property);
+    if (property == null) {
+      return;
+    }
+    Component propertyType = getType(property);
 //out("!! propertyType: " + getName(propertyType));
 
-        if (propertyType == null) {
-          return;
-        }
-        // message
-        NamedComponentReference<Message> ref2 = alias.getMessageType();
+    if (propertyType == null) {
+      return;
+    }
+    // message
+    NamedComponentReference<Message> ref2 = alias.getMessageType();
 
-        if (ref2 == null) {
-          return;
-        }
-        Message message = ref2.get();
+    if (ref2 == null) {
+      return;
+    }
+    Message message = ref2.get();
 //out("message: " + getName(message));
-        
-        if (message == null) {
-          return;
-        }
-        // part
-        String partName = alias.getPart();
+    
+    if (message == null) {
+      return;
+    }
+    // part
+    String partName = alias.getPart();
 //out("partName: " + partName);
 
-        if (partName == null) {
-          return;
-        }
-        Collection<Part> parts = message.getParts();
+    if (partName == null) {
+      return;
+    }
+    Collection<Part> parts = message.getParts();
 
-        if (parts == null) {
-          return;
-        }
-        Part aliasPart = null;
+    if (parts == null) {
+      return;
+    }
+    Part aliasPart = null;
 
-        for (Part part : parts) {
-          if (partName.equals(part.getName())) {
-            aliasPart = part;
-            break;
-          }
-        }
+    for (Part part : parts) {
+      if (partName.equals(part.getName())) {
+        aliasPart = part;
+        break;
+      }
+    }
 //out("aliasPart: " + getName(aliasPart));
-        if (aliasPart == null) {
-          return;
-        }
-        // type
-        Component aliasType = getType(aliasPart);
+    if (aliasPart == null) {
+      return;
+    }
+    // type
+    Component aliasType = getType(aliasPart);
 //out("!! aliasType: " + getName(aliasType));
 
-        if (aliasType == null) {
-          return;
-        }
-        // check
-        if (ValidationUtil.getBasedSimpleType(aliasType) != ValidationUtil.getBasedSimpleType(propertyType)) {
-          addWarning("FIX_TYPE_IN_PROPERTY_ALIAS", alias, getTypeName(aliasType), getTypeName(propertyType)); // NOI18N
+    if (aliasType == null) {
+      return;
+    }
+    // check
+    if (ValidationUtil.getBasedSimpleType(aliasType) != ValidationUtil.getBasedSimpleType(propertyType)) {
+      addWarning("FIX_TYPE_IN_PROPERTY_ALIAS", alias, getTypeName(propertyType), getTypeName(aliasType)); // NOI18N
 //out("WARNING: " + getTypeName(aliasType) + " "  + getTypeName(propertyType));
-        }
+    }
 //out();
-      }
-    };
   }
+
+  };}
 
   private Component getType(CorrelationProperty property) {
     NamedComponentReference<GlobalType> ref1 = property.getType();
@@ -268,29 +280,7 @@ public final class Validator extends WsdlValidator {
     return null;
   }
 
-  private Component getType(Part part) {
-    NamedComponentReference<GlobalType> ref1 = part.getType();
-
-    if (ref1 != null) {
-      GlobalType type = ref1.get();
-
-      if (type != null) {
-        return getTypeOfElement(type);
-      }
-    }
-    NamedComponentReference<GlobalElement> ref2 = part.getElement();
-
-    if (ref2 != null) {
-      GlobalElement element = ref2.get();
-
-      if (element != null) {
-        return getTypeOfElement(element);
-      }
-    }
-    return null;
-  }
-
-  private DocumentComponent getQuery(PropertyAlias alias) {
+  private DocumentComponent getWrongQuery(PropertyAlias alias) {
     List<WSDLComponent> children = alias.getChildren();
 
     for (WSDLComponent child : children) {

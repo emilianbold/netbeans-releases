@@ -1,4 +1,6 @@
-Results for "f\oo" with queryType=COMPLETION and nameKind=PREFIX
+Code completion result for source line:
+z = "f\|oo"
+(QueryType=COMPLETION, NameKind=PREFIX)
 ------------------------------------
 KEYWORD    \                                          \<i>ooo</i>: The latin character in octal <i>ooo</i>
 KEYWORD    \"                                         Double Quote (\u0022)

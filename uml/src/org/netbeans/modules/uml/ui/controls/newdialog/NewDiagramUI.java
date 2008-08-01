@@ -1033,7 +1033,7 @@ public class NewDiagramUI extends WizardInteriorPage implements
 			INamespace currentNamespace = (IInteraction)interaction;
 			if( currentNamespace != null )
 			{
-				IProxyDiagramManager diagramManager = new ProxyDiagramManager();
+				IProxyDiagramManager diagramManager = ProxyDiagramManager.instance();
 				if ( diagramManager != null )
 				{
 					ETList<IProxyDiagram> proxyDiagrams = 

@@ -60,6 +60,7 @@ final class FormClassLoader extends ClassLoader {
     private ClassLoader projectClassLoader;
 
     FormClassLoader(ClassLoader projectClassLoader) {
+        super(null);
         this.systemClassLoader = org.openide.util.Lookup.getDefault().lookup(ClassLoader.class);
         this.projectClassLoader = projectClassLoader;
     }

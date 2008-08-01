@@ -50,6 +50,7 @@ made subject to such option by the copyright holder.
     <filter pattern="http://www\.netbeans\.org/download/[0-9]_[0-9]/javadoc/apichanges\.html" accept="true"/>
     <!-- sources -->
     <filter pattern="http://www\.netbeans\.org/(unbranded-)?source/browse/.*" accept="true"/>
+    <filter pattern="http://hg\.netbeans\.org.*" accept="true"/>
     <filter pattern="http://openide\.netbeans\.org/versioning-policy\.html.*" accept="true"/>
     <filter pattern="http://www\.netbeans\.org/issues/show_bug\.cgi.*" accept="true"/>
     <filter pattern="http://openide\.netbeans\.org.*tutorial.*api-design.*" accept="true"/>
@@ -86,6 +87,8 @@ made subject to such option by the copyright holder.
     <filter pattern="http://projects\.netbeans\.org/buildsys/design\.html" accept="true"/>
     <filter pattern="http://platform\.netbeans\.org/articles/.*" accept="true"/>
     <filter pattern="http://ui\.netbeans\.org/docs/ui/themes/themes\.html" accept="true"/>
-    <filter pattern="http://wiki.netbeans.org/wiki/view/.*" accept="true"/>
+    <filter pattern="http://wiki.netbeans.org/.*" accept="true"/>
+    <!-- Useful to point to open layer positions (see e.g. HOWTO-MIME.html): -->
+    <filter pattern="http://deadlock\.netbeans\.org/hudson/job/nbms-and-javadoc/lastSuccessfulBuild/artifact/nbbuild/build/generated/layers\.txt" accept="true"/>
     <!-- forbid the rest of NetBeans sites -->
     <filter pattern="http://.*netbeans\.org/.*" accept="false"/>

@@ -48,10 +48,9 @@ import javax.swing.KeyStroke;
  * @author AlexanderPermyacov
  */
 public class LinkConnectDone extends MapperKeyboardAction {
-    private Canvas canvas;
-
+    
     LinkConnectDone(Canvas canvas) {
-        this.canvas = canvas;
+        super(canvas);
     }
     
     @Override

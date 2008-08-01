@@ -46,6 +46,7 @@ import java.io.File;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.masterfs.filebasedfs.utils.FileInfo;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
@@ -59,13 +60,13 @@ import org.openide.filesystems.FileUtil;
  */
 public class FileObjectFactoryTest extends NbTestCase {
     private File testFile;
-    private FileObject testFo;
 
 
     public FileObjectFactoryTest(String testName) {
         super(testName);
     }
 
+    @Override
     protected void setUp() throws Exception {
         super.setUp();
         clearWorkDir();        
@@ -75,7 +76,7 @@ public class FileObjectFactoryTest extends NbTestCase {
         }
         
     }
-
+    
 
     public void testIssuingFileObject() throws IOException {      
         FileObjectFactory fbs = FileObjectFactory.getInstance(getWorkDir());
@@ -156,10 +157,7 @@ public class FileObjectFactoryTest extends NbTestCase {
             assertTrue(external.createNewFile());
             assertNull(foWorkDir.getFileObject(external.getName()));
             
-            File root = workDir;
-            while(root.getParentFile() != null) {
-                root = root.getParentFile();
-            }
+            File root = new FileInfo(workDir).getRoot().getFile();
             
             fdc.assertDataCreated(0);                
             FileUtil.refreshFor(root);

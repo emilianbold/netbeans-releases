@@ -73,6 +73,7 @@ import com.sun.tools.javac.util.CouplingAbort;
 import com.sun.tools.javac.util.FlowListener;
 import com.sun.tools.javac.util.JCDiagnostic.DiagnosticPosition;
 import com.sun.tools.javac.util.Log;
+import com.sun.tools.javadoc.JavadocClassReader;
 import com.sun.tools.javadoc.JavadocEnter;
 import com.sun.tools.javadoc.JavadocMemberEnter;
 import com.sun.tools.javadoc.Messager;
@@ -155,6 +156,7 @@ import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementa
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaSourceProvider;
 import org.netbeans.modules.java.source.PostFlowAnalysis;
 import org.netbeans.modules.java.source.TreeLoader;
+import org.netbeans.modules.java.source.parsing.OutputFileManager;
 import org.netbeans.modules.java.source.parsing.SourceFileObject;
 import org.netbeans.modules.java.source.tasklist.CompilerSettings;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl;
@@ -165,7 +167,6 @@ import org.netbeans.modules.java.source.usages.RepositoryUpdater;
 import org.netbeans.modules.java.source.util.LowMemoryEvent;
 import org.netbeans.modules.java.source.util.LowMemoryListener;
 import org.netbeans.modules.java.source.util.LowMemoryNotifier;
-import org.netbeans.modules.java.source.usages.SymbolClassReader;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileChangeAdapter;
@@ -339,7 +340,7 @@ public final class JavaSource {
     
     private PositionConverter binding;
     private final boolean supportsReparse;
-    
+        
     private static final Logger LOGGER = Logger.getLogger(JavaSource.class.getName());
         
     static {
@@ -856,7 +857,7 @@ public final class JavaSource {
      * @see Task for information about implementation requirements
      * @param task The task which.
      */    
-    public ModificationResult runModificationTask(Task<WorkingCopy> task) throws IOException {        
+    public ModificationResult runModificationTask(Task<WorkingCopy> task) throws IOException {
         if (task == null) {
             throw new IllegalArgumentException ("Task cannot be null");     //NOI18N
         }
@@ -913,7 +914,7 @@ public final class JavaSource {
                     assert currentInfo != null;                    
                     WorkingCopy copy = new WorkingCopy (currentInfo);
                     task.run (copy);
-                    List<Difference> diffs = copy.getChanges();
+                    List<Difference> diffs = copy.getChanges(result.tag2Span);
                     if (diffs != null && diffs.size() > 0)
                         result.diffs.put(currentInfo.getFileObject(), diffs);
                 }
@@ -964,7 +965,7 @@ public final class JavaSource {
                         if (!ci.needsRestart) {
                             jt = ci.getJavacTask();
                             Log.instance(jt.getContext()).nerrors = 0;
-                            List<Difference> diffs = copy.getChanges();
+                            List<Difference> diffs = copy.getChanges(result.tag2Span);
                             if (diffs != null && diffs.size() > 0)
                                 result.diffs.put(ci.getFileObject(), diffs);
                             activeFile = null;
@@ -1160,19 +1161,24 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
         if (lintOptions.length() > 0) {
             options.addAll(Arrays.asList(lintOptions.split(" ")));
         }
+        Source validatedSourceLevel = validateSourceLevel(sourceLevel);
         if (!backgroundCompilation) {
             options.add("-Xjcov"); //NOI18N, Make the compiler store end positions
             options.add("-XDdisableStringFolding"); //NOI18N
         } else {
             options.add("-XDbackgroundCompilation");    //NOI18N
             options.add("-XDcompilePolicy=byfile");     //NOI18N
+            options.add("-target");                     //NOI18N
+            options.add(validatedSourceLevel.requiredTarget().name);
         }
         options.add("-XDide");   // NOI18N, javac runs inside the IDE
+        options.add("-XDsave-parameter-names");   // NOI18N, javac runs inside the IDE
         options.add("-g:");      // NOI18N, Enable some debug info
+        options.add("-g:source"); // NOI18N, Make the compiler to maintian source file info
         options.add("-g:lines"); // NOI18N, Make the compiler to maintain line table
         options.add("-g:vars");  // NOI18N, Make the compiler to maintain local variables table
         options.add("-source");  // NOI18N
-        options.add(validateSourceLevel(sourceLevel));
+        options.add(validatedSourceLevel.name);
 
         ClassLoader orig = Thread.currentThread().getContextClassLoader();
         try {            
@@ -1183,11 +1189,7 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
             JavacTaskImpl task = (JavacTaskImpl)tool.getTask(null, cpInfo.getFileManager(), diagnosticListener, options, null, Collections.<JavaFileObject>emptySet());
             Context context = task.getContext();
             
-            if (backgroundCompilation) {
-                SymbolClassReader.preRegister(context, false);
-            } else {
-                SymbolClassReader.preRegister(context, true);
-            }
+            JavadocClassReader.preRegister(context, !backgroundCompilation);
             
             if (cnih != null) {
                 context.put(ClassNamesForFileOraculum.class, cnih);
@@ -1232,6 +1234,10 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
      *
      */
     static Phase moveToPhase (final Phase phase, final CompilationInfoImpl currentInfo, final boolean cancellable) throws IOException {
+        if (currentInfo.jfo.getKind() != JavaFileObject.Kind.SOURCE) {
+            currentInfo.setPhase(phase);
+            return phase;
+        }
         Phase parserError = currentInfo.parserCrashed;
         assert parserError != null;
         Phase currentPhase = currentInfo.getPhase();        
@@ -1371,10 +1377,10 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
     });
     
     private void resetState (boolean invalidate, boolean updateIndex) {
-        resetState (invalidate, updateIndex, null);
+        resetState (invalidate, updateIndex, false, null);
     }
                
-    private void resetState(boolean invalidate, boolean updateIndex, Pair<DocPositionRegion,MethodTree> changedMethod) {
+    private void resetState(boolean invalidate, boolean updateIndex, boolean filterOutFileManager, Pair<DocPositionRegion,MethodTree> changedMethod) {
         boolean invalid;
         synchronized (this) {
             invalid = (this.flags & INVALID) != 0;
@@ -1387,7 +1393,15 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
             }
             if (updateIndex) {
                 this.flags|=UPDATE_INDEX;
-            }            
+            }
+            if (filterOutFileManager && binding != null && rootFo != null) {
+                //No need to be fully synchronized OutputFileManager.setFilteredFiles is idempotent
+                OutputFileManager ofm = this.classpathInfo.getOutputFileManager();
+                if (ofm != null && !ofm.isFiltered()) {
+                    Set<File> files = RepositoryUpdater.getAffectedCacheFiles(binding.getFileObject(), rootFo);
+                    ofm.setFilteredFiles(files);                    
+                }
+            }
         }
         if (updateIndex && !invalid) {
             //First change set the index as dirty
@@ -1830,7 +1844,7 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
                     }
                 }
             }
-            JavaSource.this.resetState(true, changedMethod==null, changedMethod);
+            JavaSource.this.resetState(true, changedMethod==null, true, changedMethod);
         }        
     }
     
@@ -1946,11 +1960,16 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
             DataObject invalidDO = (DataObject) pce.getSource();
             if (invalidDO != dobj)
                 return;
-            if (DataObject.PROP_VALID.equals(pce.getPropertyName())) {
+            final String propName = pce.getPropertyName();
+            if (DataObject.PROP_VALID.equals(propName)) {
                 handleInvalidDataObject(invalidDO);
+                resetOutputFileManagerFilter();
+            } else if (DataObject.PROP_MODIFIED.equals(propName) && !invalidDO.isModified()) {
+                resetOutputFileManagerFilter();
             } else if (pce.getPropertyName() == null && !dobj.isValid()) {
                 handleInvalidDataObject(invalidDO);
-            }
+                resetOutputFileManagerFilter();
+            }            
         }
         
         private void handleInvalidDataObject(final DataObject invalidDO) {
@@ -1959,6 +1978,15 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
                     handleInvalidDataObjectImpl(invalidDO);
                 }
             });
+        }
+        
+        private void resetOutputFileManagerFilter () {
+            if (binding != null) {
+                OutputFileManager ofm = classpathInfo.getOutputFileManager();
+                if (ofm != null) {                    
+                    ofm.clearFilteredFiles();                    
+                }
+            }
         }
         
         private void handleInvalidDataObjectImpl(DataObject invalidDO) {
@@ -2092,6 +2120,11 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
             }
             Phase currentPhase = moveToPhase(phase, info, true);                
             return currentPhase.compareTo(phase)<0 ? null : new CompilationInfo(info);
+        }
+
+        public CompilationController createCompilationController (final JavaSource js) throws IOException {
+            CompilationInfoImpl info = createCurrentInfo(js, js.binding, js.createJavacTask(null, null));
+            return new CompilationController(info);
         }
 
         @Override
@@ -2524,25 +2557,25 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
         return false;
     }    
     
-    private static String validateSourceLevel (String sourceLevel) {        
+    private static Source validateSourceLevel (String sourceLevel) {        
         Source[] sources = Source.values();
         if (sourceLevel == null) {
             //Should never happen but for sure
-            return sources[sources.length-1].name;
+            return sources[sources.length-1];
         }
         for (Source source : sources) {
             if (source.name.equals(sourceLevel)) {
-                return sourceLevel;
+                return source;
             }
         }
         SpecificationVersion specVer = new SpecificationVersion (sourceLevel);
         SpecificationVersion JAVA_12 = new SpecificationVersion ("1.2");   //NOI18N
         if (JAVA_12.compareTo(specVer)>0) {
             //Some SourceLevelQueries return 1.1 source level which is invalid, use 1.2
-            return sources[0].name;
+            return sources[0];
         }
         else {
-            return sources[sources.length-1].name;
+            return sources[sources.length-1];
         }
     }
     
@@ -2799,7 +2832,11 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
             if (t instanceof ThreadDeath) {
                 throw (ThreadDeath) t;
             }
-            dumpSource(ci, t);
+            boolean a = false;
+            assert a = true; 
+            if (a) {
+                dumpSource(ci, t);
+            }
             return false;
         }
         return true;

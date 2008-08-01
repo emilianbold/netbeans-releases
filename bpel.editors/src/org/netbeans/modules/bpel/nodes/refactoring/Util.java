@@ -21,7 +21,7 @@ package org.netbeans.modules.bpel.nodes.refactoring;
 import org.netbeans.modules.bpel.editors.api.nodes.NodeType;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.nodes.BpelNode;
-import org.netbeans.modules.bpel.editors.api.utils.RefactorUtil;
+import org.netbeans.modules.bpel.editors.api.EditorUtil;
 /**
  *
  * @author Vitaly Bychkov
@@ -44,7 +44,7 @@ public class Util {
         NodeType nodeType = node.getNodeType();
         switch (nodeType) {
             case BOOLEAN_EXPR :
-                nodeName = RefactorUtil.getName((BpelEntity)ref);
+                nodeName = EditorUtil.getName((BpelEntity)ref);
                 break;
             case INVOKE :
             case RECEIVE :

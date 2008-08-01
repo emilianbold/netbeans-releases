@@ -48,6 +48,7 @@ import java.util.ListIterator;
 import java.util.Stack;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.Executor;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -113,10 +114,11 @@ import java.util.logging.Logger;
  *     }
  * }
  * </PRE>
+ * Since version 7.16 it implements {@link Executor}
  * 
  * @author Petr Nejedly, Jaroslav Tulach
  */
-public final class RequestProcessor {
+public final class RequestProcessor implements Executor{
     /** the static instance for users that do not want to have own processor */
     private static RequestProcessor DEFAULT = new RequestProcessor();
 
@@ -240,6 +242,15 @@ public final class RequestProcessor {
         return UNLIMITED;
     }
 
+    /** Implements contract of {@link Executor}. 
+     * Simply delegates to {@link #post(java.lang.Runnable)}.
+     * @param command the runnable to execute
+     * @since 7.16
+     */
+    public void execute(Runnable command) {
+        post(command);
+    }
+    
     /** This methods asks the request processor to start given
      * runnable immediately. The default priority is {@link Thread#MIN_PRIORITY}.
      *
@@ -728,7 +739,7 @@ public final class RequestProcessor {
 
                     if (lastThread != Thread.currentThread()) {
                         if (loggable) {
-                            em.fine("    ## waiting for it to be finished"); // NOI18N
+                            em.fine("    ## waiting for it to be finished: " + lastThread + " now: " + Thread.currentThread()); // NOI18N
                         }
                         super.waitFinished();
                     }

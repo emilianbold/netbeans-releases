@@ -92,7 +92,7 @@ public class FormatingTest extends GeneratorTestMDRCompat {
         doc.putProperty(Language.class, JavaTokenId.language());
         JavaSource testSource = JavaSource.forDocument(doc);
         final int[] counter = new int[] {0};
-        Preferences preferences = FmtOptions.getPreferences(FmtOptions.getCurrentProfileId());
+        Preferences preferences = FmtOptions.getPreferences(null);
         preferences.putInt("rightMargin", 30);
         Task<WorkingCopy> task = new Task<WorkingCopy>() {
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
@@ -338,6 +338,7 @@ public class FormatingTest extends GeneratorTestMDRCompat {
             "}\n";
         preferences.put("wrapExtendsImplementsKeyword", CodeStyle.WrapStyle.WRAP_NEVER.name());
         preferences.put("wrapExtendsImplementsList", CodeStyle.WrapStyle.WRAP_ALWAYS.name());
+        preferences.putInt("rightMargin", 50);
         reformat(doc, content, golden);
 
         golden =
@@ -364,7 +365,7 @@ public class FormatingTest extends GeneratorTestMDRCompat {
         doc.putProperty(Language.class, JavaTokenId.language());
         JavaSource testSource = JavaSource.forDocument(doc);
         final int[] counter = new int[] {0};
-        Preferences preferences = FmtOptions.getPreferences(FmtOptions.getCurrentProfileId());
+        Preferences preferences = FmtOptions.getPreferences(null);
         preferences.putInt("rightMargin", 20);
         Task<WorkingCopy> task = new Task<WorkingCopy>() {
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
@@ -559,7 +560,7 @@ public class FormatingTest extends GeneratorTestMDRCompat {
         };
         testSource.runModificationTask(task).commit();
 
-        Preferences preferences = FmtOptions.getPreferences(FmtOptions.getCurrentProfileId());
+        Preferences preferences = FmtOptions.getPreferences(null);
         preferences.putBoolean("spaceBeforeMethodDeclParen", true);
         preferences.putBoolean("spaceWithinMethodDeclParens", true);
         preferences.putBoolean("spaceBeforeMethodDeclLeftBrace", false);
@@ -698,7 +699,7 @@ public class FormatingTest extends GeneratorTestMDRCompat {
         };
         testSource.runModificationTask(task).commit();
 
-        Preferences preferences = FmtOptions.getPreferences(FmtOptions.getCurrentProfileId());
+        Preferences preferences = FmtOptions.getPreferences(null);
         preferences.putBoolean("spaceBeforeStaticInitLeftBrace", false);
         testSource.runModificationTask(task).commit();
         preferences.putBoolean("spaceBeforeStaticInitLeftBrace", true);
@@ -822,7 +823,7 @@ public class FormatingTest extends GeneratorTestMDRCompat {
         };
         testSource.runModificationTask(task).commit();
 
-        Preferences preferences = FmtOptions.getPreferences(FmtOptions.getCurrentProfileId());
+        Preferences preferences = FmtOptions.getPreferences(null);
         preferences.putBoolean("spaceBeforeForParen", false);
         preferences.putBoolean("spaceWithinForParens", true);
         preferences.putBoolean("spaceBeforeForLeftBrace", false);
@@ -1012,7 +1013,7 @@ public class FormatingTest extends GeneratorTestMDRCompat {
         };
         testSource.runModificationTask(task).commit();
 
-        Preferences preferences = FmtOptions.getPreferences(FmtOptions.getCurrentProfileId());
+        Preferences preferences = FmtOptions.getPreferences(null);
         preferences.putBoolean("spaceBeforeForParen", false);
         preferences.putBoolean("spaceWithinForParens", true);
         preferences.putBoolean("spaceBeforeForLeftBrace", false);
@@ -1186,7 +1187,7 @@ public class FormatingTest extends GeneratorTestMDRCompat {
         };
         testSource.runModificationTask(task).commit();
 
-        Preferences preferences = FmtOptions.getPreferences(FmtOptions.getCurrentProfileId());
+        Preferences preferences = FmtOptions.getPreferences(null);
         preferences.putBoolean("spaceBeforeIfParen", false);
         preferences.putBoolean("spaceWithinIfParens", true);
         preferences.putBoolean("spaceBeforeIfLeftBrace", false);
@@ -1496,7 +1497,7 @@ public class FormatingTest extends GeneratorTestMDRCompat {
         };
         testSource.runModificationTask(task).commit();
 
-        Preferences preferences = FmtOptions.getPreferences(FmtOptions.getCurrentProfileId());
+        Preferences preferences = FmtOptions.getPreferences(null);
         preferences.putBoolean("spaceBeforeWhileParen", false);
         preferences.putBoolean("spaceWithinWhileParens", true);
         preferences.putBoolean("spaceBeforeWhileLeftBrace", false);
@@ -1670,7 +1671,7 @@ public class FormatingTest extends GeneratorTestMDRCompat {
         };
         testSource.runModificationTask(task).commit();
 
-        Preferences preferences = FmtOptions.getPreferences(FmtOptions.getCurrentProfileId());
+        Preferences preferences = FmtOptions.getPreferences(null);
         preferences.putBoolean("spaceBeforeSwitchParen", false);
         preferences.putBoolean("spaceWithinSwitchParens", true);
         preferences.putBoolean("spaceBeforeSwitchLeftBrace", false);
@@ -1899,7 +1900,7 @@ public class FormatingTest extends GeneratorTestMDRCompat {
         };
         testSource.runModificationTask(task).commit();
 
-        Preferences preferences = FmtOptions.getPreferences(FmtOptions.getCurrentProfileId());
+        Preferences preferences = FmtOptions.getPreferences(null);
         preferences.putBoolean("spaceBeforeWhileParen", false);
         preferences.putBoolean("spaceWithinWhileParens", true);
         preferences.putBoolean("spaceBeforeDoLeftBrace", false);
@@ -2102,7 +2103,7 @@ public class FormatingTest extends GeneratorTestMDRCompat {
         };
         testSource.runModificationTask(task).commit();
 
-        Preferences preferences = FmtOptions.getPreferences(FmtOptions.getCurrentProfileId());
+        Preferences preferences = FmtOptions.getPreferences(null);
         preferences.putBoolean("spaceBeforeSynchronizedParen", false);
         preferences.putBoolean("spaceWithinSynchronizedParens", true);
         preferences.putBoolean("spaceBeforeSynchronizedLeftBrace", false);
@@ -2259,7 +2260,7 @@ public class FormatingTest extends GeneratorTestMDRCompat {
         };
         testSource.runModificationTask(task).commit();
 
-        Preferences preferences = FmtOptions.getPreferences(FmtOptions.getCurrentProfileId());
+        Preferences preferences = FmtOptions.getPreferences(null);
         preferences.putBoolean("spaceBeforeCatchParen", false);
         preferences.putBoolean("spaceWithinCatchParens", true);
         preferences.putBoolean("spaceBeforeTryLeftBrace", false);
@@ -2524,7 +2525,7 @@ public class FormatingTest extends GeneratorTestMDRCompat {
         };
         testSource.runModificationTask(task).commit();
 
-        Preferences preferences = FmtOptions.getPreferences(FmtOptions.getCurrentProfileId());
+        Preferences preferences = FmtOptions.getPreferences(null);
         preferences.putBoolean("spaceWithinParens", true);
         testSource.runModificationTask(task).commit();
         preferences.putBoolean("spaceWithinParens", false);
@@ -2671,7 +2672,7 @@ public class FormatingTest extends GeneratorTestMDRCompat {
         };
         testSource.runModificationTask(task).commit();
 
-        Preferences preferences = FmtOptions.getPreferences(FmtOptions.getCurrentProfileId());
+        Preferences preferences = FmtOptions.getPreferences(null);
         preferences.putBoolean("spaceWithinTypeCastParens", true);
         preferences.putBoolean("spaceAfterTypeCast", false);
         testSource.runModificationTask(task).commit();
@@ -2762,7 +2763,7 @@ public class FormatingTest extends GeneratorTestMDRCompat {
         };
         testSource.runModificationTask(task).commit();
 
-        Preferences preferences = FmtOptions.getPreferences(FmtOptions.getCurrentProfileId());
+        Preferences preferences = FmtOptions.getPreferences(null);
         preferences.putInt("labelIndent", 4);
         testSource.runModificationTask(task).commit();
         preferences.putInt("labelIndent", 0);
@@ -2872,7 +2873,7 @@ public class FormatingTest extends GeneratorTestMDRCompat {
                 workingCopy.rewrite(clazz, maker.addClassMember(clazz, method));
             }            
         };
-        Preferences preferences = FmtOptions.getPreferences(FmtOptions.getCurrentProfileId());
+        Preferences preferences = FmtOptions.getPreferences(null);
         preferences.putBoolean("spaceWithinMethodDeclParens", true);
         preferences.putBoolean("spaceWithinMethodCallParens", true);
         testSource.runModificationTask(task).commit();
@@ -2926,14 +2927,232 @@ public class FormatingTest extends GeneratorTestMDRCompat {
         preferences.putBoolean("spaceWithinMethodCallParens", false);
     }
     
+    /**
+     * Problems with code formatting and comments put in the wrong place.
+     * Regression test.
+     *
+     * http://www.netbeans.org/issues/show_bug.cgi?id=137626
+     */
+    public void test137626() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "}\n"
+            );
+        FileObject testSourceFO = FileUtil.toFileObject(testFile);
+        DataObject testSourceDO = DataObject.find(testSourceFO);
+        EditorCookie ec = (EditorCookie) testSourceDO.getCookie(EditorCookie.class);
+        final Document doc = ec.openDocument();
+        doc.putProperty(Language.class, JavaTokenId.language());
+        String content =
+            "package hierbas.del.litoral;\n" +
+            "public class Test{\n" +
+            "public void test(int i){\n" +
+            "    if(i>100)\n" +
+            "        i=100;\n" +
+            "\n" +
+            "    //Comment\n" +
+            "    System.err.println();\n" +
+            "}\n" +
+            "}\n";
+
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "\n" +
+            "    public void test(int i) {\n" +
+            "        if (i > 100) {\n" +
+            "            i = 100;\n" +
+            "        }\n" +
+            "\n" +
+            "        //Comment\n" +
+            "        System.err.println();\n" +
+            "    }\n" +
+            "}\n";
+        reformat(doc, content, golden);
+        
+        content =
+            "package hierbas.del.litoral;\n" +
+            "public class Test{\n" +
+            "public void test(int i){\n" +
+            "    if(i>100)\n" +
+            "        i=100; //Comment\n" +
+            "    System.err.println();\n" +
+            "}\n" +
+            "}\n";
+
+        golden =
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "\n" +
+            "    public void test(int i) {\n" +
+            "        if (i > 100) {\n" +
+            "            i = 100; //Comment\n" +
+            "        }\n" +
+            "        System.err.println();\n" +
+            "    }\n" +
+            "}\n";
+        reformat(doc, content, golden);
+    }
+
+    /**
+     * Unexpected new line after comment.
+     * Regression test.
+     *
+     * http://www.netbeans.org/issues/show_bug.cgi?id=131954
+     */
+    public void test131954() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "}\n"
+            );
+        FileObject testSourceFO = FileUtil.toFileObject(testFile);
+        DataObject testSourceDO = DataObject.find(testSourceFO);
+        EditorCookie ec = (EditorCookie) testSourceDO.getCookie(EditorCookie.class);
+        final Document doc = ec.openDocument();
+        doc.putProperty(Language.class, JavaTokenId.language());
+        String content =
+            "package hierbas.del.litoral;\n" +
+            "public class Test{\n" +
+            "public void test(){\n" +
+            "int a; // Uff\n" +
+            "int b;\n" +
+            "}\n" +
+            "}\n";
+
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "\n" +
+            "    public void test() {\n" +
+            "        int a; // Uff\n" +
+            "        int b;\n" +
+            "    }\n" +
+            "}\n";
+        reformat(doc, content, golden);
+    }
+    
+    /**
+     * SIOOBE when reformatting code with unclosed javadoc comment.
+     * Regression test.
+     *
+     * http://www.netbeans.org/issues/show_bug.cgi?id=135210
+     */
+    public void test135210() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "}\n"
+            );
+        FileObject testSourceFO = FileUtil.toFileObject(testFile);
+        DataObject testSourceDO = DataObject.find(testSourceFO);
+        EditorCookie ec = (EditorCookie) testSourceDO.getCookie(EditorCookie.class);
+        final Document doc = ec.openDocument();
+        doc.putProperty(Language.class, JavaTokenId.language());
+        String content =
+            "package hierbas.del.litoral;\n" +
+            "public class Test{\n" +
+            "/**\n" +
+            "*\n" +
+            "*\n" +
+            "}\n";
+
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "\n" +
+            "    /**\n" +
+            "     *\n" +
+            "     *\n" +
+            "}\n";
+        reformat(doc, content, golden);
+    }
+
+    /**
+     * Unexpected new line after comment.
+     * Regression test.
+     *
+     * http://www.netbeans.org/issues/show_bug.cgi?id=133225
+     */
+    public void test133225() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "}\n"
+            );
+        FileObject testSourceFO = FileUtil.toFileObject(testFile);
+        DataObject testSourceDO = DataObject.find(testSourceFO);
+        EditorCookie ec = (EditorCookie) testSourceDO.getCookie(EditorCookie.class);
+        final Document doc = ec.openDocument();
+        doc.putProperty(Language.class, JavaTokenId.language());
+        String content =
+            "package hierbas.del.litoral;\n" +            
+            "public class Test{\n" +
+            "    public void test() {\n" +
+            "        int i = 5;\n" +
+            "        if (i > 0)\n" +
+            "            i++;\n" +
+            "        if (i > 0)\n" +
+            "            i++;\n" +
+            "    }\n" +
+            "}\n";
+
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "public class Test{\n" +
+            "    public void test() {\n" +
+            "        int i = 5;\n" +
+            "        if (i > 0) {\n" +
+            "            i++;\n" +
+            "        }\n" +
+            "        if (i > 0)\n" +
+            "            i++;\n" +
+            "    }\n" +
+            "}\n";
+        reformat(doc, content, golden, 92, 128);
+        reformat(doc, content, golden, 92, 127);
+        
+        golden =
+            "package hierbas.del.litoral;\n" +
+            "public class Test{\n" +
+            "    public void test() {\n" +
+            "        int i = 5;\n" +
+            "        if (i > 0)\n" +
+            "            i++;\n" +
+            "        if (i > 0) {\n" +
+            "            i++;\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n";
+        reformat(doc, content, golden, 128, 163);
+        reformat(doc, content, golden, 127, 163);
+    }
+    
     private void reformat(Document doc, String content, String golden) throws Exception {
+        reformat(doc, content, golden, 0, content.length());
+    }
+    
+    private void reformat(Document doc, String content, String golden, int startOffset, int endOffset) throws Exception {
         doc.remove(0, doc.getLength());
         doc.insertString(0, content, null);
         
         Reformat reformat = Reformat.get(doc);
         reformat.lock();
         try {
-            reformat.reformat(0, doc.getLength());
+            reformat.reformat(startOffset, endOffset);
         } finally {
             reformat.unlock();
         }

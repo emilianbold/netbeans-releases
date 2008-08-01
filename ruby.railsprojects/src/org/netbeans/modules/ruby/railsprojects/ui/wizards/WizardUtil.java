@@ -54,4 +54,16 @@ final class WizardUtil {
         }
         return platform;
     }
+
+    static boolean checkWarbler(WizardDescriptor wizardDescriptor) {
+        Boolean needWarbler = (Boolean) wizardDescriptor.getProperty(NewRailsProjectWizardIterator.WAR_SUPPORT);
+        if (needWarbler == null || !needWarbler) {
+            return true;
+        }
+        RubyPlatform platform = platformFor(wizardDescriptor);
+        if (platform != null && platform.getGemManager() != null) {
+            return platform.getGemManager().isGemInstalled("warbler"); //NOI18N
+        }
+        return true;
+    }
 }

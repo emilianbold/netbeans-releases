@@ -1,13 +1,7 @@
 Manifest-Version: 1.0
-OpenIDE-Module-Specification-Version: 1.7
+OpenIDE-Module-Specification-Version: 1.8
 OpenIDE-Module-Layer: org/netbeans/modules/j2ee/sun/appsrvapi/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/j2ee/sun/appsrvapi/Bundle.properties
 OpenIDE-Module: org.netbeans.modules.j2ee.sun.appsrv/1
 OpenIDE-Module-Implementation-Version: 1
 AutoUpdate-Show-In-Client: false
-
-Name: org/netbeans/modules/j2ee/sun/ide/sunresources/resourcesloader/SunResourceDataLoader.class
-OpenIDE-Module-Class: Loader
-Install-Before: org.openide.loaders.XMLDataObject, org.netbeans.modules.xml.XMLDataObject, org.netbeans.modules.xml.core.XMLDataObject
-
-

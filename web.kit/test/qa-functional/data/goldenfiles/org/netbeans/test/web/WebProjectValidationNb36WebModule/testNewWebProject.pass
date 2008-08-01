@@ -7,7 +7,7 @@
 .+ Configuration Files 
 ..+ context.xml
 ..+ sun-web.xml
-..+ sun-web.xml
+..+ web.xml
 .+ Server Resources
 .+ Source Packages 
 ..+ <default package> 

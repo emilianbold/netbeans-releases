@@ -99,10 +99,10 @@ public class WsFromJavaPanel0 implements  WizardDescriptor.FinishablePanel<Wizar
 //        Preferences prefs = AxisUtils.getPreferences();
 //        String axisHome = prefs.get("AXIS_HOME",null); //NOI18N
 //        if (axisHome == null || axisHome.length() == 0) {
-//            wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(WsFromJavaPanel0.class, "MSG_NoAxisHome")); // NOI18N
+//            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(WsFromJavaPanel0.class, "MSG_NoAxisHome")); // NOI18N
 //            return false;
 //        } else {
-//            wizardDescriptor.putProperty("WizardPanel_errorMessage", ""); //NOI18N
+//            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, ""); //NOI18N
 //        }
         return component.dataIsValid();
     }

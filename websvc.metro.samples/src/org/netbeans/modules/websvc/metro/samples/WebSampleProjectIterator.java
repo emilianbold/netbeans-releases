@@ -112,9 +112,13 @@ public class WebSampleProjectIterator implements TemplateWizard.Iterator {
     public java.util.Set instantiate (org.openide.loaders.TemplateWizard templateWizard) throws java.io.IOException {
         File projectLocation = (File) wiz.getProperty(WizardProperties.PROJECT_DIR);
         String name = (String) wiz.getProperty(WizardProperties.NAME);
+        String serverID = (String) wiz.getProperty(WizardProperties.SERVER);
                         
         Collection<FileObject> prjLocs = null;
-        prjLocs = WebSampleProjectGenerator.createProjectFromTemplate(templateWizard.getTemplate().getPrimaryFile(), projectLocation, name);
+        prjLocs = WebSampleProjectGenerator.createProjectFromTemplate(
+                templateWizard.getTemplate().getPrimaryFile(), 
+                projectLocation, 
+                name, serverID);
         
         Set hset = new HashSet();
         for (FileObject prj : prjLocs) {
@@ -147,8 +151,8 @@ public class WebSampleProjectIterator implements TemplateWizard.Iterator {
         list = new String[] {
             NbBundle.getMessage(PanelConfigureProject.class, "LBL_NWP1_ProjectTitleName"), // NOI18N
         };
-        component.putClientProperty ("WizardPanel_contentData", list); // NOI18N
-        component.putClientProperty ("WizardPanel_contentSelectedIndex", Integer.valueOf(currentIndex)); // NOI18N
+        component.putClientProperty (WizardDescriptor.PROP_CONTENT_DATA, list); // NOI18N
+        component.putClientProperty (WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, Integer.valueOf(currentIndex)); // NOI18N
     }
     
     private FileObject getIndexFile(FileObject webRoot) {

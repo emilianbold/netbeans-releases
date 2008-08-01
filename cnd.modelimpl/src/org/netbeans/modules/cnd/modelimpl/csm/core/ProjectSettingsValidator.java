@@ -52,6 +52,7 @@ import java.util.zip.Adler32;
 import java.util.zip.Checksum;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
+import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.repository.ProjectSettingsValidatorKey;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
@@ -137,7 +138,10 @@ public class ProjectSettingsValidator {
 	}
 	Key key = new ProjectSettingsValidatorKey(csmProject.getUniqueName().toString());
 	data = (Data) RepositoryUtils.get(key);
-	assert data != null : "Can not get project settings validator data by the key " + key; //NOI18N
+        if( data == null ) {
+            data = new Data();
+            DiagnosticExceptoins.register(new IllegalStateException("Can not get project settings validator data by the key " + key)); //NOI18N
+        }
     }
     
     public boolean exists(FileImpl fileImpl) {

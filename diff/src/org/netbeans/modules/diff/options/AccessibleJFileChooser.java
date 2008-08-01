@@ -50,7 +50,7 @@ import java.awt.HeadlessException;
  *
  * @author Maros Sandor
  */
-class AccessibleJFileChooser extends JFileChooser {
+public class AccessibleJFileChooser extends JFileChooser {
 
     private final String acsd;
 

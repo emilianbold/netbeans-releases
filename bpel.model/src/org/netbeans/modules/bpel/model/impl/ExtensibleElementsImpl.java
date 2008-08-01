@@ -38,11 +38,11 @@ import org.w3c.dom.Element;
  */
 public abstract class ExtensibleElementsImpl extends BpelContainerImpl implements ExtensibleElements {
 
-    ExtensibleElementsImpl( BpelModelImpl model, Element e ) {
+    public ExtensibleElementsImpl( BpelModelImpl model, Element e ) {
         super(model, e);
     }
 
-    ExtensibleElementsImpl( BpelBuilderImpl builder, String tagName ) {
+    public ExtensibleElementsImpl( BpelBuilderImpl builder, String tagName ) {
         super(builder, tagName);
     }
 

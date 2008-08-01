@@ -137,12 +137,12 @@ public class PanelModuleDetectionVisual extends JPanel {
         File project = getProject(wizardDescriptor);
         for (Vector<String> module : modules) {
             if (isModuleForbidden(project, module.get(REL_PATH_INDEX))) {
-                wizardDescriptor.putProperty("WizardPanel_errorMessage", //NOI18N
+                wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, //NOI18N
                         getMessage("MSG_ModuleLocationAlreadyExists")); //NOI18N
                 return false;
             }
         }
-        wizardDescriptor.putProperty("WizardPanel_errorMessage", null); // NOI18N
+        wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, null); // NOI18N
         return true;
     }
     

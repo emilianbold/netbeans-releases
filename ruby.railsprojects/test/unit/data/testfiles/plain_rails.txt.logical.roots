@@ -55,6 +55,7 @@ rootFiles:
   public
   script
   spec
+  test
   unit
   vendor
   views

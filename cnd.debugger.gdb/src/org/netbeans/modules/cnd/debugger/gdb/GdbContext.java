@@ -71,15 +71,24 @@ public class GdbContext implements PropertyChangeListener {
                 gdb.data_list_changed_registers(cb);
             }
         });
-        pcs.addPropertyChangeListener(this); // used to notify sunc updates
+        pcs.addPropertyChangeListener(this); // used to notify sync updates
     }
     
-    public void invalidate() {
+    public void invalidate(boolean fireUpdates) {
         cache.clear();
+        
+        // fire updates if requested
+        if (fireUpdates) {
+            for (String propertyName : requests.keySet()) {
+                if (hasListeners(propertyName)) {
+                    pcs.firePropertyChange(propertyName, 0, 1);
+                }
+            }
+        }
     }
     
     public void update() {
-        invalidate();
+        invalidate(false);
         //request update of all properties that have listeners
         for (Map.Entry<String,Request> entry : requests.entrySet()) {
             if (hasListeners(entry.getKey())) {
@@ -101,19 +110,22 @@ public class GdbContext implements PropertyChangeListener {
         Object res = cache.get(name);
         // If it is not in cache request it and wait for context change
         if (res == null) {
+            boolean child = true;
             Object lock = waitLocks.get(name);
             if (lock == null) {
+                child = false;
                 lock = "Lock for " + name; // NOI18N
-                waitLocks.put(name, lock);
-                requests.get(name).run(true);
             }
             synchronized (lock) {
-                try {
-                    lock.wait(SYNC_UPDATE_TIMEOUT);
-                } catch (InterruptedException ie) {
+                waitLocks.put(name, lock);
+                if (child || requests.get(name).run(true)) {
+                    try {
+                        lock.wait(SYNC_UPDATE_TIMEOUT);
+                    } catch (InterruptedException ie) {
+                    }
                 }
+                waitLocks.remove(name);
             }
-            waitLocks.remove(name);
             return cache.get(name);
         }
         return res;
@@ -148,7 +160,7 @@ public class GdbContext implements PropertyChangeListener {
         return instance;
     }
     
-    private static GdbProxy getCurrentGdb() {
+    public static GdbProxy getCurrentGdb() {
         DebuggerEngine currentEngine = DebuggerManager.getDebuggerManager().getCurrentEngine();
         if (currentEngine == null) {
             return null;
@@ -162,18 +174,20 @@ public class GdbContext implements PropertyChangeListener {
     
     /////// Request
     private static abstract class Request {
-        public void run(boolean async) {
+        public boolean run(boolean async) {
             GdbProxy gdb = getCurrentGdb();
             if (gdb != null) {
                 CommandBuffer cb = null;
                 if (!async) {
-                    cb = new CommandBuffer();
+                    cb = new CommandBuffer(gdb);
                 }
                 request(cb, gdb);
                 if (cb != null) {
                     cb.waitForCompletion();
                 }
+                return true;
             }
+            return false;
         }
         
         protected abstract void request(CommandBuffer cb, GdbProxy gdb);

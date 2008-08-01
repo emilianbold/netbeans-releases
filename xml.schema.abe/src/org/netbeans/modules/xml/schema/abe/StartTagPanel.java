@@ -94,9 +94,10 @@ import org.openide.util.datatransfer.NewType;
  *
  */
 public class StartTagPanel extends TagPanel {
-    protected static final long serialVersionUID = 7526472295622776147L;
-    
+    protected static final long serialVersionUID = 7526472295622776147L;    
     private ExpandCollapseButton expandButton;
+    private Font tagNameFont;
+    
     public StartTagPanel(final ElementPanel elementPanel, InstanceUIContext context) {
         super(elementPanel, context);
         //add listener for name changes
@@ -324,6 +325,10 @@ public class StartTagPanel extends TagPanel {
      */
     public void setTagName(String value) {
         String tagName=value;
+        Font font = tagNameLabel.getFont();
+        //font = font.deriveFont((font.getStyle() | java.awt.Font.BOLD), font.getSize()+2);
+        font = font.deriveFont((font.getStyle() | java.awt.Font.PLAIN), font.getSize()+2);
+        tagNameLabel.setFont(font);
         tagNameLabel.setText(tagName);
     }
     
@@ -946,11 +951,14 @@ public class StartTagPanel extends TagPanel {
                     if(((Boolean)evt.getNewValue()).booleanValue()){
                         //set the tage name color to orange
                         //tagNameLabel.setForeground(InstanceDesignConstants.TAG_NAME_SELECTED_COLOR);
-                        Font font = tagNameLabel.getFont();
-                        font = new Font(font.getName(), Font.BOLD, font.getSize());
-                        tagNameLabel.setFont(font);
+                        if(tagNameFont == null) {
+                            Font font = tagNameLabel.getFont();
+                            //font = new Font(font.getName(), Font.BOLD, font.getSize());
+                            tagNameFont = font.deriveFont((font.getStyle() | java.awt.Font.PLAIN), font.getSize());
+                            tagNameLabel.setFont(tagNameFont);
+                        }
                         getElementPanel().repaint();
-                    }else{
+                    } else {
                         //set the tage name color to normal color
                         /*tagNameLabel.setForeground(InstanceDesignConstants.TAG_NAME_COLOR);
                         if(getElementPanel().getAXIContainer().isReadOnly(context.getAXIModel())){
@@ -960,9 +968,11 @@ public class StartTagPanel extends TagPanel {
                                 //tagNameLabel.setForeground(InstanceDesignConstants.TAG_NAME_SELECTED_COLOR);
                             }
                         }*/
-                        Font font = tagNameLabel.getFont();
-                        font = new Font(font.getName(), Font.PLAIN, font.getSize());
-                        tagNameLabel.setFont(font);
+                        if(tagNameFont == null) {
+                            Font font = tagNameLabel.getFont();
+                            font = new Font(font.getName(), Font.PLAIN, font.getSize());
+                            tagNameLabel.setFont(font);
+                        }
                         getElementPanel().repaint();
                     }
                     getEndSlash().setForeground(tagNameLabel.getForeground());

@@ -67,7 +67,7 @@ public class AstNodeUtils {
             return null;
         }
 
-        if (astOffset >= so && astOffset <= eo && node.children().isEmpty()) {
+        if (astOffset >= so && astOffset < eo && node.children().isEmpty()) {
             //if the node matches and has no children we found it
             return node;
         }
@@ -75,7 +75,7 @@ public class AstNodeUtils {
         for (AstNode child : node.children()) {
             int ch_so = child.startOffset();
             int ch_eo = child.endOffset();
-            if (astOffset >= ch_so && astOffset <= ch_eo) {
+            if (astOffset >= ch_so && astOffset < ch_eo) {
                 //the child is or contains the searched node
                 return findDescendant(child, astOffset);
             }

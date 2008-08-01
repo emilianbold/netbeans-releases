@@ -55,16 +55,23 @@ made subject to such option by the copyright holder.
     
     <target name="-init-user">
         <property file="${user.build.properties.file}"/>
-        <condition property="is-jdk-1.5">
-            <equals arg1="${ant.java.version}" arg2="1.5"/>
+        <condition property="isMacOs">
+            <os family="mac"/>
         </condition>
+        <condition property="jdk.home" value="${java.home}/" else="${java.home}/../">
+            <istrue value="${isMacOs}"/>
+        </condition>
+        <condition property="platform.home" value="${platforms.JDK_1.5.home}" else="${jdk.home}">
+            <isset property="platforms.JDK_1.5.home"/>
+        </condition>
+        <property name="platform.javac" value="${platform.home}/bin/javac"/>
     </target>
     
     <target name="-init-xjc" depends="-init-user">
         <mkdir dir="${jaxb.base}/build"/>
         <mkdir dir="${jaxb.base}/src"/>
         <taskdef name="xjc" classname="com.sun.tools.xjc.XJCTask">
-            <classpath path="${java.home}/../lib/tools.jar:${libs.jaxws21.classpath}"/>
+            <classpath path="${platform.home}/lib/tools.jar:${netbeans.dest.dir}/${nb.cluster.ide.dir}/modules/ext/jaxb/jaxb-xjc.jar:${libs.jaxb.classpath}"/>
         </taskdef>
     </target>
     
@@ -78,8 +85,9 @@ made subject to such option by the copyright holder.
         <mkdir dir="${jaxb.base}/build"/>
         <javac srcdir="${jaxb.base}/src" 
                destdir="${jaxb.base}/build" 
-               classpath="${java.home}/../lib/tools.jar:${libs.jaxws21.classpath}" 
-               debug="on" source="1.5" fork="true">
+               classpath="${platform.home}/lib/tools.jar:${libs.jaxb.classpath}" 
+               executable="${platform.javac}"
+               debug="on" source="1.5" fork="true" verbose="true">               
         </javac>
     </target>
     

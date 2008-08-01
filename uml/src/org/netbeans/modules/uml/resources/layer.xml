@@ -45,9 +45,9 @@ made subject to such option by the copyright holder.
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
     <folder name="About">
-        <folder name="Licenses">
+        <!--<folder name="Licenses">
             <file name="license" url="license.html"/>
-        </folder>
+        </folder>-->
     </folder>
     <folder name="Services">
         <folder name="JavaHelp">
@@ -55,12 +55,14 @@ made subject to such option by the copyright holder.
                 <attr name="position" intvalue="1500"/>
             </file> 
         </folder>
+        <!--
         <folder name="MIMEResolver">
             <file name="UMLMimeTypeResolver.xml" url="UMLMimeTypeResolver.xml" >
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.Bundle"/>
                 <attr name="position" intvalue="205"/>
             </file>
         </folder>
+        -->
     </folder>    
     <folder name="contextmenu">
         <folder name="uml">
@@ -69,28 +71,28 @@ made subject to such option by the copyright holder.
             <!-- conover - replaced with a new version 
             <file name="org.netbeans.modules.uml.ui.addins.reguiaddin.GenerateCodeAction.instance"/>
             -->
-            <file name="org.netbeans.modules.uml.ui.addins.reguiaddin.REOperationAction.instance"/>
-            <file name="org.netbeans.modules.uml.ui.addins.reguiaddin.RedefineOperationsAction.instance"/>
+            <!--file name="org.netbeans.modules.uml.ui.addins.reguiaddin.REOperationAction.instance"/-->
+            <!--file name="org.netbeans.modules.uml.ui.addins.reguiaddin.RedefineOperationsAction.instance"/-->
             </folder>
             <folder name="diagram">
             <file name="org.netbeans.modules.uml.ui.addins.associateDialog.AssociateAction.instance"/>
             <!-- conover - replaced with a new version 
             <file name="org.netbeans.modules.uml.ui.addins.reguiaddin.GenerateCodeAction.instance"/>
             -->
-            <file name="org.netbeans.modules.uml.ui.addins.reguiaddin.REOperationAction.instance"/>
-            <file name="org.netbeans.modules.uml.ui.addins.reguiaddin.RedefineOperationsAction.instance"/>
+            <!--file name="org.netbeans.modules.uml.ui.addins.reguiaddin.REOperationAction.instance"/-->
+            <!--file name="org.netbeans.modules.uml.ui.addins.reguiaddin.RedefineOperationsAction.instance"/-->
             </folder>
         </folder>
     </folder>
     <folder name="Actions">
         <folder name="Modeling">
             <file name="org.netbeans.modules.uml.ui.addins.associateDialog.AssociateAction.instance"/>
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.ui.addins.reguiaddin.Bundle"/>     
+            <!--<attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.ui.addins.reguiaddin.Bundle"/> -->    
             <!-- conover - replaced with a new version 
             <file name="org.netbeans.modules.uml.ui.addins.reguiaddin.GenerateCodeAction.instance"/>
             -->
-            <file name="org.netbeans.modules.uml.ui.addins.reguiaddin.REOperationAction.instance"/>
-            <file name="org.netbeans.modules.uml.ui.addins.reguiaddin.RedefineOperationsAction.instance"/>
+            <!--file name="org.netbeans.modules.uml.ui.addins.reguiaddin.REOperationAction.instance"/-->
+            <!--file name="org.netbeans.modules.uml.ui.addins.reguiaddin.RedefineOperationsAction.instance"/-->
         </folder>
   </folder>
 </filesystem>

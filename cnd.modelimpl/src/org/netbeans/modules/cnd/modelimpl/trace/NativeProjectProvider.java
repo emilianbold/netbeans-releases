@@ -91,6 +91,13 @@ public final class NativeProjectProvider {
 	}
     }
     
+    public static void setUserMacros(NativeProject nativeProject, List<String> usrMacros) {
+	if( nativeProject instanceof NativeProjectImpl) {
+	    ((NativeProjectImpl) nativeProject).usrMacros.clear();
+            ((NativeProjectImpl) nativeProject).usrMacros.addAll(usrMacros);
+	}
+    }
+    
     private static final class NativeProjectImpl implements NativeProject {
 	
 	private final List<String> sysIncludes;

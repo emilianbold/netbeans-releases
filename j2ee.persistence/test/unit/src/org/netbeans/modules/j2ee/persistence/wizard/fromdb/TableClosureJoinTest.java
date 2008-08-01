@@ -79,7 +79,7 @@ public class TableClosureJoinTest extends TestCase {
         tablesAndRefs.put("ROOM_STUDENT", new HashSet(Arrays.asList(new String[] { "STUDENT", "ROOM" })));
         tablesAndRefs.put("FOO_ROOM_STUDENT", new HashSet(Arrays.asList(new String[] { "FOO", "ROOM_STUDENT" })));
 
-        provider = new TableProviderImpl(tablesAndRefs);
+        provider = new TableProviderImpl(null, null, tablesAndRefs);
         closure = new TableClosure(provider);
     }
 

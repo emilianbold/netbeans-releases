@@ -47,6 +47,8 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.swing.text.BadLocationException;
@@ -55,12 +57,12 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
+import org.netbeans.modules.j2ee.persistence.wizard.jpacontroller.JpaControllerUtil;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigModel;
 import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean;
 import org.netbeans.modules.web.jsf.palette.JSFPaletteUtilities;
-import org.netbeans.modules.web.jsf.wizards.JSFClientGenerator;
 import org.openide.filesystems.FileObject;
 import org.openide.text.ActiveEditorDrop;
 
@@ -71,8 +73,8 @@ import org.openide.text.ActiveEditorDrop;
 public final class JsfTable implements ActiveEditorDrop {
     
     private static String [] BEGIN = {
-        "<h:form>\n <h:dataTable value=\"#'{'{0}'}'\" var=\"item\">\n",
-        "<h:form>\n <h1><h:outputText value=\"List\"/></h1>\n <h:dataTable value=\"#'{'{0}'}'\" var=\"item\">\n",
+        "<h:form>\n <h:dataTable value=\"#'{'{0}'}'\" var=\"{1}\">\n",
+        "<h:form>\n <h1><h:outputText value=\"List\"/></h1>\n <h:dataTable value=\"#'{'{0}'}'\" var=\"{1}\">\n",
     };
     private static String [] END = {
         "</h:dataTable>\n </h:form>\n",
@@ -80,10 +82,8 @@ public final class JsfTable implements ActiveEditorDrop {
     };
     private static String [] ITEM = {
         "",
-        "<h:column>\n <f:facet name=\"header\">\n <h:outputText value=\"{0}\"/>\n </f:facet>\n <h:outputText value=\"#'{'item.{2}'}'\"/>\n</h:column>\n",
-        "<h:column>\n <f:facet name=\"header\">\n <h:outputText value=\"{0}\"/>\n </f:facet>\n <h:outputText value=\"#'{'item.{2}'}'\">\n <f:convertDateTime type=\"{3}\" pattern=\"{4}\" />\n</h:outputText>\n</h:column>\n"
-//        "<h:column>\n <f:facet name=\"header\">\n <h:outputText value=\"{0}\"/>\n </f:facet>\n"
-//                + "<h:commandLink action=\"#'{'{4}'}'\" value=\"#'{'item.{2}'}'\"/>\n </h:column>\n",
+        "<h:column>\n <f:facet name=\"header\">\n <h:outputText value=\"{0}\"/>\n </f:facet>\n <h:outputText value=\" #'{'{3}.{2}'}'\"/>\n</h:column>\n",
+        "<h:column>\n <f:facet name=\"header\">\n <h:outputText value=\"{0}\"/>\n </f:facet>\n <h:outputText value=\"#'{'{5}.{2}'}'\">\n <f:convertDateTime type=\"{3}\" pattern=\"{4}\" />\n</h:outputText>\n</h:column>\n"
     };
     
     private String variable = "";
@@ -121,7 +121,7 @@ public final class JsfTable implements ActiveEditorDrop {
         if (surroundWithFView) {
             stringBuffer.append("<f:view>\n");
         }
-        stringBuffer.append(MessageFormat.format(BEGIN [formType], new Object [] {variable}));
+        stringBuffer.append(MessageFormat.format(BEGIN [formType], new Object [] {variable, "item"})); //NOI18N
         
         FileObject targetJspFO = JsfForm.getFO(target);
         JavaSource javaSource = JavaSource.create(JsfForm.createClasspathInfo(targetJspFO));
@@ -129,7 +129,7 @@ public final class JsfTable implements ActiveEditorDrop {
             public void run(CompilationController controller) throws IOException {
                 controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                 TypeElement typeElement = controller.getElements().getTypeElement(bean);
-                createTable(controller, typeElement, variable, stringBuffer, "", null);
+                createTable(controller, typeElement, variable, stringBuffer, "", null, null);
             }
         }, true);
         stringBuffer.append(END [formType]);
@@ -143,39 +143,58 @@ public final class JsfTable implements ActiveEditorDrop {
      *  it will be formated using {0} = iterator variable
      */
     public static void createTable(CompilationController controller, TypeElement bean, String variable, StringBuffer stringBuffer, 
-            String commands, String setupDetail) {
+            String commands, JpaControllerUtil.EmbeddedPkSupport embeddedPkSupport, String tableVarName) {
+        if (tableVarName == null) {
+            tableVarName = "item"; //NOI18N
+        }
         int formType = 1;
-        ExecutableElement[] methods = JsfForm.getEntityMethods(bean);
-        boolean fieldAccess = JsfForm.isFieldAccess(bean);
         TypeMirror dateTypeMirror = controller.getElements().getTypeElement("java.util.Date").asType();
-        for (ExecutableElement method : methods) {
-            String methodName = method.getSimpleName().toString();
-            if (methodName.startsWith("get")) {
-                int isRelationship = JsfForm.isRelationship(controller, method, fieldAccess);
-                String name = methodName.substring(3);
-                String propName = name.substring(0,1).toLowerCase() + name.substring(1);
-                if (setupDetail != null && JsfForm.isId(controller, method, fieldAccess)) {
-                    String managedBeanName = JSFClientGenerator.getManagedBeanName(bean.getSimpleName().toString());
-                    stringBuffer.append(MessageFormat.format(ITEM [1], new Object [] {name, variable, propName}));
-                } else if (controller.getTypes().isSameType(dateTypeMirror, method.getReturnType())) {
-                    //param 3 - temporal, param 4 - date/time format
-                    String temporal = JsfForm.getTemporal(controller, method, fieldAccess);
-                    if (temporal == null) {
-                        stringBuffer.append(MessageFormat.format(ITEM [formType], new Object [] {name, variable, propName}));
-                    } else {
-                        stringBuffer.append(MessageFormat.format(ITEM [2], new Object [] {name, variable, propName, temporal, JsfForm.getDateTimeFormat(temporal)}));
+        if (bean != null) {
+            ExecutableElement[] methods = JpaControllerUtil.getEntityMethods(bean);
+            boolean fieldAccess = JpaControllerUtil.isFieldAccess(bean);
+            for (ExecutableElement method : methods) {
+                String methodName = method.getSimpleName().toString();
+                if (methodName.startsWith("get")) {
+                    int isRelationship = JpaControllerUtil.isRelationship(controller, method, fieldAccess);
+                    String name = methodName.substring(3);
+                    String propName = JpaControllerUtil.getPropNameFromMethod(methodName);
+                    if (JsfForm.isId(controller, method, fieldAccess)) {
+                        TypeMirror rType = method.getReturnType();
+                        if (TypeKind.DECLARED == rType.getKind()) {
+                            DeclaredType rTypeDeclared = (DeclaredType)rType;
+                            TypeElement rTypeElement = (TypeElement) rTypeDeclared.asElement();
+                            if (JpaControllerUtil.isEmbeddableClass(rTypeElement)) {
+                                if (embeddedPkSupport == null) {
+                                    embeddedPkSupport = new JpaControllerUtil.EmbeddedPkSupport();
+                                }
+                                for (ExecutableElement pkMethod : embeddedPkSupport.getPkAccessorMethods(controller, bean)) {
+                                    if (!embeddedPkSupport.isRedundantWithRelationshipField(controller, bean, pkMethod)) {
+                                        String pkMethodName = pkMethod.getSimpleName().toString();
+                                        String pkPropTitle = pkMethodName.substring(3);
+                                        String pkPropName = propName + "." + JpaControllerUtil.getPropNameFromMethod(pkMethodName);
+                                        stringBuffer.append(MessageFormat.format(ITEM [1], new Object [] {pkPropTitle, null, pkPropName, tableVarName}));
+                                    }
+                                }
+                            }
+                            else {
+                                stringBuffer.append(MessageFormat.format(ITEM [1], new Object [] {name, variable, propName, tableVarName}));
+                            }
+                        }
+                    } else if (controller.getTypes().isSameType(dateTypeMirror, method.getReturnType())) {
+                        //param 3 - temporal, param 4 - date/time format
+                        String temporal = JsfForm.getTemporal(controller, method, fieldAccess);
+                        if (temporal == null) {
+                            stringBuffer.append(MessageFormat.format(ITEM [formType], new Object [] {name, variable, propName, tableVarName}));
+                        } else {
+                            stringBuffer.append(MessageFormat.format(ITEM [2], new Object [] {name, variable, propName, temporal, JsfForm.getDateTimeFormat(temporal), tableVarName}));
+                        }
+                    } else if (isRelationship == JpaControllerUtil.REL_NONE || isRelationship == JpaControllerUtil.REL_TO_ONE) {
+                        stringBuffer.append(MessageFormat.format(ITEM [formType], new Object [] {name, variable, propName, tableVarName}));
                     }
-                } else if (isRelationship == JsfForm.REL_NONE || isRelationship == JsfForm.REL_TO_ONE) {
-                    stringBuffer.append(MessageFormat.format(ITEM [formType], new Object [] {name, variable, propName}));
-                    //links to related objects -- does not work correctly for composite IDs
-                    //                } else if (isRelationship == JsfForm.REL_TO_ONE) {
-                    //                    String managedBeanName = JSFClientGenerator.getManagedBeanName(JSFClientGenerator.simpleClassName(methods[i].getType().getName()));
-                    //                    String relatedIdProp = JSFClientGenerator.getPropNameFromMethod(JsfForm.getIdGetter(fieldAccess, (JavaClass) methods[i].getType()).getName());
-                    //                    sb.append(MessageFormat.format(ITEM [3], new Object [] {name, variable, propName + "." + relatedIdProp , relatedIdProp, managedBeanName + "." + setupDetail}));
                 }
             }
         }
-        stringBuffer.append(MessageFormat.format(commands, new Object [] {"item"}));
+        stringBuffer.append(MessageFormat.format(commands, new Object [] {tableVarName}));
     }
     
     public ManagedBean[] getManagedBeanNames(JTextComponent target) {

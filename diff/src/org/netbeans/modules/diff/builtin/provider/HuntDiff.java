@@ -45,35 +45,37 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
+
 import org.netbeans.api.diff.Difference;
 
+/**
+ * Internal Diff algorithm.
+ * 
+ * @author Maros Sandor
+ * @author Martin Entlicher
+ */
+class HuntDiff {
 
-public class HuntDiff {
-
+    private static final Pattern spaces = Pattern.compile("(\\s+)");
+    
     private HuntDiff() {
     }
 
     /**
      * @param lines1 array of lines from the first source
      * @param lines2 array of lines from the second source
-     * @param ignoreWhitespace true to ignore leading and trailing whitespace when computing diff, false to also find differences in whitespace
+     * @param options additional paremeters for the diff algorithm
      * @return computed diff
      */ 
-    public static Difference[] diff(String[] lines1, String[] lines2, boolean ignoreWhitespace) {
+    public static Difference[] diff(String[] lines1, String[] lines2, BuiltInDiffProvider.Options options) {
         int m = lines1.length;
         int n = lines2.length;
-        String [] lines1_original = lines1;
-        String [] lines2_original = lines2;
-        if (ignoreWhitespace) {
-            lines1 = new String[lines1_original.length];
-            lines2 = new String[lines2_original.length];
-            for (int i = 0 ; i < lines1_original.length; i++) {
-                lines1[i] = lines1_original[i].trim();
-            }
-            for (int i = 0 ; i < lines2_original.length; i++) {
-                lines2[i] = lines2_original[i].trim();
-            }
-        }
+        String [] lines1_original = copy(lines1);
+        String [] lines2_original = copy(lines2);
+        applyDiffOptions(lines1, lines2, options);
+
         Line[] l2s = new Line[n + 1];
         // In l2s we have sorted lines of the second file <1, n>
         for (int i = 1; i <= n; i++) {
@@ -84,11 +86,6 @@ public class HuntDiff {
             public int compare(Line l1, Line l2) {
                 return l1.line.compareTo(l2.line);
             }
-
-            public boolean equals(Object obj) {
-                return obj == this;
-            }
-            
         });
         
         int[] equvalenceLines = new int[n+1];
@@ -125,9 +122,63 @@ public class HuntDiff {
         
         List<Difference> differences = getDifferences(J, lines1_original, lines2_original);
         cleanup(differences);
-        return differences.toArray(new Difference[0]);
+        return differences.toArray(new Difference[differences.size()]);
     }
     
+    private static String[] copy(String[] strings) {
+        String [] copy = new String[strings.length];
+        for (int i = 0; i < strings.length; i++) {
+            copy[i] = strings[i];
+        }
+        return copy;
+    }
+
+    private static void applyDiffOptions(String[] lines1, String[] lines2, BuiltInDiffProvider.Options options) {
+        if (options.ignoreLeadingAndtrailingWhitespace && options.ignoreInnerWhitespace) {
+            for (int i = 0; i < lines1.length; i++) {
+                lines1[i] = spaces.matcher(lines1[i]).replaceAll("");
+            }
+            for (int i = 0; i < lines2.length; i++) {
+                lines2[i] = spaces.matcher(lines2[i]).replaceAll("");
+            }
+        } else if (options.ignoreLeadingAndtrailingWhitespace) {
+            for (int i = 0; i < lines1.length; i++) {
+                lines1[i] = lines1[i].trim();
+            }
+            for (int i = 0; i < lines2.length; i++) {
+                lines2[i] = lines2[i].trim();
+            }
+        } else if (options.ignoreInnerWhitespace) {
+            for (int i = 0; i < lines1.length; i++) {
+                replaceInnerSpaces(lines1, i);
+            }
+            for (int i = 0; i < lines2.length; i++) {
+                replaceInnerSpaces(lines2, i);
+            }
+        }
+        if (options.ignoreCase) {
+            for (int i = 0 ; i < lines1.length; i++) {
+                lines1[i] = lines1[i].toUpperCase();
+            }
+            for (int i = 0 ; i < lines2.length; i++) {
+                lines2[i] = lines2[i].toUpperCase();
+            }
+        }
+    }
+
+    private static void replaceInnerSpaces(String[] strings, int idx) {
+        Matcher m = spaces.matcher(strings[idx]);
+        StringBuffer sb = new StringBuffer();
+        while (m.find()) {
+            if (m.start() == 0 || m.end() == strings[idx].length()) {
+                m.appendReplacement(sb, "$1");
+            } else {
+                m.appendReplacement(sb, "");
+            }
+        }
+        strings[idx] = sb.toString();
+    }
+
     private static int findAssoc(String line1, Line[] l2s, boolean[] equivalence) {
         int idx = binarySearch(l2s, line1, 1, l2s.length - 1);
         if (idx < 1) {
@@ -201,7 +252,7 @@ public class HuntDiff {
                     break;
                 }
             }
-            if (equivalence[p] == true) {
+            if (equivalence[p]) {
                 break;
             } else {
                 p++;

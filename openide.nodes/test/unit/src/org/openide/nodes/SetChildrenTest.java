@@ -193,8 +193,8 @@ public class SetChildrenTest extends NbTestCase {
         // printEvents( nlRoot.getEvents() );
         
         GoldenEvent[] rootGoldenEvents = new GoldenEvent[] {
-            new GoldenEvent(root, Node.PROP_LEAF, Boolean.FALSE, Boolean.TRUE),
             new GoldenEvent(root, false, testNodes[0], new int[] { 0, 1 }),
+            new GoldenEvent(root, Node.PROP_LEAF, Boolean.FALSE, Boolean.TRUE),
         };
         
         GoldenEvent.assertEvents ( nlRoot.getEvents(), rootGoldenEvents, null );
@@ -477,18 +477,22 @@ public class SetChildrenTest extends NbTestCase {
         }        
                 
         public void nodeDestroyed(NodeEvent evt) {
+            ChildFactoryTest.assertNodeAndEvent(evt);
             events.add( evt );
         }        
                 
         public void childrenReordered(NodeReorderEvent evt) {
+            ChildFactoryTest.assertNodeAndEvent(evt);
             events.add( evt );
         }
                 
         public void childrenRemoved(NodeMemberEvent evt) {
+            ChildFactoryTest.assertNodeAndEvent(evt);
             events.add( evt );
         }
                 
         public void childrenAdded(NodeMemberEvent evt) {
+            ChildFactoryTest.assertNodeAndEvent(evt);
             events.add( evt );            
         }
         

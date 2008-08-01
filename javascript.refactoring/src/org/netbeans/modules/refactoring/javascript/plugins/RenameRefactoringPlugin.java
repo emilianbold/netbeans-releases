@@ -82,6 +82,7 @@ import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.api.lexer.TokenUtilities;
 import org.netbeans.napi.gsfret.source.ClasspathInfo;
 import org.netbeans.napi.gsfret.source.CompilationController;
 import org.netbeans.napi.gsfret.source.ModificationResult;
@@ -277,18 +278,19 @@ public class RenameRefactoringPlugin extends JsRefactoringPlugin {
         return preCheckProblem;
     }
     
-    private static final String getCannotRename(FileObject r) {
-        return new MessageFormat(NbBundle.getMessage(RenameRefactoringPlugin.class, "ERR_CannotRenameFile")).format(new Object[] {r.getNameExt()});
-    }
+//    private static final String getCannotRename(FileObject r) {
+//        return new MessageFormat(NbBundle.getMessage(RenameRefactoringPlugin.class, "ERR_CannotRenameFile")).format(new Object[] {r.getNameExt()});
+//    }
     
     protected Problem fastCheckParameters(CompilationController info) throws IOException {
         Problem fastCheckProblem = null;
         info.toPhase(org.netbeans.napi.gsfret.source.Phase.RESOLVED);
         ElementKind kind = treePathHandle.getKind();
-//        
         String newName = refactoring.getNewName();
-//        String oldName = element.getSimpleName().toString();
         String oldName = treePathHandle.getSimpleName();
+        if (oldName == null) {
+            return new Problem(true, "Cannot determine name");
+        }
         
         if (oldName.equals(newName)) {
             boolean nameNotChanged = true;
@@ -862,9 +864,13 @@ public class RenameRefactoringPlugin extends JsRefactoringPlugin {
                     String primaryCategory = id.primaryCategory();
                     if ("comment".equals(primaryCategory) || "block-comment".equals(primaryCategory)) { // NOI18N
                         // search this comment
-                        String text = token.text().toString();
-                        int index = text.indexOf(oldName);
+                        CharSequence tokenText = token.text();
+                        if (tokenText == null || oldName == null) {
+                            continue;
+                        }
+                        int index = TokenUtilities.indexOf(tokenText, oldName);
                         if (index != -1) {
+                            String text = tokenText.toString();
                             // TODO make sure it's its own word. Technically I could
                             // look at identifier chars like "_" here but since they are
                             // used for other purposes in comments, consider letters
@@ -1040,7 +1046,8 @@ public class RenameRefactoringPlugin extends JsRefactoringPlugin {
                 }
                 break;
             case Token.NAME:
-                if (node.getParentNode() != null && node.getParentNode().getType() == Token.CALL) {
+                if (node.getParentNode() != null && node.getParentNode().getType() == Token.CALL &&
+                        node.getParentNode().getFirstChild() == node) {
                     // Ignore calls
                     break;
                 }

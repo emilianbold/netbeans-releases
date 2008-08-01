@@ -41,7 +41,10 @@
 package org.openide.filesystems;
 
 import java.util.List;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
 
 
 /**
@@ -90,38 +93,75 @@ class FCLSupport {
         }
     }
 
-    final static void dispatchEvent(FileChangeListener fcl, FileEvent fe, Op operation) {
-        try {
-            switch (operation) {
-                case DATA_CREATED:
-                    fcl.fileDataCreated(fe);
-                    break;
-                case FOLDER_CREATED:
-                    fcl.fileFolderCreated(fe);
-                    break;
-                case FILE_CHANGED:
-                    fcl.fileChanged(fe);
-                    break;
-                case FILE_DELETED:
-                    fcl.fileDeleted(fe);
-                    break;
-                case FILE_RENAMED:
-                    fcl.fileRenamed((FileRenameEvent) fe);
-                    break;
-                case ATTR_CHANGED:
-                    fcl.fileAttributeChanged((FileAttributeEvent) fe);
-                    break;
-                default:
-                    throw new AssertionError(operation);
-            }
-        } catch (RuntimeException x) {
-            Exceptions.printStackTrace(x);
-        }
+    final static void dispatchEvent(final FileChangeListener fcl, final FileEvent fe, final Op operation) {
+        boolean async = fe.isAsynchronous();
+        DispatchEventWrapper dw = new DispatchEventWrapper(fcl, fe, operation);
+        dw.dispatchEvent(async);
     }
-
+    
     /** @return true if there is a listener
     */
     synchronized final boolean hasListeners() {
         return listeners != null && listeners.hasListeners();
     }
+    
+    private static class DispatchEventWrapper {
+        final FileChangeListener fcl;
+        final FileEvent fe;
+        final Op operation;
+        DispatchEventWrapper(final FileChangeListener fcl, final FileEvent fe, final Op operation) {
+            this.fcl =fcl;
+            this.fe =fe;
+            this.operation =operation;
+        }
+        void dispatchEvent(boolean async) {
+            if (async) {
+                q.offer(this);
+                task.schedule(300);
+            } else {
+                dispatchEventImpl(fcl, fe, operation);
+            }
+        }        
+        
+        private void dispatchEventImpl(FileChangeListener fcl, FileEvent fe, Op operation) {
+            try {
+                switch (operation) {
+                    case DATA_CREATED:
+                        fcl.fileDataCreated(fe);
+                        break;
+                    case FOLDER_CREATED:
+                        fcl.fileFolderCreated(fe);
+                        break;
+                    case FILE_CHANGED:
+                        fcl.fileChanged(fe);
+                        break;
+                    case FILE_DELETED:
+                        fcl.fileDeleted(fe);
+                        break;
+                    case FILE_RENAMED:
+                        fcl.fileRenamed((FileRenameEvent) fe);
+                        break;
+                    case ATTR_CHANGED:
+                        fcl.fileAttributeChanged((FileAttributeEvent) fe);
+                        break;
+                    default:
+                        throw new AssertionError(operation);
+                }
+            } catch (RuntimeException x) {
+                Exceptions.printStackTrace(x);
+            }
+        }
+        
+    }
+    private static RequestProcessor RP = new RequestProcessor("Async FileEvent dispatcher"); // NOI18N
+    private static final Queue<DispatchEventWrapper> q = new ConcurrentLinkedQueue<DispatchEventWrapper>();
+    private static RequestProcessor.Task task = RP.create(new Runnable() {
+        public void run() {
+            DispatchEventWrapper dw = q.poll();
+            while (dw != null) {
+                dw.dispatchEvent(false);
+                dw = q.poll();
+            }
+        }
+    });           
 }

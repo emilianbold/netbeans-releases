@@ -81,7 +81,6 @@ import org.openide.loaders.*;
 import org.openide.filesystems.*;
 import org.openide.nodes.*;
 import org.openide.xml.XMLUtil;
-import org.openide.actions.*;
 import org.openide.util.Utilities;
 import org.openide.util.NbBundle;
 import org.openide.ErrorManager;
@@ -262,14 +261,11 @@ public class PaletteItemDataObject extends MultiDataObject {
     /** DataLoader for the palette item files. */
     public static final class PaletteItemDataLoader extends UniFileLoader {
         
-        static final String ITEM_EXT = "comp_palette_item"; // NOI18N
+        //static final String ITEM_EXT = "comp_palette_item"; // NOI18N
         
         PaletteItemDataLoader() {
             super("org.netbeans.modules.visualweb.palette.PaletteItemDataObject"); // NOI18N
-            
-            ExtensionList ext = new ExtensionList();
-            ext.addExtension(ITEM_EXT);
-            setExtensions(ext);
+            getExtensions().addMimeType("text/x-comp-palette+xml");
         }
         
         /** Gets default display name. Overides superclass method. */
@@ -465,7 +461,7 @@ public class PaletteItemDataObject extends MultiDataObject {
   	    UI_LOG.log(rec);
 
             // XXX NB#82645, when the issue is fixed, remove this.
-            hackExplorerDnD(this, t);
+            //hackExplorerDnD(this, t);
             
             return t;
             
@@ -686,15 +682,15 @@ public class PaletteItemDataObject extends MultiDataObject {
     //////////////////////
     // >>> Hack workaround.
     /** XXX Workaround of NB #82645. */
-    private static void hackExplorerDnD(ItemNode itemNode, Transferable trans) {
-        Object explorerDnDManager = getExplorerDnDManager();
-        if (explorerDnDManager != null) {
-            setNodeAllowedActions(explorerDnDManager, DnDConstants.ACTION_MOVE);
-            setDraggedTransferable(explorerDnDManager, trans, true);
-            setDraggedNodes(explorerDnDManager, new Node[] {itemNode});
-            setDnDActive(explorerDnDManager, true);
-        }
-    }
+//    private static void hackExplorerDnD(ItemNode itemNode, Transferable trans) {
+//        Object explorerDnDManager = getExplorerDnDManager();
+//        if (explorerDnDManager != null) {
+//            setNodeAllowedActions(explorerDnDManager, DnDConstants.ACTION_MOVE);
+//            setDraggedTransferable(explorerDnDManager, trans, true);
+//            setDraggedNodes(explorerDnDManager, new Node[] {itemNode});
+//            setDnDActive(explorerDnDManager, true);
+//        }
+//    }
     
     private static void setNodeAllowedActions(Object explorerDnDManager, int actions) {
         invokeOnExplorerDnDManager(explorerDnDManager,

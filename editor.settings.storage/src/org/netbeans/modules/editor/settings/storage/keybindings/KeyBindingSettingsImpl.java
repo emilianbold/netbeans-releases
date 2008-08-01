@@ -159,28 +159,8 @@ public final class KeyBindingSettingsImpl extends KeyBindingSettingsFactory {
      * @return List of {@link MultiKeyBinding}
      */
     public List<MultiKeyBinding> getKeyBindings(String profile) {
-        init ();
-        
-        // 1) get real profile
 	profile = getInternalKeymapProfile(profile);
-        
-        Map<Collection<KeyStroke>, MultiKeyBinding> allShortcuts = new HashMap<Collection<KeyStroke>, MultiKeyBinding>();
-
-        // Add base shortcuts
-        if (baseKBS != null) {
-            Map<Collection<KeyStroke>, MultiKeyBinding> baseShortcuts = baseKBS.getShortcuts(profile, false);
-            allShortcuts.putAll(baseShortcuts);
-        }
-
-        // Add local shortcuts
-        Map<Collection<KeyStroke>, MultiKeyBinding> localShortcuts = getShortcuts(profile, false);
-        allShortcuts.putAll(localShortcuts);
-        
-        // Prepare the result
-        List<MultiKeyBinding> result = new ArrayList<MultiKeyBinding>(allShortcuts.values());
-        log ("getKeyBindings", result);
-        
-	return Collections.unmodifiableList(result);
+        return Collections.unmodifiableList(new ArrayList<MultiKeyBinding>(getShortcuts(profile, false).values()));
     }
 
     private Map<Collection<KeyStroke>, MultiKeyBinding> getShortcuts(String profile, boolean defaults) {
@@ -287,21 +267,42 @@ public final class KeyBindingSettingsImpl extends KeyBindingSettingsFactory {
     }
 
     public Object createInstanceForLookup() {
-        List<MultiKeyBinding> keyB = getKeyBindings();
-        return new Immutable(new ArrayList<MultiKeyBinding>(keyB));
-    }
-
-    
-    private static class Listener extends WeakReference<KeyBindingSettingsImpl> 
-    implements PropertyChangeListener, Runnable {
-        private KeyBindingSettingsFactory      baseKBS;
+        init ();
         
-        Listener (
-            KeyBindingSettingsImpl      kb,
-            KeyBindingSettingsFactory          baseKBS
+        // 1) get real profile
+	String profile = getInternalKeymapProfile(EditorSettingsImpl.getInstance().getCurrentKeyMapProfile());
+        
+        Map<Collection<KeyStroke>, MultiKeyBinding> allShortcuts = new HashMap<Collection<KeyStroke>, MultiKeyBinding>();
+
+        // Add base shortcuts
+        if (baseKBS != null) {
+            Map<Collection<KeyStroke>, MultiKeyBinding> baseShortcuts = baseKBS.getShortcuts(profile, false);
+            allShortcuts.putAll(baseShortcuts);
+        }
+
+        // Add local shortcuts
+        Map<Collection<KeyStroke>, MultiKeyBinding> localShortcuts = getShortcuts(profile, false);
+        allShortcuts.putAll(localShortcuts);
+        
+        // Prepare the result
+        List<MultiKeyBinding> result = new ArrayList<MultiKeyBinding>(allShortcuts.values());
+        
+        return new Immutable(result);
+    }
+    
+    private static final class Listener extends WeakReference<KeyBindingSettingsImpl> implements PropertyChangeListener, Runnable {
+        
+        private final KeyBindingSettingsFactory baseKBS;
+        private final EditorSettingsStorage<Collection<KeyStroke>, MultiKeyBinding> storage;
+        
+        public Listener (
+            KeyBindingSettingsImpl kb,
+            KeyBindingSettingsFactory baseKBS
         ) {
             super(kb, Utilities.activeReferenceQueue());
             this.baseKBS = baseKBS;
+            this.storage = EditorSettingsStorage.get(KeyMapsStorage.ID);
+
             addListeners ();
         }
         
@@ -317,13 +318,17 @@ public final class KeyBindingSettingsImpl extends KeyBindingSettingsFactory {
                 EditorSettings.PROP_CURRENT_KEY_MAP_PROFILE,
                 this
             );
-            if (baseKBS != null)
-                baseKBS.addPropertyChangeListener (this);
+            storage.addPropertyChangeListener(this);
+            if (baseKBS != null) {
+                baseKBS.addPropertyChangeListener(this);
+            }
         }
         
         private void removeListeners () {
-            if (baseKBS != null)
-                baseKBS.removePropertyChangeListener (this);
+            if (baseKBS != null) {
+                baseKBS.removePropertyChangeListener(this);
+            }
+            storage.removePropertyChangeListener(this);
             EditorSettingsImpl.getInstance().removePropertyChangeListener(
                 EditorSettings.PROP_CURRENT_KEY_MAP_PROFILE,
                 this

@@ -1,0 +1,341 @@
+/*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Sun in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ */
+package org.netbeans.modules.php.editor;
+
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.event.KeyEvent;
+import java.beans.BeanInfo;
+import java.io.IOException;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.ImageIcon;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
+import javax.swing.text.JTextComponent;
+import org.netbeans.api.editor.completion.Completion;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.queries.VisibilityQuery;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.gsf.api.CancellableTask;
+import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.gsf.api.SourceModelFactory;
+import org.netbeans.modules.php.editor.nav.NavUtils;
+import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
+import org.netbeans.modules.php.editor.parser.astnodes.Include;
+import org.netbeans.modules.php.editor.parser.astnodes.ParenthesisExpression;
+import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
+import org.netbeans.modules.php.editor.parser.astnodes.Scalar.Type;
+import org.netbeans.modules.php.project.api.PhpSourcePath;
+import org.netbeans.spi.editor.completion.CompletionItem;
+import org.netbeans.spi.editor.completion.CompletionProvider;
+import org.netbeans.spi.editor.completion.CompletionResultSet;
+import org.netbeans.spi.editor.completion.CompletionTask;
+import org.netbeans.spi.editor.completion.support.AsyncCompletionQuery;
+import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
+import org.netbeans.spi.editor.completion.support.CompletionUtilities;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.util.Exceptions;
+
+/**
+ * Base on code from contrib/editor.fscompletion
+ * @author Jan Lahoda
+ */
+public class FSCompletion implements CompletionProvider {
+    
+    public FSCompletion() {
+    }
+
+    public CompletionTask createTask(int queryType, JTextComponent component) {
+        return new AsyncCompletionTask(new AsyncCompletionQuery() {
+            protected void query(final CompletionResultSet resultSet, final Document doc, final int caretOffset) {
+                try {
+                FileObject file = NavUtils.getFile(doc);
+                
+                if (file == null) {
+                    return ;
+                }
+
+                final List<FileObject> includePath = PhpSourcePath.getIncludePath(file);
+                
+                SourceModelFactory.getInstance().getModel(file).runUserActionTask(new CancellableTask<CompilationInfo>() {
+                        public void cancel() {}
+                        public void run(CompilationInfo parameter) throws Exception {
+                            List<ASTNode> path = NavUtils.underCaret(parameter, caretOffset);
+                            
+                            if (path.size() < 2) {
+                                return ;
+                            }
+                            
+                            ASTNode d1 = path.get(path.size() - 1);
+                            ASTNode d2 = path.get(path.size() - 2);
+                            
+                            if (d2 instanceof ParenthesisExpression) {
+                                if (path.size() < 3) {
+                                    return ;
+                                }
+                                d2 = path.get(path.size() - 3);
+                            }
+                            
+                            if (!(d1 instanceof Scalar) || !(d2 instanceof Include)) {
+                                return ;
+                            }
+                            
+                            Scalar s = (Scalar) d1;
+                            
+                            if (s.getScalarType() != Type.STRING || !NavUtils.isQuoted(s.getStringValue())) {
+                                return ;
+                            }
+                            
+                            int startOffset = s.getStartOffset() + 1;
+                            String prefix = parameter.getText().substring(startOffset, caretOffset);
+                            List<FileObject> relativeTo = new LinkedList<FileObject>();
+                            relativeTo.addAll(includePath);
+                            
+                            relativeTo.add(parameter.getFileObject().getParent());
+                            
+                            resultSet.addAllItems(computeRelativeItems(relativeTo, prefix, startOffset, new PHPIncludesFilter()));
+                        }
+                }, true);
+                } catch (IOException e) {
+                    Logger.getLogger(FSCompletion.class.getName()).log(Level.WARNING, null, e);
+                } catch (Throwable t) {
+                    t.printStackTrace();
+                } finally {
+                    resultSet.finish();
+                }
+            }
+        }, component);
+    }
+
+    public int getAutoQueryTypes(JTextComponent component, String typedText) {
+        return 0;
+    }
+
+    private static List<? extends CompletionItem> computeRelativeItems(Collection<? extends FileObject> relativeTo, String prefix, int anchor, FileObjectFilter filter) throws IOException {
+        assert relativeTo != null;
+        
+        List<CompletionItem> result = new LinkedList<CompletionItem>();
+        
+        int lastSlash = prefix.lastIndexOf('/');
+        String pathPrefix;
+        String filePrefix;
+        
+        if (lastSlash != (-1)) {
+            pathPrefix = prefix.substring(0, lastSlash);
+            filePrefix = prefix.substring(lastSlash + 1);
+        } else {
+            pathPrefix = null;
+            filePrefix = prefix;
+        }
+        
+        Set<FileObject> directories = new HashSet<FileObject>();
+        
+        for (FileObject f : relativeTo) {
+            if (pathPrefix != null) {
+                f = f.getFileObject(pathPrefix);
+            }
+            
+            if (f != null) {
+                directories.add(f);
+            }
+        }
+        
+        for (FileObject dir : directories) {
+            FileObject[] children = dir.getChildren();
+
+            for (int cntr = 0; cntr < children.length; cntr++) {
+                FileObject current = children[cntr];
+
+                if (VisibilityQuery.getDefault().isVisible(current) && current.getNameExt().startsWith(filePrefix) && filter.accept(current)) {
+                    result.add(new FSCompletionItem(current, pathPrefix != null ? pathPrefix + "/" : "", anchor));
+                }
+            }
+        }
+        
+        return result;
+    }
+    
+    private static class PHPIncludesFilter implements FileObjectFilter {
+
+        public boolean accept(FileObject file) {
+            if (file.isFolder()) {
+                return true;
+            }
+            
+            String mimeType = FileUtil.getMIMEType(file);
+            
+            return mimeType != null && mimeType.startsWith("text/");
+        }
+
+    }
+
+    static final class FSCompletionItem implements CompletionItem {
+
+        private FileObject file;
+        private ImageIcon  icon;
+        private int        anchor;
+        private String     toAdd;
+        private String     prefix;
+
+        public FSCompletionItem(FileObject file, String prefix, int anchor) throws IOException {
+            this.file = file;
+
+            DataObject od = DataObject.find(file);
+
+            icon = new ImageIcon(od.getNodeDelegate().getIcon(BeanInfo.ICON_COLOR_16x16));
+
+            this.anchor = anchor;
+
+            this.prefix = prefix;
+        }
+
+        private void doSubstitute(JTextComponent component, String toAdd, int backOffset) {
+            BaseDocument doc = (BaseDocument) component.getDocument();
+            int caretOffset = component.getCaretPosition();
+            String value = getText();
+
+            if (toAdd != null) {
+                value += toAdd;
+            }
+
+            // Update the text
+            doc.atomicLock();
+            try {
+                String prefix = doc.getText(anchor, caretOffset - anchor);
+
+                doc.remove(caretOffset - prefix.length(), prefix.length());
+                doc.insertString(caretOffset - prefix.length(), value, null);
+
+                component.setCaretPosition(component.getCaretPosition() - backOffset);
+            } catch (BadLocationException e) {
+                Exceptions.printStackTrace(e);
+            } finally {
+                doc.atomicUnlock();
+            }
+        }
+
+        public void defaultAction(JTextComponent component) {
+            doSubstitute(component, null, 0);
+            if (!file.isFolder()) {
+                Completion.get().hideAll();
+            }
+        }
+
+        public void processKeyEvent(KeyEvent evt) {
+            if (evt.getID() == KeyEvent.KEY_TYPED) {
+                String toAdd = null;
+
+                switch (evt.getKeyChar()) {
+                    case '/': if (toAdd == null) toAdd = "/";
+                    doSubstitute((JTextComponent) evt.getSource(), toAdd, toAdd.length() - 1);
+                    evt.consume();
+                    break;
+                }
+            }
+        }
+
+        public int getPreferredWidth(Graphics g, Font defaultFont) {
+            return CompletionUtilities.getPreferredWidth(file.getNameExt(), null, g, defaultFont);
+        }
+
+        public void render(Graphics g, Font defaultFont, Color defaultColor, Color backgroundColor, int width, int height, boolean selected) {
+            CompletionUtilities.renderHtml(icon, file.getNameExt(), null, g, defaultFont, defaultColor, width, height, selected);
+        }
+
+        public CompletionTask createDocumentationTask() {
+            return null;
+        }
+
+        public CompletionTask createToolTipTask() {
+            return null;
+        }
+
+        public boolean instantSubstitution(JTextComponent component) {
+            return false; //????
+        }
+
+        public int getSortPriority() {
+            return -1000;
+        }
+
+        public CharSequence getSortText() {
+            return getText();
+        }
+
+        public CharSequence getInsertPrefix() {
+            return getText();
+        }
+
+        private String getText() {
+            return prefix + file.getNameExt() + (file.isFolder() ? "/" : "");
+        }
+
+        public int hashCode() {
+            return getText().hashCode();
+        }
+
+        public boolean equals(Object o) {
+            if (!(o instanceof FSCompletionItem)) 
+                return false;
+
+            FSCompletionItem remote = (FSCompletionItem) o;
+
+            return getText().equals(remote.getText());
+        }
+
+    }
+
+    interface FileObjectFilter {
+
+        public boolean accept(FileObject file);
+
+    }
+}

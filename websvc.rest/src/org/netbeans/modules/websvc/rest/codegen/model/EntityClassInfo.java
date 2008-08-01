@@ -49,6 +49,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
@@ -61,6 +62,7 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
+import org.netbeans.modules.websvc.rest.wizard.Util;
 import org.openide.util.Exceptions;
 
 /**
@@ -120,6 +122,7 @@ public class EntityClassInfo {
 
                     TypeElement classElement = JavaSourceHelper.getTopLevelClassElement(controller);
                     extractFields(classElement);
+                    extractFieldsFromMethods(classElement);
                 }
             }, true);
         } catch (IOException ex) {
@@ -137,7 +140,13 @@ public class EntityClassInfo {
             }
 
             FieldInfo fieldInfo = new FieldInfo();
+            
+            for (AnnotationMirror annotation : field.getAnnotationMirrors()) {
+                fieldInfo.addAnnotation(annotation.toString());
+            }
 
+            if (!fieldInfo.isPersistent()) continue;
+            
             fieldInfos.add(fieldInfo);
             fieldInfo.setName(field.getSimpleName().toString());
 
@@ -145,9 +154,8 @@ public class EntityClassInfo {
 
             if (fieldType.getKind() == TypeKind.DECLARED) {
                 DeclaredType declType = (DeclaredType) fieldType;
-
                 fieldInfo.setType(declType.asElement().toString());
-
+               
                 for (TypeMirror arg : declType.getTypeArguments()) {
                     fieldInfo.setTypeArg(arg.toString());
                 }
@@ -155,9 +163,49 @@ public class EntityClassInfo {
                 fieldInfo.setType(fieldType.toString());
             }
 
+            if (fieldInfo.isId()) {
+                idFieldInfo = fieldInfo;
+            }
+        }
+    }
+    
+    protected void extractFieldsFromMethods(TypeElement typeElement) {
+        List<ExecutableElement> methods = ElementFilter.methodsIn(typeElement.getEnclosedElements());
 
-            for (AnnotationMirror annotation : field.getAnnotationMirrors()) {
+        for (ExecutableElement method : methods) {
+            Set<Modifier> modifiers = method.getModifiers();
+            if (modifiers.contains(Modifier.STATIC)) {
+                continue;
+            }
+
+            FieldInfo fieldInfo = new FieldInfo();
+
+             for (AnnotationMirror annotation : method.getAnnotationMirrors()) {
                 fieldInfo.addAnnotation(annotation.toString());
+            }
+             
+            if (!fieldInfo.isPersistent()) continue;
+                
+            fieldInfos.add(fieldInfo);
+            String name = method.getSimpleName().toString();
+            if (name.startsWith("get")) {       //NOI18N
+                name = name.substring(3);
+                name = Util.lowerFirstChar(name);
+            }
+            fieldInfo.setName(name);
+
+            TypeMirror returnType = method.getReturnType();
+
+            if (returnType.getKind() == TypeKind.DECLARED) {
+                DeclaredType declType = (DeclaredType) returnType;
+
+                fieldInfo.setType(declType.asElement().toString());
+
+                for (TypeMirror arg : declType.getTypeArguments()) {
+                    fieldInfo.setTypeArg(arg.toString());
+                }
+            } else {
+                fieldInfo.setType(returnType.toString());
             }
 
             if (fieldInfo.isId()) {
@@ -300,7 +348,9 @@ public class EntityClassInfo {
 
         private String name;
         private String type;
+        private String simpleTypeName;
         private String typeArg;
+        private String simpleTypeArgName;
         private List<String> annotations;
         private Collection<FieldInfo> fieldInfos;
 
@@ -317,7 +367,15 @@ public class EntityClassInfo {
         }
 
         public void setType(String type) {
-            this.type = type;
+            Class primitiveType = Util.getPrimitiveType(type);
+            
+            if (primitiveType != null) {
+                this.type = primitiveType.getName();
+                this.simpleTypeName = primitiveType.getSimpleName();
+            } else {
+                this.type = type;
+                this.simpleTypeName = type.substring(type.lastIndexOf(".") + 1);
+            }
         }
 
         public String getType() {
@@ -325,24 +383,36 @@ public class EntityClassInfo {
         }
 
         public String getSimpleTypeName() {
-            return type.substring(type.lastIndexOf(".") + 1);
+            return simpleTypeName;
         }
 
         public void setTypeArg(String typeArg) {
             this.typeArg = typeArg;
+            this.simpleTypeArgName = typeArg.substring(typeArg.lastIndexOf(".") + 1);
         }
 
         public String getTypeArg() {
             return typeArg;
+        }
+        
+        public String getSimpleTypeArgName() {
+            return simpleTypeArgName;
         }
 
         public void addAnnotation(String annotation) {
             this.annotations.add(annotation);
         }
 
+        public boolean isPersistent() {
+            return matchAnnotation("@javax.persistence.Column") || isRelationship() || isId();
+        }
+        
         public boolean isId() {
             return matchAnnotation("@javax.persistence.Id") || matchAnnotation("@javax.persistence.EmbeddedId"); //NOI18N
-
+        }
+        
+        public boolean isGeneratedValue() {
+            return matchAnnotation("@javax.persistence.GeneratedValue");        //NOI18N
         }
 
         public boolean isEmbeddedId() {

@@ -41,15 +41,22 @@
 
 package org.netbeans.modules.spring.beans.refactoring;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import javax.swing.text.BadLocationException;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.modules.spring.api.Action;
 import org.netbeans.modules.spring.api.beans.SpringScope;
 import org.netbeans.modules.spring.api.beans.model.SpringConfigModel;
 import org.netbeans.modules.spring.api.beans.model.SpringConfigModel.DocumentAccess;
 import org.netbeans.modules.spring.beans.refactoring.JavaElementRefFinder.Matcher;
+import org.netbeans.modules.spring.beans.refactoring.SpringRefactorings.RenamedProperty;
 import org.openide.filesystems.FileObject;
 import org.openide.text.PositionBounds;
 import org.openide.util.Exceptions;
@@ -60,11 +67,47 @@ import org.openide.util.Exceptions;
  */
 public class Occurrences {
 
+    public static List<Occurrence> getPropertyOccurrences(final RenamedProperty renamedProperty, JavaSource js, final SpringScope scope) throws IOException {
+        final List<Occurrence> result = new ArrayList<Occurrence>();
+        final Set<File> processed = new HashSet<File>();
+
+        js.runUserActionTask(new Task<CompilationController>() {
+
+            public void run(final CompilationController cc) throws Exception {
+                for (SpringConfigModel model : scope.getAllConfigModels()) {
+                    model.runDocumentAction(new Action<DocumentAccess>() {
+                        public void run(DocumentAccess docAccess) {
+                            File file = docAccess.getFile();
+                            if (processed.contains(file)) {
+                                return;
+                            }
+                            processed.add(file);
+                            try {
+                                new PropertyRefFinder(docAccess, cc, renamedProperty).addOccurrences(result);
+                            } catch (BadLocationException ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
+                        }
+                        
+                    });
+                }
+            }
+        }, true);
+        
+        return result;
+    }
+    
     public static List<Occurrence> getJavaClassOccurrences(final String className, SpringScope scope) throws IOException {
         final List<Occurrence> result = new ArrayList<Occurrence>();
-        for (SpringConfigModel model : scope.getAllFilesConfigModels()) {
+        final Set<File> processed = new HashSet<File>();
+        for (SpringConfigModel model : scope.getAllConfigModels()) {
             model.runDocumentAction(new Action<DocumentAccess>() {
                 public void run(DocumentAccess docAccess) {
+                    File file = docAccess.getFile();
+                    if (processed.contains(file)) {
+                        return;
+                    }
+                    processed.add(file);
                     try {
                         new JavaElementRefFinder(docAccess).addOccurrences(new JavaClassRefMatcher(className), result);
                     } catch (BadLocationException e) {
@@ -78,9 +121,15 @@ public class Occurrences {
 
     public static List<Occurrence> getJavaPackageOccurrences(final String packageName, final boolean subpackages, SpringScope scope) throws IOException {
         final List<Occurrence> result = new ArrayList<Occurrence>();
-        for (SpringConfigModel model : scope.getAllFilesConfigModels()) {
+        final Set<File> processed = new HashSet<File>();
+        for (SpringConfigModel model : scope.getAllConfigModels()) {
             model.runDocumentAction(new Action<DocumentAccess>() {
                 public void run(DocumentAccess docAccess) {
+                    File file = docAccess.getFile();
+                    if (processed.contains(file)) {
+                        return;
+                    }
+                    processed.add(file);
                     try {
                         new JavaElementRefFinder(docAccess).addOccurrences(new JavaPackageRefMatcher(packageName, subpackages), result);
                     } catch (BadLocationException e) {

@@ -44,20 +44,15 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
-import java.net.URL;
 import java.util.List;
-import java.util.ArrayList;
 import java.util.Collections;
-import org.netbeans.modules.gsf.LanguageRegistry;
 import org.netbeans.modules.gsfpath.spi.classpath.ClassPathImplementation;
 import org.netbeans.modules.gsfpath.spi.classpath.PathResourceImplementation;
-import org.netbeans.modules.gsfpath.spi.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 
 final class GsfBootClassPathImplementation implements ClassPathImplementation {
     private File projectDirectory;
     private final PropertyEvaluator evaluator;
-    private List<PathResourceImplementation> resourcesCache;
     private PropertyChangeSupport support = new PropertyChangeSupport(this);
 
     public GsfBootClassPathImplementation(File projectDirectory, PropertyEvaluator evaluator) {
@@ -66,18 +61,8 @@ final class GsfBootClassPathImplementation implements ClassPathImplementation {
         this.evaluator = evaluator;
     }
 
-    public synchronized List<PathResourceImplementation> getResources() {
-        if (this.resourcesCache == null) {
-            List<PathResourceImplementation> result = new ArrayList<PathResourceImplementation>();
-
-            // Additional libraries - such as the JavaScript ones
-            for (URL url : LanguageRegistry.getInstance().getLibraryUrls()) {
-                result.add(ClassPathSupport.createResource(url));
-            }
-            
-            resourcesCache = Collections.unmodifiableList (result);
-        }
-        return this.resourcesCache;
+    public List<PathResourceImplementation> getResources() {
+        return Collections.emptyList();
     }
 
     public void addPropertyChangeListener(PropertyChangeListener listener) {

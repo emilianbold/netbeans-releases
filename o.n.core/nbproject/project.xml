@@ -61,7 +61,7 @@ made subject to such option by the copyright holder.
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>2.0</specification-version>
+                        <specification-version>2.12</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -188,14 +188,22 @@ made subject to such option by the copyright holder.
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
+                        <code-name-base>org.netbeans.core.startup</code-name-base>
+                        <compile-dependency/>
+                        <test/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.libs.javacapi</code-name-base>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.libs.javacimpl</code-name-base>
+                    </test-dependency>
+                    <test-dependency>
                         <code-name-base>org.netbeans.modules.editor.mimelookup.impl</code-name-base>
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.masterfs</code-name-base>
                         <compile-dependency/>
-                    </test-dependency>
-                    <test-dependency>
-                        <code-name-base>org.netbeans.modules.progress.ui</code-name-base>
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.queries</code-name-base>
@@ -216,17 +224,28 @@ made subject to such option by the copyright holder.
                         <recursive/>
                         <compile-dependency/>
                     </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.jellytools</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.jellytools.platform</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
                 </test-type>
             </test-dependencies>
             <friend-packages>
                 <friend>org.netbeans.core.execution</friend>
-                <friend>org.netbeans.core.windows</friend>
                 <friend>org.netbeans.core.ui</friend>
+                <friend>org.netbeans.core.windows</friend>
+                <friend>org.netbeans.modules.jellytools</friend>
+                <friend>org.netbeans.modules.jellytools.platform</friend>
                 <friend>org.netbeans.modules.settings</friend>
                 <friend>org.openide.compat</friend>
                 <package>org.netbeans.beaninfo</package>
                 <package>org.netbeans.beaninfo.editors</package>
                 <package>org.netbeans.core</package>
+                <package>org.netbeans.core.actions</package>
             </friend-packages>
         </data>
     </configuration>

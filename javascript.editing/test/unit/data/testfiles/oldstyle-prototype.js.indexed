@@ -1,12 +1,7 @@
 
 
 Document 0
-Delete:  source : <TESTURL>/oldstyle-prototype.js
-
-
-
-Document 1
-Indexed:
+Searchable Keys:
   base : guy;;guy;|GLOBAL|;;0;;;Person;
   base : initialize;Person;initialize;|CONSTRUCTOR|;name;0;;;Person;
   base : john;;john;|GLOBAL|;;0;;;Pirate;
@@ -31,4 +26,4 @@ Indexed:
   fqn : pirate;;Pirate;|DOCUMENTED|CONSTRUCTOR|;;0;16f;;;
   fqn : pirate;;Pirate;|DOCUMENTED|PROPERTY|;;0;140;;;
 
-Not Indexed:
+Not Searchable Keys:

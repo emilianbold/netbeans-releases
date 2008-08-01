@@ -44,15 +44,10 @@ package org.netbeans.modules.cnd.editor.filecreation;
 import java.awt.Component;
 import java.awt.event.ActionListener;
 import java.io.File;
-import java.text.MessageFormat;
 import java.util.Enumeration;
 import java.util.Vector;
 import javax.swing.DefaultComboBoxModel;
-import javax.swing.JLabel;
-import javax.swing.JList;
 import javax.swing.JTextField;
-import javax.swing.ListCellRenderer;
-import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
@@ -65,7 +60,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -73,27 +67,17 @@ import org.openide.util.NbBundle;
  * NewCndFileChooserPanelGUI is SimpleTargetChooserPanelGUI extended with extension selector and logic
  * 
  */
-class NewCndFileChooserPanelGUI extends javax.swing.JPanel implements ActionListener, DocumentListener {
+class NewCndFileChooserPanelGUI extends CndPanelGUI implements ActionListener{
   
-    /** prefered dimmension of the panels */
-    private static final java.awt.Dimension PREF_DIM = new java.awt.Dimension (500, 340);
     
-    private static final String NEW_FILE_PREFIX = 
-        NbBundle.getMessage( NewCndFileChooserPanelGUI.class, "LBL_NewCndFileChooserPanelGUI_NewFilePrefix"  ); // NOI18N
-    
-    private final ListCellRenderer CELL_RENDERER = new GroupCellRenderer();
-        
-    private Project project;
     private String expectedExtension;
-    private final ChangeSupport changeSupport = new ChangeSupport(this);
-    private SourceGroup[] folders;
     private final ExtensionsSettings es;
     
     /** Creates new form NewCndFileChooserPanelGUI */
     NewCndFileChooserPanelGUI( Project project, SourceGroup[] folders, Component bottomPanel, ExtensionsSettings es) {
+        super(project, folders);
+        
         this.es = es;
-        this.project = project;
-        this.folders = folders;
         initComponents();
         initMnemonics();
         
@@ -225,7 +209,7 @@ class NewCndFileChooserPanelGUI extends javax.swing.JPanel implements ActionList
     public String getTargetName() {
         String documentName = documentNameTextField.getText().trim();
         
-        if ( documentName.length() == 0 || documentName.charAt(documentName.length() - 1) == '.') {
+        if ( documentName.length() == 0){
             return null;
         }
         else {
@@ -242,9 +226,14 @@ class NewCndFileChooserPanelGUI extends javax.swing.JPanel implements ActionList
     public String getTargetExtension() {
         return expectedExtension;
     }
-        
     
-    private void updateCreatedFile() {
+    public boolean useTargetExtensionAsDefault() {
+        return cbSetAsDefault.isSelected();
+    }
+        
+    protected void updateCreatedFile() {
+        
+        cbSetAsDefault.setEnabled(!es.getDefaultExtension().equals(getTargetExtension())); 
         
         FileObject root = ((SourceGroup)locationComboBox.getSelectedItem()).getRootFolder();
             
@@ -291,19 +280,6 @@ class NewCndFileChooserPanelGUI extends javax.swing.JPanel implements ActionList
         }
     }
 
-    @Override
-    public java.awt.Dimension getPreferredSize() {
-        return PREF_DIM;
-    }
-    
-    public void addChangeListener(ChangeListener l) {
-        changeSupport.addChangeListener(l);
-    }
-    
-    public void removeChangeListener(ChangeListener l) {
-        changeSupport.removeChangeListener(l);
-    }
-    
     private DefaultComboBoxModel getExtensionsCBModel() {
         Enumeration<String> enExt = es.getExtensionList().extensions();
         Vector<String> vExt = new Vector<String>();
@@ -326,6 +302,7 @@ class NewCndFileChooserPanelGUI extends javax.swing.JPanel implements ActionList
         documentNameTextField = new javax.swing.JTextField();
         jLabel5 = new javax.swing.JLabel();
         cbExtension = new javax.swing.JComboBox();
+        cbSetAsDefault = new javax.swing.JCheckBox();
         jLabel1 = new javax.swing.JLabel();
         projectTextField = new javax.swing.JTextField();
         locationLabel = new javax.swing.JLabel();
@@ -343,7 +320,7 @@ class NewCndFileChooserPanelGUI extends javax.swing.JPanel implements ActionList
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
         jLabel3.setLabelFor(documentNameTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(NewCndFileChooserPanelGUI.class, "LBL_TargetChooser_FileName_Label")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(NewCndFileChooserPanelGUI.class, "LBL_TargetChooser_ClassName_Label")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         jPanel1.add(jLabel3, gridBagConstraints);
@@ -357,7 +334,9 @@ class NewCndFileChooserPanelGUI extends javax.swing.JPanel implements ActionList
 
         jLabel5.setLabelFor(cbExtension);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel5, org.openide.util.NbBundle.getMessage(NewCndFileChooserPanelGUI.class, "LBL_TargetChooser_Extension_Label")); // NOI18N
-        jPanel1.add(jLabel5, new java.awt.GridBagConstraints());
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        jPanel1.add(jLabel5, gridBagConstraints);
 
         cbExtension.setEditable(true);
         cbExtension.setModel(getExtensionsCBModel());
@@ -373,6 +352,13 @@ class NewCndFileChooserPanelGUI extends javax.swing.JPanel implements ActionList
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 5, 0);
         jPanel1.add(cbExtension, gridBagConstraints);
         cbExtension.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NewCndFileChooserPanelGUI.class, "AD_ExtensionTextField")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(cbSetAsDefault, org.openide.util.NbBundle.getMessage(NewCndFileChooserPanelGUI.class, "ACSD_SetAsDefaultCheckBox")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 3, 0, 0);
+        jPanel1.add(cbSetAsDefault, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
@@ -489,6 +475,7 @@ class NewCndFileChooserPanelGUI extends javax.swing.JPanel implements ActionList
     private javax.swing.JPanel bottomPanelContainer;
     private javax.swing.JButton browseButton;
     private javax.swing.JComboBox cbExtension;
+    private javax.swing.JCheckBox cbSetAsDefault;
     private javax.swing.JTextField documentNameTextField;
     private javax.swing.JTextField fileTextField;
     private javax.swing.JTextField folderTextField;
@@ -504,34 +491,7 @@ class NewCndFileChooserPanelGUI extends javax.swing.JPanel implements ActionList
     private javax.swing.JSeparator targetSeparator;
     // End of variables declaration//GEN-END:variables
 
-    private SourceGroup getPreselectedGroup( SourceGroup[] groups, FileObject folder ) {        
-        for( int i = 0; folder != null && i < groups.length; i++ ) {
-            if( FileUtil.isParentOf( groups[i].getRootFolder(), folder )
-                || groups[i].getRootFolder().equals(folder)) {
-                return groups[i];
-            }
-        }
-        return groups[0];
-    }
-    
-    private String getRelativeNativeName( FileObject root, FileObject folder ) {
-        if (root == null) {
-            throw new NullPointerException("null root passed to getRelativeNativeName"); // NOI18N
-        }
-        
-        String path;
-        
-        if (folder == null) {
-            path = ""; // NOI18N
-        }
-        else {
-            path = FileUtil.getRelativePath( root, folder );            
-        }
-        
-        return path == null ? "" : path.replace( '/', File.separatorChar ); // NOI18N
-    }
     // ActionListener implementation -------------------------------------------
-    
     public void actionPerformed(java.awt.event.ActionEvent e) {
         if ( browseButton == e.getSource() ) {
             FileObject fo=null;
@@ -556,58 +516,4 @@ class NewCndFileChooserPanelGUI extends javax.swing.JPanel implements ActionList
         }
     }    
     
-    // DocumentListener implementation -----------------------------------------
-    
-    public void changedUpdate(javax.swing.event.DocumentEvent e) {
-        updateCreatedFile();
-    }    
-    
-    public void insertUpdate(javax.swing.event.DocumentEvent e) {
-        updateCreatedFile();
-    }
-    
-    public void removeUpdate(javax.swing.event.DocumentEvent e) {
-        updateCreatedFile();
-    }
-    
-    // Rendering of the location combo box -------------------------------------
-    
-    private class GroupCellRenderer extends JLabel implements ListCellRenderer {
-    
-        public GroupCellRenderer() {
-            setOpaque( true );
-        }
-        
-        public Component getListCellRendererComponent( JList list, Object value, int index, boolean isSelected, boolean cellHasFocus ) {
-            if (value instanceof SourceGroup) {
-                SourceGroup group = (SourceGroup)value;
-                String projectDisplayName = ProjectUtils.getInformation( project ).getDisplayName();
-                String groupDisplayName = group.getDisplayName();
-                if ( projectDisplayName.equals( groupDisplayName ) ) {
-                    setText( groupDisplayName );
-                }
-                else {
-                    setText( MessageFormat.format( PhysicalView.GroupNode.GROUP_NAME_PATTERN,
-                        new Object[] { groupDisplayName, projectDisplayName, group.getRootFolder().getName() } ) );
-                }
-                
-                setIcon( group.getIcon( false ) );
-            } 
-            else {
-                setText( value.toString () );
-                setIcon( null );
-            }
-            if ( isSelected ) {
-                setBackground(list.getSelectionBackground());
-                setForeground(list.getSelectionForeground());             
-            }
-            else {
-                setBackground(list.getBackground());
-                setForeground(list.getForeground());
-             
-            }
-            return this;        
-        }
-                
-    }
 }

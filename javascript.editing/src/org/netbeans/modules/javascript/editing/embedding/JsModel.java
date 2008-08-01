@@ -51,13 +51,11 @@ import org.netbeans.api.lexer.TokenHierarchyEvent;
 import org.netbeans.api.lexer.TokenHierarchyListener;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.gsf.api.EditHistory;
+import org.netbeans.modules.gsf.api.IncrementalEmbeddingModel;
 import org.netbeans.modules.javascript.editing.JsAnalyzer;
 import org.netbeans.modules.javascript.editing.JsUtils;
-import org.netbeans.modules.javascript.editing.NbUtilities;
-import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -76,10 +74,15 @@ public class JsModel {
     private static final Logger LOGGER = Logger.getLogger(JsModel.class.getName());
     private static final boolean LOG = LOGGER.isLoggable(Level.FINE);
     
+    private static final String RHTML_MIME_TYPE = "application/x-httpd-eruby"; // NOI18N
+    private static final String HTML_MIME_TYPE = "text/html"; // NOI18N
+    private static final String JSP_MIME_TYPE = "text/x-jsp"; // NOI18N
+    private static final String PHP_MIME_TYPE = "text/x-php5"; // NOI18N
     
-    private final String RHTML_MIME_TYPE = "application/x-httpd-eruby"; // NOI18N
-    private final String HTML_MIME_TYPE = "text/html"; // NOI18N
-    private final String JSP_MIME_TYPE = "text/x-jsp"; // NOI18N
+    // If you change this, update the testcase reference 
+    // in javascript.hints/test/unit/data/testfiles/generated.js
+    private static final String GENERATED_IDENTIFIER = " __UNKNOWN__ "; // NOI18N
+    
     private final Document doc;
     private final ArrayList<CodeBlockData> codeBlocks = new ArrayList<CodeBlockData>();
     private String rubyCode;
@@ -144,9 +147,11 @@ public class JsModel {
                 } else if (HTML_MIME_TYPE.equals(mimeType)) {
                     @SuppressWarnings("unchecked")
                     TokenSequence<? extends HTMLTokenId> hts = (TokenSequence<? extends HTMLTokenId>) tokenSequence;
-                    extractJavaScriptFromHtml(hts, buffer, false);
-                } else if(JSP_MIME_TYPE.equals(mimeType)) {
+                    extractJavaScriptFromHtml(hts, buffer, new JsAnalyzerState());
+                } else if (JSP_MIME_TYPE.equals(mimeType)) {
                     extractJavaScriptFromJsp((TokenSequence<? extends TokenId>) tokenSequence, buffer);
+                } else if (PHP_MIME_TYPE.equals(mimeType)) {
+                    extractJavaScriptFromPHP((TokenSequence<? extends TokenId>) tokenSequence, buffer);
                 }
             } finally {
                 d.readUnlock();
@@ -154,12 +159,12 @@ public class JsModel {
             rubyCode = buffer.toString();
         }
 
-          if (LOG) {
+        if (LOG) {
             LOGGER.log(Level.FINE, "===== VIRTUAL JavaScript SOURCE =====");
             LOGGER.log(Level.FINE, rubyCode);
             LOGGER.log(Level.FINE, "=====================================");
-}
-        
+        }
+
         return rubyCode;
     }
 
@@ -185,8 +190,6 @@ public class JsModel {
 //        EVENT_HANDLER_NAMES.add("onselect"); // NOI18N
 //        EVENT_HANDLER_NAMES.add("onchange"); // NOI18N
 //    }
-    
-    
     /** Create a JavaScript model of the given JSP buffer.
      * @todo Make this more general purpose (so it can be used from HTML, JSP etc.)
      * @param outputBuffer The buffer to emit the translation to
@@ -195,11 +198,11 @@ public class JsModel {
      */
     void extractJavaScriptFromJsp(TokenSequence<? extends TokenId> tokenSequence, StringBuilder outputBuffer) {
         StringBuilder buffer = outputBuffer;
-        
+
         //TODO - implement the "classpath" import for other projects
         //how is the javascript classpath done????????/
-        
-        boolean inJavaScript = false;
+
+        JsAnalyzerState state = new JsAnalyzerState();
 
         while (tokenSequence.moveNext()) {
             Token<? extends TokenId> token = tokenSequence.token();
@@ -209,16 +212,28 @@ public class JsModel {
                 if (ts == null) {
                     continue;
                 }
-                inJavaScript = extractJavaScriptFromHtml(ts, buffer, inJavaScript);
-            } else if (token.id().primaryCategory().equals("expression-language")
-                    || token.id().primaryCategory().equals("scriptlet")) { // NOI18N
+                extractJavaScriptFromHtml(ts, buffer, state);
                 
-                if (inJavaScript) {
+            } else if (token.id().primaryCategory().equals("expression-language") 
+                    || token.id().primaryCategory().equals("scriptlet")
+                    || token.id().primaryCategory().equals("symbol") && "/>".equals(token.text().toString())) { // NOI18N
+                //The test for jsp /> symbol means 
+                //that we just encountered an end of jsp tag without body
+                //so it is possible/likely the tag generates something
+                
+                //TODO Add a list of know tags and adjust the heuristics according
+                //to the tag declaration. It may work nicely using the 
+                //JSP parser for getting custom jsp tags metadata.
+                
+                //TODO The whole implementation of the JsJspModel
+                //should be in separate file in JSP module and should 
+                //depend on both lexers instead of these string dependencies.
+                
+                if (state.in_inlined_javascript || state.in_javascript) {
                     int sourceStart = tokenSequence.offset();
-                    String text = " __UNKNOWN__ "; // NOI18N
                     int sourceEnd = sourceStart + token.length();
                     int generatedStart = buffer.length();
-                    buffer.append(text);
+                    buffer.append(GENERATED_IDENTIFIER);
                     int generatedEnd = buffer.length();
                     CodeBlockData blockData = new CodeBlockData(sourceStart, sourceEnd, generatedStart,
                             generatedEnd);
@@ -228,8 +243,54 @@ public class JsModel {
         }
 
     }
-    
-       /** Create a JavaScript model of the given RHTML buffer.
+
+    void extractJavaScriptFromPHP(TokenSequence<? extends TokenId> tokenSequence, StringBuilder outputBuffer) {
+        StringBuilder buffer = outputBuffer;
+
+        //TODO - implement the "classpath" import for other projects
+        //how is the javascript classpath done????????/
+
+        JsAnalyzerState state = new JsAnalyzerState();
+
+        while (tokenSequence.moveNext()) {
+            Token<? extends TokenId> token = tokenSequence.token();
+
+            if (token.id().name().equals("T_INLINE_HTML")) { // NOI18N
+                TokenSequence<? extends HTMLTokenId> ts = tokenSequence.embedded(HTMLTokenId.language());
+                if (ts == null) {
+                    continue;
+                }
+                extractJavaScriptFromHtml(ts, buffer, state);
+            }
+            if (state.in_inlined_javascript || state.in_javascript) {
+                int sourceStart = tokenSequence.offset();
+
+                //find end of the php code
+                while (tokenSequence.moveNext()) {
+
+                    token = tokenSequence.token();
+
+                    if (token.id().name().equals("T_INLINE_HTML")) {
+                        //we are out of php code
+                        tokenSequence.movePrevious();
+                        int sourceEnd = sourceStart + token.length();
+                        int generatedStart = buffer.length();
+                        buffer.append(GENERATED_IDENTIFIER);
+                        int generatedEnd = buffer.length();
+                        CodeBlockData blockData = new CodeBlockData(sourceStart, sourceEnd, generatedStart,
+                                generatedEnd);
+                        codeBlocks.add(blockData);
+                        break;
+                    }
+
+
+                }
+            }
+
+        }
+    }
+
+    /** Create a JavaScript model of the given RHTML buffer.
      * @todo Make this more general purpose (so it can be used from HTML, JSP etc.)
      * @param outputBuffer The buffer to emit the translation to
      * @param tokenHierarchy The token hierarchy for the RHTML code
@@ -250,33 +311,36 @@ public class JsModel {
 //        // Erubis uses _buf; I've seen eruby using something else (_erbout?)
 //        buffer.append("_buf='';"); // NOI18N
 //        codeBlocks.add(new CodeBlockData(0, 0, 0, buffer.length()));
-            FileObject fo = NbUtilities.findFileObject(doc);
-            if (fo != null) {
-                Project project = FileOwnerQuery.getOwner(fo);
-                if (project != null) {
-                    StringBuilder sb = new StringBuilder();
-                    FileObject javascriptFolder = project.getProjectDirectory().getFileObject("public/javascripts"); // NOI18N
-                    if (javascriptFolder != null) {
-                        addJavaScriptFiles(javascriptFolder, sb);
-                        if (sb.length() > 0) {
-                            // Insert a file link
-                            //int sourceStart = ts.offset(); 
-                            int sourceStart = 0;
-                            String insertText = JsAnalyzer.NETBEANS_IMPORT_FILE + "('" + sb.toString() + "');\n"; // NOI18N
-                            // This corresponds to a 0-size block in the source
-                            int sourceEnd = sourceStart;
-                            int generatedStart = buffer.length();
-                            buffer.append(insertText);
-                            int generatedEnd = buffer.length();
-                            CodeBlockData blockData = new CodeBlockData(sourceStart, sourceEnd, generatedStart,
-                                    generatedEnd);
-                            codeBlocks.add(blockData);
-                        }
+/* This could be a huge bottleneck - see http://www.netbeans.org/issues/show_bug.cgi?id=134329
+        FileObject fo = NbUtilities.findFileObject(doc);
+        if (fo != null) {
+            Project project = FileOwnerQuery.getOwner(fo);
+            if (project != null) {
+                StringBuilder sb = new StringBuilder();
+                FileObject javascriptFolder = project.getProjectDirectory().getFileObject("public/javascripts"); // NOI18N
+                if (javascriptFolder != null) {
+                    addJavaScriptFiles(javascriptFolder, sb);
+                    if (sb.length() > 0) {
+                        // Insert a file link
+                        //int sourceStart = ts.offset(); 
+                        int sourceStart = 0;
+                        String path = sb.toString();
+                        String insertText = JsAnalyzer.NETBEANS_IMPORT_FILE + "(" + path + ");\n"; // NOI18N
+                        // This corresponds to a 0-size block in the source
+                        int sourceEnd = sourceStart;
+                        int generatedStart = buffer.length();
+                        buffer.append(insertText);
+                        int generatedEnd = buffer.length();
+                        CodeBlockData blockData = new CodeBlockData(sourceStart, sourceEnd, generatedStart,
+                                generatedEnd);
+                        codeBlocks.add(blockData);
                     }
                 }
             }
+        }
+*/
 
-        boolean inJavaScript = false;
+        JsAnalyzerState state = new JsAnalyzerState();
 
         // Rails automatically inserts certain JavaScript libraries:
         //  <script type="text/javascript" src="javascripts/prototype.js"></script>
@@ -294,7 +358,7 @@ public class JsModel {
         //FileObject fo = 
 
 
-        while(tokenSequence.moveNext()) {
+        while (tokenSequence.moveNext()) {
             Token<? extends TokenId> token = tokenSequence.token();
 
             // Conversion algorithm:
@@ -314,7 +378,7 @@ public class JsModel {
                 if (ts == null) {
                     continue;
                 }
-                inJavaScript = extractJavaScriptFromHtml(ts, buffer, inJavaScript);
+                extractJavaScriptFromHtml(ts, buffer, state);
             } else if (token.id().primaryCategory().equals("ruby")) { // NOI18N
                 // TODO - look for JavaScript context in Ruby, like this onclick handler:
                 // <%= submit_tag 'Upload', :onclick => "Element.show('upload-spinner')" %>
@@ -323,12 +387,11 @@ public class JsModel {
                 //  example2:   <input id="<%= id %>">
 
                 // TODO - make sure it's NOT an erb comment!!!
-                if (inJavaScript) {
+                if (state.in_inlined_javascript || state.in_javascript) {
                     int sourceStart = tokenSequence.offset();
-                    String text = " __UNKNOWN__ "; // NOI18N
                     int sourceEnd = sourceStart + token.length();
                     int generatedStart = buffer.length();
-                    buffer.append(text);
+                    buffer.append(GENERATED_IDENTIFIER);
                     int generatedEnd = buffer.length();
                     CodeBlockData blockData = new CodeBlockData(sourceStart, sourceEnd, generatedStart,
                             generatedEnd);
@@ -346,10 +409,15 @@ public class JsModel {
 //        }
     }
 
+    //internal JS analyzer states
+    protected static final String JS = "in_javascript";
+    protected static final String JS_INLINED = "in_inlined_javascript";
+//    private static final String QUTE_CUT = "quote_cut";    
 
+    
     /** @return True iff we're still in the middle of an embedded token */
-    boolean extractJavaScriptFromHtml(TokenSequence<? extends HTMLTokenId> ts,
-            StringBuilder buffer, boolean inJavaScript) {
+    void extractJavaScriptFromHtml(TokenSequence<? extends HTMLTokenId> ts,
+            StringBuilder buffer, JsAnalyzerState state) {
         // NOI18N
         // Process the HTML content: look for embedded script blocks,
         // as well as JavaScript event handlers in element attributes.
@@ -359,10 +427,29 @@ public class JsModel {
             Token<? extends HTMLTokenId> htmlToken = ts.token();
             TokenId htmlId = htmlToken.id();
             if (htmlId == HTMLTokenId.SCRIPT) {
-                inJavaScript = true;
+                state.in_javascript = true;
                 // Emit the block verbatim
                 int sourceStart = ts.offset();
                 String text = htmlToken.text().toString();
+                
+                // Make sure it doesn't start with <!--, if it does, remove it
+                // (this is a mechanism used in files to gracefully handle older browsers)
+                int start = 0;
+                for (; start < text.length(); start++) {
+                    char c = text.charAt(start);
+                    if (!Character.isWhitespace(c)) {
+                        break;
+                    }
+                }
+                if (start < text.length() && text.startsWith("<!--", start)) {
+                    int lineEnd = text.indexOf('\n', start);
+                    if (lineEnd != -1) {
+                        lineEnd++; //skip the \n
+                        sourceStart += lineEnd;
+                        text = text.substring(lineEnd);
+                    }
+                }
+
                 int sourceEnd = sourceStart + text.length();
                 int generatedStart = buffer.length();
                 buffer.append(text);
@@ -373,6 +460,9 @@ public class JsModel {
             } else if (htmlId == HTMLTokenId.TAG_OPEN) {
                 String text = htmlToken.text().toString();
 
+                // TODO - if we see a <script src="someurl"> block that also
+                // has a nonempty body, warn - the body will be ignored!!
+                // (This should be a quickfix)
                 if ("script".equals(text)) {
                     // Look for "<script src=" and if found, locate any includes.
                     // Quit when I find TAG_CLOSE or run out of tokens
@@ -386,6 +476,9 @@ public class JsModel {
                     while (ets.moveNext()) {
                         Token<? extends HTMLTokenId> t = ets.token();
                         TokenId id = t.id();
+                        // TODO - if we see a DEFER attribute here record that somehow
+                        // such that I can have a quickfix look to make sure you don't try
+                        // to mess with the document!
                         if (id == HTMLTokenId.TAG_CLOSE_SYMBOL) {
                             break;
                         } else if (foundSrc || foundType) {
@@ -416,6 +509,9 @@ public class JsModel {
                             if (src.length() > 2 && src.startsWith("\"") && src.endsWith("\"")) {
                                 src = src.substring(1, src.length() - 1);
                             }
+                            if (src.length() > 2 && src.startsWith("'") && src.endsWith("'")) {
+                                src = src.substring(1, src.length() - 1);
+                            }
 
                             // Insert a file link
                             int sourceStart = ts.offset();
@@ -435,7 +531,7 @@ public class JsModel {
                     }
                 }
 
-            } else if (inJavaScript && htmlId == HTMLTokenId.TEXT) {
+            } else if (state.in_javascript && htmlId == HTMLTokenId.TEXT) {
                 int sourceStart = ts.offset();
                 String text = htmlToken.text().toString();
                 int sourceEnd = sourceStart + text.length();
@@ -446,15 +542,20 @@ public class JsModel {
                         generatedEnd);
                 codeBlocks.add(blockData);
             } else if (htmlId == HTMLTokenId.VALUE_JAVASCRIPT) {
-                inJavaScript = true;
 
                 // Look for well known attribute names that are associated
                 // with JavaScript event handlers
                 String value = htmlToken.toString();
                 // Strip surrounding "'s
-                if (value.length() >= 2 && value.startsWith("\"") && value.endsWith("\"")) {
-                    value = value.substring(1, value.length() - 1);
+                if (value.length() >= 1 ) {
+                    char fch = value.charAt(0);
+//                    char lch = value.charAt(value.length() -1);
+                    if((fch == '\'' || fch == '"') && !state.in_inlined_javascript) {
+                        state.opening_quotation_stripped = true;
+                        value = value.substring(1);
+                    }
                 }
+                
 //              if (htmlId == HTMLTokenId.ARGUMENT) {
 //                String name = htmlToken.toString();
 //                if (EVENT_HANDLER_NAMES.contains(name)) {
@@ -492,19 +593,27 @@ public class JsModel {
 
                 int sourceStart = ts.offset();
                 String text = value;
-                int sourceEnd = sourceStart + text.length();
+//                int sourceEnd = sourceStart + text.length();
+                int sourceEnd = sourceStart + htmlToken.length();
 
-                // Add a function context around the event handler
-                // such that it gets proper function context (e.g.
-                // it can return values, the way event handlers can)
-                int beforePrelude = buffer.length();
-                buffer.append(";function(){\n"); // NOI18N
-                // TODO: Assign "this = " some kind of object type
-                // based on where we are
-                int afterPrelude = buffer.length();
-                codeBlocks.add(new CodeBlockData(sourceStart, sourceStart, beforePrelude,
-                        afterPrelude));
+                if(!state.in_inlined_javascript) {
+                    //first inlined JS section - add the prelude
+                    
+                    // Add a function context around the event handler
+                    // such that it gets proper function context (e.g.
+                    // it can return values, the way event handlers can)
+                    int beforePrelude = buffer.length();
+                    buffer.append(";function(){\n"); // NOI18N
+                    // TODO: Assign "this = " some kind of object type
+                    // based on where we are
+                    int afterPrelude = buffer.length();
+                    codeBlocks.add(new CodeBlockData(sourceStart, sourceStart, beforePrelude,
+                            afterPrelude));
+                } 
+                
+                state.in_inlined_javascript = true;
 
+                //subsequent inlined section - just copy the js code
                 // Emit the block verbatim
                 int generatedStart = buffer.length();
                 buffer.append(text);
@@ -512,7 +621,31 @@ public class JsModel {
                 CodeBlockData blockData = new CodeBlockData(sourceStart, sourceEnd,
                         generatedStart, generatedEnd);
                 codeBlocks.add(blockData);
+                
+                state.lastCodeBlock = blockData;
 
+            } else if(state.in_inlined_javascript && htmlId != HTMLTokenId.VALUE_JAVASCRIPT) {
+                //end of inlined javascript section - add postlude
+
+                if(state.opening_quotation_stripped) {
+                    //remove the ending quotation from the buffer and adjust the last codeblock
+                    CodeBlockData last = state.lastCodeBlock;
+                    char lastChar = buffer.charAt(buffer.length() - 1);
+                    if (lastChar == '\'' || lastChar == '"') {
+                        //ok, remove the ending quotation
+                        buffer.deleteCharAt(buffer.length() - 1);
+                        last.generatedEnd--;
+                    } else {
+                        //strange, opening quotation stripped but no ending quotation found???
+                    }
+                }
+                
+                state.in_inlined_javascript = false;
+                state.opening_quotation_stripped = false;
+                state.lastCodeBlock = null;
+                
+                int sourceStart = ts.offset();
+                
                 // Finish the surrounding function context
                 int beforePostlude = buffer.length();
                 // Add a newline to reduce the possiblity of the parser
@@ -528,11 +661,10 @@ public class JsModel {
             } else {
                 // TODO - stash some other DOM stuff into the JavaScript
                 // file such that I can refer to them from within JavaScript
-                inJavaScript = false;
+                state.in_javascript = false;
             }
         }
 
-        return inJavaScript;
     }
 
     public int sourceToGeneratedPos(int sourceOffset) {
@@ -595,6 +727,37 @@ public class JsModel {
         return prevLexOffset;
     }
 
+    IncrementalEmbeddingModel.UpdateState incrementalUpdate(EditHistory history) {
+        // Clear cache
+        //prevLexOffset = prevAstOffset = 0;
+        prevLexOffset = history.convertOriginalToEdited(prevLexOffset);
+        
+        int offset = history.getStart();
+        int limit = history.getOriginalEnd();
+        int delta = history.getSizeDelta();
+
+        boolean codeOverlaps = false;
+        for (CodeBlockData codeBlock : codeBlocks) {
+            // Block not affected by move
+            if (codeBlock.sourceEnd <= offset) {
+                continue;
+            }
+            if (codeBlock.sourceStart >= limit) {
+                codeBlock.sourceStart += delta;
+                codeBlock.sourceEnd += delta;
+                continue;
+            }
+            if (codeBlock.sourceStart <= offset && codeBlock.sourceEnd >= limit) {
+                codeBlock.sourceEnd += delta;
+                codeOverlaps = true;
+                continue;
+            }
+            return IncrementalEmbeddingModel.UpdateState.FAILED;
+        }
+        
+        return codeOverlaps ? IncrementalEmbeddingModel.UpdateState.UPDATED : IncrementalEmbeddingModel.UpdateState.COMPLETED;
+    }
+
     private void addJavaScriptFiles(FileObject file, StringBuilder sb) {
         if (file.isFolder()) {
             for (FileObject child : file.getChildren()) {
@@ -627,9 +790,21 @@ public class JsModel {
                 return codeBlock;
             }
         }
+        
         return null;
     }
 
+    public static boolean isGeneratedIdentifier(String ident) {
+        return GENERATED_IDENTIFIER.trim().equals(ident);
+    }
+    
+    static class JsAnalyzerState {
+        boolean in_javascript = false;
+        boolean in_inlined_javascript = false;
+        boolean opening_quotation_stripped = false;
+        CodeBlockData lastCodeBlock =  null;
+    }
+    
     private class CodeBlockData {
 
         /** Start of section in RHTML file */

@@ -41,12 +41,11 @@
 
 package org.netbeans.modules.websvc.wsitmodelext.security;
 
-import org.netbeans.modules.websvc.wsitmodelext.policy.NestedPolicyAllowed;
+import org.netbeans.modules.xml.wsdl.model.ExtensibilityElement;
 
 /**
  *
  * @author Martin Grebac
  */
-public interface WssElement extends NestedPolicyAllowed {
-    public static final String WSS_PROPERTY = "WSS_PROPERTY";     //NOI18N    
+public interface WssElement extends ExtensibilityElement {
 }

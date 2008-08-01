@@ -51,12 +51,13 @@ import java.util.List;
 import java.util.StringTokenizer;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JPanel;
+import org.apache.tools.ant.module.api.support.AntScriptUtils;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.ant.freeform.Actions;
 import org.netbeans.modules.ant.freeform.FreeformProject;
 import org.netbeans.modules.ant.freeform.FreeformProjectGenerator;
-import org.netbeans.modules.ant.freeform.Util;
+import org.netbeans.spi.project.ActionProvider;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -114,11 +115,11 @@ public final class UnboundTargetAlert extends JPanel {
     private void listTargets() {
         FileObject script = FreeformProjectGenerator.getAntScript(project.helper(), project.evaluator());
         if (script != null) {
-            List<String> targets = Util.getAntScriptTargetNames(script);
-            if (targets != null) {
+            try {
+                List<String> targets = AntScriptUtils.getCallableTargetNames(script);
                 selectCombo.setModel(new DefaultComboBoxModel(targets.toArray(new String[targets.size()])));
                 selectCombo.setSelectedItem("");
-            }
+            } catch (IOException x) {/* ignore */}
         }
     }
 

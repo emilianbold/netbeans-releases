@@ -1,12 +1,7 @@
 
 
 Document 0
-Delete:  source : <TESTURL>/prototype.js
-
-
-
-Document 1
-Indexed:
+Searchable Keys:
   base : $$;;$$;|FUNCTION|;;0;;;;
   base : $;;$;|FUNCTION|;element;0;;;;
   base : $a;;$A;|GLOBAL|;;0;;;;
@@ -16,12 +11,12 @@ Indexed:
   base : $h;;$H;|FUNCTION|;object;0;;;;
   base : $r;;$R;|GLOBAL|;;0;;;;
   base : $w;;$w;|FUNCTION|;string;0;;;;
-  base : _complete;Ajax.Request;_complete;|PROPERTY|;;0;;;Boolean;
-  base : _each;Ajax.Responders;_each;|FUNCTION|;iterator;0;;;void;
-  base : _each;Element.ClassNames;_each;|FUNCTION|;iterator;0;;;void;
-  base : _flag;Element._attributeTranslations.values;_flag;|FUNCTION|;element,attribute;0;;;;
-  base : _getattr;Element._attributeTranslations.values;_getAttr;|FUNCTION|;element,attribute;0;;;;
-  base : _nativeextensions;;_nativeExtensions;|GLOBAL|;;0;;;;
+  base : _complete;Ajax.Request;_complete;|PRIVATE|PROPERTY|;;0;;;Boolean;
+  base : _each;Ajax.Responders;_each;|PRIVATE|FUNCTION|;iterator;0;;;void;
+  base : _each;Element.ClassNames;_each;|PRIVATE|FUNCTION|;iterator;0;;;void;
+  base : _flag;Element._attributeTranslations.values;_flag;|PRIVATE|FUNCTION|;element,attribute;0;;;;
+  base : _getattr;Element._attributeTranslations.values;_getAttr;|PRIVATE|FUNCTION|;element,attribute;0;;;;
+  base : _nativeextensions;;_nativeExtensions;|PRIVATE|GLOBAL|;;0;;;;
   base : abort;;abort;|FUNCTION|;message;0;;;void;
   base : absolutize;Position;absolutize;|FUNCTION|;element;0;;;void;
   base : abstract;;Abstract;|PROPERTY|;;0;;;;
@@ -348,7 +343,7 @@ Indexed:
   fqn : $h;;$H;|FUNCTION|;object;0;;;;
   fqn : $r;;$R;|GLOBAL|;;0;;;;
   fqn : $w;;$w;|FUNCTION|;string;0;;;;
-  fqn : _nativeextensions;;_nativeExtensions;|GLOBAL|;;0;;;;
+  fqn : _nativeextensions;;_nativeExtensions;|PRIVATE|GLOBAL|;;0;;;;
   fqn : abort;;abort;|FUNCTION|;message;0;;;void;
   fqn : abstract.eventobserver.callback;;Abstract.EventObserver.callback;|PROPERTY|;;0;;;;
   fqn : abstract.eventobserver.element;;Abstract.EventObserver.element;|PROPERTY|;;0;;;;
@@ -394,7 +389,7 @@ Indexed:
   fqn : ajax.periodicalupdater.updater;;Ajax.PeriodicalUpdater.updater;|PROPERTY|;;0;;;;
   fqn : ajax.periodicalupdater.url;;Ajax.PeriodicalUpdater.url;|PROPERTY|;;0;;;;
   fqn : ajax.periodicalupdater;;Ajax.PeriodicalUpdater;|CONSTRUCTOR|;;0;;;;
-  fqn : ajax.request._complete;;Ajax.Request._complete;|PROPERTY|;;0;;;Boolean;
+  fqn : ajax.request._complete;;Ajax.Request._complete;|PRIVATE|PROPERTY|;;0;;;Boolean;
   fqn : ajax.request.dispatchexception;;Ajax.Request.dispatchException;|FUNCTION|;exception;0;;;void;
   fqn : ajax.request.evaljson;;Ajax.Request.evalJSON;|FUNCTION|;;0;;;;
   fqn : ajax.request.evalresponse;;Ajax.Request.evalResponse;|FUNCTION|;;0;;;;
@@ -407,7 +402,7 @@ Indexed:
   fqn : ajax.request.success;;Ajax.Request.success;|FUNCTION|;;0;;;Boolean;
   fqn : ajax.request.transport;;Ajax.Request.transport;|PROPERTY|;;0;;;;
   fqn : ajax.request;;Ajax.Request;|CONSTRUCTOR|;;0;;;;
-  fqn : ajax.responders._each;;Ajax.Responders._each;|FUNCTION|;iterator;0;;;void;
+  fqn : ajax.responders._each;;Ajax.Responders._each;|PRIVATE|FUNCTION|;iterator;0;;;void;
   fqn : ajax.responders.dispatch;;Ajax.Responders.dispatch;|FUNCTION|;callback,request,transport,json;0;;;void;
   fqn : ajax.responders.register;;Ajax.Responders.register;|FUNCTION|;responder;0;;;void;
   fqn : ajax.responders.responders;;Ajax.Responders.responders;|PROPERTY|;;0;;;Array;
@@ -431,14 +426,14 @@ Indexed:
   fqn : element._attributetranslations.names.rowspan;;Element._attributeTranslations.names.rowspan;|PROPERTY|;;0;;;String;
   fqn : element._attributetranslations.names.tabindex;;Element._attributeTranslations.names.tabindex;|PROPERTY|;;0;;;String;
   fqn : element._attributetranslations.names.valign;;Element._attributeTranslations.names.valign;|PROPERTY|;;0;;;String;
-  fqn : element._attributetranslations.values._flag;;Element._attributeTranslations.values._flag;|FUNCTION|;element,attribute;0;;;;
-  fqn : element._attributetranslations.values._getattr;;Element._attributeTranslations.values._getAttr;|FUNCTION|;element,attribute;0;;;;
+  fqn : element._attributetranslations.values._flag;;Element._attributeTranslations.values._flag;|PRIVATE|FUNCTION|;element,attribute;0;;;;
+  fqn : element._attributetranslations.values._getattr;;Element._attributeTranslations.values._getAttr;|PRIVATE|FUNCTION|;element,attribute;0;;;;
   fqn : element._attributetranslations.values.style;;Element._attributeTranslations.values.style;|FUNCTION|;element;0;;;;
   fqn : element._attributetranslations.values.title;;Element._attributeTranslations.values.title;|FUNCTION|;element;0;;;;
   fqn : element.addclassname;;Element.addClassName;|FUNCTION|;element,className;0;;;;
   fqn : element.addmethods;;Element.addMethods;|FUNCTION|STATIC|;methods;0;;;void;
   fqn : element.ancestors;;Element.ancestors;|FUNCTION|;element;0;;;;
-  fqn : element.classnames._each;;Element.ClassNames._each;|FUNCTION|;iterator;0;;;void;
+  fqn : element.classnames._each;;Element.ClassNames._each;|PRIVATE|FUNCTION|;iterator;0;;;void;
   fqn : element.classnames.add;;Element.ClassNames.add;|FUNCTION|;classNameToAdd;0;;;void;
   fqn : element.classnames.element;;Element.ClassNames.element;|PROPERTY|;;0;;;;
   fqn : element.classnames.initialize;;Element.ClassNames.initialize;|CONSTRUCTOR|;element;0;;;Element.ClassNames;
@@ -638,4 +633,4 @@ Indexed:
   fqn : try.these;;Try.these;|FUNCTION|;;0;;;;
   fqn : try;;Try;|PROPERTY|;;0;;;;
 
-Not Indexed:
+Not Searchable Keys:

@@ -50,6 +50,7 @@ import java.util.logging.Logger;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.JPDAClassType;
 import org.netbeans.api.debugger.jpda.JPDAThread;
+import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.models.CallStackFrameImpl;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.openide.util.NbBundle;
@@ -70,7 +71,7 @@ public class Evaluator implements JavaParserVisitor {
         System.getProperty ("netbeans.debugger.noInvokeMethods") != null;
     
     private static final Logger loggerMethod = Logger.getLogger("org.netbeans.modules.debugger.jpda.invokeMethod"); // NOI18N
-    private static final Logger loggerValue = Logger.getLogger("org.netbeans.modules.debugger.jpda.getValue"); // NOI8N
+    private static final Logger loggerValue = Logger.getLogger("org.netbeans.modules.debugger.jpda.getValue"); // NOI18N
 
     private Expression              expression;
     private EvaluationContext       evaluationContext;
@@ -1511,7 +1512,8 @@ public class Evaluator implements JavaParserVisitor {
                 // Try to get arguments
                 try {
                     org.netbeans.api.debugger.jpda.LocalVariable[] lvs;
-                    lvs = new CallStackFrameImpl(frame, 0, evaluationContext.getDebugger()).getMethodArguments();
+                    lvs = new CallStackFrameImpl((JPDAThreadImpl) ((JPDADebuggerImpl) evaluationContext.getDebugger()).getThread(frame.thread()),
+                                                 frame, 0, evaluationContext.getDebugger()).getMethodArguments();
                     if (lvs != null) {
                         for (org.netbeans.api.debugger.jpda.LocalVariable lv : lvs) {
                             if (ctx.identifier.equals(lv.getName())) {

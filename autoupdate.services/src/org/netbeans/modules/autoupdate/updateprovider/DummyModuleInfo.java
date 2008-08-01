@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -97,6 +97,9 @@ public final class DummyModuleInfo extends ModuleInfo {
     private final Set<Dependency> deps;
     private final String[] provides;
     
+    private SpecificationVersion specVersion = null;
+    private String codeName = null;
+    
     /** Create a new fake module based on manifest.
      * Only main attributes need be presented, so
      * only pass these.
@@ -138,12 +141,18 @@ public final class DummyModuleInfo extends ModuleInfo {
     }
     
     public SpecificationVersion getSpecificationVersion() {
-        String sv = attr.getValue("OpenIDE-Module-Specification-Version"); // NOI18N
-        return (sv == null ? null : new SpecificationVersion(sv));
+        if (specVersion == null) {
+            String sv = attr.getValue("OpenIDE-Module-Specification-Version"); // NOI18N
+            specVersion = sv == null ? null : new SpecificationVersion(sv);
+        }
+        return specVersion;
     }
     
     public String getCodeName() {
-        return attr.getValue("OpenIDE-Module"); // NOI18N
+        if (codeName == null) {
+            codeName = attr.getValue("OpenIDE-Module"); // NOI18N
+        }
+        return codeName;
     }
     
     public int getCodeNameRelease() {

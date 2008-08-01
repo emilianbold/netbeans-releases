@@ -58,9 +58,6 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-
-
-import org.netbeans.modules.uml.ui.support.applicationmanager.INodePresentation;
 import org.netbeans.modules.uml.ui.support.commondialogs.IErrorDialog;
 import org.netbeans.modules.uml.ui.support.commondialogs.MessageIconKindEnum;
 import org.netbeans.modules.uml.ui.support.finddialog.FindController;
@@ -1185,14 +1182,15 @@ public class AssociateDlgGUI extends JCenterDialog implements IAssociateDlgGUI
                                     if (pPresEle != null)
                                     {
                                         // the lock edit flag is only available for nodes
-                                        if (pPresEle instanceof INodePresentation)
-                                        {
-                                            INodePresentation pNode = (INodePresentation)pPresEle;
-                                            if (pNode != null)
-                                            {
-                                                pNode.setLockEdit(true);
-                                            }
-                                        }
+                                        // TODO: meteora
+//                                        if (pPresEle instanceof INodePresentation)
+//                                        {
+//                                            INodePresentation pNode = (INodePresentation)pPresEle;
+//                                            if (pNode != null)
+//                                            {
+//                                                pNode.setLockEdit(true);
+//                                            }
+//                                        }
                                     }
                                 }
                             }

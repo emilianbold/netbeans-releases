@@ -46,10 +46,9 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.URL;
-import java.util.Iterator;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
-import org.netbeans.JarClassLoader;
+import org.netbeans.ProxyURLStreamHandlerFactory;
 import org.netbeans.Stamps;
 import org.netbeans.Util;
 import org.openide.filesystems.FileObject;
@@ -61,7 +60,6 @@ import org.openide.modules.SpecificationVersion;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 
 /**
@@ -93,18 +91,9 @@ public final class Main extends Object {
   }
 
 
-  private static boolean nbFactoryInitialized;
   /** Initializes default stream factory */
   public static void initializeURLFactory () {
-    if (!nbFactoryInitialized) {
-        NbURLStreamHandlerFactory fact = new NbURLStreamHandlerFactory();
-        try {
-            java.net.URL.setURLStreamHandlerFactory(fact);
-        } catch (Error e) {
-            fact.registerUsingReflection(e);
-        }
-        nbFactoryInitialized = true;
-    }
+      ProxyURLStreamHandlerFactory.register();
   }
   
   /**

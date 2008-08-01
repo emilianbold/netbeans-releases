@@ -41,7 +41,12 @@
 
 package org.netbeans.modules.web.jspcompiler;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.LineNumberReader;
+
 
 /**
  * This class reads SMAP information from files.
@@ -55,6 +60,7 @@ public class SmapFileReader implements SmapReader {
         this.file = file;
     }
 
+    @Override
     public String toString() {
         if (file != null) return file.toString();
         return null;
@@ -80,6 +86,5 @@ public class SmapFileReader implements SmapReader {
         }
         return null;
     }
- 
 
 }

@@ -66,13 +66,10 @@ import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.BaseKit;
 import org.netbeans.lib.editor.util.swing.MutablePositionRegion;
+import org.netbeans.modules.gsf.api.DataLoadersBridge;
 import org.netbeans.modules.gsf.api.OffsetRange;
-import org.netbeans.spi.editor.highlighting.HighlightsLayer;
-import org.netbeans.spi.editor.highlighting.HighlightsLayerFactory;
-import org.netbeans.spi.editor.highlighting.HighlightsLayerFactory.Context;
-import org.netbeans.spi.editor.highlighting.ZOrder;
 import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
-import org.openide.loaders.DataObject;
+import org.openide.filesystems.FileObject;
 import org.openide.text.NbDocument;
 
 /**
@@ -334,22 +331,13 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
         if (bag == null) {
             doc.putProperty(InstantRenamePerformer.class, bag = new OffsetsBag(doc));
             
-            Object stream = doc.getProperty(Document.StreamDescriptionProperty);
+            Object stream = DataLoadersBridge.getDefault().getFileObject(doc);
             
-            if (stream instanceof DataObject) {
-                Logger.getLogger("TIMER").log(Level.FINE, "Instant Rename Highlights Bag", new Object[] {((DataObject) stream).getPrimaryFile(), bag}); //NOI18N
+            if (stream instanceof FileObject) {
+                Logger.getLogger("TIMER").log(Level.FINE, "Instant Rename Highlights Bag", new Object[] {(FileObject) stream, bag}); //NOI18N
             }
         }
         
         return bag;
     }
-
-    public static final class HLFactory implements HighlightsLayerFactory {
-        public HighlightsLayer[] createLayers(Context context) {
-            return new HighlightsLayer[] {
-                //"above" mark occurrences, "below" search layers:
-                HighlightsLayer.create(InstantRenamePerformer.class.getName(), ZOrder.CARET_RACK.forPosition(75), false, getHighlightsBag(context.getDocument())),
-            };
-        }
-    } // End of HLFactory class
 }

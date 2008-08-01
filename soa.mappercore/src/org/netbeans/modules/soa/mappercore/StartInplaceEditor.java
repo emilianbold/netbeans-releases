@@ -50,19 +50,18 @@ import org.netbeans.modules.soa.mappercore.model.VertexItem;
  * @author alex
  */
 class StartInplaceEditor extends MapperKeyboardAction {
-    private Canvas canvas;
 
     public StartInplaceEditor(Canvas canvas) {
-        this.canvas = canvas;
+        super(canvas);
     }
-
+    
     public void actionPerformed(ActionEvent e) {
-            SelectionModel selectionModel = canvas.getSelectionModel();
-            TreePath treePath = selectionModel.getSelectedPath();
-            VertexItem vertexItem = selectionModel.getSelectedVertexItem();
-            if (vertexItem != null && treePath != null) {
-                canvas.startEdit(treePath, vertexItem);
-            }
+        SelectionModel selectionModel = canvas.getSelectionModel();
+        TreePath treePath = selectionModel.getSelectedPath();
+        VertexItem vertexItem = selectionModel.getSelectedVertexItem();
+        if (vertexItem != null && treePath != null) {
+            canvas.startEdit(treePath, vertexItem);
+        }
     }
 
     @Override

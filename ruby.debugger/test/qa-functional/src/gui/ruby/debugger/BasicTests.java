@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -44,22 +44,27 @@ import junit.textui.TestRunner;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.JellyTestCase;
-import org.netbeans.jellytools.NbDialogOperator;
+import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
-import org.netbeans.jellytools.OutputTabOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.actions.Action;
+import org.netbeans.jellytools.TopComponentOperator;
+import org.netbeans.jellytools.TreeTableOperator;
+import org.netbeans.jellytools.actions.DebugProjectAction;
+import org.netbeans.jellytools.modules.debugger.actions.StepIntoAction;
+import org.netbeans.jellytools.modules.debugger.actions.StepOutAction;
+import org.netbeans.jellytools.modules.debugger.actions.StepOverAction;
+import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.JemmyProperties;
-import org.netbeans.jemmy.TimeoutExpiredException;
+import org.netbeans.jemmy.operators.ContainerOperator;
+import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.ide.ProjectSupport;
-import org.openide.util.Utilities;
 
 /**
  * Basic ruby debugger test.
  *
- * @author Tomas.Musil@sun.com
+ * @author Tomas Musil, Jiri Skrivanek
  */
 public class BasicTests extends JellyTestCase {
     
@@ -70,10 +75,9 @@ public class BasicTests extends JellyTestCase {
 
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new BasicTests("testDebuggerStartStop"));
+        suite.addTest(new BasicTests("testCreateRubyProject"));
+        suite.addTest(new BasicTests("testDebuggerStart"));
         suite.addTest(new BasicTests("testStepInOutOver"));
-        suite.addTest(new BasicTests("testNativeRubyDebugging"));
-
         return suite;
     }
     
@@ -82,7 +86,7 @@ public class BasicTests extends JellyTestCase {
         // run whole suite
         TestRunner.run(suite());
         // run only selected test case
-        //junit.textui.TestRunner.run(new RubyValidation("testCreateRubyProject"));
+        //junit.textui.TestRunner.run(new BasicTests("testCreateRubyProject"));
     }
     
     public @Override void setUp() {
@@ -91,65 +95,19 @@ public class BasicTests extends JellyTestCase {
     
     // name of sample projects
     private static final String SAMPLE_RUBY_PROJECT_NAME = "SampleRubyApplication";  //NOI18N
-    //line number with puts "helloworld"
-    //TODO get rid of hardcoding line number
-    private static final int breakpointLineNumber = 6;
     
-    public void testDebuggerStartStop() throws InterruptedException {
-        createRubyProject(SAMPLE_RUBY_PROJECT_NAME);
-        EditorOperator debuggeeOp = new EditorOperator("main.rb");
-        Util.putBreakpointToLine(debuggeeOp, breakpointLineNumber);
-        Util.invokeDebugMainProject();
-        OutputTabOperator outOp = new OutputTabOperator(SAMPLE_RUBY_PROJECT_NAME + " (debug)");
-        outOp.waitText("ruby 1.8.5 debugger listens");
-        Util.waitForDebuggingActions();
-        if (Utilities.isWindows()){
-            // FIXME: when problems of issue #113007 are solved -> cannot kill session, so invoking Continue for now
-            Util.invokeContinue();
-        } else {
-            Util.invokeFinishDebuggerSession();
-        }
-        outOp.waitText("");
-        Thread.sleep(2000);
-        assertFalse("debugger is not running now", new Action("Run|Continue", null).isEnabled());
-    }
-
-    public void testStepInOutOver() throws InterruptedException{
-        EditorOperator debuggeeOp = new EditorOperator("main.rb");
-        debuggeeOp.setCaretPositionToLine(breakpointLineNumber+1);
-        debuggeeOp.insert("require 'date' \n d = Date.today \n puts d");
-        Util.invokeDebugMainProject();
-        Util.waitForDebuggingActions();
-        Util.invokeStepOver(); //move to puts helloworld
-        Util.invokeStepOver(); //move to d = Date.new
-        Thread.sleep(500);
-        Util.invokeStepInto();
-        assertTrue("After step into PC should move to date.rb", Util.isOpenedEditorTab("date.rb"));
-        assertEquals("callstack size", 2, Util.getCallStackSize());
-        Util.invokeStepOut();
-        assertTrue("Local variables should contain d", Util.isLocalVariablePresent("d")); 
-        assertEquals("callstack size", 1, Util.getCallStackSize());
-        Util.invokeStepOver();
-    }
-
-    public void testNativeRubyDebugging() throws InterruptedException{
-        String nativeRuby = Util.detectNativeRuby();
-        ProjectSupport.waitScanFinished();
-        if (nativeRuby != null){
-            OutputTabOperator outOp = new OutputTabOperator(SAMPLE_RUBY_PROJECT_NAME + " (debug)");
-            Util.setRuby(nativeRuby);
-            Util.invokeDebugMainProject();
-            Util.waitForDebuggingActions();
-            Util.invokeStepOver(); 
-            outOp.waitText("Hello World");
-            Util.invokeContinue();
-        } else {
-            fail ("did not found native ruby on $PATH;");
-        }
-    }
     
-    //project generation method
-    private void createRubyProject(String projectName) {
+    /** Test Ruby Application
+     * - open new project wizard
+     * - choose Ruby|Ruby Application
+     * - click Next
+     * - type name and location and finish the wizard
+     * - wait until project is in Projects view
+     * - wait classpath scanning finished
+     * - wait until main.rb is opened in editor
+     * - insert some test data into editor
+     */
+    public void testCreateRubyProject() {
         // create new web application project
         NewProjectWizardOperator npwo = NewProjectWizardOperator.invoke();
         // "Ruby"
@@ -158,24 +116,68 @@ public class BasicTests extends JellyTestCase {
         // "Ruby Application"
         String rubyApplicationLabel = Bundle.getString("org.netbeans.modules.ruby.rubyproject.ui.wizards.Bundle", "TXT_NewJavaApp");
         npwo.selectProject(rubyApplicationLabel);
-        npwo.btNext().pushNoBlock();
-        try {
-            // "Choose Ruby Interpreter"
-            String chooseRubyTitle = Bundle.getString("org.netbeans.api.ruby.platform.Bundle", "ChooseRuby");
-            new NbDialogOperator(chooseRubyTitle).cancel();
-        } catch (TimeoutExpiredException e) {
-            // ignore - Choose Ruby Interpreter dialog is opened only when native Ruby is available
-        }
+        npwo.next();
         NewProjectNameLocationStepOperator npnlso = new NewProjectNameLocationStepOperator();
-        npnlso.txtProjectName().setText(projectName);
+        npnlso.txtProjectName().setText(SAMPLE_RUBY_PROJECT_NAME);
         npnlso.txtProjectLocation().setText(System.getProperty("netbeans.user")); // NOI18N
         npnlso.finish();
         // wait project appear in projects view
         // wait 30 second
         JemmyProperties.setCurrentTimeout("JTreeOperator.WaitNextNodeTimeout", 30000); // NOI18N
-        new ProjectsTabOperator().getProjectRootNode(projectName);
+        new ProjectsTabOperator().getProjectRootNode(SAMPLE_RUBY_PROJECT_NAME);
         // wait classpath scanning finished
         ProjectSupport.waitScanFinished();
+        // wait for main.rb opened in editor
+        EditorOperator eo = new EditorOperator("main.rb");  // NOI18N
+        eo.replace("puts \"Hello World\"", "require 'date'\ndate1 = Date.today\ndate2 = Date.today\nputs date2");
     }
-    
+
+    /** Test start of ruby debugger
+     * - set breakpoint to line with date1 declaration
+     * - start debugger
+     * - wait debugger is stopped at breakpoint
+     */
+    public void testDebuggerStart() throws Exception {
+        EditorOperator eo = new EditorOperator("main.rb");  // NOI18N
+        Util.setBreakpoint(eo, "date1 ="); // NOI18N
+        Node rootNode = new ProjectsTabOperator().getProjectRootNode(SAMPLE_RUBY_PROJECT_NAME);
+        new DebugProjectAction().performMenu(rootNode);
+        Util.waitStopped(eo);
+    }
+
+    /** Test step into, step over and step out.
+     * - perform step over
+     * - wait it stops at next line
+     * - check date1 is shown in Local Variables view
+     * - check stack has two rows in Call Stack view
+     * - perform step into
+     * - wait date.rb is opened and debugger stopped in it
+     * - perform step out and check debugger is finished
+     */
+    public void testStepInOutOver() throws Exception{
+        EditorOperator eo = new EditorOperator("main.rb");
+        int lineNumber = eo.getLineNumber();
+        new StepOverAction().perform();
+        lineNumber = Util.waitStopped(eo, lineNumber+1);
+        assertTrue("Debugger not at \"date2 = Date.today\"", eo.getText(lineNumber).indexOf("date2 =") > -1);
+ 
+        TopComponentOperator localVariablesTCO = new TopComponentOperator("Local Variables");//NOI18N
+        new Node(new TreeTableOperator(localVariablesTCO).tree(), "date1");
+
+        TopComponentOperator callStackTCO = new TopComponentOperator("Call Stack");//NOI18N
+        assertEquals("Call Stack row count wrong.", 2, new JTableOperator(callStackTCO).getRowCount());
+        
+        new StepIntoAction().perform();
+        // wait for date.rb opened in editor
+        EditorOperator eoDate = new EditorOperator("date.rb");
+        lineNumber = Util.waitStopped(eoDate);
+        assertTrue("Debugger not at \"today in date.rb\"", eoDate.getText(lineNumber).indexOf("today") > -1);
+        
+        new StepOutAction().perform();
+        
+        String debugToolbarLabel = Bundle.getStringTrimmed("org.netbeans.modules.debugger.jpda.ui.Bundle", "Toolbars/Debug");
+        ContainerOperator debugToolbarOper = MainWindowOperator.getDefault().getToolbar(debugToolbarLabel);
+         // wait until Debug toolbar dismiss
+        debugToolbarOper.waitComponentVisible(false);
+    }
 }

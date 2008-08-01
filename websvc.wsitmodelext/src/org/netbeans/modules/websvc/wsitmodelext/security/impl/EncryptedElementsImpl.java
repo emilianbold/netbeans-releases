@@ -43,9 +43,7 @@ package org.netbeans.modules.websvc.wsitmodelext.security.impl;
 
 import org.netbeans.modules.websvc.wsitmodelext.security.EncryptedElements;
 import org.netbeans.modules.websvc.wsitmodelext.security.SecurityPolicyAttribute;
-import org.netbeans.modules.websvc.wsitmodelext.security.SecurityPolicyQName;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import org.netbeans.modules.xml.wsdl.model.visitor.WSDLVisitor;
 import org.w3c.dom.Element;
 
 /**
@@ -61,15 +59,6 @@ public class EncryptedElementsImpl extends SecurityPolicyComponentImpl implement
         super(model, e);
     }
     
-    public EncryptedElementsImpl(WSDLModel model){
-        this(model, createPrefixedElement(SecurityPolicyQName.ENCRYPTEDELEMENTS.getQName(), model));
-    }
-
-    @Override
-    public void accept(WSDLVisitor visitor) {
-        visitor.visit(this);
-    }
-
     public void setXpathVersion(String xPathVersion) {
         setAttribute(XPATHVERSION_PROPERTY, SecurityPolicyAttribute.XPATHVERSION, xPathVersion);        
     }

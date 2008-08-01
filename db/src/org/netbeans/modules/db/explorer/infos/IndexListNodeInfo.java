@@ -55,7 +55,6 @@ import java.util.logging.Logger;
 
 import org.netbeans.lib.ddl.impl.DriverSpecification;
 import org.netbeans.api.db.explorer.DatabaseException;
-import org.netbeans.modules.db.explorer.DatabaseNodeChildren;
 import org.netbeans.modules.db.explorer.nodes.DatabaseNode;
 
 public class IndexListNodeInfo extends DatabaseNodeInfo {
@@ -141,14 +140,25 @@ public class IndexListNodeInfo extends DatabaseNodeInfo {
                 }
                 rs.close();
 
-                if (info != null) ((DatabaseNodeChildren)getNode().getChildren()).createSubnode(info,true);
-                //refresh list of columns due to the column's icons
-                getParent().refreshChildren();
+                if (info != null) {
+                    addChild(info);
+                }
+                
+                notifyChange();
             }
         } catch (Exception e) {
-            e.printStackTrace();
-            throw new DatabaseException(e.getMessage());
+            throw new DatabaseException(e);
         }
+    }
+    
+    @Override
+    public String getDisplayName() {
+            return bundle().getString("NDN_Indexes"); //NOI18N
+    }
+
+    @Override
+    public String getShortDescription() {
+        return bundle().getString("ND_IndexList"); //NOI18N
     }
 
 }

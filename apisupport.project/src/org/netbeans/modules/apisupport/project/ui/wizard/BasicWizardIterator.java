@@ -190,7 +190,21 @@ public abstract class BasicWizardIterator implements WizardDescriptor.Asynchrono
         }
         
         public String getDefaultPackagePath(String fileName, boolean resource) {
-            return (resource ? getModuleInfo().getResourceDirectoryPath(false) : getModuleInfo().getSourceDirectoryPath()) + '/' +
+            return getDefaultPackagePath(fileName, resource, false);
+        }
+
+        public String getDefaultPackagePath(String fileName, boolean resource, boolean inTests) {
+            if (inTests) {
+                // TBD: mkleint needs to adopt this to Maven, I am afraid
+                // but for our ant scripts the test dir and resource test dir
+                // is the same, so I can temporarily use 
+                // just the following workaround:
+                String path = getModuleInfo().getResourceDirectoryPath(true);
+                return path + '/' +
+                    getPackageName().replace('.','/') + '/' + fileName;
+            }
+            
+            return (resource ? getModuleInfo().getResourceDirectoryPath(inTests) : getModuleInfo().getSourceDirectoryPath()) + '/' +
                     getPackageName().replace('.','/') + '/' + fileName;
         }
         
@@ -221,7 +235,7 @@ public abstract class BasicWizardIterator implements WizardDescriptor.Asynchrono
     public void initialize(WizardDescriptor wiz) {
         // mkleint: copied from the NewJavaFileWizardIterator.. there must be something painfully wrong..
         String[] beforeSteps = null;
-        Object prop = wiz.getProperty("WizardPanel_contentData"); // NOI18N
+        Object prop = wiz.getProperty(WizardDescriptor.PROP_CONTENT_DATA); // NOI18N
         if (prop != null && prop instanceof String[]) {
             beforeSteps = (String[])prop;
         }
@@ -370,9 +384,9 @@ public abstract class BasicWizardIterator implements WizardDescriptor.Asynchrono
             panel.addPropertyChangeListener(this);
             panel.setName(panel.getPanelName()); // NOI18N
             this.panel = panel;
-            panel.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(stepIndex)); // NOI18N
+            panel.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer(stepIndex)); // NOI18N
             // names of currently used steps
-            panel.putClientProperty("WizardPanel_contentData", allSteps); // NOI18N
+            panel.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, allSteps); // NOI18N
         }
         
         private BasicWizardIterator.Panel getPanel() {

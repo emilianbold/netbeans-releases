@@ -34,37 +34,33 @@ public class TreeParserNoEx extends TreeParser {
         super();
     }
     
+    @Override
     protected void match(AST t, int ttype) {
-        //System.out.println("match("+ttype+"); cursor is "+t);
         if (t == null || t == ASTNULL || t.getType() != ttype) {
             if (inputState.guessing == 0) {
                 matchException = new MismatchedTokenException(getTokenNames(), t, ttype, false);
             }
             matchError = true;
-        } /*else {
-            matchError = false;
-        }*/
+        }
     }
 
+    @Override
     public void match(AST t, BitSet b) {
         if (t == null || t == ASTNULL || !b.member(t.getType())) {
             if (inputState.guessing == 0) {
                 matchException = new MismatchedTokenException(getTokenNames(), t, b, false);
             }
             matchError = true;
-        } /*else {
-            matchError = false;
-        }*/
+        }
     }
 
+    @Override
     protected void matchNot(AST t, int ttype) {
         if (t == null || t == ASTNULL || t.getType() == ttype) {
             if (inputState.guessing == 0) {
                 matchException = new MismatchedTokenException(getTokenNames(), t, ttype, true);
             }
             matchError = true;
-        } /*else {
-            matchError = false;
-        }*/
+        }
     }
 }

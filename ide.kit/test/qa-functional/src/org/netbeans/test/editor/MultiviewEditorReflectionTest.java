@@ -41,7 +41,8 @@
 
 package org.netbeans.test.editor;
 
-import java.lang.reflect.Method;
+import junit.framework.Test;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
 import org.openide.util.Lookup;
 import org.openide.util.SharedClassObject;
@@ -53,26 +54,27 @@ import org.openide.util.SharedClassObject;
  */
 public class MultiviewEditorReflectionTest extends NbTestCase {
 
-    /** Creates a new instance of MultiviewEditorReflectionTest */
     public MultiviewEditorReflectionTest(String name) {
         super(name);
     }
+    
+    public static Test suite() {
+        return NbModuleSuite.create(
+            NbModuleSuite.createConfiguration(
+                MultiviewEditorReflectionTest.class
+            ).gui(false).clusters(".*").enableModules(".*")
+        );
+    }
 
     public void testReflection() throws Exception {
-            final ClassLoader loader = (ClassLoader)Lookup.getDefault().lookup(ClassLoader.class);
-            Class settingsClass = Class.forName(
-                    "org.netbeans.editor.Settings", false, loader); //NOI18N
-            Class listenerClass = Class.forName(
-                    "org.netbeans.editor.SettingsChangeListener", false, loader); //NOI18N
-            Method addSettingsListener = settingsClass.getMethod(
-                    "addSettingsChangeListener",new Class[ ] { listenerClass });//NOI18N
-            Method removeSettingsListener = settingsClass.getMethod(
-                    "removeSettingsChangeListener",new Class[ ] { listenerClass });//NOI18N
-
-            Class editorBaseOption = Class.forName("org.netbeans.modules.editor.options.BaseOptions", true,
-                    loader);
-            SharedClassObject option = SharedClassObject.findObject(editorBaseOption);
-            Method is = option.getClass().getMethod("isToolbarVisible", new Class[0]);
+            ClassLoader loader = Lookup.getDefault().lookup(ClassLoader.class);
+            Class settingsClass = Class.forName("org.netbeans.editor.Settings", false, loader);
+            Class listenerClass = Class.forName("org.netbeans.editor.SettingsChangeListener", false, loader);
+            settingsClass.getMethod("addSettingsChangeListener", listenerClass);
+            settingsClass.getMethod("removeSettingsChangeListener", listenerClass);
+            Class<?> editorBaseOption = Class.forName("org.netbeans.modules.editor.options.BaseOptions", true, loader);
+            SharedClassObject.findObject(editorBaseOption.asSubclass(SharedClassObject.class), true);
+            editorBaseOption.getMethod("isToolbarVisible");
     }
 
 }

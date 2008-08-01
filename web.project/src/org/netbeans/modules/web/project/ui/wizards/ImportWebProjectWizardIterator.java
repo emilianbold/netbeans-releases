@@ -83,24 +83,23 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 public class ImportWebProjectWizardIterator implements WizardDescriptor.ProgressInstantiatingIterator {
     
     private static final long serialVersionUID = 1L;
-    private String buildfileName = GeneratedFilesHelper.BUILD_XML_PATH;
 
-    private String moduleLoc;
+    private ProjectImportLocationWizardPanel projectLocationWizardPanel;
     
     /** Create a new wizard iterator. */
     public ImportWebProjectWizardIterator () {}
     
     private WizardDescriptor.Panel[] createPanels() {
         return new WizardDescriptor.Panel[] {
-            new ProjectImportLocationWizardPanel(J2eeModule.WAR, 
+            projectLocationWizardPanel = new ProjectImportLocationWizardPanel(J2eeModule.WAR, 
                     NbBundle.getMessage(NewWebProjectWizardIterator.class, "LBL_IW_Step1"),
                     NbBundle.getMessage(NewWebProjectWizardIterator.class, "TXT_WebExtSources"),
                     NbBundle.getMessage(NewWebProjectWizardIterator.class, "LBL_NPW1_DefaultProjectName"),
-                    NbBundle.getMessage(NewWebProjectWizardIterator.class, "LBL_IW_LocationSrcDesc")),
+                    NbBundle.getMessage(NewWebProjectWizardIterator.class, "LBL_IW_LocationSrcDesc"), true),
             new ProjectServerWizardPanel(J2eeModule.WAR, 
                     NbBundle.getMessage(NewWebProjectWizardIterator.class, "LBL_IW_Step2"),
                     NbBundle.getMessage(NewWebProjectWizardIterator.class, "TXT_WebExtSources"),
-                    true, false, true, false, false),
+                    true, false, true, false, true, false),
             new PanelSourceFolders.Panel()
         };
     }
@@ -173,7 +172,7 @@ public class ImportWebProjectWizardIterator implements WizardDescriptor.Progress
             j2eeLevel = WebModule.J2EE_14_LEVEL;
         }
 
-        String buildfile = getBuildfile();
+        String buildfile = projectLocationWizardPanel.getBuildFile();
         
         WebProjectCreateData createData = new WebProjectCreateData();
         createData.setProjectDir(dirF);
@@ -224,14 +223,6 @@ public class ImportWebProjectWizardIterator implements WizardDescriptor.Progress
         return resultSet;
     }
     
-    private String getBuildfile() {
-        return buildfileName;
-    }
-    
-    private void setBuildfile(String name) {
-        buildfileName = name;
-    }
-
     private transient int index;
     private transient WizardDescriptor.Panel[] panels;
     private transient WizardDescriptor wiz;
@@ -254,9 +245,9 @@ public class ImportWebProjectWizardIterator implements WizardDescriptor.Progress
                 JComponent jc = (JComponent)c;
                 jc.putClientProperty("NewProjectWizard_Title", NbBundle.getMessage(ImportWebProjectWizardIterator.class, "TXT_WebExtSources")); // NOI18N
                 // Step #.
-                jc.putClientProperty("WizardPanel_contentSelectedIndex", Integer.valueOf(i)); // NOI18N
+                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, Integer.valueOf(i)); // NOI18N
                 // Step name (actually the whole list for reference).
-                jc.putClientProperty("WizardPanel_contentData", steps); // NOI18N
+                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps); // NOI18N
             }
         }
     }

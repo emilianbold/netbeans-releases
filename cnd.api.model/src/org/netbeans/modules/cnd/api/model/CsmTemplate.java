@@ -54,7 +54,12 @@ import java.util.List;
  *
  * @author Vladimir Kvashin
  */
-public interface CsmTemplate extends CsmObject {
+public interface CsmTemplate extends CsmScope {
+    /**
+     * Returns true if this declaration is template, otherwise false.
+     */
+    boolean isTemplate();
+
 
     List<CsmTemplateParameter> getTemplateParameters();
 

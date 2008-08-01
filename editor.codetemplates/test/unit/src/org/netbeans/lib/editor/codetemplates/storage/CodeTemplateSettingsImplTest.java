@@ -131,7 +131,35 @@ public class CodeTemplateSettingsImplTest extends NbTestCase {
         
         // Force loading from the files
         //Map<String, CodeTemplateDescription> loadedMap = CodeTemplatesStorage.load(mimePath, false);
-        StorageImpl<String, CodeTemplateDescription> storage = new StorageImpl<String, CodeTemplateDescription>(new CodeTemplatesStorage());
+        StorageImpl<String, CodeTemplateDescription> storage = new StorageImpl<String, CodeTemplateDescription>(new CodeTemplatesStorage(), null);
+        Map<String, CodeTemplateDescription> loadedMap = storage.load(mimePath, null, false);
+        
+        assertNotNull("Can't load the map", loadedMap);
+        assertEquals("Wrong number of code templates", 1, loadedMap.size());
+        checkCodeTemplate(loadedMap, abbrev, desc, text, uuid, contexts.toArray(new String [contexts.size()]));
+    }
+
+    public void testEndOfLines() throws IOException {
+        String abbrev = "tt";
+        String desc = "Multi-line Code Template";
+        String text = "<table>\n" +
+                      "    <tr>\n" +
+                      "        <td>${cursor}</td>\n" +
+                      "    </tr>\n" +
+                      "</table>\n";
+        String uuid = "test-uuid-1";
+        List<String> contexts = Arrays.asList(new String [] { "ct-ctx-tt" });
+        CodeTemplateDescription ct = new CodeTemplateDescription(abbrev, desc, text, contexts, uuid);
+        
+        MimePath mimePath = MimePath.parse("text/x-multi");
+        CodeTemplateSettingsImpl ctsi = CodeTemplateSettingsImpl.get(mimePath);
+        
+        // Write the code template
+        ctsi.setCodeTemplates(Collections.singletonMap(abbrev, ct));
+        
+        // Force loading from the files
+        //Map<String, CodeTemplateDescription> loadedMap = CodeTemplatesStorage.load(mimePath, false);
+        StorageImpl<String, CodeTemplateDescription> storage = new StorageImpl<String, CodeTemplateDescription>(new CodeTemplatesStorage(), null);
         Map<String, CodeTemplateDescription> loadedMap = storage.load(mimePath, null, false);
         
         assertNotNull("Can't load the map", loadedMap);
@@ -152,7 +180,7 @@ public class CodeTemplateSettingsImplTest extends NbTestCase {
         
         // Force loading from the files
         //Map<String, CodeTemplateDescription> loadedMap = CodeTemplatesStorage.load(mimePath, false);
-        StorageImpl<String, CodeTemplateDescription> storage = new StorageImpl<String, CodeTemplateDescription>(new CodeTemplatesStorage());
+        StorageImpl<String, CodeTemplateDescription> storage = new StorageImpl<String, CodeTemplateDescription>(new CodeTemplatesStorage(), null);
         Map<String, CodeTemplateDescription> loadedMap = storage.load(mimePath, null, false);
         
         assertNotNull("Can't load the map", loadedMap);

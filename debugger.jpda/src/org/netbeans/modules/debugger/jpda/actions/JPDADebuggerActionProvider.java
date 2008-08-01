@@ -54,7 +54,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
-import org.netbeans.modules.debugger.jpda.JPDAStepImpl.SingleThreadedStepWatch;
+//import org.netbeans.modules.debugger.jpda.JPDAStepImpl.SingleThreadedStepWatch;
 import org.netbeans.spi.debugger.ActionsProviderSupport;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakSet;
@@ -69,7 +69,7 @@ import org.openide.util.WeakSet;
 abstract class JPDADebuggerActionProvider extends ActionsProviderSupport 
 implements PropertyChangeListener {
     
-    private JPDADebuggerImpl debugger;
+    protected JPDADebuggerImpl debugger;
     
     /** The ReqeustProcessor used by action performers. */
     private static RequestProcessor actionsRequestProcessor;
@@ -121,7 +121,7 @@ implements PropertyChangeListener {
                 if (stepRequest.thread ().equals (tr)) {
                     //S ystem.out.println("  remove request " + stepRequest);
                     erm.deleteEventRequest (stepRequest);
-                    SingleThreadedStepWatch.stepRequestDeleted(stepRequest);
+                    //SingleThreadedStepWatch.stepRequestDeleted(stepRequest);
                     getDebuggerImpl().getOperator().unregister(stepRequest);
                     break;
                 }

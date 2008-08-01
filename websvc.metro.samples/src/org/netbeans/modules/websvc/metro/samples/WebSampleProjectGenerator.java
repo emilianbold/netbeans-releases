@@ -77,7 +77,9 @@ public class WebSampleProjectGenerator {
     public static final String PROJECT_CONFIGURATION_NAMESPACE = "http://www.netbeans.org/ns/web-project/3";    //NOI18N
     public static final String JSPC_CLASSPATH = "jspc.classpath";
 
-    public static Collection<FileObject> createProjectFromTemplate(final FileObject template, File projectLocation, final String name) throws IOException {
+    public static Collection<FileObject> createProjectFromTemplate(
+                        final FileObject template, File projectLocation, 
+                        final String name, final String serverID) throws IOException {
         assert template != null && projectLocation != null && name != null;
         ArrayList<FileObject> projects = new ArrayList<FileObject>();
         if (template.getExt().endsWith("zip")) {  //NOI18N
@@ -122,7 +124,7 @@ public class WebSampleProjectGenerator {
                         projects.add(prjLoc);
                         Boolean needsDefaults = (Boolean)template.getAttribute("needsdefaults");
                         if (needsDefaults) {
-                            DevDefaultsProvider.getDefault().fillDefaultsToDefaultServer();
+                            DevDefaultsProvider.getDefault().fillDefaultsToServer(serverID);
                         }
                     } catch (Exception e) {
                         Exceptions.printStackTrace(e);

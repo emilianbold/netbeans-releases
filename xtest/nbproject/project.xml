@@ -69,7 +69,7 @@
             <compilation-unit>
                 <package-root>src</package-root>
                 <classpath mode="compile">${basecp}</classpath>
-                <source-level>1.4</source-level>
+                <source-level>1.5</source-level>
             </compilation-unit>
             <compilation-unit>
                 <package-root>test/unit/src</package-root>

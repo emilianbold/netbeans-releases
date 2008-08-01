@@ -18,7 +18,7 @@ public class AddShortcutDialog extends JDialogOperator {
     /** Creates new AddShortcutDialog that can handle it.
      */
     public AddShortcutDialog() {
-        super("Add Shortcut Dialog");
+        super("Add Shortcut");
     }
 
     private JLabelOperator _lblShortcut;

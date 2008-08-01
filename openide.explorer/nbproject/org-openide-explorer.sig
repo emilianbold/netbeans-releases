@@ -1,5 +1,5 @@
 #API master signature file
-#Version 6.12.1
+#Version 6.13
 CLSS protected abstract java.awt.Component$AccessibleAWTComponent
 cons protected AccessibleAWTComponent(java.awt.Component)
 fld  protected java.awt.event.ComponentListener java.awt.Component$AccessibleAWTComponent.accessibleAWTComponentHandler
@@ -1822,18 +1822,19 @@ meth public final void org.openide.explorer.ExplorerManager.setExploredContext(o
 meth public final void org.openide.explorer.ExplorerManager.setExploredContextAndSelection(org.openide.nodes.Node,[Lorg.openide.nodes.Node;) throws java.beans.PropertyVetoException
 meth public final void org.openide.explorer.ExplorerManager.setRootContext(org.openide.nodes.Node)
 meth public final void org.openide.explorer.ExplorerManager.setSelectedNodes([Lorg.openide.nodes.Node;) throws java.beans.PropertyVetoException
-meth public java.lang.Object org.openide.explorer.ExplorerManager.clone()
 meth public java.lang.String java.lang.Object.toString()
 meth public native final java.lang.Class java.lang.Object.getClass()
 meth public native final void java.lang.Object.notify()
 meth public native final void java.lang.Object.notifyAll()
 meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
 meth public native int java.lang.Object.hashCode()
+meth public org.openide.explorer.ExplorerManager org.openide.explorer.ExplorerManager.clone()
 meth public static org.openide.explorer.ExplorerManager org.openide.explorer.ExplorerManager.find(java.awt.Component)
 meth public synchronized void org.openide.explorer.ExplorerManager.addPropertyChangeListener(java.beans.PropertyChangeListener)
 meth public synchronized void org.openide.explorer.ExplorerManager.addVetoableChangeListener(java.beans.VetoableChangeListener)
 meth public synchronized void org.openide.explorer.ExplorerManager.removePropertyChangeListener(java.beans.PropertyChangeListener)
 meth public synchronized void org.openide.explorer.ExplorerManager.removeVetoableChangeListener(java.beans.VetoableChangeListener)
+meth public volatile java.lang.Object org.openide.explorer.ExplorerManager.clone() throws java.lang.CloneNotSupportedException
 supr java.lang.Object
 CLSS public final org.openide.explorer.ExplorerUtils
 meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException

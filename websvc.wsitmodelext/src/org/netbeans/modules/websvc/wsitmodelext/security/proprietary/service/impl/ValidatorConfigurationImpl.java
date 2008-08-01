@@ -44,9 +44,7 @@ package org.netbeans.modules.websvc.wsitmodelext.security.proprietary.service.im
 import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.ProprietaryPolicyQName;
 import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.ProprietarySecurityPolicyAttribute;
 import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.ValidatorConfiguration;
-import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.service.ProprietarySecurityPolicyServiceQName;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import org.netbeans.modules.xml.wsdl.model.visitor.WSDLVisitor;
 import org.w3c.dom.Element;
 
 /**
@@ -62,14 +60,6 @@ public class ValidatorConfigurationImpl extends ProprietarySecurityPolicyCompone
         super(model, e);
     }
     
-    public ValidatorConfigurationImpl(WSDLModel model){
-        this(model, createPrefixedElement(ProprietarySecurityPolicyServiceQName.VALIDATORCONFIGURATION.getQName(), model));
-    }
-
-    public void accept(WSDLVisitor visitor) {
-        visitor.visit(this);
-    }
-
     public void setVisibility(String vis) {
         setAnyAttribute(ProprietaryPolicyQName.VISIBILITY.getQName(), vis);
     }

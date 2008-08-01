@@ -302,7 +302,7 @@ class DeployablePanelVisual extends JPanel implements DocumentListener, ActionLi
         projectNameTextField.requestFocus();
     }
     
-    private static final String WP_eM = "WizardPanel_errorMessage"; //NOI18N
+    private static final String WP_eM = WizardDescriptor.PROP_ERROR_MESSAGE; //NOI18N
     
     private static final ResourceBundle bundle = NbBundle.getBundle(DeployablePanelVisual.class);
     

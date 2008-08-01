@@ -69,7 +69,7 @@ public final class GotoNextOccurrenceAction extends BaseAction {
     }
 
     public void actionPerformed(ActionEvent evt, JTextComponent txt) {
-        SemanticUtils.navigateToOccurence(true);
+        SemanticUtils.navigateToOccurrence(true);
     }
 
     @Override

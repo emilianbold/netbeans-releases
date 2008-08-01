@@ -469,7 +469,7 @@ public class ElementTest extends TestCase {
         model.setAttribute(a1, "newattr", shouldEscapeXML);
         model.flush();
         String doctext = doc.getText(0, doc.getLength()-1);
-        System.out.println(doctext);
+        //System.out.println(doctext);
         assertEquals(-1, doctext.indexOf(shouldEscapeXML));
         assertEquals(124, doctext.indexOf("&lt;"));
         assertEquals(131, doctext.indexOf("&amp;&amp;"));

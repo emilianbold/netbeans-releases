@@ -89,7 +89,7 @@ public class UseDatabaseGeneratorTest extends TestBase {
         final ElementHandle<TypeElement> elementHandle = _RetoucheUtil.getJavaClassFromNode(node);
         Datasource datasource = new DatasourceImpl();
         J2eeModuleProvider j2eeModuleProvider = testModule.getProject().getLookup().lookup(J2eeModuleProvider.class);
-        generator.generate(beanClass, elementHandle, j2eeModuleProvider, "referenceName", datasource, false, null);
+        generator.generate(beanClass, elementHandle.getQualifiedName(), j2eeModuleProvider, "referenceName", datasource, false, null);
         
         JavaSource javaSource = JavaSource.forFileObject(beanClass);
         javaSource.runModificationTask(new Task<WorkingCopy>() {
@@ -115,7 +115,7 @@ public class UseDatabaseGeneratorTest extends TestBase {
         final ElementHandle<TypeElement> elementHandle2 = _RetoucheUtil.getJavaClassFromNode(node);
         datasource = new DatasourceImpl();
         j2eeModuleProvider = testModule.getProject().getLookup().lookup(J2eeModuleProvider.class);
-        generator.generate(beanClass, elementHandle2, j2eeModuleProvider, "referenceName", datasource, false, null);
+        generator.generate(beanClass, elementHandle2.getQualifiedName(), j2eeModuleProvider, "referenceName", datasource, false, null);
         
         javaSource = JavaSource.forFileObject(beanClass);
         javaSource.runModificationTask(new Task<WorkingCopy>() {

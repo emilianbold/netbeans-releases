@@ -12,12 +12,9 @@ import javax.swing.JFileChooser;
 import javax.swing.JTextField;
 import javax.swing.UIManager;
 import javax.swing.event.DocumentListener;
-import org.netbeans.modules.db.mysql.Installation;
-import org.netbeans.modules.db.mysql.Installation.Command;
-import org.netbeans.modules.db.mysql.InstallationSupport;
-import org.netbeans.modules.db.mysql.MySQLOptions;
-import org.netbeans.modules.db.mysql.ServerInstance;
-import org.netbeans.modules.db.mysql.Utils;
+import org.netbeans.modules.db.mysql.DatabaseServer;
+import org.netbeans.modules.db.mysql.impl.MySQLOptions;
+import org.netbeans.modules.db.mysql.util.Utils;
 import org.openide.DialogDescriptor;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
@@ -87,15 +84,8 @@ public class AdminPropertiesPanel extends javax.swing.JPanel {
         }
     }
     
-    /** If one command is updated, fill in the other values if it is for
-     * a known installation.
-     */
-    private void fillInCommands() {
-        
-    }
-
     /** Creates new form PropertiesPanel */
-    public AdminPropertiesPanel(ServerInstance server) {
+    public AdminPropertiesPanel(DatabaseServer server) {
         nbErrorForeground = UIManager.getColor("nb.errorForeground"); //NOI18N
         if (nbErrorForeground == null) {
             //nbErrorForeground = new Color(89, 79, 191); // RGB suggested by Bruce in #28466
@@ -204,7 +194,7 @@ public class AdminPropertiesPanel extends javax.swing.JPanel {
             }
         });
 
-        btnAdminBrowse.setText(org.openide.util.NbBundle.getMessage(AdminPropertiesPanel.class, "AdminPropertiesPanel.btnAdminBrowse.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(btnAdminBrowse, org.openide.util.NbBundle.getMessage(AdminPropertiesPanel.class, "AdminPropertiesPanel.btnAdminBrowse.text")); // NOI18N
         btnAdminBrowse.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnAdminBrowseActionPerformed(evt);
@@ -225,7 +215,7 @@ public class AdminPropertiesPanel extends javax.swing.JPanel {
             }
         });
 
-        btnStartBrowse.setText(org.openide.util.NbBundle.getMessage(AdminPropertiesPanel.class, "AdminPropertiesPanel.btnStartBrowse.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(btnStartBrowse, org.openide.util.NbBundle.getMessage(AdminPropertiesPanel.class, "AdminPropertiesPanel.btnStartBrowse.text")); // NOI18N
         btnStartBrowse.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnStartBrowseActionPerformed(evt);
@@ -246,7 +236,7 @@ public class AdminPropertiesPanel extends javax.swing.JPanel {
             }
         });
 
-        btnStopBrowse.setText(org.openide.util.NbBundle.getMessage(AdminPropertiesPanel.class, "AdminPropertiesPanel.btnStopBrowse.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(btnStopBrowse, org.openide.util.NbBundle.getMessage(AdminPropertiesPanel.class, "AdminPropertiesPanel.btnStopBrowse.text")); // NOI18N
         btnStopBrowse.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnStopBrowseActionPerformed(evt);
@@ -256,24 +246,24 @@ public class AdminPropertiesPanel extends javax.swing.JPanel {
         txtStopArgs.setText(org.openide.util.NbBundle.getMessage(AdminPropertiesPanel.class, "AdminPropertiesPanel.txtStopArgs.text")); // NOI18N
 
         messageLabel.setForeground(new java.awt.Color(255, 0, 51));
-        messageLabel.setText(org.openide.util.NbBundle.getMessage(AdminPropertiesPanel.class, "AdminPropertiesPanel.messageLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(messageLabel, org.openide.util.NbBundle.getMessage(AdminPropertiesPanel.class, "AdminPropertiesPanel.messageLabel.text")); // NOI18N
 
         jLabel1.setLabelFor(txtAdmin);
-        jLabel1.setText(org.openide.util.NbBundle.getMessage(AdminPropertiesPanel.class, "AdminPropertiesPanel.jLabel1.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(AdminPropertiesPanel.class, "AdminPropertiesPanel.jLabel1.text")); // NOI18N
 
-        jLabel2.setText(org.openide.util.NbBundle.getMessage(AdminPropertiesPanel.class, "AdminPropertiesPanel.jLabel2.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(AdminPropertiesPanel.class, "AdminPropertiesPanel.jLabel2.text")); // NOI18N
 
         jLabel3.setLabelFor(txtStart);
-        jLabel3.setText(org.openide.util.NbBundle.getMessage(AdminPropertiesPanel.class, "AdminPropertiesPanel.jLabel3.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(AdminPropertiesPanel.class, "AdminPropertiesPanel.jLabel3.text")); // NOI18N
 
         jLabel4.setLabelFor(txtStop);
-        jLabel4.setText(org.openide.util.NbBundle.getMessage(AdminPropertiesPanel.class, "AdminPropertiesPanel.jLabel4.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel4, org.openide.util.NbBundle.getMessage(AdminPropertiesPanel.class, "AdminPropertiesPanel.jLabel4.text")); // NOI18N
 
-        jLabel5.setText(org.openide.util.NbBundle.getMessage(AdminPropertiesPanel.class, "AdminPropertiesPanel.jLabel5.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel5, org.openide.util.NbBundle.getMessage(AdminPropertiesPanel.class, "AdminPropertiesPanel.jLabel5.text")); // NOI18N
 
-        jLabel6.setText(org.openide.util.NbBundle.getMessage(AdminPropertiesPanel.class, "AdminPropertiesPanel.jLabel6.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel6, org.openide.util.NbBundle.getMessage(AdminPropertiesPanel.class, "AdminPropertiesPanel.jLabel6.text")); // NOI18N
 
-        jLabel7.setText(org.openide.util.NbBundle.getMessage(AdminPropertiesPanel.class, "AdminPropertiesPanel.jLabel7.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel7, org.openide.util.NbBundle.getMessage(AdminPropertiesPanel.class, "AdminPropertiesPanel.jLabel7.text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -357,9 +347,18 @@ public class AdminPropertiesPanel extends javax.swing.JPanel {
 
         layout.linkSize(new java.awt.Component[] {btnAdminBrowse, jLabel4, jLabel5, jLabel6, jLabel7}, org.jdesktop.layout.GroupLayout.VERTICAL);
 
+        txtAdmin.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AdminPropertiesPanel.class, "AdminPropertiesPanel.txtAdmin.AccessibleContext.accessibleDescription")); // NOI18N
         btnAdminBrowse.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AdminPropertiesPanel.class, "AdminPropertiesPanel.btnAdminBrowse.AccessibleContext.accessibleDescription")); // NOI18N
+        txtAdminArgs.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(AdminPropertiesPanel.class, "AdminPropertiesPanel.txtAdminArgs.AccessibleContext.accessibleName")); // NOI18N
+        txtAdminArgs.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AdminPropertiesPanel.class, "AdminPropertiesPanel.txtAdminArgs.AccessibleContext.accessibleDescription")); // NOI18N
+        txtStart.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AdminPropertiesPanel.class, "AdminPropertiesPanel.txtStart.AccessibleContext.accessibleDescription")); // NOI18N
         btnStartBrowse.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AdminPropertiesPanel.class, "AdminPropertiesPanel.btnStartBrowse.AccessibleContext.accessibleDescription")); // NOI18N
+        txtStartArgs.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(AdminPropertiesPanel.class, "AdminPropertiesPanel.txtStartArgs.AccessibleContext.accessibleName")); // NOI18N
+        txtStartArgs.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AdminPropertiesPanel.class, "AdminPropertiesPanel.txtStartArgs.AccessibleContext.accessibleDescription")); // NOI18N
+        txtStop.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AdminPropertiesPanel.class, "AdminPropertiesPanel.txtStop.AccessibleContext.accessibleDescription")); // NOI18N
         btnStopBrowse.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AdminPropertiesPanel.class, "AdminPropertiesPanel.btnStopBrowse.AccessibleContext.accessibleDescription")); // NOI18N
+        txtStopArgs.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(AdminPropertiesPanel.class, "AdminPropertiesPanel.txtStopArgs.AccessibleContext.accessibleName")); // NOI18N
+        txtStopArgs.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AdminPropertiesPanel.class, "AdminPropertiesPanel.txtStopArgs.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
 private void btnAdminBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAdminBrowseActionPerformed

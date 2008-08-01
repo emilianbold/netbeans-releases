@@ -171,6 +171,10 @@ public class TargetModule implements TargetModuleID, java.io.Serializable {
         return ret;
     }
     
+    public boolean hasDelegate() {
+        return delegate != null;
+    }
+    
     public TargetModuleID delegate() {
         if (delegate == null) {
             throw new IllegalStateException("Delegate is not set yet"); //NOI18N

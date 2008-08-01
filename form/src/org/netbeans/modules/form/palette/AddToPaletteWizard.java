@@ -79,9 +79,9 @@ class AddToPaletteWizard extends WizardDescriptor {
     private AddToPaletteWizard(ATPWizardIterator iterator) {
         wizardIterator = iterator;
 
-        putProperty("WizardPanel_autoWizardStyle", Boolean.TRUE); // NOI18N
-        putProperty("WizardPanel_contentDisplayed", Boolean.TRUE); // NOI18N
-        putProperty("WizardPanel_contentNumbered", Boolean.TRUE); // NOI18N
+        putProperty(WizardDescriptor.PROP_AUTO_WIZARD_STYLE, Boolean.TRUE); // NOI18N
+        putProperty(WizardDescriptor.PROP_CONTENT_DISPLAYED, Boolean.TRUE); // NOI18N
+        putProperty(WizardDescriptor.PROP_CONTENT_NUMBERED, Boolean.TRUE); // NOI18N
 
         setTitle(PaletteUtils.getBundleString("CTL_AddToPaletteWizard_Title")); // NOI18N
         setTitleFormat(new java.text.MessageFormat("{0}")); // NOI18N
@@ -99,7 +99,7 @@ class AddToPaletteWizard extends WizardDescriptor {
         else
             throw new IllegalArgumentException();
 
-        putProperty("WizardPanel_contentData",  // NOI18N
+        putProperty(WizardDescriptor.PROP_CONTENT_DATA,  // NOI18N
                     new String[] { PaletteUtils.getBundleString(firstStep_key),
                                    PaletteUtils.getBundleString("CTL_SelectBeans_Step"), // NOI18N
                                    PaletteUtils.getBundleString("CTL_SelectCategory_Step") }); // NOI18N

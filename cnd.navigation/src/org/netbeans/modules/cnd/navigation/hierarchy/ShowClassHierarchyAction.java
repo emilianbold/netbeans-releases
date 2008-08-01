@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.cnd.navigation.hierarchy;
 
-import org.netbeans.modules.cnd.navigation.classhierarchy.*;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.loaders.CCDataObject;
 import org.netbeans.modules.cnd.loaders.HDataObject;
@@ -57,8 +56,10 @@ public final class ShowClassHierarchyAction extends CookieAction {
         CsmClass decl = ContextUtils.getContextClass(activatedNodes);
         if (decl != null){
             HierarchyTopComponent view = HierarchyTopComponent.findInstance();
-            view.setClass(decl);
-            view.open();
+            if (!view.isOpened()) {
+                 view.open();
+            }
+            view.setClass(decl, false);
             view.requestActive();
         } else {
             String msg = NbBundle.getMessage(getClass(), "MESSAGE_NoContextClass"); // NOI18N

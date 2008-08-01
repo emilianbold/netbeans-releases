@@ -83,32 +83,36 @@ public class SmartCompletionInQuoteTestCase extends CompletionBaseTestCase {
     protected CompletionTestPerformer createTestPerformer() {
         return new CompletionTestPerformer(CsmCompletionQuery.QueryScope.SMART_QUERY);
     }
-    
+
     public void testInCpuConstructorImpl() throws Exception {
         super.performTest("cpu.cc", 48, 9);
     }
-    
+
     public void testInCpuComputeSupportMetricImplInExpr() throws Exception {
         super.performTest("cpu.cc", 58, 27);
     }
-    
+
     public void testInCpuComputeSupportMetricImplInSwitch() throws Exception {
         super.performTest("cpu.cc", 60, 14);
     }
-    
+
     public void testInCpuComputeSupportMetricImplInCase() throws Exception {
         super.performTest("cpu.cc", 61, 16);
     }
-    
+
     public void testInCpuComputeSupportMetricImplInMethodCall() throws Exception {
         super.performTest("cpu.cc", 70, 7);
     }
-    
+
     public void testInCpuComputeSupportMetricImplInMethodCallParam() throws Exception {
         super.performTest("cpu.cc", 70, 23);
     }
-    
+
     public void testClassesInParameters() throws Exception {
         super.performTest("customer.cc", 57, 45);
+    }
+
+    public void testCCAfterSemicolon() throws Exception {
+        super.performTest("quote.cc", 142, 28);
     }
 }

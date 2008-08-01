@@ -38,7 +38,7 @@
                           <Group type="103" groupAlignment="0" attributes="0">
                               <Component id="includeLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                               <Group type="102" alignment="1" attributes="0">
-                                  <Component id="includePane" pref="170" max="32767" attributes="0"/>
+                                  <Component id="includePane" pref="171" max="32767" attributes="0"/>
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Group type="103" groupAlignment="0" max="-2" attributes="0">
                                       <Component id="upButton" linkSize="1" max="32767" attributes="1"/>
@@ -112,7 +112,7 @@
                           <Component id="removeAllButton" min="-2" max="-2" attributes="0"/>
                           <EmptySpace pref="19" max="32767" attributes="0"/>
                       </Group>
-                      <Component id="availablePane" alignment="0" pref="147" max="32767" attributes="2"/>
+                      <Component id="availablePane" alignment="0" pref="159" max="32767" attributes="2"/>
                   </Group>
                   <EmptySpace min="-2" max="-2" attributes="0"/>
               </Group>

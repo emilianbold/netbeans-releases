@@ -48,42 +48,61 @@ import org.netbeans.modules.cnd.completion.cplusplus.ext.CompletionBaseTestCase;
  * @author Vladimir Voskresensky
  */
 public class CCBasicCompletionTestCase extends CompletionBaseTestCase {
-    
+
     /**
      * Creates a new instance of CCBasicCompletionTestCase
      */
     public CCBasicCompletionTestCase(String testName) {
         super(testName, true);
     }
+
+    public void testIZ109010() throws Exception {
+        // IZ#109010: Code completion listbox doesn't appear after "flag ? static_cast<int>(remainder) :" expression
+        super.performTest("file.cc", 45, 54);
+    }
     
+    public void testIZ131568() throws Exception {
+        // IZ#131568: Completion doubles some static functions
+        super.performTest("iz131568.cc", 4, 5, "Re");
+    }
+
+    public void testIZ131283() throws Exception {
+        // IZ#131283: Code Completion works wrongly in some casses
+        super.performTest("file.h", 28, 9, "st");
+    }
+
+    public void testIZ119041() throws Exception {
+        super.performTest("file.cc", 9, 5, "str[]", -1);
+    }
+
     public void testNoAbbrevInCompletion() throws Exception {
         super.performTest("file.cc", 43, 5, "a.f");
     }
-    
+
     public void testEmptyDerefCompletion() throws Exception {
         super.performTest("file.cc", 39, 5, " &");
         super.performTest("file.cc", 39, 5, "pointer = &");
         super.performTest("file.cc", 39, 5, "foo(&)", -1);
     }
-    
+
     public void testEmptyPtrCompletion() throws Exception {
         super.performTest("file.cc", 39, 5, "*");
         super.performTest("file.cc", 39, 5, "pointer = *");
         super.performTest("file.cc", 39, 5, "foo(*)", -1);
     }
-    
+
     public void testCompletionInEmptyFile() throws Exception {
         super.performTest("empty.cc", 1,1);
     }
-    
+
     public void testRecoveryBeforeFoo() throws Exception {
         super.performTest("file.cc", 43, 5, "a.");
     }
-    
+
     public void testExtraDeclarationOnTypeInsideFun() throws Exception {
         super.performTest("file.cc", 39, 5, "p");
     }
-    
+
     public void testSwitchCaseVarsInCompound() throws Exception {
         super.performTest("file.cc", 24, 13);
     }
@@ -91,23 +110,23 @@ public class CCBasicCompletionTestCase extends CompletionBaseTestCase {
     public void testSwitchCaseVarsNotIncCompound() throws Exception {
         super.performTest("file.cc", 28, 13);
     }
-    
+
     public void testSwitchCaseVarsAfterCompoundAndNotCompoundInDefault() throws Exception {
         super.performTest("file.cc", 32, 13);
     }
-    
+
     public void testCompletionOnEmptyInGlobal() throws Exception {
         super.performTest("file.cc", 1, 1);
     }
-    
+
     public void testCompletionOnEmptyInClassFunction() throws Exception {
         super.performTest("file.cc", 7, 1);
-    }  
-    
+    }
+
     public void testCompletionOnEmptyInGlobFunction() throws Exception {
         super.performTest("file.cc", 19, 1);
-    }  
-    
+    }
+
     public void testCompletionInsideInclude() throws Exception {
         // IZ#98530]  Completion list appears in #include directive
         super.performTest("file.cc", 2, 11); // completion inside #include "file.c"
@@ -125,103 +144,103 @@ public class CCBasicCompletionTestCase extends CompletionBaseTestCase {
 
     public void testGlobalCompletionInGlobal() throws Exception {
         super.performTest("file.cc", 47, 1, "::");
-    } 
-    
+    }
+
     public void testGlobalCompletionInClassFunction() throws Exception {
         super.performTest("file.cc", 7, 1, "::");
-    }  
+    }
 
     public void testGlobalCompletionInGlobFunction() throws Exception {
         super.performTest("file.cc", 19, 1, "::");
-    }  
-    
+    }
+
     public void testCompletionInConstructor() throws Exception {
         super.performTest("file.h", 20, 9);
     }
-    
+
     public void testProtectedMethodByClassPrefix() throws Exception {
         super.performTest("file.h", 23, 9, "B::");
     }
     ////////////////////////////////////////////////////////////////////////////
     // tests for incomplete or incorrect constructions
-    
+
     public void testErrorCompletion1() throws Exception {
         super.performTest("file.cc", 5, 1, "->");
-    }    
+    }
 
     public void testErrorCompletion2() throws Exception {
         super.performTest("file.cc", 5, 1, ".");
-    }    
+    }
 
     public void testErrorCompletion3() throws Exception {
         super.performTest("file.cc", 5, 1, ".->");
-    }    
+    }
 
     public void testErrorCompletion4() throws Exception {
         super.performTest("file.cc", 5, 1, "::.");
-    }    
+    }
 
     public void testErrorCompletion5() throws Exception {
         super.performTest("file.cc", 5, 1, "*:");
-    }    
+    }
 
     public void testErrorCompletion6() throws Exception {
         super.performTest("file.cc", 5, 1, ":");
-    }    
+    }
 
     public void testErrorCompletion7() throws Exception {
         super.performTest("file.cc", 5, 1, "->");
-    }    
+    }
 
     public void testErrorCompletion8() throws Exception {
         super.performTest("file.cc", 5, 1, "#inc");
-    } 
-    
+    }
+
     public void testErrorCompletion9() throws Exception {
         super.performTest("file.cc", 5, 1, "#");
-    } 
-   
+    }
+
     public void testErrorCompletion10() throws Exception {
         // IZ#77774: Code completion list appears, when include header file
         super.performTest("file.cc", 1, 1, "#include \"file.");
     }
-    
+
     public void testErrorCompletionInFun1() throws Exception {
         super.performTest("file.cc", 7, 1, "->");
-    }    
+    }
 
     public void testErrorCompletionInFun2() throws Exception {
         super.performTest("file.cc", 7, 1, ".");
-    }    
+    }
 
     public void testErrorCompletionInFun3() throws Exception {
         super.performTest("file.cc", 7, 1, ".->");
-    }    
+    }
 
     public void testErrorCompletionInFun4() throws Exception {
         super.performTest("file.cc", 7, 1, "::.");
-    }    
+    }
 
     public void testErrorCompletionInFun5() throws Exception {
         super.performTest("file.cc", 7, 1, "*:");
-    }    
+    }
 
     public void testErrorCompletionInFun6() throws Exception {
         super.performTest("file.cc", 7, 1, ":");
-    }    
+    }
 
     public void testErrorCompletionInFun7() throws Exception {
         super.performTest("file.cc", 7, 1, "->");
-    }     
+    }
 
     public  void testCompletionAfterSpace() throws Exception {
         super.performTest("file.cc", 7, 5, "A::                 f");
     }
-    
+
     public  void testCompletionAfterSpace2() throws Exception {
         super.performTest("file.cc", 43, 5, "a    .     ");
     }
-    
+
     public void testCompletionInEmptyUsrInclude() throws Exception {
         super.performTest("file.cc", 1, 1, "#include \"\"", -1);
     }
@@ -233,7 +252,7 @@ public class CCBasicCompletionTestCase extends CompletionBaseTestCase {
     ////////////////////////////////////////////////////////////////////////////
     // tests for static function completion
     // IZ#126622 : Static function is missed in Code Completion listbox
-    
+
     public void testCompletionForStaticFunctions1() throws Exception {
         super.performTest("static.cc", 18, 5);
     }
@@ -257,5 +276,23 @@ public class CCBasicCompletionTestCase extends CompletionBaseTestCase {
     public void testRestrictPointers2() throws Exception {
         super.performTest("restrict.c", 15, 5);
     }
-    
+
+    ////////////////////////////////////////////////////////////////////////////
+    // tests for cast completion
+    // IZ#92198 : Code completion works wrong with static_cast expression
+    public void testCast1() throws Exception {
+        super.performTest("cast.cc", 9, 23);
+    }
+
+    public void testCast2() throws Exception {
+        super.performTest("cast.cc", 10, 34);
+    }
+
+    public void testCast3() throws Exception {
+        super.performTest("cast.cc", 19, 21);
+    }
+
+    public void testCast4() throws Exception {
+        super.performTest("cast.cc", 20, 33);
+    }
 }

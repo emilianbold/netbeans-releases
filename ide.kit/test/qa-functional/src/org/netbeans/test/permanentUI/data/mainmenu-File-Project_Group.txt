@@ -1,4 +1,0 @@
-Project Group          > (o) (none)
-                         ( ) MyProjectGroup
-                         ====================
-                             New Group...      N

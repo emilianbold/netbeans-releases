@@ -1,12 +1,7 @@
 
 
 Document 0
-Delete:  source : <TESTURL>/stub_dom2_Node.js
-
-
-
-Document 1
-Indexed:
+Searchable Keys:
   base : appendchild;Node;appendChild;|DOCUMENTED|FUNCTION|;newChild:Node;0;5d0;;Node;
   base : attribute_node;Node;ATTRIBUTE_NODE;|DOCUMENTED|PROPERTY|;;0;1f1;;Number;
   base : attributes;Node;attributes;|DOCUMENTED|PROPERTY|;;0;7b1;;NamedNodeMap;
@@ -102,4 +97,4 @@ Indexed:
   fqn : node.textcontent;;Node.textContent;|DOCUMENTED|PROPERTY|;;0;51cc;IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ;String;
   fqn : node;;Node;|DOCUMENTED|PROPERTY|;;0;0;;;
 
-Not Indexed:
+Not Searchable Keys:

@@ -50,9 +50,12 @@ import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
 import org.netbeans.modules.php.dbgp.annotations.BrkpntAnnotation;
-import org.netbeans.modules.php.dbgp.annotations.DebuggerAnnotation;
 import org.netbeans.modules.php.dbgp.annotations.DisabledBrkpntAnnotation;
+import org.openide.text.Annotation;
+import org.openide.text.AnnotationProvider;
 import org.openide.text.Line;
+import org.openide.text.Line.Set;
+import org.openide.util.Lookup;
 
 
 /**
@@ -63,7 +66,7 @@ import org.openide.text.Line;
  * @author ads
  */
 public class BreakpointAnnotationListener extends DebuggerManagerAdapter
-    implements PropertyChangeListener 
+    implements PropertyChangeListener, AnnotationProvider
 {
 
     @Override
@@ -101,16 +104,16 @@ public class BreakpointAnnotationListener extends DebuggerManagerAdapter
 
     private void addAnnotation(Breakpoint breakpoint) {
         Line line = ((LineBreakpoint) breakpoint).getLine();
-        DebuggerAnnotation annotation = breakpoint.isEnabled() ?
-                new BrkpntAnnotation( line )
-                : new DisabledBrkpntAnnotation(  line );
+        Annotation annotation = breakpoint.isEnabled() ?
+                new BrkpntAnnotation( line, breakpoint )
+                : new DisabledBrkpntAnnotation(  line, breakpoint );
         myAnnotations.put( breakpoint, annotation );
         breakpoint.addPropertyChangeListener(Breakpoint.PROP_ENABLED, this);
     }
 
     private void removeAnnotation(Breakpoint breakpoint) {
-        DebuggerAnnotation annotation = 
-            (DebuggerAnnotation)myAnnotations.remove(breakpoint);
+        Annotation annotation = 
+            myAnnotations.remove(breakpoint);
         
         if (annotation == null) {
             return;
@@ -120,8 +123,12 @@ public class BreakpointAnnotationListener extends DebuggerManagerAdapter
         breakpoint.removePropertyChangeListener(Breakpoint.PROP_ENABLED, this);
     }
     
-    private Map<Breakpoint, DebuggerAnnotation> myAnnotations 
-        = new HashMap<Breakpoint, DebuggerAnnotation>();
+    private Map<Breakpoint, Annotation> myAnnotations 
+        = new HashMap<Breakpoint, Annotation>();
 
     private String[] myProperties;
+
+    public void annotate(Set set, Lookup context) {
+        DebuggerManager.getDebuggerManager().getBreakpoints();
+    }
 }

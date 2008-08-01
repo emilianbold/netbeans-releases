@@ -162,6 +162,26 @@ implements ChangeListener {
         
         return ret;
     }
+    
+    /** Calls into one loader. Setups security condition to allow DataObject ocnstructor
+     * to succeed.
+     */
+    public static DataObject handleFindDataObject (DataObject.Factory factory, FileObject fo, Set<? super FileObject> rec) 
+    throws java.io.IOException {
+        DataObject ret;
+        
+        Collection<Item> prev = enterAllowContructor();
+        try {
+            // make sure this thread is allowed to recognize
+            getPOOL ().enterRecognition(fo);
+            
+            ret = factory.findDataObject (fo, rec);
+        } finally {
+            exitAllowConstructor (prev);
+        }
+        
+        return ret;
+    }
 
     /** Creates and finishes registration of MultiDataObject.
      */
@@ -571,26 +591,8 @@ implements ChangeListener {
      */
     private final class FSListener extends FileChangeAdapter {
         FSListener() {}
-        private Collection<Item> getTargets(FileEvent fe) {
-            FileObject fo = fe.getFile();
-            List<Item> toNotify = new LinkedList<Item>();
-            // The FileSystem notifying us about the changes should
-            // not hold any lock so we're safe here
-            synchronized (DataObjectPool.this) {
-                Item itm = map.get(fo);
-                if (itm != null) { // the file was someones' primary
-                    return Collections.singleton(itm); // so notify only owner
-                } else { // unknown file or someone secondary
-                    List<Item> arr = children.get(fo.getParent());
-                    if (arr != null) {
-                        return new ArrayList<Item>(arr);
-                    } else {
-                        return Collections.emptyList();
-                    }
-                }
-            }
-        }
 
+        @Override
         public void fileChanged(FileEvent fe) {
             if (LISTENER.isLoggable(Level.FINE)) {
                 LISTENER.fine("fileChanged: " + fe); // NOI18N
@@ -604,6 +606,7 @@ implements ChangeListener {
             }
         }
 
+        @Override
         public void fileRenamed (FileRenameEvent fe) {
             if (LISTENER.isLoggable(Level.FINE)) {
                 LISTENER.fine("fileRenamed: " + fe); // NOI18N
@@ -617,6 +620,7 @@ implements ChangeListener {
             }
         }
 
+        @Override
         public void fileDeleted (FileEvent fe) {
             if (LISTENER.isLoggable(Level.FINE)) {
                 LISTENER.fine("fileDeleted: " + fe); // NOI18N
@@ -630,6 +634,7 @@ implements ChangeListener {
             }
         }
 
+        @Override
         public void fileDataCreated (FileEvent fe) {
             if (LISTENER.isLoggable(Level.FINE)) {
                 LISTENER.fine("fileDataCreated: " + fe); // NOI18N
@@ -644,19 +649,12 @@ implements ChangeListener {
             ShadowChangeAdapter.checkBrokenDataShadows(fe);
         }
         
+        @Override
         public void fileAttributeChanged (FileAttributeEvent fe) {
-            if (LISTENER.isLoggable(Level.FINE)) {
-                LISTENER.fine("fileAttributeChanged: " + fe); // NOI18N
-            }
-            for (Item item : getTargets(fe)) {
-                DataObject dobj = item.getDataObjectOrNull();
-                if (LISTENER.isLoggable(Level.FINE)) {
-                    LISTENER.fine("  to: " + dobj); // NOI18N
-                }
-                if (dobj != null) dobj.notifyAttributeChanged(fe);
-            }
+            checkAttributeChanged(fe);
         }
 
+        @Override
         public void fileFolderCreated(FileEvent fe) {
             if (LISTENER.isLoggable(Level.FINE)) {
                 LISTENER.fine("fileFolderCreated: " + fe); // NOI18N
@@ -664,6 +662,55 @@ implements ChangeListener {
             ShadowChangeAdapter.checkBrokenDataShadows(fe);
         }
     }
+    
+    static private Collection<Item> getTargets(FileEvent fe) {
+        FileObject fo = fe.getFile();
+        // The FileSystem notifying us about the changes should
+        // not hold any lock so we're safe here
+        synchronized (DataObjectPool.POOL) {
+            Item itm = DataObjectPool.POOL.map.get(fo);
+            if (itm != null) { // the file was someones' primary
+                return Collections.singleton(itm); // so notify only owner
+            } else { // unknown file or someone secondary
+                List<Item> arr = DataObjectPool.POOL.children.get(fo.getParent());
+                if (arr != null) {
+                    return new ArrayList<Item>(arr);
+                } else {
+                    return Collections.emptyList();
+                }
+                /*List<Item> toNotify = new LinkedList<Item>();
+                FileObject parent = fo.getParent();
+                if (parent != null) { // the fo is not root
+                    FileObject[] siblings = parent.getChildren();
+                    // notify all in folder
+                    for (int i = 0; i < siblings.length; i++) {
+                        itm = (Item) DataObjectPool.POOL.map.get(siblings[i]);
+                        if (itm != null) {
+                            toNotify.add(itm);
+                        }
+                    }
+                }
+                return toNotify;*/
+            }
+        }
+    }
+
+    /** Checks for attribute changes.
+     */
+    public static void checkAttributeChanged(FileAttributeEvent fe) {
+        if (LISTENER.isLoggable(Level.FINE)) {
+            LISTENER.fine("fileAttributeChanged: " + fe); // NOI18N
+        }
+        for (Item item : getTargets(fe)) {
+            DataObject dobj = item.getDataObjectOrNull();
+            if (LISTENER.isLoggable(Level.FINE)) {
+                LISTENER.fine("  to: " + dobj); // NOI18N
+            }
+            if (dobj != null) {
+                dobj.notifyAttributeChanged(fe);
+            }
+        }
+    }   
     
     /** Registers new DataObject instance.
     * @param fo primary file for obj

@@ -67,6 +67,7 @@ import javax.swing.JTextField;
 import org.openide.DialogDisplayer;
 import org.openide.DialogDescriptor;
 import org.openide.NotifyDescriptor;
+import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 
 public class ParamEditor extends javax.swing.JPanel {
@@ -153,15 +154,13 @@ public class ParamEditor extends javax.swing.JPanel {
 	taC.insets = new Insets(0, 15, 4, 15);
 
         JLabel nameLabel = new JLabel(); 
-        nameLabel.setDisplayedMnemonic(NbBundle.getMessage(ParamEditor.class, "MON_Name_Mnemonic").charAt(0));
         nameLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ParamEditor.class, "ACS_MON_NameA11yDesc"));
         if (name == null || name.length()==0) 
             getAccessibleContext().setAccessibleDescription(title);
         else 
              getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ParamEditor.class,
                 "ACS_ParamEditorA11yDesc",title, name)); //NOI18N
-	String text = NbBundle.getMessage(ParamEditor.class, "MON_Name");
-	text = text.concat(": "); //NOI18N
+	String text = NbBundle.getMessage(ParamEditor.class, "MON_Param_Name");
 	
 	if(editable == Editable.BOTH) { 
 	    final JTextField nameText = new JTextField(25);
@@ -186,11 +185,10 @@ public class ParamEditor extends javax.swing.JPanel {
 	    this.add(nameLabel, labelC); 
 	    text = text.concat(name); 
 	}
-	nameLabel.setText(text); 
+	Mnemonics.setLocalizedText(nameLabel, text); 
 	    
 	JLabel valueLabel = new JLabel(); 
-	valueLabel.setText(NbBundle.getMessage(ParamEditor.class, "MON_Value").concat(":"));
-        valueLabel.setDisplayedMnemonic(NbBundle.getMessage(ParamEditor.class, "MON_Value_Mnemonic").charAt(0));
+	Mnemonics.setLocalizedText(valueLabel, NbBundle.getMessage(ParamEditor.class, "MON_Param_Value")); 
         valueLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ParamEditor.class, "ACS_MON_ValueA11yDesc"));
 	firstC.gridy++; 
 	this.add(valueLabel, labelC); 

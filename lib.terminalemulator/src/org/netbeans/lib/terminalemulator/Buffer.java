@@ -2,7 +2,7 @@
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -19,7 +19,7 @@
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
- * "Portions Copyrighted [year] [name of copyright owner]"
+ *			"Portions Copyrighted [year] [name of copyright owner]"
  *
  * Contributor(s):
  *
@@ -357,20 +357,82 @@ class Buffer {
 	return null;
     }
 
+    private int utilization(int nchars, int ncapacity) {
+        float u = ((float)nchars)/((float)ncapacity);
+        float p = u * 100.0f;      // convert to percentage
+        return (int) p;
+    }
     /*
      * Print interesting statistics and facts about this Term
      */
-    public void printStats() {
-	int nchars = 0;
-	int ncapacity = 0;
+    public void printStats(boolean indented) {
+	int chars = 0;
+	int charcapacity = 0;
+        
+        int nalines =0;     // lines with attributes
+        int attrs = 0;
+        int attrcapacity = 0;
+        
 	for (int lx = 0; lx < nlines; lx++) {
 	    Line l = lineAt(lx);
-	    ncapacity += l.capacity();
-	    nchars += l.length();
+	    chars += l.length();
+	    charcapacity += l.capacity();
+            if (l.hasAttributes()) {
+                nalines++;
+                attrs += l.length();
+                attrcapacity += l.capacity();
+            }
 	}
-	System.out.println(
-	    "  nlines " + nlines +	// NOI18N
-	    "  nchars " + nchars + 	// NOI18N
-	    "  ncapacity " + ncapacity );	// NOI18N
+        
+        Term.indent(indented);
+	System.out.println("Buffer:" +
+	    "  nlines " + nlines);	// NOI18N
+        
+        Term.indent(indented);
+        System.out.println("       " +
+	    "  chars " + chars + 	// NOI18N
+	    "  charcapacity " + charcapacity +
+            "  utilzn %" + utilization(chars, charcapacity) );	// NOI18N
+        
+        Term.indent(indented);
+        System.out.println("       " +
+	    "  attrs " + attrs + 	// NOI18N
+	    "  attrcapacity " + attrcapacity +
+            "  utilzn %" + utilization(attrs, attrcapacity) );	// NOI18N
+        
+        // estimate actual byte consumption
+        final int unitObjectSz = 8;
+        final int unitReferenceSz = 4;
+        
+        final int unitBooleanSz = 4;
+        final int unitCharSz = 2;
+        final int unitIntSz = 4;
+        
+        final int unitCharArraySz = 12;
+        final int unitIntArraySz = 12;
+        
+        long bytes = 0;
+        long unitLineSz = unitObjectSz + 
+                          unitBooleanSz +   // about_to_wrap
+                          unitReferenceSz + // attr
+                          unitIntSz +       // backgroundColor
+                          unitReferenceSz + // buf
+                          unitIntSz +       // capacity
+                          unitIntSz +       // glyphId
+                          unitIntSz +       // length
+                          unitBooleanSz     // wrapped
+                ;
+        bytes += unitLineSz * nlines;
+        
+        bytes += unitCharArraySz * nlines;
+        bytes += unitCharSz * charcapacity;
+        
+        bytes += unitIntArraySz * nalines;
+        bytes += unitIntSz * attrcapacity;
+        
+        Term.indent(indented);
+        System.out.println("       " +
+	    "  bytes " + bytes/1024 + "K");         	// NOI18N
+                
     }
 }

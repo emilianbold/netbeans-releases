@@ -52,6 +52,7 @@ import java.util.StringTokenizer;
 import java.util.WeakHashMap;
 import junit.framework.Assert;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.ProjectFactory;
 import org.netbeans.spi.project.ProjectState;
 import org.openide.filesystems.FileObject;
@@ -60,7 +61,13 @@ import org.openide.filesystems.LocalFileSystem;
 import org.openide.filesystems.Repository;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 import org.openide.util.test.MockLookup;
+import org.openide.xml.XMLUtil;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 /**
  * Help set up org.netbeans.api.project.*Test.
@@ -220,6 +227,11 @@ public final class TestUtil {
      */
     public static Object BROKEN_PROJECT_LOAD_LOCK = null;
     
+    /**If non-null, use the value as the Lookup for newly created projects.
+     * 
+     */
+    public static Lookup LOOKUP = null;
+    
     private static final class TestProjectFactory implements ProjectFactory {
         
         TestProjectFactory() {}
@@ -246,7 +258,7 @@ public final class TestUtil {
                     }
                     throw new IOException("Load failed of " + projectDirectory);
                 } else {
-                    return new TestProject(projectDirectory, state);
+                    return new TestProject(projectDirectory, LOOKUP != null ? LOOKUP : Lookup.EMPTY, state);
                 }
             } else {
                 return null;
@@ -279,17 +291,19 @@ public final class TestUtil {
     private static final class TestProject implements Project {
         
         private final FileObject dir;
+        private final Lookup lookup;
         final ProjectState state;
         Throwable error;
         int saveCount = 0;
         
-        public TestProject(FileObject dir, ProjectState state) {
+        public TestProject(FileObject dir, Lookup lookup, ProjectState state) {
             this.dir = dir;
+            this.lookup = lookup;
             this.state = state;
         }
         
         public Lookup getLookup() {
-            return Lookup.EMPTY;
+            return lookup;
         }
         
         public FileObject getProjectDirectory() {

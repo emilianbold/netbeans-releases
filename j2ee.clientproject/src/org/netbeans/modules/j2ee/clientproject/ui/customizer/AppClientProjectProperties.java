@@ -48,10 +48,11 @@ import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Properties;
+import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 import java.util.logging.Level;
@@ -75,6 +76,7 @@ import org.netbeans.modules.j2ee.clientproject.AppClientProjectType;
 import org.netbeans.modules.j2ee.clientproject.AppClientProjectUtil;
 import org.netbeans.modules.j2ee.clientproject.Utils;
 import org.netbeans.modules.j2ee.clientproject.classpath.ClassPathSupportCallbackImpl;
+import org.netbeans.modules.j2ee.common.SharabilityUtility;
 import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
 import org.netbeans.modules.j2ee.common.project.ui.ClassPathUiSupport;
 import org.netbeans.modules.j2ee.common.project.ui.J2eePlatformUiSupport;
@@ -87,6 +89,7 @@ import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.ui.PlatformUiSupport;
 import org.netbeans.modules.websvc.api.client.WebServicesClientConstants;
+import org.netbeans.spi.java.project.support.ui.IncludeExcludeVisualizer;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
@@ -270,7 +273,9 @@ public class AppClientProjectProperties {
     private final StoreGroup privateGroup; 
     private final StoreGroup projectGroup;
     
-    private final Properties additionalProperties;    
+    private Map<String,String> additionalProperties;
+    
+    private String includes, excludes;
 
     public static final String JAVA_SOURCE_BASED = "java.source.based";
     
@@ -291,7 +296,7 @@ public class AppClientProjectProperties {
         privateGroup = new StoreGroup();
         projectGroup = new StoreGroup();
         
-        additionalProperties = new Properties();
+        additionalProperties = new HashMap<String,String>();
         
         init(); // Load known properties        
     }
@@ -306,6 +311,14 @@ public class AppClientProjectProperties {
         // CustomizerSources
         SOURCE_ROOTS_MODEL = AppClientSourceRootsUi.createModel( project.getSourceRoots() );
         TEST_ROOTS_MODEL = AppClientSourceRootsUi.createModel( project.getTestSourceRoots() );        
+        includes = evaluator.getProperty(ProjectProperties.INCLUDES);
+        if (includes == null) {
+            includes = "**"; // NOI18N
+        }
+        excludes = evaluator.getProperty(ProjectProperties.EXCLUDES);
+        if (excludes == null) {
+            excludes = ""; // NOI18N
+        }
         META_INF_MODEL = projectGroup.createStringDocument( evaluator, META_INF );
                 
         // CustomizerLibraries
@@ -319,7 +332,7 @@ public class AppClientProjectProperties {
         PLATFORM_MODEL = PlatformUiSupport.createPlatformComboBoxModel (evaluator.getProperty(JAVA_PLATFORM));
         PLATFORM_LIST_RENDERER = PlatformUiSupport.createPlatformListCellRenderer();
         SpecificationVersion minimalSourceLevel = null;
-        if (evaluator.getProperty(J2EE_PLATFORM).equals(ProjectProperties.JAVA_EE_5)) {
+        if (ProjectProperties.JAVA_EE_5.equals(evaluator.getProperty(J2EE_PLATFORM))) {
             minimalSourceLevel = new SpecificationVersion(ProjectProperties.JAVA_EE_5);
         }
         JAVAC_SOURCE_MODEL = PlatformUiSupport.createSourceLevelComboBoxModel(PLATFORM_MODEL, evaluator.getProperty(JAVAC_SOURCE), evaluator.getProperty(JAVAC_TARGET), minimalSourceLevel);
@@ -371,7 +384,9 @@ public class AppClientProjectProperties {
         RUN_WORK_DIR_MODEL = privateGroup.createStringDocument( evaluator, RUN_WORK_DIR );
 
         J2EE_SERVER_INSTANCE_MODEL = J2eePlatformUiSupport.createPlatformComboBoxModel(
-                privateProperties.getProperty(J2EE_SERVER_INSTANCE), projectProperties.getProperty(J2EE_PLATFORM));
+                privateProperties.getProperty(J2EE_SERVER_INSTANCE),
+                projectProperties.getProperty(J2EE_PLATFORM),
+                J2eeModule.CLIENT);
         J2EE_PLATFORM_MODEL = J2eePlatformUiSupport.createSpecVersionComboBoxModel(
             projectProperties.getProperty( J2EE_PLATFORM ));
     }
@@ -440,7 +455,17 @@ public class AppClientProjectProperties {
         resolveProjectDependencies();
         
         // Encode all paths (this may change the project properties)
-        String[] javac_cp = cs.encodeToStrings( ClassPathUiSupport.getList( JAVAC_CLASSPATH_MODEL.getDefaultListModel() ), ClassPathSupportCallbackImpl.ELEMENT_INCLUDED_LIBRARIES  );
+        List<ClassPathSupport.Item> javaClasspathList = ClassPathUiSupport.getList(JAVAC_CLASSPATH_MODEL.getDefaultListModel());
+        if (J2EE_SERVER_INSTANCE_MODEL.getSelectedItem() != null) {
+            final String instanceId = J2eePlatformUiSupport.getServerInstanceID(
+                    J2EE_SERVER_INSTANCE_MODEL.getSelectedItem());
+            final String oldServInstID = project.getAntProjectHelper().getProperties(
+                    AntProjectHelper.PRIVATE_PROPERTIES_PATH).getProperty(J2EE_SERVER_INSTANCE);
+
+            SharabilityUtility.switchServerLibrary(instanceId, oldServInstID, javaClasspathList, updateHelper);
+        }
+        
+        String[] javac_cp = cs.encodeToStrings( javaClasspathList, ClassPathSupportCallbackImpl.ELEMENT_INCLUDED_LIBRARIES  );
         String[] javac_test_cp = cs.encodeToStrings( ClassPathUiSupport.getList( JAVAC_TEST_CLASSPATH_MODEL ), null );
         String[] run_test_cp = cs.encodeToStrings( ClassPathUiSupport.getList( RUN_TEST_CLASSPATH_MODEL ), null );
         String[] run_cp = cs.encodeToStrings( ClassPathUiSupport.getList( RUN_CLASSPATH_MODEL ), null );
@@ -498,13 +523,14 @@ public class AppClientProjectProperties {
         boolean serverLibUsed = ProjectProperties.isUsingServerLibrary(projectProperties,
                 AppClientProjectProperties.J2EE_PLATFORM_CLASSPATH); 
         if (J2EE_SERVER_INSTANCE_MODEL.getSelectedItem() != null) {
-            setNewServerInstanceValue(J2eePlatformUiSupport.getServerInstanceID(J2EE_SERVER_INSTANCE_MODEL.getSelectedItem()),
-                    project, projectProperties, privateProperties, !serverLibUsed);
+            final String instanceId = J2eePlatformUiSupport.getServerInstanceID(
+                    J2EE_SERVER_INSTANCE_MODEL.getSelectedItem());
+            setNewServerInstanceValue(instanceId, project, projectProperties, privateProperties, !serverLibUsed);
         }
 
         // Configure server libraries (if any)
         boolean configured = setServerClasspathProperties(projectProperties, privateProperties,
-                cs, ClassPathUiSupport.getList(JAVAC_CLASSPATH_MODEL.getDefaultListModel()));
+                cs, javaClasspathList);
 
         // Configure classpath from server (no server libraries)
         if (!configured && J2EE_SERVER_INSTANCE_MODEL.getSelectedItem() != null) {
@@ -512,9 +538,10 @@ public class AppClientProjectProperties {
                     project, projectProperties, privateProperties, true);
         }
 
-        storeAdditionalProperties(projectProperties);
-        List<ClassPathSupport.Item> cpItems = ClassPathUiSupport.getList(JAVAC_CLASSPATH_MODEL.getDefaultListModel());
-        ProjectProperties.storeLibrariesLocations(cpItems.iterator(), projectProperties, project.getProjectDirectory());
+        projectProperties.putAll(additionalProperties);
+
+        projectProperties.put(ProjectProperties.INCLUDES, includes);
+        projectProperties.put(ProjectProperties.EXCLUDES, excludes);
         
         // Store the property changes into the project
         updateHelper.putProperties( AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties );
@@ -531,13 +558,6 @@ public class AppClientProjectProperties {
         
     }
   
-    private void storeAdditionalProperties(EditableProperties projectProperties) {
-        for (Iterator i = additionalProperties.keySet().iterator(); i.hasNext();) {
-            String key = i.next().toString();
-            projectProperties.put(key, additionalProperties.getProperty(key));
-        }
-    }
-    
     private static String getDocumentText( Document document ) {
         try {
             return document.getText( 0, document.getLength() );
@@ -580,15 +600,7 @@ public class AppClientProjectProperties {
                     item.getType() == ClassPathSupport.Item.TYPE_JAR ) {
                 refHelper.destroyReference(item.getReference());
                 if (item.getType() == ClassPathSupport.Item.TYPE_JAR) {
-                    //oh well, how do I do this otherwise??
-                    EditableProperties ep = updateHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                    if (item.getJavadocProperty() != null) {
-                        ep.remove(item.getJavadocProperty());
-                    }
-                    if (item.getSourceProperty() != null) {
-                        ep.remove(item.getSourceProperty());
-                    }
-                    updateHelper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
+                    item.removeSourceAndJavadoc(updateHelper);
                 }
             }
         }
@@ -628,7 +640,7 @@ public class AppClientProjectProperties {
     
     /* This is used by CustomizerWSServiceHost */
     public void putAdditionalProperty(String propertyName, String propertyValue) {
-        additionalProperties.setProperty(propertyName, propertyValue);
+        additionalProperties.put(propertyName, propertyValue);
     }
     
     private static boolean showModifiedMessage (String title) {
@@ -834,7 +846,9 @@ public class AppClientProjectProperties {
 
         List<ClassPathSupport.Item> serverItems = new ArrayList<ClassPathSupport.Item>();
         for (ClassPathSupport.Item item : items) {
-            if (item.getType() == ClassPathSupport.Item.TYPE_LIBRARY && item.getLibrary().getType().equals(J2eePlatform.LIBRARY_TYPE)) {
+            if (item.getType() == ClassPathSupport.Item.TYPE_LIBRARY
+                    && !item.isBroken()
+                    && item.getLibrary().getType().equals(J2eePlatform.LIBRARY_TYPE)) {
                 serverItems.add(ClassPathSupport.Item.create(item.getLibrary(), null));
             }
         }
@@ -864,6 +878,23 @@ public class AppClientProjectProperties {
     public static String getProperty(final String property, final AntProjectHelper helper, final String path) {
         EditableProperties props = helper.getProperties(path);
         return props.getProperty(property);
+    }
+    
+    void loadIncludesExcludes(IncludeExcludeVisualizer v) {
+        Set<File> roots = new HashSet<File>();
+        for (DefaultTableModel model : new DefaultTableModel[] {SOURCE_ROOTS_MODEL, TEST_ROOTS_MODEL}) {
+            for (Object row : model.getDataVector()) {
+                roots.add((File) ((Vector) row).elementAt(0));
+            }
+        }
+        v.setRoots(roots.toArray(new File[roots.size()]));
+        v.setIncludePattern(includes);
+        v.setExcludePattern(excludes);
+    }
+
+    void storeIncludesExcludes(IncludeExcludeVisualizer v) {
+        includes = v.getIncludePattern();
+        excludes = v.getExcludePattern();
     }
     
     

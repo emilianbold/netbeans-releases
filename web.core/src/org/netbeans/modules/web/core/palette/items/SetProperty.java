@@ -75,7 +75,6 @@ public class SetProperty extends GetProperty {
     }
 
     private String createBody() {
-
         String strBean = " name=\"\""; // NOI18N
         if (getBeanIndex() == -1) {
             strBean = " name=\"" + getBean() + "\""; // NOI18N

@@ -45,7 +45,7 @@ import java.io.IOException;
 import java.util.Set;
 import java.util.TreeSet;
 import org.netbeans.api.xml.services.UserCatalog;
-import org.openide.util.Lookup;
+import org.netbeans.modules.xml.lib.Util;
 import org.openide.xml.XMLUtil;
 import org.xml.sax.*;
 import org.xml.sax.helpers.*;
@@ -56,7 +56,7 @@ import org.xml.sax.helpers.*;
  * @author  Petr Kuzel
  * @see     SchemaInfo
  */
-final class SchemaParser extends DefaultHandler {
+public final class SchemaParser extends DefaultHandler {
 
     private SchemaInfo info =  new SchemaInfo();
 

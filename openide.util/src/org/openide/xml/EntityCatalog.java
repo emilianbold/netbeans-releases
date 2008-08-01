@@ -42,6 +42,7 @@
 package org.openide.xml;
 
 import java.io.IOException;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.util.Lookup;
 import org.xml.sax.EntityResolver;
@@ -115,7 +116,7 @@ public abstract class EntityCatalog implements EntityResolver {
             }
 
             if (systemID != null && systemID.startsWith("http")) { // NOI18N
-                Logger.getLogger(EntityCatalog.class.getName()).warning("No resolver found for " + systemID);
+                Logger.getLogger(EntityCatalog.class.getName()).log(Level.FINE, "No resolver found for {0}", systemID);
             }
             return null;
         }

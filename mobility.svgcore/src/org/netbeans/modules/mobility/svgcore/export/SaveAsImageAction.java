@@ -86,7 +86,9 @@ public final class SaveAsImageAction extends CookieAction{
                 SaveAnimationAsImageAction.setDialogMinimumSize(dlg);
                 dlg.setVisible(true);
 
-                if (dd.getValue() == DialogDescriptor.OK_OPTION){
+                if (dd.getValue() == DialogDescriptor.OK_OPTION
+                        && panel.isExportConfirmed())
+                {
                     AnimationRasterizer.export(doj, (AnimationRasterizer.Params) panel);
                 }
             } catch( Exception e) {

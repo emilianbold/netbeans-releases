@@ -58,6 +58,12 @@ made subject to such option by the copyright holder.
     </folder>
     <folder name="Projects">
         <folder name="org-codehaus-mevenide-netbeans">
+         <!-- to be removed once maven modules are part of standard distro -->
+            <folder name="Lookup">
+                <file name="org-netbeans-modules-spring-webmvc-ProjectLookupProvider.instance"/>
+            </folder>
+        </folder>
+        <folder name="org-netbeans-modules-maven">
             <folder name="Lookup">
                 <file name="org-netbeans-modules-spring-webmvc-ProjectLookupProvider.instance"/>
             </folder>
@@ -99,6 +105,10 @@ made subject to such option by the copyright holder.
                 <attr name="template" boolvalue="true"/>
             </file>
             <file name="dispatcher-servlet.xml" url="templates/dispatcher-servlet.template">
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="template" boolvalue="true"/>
+            </file>
+            <file name="index.jsp" url="templates/index.template">
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="template" boolvalue="true"/>
             </file>

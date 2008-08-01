@@ -54,136 +54,137 @@ import java.util.logging.Logger;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Session;
-import org.netbeans.modules.php.dbgp.api.SessionId;
 import org.netbeans.modules.php.dbgp.models.AbstractIDEBridge;
 import org.netbeans.modules.php.dbgp.packets.DbgpCommand;
 import org.netbeans.modules.php.dbgp.packets.DbgpMessage;
 import org.netbeans.modules.php.dbgp.packets.DbgpResponse;
 import org.netbeans.modules.php.dbgp.packets.InitMessage;
-
+import org.openide.util.RequestProcessor;
 
 /**
  * @author ads
  *
  */
 public class DebugSession implements Runnable {
-
     private static final int SLEEP_TIME = 100;
+    private DebuggerOptions options;
 
-    DebugSession( Socket socket ){
-        mySocket = socket;
-        isStopped = new AtomicBoolean( false );
-        myCommands = new LinkedList<DbgpCommand>();
-        mySessionId = new AtomicReference<SessionId>();
-        myBridge = new IDESessionBridge();
-        myFileName = new AtomicReference<String>();
-        myEngine = new AtomicReference<DebuggerEngine>();
+    DebugSession(DebuggerOptions options) {
+        init(null);
+        this.options = options;
     }
-    
+
     /* (non-Javadoc)
      * @see java.lang.Runnable#run()
      */
     public void run() {
-        setSessionThread( Thread.currentThread() );
+        setSessionThread(Thread.currentThread());
         boolean moreCommands = false;
-        synchronized ( myCommands ){
+        synchronized (myCommands) {
             moreCommands = myCommands.size() > 0;
         }
-        while( !isStopped.get() || moreCommands ){
-            try { 
+        while (continueDebugging()) {
+            try {
                 sendCommands();
-                receiveData();
-                sleepTillNewCommand();
-            }
-            catch ( IOException e ){
-                log( e );
+                if (continueDebugging()) {
+                    receiveData();
+                    sleepTillNewCommand();
+                }
+            } catch (IOException e) {
+                log(e);
             }
         }
-        setSessionThread( null );
+        setSessionThread(null);
         try {
             getSocket().close();
-        }
-        catch (IOException e) {
-            log( e);
+        } catch (IOException e) {
+            log(e);
         }
     }
-    
-    public void sendCommandLater( DbgpCommand command ){
-        synchronized ( this ) {
+
+    private boolean continueDebugging() {
+        return !isStopped.get() && mySocket != null && !mySocket.isClosed();
+    }
+
+    public void sendCommandLater(DbgpCommand command) {
+        synchronized (this) {
             /*
              *  Do not collect command before session is not initialized.
              *  So any command before Init message will not be sent.
              *  ( F.e. commands for getting watch values will be just ignored
              *  if they was requested before Init message ).
              */
-            if ( getSessionId() == null ){
+            if (getSessionId() == null) {
                 return;
             }
-            if ( getSessionThread() == null ){
+            if (getSessionThread() == null) {
                 return;
             }
             addCommand(command);
-            getSessionThread().interrupt();
+            //getSessionThread().interrupt();
         }
     }
-    
-    public DbgpResponse sendSynchronCommand( DbgpCommand command ) {
-        if ( getSessionThread() != Thread.currentThread() ) {
+
+    public DbgpResponse sendSynchronCommand(DbgpCommand command) {
+        if (getSessionThread() != Thread.currentThread()) {
             throw new IllegalStateException("Method incorrect usage. " +
                     "It should be called in handler thread only");  // NOI18N
+
         }
         try {
-            command.send( getSocket().getOutputStream() );
-            if ( command.wantAcknowledgment() ) {
-                DbgpMessage message = receiveData( command );
-                if ( message instanceof DbgpResponse ) {
+            command.send(getSocket().getOutputStream());
+            if (command.wantAcknowledgment()) {
+                DbgpMessage message = receiveData(command);
+                if (message instanceof DbgpResponse) {
                     return (DbgpResponse) message;
                 }
             }
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             log(e);
         }
         return null;
     }
-    
+
     public String getTransactionId() {
-        return myTransactionId.getAndIncrement() +"";
+        return myTransactionId.getAndIncrement() + "";
     }
-    
+
+    public void start(Socket socket) {
+        init(socket);        
+        RequestProcessor.getDefault().post(this);
+    }
+
     public void stop() {
-        isStopped.set( true );
-        getBridge().setSuspended( false );
+        isStopped.set(true);
+        getBridge().setSuspended(false);
         getBridge().hideAnnotations();
-        StartActionProviderImpl.getInstance().removeSession( this );
-        getBridge().getBreakpointModel().setCurrentStack( null , this);
+        StartActionProviderImpl.getInstance().removeSession(this);
+        getBridge().getBreakpointModel().setCurrentStack(null, this);
         getBridge().getCallStackModel().clearModel();
         getBridge().getThreadsModel().update();
         getBridge().getVariablesModel().clearModel();
         getBridge().getWatchesModel().clearModel();
-        Session session = (Session) getBridge().getEngine().lookupFirst(null, Session.class);
-        StartActionProviderImpl.getInstance().stop(session);
     }
 
-    public void setId( InitMessage message ) {
-        setSessionFile( message.getFileUri() );
+    public void setId(InitMessage message) {
+        setSessionFile(message.getFileUri());
         String sessionId = message.getSessionId();
-        DebuggerEngine[] engines = 
-            DebuggerManager.getDebuggerManager().getDebuggerEngines();
+        DebuggerEngine[] engines =
+                DebuggerManager.getDebuggerManager().getDebuggerEngines();
         for (DebuggerEngine engine : engines) {
-            SessionId id = (SessionId)engine.lookupFirst( null , SessionId.class );
-            if ( id.getId().equals( sessionId ) ) {
-                mySessionId.set( id );
-                id.setFileUri( message.getFileUri() );
+            SessionId id = (SessionId) engine.lookupFirst(null, SessionId.class);
+            if (id != null && id.getId().equals(sessionId)) {
+                mySessionId.set(id);
+                id.setFileUri(message.getFileUri());
                 myEngine.set(engine);
             }
         }
         Session[] sessions = DebuggerManager.getDebuggerManager().getSessions();
         for (Session session : sessions) {
-            SessionId id = (SessionId)session.lookupFirst( null , SessionId.class );
-            if ( id.getId().equals( sessionId ) ) {
-                StartActionProviderImpl.getInstance().attachDebugSession( session ,
-                        this );
+            SessionId id = (SessionId) session.lookupFirst(null, SessionId.class);
+            if (id != null && id.getId().equals(sessionId)) {
+                StartActionProviderImpl.getInstance().attachDebugSession(session,
+                        this);
             }
         }
     }
@@ -191,111 +192,124 @@ public class DebugSession implements Runnable {
     public SessionId getSessionId() {
         return mySessionId.get();
     }
-    
+
     public IDESessionBridge getBridge() {
         return myBridge;
     }
-    
+
     public String getFileName() {
         return myFileName.get();
     }
-    
-    private void setSessionFile( String fileName ) {
-        myFileName.set( fileName );
+
+    private void init(Socket socket) {
+        this.mySocket = socket;
+        isStopped = new AtomicBoolean(false);
+        myCommands = new LinkedList<DbgpCommand>();
+        mySessionId = new AtomicReference<SessionId>();
+        myBridge = new IDESessionBridge();
+        myFileName = new AtomicReference<String>();
+        myEngine = new AtomicReference<DebuggerEngine>();
     }
-    
+
+    private void setSessionFile(String fileName) {
+        myFileName.set(fileName);
+    }
+
     private void sleepTillNewCommand() {
         try {
             // Wake up every 100 milliseconds and see if the debuggee has something to say.
             // The IDE side can interrupt the sleep to send new packets to the
             // debugger.
-            Thread.sleep(SLEEP_TIME); 
-        }
-        catch (InterruptedException ie) {
+            Thread.sleep(SLEEP_TIME);
+        } catch (InterruptedException ie) {
             // OK, run the look again.
         }
     }
-    
-    private synchronized void setSessionThread( Thread thread ){
+
+    private synchronized void setSessionThread(Thread thread) {
         mySessionThread = thread;
     }
 
     private void sendCommands() throws IOException {
         List<DbgpCommand> list;
-        synchronized ( myCommands ) {
-            list = new ArrayList<DbgpCommand>( myCommands );
+        synchronized (myCommands) {
+            list = new ArrayList<DbgpCommand>(myCommands);
             myCommands.clear();
         }
         for (DbgpCommand command : list) {
-            command.send( getSocket().getOutputStream() );
-            if ( command.wantAcknowledgment() ) {
-                receiveData( command );
+            if (continueDebugging()) {
+                command.send(getSocket().getOutputStream());
+                if (continueDebugging() && command.wantAcknowledgment()) {
+                    receiveData(command);
+                }
             }
         }
     }
-    
-    
-    private void addCommand( DbgpCommand command ){
-        synchronized ( myCommands ) {
-            myCommands.add( command );
+
+    private void addCommand(DbgpCommand command) {
+        synchronized (myCommands) {
+            myCommands.add(command);
         }
     }
-    
-    private Thread getSessionThread(){
+
+    private Thread getSessionThread() {
         return mySessionThread;
     }
 
-    private void receiveData() throws IOException{
-        receiveData( null );
+    private void receiveData() throws IOException {
+        receiveData(null);
     }
-    
-    private DbgpMessage receiveData( DbgpCommand command ) throws IOException{
-        if ( command!= null || getSocket().getInputStream().available() > 0) {
-            DbgpMessage message = DbgpMessage.create( 
-                    getSocket().getInputStream() );
+
+    private DbgpMessage receiveData(DbgpCommand command) throws IOException {
+        if (command != null || getSocket().getInputStream().available() > 0) {
+            DbgpMessage message = DbgpMessage.create(
+                    getSocket().getInputStream());
             handleMessage(command, message);
             return message;
         }
         return null;
     }
 
-    private void handleMessage( DbgpCommand command, DbgpMessage message ) 
-        throws IOException  
-    {
-        if ( message == null ) {
+    private void handleMessage(DbgpCommand command, DbgpMessage message)
+            throws IOException {
+        if (message == null) {
             return;
         }
-        
-        if ( command == null ) {
+
+        if (command == null) {
             // this is case when we don't need achnowl-t
-            message.process(this, null );
+            message.process(this, null);
             return;
         }
-        
+
         boolean awaited = false;
-        if ( message instanceof DbgpResponse ) {    
+        if (message instanceof DbgpResponse) {
             DbgpResponse response = (DbgpResponse) message;
             String id = response.getTransactionId();
-            if ( id.equals( command.getTransactionId())) {
+            if (id.equals(command.getTransactionId())) {
                 awaited = true;
                 message.process(this, command);
             }
         }
-        if ( !awaited ) {
-            message.process(this, null );
-            receiveData( command );
+        if (!awaited) {
+            message.process(this, null);
+            receiveData(command);
         }
     }
-    
-    private Socket getSocket(){
+
+    private Socket getSocket() {
         return mySocket;
     }
-    
-    private void log( IOException e ) {
-        Logger.getLogger( DebugSession.class.getName() ).log( 
-                Level.SEVERE, null, e );
+
+    private void log(IOException e) {
+        Logger.getLogger(DebugSession.class.getName()).log(
+                Level.SEVERE, null, e);
     }
-    
+
+    public DebuggerOptions getOptions() {
+        return options;
+    }
+
     /*
      * This class is associated  with DebugSession but is intended for
      * cooperation with IDE UI. 
@@ -306,36 +320,24 @@ public class DebugSession implements Runnable {
          * @see org.netbeans.modules.php.dbgp.models.AbstractIDEBridge#getEngine()
          */
         @Override
-        protected DebuggerEngine getEngine()
-        {
+        protected DebuggerEngine getEngine() {
             return myEngine.get();
         }
-        
+
         /* (non-Javadoc)
          * @see org.netbeans.modules.php.dbgp.models.AbstractIDEBridge#getDebugSession()
          */
-        protected DebugSession getDebugSession(){
+        protected DebugSession getDebugSession() {
             return DebugSession.this;
         }
-
     }
-    
     private Socket mySocket;
-    
     private AtomicBoolean isStopped;
-    
     private Thread mySessionThread;
-    
     private List<DbgpCommand> myCommands;
-    
     private AtomicReference<SessionId> mySessionId;
-    
     private AtomicReference<DebuggerEngine> myEngine;
-    
-    private static final AtomicInteger myTransactionId = new AtomicInteger( 0 );
-    
-    private final IDESessionBridge myBridge;
-    
+    private static final AtomicInteger myTransactionId = new AtomicInteger(0);
+    private IDESessionBridge myBridge;
     private AtomicReference<String> myFileName;
-    
 }

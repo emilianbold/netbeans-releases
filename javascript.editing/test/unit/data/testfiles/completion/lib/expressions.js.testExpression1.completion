@@ -1,9 +1,11 @@
-Results for escape with queryType=COMPLETION and nameKind=PREFIX
-METHOD     exec(str)                                  RegExp
+Code completion result for source line:
+/regexp/.|escape("myexpr")
+(QueryType=COMPLETION, NameKind=PREFIX)
+METHOD     exec(str) : void                           RegExp
 METHOD     test(str) : Boolean                        RegExp
 METHOD     toSource() : void                          RegExp
 METHOD     toString() : String                        RegExp
-METHOD     watch(prop, handler)                       RegExp
+METHOD     watch(prop, handler) : void                RegExp
 PROPERTY   constructor                                RegExp
 PROPERTY   global : Boolean                           RegExp
 PROPERTY   ignoreCase : Boolean                       RegExp
@@ -12,16 +14,16 @@ PROPERTY   multiline                                  RegExp
 PROPERTY   prototype                                  RegExp
 PROPERTY   source : String                            RegExp
 ------------------------------------
-METHOD     eval(string)                               Object
+METHOD     eval(string) : void                        Object
 METHOD     hasOwnProperty(prop) : Boolean             Object
 METHOD     isPrototypeOf(object) : Boolea             Object
 METHOD     propertyIsEnumerable(prop) : B             Object
 METHOD     toLocaleString() : String                  Object
 METHOD     toSource() : void                          Object
 METHOD     toString() : String                        Object
-METHOD     unwatch(prop)                              Object
+METHOD     unwatch(prop) : void                       Object
 METHOD     valueOf() : void                           Object
-METHOD     watch(prop, handler)                       Object
+METHOD     watch(prop, handler) : void                Object
 KEYWORD    abstract                                   null
 KEYWORD    boolean                                    null
 KEYWORD    break                                      null

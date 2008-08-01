@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -65,22 +65,45 @@ public final class LocalFileSystemEx extends LocalFileSystem {
     private static HashMap<String,FileObject> allLocks = new HashMap<String,FileObject> (7);
     private static HashSet<String> pLocks = new HashSet<String> (7);
 //    private static HashMap allThreads = new HashMap (7);
+    private static final Logger LOGGER = Logger.getLogger(LocalFileSystemEx.class.getName());
 
-    public static String [] getLocks () {
+    public static String[] getLocks() {
+        /* Returns union of allLocks and pLocks. As side effect
+         * it removes invalid locks from pLocks.
+         */
+        LinkedList<String> l = new LinkedList<String>();
+        Set<String> pLocksCopy = new HashSet<String>();
         synchronized (allLocks) {
-            removeInvalid (pLocks);
-            LinkedList<String> l = new LinkedList<String> ();
-            l.addAll (allLocks.keySet ());
-            l.addAll (pLocks);
-            return l.toArray (new String [l.size ()]);
+            l.addAll(allLocks.keySet());
+            pLocksCopy.addAll(pLocks);
         }
+        // must be called outside of synchronized block becuase it may lock (#133616)
+        Set<String> invalid = getInvalid(pLocksCopy);
+        pLocksCopy.removeAll(invalid);
+        l.addAll(pLocksCopy);
+        synchronized (allLocks) {
+            pLocks.removeAll(invalid);
+        }
+        return l.toArray(new String[l.size()]);
     }
 
-    public static boolean hasLocks () {
+    public static boolean hasLocks() {
+        /* Returns true if either allLocks or pLocks are not empty. As side effect
+         * it removes invalid locks from pLocks.
+         */
+        Set<String> pLocksCopy = new HashSet<String>();
+        boolean allLocksEmpty;
         synchronized (allLocks) {
-            removeInvalid (pLocks);
-            return !allLocks.isEmpty () || !pLocks.isEmpty ();
+            allLocksEmpty = allLocks.isEmpty();
+            pLocksCopy.addAll(pLocks);
         }
+        // must be called outside of synchronized block becuase it may lock (#133616)
+        Set<String> invalid = getInvalid(pLocksCopy);
+        pLocksCopy.removeAll(invalid);
+        synchronized (allLocks) {
+            pLocks.removeAll(invalid);
+        }
+        return !allLocksEmpty || !pLocksCopy.isEmpty();
     }
     
     public static void potentialLock (String name) {
@@ -97,7 +120,9 @@ public final class LocalFileSystemEx extends LocalFileSystem {
         }
     }
 
-    private static void removeInvalid (Set names) {
+    private static Set<String> getInvalid (Set names) {
+        LOGGER.finest("133616 - checking invalid");
+        HashSet<String> invalid = new HashSet<String>();
         FileSystem sfs = Repository.getDefault ().getDefaultFileSystem ();
         Iterator i = names.iterator ();
         while (i.hasNext ()) {
@@ -107,9 +132,10 @@ public final class LocalFileSystemEx extends LocalFileSystem {
                 // file lock recorded in potentialLock has been used
                 // in operation which masked file as hidden and nothing
                 // was actually locked
-                i.remove ();
+                invalid.add(name);
             }
         }
+        return invalid;
     }
 
     /** Creates new LocalFileSystemEx */
@@ -127,6 +153,7 @@ public final class LocalFileSystemEx extends LocalFileSystem {
     }
 
     protected void lock (String name) throws IOException {
+        LOGGER.finest("133616 - in lock");
         super.lock (name);
         synchronized (allLocks) {
             FileObject fo = findResource (name);

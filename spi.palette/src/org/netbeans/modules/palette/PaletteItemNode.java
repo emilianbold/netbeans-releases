@@ -53,7 +53,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 import org.openide.loaders.DataNode;
-import org.openide.loaders.DataObject;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.text.ActiveEditorDrop;
@@ -64,6 +63,7 @@ import org.openide.util.Utilities;
 import org.openide.util.datatransfer.ExTransferable;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
+import org.openide.util.lookup.ProxyLookup;
 
 
 
@@ -99,12 +99,9 @@ public final class PaletteItemNode extends FilterNode implements Node.Cookie {
                     String icon32URL, 
                     InstanceContent content) 
     {
-        super(original, Children.LEAF, new AbstractLookup(content));
+        super(original, Children.LEAF, new ProxyLookup(( new Lookup[] {new AbstractLookup(content), original.getLookup()})));
         
         content.add( this );
-        DataObject dob = original.getCookie( DataObject.class );
-        if( null != dob )
-            content.add( dob );
         this.name = name;
         this.bundleName = bundleName; 
         this.displayNameKey = displayNameKey;
@@ -122,14 +119,10 @@ public final class PaletteItemNode extends FilterNode implements Node.Cookie {
                     String icon32URL, 
                     InstanceContent content) 
     {
-        super(original, Children.LEAF, new AbstractLookup(content));
+        super(original, Children.LEAF, new ProxyLookup(( new Lookup[] {new AbstractLookup(content), original.getLookup()})));
         
         content.add( this );
-        DataObject dob = original.getCookie( DataObject.class );
-        if( null != dob )
-            content.add( dob );
         this.name = name;
-        this.bundleName = bundleName; 
         assert null != displayName;
         this.displayName = displayName;
         this.description = tooltip;
@@ -139,10 +132,12 @@ public final class PaletteItemNode extends FilterNode implements Node.Cookie {
         this.icon32URL = icon32URL;
     }
     
+    @Override
     public String getName() {
         return name;
     }
 
+    @Override
     public String getDisplayName() {
         if (displayName == null)
             displayName = _getDisplayName(bundleName, displayNameKey, className);
@@ -150,6 +145,7 @@ public final class PaletteItemNode extends FilterNode implements Node.Cookie {
         return displayName;
     }
 
+    @Override
     public String getShortDescription() {
         if (description == null)
             description = _getShortDescription(bundleName, tooltipKey, className, displayNameKey);
@@ -157,6 +153,7 @@ public final class PaletteItemNode extends FilterNode implements Node.Cookie {
         return description;
     }
 
+    @Override
     public Image getIcon(int type) {
 
         Image icon = null;
@@ -181,15 +178,18 @@ public final class PaletteItemNode extends FilterNode implements Node.Cookie {
         return icon;
     }
     
+    @Override
     public boolean canRename() {
         return false;
     }
 
     // TODO properties
+    @Override
     public Node.PropertySet[] getPropertySets() {
         return NO_PROPERTIES;
     }
 
+    @Override
     public Transferable clipboardCopy() throws IOException {
 
         ExTransferable t = ExTransferable.create( super.clipboardCopy() );
@@ -204,6 +204,7 @@ public final class PaletteItemNode extends FilterNode implements Node.Cookie {
         return new NoExternalDndTransferable( t );
     }
 
+    @Override
     public Transferable drag() throws IOException {
         return clipboardCopy();
     }
@@ -230,29 +231,29 @@ public final class PaletteItemNode extends FilterNode implements Node.Cookie {
             String instanceName) 
     {
 
-        String displayName = null;
+        String dName = null;
         try {
-            displayName = NbBundle.getBundle(bundleName).getString(displayNameKey);
+            dName = NbBundle.getBundle(bundleName).getString(displayNameKey);
 
-            if (displayName == null && displayNameKey != null)
-                displayName = displayNameKey;
+            if (dName == null && displayNameKey != null)
+                dName = displayNameKey;
 
-            if (displayName == null) {//derive name from the instance name
+            if (dName == null) {//derive name from the instance name
                 if (instanceName != null && instanceName.trim().length() > 0) {
                     int dotIndex = instanceName.lastIndexOf('.'); // NOI18N
-                    displayName = instanceName.substring(dotIndex);
+                    dName = instanceName.substring(dotIndex);
                 }
             }
 
-            if (displayName == null) // no name derived from the item
-                displayName = name;
+            if (dName == null) // no name derived from the item
+                dName = name;
 
         }
         catch (Exception ex) {
             Logger.getLogger( getClass().getName() ).log( Level.INFO, null, ex );
         }
 
-        return (displayName == null ? "" : displayName);
+        return (dName == null ? "" : dName);
     }
 
     public String _getShortDescription(
@@ -308,6 +309,7 @@ public final class PaletteItemNode extends FilterNode implements Node.Cookie {
         return icon;
     }
     
+    @Override
     public HelpCtx getHelpCtx() {
         DataNode dn = (DataNode) getOriginal();
         Object helpId = dn.getDataObject().getPrimaryFile().getAttribute("helpId"); //NOI18N

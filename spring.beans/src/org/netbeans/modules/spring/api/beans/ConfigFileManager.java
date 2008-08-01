@@ -60,12 +60,12 @@ public final class ConfigFileManager {
     private final ConfigFileManagerImplementation impl;
 
     static {
-        ConfigFileManagerAccessor.DEFAULT = new ConfigFileManagerAccessor() {
+        ConfigFileManagerAccessor.setDefault(new ConfigFileManagerAccessor() {
             @Override
             public ConfigFileManager createConfigFileManager(ConfigFileManagerImplementation impl) {
                 return new ConfigFileManager(impl);
             }
-        };
+        });
     }
 
     private ConfigFileManager(ConfigFileManagerImplementation impl) {

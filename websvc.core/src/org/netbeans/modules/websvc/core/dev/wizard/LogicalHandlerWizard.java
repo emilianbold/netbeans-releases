@@ -51,6 +51,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.websvc.core.CreatorProvider;
 import org.netbeans.modules.websvc.core.HandlerCreator;
+import org.netbeans.modules.websvc.core.WSStackUtils;
 import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
@@ -94,9 +95,9 @@ public class LogicalHandlerWizard implements WizardDescriptor.InstantiatingItera
         JComponent c = (JComponent) firstPanel.getComponent();
         Util.changeLabelInComponent(c, NbBundle.getMessage(LogicalHandlerWizard.class, "LBL_JavaTargetChooserPanelGUI_ClassName_Label"), //NOI18N
                 NbBundle.getMessage(LogicalHandlerWizard.class, "LBL_LogicalHandler_Name") ); //NOI18N
-        c.putClientProperty("WizardPanel_contentData", //NOI18N
+        c.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, //NOI18N
                 HANDLER_STEPS);
-        c.putClientProperty("WizardPanel_contentSelectedIndex", //NOI18N
+        c.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, //NOI18N
                 Integer.valueOf(0));
         c.getAccessibleContext().setAccessibleDescription
                 (HANDLER_STEPS[0]);
@@ -190,7 +191,7 @@ public class LogicalHandlerWizard implements WizardDescriptor.InstantiatingItera
             if (projectType == ProjectInfo.JSE_PROJECT_TYPE && Util.getSourceLevel(project).equals("1.5")) { //NOI18N
                 //test JAX-WS library
                 if (!PlatformUtil.hasJAXWSLibrary(project)) {
-                    wiz.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(BottomPanel.class, "LBL_LogicalHandlerWarning")); // NOI18N
+                    wiz.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(BottomPanel.class, "LBL_LogicalHandlerWarning")); // NOI18N
                     return false;
                 } else
                     return true;
@@ -203,23 +204,24 @@ public class LogicalHandlerWizard implements WizardDescriptor.InstantiatingItera
             }
             
             //if platform is Tomcat, source level must be jdk 1.5 and jaxws library must be in classpath
+            WSStackUtils wsStackUtils = new WSStackUtils(project);
             if(!Util.isJavaEE5orHigher(project) && projectType == ProjectInfo.WEB_PROJECT_TYPE
-                    && !PlatformUtil.isJsr109Supported(project) 
-                    && !PlatformUtil.isJsr109OldSupported(project) ){
+                    && !wsStackUtils.isJsr109Supported() 
+                    && !wsStackUtils.isJsr109OldSupported() ){
                 //has to be at least jdk 1.5
                 if (Util.isSourceLevel14orLower(project)) {
-                    wiz.putProperty("WizardPanel_errorMessage",
+                    wiz.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
                             NbBundle.getMessage(LogicalHandlerWizard.class, "ERR_HandlerNeedProperSourceLevel")); // NOI18N
                     return false;
                 }
-                if (!PlatformUtil.hasJAXWSLibrary(project)) { //must have jaxws library
-                    wiz.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(BottomPanel.class, "LBL_LogicalHandlerWarning")); // NOI18N
+                if (!wsStackUtils.hasJAXWSLibrary()) { //must have jaxws library
+                    wiz.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(BottomPanel.class, "LBL_LogicalHandlerWarning")); // NOI18N
                     return false;
                 } else
                     return true;
             }
             
-            wiz.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(BottomPanel.class, "LBL_LogicalHandlerWarning")); // NOI18N
+            wiz.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(BottomPanel.class, "LBL_LogicalHandlerWarning")); // NOI18N
             
             return false;
         }

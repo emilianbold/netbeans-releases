@@ -140,7 +140,7 @@ public class CCKit extends NbEditorKit {
         // in future we can make attributes per document based on used compiler info
         if (lexerAttrs == null) {
             lexerAttrs = new InputAttributes();
-            lexerAttrs.setValue(getLanguage(), "lexer-filter", getFilter(), true);  // NOI18N
+            lexerAttrs.setValue(getLanguage(), CndLexerUtilities.LEXER_FILTER, getFilter(), true);  // NOI18N
         }
         return lexerAttrs;
     }
@@ -199,7 +199,9 @@ public class CCKit extends NbEditorKit {
             new CCDeleteCharAction(deletePrevCharAction, false),
             getToggleCommentAction(),
             getCommentAction(),
-            getUncommentAction()
+            getUncommentAction(),
+            new InsertSemicolonAction(true),
+            new InsertSemicolonAction(false),            
 	};
         ccActions = TextAction.augmentList(super.createActions(), ccActions);
         Action[] extra = CndEditorActionsProvider.getDefault().getActions(getContentType());
@@ -250,7 +252,7 @@ public class CCKit extends NbEditorKit {
 	    putValue ("helpID", CCFormatAction.class.getName ()); // NOI18N
 	}
 
-	public void actionPerformed(ActionEvent evt, JTextComponent target) {
+	public void actionPerformed(ActionEvent evt, final JTextComponent target) {
 	    if (target != null) {
 
 		if (!target.isEditable() || !target.isEnabled()) {
@@ -258,51 +260,53 @@ public class CCKit extends NbEditorKit {
 		    return;
 		}
 
-		Caret caret = target.getCaret();
-		BaseDocument doc = (BaseDocument)target.getDocument();
+		final BaseDocument doc = (BaseDocument)target.getDocument();
                 // Set hourglass cursor
                 Cursor origCursor = target.getCursor();
                 target.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                
+                doc.runAtomic(new Runnable() {
 
-		doc.atomicLock();
-		try {
+                    public void run() {
+                        try {
+                            Caret caret = target.getCaret();
 
-		    int caretLine = Utilities.getLineOffset(doc, caret.getDot());
-		    int startPos;
-		    Position endPosition;
-		    //if (caret.isSelectionVisible()) {
-		    if (Utilities.isSelectionShowing(caret)){
-			startPos = target.getSelectionStart();
-			endPosition = doc.createPosition(target.getSelectionEnd());
-		    } else {
-			startPos = 0;
-			endPosition = doc.createPosition(doc.getLength());
-		    }
+                            int caretLine = Utilities.getLineOffset(doc, caret.getDot());
+                            int startPos;
+                            Position endPosition;
+                            //if (caret.isSelectionVisible()) {
+                            if (Utilities.isSelectionShowing(caret)) {
+                                startPos = target.getSelectionStart();
+                                endPosition = doc.createPosition(target.getSelectionEnd());
+                            } else {
+                                startPos = 0;
+                                endPosition = doc.createPosition(doc.getLength());
+                            }
 
-		    int pos = startPos;
-                    Formatter formatter = doc.getFormatter();
-                    formatter.reformatLock();
-                    try {
-                        while (pos < endPosition.getOffset()) {
-                            int stopPos = endPosition.getOffset();
-                            int reformattedLen = formatter.reformat(doc, pos, stopPos);
-                            pos = pos + reformattedLen;
+                            int pos = startPos;
+                            Formatter formatter = doc.getFormatter();
+                            formatter.reformatLock();
+                            try {
+                                while (pos < endPosition.getOffset()) {
+                                    int stopPos = endPosition.getOffset();
+                                    int reformattedLen = formatter.reformat(doc, pos, stopPos);
+                                    pos = pos + reformattedLen;
+                                }
+                            } finally {
+                                formatter.reformatUnlock();
+                            }
+
+                            // Restore the line
+                            pos = Utilities.getRowStartFromLineOffset(doc, caretLine);
+                            if (pos >= 0) {
+                                caret.setDot(pos);
+                            }
+                        } catch (BadLocationException e) {
+                            //failed to format
                         }
-                    } finally {
-                        formatter.reformatUnlock();
                     }
-
-		    // Restore the line
-		    pos = Utilities.getRowStartFromLineOffset(doc, caretLine);
-		    if (pos >= 0) {
-			caret.setDot(pos);
-		    }
-		} catch (BadLocationException e) {
-                    //failed to format
-		} finally {
-		    doc.atomicUnlock();
-                    target.setCursor(origCursor);
-		}
+                });
+                target.setCursor(origCursor);
 
 	    }
 	}
@@ -312,8 +316,10 @@ public class CCKit extends NbEditorKit {
     public static class CCDefaultKeyTypedAction extends ExtDefaultKeyTypedAction {
       
         @Override
-	protected void checkIndentHotChars(JTextComponent target, String typedText) {
-	    boolean reindent = false;
+        protected void checkIndentHotChars(JTextComponent target, String typedText) {
+            // This block is obsolete cause getKeywordBasedReformatBlock() is already called in CCFormatter.getReformatBlock()        
+            /*  
+            boolean reindent = false;
 	
 	    BaseDocument doc = Utilities.getDocument(target);
 	    int dotPos = target.getCaret().getDot();
@@ -327,10 +333,20 @@ public class CCKit extends NbEditorKit {
 		    } catch (BadLocationException e) {
 		    }
 		}
-	    }
+	    }*/
 	
-	    super.checkIndentHotChars(target, typedText);
-	}
+            BaseDocument doc = Utilities.getDocument(target);
+            if (doc != null) {
+                // To fix IZ#130504 we need to differ different reasons line indenting request,
+                // but ATM there is no way to transfer this info from here to FormatSupport 
+                // correctly over FormatWriter because it's final class for some reasons.
+                // But java editor has the same bug, so one day we may have such possibility 
+                doc.putProperty(CCFormatter.IGNORE_IN_COMMENTS_MODE, Boolean.TRUE); 
+                super.checkIndentHotChars(target, typedText);
+                doc.putProperty(CCFormatter.IGNORE_IN_COMMENTS_MODE, null);
+            }
+            
+       	}
         
         @Override
         protected void insertString(BaseDocument doc, int dotPos,

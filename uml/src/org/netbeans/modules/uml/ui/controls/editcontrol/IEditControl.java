@@ -145,7 +145,7 @@ public interface IEditControl
 	/**
 	 * Gets if the edit control is a multiline edit
 	*/
-	public boolean getMultiline();
+	public boolean isMultiline();
 
 	/**
 	 * Gets/Sets the range of selected characters

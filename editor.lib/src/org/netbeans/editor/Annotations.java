@@ -52,18 +52,27 @@ import javax.swing.event.EventListenerList;
 import java.util.EventListener;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
+import java.util.Collections;
 import java.util.Comparator;
+import java.util.List;
 import javax.swing.JPopupMenu;
 import javax.swing.Action;
 import java.util.Map;
 import java.util.TreeSet;
+import javax.swing.JComponent;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.SwingUtilities;
 import org.netbeans.editor.ext.ExtKit;
+import org.openide.awt.Actions;
+import org.openide.awt.DynamicMenuContent;
+import org.openide.util.ContextAwareAction;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.actions.Presenter;
+import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 
 /** Annotations class act as data model containing all annotations attached
  * to one document. Class uses instances of private class LineAnnotations for 
@@ -642,6 +651,14 @@ public class Annotations implements DocumentListener {
         }
     }
     
+    private Action getAction(AnnotationDesc anno, Action action) {
+        if (action instanceof ContextAwareAction && anno instanceof Lookup.Provider) {
+            Lookup lookup = ((Lookup.Provider) anno).getLookup();
+            action = ((ContextAwareAction) action).createContextAwareInstance(lookup);
+        }
+        return action;
+    }
+    
     /** Creates menu item for the given action. It must handle the BaseActions, which
      * have localized name stored not in Action.NAME property. */
     private JMenuItem createMenuItem(Action action, BaseKit kit) {
@@ -654,7 +671,7 @@ public class Annotations implements DocumentListener {
             item = ((Presenter.Popup) action).getPopupPresenter();        
         } else {
             item = new JMenuItem( (String)action.getValue(Action.NAME) );
-            item.addActionListener(action);
+            Actions.connect(item, action, true);
             addAcceleretors(action, item, kit);
         }
         return item;
@@ -664,15 +681,56 @@ public class Annotations implements DocumentListener {
     public JPopupMenu createPopupMenu(BaseKit kit, int line) {
         return createMenu(kit, line, false).getPopupMenu();
     }
+
+    private JMenu createSubMenu(AnnotationDesc anno, BaseKit kit) {
+        JMenu subMenu = null;
+        Action[] actions = anno.getActions();
+        if (actions != null) {
+            subMenu = new JMenu(anno.getAnnotationTypeInstance().getDescription());
+            for (int j=0; j<actions.length; j++) {
+                JMenuItem item = createMenuItem(getAction(anno, actions[j]), kit);
+                if (item instanceof DynamicMenuContent) {
+                    JComponent[] cs = ((DynamicMenuContent) item).getMenuPresenters();
+                    for (JComponent c : cs) {
+                        subMenu.add(c);
+                    }
+                } else {
+                    subMenu.add(item);
+                }
+            }
+
+            if (subMenu.getItemCount() == 0) {
+                subMenu = null;
+            }
+        }
+        return subMenu;
+    }
     
+    private List<JMenu> createSubMenus(AnnotationDesc anno, BaseKit kit) {
+        JMenu subMenu = createSubMenu(anno, kit);
+        if (subMenu != null) {
+            return Collections.singletonList(subMenu);
+        } else if (anno instanceof AnnotationCombination) {
+            // if the annotation does not have defined actions,
+            // add actions of all sub-annotation
+            List<AnnotationDesc> subAnnotations = ((AnnotationCombination) anno).getCombinedAnnotations();
+            List<JMenu> subMenus = new ArrayList<JMenu>(subAnnotations.size());
+            for (AnnotationDesc ad : subAnnotations) {
+                subMenu = createSubMenu(ad, kit);
+                if (subMenu != null) {
+                    subMenus.add(subMenu);
+                }
+            }
+            return subMenus;
+        } else {
+            return Collections.emptyList();
+        }
+    }
+
     private void initMenu(JMenu pm, BaseKit kit, int line){
         LineAnnotations annos = getLineAnnotations(line);
         Map types = new HashMap(AnnotationTypes.getTypes().getVisibleAnnotationTypeNamesCount() * 4/3);
 
-        Action[] actions;
-        boolean separator = false;
-        boolean added = false;
-        JMenu subMenu;
         TreeSet orderedSubMenus = new TreeSet(MENU_COMPARATOR);
 
         if (annos != null) {
@@ -680,49 +738,23 @@ public class Annotations implements DocumentListener {
             // first, add actions for active annotation
             AnnotationDesc anno = annos.getActive();
             if (anno != null) {
-                actions = anno.getActions();
-                if (actions != null) {
-                    subMenu = new JMenu(anno.getAnnotationTypeInstance().getDescription());
-                    for (int j=0; j<actions.length; j++)
-                        subMenu.add(createMenuItem(actions[j], kit));
-                    
-                    if (subMenu.getItemCount() > 0) {
-                        orderedSubMenus.add(subMenu);
-                        separator = true;
-                    }
-                    types.put(anno.getAnnotationType(), anno.getAnnotationType());
-                }
+                List<JMenu> subMenus = createSubMenus(anno, kit);
+                orderedSubMenus.addAll(subMenus);
+                types.put(anno.getAnnotationType(), anno.getAnnotationType());
             }
 
             // second, add submenus for all pasive annotations
             AnnotationDesc[] pasiveAnnos = annos.getPasive();
-            added = false;
             if (pasiveAnnos != null) {
                 for (int i=0; i < pasiveAnnos.length; i++) {
-                    actions = pasiveAnnos[i].getActions();
-                    if (actions != null) {
-                        subMenu = new JMenu(pasiveAnnos[i].getAnnotationTypeInstance().getDescription());
-                        for (int j=0; j<actions.length; j++)
-                            subMenu.add(createMenuItem(actions[j], kit));
-                        if (separator) {
-                            separator = false;
-                            //pm.addSeparator();
-                        }
-                        if (subMenu.getItemCount() > 0){
-                            //pm.add(subMenu);
-                            orderedSubMenus.add(subMenu);
-                            added = true;
-                        }
-                        types.put(pasiveAnnos[i].getAnnotationType(), pasiveAnnos[i].getAnnotationType());
-                    }
+                    List<JMenu> subMenus = createSubMenus(pasiveAnnos[i], kit);
+                    orderedSubMenus.addAll(subMenus);
+                    types.put(pasiveAnnos[i].getAnnotationType(), pasiveAnnos[i].getAnnotationType());
                 }
-                if (added)
-                    separator = true;
             }
         }
 
         // third, add all remaining possible actions to the end of the list
-        added = false;
         AnnotationType type;
         for (Iterator i = AnnotationTypes.getTypes().getAnnotationTypeNames(); i.hasNext(); ) {
             type = AnnotationTypes.getTypes().getType((String)i.next());
@@ -730,38 +762,25 @@ public class Annotations implements DocumentListener {
                 continue;
             if (types.get(type.getName()) != null)
                 continue;
-            actions = type.getActions();
+            Action[] actions = type.getActions();
             if (actions != null) {
-                subMenu = new JMenu(type.getDescription());
+                JMenu subMenu = new JMenu(type.getDescription());
                 for (int j=0; j<actions.length; j++) {
                     if (actions[j].isEnabled()) {
                         subMenu.add(createMenuItem(actions[j], kit));
                     }
                 }
-                if (separator) {
-                    separator = false;
-                    //pm.addSeparator();
-                }
                 if (subMenu.getItemCount() > 0){
                     //pm.add(subMenu);
                     orderedSubMenus.add(subMenu);
-                    added = true;
                 }
             }
         }
         
-        if (added)
-            separator = true;
-
-        /*
-        if (separator)
-            pm.addSeparator();
-         */
-        
         if (!orderedSubMenus.isEmpty()){
             Iterator iter = orderedSubMenus.iterator();
             while(iter.hasNext()){
-                subMenu = (JMenu) iter.next();
+                JMenu subMenu = (JMenu) iter.next();
                 pm.add(subMenu);
             }
             pm.addSeparator();
@@ -1228,7 +1247,7 @@ public class Annotations implements DocumentListener {
      * annotations which are representd by this combined annotation. The only
      * added functionality is for tooltip text and annotation type.
      */
-    private static class AnnotationCombination extends AnnotationDesc {
+    private static class AnnotationCombination extends AnnotationDesc implements Lookup.Provider {
         
         /** Delegate annotaiton */
         private AnnotationDesc delegate;
@@ -1237,7 +1256,7 @@ public class Annotations implements DocumentListener {
         private String type;
         
         /** List of annotations which are combined */
-        private LinkedList list;
+        private LinkedList<AnnotationDesc> list;
         
         public AnnotationCombination(String type, AnnotationDesc delegate) {
             super(delegate.getOffset(), delegate.getLength());
@@ -1281,9 +1300,31 @@ public class Annotations implements DocumentListener {
                 return true;
         }
 
+        List<AnnotationDesc> getCombinedAnnotations() {
+            return list;
+        }
+
         /** Get Mark which represent this annotation in document */
         /* package */ @Override Mark getMark() {
             return delegate.getMark();
+        }
+
+        public Lookup getLookup() {
+            Lookup l = null;
+            for (AnnotationDesc ad : list) {
+                if (ad instanceof Lookup.Provider) {
+                    Lookup adl = ((Lookup.Provider) ad).getLookup();
+                    if (l == null) {
+                        l = adl;
+                    } else {
+                        l = new ProxyLookup(l, adl);
+                    }
+                }
+            }
+            if (l == null) {
+                l = Lookups.fixed(new Object[0]);
+            }
+            return l;
         }
         
     }

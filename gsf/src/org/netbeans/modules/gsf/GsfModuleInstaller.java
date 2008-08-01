@@ -50,7 +50,6 @@ import javax.management.MalformedObjectNameException;
 import javax.management.NotCompliantMBeanException;
 import javax.management.ObjectName;
 import org.netbeans.napi.gsfret.source.SourceTaskFactoryManager;
-import org.netbeans.editor.Settings;
 import org.netbeans.modules.gsfret.source.ActivatedDocumentListener;
 import org.netbeans.modules.gsfret.source.SourceAccessor;
 import org.netbeans.modules.gsfret.source.usages.ClassIndexManager;
@@ -64,6 +63,9 @@ import org.openide.windows.WindowManager;
 
 
 public class GsfModuleInstaller extends ModuleInstall {
+//static {
+//    System.setProperty("gsf.preindexing", "true");
+//}    
     private static final boolean ENABLE_MBEANS =
         Boolean.getBoolean("org.netbeans.modules.gsf.enableMBeans"); //NOI18N
 
@@ -75,10 +77,6 @@ public class GsfModuleInstaller extends ModuleInstall {
         // for a better way to fix it
         SourceAccessor.dummy = 1;
         
-        // add editor support for our registered editor types
-        Settings.addInitializer(new GsfEditorSettings());
-        Settings.reset();
-
         SourceTaskFactoryManager.register();
 
         WindowManager.getDefault().invokeWhenUIReady(new Runnable() {

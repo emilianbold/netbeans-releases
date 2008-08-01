@@ -603,9 +603,12 @@ final class ResultView extends TopComponent {
         
         if (resultModel.wasLimitReached()) {
             setRootDisplayName(
-                    NbBundle.getMessage(ResultView.class,
-                                        "TEXT_MSG_FOUND_X_NODES_LIMIT", //NOI18N
-                                        new Integer(resultSize)));
+                    NbBundle.getMessage(
+                            ResultView.class,
+                            "TEXT_MSG_FOUND_X_NODES_LIMIT",             //NOI18N
+                            Integer.valueOf(resultSize),
+                            Integer.valueOf(resultModel.getTotalDetailsCount()))
+                            + ' ' + resultModel.getLimitDisplayName());
             return;
         }
         

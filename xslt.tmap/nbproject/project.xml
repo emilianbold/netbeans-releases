@@ -78,6 +78,14 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.soa.validation</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>6.5</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.xml.axi</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -111,12 +119,29 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.xml.schema.completion</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.2</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.xml.schema.model</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
                         <specification-version>1.1.21</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.xml.text</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>2</release-version>
+                        <specification-version>1.16</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -216,7 +241,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>6.4</specification-version>
+                        <specification-version>7.0</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -253,13 +278,16 @@
                 </dependency>
             </module-dependencies>
             <friend-packages>
-                <friend>org.netbeans.modules.xslt.project</friend>
                 <friend>org.netbeans.modules.xslt.core</friend>
-                <package>org.netbeans.modules.xslt.tmap.model.validation</package>
+                <friend>org.netbeans.modules.xslt.project</friend>
+                <friend>org.netbeans.modules.xslt.validation</friend>
+                <package>org.netbeans.modules.xslt.tmap</package>
                 <package>org.netbeans.modules.xslt.tmap.model.api</package>
+                <package>org.netbeans.modules.xslt.tmap.model.api.events</package>
                 <package>org.netbeans.modules.xslt.tmap.model.spi</package>
                 <package>org.netbeans.modules.xslt.tmap.model.impl</package>
                 <package>org.netbeans.modules.xslt.tmap.model.xsltmap</package>
+                <package>org.netbeans.modules.xslt.tmap.model.validation</package>
                 <package>org.netbeans.modules.xslt.tmap.util</package>
             </friend-packages>
         </data>

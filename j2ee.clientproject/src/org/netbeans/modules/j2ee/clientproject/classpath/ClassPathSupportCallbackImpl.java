@@ -115,27 +115,17 @@ public class ClassPathSupportCallbackImpl implements ClassPathSupport.Callback {
         //find a correcponding classpath item for the library
         for (ClassPathSupport.Item item : classpath) {
             if("true".equals(item.getAdditionalProperty(INCLUDE_IN_DEPLOYMENT))) { // NOI18N
-                data.appendChild(createLibraryElement(doc, item, 
-                        includedLibrariesElement, antProjectHelper.getProjectDirectory()));
+                data.appendChild(createLibraryElement(antProjectHelper, doc, item, 
+                        includedLibrariesElement));
             }
         }
         
         antProjectHelper.putPrimaryConfigurationData( data, true );
     }
     
-    private static Element createLibraryElement(Document doc, Item item, 
-            String includedLibrariesElement, FileObject projectFolder) {
+    private static Element createLibraryElement(AntProjectHelper antProjectHelper, Document doc, Item item, 
+            String includedLibrariesElement) {
         Element libraryElement = doc.createElementNS( AppClientProjectType.PROJECT_CONFIGURATION_NAMESPACE, includedLibrariesElement );
-        List<String> files = new ArrayList<String>();
-        List<String> dirs = new ArrayList<String>();
-        ProjectProperties.getFilesForItem(item, files, dirs, projectFolder);
-        if (files.size() > 0) {
-            libraryElement.setAttribute(ATTR_FILES, "" + files.size());
-        }
-        if (dirs.size() > 0) {
-            libraryElement.setAttribute(ATTR_DIRS, "" + dirs.size());
-        }
-        
         // appclient is different from other j2ee projects - it stores reference without ${ and }
         libraryElement.appendChild( doc.createTextNode( CommonProjectUtils.getAntPropertyName(item.getReference()) ) );
         return libraryElement;

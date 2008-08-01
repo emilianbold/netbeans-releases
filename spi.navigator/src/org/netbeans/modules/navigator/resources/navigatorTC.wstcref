@@ -7,5 +7,5 @@
 <tc-ref version="2.0">
     <module name="org.netbeans.spi.navigator/1" spec="1.0" />
     <tc-id id="navigatorTC" />
-    <state opened="true" />
+    <state opened="false" />
 </tc-ref>

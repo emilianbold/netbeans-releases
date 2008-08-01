@@ -61,9 +61,12 @@ public class BreakpointsWindowOperatorTest extends JellyTestCase {
     }
 
     public static NbTest suite() {
+        /*
         NbTestSuite suite = new NbTestSuite();
         suite.addTest(new BreakpointsWindowOperatorTest("testInvoke"));
         return suite;
+         */
+        return (NbTest) createModuleTest(BreakpointsWindowOperatorTest.class, "testInvoke");
     }
     
     /** Print out test name. */

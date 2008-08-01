@@ -29,6 +29,7 @@ package org.netbeans.modules.javascript.editing;
 
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
@@ -42,15 +43,20 @@ public class JsUtils {
     }
 
     public static boolean isJsFile(FileObject f) {
-        return JsMimeResolver.JAVASCRIPT_MIME_TYPE.equals(f.getMIMEType());
+        return JsTokenId.JAVASCRIPT_MIME_TYPE.equals(f.getMIMEType());
     }
 
-    public static boolean isJsDocument(Document doc) {
-        String mimeType = (String)doc.getProperty("mimeType");
+    public static boolean isJsOrJsonDocument(Document doc) {
+        String mimeType = (String)doc.getProperty("mimeType"); // NOI18N
 
-        return JsMimeResolver.JAVASCRIPT_MIME_TYPE.equals(mimeType);
+        return JsTokenId.JAVASCRIPT_MIME_TYPE.equals(mimeType) || JsTokenId.JSON_MIME_TYPE.equals(mimeType);
     }
 
+    public static boolean isJsonFile(FileObject f) {
+        return f != null && "json".equals(f.getExt()); // NOI18N
+    }
+
+    public static final String HTML_MIME_TYPE = "text/html"; // NOI18N
     public static final String RHTML_MIME_TYPE = "application/x-httpd-eruby"; // NOI18N
     
     public static boolean isRhtmlDocument(Document doc) {
@@ -297,16 +303,23 @@ public class JsUtils {
     /** Includes things you'd want selected as a unit when double clicking in the editor */
     public static boolean isIdentifierChar(char c) {
         return Character.isJavaIdentifierPart(c) || (// Globals, fields and parameter prefixes (for blocks and symbols)
-                c == '$') || (c == '@') || (c == '&') || (c == ':') || (// Function name suffixes
-                c == '!') || (c == '?') || (c == '=');
+                c == '$');
     }
 
     /** Includes things you'd want selected as a unit when double clicking in the editor */
     public static boolean isStrictIdentifierChar(char c) {
         return Character.isJavaIdentifierPart(c) ||
-                (c == '!') || (c == '?') || (c == '=');
+                (c == '$');
     }
 
+    /** The following keywords apply inside a call expression */
+    public static final String[] CALL_KEYWORDS =
+            new String[] {
+        "true", // NOI18N
+        "false", // NOI18N
+        "null" // NOI18N
+    };
+    
     // Section 7.5.2 in ECMAScript Language Specification, ECMA-262
     public static final String[] JAVASCRIPT_KEYWORDS =
             new String[]{
@@ -550,5 +563,31 @@ public class JsUtils {
         } else {
             return s.substring(0, length - 3) + "...";
         }
+    }
+    
+    /**
+     * Convert the display string used for types internally to something
+     * suitable. For example, Array<String> is shown as String[].
+     */
+    public static String normalizeTypeString(String s) {
+       if (s.indexOf("Array<") != -1) { // NOI18N
+           String[] types = s.split("\\|"); // NOI18N
+           StringBuilder sb = new StringBuilder();
+           for (String t : types) {
+               if (sb.length() > 0) {
+                   sb.append("|"); // NOI18N
+               }
+               if (t.startsWith("Array<") && t.endsWith(">")) { // NOI18N
+                   sb.append(t.substring(6, t.length()-1));
+                   sb.append("[]"); // NOI18N
+               } else {
+                   sb.append(t);
+               }
+           }
+           
+           return sb.toString();
+       } 
+       
+       return s;
     }
 }

@@ -105,11 +105,4 @@ public class ChangingPropertiesTestCase extends RepositoryAccessTestBase {
 	}
 	assertNoExceptions();
     }
-
-    private void sleep(long timeout) {
-	try {
-	    Thread.sleep(timeout);
-	} catch( InterruptedException e ) {
-	}
-    }
 }

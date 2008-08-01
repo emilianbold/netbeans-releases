@@ -56,13 +56,16 @@ import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 import com.sun.source.util.Trees;
+import java.awt.Dialog;
 import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.net.URL;
-import java.util.Arrays;
-import java.util.HashSet;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -77,12 +80,15 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.AbstractElementVisitor6;
 import javax.lang.model.util.ElementFilter;
+import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
 import org.netbeans.api.java.lexer.JavaTokenId;
+import org.netbeans.api.java.lexer.JavadocTokenId;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.SourceUtils;
@@ -91,12 +97,19 @@ import org.netbeans.api.java.source.ui.ElementOpen;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.modules.java.editor.javadoc.JavadocImports;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
+import org.openide.util.Mutex;
+import org.openide.util.Mutex.Action;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -123,22 +136,71 @@ public class GoToSupport {
     }
     
     private static String performGoTo(final Document doc, final int offset, final boolean goToSource, final boolean tooltip, final boolean javadoc) {
+        if (!tooltip && !javadoc && SourceUtils.isScanInProgress()) {
+            final AtomicBoolean cancel = new AtomicBoolean(false);
+            final Dialog[] d = new Dialog[1];
+            String warning = NbBundle.getMessage(GoToSupport.class, "LBL_ScanInProgress");
+            String caption = NbBundle.getMessage(GoToSupport.class, "CAP_ScanInProgress");
+            String cancelButton = NbBundle.getMessage(GoToSupport.class, "BTN_ScanInProgress_Cancel");
+            DialogDescriptor nd = new DialogDescriptor(warning, caption, true, new Object[] {cancelButton}, cancelButton, DialogDescriptor.DEFAULT_ALIGN, null, new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    cancel.set(true);
+                    d[0].setVisible(false);
+                }
+            });
+
+            nd.setMessageType(NotifyDescriptor.INFORMATION_MESSAGE);
+
+            d[0] = DialogDisplayer.getDefault().createDialog(nd);
+
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    performGoToImpl(doc, offset, goToSource, tooltip, javadoc, new Action<Boolean>() {
+                        public Boolean run() {
+                            return !cancel.get();
+                        }
+                    });
+
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            d[0].setVisible(false);
+                        }
+                    });
+                }
+            });
+
+            d[0].setVisible(true);
+            
+            return null;
+        } else {
+            return performGoToImpl(doc, offset, goToSource, tooltip, javadoc, null);
+        }
+    }
+
+    private static String performGoToImpl(final Document doc, final int offset, final boolean goToSource, final boolean tooltip, final boolean javadoc, final Action<Boolean> atStart) {
         try {
             final FileObject fo = getFileObject(doc);
             
             if (fo == null)
                 return null;
             
-            JavaSource js = JavaSource.forFileObject(fo);
+            final JavaSource js = JavaSource.forFileObject(fo);
             
             if (js == null) { //#123488
                 return null;
             }
             
             final String[] result = new String[1];
+            final int[] offsetToOpen = new int[] {-1};
+            final ElementHandle[] elementToOpen = new ElementHandle[1];
+            final String[] displayNameForError = new String[1];
+            final boolean[] tryToOpen = new boolean[1];
             
             js.runUserActionTask(new Task<CompilationController>() {
                 public void run(CompilationController controller) throws Exception {
+                    if (atStart != null && atStart.run() == Boolean.FALSE)
+                        return ;
+                    
                     if (controller.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0)
                         return;
                     
@@ -152,70 +214,75 @@ public class GoToSupport {
                     
                     int exactOffset = controller.getPositionConverter().getJavaSourcePosition(span[0] + 1);
                     
-                    TreePath path = controller.getTreeUtilities().pathFor(exactOffset);
-                    TreePath parent = path.getParentPath();
                     Element el = null;
                     boolean insideImportStmt = false;
+                    TreePath path = controller.getTreeUtilities().pathFor(exactOffset);
                     
-                    if (parent != null) {
-                        Tree parentLeaf = parent.getLeaf();
+                    if (token[0] != null && token[0].id() == JavaTokenId.JAVADOC_COMMENT) {
+                        el = JavadocImports.findReferencedElement(controller, offset);
+                    } else {
+                        TreePath parent = path.getParentPath();
 
-                        if (parentLeaf.getKind() == Kind.NEW_CLASS && ((NewClassTree) parentLeaf).getIdentifier() == path.getLeaf()) {
-                            if (!isError(controller.getTrees().getElement(path.getParentPath()))) {
-                                path = path.getParentPath();
-                            }
-                        } else if (parentLeaf.getKind() == Kind.IMPORT && ((ImportTree) parentLeaf).isStatic()) {
-                            el = handleStaticImport(controller, (ImportTree) parentLeaf);
-                            insideImportStmt = true;
-                        } else {
-                            if (   parentLeaf.getKind() == Kind.PARAMETERIZED_TYPE
-                                && parent.getParentPath().getLeaf().getKind() == Kind.NEW_CLASS
-                                && ((ParameterizedTypeTree) parentLeaf).getType() == path.getLeaf()) {
-                                if (!isError(controller.getTrees().getElement(parent.getParentPath()))) {
-                                    path = parent.getParentPath();
+                        if (parent != null) {
+                            Tree parentLeaf = parent.getLeaf();
+
+                            if (parentLeaf.getKind() == Kind.NEW_CLASS && ((NewClassTree) parentLeaf).getIdentifier() == path.getLeaf()) {
+                                if (!isError(controller.getTrees().getElement(path.getParentPath()))) {
+                                    path = path.getParentPath();
+                                }
+                            } else if (parentLeaf.getKind() == Kind.IMPORT && ((ImportTree) parentLeaf).isStatic()) {
+                                el = handleStaticImport(controller, (ImportTree) parentLeaf);
+                                insideImportStmt = true;
+                            } else {
+                                if (   parentLeaf.getKind() == Kind.PARAMETERIZED_TYPE
+                                    && parent.getParentPath().getLeaf().getKind() == Kind.NEW_CLASS
+                                    && ((ParameterizedTypeTree) parentLeaf).getType() == path.getLeaf()) {
+                                    if (!isError(controller.getTrees().getElement(parent.getParentPath()))) {
+                                        path = parent.getParentPath();
+                                    }
                                 }
                             }
-                        }
-                        
-                        if (el == null) {
-                            el = controller.getTrees().getElement(path);
 
-                            if (parentLeaf.getKind() == Kind.METHOD_INVOCATION && isError(el)) {
-                                ExecutableElement ee = Utilities.fuzzyResolveMethodInvocation(controller, path.getParentPath(), new TypeMirror[1], new int[1]);
+                            if (el == null) {
+                                el = controller.getTrees().getElement(path);
 
-                                if (ee != null) {
-                                    el = ee;
-                                } else {
-                                    ExpressionTree select = ((MethodInvocationTree)parentLeaf).getMethodSelect();
-                                    Name methodName = null;
-                                    switch (select.getKind()) {
-                                        case IDENTIFIER:
-                                            Scope s = controller.getTrees().getScope(path);
-                                            el = s.getEnclosingClass();
-                                            methodName = ((IdentifierTree)select).getName();
-                                            break;
-                                        case MEMBER_SELECT:
-                                            el = controller.getTrees().getElement(new TreePath(path, ((MemberSelectTree)select).getExpression()));
-                                            methodName = ((MemberSelectTree)select).getIdentifier();
-                                            break;
-                                    }
-                                    if (el != null) {
-                                        for (ExecutableElement m : ElementFilter.methodsIn(el.getEnclosedElements())) {
-                                            if (m.getSimpleName() == methodName) {
-                                                el = m;
+                                if (parentLeaf.getKind() == Kind.METHOD_INVOCATION && isError(el)) {
+                                    ExecutableElement ee = Utilities.fuzzyResolveMethodInvocation(controller, path.getParentPath(), new TypeMirror[1], new int[1]);
+
+                                    if (ee != null) {
+                                        el = ee;
+                                    } else {
+                                        ExpressionTree select = ((MethodInvocationTree)parentLeaf).getMethodSelect();
+                                        Name methodName = null;
+                                        switch (select.getKind()) {
+                                            case IDENTIFIER:
+                                                Scope s = controller.getTrees().getScope(path);
+                                                el = s.getEnclosingClass();
+                                                methodName = ((IdentifierTree)select).getName();
                                                 break;
+                                            case MEMBER_SELECT:
+                                                el = controller.getTrees().getElement(new TreePath(path, ((MemberSelectTree)select).getExpression()));
+                                                methodName = ((MemberSelectTree)select).getIdentifier();
+                                                break;
+                                        }
+                                        if (el != null) {
+                                            for (ExecutableElement m : ElementFilter.methodsIn(el.getEnclosedElements())) {
+                                                if (m.getSimpleName() == methodName) {
+                                                    el = m;
+                                                    break;
+                                                }
                                             }
                                         }
                                     }
                                 }
                             }
+                        } else {
+                            if (!tooltip)
+                                CALLER.beep(goToSource, javadoc);
+                            else
+                                result[0] = null;
+                            return;
                         }
-                    } else {
-                        if (!tooltip)
-                            CALLER.beep(goToSource, javadoc);
-                        else
-                            result[0] = null;
-                        return;
                     }
                     
                     if (isError(el)) {
@@ -306,27 +373,42 @@ public class GoToSupport {
                                     CALLER.beep(goToSource, javadoc);
                                 } else {
                                     //#71272: it is necessary to translate the offset:
-                                    int targetOffset = controller.getPositionConverter().getOriginalPosition((int) startPos);
-                                    
-                                    if (targetOffset >= 0) {
-                                        if (!CALLER.open(fo, targetOffset)) {
-                                            CALLER.warnCannotOpen(el);
-                                        }
-                                    } else {
-                                        CALLER.warnCannotOpen(el);
-                                    }
+                                    offsetToOpen[0] = controller.getPositionConverter().getOriginalPosition((int) startPos);
+                                    displayNameForError[0] = Utilities.getElementName(el, false).toString();
+                                    tryToOpen[0] = true;
                                 }
                             } else {
                                 CALLER.beep(goToSource, javadoc);
                             }
                         } else {
-                            if (!CALLER.open(controller.getClasspathInfo(), el)) {
-                                CALLER.warnCannotOpen(el);
-                            }
+                            elementToOpen[0] = ElementHandle.create(el);
+                            displayNameForError[0] = Utilities.getElementName(el, false).toString();
+                            tryToOpen[0] = true;
                         }
                     }
                 }
             },true);
+            
+            if (tryToOpen[0]) {
+                assert result[0] == null;
+
+                Mutex.EVENT.readAccess(new Runnable() {
+                    public void run() {
+                        boolean openSucceeded = false;
+
+                        if (offsetToOpen[0] >= 0) {
+                            openSucceeded = CALLER.open(fo, offsetToOpen[0]);
+                        } else {
+                            if (elementToOpen[0] != null) {
+                                openSucceeded = CALLER.open(js.getClasspathInfo(), elementToOpen[0]);
+                            }
+                        }
+                        if (!openSucceeded) {
+                            CALLER.warnCannotOpen(displayNameForError[0]);
+                        }
+                    }
+                });
+            }
             
             return result[0];
         } catch (IOException ioe) {
@@ -342,7 +424,7 @@ public class GoToSupport {
         performGoTo(doc, offset, false, false, true);
     }
     
-    private static final Set<JavaTokenId> USABLE_TOKEN_IDS = new HashSet<JavaTokenId>(Arrays.asList(JavaTokenId.IDENTIFIER, JavaTokenId.THIS, JavaTokenId.SUPER));
+    private static final Set<JavaTokenId> USABLE_TOKEN_IDS = EnumSet.of(JavaTokenId.IDENTIFIER, JavaTokenId.THIS, JavaTokenId.SUPER);
     
     public static int[] getIdentifierSpan(Document doc, int offset, Token<JavaTokenId>[] token) {
         if (getFileObject(doc) == null) {
@@ -362,7 +444,19 @@ public class GoToSupport {
         
         Token<JavaTokenId> t = ts.token();
         
-        if (!USABLE_TOKEN_IDS.contains(t.id())) {
+        if (JavaTokenId.JAVADOC_COMMENT == t.id()) {
+            // javadoc hyperlinking (references + XXX param names)
+            TokenSequence<JavadocTokenId> jdts = ts.embedded(JavadocTokenId.language());
+            if (JavadocImports.isInsideReference(jdts, offset)) {
+                jdts.move(offset);
+                jdts.moveNext();
+                if (token != null) {
+                    token[0] = t;
+                }
+                return new int [] {jdts.offset(), jdts.offset() + jdts.token().length()};
+            }
+            return null;
+        } else if (!USABLE_TOKEN_IDS.contains(t.id())) {
             ts.move(offset - 1);
             if (!ts.moveNext())
                 return null;
@@ -762,12 +856,11 @@ public class GoToSupport {
             int value = goToSource ? 1 : goToJavadoc ? 2 : 0;
             StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(GoToSupport.class, "WARN_CannotGoToGeneric", value));
         }
-        public boolean open(ClasspathInfo info, Element el) {
+        public boolean open(ClasspathInfo info, ElementHandle<?> el) {
             return ElementOpen.open(info, el);
         }
-        public void warnCannotOpen(Element el) {
+        public void warnCannotOpen(String displayName) {
             Toolkit.getDefaultToolkit().beep();
-            String displayName = Utilities.getElementName(el, false).toString();
             StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(GoToSupport.class, "WARN_CannotGoTo", displayName));
         }
     };
@@ -775,7 +868,7 @@ public class GoToSupport {
     interface UiUtilsCaller {
         public boolean open(FileObject fo, int pos);
         public void beep(boolean goToSource, boolean goToJavadoc);
-        public boolean open(ClasspathInfo info, Element el);
-        public void warnCannotOpen(Element el);
+        public boolean open(ClasspathInfo info, ElementHandle<?> el);
+        public void warnCannotOpen(String displayName);
     }
 }

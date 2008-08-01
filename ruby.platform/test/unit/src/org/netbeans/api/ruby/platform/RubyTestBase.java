@@ -40,20 +40,17 @@
  */
 package org.netbeans.api.ruby.platform;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Properties;
 import org.netbeans.api.ruby.platform.RubyPlatform.Info;
-import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.gsf.GsfTestBase;
 import org.netbeans.modules.ruby.platform.gems.GemManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
-public abstract class RubyTestBase extends NbTestCase {
-    
+public abstract class RubyTestBase extends GsfTestBase {
+
     private FileObject testRubyHome;
 
     public RubyTestBase(final String name) {
@@ -62,68 +59,88 @@ public abstract class RubyTestBase extends NbTestCase {
 
     protected @Override void setUp() throws Exception {
         super.setUp();
-        clearWorkDir();
         TestUtil.getXTestJRubyHome();
-        System.setProperty("netbeans.user", getWorkDirPath());
     }
 
     public File getTestRubyHome() {
         return FileUtil.toFile(testRubyHome);
     }
-    
+
     private static File resolveFile(final String property, final boolean mandatory) {
         String path = System.getProperty(property);
         assertTrue("must set " + property, !mandatory || (path != null));
         return path == null ? null : new File(path);
     }
-    
+
     static File getFile(final String property, boolean mandatory) {
         File file = resolveFile(property, mandatory);
         assertTrue(file + " is file", !mandatory || file.isFile());
         return file;
-        
+
     }
-    
+
     static File getDirectory(final String property, final boolean mandatory) {
         File directory = resolveFile(property, mandatory);
         assertTrue(directory + " is directory", !mandatory || directory.isDirectory());
         return directory;
     }
 
-    protected File setUpRuby() throws Exception {
+    protected File setUpRuby() throws IOException {
         return setUpRuby(false, "");
     }
 
-    protected File setUpRubyWithGems() throws Exception {
+    protected File setUpRubyWithGems() throws IOException {
         return setUpRuby(true, "");
     }
-    
-    protected File setUpRuby(final boolean withGems, final String suffix) throws Exception {
+
+    protected File setUpRuby(final boolean withGems, final String suffix) throws IOException {
+        return setUpRuby("Ruby", withGems, suffix);
+    }
+
+    protected File setUpRubinius() throws IOException {
+        return setUpRuby("Rubinius", false, "");
+
+    }
+
+    private File setUpRuby(final String kind, final boolean withGems, final String suffix) throws IOException {
         // Ensure that $GEM_HOME isn't picked up
         // I can't do this:
         //  System.getenv().remove("GEM_HOME");
         // because the environment variable map is unmodifiable. So instead
         // side effect to ensure that the GEM_HOME check isn't run
         GemManager.TEST_GEM_HOME = "invalid"; // non null but also invalid dir, will bypass $GEM_HOME lookup
-        
+        boolean isRubinius = kind.equals("Rubinius");
+
         // Build a fake ruby structure
         testRubyHome = FileUtil.createFolder(FileUtil.toFileObject(getWorkDir()), "test_ruby");
-        
+
         FileObject bin = testRubyHome.createFolder("bin");
-        FileObject libRuby = FileUtil.createFolder(testRubyHome, "lib/ruby");
-        libRuby.createFolder(RubyPlatform.DEFAULT_RUBY_RELEASE);
-        FileObject interpreter = bin.createData("ruby" + suffix);
+        FileObject libRuby = FileUtil.createFolder(testRubyHome, "lib");
+        FileObject libRuby18 = null;
+        if (!isRubinius) {
+            libRuby = FileUtil.createFolder(testRubyHome, "lib/ruby");
+            libRuby18 = libRuby.createFolder(RubyPlatform.DEFAULT_RUBY_RELEASE);
+        }
+
+        FileObject interpreter = isRubinius
+                ? FileUtil.createData(testRubyHome, "shotgun/rubinius")
+                : bin.createData("ruby" + suffix);
         String[] binaries = { "irb", "gem", "rdoc" };
         for (String binary : binaries) {
             bin.createData(binary + suffix);
         }
 
         Properties props = new Properties();
-        props.put(Info.RUBY_KIND, "Ruby");
+        props.put(Info.RUBY_KIND, kind);
         props.put(Info.RUBY_VERSION, "0.1");
         props.put(Info.RUBY_RELEASE_DATE, "2000-01-01");
         props.put(Info.RUBY_PLATFORM, "abcd");
+        props.put(Info.RUBY_PLATFORM, "abcd");
+        if (!isRubinius) {
+            props.put(Info.RUBY_LIB_DIR, FileUtil.toFile(libRuby18).getAbsolutePath());
+        }
         if (withGems) {
+            assertFalse("setuping Rubinius with RubyGems is not supported yet", isRubinius);
             // Build a fake rubygems repository
             FileObject gemRepo = FileUtil.createFolder(libRuby, "gems/" + RubyPlatform.DEFAULT_RUBY_RELEASE);
             GemManager.initializeRepository(gemRepo);
@@ -137,10 +154,23 @@ public abstract class RubyTestBase extends NbTestCase {
         return FileUtil.toFile(interpreter);
     }
 
+    /**
+     * Return {@link RubyPlatformManager#getDefaultPlatform default platform}
+     * with customized Gem Home and empty Gem Path so it is safe to treat it in
+     * read-write mode.
+     */
+    protected RubyPlatform getSafeJRuby() throws IOException {
+        RubyPlatform jruby = RubyPlatformManager.getDefaultPlatform();
+        FileObject gemRepo = FileUtil.toFileObject(getWorkDir()).createFolder("gem-repo");
+        GemManager.initializeRepository(gemRepo);
+        jruby.setGemHome(FileUtil.toFile(gemRepo));
+        jruby.getInfo().setGemPath("");
+        return jruby;
+    }
+
     protected static void installFakeFastRubyDebugger(RubyPlatform platform) throws IOException {
         String gemplaf = platform.isJRuby() ? "java" : "";
-        installFakeGem("ruby-debug-base", RubyPlatform.RDEBUG_BASE_VERSION, gemplaf, platform);
-        installFakeGem("ruby-debug-ide", RubyPlatform.RDEBUG_IDE_VERSION, gemplaf, platform);
+        installFakeGem("ruby-debug-ide", "0.2.0", gemplaf, platform);
     }
 
     protected static void uninstallFakeGem(final String name, final String version, final String actualPlatform, final RubyPlatform platform) throws IOException {
@@ -150,7 +180,7 @@ public abstract class RubyTestBase extends NbTestCase {
         gem.delete();
         platform.getGemManager().reset();
     }
-    
+
     protected static void uninstallFakeGem(final String name, final String version, final RubyPlatform platform) throws IOException {
         uninstallFakeGem(name, version, null, platform);
     }
@@ -161,44 +191,8 @@ public abstract class RubyTestBase extends NbTestCase {
         FileUtil.createData(gemHome, "specifications/" + name + '-' + version + gemplaf + ".gemspec");
         platform.getGemManager().reset();
     }
-    
+
     protected static void installFakeGem(final String name, final String version, final RubyPlatform platform) throws IOException {
         installFakeGem(name, version, null, platform);
     }
-
-    protected FileObject getTestFile(String relFilePath) {
-        File wholeInputFile = new File(getDataDir(), relFilePath);
-        if (!wholeInputFile.exists()) {
-            NbTestCase.fail("File " + wholeInputFile + " not found.");
-        }
-        FileObject fo = FileUtil.toFileObject(wholeInputFile);
-        assertNotNull(fo);
-        return fo;
-    }
-
-    
-    protected FileObject touch(final String dir, final String path) throws IOException {
-        return touch(new File(dir), path);
-    }
-
-    protected FileObject touch(final File dir, final String binary) throws IOException {
-        if (!dir.isDirectory()) {
-            assertTrue("success to create " + dir, dir.mkdirs());
-        }
-        FileObject dirFO = FileUtil.toFileObject(FileUtil.normalizeFile(dir));
-        return FileUtil.createData(dirFO, binary);
-    }
-
-    /** Copy-pasted from APISupport. */
-    protected static String slurp(File file) throws IOException {
-        InputStream is = new FileInputStream(file);
-        try {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            FileUtil.copy(is, baos);
-            return baos.toString("UTF-8");
-        } finally {
-            is.close();
-        }
-    }
-    
 }

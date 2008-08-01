@@ -68,6 +68,7 @@ import org.netbeans.modules.mobility.project.ui.wizard.ProjectPanel;
 import org.netbeans.spi.mobility.project.ProjectPropertiesDescriptor;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -143,9 +144,12 @@ public class ImportCDCProjectWizardIterator implements TemplateWizard.Iterator {
     
     public void initialize(final org.openide.loaders.TemplateWizard templateWizard) {
         platformInstall = PlatformInstallPanel.isPlatformInstalled(CDCPlatform.PLATFORM_CDC) ^ true;
-        if (platformInstall)
+        if (platformInstall){
             platformPanel = new PlatformInstallPanel.WizardPanel(CDCPlatform.PLATFORM_CDC);
+            ((JComponent)platformPanel.getComponent()).putClientProperty("NewProjectWizard_Title", CDC55TYPE.equals(prjType) ? NbBundle.getMessage(ImportCDCProjectWizardIterator.class, "TXT_Import55Project") : NbBundle.getMessage(ImportCDCProjectWizardIterator.class, "TXT_ImportToolkitProject"));
+        }
         sourcesPanel = new ImportCDCProjectPanel.WizardPanel(prjType);
+        ((JComponent)sourcesPanel.getComponent()).putClientProperty("NewProjectWizard_Title", CDC55TYPE.equals(prjType) ? NbBundle.getMessage(ImportCDCProjectWizardIterator.class, "TXT_Import55Project") : NbBundle.getMessage(ImportCDCProjectWizardIterator.class, "TXT_ImportToolkitProject"));
         projectPanel = new ProjectPanel.WizardPanel(false, true);        
         currentIndex = 0;
         updateStepsList();
@@ -264,8 +268,8 @@ public class ImportCDCProjectWizardIterator implements TemplateWizard.Iterator {
                 NbBundle.getMessage(ProjectPanel.class, "TITLE_Project"), // NOI18N
             };
         }
-        component.putClientProperty("WizardPanel_contentData", list); // NOI18N
-        component.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(currentIndex)); // NOI18N
+        component.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, list); // NOI18N
+        component.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer(currentIndex)); // NOI18N
     }
     
 }

@@ -74,14 +74,32 @@ public abstract class BasicVisualPanel extends JPanel {
     }
     
     /**
-     * Set an warning message but mark the panel as valid.
+     * Set a warning message but mark the panel as valid.
      */
     protected final void setWarning(String message) {
+        setWarning(message, true);
+    }
+    
+    /**
+     * Set a warning message and validity of the panel.
+     */
+    protected final void setWarning(String message, boolean valid) {
         if (message == null) {
             throw new NullPointerException();
         }
-        setMessage(message);
-        setValid(true);
+        settings.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE, message);
+        setValid(valid);
+    }
+    
+    /**
+     * Set an info message and validity of the panel.
+     */
+    protected final void setInfo(String message, boolean valid) {
+        if (message == null) {
+            throw new NullPointerException();
+        }
+        settings.putProperty(WizardDescriptor.PROP_INFO_MESSAGE, message);
+        setValid(valid);
     }
     
     /**
@@ -102,7 +120,7 @@ public abstract class BasicVisualPanel extends JPanel {
     }
     
     private final void setMessage(String message) {
-        settings.putProperty("WizardPanel_errorMessage", message); // NOI18N
+        settings.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, message); // NOI18N
     }
     
     /**

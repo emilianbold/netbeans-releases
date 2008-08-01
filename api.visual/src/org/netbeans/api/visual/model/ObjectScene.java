@@ -82,7 +82,7 @@ public class ObjectScene extends Scene {
     private Object focusedObject = null;
     private Object hoveredObject = null;
 
-    private WidgetAction selectAction = ActionFactory.createSelectAction (new ObjectSelectProvider ());
+    private WidgetAction selectAction = ActionFactory.createSelectAction (new ObjectSelectProvider (), true);
     private WidgetAction objectHoverAction;
 
     private Map<ObjectSceneEventType, List<ObjectSceneListener>> listeners = new java.util.EnumMap<ObjectSceneEventType, List<ObjectSceneListener>> (ObjectSceneEventType.class);

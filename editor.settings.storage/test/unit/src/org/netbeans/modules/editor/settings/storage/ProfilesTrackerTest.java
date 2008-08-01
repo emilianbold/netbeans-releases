@@ -92,6 +92,7 @@ public class ProfilesTrackerTest extends NbTestCase {
     
     protected @Override void setUp() throws Exception {
         super.setUp();
+        clearWorkDir();
     
         EditorTestLookup.setLookup(
             new URL[] {
@@ -167,14 +168,14 @@ public class ProfilesTrackerTest extends NbTestCase {
         ProfilesTracker pt = new ProfilesTracker(getLocator(settingsTypeId), new MimeTypesTracker(null, BASE));
 
         {
-        TestUtilities.createFile(BASE + "/text/plain/" + folder + "/ProfileA/abc.xml", contents);
+        TestUtilities.createFile(BASE + "/text/plain/" + folder + "/ProfileA/abc.xml", contents, 120);
         ProfilesTracker.ProfileDescription pd = pt.getProfileByDisplayName("ProfileA");
         assertNotNull("ProfileDescription should not be null", pd);
         assertFalse("Wrong isRollbackAllowed value", pd.isRollbackAllowed());
         }
         
         {
-        TestUtilities.createFile(BASE + "/text/plain/" + folder + "/ProfileA/Defaults/abc.xml", contents);
+        TestUtilities.createFile(BASE + "/text/plain/" + folder + "/ProfileA/Defaults/abc.xml", contents, 120);
         ProfilesTracker.ProfileDescription pd = pt.getProfileByDisplayName("ProfileA");
         assertNotNull("ProfileDescription should not be null", pd);
         assertTrue("Wrong isRollbackAllowed value", pd.isRollbackAllowed());
@@ -199,31 +200,31 @@ public class ProfilesTrackerTest extends NbTestCase {
         ProfilesTracker pt = new ProfilesTracker(getLocator(settingsTypeId), new MimeTypesTracker(null, BASE));
         
         {
-        TestUtilities.createFolder(BASE);
+        TestUtilities.createFolder(BASE, 120);
         Set<String> profiles = pt.getProfilesDisplayNames();
         assertNotNull("Profiles should not be null", profiles);
         assertEquals("Wrong # of recognized profiles", 0, profiles.size());
         }
         {
-        TestUtilities.createFolder(BASE + "/text");
+        TestUtilities.createFolder(BASE + "/text", 120);
         Set<String> profiles = pt.getProfilesDisplayNames();
         assertNotNull("Profiles should not be null", profiles);
         assertEquals("Wrong # of recognized profiles", 0, profiles.size());
         }
         {
-        TestUtilities.createFolder(BASE + "/text/x-jsp");
+        TestUtilities.createFolder(BASE + "/text/x-jsp", 120);
         Set<String> profiles = pt.getProfilesDisplayNames();
         assertNotNull("Profiles should not be null", profiles);
         assertEquals("Wrong # of recognized profiles", 0, profiles.size());
         }
         {
-        TestUtilities.createFolder(BASE + "/text/x-jsp/FontsColors");
+        TestUtilities.createFolder(BASE + "/text/x-jsp/FontsColors", 120);
         Set<String> profiles = pt.getProfilesDisplayNames();
         assertNotNull("Profiles should not be null", profiles);
         assertEquals("Wrong # of recognized profiles", 0, profiles.size());
         }
         {
-        TestUtilities.createFile(BASE + "/text/x-jsp/" + folder + "/MyProfile/abc.xml", contents);
+        TestUtilities.createFile(BASE + "/text/x-jsp/" + folder + "/MyProfile/abc.xml", contents, 120);
         Set<String> profiles = pt.getProfilesDisplayNames();
         assertNotNull("Profiles should not be null", profiles);
         assertEquals("Wrong # of recognized profiles", 1, profiles.size());
@@ -235,27 +236,27 @@ public class ProfilesTrackerTest extends NbTestCase {
         ProfilesTracker pt = new ProfilesTracker(getLocator(settingsTypeId), new MimeTypesTracker(null, BASE));
         
         {
-        TestUtilities.createFile(BASE + "/text/x-jsp/" + folder + "/MyProfile/abc.xml", contents);
+        TestUtilities.createFile(BASE + "/text/x-jsp/" + folder + "/MyProfile/abc.xml", contents, 120);
         Set<String> profiles = pt.getProfilesDisplayNames();
         assertNotNull("Profiles should not be null", profiles);
         assertEquals("Wrong # of recognized profiles", 1, profiles.size());
         assertEquals("Wrong profile display name", "MyProfile", profiles.iterator().next());
         }
         {
-        TestUtilities.delete(BASE + "/text/x-jsp/" + folder + "/MyProfile/abc.xml");
+        TestUtilities.delete(BASE + "/text/x-jsp/" + folder + "/MyProfile/abc.xml", 120);
         Set<String> profiles = pt.getProfilesDisplayNames();
         assertNotNull("Profiles should not be null", profiles);
         assertEquals("Wrong # of recognized profiles", 0, profiles.size());
         }
         {
-        TestUtilities.createFile(BASE + "/text/x-jsp/" + folder + "/MyProfile/abc.xml", contents);
+        TestUtilities.createFile(BASE + "/text/x-jsp/" + folder + "/MyProfile/abc.xml", contents, 120);
         Set<String> profiles = pt.getProfilesDisplayNames();
         assertNotNull("Profiles should not be null", profiles);
         assertEquals("Wrong # of recognized profiles", 1, profiles.size());
         assertEquals("Wrong profile display name", "MyProfile", profiles.iterator().next());
         }
         {
-        TestUtilities.delete(BASE);
+        TestUtilities.delete(BASE, 120);
         Set<String> profiles = pt.getProfilesDisplayNames();
         assertNotNull("Profiles should not be null", profiles);
         assertEquals("Wrong # of recognized profiles", 0, profiles.size());
@@ -275,7 +276,7 @@ public class ProfilesTrackerTest extends NbTestCase {
         }
         
         {
-        TestUtilities.createFile(BASE + "/text/x-jsp/" + folder + "/MyProfile/abc.xml", contents);
+        TestUtilities.createFile(BASE + "/text/x-jsp/" + folder + "/MyProfile/abc.xml", contents, 120);
         Set<String> profiles = pt.getProfilesDisplayNames();
         assertNotNull("Profiles should not be null", profiles);
         assertEquals("Wrong # of recognized profiles", 1, profiles.size());
@@ -291,7 +292,7 @@ public class ProfilesTrackerTest extends NbTestCase {
         
         {
         listener.reset();
-        TestUtilities.delete(BASE);
+        TestUtilities.delete(BASE, 120);
         Set<String> profiles = pt.getProfilesDisplayNames();
         assertNotNull("Profiles should not be null", profiles);
         assertEquals("Wrong # of recognized profiles", 0, profiles.size());
@@ -318,7 +319,7 @@ public class ProfilesTrackerTest extends NbTestCase {
         }
         
         {
-        TestUtilities.createFile(BASE + "/" + folder + "/MyProfile/abc.xml", contents);
+        TestUtilities.createFile(BASE + "/" + folder + "/MyProfile/abc.xml", contents, 120);
         Set<String> profiles = pt.getProfilesDisplayNames();
         assertNotNull("Profiles should not be null", profiles);
         assertEquals("Wrong # of recognized profiles", 1, profiles.size());
@@ -334,7 +335,7 @@ public class ProfilesTrackerTest extends NbTestCase {
         
         {
         listener.reset();
-        TestUtilities.delete(BASE);
+        TestUtilities.delete(BASE, 120);
         Set<String> profiles = pt.getProfilesDisplayNames();
         assertNotNull("Profiles should not be null", profiles);
         assertEquals("Wrong # of recognized profiles", 0, profiles.size());

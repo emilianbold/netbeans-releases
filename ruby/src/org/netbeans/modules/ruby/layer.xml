@@ -11,6 +11,10 @@
                     <attr name="instanceOf" stringvalue="org.netbeans.api.lexer.Language"/>
                 </file>
                 
+                <folder name="Actions">
+                    <file name="org-netbeans-modules-ruby-ReflowParagraphAction.instance"/>
+                </folder>
+                
                 <!-- TODO - this should not be necessary; I'm doing this now to work around
                     bugs in color initialization -->
                 <folder name="FontsColors">
@@ -111,86 +115,31 @@
                 <file name="x-ruby" url="RubyExample"/>
             </folder>
         </folder>
-        <file name="RubyOptions.instance">
-            <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.RubyOptionsCategory"/>
-            <attr name="position" intvalue="305"/>
-        </file>     
+       <folder name="Editor">
+          <folder name="Formatting">
+              <attr name="position" intvalue="0"/>
+              <folder name="text">
+                  <folder name="x-ruby">
+                      <file name="TabsAndIndents.instance">
+                          <attr name="instanceOf" stringvalue="org.netbeans.spi.options.OptionsPanelController"/>
+                          <attr name="instanceCreate" methodvalue="org.netbeans.modules.ruby.options.FmtTabsIndents.getController"/>
+                          <attr name="position" intvalue="100"/>
+                      </file>
+                  </folder>
+              </folder>
+          </folder>
+      </folder>
     </folder>
-    
-    <folder name="org.netbeans.modules.ruby">
-        <folder name="options">
-            <file name="Formatting.instance">
-                <attr name="position" intvalue="150"/>
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.options.FormatingAdvancedOption"/>
-            </file>
-        </folder>
-    </folder>
-    
+
     <folder name="GsfPlugins">
         <folder name="text">
             <folder name="x-ruby">
-                <!-- Is this attribute unused? -->
-                <attr name="displayName" stringvalue="Ruby"/>
-                
-                <!-- Used by index scanner to identify relevant files -->
-                <folder name="extensions">
-                    <file name="rb"/>
-                </folder>
-                
                 <file name="language.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.GsfLanguage"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.RubyLanguage"/>
                 </file>
-                
-                <file name="parser.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.Parser"/>
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.RubyParser"/>
-                </file>
-                
-                <file name="renamer.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.InstantRenamer"/>
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.RenameHandler"/>
-                </file>
-                
-                <file name="declarationfinder.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.DeclarationFinder"/>
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.DeclarationFinder"/>
-                </file>
-                
-                <file name="formatter.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.Formatter"/>
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.Formatter"/>
-                </file>
-                
-                <file name="bracket.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.BracketCompletion"/>
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.BracketCompleter"/>
-                </file>
-                
-                <file name="completion.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.Completable"/>
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.CodeCompleter"/>
-                </file>
-                
-                <file name="indexer.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.Indexer"/>
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.RubyIndexer"/>
-                </file>
-                
-                <file name="semantic.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.SemanticAnalyzer"/>
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.SemanticAnalysis"/>
-                </file>
-                
-                <file name="occurrences.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.OccurrencesFinder"/>
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.OccurrencesFinder"/>
-                </file>
-                
                 <file name="structure.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.StructureScanner"/>
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.StructureAnalyzer"/>
-                </file>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.RubyStructureAnalyzer"/>
+                </file> 
             </folder>
         </folder>
     </folder>

@@ -151,12 +151,6 @@ public interface CsmFunction<T> extends CsmOffsetableDeclaration<T>, CsmScope {
     
     OperatorKind getOperatorKind();
     
-    /**
-     * Returns true if this class is template, otherwise false.
-     * If isTemplate() returns true, this class is an instance of CsmTemplate
-     */
-    boolean isTemplate();
-
     boolean isInline();
 
     CsmType getReturnType();

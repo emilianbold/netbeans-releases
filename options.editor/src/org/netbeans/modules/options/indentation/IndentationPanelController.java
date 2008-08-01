@@ -42,7 +42,9 @@
 package org.netbeans.modules.options.indentation;
 
 import java.beans.PropertyChangeListener;
+import java.util.prefs.Preferences;
 import javax.swing.JComponent;
+import javax.swing.JEditorPane;
 import org.netbeans.spi.options.OptionsPanelController;
 
 import org.openide.util.HelpCtx;
@@ -85,7 +87,7 @@ public final class IndentationPanelController extends OptionsPanelController {
     }
     
     public JComponent getComponent (Lookup masterLookup) {
-        return getIndentationPanel ();
+        return getIndentationPanel(masterLookup);
     }
 
     public void addPropertyChangeListener (PropertyChangeListener l) {
@@ -98,9 +100,17 @@ public final class IndentationPanelController extends OptionsPanelController {
 
     private IndentationPanel indentationPanel;
     
-    private IndentationPanel getIndentationPanel () {
-        if (indentationPanel == null)
-            indentationPanel = new IndentationPanel ();
+    private IndentationPanel getIndentationPanel() {
+        assert indentationPanel != null;
+        return indentationPanel;
+    }
+
+    private IndentationPanel getIndentationPanel(Lookup lookup) {
+        if (indentationPanel == null) {
+            Preferences prefs = lookup.lookup(Preferences.class);
+            JEditorPane preview = lookup.lookup(JEditorPane.class);
+            indentationPanel = new IndentationPanel(prefs, preview);
+        }
         return indentationPanel;
     }
 }

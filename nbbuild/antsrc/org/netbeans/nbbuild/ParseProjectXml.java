@@ -92,12 +92,12 @@ public final class ParseProjectXml extends Task {
     static final int TYPE_SUITE = 1;
     static final int TYPE_STANDALONE = 2;
 
-    private File project;
+    private File moduleProject;
     /**
      * Set the NetBeans module project to work on.
      */
     public void setProject(File f) {
-        project = f;
+        moduleProject = f;
     }
     private File projectFile;
     /**
@@ -111,7 +111,7 @@ public final class ParseProjectXml extends Task {
         if (projectFile != null) {
             return projectFile;
         }
-        return new File(new File(project, "nbproject"), "project.xml");
+        return new File(new File(moduleProject, "nbproject"), "project.xml");
     }
 
     private String publicPackagesProperty;
@@ -218,7 +218,7 @@ public final class ParseProjectXml extends Task {
     }
 
     // test distribution path 
-    public  static String testDistLocation;
+    private static String cachedTestDistLocation;
 
     public static class TestType {
         private String name;
@@ -384,7 +384,7 @@ public final class ParseProjectXml extends Task {
                     testTypes.size() > 0) {
                 @SuppressWarnings("unchecked")
                 Hashtable<String,String> properties = getProject().getProperties();
-                properties.put("project", project.getAbsolutePath());
+                properties.put("project", moduleProject.getAbsolutePath());
                 modules = new ModuleListParser(properties, getModuleType(pDoc), getProject());
                 ModuleListParser.Entry myself = modules.findByCodeNameBase(getCodeNameBase(pDoc));
                 if (myself == null) { // #71130
@@ -465,8 +465,8 @@ public final class ParseProjectXml extends Task {
                if (testDistLocation == null) {
                    testDistLocation = "${" + TestDeps.TEST_DIST_VAR + "}";
                }
-               ParseProjectXml.testDistLocation = testDistLocation;
-               
+               ParseProjectXml.cachedTestDistLocation = testDistLocation;
+    
                for (TestDeps td : getTestDeps(pDoc, modules, getCodeNameBase(pDoc))) {
                    // unit tests
                    TestType testType = getTestType(td.testtype);
@@ -474,17 +474,21 @@ public final class ParseProjectXml extends Task {
                        if (testType.getFolder() != null) {
                            define(testType.getFolder(),td.getTestFolder());
                        }
-                       if (testType.getCompileCP() != null && td.getCompileClassPath() != null && td.getCompileClassPath().trim().length() > 0) {
-                           define(testType.getCompileCP(),td.getCompileClassPath());
-                       }
-                       if (testType.getRuntimeCP() != null && td.getRuntimeClassPath() != null && td.getRuntimeClassPath().trim().length() > 0) {
-                           define(testType.getRuntimeCP(),td.getRuntimeClassPath());
-                       }
-                       if (TestDeps.UNIT.equals(td.testtype)) {
-                           String testCompileDep = td.getTestCompileDep();   
-                           if (testType.getCompileDep() != null && testCompileDep != null ) {
-                               define(testType.getCompileDep(),testCompileDep);
+                       if (testType.getCompileCP() != null) {
+                           String cp = td.getCompileClassPath();
+                           if (cp != null && cp.trim().length() > 0) {
+                               define(testType.getCompileCP(), cp);
                            }
+                       }
+                       if (testType.getRuntimeCP() != null) {
+                           String cp = td.getRuntimeClassPath();
+                           if (cp != null && cp.trim().length() > 0) {
+                               define(testType.getRuntimeCP(), cp);
+                           }
+                       }
+                       String testCompileDep = td.getTestCompileDep();
+                       if (testType.getCompileDep() != null && testCompileDep != null) {
+                           define(testType.getCompileDep(), testCompileDep);
                        }
                    }
                }
@@ -832,8 +836,10 @@ public final class ParseProjectXml extends Task {
                     throw new BuildException("The module " + depJar + " has no public packages and so cannot be compiled against", getLocation());
                 } else if (pubpkgs != null && !runtime && publicPackageJarDir != null) {
                     File splitJar = createPublicPackageJar(additions, pubpkgs, publicPackageJarDir, cnb);
-                    additions.clear();
-                    additions.add(splitJar);
+                    if (splitJar != null) {
+                        additions.clear();
+                        additions.add(splitJar);
+                    }
                 }
             }
             
@@ -918,6 +924,7 @@ public final class ParseProjectXml extends Task {
       // code name base of tested module
       final String cnb;
       final ModuleListParser modulesParser;
+      boolean fullySpecified;
       
       private Set<String> missingEntries;
   
@@ -928,6 +935,11 @@ public final class ParseProjectXml extends Task {
           this.cnb = cnb;
           this.modulesParser = modulesParser;
       }
+
+       @Override
+       public String toString() {
+           return cnb + "/" + testtype + ":" + dependencies;
+       }
       
       public List<String> getFiles(boolean compile) {
           List<String> files = new ArrayList<String>();
@@ -936,8 +948,14 @@ public final class ParseProjectXml extends Task {
           }
           return files;
       }
-      public void addDepenency(TestDep dep) {
+      public void addDependency(TestDep dep) {
           dependencies.add(dep);
+          fullySpecified |= dep.cnb.equals("org.netbeans.libs.junit4");
+      }
+      public void addOptionalDependency(TestDep dep) {
+          if (dep.modulesParser.findByCodeNameBase(dep.cnb) != null) {
+              dependencies.add(dep);
+          }
       }
 
         private String getTestFolder() {
@@ -949,7 +967,7 @@ public final class ParseProjectXml extends Task {
                 // no cluster name is specified for standalone or module in module suite
                 cluster = "cluster";
             }
-            return ParseProjectXml.testDistLocation + sep + testtype + sep + cluster + sep + cnb.replace('.','-');
+            return ParseProjectXml.cachedTestDistLocation + sep + testtype + sep + cluster + sep + cnb.replace('.','-');
         }
 
         String getCompileClassPath() {
@@ -992,10 +1010,11 @@ public final class ParseProjectXml extends Task {
         ModuleListParser.Entry entry = modulesParser.findByCodeNameBase(cnb);
         if (!cnbs.isEmpty() && entry != null) {
             // check if is tests are already built
-            for (TestDep td : dependencies) {
-                if (cnb.equals(td.cnb) && new File(td.getTestJarPath()).exists()) {
-                    // don't compile already compiled tests dependencies
-                    return ;
+            for (String othertesttype : new String[] {"unit", "qa-functional"}) {
+                // don't compile already compiled tests dependencies
+                String p = testJarPath(entry, othertesttype);
+                if (p != null && new File(p).exists()) {
+                    return;
                 }
             }
             if (sb.length() > 0) {
@@ -1009,23 +1028,25 @@ public final class ParseProjectXml extends Task {
         }
         cnbs.add(cnb);
         if (entry != null) {
-            String testDeps[] = entry.getTestDependencies();
-            if (testDeps != null) {
-                for (String cnb2 : testDeps) {
-                    computeCompileDep(cnb2,cnbs,sb);
+            for (String othertesttype : new String[] {"unit", "qa-functional"}) {
+                String testDeps[] = entry.getTestDependencies().get(othertesttype);
+                if (testDeps != null) {
+                    for (String cnb2 : testDeps) {
+                        computeCompileDep(cnb2,cnbs,sb);
+                    }
                 }
-            } 
+            }
         }
     }
     
-    public void addMisingEntry(String cnd) {
+   private void addMissingEntry(String cnb) {
         if (missingEntries == null) {
             missingEntries = new HashSet<String>();
         }
-        missingEntries.add(cnd);
+        missingEntries.add(cnb);
     }
     
-    public String getMissingEntries() {
+   private String getMissingEntries() {
        if ( missingEntries != null) {
            StringBuilder builder = new StringBuilder();
            builder.append("\n-missing-Module-Entries-: ");
@@ -1059,6 +1080,11 @@ public final class ParseProjectXml extends Task {
            this.testDeps = testDeps;
            this.compile = compile;
        }
+
+       @Override
+       public String toString() {
+           return cnb + (recursive ? "/recursive" : "") + (test ? "/test" : "") + (compile ? "/compile" : "");
+       }
        /* get modules dependecies
         */
        List<ModuleListParser.Entry> getModules() {
@@ -1071,7 +1097,7 @@ public final class ParseProjectXml extends Task {
                ModuleListParser.Entry entry = modulesParser.findByCodeNameBase(cnb);
                if (entry == null) {
                    //throw new BuildException("Module "  + cnb + " doesn't exist.");
-                   testDeps.addMisingEntry(cnb);
+                   testDeps.addMissingEntry(cnb);
                } else {
                     entries.add(modulesParser.findByCodeNameBase(cnb));
                }
@@ -1080,18 +1106,18 @@ public final class ParseProjectXml extends Task {
            
        } 
        
-       private void addRecursiveModules(String cnd, Map<String,ModuleListParser.Entry> entriesMap) {
-           if (!entriesMap.containsKey(cnd)) {
-               ModuleListParser.Entry entry = modulesParser.findByCodeNameBase(cnd);
+       private void addRecursiveModules(String cnb, Map<String,ModuleListParser.Entry> entriesMap) {
+           if (!entriesMap.containsKey(cnb)) {
+               ModuleListParser.Entry entry = modulesParser.findByCodeNameBase(cnb);
                if (entry == null) {
 //                   throw new BuildException("Module "  + cnd + " doesn't exist.");
-                   testDeps.addMisingEntry(cnd);
+                   testDeps.addMissingEntry(cnb);
                } else {
-                   entriesMap.put(cnd,entry);
-                   String cnds[] = entry.getRuntimeDependencies();
-                   // cnds can be null
-                   if (cnds != null) {
-                       for (String c : cnds) {
+                   entriesMap.put(cnb,entry);
+                   String cnbs[] = entry.getRuntimeDependencies();
+                   // cnbs can be null
+                   if (cnbs != null) {
+                       for (String c : cnbs) {
                            addRecursiveModules(c, entriesMap);
                        }
                    }
@@ -1112,7 +1138,11 @@ public final class ParseProjectXml extends Task {
                // get tests files
                if (test) {
                    // get test folder
-                   String jarPath = getTestJarPath() ;
+                   String jarPath = getTestJarPath(false);
+                   if (jarPath != null) {
+                      files.add(jarPath);
+                   }
+                   jarPath = getTestJarPath(true);
                    if (jarPath != null) {
                       files.add(jarPath);
                    }
@@ -1120,21 +1150,37 @@ public final class ParseProjectXml extends Task {
            }
            return files;
        }
-       public String getTestJarPath() {
-           String sep = File.separator;
+       /**
+        * @param useUnit if true, try unit tests, even if this is of another type (so we can use unit test utils in any kind of tests)
+        */
+       public String getTestJarPath(boolean useUnit) {
            ModuleListParser.Entry entry = modulesParser.findByCodeNameBase(cnb);
            if (entry == null) {
-               testDeps.addMisingEntry(cnb);
+               testDeps.addMissingEntry(cnb);
                return null;
            } else {
-               String cluster = entry.getClusterName();
-               if (cluster == null) {
-                   cluster = "cluster";
+               String type = testDeps.testtype;
+               if (useUnit) {
+                   if (type.equals("unit")) {
+                       return null;
+                   } else {
+                       type = "unit";
+                   }
                }
-                return ParseProjectXml.testDistLocation + sep + testDeps.testtype + sep + cluster  + sep + cnb.replace('.','-') + sep + "tests.jar";           
+               return testJarPath(entry, type);
            }
        }
-   } 
+   }
+
+    private static String testJarPath(ModuleListParser.Entry entry, String testType) {
+        String sep = File.separator;
+        String cluster = entry.getClusterName();
+        if (cluster == null) {
+            cluster = "cluster";
+        }
+        return ParseProjectXml.cachedTestDistLocation + sep + testType + sep + cluster + sep + entry.getCnb().replace('.', '-') + sep + "tests.jar";
+    }
+
     private String computeClassPathExtensions(Document pDoc) {
         Element data = getConfig(pDoc);
         StringBuffer list = null;
@@ -1205,6 +1251,16 @@ public final class ParseProjectXml extends Task {
                     ZipEntry inEntry;
                     while ((inEntry = zis.getNextEntry()) != null) {
                         String path = inEntry.getName();
+                        if (path.matches("META-INF/services/(com\\.sun\\.mirror\\.apt\\.AnnotationProcessorFactory|javax\\.annotation\\.processing\\.Processor)")) {
+                            // An annotation processor is called by the compiler,
+                            // so needs to be present in the classpath of the module depending on it.
+                            // Not just the registration but the implementation need to be available;
+                            // and any classes that the impl depends on as well.
+                            // Since this all would be hard to compute, best to just leave the classpath untouched.
+                            os.close();
+                            ppjar.delete();
+                            return null;
+                        }
                         if (!addedPaths.add(path)) {
                             continue;
                         }
@@ -1264,7 +1320,7 @@ public final class ParseProjectXml extends Task {
                         String cnb =  findTextOrNull(el,"code-name-base");
                         boolean  recursive = (findNBMElement(el,"recursive") != null);
                         boolean  compile = (findNBMElement(el,"compile-dependency") != null);
-                        testDeps.addDepenency(new TestDep(cnb,
+                        testDeps.addDependency(new TestDep(cnb,
                                                          modules,
                                                          recursive,
                                                          test,
@@ -1273,8 +1329,6 @@ public final class ParseProjectXml extends Task {
                     }
 
                 }
-
-
             }
         }
         // #82204 intialize default testtypes when are not  in project.xml
@@ -1285,6 +1339,26 @@ public final class ParseProjectXml extends Task {
         if (!existsQaFunctionalTests) {
             log("Default TestDeps for qa-functional", Project.MSG_VERBOSE);
             testDepsList.add(new TestDeps(TestDeps.QA_FUNCTIONAL,testCnb,modules));
+        }
+        for (TestDeps testDeps : testDepsList) {
+            if (testDeps.fullySpecified) {
+                continue;
+            }
+            for (String library : new String[]{"org.netbeans.libs.junit4", "org.netbeans.modules.nbjunit", "org.netbeans.insane"}) {
+                testDeps.addOptionalDependency(new TestDep(library, modules, false, false, true, testDeps));
+            }
+            if (testDeps.testtype.startsWith("qa-")) {
+                // ProjectSupport moved from the old nbjunit.ide:
+                testDeps.addOptionalDependency(new TestDep("org.netbeans.modules.java.j2seproject", modules, false, true, true, testDeps));
+                // Need to include transitive deps of j2seproject in CP:
+                testDeps.addOptionalDependency(new TestDep("org.netbeans.modules.java.j2seproject", modules, true, false, false, testDeps));
+                // Common GUI testing tools:
+                for (String library : new String[]{"org.netbeans.modules.jemmy", "org.netbeans.modules.jellytools"}) {
+                    testDeps.addOptionalDependency(new TestDep(library, modules, false, false, true, testDeps));
+                }
+                // For NbModuleSuite, which needs to find the platform:
+                testDeps.addOptionalDependency(new TestDep("org.openide.util", modules, false, false, false, testDeps));
+            }
         }
         return testDepsList.toArray(new TestDeps[testDepsList.size()]);
     }
@@ -1298,7 +1372,7 @@ public final class ParseProjectXml extends Task {
     static Element findNBMElement(Element el,String name) {
         Element retEl = XMLUtil.findElement(el,name,NBM_NS_CACHE) ;
         if (retEl == null) {
-            NBM_NS_CACHE = (NBM_NS_CACHE == NBM_NS3) ? NBM_NS2 :NBM_NS3;
+            NBM_NS_CACHE = (NBM_NS_CACHE.equals(NBM_NS3)) ? NBM_NS2 :NBM_NS3;
             retEl = XMLUtil.findElement(el,name,NBM_NS_CACHE) ;            
         }
         return retEl;

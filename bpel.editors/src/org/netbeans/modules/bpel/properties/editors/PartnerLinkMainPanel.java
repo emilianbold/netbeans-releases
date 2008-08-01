@@ -1,20 +1,42 @@
 /*
- * The contents of this file are subject to the terms of the Common Development
- * and Distribution License (the License). You may not use this file except in
- * compliance with the License.
- * 
- * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
- * or http://www.netbeans.org/cddl.txt.
- * 
- * When distributing Covered Code, include this CDDL Header Notice in each file
- * and include the License file at http://www.netbeans.org/cddl.txt.
- * If applicable, add the following below the CDDL Header, with the fields
- * enclosed by brackets [] replaced by your own identifying information:
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License. When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Sun in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
+ * Contributor(s):
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
  */
 package org.netbeans.modules.bpel.properties.editors;
 
@@ -52,9 +74,12 @@ import org.netbeans.modules.soa.ui.form.CustomNodeEditor;
 import org.netbeans.modules.soa.ui.form.valid.Validator;
 import org.openide.ErrorManager;
 import static org.netbeans.modules.bpel.properties.PropertyType.*;
+import org.netbeans.modules.bpel.editors.api.EditorUtil;
+import org.netbeans.modules.soa.ui.SoaUtil;
 import org.netbeans.modules.soa.ui.form.EditorLifeCycleAdapter;
 import org.netbeans.modules.soa.ui.form.valid.DefaultValidator;
 import org.netbeans.modules.bpel.editors.api.ui.valid.ErrorMessagesBundle;
+import org.netbeans.modules.bpel.model.api.support.Utils;
 import org.netbeans.modules.bpel.nodes.BpelNode;
 import org.netbeans.modules.soa.ui.form.valid.ValidStateManager;
 import org.netbeans.modules.soa.ui.form.valid.ValidStateManager.ValidStateListener;
@@ -389,29 +414,27 @@ public class PartnerLinkMainPanel extends EditorLifeCycleAdapter
         reloadPortTypes();
         //
         setWrapper(getCurrentWsdlFile());
-        //
-        boolean isThereAnyPLT = false;
 
         // vlv
         WSDLModel wsdlModel = getCurrentWsdlModel();
         List<PartnerLinkType> pltList = getPartnerLinkTypeRecursively(wsdlModel);
-        isThereAnyPLT = !pltList.isEmpty();
-        //
-        if (isThereAnyPLT) {
-            rbtnUseExistingPLT.setSelected(true);
-            setRolesByDefault();
-        } else {
-            rbtnCreateNewPLT.setSelected(true);
-            if (wsdlModel != null) {
-                setDefaultParamsForNewPLT(wsdlModel);
-            }
+
+        if (pltList.isEmpty()) {
+          rbtnCreateNewPLT.setSelected(true);
+          setDefaultParamsForNewPLT(wsdlModel);
         }
-        //
+        else {
+          rbtnUseExistingPLT.setSelected(true);
+          setRolesByDefault();
+        }
         updateEnabledState();
         getValidator().revalidate(true);
     }
 
-    private void setDefaultParamsForNewPLT(final WSDLModel wsdlModel) {
+    private void setDefaultParamsForNewPLT(WSDLModel wsdlModel) {
+        if (wsdlModel == null) {
+          return;
+        }
         // vlv
         List<PortType> portTypeList = getPortTypeRecursively(wsdlModel);
 
@@ -423,6 +446,7 @@ public class PartnerLinkMainPanel extends EditorLifeCycleAdapter
         //
         // Try correct the name by cutting the unnecessary suffix
         String suffixToRemove = "PortType"; // NOI18N
+
         if (portTypeName != null && portTypeName.endsWith(suffixToRemove)) {
             int index = portTypeName.length() - suffixToRemove.length();
             String correctedName = portTypeName.substring(0, index);
@@ -431,7 +455,6 @@ public class PartnerLinkMainPanel extends EditorLifeCycleAdapter
                 portTypeName = correctedName;
             }
         }
-        //
         chbxPartnerWillImpement.setSelected(true);
         fldNewPLTName.setText(portTypeName + "LinkType"); // NOI18N
         fldPartnerRoleName.setText(portTypeName + "Role"); // NOI18N
@@ -603,10 +626,7 @@ public class PartnerLinkMainPanel extends EditorLifeCycleAdapter
     }
     
     private FileObject getSource() {
-        BpelModel model = myEditor.getLookup().lookup(BpelModel.class);
-        
-        return org.netbeans.modules.bpel.editors.api.utils.Util.
-                getFileObjectByModel(model);
+        return SoaUtil.getFileObjectByModel(myEditor.getLookup().lookup(BpelModel.class));
     }
     
     // vlv
@@ -1084,9 +1104,9 @@ public class PartnerLinkMainPanel extends EditorLifeCycleAdapter
         fldPartnerRole.setEditable(false);
 
         lblNewPLTypeName1.setLabelFor(myWsdlWrapperName);
-        lblNewPLTypeName1.setText("Create in &File:");
+        lblNewPLTypeName1.setText(NbBundle.getMessage(PartnerLinkMainPanel.class, "LBL_Create_in_File")); // NOI18N
 
-        myBrowseButton.setText("&Browse");
+        myBrowseButton.setText(NbBundle.getMessage(PartnerLinkMainPanel.class, "LBL_Browse")); // NOI18N
         myBrowseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 browseWsdlFile(evt);
@@ -1298,8 +1318,7 @@ public class PartnerLinkMainPanel extends EditorLifeCycleAdapter
         if (result != DialogDescriptor.OK_OPTION) {
             return;
         }
-        FileObject file = org.netbeans.modules.bpel.editors.api.utils.Util.
-                getFileObjectByModel(dialog.getModel());
+        FileObject file = SoaUtil.getFileObjectByModel(dialog.getModel());
         
         String text = getRelativeName(file);
         myWsdlWrapperName.setText(text);
@@ -1317,7 +1336,7 @@ public class PartnerLinkMainPanel extends EditorLifeCycleAdapter
     // vlv
     private String getRelativeName(FileObject file) {
         BpelModel bpelModel = myEditor.getLookup().lookup(BpelModel.class);
-        Project modelProject = ResolverUtility.safeGetProject(bpelModel);
+        Project modelProject = Utils.safeGetProject(bpelModel);
         String relativePath = ResolverUtility.safeGetRelativePath(file, modelProject);
         String name = relativePath != null ? relativePath : file.getPath();
         
@@ -1352,7 +1371,6 @@ public class PartnerLinkMainPanel extends EditorLifeCycleAdapter
           partners.addAll(definitions.getExtensibilityElements(PartnerLinkType.class));
         }
       });
-
       return partners;
     }
 
@@ -1369,7 +1387,6 @@ public class PartnerLinkMainPanel extends EditorLifeCycleAdapter
           ports.addAll(definitions.getPortTypes());
         }
       });
-
       return ports;
     }
 

@@ -44,43 +44,35 @@ import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
 
 /**
- * 
  * @author ads
  */
-final class PhpTemplates implements RecommendedTemplates,
-    PrivilegedTemplates 
-{
-
+final class PhpTemplates implements RecommendedTemplates, PrivilegedTemplates {
 
     private static final String[] TYPES = new String[] {
-        "PHP",                  // NOI18N
-        "XML",                  // NOI18N
-        "simple-files",         // NOI18N
+        "PHP", // NOI18N
+        "XML", // NOI18N
+        "simple-files", // NOI18N
     };
-    
+
     private static final String[] PRIVILEGED_NAMES = new String[] {
         /*
          * See discussion about the set of templates here:
          * http://php.netbeans.org/issues/show_bug.cgi?id=122121
          */
-        "Templates/Scripting/EmptyPHP.php", // NOI18N
+        "Templates/Scripting/EmptyPHP", // NOI18N
+        "Templates/Scripting/EmptyPHPWebPage", // NOI18N
+        "Templates/Scripting/PHPClass", // NOI18N
+        "Templates/Scripting/PHPInterface", // NOI18N
         "Templates/Other/html.html", // NOI18N
         "Templates/Other/xhtml.xhtml", // NOI18N
         "Templates/Other/CascadeStyleSheet.css", // NOI18N
     };
-    
-    /* (non-Javadoc)
-     * @see org.netbeans.spi.project.ui.RecommendedTemplates#getRecommendedTypes()
-     */
+
     public String[] getRecommendedTypes() {
         return TYPES;
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.spi.project.ui.PrivilegedTemplates#getPrivilegedTemplates()
-     */
     public String[] getPrivilegedTemplates() {
         return PRIVILEGED_NAMES;
     }
-    
 }

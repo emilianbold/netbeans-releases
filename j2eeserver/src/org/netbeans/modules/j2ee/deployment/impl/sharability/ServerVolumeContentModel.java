@@ -41,35 +41,46 @@
 
 package org.netbeans.modules.j2ee.deployment.impl.sharability;
 
+import java.net.URI;
 import javax.swing.AbstractListModel;
 import java.util.List;
 import java.util.ArrayList;
 import java.net.URL;
-import java.net.MalformedURLException;
 
 import org.netbeans.spi.project.libraries.LibraryImplementation;
+import org.netbeans.spi.project.libraries.LibraryImplementation2;
 import org.netbeans.spi.project.libraries.LibraryStorageArea;
-import org.openide.filesystems.FileUtil;
-import org.openide.ErrorManager;
+import org.openide.util.NbCollections;
 
 class ServerVolumeContentModel extends AbstractListModel/*<String>*/ {
 
     private LibraryImplementation impl;
+    private LibraryImplementation2 impl2;
     private LibraryStorageArea area;
     private String volumeType;
-    private List/*<URL>*/ content;
+    private List<Object> content;
 
-    public ServerVolumeContentModel (LibraryImplementation impl, LibraryStorageArea area, String volumeType) {
+    public ServerVolumeContentModel(LibraryImplementation impl, LibraryStorageArea area, String volumeType) {
         //TODO: Should listen on the impl
         this.impl = impl;
         this.area = area;
         this.volumeType = volumeType;
-        List l = this.impl.getContent (volumeType);
-        if (l != null) {
-            this.content = new ArrayList(l);
+        if (impl instanceof LibraryImplementation2) {
+            impl2 = (LibraryImplementation2)impl;
         }
-        else {
-            content = new ArrayList();
+        if (impl2 != null) {
+            List<URI> l = impl2.getURIContent (volumeType);
+            if (l != null) {
+                content = new ArrayList<Object>(l);
+            }
+        } else {
+            List<URL> l = this.impl.getContent (volumeType);
+            if (l != null) {
+                content = new ArrayList<Object>(l);
+            }
+        }
+        if (content == null) {
+            content = new ArrayList<Object>();
         }
     }
     
@@ -78,46 +89,63 @@ class ServerVolumeContentModel extends AbstractListModel/*<String>*/ {
     }
 
     public int getSize() {
-        return this.content.size();
+        return content.size();
     }
 
     public Object getElementAt(int index) {
-        if (index < 0 || index >= this.content.size())
+        if (index < 0 || index >= content.size())
             throw new IllegalArgumentException();
-        return this.content.get (index);
+        return content.get (index);
     }
 
     public void addResource (URL resource) {        
-        this.content.add (resource);
-        int index = this.content.size()-1;
-        this.impl.setContent (this.volumeType, content);
-        this.fireIntervalAdded(this,index,index);
+        assert impl2 == null;
+        content.add (resource);
+        int index = content.size()-1;
+        propagateContent();
+        fireIntervalAdded(this,index,index);
+    }
+
+    public void addResource (URI resource) {
+        assert impl2 != null;
+        content.add (resource);
+        int index = content.size()-1;
+        propagateContent();
+        fireIntervalAdded(this,index,index);
+    }
+    
+    private void propagateContent() {
+        if (impl2 != null) {
+            impl2.setURIContent (volumeType, NbCollections.checkedListByCopy(content, URI.class, true));
+        } else {
+            impl.setContent (volumeType, NbCollections.checkedListByCopy(content, URL.class, true));
+        }
     }
 
     public void removeResources (int[] indices) {
         for (int i=indices.length-1; i>=0; i--) {
-            this.content.remove(indices[i]);
+            content.remove(indices[i]);
         }
-        this.impl.setContent (this.volumeType, content);
-        this.fireIntervalRemoved(this,indices[0],indices[indices.length-1]);
+        propagateContent();
+        fireIntervalRemoved(this,indices[0],indices[indices.length-1]);
     }
 
     public void moveUp (int[] indices) {
         for (int i=0; i< indices.length; i++) {
-            Object value = this.content.remove(indices[i]);
-            this.content.add(indices[i]-1,value);
+            Object value = content.remove(indices[i]);
+            content.add(indices[i]-1,value);
         }
-        this.impl.setContent (this.volumeType, content);
-        this.fireContentsChanged(this,indices[0]-1,indices[indices.length-1]);
+        propagateContent();
+        fireContentsChanged(this,indices[0]-1,indices[indices.length-1]);
     }
 
     public void moveDown (int[] indices) {
         for (int i=indices.length-1; i>=0; i--) {
-            Object value = this.content.remove(indices[i]);
-            this.content.add(indices[i]+1,value);
+            Object value = content.remove(indices[i]);
+            content.add(indices[i]+1,value);
         }
-        this.impl.setContent (this.volumeType, content);
-        this.fireContentsChanged(this,indices[0],indices[indices.length-1]+1);
+        propagateContent();
+        fireContentsChanged(this,indices[0],indices[indices.length-1]+1);
     }
 
 }

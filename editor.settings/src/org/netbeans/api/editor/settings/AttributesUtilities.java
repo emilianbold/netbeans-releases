@@ -191,6 +191,12 @@ public final class AttributesUtilities {
         /** Creates a new instance of SmartAttributeSet */
         private Immutable(HashMap<Object, Object> attribs) {
             this.attribs = attribs == null ? new HashMap<Object, Object>() : attribs;
+            Object resolver = this.attribs.get(AttributeSet.ResolveAttribute);
+            if(resolver instanceof AttributeSet){
+            	setResolveParent((AttributeSet)resolver);
+            }else{
+            	//broken or null resolver key. Ignore (log if different class maybe ?)
+            }
         }
 
         public synchronized void setResolveParent(AttributeSet parent) {
@@ -373,9 +379,13 @@ public final class AttributesUtilities {
             }
             
             for(AttributeSet delegate : delegates) {
-                if (delegate.isDefined(key)) {
-                    return delegate.getAttribute(key);
-                }
+            	AttributeSet current = delegate;
+            	while (current != null) {
+            		if (current.isDefined(key)) {
+            			return current.getAttribute(key);
+            		}
+            		current = current.getResolveParent();
+            	}
             }
             
             return null;

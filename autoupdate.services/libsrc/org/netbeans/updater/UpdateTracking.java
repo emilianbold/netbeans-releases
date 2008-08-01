@@ -191,7 +191,17 @@ public final class UpdateTracking {
         File userDir = null;
         if (user != null) {
             userDir = new File (user);
-            userDir = new File (userDir.toURI ().normalize ()).getAbsoluteFile ();
+            if (userDir.getPath ().startsWith ("\\\\")) {
+                // Do not use URI.normalize for UNC paths because of http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4723726 (URI.normalize() ruins URI built from UNC File)
+                try {
+                    userDir = userDir.getCanonicalFile ();
+                } catch (IOException ex) {
+                    // fallback when getCanonicalFile fails
+                    userDir = userDir.getAbsoluteFile ();
+                }
+            } else {
+                userDir = new File (userDir.toURI ().normalize ()).getAbsoluteFile ();
+            }
         }
         
         return userDir;

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -52,7 +52,6 @@ public class DebuggerPreferences {
     private static final DebuggerPreferences INSTANCE = new DebuggerPreferences();
     
     private static final String DO_NOT_ASK_AGAIN = "fast-debugger-do-not-ask-again"; // NOI18N
-    private static final String IS_FIRST_TIME = "is-called-first-time"; // NOI18N
     
     private DebuggerPreferences() {}
     
@@ -66,14 +65,6 @@ public class DebuggerPreferences {
     
     public boolean isDoNotAskAgain() {
         return getPreferences().getBoolean(DO_NOT_ASK_AGAIN, false);
-    }
-    
-    public void setFirstTime(final boolean firstTime) {
-        getPreferences().putBoolean(IS_FIRST_TIME, firstTime);
-    }
-    
-    public boolean isFirstTime() {
-        return getPreferences().getBoolean(IS_FIRST_TIME, true);
     }
     
     private Preferences getPreferences() {

@@ -56,6 +56,15 @@ made subject to such option by the copyright holder.
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.options.api</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.6</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.settings</code-name-base>
                     <run-dependency>
                         <release-version>1</release-version>
@@ -71,7 +80,7 @@ made subject to such option by the copyright holder.
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>1.8</specification-version>
+                        <specification-version>1.13</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -95,7 +104,7 @@ made subject to such option by the copyright holder.
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>6.2</specification-version>
+                        <specification-version>7.8</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -193,7 +202,11 @@ made subject to such option by the copyright holder.
             </test-dependencies>
             <friend-packages>
                 <friend>org.netbeans.core.nativeaccess</friend>
+                <friend>org.netbeans.modules.visualweb.gravy</friend>
                 <package>org.netbeans.core.windows.nativeaccess</package>
+                <package>org.netbeans.core.windows.view.ui.tabcontrol</package>
+                <package>org.netbeans.core.windows.resources</package>
+                <package>org.netbeans.core.windows.actions</package>
             </friend-packages>
         </data>
     </configuration>

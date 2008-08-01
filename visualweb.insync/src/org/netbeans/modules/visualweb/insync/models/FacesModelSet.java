@@ -1162,8 +1162,7 @@ public class FacesModelSet extends ModelSet implements FacesDesignProject {
     public void setProjectData(String key, Object data) {
         userData.put(key, data);
         // PROJECTTODO2: Still need to put this on project save not on set.
-        AuxiliaryConfiguration config = (AuxiliaryConfiguration) project.getLookup().lookup(AuxiliaryConfiguration.class);
-        assert config != null : "project has no AuxiliaryConfiguration";
+        AuxiliaryConfiguration config = ProjectUtils.getAuxiliaryConfiguration(project);
         DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
         try {
             // !EAT TODO move this to flushProjectData()
@@ -1190,8 +1189,7 @@ public class FacesModelSet extends ModelSet implements FacesDesignProject {
             return String.valueOf(result);
         }
 //        if (JsfProjectUtils.isEnabled()) {
-            AuxiliaryConfiguration config = (AuxiliaryConfiguration) project.getLookup().lookup(AuxiliaryConfiguration.class);
-            assert config != null : "project has no AuxiliaryConfiguration";
+            AuxiliaryConfiguration config = ProjectUtils.getAuxiliaryConfiguration(project);
             Element element = config.getConfigurationFragment(PROJECTDATA_ELEMENT_KEY_PREFIX + key, PROJECTDATA_ELEMENT_NAMESPACE, false);
             if (element == null)
                 return null;

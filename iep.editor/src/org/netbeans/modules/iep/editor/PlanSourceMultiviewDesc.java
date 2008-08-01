@@ -53,7 +53,7 @@ public class PlanSourceMultiviewDesc
     }
 
     public String preferredID() {
-	return PREFERRED_ID;
+    return PREFERRED_ID;
     }
 
     public int getPersistenceType() {
@@ -79,19 +79,19 @@ public class PlanSourceMultiviewDesc
                 return editorComponent;
             }
             return MultiViewFactory.BLANK_ELEMENT;
-	
+    
     }
     
     public void writeExternal(ObjectOutput out) throws IOException {
-	out.writeObject(wsdlDataObject);
+    out.writeObject(wsdlDataObject);
     }
 
     public void readExternal(ObjectInput in)
-	throws IOException, ClassNotFoundException
+    throws IOException, ClassNotFoundException
     {
-	Object firstObject = in.readObject();
-	if (firstObject instanceof PlanDataObject)
-	    wsdlDataObject = (PlanDataObject) firstObject;
+    Object firstObject = in.readObject();
+    if (firstObject instanceof PlanDataObject)
+        wsdlDataObject = (PlanDataObject) firstObject;
     }
     
 }

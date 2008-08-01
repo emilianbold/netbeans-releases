@@ -217,8 +217,8 @@ public class ContiguousOrderCustomEditor extends TcgComponentNodePropertyEditor 
             String outputSchemaNameStr = NbBundle.getMessage(DefaultCustomEditor.class, "CustomEditor.OUTPUT_SCHEMA_NAME");
             mOutputSchemaNamePanel = PropertyPanel.createSingleLineTextPanel(outputSchemaNameStr, outputSchemaNameProp, false);
             if (mOutputSchemaNamePanel.getStringValue() == null || mOutputSchemaNamePanel.getStringValue().trim().equals("")) {
-            	IEPModel model = mComponent.getModel();
-            	String schemaName = NameGenerator.generateSchemaName(model.getPlanComponent().getSchemaComponentContainer());
+                IEPModel model = mComponent.getModel();
+                String schemaName = NameGenerator.generateSchemaName(model.getPlanComponent().getSchemaComponentContainer());
                 mOutputSchemaNamePanel.setStringValue(schemaName);
             }
             ((JTextField)mOutputSchemaNamePanel.input[0]).setEditable(false);

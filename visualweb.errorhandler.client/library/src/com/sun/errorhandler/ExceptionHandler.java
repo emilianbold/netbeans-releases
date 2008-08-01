@@ -302,21 +302,22 @@ public class ExceptionHandler extends HttpServlet {
 
         if (stackCount == -1)
             stackCount = 0;
-        if ( DebugClientThread.errorHost != null && ste.length > 0) {
-            DebugClientThread clientThread = new DebugClientThread();
-            DebugProtocol debugprotocol = new DebugProtocol();
-            clientThread.start();
-            if (clientThread.testConnected()) {
-                clientThread.sendMessage(debugprotocol.DEBUG_CLIENT_ID + debugprotocol.DEBUG_DELIMITER + debugprotocol.DEBUG_CLIENT_NAME);
-                clientThread.sendMessage(debugprotocol.DEBUG_REQUEST_START);
-                clientThread.sendMessage(debugprotocol.DEBUG_CLASS_NAME + debugprotocol.DEBUG_DELIMITER + ste[stackCount].getClassName());
-                clientThread.sendMessage(debugprotocol.DEBUG_FILE_NAME + debugprotocol.DEBUG_DELIMITER + ste[stackCount].getFileName());
-                clientThread.sendMessage(debugprotocol.DEBUG_METHOD_NAME + debugprotocol.DEBUG_DELIMITER + ste[stackCount].getMethodName());
-                clientThread.sendMessage(debugprotocol.DEBUG_LINE_NUMBER + debugprotocol.DEBUG_DELIMITER + ste[stackCount].getLineNumber());
-                clientThread.sendMessage(debugprotocol.DEBUG_REQUEST_END);
-                clientThread.disconnect();
-            }
-        }
+        // Bug Fix: 131999 - Debug server is no longer supported. It was a relic of Ceator
+//        if ( DebugClientThread.errorHost != null && ste.length > 0) {
+//            DebugClientThread clientThread = new DebugClientThread();
+//            DebugProtocol debugprotocol = new DebugProtocol();
+//            clientThread.start();
+//            if (clientThread.testConnected()) {
+//                clientThread.sendMessage(debugprotocol.DEBUG_CLIENT_ID + debugprotocol.DEBUG_DELIMITER + debugprotocol.DEBUG_CLIENT_NAME);
+//                clientThread.sendMessage(debugprotocol.DEBUG_REQUEST_START);
+//                clientThread.sendMessage(debugprotocol.DEBUG_CLASS_NAME + debugprotocol.DEBUG_DELIMITER + ste[stackCount].getClassName());
+//                clientThread.sendMessage(debugprotocol.DEBUG_FILE_NAME + debugprotocol.DEBUG_DELIMITER + ste[stackCount].getFileName());
+//                clientThread.sendMessage(debugprotocol.DEBUG_METHOD_NAME + debugprotocol.DEBUG_DELIMITER + ste[stackCount].getMethodName());
+//                clientThread.sendMessage(debugprotocol.DEBUG_LINE_NUMBER + debugprotocol.DEBUG_DELIMITER + ste[stackCount].getLineNumber());
+//                clientThread.sendMessage(debugprotocol.DEBUG_REQUEST_END);
+//                clientThread.disconnect();
+//            }
+//        }
     }
 
     /** Append a character to a StringBuffer intended for HTML

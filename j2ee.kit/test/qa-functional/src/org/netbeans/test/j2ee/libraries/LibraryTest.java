@@ -50,23 +50,20 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.jar.JarFile;
-import junit.framework.Test;
-import junit.textui.TestRunner;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.EditorWindowOperator;
-import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.ActionNoBlock;
+import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JRadioButtonOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
-import org.netbeans.junit.NbTestSuite;
 import org.netbeans.test.j2ee.lib.ContentComparator;
 import org.netbeans.test.j2ee.lib.FilteringLineDiff;
 import org.netbeans.test.j2ee.lib.Utils;
@@ -76,9 +73,10 @@ import org.netbeans.test.j2ee.wizard.WizardUtils;
  *
  * @author jungi
  */
-public class LibraryTest extends JellyTestCase {
+public class LibraryTest extends J2eeTestCase {
     
     private static boolean CREATE_GOLDEN_FILES = Boolean.getBoolean("org.netbeans.test.j2ee.libraries.golden");
+    private static final String CATEGORY_JAVA_EE = "Java EE";
     //private static boolean CREATE_GOLDEN_FILES = true;
     
     protected String appName = "LibsInclusionTestApp";
@@ -90,19 +88,6 @@ public class LibraryTest extends JellyTestCase {
     /** Creates a new instance of LibraryTest */
     public LibraryTest(String s) {
         super(s);
-    }
-    
-    public static Test suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new LibraryTest("testDD"));
-        suite.addTest(new LibraryTest("testDDandManifests"));
-        return suite;
-    }
-    
-    /** Use for execution inside IDE */
-    public static void main(java.lang.String[] args) {
-        // run only selected test case
-        TestRunner.run(suite());
     }
     
     private static final String EAR_BUNDLE
@@ -119,13 +104,17 @@ public class LibraryTest extends JellyTestCase {
                 new String[] {getDataDir().getAbsolutePath() + File.separator + "libs" + File.separator + "math.zip"},
                 null);
         //create empty j2ee project
-        WizardUtils.createNewProject("Enterprise", "Enterprise Application");
+        WizardUtils.createNewProject(CATEGORY_JAVA_EE,"Enterprise Application");
         NewProjectNameLocationStepOperator npnlso =
                 WizardUtils.setProjectNameLocation(appName, getWorkDirPath());
         WizardUtils.setJ2eeSpecVersion(npnlso, WizardUtils.MODULE_EAR, "1.4");
-        JCheckBoxOperator jcbo = new JCheckBoxOperator(npnlso, 1);
+        //Create EJB Module:
+        String moduleLabel = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.common.project.ui.Bundle", "LBL_NEAP_CreateEjbModule");
+        JCheckBoxOperator jcbo = new JCheckBoxOperator(npnlso, moduleLabel);
         jcbo.setSelected(false);
-        jcbo = new JCheckBoxOperator(npnlso, 2);
+        //Create Web Application Module:
+        moduleLabel = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.common.project.ui.Bundle", "LBL_NEAP_CreatWebAppModule");
+        jcbo = new JCheckBoxOperator(npnlso, moduleLabel);
         jcbo.setSelected(false);
         npnlso.finish();
         //add modules to j2ee app

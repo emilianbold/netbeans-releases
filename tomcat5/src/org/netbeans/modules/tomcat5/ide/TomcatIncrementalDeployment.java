@@ -53,6 +53,7 @@ import javax.enterprise.deploy.spi.status.ProgressObject;
 import javax.enterprise.deploy.spi.exceptions.OperationUnsupportedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.plugins.api.AppChangeDescriptor;
+import org.netbeans.modules.j2ee.deployment.plugins.api.DeploymentChangeDescriptor;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfiguration;
 import org.netbeans.modules.tomcat5.TomcatManager;
@@ -149,6 +150,16 @@ public class TomcatIncrementalDeployment extends IncrementalDeployment {
         if (tm.isTomcat50() && tm.getTomcatProperties().getOpenContextLogOnRun()) {
             tm.openLog(module);
         }
+    }
+
+    @Override
+    public ProgressObject deployOnSave(TargetModuleID module, DeploymentChangeDescriptor desc) {
+        return incrementalDeploy(module, desc);
+    }
+
+    @Override
+    public boolean isDeployOnSaveSupported() {
+        return true;
     }
     
     private static class P implements ProgressObject {

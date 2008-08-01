@@ -69,7 +69,7 @@ public interface WebServicesClientSupportImpl {
 
     public FileObject getDeploymentDescriptor();
 	
-    public List/*ClientStubDescriptor*/ getStubDescriptors();
+    public List<ClientStubDescriptor> getStubDescriptors();
     
     public List/*WsCompileClientEditorSupport.ServiceSettings*/ getServiceClients();
     

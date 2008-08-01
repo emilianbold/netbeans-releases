@@ -22,20 +22,28 @@ Microsystems, Inc. All Rights Reserved.
 <project name="Mac Installer" basedir="." default="build-all-dmg">
     
     <import file="${basedir}/build.pro"/>
+    <property file="${basedir}/Bundle.properties"/>
+    <condition property="ml.suffix" value="-ml" else="">
+        <istrue value="${mlbuild}"/>
+    </condition>      
             
     <target name="build-glassfish-pkg" >
-        <echo message="Building ${glassfish.appname} into ${basedir}/glassfish"/>
+        <echo message="Building ${glassfish-title} into ${basedir}/glassfish"/>
         <ant dir="glassfish"/>      
+    </target>
+
+    <target name="build-glassfish-v3-pkg" >
+        <echo message="Building ${glassfish-v3-title} into ${basedir}/glassfish-v3"/>
+        <ant dir="glassfish-v3"/>      
     </target>
     
     <target name="build-tomcat-pkg">
-        <echo message="Building ${tomcat.appname} into ${basedir}/tomcat"/>
+        <echo message="Building ${tomcat-title} into ${basedir}/tomcat"/>
         <ant dir="tomcat" target="build-pkg"/>              
     </target>
-    
-    
+        
     <target name="build-openesb-pkg">
-        <echo message="Building ${openesb.appname} into ${basedir}/openesb"/>
+        <echo message="Building ${openesb-title} into ${basedir}/openesb"/>
         <ant dir="openesb" target="build-pkg"/>                     
     </target>
     
@@ -48,91 +56,48 @@ Microsystems, Inc. All Rights Reserved.
         <delete dir="${basedir}/netBeans/javase/build"/>
         <delete dir="${basedir}/netBeans/javaee/build"/>
         <delete dir="${basedir}/netBeans/baseide/build"/>    
-        <delete dir="${basedir}/netBeans/php/build"/>          
+        <delete dir="${basedir}/netBeans/php/build"/> 
+        <delete dir="${basedir}/netBeans/webcommon/build"/> 
+        <delete dir="${basedir}/tools/classes"/>           
     </target>
+    
+    <target name="init">    
+        <mkdir dir="${basedir}/tools/classes"/> 
+        <javac 
+            srcdir="${basedir}/tools/src" 
+            destdir="${basedir}/tools/classes"          
+            debug="true"/>  
+        <taskdef 
+           name="for-each" 
+           classname="org.netbeans.installer.mac.ant.ForEach" 
+           classpath="${basedir}/tools/classes/"/>           
+    </target>        
 
-
-    <target name="unzip-nb" description="Unzip clusters to modules" >
+    <target name="unzip-nb" description="Unzip clusters to modules" >                                                  
         <mkdir dir="build"/> 
-        <ant target="unzip-cluster">            
-            <property name="cluster.name" value="cnd"/>
-            <property name="module.name" value="cpp"/>          
-        </ant>         
-        <ant target="unzip-cluster">            
-            <property name="cluster.name" value="apisupport"/>
-            <property name="module.name" value="javase"/>          
-        </ant> 
-        <ant target="unzip-cluster">            
-            <property name="cluster.name" value="profiler"/>
-            <property name="module.name" value="javase"/>          
-        </ant> 
-        <ant target="unzip-cluster">            
-            <property name="cluster.name" value="java"/>
-            <property name="module.name" value="javase"/>          
-        </ant>         
-        <ant target="unzip-cluster">            
-            <property name="cluster.name" value="harness"/>
-            <property name="module.name" value="javase"/>          
-        </ant>        
-        <ant target="unzip-cluster">            
-            <property name="cluster.name" value="soa"/>
-            <property name="module.name" value="soa"/>          
-        </ant>          
-        <ant target="unzip-cluster">            
-            <property name="cluster.name" value="ruby"/>
-            <property name="module.name" value="ruby"/>          
-        </ant>
-        <ant target="unzip-cluster">            
-            <property name="cluster.name" value="php"/>
-            <property name="module.name" value="php"/>          
-        </ant>            
-        
-        <ant target="unzip-cluster">            
-            <property name="cluster.name" value="enterprise"/>
-            <property name="module.name" value="javaee"/>          
-        </ant>
-        <ant target="unzip-cluster">            
-            <property name="cluster.name" value="identity"/>
-            <property name="module.name" value="javaee"/>          
-        </ant>
-        <ant target="unzip-cluster">            
-            <property name="cluster.name" value="xml"/>
-            <property name="module.name" value="javaee"/>          
-        </ant>
-        <ant target="unzip-cluster">            
-            <property name="cluster.name" value="visualweb"/>
-            <property name="module.name" value="javaee"/>          
-        </ant>        
-        
-        <ant target="unzip-cluster">            
-            <property name="cluster.name" value="ide"/>
-            <property name="module.name" value="baseide"/>          
-        </ant>  
-        <ant target="unzip-cluster">            
-            <property name="cluster.name" value="nb6.0-etc"/>
-            <property name="module.name" value="baseide"/>          
-        </ant>
-        <ant target="unzip-cluster">            
-            <property name="cluster.name" value="platform"/>
-            <property name="module.name" value="baseide"/>          
-        </ant>  
-        <ant target="unzip-cluster">            
-            <property name="cluster.name" value="gsf"/>
-            <property name="module.name" value="baseide"/>          
-        </ant>    
-
+        <property name="clusters" value="cnd(cpp),
+                                         apisupport(javase), profiler(javase), java(javase), harness(javase),
+                                         soa(soa),
+                                         ruby(ruby),                                       
+                                         php(php), 
+                                         enterprise(javaee), identity(javaee), xml(javaee), visualweb(javaee), groovy(javaee),
+                                         webcommon(webcommon),
+                                         ide(baseide), nb6.0-etc(baseide), platform(baseide), gsf(baseide)"/>        
+        <for-each list="${clusters}" separator="," property="cluster.name"  propertyArg="module.name">
+            <ant target="unzip-cluster"/>                           
+        </for-each>                                                  
     </target>
     
     <target name="unzip-cluster">
         <mkdir dir="${basedir}/netBeans/${module.name}/build/netbeans"/>
         <exec executable="sh" failonerror="yes">
             <arg value="-c"/>
-            <arg value="unzip -d ${basedir}/netBeans/${module.name}/build/netbeans ${common.name}-${cluster.name}${ml_postfix}.zip"/>
+            <arg value="unzip -d ${basedir}/netBeans/${module.name}/build/netbeans ${common.name}${ml.suffix}-${cluster.name}.zip"/>
         </exec>      
     </target>
     
     <target name="size-pack-module" description="Count up size of the module, pack200">           
-        <exec executable="sh" failonerror="yes" outputproperty="size">
+        <exec executable="sh" failonerror="no" outputproperty="size">
             <arg value="-c"/>
             <arg value="cd ${basedir}/netBeans/${module.name}; du -sk build | sed 's/[\t]*build//'"/>
         </exec>        
@@ -141,8 +106,8 @@ Microsystems, Inc. All Rights Reserved.
             <arg value="-c"/>
             <arg value="sh ${basedir}/pack200.sh ${basedir}/netBeans/${module.name}/build"/>
         </exec>           
-    </target>    
-    
+    </target>
+
     <target name="build-pkg" depends="unzip-nb" description="Builds NB and packs packages" >                  
         <ant target="size-pack-module">
             <property name="module.name" value="baseide"/>            
@@ -151,37 +116,17 @@ Microsystems, Inc. All Rights Reserved.
         <ant target="build-modules"/>       
     </target>
     
-    <target name="build-modules">
-        <ant target="build-module">
-            <property name="module.name" value="javase"/>
-            <property name="module.title" value="${javase.appname}"/>            
-        </ant>
-        
-        <ant target="build-module">
-            <property name="module.name" value="javaee"/>
-            <property name="module.title" value="${javaee.appname}"/>            
-        </ant>
-        
-        <ant target="build-module">
-            <property name="module.name" value="cpp"/>
-            <property name="module.title" value="${cpp.appname}"/>            
-        </ant>
-        
-        <ant target="build-module">
-            <property name="module.name" value="ruby"/>
-            <property name="module.title" value="${ruby.appname}"/>            
-        </ant>
-        
-        <ant target="build-module">
-            <property name="module.name" value="soa"/>
-            <property name="module.title" value="${soa.appname}"/>          
-        </ant>      
-        
-        <ant target="build-module">
-            <property name="module.name" value="php"/>
-            <property name="module.title" value="${php.appname}"/>          
-        </ant>          
-        
+    <target name="build-modules">        
+        <property name="modules" value="javase(${javase-title}),
+                                        javaee(${javaee-title}),
+                                        cpp(${cpp-title}),
+                                        ruby(${ruby-title}),
+					webcommon(${webcommon-title}),
+                                        soa(${soa-title}),
+                                        php(${php-title})"/>        
+        <for-each list="${modules}" separator="," property="module.name"  propertyArg="module.title">
+            <ant target="build-module"/>                           
+        </for-each>                        
     </target>
     
     <target name="build-module">
@@ -198,7 +143,12 @@ Microsystems, Inc. All Rights Reserved.
             <filterset>
                 <filter token="TITLE" value="${module.title}"/>
             </filterset>
-        </copy>        
+        </copy>  
+        
+        <copy file="${basedir}/netBeans/baseide/pkg/scripts/env.sh" 
+              todir="${basedir}/netBeans/${module.name}/pkg/scripts"/> 
+        <copy file="${basedir}/netBeans/baseide/pkg/scripts/addproduct_id.sh" 
+              todir="${basedir}/netBeans/${module.name}/pkg/scripts"/>        
         
         <echo message="Building ${module.name} into ${basedir}/build/${module.name}.pkg"/>
         <exec executable="sh" failonerror="yes">
@@ -207,88 +157,262 @@ Microsystems, Inc. All Rights Reserved.
         </exec>                                         
     </target>          
     
-    <target name="build-all-dmg" depends="clean,build-pkg,build-glassfish-pkg,build-tomcat-pkg,build-openesb-pkg">                                                    
-        
-       <property file="${basedir}/build/sizes.pro"/>  
-       
-       <mkdir dir="dist"/>  
-       
-       <ant target="build-dmg"> 
-           <property name="bundle.type" value=""/>
-           <property name="welcome.message" value="${welcome.full}"/>
-           <property name="packages" value="./build/*pkg"/>          
-       </ant>   
-       <ant target="build-dmg"> 
-           <property name="bundle.type" value="-javase"/>      
-           <property name="welcome.message" value="${welcome.javase}"/>           
-           <property name="packages" value="./build/baseide.pkg ./build/javase.pkg"/>          
-       </ant> 
-       <ant target="build-dmg"> 
-           <property name="bundle.type" value="-javaee"/>
-           <property name="welcome.message" value="${welcome.javaee}"/>           
-           <property name="packages" value="./build/baseide.pkg ./build/javase.pkg  ./build/javaee.pkg ./build/glassfish.pkg ./build/tomcat.pkg"/>          
-       </ant> 
-       <ant target="build-dmg"> 
-           <property name="bundle.type" value="-cpp"/>
-           <property name="welcome.message" value="${welcome.cpp}"/>           
-           <property name="packages" value="./build/baseide.pkg ./build/cpp.pkg"/>          
-       </ant> 
-       <ant target="build-dmg"> 
-           <property name="bundle.type" value="-ruby"/>
-           <property name="welcome.message" value="${welcome.ruby}"/>           
-           <property name="packages" value="./build/baseide.pkg ./build/ruby.pkg"/>          
-       </ant>
-       <ant target="build-dmg"> 
-           <property name="bundle.type" value="-php"/>
-           <property name="welcome.message" value="${welcome.php}"/>           
-           <property name="packages" value="./build/baseide.pkg ./build/php.pkg"/>          
-       </ant>       
-       
-       <delete file="${basedir}/build/sizes.pro"/>
-    </target>      
-    
-    <target name="build-dmg">                   
-        <delete dir="dist_dmg"/>        
-        <property name="mpkgfile" value="dist_dmg/${appname}.mpkg"/>        
-        <mkdir dir="${mpkgfile}/Contents/Resources/English.lproj"/>
-        <mkdir dir="${mpkgfile}/Contents/Packages"/>
-        <copy file="dmg/license.txt" tofile="${mpkgfile}/Contents/Resources/English.lproj/License.txt"/>
-        <copy file="dmg/intro.txt" tofile="${mpkgfile}/Contents/Resources/English.lproj/Welcome.txt">
-            <filterset>
-                 <filter token="MESSAGE" value="${welcome.message}"/>
-            </filterset>
+    <target name="build-all-dmg" depends="clean,init,build-pkg,build-glassfish-pkg,build-glassfish-v3-pkg,build-tomcat-pkg,build-openesb-pkg">                                                        
+        <mkdir dir="dist"/>                  
+        <property name="bundles" value="        (./build/*pkg),
+                                             -javase(./build/baseide.pkg ./build/javase.pkg),
+                                             -java(./build/baseide.pkg ./build/javase.pkg  ./build/webcommon.pkg ./build/javaee.pkg ./build/glassfish.pkg ./build/glassfish-v3.pkg ./build/tomcat.pkg),
+                                             -cpp(./build/baseide.pkg ./build/cpp.pkg),
+                                             -ruby(./build/baseide.pkg ./build/webcommon.pkg ./build/ruby.pkg ./build/glassfish-v3.pkg),
+                                             -php(./build/baseide.pkg ./build/webcommon.pkg ./build/php.pkg)"/>        
+        <for-each list="${bundles}" separator="," property="bundle.type"  propertyArg="packages">
+            <delete dir="${basedir}/dist_dmg"/>                          
+            <ant target="build-dmg">
+                 <property name="dmg.name" value="${dmg.prefix.name}${ml.suffix}${bundle.type}-macosx"/>  
+                 <property name="mpkg.name" value="${mpkg.name_nb}"/>
+                 <property name="license.file" value="${basedir}/dmg/Resources/license.txt"/>                                  
+            </ant>     
+        </for-each>         
+        <delete file="${basedir}/build/sizes.pro"/>
+    </target>     
+            
+    <target name="prepare-lproj-dirs">  
+        <mkdir dir="${basedir}/dmg/Resources_full"/>
+        <property name="resources.full.dir" value="${basedir}/dmg/Resources_full"/> 
+        <copy file="${basedir}/Bundle.properties" todir="${resources.full.dir}"/>
+        <copy  todir="${resources.full.dir}">
+            <fileset dir="${basedir}/dmg/Resources/" includes="*.html"/>
         </copy>
-        <copy file="dmg/bgimage.tif" tofile="${mpkgfile}/Contents/Resources/English.lproj/background.tif"/>        
-        <copy file="dmg/distribution${bundle.type}.dist" tofile="${mpkgfile}/Contents/distribution.dist">                                    
-            <filterset>
-                <filter token="TITLE" value="${appname}"/>
-                <filter token="GF_TITLE" value="${glassfish.appname}"/>
-                <filter token="TC_TITLE" value="${tomcat.appname}"/>
-                <filter token="OESB_TITLE" value="${openesb.appname}"/>
-                <filter token="NB_TITLE" value="${baseide.install.name}"/>                
+       
+        <condition property="nb.locales.nonzero.length">
+            <and>
+                <isset property="nb.locales"/>
+                <length string="${nb.locales}" when="greater" length="0"/>
+            </and>
+        </condition>   
+        <condition property="locales" value=",${nb.locales}" else="">
+            <and>
+                <istrue value="${mlbuild}"/>
+                <istrue value="${nb.locales.nonzero.length}"/>
+            </and>   
+        </condition>
+        <echo message="locales are: ${locales}"/>        
+        
+        <condition property="do.copy.translated.files">
+            <istrue value="${mlbuild}"/>
+        </condition>        
+        <ant target="copy-translated-files"/> 
+        
+        <for-each list="${locales}" separator="," property="locale">
+            <ant target="build-lproj-dir"/>                           
+        </for-each>            
+        <delete dir="${resources.full.dir}"/>
+    </target> 
+       
+    <target name="copy-translated-files" if="do.copy.translated.files">         
+        <copy todir="${resources.full.dir}" flatten="true" includeEmptyDirs="false" failonerror="false">                    
+            <fileset dir="${translatedfiles.src}"> 
+                <include name="**/mac/newbuild/**"/>
+            </fileset>
+        </copy>               
+    </target>        
+       
+    <target name="init-locale-propeties">
+        <echo message="Init locale properties for locale: ${locale}"/>
+        <!-- set the name of the locale suffix-->                                   
+        <condition property="locale.suffix" value="" else="_${locale}">
+            <equals arg1="${locale}" arg2=""/>
+        </condition>
+        <condition property="locale.name" value="english" else="${locale}">
+            <equals arg1="${locale}" arg2=""/>
+        </condition>                                                            
+        <!-- find out name of lproj dir from the map file-->
+        <exec executable="sh" failonerror="yes" outputproperty="locale.dir">
+            <arg value="-c"/>
+            <arg value="cat ${basedir}/dmg/lprojdirnames.map  | sed '/'${locale.name}'=/!d;s/'${locale.name}'=//'"/>
+        </exec>                     
+    </target>  
+
+    <target name="build-lproj-dir" depends="init-locale-propeties">
+        <echo message="Building ${locale.dir}.lproj dir..."/>        
+        <!-- create lproj dir -->
+        <mkdir dir="${mpkg.file}/Contents/Resources/${locale.dir}.lproj"/>
+        <!-- copy Welcome.html and Localizable.strings -->                 
+        <copy file="${resources.full.dir}/Welcome${bundle.type}${locale.suffix}.html"
+              tofile="${mpkg.file}/Contents/Resources/${locale.dir}.lproj/Welcome.html" failonerror="false"/>               
+        <exec executable="sh" failonerror="no">
+            <arg value="-c"/>
+            <arg value="cat ${resources.full.dir}/Bundle${locale.suffix}.properties |
+                sed 's/#.*$//;s/^/&quot;/;s/$/&quot;;/;s/=/&quot; = &quot;/;s/^&quot;&quot;;//;
+                s/'\$${buildnumber}'/'${buildnumber}'/;s/'\$${tomcat.version}'/'${tomcat.version}'/' 
+                > ${resources.full.dir}/Localizable.strings"/>
+        </exec>         
+        <native2ascii encoding="UTF-16" src="${resources.full.dir}" dest="${mpkg.file}/Contents/Resources/${locale.dir}.lproj" 
+                      reverse="true" includes="Localizable.strings"/>                        
+    </target>     
+  
+    <target name="build-all-mysql-dmg" depends="clean,init,build-pkg,build-glassfish-pkg,build-tomcat-pkg,build-openesb-pkg">   
+        <mkdir dir="dist"/>         
+        <get src="${mysql_connector.location}" 
+             dest="${basedir}/build/${mysql_connector.name}.jar"
+             usetimestamp="true"/>
+        <!-- temp workaround with productid for NB in MYSQL bundles: replace "NB" with "NBMYSQL" in postflight for baseide.pkg-->     
+        <exec executable="sh" failonerror="yes">
+            <arg value="-c"/>
+            <arg value="sed -i '' 's/addproduct_id.sh &quot;NB&quot;/addproduct_id.sh &quot;NBMYSQL&quot;/'
+                            ${basedir}/build/baseide.pkg/Contents/Resources/postflight"/>            
+        </exec>          
+
+        <get src="${mysql_prefPane.location}" 
+             dest="${basedir}/build/${mysql_prefPane.name}.zip"
+             usetimestamp="true"/>    
+                           
+        <exec executable="sh" failonerror="yes">
+            <arg value="-c"/>
+            <arg value="unzip -o ${basedir}/build/${mysql_prefPane.name}.zip -d ${basedir}/build;
+                        rm -f ${basedir}/build/${mysql_prefPane.name}.zip"/>
+        </exec>        
+        
+        <ant target="build-mysql-dmg">
+            <property name="mysql.location" value="${mysql_10.4.location}"/>
+            <property name="mysql.pkg.name" value="${mysql_10.4.pkg.name}"/>
+            <property name="dmg.name" value="${mysql_10.4.dmg.name}"/>                        
+        </ant>
+        <ant target="build-mysql-dmg">
+            <property name="mysql.location" value="${mysql_10.5.location}"/>
+            <property name="mysql.pkg.name" value="${mysql_10.5.pkg.name}"/>                
+            <property name="dmg.name" value="${mysql_10.5.dmg.name}"/>
+            <property name="mysql_prefPane.path" value="${basedir}/build/${mysql_prefPane.name}"/>           
+        </ant> 
+        <!-- return "NB" in baseide.pkg-->         
+        <exec executable="sh" failonerror="yes">
+            <arg value="-c"/>
+            <arg value="sed -i '' 's/addproduct_id.sh &quot;NBMYSQL&quot;/addproduct_id.sh &quot;NB&quot;/'
+                            ${basedir}/build/baseide.pkg/Contents/Resources/postflight"/>            
+        </exec>         
+        <delete file="${basedir}/build/${mysql_connector.name}.jar"/> 
+        <delete file="${basedir}/build/${mysql_prefPane.name}"/> 
+        <delete file="${basedir}/build/sizes.pro"/>        
+    </target>    
+
+    <target name="clean-mysql">
+        <delete dir="${basedir}/build/mysqltmp"/>
+        <delete dir="${basedir}/build/mysql.pkg"/>
+        <delete dir="${basedir}/build/mysqlstartup.pkg"/>
+    </target>
+    
+    <target name="build-mysql-dmg" depends="clean-mysql">
+        <echo message="Building ${dmg.name}.dmg"/> 
+        <mkdir dir="${basedir}/dist_dmg"/>
+        <property name="mysql.dir" value="${basedir}/build/mysqltmp"/>                             
+        <mkdir dir="${mysql.dir}"/>              
+        <echo message="Downloading MySQL from ${mysql.location}"/>         
+        <get src="${mysql.location}" dest="${mysql.dir}/mysql.dmg" usetimestamp="true"/>        
+                         
+        <condition property="prefPane.path" value="${mysql_prefPane.path}" else="${mysql.dir}/${mysql_prefPane.name}">            
+            <isset property="mysql_prefPane.path"/>                            
+        </condition>
+        
+        <echo message="Mounting ${mysql.dir}/mysql.dmg"/>         
+        <exec executable="sh" failonerror="yes">
+            <arg value="-c"/>
+            <arg value="hdiutil mount -mountpoint ${mysql.dir} ${mysql.dir}/mysql.dmg;
+                        cp -RPfv ${mysql.dir}/${mysql.pkg.name}.pkg  ${basedir}/build/mysql.pkg;
+                        cp -RPfv ${mysql.dir}/${mysql_startup.pkg.name}.pkg ${basedir}/build/mysqlstartup.pkg;                                            
+                        cp -RPfv ${prefPane.path} ${basedir}/dist_dmg/${mysql_prefPane.name};                      
+                        hdiutil detach ${mysql.dir};"/>            
+        </exec>                                       
+        <delete dir="${mysql.dir}"/>       
+        
+        <ant target="size-package">
+            <property name="package" value="${basedir}/build/mysql.pkg"/>    
+            <property name="module.name" value="mysql"/>    
+        </ant>
+        <ant target="size-package">
+            <property name="package" value="${basedir}/build/mysqlstartup.pkg"/>    
+            <property name="module.name" value="mysqlstartup"/>    
+        </ant>     
+        
+        <copy file="${basedir}/build/${mysql_connector.name}.jar" 
+              todir="${basedir}/build/mysql.pkg/Contents/Resources" failonerror="false"/>
+
+        <copy file="${basedir}/dmg/Resources/license_mysql.txt" 
+              todir="${basedir}/build/mysql.pkg/Contents/Resources" failonerror="false"/>    
+
+        <copy file="${basedir}/dmg/Resources/readme_mysql.txt" 
+              todir="${basedir}/build/mysql.pkg/Contents/Resources" failonerror="false"/>             
+             
+        <echo message="script_dir=`dirname &quot;$$0&quot;` ${line.separator}
+cp -p -f  &quot;$$script_dir&quot;/license_mysql.txt &quot;$$2/mysql/${mysql_license.name}&quot; ${line.separator}
+cp -p -f  &quot;$$script_dir&quot;/readme_mysql.txt &quot;$$2/mysql/${mysql_readme.name}&quot; ${line.separator}
+if [ -d &quot;${glassfish.install.dir}&quot; ] ; then ${line.separator}
+    cp -RPf &quot;$$script_dir&quot;/${mysql_connector.name}.jar &quot;${glassfish.install.dir}/lib/&quot;${line.separator}
+fi"
+              file="${basedir}/build/mysql.pkg/Contents/Resources/postflight"
+              append="true"/>  
+                     
+        <copy file="${basedir}/mysqlstartup/pkg/scripts/postflight"
+              todir="${basedir}/build/mysqlstartup.pkg/Contents/Resources/"/>
+        <chmod file="${basedir}/build/mysqlstartup.pkg/Contents/Resources/postflight" perm="ugo+x"/>          
+              
+        <ant target="build-dmg">             
+             <property name="packages" value="./build/baseide.pkg ./build/javase.pkg  ./build/webcommon.pkg ./build/javaee.pkg ./build/ruby.pkg ./build/glassfish.pkg ./build/mysql*.pkg"/>  
+             <property name="bundle.type" value="-mysql"/> 
+             <property name="mpkg.name" value="${mpkg.name_nb_mysql}"/> 
+             <property name="license.file" value="${basedir}/dmg/Resources/license_mysql.txt"/>                           
+        </ant>          
+    </target>
+    
+    <target name="size-package" description="Count up size of the package">        
+        <exec executable="sh" failonerror="no" outputproperty="size">
+            <arg value="-c"/>
+            <arg value="cd ${package}/Contents; cat Info.plist | sed -n '/IFPkgFlagInstalledSize/{n;p;}' | sed 's/\&lt;integer\&gt;//' | sed 's/\&lt;\/integer\&gt;//'"/>
+        </exec>        
+        <echo message="sizeof.${module.name}=${size}${line.separator}" file="${basedir}/build/sizes.pro" append="true"/>                                     
+    </target>    
+    
+        
+    <target name="build-dmg">   
+        <property file="${basedir}/build/sizes.pro"/>         
+        <echo message="Building dmg for ${dmg.name}.dmg..."/>                    
+        <property name="mpkg.file" value="${basedir}/dist_dmg/${mpkg.name}.mpkg"/>   
+       
+        <copy file="${basedir}/dmg/Resources/bgimage.tif" 
+              tofile="${mpkg.file}/Contents/Resources/background.tif"/>  
+        <copy file="${license.file}" 
+              tofile="${mpkg.file}/Contents/Resources/License.txt" />                         
+                         
+        <ant target="prepare-lproj-dirs"/>                                             
+        
+        <copy file="dmg/distribution${bundle.type}.dist" tofile="${mpkg.file}/Contents/distribution.dist">                                    
+            <filterset>                      
                 <filter token="SIZE_CPP" value="${sizeof.cpp}"/>                
                 <filter token="SIZE_JAVASE" value="${sizeof.javase}"/> 
+                <filter token="SIZE_WEBCOMMON" value="${sizeof.webcommon}"/>
                 <filter token="SIZE_JAVAEE" value="${sizeof.javaee}"/>
                 <filter token="SIZE_RUBY" value="${sizeof.ruby}"/>
                 <filter token="SIZE_SOA" value="${sizeof.soa}"/>
                 <filter token="SIZE_GLASSFISH" value="${sizeof.glassfish}"/>
+                <filter token="SIZE_GLASSFISHV3" value="${sizeof.glassfish.v3}"/>
                 <filter token="SIZE_TOMCAT" value="${sizeof.tomcat}"/>                
                 <filter token="SIZE_OPENESB" value="${sizeof.openesb}"/>   
                 <filter token="SIZE_BASEIDE" value="${sizeof.baseide}"/>                
-                <filter token="SIZE_PHP" value="${sizeof.php}"/>                 
+                <filter token="SIZE_PHP" value="${sizeof.php}"/>    
+                <filter token="SIZE_MYSQL" value="${sizeof.mysql}"/> 
+                <filter token="SIZE_MYSQLSTARTUP" value="${sizeof.mysqlstartup}"/>                 
             </filterset>
-        </copy>            
+        </copy> 
         
+        <mkdir dir="${mpkg.file}/Contents/Packages"/>         
         <exec executable="sh" failonerror="yes">
             <arg value="-c"/>
-            <arg value="cp -RPf ${packages} ./dist_dmg/'${appname}'.mpkg/Contents/Packages"/>
-        </exec>           
-                                           
+            <arg value="cp -RPf ${packages} '${mpkg.file}'/Contents/Packages"/>
+        </exec>                                            
+        
         <exec executable="sh" failonerror="yes">
           <arg value="-c"/>
-          <arg value="sh dmg/createdmg.sh '${dmg.prefix.name}${bundle.type}'-macosx'${ml_postfix}'.dmg '${appname}'"/>
+          <arg value="sh dmg/createdmg.sh '${dmg.name}'.dmg '${mpkg.name}'"/>
         </exec>  
         <delete dir="dist_dmg"/>
-    </target>         
-    
+    </target>             
 </project>          

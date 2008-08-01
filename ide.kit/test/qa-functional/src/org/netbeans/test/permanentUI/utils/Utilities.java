@@ -39,21 +39,15 @@
 package org.netbeans.test.permanentUI.utils;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.Iterator;
-import java.util.NoSuchElementException;
 import java.util.Scanner;
-import java.util.Set;
-import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import javax.swing.JMenuItem;
-import javax.swing.MenuElement;
 
 /**
  *
@@ -61,15 +55,7 @@ import javax.swing.MenuElement;
  */
 public class Utilities {
 
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String[] args) {
-        final String mainmenu_file = "F:\\prace\\hg\\main\\ide.kit\\test\\qa-functional\\src\\org\\netbeans\\test\\permanentUI\\data\\mainmenu-file.txt";
-
-        NbMenuItem item = Utilities.readMenuStructureFromFile(mainmenu_file);
-        Utilities.printMenuStructure(System.out, item, " ");
-    }
+    private static boolean debug = false;
 
     /**
      * reads menus like http://wiki.netbeans.org/MainMenu
@@ -95,26 +81,33 @@ public class Utilities {
      * @param filename
      * @return parsed menu structure
      */
-    public static NbMenuItem readMenuStructureFromFile(String filename) {
+    public static NbMenuItem readMenuStructureFromFile(String filename) throws IllegalStateException {
         NbMenuItem parsedMenu = new NbMenuItem();
         try {
             //first use a Scanner to get each line
             Scanner scanner = new Scanner(new File(filename));
             //starts "| Item |"
             String menuName = scanner.nextLine();
+            if (debug) {
+                System.out.println("1: " + menuName);
+            }
             int from;
             if ((from = menuName.indexOf("| ")) != -1) {
                 parsedMenu.setName(menuName.substring(from + "| ".length(), menuName.lastIndexOf(" |")));
-                parsedMenu.setMnemo(menuName.substring(menuName.lastIndexOf(" |") + "| ".length()).trim().charAt(0));
+                char mnemo = menuName.substring(menuName.lastIndexOf(" |") + "| ".length()).trim().charAt(0);
+                parsedMenu.setMnemo(Character.isLetter(mnemo) ? mnemo : '-');
             } else {
                 System.out.println("Wrong file: missing header - menu name as | menuName |");
-                return null;
+                throw new IllegalStateException("Wrong file: missing header - menu name as | menuName |");
             }
             //skip ====== bellow menu name
             menuName = scanner.nextLine();
-            if (!(menuName.matches("^={5,}+"))) {
-                System.out.println("Wrong file: missing ===== - bellow  menu name");
-                return null;
+            if (debug) {
+                System.out.println("2: " + menuName);
+            }
+            if (!(menuName.matches("^={5,}+\\s*+"))) {
+                System.err.println("Wrong file: missing ===== - bellow  menu name");
+                throw new IllegalStateException("Wrong file: missing ===== - bellow  menu name");
             }
             //parse the menu items structure
             ArrayList<NbMenuItem> submenu = new ArrayList<NbMenuItem>();
@@ -124,7 +117,8 @@ public class Utilities {
             parsedMenu.setSubmenu(submenu);
             scanner.close();
         } catch (IOException ex) {
-            //log(ex.getMessage());
+            Logger.getLogger(Utilities.class.getName()).log(Level.SEVERE, null, ex);
+            throw new IllegalStateException(ex);
         }
 
         return parsedMenu;
@@ -146,7 +140,7 @@ public class Utilities {
      * @param filename
      * @return parsed submenu structure
      */
-    public static NbMenuItem readSubmenuStructureFromFile(String filename) {
+    public static NbMenuItem readSubmenuStructureFromFile(String filename) throws IllegalStateException {
         NbMenuItem parsedMenu = new NbMenuItem();
         try {
             //first use a Scanner to get each line
@@ -154,22 +148,22 @@ public class Utilities {
             //starts "Toolbars                 > [x] Build                  B"
             String submenuName = scanner.nextLine();
             int to;
-            if ((to = submenuName.indexOf("> ")) != -1) {
-                parsedMenu.setName(submenuName.substring(0, submenuName.lastIndexOf("   > ")));
+            if ((to = submenuName.indexOf(">")) != -1) {
+                parsedMenu.setName(submenuName.substring(0, submenuName.lastIndexOf(">")).trim());
             } else {
-                System.out.println("Wrong file: missing header - submenu name                 > [x] submenu item                  B");
-                return null;
+                throw new IllegalStateException("Wrong file: missing header - submenu name                 > [x] submenu item                  B");
             }
 
             ArrayList<NbMenuItem> submenu = new ArrayList<NbMenuItem>();
             submenu.add(parseMenuLineText(submenuName.substring(to)));
             while (scanner.hasNextLine()) {
-                submenu.add(parseMenuLineText(scanner.nextLine()));
+                submenu.add(parseMenuLineText(scanner.nextLine().trim()));
             }
             parsedMenu.setSubmenu(submenu);
             scanner.close();
         } catch (IOException ex) {
-            //log(ex.getMessage());
+            Logger.getLogger(Utilities.class.getName()).log(Level.SEVERE, null, ex);
+            throw new IllegalStateException(ex);
         }
 
         return parsedMenu;
@@ -192,9 +186,11 @@ public class Utilities {
         //parse line
         Scanner line = new Scanner(lineText);
         NbMenuItem menuitem = new NbMenuItem();
-
+        if (debug) {
+            System.out.println("Parsing line: " + line);
+        }
         //is it separator? "======="
-        if (line.hasNext("^={5,}+")) { //at least 5x =
+        if (line.hasNext("^={5,}+\\s*")) { //at least 5x =
 
             menuitem.setSeparator(true);
         } else {
@@ -245,7 +241,7 @@ public class Utilities {
      * @param menu NbMenuItem
      * @param separator
      */
-    public static void printMenuStructure(PrintStream out, NbMenuItem menu, String separator) {
+    public static void printMenuStructure(PrintStream out, NbMenuItem menu, String separator, int level) {
         String checked = " ";
         String output = separator;
         if (menu == null) {
@@ -268,13 +264,13 @@ public class Utilities {
         }
         output += "   " + menu.getMnemo();
 
-        System.out.println(output);
+        out.println(output);
 
         //print submenu
-        if (submenu != null) {
+        if (level > 0 && submenu != null) {
             Iterator<NbMenuItem> sIt = submenu.iterator();
             while (sIt.hasNext()) {
-                printMenuStructure(out,/*(NbMenuItem)*/ sIt.next(), separator + separator);
+                printMenuStructure(out,/*(NbMenuItem)*/ sIt.next(), separator + separator, level - 1);
             }
         }
     }
@@ -306,6 +302,37 @@ public class Utilities {
         return textLines;
     }
 
+    public static ArrayList<String> parseFileByLinesLeaveSpaces(String filename) {
+        ArrayList<String> textLines = new ArrayList<String>();
+
+        try {
+            Scanner scanner = new Scanner(new File(filename));
+            while (scanner.hasNextLine()) {
+                String nextLine = scanner.nextLine();
+                int spaces = 0;
+                while (nextLine.charAt(spaces) == ' ') {
+                    spaces++;
+                }
+                nextLine = nextLine.substring(spaces);
+                for (int i = 0; i < spaces / 4; i++) {
+                    nextLine = "+-" + nextLine;
+                }
+
+//                for(int i = 0; nextLine.charAt(i)==' ';i++){
+//                    nextLine = nextLine.substring(4);
+//                    nextLine = 
+////                    nextLine.replaceFirst("    ", "+-");
+////                    System.out.println("replacing");
+//                }
+                textLines.add(nextLine);
+            }
+
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(Utilities.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return textLines;
+    }
+
     /**
      * trims unnecessary spaces from text line
      * @param line
@@ -321,8 +348,11 @@ public class Utilities {
                 trimmedText.append(" ");
             }
         }
-
-        return trimmedText.substring(0, trimmedText.length() - 1);//remove the last space
+        int trimmedTextLengt = trimmedText.length();
+        if (trimmedTextLengt > 0) {
+            trimmedTextLengt--; //remove the last space if line is not empty
+        }
+        return trimmedText.substring(0, trimmedTextLengt);
 
     }
 
@@ -335,7 +365,7 @@ public class Utilities {
      */
     public static String compareNbMenuItems(NbMenuItem menuOrigin, NbMenuItem menuCompare, int submenuLevel) {
         String returnText = "";
-        System.out.println(menuOrigin.toString()+" comparing with \n"+menuCompare); //DEBUG
+        System.out.println(menuOrigin.toString() + " comparing with \n" + menuCompare); //DEBUG
         if (!menuOrigin.equals(menuCompare)) {
             returnText = menuOrigin.findDifference(menuCompare);
         }
@@ -347,29 +377,24 @@ public class Utilities {
                 NbMenuItem originItem = null;
                 NbMenuItem compareItem = null;
                 while (itOrigin.hasNext() || itCompare.hasNext()) {
-                    try {
-                        originItem = itOrigin.next();
-                    } catch (NoSuchElementException e) {
-                        originItem = null;
-                    }
-                    try {
-                        compareItem = itCompare.next();
-                    } catch (NoSuchElementException e) {
-                        compareItem = null;
-                    }
-                    if(originItem == null) {
-                        if(compareItem == null) {
-                            returnText += "BOTH ITEMS ARE NULL. THIS STATE SHOULDN'T HAPPEN";
-                        } else { //only originItem is null
-                            returnText += compareItem.getName() + " is missing in the menu. ["+compareItem.toString()+"]";
+                    if (itOrigin.hasNext()) {
+                        if (itCompare.hasNext()) { //both items exist
+                            originItem = itOrigin.next();
+                            compareItem = itCompare.next();
+                            returnText += compareNbMenuItems(originItem, compareItem, submenuLevel - 1);
+                        } else { //compareItem doesn't exist
+                            originItem = itOrigin.next();
+                            returnText += originItem.getName() + " should NOT be in the menu. [" + originItem.toString() + "] \n";
                         }
                     } else {
-                        if(compareItem == null) {
-                            returnText += originItem.getName() + " shoul NOT be in the menu. ["+originItem.toString()+"]";                          
-                        } else { 
+                        if (itCompare.hasNext()) {//originItem doesn't exist
+                            compareItem = itCompare.next();
+                            returnText += compareItem.getName() + " is missing in the menu. [" + compareItem.toString() + "] \n";
+                        } else {
+                            returnText += "BOTH ITEMS ARE NULL. THIS STATE SHOULDN'T HAPPEN";
                         }
                     }
-                    returnText += compareNbMenuItems(originItem, compareItem, submenuLevel - 1);
+
                 }
             }
         }
@@ -391,5 +416,56 @@ public class Utilities {
             }
         }
         return newArray;
+    }
+
+    public static NbMenuItem getMenuByName(String menuName, NbMenuItem aMenu) {
+        //browse throught the menu
+        if (menuName.equals(aMenu.getName())) {
+            return aMenu;
+        }
+        if (aMenu.getSubmenu() != null) { //recursively for submenu
+
+            Iterator<NbMenuItem> aMenuIt = aMenu.getSubmenu().iterator();
+            while (aMenuIt.hasNext()) {
+                NbMenuItem ret = getMenuByName(menuName, aMenuIt.next());
+                if (ret != null) {
+                    return ret;
+                }
+            }
+        }
+        return null;
+    }
+
+    public static String readFileToString(String filename) {
+        if(!(new File(filename).exists())) {
+            return "DIFF is empty";
+        } else {
+
+        }
+        FileInputStream fis = null;
+        byte[] b = null;
+                 
+        try {
+            fis = new FileInputStream(filename);
+            
+            int x = fis.available();
+            
+           b = new byte[x];
+            
+            fis.read(b);
+        } catch (IOException ex) {
+            System.out.println("problems with diff file - nothing with the test");
+            ex.printStackTrace();
+        } finally {
+            try {
+                fis.close();
+            } catch (IOException ex) {
+                System.out.println("just closing the diff file - nothing with the test");
+                ex.printStackTrace();
+            }
+        }
+        
+    
+        return new String(b);
     }
 }

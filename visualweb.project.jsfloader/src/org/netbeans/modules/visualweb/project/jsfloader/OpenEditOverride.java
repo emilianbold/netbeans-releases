@@ -37,6 +37,7 @@ import javax.swing.Action;
 import javax.swing.JComponent;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
@@ -103,46 +104,44 @@ public final class OpenEditOverride  implements LookupProvider {
         protected void projectClosed() {
             Project project = projectRef.get();
             if (project != null) {
-                AuxiliaryConfiguration aux = project.getLookup().lookup(AuxiliaryConfiguration.class);
+                AuxiliaryConfiguration aux = ProjectUtils.getAuxiliaryConfiguration(project);
                 HashMap<FileObject,String> multiviews = multiViewsByProject.get(project);
                 multiviews = (multiviews == null) ? new HashMap<FileObject,String>(1) : multiviews;
                 
-                if (aux != null) {
-                    Element openFiles = aux.getConfigurationFragment(OPEN_FILES_ELEMENT, OPEN_FILES_NS, false);
-                    
-                    if (openFiles == null)
-                        return;
+                Element openFiles = aux.getConfigurationFragment(OPEN_FILES_ELEMENT, OPEN_FILES_NS, false);
 
-                    NodeList fileNodeList = openFiles.getElementsByTagName(FILE_ELEMENT);
-                    for (int i = 0; i < fileNodeList.getLength(); i++) {
-                        String url = fileNodeList.item(i).getChildNodes().item(0).getNodeValue();
-                        FileObject fo;
-                        try {
-                            fo = URLMapper.findFileObject(new URL(url));
-                        } catch (MalformedURLException mue) {
-                            assert false : "MalformedURLException in " + url;
-                            continue;
-                        }
-                        if (fo == null) {
-                            continue;
-                        }
+                if (openFiles == null)
+                    return;
 
-                        if (FileOwnerQuery.getOwner(fo) != project) {
-                            continue;
+                NodeList fileNodeList = openFiles.getElementsByTagName(FILE_ELEMENT);
+                for (int i = 0; i < fileNodeList.getLength(); i++) {
+                    String url = fileNodeList.item(i).getChildNodes().item(0).getNodeValue();
+                    FileObject fo;
+                    try {
+                        fo = URLMapper.findFileObject(new URL(url));
+                    } catch (MalformedURLException mue) {
+                        assert false : "MalformedURLException in " + url;
+                        continue;
+                    }
+                    if (fo == null) {
+                        continue;
+                    }
+
+                    if (FileOwnerQuery.getOwner(fo) != project) {
+                        continue;
+                    }
+
+                    try {
+                        DataObject dobj = DataObject.find(fo);
+                        if (dobj instanceof JsfJspDataObject) {
+                            FileObject primaryFile = dobj.getPrimaryFile();
+                            String mvId = multiviews.get(primaryFile);
+
+                            primaryFile.setAttribute(MULTIVIEW_ATTRIBUTE, mvId);
                         }
-                        
-                        try {
-                            DataObject dobj = DataObject.find(fo);
-                            if (dobj instanceof JsfJspDataObject) {
-                                FileObject primaryFile = dobj.getPrimaryFile();
-                                String mvId = multiviews.get(primaryFile);
-                                
-                                primaryFile.setAttribute(MULTIVIEW_ATTRIBUTE, mvId);
-                            }
-                        }catch (IOException ex) {
-                            assert false : "IOException for FileObject: " + fo.getPath();
-                            continue;
-                        }
+                    }catch (IOException ex) {
+                        assert false : "IOException for FileObject: " + fo.getPath();
+                        continue;
                     }
                 }
                 

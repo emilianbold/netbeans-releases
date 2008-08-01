@@ -40,7 +40,7 @@ import static org.netbeans.modules.bpel.properties.PropertyType.*;
 import org.netbeans.modules.bpel.properties.editors.ReceiveCustomEditor;
 import org.netbeans.modules.bpel.editors.api.nodes.actions.ActionType;
 import org.netbeans.modules.bpel.properties.props.CustomEditorProperty;
-import org.netbeans.modules.soa.ui.SoaUiUtil;
+import org.netbeans.modules.soa.ui.SoaUtil;
 import org.netbeans.modules.soa.ui.form.CustomNodeEditor;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -83,7 +83,7 @@ public class ReceiveNode extends BpelNode<Receive> {
         if (receive == null) {
             return super.getImplHtmlDisplayName();
         }
-        return SoaUiUtil.getGrayString(super.getImplHtmlDisplayName(), EMPTY_STRING);
+        return SoaUtil.getGrayString(super.getImplHtmlDisplayName(), EMPTY_STRING);
     }
     
     public String getHelpId() {

@@ -50,15 +50,12 @@ import java.nio.charset.IllegalCharsetNameException;
 import java.nio.charset.UnsupportedCharsetException;
 import java.util.Date;
 import java.util.EventListener;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.SaveCookie;
 import org.openide.nodes.Node;
 import org.openide.nodes.CookieSet;
-
 import org.netbeans.modules.web.core.QueryStringCookie;
 import org.netbeans.modules.web.core.WebExecSupport;
 import org.openide.filesystems.FileChangeAdapter;
@@ -111,8 +108,6 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
     transient final private static boolean debug = false;
     
     transient volatile private Lookup currentLookup;
-    transient volatile private boolean useEditorForEncoding = false, reparseEncoding = false;
-    transient final private AtomicBoolean resolvingEncoding = new AtomicBoolean(false);
     
     public JspDataObject(FileObject pf, final UniFileLoader l) throws DataObjectExistsException {
         super(pf, l);
@@ -131,6 +126,7 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
         return super.getCookieSet();
     }
     
+    @Override
     public Node.Cookie getCookie(Class type) {
         if (type.isAssignableFrom(BaseJspEditorSupport.class)) {
             return getJspEditorSupport();
@@ -138,6 +134,7 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
         return super.getCookie(type);
     }
     
+    @Override
     protected org.openide.nodes.Node createNodeDelegate() {
         return new JspNode(this);
     }
@@ -168,7 +165,6 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
      * @param reload true if the new version of the plugin should be loaded.
      */
     public synchronized void refreshPlugin(boolean reload) {
-        //System.out.println("REFRESHING PLUGIN " + reload);
         compileData = null;
         if (reload)
             getPlugin();
@@ -210,8 +206,8 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
         retrievedEncoding = retrievedEncoding != null ? retrievedEncoding : DEFAULT_ENCODING;
 
         if (LOGGER.isLoggable(Level.FINER)) {
-            LOGGER.log(Level.FINER, "Retrieved encoding for " + getPrimaryFile().getNameExt()
-                    + " is " + retrievedEncoding);
+            LOGGER.log(Level.FINER, "Retrieved encoding for " + getPrimaryFile().getNameExt()  //NOI18N
+                    + " is " + retrievedEncoding);  //NOI18N
         }
         return retrievedEncoding;
     }
@@ -227,44 +223,6 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
             }
         }
         
-    }
-    
-    private static final String CORRECT_WINDOWS_31J = "windows-31j";
-    private static final String CORRECT_EUC_JP = "EUC-JP";
-    private static final String CORRECT_GB2312 = "GB2312";
-    private static final String CORRECT_BIG5 = "BIG5";
-    
-    private static String canonizeEncoding(String encodingAlias) {
-        
-        // canonic name first
-        if (Charset.isSupported(encodingAlias)) {
-            Charset cs = Charset.forName(encodingAlias);
-            encodingAlias = cs.name();
-        }
-        
-        // this is not supported on JDK 1.4.1
-        if (encodingAlias.equalsIgnoreCase("MS932")) {
-            return CORRECT_WINDOWS_31J;
-        }
-        // this is not a correct charset by http://www.iana.org/assignments/character-sets
-        if (encodingAlias.equalsIgnoreCase("euc-jp-linux")) {
-            return CORRECT_EUC_JP;
-        }
-        // chinese encodings that must be adjusted
-        if (encodingAlias.equalsIgnoreCase("EUC-CN")) {
-            return CORRECT_GB2312;
-        }
-        if (encodingAlias.equalsIgnoreCase("GBK")) {
-            return CORRECT_GB2312;
-        }
-        if (encodingAlias.equalsIgnoreCase("GB18030")) {
-            return CORRECT_GB2312;
-        }
-        if (encodingAlias.equalsIgnoreCase("EUC-TW")) {
-            return CORRECT_BIG5;
-        }
-        
-        return encodingAlias;
     }
     
     private void initialize() {
@@ -322,13 +280,13 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
                 // set the encoding of the generated servlet
                 String encoding = compileData.getServletEncoding();
                 if (encoding != null) {
-                    if (!"".equals(encoding)) {
+                    if (!"".equals(encoding)) {  //NOI18N
                         try {
                             Charset.forName(encoding);
                         } catch (IllegalArgumentException ex) {
-                            IOException t = new IOException(NbBundle.getMessage(JspDataObject.class, "FMT_UnsupportedEncoding", encoding));
+                            IOException t = new IOException(NbBundle.getMessage(JspDataObject.class, "FMT_UnsupportedEncoding", encoding));  //NOI18N
                             t.initCause(ex);
-                            Logger.getLogger("global").log(Level.INFO, null, t);
+                            Logger.getLogger("global").log(Level.INFO, null, t);  //NOI18N
                         }
                     } else
                         encoding = null;
@@ -337,12 +295,12 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
                     // actually set the encoding
                     servletFileObject.setAttribute(ATTR_FILE_ENCODING, encoding); //NOI18N
                 } catch (IOException ex) {
-                    Logger.getLogger("global").log(Level.INFO, null, ex);
+                    Logger.getLogger("global").log(Level.INFO, null, ex);  //NOI18N
                 }
             } else
                 servletDataObject = null;
         } catch (IOException e) {
-            Logger.getLogger("global").log(Level.INFO, null, e);
+            Logger.getLogger("global").log(Level.INFO, null, e);  //NOI18N
             servletDataObject = null;
         }
         
@@ -424,23 +382,15 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
     
     /////// -------- FIELDS AND METHODS FOR MANIPULATING THE PARSED INFORMATION -------- ////////
     
-    /** Updates the information about statically included pages for these pages.
-     * E.g. tells the included pages that they are included in this page. */
-/*    private void updateIncludedPagesInfo(JspCompilationInfo compInfo) throws IOException {
-        FileObject included[] = compInfo.getIncludedFileObjects();
-        for (int i = 0; i < included.length; i++) {
-            IncludedPagesSupport.setIncludedIn(getPrimaryFile(), included[i]);
-        }
-    }*/
-    
     public void setQueryString(String params) throws java.io.IOException {
         WebExecSupport.setQueryString(getPrimaryEntry().getFile(), params);
         firePropertyChange(PROP_REQUEST_PARAMS, null, null);
     }
     
+    @Override
     protected org.openide.filesystems.FileObject handleRename(String str) throws java.io.IOException {
         if ("".equals(str)) // NOI18N
-            throw new IOException(NbBundle.getMessage(JspDataObject.class, "FMT_Not_Valid_FileName"));
+            throw new IOException(NbBundle.getMessage(JspDataObject.class, "FMT_Not_Valid_FileName"));  //NOI18N
         
         org.openide.filesystems.FileObject retValue;
         
@@ -457,6 +407,7 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
         if (cookie!=null) getCookieSet().remove(cookie);
     }
     
+    @Override
     protected FileObject handleMove(DataFolder df) throws IOException {
         
         FileObject retValue;
@@ -491,10 +442,10 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
                     //so the ICHNE is always thrown for them, just ignore
                     Boolean template = (Boolean)file.getAttribute("template");//NOI18N
                     if(template == null || !template.booleanValue()) {
-                        Logger.getLogger("global").log(Level.INFO, "Detected illegal charset name in file " + file.getNameExt() + " (" + ichse.getMessage() + ")");
+                        Logger.getLogger("global").log(Level.INFO, "Detected illegal charset name in file " + file.getNameExt() + " (" + ichse.getMessage() + ")");  //NOI18N
                     }
                 } catch (UnsupportedCharsetException uchse) {
-                    Logger.getLogger("global").log(Level.INFO, "Detected unsupported charset name in file " + file.getNameExt() + " (" + uchse.getMessage() + ")");
+                    Logger.getLogger("global").log(Level.INFO, "Detected unsupported charset name in file " + file.getNameExt() + " (" + uchse.getMessage() + ")");  //NOI18N
                 }
 
                 return null;
@@ -538,7 +489,7 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
                 if (evt.getOldValue() instanceof FileObject)
                     unregister((FileObject)evt.getOldValue());
                 if (evt.getNewValue() instanceof FileObject)
-                    register((FileObject)evt.getNewValue());;
+                    register((FileObject)evt.getNewValue());
                     refreshPlugin(true);
             }
             // the context object has changed
@@ -556,6 +507,7 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
             
         }
         
+        @Override
         public void fileRenamed(FileRenameEvent fe) {
             refreshPlugin(true);
         }
@@ -579,11 +531,11 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
             serverChange();
         }
          */
-        
+        /*
         private void serverChange() {
             refreshPlugin(true);
             firePropertyChange0(PROP_SERVER_CHANGE, null, null);
-        }
+        }*/
     }
 }
 

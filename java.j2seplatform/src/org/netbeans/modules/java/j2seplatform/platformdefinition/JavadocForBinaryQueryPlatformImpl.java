@@ -45,8 +45,11 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
+import java.util.Set;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
@@ -73,7 +76,6 @@ public class JavadocForBinaryQueryPlatformImpl implements JavadocForBinaryQueryI
     private static final int STATE_INDEX = 4;
 
     private static final String NAME_DOCS = "docs"; //NOI18N
-    private static final String NAME_JA = "ja";     //NOI18N
     private static final String NAME_API = "api";   //NOI18N
     private static final String NAME_IDNEX ="index-files";  //NOI18N
 
@@ -165,30 +167,31 @@ public class JavadocForBinaryQueryPlatformImpl implements JavadocForBinaryQueryI
         }
     }
     
-    private static FileObject findIndexFolder (FileObject fo) {
+    //Package private, used by tests
+    /*private*/ static FileObject findIndexFolder (FileObject fo) {
         int state = STATE_START;
         while (state != STATE_ERROR && state != STATE_INDEX) {
             switch (state) {
                 case STATE_START:
                     {
-                        FileObject tmpFo = fo.getFileObject(NAME_DOCS);    //NOI18N
+                        FileObject tmpFo = fo.getFileObject(NAME_DOCS);
                         if (tmpFo != null) {
                             fo = tmpFo;
                             state = STATE_DOCS;
                             break;
-                        }
-                        tmpFo = fo.getFileObject(NAME_JA);     //NOI18N
-                        if (tmpFo != null) {
-                            fo = tmpFo;
-                            state = STATE_LAN;
-                            break;
-
-                        }
+                        }                        
                         tmpFo = fo.getFileObject(NAME_API);
                         if (tmpFo != null) {
                             fo = tmpFo;
                             state = STATE_API;
                             break;
+                        }
+                        tmpFo = getLocalization (fo);
+                        if (tmpFo != null) {
+                            fo = tmpFo;
+                            state = STATE_LAN;
+                            break;
+
                         }
                         fo = null;
                         state = STATE_ERROR;
@@ -196,18 +199,19 @@ public class JavadocForBinaryQueryPlatformImpl implements JavadocForBinaryQueryI
                     }
                 case STATE_DOCS:
                     {
-                        FileObject tmpFo = fo.getFileObject(NAME_JA);
-                        if (tmpFo != null) {
-                            fo = tmpFo;
-                            state = STATE_LAN;
-                            break;
-                        }
-                        tmpFo = fo.getFileObject(NAME_API);
+                        FileObject tmpFo = fo.getFileObject(NAME_API);
                         if (tmpFo != null) {
                             fo = tmpFo;
                             state = STATE_API;
                             break;
                         }
+                        tmpFo = getLocalization (fo);
+                        if (tmpFo != null) {
+                            fo = tmpFo;
+                            state = STATE_LAN;
+                            break;
+                        }
+                        
                         fo = null;
                         state = STATE_ERROR;
                         break;
@@ -238,6 +242,57 @@ public class JavadocForBinaryQueryPlatformImpl implements JavadocForBinaryQueryI
             }
         }
         return fo;
+    }
+    
+    private static FileObject getLocalization (final FileObject root)  {
+        final FileObject[] children = root.getChildren();
+        if (children.length == 0) {
+            return null;
+        }
+        else if (children.length == 1) {
+            return children[0];
+        }
+        else {   
+            final Set<FileObject> candidates = new HashSet<FileObject>();
+            for (FileObject fo : children) {
+                if (!fo.isFolder()) {
+                    continue;
+                }
+                if (fo.getName().charAt(0) == '.') { //Hidden, ignore
+                    continue;
+                }
+                candidates.add(fo);
+            }
+            if (candidates.isEmpty()) {
+                return null;
+            }
+            else if (candidates.size() == 1) {
+                return candidates.iterator().next();
+            }
+            else {
+                //Slow, especially first call
+                final Set<String> locales = getLocales();
+                for (FileObject fo : candidates) {
+                    if (locales.contains(fo.getName())) {
+                        return fo;
+                    }
+                }
+                return null;
+            }
+        }
+    }
+    
+    private static Set<String> locales;
+    
+    private static synchronized Set<String> getLocales () {
+        if (locales == null) {
+            final Locale[] locs = Locale.getAvailableLocales();
+            locales = new HashSet<String>();
+            for (Locale l : locs) {
+                locales.add (l.toString());
+            }
+        }
+        return locales;
     }
     
 }

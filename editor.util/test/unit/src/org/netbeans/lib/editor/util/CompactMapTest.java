@@ -119,8 +119,8 @@ public class CompactMapTest extends NbTestCase {
         assertEquals(key2, e.getKey());
         assertEquals(val2, e.getValue());
         
-        CompactMap.MapEntry mapEntry = testMap.getFirstEntry(0);
-        assertEquals(mapEntry, e1);
+        CompactMap.MapEntry mapEntry = testMap.getFirstEntry(key1.hashCode());
+        assertEquals(e1, mapEntry);
         
         // Test MapEntry.hashCode() and equals()
         Entry ehe = new Entry(mapEntry.getKey());

@@ -1,0 +1,36 @@
+// From http://www.w3schools.com/e4x/e4x_example.asp
+var |>GLOBAL:order<| = new |>CLASS:XML<|()
+
+|>GLOBAL:order<|=<order id="555">
+<date>2005-08-01</date>
+<customer>
+  <firstname>John</firstname>
+  <lastname>Johnson</lastname>
+</customer>
+<item>
+  <name>Maxilaku</name>
+  <qty>5</qty>
+  <price>155.00</price>
+</item>
+</order>
+
+// Calculate the price:
+var |>GLOBAL:total<|=|>GLOBAL:order<|.item.qty * |>GLOBAL:order<|.item.price
+
+//Display the customers full name:
+|>GLOBAL:document<|.write(|>GLOBAL:order<|.customer.lastname)
+|>GLOBAL:document<|.write(",")
+|>GLOBAL:document<|.write(|>GLOBAL:order<|.customer.firstname)
+
+//Add a new item:
+|>GLOBAL:order<|.item+=
+<item>
+  <name>Pavlova</name>
+  <qty>10</qty>
+  <price>128.00</price>
+</item>
+
+//Display the order id:
+|>GLOBAL:document<|.write(|>GLOBAL:order<|.@id)
+
+

@@ -28,8 +28,8 @@
 package org.netbeans.modules.php.rt.providers.impl.ftp;
 
 import org.netbeans.modules.php.rt.providers.impl.HostImpl;
-import org.netbeans.modules.php.rt.providers.impl.WizardConstants;
 import org.netbeans.modules.php.rt.ui.AddHostWizard;
+import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 
 /**
@@ -108,7 +108,7 @@ public class FtpServerFileWizardComponent extends FtpServerFilePanelVisual{
 
     boolean isContentValid() {
         if (getWizard() != null) {
-            getWizard().putProperty(WizardConstants.WIZARD_PANEL_ERROR_MESSAGE, "");
+            getWizard().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, "");
         }
         return super.doContentValidation();
     }
@@ -121,7 +121,7 @@ public class FtpServerFileWizardComponent extends FtpServerFilePanelVisual{
         if (getWizard() == null) {
             return;
         }
-        getWizard().putProperty(WizardConstants.WIZARD_PANEL_ERROR_MESSAGE, message);
+        getWizard().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, message);
     }
 
     

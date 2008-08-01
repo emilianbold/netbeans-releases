@@ -47,9 +47,11 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 
+import java.util.prefs.Preferences;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.jpda.event.JPDABreakpointEvent;
 import org.netbeans.api.debugger.jpda.event.JPDABreakpointListener;
+import org.openide.util.NbPreferences;
 
 /**
  * Abstract definition of JPDA breakpoint.
@@ -80,12 +82,19 @@ public class JPDABreakpoint extends Breakpoint {
     /** Set of actions. */
     private boolean                     enabled = true;
     private boolean                     hidden = false;
-    private int                         suspend = SUSPEND_ALL;
+    private int                         suspend;
     private String                      printText;
     private Collection<JPDABreakpointListener>  breakpointListeners = new HashSet<JPDABreakpointListener>();
     
    
     JPDABreakpoint () {
+        Preferences preferences = NbPreferences.forModule(getClass()).node("debugging"); // NOI18N
+        int num = preferences.getInt("default.suspend.action", 1); // NOI18N [TODO] create property name constant, use it in ActionsPanel
+        switch (num) {
+            case 0: suspend = SUSPEND_NONE; break;
+            case 1: suspend = SUSPEND_EVENT_THREAD; break;
+            case 2: suspend = SUSPEND_ALL;
+        }
     }
     
 

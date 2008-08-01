@@ -61,45 +61,45 @@ public class ExtendedTokenSequence {
         this.diffs = diffs;
     }
 
-    /*package local*/ Diff replacePrevious(Token<CppTokenId> previous, int newLines, int spaces){
+    /*package local*/ Diff replacePrevious(Token<CppTokenId> previous, int newLines, int spaces, boolean isIndent){
         String old = previous.text().toString();
-        if (!Diff.equals(old, newLines, spaces)){
+        if (!Diff.equals(old, newLines, spaces, isIndent)){
             return diffs.addFirst(ts.offset() - previous.length(),
-                                  ts.offset(), newLines, spaces);
+                                  ts.offset(), newLines, spaces, isIndent);
         }
         return null;
     }
 
-    /*package local*/ Diff addBeforeCurrent(int newLines, int spaces){
+    /*package local*/ Diff addBeforeCurrent(int newLines, int spaces, boolean isIndent){
         if (newLines+spaces>0) {
             return diffs.addFirst(ts.offset(),
-                                  ts.offset(), newLines, spaces);
+                                  ts.offset(), newLines, spaces, isIndent);
         }
         return null;
     }
 
-    /*package local*/ Diff replaceCurrent(Token<CppTokenId> current, int newLines, int spaces){
+    /*package local*/ Diff replaceCurrent(Token<CppTokenId> current, int newLines, int spaces, boolean isIndent){
         String old = current.text().toString();
-        if (!Diff.equals(old, newLines, spaces)){
+        if (!Diff.equals(old, newLines, spaces, isIndent)){
             return diffs.addFirst(ts.offset(),
-                                  ts.offset() + current.length(), newLines, spaces);
+                                  ts.offset() + current.length(), newLines, spaces, isIndent);
         }
         return null;
     }
 
-    /*package local*/ Diff addAfterCurrent(Token<CppTokenId> current, int newLines, int spaces){
+    /*package local*/ Diff addAfterCurrent(Token<CppTokenId> current, int newLines, int spaces, boolean isIndent){
         if (newLines+spaces>0) {
             return diffs.addFirst(ts.offset() + current.length(),
-                                  ts.offset() + current.length(), newLines, spaces);
+                                  ts.offset() + current.length(), newLines, spaces, isIndent);
         }
         return null;
     }
 
-    /*package local*/ Diff replaceNext(Token<CppTokenId> current, Token<CppTokenId> next, int newLines, int spaces){
+    /*package local*/ Diff replaceNext(Token<CppTokenId> current, Token<CppTokenId> next, int newLines, int spaces, boolean isIndent){
         String old = next.text().toString();
-        if (!Diff.equals(old, newLines, spaces)){
+        if (!Diff.equals(old, newLines, spaces, isIndent)){
             return diffs.addFirst(ts.offset()+current.length(),
-                                  ts.offset()+current.length()+next.length(), newLines, spaces);
+                                  ts.offset()+current.length()+next.length(), newLines, spaces, isIndent);
         }
         return null;
     }
@@ -470,19 +470,28 @@ public class ExtendedTokenSequence {
     }
 
     /*package local*/ int openParenIndent(int parenDepth) {
+        return openBraceIndent(parenDepth, LPAREN, RPAREN);
+    }
+
+    /*package local*/ int openBraceIndent(int braceDepth) {
+        return openBraceIndent(braceDepth, LBRACE, RBRACE);
+    }
+
+    private int openBraceIndent(int braceDepth, CppTokenId open, CppTokenId close) {
         int index = ts.index();
         try {
             while(true) {
                 if (!ts.movePrevious()){
                     return -1;
                 }
-                if (ts.token().id() == LPAREN){
-                    parenDepth--;
-                    if (parenDepth == 0){
-                        return getTokenPosition()+1;
+                if (ts.token().id() == open){
+                    braceDepth--;
+                    if (braceDepth == 0){
+                        ts.moveNext();
+                        return getTokenPosition();
                     }
-                } else if (ts.token().id() == RPAREN){
-                    parenDepth++;
+                } else if (ts.token().id() == close){
+                    braceDepth++;
                 }
             }
         } finally {
@@ -508,14 +517,19 @@ public class ExtendedTokenSequence {
                     res[0] = ts.index();
                 } else if (ts.token().id() == BLOCK_COMMENT ||
                            ts.token().id() == DOXYGEN_COMMENT){
-                    if (hasDoc) {
-                        // second block comment?
+                    if (isFirstLineToken()) {
+                        if (hasDoc) {
+                            // second block comment?
+                            res[2] = 1;
+                            return res;
+                        }
+                        res[0] = -1;
+                        res[1] = -1;
+                        hasDoc = true;
+                    } else {
                         res[2] = 1;
                         return res;
                     }
-                    res[0] = -1;
-                    res[1] = -1;
-                    hasDoc = true;
                 } else if (ts.token().id() == PREPROCESSOR_DIRECTIVE){
                     if (res[0] == -1) {
                         res[0] = ts.index()+1;

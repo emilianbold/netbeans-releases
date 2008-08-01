@@ -89,7 +89,7 @@ public class DbgpFunctionBreakpointType extends BreakpointType {
      */
     @Override
     public boolean isDefault() {
-        return true;
+        return false;
     }
 
 }

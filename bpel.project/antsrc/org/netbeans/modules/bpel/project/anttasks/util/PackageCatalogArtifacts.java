@@ -51,6 +51,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.bpel.project.CommandlineBpelProjectXmlCatalogProvider;
@@ -59,6 +62,9 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.DefaultHandler;
 
 public class PackageCatalogArtifacts {
     
@@ -78,35 +84,25 @@ public class PackageCatalogArtifacts {
         
         final File projectCatalogFile = new File(
                 CommandlineBpelProjectXmlCatalogProvider.getInstance().
-                getProjectWideCatalogForWizard());
-        final File localCatalogFile = new File(
-                CommandlineBpelProjectXmlCatalogProvider.getInstance().
-                getProjectWideCatalog());
+                getProjectCatalogUri());
         
         final boolean projectCatalogExists = projectCatalogFile.exists() && 
                 (projectCatalogFile.length() > 0);
-        final boolean localCatalogExists = localCatalogFile.exists() && 
-                (localCatalogFile.length() > 0);
         
-        if (!projectCatalogExists && !localCatalogExists) {
+        if (!projectCatalogExists) {
             return;
         }
         
         final CatalogReader projectCatalogReader;
-        final CatalogReader localCatalogReader;
         
         try {
             projectCatalogReader = projectCatalogExists ? 
                 new CatalogReader(
                 projectCatalogFile.getCanonicalPath()) : null;
-            localCatalogReader = localCatalogExists ? 
-                new CatalogReader(
-                localCatalogFile.getCanonicalPath()) : null;
             
             doCopy(sourceDirectory, 
-                    buildDirectory, 
-                    projectCatalogReader, 
-                    localCatalogReader);
+                    buildDirectory,
+                    projectCatalogReader);
         } catch (Throwable ex) {
             logger.log(Level.WARNING, ex.getMessage(), ex);
         }
@@ -115,37 +111,21 @@ public class PackageCatalogArtifacts {
     private void doCopy(
             final File sourceDirectory,
             final File buildDirectory,
-            final CatalogReader projectCatalog, 
-            final CatalogReader localCatalog) throws Exception {
+            final CatalogReader projectCatalog) throws Exception {
         
         final List<String> listOfProjectNSs = projectCatalog == null ? 
-            new ArrayList<String>() : 
-            projectCatalog.getListOfNamespaces();
+            new ArrayList<String>() : projectCatalog.getNamespaces();
         final List<String> listOfProjectURIs = projectCatalog == null ? 
-            new ArrayList<String>() : 
-            projectCatalog.getListOfLocalURIs();
+            new ArrayList<String>() : projectCatalog.getLocations();
         
-        final List<String> listOfLocalNSs = localCatalog == null ? 
-            new ArrayList<String>() : 
-            localCatalog.getListOfNamespaces();
-        final List<String> listOfLocalURIs = localCatalog == null ? 
-            new ArrayList<String>() : 
-            localCatalog.getListOfLocalURIs();
-        
-        // Now we have constructed the lists of system id -> local uri mappings
-        // for both local (./retrieved/catalog.xml) and project (./catalog.xml)
-        // catalogs. We will run through the local one first, then through the
-        // project one. Note that the project catalog takes precedence of the 
-        // local one, i.e. if the same system id exists in both the local 
-        // catalog and the project one, the resource will be taken from the 
-        // uri in the project catalog.
-        
-        // Some additional initialization (helper stuff)
         final File metaInfDirectory = new File(buildDirectory, "META-INF");
         metaInfDirectory.mkdirs();
         
         final File projectDirectory = buildDirectory.getParentFile();
         final File catalogFile = new File(metaInfDirectory, "catalog.xml");
+        
+        final String retrieverPathPrefix = "nbproject/private/cache/";
+        final String retrieverPathPrefix2 = "retrieved/";
         
         final PrintWriter catalogWriter = 
                 new PrintWriter(new FileWriter(catalogFile));
@@ -153,43 +133,40 @@ public class PackageCatalogArtifacts {
         catalogWriter.println("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>");
         catalogWriter.println("<catalog xmlns=\"urn:oasis:names:tc:entity:xmlns:xml:catalog\" prefer=\"system\">");
         
-        // For local catalog we always copy the resources referenced in it. For
-        // project catalog the behavior is a little bit more complicated.
-        for (int i = 0; i < listOfLocalNSs.size(); i++) {
-            final String ns = listOfLocalNSs.get(i);
-            
-            // Check whether the same system id exists in the project catalog
-            final int indexInProject = projectCatalog.locateNS(ns);
-            
-            if (indexInProject == -1) {
-                final String localUri = listOfLocalURIs.get(i);
-                
-                Util.copyFile(
-                        new File(projectDirectory, localUri), 
-                        new File(metaInfDirectory, localUri));
-                
-                //catalogModel.addURI(new URI(ns), new URI(localUri));
-                catalogWriter.println("    <system systemId=\"" + ns + "\" uri=\"" + localUri + "\"/>");
-            }
-        }
-        
         for (int i = 0; i < listOfProjectNSs.size(); i++) {
             final String ns = listOfProjectNSs.get(i);
             String localUri = listOfProjectURIs.get(i);
             
-            URI realUri = new URI(localUri);
+            final URI realUri = new URI(localUri);
             
-            // If the URI does not have a scheme, it is a path relative to the
-            // project catalog file (i.e. the project directory). If it is 
-            // contained in the sources directory, it will be copied to the 
-            // build directory automatically. Otherwise, we need to copy it 
-            // manually (just like for local catalog resources)
             if (realUri.getScheme() == null) {
+                // The URI leads us to the sources directory -- just correct 
+                // it and proceed
                 if (localUri.startsWith(sourceDirectory.getName() + "/")) {
                     localUri = "../" + localUri.substring(
                             sourceDirectory.getName().length() + 1);
-                } else {
-                    // TODO
+                } 
+                
+                // The URI leads to the nbproject directory -- it is a
+                // resource fetched by the retriever -- copy it
+                if (localUri.startsWith(retrieverPathPrefix)) {
+                    localUri = localUri.substring(retrieverPathPrefix.length());
+                    
+                    Util.copyFile(
+                            new File(projectDirectory, retrieverPathPrefix + localUri), 
+                            new File(buildDirectory, "_" + localUri));
+                    
+                    localUri = "../_" + localUri;
+                }
+                
+                // The URI leads to the retrieved directory -- it is a
+                // resource fetched by the retriever -- copy it
+                if (localUri.startsWith(retrieverPathPrefix2)) {
+                    Util.copyFile(
+                            new File(projectDirectory, localUri), 
+                            new File(buildDirectory, "_" + localUri));
+                    
+                    localUri = "../_" + localUri;
                 }
             } else if (realUri.getScheme().equals("nb-uri")) {
                 try {
@@ -200,38 +177,42 @@ public class PackageCatalogArtifacts {
                             lookup(AntProjectHelper.class);
                     final ReferenceHelper referenceHelper = project.getLookup().
                             lookup(ReferenceHelper.class);
-
+                            
                     final DefaultProjectCatalogSupport catalogSupport = 
                             new DefaultProjectCatalogSupport(
                                     project, antHelper, referenceHelper);
-
+                                    
                     final FileObject fo = catalogSupport.resolveProjectProtocol(
                             new URI(localUri));
                     final File file = FileUtil.toFile(fo);
-
+                    
                     final Project referencedProject = FileOwnerQuery.getOwner(fo);
-
+                    
                     final String uri = 
-                            "dependentProjectsFiles/" + 
+                            "_dependent/" + 
                             referencedProject.getProjectDirectory().getName() + 
                             "/" + Util.getRelativePath(FileUtil.toFile(
                             referencedProject.getProjectDirectory()), file);
                     final File target = new File(buildDirectory, uri);
-
+                    
                     Util.copyFile(file, target);
-
+                    
+                    processImports(file, target);
+                    
                     localUri = "../" + uri;
                 } catch (Exception e) {
                     File[] resolved = resolveProjectUri(projectDirectory, localUri);
                     
                     if ((resolved != null) && resolved[0].exists()) {
                         final String uri = 
-                                "dependentProjectsFiles/" + 
+                                "_dependent/" + 
                                 resolved[1] + 
                                 "/" + Util.getRelativePath(resolved[1], resolved[0]);
                         final File target = new File(buildDirectory, uri);
-
+                        
                         Util.copyFile(resolved[0], target);
+                        
+                        processImports(resolved[0], target);
                         
                         localUri = "../" + uri;
                     } else {
@@ -250,7 +231,9 @@ public class PackageCatalogArtifacts {
         catalogWriter.close();
     }
     
-    private File[] resolveProjectUri(File projectDirectory, String uri) throws IOException {
+    private File[] resolveProjectUri(
+            final File projectDirectory, 
+            final String uri) throws IOException {
         //nb-uri:IZ107908_Module2#src/DummySchema.xsd
         String corrected = uri.substring("nb-uri:".length());
         
@@ -280,6 +263,72 @@ public class PackageCatalogArtifacts {
                 new File(projectDirectory, projectLocation + "/" + path),
                 new File(projectDirectory, projectLocation)
             };
+        }
+    }
+    
+    private void processImports(
+            final File source,
+            final File target) {
+        
+        final SAXParserFactory factory = SAXParserFactory.newInstance();
+        factory.setValidating(false);
+        factory.setNamespaceAware(false);
+        
+        try {
+            SAXParserFactory.
+                    newInstance().
+                    newSAXParser().
+                    parse(source, new MyHandler(source, target));
+        } catch (IOException e) {
+            // just ignore, as we cannot handle it in any way
+        } catch (ParserConfigurationException e) {
+            // just ignore, as we cannot handle it in any way
+        } catch (SAXException e) {
+            // just ignore, as we cannot handle it in any way
+        }
+    }
+    
+    private class MyHandler extends DefaultHandler {
+        
+        private File source;
+        private File target;
+        
+        public MyHandler(
+                final File source,
+                final File target) {
+            
+            this.source = source;
+            this.target = target;
+        }
+
+        @Override
+        public void startElement(
+                final String uri, 
+                final String localName, 
+                final String qName, 
+                final Attributes attributes) throws SAXException {
+            
+            if ("import".equals(qName) || "xsd:import".equals(qName)) {
+                final String wsdlLocation = attributes.getValue("location");
+                final String schemaLocation = attributes.getValue("schemaLocation");
+                
+                final String location = 
+                        wsdlLocation == null ? schemaLocation : wsdlLocation;
+                
+                final File referenced = new File(source.getParentFile(), location);
+                final File dereferenced = new File(target.getParentFile(), location);
+                
+                if ((location != null) && 
+                        referenced.exists() && !referenced.isDirectory()) {
+                    try {
+                        Util.copyFile(referenced, dereferenced);
+                    } catch (IOException e) {
+                        throw new SAXException(e);
+                    }
+                    
+                    processImports(referenced, dereferenced);
+                }
+            }
         }
     }
 }

@@ -108,16 +108,16 @@ public class RemoveOperationAction extends AbstractAction{
 
     public void actionPerformed(ActionEvent arg0) {
         if(methods.size()<1) return;
-        boolean sigleSelection = methods.size()==1;
-        String methodName = sigleSelection?methods.iterator().next().getOperationName():""+methods.size();
+        boolean singleSelection = methods.size()==1;
+        String methodName = singleSelection?methods.iterator().next().getOperationName():""+methods.size();
         NotifyDescriptor desc = new NotifyDescriptor.Confirmation
                 (NbBundle.getMessage(RemoveOperationAction.class, 
-                (sigleSelection?"MSG_OPERATION_DELETE":"MSG_OPERATIONS_DELETE"), methodName));
+                (singleSelection?"MSG_OPERATION_DELETE":"MSG_OPERATIONS_DELETE"), methodName));
         Object retVal = DialogDisplayer.getDefault().notify(desc);
         if (retVal == NotifyDescriptor.YES_OPTION) {
             final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.
                     getMessage(RemoveOperationAction.class, 
-                    (sigleSelection?"MSG_RemoveOperation":"MSG_RemoveOperations"), methodName)); //NOI18N
+                    (singleSelection?"MSG_RemoveOperation":"MSG_RemoveOperations"), methodName)); //NOI18N
             Task task = new Task(new Runnable() {
                 public void run() {
                     handle.start();
@@ -134,6 +134,16 @@ public class RemoveOperationAction extends AbstractAction{
         }
     }
     
+     //converts the wsdlOperation name to Java name according to JAXWS rules
+    private String convertOperationName(final String wsdlOperation){
+        String name = wsdlOperation;
+        String firstChar = name.substring(0,1);
+        firstChar = firstChar.toLowerCase();
+        name= firstChar.concat(name.substring(1));
+        return name;
+    }
+    
+    
     private void removeOperation(Set<MethodModel> methods) throws IOException {
         for(MethodModel method:methods) {
             String methodName = method.getOperationName();
@@ -141,13 +151,12 @@ public class RemoveOperationAction extends AbstractAction{
             File wsdlFile = getWSDLFile(implementationClass);
             if(wsdlFile != null) {
                 OperationGeneratorHelper generatorHelper = new OperationGeneratorHelper(wsdlFile);
-                WSDLModel wsdlModel = WSDLUtils.getWSDLModel(FileUtil.toFileObject(wsdlFile), true);
+                WSDLModel wsdlModel = WSDLUtils.getWSDLModel(FileUtil.toFileObject(wsdlFile), true);    
                 //TODO: methodName should be the equivalent operation name in the WSDL
                 //i.e., should look at operationName annotation if present
-                generatorHelper.removeWSOperation(wsdlModel, generatorHelper.
+                generatorHelper.removeWSOperation(wsdlModel, OperationGeneratorHelper.
                         getPortTypeNameFromImpl(implementationClass), methodName);
-                generatorHelper.generateJavaArtifacts(service.getName(), implementationClass, methodName, true);
-                
+                generatorHelper.generateJavaArtifacts(service.getName(), implementationClass, convertOperationName(methodName), true);
             } else{
                 //WS from Java
                 MethodGenerator.deleteMethod(implementationClass, methodName);
@@ -161,7 +170,7 @@ public class RemoveOperationAction extends AbstractAction{
             }
         }
     }
-    
+  
     private File getWSDLFile(FileObject implementationClass){
         String localWsdlUrl = service.getLocalWsdlFile();
         if (localWsdlUrl!=null) { //WS from e

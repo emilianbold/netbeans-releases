@@ -118,7 +118,7 @@ public class ClassPathSupportCallbackImpl implements ClassPathSupport.Callback {
         for (ClassPathSupport.Item item : classpath) {
             if("true".equals(item.getAdditionalProperty(INCLUDE_IN_DEPLOYMENT))) { // NOI18N
                 appendChildElement(data, 
-                    createLibraryElement(doc, item, includedLibrariesElement, antProjectHelper.getProjectDirectory()), 
+                    createLibraryElement(antProjectHelper, doc, item, includedLibrariesElement), 
                     ejbjarElemOrder);
             }
         }
@@ -182,18 +182,8 @@ public class ClassPathSupportCallbackImpl implements ClassPathSupport.Callback {
         parent.insertBefore(el, insertBefore);
     }
         
-    private static Element createLibraryElement(Document doc, Item item, String includedLibrariesElement, FileObject projectFolder) {
+    private static Element createLibraryElement(AntProjectHelper antProjectHelper, Document doc, Item item, String includedLibrariesElement) {
         Element libraryElement = doc.createElementNS( EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE, includedLibrariesElement );
-        ArrayList files = new ArrayList ();
-        ArrayList dirs = new ArrayList ();
-        ProjectProperties.getFilesForItem(item, files, dirs, projectFolder);
-        if (files.size() > 0) {
-            libraryElement.setAttribute(ATTR_FILES, "" + files.size());
-        }
-        if (dirs.size() > 0) {
-            libraryElement.setAttribute(ATTR_DIRS, "" + dirs.size());
-        }
-        
         // ejbjar is different from other j2ee projects - it stores reference without ${ and }
         libraryElement.appendChild( doc.createTextNode( CommonProjectUtils.getAntPropertyName(item.getReference()) ) );
         return libraryElement;

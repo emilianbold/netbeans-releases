@@ -104,23 +104,13 @@ final class IntList {
         if (size() == 0) {
             return -1;
         }
-        return findInRange (val, 0, size());
-    }
-    
-    /** Recursive binary search */
-    private int findInRange (int val, int start, int end) {
-        if (end - start <= 1) {
-            return start;
+        int pos = Arrays.binarySearch(array, val);
+        if (pos < 0) {
+            pos = -pos - 2; 
         }
-        int midPoint = start + ((end - start) / 2);
-        int valAtMidpoint = get (midPoint);
-        if (valAtMidpoint > val) {
-            return findInRange (val, start, start + ((end - start) / 2));
-        } else {
-            return findInRange (val, start + ((end - start) / 2), end);
-        }
+        return pos;
     }
-    
+
     public int indexOf (int val) {
         int result = Arrays.binarySearch(array, val);
         if (result < 0) {
@@ -143,6 +133,7 @@ final class IntList {
         System.arraycopy(old, 0, array, 0, old.length);
     }
     
+    @Override
     public String toString() {
         StringBuffer result = new StringBuffer ("IntList [");
         for (int i=0; i < used; i++) {

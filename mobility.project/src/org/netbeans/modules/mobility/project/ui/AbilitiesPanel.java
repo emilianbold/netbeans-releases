@@ -138,11 +138,11 @@ public class AbilitiesPanel implements NavigatorPanel
         private static Action[] actions = { new AddAction(), new RemoveAction(), new CopyAction(), new PasteAction() };
         private static ExplorerManager manager=new ExplorerManager();
         private static HashMap<String,String> copiedAbilities=new HashMap<String,String>();
-        
+        private static boolean pasteActionEnabled = false;
         //To disable paste at the beginning
         static
         {
-            actions[3].setEnabled(false);
+            actions[3].setEnabled(pasteActionEnabled);
         }
         
         static void addAbility(EditableProperties ep,AntProjectHelper helper, String key, String value)
@@ -173,6 +173,9 @@ public class AbilitiesPanel implements NavigatorPanel
                 if (node != defaultConfig)
                 {
                     ProjectConfiguration conf=node.getLookup().lookup(ProjectConfiguration.class);
+                    if (conf == null){ //not a configuration node
+                        continue;
+                    }
                     String abilities = ep.getProperty(J2MEProjectProperties.CONFIG_PREFIX + conf.getDisplayName() + "." + DefaultPropertiesDescriptor.ABILITIES);
                     if (abilities == null)
                         // Let's take a default value if we inherit from default configuration
@@ -213,7 +216,7 @@ public class AbilitiesPanel implements NavigatorPanel
                     String value=tableModel.getValueAt(row,1);
                     copiedAbilities.put(key,value);
                 }
-                actions[3].setEnabled(true);
+                actions[3].setEnabled(pasteActionEnabled = true);
             }
         }
         
@@ -250,6 +253,7 @@ public class AbilitiesPanel implements NavigatorPanel
                         {
                             ErrorManager.getDefault().notify(ex);
                         }
+                        actions[3].setEnabled(pasteActionEnabled = false);
                     }
                 });
 
@@ -272,6 +276,9 @@ public class AbilitiesPanel implements NavigatorPanel
                 for (Node node : selectedNodes)
                 {
                     ProjectConfiguration conf=node.getLookup().lookup(ProjectConfiguration.class);
+                    if (conf == null){ //this node does not contain Project Configuration
+                        continue;
+                    }
                     String abilities = ep.getProperty(J2MEProjectProperties.CONFIG_PREFIX + conf.getDisplayName() + "." + DefaultPropertiesDescriptor.ABILITIES);
                     if (abilities == null)
                         // Let's take a default value if we inherit from default configuration
@@ -361,6 +368,9 @@ public class AbilitiesPanel implements NavigatorPanel
                                 if (node != defaultConfig)
                                 {
                                     ProjectConfiguration conf=node.getLookup().lookup(ProjectConfiguration.class);
+                                    if (conf == null){ //not a configuration node
+                                        continue;
+                                    }
                                     String abilities = ep.getProperty(J2MEProjectProperties.CONFIG_PREFIX + conf.getDisplayName() + "." + DefaultPropertiesDescriptor.ABILITIES);
                                     if (abilities == null)
                                         // Let's take a default value if we inherit from default configuration
@@ -583,6 +593,19 @@ public class AbilitiesPanel implements NavigatorPanel
             table.setBackground(javax.swing.UIManager.getDefaults().getColor("Table.background")); //NOI18N               
             tableModel.setDataDelegates(new Object[] {abIntersection});
             selectedNodes=nodes;
+            boolean enabled = false;
+            for (Node node : nodes) { //at least one selected node must be a Project configuration node
+                ProjectConfiguration conf=node.getLookup().lookup(ProjectConfiguration.class);
+                if (conf != null){
+                    enabled = true;
+                }
+            }
+
+            for (Action action : actions) {
+                action.setEnabled(enabled);
+            }
+            if (enabled)
+                actions[3].setEnabled(pasteActionEnabled);
         }
         
         private void initComponents()

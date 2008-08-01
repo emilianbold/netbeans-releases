@@ -111,7 +111,7 @@ public abstract class SAXGeneratorAbstractPanel extends JPanel implements Custom
                     peer = (SAXGeneratorAbstractPanel) peerClass.newInstance();
                     peer.step = this;
                     peer.setObject(bean);
-                    peer.putClientProperty("WizardPanel_contentSelectedIndex", index);  // NOI18N
+                    peer.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, index);  // NOI18N
                 } catch (InstantiationException ex) {
                     throw new IllegalStateException();
                 } catch (IllegalAccessException ex) {

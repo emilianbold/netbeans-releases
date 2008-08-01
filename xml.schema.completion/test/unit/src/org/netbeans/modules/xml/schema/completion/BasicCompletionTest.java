@@ -43,7 +43,6 @@ package org.netbeans.modules.xml.schema.completion;
 import java.util.List;
 import junit.framework.*;
 import org.netbeans.modules.xml.schema.completion.util.CompletionUtil;
-import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -53,7 +52,6 @@ public class BasicCompletionTest extends AbstractTestCase {
     
     static final String PO_INSTANCE_DOCUMENT = "resources/PO.xml";
     static final String TEST_INSTANCE_DOCUMENT = "resources/Test.xml";
-    static final String PROJECT_INSTANCE_DOCUMENT = "resources/project.xml";
     
     public BasicCompletionTest(String testName) {
         super(testName);
@@ -61,8 +59,10 @@ public class BasicCompletionTest extends AbstractTestCase {
     
     public static Test suite() {
         TestSuite suite = new TestSuite();
-        //suite.addTest(new BasicCompletionTest("testAttributes1"));
+        suite.addTest(new BasicCompletionTest("testAttributes1"));
         suite.addTest(new BasicCompletionTest("testNoNamespaceCompletion"));
+        suite.addTest(new BasicCompletionTest("testNoNamespaceCompletion1"));
+        suite.addTest(new BasicCompletionTest("testNoNamespaceCompletion2"));
         suite.addTest(new BasicCompletionTest("testPurchaseOrder"));
         suite.addTest(new BasicCompletionTest("testPurchaseOrder1"));
         suite.addTest(new BasicCompletionTest("testPurchaseOrder2"));
@@ -75,18 +75,34 @@ public class BasicCompletionTest extends AbstractTestCase {
         suite.addTest(new BasicCompletionTest("testEndtagCompletion1"));
         suite.addTest(new BasicCompletionTest("testEndtagCompletion2"));
         suite.addTest(new BasicCompletionTest("testEndtagCompletion3"));
+        suite.addTest(new BasicCompletionTest("testCompletionWithAmpersand"));
         suite.addTest(new BasicCompletionTest("testSchemaFromRuntimeCatalog"));
         //suite.addTest(new BasicCompletionTest("testCompletionUsingSchemaFromCatalog"));
         suite.addTest(new BasicCompletionTest("testWildcard1"));
         suite.addTest(new BasicCompletionTest("testWildcard2"));
         suite.addTest(new BasicCompletionTest("testWildcard3"));
         suite.addTest(new BasicCompletionTest("testWildcard4"));
+        //suite.addTest(new BasicCompletionTest("testWildcard5"));
         suite.addTest(new BasicCompletionTest("testChildren1"));
         suite.addTest(new BasicCompletionTest("testChildren2"));
-        suite.addTest(new BasicCompletionTest("testReadNamespace"));
         suite.addTest(new BasicCompletionTest("testImport1"));
         suite.addTest(new BasicCompletionTest("testInclude1"));
+        suite.addTest(new BasicCompletionTest("testElementValueCompletion1"));
+        suite.addTest(new BasicCompletionTest("testElementValueCompletion2"));
+        suite.addTest(new BasicCompletionTest("testAttributeValueCompletion1"));
+        suite.addTest(new BasicCompletionTest("testAttributeValueCompletion2"));        
         return suite;
+    }
+    
+    /**
+     * Query attributes at offset 217. See Attr1.xml.
+     * Should fetch five attributes.
+     */
+    public void testAttributes1() throws Exception {
+        setupCompletion("resources/Attr1.xml", null);
+        List<CompletionResultItem> items = query(217);
+        String[] expectedResult = {"attrA11", "attrA12", "attrA13", "attrA14", "attrA15"};
+        assertResult(items, expectedResult);
     }
     
     /**
@@ -96,6 +112,26 @@ public class BasicCompletionTest extends AbstractTestCase {
         setupCompletion("resources/NoTNS.xml", null);
         List<CompletionResultItem> items = query(157);
         String[] expectedResult = {"NNSChild1", "NNSChild2"};
+        assertResult(items, expectedResult);
+    }
+    
+    /**
+     * Queries elements from schema with no namespace.
+     */
+    public void testNoNamespaceCompletion1() throws Exception {
+        setupCompletion("resources/NoTNS1.xml", null);
+        List<CompletionResultItem> items = query(175);
+        String[] expectedResult = {"NNSChild11", "NNSChild12"};
+        assertResult(items, expectedResult);
+    }
+    
+    /**
+     * Queries elements from schema with no namespace.
+     */
+    public void testNoNamespaceCompletion2() throws Exception {
+        setupCompletion("resources/NoTNS2.xml", null);
+        List<CompletionResultItem> items = query(167);
+        String[] expectedResult = {"Attr11", "Attr12"};
         assertResult(items, expectedResult);
     }
     
@@ -182,6 +218,17 @@ public class BasicCompletionTest extends AbstractTestCase {
     }
     
     /**
+     * Tests completion with ampersand.
+     * See http://www.netbeans.org/issues/show_bug.cgi?id=135379.
+     */
+    public void testCompletionWithAmpersand() throws Exception {
+        setupCompletion("resources/PO8.xml", null);
+        List<CompletionResultItem> items = query(260);
+        String[] expectedResult = {"po:name","po:street","po:city","po:state","po:zip"};
+        assertResult(items, expectedResult);
+    }
+    
+    /**
      * Queries an empty tag. If cursor is between < and A31 in <A31 />
      * we should show all qualifying elements that are children of the parent.
      */
@@ -256,29 +303,14 @@ public class BasicCompletionTest extends AbstractTestCase {
     }
     
     public void testWildcard1() throws Exception {
-        StringBuffer buffer = new StringBuffer();
-        buffer.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"); //offset=39
-        buffer.append("<A:rootA1 xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"); //offset=64
-        buffer.append("  xmlns:A=\"http://xml.netbeans.org/schema/TNSA\"\n"); //offset=48
-        buffer.append("  xsi:schemaLocation=\"http://xml.netbeans.org/schema/TNSA A.xsd\">\n"); //offset=66
-        buffer.append("  <\n"); //offset=4
-        buffer.append("</A:rootA1>\n");
-        setupCompletion(TEST_INSTANCE_DOCUMENT, buffer);
+        setupCompletion("resources/Wildcard1.xml", null);
         List<CompletionResultItem> items = query(221);
         String[] expectedResult = {"A:rootA1", "A:rootA2", "A:rootA3", "A:A11", "A:A12"};
         assertResult(items, expectedResult);
     }
     
     public void testWildcard2() throws Exception {
-        StringBuffer buffer = new StringBuffer();
-        buffer.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"); //offset=39
-        buffer.append("<A:rootA1 xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"); //offset=64
-        buffer.append("  xmlns:A=\"http://xml.netbeans.org/schema/TNSA\"\n"); //offset=48
-        buffer.append("  xsi:schemaLocation=\"http://xml.netbeans.org/schema/TNSA A.xsd\n"); //offset=64
-        buffer.append("  http://xml.netbeans.org/schema/TNSB B.xsd\">\n"); //offset=46
-        buffer.append("  <\n");
-        buffer.append("</A:rootA1>\n");
-        setupCompletion(TEST_INSTANCE_DOCUMENT, buffer);
+        setupCompletion("resources/Wildcard2.xml", null);
         List<CompletionResultItem> items = query(265);
         String[] expectedResult = {"ns1:rootB1", "ns1:rootB2", "A:rootA1", "A:rootA2",
         "A:rootA3", "A:A11", "A:A12"};
@@ -286,43 +318,47 @@ public class BasicCompletionTest extends AbstractTestCase {
     }
     
     public void testWildcard3() throws Exception {
-        StringBuffer buffer = new StringBuffer();
-        buffer.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"); //offset=39
-        buffer.append("<A:rootA1 xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"); //offset=64
-        buffer.append("  xmlns:A=\"http://xml.netbeans.org/schema/TNSA\"\n"); //offset=48
-        buffer.append("  xmlns:B=\"http://xml.netbeans.org/schema/TNSB\"\n"); //offset=48
-        buffer.append("  xmlns:C=\"http://xml.netbeans.org/schema/TNSC\"\n"); //offset=48
-        buffer.append("  xsi:schemaLocation=\"http://xml.netbeans.org/schema/TNSA A.xsd\n"); //offset=64
-        buffer.append("  http://xml.netbeans.org/schema/TNSB B.xsd\n"); //offset=44
-        buffer.append("  http://xml.netbeans.org/schema/TNSC C.xsd\">\n"); //offset=46
-        buffer.append("  <\n"); //offset=04
-        buffer.append("</A:rootA1>\n");
-        setupCompletion(TEST_INSTANCE_DOCUMENT, buffer);
+        setupCompletion("resources/Wildcard3.xml", null);
+        //query at 405
         List<CompletionResultItem> items = query(405);
         String[] expectedResult = {"C:rootC1", "C:rootC1","B:rootB1", "B:rootB2",
         "A:rootA1", "A:rootA2", "A:rootA3", "A:A11", "A:A12"};
         assertResult(items, expectedResult);
+        
+        //query at 447
+        items = query(447);
+        String[] expectedResult1 = {"C:rootC1", "C:rootC2","B:rootB1", "B:rootB2", "A:rootA1",
+            "A:rootA2", "A:rootA3", "A:A11", "A:A12"};        
+        assertResult(items, expectedResult1);
+        
+        //query at 494
+        items = query(494);
+        String[] expectedResult2 = {"B:B11", "B:B12"};
+        assertResult(items, expectedResult2);
     }
     
     public void testWildcard4() throws Exception {
-        StringBuffer buffer = new StringBuffer();
-        buffer.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"); //offset=39
-        buffer.append("<A:rootA2 xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"); //offset=64
-        buffer.append("  xmlns:A=\"http://xml.netbeans.org/schema/TNSA\"\n"); //offset=48
-        buffer.append("  xmlns:B=\"http://xml.netbeans.org/schema/TNSB\"\n"); //offset=48
-        buffer.append("  xmlns:C=\"http://xml.netbeans.org/schema/TNSC\"\n"); //offset=48
-        buffer.append("  xsi:schemaLocation=\"http://xml.netbeans.org/schema/TNSA A.xsd\n"); //offset=64
-        buffer.append("  http://xml.netbeans.org/schema/TNSB B.xsd\n"); //offset=44
-        buffer.append("  http://xml.netbeans.org/schema/TNSC C.xsd\">\n"); //offset=46
-        buffer.append("  <\n"); //offset=04
-        buffer.append("</A:rootA2>\n");
-        setupCompletion(TEST_INSTANCE_DOCUMENT, buffer);
+        setupCompletion("resources/Wildcard4.xml", null);
         List<CompletionResultItem> items = query(405);
         String[] expectedResult = {"C:rootC1", "C:rootC1","B:rootB1", "B:rootB2", "A:rootA1",
             "A:rootA2", "A:rootA3", "A:rootA3", "A:A21", "A:A22"};
         assertResult(items, expectedResult);
     }
-            
+    
+//    public void testWildcard5() throws Exception {
+//        setupCompletion("resources/Camera1.xml", null);
+//        //query at 376
+//        List<CompletionResultItem> items = query(376);
+//        String[] expectedResult1 = {"n:body", "n:lens", "n:manulaAdapter"};
+//        assertResult(items, expectedResult1);        
+//        
+//        //query at 404
+//        items = query(404);
+//        String[] expectedResult2 = {"c:body", "c:lens", "c:manulaAdapter"};
+//        assertResult(items, expectedResult2);
+//    }
+    
+    
     public void testChildren1() throws Exception {
         StringBuffer buffer = new StringBuffer();
         buffer.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"); //offset=39
@@ -354,16 +390,6 @@ public class BasicCompletionTest extends AbstractTestCase {
         assertResult(items, expectedResult);
     }
     
-    /**
-     * Reads the namespaces specified in an instance document like project.xml.
-     */
-    public void testReadNamespace() throws Exception {
-        setupCompletion(PROJECT_INSTANCE_DOCUMENT, null);
-        String[] results = CompletionUtil.getDeclaredNamespaces(FileUtil.toFile(instanceFileObject));
-        String[] expectedResult = {"http://www.netbeans.org/ns/project/1","http://www.netbeans.org/ns/nb-module-project/3"};
-        assertResult(results, expectedResult);
-    }
-
     public void testImport1() throws Exception {
         setupCompletion("resources/Import.xml", null);
         List<CompletionResultItem> items = query(246);
@@ -377,16 +403,46 @@ public class BasicCompletionTest extends AbstractTestCase {
         String[] expectedResult = {"ns:M1","ns:M2"};
         assertResult(items, expectedResult);
     }
+    
+    /**
+     * Queries elements values for element "city".
+     * Result should be 0.
+     */
+    public void testElementValueCompletion1() throws Exception {
+        setupCompletion("resources/PO9.xml", null);
+        List<CompletionResultItem> items = query(309);
+        assert(items.size() == 0); //50 states
+    }    
 
     /**
-     * Query attributes at offset 217. See Attr1.xml.
-     * Should fetch five attributes.
+     * Queries elements values for element "state".
+     * Result should be 50.
      */
-    public void testAttributes1() throws Exception {
-        setupCompletion("resources/Attr1.xml", null);
-        List<CompletionResultItem> items = query(217);
-        String[] expectedResult = {"attrA1", "attrA2", "attrA3", "attrA4", "attrA5"};
+    public void testElementValueCompletion2() throws Exception {
+        setupCompletion("resources/PO9.xml", null);
+        List<CompletionResultItem> items = query(332);
+        assert(items.size() == 50); //50 states
+    }    
+    
+    /**
+     * Queries attribute values for attribute "partNum".
+     * Result should be 0.
+     */
+    public void testAttributeValueCompletion1() throws Exception {
+        setupCompletion("resources/PO9.xml", null);
+        List<CompletionResultItem> items = query(588);
+        assert(items.size() == 0);
+    }    
+    
+    /**
+     * Queries attribute values for attribute "brand".
+     * Result should be 6.
+     */
+    public void testAttributeValueCompletion2() throws Exception {
+        setupCompletion("resources/PO9.xml", null);
+        String[] expectedResult = {"ACER", "HP", "NOKIA", "SAMSUNG", "SONY","SUN"};
+        List<CompletionResultItem> items = query(597);
+        assert(items.size() == 6);
         assertResult(items, expectedResult);
     }
-
 }

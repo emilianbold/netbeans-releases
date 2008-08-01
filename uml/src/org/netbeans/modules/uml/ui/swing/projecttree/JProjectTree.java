@@ -49,6 +49,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.FocusListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.io.IOException;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.Vector;
@@ -155,6 +156,7 @@ import javax.swing.JToolBar;
 import org.netbeans.modules.uml.ui.swing.testbed.addin.menu.Separator;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -2402,7 +2404,13 @@ public class JProjectTree extends ApplicationView implements IProjectTreeControl
                      IDiagram dia = proxyDia.getDiagram();
                      if (dia != null)
                      {
-                        dia.save();
+                         try
+                         {
+                             dia.save();
+                         } catch (IOException e)
+                         {
+                             Exceptions.printStackTrace(e);
+                         }
                         retObj.add(proxyDia);
                      }
                   }
@@ -4329,8 +4337,14 @@ public class JProjectTree extends ApplicationView implements IProjectTreeControl
                   // Set the dirty state to true to have the diagram autosaved.
                   if (newDiagram != null )
                   {
-                      newDiagram.setIsDirty(true);
-                      newDiagram.save();
+                      newDiagram.setDirty(true);
+                      try
+                      {
+                          newDiagram.save();
+                      } catch (IOException ioe)
+                      {
+                          Exceptions.printStackTrace(ioe);
+                      }
                   }
               }
           }

@@ -104,6 +104,14 @@ class AddDomainDirectoryPanel implements WizardDescriptor.FinishablePanel,
             return false;
         }
         File domainDir = new File(((AddInstanceVisualDirectoryPanel)getComponent()).getInstanceDirectory());
+        if (!domainDir.isAbsolute()) {
+            wiz.putProperty(AddDomainWizardIterator.PROP_ERROR_MESSAGE,
+                    NbBundle.getMessage(AddDomainDirectoryPanel.class,
+                    "Msg_EneterValidDomainDir",                                 //NOI18N
+                    ((AddInstanceVisualDirectoryPanel)getComponent()).getInstanceDirectory()));
+            ((AddInstanceVisualDirectoryPanel)getComponent()).setAdminPort("");
+            return false;                
+        }
         if (!creatingPersonalInstance) {
             if (((AddInstanceVisualDirectoryPanel)getComponent()).getInstanceDirectory().length() < 1) {
                 wiz.putProperty(AddDomainWizardIterator.PROP_ERROR_MESSAGE,

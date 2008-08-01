@@ -186,7 +186,7 @@ final class WsdlPanel implements WizardDescriptor.FinishablePanel {
                 errorMessage = "<html>" + Utility.escapeHtml(mErrorMessage) + "</html>";
             }*/
             
-            templateWizard.putProperty ("WizardPanel_errorMessage", mErrorMessage); // NOI18N
+            templateWizard.putProperty (WizardDescriptor.PROP_ERROR_MESSAGE, mErrorMessage); // NOI18N
         }
         return this.mErrorMessage == null;
         

@@ -6,7 +6,7 @@ import org.netbeans.modules.iep.model.SchemaAttribute;
 
 public class PropertyUtil {
 
-	public static List<SchemaAttribute> convertToSchemaAttributes(List attrs) {
-		return null;
-	}
+    public static List<SchemaAttribute> convertToSchemaAttributes(List attrs) {
+        return null;
+    }
 }

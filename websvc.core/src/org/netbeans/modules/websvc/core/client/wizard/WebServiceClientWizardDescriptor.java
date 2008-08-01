@@ -126,7 +126,7 @@ public class WebServiceClientWizardDescriptor implements WizardDescriptor.Finish
             illegalChar="?";
         }
         if (!projectDirValid) {
-            wizardDescriptor.putProperty("WizardPanel_errorMessage",
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
                     NbBundle.getMessage(WebServiceClientWizardDescriptor.class,"MSG_InvalidProjectPath",projectPath,illegalChar));
             return false;
         }

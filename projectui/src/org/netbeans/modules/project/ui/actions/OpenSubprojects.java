@@ -62,6 +62,7 @@ public class OpenSubprojects extends NodeAction {
         return NbBundle.getMessage( OpenSubprojects.class, "LBL_OpenSubprojectsAction_Name" ); // NOI18N        
     }
     
+    @Override
     public String iconResource() {
         return ICON;
     }
@@ -70,8 +71,9 @@ public class OpenSubprojects extends NodeAction {
         return HelpCtx.DEFAULT_HELP;
     }
     
+    @Override
     protected boolean asynchronous() {
-        return false;
+        return true;
     }
     
     protected boolean enable(org.openide.nodes.Node[] activatedNodes) {
@@ -91,7 +93,8 @@ public class OpenSubprojects extends NodeAction {
                 
                 SubprojectProvider spp = (SubprojectProvider)p.getLookup().lookup( SubprojectProvider.class );
                 
-                if ( spp != null && !spp.getSubprojects().isEmpty() ) {
+                if ( spp != null //#97534 be satisfied with presence of the provider in lookup - && !spp.getSubprojects().isEmpty() 
+                   ) {
                     someSubprojects = true;
                 }                
             }

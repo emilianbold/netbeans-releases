@@ -53,6 +53,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.api.debugger.Session;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.openide.ErrorManager;
@@ -85,13 +87,16 @@ public class Operator {
     
     private static Logger logger = Logger.getLogger("org.netbeans.modules.debugger.jpda.jdievents"); // NOI18N
 
+    public static final String SILENT_EVENT_PROPERTY = "silent"; // NOI18N
+
     private Thread            thread;
     private boolean           breakpointsDisabled;
     private List<EventSet>    staledEvents = new ArrayList<EventSet>();
     private List<EventRequest> staledRequests = new ArrayList<EventRequest>();
     private boolean           stop;
     private boolean           canInterrupt;
-
+    private JPDADebuggerImpl  debugger;
+    
     /**
      * Creates an operator for a given virtual machine. The operator will listen
      * to the VM's event queue.
@@ -113,6 +118,7 @@ public class Operator {
         EventQueue eventQueue = virtualMachine.eventQueue ();
         if (eventQueue == null) 
             throw new NullPointerException ();
+        this.debugger = debugger;
         final Object[] params = new Object[] {eventQueue, starter, finalizer};
         thread = new Thread (new Runnable () {
         public void run () {
@@ -168,42 +174,39 @@ public class Operator {
                             canInterrupt = false;
                         }
                      }
-                     synchronized (Operator.this) {
-                         if (breakpointsDisabled) {
-                             if (eventSet.suspendPolicy() == EventRequest.SUSPEND_ALL) {
-                                staledEvents.add(eventSet);
-                                eventSet.resume();
-                                if (logger.isLoggable(Level.FINE)) {
-                                    logger.fine("RESUMING "+eventSet);
-                                }
+                     boolean silent = eventSet.size() > 0;
+                     for (Event e: eventSet) {
+                         EventRequest r = e.request();
+                         if (r == null || !Boolean.TRUE.equals(r.getProperty (SILENT_EVENT_PROPERTY))) {
+                             silent = false;
+                             break;
+                         }
+                     }
+                     if (!silent) {
+                         synchronized (Operator.this) {
+                             if (breakpointsDisabled) {
+                                 if (eventSet.suspendPolicy() == EventRequest.SUSPEND_ALL) {
+                                    staledEvents.add(eventSet);
+                                    eventSet.resume();
+                                    if (logger.isLoggable(Level.FINE)) {
+                                        logger.fine("RESUMING "+eventSet);
+                                    }
+                                 }
+                                 continue;
                              }
-                             continue;
                          }
                      }
                      boolean resume = true, startEventOnly = true;
-                     boolean silent = false;
                      int suspendPolicy = eventSet.suspendPolicy();
                      boolean suspendedAll = suspendPolicy == EventRequest.SUSPEND_ALL;
                      JPDAThreadImpl suspendedThread = null;
-                     if (suspendedAll) debugger.notifySuspendAll();
+                     if (!silent && suspendedAll) debugger.notifySuspendAll();
                      if (suspendPolicy == EventRequest.SUSPEND_EVENT_THREAD) {
-                         EventIterator i = eventSet.eventIterator ();
                          ThreadReference tref = null;
-                         while (i.hasNext ()) {
-                            Event e = i.nextEvent ();
-                            silent = Boolean.TRUE.equals(e.request ().getProperty ("silent"));
-                            if (e instanceof LocatableEvent) {
-                                tref = ((LocatableEvent) e).thread();
+                         for (Event e: eventSet) {
+                            tref = getEventThread(e);
+                            if (tref != null) {
                                 break;
-                            }
-                            if (e instanceof ClassPrepareEvent) {
-                                tref = ((ClassPrepareEvent) e).thread();
-                            }
-                            if (e instanceof ThreadStartEvent) {
-                                tref = ((ThreadStartEvent) e).thread();
-                            }
-                            if (e instanceof ThreadDeathEvent) {
-                                tref = ((ThreadDeathEvent) e).thread();
                             }
                          }
                          if (tref != null && !silent) {
@@ -226,10 +229,9 @@ public class Operator {
                                  logger.fine("JDI new events (?????)=============================================");
                                  break;
                          }
+                         logger.fine("  event is silent = "+silent);
                      }
-                     EventIterator i = eventSet.eventIterator ();
-                     while (i.hasNext ()) {
-                         Event e = i.nextEvent ();
+                     for (Event e: eventSet) {
                          if ((e instanceof VMDeathEvent) ||
                                  (e instanceof VMDisconnectEvent)
                             ) {
@@ -285,30 +287,48 @@ public class Operator {
                          logger.fine("JDI events dispatched (resume " + (resume && (!startEventOnly)) + ")");
                          logger.fine("  resume = "+resume+", startEventOnly = "+startEventOnly);
                      }
-                     if (resume && (!startEventOnly)) {
-                         if (!silent && suspendedAll) {
-                             //TODO: Not really all might be suspended!
-                             debugger.notifyToBeResumedAll();
-                         }
-                         if (!silent && suspendedThread != null) {
-                             suspendedThread.notifyToBeResumed();
-                         }
-                         synchronized (resumeLock) {
-                            eventSet.resume ();
+                     if (!startEventOnly) {
+                         if (resume) {
+                             if (!silent && suspendedAll) {
+                                 //TODO: Not really all might be suspended!
+                                 debugger.notifyToBeResumedAll();
+                             }
+                             if (!silent && suspendedThread != null) {
+                                 suspendedThread.notifyToBeResumed();
+                             }
+                             synchronized (resumeLock) {
+                                eventSet.resume ();
+                             }
+                         } else if (!silent && (suspendedAll || suspendedThread != null)) {
+                            Session session = debugger.getSession();
+                            if (session != null) {
+                                DebuggerManager.getDebuggerManager().setCurrentSession(session);
+                            }
+                            ThreadReference tref = null;
+                            for (Event e: eventSet) {
+                                tref = getEventThread(e);
+                                if (tref != null) {
+                                    break;
+                                }
+                             }
+                            if (tref != null) debugger.setStoppedState (tref);
                          }
                      }
                      if (!silent && !resume) { // Check for multiply-suspended threads
                          synchronized (resumeLock) {
                              List<ThreadReference> threads = eventSet.virtualMachine().allThreads();
                              for (ThreadReference t : threads) {
-                                 JPDAThreadImpl jt = (JPDAThreadImpl) debugger.getExistingThread(t);
-                                 while (t.suspendCount() > 1) {
-                                     if (jt != null) {
-                                         jt.notifyToBeResumed();
-                                     }
-                                     t.resume();
+                                 try {
+                                     JPDAThreadImpl jt = (JPDAThreadImpl) debugger.getExistingThread(t);
+                                     while (t.suspendCount() > 1) {
+                                         if (jt != null) {
+                                             jt.notifyToBeResumed();
+                                         }
+                                         t.resume();
+                                     } // while
+                                 } catch (ObjectCollectedException e) {
                                  }
-                             }
+                             } // for
                          }
                      }
                  } catch (VMDisconnectedException e) {
@@ -325,6 +345,23 @@ public class Operator {
              starter = null;
          }
      }, "Debugger operator thread"); // NOI18N
+    }
+    
+    private static final ThreadReference getEventThread(Event e) {
+        ThreadReference tref = null;
+        if (e instanceof LocatableEvent) {
+            tref = ((LocatableEvent) e).thread();
+        } else
+        if (e instanceof ClassPrepareEvent) {
+            tref = ((ClassPrepareEvent) e).thread();
+        } else
+        if (e instanceof ThreadStartEvent) {
+            tref = ((ThreadStartEvent) e).thread();
+        } else
+        if (e instanceof ThreadDeathEvent) {
+            tref = ((ThreadDeathEvent) e).thread();
+        }
+        return tref;
     }
 
     /**
@@ -388,6 +425,10 @@ public class Operator {
             e.removed(req);
         }
         staledRequests.remove(req);
+        if (req instanceof StepRequest) {
+            ThreadReference tr = ((StepRequest) req).thread();
+            ((JPDAThreadImpl) debugger.getThread(tr)).setInStep(false, null);
+        }
     }
     
     /**

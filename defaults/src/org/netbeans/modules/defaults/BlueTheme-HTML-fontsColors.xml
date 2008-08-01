@@ -50,7 +50,7 @@ made subject to such option by the copyright holder.
     <fontcolor name="operator" foreColor="ff007c00" default="operator"/>
     <fontcolor name="sgml-comment" foreColor="gray" default="comment"/>
     <fontcolor name="sgml-declaration" foreColor="ffbf9221" default="default"/>
-    <fontcolor name="tag" foreColor="blue" default="default"/>
+    <fontcolor name="tag" foreColor="F8BB00" default="default"/>
     <fontcolor name="text" default="default"/>
     <fontcolor name="value" foreColor="ff99006b" default="default"/>
     <fontcolor name="ws" default="whitespace"/>

@@ -57,14 +57,16 @@ public final class NewCanvasAction extends CallableSystemAction {
         return NbBundle.getMessage(NewCanvasAction.class, "CTL_NewCanvasAction");
     }
     
+    @Override
     protected String iconResource() {
-        return "org/netbeans/paint/new.PNG";
+        return "org/netbeans/paint/new-canvas.png";
     }
     
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
     
+    @Override
     protected boolean asynchronous() {
         return false;
     }

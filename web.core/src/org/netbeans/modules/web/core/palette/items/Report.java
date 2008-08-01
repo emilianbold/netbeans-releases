@@ -60,15 +60,14 @@ public class Report implements ActiveEditorDrop {
     SQLStmt stmt = null;
     private String variable = VARIABLE_DEFAULT;
     private int scopeIndex = SQLStmt.SCOPE_DEFAULT;
-    private String dataSource = "";
+    private String dataSource = "";  //NOI18N
     private String query = QUERY_DEFAULT;
     private String displayName;
-    private String stmtLabel = "";
-    private String stmtACSN = "";
-    private String stmtACSD = "";
+    private String stmtLabel = "";  //NOI18N
+    private String stmtACSN = "";  //NOI18N
+    private String stmtACSD = "";  //NOI18N
 
     public Report() {
-
         try {
             displayName = NbBundle.getBundle("org.netbeans.modules.web.core.palette.items.resources.Bundle").getString("NAME_jsp-Report"); // NOI18N
         } catch (Exception e) {
@@ -88,26 +87,25 @@ public class Report implements ActiveEditorDrop {
         } catch (Exception e) {
         }
 
-        stmt = new SQLStmt(variable, scopeIndex, dataSource, query, "ReportStmtCustomizer"); // NOI18N
+        stmt = new SQLStmt(variable, scopeIndex, dataSource, query, "ReportStmtCustomizer", false); // NOI18N
     }
 
     public boolean handleTransfer(JTextComponent targetComponent) {
-
         boolean accept = stmt.customize(targetComponent, displayName, stmtLabel, stmtACSN, stmtACSD);
         if (accept) {
-            String body = createBody();
+            String prefix = JSPPaletteUtilities.findSqlPrefix(targetComponent);
+            String core = JSPPaletteUtilities.findJstlPrefix(targetComponent);
+            String body = createBody(prefix, core);
             try {
                 JSPPaletteUtilities.insert(body, targetComponent);
             } catch (BadLocationException ble) {
                 accept = false;
             }
         }
-
         return accept;
     }
 
-    private String createBody() {
-
+    private String createBody(String prefix, String core) {
         variable = stmt.getVariable();
         dataSource = stmt.getDataSource();
 
@@ -121,7 +119,7 @@ public class Report implements ActiveEditorDrop {
             strVariable = " var=\"" + variable + "\""; // NOI18N
         }
         scopeIndex = stmt.getScopeIndex();
-        String strScope = "";
+        String strScope = "";  //NOI18N
         if (scopeIndex != SQLStmt.SCOPE_DEFAULT) {
             strScope = " scope=\"" + SQLStmt.scopes[scopeIndex] + "\""; // NOI18N
         }
@@ -134,7 +132,16 @@ public class Report implements ActiveEditorDrop {
         if (query.length() > 0) {
             strQuery += "\n"; // NOI18N
         }
-        String body = "<sql:query" + strVariable + strScope + strDS + ">\n" + strQuery + "</sql:query>\n" + "\n" + "<table border=\"1\">\n" + "<!-- column headers -->\n" + "<tr>\n" + "<c:forEach var=\"columnName\" items=\"${" + variable + ".columnNames}\">\n" + "<th><c:out value=\"${columnName}\"/></th>\n" + "</c:forEach>\n" + "</tr>\n" + "<!-- column data -->\n" + "<c:forEach var=\"row\" items=\"${" + variable + ".rowsByIndex}\">\n" + "<tr>\n" + "<c:forEach var=\"column\" items=\"${row}\">\n" + "<td><c:out value=\"${column}\"/></td>\n" + "</c:forEach>\n" + "</tr>\n" + "</c:forEach>\n" + "</table>"; // NOI18N
-        return body;
+        
+        return "<"+prefix+":query" + strVariable + strScope + strDS + ">\n" + // NOI18N
+                strQuery + "</"+prefix+":query>\n\n" + "<table border=\"1\">\n" + // NOI18N
+                "<!-- column headers -->\n" + "<tr>\n" + // NOI18N
+                "<"+core+":forEach var=\"columnName\" items=\"${" + variable + ".columnNames}\">\n" + // NOI18N
+                "<th><"+core+":out value=\"${columnName}\"/></th>\n" + "</"+core+":forEach>\n" + "</tr>\n" + // NOI18N
+                "<!-- column data -->\n" + // NOI18N
+                "<"+core+":forEach var=\"row\" items=\"${" + variable + ".rowsByIndex}\">\n" + // NOI18N
+                "<tr>\n" + "<"+core+":forEach var=\"column\" items=\"${row}\">\n" + // NOI18N
+                "<td><"+core+":out value=\"${column}\"/></td>\n" + "</"+core+":forEach>\n" + "</tr>\n" + // NOI18N
+                "</"+core+":forEach>\n" + "</table>"; // NOI18N
     }
 }

@@ -29,6 +29,7 @@ package org.netbeans.modules.cnd.gotodeclaration.util;
 
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.spi.jumpto.type.SearchType;
 
 /**
@@ -58,7 +59,7 @@ public class NameMatcherFactory {
 	    super(patternText);
 	}
 
-	public final boolean matches(String name) {
+	public final boolean accept(String name) {
 	    return patternText.equals(name);
 	}
     }
@@ -69,7 +70,7 @@ public class NameMatcherFactory {
 	    super(patternText);
 	}
 
-	public final boolean matches(String name) {
+	public final boolean accept(String name) {
 	    return patternText.equalsIgnoreCase(name);
 	}
     }
@@ -80,7 +81,7 @@ public class NameMatcherFactory {
 	    super(patternText);
 	}
 	
-	public final boolean matches(String name) {
+	public final boolean accept(String name) {
 	    return name != null && name.startsWith(patternText);
 	}
     }
@@ -91,7 +92,7 @@ public class NameMatcherFactory {
 	    super(patternText.toLowerCase());
 	}
 	
-	public final boolean matches(String name) {
+	public final boolean accept(String name) {
 	    return name != null && name.toLowerCase().startsWith(patternText);
 	}
     }
@@ -104,7 +105,7 @@ public class NameMatcherFactory {
 	    pattern = Pattern.compile(patternText, caseSensitive ? 0 : Pattern.CASE_INSENSITIVE);
 	}
 	
-	public final boolean matches(String name) {
+	public final boolean accept(String name) {
 	    return name != null && pattern.matcher(name).matches();
 	}
     }
@@ -131,7 +132,7 @@ public class NameMatcherFactory {
             pattern = Pattern.compile(patternString.toString());
 	}
 	
-	public final boolean matches(String name) {
+	public final boolean accept(String name) {
 	    return name != null && pattern.matcher(name).matches();
 	}
     }
@@ -164,4 +165,17 @@ public class NameMatcherFactory {
             return null;
         }
     }    
+    
+    public static CsmSelect.CsmFilter createNameFilter(String text, SearchType type) {
+        final NameMatcher matcher = createNameMatcher(text, type);
+        if( matcher != null ) {
+            CsmSelect.NameAcceptor acceptor = new CsmSelect.NameAcceptor() {
+                public boolean accept(CharSequence name) {
+                    return matcher.accept(name.toString());
+                }
+            };
+            return CsmSelect.getDefault().getFilterBuilder().createNameFilter(acceptor);
+        }
+        return null;
+    }
 }

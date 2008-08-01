@@ -58,7 +58,8 @@ class EntityRefResultItem extends XMLResultItem {
     }
 
     public String getReplacementText(int modifiers) {
-        return super.getReplacementText(modifiers) + ';';
+        //return super.getReplacementText(modifiers) + ';';
+        return "&" + super.getReplacementText(modifiers) + ';';
     }
     
     Color getPaintColor() { return Color.blue; }

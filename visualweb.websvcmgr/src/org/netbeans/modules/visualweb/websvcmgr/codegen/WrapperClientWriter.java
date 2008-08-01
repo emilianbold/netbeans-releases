@@ -56,8 +56,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import javax.xml.bind.annotation.XmlType;
-import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlOperation;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
+import org.netbeans.modules.websvc.jaxwsmodelapi.WSOperation;
 import org.netbeans.modules.websvc.manager.api.WebServiceDescriptor;
 import org.netbeans.modules.websvc.manager.util.ManagerUtil;
 
@@ -77,7 +77,7 @@ public class WrapperClientWriter extends java.io.PrintWriter {
     private String className;
     private WebServiceDescriptor wsData;
     private WsdlPort port;
-    private final List<WsdlOperation> operations;
+    private final List<WSOperation> operations;
     private ClassLoader wsClassLoader;
     private String portGetterMethod;
     private String portClassName;
@@ -89,7 +89,7 @@ public class WrapperClientWriter extends java.io.PrintWriter {
     boolean isJaxRpc = false;
     
     /** Creates a new instance of JavaWriter */
-    public WrapperClientWriter(Writer writer, WebServiceDescriptor wsData, boolean isJaxRpc, List<java.lang.reflect.Method> sortedMethods, List<WsdlOperation> operations){
+    public WrapperClientWriter(Writer writer, WebServiceDescriptor wsData, boolean isJaxRpc, List<java.lang.reflect.Method> sortedMethods, List<WSOperation> operations){
         super(writer);
         
         this.operations = operations;

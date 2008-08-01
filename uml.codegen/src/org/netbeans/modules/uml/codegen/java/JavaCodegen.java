@@ -54,7 +54,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 import org.netbeans.modules.uml.core.coreapplication.ICodeGenerator;
@@ -72,6 +71,7 @@ import org.netbeans.modules.uml.codegen.java.merging.Merger;
 import org.netbeans.modules.uml.codegen.java.merging.Merger.ParsedInfo;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
 import org.netbeans.modules.uml.util.StringTokenizer2;
+import org.openide.util.Exceptions;
 
 public class JavaCodegen implements ICodeGenerator 
 {
@@ -258,9 +258,6 @@ public class JavaCodegen implements ICodeGenerator
                                     domainTemplate.getTemplateFilename());
                         }
                         
-                        templteFileObject.setAttribute(
-                            "javax.script.ScriptEngine", "freemarker"); // NOI18N
-
                         FileMapping fmap = new FileMapping();
                         fmap.templateFileObject = templteFileObject;
                         fmap.domainTemplate = domainTemplate;
@@ -465,7 +462,25 @@ public class JavaCodegen implements ICodeGenerator
                             ScriptEngine engine = engines.get(templFO);
                             if (engine == null) 
                             {
-                                engine = mgr.getEngineByName("freemarker");
+                                String engineID = null;
+                                Object value = templFO.getAttribute("javax.script.ScriptEngine");
+                        
+                                if (value instanceof String) 
+                                {
+                                    engineID = (String) value;
+                                }
+                                if (engineID == null || engineID.length() == 0) 
+                                {
+                                    engineID = "freemarker";
+                                }
+                                engine = mgr.getEngineByName(engineID);
+                                if (engine == null) 
+                                {
+                                    task.log(task.TERSE, getBundleMessage(
+                                        "MSG_ErrorNonExistingScriptingEngine", engineID)); // NOI18N
+                                    errorsCount++;
+                                    continue;
+                                }
                                 engines.put(templFO, engine);
                             }
 
@@ -645,7 +660,6 @@ public class JavaCodegen implements ICodeGenerator
                 {
                     theSameSet = false;
                 }
-                
                 for (FileMapping fmap : fmappings)                    
                 {
                     if (genToTmp)
@@ -663,14 +677,15 @@ public class JavaCodegen implements ICodeGenerator
                         FileObject fo = null;
                         if (!exf.equals(new File(fmap.targetFilePath)))
                         {
-                             fo  = FileUtil.toFileObject(exf);
-                             if (fo != null)
-                             {
+                            fo = FileUtil.toFileObject(exf);
+                            if (fo != null)
+                            {
                                 fo.delete();
-                             }
+                            }
                         }
                         else
                         {
+
                             if ((!backup) && (fmap.merge) && 
                                 (fmap.existingSourceBackupPath != null))
                             {
@@ -825,14 +840,17 @@ public class JavaCodegen implements ICodeGenerator
 	    +((int)(Math.random() * 100000));
 	
 	File newTargetFolder = new File(trg);
-	//newTargetFolder.mkdirs();
-        FileUtil.createFolder(newTargetFolder);
+	FileUtil.createFolder(newTargetFolder);
 	return newTargetFolder.getCanonicalPath();
     }
 
     private void deleteDirs(String topParent, String path) 
     {               
         File topDir = new File(topParent);
+        if (path == null) 
+        {
+            return;
+        }
         File cur = new File(path);
         if (! inSubdir(topDir, cur)) 
         {

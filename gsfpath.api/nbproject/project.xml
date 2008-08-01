@@ -47,7 +47,7 @@ made subject to such option by the copyright holder.
             <code-name-base>org.netbeans.modules.gsfpath.api</code-name-base>
             <module-dependencies>
                 <dependency>
-                    <code-name-base>org.openide.filesystems</code-name-base>
+                    <code-name-base>org.openide.awt</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
@@ -55,7 +55,7 @@ made subject to such option by the copyright holder.
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.openide.util</code-name-base>
+                    <code-name-base>org.openide.dialogs</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
@@ -71,34 +71,26 @@ made subject to such option by the copyright holder.
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.openide.io</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency/>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.openide.awt</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>6.2</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.openide.dialogs</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>6.2</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.openide.explorer</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
                         <specification-version>6.8</specification-version>
                     </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.openide.filesystems</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>6.2</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.openide.io</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency/>
                 </dependency>
                 <dependency>
                     <code-name-base>org.openide.loaders</code-name-base>
@@ -122,6 +114,14 @@ made subject to such option by the copyright holder.
                         <specification-version>6.2</specification-version>
                     </run-dependency>
                 </dependency>
+                <dependency>
+                    <code-name-base>org.openide.util</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>7.8</specification-version>
+                    </run-dependency>
+                </dependency>
             </module-dependencies>
             <test-dependencies>
                 <test-type>
@@ -140,7 +140,34 @@ made subject to such option by the copyright holder.
                     <name>qa-functional</name>
                 </test-type>
             </test-dependencies>
-            <public-packages>
+            <friend-packages>
+                <friend>org.netbeans.modules.erlang.editing</friend>
+                <friend>org.netbeans.modules.erlang.platform</friend>
+                <friend>org.netbeans.modules.erlang.project</friend>
+                <friend>org.netbeans.modules.fortress.editing</friend>
+                <friend>org.netbeans.modules.fortress.platform</friend>
+                <friend>org.netbeans.modules.fortress.project</friend>
+                <friend>org.netbeans.modules.groovy.grailsproject</friend>
+                <friend>org.netbeans.modules.groovy.refactoring</friend>
+                <friend>org.netbeans.modules.groovy.support</friend>
+                <friend>org.netbeans.modules.gsf</friend>
+                <friend>org.netbeans.modules.gsf.tools</friend>
+                <friend>org.netbeans.modules.javascript.libraries</friend>
+                <friend>org.netbeans.modules.javascript.refactoring</friend>
+                <friend>org.netbeans.modules.maven.gsf</friend>
+                <friend>org.netbeans.modules.php.editor</friend>
+                <friend>org.netbeans.modules.php.project</friend>
+                <friend>org.netbeans.modules.php.refactoring</friend>
+                <friend>org.netbeans.modules.ruby.project</friend>
+                <friend>org.netbeans.modules.ruby.railsprojects</friend>
+                <friend>org.netbeans.modules.ruby.refactoring</friend>
+                <friend>org.netbeans.modules.scala.debugger.projects</friend>
+                <friend>org.netbeans.modules.scala.editing</friend>
+                <friend>org.netbeans.modules.scala.platform</friend>
+                <friend>org.netbeans.modules.scala.project</friend>
+                <friend>org.netbeans.modules.scala.stdplatform</friend>
+                <friend>org.netbeans.modules.web.project</friend>
+                <friend>net.java.dev.nbpython.project</friend>
                 <package>org.netbeans.modules.gsfpath.api.classpath</package>
                 <package>org.netbeans.modules.gsfpath.api.platform</package>
                 <package>org.netbeans.modules.gsfpath.api.queries</package>
@@ -149,7 +176,7 @@ made subject to such option by the copyright holder.
                 <package>org.netbeans.modules.gsfpath.spi.classpath.support</package>
                 <package>org.netbeans.modules.gsfpath.spi.platform</package>
                 <package>org.netbeans.modules.gsfpath.spi.queries</package>
-            </public-packages>
+            </friend-packages>
         </data>
     </configuration>
 </project>

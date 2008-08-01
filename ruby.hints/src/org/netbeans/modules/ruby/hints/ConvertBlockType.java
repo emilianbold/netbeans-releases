@@ -27,7 +27,6 @@
  */
 package org.netbeans.modules.ruby.hints;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -39,7 +38,6 @@ import javax.swing.text.BadLocationException;
 import org.jruby.ast.IArgumentNode;
 import org.jruby.ast.Node;
 import org.jruby.ast.NodeType;
-import org.jruby.ast.YieldNode;
 import org.jruby.lexer.yacc.ISourcePosition;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.OffsetRange;
@@ -48,15 +46,17 @@ import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
+import org.netbeans.modules.gsf.api.Hint;
+import org.netbeans.modules.gsf.api.EditList;
+import org.netbeans.modules.gsf.api.HintFix;
+import org.netbeans.modules.gsf.api.HintSeverity;
+import org.netbeans.modules.gsf.api.PreviewableFix;
+import org.netbeans.modules.gsf.api.RuleContext;
 import org.netbeans.modules.ruby.AstPath;
 import org.netbeans.modules.ruby.AstUtilities;
-import org.netbeans.modules.ruby.hints.spi.AstRule;
-import org.netbeans.modules.ruby.hints.spi.Description;
-import org.netbeans.modules.ruby.hints.spi.EditList;
-import org.netbeans.modules.ruby.hints.spi.Fix;
-import org.netbeans.modules.ruby.hints.spi.HintSeverity;
-import org.netbeans.modules.ruby.hints.spi.PreviewableFix;
-import org.netbeans.modules.ruby.hints.spi.RuleContext;
+import org.netbeans.modules.ruby.RubyFormatter;
+import org.netbeans.modules.ruby.hints.infrastructure.RubyAstRule;
+import org.netbeans.modules.ruby.hints.infrastructure.RubyRuleContext;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
 import org.netbeans.modules.ruby.lexer.RubyTokenId;
 import org.openide.util.Exceptions;
@@ -67,12 +67,13 @@ import org.openide.util.NbBundle;
  *
  * @author Tor Norbye
  */
-public class ConvertBlockType implements AstRule {
+public class ConvertBlockType extends RubyAstRule {
 
     public ConvertBlockType() {
     }
 
-    public boolean appliesTo(CompilationInfo info) {
+    public boolean appliesTo(RuleContext context) {
+        CompilationInfo info = context.compilationInfo;
         // Skip for RHTML files for now - isn't implemented properly
         return info.getFileObject().getMIMEType().equals("text/x-ruby");
     }
@@ -81,7 +82,7 @@ public class ConvertBlockType implements AstRule {
         return Collections.singleton(NodeType.ITERNODE);
     }
 
-    public void run(RuleContext context, List<Description> result) {
+    public void run(RubyRuleContext context, List<Hint> result) {
         Node node = context.node;
         CompilationInfo info = context.compilationInfo;
         int caretOffset = context.caretOffset;
@@ -136,7 +137,7 @@ public class ConvertBlockType implements AstRule {
                     int len = (id == RubyTokenId.LBRACE) ? 1 : 3; // }=1, end=3
                     range = new OffsetRange(endLexOffset-len, endLexOffset);
                 }
-                List<Fix> fixList = new ArrayList<Fix>(1);
+                List<HintFix> fixList = new ArrayList<HintFix>(1);
                 boolean convertFromBrace = id == RubyTokenId.LBRACE;
 
                 int endOffset = node.getPosition().getEndOffset();
@@ -167,16 +168,16 @@ public class ConvertBlockType implements AstRule {
                 
                 boolean sameLine = Utilities.getRowEnd(doc, lexOffset) == Utilities.getRowEnd(doc, endOffset);
                 if (sameLine && convertFromBrace) {
-                    fixList.add(new ConvertTypeFix(info, node, convertFromBrace, !convertFromBrace, true, false));
+                    fixList.add(new ConvertTypeFix(context, node, convertFromBrace, !convertFromBrace, true, false));
                 } else if (!sameLine && !convertFromBrace && offerCollapse) {
-                    fixList.add(new ConvertTypeFix(info, node, convertFromBrace, !convertFromBrace, false, true));
+                    fixList.add(new ConvertTypeFix(context, node, convertFromBrace, !convertFromBrace, false, true));
                 } // else: Should I let you expand a single line do-end to a multiline {}, or vice versa? Naeh,
                 // they can do this in two steps; it's not common
-                fixList.add(new ConvertTypeFix(info, node, convertFromBrace, !convertFromBrace, false, false));
+                fixList.add(new ConvertTypeFix(context, node, convertFromBrace, !convertFromBrace, false, false));
                 if (sameLine || (!sameLine && offerCollapse)) {
-                    fixList.add(new ConvertTypeFix(info, node, false, false, sameLine, !sameLine));
+                    fixList.add(new ConvertTypeFix(context, node, false, false, sameLine, !sameLine));
                 }
-                Description desc = new Description(this, getDisplayName(), info.getFileObject(), range, fixList, 500);
+                Hint desc = new Hint(this, getDisplayName(), info.getFileObject(), range, fixList, 500);
                 result.add(desc);
             }
         } catch (BadLocationException ex) {
@@ -214,17 +215,17 @@ public class ConvertBlockType implements AstRule {
 
     private static class ConvertTypeFix implements PreviewableFix {
 
-        private final CompilationInfo info;
+        private final RubyRuleContext context;
         private final boolean convertToDo;
         private final boolean convertToBrace;
         private final Node node;
         private final boolean expand;
         private final boolean collapse;
 
-        ConvertTypeFix(CompilationInfo info, Node node, 
+        ConvertTypeFix(RubyRuleContext context, Node node, 
                 boolean convertToDo, boolean convertToBrace,
                 boolean expand, boolean collapse) {
-            this.info = info;
+            this.context = context;
             this.node = node;
             this.convertToDo = convertToDo;
             this.convertToBrace = convertToBrace;
@@ -271,7 +272,7 @@ public class ConvertBlockType implements AstRule {
         }
         
         public EditList getEditList() throws Exception {
-            BaseDocument doc = (BaseDocument) info.getDocument();
+            BaseDocument doc = context.doc;
             EditList edits = new EditList(doc);
 
             ISourcePosition pos = node.getPosition();
@@ -326,7 +327,7 @@ public class ConvertBlockType implements AstRule {
                         doc.getText(endOffset, 3).equals("end")) { // NOI18N
                     // TODO - make sure there is whitespace next to these tokens!!!
                     // They are optional around {} but not around do/end!
-                    AstPath path = new AstPath(AstUtilities.getRoot(info), node);
+                    AstPath path = new AstPath(AstUtilities.getRoot(context.compilationInfo), node);
                     assert path.leaf() == node;
                     boolean parenIsNecessary = isArgParenNecessary(path, doc);
 
@@ -388,7 +389,6 @@ public class ConvertBlockType implements AstRule {
                     min = start;
                 }
 
-                @SuppressWarnings(value = "unchecked")
                 List<Node> list = node.childNodes();
 
                 if (list != null && list.size() > 0) {
@@ -407,10 +407,12 @@ public class ConvertBlockType implements AstRule {
                 offsets.add(start);
             }
 
-            @SuppressWarnings(value = "unchecked")
             List<Node> list = node.childNodes();
 
             for (Node child : list) {
+                if (child.isInvisible()) {
+                    continue;
+                }
                 if (child.nodeId == NodeType.EVSTRNODE) {
                     // Don't linebreak inside a #{} expression
                     continue;
@@ -511,7 +513,7 @@ public class ConvertBlockType implements AstRule {
                     Exceptions.printStackTrace(ble);
                 }
             }
-            edits.format();
+            edits.setFormatter(new RubyFormatter(), true);
         }
 
         private void collapse(EditList edits, BaseDocument doc, Node node, int startOffset, int endOffset) {
@@ -634,7 +636,7 @@ public class ConvertBlockType implements AstRule {
                     Exceptions.printStackTrace(ble);
                 }
             }
-            edits.format();
+            edits.setFormatter(new RubyFormatter(), true);
         }
 
         /** Determine whether parentheses are necessary around the call

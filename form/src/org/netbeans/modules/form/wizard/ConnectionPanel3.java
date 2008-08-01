@@ -47,6 +47,7 @@ import java.lang.reflect.Method;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.form.*;
+import org.openide.WizardDescriptor;
 
 /**
  * The UI component of the ConnectionWizardPanel3.
@@ -91,7 +92,7 @@ class ConnectionPanel3 extends javax.swing.JPanel {
         getAccessibleContext().setAccessibleDescription(
             bundle.getString("ACSD_CW_ConnectionPanel3")); // NOI18N
         
-        putClientProperty("WizardPanel_contentSelectedIndex", new Integer(2)); // NOI18N
+        putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer(2)); // NOI18N
     }
 
     @Override

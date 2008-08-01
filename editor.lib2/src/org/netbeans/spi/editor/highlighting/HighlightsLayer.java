@@ -229,5 +229,9 @@ public final class HighlightsLayer {
             
             return layer.accessor;
         }
+        
+        public int getZOrderRack(ZOrder zOrder) {
+            return zOrder.getRack();
+        }
     } // End of PackageAccessor class
 }

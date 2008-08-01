@@ -69,7 +69,7 @@ public final class GotoPrevOccurrenceAction extends BaseAction {
     }
 
     public void actionPerformed(ActionEvent evt, JTextComponent txt) {
-        SemanticUtils.navigateToOccurence(false);
+        SemanticUtils.navigateToOccurrence(false);
     }
 
     @Override

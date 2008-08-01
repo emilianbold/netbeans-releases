@@ -50,10 +50,14 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.spi.project.FileOwnerQueryImplementation;
@@ -61,6 +65,7 @@ import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.NbPreferences;
 import org.openide.util.Utilities;
 import org.openide.util.WeakSet;
 
@@ -122,7 +127,7 @@ public class SimpleFileOwnerQueryImplementation implements FileOwnerQueryImpleme
                 } catch (IOException e) {
                     // There is a project here, but we cannot load it...
                     if (warnedAboutBrokenProjects.add(f)) { // #60416
-                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                        Logger.getLogger(SimpleFileOwnerQueryImplementation.class.getName()).log(Level.FINE, "Cannot load project.", e); //NOI18N
                     }
                     return null;
                 }
@@ -141,7 +146,7 @@ public class SimpleFileOwnerQueryImplementation implements FileOwnerQueryImpleme
                 if (externalOwnersReference != null) {
                     FileObject externalOwner = externalOwnersReference.get();
 
-                    if (externalOwner != null) {
+                    if (externalOwner != null && externalOwner.isValid()) {
                         try {
                             // Note: will be null if there is no such project.
                             Project p = ProjectManager.getDefault().findProject(externalOwner);
@@ -152,12 +157,31 @@ public class SimpleFileOwnerQueryImplementation implements FileOwnerQueryImpleme
                             return p;
                         } catch (IOException e) {
                             // There is a project there, but we cannot load it...
-                            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                            Logger.getLogger(SimpleFileOwnerQueryImplementation.class.getName()).log(Level.FINE, "Cannot load project.", e); //NOI18N
                             return null;
                         }
                     }
                 }
             }
+            if (!deserializedExternalOwners.isEmpty() && (folder || externalRootsIncludeNonFolders)) {
+                FileObject externalOwner = deserializedExternalOwners.get(fileObject2URI(f));
+                if (externalOwner != null && externalOwner.isValid()) {
+                    try {
+                        // Note: will be null if there is no such project.
+                        Project p = ProjectManager.getDefault().findProject(externalOwner);
+                        synchronized (this) {
+                            lastFoundKey = new WeakReference<FileObject>(f);
+                            lastFoundValue = new WeakReference<Project>(p);
+                        }
+                        return p;
+                    } catch (IOException e) {
+                        // There is a project there, but we cannot load it...
+                        Logger.getLogger(SimpleFileOwnerQueryImplementation.class.getName()).log(Level.FINE, "Cannot load project.", e); //NOI18N
+                        return null;
+                    }
+                }
+            }
+            
             f = f.getParent();
         }
         return null;
@@ -168,9 +192,44 @@ public class SimpleFileOwnerQueryImplementation implements FileOwnerQueryImpleme
      */
     private static final Map<URI,Reference<FileObject>> externalOwners =
         Collections.synchronizedMap(new WeakHashMap<URI,Reference<FileObject>>());
+    
+    private static final Map<URI,FileObject> deserializedExternalOwners =
+        Collections.synchronizedMap(new HashMap<URI,FileObject>());
+    
     private static boolean externalRootsIncludeNonFolders = false;
     private static final Map<FileObject,Collection<URI>> project2External =
         Collections.synchronizedMap(new WeakHashMap<FileObject,Collection<URI>>());
+    
+    
+    static void deserialize() {
+        try {
+            Preferences p = NbPreferences.forModule(SimpleFileOwnerQueryImplementation.class).node("externalOwners");
+            for (String name : p.keys()) {
+                URL u = new URL(p.get(name, null));
+                URI i = new URI(name);
+                deserializedExternalOwners.put(i, URLMapper.findFileObject(u));
+            }
+            NbPreferences.forModule(SimpleFileOwnerQueryImplementation.class).node("externalOwners").removeNode();
+        } catch (Exception ex) {
+            Logger.getLogger(SimpleFileOwnerQueryImplementation.class.getName()).log(Level.WARNING, null, ex);
+        }
+    }
+    
+    static void serialize() {
+        try {
+            Preferences p = NbPreferences.forModule(SimpleFileOwnerQueryImplementation.class).node("externalOwners");
+            for (URI uri : externalOwners.keySet()) {
+               Reference<FileObject> fo = externalOwners.get(uri);
+               FileObject fileObject = fo.get();
+               if (fileObject != null) {
+                    p.put(uri.toString(), fileObject.getURL().toExternalForm()); 
+               }
+            }
+        } catch (Exception ex) {
+            Logger.getLogger(SimpleFileOwnerQueryImplementation.class.getName()).log(Level.WARNING, null, ex);
+        }
+        
+    }
     
     /** @see FileOwnerQuery#reset */
     public static void reset() {
@@ -194,7 +253,9 @@ public class SimpleFileOwnerQueryImplementation implements FileOwnerQueryImpleme
     public static void markExternalOwnerTransient(URI root, Project owner) {
         externalRootsIncludeNonFolders |= !root.getPath().endsWith("/");
         if (owner != null) {
-            externalOwners.put(root, new WeakReference<FileObject>(owner.getProjectDirectory()));            
+            FileObject fo = owner.getProjectDirectory();
+            externalOwners.put(root, new WeakReference<FileObject>(fo));
+            deserializedExternalOwners.remove(root);
             synchronized (project2External) {
                 FileObject prjDir = owner.getProjectDirectory();
                 Collection<URI> roots = project2External.get (prjDir);

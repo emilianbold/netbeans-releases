@@ -42,17 +42,23 @@ package org.netbeans.modules.websvc.axis2.wizards;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
+import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
@@ -79,6 +85,7 @@ import org.netbeans.modules.websvc.axis2.java.GenerationUtils;
 import org.netbeans.modules.websvc.axis2.java.SourceUtils;
 import org.netbeans.modules.websvc.axis2.services.model.MessageReceiver;
 import org.netbeans.modules.websvc.axis2.services.model.MessageReceivers;
+import org.netbeans.modules.websvc.axis2.services.model.Operation;
 import org.netbeans.modules.websvc.axis2.services.model.Parameter;
 import org.netbeans.modules.websvc.axis2.services.model.Service;
 import org.netbeans.modules.websvc.axis2.services.model.ServiceGroup;
@@ -118,7 +125,11 @@ public class WizardUtils {
 
         servicesModel.startTransaction();
         Service service = factory.createService();
-        service.setNameAttr(serviceFo.getName());
+        String serviceName = serviceFo.getName();
+        try {
+            serviceName = URLEncoder.encode(serviceName, "UTF-8"); //NOI18N
+        } catch (UnsupportedEncodingException ex) {}     
+        service.setNameAttr(serviceName);
         service.setScopeAttr("application"); //NOI18N
         service.setDescription(serviceFo.getName()+" service"); //NOI18N
         service.setMessageReceivers(receivers);
@@ -144,7 +155,7 @@ public class WizardUtils {
         Service newService = (Service)service.copy(serviceGroup);
         List<Parameter> params = newService.getParameters();
         for (Parameter param:newService.getParameters()) {
-            if ("ServiceClass".equals(param.getNameAttr())) {
+            if ("ServiceClass".equals(param.getNameAttr())) { // NOI18N
                 param.setValue(serviceClass);
                 break;
             }
@@ -153,6 +164,40 @@ public class WizardUtils {
 
         servicesModel.endTransaction();
     }
+    
+    static void addService(ServicesModel servicesModel, String serviceClass, WsdlBindingInfo bindingInfo) {
+        ServicesComponentFactory factory = servicesModel.getFactory();
+        Services services = servicesModel.getRootComponent();
+        ServiceGroup serviceGroup = (ServiceGroup)services;
+
+        servicesModel.startTransaction();
+        
+        Service newService = factory.createService();
+        newService.setNameAttr(bindingInfo.getServiceName());
+        newService.setDescription(bindingInfo.getServiceName()+" service"); //NOI18N
+                
+        List<WsdlBindingInfo.WsdlOperationInfo> wsdlOperations = bindingInfo.getWsdlOperations();
+        for (WsdlBindingInfo.WsdlOperationInfo wsdlOp:wsdlOperations) {
+            Operation operation = factory.createOperation();
+            operation.setNameAttr(wsdlOp.getOperationName());
+            MessageReceiver messageReceiver = factory.createMessageReceiver();
+            messageReceiver.setClassAttr(wsdlOp.isInOnly()?
+                "org.apache.axis2.receivers.RawXMLINOnlyMessageReceiver": //NOI18N
+                "org.apache.axis2.receivers.RawXMLINOutMessageReceiver"); //NOI18N
+            operation.setMessageReceiver(messageReceiver);
+            newService.addOperation(operation);
+        }
+        
+        Parameter serviceClassParam = factory.createParameter();
+        serviceClassParam.setNameAttr("ServiceClass"); //NOI18N
+        serviceClassParam.setValue(serviceClass);       
+        newService.addParameter(serviceClassParam);
+        
+        serviceGroup.addService(newService);
+
+        servicesModel.endTransaction();
+    }
+    
     /** add service element to axis2.xml, used in "from java" case
      * 
      * @param axis2Model
@@ -175,7 +220,7 @@ public class WizardUtils {
                 GenerateWsdl genWsdl = factory.createGenerateWsdl();
                 String defaultNs = AxisUtils.getNamespaceFromClassName(serviceClass);
                 genWsdl.setTargetNamespaceAttr(defaultNs);
-                genWsdl.setSchemaNamespaceAttr(defaultNs+"xsd");
+                genWsdl.setSchemaNamespaceAttr(defaultNs+"xsd"); // NOI18N
                 service.setGenerateWsdl(genWsdl);
             }
             axis2.addService(service);
@@ -197,10 +242,10 @@ public class WizardUtils {
         Axis2ComponentFactory factory = axis2Model.getFactory();
 
         Axis2 axis2 = axis2Model.getRootComponent();
-        if (axis2 != null) {            
+        if (axis2 != null) {     
             axis2Model.startTransaction();
             org.netbeans.modules.websvc.axis2.config.model.Service service = factory.createService();
-            service.setNameAttr(serviceName);factory.createService();
+            service.setNameAttr(serviceName);
             service.setServiceClass(serviceClass);
             service.setWsdlUrl(wsdlUrl);
             JavaGenerator javaGenerator = factory.createJavaGenerator();
@@ -214,6 +259,89 @@ public class WizardUtils {
             axis2.addService(service);
             axis2Model.endTransaction();
         }
+    }
+    
+    static void addAxiomService(Axis2Model axis2Model, String wsdlUrl, String serviceClass, String serviceName) {
+         Axis2ComponentFactory factory = axis2Model.getFactory();
+
+        Axis2 axis2 = axis2Model.getRootComponent();
+        if (axis2 != null) {     
+            axis2Model.startTransaction();
+            org.netbeans.modules.websvc.axis2.config.model.Service service = factory.createService();
+            service.setNameAttr(serviceName);
+            service.setServiceClass(serviceClass);
+            service.setWsdlUrl(wsdlUrl);
+            axis2.addService(service);
+            axis2Model.endTransaction();
+        }       
+    }
+    
+    static void generateSkeletonAxiomMethods(FileObject targetFile, final WsdlBindingInfo wsdlBindingInfo) 
+        throws IOException {
+        if (wsdlBindingInfo == null || wsdlBindingInfo.getWsdlOperations().isEmpty()) return;
+        JavaSource targetJavaSource = JavaSource.forFileObject(targetFile);
+        assert targetJavaSource != null;
+        
+        final List<WsdlBindingInfo.WsdlOperationInfo> wsdlOperations = wsdlBindingInfo.getWsdlOperations();
+        CancellableTask<WorkingCopy> task = new CancellableTask<WorkingCopy>() {
+            
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                ClassTree targetClass = SourceUtils.getPublicTopLevelTree(workingCopy);
+                if (targetClass!=null) {
+                      
+                    TreeMaker make = workingCopy.getTreeMaker();
+ 
+                    ClassTree modifiedClass = null;
+                    // add implementation clause
+                    TypeElement exceptionElement = workingCopy.getElements().getTypeElement("javax.xml.stream.XMLStreamException"); //NOI18N
+                    TypeElement OMElement = workingCopy.getElements().getTypeElement("org.apache.axiom.om.OMElement"); //NOI18N
+                    
+                    TypeMirror exceptionMirror = exceptionElement.asType();
+                    TypeMirror OMMirror = OMElement.asType();
+                    
+                    for (WsdlBindingInfo.WsdlOperationInfo wsdlOperation: wsdlOperations) {
+
+                        ModifiersTree modifs = make.Modifiers(Collections.<Modifier>emptySet());
+                        VariableTree param = make.Variable(modifs, "requestElement", make.Type(OMMirror), null); //NOI18N
+                        
+                        ExpressionTree exc = (ExpressionTree)make.Type(exceptionMirror);
+                        
+                        modifs = make.Modifiers(Collections.<Modifier>singleton(Modifier.PUBLIC));
+                        
+                        MethodTree method = make.Method (
+                                modifs,
+                                wsdlOperation.getOperationName(), // operation name
+                                wsdlOperation.isInOnly()?make.PrimitiveType(TypeKind.VOID):make.Type(OMMirror), // return type
+                                Collections.<TypeParameterTree>emptyList(), // type parameters - none
+                                Collections.<VariableTree>singletonList(param),
+                                Collections.<ExpressionTree>singletonList(exc), // throws
+                                createMethodBody(wsdlOperation, targetClass.getSimpleName()), // method body
+                               null // default value - not applicable here, used by annotations
+                                );
+
+                        if (modifiedClass == null) {
+                            modifiedClass =  make.addClassMember(targetClass, method);
+                        } else {
+                            modifiedClass =  make.addClassMember(modifiedClass, method);
+                        }
+                    }
+                    if (modifiedClass != null) workingCopy.rewrite(targetClass, modifiedClass);
+                }
+            }
+            
+            public void cancel() {
+            }
+        };
+        
+        targetJavaSource.runModificationTask(task).commit();        
+    }
+    
+    private static String createMethodBody(WsdlBindingInfo.WsdlOperationInfo wsdlOperation, Name className) {
+        return wsdlOperation.isInOnly()?"{}":"{"+ // NOI18N
+        "// TODO: to generate response, the following code can be customized:\n"+
+        "OMNode response = omFactory.createOMText(\"response text\");\n"+ // NOI18N
+        "return createResponse(\""+wsdlOperation.getOperationName()+"Response\",\"return\", response); }"; // NOI18N
     }
     
     static void generateSkeletonMethods(FileObject targetFile, final String sourceElement, final String interfaceName) 
@@ -301,6 +429,8 @@ public class WizardUtils {
         targetJavaSource.runModificationTask(task).commit();
         
     }
+    
+    
     
     public static void addAxis2Library(Project project) {
         ClassPath classPath = null;

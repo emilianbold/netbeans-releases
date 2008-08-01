@@ -93,45 +93,36 @@
         <DimensionLayout dim="0">
           <Group type="103" groupAlignment="0" attributes="0">
               <Group type="102" attributes="0">
-                  <Group type="103" groupAlignment="0" attributes="0">
-                      <Component id="jLabelWorkingDirectory" alignment="0" min="-2" max="-2" attributes="0"/>
-                      <Component id="jLabelArgs" alignment="0" min="-2" max="-2" attributes="0"/>
-                      <Component id="jLabelMainClass" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                      <Component id="jrubyPropsLabel" max="32767" attributes="1"/>
+                      <Component id="jLabelWorkingDirectory" alignment="0" pref="116" max="32767" attributes="1"/>
+                      <Component id="rakeLabel" alignment="0" pref="116" max="32767" attributes="1"/>
+                      <Component id="rubyOptionsLabel" alignment="0" max="32767" attributes="1"/>
+                      <Component id="jLabelArgs" alignment="0" max="32767" attributes="1"/>
+                      <Component id="jLabelMainClass" alignment="0" max="32767" attributes="1"/>
                   </Group>
-                  <EmptySpace max="-2" attributes="0"/>
+                  <EmptySpace min="-2" max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Component id="jTextFieldMainClass" alignment="0" pref="485" max="32767" attributes="0"/>
-                      <Component id="jTextFieldArgs" alignment="1" pref="485" max="32767" attributes="0"/>
-                      <Component id="jTextVMOptions" alignment="1" pref="485" max="32767" attributes="0"/>
-                      <Group type="102" alignment="0" attributes="0">
-                          <Component id="jTextWorkingDirectory" pref="485" max="32767" attributes="0"/>
-                          <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                      </Group>
                       <Group type="102" alignment="0" attributes="0">
                           <EmptySpace min="-2" max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="rakeTextField" alignment="0" pref="485" max="32767" attributes="0"/>
-                              <Group type="102" alignment="0" attributes="0">
-                                  <Component id="jLabelVMOptionsExample" min="-2" max="-2" attributes="0"/>
-                                  <EmptySpace pref="437" max="32767" attributes="0"/>
-                              </Group>
+                              <Component id="jLabelVMOptionsExample" alignment="0" min="-2" max="-2" attributes="0"/>
                               <Component id="rakeExampleLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                              <Component id="jrubyPropsExample" alignment="0" min="-2" max="-2" attributes="0"/>
+                              <Component id="rakeTextField" alignment="0" pref="488" max="32767" attributes="2"/>
+                              <Component id="jrubyPropsText" alignment="0" pref="488" max="32767" attributes="2"/>
                           </Group>
                       </Group>
+                      <Component id="jTextFieldArgs" alignment="0" pref="488" max="32767" attributes="2"/>
+                      <Component id="rubyOptions" alignment="0" pref="488" max="32767" attributes="2"/>
+                      <Component id="jTextFieldMainClass" alignment="0" pref="488" max="32767" attributes="2"/>
+                      <Component id="jTextWorkingDirectory" alignment="0" pref="488" max="32767" attributes="2"/>
                   </Group>
-                  <EmptySpace min="-2" pref="9" max="-2" attributes="0"/>
+                  <EmptySpace min="-2" pref="6" max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="1" attributes="0">
-                      <Component id="jButtonWorkingDirectoryBrowse" min="-2" max="-2" attributes="0"/>
                       <Component id="jButtonMainClass" min="-2" max="-2" attributes="0"/>
+                      <Component id="jButtonWorkingDirectoryBrowse" min="-2" max="-2" attributes="0"/>
                   </Group>
-              </Group>
-              <Group type="102" alignment="0" attributes="0">
-                  <Component id="jLabelVMOptions" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace max="-2" attributes="0"/>
-              </Group>
-              <Group type="102" alignment="0" attributes="0">
-                  <Component id="rakeLabel" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace max="-2" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -154,21 +145,27 @@
                       <Component id="jButtonWorkingDirectoryBrowse" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="jTextWorkingDirectory" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <EmptySpace max="-2" attributes="0"/>
-                  <Group type="103" groupAlignment="1" attributes="0">
-                      <Component id="jLabelVMOptions" min="-2" max="-2" attributes="0"/>
-                      <Component id="jTextVMOptions" min="-2" max="-2" attributes="0"/>
+                  <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
+                  <Group type="103" groupAlignment="3" attributes="0">
+                      <Component id="rubyOptionsLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="rubyOptions" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
+                  <EmptySpace min="-2" pref="5" max="-2" attributes="0"/>
                   <Component id="jLabelVMOptionsExample" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace max="-2" attributes="0"/>
+                  <EmptySpace min="-2" pref="9" max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="3" attributes="0">
                       <Component id="rakeLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="rakeTextField" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
                   <Component id="rakeExampleLabel" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace max="32767" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Group type="103" groupAlignment="3" attributes="0">
+                      <Component id="jrubyPropsLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="jrubyPropsText" alignment="3" min="-2" max="-2" attributes="0"/>
+                  </Group>
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Component id="jrubyPropsExample" min="-2" max="-2" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -276,10 +273,10 @@
             <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
           </AuxValues>
         </Component>
-        <Component class="javax.swing.JLabel" name="jLabelVMOptions">
+        <Component class="javax.swing.JLabel" name="rubyOptionsLabel">
           <Properties>
             <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
-              <ComponentRef name="jTextVMOptions"/>
+              <ComponentRef name="rubyOptions"/>
             </Property>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
               <ResourceString bundle="org/netbeans/modules/ruby/rubyproject/ui/customizer/Bundle.properties" key="LBL_CustomizeRun_Run_VM_Options" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
@@ -289,7 +286,7 @@
             <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
           </AuxValues>
         </Component>
-        <Component class="javax.swing.JTextField" name="jTextVMOptions">
+        <Component class="javax.swing.JTextField" name="rubyOptions">
           <AccessibilityProperties>
             <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
               <ResourceString bundle="org/netbeans/modules/ruby/rubyproject/ui/customizer/Bundle.properties" key="CustomizerRun.jTextVMOptions.AccessibleContext.accessibleName" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
@@ -342,6 +339,31 @@
               <ResourceString bundle="org/netbeans/modules/ruby/rubyproject/ui/customizer/Bundle.properties" key="RakeArgsEx" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
           </Properties>
+        </Component>
+        <Component class="javax.swing.JLabel" name="jrubyPropsLabel">
+          <Properties>
+            <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+              <ComponentRef name="rubyOptions"/>
+            </Property>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/ruby/rubyproject/ui/customizer/Bundle.properties" key="CustomizerRun.jrubyPropsLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+          </Properties>
+          <AuxValues>
+            <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
+          </AuxValues>
+        </Component>
+        <Component class="javax.swing.JTextField" name="jrubyPropsText">
+        </Component>
+        <Component class="javax.swing.JLabel" name="jrubyPropsExample">
+          <Properties>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/ruby/rubyproject/ui/customizer/Bundle.properties" key="CustomizerRun.jrubyPropsExample.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+          </Properties>
+          <AuxValues>
+            <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
+          </AuxValues>
         </Component>
       </SubComponents>
     </Container>

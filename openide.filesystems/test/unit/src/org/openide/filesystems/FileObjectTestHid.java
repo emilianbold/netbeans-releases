@@ -41,6 +41,7 @@
 
 package org.openide.filesystems;
 
+import org.openide.filesystems.test.StatFiles;
 import org.xml.sax.*;
 import org.openide.util.*;
 import javax.xml.parsers.SAXParserFactory;
@@ -49,6 +50,7 @@ import java.io.*;
 import java.util.*;
 import java.net.*;
 import org.netbeans.junit.MockServices;
+import org.netbeans.junit.RandomlyFails;
 
 /**
  *
@@ -398,10 +400,12 @@ public class FileObjectTestHid extends TestBaseHid {
     
     /** Test whether the read is forbiden while somebody is writing
      */
+    @RandomlyFails
     public void testWriteReadExclusion() throws Exception {
         testWriteReadExclusion(false);
     }
 
+    @RandomlyFails
     public void testWriteReadExclusionDeadlock() throws Exception {
         testWriteReadExclusion(true);
     }
@@ -1016,29 +1020,48 @@ public class FileObjectTestHid extends TestBaseHid {
         MockServices.setServices(MR.class);
         
         String actualMT = fo.getMIMEType();
-        assertNotNull("queried", MR.tested);
-        assertEquals("right mime type", "ahoj", actualMT);
+        assertNotNull("MIMEResolver not accessed at all.", MR.tested);
+        assertEquals("Wrong MIME type recognized.", fo.getExt(), actualMT);
     }
 
-    public void DISABLEDtestGetMIMETypeWithResolverWhileOpenOutputStream() throws Exception {
+    /** Test whether MIME type for the same FileObject is properly cached 
+     * without unnecessary disk accesses and whether cache is freed when
+     * undelying file is modified.
+     */
+    public void testGetMIMETypeCached() throws IOException {
         checkSetUp();
         FileObject fo = getTestFile1(root);
         MockServices.setServices(MR.class);
+
+        StatFiles accessCounter = new StatFiles();
+        accessCounter.register();
+        for (int i = 0; i < 100; i++) {
+            assertEquals("Wrong MIME type recognized.", fo.getExt(), fo.getMIMEType());
+            assertNotNull("MIMEResolver not accessed at all.", MR.tested);
+        }
+        accessCounter.unregister();
+        int count = accessCounter.getResults().statResult(FileUtil.toFile(fo), StatFiles.READ);
+        assertTrue("Too many read disk accesses while getting MIME type (should be cached). Expected "+count+" < 5.", count < 5);
         
-        FileLock lock = fo.lock();
-        OutputStream os = fo.getOutputStream(lock);
-        try {
-            String actualMT = fo.getMIMEType();
-            assertNotNull("queried", MR.tested);
-            assertEquals("right mime type", "ahoj", actualMT);
-        } finally {
-            os.close();
+        if(fo.canWrite()) {
+            String beforeRename = fo.getMIMEType();
+            FileLock lock = fo.lock();
+            fo.rename(lock, fo.getName(), "newDummyExt");
             lock.releaseLock();
+            String afterRename = fo.getMIMEType();
+            assertFalse("MIME type after rename must be different.", beforeRename.equals(afterRename));
+
+            OutputStream os = fo.getOutputStream();
+            os.write(42);
+            os.close();
+            MR.tested = null;
+            assertEquals("Wrong MIME type recognized.", fo.getExt(), fo.getMIMEType());
+            assertNotNull("After file modification cache must be cleaned and MIMEResolver accessed.", MR.tested);
         }
     }
-    
+
     public static final class MR extends MIMEResolver {
-        static FileObject tested;
+        public static FileObject tested;
         
         public String findMIMEType(FileObject fo) {
             try {
@@ -1053,88 +1076,8 @@ public class FileObjectTestHid extends TestBaseHid {
             is.read(arr);
             is.close();
             tested = fo;
-            return "ahoj";
+            return fo.getExt();
         }
-    }
-    
-    /** Default mime type for files that do not contain
-     * strange chacracters is text/plain
-     *
-    public void testDefaultMimeTypeForTextFiles () throws Exception {
-        checkSetUp();
-        FileObject fo;
-        
-        try {
-            fo = FileUtil.createData(root, "file.jarda"); // file with completely strange extension
-        } catch (IOException iex) {
-            fsAssert(
-                "Does not seem to be writeable. So there was expected.",
-                !root.canWrite () && fs.isReadOnly()
-            );
-            return;
-        }
-        FileLock lock = fo.lock();
-        PrintWriter w = new PrintWriter (
-            fo.getOutputStream (lock)
-        );
-        w.println ("Hi Jarda,");
-        w.println ("how are you?");
-        w.close();
-        lock.releaseLock();
-        
-        assertEquals ("File is recognized as text type", "text/plain", fo.getMIMEType());
-    }
-
-    /** /etc/hosts was broken
-     *
-    public void testDefaultMimeTypeFilesWithoutExtensionsIsComputed () throws Exception {
-        checkSetUp();
-        FileObject fo;
-        try {
-            fo = FileUtil.createData(root, "file"); // file without extension
-        } catch (IOException iex) {
-            fsAssert(
-            "Does not seem to be writeable. So there was expected.",
-            !root.canWrite () && fs.isReadOnly()
-            );
-            return;
-        }
-        FileLock lock = fo.lock();
-        
-        InputStream is = getClass ().getResourceAsStream("FileObjectHosts.txt");
-        OutputStream os = fo.getOutputStream (lock);
-        FileUtil.copy (is, os);
-        is.close ();
-        os.close ();
-        lock.releaseLock ();
-        
-        assertEquals ("File is recognized as text plain", "text/plain", fo.getMIMEType());
-    }
-    
-    /** Default mime type for files with strange chacracters is content/unknown
-     *
-    public void testDefaultMimeTypeForHostsAllow () throws Exception {
-        checkSetUp();
-        FileObject fo;
-        try {
-            fo = FileUtil.createData(root, "file.jarda"); // file with completely strange extension
-        } catch (IOException iex) {
-            fsAssert(
-            "Does not seem to be writeable. So there was expected.",
-            !root.canWrite () && fs.isReadOnly()
-            );
-            return;
-        }
-        FileLock lock = fo.lock();
-        
-        InputStream is = getClass ().getResourceAsStream("FileObjecttextplain.txt");
-        OutputStream os = fo.getOutputStream (lock);
-        FileUtil.copy (is, os);
-        is.close ();
-        os.close ();
-        lock.releaseLock ();
-        
-        assertEquals ("File is recognized as text plain", "text/plain", fo.getMIMEType());
     }
     
     /** Default mime type for files with strange chacracters is content/unknown
@@ -1180,34 +1123,6 @@ public class FileObjectTestHid extends TestBaseHid {
         
         assertEquals ("File is recognized as unknown", "content/unknown", fo.getMIMEType());
     }
-    
-    /** Regardless of the default file content the registered extensions 
-     * take precedence.
-     *
-    public void testRegisteredMimeTypeIsMoreImportant () throws Exception {
-        checkSetUp();
-        FileObject fo;
-        try {
-            fo = FileUtil.createData(root, "file.mov"); // mov is registered
-        } catch (IOException iex) {
-            fsAssert(
-            "Does not seem to be writeable. So there was expected.",
-            !root.canWrite () && fs.isReadOnly()
-            );
-            return;
-        }
-        FileLock lock = fo.lock();
-        PrintWriter w = new PrintWriter (
-        fo.getOutputStream (lock)
-        );
-        w.println ("Hi Jarda,");
-        w.println ("how are you?");
-        w.close();
-        lock.releaseLock();
-        
-        assertEquals ("File is recognized as movie", "video/quicktime", fo.getMIMEType());
-    }
-    */
     
     /** Test of getChildren method, of class org.openide.filesystems.FileObject. */
     public void  testGetChildren() {
@@ -1265,12 +1180,9 @@ public class FileObjectTestHid extends TestBaseHid {
     public void  testGetFolders3() {
         checkSetUp();
         
-        List folders = makeList(root.getFolders(true));
-        Iterator it = folders.iterator();
-        
-        while (it.hasNext()) {
+        for (FileObject fo : makeList(root.getFolders(true))) {
             fsAssert("getData should return FileObjects that return isFolder () == true and isData () == false",
-            ((FileObject)it.next()).isFolder() && !((FileObject)it.next()).isData());
+                     fo.isFolder() && !fo.isData());
         }
     }
     
@@ -1289,12 +1201,9 @@ public class FileObjectTestHid extends TestBaseHid {
     public void  testGetData1() {
         checkSetUp();
         
-        List folders = makeList(root.getData(true));
-        Iterator it = folders.iterator();
-        
-        while (it.hasNext()) {
+        for (FileObject fo : makeList(root.getData(true))) {
             fsAssert("getData should return FileObjects that return isFolder () == false and isData () == true",
-            !((FileObject)it.next()).isFolder() && ((FileObject)it.next()).isData());
+                     !fo.isFolder() && fo.isData());
         }
     }
 
@@ -1605,7 +1514,7 @@ public class FileObjectTestHid extends TestBaseHid {
         }                
     }
 
-    public void testDelete2() throws IOException {
+    public void testDelete2() throws Exception {
         checkSetUp();
         
         FileObject folder = getTestFolder1 (root);
@@ -1630,14 +1539,20 @@ public class FileObjectTestHid extends TestBaseHid {
             
     }
 
-    public static void implOfTestGetFileObjectForSubversion(final FileObject folder, final String childName) {        
+    public static void implOfTestGetFileObjectForSubversion(final FileObject folder, final String childName) throws InterruptedException {        
         final List l = new ArrayList();
         folder.addFileChangeListener(new FileChangeAdapter(){
             public void fileFolderCreated(FileEvent fe) {
                 l.add(fe.getFile());
+                synchronized(l) {
+                    l.notifyAll();
+                }
             }                
         });
         FileObject child = folder.getFileObject(childName);
+        synchronized(l) {
+            l.wait(1000);
+        }
         if (l.size() == 0) {
             assertNull(child);        
         } else {
@@ -2573,8 +2488,8 @@ public class FileObjectTestHid extends TestBaseHid {
         fsTestFrameworkErrorAssert  ("Unexpected setUp behaviour: root == null: " + getResourcePrefix(), root != null);
     }
     
-    private List makeList(Enumeration<? extends FileObject> e) {
-        List l = new LinkedList();
+    private List<? extends FileObject> makeList(Enumeration<? extends FileObject> e) {
+        List<FileObject> l = new LinkedList<FileObject>();
         while (e.hasMoreElements()) {
             l.add(e.nextElement());
         }

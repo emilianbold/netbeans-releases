@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.mobility.project.ui.customizer;
 import java.io.File;
+import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -331,6 +332,13 @@ public class J2MEProjectProperties implements ProjectProperties {
                     String enc = sharedProps.getProperty(DefaultPropertiesDescriptor.JAVAC_ENCODING);
                     if (enc != null) FileEncodingQuery.setDefaultEncoding(Charset.forName(enc));
                     
+                    // save the project under write lock
+                    try {
+                        ProjectManager.getDefault().saveProject(project);
+                    } catch (IOException ex) {
+                        ErrorManager.getDefault().notify(ex);
+                    }
+
                     return null;
                 }
             });

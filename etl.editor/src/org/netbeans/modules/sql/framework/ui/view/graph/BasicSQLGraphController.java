@@ -116,6 +116,7 @@ import org.netbeans.modules.sql.framework.ui.view.join.JoinUtility;
 import com.sun.sql.framework.exception.BaseException;
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.ui.view.ETLOutputWindowTopComponent;
 import org.netbeans.modules.sql.framework.model.DBConnectionDefinition;
 import org.netbeans.modules.sql.framework.model.DBTable;
 
@@ -168,7 +169,7 @@ public class BasicSQLGraphController implements IGraphController {
                     conn = dbConn.getJDBCConnection();
                     String tableName = tbl.getTableName();
                     String schema = tbl.getDatabaseConnection().getSchema();
-                    String url = dbConn.getDatabaseURL();
+                    //String url = dbConn.getDatabaseURL();
                     String catalog = null;
                     try {
                         catalog = conn.getCatalog();
@@ -218,8 +219,23 @@ public class BasicSQLGraphController implements IGraphController {
                         ((SQLDBTable) dbTable).setAliasUsed(true);
                         ((SQLDBTable) dbTable).setAliasName(generateTableAliasName(isSource, tbls));
                         DBConnectionDefinition def = null;
+                        
+                        String modelName = generateDBModelName(isSource);
+                        List<SQLDBModel> dbmodels = null;
+                        if(isSource){
+                            dbmodels = sqlModel.getSQLDefinition().getSourceDatabaseModels();
+                        } else {
+                            dbmodels = sqlModel.getSQLDefinition().getTargetDatabaseModels();
+                        }
+                        
+                        for(SQLDBModel dbm: dbmodels){
+                            if(dbm.getConnectionDefinition().getConnectionURL().equals(dbConn.getDatabaseURL())){
+                                modelName = dbm.getModelName();
+                            } 
+                        }
+                        
                         try {
-                            def = SQLModelObjectFactory.getInstance().createDBConnectionDefinition(dbConn.getDisplayName(), dbMeta.getDBType(), dbConn.getDriverClass(), dbConn.getDatabaseURL(), dbConn.getUser(), dbConn.getPassword(), "Descriptive info here");
+                            def = SQLModelObjectFactory.getInstance().createDBConnectionDefinition(modelName, dbMeta.getDBType(), dbConn.getDriverClass(), dbConn.getDatabaseURL(), dbConn.getUser(), dbConn.getPassword(), "Descriptive info here");
                         } catch (Exception ex) {
                             //ignore
                         }
@@ -229,7 +245,7 @@ public class BasicSQLGraphController implements IGraphController {
                         } else {
                             model = SQLModelObjectFactory.getInstance().createDBModel(SQLConstants.TARGET_DBMODEL);
                         }
-                        model.setModelName(dbConn.getDisplayName());
+                        model.setModelName(modelName);
                         model.setConnectionDefinition(def);
                         dbMeta.populateColumns((SQLDBTable) dbTable);
                         ((SQLDBTable) dbTable).setEditable(true);
@@ -286,6 +302,7 @@ public class BasicSQLGraphController implements IGraphController {
                         }
                         if (sqlModel.getSQLDefinition().getSourceTables().size() > 1) {
                             if (dbTable instanceof SourceTableImpl) {
+								e.dropComplete(true);
                                 NotifyDescriptor d = new NotifyDescriptor.Confirmation("Do you want to create a join?", "Confirm join creation", NotifyDescriptor.YES_NO_OPTION);
                                 if (DialogDisplayer.getDefault().notify(d) == NotifyDescriptor.YES_OPTION) {
                                     JoinMainDialog.showJoinDialog(sqlModel.getSQLDefinition().getJoinSources(), null, this.viewC, true);
@@ -751,7 +768,7 @@ public class BasicSQLGraphController implements IGraphController {
                 guiInfo.setY(dropLocation.y);
             }
 
-
+            collabModel.setDirty(true);
             // do special processing for following objects
             switch (sqlObj.getObjectType()) {
                 case SQLConstants.CAST_OPERATOR:
@@ -825,6 +842,7 @@ public class BasicSQLGraphController implements IGraphController {
 
             // now add the object
             collabModel.addObject(sqlObj);
+            collabModel.setDirty(true);
         } catch (BaseException e) {
             NotifyDescriptor d = new NotifyDescriptor.Message(e.toString(), NotifyDescriptor.INFORMATION_MESSAGE);
             DialogDisplayer.getDefault().notify(d);
@@ -864,6 +882,7 @@ public class BasicSQLGraphController implements IGraphController {
                     SQLDataEvent evt = new SQLDataEvent(collabModel, (RuntimeInput) col.getParent(), col);
                     collabModel.fireChildObjectDeletedEvent(evt);
                 }
+                ETLOutputWindowTopComponent.getDefault().findAndRemoveComponent(sqlObj);
             }
             updateActions(collabModel);
         } catch (Exception e) {
@@ -885,7 +904,7 @@ public class BasicSQLGraphController implements IGraphController {
 
         return aName;
     }
-
+    
     private boolean isTableAliasNameExist(String aName, List sTables) {
 
         Iterator it = sTables.iterator();
@@ -898,6 +917,32 @@ public class BasicSQLGraphController implements IGraphController {
             }
         }
 
+        return false;
+    }
+    
+    private String generateDBModelName(boolean isSource) {
+        int cnt = 1;
+        String connNamePrefix = isSource ? "SourceConnection" : "TargetConnection";
+        String aName = connNamePrefix + cnt;
+       
+        while (isDBModelNameExist(isSource, aName)) {
+            cnt++;
+            aName = connNamePrefix + cnt;
+        }
+
+        return aName;
+    }
+
+    private boolean isDBModelNameExist(boolean isSource, String aName) {
+        CollabSQLUIModel sqlModel = (CollabSQLUIModel) collabModel;
+        Iterator<SQLDBModel> it = sqlModel.getSQLDefinition().getAllDatabases().iterator();
+        while (it.hasNext()) {
+            SQLDBModel dbModel = it.next();
+            String dbName = dbModel.getModelName();
+            if (dbName != null && dbName.equals(aName)) {
+                return true;
+            }
+        }
         return false;
     }
 

@@ -72,6 +72,7 @@ public class GdbWatchVariable extends AbstractVariable implements PropertyChange
     
     private Watch watch;
     private WatchesTreeModel model;
+    private long creationTime;
     private static Logger log = Logger.getLogger("gdb.logger.watches"); // NOI18N
     
     /** Creates a new instance of GdbWatchVariable */
@@ -79,6 +80,7 @@ public class GdbWatchVariable extends AbstractVariable implements PropertyChange
         this.model = model;
         this.watch = watch;
         name = watch.getExpression();
+        creationTime = System.currentTimeMillis();
         fields = new Field[0];
         type = null;
         value = null;
@@ -101,12 +103,25 @@ public class GdbWatchVariable extends AbstractVariable implements PropertyChange
         getDebugger().removePropertyChangeListener(this);
     }
     
+    @Override
+    public boolean equals(Object o) {
+        return o instanceof GdbWatchVariable &&
+                    creationTime == ((GdbWatchVariable) o).creationTime &&
+                    getFullName(true).equals(((GdbWatchVariable) o).getFullName(true));
+    }
+    
+    @Override
+    public int hashCode() {
+        return name.hashCode() + (int) (creationTime & 0xffffffff);
+    }
+    
+    @Override
     public void propertyChange(final PropertyChangeEvent ev) {
         log.fine("GWV.propertyChange: Property change for " + ev.getPropertyName()); // NOI18N
         
         final String pname = ev.getPropertyName();
-        if ((pname.equals(GdbDebugger.PROP_STATE) && ev.getNewValue().equals(GdbDebugger.STATE_STOPPED)) ||
-                pname.equals(GdbDebugger.PROP_CURRENT_THREAD) ||
+        // We do not need to listen to PROP_STATE here, because we do stack update on every stop
+        if (pname.equals(GdbDebugger.PROP_CURRENT_THREAD) ||
                 pname.equals(GdbDebugger.PROP_CURRENT_CALL_STACK_FRAME) ||
                 pname.equals(Watch.PROP_EXPRESSION)) {
             final GdbWatchVariable gwv = this;
@@ -117,10 +132,10 @@ public class GdbWatchVariable extends AbstractVariable implements PropertyChange
                     }
                     type = getDebugger().requestWhatis(watch.getExpression());
                     if (type != null && type.length() > 0) {
-                        value = getDebugger().requestValue("\"" + watch.getExpression() + "\""); // NOI18N
+                        value = getDebugger().evaluate(watch.getExpression());
                         String rt = getTypeInfo().getResolvedType(gwv);
                         if (GdbUtils.isPointer(rt)) {
-                            derefValue = getDebugger().requestValue('*' + watch.getExpression());
+                            derefValue = getDebugger().evaluate('*' + watch.getExpression());
                         }
                     } else {
                         type = "";
@@ -157,8 +172,10 @@ public class GdbWatchVariable extends AbstractVariable implements PropertyChange
     
     @Override
     public String getValue() {
-        if (value == null || value.length() == 0) {
-            value = getDebugger().requestValue("\"" + watch.getExpression() + "\""); // NOI18N
+        synchronized (this) {
+            if (value == null || value.length() == 0) {
+                value = getDebugger().evaluate(watch.getExpression());
+            }
         }
         return super.getValue();
     }

@@ -41,37 +41,17 @@
 
 package org.netbeans.modules.project.ui;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.lang.reflect.Field;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.Log;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.project.ui.actions.TestSupport;
-import org.netbeans.spi.project.SubprojectProvider;
-import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.URLMapper;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.lookup.Lookups;
 
 /** Tests fix of issue 56454.
@@ -79,6 +59,11 @@ import org.openide.util.lookup.Lookups;
  * @author Jiri Rechtacek
  */
 public class OpenProjectListNPUTest extends NbTestCase {
+
+    static {
+        System.setProperty("org.openide.windows.DummyWindowManager.VISIBLE", "false");
+    }
+
     FileObject f1_1_open, f1_2_open, f1_3_close;
     FileObject f2_1_open;
 
@@ -105,7 +90,7 @@ public class OpenProjectListNPUTest extends NbTestCase {
         f1_3_close = p1.createData("f1_3.java");
 
         project1 = ProjectManager.getDefault ().findProject (p1);
-        OpenProjectList.getDefault().getTemplatesLRU(project1);
+        OpenProjectList.getDefault().getTemplatesLRU(project1, null);
         
         ((TestSupport.TestProject) project1).setLookup (Lookups.singleton (TestSupport.createAuxiliaryConfiguration ()));
         
@@ -131,7 +116,7 @@ public class OpenProjectListNPUTest extends NbTestCase {
 
 
     public void testOpen () throws Exception {
-        OpenProjectList.getDefault().getTemplatesLRU(project1);
+        OpenProjectList.getDefault().getTemplatesLRU(project1, null);
         
         
         assertTrue ("No project is open.", OpenProjectList.getDefault ().getOpenProjects ().length == 0);

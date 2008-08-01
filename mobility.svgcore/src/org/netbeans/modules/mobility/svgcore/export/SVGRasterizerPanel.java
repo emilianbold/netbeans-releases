@@ -52,6 +52,7 @@ import com.sun.perseus.model.ModelNode;
 import com.sun.perseus.util.SVGConstants;
 import java.awt.Dimension;
 import java.awt.Rectangle;
+import java.io.File;
 import java.io.IOException;
 import javax.microedition.m2g.SVGImage;
 import javax.swing.ComboBoxModel;
@@ -72,7 +73,10 @@ import org.netbeans.modules.mobility.svgcore.composer.PerseusController;
 import org.netbeans.modules.mobility.svgcore.composer.SVGObjectOutline;
 import org.netbeans.modules.mobility.svgcore.composer.SceneManager;
 import org.netbeans.modules.mobility.svgcore.export.ComponentGroup.ComponentWrapper;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.util.NbBundle;
 import org.w3c.dom.svg.SVGElement;
 import org.w3c.dom.svg.SVGLocatableElement;
 import org.w3c.dom.svg.SVGMatrix;
@@ -94,6 +98,9 @@ public abstract class SVGRasterizerPanel extends JPanel implements AnimationRast
     protected volatile boolean             m_updateInProgress = false;
     protected volatile SVGImage            m_svgImage;
     private            SVGLocatableElement m_exportedElement = null;            
+    
+    private static final String CONFIRM_REWRITE_TITLE = "LBL_Confirm_Rewrite_Title"; // NOI18N
+    private static final String CONFIRM_REWRITE_MESSAGE = "LBL_Confirm_Rewrite_Msg"; // NOI18N
     
     protected class SVGRasterizerComponentGroup extends ComponentGroup {
         public SVGRasterizerComponentGroup( Object ... comps) {
@@ -279,7 +286,25 @@ public abstract class SVGRasterizerPanel extends JPanel implements AnimationRast
         return model;
     }    
     
+    protected boolean isExportConfirmed(){
+        String fileName = getPreviewFileName();
+        File file = new File(fileName);
+        if (!file.exists()){
+            return true;
+        } else {
+            return userConfirmRewrite(fileName);
+        }
+    }
+    
+    private static boolean userConfirmRewrite(String file) {
+        String title = NbBundle.getMessage(SVGRasterizerPanel.class, CONFIRM_REWRITE_TITLE, file);
+        String msg = NbBundle.getMessage(SVGRasterizerPanel.class, CONFIRM_REWRITE_MESSAGE, file);
+        
+        NotifyDescriptor d = new NotifyDescriptor.Confirmation(msg, title, 
+                NotifyDescriptor.OK_CANCEL_OPTION);
+        return DialogDisplayer.getDefault().notify(d) == NotifyDescriptor.OK_OPTION;
+    }
+    
     protected abstract void updateImage(JComponent source, boolean isOutputChanged);
+    protected abstract String getPreviewFileName();
 }
-    
-    

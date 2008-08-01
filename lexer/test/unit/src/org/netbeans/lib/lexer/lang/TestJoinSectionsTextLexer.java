@@ -42,8 +42,8 @@
 package org.netbeans.lib.lexer.lang;
 
 import org.netbeans.api.lexer.PartType;
-import org.netbeans.lib.lexer.lang.TestJoinSectionsTextTokenId;
 import org.netbeans.api.lexer.Token;
+import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerInput;
 import org.netbeans.spi.lexer.LexerRestartInfo;
@@ -68,6 +68,8 @@ final class TestJoinSectionsTextLexer implements Lexer<TestJoinSectionsTextToken
     
     private static final int IN_BRACES = 1;
     
+    private StringBuilder text = new StringBuilder();
+    
     TestJoinSectionsTextLexer(LexerRestartInfo<TestJoinSectionsTextTokenId> info) {
         this.input = info.input();
         this.tokenFactory = info.tokenFactory();
@@ -91,15 +93,18 @@ final class TestJoinSectionsTextLexer implements Lexer<TestJoinSectionsTextToken
                     input.backup(1);
                     return token(TestJoinSectionsTextTokenId.TEXT);
                 }
+                text.append((char)c);
                 while (true) {
                     switch ((c = input.read())) {
                         case '}':
+                            text.append((char)c);
                             return token(TestJoinSectionsTextTokenId.BRACES);
                         case EOF:
                             state = IN_BRACES;
-                            return tokenFactory.createToken(TestJoinSectionsTextTokenId.BRACES,
-                                    input.readLength(), PartType.START);
+                            input.backup(1); // Backup EOF so that compareAndClearText() works
+                            return token(TestJoinSectionsTextTokenId.BRACES, PartType.START);
                     }
+                    text.append((char)c);
                 }
                 // break;
 
@@ -107,6 +112,7 @@ final class TestJoinSectionsTextLexer implements Lexer<TestJoinSectionsTextToken
                 return null; // the only legal situation when null can be returned
 
             default: // In regular text
+                text.append((char) c);
                 while (true) {
                     switch ((c = input.read())) {
                         case '{':
@@ -114,6 +120,7 @@ final class TestJoinSectionsTextLexer implements Lexer<TestJoinSectionsTextToken
                             input.backup(1);
                             return token(TestJoinSectionsTextTokenId.TEXT);
                     }
+                    text.append((char) c);
                 }
                 // break;
         }
@@ -121,26 +128,58 @@ final class TestJoinSectionsTextLexer implements Lexer<TestJoinSectionsTextToken
     
     private Token<TestJoinSectionsTextTokenId> finishIncompleteBraces() {
         while (true) {
-            switch (input.read()) {
+            int c;
+            switch ((c = input.read())) {
                 case '}':
+                    text.append((char) c);
                     state = 0;
-                    return tokenFactory.createToken(TestJoinSectionsTextTokenId.BRACES,
-                            input.readLength(), PartType.END);
+                    return token(TestJoinSectionsTextTokenId.BRACES, PartType.END);
 
                 case EOF:
                     input.backup(1);
                     if (input.readLength() == 0)
                         return null;
-                    return tokenFactory.createToken(TestJoinSectionsTextTokenId.BRACES,
-                            input.readLength(), PartType.MIDDLE);
+                    return token(TestJoinSectionsTextTokenId.BRACES, PartType.MIDDLE);
             }
         }
     }
         
     private Token<TestJoinSectionsTextTokenId> token(TestJoinSectionsTextTokenId id) {
+        compareAndClearText();
         return tokenFactory.createToken(id);
     }
     
+    private Token<TestJoinSectionsTextTokenId> token(TestJoinSectionsTextTokenId id, PartType partType) {
+        compareAndClearText();
+        return tokenFactory.createToken(id, input.readLength(), partType);
+    }
+
+    private void compareAndClearText() {
+        String str = input.readText().toString();
+        assert (str.length() == text.length()) : dumpText(str);
+        for (int i = 0; i < str.length(); i++) {
+            if (str.charAt(i) != text.charAt(i)) {
+                throw new IllegalStateException("Difference at index " + i + ": " + dumpText(str));
+            }
+        }
+        input.backup(str.length());
+        for (int i = 0; i < str.length(); i++) {
+            int c = input.read();
+            if (c != text.charAt(i)) {
+                input.backup(1); 
+                c = input.read();
+                c = input.readText().charAt(i);
+                throw new IllegalStateException("Read difference at index " + i + ", c='" + c + "':\n" + dumpText(str));
+            }
+        }
+        text.delete(0, text.length());
+    }
+
+    private String dumpText(String str) {
+        return "str(" + str.length() + ")=\"" + CharSequenceUtilities.debugText(str) +
+                "\"\ntext(" + text.length() + ")=\"" + CharSequenceUtilities.debugText(text) + "\"\n";
+    }
+
     public void release() {
     }
 

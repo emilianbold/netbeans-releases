@@ -68,3 +68,17 @@ fi
 if [ -d "/Library/Receipts/glassfish.pkg" ] ; then
     rm -rf "/Library/Receipts/glassfish.pkg"
 fi
+
+#Fix for 132115
+sed -i '' "s/never/TUE/" $2/updatecenter/config/config.xml
+
+#Fix for 126419
+#First, get ownership info for current user home directory
+#Second, execute "chown user:group" against .asadminpass and .asadmintruststore
+ownership=`ls -nlda ~ | awk ' { print $3 ":" $4 } ' 2>/dev/null`
+echo "Updating glassfish security files permissions to $ownership"
+[ -f ~/.asadminpass ]       && chown "$ownership" ~/.asadminpass
+[ -f ~/.asadmintruststore ] && chown "$ownership" ~/.asadmintruststore
+
+#add Product ID
+"$script_dir"/addproduct_id.sh "GLASSFISH"

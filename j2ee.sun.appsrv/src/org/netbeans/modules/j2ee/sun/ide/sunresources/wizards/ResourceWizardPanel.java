@@ -113,7 +113,7 @@ public abstract class ResourceWizardPanel extends javax.swing.JPanel implements 
     
     public void setErrorMsg(String message) {
         if (this.wizDescriptor != null) {
-            this.wizDescriptor.putProperty("WizardPanel_errorMessage", message);    //NOI18N
+            this.wizDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, message);    //NOI18N
         }
     }
     

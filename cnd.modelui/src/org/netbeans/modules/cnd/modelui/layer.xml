@@ -36,28 +36,42 @@ Contributor(s):
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
-    
     <folder name="Actions">
         <folder name="View">
-	    <file name="org.netbeans.modules.cnd.modelui.switcher.SwitchProjectAction.instance">
-		<attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.modelui.switcher.SwitchProjectAction"/>
-	    </file>
-	    <file name="org.netbeans.modules.cnd.modelui.switcher.CodeAssistanceSubmenuAction.instance">
-		<attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.modelui.switcher.CodeAssistanceSubmenuAction"/>
-	    </file>
-	</folder>
+            <file name="org.netbeans.modules.cnd.modelui.switcher.SwitchProjectAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.modelui.switcher.SwitchProjectAction"/>
+            </file>
+            <file name="org.netbeans.modules.cnd.modelui.switcher.CodeAssistanceSubmenuAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.modelui.switcher.CodeAssistanceSubmenuAction"/>
+            </file>
+        </folder>
     </folder>
-
     <folder name="NativeProjects">
         <folder name="Actions">
             <file name="org.netbeans.modules.cnd.modelui.switcher.SwitchProjectAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/View/org.netbeans.modules.cnd.modelui.switcher.SwitchProjectAction.instance"/>
                 <attr name="position" intvalue="100"/>
             </file>
-	    <file name="org.netbeans.modules.cnd.modelui.switcher.TestProjectReferencesAction.instance">
-		<attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.modelui.switcher.TestProjectReferencesAction"/>
+            <file name="TestProjectAllReferencesAction.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.modelui.trace.TestProjectReferencesAction.getAllReferencesAction"/>
                 <attr name="position" intvalue="1300"/>
-	    </file>            
+            </file>
+            <file name="TestProjectDirectUsageReferencesAction.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.modelui.trace.TestProjectReferencesAction.getDirectUsageReferencesAction"/>
+                <attr name="position" intvalue="1400"/>
+            </file>
+            <file name="TestProjectSmartCompletionAnalyzerAction.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.modelui.trace.TestProjectReferencesAction.getSmartCompletionAnalyzerAction"/>
+                <attr name="position" intvalue="1500"/>
+            </file>
+            <file name="TestReparseAction.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.modelui.trace.TestProjectReferencesAction.getTestReparseAction"/>
+                <attr name="position" intvalue="1600"/>
+            </file>
+            <file name="TestErrorHighlightingAction.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.modelui.trace.TestErrorHighlightingAction.getInstance"/>
+                <attr name="position" intvalue="1700"/>
+            </file>
         </folder>
         <folder name="Menu">
             <file name="org.netbeans.modules.cnd.modelui.switcher.CodeAssistanceSubmenuAction.shadow">
@@ -65,6 +79,5 @@ Contributor(s):
                 <attr name="position" intvalue="100"/>
             </file>
         </folder>
-   </folder>     
-
+    </folder>
 </filesystem>

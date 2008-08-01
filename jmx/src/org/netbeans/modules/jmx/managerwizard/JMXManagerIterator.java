@@ -60,10 +60,10 @@ import org.openide.loaders.TemplateWizard;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
 
-import org.netbeans.modules.jmx.WizardConstants;
-import org.netbeans.modules.jmx.WizardHelpers;
+import org.netbeans.modules.jmx.common.WizardConstants;
+import org.netbeans.modules.jmx.common.WizardHelpers;
 
-import org.netbeans.modules.jmx.runtime.J2SEProjectType;
+import org.netbeans.modules.jmx.common.runtime.J2SEProjectType;
 
 
 /**
@@ -177,8 +177,8 @@ public class JMXManagerIterator implements TemplateWizard.Iterator {
      */
     private void initializeComponent(String[] steps, int panelOffset,JComponent jc) 
     {
-        jc.putClientProperty("WizardPanel_contentData", steps);// NOI18N
-        jc.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(panelOffset));// NOI18N
+        jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps);// NOI18N
+        jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer(panelOffset));// NOI18N
     }
     
     public void uninitialize(TemplateWizard wiz)

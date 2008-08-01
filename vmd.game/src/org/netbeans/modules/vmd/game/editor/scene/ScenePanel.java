@@ -100,8 +100,8 @@ public class ScenePanel extends JPanel implements SceneListener,
         TiledLayerListener, PropertyChangeListener, MouseMotionListener,
         MouseListener {
 
-	private static final boolean DEBUG = false;
-	
+    private static final boolean DEBUG = false;
+    
     private static final int DEFAULT_GRID_X = 20;
     private static final int DEFAULT_GRID_Y = 20;
     private static final int GRID_MINORS_IN_A_MAJOR = 5;
@@ -134,16 +134,16 @@ public class ScenePanel extends JPanel implements SceneListener,
         this.scene.addPropertyChangeListener(this);
         this.addMouseMotionListener(this);
         this.addMouseListener(this);
-		
-		this.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ScenePanel.class, "ScenePanel.accessible.name"));
-		this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ScenePanel.class, "ScenePanel.accessible.description"));		
+        
+        this.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ScenePanel.class, "ScenePanel.accessible.name"));
+        this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ScenePanel.class, "ScenePanel.accessible.description"));       
 
         for (Iterator iter = this.scene.getLayers().iterator(); iter.hasNext();) {
             Layer layer = (Layer) iter.next();
             this.registerLayerListeners(layer);
         }
         // vlv: print
-        putClientProperty(java.awt.print.Printable.class, ""); // NOI18N
+        putClientProperty("print.printable", Boolean.TRUE); // NOI18N
     }
 
     private void registerLayerListeners(Layer layer) {
@@ -289,12 +289,12 @@ public class ScenePanel extends JPanel implements SceneListener,
         }
         
         if (this.selectedLayers.contains(layer)) {
-			if (this.scene.isLayerLocked(layer)) {
-				g.setColor(colorSelectionLocked);
-			}
-			else {
-				g.setColor(colorSelection);
-			}
+            if (this.scene.isLayerLocked(layer)) {
+                g.setColor(colorSelectionLocked);
+            }
+            else {
+                g.setColor(colorSelection);
+            }
         }
         else if (this.hilitedLayers.containsKey(layer)) {
             g.setColor(this.hilitedLayers.get(layer));
@@ -417,7 +417,7 @@ public class ScenePanel extends JPanel implements SceneListener,
     }
 
     public void layerLockChanged(Scene sourceScene, Layer layer, boolean locked) {
-		this.repaintAllLayerDecorations();
+        this.repaintAllLayerDecorations();
     }
 
     public void layerPositionChanged(Scene sourceScene, Layer layer,
@@ -489,9 +489,9 @@ public class ScenePanel extends JPanel implements SceneListener,
         this.repaintLayerWithDecorations(source);
     }
 
-	public void tilesStructureChanged(TiledLayer source) {
-		this.repaintLayerWithDecorations(source);
-	}
+    public void tilesStructureChanged(TiledLayer source) {
+        this.repaintLayerWithDecorations(source);
+    }
 
     public void tileChanged(TiledLayer source, int row, int col) {
         int w = source.getTileWidth();
@@ -1191,7 +1191,7 @@ public class ScenePanel extends JPanel implements SceneListener,
         public void itemStateChanged(ItemEvent e) {
             //boolean selected = e.getStateChange() == ItemEvent.SELECTED ? true : false;
             ScenePanel.this.addSelectedLayer(layer, true);
-            if (DEBUG) System.out.println("set " + layer.getName() + " selection toogled"); // NOI18N
+            if (DEBUG) System.out.println("set " + layer.getName() + " selection toggled"); // NOI18N
         }
     }
       

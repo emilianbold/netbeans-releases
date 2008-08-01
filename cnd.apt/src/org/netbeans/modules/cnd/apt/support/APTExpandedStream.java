@@ -514,17 +514,33 @@ public class APTExpandedStream implements TokenStream {
         }
         for (Iterator<Token> it = tokens.iterator(); it.hasNext();) {
             Token token = it.next();
-            out.append(token.getText());
-            // FIXUP: this is the hack to be OK in stringize (used in #include macro)
-            // and concatenation
-            if (!stringize && it.hasNext()) {
-                out.append(" "); // NOI18N
+            if (stringize) {
+                out.append(escape(token.getText()));
+            } else {
+                out.append(token.getText());
+                // FIXUP: this is the hack to be OK in stringize
+                // (used in #include macro) and concatenation
+                if (it.hasNext()) {
+                    out.append(' '); // NOI18N
+                }
             }
         }
         if (stringize) {
             out.append('"'); // NOI18N
         }
         return out.toString();
+    }
+    
+    private static CharSequence escape(CharSequence cs) {
+        StringBuilder out = new StringBuilder();
+        for (int i = 0; i < cs.length(); ++i) {
+            char c = cs.charAt(i);
+            if (c == '"' || c == '\\') {
+                out.append('\\');
+            }
+            out.append(c);
+        }
+        return out;
     }
 
     private static List<Token> expandParamValue(List<Token> paramValue, APTMacroCallback callback, boolean expandPPExpression) {

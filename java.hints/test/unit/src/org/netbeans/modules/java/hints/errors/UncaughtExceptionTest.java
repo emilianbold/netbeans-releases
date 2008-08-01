@@ -30,7 +30,7 @@ package org.netbeans.modules.java.hints.errors;
 import org.netbeans.modules.java.hints.infrastructure.HintsTestBase;
 
 /**
- * Tests for Uncaught Exceptions (add throws, aurround with try-catch)
+ * Tests for Uncaught Exceptions (add throws, surround with try-catch)
  * @author Max Sauer
  */
 public class UncaughtExceptionTest extends HintsTestBase {

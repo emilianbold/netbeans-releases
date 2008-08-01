@@ -41,7 +41,9 @@
 
 package org.netbeans.modules.websvc.wsitconf.wsdlmodelext;
 
+import org.netbeans.modules.websvc.wsitmodelext.versioning.ConfigVersion;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import org.netbeans.modules.websvc.wsitconf.ui.ComboConstants;
 import org.netbeans.modules.websvc.wsitmodelext.addressing.Address10;
@@ -55,6 +57,7 @@ import org.netbeans.modules.websvc.wsitmodelext.policy.Policy;
 import org.netbeans.modules.websvc.wsitmodelext.policy.PolicyQName;
 import org.netbeans.modules.websvc.wsitmodelext.security.RequestSecurityTokenTemplate;
 import org.netbeans.modules.websvc.wsitmodelext.security.SecurityPolicyQName;
+import org.netbeans.modules.websvc.wsitmodelext.security.tokens.EncryptedSupportingTokens;
 import org.netbeans.modules.websvc.wsitmodelext.security.tokens.TransportToken;
 import org.netbeans.modules.websvc.wsitmodelext.security.tokens.WssGssKerberosV5ApReqToken11;
 import org.netbeans.modules.websvc.wsitmodelext.security.tokens.WssKerberosV5ApReqToken11;
@@ -64,7 +67,9 @@ import org.netbeans.modules.websvc.wsitmodelext.trust.KeyType;
 import org.netbeans.modules.websvc.wsitmodelext.trust.TokenType;
 import org.netbeans.modules.websvc.wsitmodelext.trust.TrustQName;
 import org.netbeans.modules.websvc.wsitmodelext.security.tokens.EncryptionToken;
+import org.netbeans.modules.websvc.wsitmodelext.security.tokens.EndorsingEncryptedSupportingTokens;
 import org.netbeans.modules.websvc.wsitmodelext.security.tokens.EndorsingSupportingTokens;
+import org.netbeans.modules.websvc.wsitmodelext.security.tokens.HashPassword;
 import org.netbeans.modules.websvc.wsitmodelext.security.tokens.HttpsToken;
 import org.netbeans.modules.websvc.wsitmodelext.security.tokens.InitiatorToken;
 import org.netbeans.modules.websvc.wsitmodelext.security.tokens.IssuedToken;
@@ -77,10 +82,11 @@ import org.netbeans.modules.websvc.wsitmodelext.security.tokens.SamlToken;
 import org.netbeans.modules.websvc.wsitmodelext.security.tokens.SecureConversationToken;
 import org.netbeans.modules.websvc.wsitmodelext.security.tokens.SecurityContextToken;
 import org.netbeans.modules.websvc.wsitmodelext.security.tokens.SignatureToken;
+import org.netbeans.modules.websvc.wsitmodelext.security.tokens.SignedEncryptedSupportingTokens;
+import org.netbeans.modules.websvc.wsitmodelext.security.tokens.SignedEndorsingEncryptedSupportingTokens;
 import org.netbeans.modules.websvc.wsitmodelext.security.tokens.SignedEndorsingSupportingTokens;
 import org.netbeans.modules.websvc.wsitmodelext.security.tokens.SignedSupportingTokens;
 import org.netbeans.modules.websvc.wsitmodelext.security.tokens.SupportingTokens;
-import org.netbeans.modules.websvc.wsitmodelext.security.tokens.TokensQName;
 import org.netbeans.modules.websvc.wsitmodelext.security.tokens.UsernameToken;
 import org.netbeans.modules.websvc.wsitmodelext.security.tokens.WssSamlV10Token11;
 import org.netbeans.modules.websvc.wsitmodelext.security.tokens.WssSamlV11Token10;
@@ -106,7 +112,6 @@ import org.netbeans.modules.xml.wsdl.model.ExtensibilityElement;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponentFactory;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import org.openide.util.NbBundle;
 
 /**
  *
@@ -118,12 +123,38 @@ public class SecurityTokensModelHelper {
     public static final int SIGNED_SUPPORTING = 1;
     public static final int ENDORSING = 2;
     public static final int SIGNED_ENDORSING = 3;
-    public static final int NONE = 4;
+    public static final int ENCRYPTED = 4;
+    public static final int SIGNED_ENCRYPTED = 5;
+    public static final int ENDORSING_ENCRYPTED = 6;
+    public static final int SIGNED_ENDORSING_ENCRYPTED = 7;
+
+    public static final int NONE = 100;
+    
+    public static Class[] SUPPORTING_TOKENS = { SupportingTokens.class, SignedSupportingTokens.class, 
+                  EndorsingSupportingTokens.class, SignedEndorsingSupportingTokens.class,
+                  EncryptedSupportingTokens.class, SignedEncryptedSupportingTokens.class, 
+                  EndorsingEncryptedSupportingTokens.class, SignedEndorsingEncryptedSupportingTokens.class};    
+    
+    private static HashMap<ConfigVersion, SecurityTokensModelHelper> instances = 
+            new HashMap<ConfigVersion, SecurityTokensModelHelper>();
+
+    private ConfigVersion configVersion = ConfigVersion.getDefault();
     
     /**
      * Creates a new instance of SecurityTokensModelHelper
      */
-    public SecurityTokensModelHelper() { }
+    private SecurityTokensModelHelper(ConfigVersion configVersion) {
+        this.configVersion = configVersion;
+    }
+
+    public static final synchronized SecurityTokensModelHelper getInstance(ConfigVersion configVersion) {
+        SecurityTokensModelHelper instance = instances.get(configVersion);
+        if (instance == null) {
+            instance = new SecurityTokensModelHelper(configVersion);
+            instances.put(configVersion, instance);
+        }
+        return instance;
+    }
 
     public static boolean isRequireClientCertificate(HttpsToken token) {
         return token.isRequireClientCertificate();
@@ -190,16 +221,15 @@ public class SecurityTokensModelHelper {
         return wc;
     }
     
-    public static String getTokenInclusionLevel(WSDLComponent tokenType) {
-        String incLevelStr = ((ExtensibilityElement)tokenType).getAnyAttribute(TokensQName.INCLUDETOKENATTRIBUTE.getQName());
-        if (incLevelStr != null) {
-            incLevelStr = incLevelStr.substring(incLevelStr.lastIndexOf('/')+1, incLevelStr.length()); //NOI18N
-            return NbBundle.getMessage(ComboConstants.class, "COMBO_" + incLevelStr); //NOI18N
-        } else {
-            return ComboConstants.NONE;
+    public static boolean isHashPassword(WSDLComponent tokenType) {
+        if (tokenType instanceof UsernameToken) {
+            if (SecurityPolicyModelHelper.isAttributeEnabled((ExtensibilityElement) tokenType, HashPassword.class)) {
+                return true;
+            }
         }
+        return false;
     }
-
+    
     public static String getTokenProfileVersion(WSDLComponent tokenType) {
         if (tokenType instanceof UsernameToken) {
             if (SecurityPolicyModelHelper.isAttributeEnabled((ExtensibilityElement) tokenType, WssUsernameToken10.class)) {
@@ -236,12 +266,12 @@ public class SecurityTokensModelHelper {
         List<Policy> policies = e.getExtensibilityElements(Policy.class);
         if ((policies != null) && (!policies.isEmpty())) {
             Policy p = policies.get(0);
-            return PolicyModelHelper.getTopLevelElement(p, tokenClass);
+            return PolicyModelHelper.getTopLevelElement(p, tokenClass,false);
         }
         return null;
     }
     
-    public static WSDLComponent setTokenType(WSDLComponent secBinding, String tokenKindStr, String tokenTypeStr) {
+    public WSDLComponent setTokenType(WSDLComponent secBinding, String tokenKindStr, String tokenTypeStr) {
         WSDLModel model = secBinding.getModel();
         WSDLComponentFactory wcf = model.getFactory();
         WSDLComponent tokenType = null;
@@ -253,7 +283,8 @@ public class SecurityTokensModelHelper {
         }
 
         try {
-            Policy p = PolicyModelHelper.createElement(secBinding, PolicyQName.POLICY.getQName(), Policy.class, false);
+            PolicyModelHelper pmh = PolicyModelHelper.getInstance(configVersion);
+            Policy p = pmh.createElement(secBinding, PolicyQName.POLICY.getQName(configVersion), Policy.class, false);
             List<ExtensibilityElement> tokenKinds = p.getExtensibilityElements();
             if ((tokenKinds != null) && (!tokenKinds.isEmpty())) {
                 for (ExtensibilityElement tkind : tokenKinds) {
@@ -288,85 +319,88 @@ public class SecurityTokensModelHelper {
             }
             
             if (ComboConstants.PROTECTION.equals(tokenKindStr)) {
-                tokenKind = wcf.create(p, TokensQName.PROTECTIONTOKEN.getQName());
+                tokenKind = wcf.create(p, SecurityPolicyQName.PROTECTIONTOKEN.getQName(configVersion));
             }
             if (ComboConstants.SIGNATURE.equals(tokenKindStr)) {
-                tokenKind = wcf.create(p, TokensQName.SIGNATURETOKEN.getQName());
+                tokenKind = wcf.create(p, SecurityPolicyQName.SIGNATURETOKEN.getQName(configVersion));
             }
             if (ComboConstants.ENCRYPTION.equals(tokenKindStr)) {
-                tokenKind = wcf.create(p, TokensQName.ENCRYPTIONTOKEN.getQName());
+                tokenKind = wcf.create(p, SecurityPolicyQName.ENCRYPTIONTOKEN.getQName(configVersion));
             }
             if (ComboConstants.INITIATOR.equals(tokenKindStr)) {
-                tokenKind = wcf.create(p, TokensQName.INITIATORTOKEN.getQName());
+                tokenKind = wcf.create(p, SecurityPolicyQName.INITIATORTOKEN.getQName(configVersion));
             }
             if (ComboConstants.RECIPIENT.equals(tokenKindStr)) {
-                tokenKind = wcf.create(p, TokensQName.RECIPIENTTOKEN.getQName());
+                tokenKind = wcf.create(p, SecurityPolicyQName.RECIPIENTTOKEN.getQName(configVersion));
             }
             if (ComboConstants.TRANSPORT.equals(tokenKindStr)) {
-                tokenKind = wcf.create(p, TokensQName.TRANSPORTTOKEN.getQName());
+                tokenKind = wcf.create(p, SecurityPolicyQName.TRANSPORTTOKEN.getQName(configVersion));
             }
 
             p.addExtensibilityElement((ExtensibilityElement) tokenKind);
 
-            Policy pinner = (Policy) wcf.create(tokenKind, PolicyQName.POLICY.getQName());
+            Policy pinner = (Policy) wcf.create(tokenKind, PolicyQName.POLICY.getQName(configVersion));
             tokenKind.addExtensibilityElement(pinner);
 
+            SecurityPolicyModelHelper spmh = SecurityPolicyModelHelper.getInstance(configVersion);
             if (ComboConstants.HTTPS.equals(tokenTypeStr)) {
-                tokenType = wcf.create(pinner, TokensQName.HTTPSTOKEN.getQName());
+                tokenType = wcf.create(pinner, SecurityPolicyQName.HTTPSTOKEN.getQName(configVersion));
                 pinner.addExtensibilityElement((ExtensibilityElement) tokenType);
                 ((HttpsToken)tokenType).setRequireClientCertificate(false);
             }
             if (ComboConstants.X509.equals(tokenTypeStr)) {
-                tokenType = wcf.create(pinner, TokensQName.X509TOKEN.getQName());
+                tokenType = wcf.create(pinner, SecurityPolicyQName.X509TOKEN.getQName(configVersion));
                 pinner.addExtensibilityElement((ExtensibilityElement) tokenType);
                 setTokenProfileVersion(tokenType, ComboConstants.X509_V310);
+                SecurityPolicyModelHelper.getInstance(configVersion).enableRequireIssuerSerialReference(tokenType, true);
             }
             if (ComboConstants.SAML.equals(tokenTypeStr)) {
-                tokenType = wcf.create(pinner, TokensQName.SAMLTOKEN.getQName());
+                tokenType = wcf.create(pinner, SecurityPolicyQName.SAMLTOKEN.getQName(configVersion));
                 pinner.addExtensibilityElement((ExtensibilityElement) tokenType);
                 setTokenProfileVersion(tokenType, ComboConstants.SAML_V1110);
             }
             if (ComboConstants.KERBEROS.equals(tokenTypeStr)) {
-                tokenType = wcf.create(pinner, TokensQName.KERBEROSTOKEN.getQName());
+                tokenType = wcf.create(pinner, SecurityPolicyQName.KERBEROSTOKEN.getQName(configVersion));
                 pinner.addExtensibilityElement((ExtensibilityElement) tokenType);
                 setTokenProfileVersion(tokenType, ComboConstants.KERBEROS_KERBEROSGSS);
             }
             if (ComboConstants.ISSUED.equals(tokenTypeStr)) {
-                tokenType = wcf.create(pinner, TokensQName.ISSUEDTOKEN.getQName());
+                tokenType = wcf.create(pinner, SecurityPolicyQName.ISSUEDTOKEN.getQName(configVersion));
                 pinner.addExtensibilityElement((ExtensibilityElement) tokenType);
                 RequestSecurityTokenTemplate template = 
-                        (RequestSecurityTokenTemplate) wcf.create(tokenType, SecurityPolicyQName.REQUESTSECURITYTOKENTEMPLATE.getQName());
+                        (RequestSecurityTokenTemplate) wcf.create(tokenType, SecurityPolicyQName.REQUESTSECURITYTOKENTEMPLATE.getQName(configVersion));
                 tokenType.addExtensibilityElement(template);
 
-                TokenType trustTokenType = (TokenType) wcf.create(template, TrustQName.TOKENTYPE.getQName());
+                TokenType trustTokenType = (TokenType) wcf.create(template, TrustQName.TOKENTYPE.getQName(configVersion));
                 template.addExtensibilityElement(trustTokenType);
                 trustTokenType.setContent(ComboConstants.ISSUED_TOKENTYPE_SAML11_POLICYSTR);
 
-                KeyType trustKeyType = (KeyType) wcf.create(template, TrustQName.KEYTYPE.getQName());
+                KeyType trustKeyType = (KeyType) wcf.create(template, TrustQName.KEYTYPE.getQName(configVersion));
                 template.addExtensibilityElement(trustKeyType);
-                trustKeyType.setContent(ComboConstants.ISSUED_KEYTYPE_SYMMETRIC_POLICYSTR);
+                String nsStart = TrustQName.getNamespaceUri(configVersion);
+                trustKeyType.setContent(nsStart + ComboConstants.ISSUED_KEYTYPE_SYMMETRIC_POLICYSTR);
 
-                KeySize trustKeySize = (KeySize) wcf.create(template, TrustQName.KEYSIZE.getQName());
+                KeySize trustKeySize = (KeySize) wcf.create(template, TrustQName.KEYSIZE.getQName(configVersion));
                 template.addExtensibilityElement(trustKeySize);
                 trustKeySize.setContent(ComboConstants.ISSUED_KEYSIZE_256);
                 
-                SecurityPolicyModelHelper.enableRequireInternalReference(tokenType, true);
+                spmh.enableRequireInternalReference(tokenType, true);
             }
             
             if (ComboConstants.USERNAME.equals(tokenTypeStr)) {
-                tokenType = wcf.create(pinner, TokensQName.USERNAMETOKEN.getQName());
+                tokenType = wcf.create(pinner, SecurityPolicyQName.USERNAMETOKEN.getQName(configVersion));
                 pinner.addExtensibilityElement((ExtensibilityElement) tokenType);
                 setTokenProfileVersion(tokenType, ComboConstants.WSS10);
             }
             if (ComboConstants.REL.equals(tokenTypeStr)) {
-                tokenType = wcf.create(pinner, TokensQName.RELTOKEN.getQName());
+                tokenType = wcf.create(pinner, SecurityPolicyQName.RELTOKEN.getQName(configVersion));
                 pinner.addExtensibilityElement((ExtensibilityElement) tokenType);
-                SecurityPolicyModelHelper.enableRequireDerivedKeys(tokenType, true);
+                spmh.enableRequireDerivedKeys(tokenType, true);
             }
             if (ComboConstants.SECURECONVERSATION.equals(tokenTypeStr)) {
-                tokenType = wcf.create(pinner, TokensQName.SECURECONVERSATIONTOKEN.getQName());
+                tokenType = wcf.create(pinner, SecurityPolicyQName.SECURECONVERSATIONTOKEN.getQName(configVersion));
                 pinner.addExtensibilityElement((ExtensibilityElement) tokenType);
-                SecurityPolicyModelHelper.enableRequireDerivedKeys(tokenType, true);
+                spmh.enableRequireDerivedKeys(tokenType, true);
 //                setBootstrapPolicy(tokenType, 
 //                        ComboConstants.SYMMETRIC, 
 //                        ComboConstants.X509, 
@@ -374,14 +408,14 @@ public class SecurityTokensModelHelper {
 //                        ComboConstants.WSS10);
             }
             if (ComboConstants.SECURITYCONTEXT.equals(tokenTypeStr)) {
-                tokenType = wcf.create(pinner, TokensQName.SECURITYCONTEXTTOKEN.getQName());
+                tokenType = wcf.create(pinner, SecurityPolicyQName.SECURITYCONTEXTTOKEN.getQName(configVersion));
                 pinner.addExtensibilityElement((ExtensibilityElement) tokenType);
-                SecurityPolicyModelHelper.enableRequireDerivedKeys(tokenType, true);
+                spmh.enableRequireDerivedKeys(tokenType, true);
             }
             if (ComboConstants.SPNEGOCONTEXT.equals(tokenTypeStr)) {
-                tokenType = wcf.create(pinner, TokensQName.SPNEGOCONTEXTTOKEN.getQName());
+                tokenType = wcf.create(pinner, SecurityPolicyQName.SPNEGOCONTEXTTOKEN.getQName(configVersion));
                 pinner.addExtensibilityElement((ExtensibilityElement) tokenType);
-                SecurityPolicyModelHelper.enableRequireDerivedKeys(tokenType, true);
+                spmh.enableRequireDerivedKeys(tokenType, true);
             }
 
 //            setTokenInclusionLevel(tokenType, ComboConstants.ALWAYSRECIPIENT);
@@ -394,7 +428,7 @@ public class SecurityTokensModelHelper {
         return tokenType;
     }
 
-    public static void setTokenInclusionLevel(WSDLComponent tokenType, String incLevel) {
+    void setTokenInclusionLevel(WSDLComponent tokenType, String incLevel) {
         WSDLModel model = tokenType.getModel();
         
         boolean isTransaction = model.isIntransaction();
@@ -403,17 +437,18 @@ public class SecurityTokensModelHelper {
         }
 
         try {
-            String levelStr = null;
+            String nsStart = SecurityPolicyQName.getNamespaceUri(configVersion);
+            String levelStr = nsStart;
             if (ComboConstants.NEVER.equals(incLevel)) {
-                levelStr = ComboConstants.NEVER_POLICYSTR;
+                levelStr += ComboConstants.NEVER_POLICYSTR;
             } else if (ComboConstants.ALWAYS.equals(incLevel)) {
-                levelStr = ComboConstants.ALWAYS_POLICYSTR;
+                levelStr += ComboConstants.ALWAYS_POLICYSTR;
             } else if (ComboConstants.ALWAYSRECIPIENT.equals(incLevel)) {
-                levelStr = ComboConstants.ALWAYSRECIPIENT_POLICYSTR;
+                levelStr += ComboConstants.ALWAYSRECIPIENT_POLICYSTR;
             } else if (ComboConstants.ONCE.equals(incLevel)) {
-                levelStr = ComboConstants.ONCE_POLICYSTR;
+                levelStr += ComboConstants.ONCE_POLICYSTR;
             }
-            ((ExtensibilityElement)tokenType).setAnyAttribute(TokensQName.INCLUDETOKENATTRIBUTE.getQName(), levelStr);
+            ((ExtensibilityElement)tokenType).setAnyAttribute(SecurityPolicyQName.INCLUDETOKENATTRIBUTE.getQName(configVersion), levelStr);
         } finally {
             if (!isTransaction) {
                 model.endTransaction();
@@ -421,7 +456,45 @@ public class SecurityTokensModelHelper {
         }
    }
 
-    public static void setTokenProfileVersion(WSDLComponent tokenType, String profileVersion) {
+    public void setHashPassword(WSDLComponent tokenType, boolean enable) {
+        
+        System.out.println("setHAshPassword" + tokenType + ", " + enable);
+        
+        WSDLModel model = tokenType.getModel();
+        WSDLComponentFactory wcf = model.getFactory();
+        boolean isTransaction = model.isIntransaction();
+        if (!isTransaction) {
+            model.startTransaction();
+        }
+        try {            
+            PolicyModelHelper pmh = PolicyModelHelper.getInstance(configVersion);
+            Policy p = pmh.createElement(tokenType, PolicyQName.POLICY.getQName(configVersion), Policy.class, false);
+            List<ExtensibilityElement> tokenAssertions = p.getExtensibilityElements();
+            
+            if (tokenType instanceof UsernameToken) {
+                if ((tokenAssertions != null) && (!tokenAssertions.isEmpty())) {
+                    for (ExtensibilityElement e : tokenAssertions) {
+                        if (e instanceof HashPassword) {                     
+                             p.removeExtensibilityElement(e);
+                        }
+                    }
+                }
+                
+                if (enable) {
+                    WSDLComponent wc = wcf.create(p, SecurityPolicyQName.HASHPASSWORD.getQName(configVersion));
+                    p.addExtensibilityElement((ExtensibilityElement) wc);
+                }
+            }
+        } catch (Exception exc) {
+            exc.printStackTrace();
+        } finally {
+            if (!isTransaction) {
+                model.endTransaction();
+            }
+        }
+    }
+    
+    public void setTokenProfileVersion(WSDLComponent tokenType, String profileVersion) {
         WSDLModel model = tokenType.getModel();
         WSDLComponentFactory wcf = model.getFactory();
         boolean isTransaction = model.isIntransaction();
@@ -429,7 +502,8 @@ public class SecurityTokensModelHelper {
             model.startTransaction();
         }
         try {
-            Policy p = PolicyModelHelper.createElement(tokenType, PolicyQName.POLICY.getQName(), Policy.class, false);
+            PolicyModelHelper pmh = PolicyModelHelper.getInstance(configVersion);
+            Policy p = pmh.createElement(tokenType, PolicyQName.POLICY.getQName(configVersion), Policy.class, false);
             WSDLComponent profileVersionAssertion = null;
             List<ExtensibilityElement> tokenAssertions = p.getExtensibilityElements();
             
@@ -442,8 +516,8 @@ public class SecurityTokensModelHelper {
                         }
                     }
                 }
-                if (ComboConstants.WSS10.equals(profileVersion)) profileVersionAssertion = wcf.create(p, TokensQName.WSSUSERNAMETOKEN10.getQName());
-                if (ComboConstants.WSS11.equals(profileVersion)) profileVersionAssertion = wcf.create(p, TokensQName.WSSUSERNAMETOKEN11.getQName());
+                if (ComboConstants.WSS10.equals(profileVersion)) profileVersionAssertion = wcf.create(p, SecurityPolicyQName.WSSUSERNAMETOKEN10.getQName(configVersion));
+                if (ComboConstants.WSS11.equals(profileVersion)) profileVersionAssertion = wcf.create(p, SecurityPolicyQName.WSSUSERNAMETOKEN11.getQName(configVersion));
             }
             if (tokenType instanceof SamlToken) {
                 if ((tokenAssertions != null) && (!tokenAssertions.isEmpty())) {
@@ -457,11 +531,11 @@ public class SecurityTokensModelHelper {
                         }
                     }
                 }
-                if (ComboConstants.SAML_V1010.equals(profileVersion)) profileVersionAssertion = wcf.create(p, TokensQName.WSSSAMLV10TOKEN10.getQName());
-                if (ComboConstants.SAML_V1011.equals(profileVersion)) profileVersionAssertion = wcf.create(p, TokensQName.WSSSAMLV10TOKEN11.getQName());
-                if (ComboConstants.SAML_V1110.equals(profileVersion)) profileVersionAssertion = wcf.create(p, TokensQName.WSSSAMLV11TOKEN10.getQName());
-                if (ComboConstants.SAML_V1111.equals(profileVersion)) profileVersionAssertion = wcf.create(p, TokensQName.WSSSAMLV11TOKEN11.getQName());
-                if (ComboConstants.SAML_V2011.equals(profileVersion)) profileVersionAssertion = wcf.create(p, TokensQName.WSSSAMLV20TOKEN11.getQName());
+                if (ComboConstants.SAML_V1010.equals(profileVersion)) profileVersionAssertion = wcf.create(p, SecurityPolicyQName.WSSSAMLV10TOKEN10.getQName(configVersion));
+                if (ComboConstants.SAML_V1011.equals(profileVersion)) profileVersionAssertion = wcf.create(p, SecurityPolicyQName.WSSSAMLV10TOKEN11.getQName(configVersion));
+                if (ComboConstants.SAML_V1110.equals(profileVersion)) profileVersionAssertion = wcf.create(p, SecurityPolicyQName.WSSSAMLV11TOKEN10.getQName(configVersion));
+                if (ComboConstants.SAML_V1111.equals(profileVersion)) profileVersionAssertion = wcf.create(p, SecurityPolicyQName.WSSSAMLV11TOKEN11.getQName(configVersion));
+                if (ComboConstants.SAML_V2011.equals(profileVersion)) profileVersionAssertion = wcf.create(p, SecurityPolicyQName.WSSSAMLV20TOKEN11.getQName(configVersion));
             }
 
             if (tokenType instanceof X509Token) {
@@ -480,14 +554,14 @@ public class SecurityTokensModelHelper {
                     }
                 }
 
-                if (ComboConstants.X509_V110.equals(profileVersion)) profileVersionAssertion = wcf.create(p, TokensQName.WSSX509V1TOKEN10.getQName());
-                if (ComboConstants.X509_V310.equals(profileVersion)) profileVersionAssertion = wcf.create(p, TokensQName.WSSX509V3TOKEN10.getQName());
-                if (ComboConstants.X509_V111.equals(profileVersion)) profileVersionAssertion = wcf.create(p, TokensQName.WSSX509V1TOKEN11.getQName());
-                if (ComboConstants.X509_V311.equals(profileVersion)) profileVersionAssertion = wcf.create(p, TokensQName.WSSX509V3TOKEN11.getQName());
-                if (ComboConstants.X509_PKCS710.equals(profileVersion)) profileVersionAssertion = wcf.create(p, TokensQName.WSSX509PKCS7TOKEN10.getQName());
-                if (ComboConstants.X509_PKCS711.equals(profileVersion)) profileVersionAssertion = wcf.create(p, TokensQName.WSSX509PKCS7TOKEN11.getQName());
-                if (ComboConstants.X509_PKIPATHV110.equals(profileVersion)) profileVersionAssertion = wcf.create(p, TokensQName.WSSX509PKIPATHV1TOKEN10.getQName());
-                if (ComboConstants.X509_PKIPATHV111.equals(profileVersion)) profileVersionAssertion = wcf.create(p, TokensQName.WSSX509PKIPATHV1TOKEN11.getQName());
+                if (ComboConstants.X509_V110.equals(profileVersion)) profileVersionAssertion = wcf.create(p, SecurityPolicyQName.WSSX509V1TOKEN10.getQName(configVersion));
+                if (ComboConstants.X509_V310.equals(profileVersion)) profileVersionAssertion = wcf.create(p, SecurityPolicyQName.WSSX509V3TOKEN10.getQName(configVersion));
+                if (ComboConstants.X509_V111.equals(profileVersion)) profileVersionAssertion = wcf.create(p, SecurityPolicyQName.WSSX509V1TOKEN11.getQName(configVersion));
+                if (ComboConstants.X509_V311.equals(profileVersion)) profileVersionAssertion = wcf.create(p, SecurityPolicyQName.WSSX509V3TOKEN11.getQName(configVersion));
+                if (ComboConstants.X509_PKCS710.equals(profileVersion)) profileVersionAssertion = wcf.create(p, SecurityPolicyQName.WSSX509PKCS7TOKEN10.getQName(configVersion));
+                if (ComboConstants.X509_PKCS711.equals(profileVersion)) profileVersionAssertion = wcf.create(p, SecurityPolicyQName.WSSX509PKCS7TOKEN11.getQName(configVersion));
+                if (ComboConstants.X509_PKIPATHV110.equals(profileVersion)) profileVersionAssertion = wcf.create(p, SecurityPolicyQName.WSSX509PKIPATHV1TOKEN10.getQName(configVersion));
+                if (ComboConstants.X509_PKIPATHV111.equals(profileVersion)) profileVersionAssertion = wcf.create(p, SecurityPolicyQName.WSSX509PKIPATHV1TOKEN11.getQName(configVersion));
             }
             
             if (tokenType instanceof KerberosToken) {
@@ -499,8 +573,8 @@ public class SecurityTokensModelHelper {
                         }
                     }
                 }
-                if (ComboConstants.KERBEROS_KERBEROS.equals(profileVersion)) profileVersionAssertion = wcf.create(p, TokensQName.WSSKERBEROSV5APREQTOKEN11.getQName());
-                if (ComboConstants.KERBEROS_KERBEROSGSS.equals(profileVersion)) profileVersionAssertion = wcf.create(p, TokensQName.WSSGSSKERBEROSV5APREQTOKEN11.getQName());
+                if (ComboConstants.KERBEROS_KERBEROS.equals(profileVersion)) profileVersionAssertion = wcf.create(p, SecurityPolicyQName.WSSKERBEROSV5APREQTOKEN11.getQName(configVersion));
+                if (ComboConstants.KERBEROS_KERBEROSGSS.equals(profileVersion)) profileVersionAssertion = wcf.create(p, SecurityPolicyQName.WSSGSSKERBEROSV5APREQTOKEN11.getQName(configVersion));
             }
 
             if (profileVersionAssertion != null) p.addExtensibilityElement((ExtensibilityElement) profileVersionAssertion);
@@ -520,10 +594,8 @@ public class SecurityTokensModelHelper {
              p = PolicyModelHelper.getPolicyForElement(c);
         }
         if (p == null) return null;
-        Class[] a = { SupportingTokens.class, SignedSupportingTokens.class, 
-                      EndorsingSupportingTokens.class, SignedEndorsingSupportingTokens.class };
-        for (Class cl : a) {
-            WSDLComponent token = PolicyModelHelper.getTopLevelElement(p, cl);
+        for (Class cl : SUPPORTING_TOKENS) {
+            WSDLComponent token = PolicyModelHelper.getTopLevelElement(p, cl,false);
             if (token != null) {
                 result.add(token);
             }
@@ -539,19 +611,8 @@ public class SecurityTokensModelHelper {
              p = PolicyModelHelper.getPolicyForElement(c);
         }
         if (p == null) return null;
-        if (SUPPORTING == supportingType) {
-            return PolicyModelHelper.getTopLevelElement(p, SupportingTokens.class);
-        }
-        if (SIGNED_SUPPORTING == supportingType) {
-            return PolicyModelHelper.getTopLevelElement(p, SignedSupportingTokens.class);
-        }
-        if (ENDORSING == supportingType) {
-            return PolicyModelHelper.getTopLevelElement(p, EndorsingSupportingTokens.class);
-        }
-        if (SIGNED_ENDORSING == supportingType) {
-            return PolicyModelHelper.getTopLevelElement(p, SignedEndorsingSupportingTokens.class);
-        }
-        return null;
+        
+        return PolicyModelHelper.getTopLevelElement(p, SUPPORTING_TOKENS[supportingType], false);
     }
 
     public static void removeSupportingTokens(WSDLComponent c) {
@@ -572,24 +633,11 @@ public class SecurityTokensModelHelper {
             model.startTransaction();
         }
         try {
-            rem = PolicyModelHelper.getTopLevelElement(p, SupportingTokens.class);
-            if (rem != null) {
-                rem.getParent().removeExtensibilityElement(rem);
-            }
-
-            rem = PolicyModelHelper.getTopLevelElement(p, SignedSupportingTokens.class);
-            if (rem != null) {
-                rem.getParent().removeExtensibilityElement(rem);
-            }
-
-            rem = PolicyModelHelper.getTopLevelElement(p, EndorsingSupportingTokens.class);
-            if (rem != null) {
-                rem.getParent().removeExtensibilityElement(rem);
-            }
-
-            rem = PolicyModelHelper.getTopLevelElement(p, SignedEndorsingSupportingTokens.class);
-            if (rem != null) {
-                rem.getParent().removeExtensibilityElement(rem);
+            for (Class cl : SUPPORTING_TOKENS) {
+                rem = PolicyModelHelper.getTopLevelElement(p, cl,false);
+                if (rem != null) {
+                    rem.getParent().removeExtensibilityElement(rem);
+                }
             }
         } finally {
             if (!isTransaction) {
@@ -598,7 +646,7 @@ public class SecurityTokensModelHelper {
         }
     }
     
-    public static WSDLComponent setSupportingTokens(WSDLComponent c, String authToken, int supportingType) {
+    public WSDLComponent setSupportingTokens(WSDLComponent c, String authToken, int supportingType) {
         if (c == null) return null;
         
         WSDLModel model = c.getModel();
@@ -611,7 +659,7 @@ public class SecurityTokensModelHelper {
             model.startTransaction();
         }
         try {
-            for (int i=0; i < 4; i++) {
+            for (int i=0; i < SecurityTokensModelHelper.SUPPORTING_TOKENS.length; i++) {
                 tokenKind = getSupportingToken(c, i);
                 if (tokenKind != null) {
                     if (ComboConstants.NONE.equals(authToken) || (authToken == null)) { 
@@ -629,65 +677,79 @@ public class SecurityTokensModelHelper {
             
             if (supportingType == NONE) return null;
             
+            PolicyModelHelper pmh = PolicyModelHelper.getInstance(configVersion);
             WSDLComponent topLevel = null;
             if (c instanceof Policy) {
                 topLevel = c;
             } else {
-                topLevel = PolicyModelHelper.createPolicy(c, true);
+                topLevel = pmh.createPolicy(c, true);
             }
         
             if (SUPPORTING == supportingType) {
-                tokenKind = wcf.create(topLevel, TokensQName.SUPPORTINGTOKENS.getQName());
+                tokenKind = wcf.create(topLevel, SecurityPolicyQName.SUPPORTINGTOKENS.getQName(configVersion));
             }
             if (SIGNED_SUPPORTING == supportingType) {
-                tokenKind = wcf.create(topLevel, TokensQName.SIGNEDSUPPORTINGTOKENS.getQName());
+                tokenKind = wcf.create(topLevel, SecurityPolicyQName.SIGNEDSUPPORTINGTOKENS.getQName(configVersion));
             }
             if (ENDORSING == supportingType) {
-                tokenKind = wcf.create(topLevel, TokensQName.ENDORSINGSUPPORTINGTOKENS.getQName());
+                tokenKind = wcf.create(topLevel, SecurityPolicyQName.ENDORSINGSUPPORTINGTOKENS.getQName(configVersion));
             }
             if (SIGNED_ENDORSING == supportingType) {
-                tokenKind = wcf.create(topLevel, TokensQName.SIGNEDENDORSINGSUPPORTINGTOKENS.getQName());
+                tokenKind = wcf.create(topLevel, SecurityPolicyQName.SIGNEDENDORSINGSUPPORTINGTOKENS.getQName(configVersion));
+            }
+            if (ENCRYPTED == supportingType) {
+                tokenKind = wcf.create(topLevel, SecurityPolicyQName.ENCRYPTEDSUPPORTINGTOKENS.getQName(configVersion));
+            }
+            if (SIGNED_ENCRYPTED == supportingType) {
+                tokenKind = wcf.create(topLevel, SecurityPolicyQName.SIGNEDENCRYPTEDSUPPORTINGTOKENS.getQName(configVersion));
+            }
+            if (SIGNED_ENDORSING_ENCRYPTED == supportingType) {
+                tokenKind = wcf.create(topLevel, SecurityPolicyQName.SIGNEDENDORSINGENCRYPTEDSUPPORTINGTOKENS.getQName(configVersion));
+            }
+            if (ENDORSING_ENCRYPTED == supportingType) {
+                tokenKind = wcf.create(topLevel, SecurityPolicyQName.ENDORSINGENCRYPTEDSUPPORTINGTOKENS.getQName(configVersion));
             }
             topLevel.addExtensibilityElement((ExtensibilityElement) tokenKind);
 
             if (ComboConstants.USERNAME.equals(authToken)) {
-                tokenType = PolicyModelHelper.createElement(tokenKind, TokensQName.USERNAMETOKEN.getQName(), UsernameToken.class, true);
+                tokenType = pmh.createElement(tokenKind, SecurityPolicyQName.USERNAMETOKEN.getQName(configVersion), UsernameToken.class, true);
                 setTokenProfileVersion(tokenType, ComboConstants.WSS10);
                 setTokenInclusionLevel(tokenType, ComboConstants.ALWAYSRECIPIENT);
             }
             if (ComboConstants.X509.equals(authToken)) {
-                tokenType = PolicyModelHelper.createElement(tokenKind, TokensQName.X509TOKEN.getQName(), X509Token.class, true);
+                tokenType = pmh.createElement(tokenKind, SecurityPolicyQName.X509TOKEN.getQName(configVersion), X509Token.class, true);
                 setTokenProfileVersion(tokenType, ComboConstants.X509_V310);
 //                SecurityPolicyModelHelper.enableRequireThumbprintReference(tokenType, true);
                 setTokenInclusionLevel(tokenType, ComboConstants.ALWAYSRECIPIENT);
             }
             if (ComboConstants.SAML.equals(authToken)) {
-                tokenType = PolicyModelHelper.createElement(tokenKind, TokensQName.SAMLTOKEN.getQName(), SamlToken.class, true);
+                tokenType = pmh.createElement(tokenKind, SecurityPolicyQName.SAMLTOKEN.getQName(configVersion), SamlToken.class, true);
                 setTokenProfileVersion(tokenType, ComboConstants.SAML_V1110);
                 setTokenInclusionLevel(tokenType, ComboConstants.ALWAYSRECIPIENT);
             }
             if (ComboConstants.SECURECONVERSATION.equals(authToken)) {
-                tokenType = PolicyModelHelper.createElement(tokenKind, TokensQName.SECURECONVERSATIONTOKEN.getQName(), SecureConversationToken.class, true);
+                tokenType = pmh.createElement(tokenKind, SecurityPolicyQName.SECURECONVERSATIONTOKEN.getQName(configVersion), SecureConversationToken.class, true);
                 setTokenInclusionLevel(tokenType, ComboConstants.ALWAYSRECIPIENT);
             }
             if (ComboConstants.ISSUED.equals(authToken)) {
-                tokenType = PolicyModelHelper.createElement(tokenKind, TokensQName.ISSUEDTOKEN.getQName(), IssuedToken.class, true);
+                tokenType = pmh.createElement(tokenKind, SecurityPolicyQName.ISSUEDTOKEN.getQName(configVersion), IssuedToken.class, true);
                 setTokenInclusionLevel(tokenType, ComboConstants.ALWAYSRECIPIENT);
 
                 RequestSecurityTokenTemplate template = 
-                        (RequestSecurityTokenTemplate) wcf.create(tokenType, SecurityPolicyQName.REQUESTSECURITYTOKENTEMPLATE.getQName());
+                        (RequestSecurityTokenTemplate) wcf.create(tokenType, SecurityPolicyQName.REQUESTSECURITYTOKENTEMPLATE.getQName(configVersion));
                 tokenType.addExtensibilityElement(template);
                 
-                TokenType trustTokenType = PolicyModelHelper.createElement(template, TrustQName.TOKENTYPE.getQName(), TokenType.class, false);
+                TokenType trustTokenType = pmh.createElement(template, TrustQName.TOKENTYPE.getQName(configVersion), TokenType.class, false);
                 trustTokenType.setContent(ComboConstants.ISSUED_TOKENTYPE_SAML11_POLICYSTR);
                 
-                KeyType trustKeyType = PolicyModelHelper.createElement(template, TrustQName.KEYTYPE.getQName(), KeyType.class, false);
-                trustKeyType.setContent(ComboConstants.ISSUED_KEYTYPE_SYMMETRIC_POLICYSTR);
+                KeyType trustKeyType = pmh.createElement(template, TrustQName.KEYTYPE.getQName(configVersion), KeyType.class, false);
+                String nsStart = TrustQName.getNamespaceUri(configVersion);
+                trustKeyType.setContent(nsStart + ComboConstants.ISSUED_KEYTYPE_SYMMETRIC_POLICYSTR);
 
-                KeySize trustKeySize = PolicyModelHelper.createElement(template, TrustQName.KEYSIZE.getQName(), KeySize.class, false);
+                KeySize trustKeySize = pmh.createElement(template, TrustQName.KEYSIZE.getQName(configVersion), KeySize.class, false);
                 trustKeySize.setContent(ComboConstants.ISSUED_KEYSIZE_256);
 
-                SecurityPolicyModelHelper.enableRequireInternalReference(tokenType, true);            
+                SecurityPolicyModelHelper.getInstance(configVersion).enableRequireInternalReference(tokenType, true);            
             }
         } finally {
             if (!isTransaction) {
@@ -745,11 +807,17 @@ public class SecurityTokensModelHelper {
                 KeyType kType = rst.getKeyType();
                 if (kType != null) {
                     String type = kType.getContent();
-                    if (ComboConstants.ISSUED_KEYTYPE_PUBLIC_POLICYSTR.equals(type)) {
-                        return ComboConstants.ISSUED_KEYTYPE_PUBLIC;
-                    }
-                    if (ComboConstants.ISSUED_KEYTYPE_SYMMETRIC_POLICYSTR.equals(type)) {
-                        return ComboConstants.ISSUED_KEYTYPE_SYMMETRIC;
+                    if (type!= null) {
+                        if (type.endsWith(ComboConstants.ISSUED_KEYTYPE_PUBLIC_POLICYSTR)) {
+                            return ComboConstants.ISSUED_KEYTYPE_PUBLIC;
+                        }
+                        if (type.endsWith(ComboConstants.ISSUED_KEYTYPE_SYMMETRIC_POLICYSTR)) {
+                            return ComboConstants.ISSUED_KEYTYPE_SYMMETRIC;
+                        }
+                        if (type.endsWith(ComboConstants.ISSUED_KEYTYPE_NOPROOF_POLICYSTR) ||
+                            type.endsWith(ComboConstants.ISSUED_KEYTYPE_NOPROOF13_POLICYSTR)) {
+                            return ComboConstants.ISSUED_KEYTYPE_NOPROOF;
+                        }
                     }
                 }
             }
@@ -801,7 +869,7 @@ public class SecurityTokensModelHelper {
         return null;
     }
 
-    public static void setIssuedTokenAddressAttributes(WSDLComponent token, String address, String metaAddress) {
+    public void setIssuedTokenAddressAttributes(WSDLComponent token, String address, String metaAddress) {
         WSDLModel model = token.getModel();
 
         boolean isTransaction = model.isIntransaction();
@@ -810,16 +878,17 @@ public class SecurityTokensModelHelper {
         }
 
         try {
-            Issuer i = PolicyModelHelper.createElement(token, TokensQName.ISSUER.getQName(), Issuer.class, false);
-            Address10 a = PolicyModelHelper.createElement(i, Addressing10QName.ADDRESS.getQName(), Address10.class, false);
+            PolicyModelHelper pmh = PolicyModelHelper.getInstance(configVersion);            
+            Issuer i = pmh.createElement(token, SecurityPolicyQName.ISSUER.getQName(configVersion), Issuer.class, false);
+            Address10 a = pmh.createElement(i, Addressing10QName.ADDRESS.getQName(), Address10.class, false);
             a.setAddress(address);
 
-            Addressing10Metadata am = PolicyModelHelper.createElement(i, 
+            Addressing10Metadata am = pmh.createElement(i, 
                     Addressing10QName.ADDRESSINGMETADATA.getQName(), Addressing10Metadata.class, false);
-            Metadata m = PolicyModelHelper.createElement(am, MexQName.METADATA.getQName(), Metadata.class, false);
-            MetadataSection ms = PolicyModelHelper.createElement(m, MexQName.METADATASECTION.getQName(), MetadataSection.class, false);
-            MetadataReference mr = PolicyModelHelper.createElement(ms, MexQName.METADATAREFERENCE.getQName(), MetadataReference.class, false);
-            Address10 ma = PolicyModelHelper.createElement(mr, Addressing10QName.ADDRESS.getQName(), Address10.class, false);
+            Metadata m = pmh.createElement(am, MexQName.METADATA.getQName(), Metadata.class, false);
+            MetadataSection ms = pmh.createElement(m, MexQName.METADATASECTION.getQName(), MetadataSection.class, false);
+            MetadataReference mr = pmh.createElement(ms, MexQName.METADATAREFERENCE.getQName(), MetadataReference.class, false);
+            Address10 ma = pmh.createElement(mr, Addressing10QName.ADDRESS.getQName(), Address10.class, false);
             ma.setAddress(metaAddress);
         } finally {
             if (!isTransaction) {
@@ -828,7 +897,7 @@ public class SecurityTokensModelHelper {
         }
     }
 
-    public static void setIssuedTokenRSTAttributes(WSDLComponent token, String tokenType, String keyType, String keySize) {
+    public void setIssuedTokenRSTAttributes(WSDLComponent token, String tokenType, String keyType, String keySize) {
         WSDLModel model = token.getModel();
 
         boolean isTransaction = model.isIntransaction();
@@ -837,11 +906,12 @@ public class SecurityTokensModelHelper {
         }
 
         try {
-            RequestSecurityTokenTemplate rst = PolicyModelHelper.createElement(token, 
-                    SecurityPolicyQName.REQUESTSECURITYTOKENTEMPLATE.getQName(), 
+            PolicyModelHelper pmh = PolicyModelHelper.getInstance(configVersion);
+            RequestSecurityTokenTemplate rst = pmh.createElement(token, 
+                    SecurityPolicyQName.REQUESTSECURITYTOKENTEMPLATE.getQName(configVersion), 
                     RequestSecurityTokenTemplate.class, false);
             
-            TokenType t = PolicyModelHelper.createElement(rst, TrustQName.TOKENTYPE.getQName(), TokenType.class, false); 
+            TokenType t = pmh.createElement(rst, TrustQName.TOKENTYPE.getQName(configVersion), TokenType.class, false);
             if (tokenType.equals(ComboConstants.ISSUED_TOKENTYPE_SAML20)) {
                 t.setContent(ComboConstants.ISSUED_TOKENTYPE_SAML20_POLICYSTR);
             }
@@ -852,15 +922,23 @@ public class SecurityTokensModelHelper {
                 t.setContent(ComboConstants.ISSUED_TOKENTYPE_SAML10_POLICYSTR);
             }
 
-            KeyType k = PolicyModelHelper.createElement(rst, TrustQName.KEYTYPE.getQName(), KeyType.class, false);
+            KeyType k = pmh.createElement(rst, TrustQName.KEYTYPE.getQName(configVersion), KeyType.class, false);
+            String nsStart = TrustQName.getNamespaceUri(configVersion);
             if (keyType.equals(ComboConstants.ISSUED_KEYTYPE_PUBLIC)) {
-                k.setContent(ComboConstants.ISSUED_KEYTYPE_PUBLIC_POLICYSTR);
+                k.setContent(nsStart + ComboConstants.ISSUED_KEYTYPE_PUBLIC_POLICYSTR);
             }
             if (keyType.equals(ComboConstants.ISSUED_KEYTYPE_SYMMETRIC)) {
-                k.setContent(ComboConstants.ISSUED_KEYTYPE_SYMMETRIC_POLICYSTR);
+                k.setContent(nsStart + ComboConstants.ISSUED_KEYTYPE_SYMMETRIC_POLICYSTR);
+            }
+            if (keyType.equals(ComboConstants.ISSUED_KEYTYPE_NOPROOF)) {
+                if (ConfigVersion.CONFIG_1_3 == configVersion) {
+                    k.setContent(nsStart + ComboConstants.ISSUED_KEYTYPE_NOPROOF13_POLICYSTR);
+                } else {
+                    k.setContent(ComboConstants.ISSUED_KEYTYPE_NOPROOF_POLICYSTR);
+                }
             }
 
-            KeySize s = PolicyModelHelper.createElement(rst, TrustQName.KEYSIZE.getQName(), KeySize.class, false);
+            KeySize s = pmh.createElement(rst, TrustQName.KEYSIZE.getQName(configVersion), KeySize.class, false);
             s.setContent(keySize);
             
         } finally {

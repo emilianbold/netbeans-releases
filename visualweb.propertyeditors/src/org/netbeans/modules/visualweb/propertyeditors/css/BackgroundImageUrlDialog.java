@@ -54,6 +54,7 @@ import org.openide.util.NbBundle;
  * @author  Winston Prakash
  */
 public class BackgroundImageUrlDialog extends StandardUrlPanel{
+    private boolean cancelled;
     
     private JDialog dialog;
     private DialogDescriptor dlg = null;
@@ -74,6 +75,8 @@ public class BackgroundImageUrlDialog extends StandardUrlPanel{
                 if (o == option[0]) {
                     // Dismiss the dialog
                     dialog.hide();
+                }else if (o == option[1]) {
+                    cancelled = true;
                 }
             }
         };
@@ -86,5 +89,9 @@ public class BackgroundImageUrlDialog extends StandardUrlPanel{
         dialog.setResizable(true);
         dialog.pack();
         dialog.show();
+    }
+    
+    public boolean isCancelled(){
+        return cancelled;
     }
 }

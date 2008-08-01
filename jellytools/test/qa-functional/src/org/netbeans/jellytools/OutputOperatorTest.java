@@ -44,6 +44,7 @@ package org.netbeans.jellytools;
 import java.awt.Toolkit;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
+import java.io.IOException;
 import org.netbeans.jellytools.actions.DebugProjectAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.EventTool;
@@ -60,7 +61,19 @@ import org.netbeans.junit.NbTestSuite;
  * @author Jiri.Skrivanek@sun.com
  */
 public class OutputOperatorTest extends JellyTestCase {
-    
+
+    static final String[] tests = new String[] {
+        "testInvoke",
+        "testGetOutputTab",
+        "testGetText",
+        "testSelectAll",
+        "testCopy",
+        "testFind",
+        "testFindNext",
+        "testWrapText",
+        "testSaveAs",
+        "testClear",
+        "testVerify"};
     public OutputOperatorTest(java.lang.String testName) {
         super(testName);
     }
@@ -70,6 +83,7 @@ public class OutputOperatorTest extends JellyTestCase {
     }
     
     public static NbTest suite() {
+        /*
         NbTestSuite suite = new NbTestSuite();
         // suites have to be in particular order
         suite.addTest(new OutputOperatorTest("testInvoke"));
@@ -88,11 +102,14 @@ public class OutputOperatorTest extends JellyTestCase {
         suite.addTest(new OutputOperatorTest("testClear"));
         suite.addTest(new OutputOperatorTest("testVerify"));
         return suite;
+         */
+        return (NbTest) createModuleTest(OutputOperatorTest.class, tests);
     }
     
     /** Print out test name. */
-    public void setUp() {
+    public void setUp() throws IOException {
         System.out.println("### "+getName()+" ###");
+        openDataProjects("SampleProject");
     }
     
     // OutputOperator instance used in tests

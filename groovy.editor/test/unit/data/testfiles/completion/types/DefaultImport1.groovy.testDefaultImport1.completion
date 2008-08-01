@@ -1,0 +1,5 @@
+Code completion result for source line:
+FileSys|       // java.io.FileSystem
+(QueryType=COMPLETION, NameKind=PREFIX)
+------------------------------------
+CLASS      FileSystem                                 null

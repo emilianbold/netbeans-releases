@@ -1,23 +1,46 @@
 /*
- * The contents of this file are subject to the terms of the Common Development
- * and Distribution License (the License). You may not use this file except in
- * compliance with the License.
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
- * or http://www.netbeans.org/cddl.txt.
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
  *
- * When distributing Covered Code, include this CDDL Header Notice in each file
- * and include the License file at http://www.netbeans.org/cddl.txt.
- * If applicable, add the following below the CDDL Header, with the fields
- * enclosed by brackets [] replaced by your own identifying information:
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License. When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Sun in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
  */
 package org.netbeans.modules.bpel.design;
 
+import java.awt.Rectangle;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Point;
@@ -25,7 +48,6 @@ import java.awt.Point;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.dnd.DropTarget;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.util.logging.Level;
@@ -50,7 +72,7 @@ import org.netbeans.modules.bpel.design.decoration.providers.ToolbarDecorationPr
 import org.netbeans.modules.bpel.design.model.patterns.ProcessPattern;
 import org.netbeans.modules.bpel.design.model.patterns.SequencePattern;
 import org.netbeans.modules.bpel.editors.api.nodes.NodeType;
-import org.netbeans.modules.bpel.editors.api.utils.Util;
+import org.netbeans.modules.bpel.editors.api.EditorUtil;
 import org.netbeans.modules.bpel.editors.multiview.DesignerMultiViewElement;
 import org.netbeans.modules.bpel.design.DiagramView;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
@@ -62,7 +84,6 @@ import org.netbeans.modules.bpel.design.model.connections.ConnectionManager;
 import org.netbeans.modules.bpel.design.model.patterns.CompositePattern;
 import org.netbeans.modules.bpel.design.model.patterns.Pattern;
 import org.netbeans.modules.bpel.design.selection.FlowlinkTool;
-import org.netbeans.modules.bpel.design.selection.GhostSelection;
 import org.netbeans.modules.bpel.design.selection.EntitySelectionModel;
 
 import org.netbeans.modules.bpel.design.layout.LayoutManager;
@@ -73,7 +94,7 @@ import org.openide.util.Lookup;
 
 import org.openide.nodes.Node;
 import org.netbeans.modules.bpel.core.helper.api.BusinessProcessHelper;
-import org.netbeans.modules.bpel.core.util.BPELValidationController;
+import org.netbeans.modules.soa.validation.core.Controller;
 import org.netbeans.modules.bpel.design.decoration.Decoration;
 import org.netbeans.modules.bpel.design.decoration.DecorationProviderFactory;
 import org.netbeans.modules.bpel.design.decoration.components.GlassPane;
@@ -81,10 +102,10 @@ import org.netbeans.modules.bpel.design.decoration.providers.SelectionDecoration
 import org.netbeans.modules.bpel.design.decoration.providers.ValidationDecorationProvider;
 import org.netbeans.modules.bpel.design.geometry.FDimension;
 import org.netbeans.modules.bpel.design.geometry.FPoint;
-import org.netbeans.modules.bpel.design.phmode.PlaceHolderSelectionModel;
 import org.netbeans.modules.soa.ui.nodes.NodeFactory;
 import org.netbeans.modules.bpel.design.PartnerlinksView;
 import org.netbeans.modules.bpel.design.ProcessView;
+import org.netbeans.modules.bpel.design.actions.CancelAction;
 import org.netbeans.modules.bpel.design.actions.CollapseCurrentPatternAction;
 import org.netbeans.modules.bpel.design.actions.DeleteAction;
 import org.netbeans.modules.bpel.design.actions.ExpandAllPatternsAction;
@@ -93,9 +114,14 @@ import org.netbeans.modules.bpel.design.actions.FindUsagesAction;
 import org.netbeans.modules.bpel.design.actions.GoToLoggingAction;
 import org.netbeans.modules.bpel.design.actions.GoToMapperAction;
 import org.netbeans.modules.bpel.design.actions.GoToSourceAction;
+import org.netbeans.modules.bpel.design.actions.RenameAction;
+import org.netbeans.modules.bpel.design.actions.ScrollToOperationAction;
 import org.netbeans.modules.bpel.design.actions.ShowContextMenuAction;
 import org.netbeans.modules.bpel.design.actions.TabToNextComponentAction;
+import org.netbeans.modules.bpel.design.geometry.FBounds;
 import org.netbeans.modules.bpel.design.model.PartnerRole;
+import org.netbeans.modules.bpel.design.model.connections.MessageConnection;
+import org.netbeans.modules.bpel.design.model.elements.VisualElement;
 import org.netbeans.modules.bpel.nodes.actions.GoToAction;
 import org.netbeans.modules.bpel.nodes.actions.ShowBpelMapperAction;
 import org.netbeans.modules.bpel.properties.NodeUtils;
@@ -112,16 +138,13 @@ public class DesignView extends JPanel implements
 
     private double zoom = 1;
     private Lookup lookup;
-    private DropTarget dTarget;
+
     private DiagramModel diagramModel;
     private EntitySelectionModel selectionModel;
     private LayoutManager layoutManager;
     private ConnectionManager connectionManager;
 
     private DnDHandler dndHandler;
-    private GhostSelection ghost;
-
-    private PlaceHolderSelectionModel phSelectionModel;
     private CopyPasteHandler copyPasteHandler;
     private FlowlinkTool flowLinkTool;
 
@@ -142,7 +165,7 @@ public class DesignView extends JPanel implements
 
     private NavigationTools navigationTools;
     private RightStripe rightStripe;
-    private DesignViewMode designViewMode = DesignViewMode.DESIGN;
+
 
     private PartnerlinksView consumersView;
     private PartnerlinksView providersView;
@@ -204,10 +227,9 @@ public class DesignView extends JPanel implements
 
         dndHandler = new DnDHandler(this);
 
-        ghost = new GhostSelection(this);
         flowLinkTool = new FlowlinkTool(this);
         copyPasteHandler = new CopyPasteHandler(this);
-//FIXME    phSelectionModel = new PlaceHolderSelectionModel(placeHolderManager);
+
 
         layoutManager = new LayoutManager();
         connectionManager = new ConnectionManager();
@@ -224,6 +246,14 @@ public class DesignView extends JPanel implements
         setFocusCycleRoot(true);
         setFocusTraversalKeysEnabled(false);
 
+        scrollPane.addScrollListener(new TriScrollPane.ScrollListener() {
+
+            public void viewScrolled(JComponent view) {
+                overlayView.revalidate();
+                overlayView.repaint();
+            }
+        });
+        
         reloadModel();
         diagramChanged();
     }
@@ -266,7 +296,11 @@ public class DesignView extends JPanel implements
     public NavigationTools getNavigationTools() {
         return navigationTools;
     }
-
+    
+    public CopyPasteHandler getCopyPasteHandler(){
+        return this.copyPasteHandler;
+    }
+    
     public RightStripe getRightStripe() {
         return rightStripe;
     }
@@ -330,28 +364,16 @@ public class DesignView extends JPanel implements
         selectionBridge.release();
     }
 
-    public BPELValidationController getValidationController() {
-        return getLookup().lookup(BPELValidationController.class);
+    public Controller getValidationController() {
+        return getLookup().lookup(Controller.class);
     }
 
     public EntitySelectionModel getSelectionModel() {
         return selectionModel;
     }
 
-    public PlaceHolderSelectionModel getPhSelectionModel() {
-        return phSelectionModel;
-    }
-
-    public GhostSelection getGhost() {
-        return ghost;
-    }
-
     public FlowlinkTool getFlowLinkTool() {
         return flowLinkTool;
-    }
-
-    public CopyPasteHandler getCopyPasteHandler() {
-        return copyPasteHandler;
     }
 
     public DecorationManager getDecorationManager() {
@@ -395,8 +417,7 @@ public class DesignView extends JPanel implements
             return null;
         }
 
-        NodeType nodeType = Util.getBasicNodeType(pattern
-                .getOMReference());
+        NodeType nodeType = EditorUtil.getBasicNodeType(pattern.getOMReference());
 
         NodeFactory factory = getNodeFactory();
 
@@ -464,6 +485,8 @@ public class DesignView extends JPanel implements
         im1.put(KeyStroke.getKeyStroke(KeyEvent.VK_F2, 0), "rename-something"); // NOI18N
         im1.put(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0), "delete-something"); // NOI18N
         im1.put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "cancel-something"); // NOI18N
+        im2.put(KeyStroke.getKeyStroke(KeyEvent.VK_S, KeyEvent.ALT_DOWN_MASK 
+                + KeyEvent.SHIFT_DOWN_MASK), "scroll-to-operation"); // NOI18N
 
         KeyStroke gotoSourceKey = GoToAction.getKeyStroke(org.netbeans.modules.bpel.nodes.actions.GoToSourceAction.class);
         KeyStroke gotoMapperKey = GoToAction.getKeyStroke(ShowBpelMapperAction.class);
@@ -535,9 +558,9 @@ public class DesignView extends JPanel implements
         im2.put(KeyStroke.getKeyStroke(KeyEvent.VK_V, KeyEvent.CTRL_DOWN_MASK), "paste-pattern"); // NOI18N
         im2.put(KeyStroke.getKeyStroke(KeyEvent.VK_X, KeyEvent.CTRL_DOWN_MASK), "cut-pattern"); // NOI18N
 
-       // am.put("rename-something", new RenameAction()); // NOI18N
+        am.put("rename-something", new RenameAction(this)); // NOI18N
         am.put("delete-something", new DeleteAction(this)); // NOI18N
-      //  am.put("cancel-something", new CancelAction()); // NOI18N
+        am.put("cancel-something", new CancelAction(this)); // NOI18N
         am.put("gotosource-something", new GoToSourceAction(this)); // NOI18N
         am.put("gotomapper-something", new GoToMapperAction(this)); // NOI18N
         am.put("gotologging-something", new GoToLoggingAction(this)); // NOI18N
@@ -546,6 +569,7 @@ public class DesignView extends JPanel implements
         am.put("show_context_menu", new ShowContextMenuAction(this)); // NOI18N
         am.put("go_next_hierarchy_component", new TabToNextComponentAction(this, true)); // NOI18N
         am.put("go_previous_hierarchy_component", new TabToNextComponentAction(this, false)); // NOI18N
+        am.put("scroll-to-operation", new ScrollToOperationAction(this)); // NOI18N
 //
 //        am.put("go_nearest_right_component", new GoRightNearestComponentAction()); // NOI18N
 //        am.put("go_nearest_left_component", new GoLeftNearestComponentAction()); // NOI18N
@@ -556,9 +580,9 @@ public class DesignView extends JPanel implements
         am.put("collapse-current-pattern", new CollapseCurrentPatternAction(this)); // NOI18N
         am.put("expand-all-patterns", new ExpandAllPatternsAction(this));
 //
-//        am.put("copy-pattern", new CopyAction()); // NOI18N
-//        am.put("cut-pattern", new CutAction()); // NOI18N
-//        am.put("paste-pattern", new PasteAction()); // NOI18N
+        am.put("copy-pattern", getCopyPasteHandler().getCopyAction()); // NOI18N
+        am.put("cut-pattern", getCopyPasteHandler().getCutAction()); // NOI18N
+        am.put("paste-pattern", getCopyPasteHandler().getPasteAction()); // NOI18N
 
 /**
          im2.put(KeyStroke.getKeyStroke(KeyEvent.VK_C, KeyEvent.CTRL_DOWN_MASK), "copy-pattern"); // NOI18N
@@ -626,25 +650,33 @@ public class DesignView extends JPanel implements
             int printHeight = (int) Math.round(dim.height
                     + 2 * LayoutManager.VMARGIN);
 
-            putClientProperty(Dimension.class, new Dimension(printWidth, printHeight));
-
-
-
             processView.revalidate();
             consumersView.revalidate();
             providersView.revalidate();
 
             repaint();
 
-            errorPanel.uninstall();
+            installErrorPanel(false);
 
             rightStripe.repaint();
         } else {
             setToolBarEnabled(false);
-            errorPanel.install();
+            installErrorPanel(true);
         }
     }
 
+    private void installErrorPanel(boolean install){
+        if (install){
+            errorPanel.updateErrorMessage();
+            this.remove(scrollPane);
+            this.add(errorPanel);
+            
+        } else {
+            this.remove(errorPanel);
+            this.add(scrollPane);
+        }
+        
+    }
     private void setToolBarEnabled(final boolean enabled) {
         zoomManager.setEnabled(enabled);
         navigationTools.setEnabled(enabled);
@@ -673,7 +705,7 @@ public class DesignView extends JPanel implements
     }
 
     private JComponent findToolBar() {
-        for (Component c = getView().getParent(); c != null;
+        for (Component c = getParent(); c != null;
                 c = c.getParent())
         {
             if (c instanceof DesignerMultiViewElement) {
@@ -684,10 +716,6 @@ public class DesignView extends JPanel implements
         return null;
     }
 
-
-    public JComponent getView() {
-        return (errorPanel.isInstalled()) ? errorPanel : this;
-    }
 
     public TopComponent getTopComponent() {
         return (TopComponent) SwingUtilities
@@ -707,7 +735,6 @@ public class DesignView extends JPanel implements
     public double getCorrectedZoom() {
         return zoomManager.getScale() * DiagramFontUtil.getZoomCorrection();
     }
-
 
     public Pattern getRootPattern() {
         return diagramModel.getRootPattern();
@@ -848,23 +875,9 @@ public class DesignView extends JPanel implements
 
     protected void printChildren(Graphics g) {}
 
-    public void goPlaceHolderMode(Pattern clipboard, boolean isCopyAction) {
-        if (clipboard == null) {
-            return;
-        }
-        CopyPasteHandler cpHandler = getCopyPasteHandler();
-        cpHandler.initPlaceHolderMode(clipboard);
-        setDesignViewMode(isCopyAction
-                ? DesignViewMode.COPY_PLACE_HOLDER
-                : DesignViewMode.CUT_PLACE_HOLDER);
-    }
 
-    private void exitPlaceHolderMode() {
 
-        CopyPasteHandler cpHandler = getCopyPasteHandler();
-        cpHandler.exitPlaceHolderMode();
-        setDesignViewMode(DesignViewMode.DESIGN);
-    }
+
 
 //FIXME
     public FPoint convertScreenToDiagram(Point point) {
@@ -906,7 +919,54 @@ public class DesignView extends JPanel implements
         consumersView.scrollPatternToView(pattern);
         processView.scrollPatternToView(pattern);
         providersView.scrollPatternToView(pattern);
+    }
+    
+    
+    public void scrollToOperation(MessageConnection messageConnection) {
+        VisualElement sourceElement = messageConnection.getSource();
+        VisualElement targetElement = messageConnection.getTarget();
 
+        Pattern sourcePattern = sourceElement.getPattern();
+
+        DiagramView centerView = getProcessView();
+
+        VisualElement centerElement;
+        VisualElement sideElement;
+
+        if (sourcePattern.getView() == centerView) {
+            centerElement = sourceElement;
+            sideElement = targetElement;
+        } else {
+            centerElement = targetElement;
+            sideElement = sourceElement;
+        }
+
+        DiagramView sideView = sideElement.getPattern().getView();
+
+        FBounds centerBounds = centerElement.getBounds();
+        Point centerPoint1 = centerView.convertDiagramToScreen(
+                centerBounds.getTopLeft());
+        Point centerPoint2 = centerView.convertDiagramToScreen(
+                centerBounds.getBottomRight());
+
+        FBounds sideBounds = sideElement.getBounds();
+        Point sidePoint1 = centerView.convertDiagramToScreen(
+                sideBounds.getTopLeft());
+        Point sidePoint2 = centerView.convertDiagramToScreen(
+                sideBounds.getBottomRight());
+
+        Rectangle centerVisibleRect = centerView.getVisibleRect();
+        Rectangle sideVisibleRect = sideView.getVisibleRect();
+
+        int centerOffset = (centerPoint2.y + centerPoint1.y) / 2 
+                - centerVisibleRect.y;
+
+        int sideOffset = (sidePoint1.y + sidePoint2.y) / 2 
+                - sideVisibleRect.y;
+
+        sideVisibleRect.y += sideOffset - centerOffset;
+
+        sideView.scrollRectToVisible(sideVisibleRect);
     }
 
     /**
@@ -1022,20 +1082,5 @@ public class DesignView extends JPanel implements
    
     public DnDHandler getDndHandler() {
         return dndHandler;
-    }
-
-    private DesignViewMode getDesignViewMode() {
-        return designViewMode;
-    }
-
-    private void setDesignViewMode(DesignViewMode mode) {
-        if (mode == null) {
-            return;
-        }
-        designViewMode = mode;
-    }
-
-    public boolean isDesignMode() {
-        return DesignViewMode.DESIGN.equals(designViewMode);
     }
 }

@@ -1,5 +1,7 @@
 <%@tag pageEncoding="UTF-8"%>
-
+<%
+    application.getClass();
+%>
 <%-- completion for JSP elements --%>
 <%--CC
 <jsp:|
@@ -23,17 +25,19 @@ String
 
 <jsp:useBean id="myBean" scope="request" class="java.lang.Byte"/>
 <%-- completion for beans in scriptlets  #58437 --%>
-<%--CC
-<% m|
+<% myBean.byteValue(); %>
+
+<%--
+<%  |   %>
 Byte myBean
-<% myBean
+<% myBean %>
 --%>
 
 <%-- Java completion for beans in scriptlets #58437 --%>
-<%--CC
-<% myBean.|
+<%--
+<% myBean.| %>
 int SIZE
-<% myBean.SIZE
+<% myBean.SIZE %>
 --%>
 
 

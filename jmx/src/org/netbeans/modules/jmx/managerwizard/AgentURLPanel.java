@@ -45,12 +45,11 @@ import java.awt.Component;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.util.ResourceBundle;
-import javax.swing.JDialog;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.netbeans.modules.jmx.GenericWizardPanel;
-import org.netbeans.modules.jmx.WizardConstants;
+import org.netbeans.modules.jmx.common.GenericWizardPanel;
+import org.netbeans.modules.jmx.common.WizardConstants;
 import org.netbeans.modules.jmx.managerwizard.ManagerPopup;
 import org.openide.WizardDescriptor;
 import org.openide.awt.Mnemonics;
@@ -428,11 +427,11 @@ public class AgentURLPanel extends javax.swing.JPanel implements DocumentListene
     // </editor-fold>//GEN-END:initComponents
 
     private void jmxAgentURLPopupJButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jmxAgentURLPopupJButtonActionPerformed
-        ManagerPopup rmiPopup = new ManagerPopup(getPanel());
+        ManagerPopup rmiPopup = new ManagerPopup(getPanel());//GEN-HEADEREND:event_jmxAgentURLPopupJButtonActionPerformed
     }//GEN-LAST:event_jmxAgentURLPopupJButtonActionPerformed
 
     private void codeExampleJRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_codeExampleJRadioButtonActionPerformed
-        codeExampleRadioButtonSelected = codeExampleJRadioButton.isSelected();
+        codeExampleRadioButtonSelected = codeExampleJRadioButton.isSelected();//GEN-HEADEREND:event_codeExampleJRadioButtonActionPerformed
         
         rmiUserNameJLabel.setEnabled(false);
         rmiUserNameJTextField.setEnabled(false);
@@ -443,7 +442,7 @@ public class AgentURLPanel extends javax.swing.JPanel implements DocumentListene
     }//GEN-LAST:event_codeExampleJRadioButtonActionPerformed
 
     private void userCredentialsJRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_userCredentialsJRadioButtonActionPerformed
-        userCredentialsRadioButtonSelected = userCredentialsJRadioButton.isSelected();
+        userCredentialsRadioButtonSelected = userCredentialsJRadioButton.isSelected();//GEN-HEADEREND:event_userCredentialsJRadioButtonActionPerformed
         
         rmiUserNameJLabel.setEnabled(userCredentialsRadioButtonSelected);
         rmiUserNameJTextField.setEnabled(userCredentialsRadioButtonSelected);
@@ -457,7 +456,7 @@ public class AgentURLPanel extends javax.swing.JPanel implements DocumentListene
     }//GEN-LAST:event_userCredentialsJRadioButtonActionPerformed
 
     private void securityJCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_securityJCheckBoxActionPerformed
-        securityCheckBoxSelected = securityJCheckBox.isSelected();
+        securityCheckBoxSelected = securityJCheckBox.isSelected();//GEN-HEADEREND:event_securityJCheckBoxActionPerformed
         
         if (securityCheckBoxSelected) {
             // enable the two rbtn by default
@@ -581,7 +580,7 @@ public class AgentURLPanel extends javax.swing.JPanel implements DocumentListene
          */
         private void setErrorMsg(String message) {
             if (wiz != null) {
-                wiz.putProperty(WizardConstants.WIZARD_ERROR_MESSAGE,
+                wiz.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
                         message);
             }
         }
@@ -621,7 +620,7 @@ public class AgentURLPanel extends javax.swing.JPanel implements DocumentListene
         {
             wiz = (WizardDescriptor) settings;
             
-            wiz.putProperty(WizardConstants.WIZARD_ERROR_MESSAGE, WizardConstants.EMPTY_STRING);
+            wiz.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, WizardConstants.EMPTY_STRING);
             //getPanel().mainClassJCheckBox.setEnabled(shouldEnableMainProjectClass());
         }
         

@@ -58,21 +58,19 @@
 
         <localizing-bundle>org.netbeans.modules.websvc.saas.services.zillow.Bundle</localizing-bundle>
 
-        <group name="Zillow">
-        </group>
-
-        <authentication profile="SaaSServices/Zillow/profile.properties">
+        <group name="Zillow"/>
+        
+        <code-gen>
+            <artifacts targets="java,servlet,resource,jsp" profile="Templates/SaaSServices/apikey.properties"/>
+            <artifacts targets="php" profile="Templates/SaaSServices/apikey.php"/>
+        </code-gen>
+        
+        <authentication>
             <api-key id="zws-id"/>
         </authentication>
 
     </saas-metadata>
 
-    <!--
-    <methods>
-        <method name="getComps" href="#zillow.homevaluation_GetComps"/>
-        <method name="getRegionChart" href="#zillow.homevaluation_GetRegionChart"/>
-        <method name="getZestimate" href="#zillow.homevaluation_GetZestimate"/>
-    </methods>
-    -->
+    <methods/>
     
 </saas-services>

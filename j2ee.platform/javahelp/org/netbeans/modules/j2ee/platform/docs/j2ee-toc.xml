@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='ISO-8859-1'  ?>
 
 <!--
-*     Copyright © 2007 Sun Microsystems, Inc. All rights reserved.
+*     Copyright © 2008 Sun Microsystems, Inc. All rights reserved.
 *     Use is subject to license terms.
 -->
 
@@ -104,6 +104,7 @@
                 <tocitem text="Creating an Entity Class" target="persist_entityclass" />
                 <tocitem text="Mapping Entity Classes" target="persist_mapping" />
                 <tocitem text="Generating Entity Classes from a Database" target="persist_fromdb" />
+                <tocitem text="Generating JPA Controller Classes from Entity Classes" target="persist_jpafromentity" />
                 <tocitem text="Generating Session Beans for Entity Classes" target="persist_session" />
                 <tocitem text="Obtaining an Entity Manager" target="persist_entitymanager" />
                 <tocitem text="Adding Support for Java Persistence" target="persist_support" />
@@ -165,7 +166,7 @@
                 <tocitem text="About Creating Web Services" target="about_implement_ws" />
                  <tocitem text="RESTful Web Service Creation" >
                     <tocitem text="Generating a RESTful Web Service from Scratch" target="create_rest_from_scratch" />
-                    <tocitem text="Using the Preregistered RESTful Web Service Components" target="wsc_rest" />
+                    <tocitem text="SaaS Components and the Web Service Manager" target="wsc_rest" />
                     <tocitem text="Generating RESTful Web Service Client Stubs" target="wsc_stubs" />
                     <tocitem text="Testing a RESTful Web Service" target="test_rest" />
                 </tocitem>
@@ -190,6 +191,7 @@
                 <tocitem text="About Deployment Descriptors" target="about_deployment_descriptors" />
                 <tocitem text="Configuring via Annotations" target="config_ws_annotations" />
                 <tocitem text="Configuring via Deployment Descriptors" target="config_ws_dd" />
+                <tocitem text="Configuring Axis2 Web Services" target="configure_axis"></tocitem>
             </tocitem>  
             <tocitem text="Building Web Services" >
                 <tocitem text="About Building Web Services" target="about_build_ws" />

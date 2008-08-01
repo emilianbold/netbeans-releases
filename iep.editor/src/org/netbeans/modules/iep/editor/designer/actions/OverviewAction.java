@@ -19,34 +19,34 @@ import com.nwoods.jgo.JGoView;
 
 public class OverviewAction extends AbstractAction {
 
-	public final static String OVERVIEW_NAME = "Overview";
+    public final static String OVERVIEW_NAME = "Overview";
     
     public final static ImageIcon OVERVIEW_ICON = ImageUtil.getImageIcon("overview.gif");
 
     private static final java.util.logging.Logger mLog = java.util.logging.Logger.getLogger(OverviewAction.class.getName());
 
-	private JGoView mView;
-	private IEPModel mModel;
-	
-	private JGoOverview mOverview;
+    private JGoView mView;
+    private IEPModel mModel;
+    
+    private JGoOverview mOverview;
     private JDialog mOverviewDialog;
     
     public OverviewAction(JGoView view, IEPModel model) {
-    	this.mView = view;
-    	this.mModel = model;
-    	
-    	this.putValue(NAME, OVERVIEW_NAME);
-    	this.putValue(SMALL_ICON, OVERVIEW_ICON);
-    	
-    	String shortDesc = NbBundle.getMessage(PlanCanvas.class,"PlanDesigner.Overview");
-    	this.putValue(SHORT_DESCRIPTION , shortDesc);
+        this.mView = view;
+        this.mModel = model;
+        
+        this.putValue(NAME, OVERVIEW_NAME);
+        this.putValue(SMALL_ICON, OVERVIEW_ICON);
+        
+        String shortDesc = NbBundle.getMessage(PlanCanvas.class,"PlanDesigner.Overview");
+        this.putValue(SHORT_DESCRIPTION , shortDesc);
     }
     
-	public void actionPerformed(ActionEvent e) {
-		overviewAction();
-	}
-	
-	private void overviewAction() {
+    public void actionPerformed(ActionEvent e) {
+        overviewAction();
+    }
+    
+    private void overviewAction() {
         if (mOverview == null) {
             mOverview = new JGoOverview();
             mOverview.setObserved(this.mView);

@@ -46,6 +46,4 @@ made subject to such option by the copyright holder.
 
     <target name="netbeans-extra" depends="release"/>
 
-    <target name="release" depends="init"/>
-
 </project>

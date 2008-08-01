@@ -694,7 +694,11 @@ public class SpriteDialog extends javax.swing.JPanel implements ActionListener {
 			e.printStackTrace();
 		}
 
-		assert(imageURL != null);
+                //assert(imageURL != null);
+                    
+                if (imageURL == null) {
+                    return;
+                }
 		
 		this.sliderWidth.removeChangeListener(this.sliderListener);
 		this.sliderHeight.removeChangeListener(this.sliderListener);
@@ -742,20 +746,18 @@ public class SpriteDialog extends javax.swing.JPanel implements ActionListener {
 		return nearest;
 	}
 	
-	public void actionPerformed(ActionEvent e) {
-		//if OK button pressed create the new layer
-		if (e.getSource() == NotifyDescriptor.OK_OPTION) {
-			this.handleOKButton();
-		}
-		else if (e.getSource() == this.buttonImportImages) {
-			try         {
-                this.handleImportImagesButton();
+        public void actionPerformed(ActionEvent e) {
+            //if OK button pressed create the new layer
+            if (e.getSource() == NotifyDescriptor.OK_OPTION) {
+                this.handleOKButton();
+            } else if (e.getSource() == this.buttonImportImages) {
+                try {
+                    this.handleImportImagesButton();
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
             }
-            catch (IOException ex) {
-				ex.printStackTrace();
-            }
-		}
-	}
+        }
 		
 	private void handleImportImagesButton() throws IOException {
 		InputStream inImgPlatformTiles = SpriteDialog.class.getResourceAsStream("res/platform_tiles.png"); // NOI18N

@@ -101,7 +101,7 @@ public abstract class Tag extends SyntaxNode implements Element, XMLTokenIDs {
                     name = next.getImage();
                     while (next.getTokenID() != VALUE) {
                         next = next.getNext();
-                        if (next == null) break SCAN_LOOP;
+                        if (next == null || next.getTokenID() == ERROR) break SCAN_LOOP;
                     }
                     
                     // fuzziness to relax minor tokenization changes
@@ -149,58 +149,56 @@ public abstract class Tag extends SyntaxNode implements Element, XMLTokenIDs {
             // Get the document and lock it
             BaseDocument doc = (BaseDocument)support.getDocument();
             doc.atomicLock();
-            
-            // An attribute with the name was not found for the element
-            // Let's add it to the end
-            int insertStart = offset + length - 1;
-            
-            SCAN_LOOP:
-                for (TokenItem next = first().getNext(); next != null; next = next.getNext()) {
-                    TokenID id = next.getTokenID();
-                    if (id == ARGUMENT) {
-                        while (next.getTokenID() != VALUE) {
-                            next = next.getNext();
-                            if (next == null) break SCAN_LOOP;
-                        }
-                        
-                        if (next == null) break SCAN_LOOP;
-                        
-                        String image = next.getImage();
-                        char test = image.charAt(0);
-                        
-                        while (next.getTokenID() == VALUE || next.getTokenID() == CHARACTER) {
-                            String actualValue = Util.actualAttributeValue(image);
-                            if (!actualValue.equals(image)) {
-                                insertStart = next.getOffset() + actualValue.length();
-                                break SCAN_LOOP;
+            try {            
+                // An attribute with the name was not found for the element
+                // Let's add it to the end
+                int insertStart = offset + length - 1;
+
+                SCAN_LOOP:
+                    for (TokenItem next = first().getNext(); next != null; next = next.getNext()) {
+                        TokenID id = next.getTokenID();
+                        if (id == ARGUMENT) {
+                            while (next.getTokenID() != VALUE) {
+                                next = next.getNext();
+                                if (next == null) break SCAN_LOOP;
                             }
-                            next = next.getNext();
+
                             if (next == null) break SCAN_LOOP;
-                            
-                            // Check if this is the last token in the element and set the
-                            // insertStart if it is
-                            image = next.getImage();
-                            insertStart = next.getOffset();
-                            if (image.length() > 0 && image.charAt(image.length() - 1) == '>') {
-                                // The element is closing
-                                insertStart += image.length() - 1;
-                                if (image.length() > 1 && image.charAt(image.length() - 2) == '/') {
-                                    // We have a closed element at the form <blu/>
-                                    insertStart--;
+
+                            String image = next.getImage();
+                            char test = image.charAt(0);
+
+                            while (next.getTokenID() == VALUE || next.getTokenID() == CHARACTER) {
+                                String actualValue = Util.actualAttributeValue(image);
+                                if (!actualValue.equals(image)) {
+                                    insertStart = next.getOffset() + actualValue.length();
+                                    break SCAN_LOOP;
+                                }
+                                next = next.getNext();
+                                if (next == null) break SCAN_LOOP;
+
+                                // Check if this is the last token in the element and set the
+                                // insertStart if it is
+                                image = next.getImage();
+                                insertStart = next.getOffset();
+                                if (image.length() > 0 && image.charAt(image.length() - 1) == '>') {
+                                    // The element is closing
+                                    insertStart += image.length() - 1;
+                                    if (image.length() > 1 && image.charAt(image.length() - 2) == '/') {
+                                        // We have a closed element at the form <blu/>
+                                        insertStart--;
+                                    }
                                 }
                             }
+
+                            if (next == null) break SCAN_LOOP;
+                        } else if (id == WS) {
+                            // just skip
+                        } else {
+                            break; // end of element markup
                         }
-                        
-                        if (next == null) break SCAN_LOOP;
-                    } else if (id == WS) {
-                        // just skip
-                    } else {
-                        break; // end of element markup
                     }
-                }
                 
-                // Update the document
-                try {
                     doc.insertString(insertStart, stringToInsert, null);
                     doc.invalidateSyntaxMarks();
                 } catch( BadLocationException e ) {

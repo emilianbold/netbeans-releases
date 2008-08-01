@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,13 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * Contributor(s):
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -48,17 +48,22 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlAttribute;
+import javax.ws.rs.core.UriBuilder;
+import javax.persistence.EntityManager;
+import customerdb.Customer;
+import java.util.Collection;
 
 
 /**
  *
- * @author nam
+ * @author PeterLiu
  */
 
 @XmlRootElement(name = "discountCode")
 public class DiscountCodeConverter {
     private DiscountCode entity;
     private URI uri;
+    private int expandLevel;
     
     /** Creates a new instance of DiscountCodeConverter */
     public DiscountCodeConverter() {
@@ -70,10 +75,23 @@ public class DiscountCodeConverter {
      *
      * @param entity associated entity
      * @param uri associated uri
+     * @param expandLevel indicates the number of levels the entity graph should be expanded@param isUriExtendable indicates whether the uri can be extended
      */
-    public DiscountCodeConverter(DiscountCode entity, URI uri) {
+    public DiscountCodeConverter(DiscountCode entity, URI uri, int expandLevel, boolean isUriExtendable) {
         this.entity = entity;
-        this.uri = uri;
+        this.uri = (isUriExtendable) ? UriBuilder.fromUri(uri).path(entity.getDiscountCode() + "/").build() : uri;
+        this.expandLevel = expandLevel;
+    }
+
+    /**
+     * Creates a new instance of DiscountCodeConverter.
+     *
+     * @param entity associated entity
+     * @param uri associated uri
+     * @param expandLevel indicates the number of levels the entity graph should be expanded
+     */
+    public DiscountCodeConverter(DiscountCode entity, URI uri, int expandLevel) {
+        this(entity, uri, expandLevel, false);
     }
 
     /**
@@ -82,8 +100,8 @@ public class DiscountCodeConverter {
      * @return value for discountCode
      */
     @XmlElement
-    public String getDiscountCode() {
-        return entity.getDiscountCode();
+    public Character getDiscountCode() {
+        return (expandLevel > 0) ? entity.getDiscountCode() : null;
     }
 
     /**
@@ -91,7 +109,7 @@ public class DiscountCodeConverter {
      *
      * @param value the value to set
      */
-    public void setDiscountCode(String value) {
+    public void setDiscountCode(Character value) {
         entity.setDiscountCode(value);
     }
 
@@ -102,7 +120,7 @@ public class DiscountCodeConverter {
      */
     @XmlElement
     public BigDecimal getRate() {
-        return entity.getRate();
+        return (expandLevel > 0) ? entity.getRate() : null;
     }
 
     /**
@@ -119,10 +137,12 @@ public class DiscountCodeConverter {
      *
      * @return value for customerCollection
      */
-    @XmlElement(name = "customers")
+    @XmlElement
     public CustomersConverter getCustomerCollection() {
-        if (entity.getCustomerCollection() != null) {
-            return new CustomersConverter(entity.getCustomerCollection(), uri.resolve("customers/"));
+        if (expandLevel > 0) {
+            if (entity.getCustomerCollection() != null) {
+                return new CustomersConverter(entity.getCustomerCollection(), uri.resolve("customerCollection/"), expandLevel - 1);
+            }
         }
         return null;
     }
@@ -133,9 +153,7 @@ public class DiscountCodeConverter {
      * @param value the value to set
      */
     public void setCustomerCollection(CustomersConverter value) {
-        if (value != null) {
-            entity.setCustomerCollection(value.getEntities());
-        }
+        entity.setCustomerCollection((value != null) ? value.getEntities() : null);
     }
 
     /**
@@ -143,9 +161,17 @@ public class DiscountCodeConverter {
      *
      * @return the uri
      */
-    @XmlAttribute(name = "uri")
-    public URI getResourceUri() {
+    @XmlAttribute
+    public URI getUri() {
         return uri;
+    }
+
+    /**
+     * Sets the URI for this reference converter.
+     *
+     */
+    public void setUri(URI uri) {
+        this.uri = uri;
     }
 
     /**
@@ -155,15 +181,27 @@ public class DiscountCodeConverter {
      */
     @XmlTransient
     public DiscountCode getEntity() {
+        if (entity.getDiscountCode() == null) {
+            DiscountCodeConverter converter = UriResolver.getInstance().resolve(DiscountCodeConverter.class, uri);
+            if (converter != null) {
+                entity = converter.getEntity();
+            }
+        }
         return entity;
     }
 
     /**
-     * Sets the DiscountCode entity.
+     * Returns the resolved DiscountCode entity.
      *
-     * @param entity to set
+     * @return an resolved entity
      */
-    public void setEntity(DiscountCode entity) {
-        this.entity = entity;
+    public DiscountCode resolveEntity(EntityManager em) {
+        Collection<Customer> customerCollection = entity.getCustomerCollection();
+        Collection<Customer> newcustomerCollection = new java.util.ArrayList<Customer>();
+        for (Customer item : customerCollection) {
+            newcustomerCollection.add(em.getReference(Customer.class, item.getCustomerId()));
+        }
+        entity.setCustomerCollection(newcustomerCollection);
+        return entity;
     }
 }

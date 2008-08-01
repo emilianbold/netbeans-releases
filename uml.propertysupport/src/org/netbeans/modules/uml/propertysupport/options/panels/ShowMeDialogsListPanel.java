@@ -121,6 +121,9 @@ public class ShowMeDialogsListPanel extends javax.swing.JPanel {
         index = getMappedIndex (s) ;
         transformCB.setSelectedIndex(index);   
         
+        s = prefs.get("UML_Convert_61_Diagram_To_65_Format", PSK_ASK);
+        index = getMappedIndex (s) ;
+        convertOldDiagramsCB.setSelectedIndex(index);   
     }
     
     public void store() {
@@ -146,6 +149,8 @@ public class ShowMeDialogsListPanel extends javax.swing.JPanel {
         prefs.put("UML_ShowMe_Overwrite_Existing_Participants", mappedChoices[index]);
         index = transformCB.getSelectedIndex() ;
         prefs.put("UML_ShowMe_Transform_When_Elements_May_Be_Lost", mappedChoices[index]);
+        index = convertOldDiagramsCB.getSelectedIndex() ;
+        prefs.put("UML_Convert_61_Diagram_To_65_Format", mappedChoices[index]);
         
     }
     
@@ -161,6 +166,7 @@ public class ShowMeDialogsListPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        allowLengthySearchesCB1 = new JComboBox (displayChoices);
         mainLabel = new javax.swing.JLabel();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
@@ -180,6 +186,8 @@ public class ShowMeDialogsListPanel extends javax.swing.JPanel {
         deleteCombFragCB = new JComboBox (displayChoices);
         moveInvokedCB = new JComboBox (displayChoices);
         allowLengthySearchesCB = new JComboBox (displayChoices);
+        jLabel20 = new javax.swing.JLabel();
+        convertOldDiagramsCB = new JComboBox (displayChoices2);
 
         mainLabel.setText(org.openide.util.NbBundle.getMessage(ShowMeDialogsListPanel.class, "mainLabel.text")); // NOI18N
 
@@ -201,6 +209,8 @@ public class ShowMeDialogsListPanel extends javax.swing.JPanel {
 
         jLabel10.setText(org.openide.util.NbBundle.getMessage(ShowMeDialogsListPanel.class, "jLabel10.text_2")); // NOI18N
 
+        jLabel20.setText(org.openide.util.NbBundle.getMessage(ShowMeDialogsListPanel.class, "jLabe20.text_1")); // NOI18N
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -219,7 +229,8 @@ public class ShowMeDialogsListPanel extends javax.swing.JPanel {
                             .add(jLabel10)
                             .add(jLabel7)
                             .add(jLabel8)
-                            .add(jLabel1))
+                            .add(jLabel1)
+                            .add(jLabel20))
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -230,7 +241,8 @@ public class ShowMeDialogsListPanel extends javax.swing.JPanel {
                                     .add(org.jdesktop.layout.GroupLayout.LEADING, autoCreateCB, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                     .add(org.jdesktop.layout.GroupLayout.LEADING, deleteConnectorCB, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                     .add(org.jdesktop.layout.GroupLayout.LEADING, overwriteCB, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .add(org.jdesktop.layout.GroupLayout.LEADING, transformCB, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 169, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                                    .add(org.jdesktop.layout.GroupLayout.LEADING, transformCB, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 169, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                    .add(convertOldDiagramsCB, 0, 169, Short.MAX_VALUE))
                                 .add(15, 15, 15))
                             .add(layout.createSequentialGroup()
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -281,6 +293,10 @@ public class ShowMeDialogsListPanel extends javax.swing.JPanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(allowLengthySearchesCB, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(jLabel10))
+                .add(7, 7, 7)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(convertOldDiagramsCB, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(jLabel20))
                 .addContainerGap(15, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -297,11 +313,15 @@ public class ShowMeDialogsListPanel extends javax.swing.JPanel {
     private String[] displayChoices = {ASK, ALWAYS, NEVER} ;
     private String[] mappedChoices = {PSK_ASK, PSK_ALWAYS, PSK_NEVER} ;
     
+    private String[] displayChoices2 = {ASK, ALWAYS} ;
+    
     private Hashtable getMappedIndex = new Hashtable();
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox allowLengthySearchesCB;
+    private javax.swing.JComboBox allowLengthySearchesCB1;
     private javax.swing.JComboBox autoCreateCB;
+    private javax.swing.JComboBox convertOldDiagramsCB;
     private javax.swing.JComboBox deleteCombFragCB;
     private javax.swing.JComboBox deleteConnectorCB;
     private javax.swing.JComboBox deleteFileCB;
@@ -309,6 +329,7 @@ public class ShowMeDialogsListPanel extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel20;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;

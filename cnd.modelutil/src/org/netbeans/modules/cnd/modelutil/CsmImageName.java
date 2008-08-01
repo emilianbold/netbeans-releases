@@ -142,4 +142,6 @@ public interface CsmImageName {
     static final String PROJECT_OPENED =  RESOURCE_BASE+"project_open.png"; // NOI18N
     static final String LIB_PROJECT =  RESOURCE_BASE+"libraries.png"; // NOI18N
     static final String LIB_PROJECT_OPENED =  RESOURCE_BASE+"libraries.png"; // NOI18N
+
+    static final String TEMPLATE_PARAMETER =  RESOURCE_BASE+"template_parameter_16.png"; // NOI18N
 }

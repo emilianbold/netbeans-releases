@@ -66,10 +66,10 @@ import org.openide.util.datatransfer.PasteType;
  * @author Jan Jancura, Maros Sandor
  */
 public class FixedWatchesManager implements TreeModelFilter, 
-NodeActionsProviderFilter, ExtendedNodeModelFilter {
+NodeActionsProviderFilter, ExtendedNodeModelFilter, TableModelFilter {
             
     public static final String FIXED_WATCH =
-        "org/netbeans/modules/debugger/resources/watchesView/FixedWatch.gif";
+        "org/netbeans/modules/debugger/resources/watchesView/watch_type3_16.png";
     private final Action DELETE_ACTION = Models.createAction (
         NbBundle.getBundle (FixedWatchesManager.class).getString 
             ("CTL_DeleteFixedWatch_Label"),
@@ -140,7 +140,16 @@ NodeActionsProviderFilter, ExtendedNodeModelFilter {
     public FixedWatchesManager (ContextProvider contextProvider) {
         this.contextProvider = contextProvider;
     }
-    
+
+    public void deleteAllFixedWatches() {
+        Collection nodes = new ArrayList(fixedWatches.keySet());
+        for (Iterator iter = nodes.iterator(); iter.hasNext();) {
+            fixedWatches.remove(iter.next());
+            fireModelChanged(new ModelEvent.NodeChanged(FixedWatchesManager.this,
+                TreeModel.ROOT,
+                ModelEvent.NodeChanged.CHILDREN_MASK));
+        }
+    }
 
     // TreeModelFilter .........................................................
     
@@ -363,6 +372,22 @@ NodeActionsProviderFilter, ExtendedNodeModelFilter {
         if (fixedWatches.containsKey (node))
             return FIXED_WATCH;
         return original.getIconBaseWithExtension (node);
+    }
+
+    public Object getValueAt(TableModel original, Object node, String columnID) throws UnknownTypeException {
+        return original.getValueAt(node, columnID);
+    }
+
+    public boolean isReadOnly(TableModel original, Object node, String columnID) throws UnknownTypeException {
+        if (fixedWatches.containsKey(node)) {
+            return true;
+        } else {
+            return original.isReadOnly(node, columnID);
+        }
+    }
+
+    public void setValueAt(TableModel original, Object node, String columnID, Object value) throws UnknownTypeException {
+        original.setValueAt(node, columnID, value);
     }
 
 }

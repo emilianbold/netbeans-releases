@@ -48,12 +48,12 @@ public class PlanNode extends DataNode {
     }
 
     @Override
-	public Action getPreferredAction() {
+    public Action getPreferredAction() {
         return SystemAction.get(PlanDesignViewOpenAction.class);
     }
     
 //    public Action getPreferredAction () {
-//	    return SystemAction.get (OpenAction.class);
+//        return SystemAction.get (OpenAction.class);
 //    }
 
     public HelpCtx getHelpCtx() {

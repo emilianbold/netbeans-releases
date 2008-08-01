@@ -91,6 +91,7 @@ public abstract class ModelBridge implements ComponentListener, PropertyChangeLi
     protected boolean checkErrors() {
         String errorMessages = "";
         if (getMapper().getContext() != null) {
+
             String valMessage = getMapper().getContext().getValidationMessage();
             if (valMessage != null) {
                 errorMessages += valMessage;
@@ -107,7 +108,7 @@ public abstract class ModelBridge implements ComponentListener, PropertyChangeLi
                     List<Template> templates = stylesheet.getChildren(Template.class);
                     boolean templateFound = false;
                     for (Template t : templates) {
-                        if (t.getMatch().equals("/")) {
+                        if (t.getMatch() != null && t.getMatch().equals("/")) {
                             templateFound = true;
                             break;
                         }

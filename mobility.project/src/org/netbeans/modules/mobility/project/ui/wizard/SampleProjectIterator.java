@@ -53,6 +53,7 @@ import javax.swing.JComponent;
 import org.netbeans.modules.mobility.cldcplatform.J2MEPlatform;
 import org.netbeans.modules.mobility.project.J2MEProjectGenerator;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
@@ -113,9 +114,12 @@ public class SampleProjectIterator implements TemplateWizard.Iterator {
     
     public void initialize(final org.openide.loaders.TemplateWizard templateWizard) {
         platformInstall = PlatformInstallPanel.isPlatformInstalled(J2MEPlatform.SPECIFICATION_NAME) ^ true;
-        if (platformInstall)
+        if (platformInstall){
             platformPanel = new PlatformInstallPanel.WizardPanel(J2MEPlatform.SPECIFICATION_NAME);
+            ((JComponent)platformPanel.getComponent()).putClientProperty("NewProjectWizard_Title", NbBundle.getMessage(NewProjectIterator.class, "TXT_SampleProject"));
+        }
         projectPanel = new ProjectPanel.WizardPanel(false, true);
+        ((JComponent)projectPanel.getComponent()).putClientProperty("NewProjectWizard_Title", NbBundle.getMessage(NewProjectIterator.class, "TXT_SampleProject"));
         psPanel = new PlatformSelectionPanel();
         String configuration = null;
         String profile = null;
@@ -193,8 +197,8 @@ public class SampleProjectIterator implements TemplateWizard.Iterator {
                 NbBundle.getMessage(PlatformSelectionPanel.class, "TITLE_PlatformSelection"), // NOI18N
             };
         }
-        component.putClientProperty("WizardPanel_contentData", list); // NOI18N
-        component.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(currentIndex)); // NOI18N
+        component.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, list); // NOI18N
+        component.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer(currentIndex)); // NOI18N
     }
     
 }

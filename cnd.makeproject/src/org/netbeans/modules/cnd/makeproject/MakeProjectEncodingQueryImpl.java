@@ -43,6 +43,7 @@ package org.netbeans.modules.cnd.makeproject;
 
 import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
@@ -69,7 +70,13 @@ public class MakeProjectEncodingQueryImpl extends FileEncodingQueryImplementatio
         assert file != null;
         
         synchronized (this) {
-            String enc = getMakeConfigurationDescriptor().getSourceEncoding();
+            String enc = null;
+            if (getMakeConfigurationDescriptor() != null) {
+                enc = getMakeConfigurationDescriptor().getSourceEncoding();
+            }
+            else {
+                enc = FileEncodingQuery.getDefaultEncoding().name();
+            }
             if (!enc.equals(nameCache)) {
                 cache = null;
                 nameCache = enc;

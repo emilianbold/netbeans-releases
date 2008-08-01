@@ -96,7 +96,6 @@ public class JavadocForBinaryQueryImpl implements JavadocForBinaryQueryImplement
                 if (this.cachedRoots == null) {
                     List<URL> result = new ArrayList<URL>();
                     for (URL u : lib.getContent(ServerLibraryTypeProvider.VOLUME_JAVADOC)) {
-                        u = LibrariesSupport.resolveLibraryEntryURL(lib.getManager().getLocation(), u);
                         result.add(getIndexFolder(u));
                     }
                     this.cachedRoots = result.toArray(new URL[result.size()]);
@@ -133,7 +132,6 @@ public class JavadocForBinaryQueryImpl implements JavadocForBinaryQueryImplement
                 }
                 for (String type : CLASSPATH_VOLUMES) {
                     for (URL entry : lib.getContent(type)) {
-                        entry = LibrariesSupport.resolveLibraryEntryURL(mgr.getLocation(), entry);
                         URL normalizedEntry;
                         if (isNormalizedURL) {
                             normalizedEntry = getNormalizedURL(entry);

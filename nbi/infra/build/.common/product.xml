@@ -121,6 +121,10 @@
             name="n-unzip"
             classname="org.netbeans.installer.infra.build.ant.NativeUnzip"
             classpath="${custom.tasks.cls}"/>
+        <taskdef
+            name="n-untar"
+            classname="org.netbeans.installer.infra.build.ant.NativeUntar"
+            classpath="${custom.tasks.cls}"/>
         
         <if property="release.to.server" value="true">
             <taskdef
@@ -339,7 +343,10 @@
         </for-each>
         
         <!-- fetch and repackage installation data zips -->
-        <for-each from="1" to="${product.data.length}" property="i">
+        <set property="current.product.data.length" 
+             value="${product.data.length}"/>
+
+        <for-each from="1" to="${current.product.data.length}" property="i">
             <!-- define the path to the current working file and the temporary
                  directory which should be used for repackaging -->
             <set 
@@ -350,7 +357,23 @@
                 uri="${current.uri}"/>
             <set 
                 property="current.zip" 
-                source="product.data.${i}.zip"/>
+                value="${product.data.${i}.zip}"/>
+
+            <condition property="product.tar.${i}.is.set" value="true" else="false">
+		<isset property="product.data.${i}.tar"/>
+            </condition>
+
+            <if property="product.tar.${i}.is.set" value="true">
+                <set 
+                    property="current.tar" 
+                    value="${product.data.${i}.tar}"/>
+            </if>
+            <if property="product.tar.${i}.is.set" value="false">
+                <set 
+                    property="current.tar" 
+                    value="false"/>
+            </if>
+
             <set 
                 property="current.file" 
                 value="${product.data.dir}/${product.data.file.name}"/>
@@ -427,7 +450,25 @@
                         src="${current.download}" 
                         dest="${current.temp.dir}"/>
                 </if>
-                <if property="current.zip" value="false">
+
+                <if property="current.tar" value="true">
+                    <n-untar
+                        src="${current.download}" 
+                        dest="${current.temp.dir}"/>
+                </if>
+
+                <condition property="do.copy.data.${i}" value="true">
+		    <and>
+			<not>
+				<equals arg1="${current.zip}" arg2="true"/>
+			</not>
+			<not>
+				<equals arg1="${current.tar}" arg2="true"/>
+			</not>
+		    </and>
+                </condition>
+
+                <if property="do.copy.data.${i}" value="true">
                     <copy file="${current.download}"
                           todir="${current.temp.dir}"/>
                 </if>

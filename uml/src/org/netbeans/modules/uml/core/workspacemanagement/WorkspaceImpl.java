@@ -42,6 +42,7 @@
 package org.netbeans.modules.uml.core.workspacemanagement;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -636,10 +637,10 @@ public class WorkspaceImpl extends WSProjectImpl implements IWorkspace
 
                   boolean successful = XMLManip.save(getDocument(), fileName);
                   XMLManip.setAttributeValue(root, "fileName", fileName);
-                  
+
                   if (!successful)
                   {
-                     throw new WorkspaceManagementException();
+                     throw new WorkspaceManagementException( );
                   }
 
                   dispatchWorkspaceSaved(this);

@@ -30,6 +30,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.swing.JScrollPane;
+import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
 import org.netbeans.modules.soa.mappercore.model.Graph;
 import org.netbeans.modules.soa.mappercore.model.MapperModel;
@@ -223,6 +224,37 @@ public class Utils {
         }
         
         return distance;
+    }
+    
+    public static boolean isTreePathExpandable(TreeModel treeModel, 
+            TreePath treePath) 
+    {
+        if (treeModel == null) return false;
+        if (treePath == null) return false;
+
+        return !treeModel.isLeaf(treePath.getLastPathComponent())
+                && isTreePathInModel(treeModel, treePath);
+    }
+    
+    public static boolean isTreePathInModel(TreeModel treeModel, 
+            TreePath treePath) 
+    {
+        if (treeModel == null) return false;
+        if (treePath == null) return false;
+        
+        TreePath parentPath = treePath.getParentPath();
+        
+        if (parentPath == null) {
+            return treeModel.getRoot() == treePath.getLastPathComponent();
+        }
+        
+        
+        if (!isTreePathInModel(treeModel, parentPath)) return false;
+
+        Object node = treePath.getLastPathComponent();
+        Object parent = parentPath.getLastPathComponent();
+        
+        return treeModel.getIndexOfChild(parent, node) >= 0;
     }
 }
 

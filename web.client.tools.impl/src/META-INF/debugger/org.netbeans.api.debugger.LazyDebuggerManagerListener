@@ -1,0 +1,4 @@
+org.netbeans.modules.web.client.javascript.debugger.ui.breakpoints.NbJSPersistenceManager
+org.netbeans.modules.web.client.javascript.debugger.ui.breakpoints.NbJSFileObjectBreakpointAnnotationListener
+org.netbeans.modules.web.client.javascript.debugger.ui.breakpoints.NbJSURIBreakpointAnnotationListener
+org.netbeans.modules.web.client.javascript.debugger.ui.NbJSCallStackAnnotationListener

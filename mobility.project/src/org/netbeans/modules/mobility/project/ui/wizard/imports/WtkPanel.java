@@ -78,6 +78,7 @@ import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.Specification;
 import org.netbeans.modules.mobility.cldcplatform.J2MEPlatform;
+import org.openide.WizardDescriptor;
 
 /**
  *
@@ -408,7 +409,7 @@ public class WtkPanel extends javax.swing.JPanel {
         
         public void showError(final String message) {
             if (wizard != null)
-                wizard.putProperty("WizardPanel_errorMessage", message); // NOI18N
+                wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, message); // NOI18N
         }
         
         public boolean isValid() {
@@ -450,6 +451,11 @@ public class WtkPanel extends javax.swing.JPanel {
         public void readSettings(final Object obj) {
             wizard = (TemplateWizard) obj;
             ((WtkPanel) getComponent()).readData(wizard);
+            Component component = getComponent();
+            Object substitute = ((JComponent)component).getClientProperty ("NewProjectWizard_Title"); // NOI18N
+            if (substitute != null) {
+                wizard.putProperty ("NewProjectWizard_Title", substitute); // NOI18N
+            }            
         }
         
         public void storeSettings(final Object obj) {

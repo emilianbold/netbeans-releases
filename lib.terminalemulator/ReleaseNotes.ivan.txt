@@ -1,0 +1,1399 @@
+nobugid (TermSupport works on solaris now)
+	- OS.UNIX -> OS.LINUX + OS.SOLARIS
+	- JNAPty needs to do some ioctl(I_PUSH's) only on solaris.
+
+nobugid (TermSupport handles csh correctly)
+	The call to setpgrp/setsid inside pty_bind pulled up into PtyProcess.
+	See comment is wrappedCmd().
+
+================================================================================
+nobugid (StreamTerm to handle IOExceptions better)
+	See comments in StreamTerm.OutputMonitor.run().
+
+================================================================================
+tag: ivan_25
+
+nobugid (de-publicize all ACT_ classes)
+	All Interps use internal Actor classes using the naming convention
+	ACT_. These classes were protected _and_ final and an eyesore
+	in the javadoc.
+	Made them package private.
+
+124612 files lost when terminalemulator was moved to cnd
+	The transfer of termulator from core to cnd was incomplete in two ways:
+
+	1) Several files were dropped:
+		   ReleaseNotes.ivan.txt 	(this file)
+		   demosrc/buildtool/*
+		   demosrc/telnet/*
+		   test/unit/src/org/netbeans/lib/terminalemulator/TermTest.java
+	   These files have been restored and brought up-to-date.
+
+	2) Some changes were committed to CVS after the copy to cnd but
+	   before the core copy was deleted so they got "lost".
+	   These changes (tags ivan_24, ivan_23) have been reintroduced.
+
+	Some more changes were never committed to CVS and missed both 
+	the core-to-cnd copy as well as the CVS-to-Hg transition.
+	These are documented below.
+
+nobugid junit test failure on textWithin()
+	In the process of reintroducing TermTest.java found that it fails.
+
+nobugid Abstracting of Buffer and Line classes
+	In order to be able to alter the implementation of Buffer, for
+	instance to have it use java.nio.Buffer's like output2, have
+	to make it be more abstract. To that end ...
+	- Enhanced Buffer.printStats() to provide more detailed statistics.
+	- Line.glyph_glyph -> Line.glyphId
+	- Line.glyph_rendition -> Line.backgroundColor
+	- new property glyphId
+	- new property backgroundColor
+	- - Line.charArray
+	  + Line.accumulateInto
+	- + Line.charAt(), charAtPut(), getChars()
+	- Lot of code in Term.java used to pass a char buf[] around
+	  which used to be a pointer directly into a Lines storage array
+	  set in paint_line_new().
+	  Now it uses Line.getChars() and a local xferBuf in myDrawChars().
+
+nobugid Make Interp public
+	On [fall 2007] Yarda, in order to satify some static code style checks,
+	had, instead of making Term.setInterp(), getInterp() public, opted
+	to make class Interp pkg private.
+
+	Java apparently allows a sub-class of a package class to
+	be passed to a parameter of the type of the package class.
+	I.e. Interp is pkg private, MyInterp is public and extends
+	Interp, ergo a public setInterp(Interp) is useful.
+
+	Instead of quibbling, making Interp, setInterp() and getInterp()
+	be public.
+
+================================================================================
+tag: ivan_24
+
+These changes were driven by trying to get Midnight Commander (mc) to work 
+under term. mc, with it's heavy dependence on terminal graphics, seems
+like a good litmus test.
+With these fixes we're doing fine on output, except for "graphical character"
+rendering. However, mc isn't very usable due to heavy dependence on function
+key and mouse event processing which I leave for another day.
+
+nobugid Handle "set text parameters" escape sequence ESC ] <p1> ; <p2> BEL
+        Allows for various terminalemulator application text values like
+        icon name, window title and current working directory to be set.
+        We only handle these sequences so output from mc doesn't mess up
+        the screen. While the sequences call new methods of class Ops,
+	op_icon_name(), op_win_title() and op_cwd(), a terminalemulator
+	_Application_ would still need some sort of listener mechanism
+	to adequately handle these requests.
+
+	Includes InterpDtTerm.ACT_DONE_COLLECT2.
+
+nobugid Factoring of InterpDtTerm.ACT_DEC_PRIVATE
+        Mainly as I was exploring sequences having to do with enabling of
+        mouse reporting. See
+            http://www.xfree86.org/current/ctlseqs.html#Mouse%20Tracking
+
+================================================================================
+tag: ivan_23
+nobugid Solitary attributed character in last column not rendered.
+        scenario:
+            Bring up 'vim', enter "aaa", enter ^V. A '^' will appear.
+            In some environments the caret is blue and in such cases 
+            the caret isn't rendered.
+        cause:
+            In Term.paint_line_new() in the case where we use runs we bail out
+            too soon because of this test:
+                if (rend+1 >= lastcol)
+                    break;
+        fix:
+            Use > instead of >=.
+
+nobugid TAB inserts spaces when it should only move the cursor.
+        This became clear in a curses example submitted by a customer.
+        Where curses uses TABs as a quick way to move around.
+        Fixed in Term.OpsImpl.op_tab()
+
+nobugid Handle ASCII SO and SI
+        SO == ^N == Shift Out == LS1 == as    switch to VT100 graphical characters
+        SI == ^O == Shift In  == LS0 == ae    switch to default rendition
+        These were not handled and were just echoed, throwing off curses screens.
+        Term.OpsImpl.op_as/ae() handle these.
+        They are now absorbed but there is no real support for graphical
+        characters yet.
+        Unicode supposedly has 32 codes for them U+FDD0 thru U+FDEF but
+        standard Java fonts render them as squares. And the mappings here:
+            http://en.wikibooks.org/wiki/Unicode/Character_reference/F000-FFFF
+        just show black squares.
+
+	Added InterpANSI.Ascii, a convenience "enumeration" containing codes
+	for common ascii characters.
+
+6535452 Dbx console in IDE: still no cursor key support
+        Also forum thread
+            http://forum.java.sun.com/thread.jspa?forumID=852&threadID=5103260
+        Term will now convert arrow keys per the DtTerm spec:
+        CursorUp    ESC [ A
+        CursorDown  ESC [ B
+        CursorRight ESC [ C
+        CursorLeft  ESC [ D
+        This is done in Term.onCursorkey().
+
+================================================================================
+tag: ivan_22
+nobugid remove deprecations
+	- Switch to using setFocusTraversalKeys() as opposed to
+	  the deracated isManagingFocus() (in Screen.java).
+	- Use getScreen() as opposed to get getDisplay().
+
+4921071 printing to the Process Output tab prevents using menus
+	NetBeans has many request processors running at low P1 so
+	a default priority (5?6?) for StreamTerm.OutputMonitor thread will
+	swamp all the RPs if we have a firehose sub-process.
+	Lowering the priority of StreamTerm.OutputMonitor to 1.
+
+4898959 [Debugger Console]: copy/paste via mouse buttons don't work.
+	With 1.4 we now can get a systemSelection in addition to
+	systemClipboard so we can accurately implement X-windows-style
+	selection semantics as follows:
+
+	SunCopy		put Terms selection into systemClipboard (only if
+			non-empty)
+	SunPaste	stuff systemClipboard contents into Term buffer
+
+	selection done	put Terms selection into systemSelection
+	clear selection	put empty string into systemSelection
+	middle click	stuff systemSelection contents into Term buffer
+
+	The Term API has been extended with pasteFromClipboard() and
+	pasteFromSelection(). The original paste() is now pasteFromClipboard()
+	so NB OutputWindow works like before.
+
+	Similarly we have copyToClipboard() and copyToSelection() and copy()
+	is copyToClipboard() so NB OutputWindow works like before.
+
+	Operations with the systemSelection only work if it is available
+	on the host system (For example itis not available Windows).
+
+	Mouse gestures to stuff the systemSelection _used_ to only work if the 
+	autoInsert property is true. That was so that a casual text selection
+	doesn't clobber the clipboard. Now that we have a distinction
+	between the clipboard and selection this property is deprecated
+	and it's setting will be ignored in favor of it always being
+	true.
+
+4898959 [Debugger Console]: copy/paste via mouse buttons don't work.
+	Term used to ignore middle mouse clicks if any mousewheel support
+	was available. Took that test out. See comments in mouseClicked().
+
+36439 (output window gives ArrayIndexOutOfBounds for some characters)
+	The wcwidth cache is allocated of size Character.MAX_VALUE
+	and indexed by a 'char', so the only way it can get an AOB is
+	Character.MAX_VALUE(\uffff) is passed to it. 
+	Fixed by allocating one more cell.
+	Can be easily verified by println'ing a \uffff but it's gotta go
+	through internal execution.
+
+17337 (CTRL-C to copy in Output Window causes it to scroll to bottom)
+	'keystroke_set' is a collection of KeyStrokes in the form:
+	       ks3 = getKeyStroke(VK_C, CTRL_MASK)
+	we use Term.maybeConsume() in keyPressed and keyTyped events. During
+	keyTyped the event->KS mapping gives us
+	       ks2 = getKeyStroke((char) ('c'-64), CTRL_MASK)
+	ks2 and ks3 while logically equivalent don't hash to the same so
+	maybeConsume() says yes to ks2 and the Ctrl-C gets passed on.
+
+	So to detect whether something in 'keystroke_set' needs to be dropped 
+	we need to check at keyPress time but take action at keyTyped time.
+	'passOn' helps us do that.
+
+24824 (Focus problems with splitpane in OW)
+4702175 (JScrollBar provide no focus feedback)
+	Issue 24824 pertains mostly to the splitplane confusing things, but
+	the scrollbars getting focus was muddying the waters.
+	Workaround for 4702175 suggets to make the scrollbars not
+	be focusable, so made the horizontal and vertical scrollbars non
+	focusable. The effect of this is Ctrl-Tab will not shift
+	focus to the scrollbars.
+
+nobugid (Switched to timed repaint)
+	Per Tims suggestion from issue 28297.
+	I had noticed that pastes (now that I got them working) take an awful
+	long time. A time delay of 20msec does wonders.
+	This should pave the way for simplification of OuputTabTerm as I
+	described in 28297.
+
+36404 (Scrollbars should scroll faster)
+	Until we agree on a common solution changed the rate from 50 to
+	10 milli-seconds per frame.
+
+nobugid (AOOB in Line.insertCharAt())
+	With InterpANSI run Term under a real pty-based shell and
+	run vi. Go into insert mode. Issue two ^t's and a {. Boom!
+	Line.insertCharAt() could not handle insertions at columns past 
+	thelength of the line. Fixed.
+
+================================================================================
+tag: ivan_21
+
+issue 24824 Focus problems with splitpane in OW
+	Overrode setEnabled() for Term so it propagates
+	enabledness to sub-components per Aleses request.
+	It's a sensible thing to have in any case.
+	
+	However, I couldn't find the error and setEnabled() code in 
+	OW that Ales was talking about. So passing the bug on
+	to Tim who's taken over Ales.
+
+regression terminalemulator won't build on JDK < 1.4
+	I had accidentally left an experimental
+	    Clipboard systemSelection = getToolkit().getSystemSelection();
+	Now it's commented out.
+
+================================================================================
+tag: ivan_20
+
+Files: Term.java, Sel.java, Line.java
+
+issue 30776 NPE when resizing output window
+	Not enough info, so no action yet.
+
+issue 31755 NullPointerException after resizing Output Window
+	The basic problem was that Sel keeps the origin and extent of 
+	the selection in unsorted order. Some methods, like paint() and
+	getExtent, setExtent() compensate for this, but adjust()
+	and intersects() didn't.
+
+	Modified sel.adjust() to take a lastline argument as well.
+
+	Moved sel.adjust into common area of Term.limit_lines().
+
+nobugid Selection vanishes on resize
+	This used to be done in Term.adjust_lines() to mimic DtTerm, where
+	if you resize so that the current selection ends up going
+	out the window the selection is cancelled.
+	After fixing 31755 it seemed more practical to not nuke the
+	selection (which is how xterm works).
+
+issue 31951 Copy to clipboard removing empty lines in output window
+	This was because Line.text would return a "" instead of a "\n"
+	for "empty" lines. This was initially so so that selecting 
+	the "empty lines" below the cursor would give "empty" selection
+	strings. But we forego that in order to fix this bug.
+	Turns out xterm also returns newlines for the "empty" lines
+	below the cursor.
+	Issue 21577 addresses the selectability of empty lines below the
+	cursor, but that's orthogonal. Once we can't select these empty
+	lines the fact that they return "" or "\n" per line becomes
+	immaterial.
+
+issue 27491 Output window Mouse Pointer
+	Fixed part 2. Mouse pointer is now java.awt.Cursor.TEXT_CURSOR
+	by default. This is consistent with xterm and DtTerm as well.
+	This can always be overriden by using
+		Term.getScreen().setCursor(...);
+
+================================================================================
+tag: ivan_19
+
+issue 17644 Executation window cuts off output-window's text
+	java bug 4711314 worked around by 
+	adding a repaint to componentResized().
+================================================================================
+tag: ivan_18
+
+(OutputWin only) Reversal on invokeAndWait()
+	Issue 
+		http://www.netbeans.org/issues/show_bug.cgi?id=25180
+	Demonstrated several regressions connected with my choice
+	of using invokeAndWait() in OutputTabTerm.
+
+	David Strupl reveretd by changing invokeNow() to use invokeLater()
+	but neglected to make copies of buffers passed in and forwarded to
+	Term.
+
+	Also added a quick change flag safe_mode.
+
+================================================================================
+tag: ivan_17
+Text for bugs:
+
+I"m marking this and other NPE related bugs as fixed with my commit
+tagged ivan_17. For a thorough description read 
+.../terminalemulator/ReleaseNotes.ivan.txt.
+Since this is a rather radical change I'd rather see new bugs filed as
+opposed to these being reopened.
+
+
+nobugid slowdown due to accessibility
+	When Assistive Technology latches on to a component various additional
+	property changes get fired. These can be expensive so the usual
+	trick is to only fire them if an AccessibleContext has been requested.
+
+	However most apps (should) set the accessibleName() and that
+	instantly creates on demand an AccessibleContext.
+
+	For Term this means that every input character will fire 
+	accessible property changes and we don't want thath. We only
+	want to do this if some real AT is latched on to us.
+
+	So, switched the test to test for an AccessibleText having
+	been doled out.
+
+issue 17644 DEFECT P3 PC Ivan@netbeans.org NEW NPE from terminalemulator
+issue 20412 DEFECT P3 PC Ivan@netbeans.org STAR NPE on org.netbeans.lib. ...
+issue 24444 DEFECT P3 PC Ivan@netbeans.org STAR NPE changing tab (Editting, ...
+issue 24728 DEFECT P3 PC Ivan@netbeans.org NEW Random NPE when execute a ...
+issue 18575 DEFECT P3 PC Ivan@netbeans.org STAR ConcurrentModificationException
+issue 20430 DEFECT P3 PC Ivan@netbeans.org NEW Deadlock during XTest
+
+	All of these, I postulate, happen because Term has been used 
+	incorrectly. Being that it is a JComponent it's state is only
+	allowed to be modified from the AWT event dispatcher thread.
+
+	The various NPE and similar problems that arose in the past
+	were unfortunately treated by inserting 'synchronised' all over
+	Term code (mainly because of my incorrect assumption that
+	paints get called on a special repainter thread).  There's also
+	one instance of using SwingUtilities.invokeLater() in scrollbar
+	adjustment.
+
+	With this commit I've reversed the situation.
+
+	First, all uses of 'synchronized' in Term have been commented 
+	out with the following pattern in the comment: "OLD NPE-x".
+	This is to make sure that the _fix_ is fixing the problem and
+	not the leftover synchronized's.
+	In case of disaster the code can be reverted.
+
+	Next, OutputTabTerm's invocations to Term were routed through 
+	SwingUtilities.invokeAndWait() or invokeLater(). They're actually
+	done through little utility functions called invokeNow and
+	invokeLater which do the SwingUtilities.isEventDispatchThread() test.
+	Every stack trace in the above issues has originated from
+	OutputTabTerm so I'm reasonably confident that all the above
+	issues will be addressed by this.
+
+	invokeNow() is used for InputStream data. invokeLater() is used
+	for actions which come over the dispatcher.
+
+	Some minor discussion on nbdev raised the issue that invokeAndWait()
+	might induce deadlock. I'd like to argue that this is fine as follows:
+
+		First, using invokeAndWait() is the rightthing to do for
+		the input. It provides a measure of flow control for the
+		input source and doesn't swamp the AWT event queue.
+
+		Second, if you use invokeLater(), because you're passing 
+		character arrays, these arrays will have to be copied.
+		There's no need for elaborate buffering and queueing 
+		since each inner class Runnable which gets created gets
+		it's own copy of the reference to the buffer, but the
+		buffer does need to be copied.
+
+		Third, as issue 20430 demonstrates, insertion of
+		synchronised is no panacea. We do need queued serialization.
+
+		Fourth, if we do get deadlocks because of invokeAndWait() we
+		can revisit this question. Regardless, some form of
+		SwingUtilities.invoke has to be used so this fix is
+		in the right direction.
+
+		Finally, I'm hard-pressed to see how a deadlock can occur.
+		The character input to Term (see below for other "input")
+		comes from an external process or an internal thread. For
+		a deadlock to occur Term code has to vie for a resource that 
+		the outputting task is holding. Term is extremely
+		self-contained though. It does not call back into any
+		NB code and therefore should not contend for any resources.
+		(The only exception is the use of debugging println's in
+		internal execution mode which usually cause an
+		infinite recursion).
+
+		P.S. I actually tried with invokeLater() for a speed
+		comparison. To my surprise I discovered that the text gets
+		all run in and stuff _as if_ ordering gets messed up or 
+		the runnables get issued out of order. Instead of pursuing
+		why I took this as further confirmation that invokeAndWait
+		is the right decision. Come to think of it I just used
+		invokeLater and didn't copy my buffers.
+
+	Analysis of Term state modification
+
+	In general Term state modifications come from these sources:
+		putChar[s].
+			This is the main source and it's the responsibility of
+			the caller to call them on the right thread.
+
+		Various property settings.
+			Happen in constructors or as side-effects of user
+			actions in the gui. So in general they should be safe.
+			All other calls should be carefully scrutinized.
+
+		Keyboard input
+			Come in on the Event Dispatch thread and usually
+			gets consumed or passed on to a listener.
+			If LineDiscipline() is being used stuff gets echoed
+			but we're still within the Event Dispatch thread.
+
+		Srollbar notifications, mouse events ...
+			All come in on the Event Dispatch thread.
+
+
+	Various mutators in OutputTabTerm are ....
+
+		Calls from OutputWriter methods of TermOutputWriter. These
+		are the most important source and therefore use
+		invokeAndWait().
+
+		setPageMode()
+		historySizeKeeper()
+			Safe. Called from TermOutputWriter
+
+		Calls from the constructors.
+			Safe. No mutator is going to come in while
+			in a constructor.
+
+		toString()
+			Unsafe.
+
+		updatePasteAction <- updateCopyCutAction
+		updateCopyCutAction < activated < TopComponent.componentActivate
+			Safe.
+
+		activateHyperlink
+		gotoHyperlink
+		invokeJumpListener
+		etc.
+		<- JumpActionPerformer[ActionPerformer].performAction
+		CopyActionPerformer[ActionPerformer].performAction()
+			Unsafe. Called from RequestProcessor.
+			Handled with existing Mutex.EVENT.readAccess.
+
+		Term.performAction() (only used for PopupAction)
+			boils down to OutputTabTerm.performAction()
+			Unsafe? ... F10 is broken.
+			Already handled with existing Mutex.EVENT.readAccess.
+
+		selectAll <- actionPerformed
+		setHyperlinkNavigationEnabled <- doClear
+		doClear <- actionPerformed
+		doClear <- topComponentClosed
+			Boils down to OutputTabTerm.actionPerformed()
+			Safe. Called on dispatch thread
+
+		checkFont <- setSettings
+		setSettings <- propertyChange(PropertyChangeEvent)
+			Safe. Called on dispatch thread
+
+	Escapes of Term
+		OutputTabTerm provides a getTerm() method, allegedly for
+		testing, but it still may be used so uses need to be
+		scrutinized.
+
+================================================================================
+tag: ivan_16
+
+issue 19156 (Not able to navigate to left/right in output window)
+	All code dealing with Ctrl-Tab is gone.
+	If you need to recover it check out code with tag ivan_15.
+
+	Shortcuts for selection manipulation remain but that is now
+	the subject of 
+
+	http://www.netbeans.org/issues/show_bug.cgi?id=24759
+
+	Here is the final result:
+
+	Action			New binding		Old Binding	Where 
+	--------------------------------------------------------------------
+	Scroll line up		Ctrl-UpArrow (1)	UpArrow		Term
+	Scroll line down	Ctrl-DownArrow (1)	DownArrow	Term
+
+	Scroll page up		PageUp					Term
+	Scroll page down	PageDown				Term
+
+	Scroll view left	Ctrl-PageUp (1)				Term
+	Scroll view right	Ctrl-PageDown (1)			Term
+
+	Scroll column		# No good binding available
+
+	Next hyperlink		Ctrl-T (2) (3)		DownArrow	OW
+	Prev hyperlink		Shift-Ctrl-T (3)	UpArrow		OW
+	Activate hyperlink	Enter|Space 		Enter|Space	OW
+	Activate hyperlink	Single-click (4)	Single|Double-Click
+									OW+Term
+
+	Next Error & Activate	F12 (3)			F12		OW
+	Prev Error & Activate	Shift-F12 (3)		Shift-F12	OW
+
+	(1) Conflicts with JLF TabbedPane accelerators.
+	(2) The highlighted errors are best described as hyperlinks hence
+	    the generic treatment.
+	(3) If you reach the last (first) link/error next (prev) will
+	    not work on the first try and will put out a message in the 
+	    status bar. One more will cause a wrap then.
+	(4) The original implementation was very confused about single vs
+	    double click. So much so that I couldn't characterise it.
+	    For example build errors were navigable with a single click,
+	    while exception errors had to be double-clicked.
+
+================================================================================
+tag: ivan_15
+
+issue 19156 (Not able to navigate to left/right in output window)
+
+	After discussions with cL on nbui about the merits of Tab
+	vs Ctrl-Tab and a fair amount of work to get Tab to navigate links
+	and Ctrl-Tab to go back to the focus mgr ... turns out the JLF
+	was wrong and that Ctrl-T and Shift-Ctrl-T should be used for 
+	link navigation! (this after email exchange with accessibility
+	people at Sun)
+
+	Since I put a fair amount of work into being able to switch between
+	grabbing Tab, Ctrl-Tab and all I"m commiting this code with all
+	of that code still in AS WELL as Ctrl-T codes so it can be
+	retrieved again and will shortly commit code that elides it.
+	Here are the coupl a notes on that code.
+
+		CtrlTab. I"m not happy with this decision, so currently
+		you can do it both ways using the property grabFocusKeys()
+		which is set to false by default. 
+
+		The various issues and implementations are discussed in source
+		comments in Term.java and Screen.java both beginning with 
+			Dealing with focus traversal ...
+
+	One of the problematic issues was that Ctrl-Tab (or Ctrl-T) would
+	jump the screen and appear in the term (as boxes) if the OW
+	is not ReadOnly. Solved this problem by introducing 
+		setHyperlinkNavigationEnabled()
+	which alters the keysets to consume or ignore Ctrl-T and
+	Ctrl-Shift-T. This stuff kicks in as soon as some exceptions
+	appear so normally these keys go through. Since the keyset
+	is shared had to create two sets.
+
+	There are still a fair number of overall accelerator issues 
+	that still remain but I"ll close this bug and reopen a new one.
+
+issue 18733 (Output Window & NotifyException not accessible)
+	One previous "fix" to this which wasn't really was the setting
+	of the name.
+	- Modified Term's accessible context to pass on name setting
+	  to the Screen which is the component relevant to accessibility.
+	- USe tab.getName() instead of getName() in OutTermPane.<init>.
+	  Otherwise only null names were being passed.
+
+	The big chunk of work here is the adding of AccessibleText to 
+	Screen and all the various support code that's needed for this.
+	All the issues (and there are quite a few) are discussed in
+	the Javadoc comment for Term.getAccessibleContext().
+
+	I've unit-tested a fair amount of this functionality, but since
+	I don't have access to actual assistive technology on my Sun 
+	box I have no clue if any of this is adequate.
+
+	I have not yet been able to determine if anything and what needs to
+	be done with the following:
+
+	- Implement AccessibleState. JTextComponent doesn't do anything
+	  special with it, so Term doesn't need to either right?
+
+	- Implement AccessibleComponent. This one is strange since I can't
+	  find any Swing components that implement it!
+
+	- Term does scrolling, so it would seem like some parts of it
+	  need to implement accessible roles of VIEW and SCROLLPANE, but
+	  it's not yet clear to me how Assistive Technology would be getting
+	  information about this.
+
+issue 24460 (Actions "Next/Previous Error" are still enabled after first ... )
+	I had chopped up checkNextPrevActions() too much.
+	Redid it and it's much simpler now as well.
+
+	Renamed checkNextPrevActions() to updateNextPrevActions() to bering it
+	in line with other similar functions.
+
+================================================================================
+tag: ivan_14
+
+issue 19156 (Not able to navigate to left/right in output window)
+	Not just that but there is precious little keyboard navigation in
+	Term. So this fix attempts to address as much as possible in
+	the whole area of keyboard navigation. There are three rough areas:
+	- Generic keyboard navigation
+	- Error navigation
+	- Selection via the keyboard.
+
+	All new sequences are documented at the end of this section.
+
+	OutputTabTerm has a private helper function oldBindings() which
+	checks whether "-Doutput.oldbindings" was set and reverts to
+	older behaviour.
+
+	Generic keyboard navigation
+	---------------------------
+	Switched to a set of keyboard bindings that matches the JLF
+	more closely. Moved the few that were implemented in
+	OutputTabTerm to Term itself.
+
+	Added Term.pageLeft(int n) and Term.pageRight(int n)
+
+	While testing, ran into and fixed bugs in the horizontal
+	scrolling mechanism whereas the cursor at the end of the line was
+	not scrollable to ...
+	- Term.possiblyHScroll() not uses the cursor position to extend
+	  total buffer column size.
+	- ColumnRight()'s limit check was incorrect causing bizarre
+	  scrolling behaviour.
+
+	Implemented the various bindings documented below.
+
+
+	Error navigation
+	----------------
+	This area itself falls into several sub-parts ...
+		- Treating errors as hyperlinks
+		- "Whole" error hiliting
+		- Hyperlink wrapping
+		- Detecting of errors and utilisation of Term regions
+		- Implementation issues and bwd compatibility.
+
+    	NOTE: A lot of this work really should be done in ActiveTerm
+	but I had to sort of exactly how OW does things before I could
+	attempt to move the functionality down.
+
+	Treating errors as hyperlinks
+	.............................
+	OW already tried to treat errors as hyperlinks so all I've done here
+	is (almost) apply JLF rules of hyperlink navigation which are:
+
+		- Links are traversed using Tab/Shift-Tab.
+		- Links are activated using Space or Enter.
+		- Traversed-to links are denoted using standard swing
+		  selection feedback.
+
+	There are a variety of inherent problems with these as well problems
+	arising in the context of errors.
+
+		- When showing and navigating java exception dump frames
+		  the terminal is not in readonly mode so plain Tab, Enter
+		  and Space are out of the question. Ctrl- versions are
+		  used instead.
+
+		- Tab and friends are also focus mgmt keys and it would all
+		  work really well if we had not only focus next and prev 
+		  idioms but also focus up and down idioms. Swing 1.4 is
+		  anticipating this but the JLF spec seems to be lagging.
+		  (See Component.setFocusTraversalKeys).
+		  As it is Ctrl-Tab and Shift-Tab conflict with TabbedPane
+		  and OW usurps them by hook and crook.
+
+		- I don't like selection feedback to mark "current"
+		  hyperlinks. If one selects elsewhere the location of the
+		  current link gets lost.
+
+		- There's no specification for denoting the currently
+		  activated link.
+
+	The whole things is also awkward for navigating compiler errors
+	the way we're used to, so F12 and Shift-F12 still work like before.
+	They just imply a next(prev) link combined with activation.
+
+	"Whole" error hiliting
+	......................
+	Previously when navigating from one error you would get:
+	a) A blue/underlined hyperlink like thing on one line.
+	b) A grey character background for the whole error.
+
+	Since we now use selection hilite to provide navgiation
+	feedback, and since there's no accepted convention for denoting
+	activated links, the grey background is used for denoting the
+	currently activated hyperlink. NOTE: this is a short-term solution.
+
+	(b) used to be ugly ... it used one per-character backgrounds
+	and as a result had a staircasey look. Changed to full-line
+	background colors. This neccessiated the addition of 
+		Term.setRowGlyph()
+
+	Hyperlink wrapping
+	..................
+	At the last (first) error a next (prev) action will have no effect
+	but putting a message into the status bar, but one more action will
+	cause the navigation wrap around to the first (last) error.
+	This neccessiated the addition of 
+		ActiveRegion.lastChild()
+	to complement ActiveRegion.firstChild()
+
+
+	Detecting of errors and utilisation of Term regions
+	...................................................
+	It also turned out that the way regions were created for compiler
+	errors was very different from java exceptions. In the compilers
+	case the boundries are know ahead of time and regions can be created.
+	In the case of stack errors no regions are really created, the
+	line is pattern-matched _after_ it's been sent to Term and an
+	independent hit targeting scheme, based on the variable 'links', is
+	used. So I switched this to on-the-fly pattern recognition with a
+	small state machine. This way java exception hyperlinks are now
+	treated more like regular errors and the whole 'links' mechanism
+	can be eliminated in the future.
+
+	As a result exception error navigation is a bit more predictable.
+
+	This whole area is still waay too ad-hoc and brittle.
+
+
+	Implementation issues and bwd compatibility
+	...........................................
+	Created a parallel set of variables and routines in OutputTabTerm
+	to satisfy the new key bindings and semantics.
+
+	old			new
+	.....................................................
+	nextPrevJump()		nextHyperlink | prevHyperlink
+	changeCurrentregion()	gotoHyperlink()
+				activateHyperlink()
+	currentRegion		currentHyperlink
+
+	oldBIndings() (mentioned above) plays it's biggest role here.
+
+	The hardest part here was battling the focus manager for control
+	over Tab, Ctrl-Tab, Shift-Tab. See the comments with the 
+	heading "Dealing with focus traversal".
+
+
+
+	Selection via the keyboard
+	--------------------------
+	This will be done later.
+
+
+
+	Action			New binding		Old Binding	Where 
+	--------------------------------------------------------------------
+	Scroll line up		Ctrl-UpArrow (1)	UpArrow		Term
+	Scroll line down	Ctrl-DownArrow (1)	DownArrow	Term
+
+	Scroll page up		PageUp					Term
+	Scroll page down	PageDown				Term
+
+	Scroll view left	Ctrl-PageUp (1)				Term
+	Scroll view right	Ctrl-PageDown (1)			Term
+
+	Scroll column		# No good binding available
+
+	Next hyperlink		Ctrl-Tab (2) (3) (5)	DownArrow	OW
+	Prev hyperlink		Shift-Tab (4) (5)	UpArrow		OW
+	Activate hyperlink	Ctrl-Enter|Ctrl-Space (3)
+							Enter|Space	OW
+	Activate hyperlink	Single-click (6)	Single|Double-Click
+									OW+Term
+
+	Next Error & Activate	F12 (5)			F12		OW
+	Prev Error & Activate	Shift-F12 (5)		Shift-F12	OW
+
+	(1) Conflicts with JLF TabbedPane accelerators.
+	(2) The highlighted errors are best described as hyperlinks hence
+	    the generic treatment.
+	(3) The general rule is that if there's no textual input that 
+	    Tab should be used, a Ctrl-Tab is for cases where we have 
+	    textual input because there Tab is meaningful. However 
+	    it's very hard for users of Netbeans to know when an output
+	    window pane is in "readonly" mode, so we basically say
+	    always use Ctrl-ed variations so you don't have to think about
+	    it.
+	(4) Technically Shift- is a direction reverser, so if the forward
+	    direction is Ctrl-Tab then the bwd direction should be 
+	    Ctrl-Shift-Tab ... except that youhave to have fingers of a
+	    Martian to be able to do that, so I've stuck to Shift-Tab.
+	(5) If you reach the last (first) link/error next (prev) will
+	    not work on the first try and will put out a message in the 
+	    status bar. One more will cause a wrap then.
+	(6) The original implementation was very confused about single vs
+	    double click. So much so that I couldn't characterise it.
+	    for example buld errors were navigable with a single click,
+	    while exception errors had to be double-clicked.
+
+issue 18733 (Output Window & NotifyException not accessible)
+	Phase-I:
+
+	Term is accessible with role PANEL. It's just a generic container.
+
+	ScrollWrapper is accessible with role PANEL. It is just a wrapper
+	around the horizontal scrollbar to help in it's placement.
+
+	Screen is accessible with role SWING_COMPONENT.
+	It should by rights be TEXT but it's very tricky to implement 
+	one dimensional caret coordinates in a 2D text widget. So, that's
+	for later.
+
+	These "fixes" deal with the accessibility issue only very
+	superficially. That is, all JComponents that go into Term implement
+	Accessible and return a description and a reasonable, but
+	not neccessarily useful, role.
+
+	More needs to be done if these components are to be actually usable.
+	- Screen needs to implement AccessibleText. 
+	- Term combines a scrollview and a view into one widget while Swing
+	  accessibility expects these to be independent. I"m not sure how to
+	  address this. One way would be to create dummy widgets that declare
+	  the roles SCROLL_PANE and VIEW just so they can work
+	  with accessibility.
+
+nobugid (OutputTabTerm timer was never really effective)
+	While working on error/hyperlink navigation I noticed that 
+	Term's refreshEnabled property was always on. This in effect makes
+	the whole timer approach introduced by rmatous not work.
+	
+	The way that was supposed to work is:
+		1) issue Term.setRefreshEnabled(false)
+		2) process and send chars to term and trigger timer
+		3) when timer fires cause a repaint.
+	It looks like though that step (1) was never done.
+	
+	This is extremely puzzling since at the time (cvs log)
+		rmatous turned on timer on 2001/09/03
+	there was ample proof that the timer helped. My suspicion is that
+	at around the same time, this happenned:
+		rmatous fixed CopyMaker on 2001/08/28 13:09:12
+	so Term gets buffered input and the improvement was attributed
+	to the wrong fix.
+
+	In any case I've introduced step (1) and measured an increase in
+	speed.
+
+	Also, the code in repaintTimer() where the refreshEnabled property
+	gets saved, set and restored is all redundant, since the earlier
+	call to flush() does all this anyway.
+	
+================================================================================
+tag: ivan_13
+
+- performance - reduce Interp footprint
+	This was based on an observation made by Tor that each Interp
+	ends up creating redundant copies of it's tste tables.
+
+	All Interps now have a static inner class InterpType which
+	owns the state transition tables and defines the actions..
+	Multiple instances of Interps of the same type share InterpTypes.
+
+	Since the state transition actions are now implemented in the
+	InterpType, they need to receive an instance of an Interp whose state
+	they will be modifying. This is passed as an AbstractInterp.
+	Occasionally the passed-in interp has to be cast to the appropriate 
+	subclass of AbstractInterp.
+
+	In order to reduce the number of these casts moved number parsing mgmt
+	from InterpANSI to AbstractInterp.
+
+	Some Interp subclasses achieved their means by modifying their
+	state vectors! Since the vectors are now shared that won't do, so a
+	more appropriate state stack was introduced into InterpDumb.
+	The stack is cleared in reset().
+
+	Files:
+	AbstractInterp.java
+	InterpANSI.java
+	InterpDtTerm.java
+	InterpDumb.java
+
+
+- performance - user cheaper Interps by default.
+	Jesse (I think) pointed out that NB in general has no use for 
+	ANSI emulation, and that Term should by default use a "dumb" terminal.
+	This should reduce the # of classes that get loaded in.
+	This happens in the initialization of 'private Term.interp'.
+
+- I18N
+	This addresses the following issues:
+
+	15333 Cursor isn't on end of text after using CTRL+C [V, ...]
+	19570 I18N - The characters of the error message are overlaped.
+
+	Basically Term can now properly handle non-latin characters, like
+	Japanese. These issues were realy only the tip of the iceberg. Term
+	did not really work with japanese until now.
+	The following work:
+		- Proper cursor position.
+		- Proper handling of line wrapping and backspacing over it
+		  (for when horizontallyScrollable is false). This is important
+		  for the proper working of Solaris 'vi' in the ja locale.
+		- Sane reaction to ANSI terminal control escapes.
+		- Selection works.
+		- Active regions work.
+		- Backspace, TAB etc. work.
+
+	There are two big parts to this
+
+	- Rendering characters in grid/cellular fashion.
+
+	  The book 
+		Creating Worldwide software (second edition) (Prentice Hall)
+		Tuthill & Smallberg
+	  discusses (on p98) how some characters might be double width and
+	  presents 'wcswidth(3)' and 'wcwidth(3)' to return the _display_
+	  width of a given character. The underlying assumption here is that 
+	  fixed width fonts are actually quantized width fonts.
+
+	  This doesn't seem to be the case for Java fonts. For example the
+	  default ja font I get has 7pixel wide latin characters and 
+	  12 pixel wide japanese characters. What to do?
+
+	  Write our own 'wcwidth' that uses Font.charWidth() and rounds it up
+	  to a multiple of the width of the latin char sub-set.
+
+	  But that's not enough. Graphics.drawString() will still advance
+	  each glyph by the original width of the font, not our rounded-up
+	  value. One solution is then to use a drawString() per character.
+	  The adopted solution is instead to use GlyphVector's and
+	  Graphics2d.drawGlyphVector() as used in Term.myDrawChars() and
+	  Term.massage_glyphs(). Despite the hairiness of the code there
+	  it turns out to be faster than a drawString() per char by
+	  a good margin.
+
+	- Accounting for the difference in Buffer vs Screen coordinates.
+	  (A reading of the main javadoc comment for class Term would
+	  help understand the rest of this).
+
+	  So now we have a situation where a Line holds characters whose
+	  positions are not neccessarily in a 1-1 correspondence with their
+	  cell positions. Mappings are provided in both directions via 
+	  Line.bufToCell() and Line.cellToBuf(). They are used in the existing
+	  buffer to view coordinate xform functions (which for example map
+	  a screen position to a character for the purpose of selection).
+	  A variety of other locations had to be adjusted to use these for
+	  proper operation. The driving algorithm for choosing what needs
+	  attention was occurances of st.cursor.col since the cursor 
+	  is in cell coordinates.
+
+	  These function aren't "cheap" because they count from the beginning
+	  of the line. Cacheing the values is impractical for the following
+	  reasons:
+		- You need to cache each mapping since they are used with equal
+		  frequency.
+		- Because Term allows horizontal scrolling a line can 
+		  potentially be very long. The index into a line therefore 
+		  will range from 0 to Integer.MAX_VALUE. This means
+		  a cache of short's won't do.
+		- So now we're talking a fair amount of memory that is 
+		  probably not justifiable unless we come up with a way to
+		  quickly dispose of the caches. Cache invalidation is
+		  always a tricky problem, but I found out something else.
+		  For a while I installed a wcwidth() cache per line (In
+		  retrospect having wcwidth() manage the cache of course
+		  made a lot more sense) but along the way I discovered
+		  that the per-line cache gets invalidated quite often.
+		  In effect the cache wouldn't have been helpful.
+	  There are some pattern that could use improvement, a bufToCell
+	  immediately followed by a cellToBuf, or a bufToCell(x) followed
+	  by bufToCell(x+n). These could be collapsed into specialized
+	  functions.
+
+	Some neccesssary fallout from all of this ...
+
+	- MyFontMetrics.wcwidth() is expensive given the number of times it
+	  gets called so the resultant width is cached. The cache is indexed
+	  by the char so is naturally Character.MAX_VALUE big. Not a big
+	  chunk of memory in the big scheme of things but it can add up if you
+	  have many Term instances. So there's a pool of them indexed by 
+	  FontMetrics. It's unfortunately trickier than you'd think. 
+	  See the opening comment in class MyFontMetrics for more info.
+
+	- LineDiscipline had to be adjusted to do something reasonable
+	  with backspaces in line buffered mode. There's a big comment in
+	  LineDiscipline.sendChar(). 
+	  To do this it reuires to have a back-pointer to the Term so
+	  we now have StreamTerm.setTerm() which is used in 
+	  Term.pushStream().
+
+	- Dealing with double-width is expensive so we don't want to
+	  compromise speed in 8-bit locales.
+
+	  One way to deal with this is to query the "file.encoding"
+	  property but I found that it's value is very variable from
+	  Java release to Java release and probably from platform to
+	  platform. In 1.4 class Charset is supposed to deal with this
+	  but we're not ready for that switch yet.
+
+	  What I opted for is having MyFontMetrics.wcwidth check for
+	  variation from an initial width and set a flag (multiCell) 
+	  on the first deviation. Various parts of the code then check
+	  MyFontMetrics.isMultiCell(). So, for example, the painting code
+	  now instead of calling Graphics.drawChars() will call 
+	  Term.myDrawChars() which will based on this flag do the expensive
+	  or the cheap thing.
+
+	A note on ANSI emulation vs double-width characters.
+	The ANSI standard doesn't talk abut double-width characters! So
+	dealing with them is AFAIK up to individual vendors. I've
+	followed Solaris'es DtTerm behaviour and spent a fair amount of
+	time making sure that Solaris vi (which can excellently edit
+	wide-char files under DtTerm) works under Term.
+
+- bug: <noid> Junk characters inserted on character insert.
+	Occasionally when charactes are shuffled in the Buffer, usually
+	under vi, junk (usually 0) characters gets inserted into the
+	Buffer instead of ' ' (ASCII SP)'s. These show up as "squares".
+	Fixed in Line.insertCharAt(), Line.setCharAt() and
+	Line.clearToEndFrom()
+
+	Prior to JDK 1.4 ascii 0 was rendered by Swing as a blank.
+	But under 1.4 this problem is a whole lot more visible.
+
+- bug: <noid> Pathologically slow horizontal scrolling on long lines
+	Was attempting to render all characters even those that are
+	not in view. Fixed in Term.paint_line_new().
+
+- bug: <noid> Cursor gets drawn on the glyph gutter on horizontal scroll.
+	Fixed by adding an additional check in paint_cursor();
+
+- deprecated: Term.goTo(Coord)
+	Use Term.setCursorCoord(Coord) which matches getCursorCoord().
+
+- Misc:
+	public->private
+		Buffer.visible_cols
+	+	Buffer.visibleCols()
+	+	StreamTerm.BUFSZ	(instead of hard-coded 1024)
+	+ 	collection of statistics on linefeeds
+	-	Term.paint_line_old()	// dead code
+	+	Term.charWidth(char)	// See section above on I18N.
+
+
+
+================================================================================
+tag: release33
+
+- accessibility
+	Term now implements Accessible and returns an accessible context.
+	The "accessible description" is set.
+	The "accessible name" is set from OW to be the same as the tab name.
+
+- performance
+	- Added Term.setKeyStrokeSet() in order to allow sharing of,
+	  sometimes large, sets.
+	  Added code to OW to take advantage of this.
+	  See 'updateKeyStrokeSet()' and 'getCommonKeyStrokeSet()'.
+	  This code also tracks changes to the global keymap so that Term will
+	  now pass through newly added keyboard accelerators.
+
+================================================================================
+back to main 3.3. trunk
+
+- bug: <noid> Missing ANSI escape sequence handling:
+	- ESC [ 4 h     set insert/overstrike mode
+	- ESC [ 4 l	reset insert/overstrike mode
+	- ESC [ 4; 17 r	margin control (used by vim for sub-windows)
+	- ESC c		full reset
+	- ESC [ ! p	soft reset
+	- ESC [ <n> n	status report. (used by unix command 'resize')
+			This also required cursor positioning ('H') to clip
+			as opposed to ignore out of bounds row and
+			column settings.
+
+- bug: <noid> Exception when running "xemacs -nw" under pty-based Term
+	xemacs has a propensity to send cursor motion directives with
+	rows that exceed the boundaries and the checks in Ops.op_cm()
+	were inadequate.
+
+- issue 16010 (Autoscrolling behavior of terminal not ideal)
+	Added a new properties
+		boolean scrollOnOutput
+		boolean trackCursor
+	to complement the existing scrollOnInput.
+	When 'scrollOnOutput' is set to 'false', you can use the
+	scrollbar to look at some text higher up w/o it moving from
+	underneath you as more output is produced.
+
+	This feasture is "smart" in the sense that if the cursor is visible
+	(i.e. the user hasn't scrolled away from the cursor) Term will
+	scroll to track the cursor even if scrollOnOutput is set to false.
+
+	However the smarts only kick in if 'trackCursor' is set to true.
+
+	Adjsuted in netbeans/core/output/OutputTabTerm.java as well by adding
+	term.setScrollOnOutput( false ) etc.
+
+- new: added the following under CVS control:
+	ReleaseNotes.ivan.txt
+			This file.
+	build.xml	For localized builds
+	properties.html	Used by func_spec.html
+	interpreter.html
+			Used by func_spec.html
+	func_spec.html	Evolution from proposal.3.html
+	proposal.3.html	Original proposal as it appeared on the NB site.
+
+================================================================================
+tag: term_aug2001_ivan_12
+
+- optimization
+  Text with attributes (fg color, bg color, underline, active, etc) used
+  to be rendered one character at a time and rather slowly.
+  Switched to run-length based rendering where runs of characters
+  with identical attributes are rendered together.
+  Depending on the density of attributed text this has produced a *2 to
+  *10 speedup in view painting.
+
+  The function implementing this is Term.paint_line_new(). paint_line_old()
+  has been kept around just in case.
+
+================================================================================
+tag: term_aug2001_ivan_11
+
+- bug http://openide.netbeans.org/issues/show_bug.cgi?id=16027:
+  Missing/awkward selection access functionality
+    + public void paste()
+    + public void copy()
+    + property selectionExtent is now bound and fireProprtyChanged() is issued
+      when selection changes.
+
+- bug http://openide.netbeans.org/issues/show_bug.cgi?id=15953
+  Exceptions when resized on selection.
+  Fixed by adjusting selection in Term.adjust_lines.
+  This is a stop-gap fix. All the selection adjustment code that uses
+  Sel.intersection should be moved into Buffer methods.
+
+- BG line stripe support (Term.setGlyph())
+	- Eliminated interference between BG line strips and selection.
+	  Did this by drawing the BG stripes before the selection in
+	  Term.do_paint().
+	- The stripes were being drawn in the gutters which made it look
+	  funny. Now they're being draw only in the text area.
+
+- bug <noid>
+  BG color of characters would override Swing style selection.
+  Fixed by having paint_line() not bother with BG rectangles if 
+  the character falls into a selection and always set the character FG 
+  color to the default fg.
+  Added Extent.intersects(int, int) to help with this.
+
+- bug <noid>
+  From Ales and NB testers:
+	> 1. When you run following simple program:
+	>   public class Out {
+	>       public static void main (String args[]) {        
+	>           System.out.println("123");        
+	>       }
+	>   }
+	> 
+	>   and then you try to select more lines in OW, it looks strange. 
+	>   - selection area ended somewhere in the middle of OW width
+	>   - when you go (by selecting) behind OW right bound, squares will
+	>     displayed in start of line (see squares.gif)
+	>   - when you run this program second time, everything looks fine
+	> 
+
+	Reproduced and fixed.
+	There are two parts to the problem:
+	1) The selection is halfway through. 
+	2) When you select and drag _out_ of the window you get the funny view.
+	In both cases it had to do with (different) variables going below 0.
+	Now, after a resize, line selection should extend all the way 
+	and the drag right should work right.
+
+- bug <noid>
+  From Ales and NB testers:
+	> 2. Sometimes (when playing with selection) we got NPE in 
+	>   Term$Scroller.extend method, on 1125 line
+	>   I found out, that sel.sel_extent is null from some reason
+	> 
+
+	This will happen if the selection "vanishes" while auto-scrolling
+	is on. The way I reproduced it was by having a program trickle
+	out a line of junk , once per second, then while it's running
+	and scrolling select some test and drag up and out of the OW
+	thereby starting the auto-scroller thread. Eventually the selection
+	will go out of buffer history (If you have a short history or no
+	anchors) and I got the same exception.
+
+	I fixed it in Term.Scroller.extend() by checking for a null selection
+	extent. That whole block of code is synchronized with Term.this
+	which is the main lock for everything.
+
+- Eliminated lots of OLD code.
+
+================================================================================
+tag: term_aug2001_ivan_10
+
++ Term.columnLeft(int n)
++ Term.columnRight(int n)
+  These are analogs of lineUp/lineDown() for horizontal scrolling.
+
+- auto-scrolling of dragged selections now works for both directions.
+- auto-horizontal-scrolling to keep cursor in view. Only on input.
+  This is tricky since because of non-local echoing the cursor position
+  is not known on a keystroke. See comment above hscrollReset() for a
+  detailed explanation of the design.
+
+- bug <noid>
+  Attributed text would not get rendered correctly on horizontal scroll.
+  Fixed.
+
+================================================================================
+tag: term_aug2001_ivan_9
+
++ Horizontal scrollbars. Use
+  	Term.setHorizontallyScrollable(boolean)
+  to enable/disable it.
+  Still needs auto scrolling and probably some other smarts.
+
+================================================================================
+tag: term_aug2001_ivan_8
+
+- Sprinkled NOI18N's all over.
+- Commented out debugging println's
+
+================================================================================
+tag: term_aug2001_ivan_7
+
+- bug 15365 (View does't folow cursor - when writing)
+  Fixed by adding a boolean property scrollOnInput() which by default is set
+  to true.
+
+- Added boolean property readOnly. When true, keystroke events and paste's
+  are ignored.
+
+================================================================================
+tag: term_aug2001_ivan_6
+
++ Term.pageUp(int n)
++ Term.pageDown(int n)
++ Term.lineUp(int n)
++ Term.lineDown(int n)
+	Scroll the view 'n' pages/lines up/down.
+	Doing key bindings for these is up to the Term client.
+
+- Implemented selection auto-scrolling for when mouse pointer moves out of
+  the view. This is based on feedback from Chris Ledantec on nbui.
+
+- Implemented SHIFT-left-click as a selection extension mechanism, per JLF.
+  Actually it is slightly off in that it implements extension (what 
+  you get when you drag) not addition semantics.
+
+- bug: Term.possiblyNormalize() would occasionally cause a null Line exception.
+  Fixed.
+
+- bug: Tab expansion add's a '\0' into the buffer. On Windows this shows up 
+  as as the Microsoft "unprintable character" square.
+  Easily fixed in Term.OpsImpl.op_tab() by switching the ' ' character
+  addition and the st.cursor.col++;
+
+================================================================================
+tag: term_aug2001_ivan_5
+
+- bug: The common "null Line" bug fixed. Turns out I was using
+  "synchronized(this)" in an inner class of Term.
+
+- bug: minor bugs having to do with null'ed selections fixed. I think
+  these only surfaced when I implemented absolute coordinates.
+
+- Absolute Coordinates are in.
+  What this means is that you no longer need to anchor text in order for
+  Regions to work.
+
+  The way this is accomplished is by having each line get an ever growing
+  number and have Coord and ActiveRegions use these numbers for rows.
+
+  implementation details:
+  ----------------------
+  To separate such "absolute" coordinates from the original buffer coordinates,
+  instroduced package private class BCoord. Coord and BCoord can can be
+  converted to each other. The conversion is based on 'Term.firsta' which
+  is the absolute line number of the first line in thebufer. Just like
+  Term.st.firstx is the buffer coordinate of the first line visible in
+  the view.
+
+  Similarly a BExtent was provided in parallel with Extent.
+
+  Serious attention was payed to the possibility of 'firsta' wrapping around
+  it's 32bit range. Ideally this could be dealt with by using unsigned numbers
+  and modulo arithmetic, but Java doesn't have unsigned. Instead the variable
+  is explicitly checked against Term.modulo = Integer.MAX_VALUE/2.
+  The 2 is for good measure. Term.modulo can be artificially reduced to a
+  small number in order to verify that selection and ActiveRegion relocation
+  works correctly.
+
+  ActiveRegions that go out of history periodically get culled.
+  This is controlled using Term.cull_frequency.
+
+- debugging aids:
+  - Added a "debug gutter" Which can be used to print out view, buffer
+    or absolute row coordinates.
+  - Added Buffer.lock and Buffer.ck_lock() which helped me find race
+    conditions. The code is commented out.
+
+================================================================================
+tag: term_aug2001_ivan_4
+
+- preparatory work for processing of ANSI escape sequence
+	ESC [ <m> ; <n> r
+
+================================================================================
+tag: term_aug2001_ivan_3
+
+- bug: ActiveRegion.setSelectable(boolean) always set property to true. Fixed.
+- bug: After the flush cleanup in term_aug2001_ivan_2 LineDispcipline's 
+  eches of characters wouldn't show up until after a newline if
+  the refreshEnabled property was off. Fixed by adding additional flushes.
+
++ Term.requestFocus() ... was missing. Added.
+
++ ActiveTerm.cancelRegion().
+  This is supposed to help with hiliting regions that are detected only after
+  the fact .. that is you aggressively call beginRegion(), like at the 
+  beginning of a line, and if at the end of the line it turns out not to
+  be useful you can cancel it.
+
+================================================================================
+tag: term_aug2001_ivan_2
+
+- Fixed a bug where the Sun Copy key wouldn't copy things.
+
++ Term.flush(), TermStream.flush()
+  See JavaDoc for Term.flush() for more info.
+
+- Internal change to repaint(). 
+  Term.repaint() used to always check the refreshEnabled attribute, which
+  would cause things like scrolling or attribute changes not take
+  immediate effect. So now we have possibly_repaint() which checks the 
+  attribute and repaint() which doesn't.
+  Only putChar() and putChars() use possibly_repaint().
+  Made repaint() and possibly_repaint() be protected.
+
+
+================================================================================
+tag: term_aug2001_ivan_1
+
+- AbstractInterp, InterpDumb, InterpANSI made public
+
+- class ActiveTerm now inherits from class StreamTerm instead of class Term
+
++ ActiveRegion ActiveRegion.firstChild()
++ ActiveRegion ActiveRegion.getNextSibling()
++ ActiveRegion ActiveRegion.getPreviousSibling()
+
+  To be used as follows:
+	ActiveTerm at;
+	r = at.regionManager().root().firstChild();
+	r = r.getNextSibling()
+	...
+  You should be able to use Regions instead of Coords to index actions (see
+  OutputTabTerm.<init>, new ActiveTermListener.
+
++ int Ops.op_get_width()
++ int Ops.op_get_column()
+
+  To help with formatting and wrapping text in a Term
+
+- The OutputStream 'pin'  parameter to StreamTerm.connect() is now optional.
+  This makes sense for output only situations.
+
++ void Term.setTabSize(int tab_size)
++ int Term.getTabSize()
+  Per NB folks' request.
+  You should be able to get rid of expandTabs() in
+  org/netbeans/core/output/OutputTabTerm.java.

@@ -28,6 +28,7 @@ ${COMMENTICON}    static final String ICON_PATH = "${ICONPATH}";
         setName(NbBundle.getMessage(${TEMPLATENAME}TopComponent.class, "CTL_${TEMPLATENAME}TopComponent"));
         setToolTipText(NbBundle.getMessage(${TEMPLATENAME}TopComponent.class, "HINT_${TEMPLATENAME}TopComponent"));
 ${COMMENTICON}        setIcon(Utilities.loadImage(ICON_PATH, true));
+        ${KEEPPREFSIZE}
     }
 
     /** This method is called from within the constructor to
@@ -57,7 +58,7 @@ ${COMMENTICON}        setIcon(Utilities.loadImage(ICON_PATH, true));
     /**
      * Gets default instance. Do not use directly: reserved for *.settings files only,
      * i.e. deserialization routines; otherwise you could get a non-deserialized instance.
-     * To obtain the singleton instance, use {@link findInstance}.
+     * To obtain the singleton instance, use {@link #findInstance}.
      */
     public static synchronized ${TEMPLATENAME}TopComponent getDefault() {
         if (instance == null) {

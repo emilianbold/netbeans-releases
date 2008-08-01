@@ -58,7 +58,6 @@ import javax.swing.text.TextAction;
 import javax.swing.text.BadLocationException;
 
 import org.netbeans.editor.*;
-import org.netbeans.editor.ext.*;
 
 import org.netbeans.modules.editor.*;
 import org.netbeans.modules.cnd.MIMENames;
@@ -81,7 +80,7 @@ public class FKit extends NbEditorKit {
 
     @Override
     public Document createDefaultDocument() {
-        BaseDocument doc = new NbEditorDocument(this.getClass());
+        BaseDocument doc = new NbEditorDocument(MIMENames.FORTRAN_MIME_TYPE);
         // Force '\n' as write line separator // !!! move to initDocument()
         doc.putProperty(BaseDocument.WRITE_LINE_SEPARATOR_PROP, BaseDocument.LS_LF);
         return doc; 
@@ -104,7 +103,7 @@ public class FKit extends NbEditorKit {
 
     @Override
     protected Action[] createActions() {
-	int arraySize = 2;
+	int arraySize = 1;
 	int numAddClasses = 0;
 	if (actionClasses != null) {
 	    numAddClasses = actionClasses.size();
@@ -125,7 +124,6 @@ public class FKit extends NbEditorKit {
 		index++;
 	    }
 	}
-	fortranActions[index++] = new FDefaultKeyTypedAction();
 	fortranActions[index++] = new FFormatAction();
         return TextAction.augmentList(super.createActions(), fortranActions);
     }
@@ -158,122 +156,62 @@ public class FKit extends NbEditorKit {
 	    putValue ("helpID", FFormatAction.class.getName ()); // NOI18N
 	}
 
-	public void actionPerformed(ActionEvent evt, JTextComponent target) {
+	public void actionPerformed(ActionEvent evt, final JTextComponent target) {
 	    if (target != null) {
 
 		if (!target.isEditable() || !target.isEnabled()) {
 		    target.getToolkit().beep();
 		    return;
 		}
+                
+                final Caret caret = target.getCaret();
+		final BaseDocument doc = (BaseDocument)target.getDocument();
 
-		Caret caret = target.getCaret();
-		BaseDocument doc = (BaseDocument)target.getDocument();
+		doc.runAtomic(new Runnable() {
+                    public void run() {
+                        try {
+                            int caretLine = Utilities.getLineOffset(doc, caret.getDot());
+                            int startPos;
+                            Position endPosition;
+                            if (caret.isSelectionVisible()) {
+                                startPos = target.getSelectionStart();
+                                endPosition = doc.createPosition(target.getSelectionEnd());
+                            } else {
+                                startPos = 0;
+                                endPosition = doc.createPosition(doc.getLength());
+                            }
+                            int pos = startPos;
 
-		doc.atomicLock();
-		try {
-		    int caretLine = Utilities.getLineOffset(doc, caret.getDot());
-		    int startPos;
-		    Position endPosition;
-		    if (caret.isSelectionVisible()) {
-			startPos = target.getSelectionStart();
-			endPosition = doc.createPosition(target.getSelectionEnd());
-		    } else {
-			startPos = 0;
-			endPosition = doc.createPosition(doc.getLength());
-		    }
-		    int pos = startPos;
+                            while (pos < endPosition.getOffset()) {
+                                int stopPos = endPosition.getOffset();
 
-		    while (pos < endPosition.getOffset()) {
-			int stopPos = endPosition.getOffset();
+                                CharArrayWriter cw = new CharArrayWriter();
+                                Writer w = doc.getFormatter().createWriter(doc, pos, cw);
+                                w.write(doc.getChars(pos, stopPos - pos));
+                                w.close();
+                                String out = new String(cw.toCharArray());
+                                doc.remove(pos, stopPos - pos);
+                                doc.insertString(pos, out, null);
+                                pos += out.length(); // go to the end of the area inserted
+                            }
 
-			CharArrayWriter cw = new CharArrayWriter();
-			Writer w = doc.getFormatter().createWriter(doc, pos, cw);
-			w.write(doc.getChars(pos, stopPos - pos));
-			w.close();
-			String out = new String(cw.toCharArray());
-			doc.remove(pos, stopPos - pos);
-			doc.insertString(pos, out, null);
-			pos += out.length(); // go to the end of the area inserted
-		    }
-
-		    // Restore the line
-		    pos = Utilities.getRowStartFromLineOffset(doc, caretLine);
-		    if (pos >= 0) {
-			caret.setDot(pos);
-		    }
-		} catch (BadLocationException e) {
-		    if (System.getProperty("netbeans.debug.exceptions") != null) { // NOI18N
-			e.printStackTrace();
-		    }
-		} catch (IOException e) {
-		    if (System.getProperty("netbeans.debug.exceptions") != null) { // NOI18N
-			e.printStackTrace();
-		    }
-		} finally {
-		    doc.atomicUnlock();
-		}
+                            // Restore the line
+                            pos = Utilities.getRowStartFromLineOffset(doc, caretLine);
+                            if (pos >= 0) {
+                                caret.setDot(pos);
+                            }
+                        } catch (BadLocationException e) {
+                            if (System.getProperty("netbeans.debug.exceptions") != null) { // NOI18N
+                                e.printStackTrace();
+                            }
+                        } catch (IOException e) {
+                            if (System.getProperty("netbeans.debug.exceptions") != null) { // NOI18N
+                                e.printStackTrace();
+                            }
+                        }
+                    }                    
+                });
 	    }
 	}
-    }
-    
-    public static class FDefaultKeyTypedAction extends ExtDefaultKeyTypedAction {
-
-        /** Check and possibly popup, hide or refresh the completion */
-        @Override
-	protected void checkCompletion(JTextComponent target, String typedText) {
-	    Completion completion = ExtUtilities.getCompletion(target);
-	    if (completion != null && typedText.length() > 0) {
-		if (!completion.isPaneVisible()) { // pane not visible yet
-		    if (completion.isAutoPopupEnabled()) {
-			boolean pop = false;
-			switch (typedText.charAt(0)) {
-			case ' ':
-			    int dotPos = target.getCaret().getDot();
-			    BaseDocument doc = (BaseDocument)target.getDocument();
-			    
-			    if (dotPos >= 2) { // last char before inserted space
-				int pos = Math.max(dotPos - 5, 0);
-				try {
-				    String txtBeforeSpace = doc.getText(pos, dotPos - pos);
-				    if (txtBeforeSpace.endsWith("new ")) { // NOI18N
-					//XXX  && !Character.isCCIdentifierPart(txtBeforeSpace.charAt(0))) {
-					pop = true;
-				    } else if (txtBeforeSpace.endsWith(", ")) { // NOI18N
-					pop = true;
-				    }
-				} catch (BadLocationException e) {
-				}
-			    }
-			    break;
-			    
-			case '.':
-			case ',':
-			    pop = true;
-			    break;
-			    
-			}
-			
-			if (pop) {
-			    completion.popup(true);
-			} else {
-			    completion.cancelRequest();
-			}
-		    }
-		    
-		} else { // the pane is already visible
-		    switch (typedText.charAt(0)) {
-		    case '=':
-		    case '{':
-		    case ';':
-			completion.setPaneVisible(false);
-			break;
-			
-		    default:
-			completion.refresh(true);
-			break;
-		    }
-		}
-	    }
-	}
-    } // end class FDefaultKeyTypedAction
+    }    
 }

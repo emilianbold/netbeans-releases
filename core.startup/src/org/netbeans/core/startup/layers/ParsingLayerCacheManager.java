@@ -80,6 +80,7 @@ abstract class ParsingLayerCacheManager extends LayerCacheManager implements Con
     
     private final static String[] ATTR_TYPES = {
         "boolvalue",
+        "bundlevalue",
         "bytevalue",
         "charvalue",
         "doublevalue",
@@ -91,11 +92,12 @@ abstract class ParsingLayerCacheManager extends LayerCacheManager implements Con
         "serialvalue",
         "shortvalue",
         "stringvalue",
-        "urlvalue"
+        "urlvalue",
     };
     
     private final static String DTD_1_0 = "-//NetBeans//DTD Filesystem 1.0//EN";
     private final static String DTD_1_1 = "-//NetBeans//DTD Filesystem 1.1//EN";
+    private final static String DTD_1_2 = "-//NetBeans//DTD Filesystem 1.2//EN";
     
     private Locator locator;
     private MemFolder root;
@@ -403,7 +405,7 @@ abstract class ParsingLayerCacheManager extends LayerCacheManager implements Con
     }
     
     public InputSource resolveEntity(String pubid, String sysid) throws SAXException, IOException {
-        if (pubid != null && (pubid.equals(DTD_1_0) || pubid.equals(DTD_1_1))) {
+        if (pubid != null && (pubid.equals(DTD_1_0) || pubid.equals(DTD_1_1) || pubid.equals(DTD_1_2))) {
             return new InputSource(new ByteArrayInputStream(new byte[0]));
         } else {
             return null;

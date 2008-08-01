@@ -60,4 +60,8 @@ public class CommentElement extends JsElement {
     public ElementKind getKind() {
         return ElementKind.KEYWORD;
     }
+
+    public String getFqn() {
+        return "?"; // NOI18N
+    }
 }

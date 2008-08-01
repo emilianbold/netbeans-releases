@@ -58,9 +58,6 @@ public class ProprietarySCServiceFactories {
         public Set<QName> getElementQNames() {
             return Collections.singleton(ProprietarySCServiceQName.SCCONFIGURATION.getQName());
         }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new SCConfigurationServiceImpl(context.getModel()));
-        }
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {
             return new SCConfigurationServiceImpl(context.getModel(), element);
@@ -71,9 +68,6 @@ public class ProprietarySCServiceFactories {
         @Override
         public Set<QName> getElementQNames() {
             return Collections.singleton(ProprietarySCServiceQName.LIFETIME.getQName());
-        }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new LifeTimeServiceImpl(context.getModel()));
         }
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {

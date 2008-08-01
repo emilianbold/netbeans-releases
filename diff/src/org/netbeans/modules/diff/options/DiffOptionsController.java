@@ -41,6 +41,7 @@
 package org.netbeans.modules.diff.options;
 
 import org.netbeans.modules.diff.*;
+import org.netbeans.modules.diff.builtin.provider.BuiltInDiffProvider;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.Lookup;
 import org.openide.util.HelpCtx;
@@ -64,7 +65,9 @@ class DiffOptionsController extends OptionsPanelController {
     public void update() {
         panel.getInternalDiff().setSelected(DiffModuleConfig.getDefault().isUseInteralDiff());
         panel.getExternalDiff().setSelected(!DiffModuleConfig.getDefault().isUseInteralDiff());
-        panel.getIgnoreWhitespace().setSelected(DiffModuleConfig.getDefault().isIgnoreWhitespace());
+        panel.getIgnoreWhitespace().setSelected(DiffModuleConfig.getDefault().getOptions().ignoreLeadingAndtrailingWhitespace);
+        panel.getIgnoreInnerWhitespace().setSelected(DiffModuleConfig.getDefault().getOptions().ignoreInnerWhitespace);
+        panel.getIgnoreCase().setSelected(DiffModuleConfig.getDefault().getOptions().ignoreCase);
         panel.getExternalCommand().setText(DiffModuleConfig.getDefault().getPreferences().get(DiffModuleConfig.PREF_EXTERNAL_DIFF_COMMAND, "diff {0} {1}")); // NOI18N
         panel.setChanged(false);
     }
@@ -72,7 +75,11 @@ class DiffOptionsController extends OptionsPanelController {
     public void applyChanges() {
         checkExternalCommand();
         DiffModuleConfig.getDefault().setUseInteralDiff(panel.getInternalDiff().isSelected());
-        DiffModuleConfig.getDefault().setIgnoreWhitespace(panel.getIgnoreWhitespace().isSelected());
+        BuiltInDiffProvider.Options options = new BuiltInDiffProvider.Options();
+        options.ignoreLeadingAndtrailingWhitespace = panel.getIgnoreWhitespace().isSelected();
+        options.ignoreInnerWhitespace = panel.getIgnoreInnerWhitespace().isSelected();
+        options.ignoreCase = panel.getIgnoreCase().isSelected();
+        DiffModuleConfig.getDefault().setOptions(options);
         DiffModuleConfig.getDefault().getPreferences().put(DiffModuleConfig.PREF_EXTERNAL_DIFF_COMMAND, panel.getExternalCommand().getText());
         panel.setChanged(false);
     }

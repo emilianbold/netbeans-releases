@@ -41,6 +41,7 @@
 package org.netbeans.modules.ruby.platform.gems;
 
 import java.awt.Component;
+import java.awt.EventQueue;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -54,21 +55,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.api.ruby.platform.RubyPlatformManager;
-import org.netbeans.modules.gsf.Language;
-import org.netbeans.modules.gsf.LanguageRegistry;
-import org.netbeans.modules.gsfret.source.usages.ClassIndexManager;
 import org.netbeans.modules.ruby.platform.Util;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
@@ -77,26 +73,23 @@ import org.openide.util.Parameters;
 import org.openide.util.Utilities;
 
 /**
- * Class which handles gem interactions - executing gem, installing, uninstalling, etc.
- *
- * @todo Use the new ExecutionService to do process management.
+ * Provides access to RubyGems environment, like RubyGems repositories, provides
+ * operations for getting information about installed gems, for fetching
+ * remotely available gems, etc.
+ * <p>
+ * Every instance of {@link GemManager} <em>belongs</em> to particular {@link
+ * RubyPlatform}.
  */
 public final class GemManager {
 
     private static final Logger LOGGER = Logger.getLogger(GemManager.class.getName());
-    
+
     /** Top level directories inside the Gem repository. */
     private static final String[] TOP_LEVEL_REPO_DIRS = { "cache", "specifications", "gems", "doc" }; // NOI18N
-    
+
     /** Directory inside the GEM_HOME directory. */
     private static final String SPECIFICATIONS = "specifications"; // NOI18N
-    
-    /**
-     * Regexp for matching version number in gem packages:  name-x.y.z (we need
-     * to pull out x,y,z such that we can do numeric comparisons on them)
-     */
-    private static final Pattern VERSION_PATTERN = Pattern.compile("(\\d+)\\.(\\d+)\\.(\\d+)(-\\S+)?"); // NOI18N
-    
+
     private static final boolean SKIP_INDEX_LIBS = System.getProperty("ruby.index.nolibs") != null; // NOI18N
     private static final boolean SKIP_INDEX_GEMS = System.getProperty("ruby.index.nogems") != null; // NOI18N
 
@@ -106,22 +99,28 @@ public final class GemManager {
      */
     private static final String DOT_GEM_SPEC = ".gemspec"; // NOI18N
 
-    /** Map&lt;gemName, Map&lt;version, specFile&gt;&gt; */
-    private Map<String, Map<String, File>> gemFiles;
+    /**
+     * Contains the locally installed gems. All installed versions are included.
+     * <p>
+     * Maps <i>gem name</i> to <i>sorted-by-version list of {@link GemInfo}s</i>
+     * </p>
+     */
+    private Map<String, List<GemInfo>> localGems;
+
     private Map<String, String> gemVersions;
     private Map<String, URL> gemUrls;
     private Set<URL> nonGemUrls;
-   
+
     /**
      * Used by tests.
      * <p>
      * <em>FIXME</em>: get rid of this
      */
     public static String TEST_GEM_HOME;
-    
+
     /** Share over invocations of the dialog since these are slow to compute */
     private List<Gem> installed;
-    
+
     /** Share over invocations of the dialog since these are ESPECIALLY slow to compute */
     private List<Gem> remote;
 
@@ -131,10 +130,13 @@ public final class GemManager {
     private String rails;
 
     private final RubyPlatform platform;
-    
+
+    private final Lock runnerLock;
+
     public GemManager(final RubyPlatform platform) {
         assert platform.hasRubyGemsInstalled() : "called when RubyGems installed";
         this.platform = platform;
+        this.runnerLock = new ReentrantLock(true);
     }
 
     private String getGemMissingMessage() {
@@ -146,18 +148,18 @@ public final class GemManager {
         }
         return NbBundle.getMessage(GemManager.class, "GemMissing");
     }
-    
+
     /**
      * Return null if there are no problems running gem. Otherwise return
      * an error message which describes the problem.
      */
     public String getGemProblem() {
         String gem = getGemTool();
-        
+
         if (gem == null) {
             return getGemMissingMessage();
         }
-        
+
         String gemHomePath = getGemHome();
         if (gemHomePath == null) {
             // edge case, misconfiguration? gem tool is installed but repository is not found
@@ -165,22 +167,34 @@ public final class GemManager {
         }
 
         File gemHome = new File(gemHomePath);
-        
+
         if (!gemHome.exists()) {
             // Is this possible? (Installing gems, but no gems installed yet
             return null;
         }
-        
+
         return null;
     }
 
+    boolean hasObsoleteRubyGemsVersion() {
+        String gemVersion = platform.getInfo().getGemVersion();
+        return Util.compareVersions("1.0", gemVersion) > 0; // NOI18N
+    }
+
+    boolean isGemHomeWritable() {
+        return getGemHomeF().canWrite();
+    }
+
     private boolean checkGemHomePermissions() {
-        if (!getGemHomeF().canWrite()) {
-            NotifyDescriptor nd = new NotifyDescriptor.Message(
-                    NbBundle.getMessage(GemManager.class, "GemNotWritable", getGemHome()),
-                    NotifyDescriptor.Message.ERROR_MESSAGE);
-            DialogDisplayer.getDefault().notifyLater(nd);
-            return false;
+        if (!isGemHomeWritable()) {
+            String gksu = Util.findOnPath("gksu"); // NOI18N
+            if (gksu == null) {
+                NotifyDescriptor nd = new NotifyDescriptor.Message(
+                        NbBundle.getMessage(GemManager.class, "GemNotWritable", getGemHome()),
+                        NotifyDescriptor.Message.ERROR_MESSAGE);
+                DialogDisplayer.getDefault().notifyLater(nd);
+                return false;
+            }
         }
         return true;
     }
@@ -203,11 +217,11 @@ public final class GemManager {
     public String getGemHome() {
         return platform.getInfo().getGemHome();
     }
-    
+
     public File getGemHomeF() {
         return FileUtil.normalizeFile(new File(platform.getInfo().getGemHome()));
     }
-    
+
     public FileObject getGemHomeFO() {
         return FileUtil.toFileObject(getGemHomeF());
     }
@@ -235,7 +249,7 @@ public final class GemManager {
         repos.add(getGemHomeF());
         return repos;
     }
-    
+
     /** Returns paths to all Gem repositories. */
     public Set<File> getGemPath() {
         Set<File> repos = new LinkedHashSet<File>();
@@ -245,7 +259,7 @@ public final class GemManager {
         }
         return repos;
     }
-    
+
     public boolean addGemPath(final File path) {
         Set<File> gemPath = getGemPath();
         boolean result;
@@ -283,49 +297,6 @@ public final class GemManager {
         }
         resetLocal();
     }
-    
-    /** Return > 0 if version1 is greater than version 2, 0 if equal and -1 otherwise */
-    public static int compareGemVersions(String version1, String version2) {
-        if (version1.equals(version2)) {
-            return 0;
-        }
-
-        Matcher matcher1 = VERSION_PATTERN.matcher(version1);
-
-        if (matcher1.matches()) {
-            int major1 = Integer.parseInt(matcher1.group(1));
-            int minor1 = Integer.parseInt(matcher1.group(2));
-            int micro1 = Integer.parseInt(matcher1.group(3));
-
-            Matcher matcher2 = VERSION_PATTERN.matcher(version2);
-
-            if (matcher2.matches()) {
-                int major2 = Integer.parseInt(matcher2.group(1));
-                int minor2 = Integer.parseInt(matcher2.group(2));
-                int micro2 = Integer.parseInt(matcher2.group(3));
-
-                if (major1 != major2) {
-                    return major1 - major2;
-                }
-
-                if (minor1 != minor2) {
-                    return minor1 - minor2;
-                }
-
-                if (micro1 != micro2) {
-                    return micro1 - micro2;
-                }
-            } else {
-                // TODO uh oh
-                //assert false : "no version match on " + version2;
-            }
-        } else {
-            // TODO assert false : "no version match on " + version1;
-        }
-
-        // Just do silly alphabetical comparison
-        return version1.compareTo(version2);
-    }
 
     /**
      * Checks whether a gem with the given name is installed in the gem
@@ -335,63 +306,13 @@ public final class GemManager {
      * @return <tt>true</tt> if installed; <tt>false</tt> otherwise
      */
     public boolean isGemInstalled(final String gemName) {
-        return getVersion(gemName) != null;
-    }
-    
-    /**
-     * Checks whether a gem with the given name and the given version is
-     * installed in the gem repository used by the currently set Ruby
-     * interpreter.
-     *
-     * @param gemName name of a gem to be checked
-     * @param version version of the gem to be checked
-     * @return <tt>true</tt> if installed; <tt>false</tt> otherwise
-     */
-    public boolean isGemInstalled(final String gemName, final String version) {
-        String currVersion = getVersion(gemName);
-        return currVersion != null && GemManager.compareGemVersions(version, currVersion) <= 0;
+        return !getVersions(gemName).isEmpty();
     }
 
-    public boolean isGemInstalledForPlatform(final String gemName, final String version) {
-        String currVersion = getVersionForPlatform(gemName);
-        return currVersion != null && GemManager.compareGemVersions(version, currVersion) <= 0;
-        
-    }
-    
-    public String getVersion(String gemName) {
-        // TODO - use gemVersions map instead!
-        initGemList();
-
-        if (gemFiles == null) {
-            return null;
-        }
-
-        Map<String, File> highestVersion = gemFiles.get(gemName);
-
-        if (highestVersion == null || highestVersion.isEmpty()) {
-            return null;
-        }
-
-        return highestVersion.keySet().iterator().next();
-    }
-
-    public String getVersionForPlatform(String gemName) {
-        // TODO - use gemVersions map instead!
-        initGemList();
-
-        if (gemFiles == null) {
-            return null;
-        }
-
-        Map<String, File> versionsToSpecs = gemFiles.get(gemName);
-
-        if (versionsToSpecs == null || versionsToSpecs.isEmpty()) {
-            return null;
-        }
-
-        // filtering
-        for (Map.Entry<String, File> versionToSpec : versionsToSpecs.entrySet()) {
-            String specName = versionToSpec.getValue().getName();
+    public boolean isGemInstalledForPlatform(final String gemName, final VersionPredicate predicate) {
+        for (GemInfo gemInfo : getVersions(gemName)) {
+            // TODO: the platform info should rather be encapsulated in GemInfo
+            String specName = gemInfo.getSpecFile().getName();
             // filter out all java gems for non-java platforms
             // hack until we support proper .gemspec parsing
             if (!platform.isJRuby() && specName.endsWith("-java.gemspec")) { // NOI18N
@@ -408,40 +329,118 @@ public final class GemManager {
                     continue;
                 }
             }
-            return versionToSpec.getKey();
+            if (predicate.isRight(gemInfo.getVersion())) {
+                return true;
+            }
         }
+        return false;
+    }
 
-        return null;
+    /**
+     * Checks whether a gem with the given name and the given version is
+     * installed in the gem repository used by the currently set Ruby
+     * interpreter.
+     *
+     * @param gemName name of a gem to be checked
+     * @param version version of the gem to be checked
+     * @return <tt>true</tt> if installed; <tt>false</tt> otherwise
+     */
+    public boolean isGemInstalled(final String gemName, final String version) {
+        String currVersion = getLatestVersion(gemName);
+        return isRightVersion(currVersion, version, false);
+    }
+
+    /**
+     * Checks whether the installed version matches.
+     *
+     * @param gemName cf. {@link #isGemInstalled(String, String)}
+     * @param version cf. {@link #isGemInstalled(String, String)}
+     * @param exact whether exact match should be performed. If <tt>false</tt>,
+     * equal or greater matches. If <tt>true</tt>, only exact version matches.
+     * @return whether the installed version matches
+     */
+    public boolean isGemInstalledForPlatform(final String gemName, final String expectedVersion, final boolean exact) {
+        VersionPredicate predicate = new VersionPredicate() {
+            public boolean isRight(String version) {
+                return isRightVersion(version, expectedVersion, exact);
+            }
+        };
+        return isGemInstalledForPlatform(gemName, predicate);
+    }
+
+    private boolean isRightVersion(final String currVersion, final String version, final boolean exact) {
+        boolean isInstalled = false;
+        if (currVersion != null) {
+            int result = Util.compareVersions(version, currVersion);
+            isInstalled = exact ? result == 0 : result <= 0;
+        }
+        return isInstalled;
+    }
+
+    public boolean isGemInstalledForPlatform(final String gemName, final String version) {
+        return isGemInstalledForPlatform(gemName, version, false);
+    }
+
+    /**
+     * Gets the newest locally installed version of the given <code>gemName</code>.
+     *
+     * @param gemName the name of the gem to check.
+     * @return the version number of the newest version or <code>null</code> if
+     * no version of the given gem was installed.
+     */
+    public String getLatestVersion(String gemName) {
+        initGemList();
+        List<GemInfo> versions = getVersions(gemName);
+        return versions.isEmpty() ? null : versions.get(0).getVersion();
+    }
+
+
+    /**
+     * Gets all locally installed versions of the given <code>gemName</code>
+     * sorted by version in descending order.
+     * 
+     * @param gemName
+     * @return the versions, an empty list if there are no versions
+     *         of the given <code>gemName</code>.
+     */
+    public List<GemInfo> getVersions(String gemName) {
+        initGemList();
+
+        List<GemInfo> versions = localGems.get(gemName);
+        if (versions == null || versions.isEmpty()) {
+            return Collections.<GemInfo>emptyList();
+        }
+        return versions;
     }
 
     /**
      * Logs the installed gems using the given logging level.
-     */ 
+     */
     private void logGems(Level level) {
         if (!LOGGER.isLoggable(level)) {
             return;
         }
-        
-        if (gemFiles == null) {
+
+        if (localGems == null) {
             LOGGER.log(level, "No gems found, gemFiles is null"); // NOI18N
             return;
         }
-        
-        LOGGER.log(level, "Found " + gemFiles.size() + " gems."); // NOI18N
-        for (String key : gemFiles.keySet()) {
-            Map<String, File> value = gemFiles.get(key);
-            LOGGER.log(level, key + " has " + (value == null ? "null" : "" + value.size()) + " version(s):"); // NOI18N
-            for (String version : value.keySet()) {
-                LOGGER.log(level, version + " at " + value.get(version)); // NOI18N
+
+        LOGGER.log(level, "Found " + localGems.size() + " gems."); // NOI18N
+        for (String key : localGems.keySet()) {
+            List<GemInfo> versions = getVersions(key);
+            LOGGER.log(level, key + " has " + versions.size() + " version(s):"); // NOI18N
+            for (GemInfo version : versions) {
+                LOGGER.log(level, version + " at " + version.getSpecFile()); // NOI18N
             }
         }
     }
-    
+
     private void initGemList() {
-        if (gemFiles == null) {
+        if (localGems == null) {
             // Initialize lazily
             assert platform.hasRubyGemsInstalled() : "asking for gems only when RubyGems are installed";
-            gemFiles = new HashMap<String, Map<String, File>>();
+            localGems = new HashMap<String, List<GemInfo>>();
             for (File gemDir : getRepositories()) {
                 File specDir = new File(gemDir, SPECIFICATIONS);
                 if (specDir.exists()) {
@@ -449,7 +448,7 @@ public final class GemManager {
                     // Add each of */lib/
                     File[] specFiles = specDir.listFiles();
                     if (specFiles != null) {
-                        chooseGems(specFiles, gemFiles);
+                        localGems.putAll(GemFilesParser.getGemInfos(specFiles));
                     }
                 } else {
                     LOGGER.finest("Cannot find Gems repository. \"" + gemDir + "\" does not exist or is not a directory."); // NOI18N
@@ -459,25 +458,9 @@ public final class GemManager {
         }
     }
 
-    /** 
-     * Given a list of files that may represent gems, choose the most recent
-     * version of each.
-     */
-    private static File[] chooseGems(final  File[] specFiles, final Map<String, Map<String, File>> gemFiles) {
-        GemFilesParser gemFilesParser = new GemFilesParser(specFiles);
-        gemFilesParser.chooseGems();
-        gemFiles.putAll(gemFilesParser.getGemMap());
-        return gemFilesParser.getFiles();
-    }
-
     public Set<String> getInstalledGemsFiles() {
         initGemList();
-
-        if (gemFiles == null) {
-            return Collections.emptySet();
-        }
-
-        return gemFiles.keySet();
+        return localGems.keySet();
     }
 
     public void reset() {
@@ -485,57 +468,103 @@ public final class GemManager {
         resetLocal();
         gemHomeUrl = null;
     }
-    
+
+    /**
+     * Tries to reset <em>remote</em> gems. Request might be ignored if the
+     * update is just in progress.
+     */
     public void resetRemote() {
-        remote = null;
+        if (runnerLock.tryLock()) {
+            try {
+                remote = null;
+            } finally {
+                runnerLock.unlock();
+            }
+        } else {
+            LOGGER.finest("resetRemote() ignored");
+        }
     }
-    
+
+    /**
+     * Tries to reset <em>local</em> and <em>installed</em> gems. Request might
+     * be ignored if the update is just in progress.
+     */
     public void resetLocal() {
-        installed = null;
-        gemFiles = null;
-        platform.fireGemsChanged();
+        if (runnerLock.tryLock()) {
+            try {
+                installed = null;
+                localGems = null;
+                platform.fireGemsChanged();
+            } finally {
+                runnerLock.unlock();
+            }
+        } else {
+            LOGGER.finest("resetLocal() ignored");
+        }
     }
-    
+
     /**
      * <em>WARNING:</em> Slow! Synchronous gem execution.
-     * 
+     *
      * @param errors list to which the errors, which happen during gems
-     *        reload, will be accumulated 
+     *        reload, will be accumulated
      */
     public void getAllGems(List<String> errors) {
         reloadIfNeeded(errors);
     }
-    
+
     /**
      * <em>WARNING:</em> Slow! Synchronous gem execution.
-     * 
+     *
      * @param errors list to which the errors, which happen during gems
-     *        reload, will be accumulated 
-     * @return list of the installed gems. Returns an empty list if they could not
-     * be read, never null. 
+     *        reload, will be accumulated
+     * @return list of the installed gems. Returns an empty list if they could
+     *         not be read, never null.
      */
     public List<Gem> getInstalledGems(List<String> errors) {
         reloadIfNeeded(errors);
-        return installed != null ? installed : Collections.<Gem>emptyList();
+        return getInstalledGems();
     }
-    
+
     /**
      * Gets the available remote gems. <em>WARNING:</em> Slow! Synchronous gem execution.
-     * 
+     *
      * @param errors list to which the errors, which happen during gems
-     *        reload, will be accumulated 
+     *        reload, will be accumulated
      * @return list of the available remote gems. Returns an empty list if they could not
-     * be read, never null. 
+     *         be read, never null.
      */
     public List<Gem> getRemoteGems(List<String> errors) {
         reloadIfNeeded(errors);
+        return getRemoteGems();
+    }
+
+    /**
+     * Gets the available <b>cached</b> installed gems. Clients must be sure
+     * reload was triggered.
+     *
+     * @return list of the available installed gems. Returns an empty list if
+     *         they could not be read, never null.
+     */
+    public List<Gem> getInstalledGems() {
+        return installed != null ? installed : Collections.<Gem>emptyList();
+    }
+
+    /**
+     * Gets the available <b>cached</b> remote gems. Clients must be sure reload
+     * was triggered.
+     *
+     * @return list of the available remote gems. Returns an empty list if they
+     *         could not be read, never null.
+     */
+    public List<Gem> getRemoteGems() {
         return remote != null ? remote : Collections.<Gem>emptyList();
     }
 
     public boolean haveGemTool() {
         return getGemTool() != null;
     }
-    
+
     /** Returns false if check fails. True in success case. */
     private boolean checkGemProblem() {
         String gemProblem = getGemProblem();
@@ -548,6 +577,10 @@ public final class GemManager {
         return true;
     }
 
+    boolean needsReload() {
+        return installed == null || remote == null;
+    }
+
     /**
      * This method is called automatically every time when installed or remote
      * gems are looked for. The method reloads only needed gems. Remote, local
@@ -555,68 +588,70 @@ public final class GemManager {
      * will be getting all (remote and locals) gems subsequently.
      *
      * @param errors list into which the errors, which happen during gems
-     *        reload, will be accumulated 
+     *        reload, will be accumulated
      */
     public void reloadIfNeeded(final List<String> errors) {
+        assert !EventQueue.isDispatchThread() : "do not call from EDT!";
         if (!checkGemProblem()) {
             return;
         }
-        
-        GemRunner gemRunner = new GemRunner(platform);
-        boolean ok;
-        if (installed == null && remote == null) {
-            ok = gemRunner.fetchBoth();
-            installed = new ArrayList<Gem>();
-            remote = new ArrayList<Gem>();
-        } else if (installed == null) {
-            ok = gemRunner.fetchLocal();
-            installed = new ArrayList<Gem>();
-        } else if (remote == null) {
-            ok = gemRunner.fetchRemote();
-            remote = new ArrayList<Gem>();
-        } else {
-            return; // no reload needed
-        }
-        
-        if (ok) {
-            parseGemList(gemRunner.getOutput(), installed, remote);
-            
-            // Sort the lists
-            if (installed != null) {
-                Collections.sort(installed);
+
+        runnerLock.lock();
+        try {
+            GemRunner gemRunner = new GemRunner(platform);
+            boolean ok;
+            if (installed == null && remote == null) {
+                ok = gemRunner.fetchBoth();
+                installed = new ArrayList<Gem>();
+                remote = new ArrayList<Gem>();
+            } else if (installed == null) {
+                ok = gemRunner.fetchLocal();
+                installed = new ArrayList<Gem>();
+            } else if (remote == null) {
+                ok = gemRunner.fetchRemote();
+                remote = new ArrayList<Gem>();
+            } else {
+                return; // no reload needed
             }
-            if (remote != null) {
-                Collections.sort(remote);
-            }
-        } else {
-            // Produce the error list
-            boolean inErrors = false;
-            for (String line : gemRunner.getOutput()) {
-                if (inErrors) {
-                    errors.add(line);
-                } else if (line.startsWith("***") || line.startsWith(" ") || line.trim().length() == 0) { // NOI18N
-                    continue;
-                } else if (!line.matches("[a-zA-Z\\-]+ \\(([0-9., ])+\\)\\s?")) { // NOI18N
-                    errors.add(line);
-                    inErrors = true;
+
+            if (ok) {
+                parseGemList(gemRunner.getOutput(), installed, remote);
+
+                // Sort the lists
+                if (installed != null) {
+                    Collections.sort(installed);
                 }
+                if (remote != null) {
+                    Collections.sort(remote);
+                }
+            } else {
+                errors.addAll(gemRunner.getOutput());
             }
+        } finally {
+            runnerLock.unlock();
         }
     }
-    
-    private static void parseGemList(List<String> lines, List<Gem> localList, List<Gem> remoteList) { 
+
+    private static void parseGemList(List<String> lines, List<Gem> localList, List<Gem> remoteList) {
+        if (LOGGER.isLoggable(Level.FINEST)) {
+            LOGGER.finest("Going to parse Gem list from the following output:");
+            LOGGER.finest("=== Output Start ===");
+            for (String line : lines) {
+                LOGGER.finest(line);
+            }
+            LOGGER.finest("=== Output End ===");
+        }
         Gem gem = null;
         boolean listStarted = false;
         boolean inLocal = false;
         boolean inRemote = false;
-        
+
         for (String line : lines) {
             if (line.length() == 0) {
                 gem = null;
-                
                 continue;
             }
-            
+
             if (line.startsWith("*** REMOTE GEMS")) { // NOI18N
                 inRemote = true;
                 inLocal = false;
@@ -630,16 +665,16 @@ public final class GemManager {
                 gem = null;
                 continue;
             }
-            
+
             if (!listStarted) {
                 // Skip status messages etc.
                 continue;
             }
-            
+
             if (Character.isWhitespace(line.charAt(0))) {
                 if (gem != null) {
                     String description = line.trim();
-                    
+
                     if (gem.getDescription() == null) {
                         gem.setDescription(description);
                     } else {
@@ -650,21 +685,21 @@ public final class GemManager {
                 if (line.charAt(0) == '.') {
                     continue;
                 }
-                
+
                 // Should be a gem - but could be an error message!
                 int versionIndex = line.indexOf('(');
-                
+
                 if (versionIndex != -1) {
                     String name = line.substring(0, versionIndex).trim();
                     int endIndex = line.indexOf(')');
                     String versions;
-                    
+
                     if (endIndex != -1) {
                         versions = line.substring(versionIndex + 1, endIndex);
                     } else {
                         versions = line.substring(versionIndex);
                     }
-                    
+
                     gem = new Gem(name, inLocal ? versions : null, inLocal ? null : versions);
                     if (inLocal) {
                         localList.add(gem);
@@ -677,6 +712,8 @@ public final class GemManager {
                 }
             }
         }
+        LOGGER.finest("Parsed " + localList.size() + " local gems");
+        LOGGER.finest("Parsed " + remoteList.size() + " remote gems");
     }
 
     /**
@@ -684,8 +721,8 @@ public final class GemManager {
      * IDE caches accordingly after the gem is installed.
      *
      * @param gem gem to install
-     * @param rdoc if true, generate rdoc as part of the installation
-     * @param ri if true, generate ri data as part of the installation
+     * @param rdoc if true, generate RDoc as part of the installation
+     * @param ri if true, generate RI data as part of the installation
      * @param version If non null, install the specified version rather than the
      *        latest remote version
      */
@@ -703,14 +740,14 @@ public final class GemManager {
         };
         install(gems, null, rdoc, ri, version, true, true, installationComplete);
     }
-    
+
     /**
      * Install the latest version of the given gem with dependencies and refresh
      * IDE caches accordingly after the gem is installed.
      *
      * @param gem gem to install
-     * @param rdoc if true, generate rdoc as part of the installation
-     * @param ri if true, generate ri data as part of the installation
+     * @param rdoc if true, generate RDoc as part of the installation
+     * @param ri if true, generate RI data as part of the installation
      */
     public void installGem(final String gem, final boolean rdoc, final boolean ri) {
         installGem(gem, rdoc, ri, null);
@@ -722,8 +759,8 @@ public final class GemManager {
      * @param gem Gem description for the gem to be installed. Only the name is relevant.
      * @param parent For asynchronous tasks, provide a parent Component that will have progress dialogs added,
      *   a possible cursor change, etc.
-     * @param rdoc If true, generate rdoc as part of the installation
-     * @param ri If true, generate ri data as part of the installation
+     * @param rdoc If true, generate RDoc as part of the installation
+     * @param ri If true, generate RI data as part of the installation
      * @param version If non null, install the specified version rather than the latest remote version
      * @param asynchronous If true, run the gem task asynchronously - returning immediately and running the gem task
      *    in a background thread. A progress bar and message will be displayed (along with the option to view the
@@ -754,8 +791,8 @@ public final class GemManager {
      * @param gem gem file to be installed (e.g. /path/to/rake-0.8.1.gem)
      * @param parent For asynchronous tasks, provide a parent Component that will have progress dialogs added,
      *   a possible cursor change, etc.
-     * @param rdoc If true, generate rdoc as part of the installation
-     * @param ri If true, generate ri data as part of the installation
+     * @param rdoc If true, generate RDoc as part of the installation
+     * @param ri If true, generate RI data as part of the installation
      * @param asynchronous If true, run the gem task asynchronously - returning immediately and running the gem task
      *    in a background thread. A progress bar and message will be displayed (along with the option to view the
      *    gem output). If the exit code is normal, the completion task will be run at the end.
@@ -802,31 +839,38 @@ public final class GemManager {
             return ok;
         }
     }
-    
+
     /**
-     * Update the given gem, or all gems if gem == null
+     * Updates the given gems, or all gems if <code>gems == null</code>.
      *
-     * @param gem Gem description for the gem to be uninstalled. Only the name is relevant. If null, all installed gems
-     *    will be updated.
+     * @param gems the Gem descriptions for the gems to be updated. Only the names are relevant.
+     * If <code>null</code>, all installed gems will be updated.
+     * @param rdoc specifies whether RDoc documentation should be generated.
+     * @param ri specifies whether RI documentation should be generated.
+     * @param includeDependencies specifies whether the required dependent gems should be updated.
      * @param parent For asynchronous tasks, provide a parent Component that will have progress dialogs added,
      *   a possible cursor change, etc.
      * @param asynchronous If true, run the gem task asynchronously - returning immediately and running the gem task
      *    in a background thread. A progress bar and message will be displayed (along with the option to view the
      *    gem output). If the exit code is normal, the completion task will be run at the end.
      * @param asyncCompletionTask If asynchronous is true and the gem task completes normally, this task will be run at the end.
+     * @return true if the update was performed synchronously and was successful, false otherwise.
      */
     public boolean update(Gem[] gems, Component parent, boolean rdoc,
-            boolean ri, boolean asynchronous, Runnable asyncCompletionTask) {
+            boolean ri, boolean includeDependencies, boolean asynchronous,
+            Runnable asyncCompletionTask) {
+
         if (!checkGemHomePermissions()) {
             return false;
         }
         List<String> gemNames = gems == null ? null : mapToGemNames(gems);
         GemRunner gemRunner = new GemRunner(platform);
         if (asynchronous) {
-            gemRunner.updateAsynchronously(gemNames, rdoc, ri, resetCompletionTask(asyncCompletionTask), parent);
+            gemRunner.updateAsynchronously(gemNames, rdoc, ri, includeDependencies,
+                    resetCompletionTask(asyncCompletionTask), parent);
             return false;
         } else {
-            boolean ok = gemRunner.update(gemNames, rdoc, ri);
+            boolean ok = gemRunner.update(gemNames, rdoc, ri, includeDependencies);
             resetLocal();
             return ok;
         }
@@ -856,12 +900,12 @@ public final class GemManager {
         }
         return gemTool;
     }
-    
+
     public String getRake() {
         if (rake == null) {
             rake = platform.findExecutable("rake"); // NOI18N
 
-            if (rake != null && !(new File(rake).exists()) && getVersion("rake") != null) { // NOI18N
+            if (rake != null && !(new File(rake).exists()) && getLatestVersion("rake") != null) { // NOI18N
                 // On Windows, rake does funny things - you may only get a rake.bat
                 InstalledFileLocator locator = InstalledFileLocator.getDefault();
                 File f =
@@ -928,20 +972,20 @@ public final class GemManager {
     }
 
     /** Return other load path URLs (than the gem ones returned by {@link #getGemUrls} to add for the platform
-     * such as the basic ruby 1.8 libraries, the site_ruby libraries, and the stub libraries for 
+     * such as the basic ruby 1.8 libraries, the site_ruby libraries, and the stub libraries for
      * the core/builtin classes.
-     * 
+     *
      * @return a set of URLs
      */
     public Set<URL> getNonGemLoadPath() {
         if (nonGemUrls == null) {
             initializeUrlMaps();
         }
-        
+
         return nonGemUrls;
     }
-    
-    /** 
+
+    /**
      * Return a map from gem name to the version string, which is of the form
      * {@code <major>.<minor>.<tiny>[-<platform>]}, such as 1.2.3 and 1.13.5-ruby
      */
@@ -953,7 +997,7 @@ public final class GemManager {
         return gemVersions;
     }
 
-    /** 
+    /**
      * Return a map from gem name to the URL for the lib root of the current gems
      */
     public Map<String, URL> getGemUrls() {
@@ -978,20 +1022,21 @@ public final class GemManager {
             gemVersions = new HashMap<String, String>(60);
             nonGemUrls = new HashSet<URL>(12);
 
-            FileObject rubyStubs = platform.getRubyStubs();
-
-            if (rubyStubs != null) {
-                try {
-                    nonGemUrls.add(rubyStubs.getURL());
-                } catch (FileStateInvalidException fsie) {
-                    Exceptions.printStackTrace(fsie);
-                }
-            }
+            // Now registered via the standard library mechanism in RubyLanguage instead
+            //FileObject rubyStubs = RubyPlatform.getRubyStubs();
+            //
+            //if (rubyStubs != null) {
+            //    try {
+            //        nonGemUrls.add(rubyStubs.getURL());
+            //    } catch (FileStateInvalidException fsie) {
+            //        Exceptions.printStackTrace(fsie);
+            //    }
+            //}
 
             // Install standard libraries
-            // lib/ruby/1.8/ 
+            // lib/ruby/1.8/
             if (!SKIP_INDEX_LIBS) {
-                String rubyLibDir = platform.getLibDir();
+                String rubyLibDir = platform.getVersionLibDir();
                 if (rubyLibDir != null) {
                     File libs = new File(rubyLibDir);
                     assert libs.exists() && libs.isDirectory();
@@ -1019,12 +1064,14 @@ public final class GemManager {
                             }
                         }
                     }
-                } else if (gemFiles != null) {
-                    Set<String> gems = gemFiles.keySet();
+                } else if (localGems != null) {
+                    Set<String> gems = localGems.keySet();
                     for (String name : gems) {
-                        Map<String, File> m = gemFiles.get(name);
-                        assert m.keySet().size() == 1;
-                        File f = m.values().iterator().next();
+                        List<GemInfo> versions = localGems.get(name);
+//                        Map<String, File> m = gemFiles.get(name);
+                        assert !versions.isEmpty();
+                        GemInfo newestVersion = versions.get(0);
+                        File f = newestVersion.getSpecFile();
                         // Points to the specification file
                         assert f.getName().endsWith(DOT_GEM_SPEC);
                         String filename = f.getName().substring(0,
@@ -1035,7 +1082,7 @@ public final class GemManager {
                         if (lib.exists() && lib.isDirectory()) {
                             URL url = lib.toURI().toURL();
                             gemUrls.put(name, url);
-                            String version = m.keySet().iterator().next();
+                            String version = newestVersion.getVersion();
                             gemVersions.put(name, version);
                         }
                     }
@@ -1060,15 +1107,15 @@ public final class GemManager {
             gemVersions = Collections.unmodifiableMap(gemVersions);
             nonGemUrls = Collections.unmodifiableSet(nonGemUrls);
 
-            // Register boot roots. This is a bit of a hack.
-            // I need to find a better way to distinguish source directories
-            // from boot (library, gems, etc.) directories at the scanning and indexing end.
-            Language language = LanguageRegistry.getInstance().getLanguageByMimeType(RubyInstallation.RUBY_MIME_TYPE);
-            ClassIndexManager mgr = ClassIndexManager.get(language);
-            List<URL> roots = new ArrayList<URL>(gemUrls.size() + nonGemUrls.size());
-            roots.addAll(gemUrls.values());
-            roots.addAll(nonGemUrls);
-            mgr.setBootRoots(roots);
+//            // Register boot roots. This is a bit of a hack.
+//            // I need to find a better way to distinguish source directories
+//            // from boot (library, gems, etc.) directories at the scanning and indexing end.
+//            Language language = LanguageRegistry.getInstance().getLanguageByMimeType(RubyInstallation.RUBY_MIME_TYPE);
+//            ClassIndexManager mgr = ClassIndexManager.get(language);
+//            List<URL> roots = new ArrayList<URL>(gemUrls.size() + nonGemUrls.size());
+//            roots.addAll(gemUrls.values());
+//            roots.addAll(nonGemUrls);
+//            mgr.setBootRoots(roots);
         } catch (MalformedURLException mue) {
             Exceptions.printStackTrace(mue);
         }
@@ -1120,6 +1167,43 @@ public final class GemManager {
     private static String adjustGemPath(final String origPath) {
         // it's needed on Windows, otherwise gem tool fails
         return Utilities.isWindows() ? origPath.replace('\\', '/') : origPath;
+    }
+
+    public interface VersionPredicate {
+
+        /**
+         * Returns true if given version is suitable.
+         * @param version version to be checked
+         * @return true if given version is suitable
+         */
+        boolean isRight(String version);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final GemManager other = (GemManager) obj;
+        if (this.platform != other.platform && (this.platform == null || !this.platform.equals(other.platform))) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 3;
+        hash = 53 * hash + (this.platform != null ? this.platform.hashCode() : 0);
+        return hash;
+    }
+
+    @Override
+    public String toString() {
+        return "GemManager[platform:" + platform + "]"; // NOI18N
     }
 
 }

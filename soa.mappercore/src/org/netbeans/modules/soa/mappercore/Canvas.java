@@ -33,10 +33,12 @@ import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Stroke;
 import java.awt.dnd.Autoscroll;
+import java.awt.event.ActionEvent;
 import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -51,6 +53,7 @@ import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.JViewport;
 import javax.swing.KeyStroke;
+import javax.swing.ToolTipManager;
 import javax.swing.border.Border;
 import javax.swing.tree.TreePath;
 import org.netbeans.modules.soa.mappercore.event.MapperSelectionEvent;
@@ -63,16 +66,19 @@ import org.netbeans.modules.soa.mappercore.graphics.VerticalGradient;
 import org.netbeans.modules.soa.mappercore.graphics.XRange;
 import org.netbeans.modules.soa.mappercore.model.Constant;
 import org.netbeans.modules.soa.mappercore.model.GraphItem;
+import org.netbeans.modules.soa.mappercore.model.GraphSubset;
 import org.netbeans.modules.soa.mappercore.model.Operation;
 import org.netbeans.modules.soa.mappercore.model.Vertex;
 import org.netbeans.modules.soa.mappercore.model.VertexItem;
 import org.netbeans.modules.soa.mappercore.utils.ScrollPaneWrapper;
 import org.netbeans.modules.soa.mappercore.utils.Utils;
+import org.openide.actions.CopyAction;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author anjeleevich
+ * @author AlexanderPermyakov
  */
 public class Canvas extends MapperPanel implements VertexCanvas,
         FocusListener, MapperSelectionListener,
@@ -90,14 +96,14 @@ public class Canvas extends MapperPanel implements VertexCanvas,
             = new DefaultVertexItemRenderer();
 
     private InplaceEditor inplaceEditor;
-    private boolean printMode = false;
-    
+    private GraphSubset bufferCopyPaste;
+            
     public Canvas(Mapper mapper) {
         super(mapper);
 
         // vlv: print
-        putClientProperty(java.awt.print.Printable.class, ""); // NOI18N
-        putClientProperty(java.lang.Integer.class, new Integer(1));
+        putClientProperty("print.printable", Boolean.TRUE); // NOI18N
+        putClientProperty("print.order", new Integer(1)); // NOI18N
         
         setBackground(Mapper.CANVAS_BACKGROUND_COLOR);
 
@@ -118,38 +124,53 @@ public class Canvas extends MapperPanel implements VertexCanvas,
         inplaceEditor = new InplaceEditor(this);
         getSelectionModel().addSelectionListener(this);
                    
-//        ToolTipManager.sharedInstance().registerComponent(this);
-        
         registerAction(new StartInplaceEditor(this));
+        
+        ToolTipManager.sharedInstance().registerComponent(this);
+        
         registerAction(new MoveRightCanvasAction(this));
         registerAction(new MoveLeftCanvasAction(this));
         registerAction(new MoveUpCanvasAction(this));
         registerAction(new MoveDownCanvasAction(this));
         registerAction(new LinkConnectAction(this));
+        registerAction(new CopyMapperAction(this));
+        registerAction(new PasteMapperAction(this));
+        registerAction(new CutMapperAction(this));
+        registerAction(new DeleteMapperAction(this));
+        registerAction(new ShowPopapMenuAction(this));
     
         getAccessibleContext().setAccessibleName(NbBundle
                 .getMessage(Canvas.class, "ACSN_Canvas")); // NOI18N
         getAccessibleContext().setAccessibleDescription(NbBundle
                 .getMessage(Canvas.class, "ACSD_Canvas")); // NOI18N
     }
-
-//    @Override
-//    public String getToolTipText(MouseEvent event) {
-//        CanvasSearchResult searchResult = find(event.getX(), event.getY());
-//        
-//        if (searchResult == null) return null;
-//        if (searchResult.getPinItem() != null) return null;
-//        
-//        GraphItem graphItem = searchResult.getGraphItem();
-//        
-//        if (graphItem instanceof Vertex) {
-//            return ((Vertex) graphItem).getName();
-//        }
-//        
-//        return null;
-//    }
     
-    
+    @Override
+    public String getToolTipText(MouseEvent event) {
+        CanvasSearchResult searchResult = find(event.getX(), event.getY());
+        
+        if (searchResult == null) return null;
+        if (searchResult.getPinItem() != null) return null;
+        
+        GraphItem graphItem = searchResult.getGraphItem();
+        
+        if (graphItem instanceof Vertex) {
+            return ((Vertex) graphItem).getName();
+        }
+        
+        if (graphItem instanceof VertexItem) {
+            String str = ((VertexItem) graphItem).getText();
+            if (str != null && str.length() > 0) {
+                return str;
+            }
+        }
+        
+        if (graphItem instanceof Link) {
+            return "Link";
+        }
+        return null;
+    }
+     
     public void registerAction(MapperKeyboardAction action) {
         InputMap iMap = getInputMap();
         ActionMap aMap = getActionMap();
@@ -175,7 +196,11 @@ public class Canvas extends MapperPanel implements VertexCanvas,
                 ? linkTool.getCanvasRendererContext()
                 : getDefaultRendererContext();
     }
-
+    
+    public GraphSubset getBufferCopyPaste() {
+        return bufferCopyPaste;
+    }
+    
     JScrollPane getScrollPane() {
         return scrollPane;
     }
@@ -206,13 +231,11 @@ public class Canvas extends MapperPanel implements VertexCanvas,
     
     @Override
     public void print(Graphics g) {
-        LeftTree leftTree = getLeftTree();
-
-        leftTree.setPrintMode(true);
-        printMode = true;
+        Mapper mapper = getMapper();
+        
+        mapper.setPrintMode(true);
         super.print(g);
-        printMode = false;
-        leftTree.setPrintMode(false);
+        mapper.setPrintMode(false);
     }
     @Override
     protected void printComponent(Graphics g) {
@@ -264,6 +287,12 @@ public class Canvas extends MapperPanel implements VertexCanvas,
         }
     }
     
+    public void setBufferCopyPaste(GraphSubset graphSubset) {
+        GraphSubset oldBuffer = bufferCopyPaste;
+        bufferCopyPaste = new GraphSubset(graphSubset);
+        firePropertyChange(Mapper.BUFFER_PROPERTY, oldBuffer, bufferCopyPaste);
+    }
+    
     
     public VertexItemRenderer getVertexItemRenderer() {
         return vertexItemRenderer;
@@ -291,11 +320,19 @@ public class Canvas extends MapperPanel implements VertexCanvas,
         inplaceEditor.setVertexItemEditor(valueType, editor);
     }
     
+    public void setCustomVertexItemEditor(Class valueType, 
+            CustomVertexItemEditor editor)
+    {
+        inplaceEditor.setCustomVertexItemEditor(valueType, editor);
+    }
     
     public VertexItemEditor getVertexItemEditor(Class valueType) {
         return inplaceEditor.getVertexItemEditor(valueType);
     }
     
+    public CustomVertexItemEditor getCustomVertexItemEditor(Class valueType) {
+        return inplaceEditor.getCustomVertexItemEditor(valueType);
+    }
     
     public void startEdit(TreePath treePath, VertexItem vertexItem) {
         inplaceEditor.startEdit(treePath, vertexItem);
@@ -311,7 +348,18 @@ public class Canvas extends MapperPanel implements VertexCanvas,
         Rectangle viewRect = scrollPane.getViewport().getViewRect();
         return graphX - getGraphViewPositionX() + viewRect.x + viewRect.width;
     }
-
+    
+    public int toGraphY(int canvasY) {
+        MapperNode node = getNodeAt(canvasY);
+                
+        int graphY = node.getY();
+        while (node.getParent() != null) {
+            node = node.getParent();
+            graphY = graphY + node.getY();
+        }
+        return graphY;
+    }
+    
     @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
@@ -415,7 +463,7 @@ public class Canvas extends MapperPanel implements VertexCanvas,
             g2.translate(graphX, 0);
             grid.paintGrid(this, g2, -graphX, nodeY + topInset + 1, getWidth(),
                     contentHeight - size - 2, step,
-                    !node.isSelected() && !printMode);
+                    !node.isSelected() && !getMapper().getPrintMode());
             g2.translate(-graphX, 0);
         }
     }
@@ -828,6 +876,7 @@ public class Canvas extends MapperPanel implements VertexCanvas,
     @Override
     public void doLayout() {
         cellRendererPane.setBounds(0, 0, getWidth(), getHeight());
+        inplaceEditor.layoutEditor();
     }
 
     public JLabel getTextRenderer() {
@@ -836,7 +885,7 @@ public class Canvas extends MapperPanel implements VertexCanvas,
 
    @Override
     public int getY() {
-        if (printMode) {
+        if (getMapper().getPrintMode()) {
             return 0; 
         }
         
@@ -1022,5 +1071,17 @@ public class Canvas extends MapperPanel implements VertexCanvas,
             getScrollPane().validate();
             repaint();
         }
+    }
+    
+    private class Copy extends CopyAction {
+
+        @Override
+        public void actionPerformed(ActionEvent ev) {
+            super.actionPerformed(ev);
+            System.out.println("123445**************");
+        }
+        
+            
+        
     }
 }

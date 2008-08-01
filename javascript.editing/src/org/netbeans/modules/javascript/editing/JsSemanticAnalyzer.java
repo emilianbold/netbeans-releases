@@ -42,6 +42,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 import java.util.Map;
 import org.mozilla.javascript.Node;
 import org.mozilla.javascript.Token;
@@ -49,6 +50,7 @@ import org.netbeans.modules.gsf.api.ColoringAttributes;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.gsf.api.SemanticAnalyzer;
+import org.netbeans.modules.javascript.editing.embedding.JsModel;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
 
 /**
@@ -64,9 +66,9 @@ import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
 public class JsSemanticAnalyzer implements SemanticAnalyzer {
 
     private boolean cancelled;
-    private Map<OffsetRange, ColoringAttributes> semanticHighlights;
+    private Map<OffsetRange, Set<ColoringAttributes>> semanticHighlights;
 
-    public Map<OffsetRange, ColoringAttributes> getHighlights() {
+    public Map<OffsetRange, Set<ColoringAttributes>> getHighlights() {
         return semanticHighlights;
     }
 
@@ -99,24 +101,56 @@ public class JsSemanticAnalyzer implements SemanticAnalyzer {
             return;
         }
 
+//        if (rpr.getEditedNode() != null && rpr.semanticHighlights != null) {
+//            // Just perform incremental analysis
+//            semanticHighlights = analyzeIncremental(info, rpr, root);
+//        } else {
+            semanticHighlights = analyzeFullTree(info, rpr, root);
+//        }
+//        rpr.semanticHighlights = semanticHighlights;
+    }
+
+    Map<OffsetRange, Set<ColoringAttributes>> analyzeFullTree(CompilationInfo info, JsParseResult rpr, Node root) {
         VariableVisitor visitor = rpr.getVariableVisitor();
-        Map<OffsetRange, ColoringAttributes> highlights =
-                new HashMap<OffsetRange, ColoringAttributes>(100);
+        Map<OffsetRange, Set<ColoringAttributes>> highlights =
+                new HashMap<OffsetRange, Set<ColoringAttributes>>(100);
         Collection<Node> unusedVars = visitor.getUnusedVars();
         for (Node node : unusedVars) {
             OffsetRange range = AstUtilities.getNameRange(node);
-            highlights.put(range, ColoringAttributes.UNUSED);
+            highlights.put(range, ColoringAttributes.UNUSED_SET);
         }
 
         Collection<Node> globalVars = visitor.getGlobalVars(false);
+        // I'm sanitizing keywords like "undefined" etc. by stripping the final character
+        // to avoid a parser error. This gives me what is actually a global variable
+        // symbol in the input, which gets highlighted here. We don't want that, so if
+        // I see that the global variable sits immediately next to the sanitized range,
+        // I don't highlight it.
+        OffsetRange sanitizedRange = rpr.getSanitizedRange();
+        boolean checkRange = sanitizedRange != OffsetRange.NONE && sanitizedRange.getLength() == 1;
+        if (checkRange) {
+            String sanitized = rpr.getSanitizedContents();
+            if (sanitized != null && sanitized.length() > 0 && !Character.isLetter(sanitized.charAt(0))) {
+                // If I'm clipping away things like "," or "." it wasn't a clipped keyword and
+                // there's no need to avoid highlighting these symbols
+                checkRange = false;
+            }
+        }
         for (Node node : globalVars) {
             String s = node.getString();
+            //filter out generated code
+            if (JsModel.isGeneratedIdentifier(s)) {
+                continue;
+            }
             OffsetRange range = AstUtilities.getNameRange(node);
+            if (checkRange && range.getEnd() == sanitizedRange.getStart()) {
+                continue;
+            }
             if (Character.isUpperCase(s.charAt(0))) {
                 // A property which mimics a class
-                highlights.put(range, ColoringAttributes.CLASS);
+                highlights.put(range, ColoringAttributes.CLASS_SET);
             } else {
-                highlights.put(range, ColoringAttributes.GLOBAL);
+                highlights.put(range, ColoringAttributes.GLOBAL_SET);
             }
         }
         
@@ -124,27 +158,30 @@ public class JsSemanticAnalyzer implements SemanticAnalyzer {
         AstUtilities.addNodesByType(root, new int[] { Token.REGEXP, Token.FUNCNAME, Token.OBJLITNAME }, regexps);
         for (Node node : regexps) {
             OffsetRange range = AstUtilities.getNameRange(node);
+            if (node.isStringNode() && JsModel.isGeneratedIdentifier(node.getString())) {
+                continue;
+            }
             final int type = node.getType();
             if (type == Token.REGEXP) {
-                highlights.put(range, ColoringAttributes.REGEXP);
+                highlights.put(range, ColoringAttributes.REGEXP_SET);
             } else if (type == Token.OBJLITNAME) {
                  if (AstUtilities.isLabelledFunction(node)) {
-                    highlights.put(range, ColoringAttributes.METHOD);
+                    highlights.put(range, ColoringAttributes.METHOD_SET);
                  }
             } else {
                 assert type == Token.FUNCNAME;
-                highlights.put(range, ColoringAttributes.METHOD);
+                highlights.put(range, ColoringAttributes.METHOD_SET);
             }
         }
         
         if (isCancelled()) {
-            return;
+            return null;
         }
 
         if (highlights.size() > 0) {
             if (rpr.getTranslatedSource() != null) {
-                Map<OffsetRange, ColoringAttributes> translated = new HashMap<OffsetRange, ColoringAttributes>(2 * highlights.size());
-                for (Map.Entry<OffsetRange, ColoringAttributes> entry : highlights.entrySet()) {
+                Map<OffsetRange, Set<ColoringAttributes>> translated = new HashMap<OffsetRange, Set<ColoringAttributes>>(2 * highlights.size());
+                for (Map.Entry<OffsetRange, Set<ColoringAttributes>> entry : highlights.entrySet()) {
                     OffsetRange range = LexUtilities.getLexerOffsets(info, entry.getKey());
                     if (range != OffsetRange.NONE) {
                         translated.put(range, entry.getValue());
@@ -154,9 +191,13 @@ public class JsSemanticAnalyzer implements SemanticAnalyzer {
                 highlights = translated;
             }
 
-            this.semanticHighlights = highlights;
+            return highlights;
         } else {
-            this.semanticHighlights = null;
+            return null;
         }
     }
+
+    // Perform a partial analysis of the tree, only for the incrementally parsed function
+    //Map<OffsetRange, Set<ColoringAttributes>> analyzeIncremental(CompilationInfo info, JsParseResult rpr, Node root) {
+    //}
 }

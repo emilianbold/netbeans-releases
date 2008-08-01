@@ -270,6 +270,7 @@
 
     <!-- prepare SJSAS package -->
     <target name="-pre-package">
+        <if property="i" value="1">
 	<delete includeemptydirs="true">
             <fileset dir="${data.directory}">
 		<include name="addons/**"/>
@@ -279,10 +280,12 @@
 		<include name="Install_Application_Server*"/>
                 <include name="appserv_uninstall.class"/>
 		<include name="uninstall*"/>
+		<include name="License_Notice_Translated.pdf"/>
                 <exclude name="icons/**/"/>                
             </fileset>
         </delete>
 	<antcall target="replace-platform-tokens"/>
+        </if>
     </target>
 
     <!--============================================================================

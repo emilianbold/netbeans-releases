@@ -82,5 +82,12 @@ made subject to such option by the copyright holder.
             <folder name="Lookup"/>
         </folder>
     </folder>
-    
+    <folder name="ProjectXMLCatalog">
+        <folder name="archive-project">
+            <file name="1.xsd" url="project/resources/archive-prj.xsd"/>
+        </folder>
+        <folder name="archive-project-private">
+            <file name="1.xsd" url="project/resources/archive-prj-private.xsd"/>
+        </folder>
+    </folder>
 </filesystem>

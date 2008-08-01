@@ -328,9 +328,9 @@ public class NewCDCProjectWizardIterator implements TemplateWizard.Iterator {
             if (c instanceof JComponent) { // assume Swing components
                 JComponent jc = (JComponent)c;
                 // Step #.
-                jc.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(i)); // NOI18N
+                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer(i)); // NOI18N
                 // Step name (actually the whole list for reference).
-                jc.putClientProperty("WizardPanel_contentData", steps); // NOI18N
+                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps); // NOI18N
             }
         }
         wiz.putProperty("additionalProperties", new Properties());
@@ -433,6 +433,12 @@ public class NewCDCProjectWizardIterator implements TemplateWizard.Iterator {
 
     static int getNumberOfCdcPlatforms(){
         JavaPlatform[] platforms = JavaPlatformManager.getDefault().getPlatforms (null, new Specification(CDCPlatform.PLATFORM_CDC,null));    //NOI18N
-        return platforms.length;
+        int cnt = platforms.length;
+        for (JavaPlatform javaPlatform : platforms) {
+            if (javaPlatform.getInstallFolders().size() == 0){ //platfrom invalid
+                cnt--;
+            }
+        }
+        return cnt;
     }
 }

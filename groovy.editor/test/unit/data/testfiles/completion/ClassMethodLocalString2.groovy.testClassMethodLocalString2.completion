@@ -1,0 +1,23 @@
+Code completion result for source line:
+localString.get|
+(QueryType=COMPLETION, NameKind=PREFIX)
+------------------------------------
+METHOD     getAt(Collection)                          CharSequence
+METHOD     getAt(Collection)                          String
+METHOD     getAt(EmptyRange)                          CharSequence
+METHOD     getAt(EmptyRange)                          String
+METHOD     getAt(IntRange)                            CharSequence
+METHOD     getAt(IntRange)                            String
+METHOD     getAt(Range)                               CharSequence
+METHOD     getAt(Range)                               String
+METHOD     getAt(String)                              Object
+METHOD     getAt(int)                                 CharSequence
+METHOD     getAt(int)                                 String
+METHOD     getBytes()                                 class [B
+METHOD     getBytes(String)                           class [B
+METHOD     getBytes(int, int, byte[], int             void
+METHOD     getChars(int, int, char[], int             void
+METHOD     getClass()                                 Class
+METHOD     getMetaClass()                             MetaClass
+METHOD     getMetaPropertyValues()                    List
+METHOD     getProperties()                            Map

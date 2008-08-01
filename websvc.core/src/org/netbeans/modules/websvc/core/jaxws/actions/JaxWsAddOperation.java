@@ -44,7 +44,6 @@ package org.netbeans.modules.websvc.core.jaxws.actions;
 import org.netbeans.modules.websvc.core._RetoucheUtil;
 import org.netbeans.modules.websvc.core.AddWsOperationHelper;
 import org.netbeans.modules.websvc.core.AddOperationCookie;
-import org.openide.filesystems.FileObject;
 import java.io.IOException;
 import java.util.List;
 import org.netbeans.api.java.project.JavaProjectConstants;
@@ -55,7 +54,6 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
 import org.openide.util.RequestProcessor;
-import static org.netbeans.api.java.source.JavaSource.Phase;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -78,7 +76,7 @@ public class JaxWsAddOperation implements AddOperationCookie {
     
     public void addOperation(final FileObject implementationClass) {
         final AddWsOperationHelper strategy = new AddWsOperationHelper(
-                NbBundle.getMessage(AddWsOperationHelper.class, "LBL_OperationAction"));
+                NbBundle.getMessage(JaxWsAddOperation.class, "TITLE_OperationAction"));  //NOI18N
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
                 try {

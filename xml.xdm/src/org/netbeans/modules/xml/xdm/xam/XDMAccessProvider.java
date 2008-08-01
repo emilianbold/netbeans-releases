@@ -47,7 +47,7 @@ import java.io.InputStreamReader;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.xml.text.syntax.XMLKit;
+import org.netbeans.editor.BaseKit;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentModel;
 import org.netbeans.modules.xml.xam.dom.DocumentModelAccess;
@@ -69,7 +69,7 @@ public class XDMAccessProvider implements DocumentModelAccessProvider {
     }
     
     public Document loadSwingDocument(InputStream in) throws IOException, BadLocationException {
-        Document sd = new BaseDocument(XMLKit.class, false);
+        Document sd = new BaseDocument(BaseKit.class, false);
         BufferedReader br = new BufferedReader(new InputStreamReader(in));
         try {
             String line = null;

@@ -47,12 +47,11 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlException;
 import org.netbeans.modules.j2ee.persistence.provider.Provider;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
+import org.netbeans.modules.j2ee.persistence.spi.provider.PersistenceProviderSupplier;
 import org.netbeans.modules.j2ee.persistence.wizard.Util;
-import org.netbeans.modules.j2ee.persistence.wizard.entity.EntityWizardDescriptor;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.util.ChangeSupport;
@@ -65,18 +64,18 @@ import org.openide.util.NbBundle;
  */
 public class PersistenceUnitWizardDescriptor implements WizardDescriptor.FinishablePanel, ChangeListener {
     
-    private PersistenceUnitWizardPanelDS p;
+    private PersistenceUnitWizardPanelDS datasourcePanel;
     private PersistenceUnitWizardPanelJdbc jdbcPanel;
     private PersistenceUnitWizardPanel panel;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     private WizardDescriptor wizardDescriptor;
     private Project project;
     private boolean isContainerManaged;
-    private static String ERROR_MSG_KEY = "WizardPanel_errorMessage";
+    private static String ERROR_MSG_KEY = WizardDescriptor.PROP_ERROR_MESSAGE;
     
     public PersistenceUnitWizardDescriptor(Project project) {
         this.project = project;
-        this.isContainerManaged = Util.isSupportedJavaEEVersion(project);
+        this.isContainerManaged = Util.isContainerManaged(project);
     }
     
     public void addChangeListener(javax.swing.event.ChangeListener l) {
@@ -86,8 +85,8 @@ public class PersistenceUnitWizardDescriptor implements WizardDescriptor.Finisha
     public java.awt.Component getComponent() {
         if (panel == null) {
             if (isContainerManaged) {
-                p = new PersistenceUnitWizardPanelDS(project, this, true);
-                panel = p;
+                datasourcePanel = new PersistenceUnitWizardPanelDS(project, this, true);
+                panel = datasourcePanel;
             } else {
                 jdbcPanel= new PersistenceUnitWizardPanelJdbc(project, this, true);
                 panel = jdbcPanel;
@@ -161,16 +160,12 @@ public class PersistenceUnitWizardDescriptor implements WizardDescriptor.Finisha
         return panel.getPersistenceUnitName();
     }
     
-    Library getPersistenceLibrary() {
-        return jdbcPanel == null ? null : jdbcPanel.getPersistenceLibrary();
-    }
-    
     DatabaseConnection getPersistenceConnection() {
         return jdbcPanel == null ? null : jdbcPanel.getPersistenceConnection();
     }
     
     String getDatasource() {
-        return p == null ? null : p.getDatasource();
+        return datasourcePanel == null ? null : datasourcePanel.getDatasource();
     }
     
     boolean isContainerManaged() {
@@ -178,15 +173,15 @@ public class PersistenceUnitWizardDescriptor implements WizardDescriptor.Finisha
     }
     
     boolean isJTA() {
-        return p == null ? false : p.isJTA();
+        return datasourcePanel == null ? false : datasourcePanel.isJTA();
     }
     
     boolean isNonDefaultProviderEnabled() {
-        return p == null ? false : p.isNonDefaultProviderEnabled();
+        return datasourcePanel == null ? false : datasourcePanel.isNonDefaultProviderEnabled();
     }
     
     String getNonDefaultProvider() {
-        return p == null ? null : p.getNonDefaultProvider();
+        return datasourcePanel == null ? null : datasourcePanel.getNonDefaultProvider();
     }
     
     String getTableGeneration() {

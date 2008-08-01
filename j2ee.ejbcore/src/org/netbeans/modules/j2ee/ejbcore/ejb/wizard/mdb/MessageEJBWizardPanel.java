@@ -86,7 +86,7 @@ public class MessageEJBWizardPanel implements WizardDescriptor.FinishablePanel {
         J2eeModuleProvider j2eeModuleProvider = project.getLookup ().lookup (J2eeModuleProvider.class);
         String j2eeVersion = j2eeModuleProvider.getJ2eeModule().getModuleVersion();
         if (!EjbJar.VERSION_3_0.equals(j2eeVersion) && !EjbJar.VERSION_2_1.equals(j2eeVersion)) {
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(MessageEJBWizardPanel.class,"MSG_WrongJ2EESpecVersion")); //NOI18N
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(MessageEJBWizardPanel.class,"MSG_WrongJ2EESpecVersion")); //NOI18N
             return false;
         }
 
@@ -95,7 +95,7 @@ public class MessageEJBWizardPanel implements WizardDescriptor.FinishablePanel {
             String targetName = (String) wizardDescriptor.getProperty(MultiTargetChooserPanel.TARGET_NAME);
             String name = ejbNames.getMessageDrivenEjbClassPrefix() + targetName + ejbNames.getMessageDrivenEjbClassSuffix();
             if (targetFolder.getFileObject(name + ".java") != null) { // NOI18N
-                wizardDescriptor.putProperty("WizardPanel_errorMessage", // NOI18N
+                wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, // NOI18N
                         NbBundle.getMessage(MessageEJBWizardPanel.class,"ERR_FileAlreadyExists", name + ".java")); //NOI18N
                 return false;
             }
@@ -112,7 +112,7 @@ public class MessageEJBWizardPanel implements WizardDescriptor.FinishablePanel {
 //                    }
 //                });
 //            }
-//            wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(MessageEJBWizardPanel.class,"scanning-in-progress")); //NOI18N
+//            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(MessageEJBWizardPanel.class,"scanning-in-progress")); //NOI18N
 //            return false;
 //        }
 
@@ -125,14 +125,14 @@ public class MessageEJBWizardPanel implements WizardDescriptor.FinishablePanel {
         getComponent();
         if (wizardPanel.getDestination() == null) {
             wizardDescriptor.putProperty(
-                    "WizardPanel_errorMessage", //NOI18N
+                    WizardDescriptor.PROP_ERROR_MESSAGE, //NOI18N
                     NbBundle.getMessage(MessageEJBWizardPanel.class,"ERR_NoDestinationSelected"));
             return false;
         }
         // XXX warn about missing server (or error? or not needed?)
         if (!wizardPanel.isDestinationCreationSupportedByServerPlugin()) {
             wizardDescriptor.putProperty(
-                    "WizardPanel_errorMessage", //NOI18N
+                    WizardDescriptor.PROP_ERROR_MESSAGE, //NOI18N
                     NbBundle.getMessage(MessageEJBWizardPanel.class,"ERR_MissingServer"));
             //return false;
         }

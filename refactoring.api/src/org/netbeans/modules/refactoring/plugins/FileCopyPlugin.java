@@ -113,15 +113,17 @@ public class FileCopyPlugin implements RefactoringPlugin {
                 newOne = dob.copy(DataFolder.findFolder(fo));
                 newOne.rename(refactoring.getNewName());
                 refactoring.getContext().add(newOne.getPrimaryFile());
-            } catch (Exception ioe) {
-                ErrorManager.getDefault().notify(ioe);
+            } catch (IOException ex) {
+                throw new IllegalStateException(ex);
             }
         }
         
         @Override
         public void undoChange() {
             try {
-                newOne.delete();
+                if (newOne != null) {
+                    newOne.delete();
+                }
             } catch (IOException ex) {
                 ErrorManager.getDefault().notify(ex);
             }

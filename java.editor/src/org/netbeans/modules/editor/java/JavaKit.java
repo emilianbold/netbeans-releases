@@ -59,19 +59,17 @@ import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.editor.ext.ExtKit.CommentAction;
 import org.netbeans.editor.ext.ExtKit.PrefixMakerAction;
-import org.netbeans.editor.ext.ExtKit.UncommentAction;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplateManager;
 import org.netbeans.modules.editor.MainMenuAction;
 import org.netbeans.modules.editor.NbEditorKit;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.java.editor.codegen.InsertSemicolonAction;
-import org.netbeans.modules.java.editor.codegen.GenerateCodeAction;
 import org.netbeans.modules.java.editor.imports.FastImportAction;
 import org.netbeans.modules.java.editor.imports.JavaFixAllImports;
 import org.netbeans.modules.java.editor.overridden.GoToSuperTypeAction;
 import org.netbeans.modules.java.editor.rename.InstantRenameAction;
+import org.netbeans.modules.java.editor.semantic.GoToMarkOccurrencesAction;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.awt.Mnemonics;
@@ -157,7 +155,6 @@ public class JavaKit extends NbEditorKit {
     
 
     public JavaKit(){
-        org.netbeans.modules.java.editor.JavaEditorModule.init();
     }
     
     public String getContentType() {
@@ -172,22 +169,9 @@ public class JavaKit extends NbEditorKit {
         return new JavaSyntax(getSourceLevel((BaseDocument)doc));
     }
 
-    public Completion createCompletion(ExtEditorUI extEditorUI) {
-        return null;
-    }
-
-    public CompletionJavaDoc createCompletionJavaDoc(ExtEditorUI extEditorUI) {
-        return null;
-    }
-
     @Override
     public Document createDefaultDocument() {
-        Document doc = new JavaDocument(this.getClass());
-        Object mimeType = doc.getProperty("mimeType"); //NOI18N
-        if (mimeType == null){
-            doc.putProperty("mimeType", getContentType()); //NOI18N
-        }
-        return doc;
+        return new JavaDocument(getContentType());
     }
     
     public String getSourceLevel(BaseDocument doc) {
@@ -251,7 +235,6 @@ public class JavaKit extends NbEditorKit {
                                    new JavaGotoHelpAction(),
 				   new InstantRenameAction(),
                                    new JavaFixImports(),
-                                   new GenerateCodeAction(),
                                    new InsertSemicolonAction(true),
                                    new InsertSemicolonAction(false),
                                    new SelectCodeElementAction(selectNextElementAction, true),
@@ -266,6 +249,9 @@ public class JavaKit extends NbEditorKit {
                                    
                                    new FastImportAction(),
                                    new GoToSuperTypeAction(),
+                                   
+                                   new GoToMarkOccurrencesAction(false),
+                                   new GoToMarkOccurrencesAction(true),
                                };
                                
         return TextAction.augmentList(superActions, javaActions);

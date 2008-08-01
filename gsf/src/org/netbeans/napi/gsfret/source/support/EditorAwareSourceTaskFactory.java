@@ -44,13 +44,10 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.text.Document;
-import javax.swing.text.JTextComponent;
 import org.netbeans.napi.gsfret.source.Phase;
 import org.netbeans.napi.gsfret.source.Source.Priority;
 import org.netbeans.napi.gsfret.source.SourceTaskFactory;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
 
 /**
  * This file is originally from Retouche, the Java Support 

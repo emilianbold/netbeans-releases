@@ -90,8 +90,27 @@ made subject to such option by the copyright holder.
         <property name="xtest.ide.handler" value="true"/>
         <!-- BlacklistedClassesHandler support -->
         <property name="xtest.ide.blacklist.txt" location="${xtest.ide.blacklist}"/>
-        <condition property="xtest.ide.blacklist.args" value=" -J-Dorg.netbeans.ProxyClassLoader.level=ALL -J-Dxtest.ide.blacklist=${xtest.ide.blacklist.txt} " else="">
+        <property name="xtest.ide.whitelist.txt" location="${xtest.ide.whitelist}"/>        
+        <property name="xtest.ide.whitelist.storage.dir" location="${user.home}/whitelist_storage"/>        
+        <condition property="xtest.ide.blacklist.args.part1" value="-J-Dxtest.ide.blacklist=${xtest.ide.blacklist.txt}" else="">
             <isset property="xtest.ide.blacklist"/>
+        </condition>            
+        <condition property="xtest.ide.blacklist.args.part2" value="-J-Dxtest.ide.whitelist=${xtest.ide.whitelist.txt} -J-Dnetbeans.warmup.skip=true" else="">
+            <isset property="xtest.ide.whitelist"/>
+        </condition>            
+        <condition property="xtest.ide.blacklist.args.part3" value="-J-Dxtest.ide.generate.whitelist=${xtest.ide.generate.whitelist}" else="">
+            <istrue value="${xtest.ide.generate.whitelist}"/>
+        </condition>            
+        <condition property="xtest.ide.blacklist.args.part4" value="-J-Dxtest.ide.whitelist.storage=&quot;${xtest.ide.whitelist.storage.dir}&quot;" else="">
+            <istrue value="${xtest.ide.whitelist.use.storage}"/>
+        </condition>            
+        <condition property="xtest.ide.blacklist.args" value=" -J-Dorg.netbeans.ProxyClassLoader.level=ALL ${xtest.ide.blacklist.args.part1} ${xtest.ide.blacklist.args.part2} ${xtest.ide.blacklist.args.part3} ${xtest.ide.blacklist.args.part4} " else="">
+            <or>
+                <isset property="xtest.ide.blacklist"/>
+                <isset property="xtest.ide.whitelist"/>
+                <istrue value="${xtest.ide.generate.whitelist}"/>
+                <istrue value="${xtest.ide.whitelist.use.storage}"/>
+            </or>
         </condition>            
         <!-- Use prebuilt JDK mdr storage at specified location. It sets 
              IDE option -J-Dprebuilt.storage.dir -->

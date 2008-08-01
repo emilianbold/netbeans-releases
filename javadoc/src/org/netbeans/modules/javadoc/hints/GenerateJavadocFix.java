@@ -56,6 +56,7 @@ import org.netbeans.api.java.source.Comment;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.modules.editor.indent.api.Reformat;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.filesystems.FileObject;
@@ -94,6 +95,8 @@ final class GenerateJavadocFix implements Fix {
     public ChangeInfo implement(final boolean open) {
         final String[] javadocForDocument = new String[1];
         final Document[] docs = new Document[1];
+        final JavadocGenerator gen = new JavadocGenerator(spec);
+        gen.updateSettings(file);
         JavaSource js = JavaSource.forFileObject(file);
         try {
             js.runModificationTask(new CancellableTask<WorkingCopy>() {
@@ -108,7 +111,6 @@ final class GenerateJavadocFix implements Fix {
                         t = wc.getTrees().getTree(elm);
                     }
                     if (t != null) {
-                        JavadocGenerator gen = new JavadocGenerator(GenerateJavadocFix.this.spec);
                         String javadocTxt = gen.generateComment(elm, wc);
 //                        Comment javadoc = Comment.create(Comment.Style.JAVADOC, NOPOS, NOPOS, 0, javadocTxt);
 //                        wc.getTreeMaker().addComment(t, javadoc, true);
@@ -129,8 +131,9 @@ final class GenerateJavadocFix implements Fix {
             Logger.getLogger(GenerateJavadocFix.class.getName()).log(Level.SEVERE, ex.getMessage(), ex);
         }
 
-        // XXX follows workaround until the generator starts to do its job
-        final Indent indent = Indent.get(docs[0]);;
+        // XXX #90302; follows workaround until the generator starts to do its job
+        final Indent indent = Indent.get(docs[0]);
+        final Reformat reformat = Reformat.get(docs[0]);
         try {
             if (docs[0] == null) {
                 // nothing to do; TreeMaker did his job likely.
@@ -138,11 +141,21 @@ final class GenerateJavadocFix implements Fix {
             }
 
             indent.lock();
+            reformat.lock();
             NbDocument.runAtomicAsUser((StyledDocument) docs[0], new Runnable() {
                 public void run() {
                     try {
                         String iJavadoc = javadocForDocument[0];
                         int begin = position.getOffset();
+                        Position[] reformatSpan = null;
+                        if (makeJavadocAloneOnLine(docs[0], begin)) {
+                            // #124114
+                            iJavadoc = '\n' + iJavadoc;
+                            int[] span = findReformatSpan(docs[0], begin);
+                            reformatSpan = new Position[] {
+                                docs[0].createPosition(span[0]),
+                                docs[0].createPosition(span[1])};
+                        }
                         docs[0].insertString(begin, iJavadoc, null);
                         // move the caret to proper position
                         int offset = iJavadoc.indexOf("/**"); // NOI18N
@@ -150,6 +163,9 @@ final class GenerateJavadocFix implements Fix {
                         offset = iJavadoc.indexOf("\n", offset + 1);
                         Position openPos = docs[0].createPosition(begin + offset);
                         indent.reindent(begin, begin + iJavadoc.length() + 1);
+                        if (reformatSpan != null) {
+                            reformat.reformat(reformatSpan[0].getOffset(), reformatSpan[1].getOffset());
+                        }
                         if (open) {
                             JavadocUtilities.open(file, openPos.getOffset());
                         }
@@ -161,9 +177,61 @@ final class GenerateJavadocFix implements Fix {
         } catch (BadLocationException ex) {
             Logger.getLogger(GenerateJavadocFix.class.getName()).log(Level.SEVERE, ex.getMessage(), ex);
         } finally {
+            reformat.unlock();
             indent.unlock();
         }
         return null;
+    }
+    
+    private static boolean makeJavadocAloneOnLine(Document doc, int javadocBegin) throws BadLocationException {
+        CharSequence txt = (CharSequence) doc.getProperty(CharSequence.class);
+        if (txt == null) {
+            txt = doc.getText(0, javadocBegin);
+        }
+        
+        if (javadocBegin - 1 >= txt.length()) {
+            return false;
+        }
+        
+        for (int i = javadocBegin - 1; i >= 0; i--) {
+            char c = txt.charAt(i);
+            if (Character.isWhitespace(c)) {
+                if (c == '\n') {
+                    // before javadocBegin are only white spaces
+                    break;
+                } else {
+                    continue;
+                }
+            } else {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+    
+    private static int[] findReformatSpan(Document doc, int javadocBegin) throws BadLocationException {
+        int[] span = {javadocBegin, javadocBegin};
+        CharSequence txt = (CharSequence) doc.getProperty(CharSequence.class);
+        if (txt == null) {
+            txt = doc.getText(0, doc.getLength());
+        }
+        
+        for (; span[0] > 0; span[0]--) {
+            char c = txt.charAt(span[0]);
+            if (c == '\n') {
+                break;
+            }
+        }
+        
+        for (; span[1] < txt.length() - 1; span[1]++) {
+            char c = txt.charAt(span[1]);
+            if (c == '\n') {
+                break;
+            }
+        }
+        
+        return span;
     }
     
 }

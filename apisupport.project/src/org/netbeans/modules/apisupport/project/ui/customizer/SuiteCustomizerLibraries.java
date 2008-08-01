@@ -178,7 +178,8 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
                     for (Node module : e.getChildren().getNodes()) {
                         if (module instanceof Enabled) {
                             Enabled m = (Enabled) module;
-                            if (!m.isEnabled()) {
+                            // don't add modules in disabled cluster to disabledModules
+                            if (!m.isEnabled() && e.isEnabled()) {
                                 disabledModules.add(m.getName());
                             }
                         }
@@ -368,7 +369,7 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         Set<String> disabledModuleCNB = new HashSet<String>(Arrays.asList(getProperties().getDisabledModules()));
         Set<String> enabledClusters = new HashSet<String>(Arrays.asList(getProperties().getEnabledClusters()));
         
-        Map<File,Children> clusterToChildren = new HashMap<File,Children>();
+        Map<File,Enabled> clusterToNode = new HashMap<File,Enabled>();
         
         Children.SortedArray clusters = new Children.SortedArray();
         clusters.setComparator(this);
@@ -377,22 +378,22 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         n.setDisplayName(getMessage("LBL_ModuleListClustersModules"));
         
         for (ModuleEntry platformModule : platformModules) {
-            Children clusterChildren = clusterToChildren.get(platformModule.getClusterDirectory());
-            if (clusterChildren == null) {
+            File clusterDirectory = platformModule.getClusterDirectory();
+            Enabled cluster = clusterToNode.get(clusterDirectory);
+            if (cluster == null) {
                 Children.SortedArray modules = new Children.SortedArray();
                 modules.setComparator(this);
-                clusterChildren = modules;
                 
-                String clusterName = platformModule.getClusterDirectory().getName();
-                Enabled cluster = new Enabled(modules, enabledClusters.contains(clusterName));
+                String clusterName = clusterDirectory.getName();
+                cluster = new Enabled(modules, SingleModuleProperties.clusterMatch(enabledClusters, clusterName));
                 cluster.setName(clusterName);
                 cluster.setIconBaseWithExtension(SuiteProject.SUITE_ICON_PATH);
-                clusterToChildren.put(platformModule.getClusterDirectory(), modules);
+                clusterToNode.put(clusterDirectory, cluster);
                 n.getChildren().add(new Node[] { cluster });
             }
-            
             String cnb = platformModule.getCodeNameBase();
-            AbstractNode module = new Enabled(Children.LEAF, !disabledModuleCNB.contains(cnb));
+            
+            AbstractNode module = new Enabled(Children.LEAF, !disabledModuleCNB.contains(cnb) && cluster.isEnabled());
             module.setName(cnb);
             module.setDisplayName(platformModule.getLocalizedName());
             String desc = platformModule.getShortDescription();
@@ -409,7 +410,14 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
             module.setShortDescription(tooltip);
             module.setIconBaseWithExtension(NbModuleProject.NB_PROJECT_ICON_PATH);
             
-            clusterChildren.add(new Node[] { module });
+            cluster.getChildren().add(new Node[] { module });
+        }
+        
+        for (Node cluster : clusters.getNodes()) {
+            if (cluster instanceof Enabled) {
+                Enabled en = (Enabled) cluster;
+                en.updateClusterState();
+            }
         }
         
         return n;
@@ -510,14 +518,24 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         }
     }
     
+    // #70724: internally, cluster nodes have 3 states now
+    private enum EnabledState {
+        // module / all modules in cluster selected
+        FULL_ENABLED,
+        // only for clusters - some but not all modules are enabled
+        PART_ENABLED,
+        // module / whole cluster disabled
+        DISABLED
+    }
+    
     final class Enabled extends AbstractNode {
-        private boolean enabled;
+        private EnabledState state;
         private Children standard;
         
         public Enabled(Children ch, boolean enabled) {
             super(ch);
             this.standard = ch;
-            this.enabled = enabled;
+            setEnabled(enabled);
             
             Sheet s = Sheet.createDefault();
             Sheet.Set ss = s.get(Sheet.PROPERTIES);
@@ -526,28 +544,68 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         }
         
         public void setEnabled(boolean s) {
-            if (s == enabled) {
-                return;
-            }
-            enabled = s;
-            //refresh childern
-            for (Node nn : standard.getNodes()) {
-                if (nn instanceof Enabled) {
-                    Enabled en = (Enabled)nn;
-                    en.firePropertyChange(null, null, null);
-                }
-            }
-            //refresh parent
-            Node n = getParentNode();
-            if (n instanceof Enabled) {
-                Enabled en = (Enabled)n;
-                en.firePropertyChange(null, null, null);
-            }
-            updateDependencyWarnings();
+            setState(s ? EnabledState.FULL_ENABLED : EnabledState.DISABLED, true);
         }
         
         public boolean isEnabled() {
-            return enabled;
+            return state != EnabledState.DISABLED;
+        }
+        
+        public EnabledState getState() {
+            return state;
+        }
+
+        private void setState(EnabledState s, boolean propagate) {
+            if (s == state) {
+                return;
+            }
+            state = s;
+            if (propagate) {
+                //refresh children
+                EnabledState newChildState = 
+                        (s == EnabledState.PART_ENABLED) ? null : s;
+                for (Node nn : standard.getNodes()) {
+                    if (nn instanceof Enabled) {
+                        Enabled en = (Enabled) nn;
+                        // #70724: checking/unchecking cluster node checks/unchecks all children
+                        if (newChildState != null) {
+                            en.setState(newChildState, false);
+                        }
+                        en.firePropertyChange(null, null, null);
+                    }
+                }
+                //refresh parent
+                Node n = getParentNode();
+                if (n instanceof Enabled) {
+                    assert s != EnabledState.PART_ENABLED : "Module node should not be passed ENABLED_PARTIALLY state";
+                    Enabled par = (Enabled) n;
+                    par.updateClusterState();
+                    par.firePropertyChange(null, null, null);
+                }
+                updateDependencyWarnings();
+            }
+        }
+
+        private void updateClusterState() {
+            boolean allEnabled = true;
+            boolean allDisabled = true;
+            for (Node nn : getChildren().getNodes()) {
+                if (nn instanceof Enabled) {
+                    Enabled ch = (Enabled) nn;
+                    allEnabled &= ch.isEnabled();
+                    allDisabled &= !ch.isEnabled();
+                    if (!allEnabled && !allDisabled) {
+                        break;
+                    }
+                }
+            }
+            if (allEnabled) {
+                setState(EnabledState.FULL_ENABLED, false);
+            } else if (allDisabled) {
+                setState(EnabledState.DISABLED, false);
+            } else {
+                setState(EnabledState.PART_ENABLED, false);
+            }
         }
     }
     
@@ -570,33 +628,11 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
             Children ch = node.getChildren();
             if (ch == Children.LEAF) {
                 return node.isEnabled();
+            } else if (node.getState() == EnabledState.PART_ENABLED) {
+                return null;
             } else {
-                boolean on = false;
-                boolean off = false;
-                for (Node n : ch.getNodes()) {
-                    if (((Enabled) n).isEnabled()) {
-                        on = true;
-                    } else {
-                        off = true;
-                    }
-                    
-                    if (on && off && node.isEnabled()) {
-                        return null;
-                    }
-                }
-                
-                return on && node.isEnabled();
+                return node.isEnabled();
             }
-        }
-        
-        @Override
-        public boolean canWrite() {
-            Node parent = node.getParentNode();
-            if (parent instanceof Enabled) {
-                // cluster node
-                return ((Enabled)parent).isEnabled();
-            }
-            return true;
         }
         
         @Override
@@ -780,7 +816,7 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         for (UniverseModule m : universeModules) {
             String cnb = m.getCodeNameBase();
             String cluster = m.getCluster();
-            if (cluster != null && (!enabledClusters.contains(cluster) || disabledModules.contains(cnb))) {
+            if (cluster != null && (!SingleModuleProperties.clusterMatch(enabledClusters, cluster) || disabledModules.contains(cnb))) {
                 excluded.add(m);
             }
             sortedModules.put(cnb, m);

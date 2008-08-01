@@ -82,7 +82,7 @@ public class J2eeProjectSupport {
     
     public static final String DEFAULT_APPSRV_ID;
     static {
-        String location = System.getProperty("com.sun.aas.installRoot");
+        String location = System.getProperty("glassfish.home");
         if (location != null) {
             location = new File(location).getAbsolutePath();
         }

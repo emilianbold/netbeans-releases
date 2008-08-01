@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE editor-preferences PUBLIC "-//NetBeans//DTD Editor Preferences 1.0//EN" "http://www.netbeans.org/dtds/EditorPreferences-1_0.dtd">
+
+<editor-preferences>
+    <entry name="another-complex-prop" value="org.netbeans.editor.SettingsTest.complexValueSettingFactory" javaType="methodvalue" />
+</editor-preferences>

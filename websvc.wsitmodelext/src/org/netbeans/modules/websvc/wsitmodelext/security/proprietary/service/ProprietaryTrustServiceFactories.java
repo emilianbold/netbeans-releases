@@ -65,9 +65,6 @@ public class ProprietaryTrustServiceFactories {
         public Set<QName> getElementQNames() {
             return Collections.singleton(ProprietaryTrustServiceQName.CERTALIAS.getQName());
         }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new CertAliasImpl(context.getModel()));
-        }
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {
             return new CertAliasImpl(context.getModel(), element);
@@ -78,9 +75,6 @@ public class ProprietaryTrustServiceFactories {
         @Override
         public Set<QName> getElementQNames() {
             return Collections.singleton(ProprietaryTrustServiceQName.CONTRACT.getQName());
-        }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new ContractImpl(context.getModel()));
         }
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {
@@ -93,9 +87,6 @@ public class ProprietaryTrustServiceFactories {
         public Set<QName> getElementQNames() {
             return Collections.singleton(ProprietaryTrustServiceQName.ISSUER.getQName());
         }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new IssuerImpl(context.getModel()));
-        }
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {
             return new IssuerImpl(context.getModel(), element);
@@ -106,9 +97,6 @@ public class ProprietaryTrustServiceFactories {
         @Override
         public Set<QName> getElementQNames() {
             return Collections.singleton(ProprietaryTrustServiceQName.STSCONFIGURATION.getQName());
-        }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new STSConfigurationServiceImpl(context.getModel()));
         }
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {
@@ -121,9 +109,6 @@ public class ProprietaryTrustServiceFactories {
         public Set<QName> getElementQNames() {
             return Collections.singleton(ProprietaryTrustServiceQName.SERVICEPROVIDER.getQName());
         }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new ServiceProviderImpl(context.getModel()));
-        }
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {
             return new ServiceProviderImpl(context.getModel(), element);
@@ -134,9 +119,6 @@ public class ProprietaryTrustServiceFactories {
         @Override
         public Set<QName> getElementQNames() {
             return Collections.singleton(ProprietaryTrustServiceQName.SERVICEPROVIDERS.getQName());
-        }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new ServiceProvidersImpl(context.getModel()));
         }
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {
@@ -149,9 +131,6 @@ public class ProprietaryTrustServiceFactories {
         public Set<QName> getElementQNames() {
             return Collections.singleton(ProprietaryTrustServiceQName.TOKENTYPE.getQName());
         }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new TokenTypeImpl(context.getModel()));
-        }
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {
             return new TokenTypeImpl(context.getModel(), element);
@@ -163,9 +142,6 @@ public class ProprietaryTrustServiceFactories {
         public Set<QName> getElementQNames() {
             return Collections.singleton(ProprietaryTrustServiceQName.KEYTYPE.getQName());
         }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new KeyTypeImpl(context.getModel()));
-        }
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {
             return new KeyTypeImpl(context.getModel(), element);
@@ -176,9 +152,6 @@ public class ProprietaryTrustServiceFactories {
         @Override
         public Set<QName> getElementQNames() {
             return Collections.singleton(ProprietaryTrustServiceQName.LIFETIME.getQName());
-        }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new LifeTimeSTSImpl(context.getModel()));
         }
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {

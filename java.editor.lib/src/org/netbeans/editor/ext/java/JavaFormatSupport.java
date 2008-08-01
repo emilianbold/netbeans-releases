@@ -42,14 +42,15 @@
 package org.netbeans.editor.ext.java;
 
 import java.util.prefs.Preferences;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.editor.TokenID;
 import org.netbeans.editor.TokenContextPath;
 import org.netbeans.editor.TokenItem;
 import org.netbeans.editor.ext.FormatTokenPosition;
 import org.netbeans.editor.ext.ExtFormatSupport;
 import org.netbeans.editor.ext.FormatWriter;
+import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.openide.util.Lookup;
-import org.openide.util.NbPreferences;
 
 /**
 * Java indentation services are located here
@@ -643,7 +644,7 @@ public class JavaFormatSupport extends ExtFormatSupport {
                 case JavaTokenContext.DEFAULT_ID:
                     TokenItem swss = findSwitch(token);
                     if (swss != null) {
-                        indent = shiftSwitch() ? (getTokenIndent(swss) + getShiftWidth()) : getTokenIndent(swss);
+                        indent = getFormatOptionBoolean("indentCasesFromSwitch", true) ? (getTokenIndent(swss) + getShiftWidth()) : getTokenIndent(swss);
                     }
                     break;
 
@@ -982,6 +983,10 @@ public class JavaFormatSupport extends ExtFormatSupport {
         return changeLineIndent(pos, indent);
     }
 
+    public String getIndentString(int indent) {
+        return IndentUtils.createIndentString(getFormatWriter().getDocument(), indent);
+    }
+    
     /** Check whether the given semicolon is inside
      * the for() statement.
      * @param token token to check. It must be a semicolon.
@@ -1135,58 +1140,58 @@ public class JavaFormatSupport extends ExtFormatSupport {
     }
 
     public boolean getFormatSpaceBeforeParenthesis() {
-        return getSettingBoolean(JavaSettingsNames.JAVA_FORMAT_SPACE_BEFORE_PARENTHESIS,
-                                 JavaSettingsDefaults.defaultJavaFormatSpaceBeforeParenthesis);
+        return getFormatOptionBoolean("spaceBeforeMethodDeclParen", false); //NOI18N
     }
 
     public boolean getFormatSpaceAfterComma() {
-        return getSettingBoolean(JavaSettingsNames.JAVA_FORMAT_SPACE_AFTER_COMMA,
-                                 JavaSettingsDefaults.defaultJavaFormatSpaceAfterComma);
+        return getFormatOptionBoolean("spaceAfterComma", true); //NOI18N
     }
 
     public boolean getFormatNewlineBeforeBrace() {
-        return getSettingBoolean(JavaSettingsNames.JAVA_FORMAT_NEWLINE_BEFORE_BRACE,
-                                 JavaSettingsDefaults.defaultJavaFormatNewlineBeforeBrace);
-    }
-
-    public boolean getFormatLeadingSpaceInComment() {
-        return getSettingBoolean(JavaSettingsNames.JAVA_FORMAT_LEADING_SPACE_IN_COMMENT,
-                                 JavaSettingsDefaults.defaultJavaFormatLeadingSpaceInComment);
-    }
-
-    public boolean getFormatLeadingStarInComment() {
-        return getSettingBoolean(JavaSettingsNames.JAVA_FORMAT_LEADING_STAR_IN_COMMENT,
-                                 JavaSettingsDefaults.defaultJavaFormatLeadingStarInComment);
-    }
-
-    private int getFormatStatementContinuationIndent() {
-        int def = getSettingInteger(JavaSettingsNames.JAVA_FORMAT_STATEMENT_CONTINUATION_INDENT,
-                                 JavaSettingsDefaults.defaultJavaFormatStatementContinuationIndent);
-        try {
-            ClassLoader cl = (ClassLoader)Lookup.getDefault().lookup(ClassLoader.class);
-            Class accpClass = cl.loadClass("org.netbeans.modules.java.ui.FmtOptions"); // NOI18N
-            if (accpClass == null) {
-                return def;
-            }
-            Preferences p = NbPreferences.forModule(accpClass);
-            if (p == null) {
-                return def;
-            }
-            p = p.node("CodeStyle"); // NOI18N
-            if (p == null) {
-                return def;
-            }        
-            p = p.node("default"); // NOI18N
-            if (p == null) {
-                return def;
-            }        
-            return p.getInt("continuationIndentSize", def); // NOI18N
-            
-        } catch (ClassNotFoundException ex) {
-            return def;
+        Preferences p = getFormatOptions();
+        String s = p == null ? null : p.get("methodDeclBracePlacement", null); //NOI18N
+        if (s != null && s.equals("NEW_LINE")) { //NOI18N
+            return true;
+        } else {
+            return false;
         }
     }
 
+    public boolean getFormatLeadingSpaceInComment() {
+        // XXX: add this to FmtOptions
+        return false;
+    }
+
+    public boolean getFormatLeadingStarInComment() {
+        return getFormatOptionBoolean("addLeadingStarInComment", true); //NOI18N
+    }
+
+    private int getFormatStatementContinuationIndent() {
+        return getFormatOptionInt("continuationIndentSize", 8); //NOI18N
+    }
+    
+    private boolean getFormatOptionBoolean(String optionName, boolean def) {
+        Preferences p = getFormatOptions();
+        if (p == null) {
+            return def;
+        } else {
+            return p.getBoolean(optionName, def);
+        }
+    }
+    
+    private int getFormatOptionInt(String optionName, int def) {
+        Preferences p = getFormatOptions();
+        if (p == null) {
+            return def;
+        } else {
+            return p.getInt(optionName, def);
+        }
+    }
+
+    private Preferences getFormatOptions() {
+        Lookup l = MimeLookup.getLookup("text/x-java"); //NOI18N
+        return (Preferences)l.lookup(Preferences.class);
+    }
 
     /*   this is fix for bugs: 7980 and 9111. if user enters
      *        {   foo();
@@ -1224,32 +1229,6 @@ public class JavaFormatSupport extends ExtFormatSupport {
             return ftp2;
         else
             return ftp;
-    }
-
-    private boolean shiftSwitch() {
-        try {
-            ClassLoader cl = (ClassLoader)Lookup.getDefault().lookup(ClassLoader.class);
-            Class accpClass = cl.loadClass("org.netbeans.modules.java.ui.FmtOptions"); // NOI18N
-            if (accpClass == null) {
-                return true;
-            }
-            Preferences p = NbPreferences.forModule(accpClass);
-            if (p == null) {
-                return true;
-            }
-            p = p.node("CodeStyle");
-            if (p == null) {
-                return true;
-            }        
-            p = p.node("default");
-            if (p == null) {
-                return true;
-            }        
-            return p.getBoolean("indentCasesFromSwitch", true);
-            
-        } catch (ClassNotFoundException ex) {
-            return true;
-        }
     }
 
 }

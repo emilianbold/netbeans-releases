@@ -52,16 +52,10 @@ import org.netbeans.lib.profiler.common.SessionSettings;
 import org.netbeans.lib.profiler.common.filters.SimpleFilter;
 import org.netbeans.lib.profiler.common.integration.IntegrationUtils;
 import org.netbeans.lib.profiler.global.CommonConstants;
-import org.netbeans.lib.profiler.marker.ClassMarker;
-import org.netbeans.lib.profiler.marker.CompositeMarker;
-import org.netbeans.lib.profiler.marker.Marker;
 import org.netbeans.lib.profiler.marker.MethodMarker;
-import org.netbeans.lib.profiler.marker.PackageMarker;
-import org.netbeans.lib.profiler.results.cpu.marking.HierarchicalMark;
-import org.netbeans.lib.profiler.results.cpu.marking.Mark;
+import org.netbeans.lib.profiler.marker.Mark;
 import org.netbeans.lib.profiler.utils.MiscUtils;
 import org.netbeans.lib.profiler.utils.formatting.Formattable;
-import org.netbeans.lib.profiler.utils.formatting.MethodNameFormatterFactory;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
@@ -186,7 +180,17 @@ public final class J2EEProjectTypeProfiler extends AbstractProjectTypeProfiler {
     private static final String PROJECT_CATEGORY = NbBundle.getMessage(J2EEProjectTypeProfiler.class,
                                                                        "J2EEProjectTypeProfiler_ProjectCategory"); // NOI18N
     private static final String WEB_CONTAINER_CATEGORY = NbBundle.getMessage(J2EEProjectTypeProfiler.class,
-                                                                             "J2EEProjectTypeProfiler_WebContainerCategory"); // NOI18N
+                                                                             "J2EEProjectTypeProfiler_WebContainerCategory"); // NOI18N    
+    private static final String SOAP_CATEGORY = NbBundle.getMessage(J2EEProjectTypeProfiler.class, "J2EEProjectTypeProfiler_SOAPCategory"); // NOI18N
+    
+    private static final String SOAP_PROTOCOL_PARSING_CATEGORY = NbBundle.getMessage(J2EEProjectTypeProfiler.class, "J2EEProjectTypeProfiler_SOAPProtocolParsingCategory"); // NOI18N
+    
+    private static final String SOAP_SERIALIZATION_CATEGORY = NbBundle.getMessage(J2EEProjectTypeProfiler.class, "J2EEProjectTypeProfiler_SOAPSerialization"); // NOI18N
+    
+    private static final String SOAP_ENDPOINT_CATEGORY = NbBundle.getMessage(J2EEProjectTypeProfiler.class, "J2EEProjectTypeProfiler_SOAPEndpointCategory"); // NOI18N
+    
+    private static final String SOAP_REPLY_CATEGORY = NbBundle.getMessage(J2EEProjectTypeProfiler.class, "J2EEProjectTypeProfiler_SOAPReplyCategory"); // NOI18N
+    
     private static final String LIFECYCLE_CATEGORY = NbBundle.getMessage(J2EEProjectTypeProfiler.class,
                                                                          "J2EEProjectTypeProfiler_LifecycleCategory"); // NOI18N
     private static final String EXECUTIVE_CATEGORY = NbBundle.getMessage(J2EEProjectTypeProfiler.class,
@@ -242,9 +246,8 @@ public final class J2EEProjectTypeProfiler extends AbstractProjectTypeProfiler {
     //~ Instance fields ----------------------------------------------------------------------------------------------------------
 
     private SelectProfilingTask.SettingsConfigurator configurator;
-    private HierarchicalMark projectRoot;
     private LoadGenPanel loadGenConfig = null;
-    private Marker marker;
+
     private String loadGenPath = null;
     private PropertyChangeListener pcl = new PropertyChangeListener() {
         public void propertyChange(PropertyChangeEvent evt) {
@@ -263,13 +266,7 @@ public final class J2EEProjectTypeProfiler extends AbstractProjectTypeProfiler {
     //~ Methods ------------------------------------------------------------------------------------------------------------------
 
     public static boolean isEjbProject(final Project project) {
-        final AuxiliaryConfiguration aux = (AuxiliaryConfiguration) project.getLookup().lookup(AuxiliaryConfiguration.class);
-
-        if (aux == null) {
-            ProfilerLogger.warning("Auxiliary Configuration is null for Project: " + project); // NOI18N
-
-            return false;
-        }
+        final AuxiliaryConfiguration aux = ProjectUtils.getAuxiliaryConfiguration(project);
 
         Element e = aux.getConfigurationFragment("data", J2EE_EJBJARPROJECT_NAMESPACE_50, true); // NOI18N // is EJB Project in NB50?
 
@@ -281,13 +278,7 @@ public final class J2EEProjectTypeProfiler extends AbstractProjectTypeProfiler {
     }
 
     public static boolean isEnterpriseAppProject(final Project project) {
-        final AuxiliaryConfiguration aux = (AuxiliaryConfiguration) project.getLookup().lookup(AuxiliaryConfiguration.class);
-
-        if (aux == null) {
-            ProfilerLogger.warning("Auxiliary Configuration is null for Project: " + project); // NOI18N
-
-            return false;
-        }
+        final AuxiliaryConfiguration aux = ProjectUtils.getAuxiliaryConfiguration(project);
 
         Element e = aux.getConfigurationFragment("data", J2EE_EARPROJECT_NAMESPACE_50, true); // NOI18N // is Enterprise App Project in NB50?
 
@@ -322,13 +313,7 @@ public final class J2EEProjectTypeProfiler extends AbstractProjectTypeProfiler {
     }
 
     public static boolean isWebProject(final Project project) {
-        final AuxiliaryConfiguration aux = (AuxiliaryConfiguration) project.getLookup().lookup(AuxiliaryConfiguration.class);
-
-        if (aux == null) {
-            ProfilerLogger.warning("Auxiliary Configuration is null for Project: " + project); // NOI18N
-
-            return false;
-        }
+        final AuxiliaryConfiguration aux = ProjectUtils.getAuxiliaryConfiguration(project);
 
         Element e = aux.getConfigurationFragment("data", J2EE_WEBPROJECT_NAMESPACE_50, true); // NOI18N // is Web Project in NB50?
 
@@ -521,8 +506,7 @@ public final class J2EEProjectTypeProfiler extends AbstractProjectTypeProfiler {
                                                 .createElementNS(ProjectUtilities.PROFILER_NAME_SPACE, "data"); // NOI18N
         profilerFragment.setAttribute(PROFILE_VERSION_ATTRIBUTE, VERSION_NUMBER); // NOI18N
 
-        ((AuxiliaryConfiguration) project.getLookup().lookup(AuxiliaryConfiguration.class)).putConfigurationFragment(profilerFragment,
-                                                                                                                     false);
+        ProjectUtils.getAuxiliaryConfiguration(project).putConfigurationFragment(profilerFragment, false);
 
         try {
             ProjectManager.getDefault().saveProject(project);
@@ -776,56 +760,6 @@ public final class J2EEProjectTypeProfiler extends AbstractProjectTypeProfiler {
         return getLastAgentPort();
     }
 
-    public synchronized HierarchicalMark getMarkHierarchyRoot() {
-        if (projectRoot == null) {
-            projectRoot = new HierarchicalMark(Mark.DEFAULT_ID, PROJECT_CATEGORY, null); // NOI18N
-        }
-
-        return projectRoot;
-    }
-
-    //  public ICategory getCategoryHierarchyRoot() {
-    //    ICategory root = getProjectCategoryRoot();
-    //
-    ////    Category userSpace = new Category("User space", "USER");
-    ////
-    ////    root.addSubCategory(userSpace);
-    //
-    //    // web resources
-    //    Category webContainer = new Category("Web", "WEB");
-    //    root.addSubCategory(webContainer);
-    //
-    //    Category webLifecycle = new Category("Infrastructure", "LIFECYCLE");
-    //    Category webListener = new Category("Listeners", "LISTENER");
-    //    Category webExec = new Category("Execution", "EXECUTION");
-    //
-    //    webContainer.addSubCategory(webLifecycle);
-    //    webContainer.addSubCategory(webListener);
-    //    webContainer.addSubCategory(webExec);
-    //
-    //    Category ejbContainer = new Category("EJB", "EJB");
-    //    root.addSubCategory(ejbContainer);
-    //
-    //    Category ejbCallbacks = new Category("Container callbacks", "CALLBACK");
-    //
-    //    ejbContainer.addSubCategory(ejbCallbacks);
-    //
-    //    Category ejbLifecycle = new Category("Infrastructure", "LIFECYCLE_EJB");
-    //    Category ejbPooling = new Category("Pooling", "POOL");
-    //    Category ejbPersistence = new Category("Persistence", "PERSISTENCE");
-    //
-    //    ejbCallbacks.addSubCategory(ejbLifecycle);
-    //    ejbCallbacks.addSubCategory(ejbPooling);
-    //    ejbCallbacks.addSubCategory(ejbPersistence);
-    //
-    //    return root;
-    //  }
-    public Marker getMethodMarker(Project project) {
-        setupMarks(project);
-
-        return marker;
-    }
-
     public SimpleFilter computePredefinedInstrumentationFilter(Project project, SimpleFilter predefinedInstrFilter,
                                                                String[][] projectPackagesDescr) {
         SimpleFilter retValue;
@@ -1015,110 +949,117 @@ public final class J2EEProjectTypeProfiler extends AbstractProjectTypeProfiler {
         }
     }
 
-    private void setupMarks(final Project project) {
-        ClassMarker cMarker = new ClassMarker();
-        MethodMarker mMarker = new MethodMarker();
-        PackageMarker pMarker = new PackageMarker();
-
-        String[] lcMethodNames = new String[] { "init", "destroy" }; // NOI18N
-        HierarchicalMark webMark = new HierarchicalMark("WEB", WEB_CONTAINER_CATEGORY, getMarkHierarchyRoot()); // NOI18N
-        HierarchicalMark webLifecycleMark = new HierarchicalMark("WEB/LIFECYCLE", LIFECYCLE_CATEGORY, webMark); // NOI18N
-        HierarchicalMark webExecMark = new HierarchicalMark("WEB/EXECUTION", EXECUTIVE_CATEGORY, webMark); // NOI18N
-        HierarchicalMark jspExecMark = new HierarchicalMark("WEB/EXECUTION/JSP", JSP_CATEGORY, webExecMark); // NOI18N
-        HierarchicalMark jspTagExecMark = new HierarchicalMark("WEB/EXECUTION/TAG", TAGS_CATEGORY, webExecMark); // NOI18N
-        HierarchicalMark servletExecMark = new HierarchicalMark("WEB/EXECUTION/SERVLET", SERVLETS_CATEGORY, webExecMark); // NOI18N
-        HierarchicalMark filterExecMark = new HierarchicalMark("WEB/EXECUTION/FILTER", FILTERS_CATEGORY, webExecMark); // NOI18N
-        HierarchicalMark webListenerMark = new HierarchicalMark("WEB/LISTENER", LISTENERS_CATEGORY, webMark); // NOI18N
-        HierarchicalMark ejbMark = new HierarchicalMark("EJB", EJB_CONTAINER_CATEGORY, getMarkHierarchyRoot()); // NOI18N
-        HierarchicalMark ejbPoolMark = new HierarchicalMark("EJB/POOL/CALLBACK", POOLING_CATEGORY, ejbMark); // NOI18N
-        HierarchicalMark ejbLifecycleMark = new HierarchicalMark("EJB/LIFECYCLE/CALLBACK", CONTAINER_CALLBACKS_CATEGORY, ejbMark); // NOI18N
-        HierarchicalMark ejbPersistenceMark = new HierarchicalMark("EJB/PERSISTENCE/CALLBACK", PERSISTENCE_CATEGORY, ejbMark); // NOI18N
-        HierarchicalMark ejbExecutionMarks = new HierarchicalMark("EJB/EXECUTION", EXECUTIVE_CATEGORY, ejbMark); // NOI18N
-        HierarchicalMark dbMark = new HierarchicalMark("DB", PERSISTENCE_CATEGORY, getMarkHierarchyRoot()); // NOI18N
-        HierarchicalMark jdbcMark = new HierarchicalMark("DB/JDBC", JDBC_CATEGORY, dbMark); // NOI18N
-        HierarchicalMark dbConnectionMark = new HierarchicalMark("DB/CONN", CONNECTION_MGMT_CATEGORY, jdbcMark); // NOI18N
-        HierarchicalMark dbStatementsMark = new HierarchicalMark("DB/EXEC", STATEMENTS_CATEGORY, jdbcMark); // NOI18N
-        HierarchicalMark jpaMark = new HierarchicalMark("DB/JPA", JPA_CATEGORY, dbMark); // NOI18N
-        HierarchicalMark hibernateMark = new HierarchicalMark("DB/HIB", HIBERNATE_CATEGORY, dbMark); // NOI18N
-
-        addInterfaceMarker(mMarker, "javax.servlet.Servlet", lcMethodNames, true, webLifecycleMark, project); // NOI18N
-        addInterfaceMarkers(mMarker, new String[] { "javax.servlet.ServletConfig", // NOI18N
-            "javax.servlet.FilterConfig" }, // NOI18N
-                            webLifecycleMark, project);
-
-        addInterfaceMarker(mMarker, "javax.servlet.Filter", lcMethodNames, true, webLifecycleMark, project); // NOI18N
-
-        addInterfaceMarker(mMarker, "javax.servlet.ServletInputStream", webListenerMark, project); // NOI18N
-        addInterfaceMarker(mMarker, "javax.servlet.ServletOutputStream", webListenerMark, project); // NOI18N
-
-        addInterfaceMarker(mMarker, "javax.servlet.Filter", lcMethodNames, false, filterExecMark, project); // NOI18N
-        addInterfaceMarker(mMarker, "javax.servlet.Servlet", lcMethodNames, false, servletExecMark, project); // NOI18N
-        addInterfaceMarker(mMarker, "javax.servlet.FilterChain", filterExecMark, project); // NOI18N
-
-        addJspMarker(mMarker, jspExecMark, project);
-
-        addInterfaceMarker(mMarker, "javax.servlet.jsp.tagext.Tag", jspTagExecMark, project); // NOI18N
-        addInterfaceMarker(mMarker, "javax.servlet.jsp.tagext.TagSupport", jspTagExecMark, project); // NOI18N
-        addInterfaceMarker(mMarker, "javax.servlet.jsp.tagext.BodyTagSupport", jspTagExecMark, project); // NOI18N
-        addInterfaceMarker(mMarker, "javax.servlet.jsp.tagext.SimpleTagSupport", jspTagExecMark, project); // NOI18N
-
-        addInterfaceMarkers(mMarker,
-                            new String[] {
-                                "javax.servlet.http.HttpSessionListener", // NOI18N
-        "javax.servlet.http.HttpSessionAttributeListener", // NOI18N
-        "javax.servlet.http.HttpSessionActivationListener", // NOI18N
-        "javax.servlet.ServletContextListener", // NOI18N
-        "javax.servlet.ServletContextAttributeListener", // NOI18N
-        "javax.servlet.ServletRequestListener", // NOI18N
-        "javax.servlet.ServletRequestAttributeListener"
-                            }, // NOI18N
-                            webListenerMark, project);
-
-        addInterfaceMarker(mMarker, "javax.ejb.SessionBean", new String[] { "ejbActivate", "ejbPassivate" }, true, ejbPoolMark,
-                           project); // NOI18N
-        addInterfaceMarker(mMarker, "javax.ejb.EntityBean", new String[] { "ejbActivate", "ejbPassivate" }, true, ejbPoolMark,
-                           project); // NOI18N
-
-        addInterfaceMarker(mMarker, "javax.ejb.SessionBean", new String[] { "ejbRemove", "setSessionContext" }, true,
-                           ejbLifecycleMark, project); // NOI18N
-        addInterfaceMarker(mMarker, "javax.ejb.EntityBean",
-                           new String[] { "ejbRemove", "setEntityContext", "unsetEntityContext" }, true, ejbLifecycleMark, project); // NOI18N
-        addInterfaceMarker(mMarker, "javax.ejb.MessageDrivenBean", new String[] { "ejbRemove", "setMessageDrivenContext" }, true,
-                           ejbLifecycleMark, project); // NOI18N
-
-        addInterfaceMarker(mMarker, "javax.ejb.EntityBean", new String[] { "ejbLoad", "ejbStore" }, true, ejbPersistenceMark,
-                           project); // NOI18N
-
-        addInterfaceMarker(mMarker, "java.sql.DriverManager", new String[] { "getConnection" }, true, dbConnectionMark, project); // NOI18N
-        addInterfaceMarker(mMarker, "java.sql.Connection", dbConnectionMark, project); // NOI18N
-        addInterfaceMarker(mMarker, "java.sql.DataSource", dbConnectionMark, project); // NOI18N
-        addInterfaceMarker(mMarker, "java.sql.Statement", dbStatementsMark, project); // NOI18N
-
-        addInterfaceMarker(mMarker, "javax.persistence.EntityManager", jpaMark, project); // NOI18N
-        addInterfaceMarker(mMarker, "javax.persistence.Query", jpaMark, project); // NOI18N
-
-        addInterfaceMarkers(mMarker,
-                            new String[] {
-                                "org.hibernate.impl.SessionImpl", // NOI18N
-        "org.hibernate.impl.AbstractQueryImpl", // NOI18N
-        "org.hibernate.impl.FetchingScrollableResultsImpl", // NOI18N
-        "org.hibernate.impl.FilterImpl", // NOI18N
-        "org.hibernate.impl.CriteriaImpl", // NOI18N
-        "org.hibernate.impl.IteratorImpl", // NOI18N
-        "org.hibernate.impl.QueryImpl", // NOI18N
-        "org.hibernate.impl.ScrollableResultsImpl", // NOI18N
-        "org.hibernate.impl.SessionFactoryImpl", // NOI18N
-        "org.hibernate.impl.SessionFactoryObjectFactory", // NOI18N
-        "org.hibernate.impl.SQLQueryImpl", // NOI18N
-        "org.hibernate.impl.StatelessSessionImpl" // NOI18N
-                            }, hibernateMark, project);
-
-        pMarker.addPackageMark("org.hibernate.impl", hibernateMark); // NOI18N
-
-        marker = new CompositeMarker();
-        ((CompositeMarker) marker).addMarker(mMarker);
-        ((CompositeMarker) marker).addMarker(pMarker);
-
-        MethodNameFormatterFactory.getDefault().registerFormatter(jspExecMark, new JSPNameFormatter());
-    }
+//    private void setupMarks(final Project project) {
+//        MarkerMethodBuilder builder = project.getLookup().lookup(MarkerMethodBuilder.class);
+//        marker = builder.buildMarker(project);
+//        ClassMarker cMarker = new ClassMarker();
+//        MethodMarker mMarker = new MethodMarker();
+//        PackageMarker pMarker = new PackageMarker();
+//
+//        String[] lcMethodNames = new String[] { "init", "destroy" }; // NOI18N
+//        HierarchicalMark webMark = new HierarchicalMark("WEB", WEB_CONTAINER_CATEGORY, getMarkHierarchyRoot()); // NOI18N
+//        HierarchicalMark webLifecycleMark = new HierarchicalMark("WEB/LIFECYCLE", LIFECYCLE_CATEGORY, webMark); // NOI18N
+//        HierarchicalMark webExecMark = new HierarchicalMark("WEB/EXECUTION", EXECUTIVE_CATEGORY, webMark); // NOI18N
+//        HierarchicalMark jspExecMark = new HierarchicalMark("WEB/EXECUTION/JSP", JSP_CATEGORY, webExecMark); // NOI18N
+//        HierarchicalMark jspTagExecMark = new HierarchicalMark("WEB/EXECUTION/TAG", TAGS_CATEGORY, webExecMark); // NOI18N
+//        HierarchicalMark servletExecMark = new HierarchicalMark("WEB/EXECUTION/SERVLET", SERVLETS_CATEGORY, webExecMark); // NOI18N
+//        HierarchicalMark filterExecMark = new HierarchicalMark("WEB/EXECUTION/FILTER", FILTERS_CATEGORY, webExecMark); // NOI18N
+//        HierarchicalMark webListenerMark = new HierarchicalMark("WEB/LISTENER", LISTENERS_CATEGORY, webMark); // NOI18N
+//        HierarchicalMark ejbMark = new HierarchicalMark("EJB", EJB_CONTAINER_CATEGORY, getMarkHierarchyRoot()); // NOI18N
+//        HierarchicalMark ejbPoolMark = new HierarchicalMark("EJB/POOL/CALLBACK", POOLING_CATEGORY, ejbMark); // NOI18N
+//        HierarchicalMark ejbLifecycleMark = new HierarchicalMark("EJB/LIFECYCLE/CALLBACK", CONTAINER_CALLBACKS_CATEGORY, ejbMark); // NOI18N
+//        HierarchicalMark ejbPersistenceMark = new HierarchicalMark("EJB/PERSISTENCE/CALLBACK", PERSISTENCE_CATEGORY, ejbMark); // NOI18N
+//        HierarchicalMark ejbExecutionMarks = new HierarchicalMark("EJB/EXECUTION", EXECUTIVE_CATEGORY, ejbMark); // NOI18N
+//        HierarchicalMark dbMark = new HierarchicalMark("DB", PERSISTENCE_CATEGORY, getMarkHierarchyRoot()); // NOI18N
+//        HierarchicalMark jdbcMark = new HierarchicalMark("DB/JDBC", JDBC_CATEGORY, dbMark); // NOI18N
+//        HierarchicalMark dbConnectionMark = new HierarchicalMark("DB/CONN", CONNECTION_MGMT_CATEGORY, jdbcMark); // NOI18N
+//        HierarchicalMark dbStatementsMark = new HierarchicalMark("DB/EXEC", STATEMENTS_CATEGORY, jdbcMark); // NOI18N
+//        HierarchicalMark jpaMark = new HierarchicalMark("DB/JPA", JPA_CATEGORY, dbMark); // NOI18N
+//        HierarchicalMark hibernateMark = new HierarchicalMark("DB/HIB", HIBERNATE_CATEGORY, dbMark); // NOI18N
+//        HierarchicalMark soapMark = new HierarchicalMark("SOAP", SOAP_CATEGORY, getMarkHierarchyRoot()); //NOI18N
+//        HierarchicalMark soapParsingMark = new HierarchicalMark("SOAP/PARSING", SOAP_PROTOCOL_PARSING_CATEGORY, soapMark); // NOI18N
+//        HierarchicalMark soapSerializationMark = new HierarchicalMark("SOAP/SERIALIZATION", SOAP_SERIALIZATION_CATEGORY, soapMark); // NOI18N
+//        HierarchicalMark soapEndpointMark = new HierarchicalMark("SOAP/ENDPOINT", SOAP_ENDPOINT_CATEGORY, soapMark); // NOI18N
+//        HierarchicalMark soapReplyMark = new HierarchicalMark("SOAP/REPLY", SOAP_REPLY_CATEGORY, soapMark); // NOI18N
+//        
+//        addInterfaceMarker(mMarker, "javax.servlet.Servlet", lcMethodNames, true, webLifecycleMark, project); // NOI18N
+//        addInterfaceMarkers(mMarker, new String[] { "javax.servlet.ServletConfig", // NOI18N
+//            "javax.servlet.FilterConfig" }, // NOI18N
+//                            webLifecycleMark, project);
+//
+//        addInterfaceMarker(mMarker, "javax.servlet.Filter", lcMethodNames, true, webLifecycleMark, project); // NOI18N
+//
+//        addInterfaceMarker(mMarker, "javax.servlet.ServletInputStream", webListenerMark, project); // NOI18N
+//        addInterfaceMarker(mMarker, "javax.servlet.ServletOutputStream", webListenerMark, project); // NOI18N
+//
+//        addInterfaceMarker(mMarker, "javax.servlet.Filter", lcMethodNames, false, filterExecMark, project); // NOI18N
+//        addInterfaceMarker(mMarker, "javax.servlet.Servlet", lcMethodNames, false, servletExecMark, project); // NOI18N
+//        addInterfaceMarker(mMarker, "javax.servlet.FilterChain", filterExecMark, project); // NOI18N
+//
+//        addJspMarker(mMarker, jspExecMark, project);
+//
+//        addInterfaceMarker(mMarker, "javax.servlet.jsp.tagext.Tag", jspTagExecMark, project); // NOI18N
+//        addInterfaceMarker(mMarker, "javax.servlet.jsp.tagext.TagSupport", jspTagExecMark, project); // NOI18N
+//        addInterfaceMarker(mMarker, "javax.servlet.jsp.tagext.BodyTagSupport", jspTagExecMark, project); // NOI18N
+//        addInterfaceMarker(mMarker, "javax.servlet.jsp.tagext.SimpleTagSupport", jspTagExecMark, project); // NOI18N
+//
+//        addInterfaceMarkers(mMarker,
+//                            new String[] {
+//                                "javax.servlet.http.HttpSessionListener", // NOI18N
+//        "javax.servlet.http.HttpSessionAttributeListener", // NOI18N
+//        "javax.servlet.http.HttpSessionActivationListener", // NOI18N
+//        "javax.servlet.ServletContextListener", // NOI18N
+//        "javax.servlet.ServletContextAttributeListener", // NOI18N
+//        "javax.servlet.ServletRequestListener", // NOI18N
+//        "javax.servlet.ServletRequestAttributeListener"
+//                            }, // NOI18N
+//                            webListenerMark, project);
+//
+//        addInterfaceMarker(mMarker, "javax.ejb.SessionBean", new String[] { "ejbActivate", "ejbPassivate" }, true, ejbPoolMark,
+//                           project); // NOI18N
+//        addInterfaceMarker(mMarker, "javax.ejb.EntityBean", new String[] { "ejbActivate", "ejbPassivate" }, true, ejbPoolMark,
+//                           project); // NOI18N
+//
+//        addInterfaceMarker(mMarker, "javax.ejb.SessionBean", new String[] { "ejbRemove", "setSessionContext" }, true,
+//                           ejbLifecycleMark, project); // NOI18N
+//        addInterfaceMarker(mMarker, "javax.ejb.EntityBean",
+//                           new String[] { "ejbRemove", "setEntityContext", "unsetEntityContext" }, true, ejbLifecycleMark, project); // NOI18N
+//        addInterfaceMarker(mMarker, "javax.ejb.MessageDrivenBean", new String[] { "ejbRemove", "setMessageDrivenContext" }, true,
+//                           ejbLifecycleMark, project); // NOI18N
+//
+//        addInterfaceMarker(mMarker, "javax.ejb.EntityBean", new String[] { "ejbLoad", "ejbStore" }, true, ejbPersistenceMark,
+//                           project); // NOI18N
+//
+//        addInterfaceMarker(mMarker, "java.sql.DriverManager", new String[] { "getConnection" }, true, dbConnectionMark, project); // NOI18N
+//        addInterfaceMarker(mMarker, "java.sql.Connection", dbConnectionMark, project); // NOI18N
+//        addInterfaceMarker(mMarker, "java.sql.DataSource", dbConnectionMark, project); // NOI18N
+//        addInterfaceMarker(mMarker, "java.sql.Statement", dbStatementsMark, project); // NOI18N
+//
+//        addInterfaceMarker(mMarker, "javax.persistence.EntityManager", jpaMark, project); // NOI18N
+//        addInterfaceMarker(mMarker, "javax.persistence.Query", jpaMark, project); // NOI18N
+//
+//        addInterfaceMarkers(mMarker,
+//                            new String[] {
+//                                "org.hibernate.impl.SessionImpl", // NOI18N
+//        "org.hibernate.impl.AbstractQueryImpl", // NOI18N
+//        "org.hibernate.impl.FetchingScrollableResultsImpl", // NOI18N
+//        "org.hibernate.impl.FilterImpl", // NOI18N
+//        "org.hibernate.impl.CriteriaImpl", // NOI18N
+//        "org.hibernate.impl.IteratorImpl", // NOI18N
+//        "org.hibernate.impl.QueryImpl", // NOI18N
+//        "org.hibernate.impl.ScrollableResultsImpl", // NOI18N
+//        "org.hibernate.impl.SessionFactoryImpl", // NOI18N
+//        "org.hibernate.impl.SessionFactoryObjectFactory", // NOI18N
+//        "org.hibernate.impl.SQLQueryImpl", // NOI18N
+//        "org.hibernate.impl.StatelessSessionImpl" // NOI18N
+//                            }, hibernateMark, project);
+//
+//        pMarker.addPackageMark("org.hibernate.impl", hibernateMark); // NOI18N
+//
+//        marker = new CompositeMarker();
+//        ((CompositeMarker) marker).addMarker(mMarker);
+//        ((CompositeMarker) marker).addMarker(pMarker);
+//
+//        MethodNameFormatterFactory.getDefault().registerFormatter(jspExecMark, new JSPNameFormatter());
+//    }
 }

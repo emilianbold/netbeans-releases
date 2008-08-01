@@ -65,26 +65,17 @@ import org.netbeans.modules.xml.xam.spi.Validation.ValidationType;
 public abstract class AbstractValidator implements Validator {
     
     @SuppressWarnings("unchecked")
-    public static final ValidationResult EMPTY_RESULT = 
-                new ValidationResult( Collections.EMPTY_SET, 
-                        Collections.EMPTY_SET);
-
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.xml.xam.spi.Validator#validate(org.netbeans.modules.xml.xam.Model, org.netbeans.modules.xml.xam.spi.Validation, org.netbeans.modules.xml.xam.spi.Validation.ValidationType)
-     */
-    /** {@inheritDoc} */
-    @SuppressWarnings("unchecked")
     public ValidationResult validate( Model model, Validation validation,
             ValidationType validationType)
     {
         if(!(model instanceof WSDLModel)) {
-            return EMPTY_RESULT;
+            return null;
         }
         
         WSDLModel wsdlModel = (WSDLModel) model;
         
         if ( wsdlModel.getState() == Model.State.NOT_WELL_FORMED ){
-            return EMPTY_RESULT;
+            return null;
         }
         
         // Initialize our result object

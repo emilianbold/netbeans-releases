@@ -152,8 +152,9 @@ public class UIUtilities {
         contentModelInfoLabel.setForeground(new Color(139, 139, 139));
         
         Font font = contentModelInfoLabel.getFont();
-        font = new Font(font.getFontName(), Font.PLAIN,
-                InstanceDesignConstants.PROPS_FONT_SIZE);
+//        font = new Font(font.getFontName(), Font.PLAIN,
+//                InstanceDesignConstants.PROPS_FONT_SIZE);
+        font = font.deriveFont((font.getStyle() | java.awt.Font.PLAIN), font.getSize()+2);
         contentModelInfoLabel.setFont(font);
         
         if(component instanceof Element){
@@ -443,7 +444,8 @@ public class UIUtilities {
             infoLabel = new TranslucentLabel(" ",SwingConstants.LEFT);
         
         Font font = infoLabel.getFont();
-        font = new Font(font.getName(), Font.BOLD, font.getSize());
+        //font = new Font(font.getName(), Font.BOLD, font.getSize());
+        font = font.deriveFont((font.getStyle() | java.awt.Font.PLAIN), font.getSize()+2);
         if(foreGroundColor != null)
             infoLabel.setForeground(foreGroundColor);
         else

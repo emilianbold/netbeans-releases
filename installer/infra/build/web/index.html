@@ -43,6 +43,7 @@
 	<script type="text/javascript" src="js/languages.js"></script>
 	<script type="text/javascript">load_js_locale("js/common_strings",".js")</script>
         <script type="text/javascript">load_js_locale("js/download_strings",".js")</script>
+        <script type="text/javascript" src="js/files.js"></script>
         <script type="text/javascript" src="js/download.js"></script>
         <script type="text/javascript" src="js/build_info.js"></script>
         <script type="text/javascript">load_js_locale("js/components",".js")</script>
@@ -202,20 +203,11 @@
 							</span>
                           		            </p>
 			                            <p style="width: 95%">							                                
-                                          		<script type="text/javascript">message(SOURCE_BINARY_LABEL)</script>
+                                          		<script type="text/javascript">message(SOURCE_BINARY_LABEL.replace("{0}",BINARIES_LOCATION))</script>
 							<script type="text/javascript">message(BUILD_WIKI_LABEL.replace("{0}",INSTALL_NOTES_LINK))</script>                                
                           		            </p>
                           	        	</div>
 					</td>
-				    </tr>
-
-				    <tr>
-						<td width="10px" style="vertical-align:top;">
-							<div id="mobility_end2end_number"><br></div>
-						</td>
-						<td>
-							<div id="mobility_end2end_message"></div>
-						</td>
 				    </tr>
 				    </table>
 				</td>
@@ -270,6 +262,9 @@
                   	<table>
 				<tr>
 					<td class="companions-left b-green-left valign-center" style="padding-left:7px;">Companion <br>Projects: </td>
+					<td class="valign-center">
+						<a href="http://www.mysql.com/"><img src="http://www.netbeans.org/images/v6/mysql_logo.gif" border="0" title="MySQL - Open Source Database Server" alt="MySQL Database Server" width="58" height="30"></a>&nbsp;&nbsp;
+					</td>
 					<td  class="valign-center">
 					<a href="https://openjdk.dev.java.net/"><img alt="" src="http://www.netbeans.org/images/v6/openjdk.gif" border="0" title="Open JDK: an Open SourceJDK" width="63" height="19"></a>&nbsp;&nbsp;
 					</td>
@@ -286,12 +281,13 @@
 					<td  class="valign-center ">
 						<a href="http://java.net/"><img alt="" src="http://www.netbeans.org/images/v6/javanet.gif" border="0" width="80" heigh="36"></a>&nbsp;&nbsp;
 					</td>
-	                                
-					<td  class="valign-center b-green-right" style="padding-right:20px;">
-						<a href="https://open-esb.dev.java.net/"><img alt="" src="http://www.netbeans.org/images/v6/open-esb.gif" border="0" width="143" heigh="30"></a>
+					<td  class="valign-center">
+						<a href="http://www.virtualbox.org/wiki/VirtualBox"><img alt="Virtual Box - full virtualizer" title="Virtual Box - full virtualizer" src="http://www.netbeans.org/images/v6/vbox.gif" border="0" width="108" heigh="35"></a>
 					</td>
-					<td class="valign-center" style="padding-right:5px;">&nbsp;Powered by:</td>
-					<td  class="companions-right b-green-right valign-center" style="padding-right:10px;"><img src="http://www.netbeans.org/images/v6/poweredby.gif"  width="70" height="14"/></td>
+					<td  class="valign-center b-green-right" style="padding-right:20px;">
+						<a href="https://open-esb.dev.java.net/"><img alt="" src="http://www.netbeans.org/images/v6/open-esb.gif" border="0" width="92" heigh="30"></a>
+					</td>
+					<td  class="companions-right b-green-right valign-center align-center">Powered by<br>&nbsp;<img src="http://www.netbeans.org/images/v6/poweredby.gif"  width="70" height="14"/>&nbsp;</td>
 				</tr>
 			</table>
                 </center>
@@ -303,5 +299,18 @@
 			load_js(OMNITURE_CODE_JS);
 		}
 	</script>
+
+	<!-- Begin Google webtracking analytics -->
+	<script type="text/javascript">
+		if(LOAD_GOOGLE_ANALYTICS_CODE==1) {
+			load_js(GOOGLE_ANALYTICS_JS);
+			var pageTracker = _gat._getTracker("UA-2149007-1");
+			pageTracker._setDomainName("netbeans.org");
+			pageTracker._initData();
+			pageTracker._trackPageview();
+		}
+	
+	</script>
+	<!-- End Google webtracking analytics -->
     </body>
 </html>

@@ -48,7 +48,6 @@ import java.util.prefs.Preferences;
 import org.netbeans.modules.subversion.options.AnnotationExpression;
 import org.netbeans.modules.subversion.ui.repository.RepositoryConnection;
 import org.openide.util.NbPreferences;
-import org.netbeans.modules.versioning.util.TableSorter;
 import org.netbeans.modules.versioning.util.Utils;
 
 /**
@@ -65,7 +64,7 @@ public class SvnModuleConfig {
     public static final String KEY_ANNOTATION_FORMAT        = "annotationFormat";                           // NOI18N
     public static final String SAVE_PASSWORD                = "savePassword";                               // NOI18N
     
-    private static final String RECENT_URL = "repository.recentURL";                                        // NOI18N
+    public static final String KEY_RECENT_URL = "repository.recentURL";                                        // NOI18N
     private static final String SHOW_CHECKOUT_COMPLETED = "checkoutCompleted.showCheckoutCompleted";        // NOI18N  
 
     private static final String URL_EXP = "annotator.urlExp";                                               // NOI18N
@@ -154,12 +153,23 @@ public class SvnModuleConfig {
     }
     
     public RepositoryConnection getRepositoryConnection(String url) {
+        if(url.endsWith("/")) url = url.substring(0, url.length() - 1);
         List<RepositoryConnection> rcs = getRecentUrls();
         for (Iterator<RepositoryConnection> it = rcs.iterator(); it.hasNext();) {
             RepositoryConnection rc = it.next();
-            if(url.equals(rc.getUrl())) {
-                return rc;
+            String rcUrl = rc.getUrl();
+            if(rcUrl.endsWith("/")) rcUrl = rcUrl.substring(0, rcUrl.length() - 1);
+            if(url.equals(rcUrl)) {
+                return rc; // exact match
             }            
+        }
+        for (Iterator<RepositoryConnection> it = rcs.iterator(); it.hasNext();) {
+            RepositoryConnection rc = it.next();
+            String rcUrl = rc.getUrl();
+            if(rcUrl.endsWith("/")) rcUrl = rcUrl.substring(0, rcUrl.length() - 1);
+            if(rcUrl.startsWith(url)) {
+                return rc; // try this
+            }
         }
         return null;
     }            
@@ -167,16 +177,16 @@ public class SvnModuleConfig {
     public void insertRecentUrl(RepositoryConnection rc) {        
         Preferences prefs = getPreferences();
         
-        List<String> urlValues = Utils.getStringList(prefs, RECENT_URL);        
+        List<String> urlValues = Utils.getStringList(prefs, KEY_RECENT_URL);
         for (Iterator<String> it = urlValues.iterator(); it.hasNext();) {
             String rcOldString = it.next();
             RepositoryConnection rcOld =  RepositoryConnection.parse(rcOldString);
             if(rcOld.equals(rc)) {
-                Utils.removeFromArray(prefs, RECENT_URL, rcOldString);
+                Utils.removeFromArray(prefs, KEY_RECENT_URL, rcOldString);
             }
         }
         handleCredentials(rc);
-        Utils.insert(prefs, RECENT_URL, RepositoryConnection.getString(rc), -1);                
+        Utils.insert(prefs, KEY_RECENT_URL, RepositoryConnection.getString(rc), -1);
     }    
 
     public void setRecentUrls(List<RepositoryConnection> recentUrls) {
@@ -190,18 +200,19 @@ public class SvnModuleConfig {
             urls.add(RepositoryConnection.getString(rc));            
         }
         Preferences prefs = getPreferences();
-        Utils.put(prefs, RECENT_URL, urls);            
+        Utils.put(prefs, KEY_RECENT_URL, urls);
     }
     
     public List<RepositoryConnection> getRecentUrls() {
         Preferences prefs = getPreferences();
-        List<String> urls = Utils.getStringList(prefs, RECENT_URL);                
+        List<String> urls = Utils.getStringList(prefs, KEY_RECENT_URL);
         List<RepositoryConnection> ret = new ArrayList<RepositoryConnection>(urls.size());
         for (Iterator<String> it = urls.iterator(); it.hasNext();) {
             RepositoryConnection rc = RepositoryConnection.parse(it.next());
             if(getUrlCredentials().containsKey(rc.getUrl())) {
-                String[] creds = getUrlCredentials().get(rc.getUrl());                 
-                rc = new RepositoryConnection(rc.getUrl(), creds[0], creds[1], rc.getExternalCommand(), rc.getSavePassword());
+                String[] creds = getUrlCredentials().get(rc.getUrl());
+                if(creds.length < 2) continue; //skip garbage
+                rc = new RepositoryConnection(rc.getUrl(), creds[0], creds[1], rc.getExternalCommand(), rc.getSavePassword(), rc.getCertFile(), rc.getCertPassword());
             }
             ret.add(rc);
         }
@@ -244,27 +255,6 @@ public class SvnModuleConfig {
         List<AnnotationExpression> ret = new ArrayList<AnnotationExpression>(1);
         ret.add(new AnnotationExpression(".*/(branches|tags)/(.+?)/.*", "\\2"));     
         return ret;
-    }
-    
-    // TODO: persist state
-
-    private TableSorter importTableSorter;
-    private TableSorter commitTableSorter;
-    
-    public TableSorter getImportTableSorter() {
-        return importTableSorter;        
-    }
-
-    public void setImportTableSorter(TableSorter sorter) {
-        importTableSorter = sorter;        
-    }
-
-    public TableSorter getCommitTableSorter() {
-        return commitTableSorter;
-    }
-
-    public void setCommitTableSorter(TableSorter sorter) {
-        commitTableSorter = sorter;
     }
     
     // private methods ~~~~~~~~~~~~~~~~~~

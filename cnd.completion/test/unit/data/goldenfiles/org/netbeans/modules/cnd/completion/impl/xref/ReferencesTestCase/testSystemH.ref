@@ -1,22 +1,16 @@
-'defined', tokenID=identifier, offset=2110 [42:6/2110-42:13/2117]
---OWNER:
-    null
---RESOLVED TO:
-    null
-==============================================================
-'SYSTEM_H', tokenID=identifier, offset=2118 [42:14/2118-42:22/2126]
+'SYSTEM_H', tokenID=preprocessor_identifier, offset=2118 [42:14/2118-42:22/2126]
 --OWNER:
     null
 --RESOLVED TO:
     MACROS #define 'SYSTEM_H' [43:1/2127-43:17/2143]
 ==============================================================
-'SYSTEM_H', tokenID=identifier, offset=2135 [43:9/2135-43:17/2143]
+'SYSTEM_H', tokenID=preprocessor_identifier, offset=2135 [43:9/2135-43:17/2143]
 --OWNER:
     MACROS #define 'SYSTEM_H' [43:1/2127-43:17/2143]
 --RESOLVED TO:
     MACROS #define 'SYSTEM_H' [43:1/2127-43:17/2143]
 ==============================================================
-'"module.h"', tokenID=user-include, offset=2154 [45:10/2154-45:20/2164]
+'"module.h"', tokenID=preprocessor_user_include, offset=2154 [45:10/2154-45:20/2164]
 --OWNER:
     INCLUDE "module.h" [45:1/2145-45:20/2164]
 --RESOLVED TO:
@@ -108,21 +102,21 @@
 ==============================================================
 'vector', tokenID=identifier, offset=2507 [64:5/2507-64:11/2513]
 --OWNER:
-    TYPE $unresolved$::vector TEXT=vector < Module * >  [64:5/2507-64:21/2523] ReferencesTestCase/system.h
+    TYPE $unresolved$::vector TEXT=vector<Module*>  [64:5/2507-64:21/2523] ReferencesTestCase/system.h
 --RESOLVED TO:
     null
 ==============================================================
 'Module', tokenID=identifier, offset=2515 [64:13/2515-64:19/2521]
 --OWNER:
-    TYPE $unresolved$::vector TEXT=vector < Module * >  [64:5/2507-64:21/2523] ReferencesTestCase/system.h
+    TYPE $unresolved$::vector TEXT=vector<Module*>  [64:5/2507-64:21/2523] ReferencesTestCase/system.h
 --RESOLVED TO:
     CLASS Module [51:1/2205-92:3/3421] ReferencesTestCase/module.h
 ==============================================================
 'moduleList', tokenID=identifier, offset=2524 [64:22/2524-64:32/2534]
 --OWNER:
-    VARIABLE moduleList [64:5/2507-64:33/2535] ReferencesTestCase/system.h  TYPE: $unresolved$::vector TEXT=vector < Module * >  [64:5/2507-64:21/2523]  INIT: null  SCOPE: System 
+    VARIABLE moduleList [64:5/2507-64:33/2535] ReferencesTestCase/system.h  TYPE: $unresolved$::vector TEXT=vector<Module*>  [64:5/2507-64:21/2523]  INIT: null  SCOPE: System 
 --RESOLVED TO:
-    VARIABLE moduleList [64:5/2507-64:33/2535] ReferencesTestCase/system.h  TYPE: $unresolved$::vector TEXT=vector < Module * >  [64:5/2507-64:21/2523]  INIT: null  SCOPE: System 
+    VARIABLE moduleList [64:5/2507-64:33/2535] ReferencesTestCase/system.h  TYPE: $unresolved$::vector TEXT=vector<Module*>  [64:5/2507-64:21/2523]  INIT: null  SCOPE: System 
 ==============================================================
 'supportMetric', tokenID=identifier, offset=2544 [65:9/2544-65:22/2557]
 --OWNER:

@@ -64,21 +64,25 @@ public class RepositoryConnection {
     private boolean savePassword;
     private SVNUrl svnUrl;
     private SVNRevision svnRevision;
+    private String certFile;
+    private String certPassword;
     
     public RepositoryConnection(RepositoryConnection rc) {
-        this(rc.url, rc.username, rc.password, rc.externalCommand, rc.savePassword);
+        this(rc.url, rc.username, rc.password, rc.externalCommand, rc.savePassword, rc.certFile, rc.certPassword);
     }
     
     public RepositoryConnection(String url) {
-        this(url, null, null, null, false);
+        this(url, null, null, null, false, null, null);
     }
             
-    public RepositoryConnection(String url, String username, String password, String externalCommand, boolean savePassword) {
+    public RepositoryConnection(String url, String username, String password, String externalCommand, boolean savePassword, String certFile, String certPassword) {
         this.setUrl(url);
         this.setUsername(username);
         this.setPassword(password);
         this.setExternalCommand(externalCommand);  
         this.savePassword = savePassword;
+        this.certFile = certFile;
+        this.certPassword = certPassword;
     }
 
     public String getUrl() {
@@ -100,6 +104,15 @@ public class RepositoryConnection {
     public boolean getSavePassword() {
         return savePassword;
     }
+
+    public String getCertFile() {
+        return certFile == null ? "" : certFile;
+    }
+
+    public String getCertPassword() {
+        return certPassword == null ? "" : certPassword;
+    }
+
     
     public SVNUrl getSvnUrl() throws MalformedURLException {
         if(svnUrl == null) {
@@ -157,6 +170,14 @@ public class RepositoryConnection {
 
     void setSavePassword(boolean savePassword) {
         this.savePassword = savePassword;
+    }
+
+    public void setCertFile(String certFile) {
+        this.certFile = certFile;
+    }
+
+    public void setCertPassword(String certPassword) {
+        this.certPassword = certPassword;
     }
     
     public String toString() {
@@ -236,6 +257,10 @@ public class RepositoryConnection {
         sb.append(RC_DELIMITER);        
         sb.append(rc.getSavePassword());
         sb.append(RC_DELIMITER);
+        sb.append(rc.getCertFile());
+        sb.append(RC_DELIMITER);
+        sb.append(Scrambler.getInstance().scramble(rc.getCertPassword()));
+        sb.append(RC_DELIMITER);
         return sb.toString();
     }
     
@@ -247,7 +272,9 @@ public class RepositoryConnection {
         String password     = l > 2 && !fields[2].equals("") ? Scrambler.getInstance().descramble(fields[2]) : null;
         String extCmd       = l > 3 && !fields[3].equals("") ? fields[3] : null;
         boolean save        = l > 4 && !fields[4].equals("") ? Boolean.parseBoolean(fields[4]) : true;
-        return new RepositoryConnection(url, username, password, extCmd, save);        
+        String certFile     = l > 5 && !fields[5].equals("") ? fields[5] : null;
+        String certPasswrod = l > 6 && !fields[6].equals("") ? Scrambler.getInstance().descramble(fields[6]) : null;
+        return new RepositoryConnection(url, username, password, extCmd, save, certFile, certPasswrod);
     }
     
 }

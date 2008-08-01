@@ -42,12 +42,13 @@
 package org.netbeans.modules.websvc.api.jaxws.wsdlmodel;
 
 import com.sun.tools.ws.processor.model.java.JavaParameter;
+import org.netbeans.modules.websvc.jaxwsmodelapi.WSParameter;
 
 /**
  *
  * @author mkuchtiak
  */
-public class WsdlParameter {
+public class WsdlParameter implements WSParameter {
     private JavaParameter parameter;
     private String name;
     
@@ -56,7 +57,7 @@ public class WsdlParameter {
         this.parameter=parameter;
     }
     
-    public Object /*com.sun.tools.ws.processor.model.Operation*/ getInternalJAXWSParameter() {
+    public Object getInternalJAXWSParameter() {
         return parameter;
     }
     

@@ -61,9 +61,9 @@ class FileMapStorage implements Storage {
      * needed. */
     private static final int BASE_BUFFER_SIZE = 8196;
     /**
-     * max possible range to map.. 20 MB
+     * max possible range to map.. 1 MB
      */
-    private static final long MAX_MAP_RANGE = 1024 * 1024 * 20;
+    private static final long MAX_MAP_RANGE = 1024 * 1024;
     /**
      * The byte getWriteBuffer that write operations write into.  Actual buffers are
      * provided for writing by calling master.slice(); this getWriteBuffer simply
@@ -223,7 +223,7 @@ class FileMapStorage implements Storage {
      * Dispose of a ByteBuffer which has been acquired for writing by one of
      * the write methods, writing its contents to the file.
      */
-    public int write (ByteBuffer bb, boolean addNewLine) throws IOException {
+    public int write (ByteBuffer bb) throws IOException {
         synchronized (this) {
             if (bb == buffer) {
                 buffer = null;
@@ -234,11 +234,8 @@ class FileMapStorage implements Storage {
         bb.flip();
         if (writeChannel().isOpen()) { //If a thread was terminated while writing, it will be closed
             writeChannel().write (bb);
-            if (addNewLine) {
-                writeChannel().write(ByteBuffer.wrap(OutWriter.lineSepBytes));
-            }
             synchronized (this) {
-                bytesWritten += byteCount +  (addNewLine ? OutWriter.lineSepBytes.length : 0);
+                bytesWritten += byteCount;
                 outstandingBufferCount--;
             }
         }
@@ -347,7 +344,7 @@ class FileMapStorage implements Storage {
     public void flush() throws IOException {
         if (buffer != null) {
             if (Controller.LOG) Controller.log("FILEMAP STORAGE flush(): " + outstandingBufferCount);
-            write (buffer, false);
+            write (buffer);
             writeChannel.force(false);
             buffer = null;
         }

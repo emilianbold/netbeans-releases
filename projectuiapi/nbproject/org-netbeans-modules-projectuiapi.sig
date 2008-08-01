@@ -1,5 +1,5 @@
 #API master signature file
-#Version 1.24.1
+#Version 1.29.0
 CLSS public static final org.netbeans.spi.project.ui.support.ProjectCustomizer$Category
 meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
 meth protected void java.lang.Object.finalize() throws java.lang.Throwable
@@ -10,6 +10,7 @@ meth public final void java.lang.Object.wait() throws java.lang.InterruptedExcep
 meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
 meth public java.awt.Image org.netbeans.spi.project.ui.support.ProjectCustomizer$Category.getIcon()
 meth public java.awt.event.ActionListener org.netbeans.spi.project.ui.support.ProjectCustomizer$Category.getOkButtonListener()
+meth public java.awt.event.ActionListener org.netbeans.spi.project.ui.support.ProjectCustomizer$Category.getStoreListener()
 meth public java.lang.String java.lang.Object.toString()
 meth public java.lang.String org.netbeans.spi.project.ui.support.ProjectCustomizer$Category.getDisplayName()
 meth public java.lang.String org.netbeans.spi.project.ui.support.ProjectCustomizer$Category.getErrorMessage()
@@ -22,6 +23,7 @@ meth public native int java.lang.Object.hashCode()
 meth public static transient org.netbeans.spi.project.ui.support.ProjectCustomizer$Category org.netbeans.spi.project.ui.support.ProjectCustomizer$Category.create(java.lang.String,java.lang.String,java.awt.Image,[Lorg.netbeans.spi.project.ui.support.ProjectCustomizer$Category;)
 meth public void org.netbeans.spi.project.ui.support.ProjectCustomizer$Category.setErrorMessage(java.lang.String)
 meth public void org.netbeans.spi.project.ui.support.ProjectCustomizer$Category.setOkButtonListener(java.awt.event.ActionListener)
+meth public void org.netbeans.spi.project.ui.support.ProjectCustomizer$Category.setStoreListener(java.awt.event.ActionListener)
 meth public void org.netbeans.spi.project.ui.support.ProjectCustomizer$Category.setValid(boolean)
 supr java.lang.Object
 CLSS public static abstract interface org.netbeans.spi.project.ui.support.ProjectCustomizer$CategoryComponentProvider
@@ -251,6 +253,7 @@ meth public boolean java.lang.Object.equals(java.lang.Object)
 meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
 meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
 meth public java.lang.String java.lang.Object.toString()
+meth public java.util.concurrent.Future org.netbeans.api.project.ui.OpenProjects.openProjects()
 meth public native final java.lang.Class java.lang.Object.getClass()
 meth public native final void java.lang.Object.notify()
 meth public native final void java.lang.Object.notifyAll()
@@ -425,7 +428,9 @@ meth public native final void java.lang.Object.notify()
 meth public native final void java.lang.Object.notifyAll()
 meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
 meth public native int java.lang.Object.hashCode()
+meth public static java.awt.Dialog org.netbeans.spi.project.ui.support.ProjectCustomizer.createCustomizerDialog([Lorg.netbeans.spi.project.ui.support.ProjectCustomizer$Category;,org.netbeans.spi.project.ui.support.ProjectCustomizer$CategoryComponentProvider,java.lang.String,java.awt.event.ActionListener,java.awt.event.ActionListener,org.openide.util.HelpCtx)
 meth public static java.awt.Dialog org.netbeans.spi.project.ui.support.ProjectCustomizer.createCustomizerDialog([Lorg.netbeans.spi.project.ui.support.ProjectCustomizer$Category;,org.netbeans.spi.project.ui.support.ProjectCustomizer$CategoryComponentProvider,java.lang.String,java.awt.event.ActionListener,org.openide.util.HelpCtx)
+meth public static java.awt.Dialog org.netbeans.spi.project.ui.support.ProjectCustomizer.createCustomizerDialog(java.lang.String,org.openide.util.Lookup,java.lang.String,java.awt.event.ActionListener,java.awt.event.ActionListener,org.openide.util.HelpCtx)
 meth public static java.awt.Dialog org.netbeans.spi.project.ui.support.ProjectCustomizer.createCustomizerDialog(java.lang.String,org.openide.util.Lookup,java.lang.String,java.awt.event.ActionListener,org.openide.util.HelpCtx)
 supr java.lang.Object
 CLSS public org.netbeans.spi.project.ui.support.ProjectSensitiveActions

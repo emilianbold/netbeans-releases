@@ -67,7 +67,7 @@ public class ServerPropertiesPanel extends JPanel
      * error message label, we have to keep it here also
      */
     private final static String PROP_ERROR_MESSAGE =
-            "WizardPanel_errorMessage";                                // NOI18N
+            WizardDescriptor.PROP_ERROR_MESSAGE;                                // NOI18N
     
     /**
      * The parent wizard descriptor handle
@@ -129,8 +129,8 @@ public class ServerPropertiesPanel extends JPanel
         
         // set the required properties, so that the panel appear correct in
         // the steps
-        putClientProperty("WizardPanel_contentData", steps);           // NOI18N
-        putClientProperty("WizardPanel_contentSelectedIndex",
+        putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps);           // NOI18N
+        putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX,
                 Integer.valueOf(index));                                   // NOI18N
         
         // register the supplied listener

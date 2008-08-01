@@ -47,7 +47,7 @@ public abstract class IEPModel extends AbstractDocumentModel<IEPComponent> imple
     public abstract IEPComponentFactory getFactory();
     
     /**
-     * Search from all imported WLM models those with specified target namespace.
+     * Search from all imported IEP models those with specified target namespace.
      * @param namespaceURI the target namespace to search for model
      * @return list WSDL models or empty list if none found.
      */
@@ -55,20 +55,20 @@ public abstract class IEPModel extends AbstractDocumentModel<IEPComponent> imple
     
    
 //    /**
-//     * Find named WLM components by name and type within current model.
+//     * Find named IEP components by name and type within current model.
 //     * @param name local name of target component
 //     * @param type type of target component
-//     * @return The list WLM component of specified type and name; empty list if not found
+//     * @return The list IEP component of specified type and name; empty list if not found
 //     */
-//   <T extends ReferenceableWLMComponent> T  findComponetnByName(String name, Class <T> type);
+//   <T extends ReferenceableIEPComponent> T  findComponetnByName(String name, Class <T> type);
 //    
 //    /**
-//     * Find named WLM component by QName and type.
+//     * Find named IEP component by QName and type.
 //     * @param name QName of the target component.
 //     * @param type type of target component
-//     * @return The list WLM component of specified type and name; empty list if not found
+//     * @return The list IEP component of specified type and name; empty list if not found
 //     */
-//   <T extends ReferenceableWLMComponent> T  findComponetnByName(QName name, Class<T> type);
+//   <T extends ReferenceableIEPComponent> T  findComponetnByName(QName name, Class<T> type);
    
      public abstract PlanComponent getPlanComponent();
      
@@ -76,9 +76,30 @@ public abstract class IEPModel extends AbstractDocumentModel<IEPComponent> imple
      
      public abstract File getWsdlFile(); 
      
-	 public abstract void saveWsdl() throws Exception;
- 
-	 public abstract List<InputOperatorComponent> getInputList();
-	 
-	 public abstract List<OutputOperatorComponent> getOutputList();
+     public abstract void saveWsdl() throws Exception;
+
+     public abstract List<InputOperatorComponent> getInputList(boolean wsOnly);
+
+     public abstract List<OutputOperatorComponent> getOutputList(boolean wsOnly);
+     
+     /**
+      * Get Qualified name for IEP file.
+      * Qualified name for IEP file is package name + iep file
+      * name where dot in file name is removed with underscore.
+      * 
+      * example:
+      * 
+      *   projectA
+      *         src->
+      *             com->
+      *                 sun->
+      *                       events->
+      *                              deadDeviceDetection.iep
+      *                
+      * so qualified name will be:
+      * 
+      * com.sun.events.deadDeviceDetection_iep
+      * @return
+      */
+     public abstract String getQualifiedName();
 }

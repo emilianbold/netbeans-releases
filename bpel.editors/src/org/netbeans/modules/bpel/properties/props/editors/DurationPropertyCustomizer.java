@@ -1,20 +1,42 @@
 /*
- * The contents of this file are subject to the terms of the Common Development
- * and Distribution License (the License). You may not use this file except in
- * compliance with the License.
- * 
- * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
- * or http://www.netbeans.org/cddl.txt.
- * 
- * When distributing Covered Code, include this CDDL Header Notice in each file
- * and include the License file at http://www.netbeans.org/cddl.txt.
- * If applicable, add the following below the CDDL Header, with the fields
- * enclosed by brackets [] replaced by your own identifying information:
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License. When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Sun in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
+ * Contributor(s):
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
  */
 package org.netbeans.modules.bpel.properties.props.editors;
 
@@ -31,24 +53,25 @@ import javax.swing.JTextField;
 import javax.swing.Timer;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.modules.soa.validation.util.Duration;
+import org.netbeans.modules.soa.validation.util.DurationUtil;
+import org.netbeans.modules.soa.ui.SoaUtil;
 import org.netbeans.modules.soa.ui.form.ValidablePropertyCustomizer;
-import org.netbeans.modules.bpel.properties.Constants;
-import org.netbeans.modules.bpel.properties.PropertyType;
-import org.netbeans.modules.bpel.properties.editors.FormBundle;
+import org.netbeans.modules.soa.ui.form.RangeDoubleDocument;
 import org.netbeans.modules.soa.ui.form.RangeIntegerDocument;
 import org.netbeans.modules.soa.ui.form.valid.DefaultValidator;
-import org.netbeans.modules.bpel.editors.api.ui.valid.ErrorMessagesBundle;
 import org.netbeans.modules.soa.ui.form.valid.ValidStateManager;
 import org.netbeans.modules.soa.ui.form.valid.ValidStateManager.ValidStateListener;
 import org.netbeans.modules.soa.ui.form.valid.Validator;
+import org.netbeans.modules.bpel.properties.Constants;
+import org.netbeans.modules.bpel.properties.PropertyType;
+import org.netbeans.modules.bpel.properties.editors.FormBundle;
+import org.netbeans.modules.bpel.editors.api.ui.valid.ErrorMessagesBundle;
 import org.netbeans.modules.bpel.properties.props.PropertyVetoError;
-import org.netbeans.modules.bpel.editors.api.utils.TimeEventUtil;
-import org.netbeans.modules.soa.ui.SoaUiUtil;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.util.HelpCtx;
 
 /**
- *
  * @author nk160297
  */
 public class DurationPropertyCustomizer extends ValidablePropertyCustomizer
@@ -81,7 +104,7 @@ public class DurationPropertyCustomizer extends ValidablePropertyCustomizer
         fldDay.setDocument(new RangeIntegerDocument(0, Integer.MAX_VALUE));
         fldHour.setDocument(new RangeIntegerDocument(0, Integer.MAX_VALUE));
         fldMinute.setDocument(new RangeIntegerDocument(0, Integer.MAX_VALUE));
-        fldSecond.setDocument(new RangeIntegerDocument(0, Integer.MAX_VALUE));
+        fldSecond.setDocument(new RangeDoubleDocument(0.0, Double.MAX_VALUE));
         //
         ActionListener timerListener = new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -128,12 +151,11 @@ public class DurationPropertyCustomizer extends ValidablePropertyCustomizer
         //
         HelpCtx.setHelpIDString(this, this.getClass().getName());
         //
-        SoaUiUtil.activateInlineMnemonics(this);
+        SoaUtil.activateInlineMnemonics(this);
     }
     
     @Override
-    public synchronized void init(
-            PropertyEnv propertyEnv, PropertyEditor propertyEditor) {
+    public synchronized void init(PropertyEnv propertyEnv, PropertyEditor propertyEditor) {
         assert propertyEnv != null && propertyEditor != null : "Wrong params"; // NOI18N
         //
         if (myPropertyEnv == propertyEnv) {
@@ -155,13 +177,6 @@ public class DurationPropertyCustomizer extends ValidablePropertyCustomizer
         //
         String value = propertyEditor.getAsText();
         //
-        if (value.startsWith(TimeEventUtil.QUOTE)) {
-            value = value.substring(1, value.length());
-        }
-        if (value.endsWith(TimeEventUtil.QUOTE)) {
-            value = value.substring(0, value.length() - 1);
-        }
-        //
         parseFor(value);
         revalidate(true);
         //
@@ -174,14 +189,14 @@ public class DurationPropertyCustomizer extends ValidablePropertyCustomizer
         }
         if (newHelpCtxID != null && newHelpCtxID.length() != 0) {
             HelpCtx.setHelpIDString(this, newHelpCtxID); // NOI18N
-            SoaUiUtil.fireHelpContextChange(this, new HelpCtx(newHelpCtxID));
+            SoaUtil.fireHelpContextChange(this, new HelpCtx(newHelpCtxID));
         }
     }
     
     public void propertyChange(PropertyChangeEvent event) {
         if (PropertyEnv.PROP_STATE.equals(event.getPropertyName()) &&
                 event.getNewValue() == PropertyEnv.STATE_VALID) {
-            String currText = TimeEventUtil.QUOTE + getContent() + TimeEventUtil.QUOTE;
+            String currText = DurationUtil.addQuotes(getContent());
             try {
                 myPropertyEditor.setAsText(currText);
             } catch (PropertyVetoError ex) {
@@ -192,63 +207,24 @@ public class DurationPropertyCustomizer extends ValidablePropertyCustomizer
     }
     
     private void parseFor(String text) {
-        String value = text;
-        
-        if (value.length() == 0 ||
-                value.charAt(0) != TimeEventUtil.P_DELIM.charAt(0)) {
-            fldYear.setText(TimeEventUtil.ZERO);
-            fldMonth.setText(TimeEventUtil.ZERO);
-            fldDay.setText(TimeEventUtil.ZERO);
-            fldHour.setText(TimeEventUtil.ZERO);
-            fldMinute.setText(TimeEventUtil.ZERO);
-            fldSecond.setText(TimeEventUtil.ZERO);
-            return;
-        }
-        value = value.substring(1, value.length());
-        value = parse(TimeEventUtil.Y_DELIM, value, fldYear);
-        value = parse(TimeEventUtil.M_DELIM, value, fldMonth);
-        value = parse(TimeEventUtil.D_DELIM, value, fldDay);
-        
-        if (value.length() == 0 ||
-                value.charAt(0) != TimeEventUtil.T_DELIM.charAt(0)) {
-            fldHour.setText(TimeEventUtil.ZERO);
-            fldMinute.setText(TimeEventUtil.ZERO);
-            fldSecond.setText(TimeEventUtil.ZERO);
-            return;
-        }
-        value = value.substring(1, value.length());
-        value = parse(TimeEventUtil.H_DELIM, value, fldHour);
-        value = parse(TimeEventUtil.M_DELIM, value, fldMinute);
-        value = parse(TimeEventUtil.S_DELIM, value, fldSecond);
-    }
-    
-    private String parse(String delim, String text, JTextField field) {
-        String value = text;
-        int k = value.indexOf(delim);
-        
-        if (k == -1) {
-            field.setText(TimeEventUtil.ZERO);
-        } else {
-            int n = TimeEventUtil.parseInt(value.substring(0, k));
-            
-            if (n < 0) {
-                field.setText(TimeEventUtil.ZERO);
-            } else {
-                field.setText(TimeEventUtil.EMPTY + n);
-            }
-            value = value.substring(k + 1, value.length());
-        }
-        return value;
+      Duration duration = DurationUtil.parseDuration(text, false);
+//System.out.println("set duration: " + duration);
+      fldYear.setText("" + duration.getYears());
+      fldMonth.setText("" + duration.getMonths());
+      fldDay.setText("" + duration.getDays());
+      fldHour.setText("" + duration.getHours());
+      fldMinute.setText("" + duration.getMinutes());
+      fldSecond.setText("" + duration.getSeconds());
     }
     
     private String getContent() {
-        return TimeEventUtil.getContent(true,
-                TimeEventUtil.parseInt(fldYear.getText()),
-                TimeEventUtil.parseInt(fldMonth.getText()),
-                TimeEventUtil.parseInt(fldDay.getText()),
-                TimeEventUtil.parseInt(fldHour.getText()),
-                TimeEventUtil.parseInt(fldMinute.getText()),
-                TimeEventUtil.parseInt(fldSecond.getText()));
+        return DurationUtil.getContent(true,
+               DurationUtil.parseInt(fldYear.getText()),
+               DurationUtil.parseInt(fldMonth.getText()),
+               DurationUtil.parseInt(fldDay.getText()),
+               DurationUtil.parseInt(fldHour.getText()),
+               DurationUtil.parseInt(fldMinute.getText()),
+               DurationUtil.parseDouble(fldSecond.getText()));
     }
     
     public Validator createValidator() {
@@ -277,13 +253,13 @@ public class DurationPropertyCustomizer extends ValidablePropertyCustomizer
             if ( !check(fldMinute)) {
                 addReasonKey(Severity.ERROR, "ERR_INVALID_MINUTES"); // NOI18N
             }
-            if ( !check(fldSecond)) {
+            if (DurationUtil.parseDouble(fldSecond.getText()) < 0) {
                 addReasonKey(Severity.ERROR, "ERR_INVALID_SECONDS"); // NOI18N
             }
         }
         
         private boolean check(JTextField field) {
-            return TimeEventUtil.parseInt(field.getText()) >= 0;
+            return DurationUtil.parseInt(field.getText()) >= 0;
         }
     }
     
@@ -430,5 +406,4 @@ public class DurationPropertyCustomizer extends ValidablePropertyCustomizer
     private javax.swing.JLabel lblSecond;
     private javax.swing.JLabel lblYear;
     // End of variables declaration//GEN-END:variables
-    
 }

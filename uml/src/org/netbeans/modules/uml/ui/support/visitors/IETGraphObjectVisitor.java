@@ -43,7 +43,6 @@
 
 package org.netbeans.modules.uml.ui.support.visitors;
 
-import org.netbeans.modules.uml.ui.support.viewfactorysupport.IETGraphObject;
 
 /**
  * @author KevinM
@@ -54,5 +53,6 @@ public interface IETGraphObjectVisitor
    /*
     * Return false to break the Traversal
     */
-   public boolean visit(IETGraphObject object);
+    // TODO: meteora
+//   public boolean visit(IETGraphObject object);
 }

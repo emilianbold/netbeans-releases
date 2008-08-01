@@ -81,7 +81,7 @@ public class RowSetBeanCreateInfoSet implements BeanCreateInfoSet {
     String rowSetInstanceName;
     DatabaseMetaData metaData;
 
-    protected static String rowSetNameSuffix = DataconnectivitySettings.getRsSuffix() ;
+    protected String rowSetNameSuffix = DataconnectivitySettings.getRsSuffix() ;
     public static Class rowSetClass = com.sun.sql.rowset.CachedRowSetXImpl.class;
     protected static String dataProviderProperty = "cachedRowSet" ; // NOI18N ,
     protected static String dataProviderClassName = "com.sun.data.provider.impl.CachedRowSetDataProvider" ; // NOI18N

@@ -43,31 +43,33 @@ made subject to such option by the copyright holder.
 package org.netbeans.test.j2ee;
 
 import java.io.File;
+import junit.framework.Test;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.*;
 import org.netbeans.jellytools.actions.OpenAction;
+import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.*;
-import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.ide.ProjectSupport;
 
 /**
  *
  * @author lm97939
  */
-public class FreeFormProjects extends JellyTestCase {
+public class FreeFormProjects extends J2eeTestCase {
     
     /** Creates a new instance of AddMethodTest */
     public FreeFormProjects(String name) {
         super(name);
     }
     
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
+    public static Test suite() {
+        NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(FreeFormProjects.class);
+        conf = addServerTests(conf,"testEjbWithSources","testEarWithSources");
+        conf = conf.enableModules(".*").clusters(".*");
+        return NbModuleSuite.create(conf);
 //        suite.addTest(new FreeFormProjects("testFreeFormEjb"));
-        suite.addTest(new FreeFormProjects("testEjbWithSources"));
-        suite.addTest(new FreeFormProjects("testEarWithSources"));
-        return suite;    
     }
     
     /** Use for execution inside IDE */
@@ -101,7 +103,7 @@ public class FreeFormProjects extends JellyTestCase {
     
 //    private void createNewFreeFormEjbProject(String location, String name, String beans[], String files[]) {
 //        NewProjectWizardOperator npwo = NewProjectWizardOperator.invoke();
-//        npwo.selectCategory("Enterprise");
+//        npwo.selectCategory("Java EE"); // XXX use Bundle.getString instead
 //        npwo.selectProject("EJB Module with Existing Ant Script");
 //        npwo.next();
 //        NewProjectNameLocationStepOperator npnlso = new NewProjectNameLocationStepOperator();
@@ -146,7 +148,7 @@ public class FreeFormProjects extends JellyTestCase {
     
     private void createNewEjbProjectFromExistingSources(String location, String name, String folder, String beans[], String files[]) {
         NewProjectWizardOperator npwo = NewProjectWizardOperator.invoke();
-        npwo.selectCategory("Enterprise");
+        npwo.selectCategory("Java EE"); // XXX use Bundle.getString instead
         npwo.selectProject("EJB Module with Existing Sources");
         npwo.next();
         NewProjectNameLocationStepOperator npnlso = new NewProjectNameLocationStepOperator();
@@ -183,7 +185,7 @@ public class FreeFormProjects extends JellyTestCase {
     
     private void createNewEarProjectFromExistingSources(String location, String name, String folder) {
         NewProjectWizardOperator npwo = NewProjectWizardOperator.invoke();
-        npwo.selectCategory("Enterprise");
+        npwo.selectCategory("Java EE"); // XXX use Bundle.getString instead
         npwo.selectProject("Enterprise Application with Existing Sources");
         npwo.next();
         NewProjectNameLocationStepOperator npnlso = new NewProjectNameLocationStepOperator();

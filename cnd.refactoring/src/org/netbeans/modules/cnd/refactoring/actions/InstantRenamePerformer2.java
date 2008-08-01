@@ -136,7 +136,7 @@ public class InstantRenamePerformer2 implements DocumentListener, KeyListener {
 	this.region = new SyncDocumentRegion(doc, regions);
 	
         if (doc instanceof BaseDocument) {
-            ((BaseDocument) doc).setPostModificationDocumentListener(this);
+            ((BaseDocument) doc).addPostModificationDocumentListener(this);
         }
         
 	target.addKeyListener(this);
@@ -347,7 +347,7 @@ public class InstantRenamePerformer2 implements DocumentListener, KeyListener {
     private void release() {
 	target.putClientProperty(InstantRenamePerformer2.class, null);
         if (doc instanceof BaseDocument) {
-            ((BaseDocument) doc).setPostModificationDocumentListener(null);
+            ((BaseDocument) doc).removePostModificationDocumentListener(this);
         }
 	target.removeKeyListener(this);
 //        getHighlightsBag(doc).clear();

@@ -142,7 +142,7 @@ public class CasaWrapperModel extends CasaModel {
     public static final String PROPERTY_SERVICE_UNIT_RENAMED = PROPERTY_PREFIX + "service_unit_renamed";    // NOI18N
     public static final String PROPERTY_SERVICE_ENGINE_SERVICE_UNIT_ADDED = PROPERTY_PREFIX + "service_unit_added";   // NOI18N
     public static final String PROPERTY_SERVICE_ENGINE_SERVICE_UNIT_REMOVED = PROPERTY_PREFIX + "service_unit_removed"; // NOI18N
-    private static final String CASA_WSDL_RELATIVE_LOCATION = "../jbiasa/";     // NOI18N
+    private static final String COMPAPP_WSDL_RELATIVE_LOCATION = "../jbiasa/";     // NOI18N
     private static final String JBI_SERVICE_UNITS_DIR = "jbiServiceUnits";      // NOI18N
     private static final String JBI_SOURCE_DIR = "jbiasa";      // NOI18N
     private static final String DUMMY_PORTTYPE_NAME = "dummyCasaPortType";      // NOI18N
@@ -738,7 +738,7 @@ public class CasaWrapperModel extends CasaModel {
         assert portType != null;
         String wsdlLocation = casaWrapperModel.getWSDLLocation(interfaceQName);
 
-        ExtensibilityElementTemplateFactory factory = new ExtensibilityElementTemplateFactory();
+        ExtensibilityElementTemplateFactory factory = ExtensibilityElementTemplateFactory.getDefault();
         Collection<TemplateGroup> groups = factory.getExtensibilityElementTemplateGroups();
         Vector<LocalizedTemplateGroup> protocols = new Vector<LocalizedTemplateGroup>();
         LocalizedTemplateGroup ltg = null;
@@ -1082,6 +1082,11 @@ public class CasaWrapperModel extends CasaModel {
         if (!endpoint1Defined && !endpoint2Defined) {
             return NbBundle.getMessage(this.getClass(),
                     "MSG_CANNOT_CONNECT_TWO_UNDEFINED_ENDPOINTS"); // NOI18N
+        }
+        
+        if (endpointRef1.getEndpoint().get() == endpointRef2.getEndpoint().get()) {
+            return NbBundle.getMessage(this.getClass(),
+                    "MSG_CANNOT_CONNECT_SAME_ENDPOINT"); // NOI18N            
         }
 
         return null;
@@ -1434,7 +1439,7 @@ public class CasaWrapperModel extends CasaModel {
 
     private String getRelativePathForCompAppWSDL() {
         String compAppWSDLFileName = getCompAppWSDLFileName();
-        return CASA_WSDL_RELATIVE_LOCATION + compAppWSDLFileName;
+        return COMPAPP_WSDL_RELATIVE_LOCATION + compAppWSDLFileName;
     }
 
     private String getPortHref(String relativePath, String serviceName, String portName) {
@@ -1453,7 +1458,7 @@ public class CasaWrapperModel extends CasaModel {
         if (jbiProject != null) {
             return JbiProjectHelper.getJbiProjectName(jbiProject) + ".wsdl"; // NOI18N
         } else {
-            return null;
+            return "casa.wsdl"; // NOI18N
         }
     }
 
@@ -1955,6 +1960,27 @@ public class CasaWrapperModel extends CasaModel {
         return true;
     }
 
+    
+    /**
+     * Gets the name of the component hosting the given endpoint.
+     *
+     * @param endpoint  a casa endpoint reference
+     * @return  the SE/BC hosting the given component.
+     */
+    public String getComponentName(final CasaEndpointRef endpointRef) {
+        String compName = null;
+        CasaPort casaPort = getCasaPort(endpointRef);
+        if (casaPort != null) {
+            compName = getBindingComponentName(casaPort);
+        } else {
+            CasaServiceEngineServiceUnit sesu = 
+                    getCasaEngineServiceUnit(endpointRef);
+            assert sesu != null;
+            compName = sesu.getComponentName();
+        }
+        return compName;
+    }
+    
     /**
      * Gets the containing casa port for an endpoint.
      *
@@ -2625,7 +2651,7 @@ public class CasaWrapperModel extends CasaModel {
         FileObject casaFO = lookup.lookup(FileObject.class);
         URI uri = null;
         try {
-            uri = new URI(CASA_WSDL_RELATIVE_LOCATION + compAppWSDLFileName);
+            uri = new URI(getRelativePathForCompAppWSDL());
         } catch (URISyntaxException ex) {
             ex.printStackTrace();
         }

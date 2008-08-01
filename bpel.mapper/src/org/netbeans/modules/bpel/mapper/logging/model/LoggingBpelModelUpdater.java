@@ -18,19 +18,22 @@
  */
 package org.netbeans.modules.bpel.mapper.logging.model;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.tree.TreePath;
+import org.netbeans.modules.bpel.mapper.cast.AbstractTypeCast;
 import org.netbeans.modules.bpel.mapper.logging.tree.AlertItem;
 import org.netbeans.modules.bpel.mapper.logging.tree.LogItem;
-import org.netbeans.modules.bpel.mapper.logging.tree.LoggingTreeItem;
 import org.netbeans.modules.bpel.mapper.model.BpelModelUpdater;
 import org.netbeans.modules.bpel.mapper.model.GraphInfoCollector;
 import org.netbeans.modules.bpel.mapper.tree.MapperSwingTreeModel;
-import org.netbeans.modules.bpel.mapper.tree.spi.MapperTcContext;
+import org.netbeans.modules.bpel.mapper.model.MapperTcContext;
 import org.netbeans.modules.bpel.model.api.BpelContainer;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.BpelModel;
-import org.netbeans.modules.bpel.model.api.Expression;
 import org.netbeans.modules.bpel.model.api.ExtensibleElements;
 import org.netbeans.modules.bpel.model.api.From;
 import org.netbeans.modules.bpel.model.ext.logging.api.Alert;
@@ -40,8 +43,8 @@ import org.netbeans.modules.bpel.model.ext.logging.api.Log;
 import org.netbeans.modules.bpel.model.ext.logging.api.LogLevel;
 import org.netbeans.modules.bpel.model.ext.logging.api.Trace;
 import org.netbeans.modules.soa.mappercore.model.Graph;
-import org.netbeans.modules.soa.mappercore.model.Link;
-import org.netbeans.modules.soa.mappercore.model.Vertex;
+import org.netbeans.modules.xml.xpath.ext.spi.XPathPseudoComp;
+import org.openide.util.NbBundle;
 
 /**
  * 
@@ -51,6 +54,7 @@ import org.netbeans.modules.soa.mappercore.model.Vertex;
  */
 public class LoggingBpelModelUpdater extends BpelModelUpdater {
         
+    private static final Logger LOGGER = Logger.getLogger(LoggingBpelModelUpdater.class.getName());
 //    private BpelMapperModel mMapperModel;
 //    private BpelDesignContext mDesignContext;
 //    private TreePath mTreePath;
@@ -109,10 +113,11 @@ public class LoggingBpelModelUpdater extends BpelModelUpdater {
     }
 
     private void updateExtensileElements(TreePath rightTreePath,
-            ExtensibleElements extensibleElement) 
+            ExtensibleElements extensibleElement) throws Exception 
     {
         assert extensibleElement != null;
 
+        ExtensibleElements editorExtensibleElement = null;
         //
         // Do common preparations
         //
@@ -121,19 +126,25 @@ public class LoggingBpelModelUpdater extends BpelModelUpdater {
         GraphInfoCollector graphInfo = new GraphInfoCollector(graph);
         BpelModel bpelModel = extensibleElement.getBpelModel();
         
-        Trace trace = getTrace(extensibleElement);
-        if (trace == null) {
-            return;
-        }
+        Trace trace = null;
         // 125695
         // remove trace if there is not content
         if (graph.isEmpty()) {
+            trace = getTrace(extensibleElement, false);
+            if (trace == null) {
+                return;
+            }
             removeEmptyGraph(trace, rightTreePath);
             return;
         }
 
+        trace = trace == null ? getTrace(extensibleElement) : trace;
+        if (trace == null) {
+            return;
+        }
+
         Object rightTreeDO = MapperSwingTreeModel.getDataObject(rightTreePath);
-        Expression bpelExpr = null;
+        From bpelExpr = null;
 
         if (rightTreeDO instanceof LogItem) {
             LogLevel level = ((LogItem)rightTreeDO).getLevel();
@@ -149,6 +160,7 @@ public class LoggingBpelModelUpdater extends BpelModelUpdater {
             if (rightLog == null) {
                 return;
             }
+            editorExtensibleElement = rightLog;
             
             From from = rightLog.getFrom();
             if (from == null) {
@@ -171,7 +183,8 @@ public class LoggingBpelModelUpdater extends BpelModelUpdater {
             if (rightAlert == null) {
                 return;
             }
-            
+            editorExtensibleElement = rightAlert;
+
             From from = rightAlert.getFrom();
             if (from == null) {
                 from = bpelModel.getBuilder().createFrom();
@@ -184,7 +197,18 @@ public class LoggingBpelModelUpdater extends BpelModelUpdater {
         }
         //
         // Populate 
-        populateContentHolder(bpelExpr, graphInfo);
+        Set<AbstractTypeCast> typeCastCollector = new HashSet<AbstractTypeCast>();
+        Set<XPathPseudoComp> pseudoCollector = new HashSet<XPathPseudoComp>();
+
+        updateFrom(graph, typeCastCollector, pseudoCollector, bpelExpr);
+        
+//        populateContentHolder(bpelExpr, graphInfo, typeCastCollector);
+        if (editorExtensibleElement != null) {
+            registerTypeCasts(editorExtensibleElement, typeCastCollector, true);
+        } else {
+            LOGGER.log(Level.WARNING, NbBundle.getMessage(
+                    LoggingBpelModelUpdater.class, "MSG_WarningNoEditorExtensibleElement")); // NOI18N
+        }
     }
 
     // todo m
@@ -221,17 +245,42 @@ public class LoggingBpelModelUpdater extends BpelModelUpdater {
     }
     
     private Trace getTrace(ExtensibleElements extensibleElement) {
+        return getTrace(extensibleElement, true);
+    }
+
+    private Trace getTrace(ExtensibleElements extensibleElement, boolean create) {
         List<Trace> traces = extensibleElement.getChildren(Trace.class);
         if (traces != null && traces.size() > 0) {
             return traces.get(0);
         } 
 
+        if (!create) {
+            return null;
+        }
+        
         BpelModel bpelModel = extensibleElement.getBpelModel();
+        if (bpelModel == null) {
+            return null;
+        }
+//        Process process = bpelModel.getProcess();
+//        try {
+//            System.out.println("going to add namespace context");
+//            process.getNamespaceContext().
+//                    addNamespace(Trace.LOGGING_NAMESPACE_URI);
+//        } catch (InvalidNamespaceException ex) {
+//            Exceptions.printStackTrace(ex);
+//        }
+//
+//        try {
+//            bpelModel.sync();
+//        } catch (IOException ex) {
+//            ErrorManager.getDefault().notify(ex);
+//        }
+        
         Trace newTrace = bpelModel.getBuilder().createExtensionEntity(Trace.class);
         extensibleElement.addExtensionEntity(Trace.class, newTrace);
         traces = extensibleElement.getChildren(Trace.class);
-        
-            
+
         return traces != null && traces.size() > 0 ? traces.get(0) : null;
     }
 }

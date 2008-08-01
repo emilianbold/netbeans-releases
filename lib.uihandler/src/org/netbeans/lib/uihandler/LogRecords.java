@@ -84,6 +84,7 @@ public final class LogRecords {
         String formated = FORMATTER.format(rec);
         byte[] arr = formated.getBytes("utf-8");
         os.write(arr);
+        os.flush();
     }
 
     public static void scan(InputStream is, Handler h) throws IOException {

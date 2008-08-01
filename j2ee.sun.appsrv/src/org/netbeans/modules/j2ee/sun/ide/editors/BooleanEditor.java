@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
@@ -40,76 +40,16 @@
  */
 package org.netbeans.modules.j2ee.sun.ide.editors;
 
+public class BooleanEditor extends ChoiceEditor {
 
-import java.awt.Component;
-import java.beans.PropertyEditorSupport;
-
-import org.openide.util.NbBundle;
-import org.openide.explorer.propertysheet.editors.EnhancedPropertyEditor;
-
-public class BooleanEditor extends PropertyEditorSupport implements EnhancedPropertyEditor {
-
-    public String curr_Sel;
-    public String[] choices = {
+    private String[] choices = {
         "true", // NOI18N
         "false" // NOI18N
     };
 
-    public BooleanEditor() {
-        curr_Sel = null;
-    }
-
-    public String getAsText() {
-        return curr_Sel;
-    }
-    
-    public void setAsText(String string) throws IllegalArgumentException {
-        if((string==null)||(string.equals(""))) // NOI18N
-            throw new IllegalArgumentException();
-        else
-            curr_Sel = string;
-        this.firePropertyChange();
-    }
-    
-    public void setValue(Object val) {
-        if (val == null) {
-            String str = NbBundle.getMessage(BooleanEditor.class, "TXT_Null_Value");     //NOI18N
-            curr_Sel = str;
-        }
-        else {
-            if (! (val instanceof String)) {
-                throw new IllegalArgumentException();
-            }
-            curr_Sel = (String) val;
-        }
-        super.setValue(curr_Sel);
-    }
-    
-    public Object getValue() {
-        return curr_Sel;
-    }
-    
-    public String getJavaInitializationString() {
-        return getAsText();
-    }
-    
+    @Override
     public String[] getTags() {
-        return choices;
+        return choices.clone();
     }
-    
-    public Component getInPlaceCustomEditor() {
-        return null;
-    }
-    
-    
-    public boolean hasInPlaceCustomEditor() {
-        return false;
-    }
-    
-    public boolean supportsEditingTaggedValues() {
-        return false;
-    }
-    
+
 }
-
-

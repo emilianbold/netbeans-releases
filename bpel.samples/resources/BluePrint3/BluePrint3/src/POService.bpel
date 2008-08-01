@@ -34,6 +34,8 @@
          xmlns:bpws="http://docs.oasis-open.org/wsbpel/2.0/process/executable"
          xmlns:pos="http://manufacturing.org/wsdl/purchase/bp3"
          xmlns="http://docs.oasis-open.org/wsbpel/2.0/process/executable"
+         xmlns:sxt="http://www.sun.com/wsbpel/2.0/process/executable/SUNExtension/Trace" 
+         xmlns:sxed="http://www.sun.com/wsbpel/2.0/process/executable/SUNExtension/Editor"
          xmlns:invs="http://manufacturing.org/wsdl/inventory/bp3"
          xmlns:po="http://manufacturing.org/xsd/purchase">
     
@@ -82,10 +84,8 @@
             <sequence>
                 <assign name="Assign1_1">
                     <copy>
-                        <from variable="inventoryServiceFault"
-                              part="faultInfo"/>
-                        <to variable="purchaseOrderFault"
-                            part="faultInfo"/>
+                        <from variable="inventoryServiceFault" part="faultInfo"/>
+                        <to variable="purchaseOrderFault" part="faultInfo"/>
                     </copy>
                 </assign>
                 <reply name="sendPurchaseOrder.Fault"
@@ -111,10 +111,8 @@
                 <to>$purchaseOrderRequest.purchaseOrder/po:price</to>
             </copy>
             <copy>
-                <from variable="purchaseOrderRequest"
-                      part="purchaseOrder"/>
-                <to variable="inventoryServiceRequest"
-                    part="purchaseOrder"/>
+                <from variable="purchaseOrderRequest" part="purchaseOrder"/>
+                <to variable="inventoryServiceRequest" part="purchaseOrder"/>
             </copy>
         </assign>
         <if name="Decision">
@@ -139,10 +137,12 @@
                 outputVariable="inventoryServiceReply"/>
         <assign name="Assign">
             <copy>
-                <from variable="purchaseOrderRequest"
-                      part="purchaseOrder"/>
-                <to variable="purchaseOrderReply"
-                    part="purchaseOrder"/>
+                <from variable="purchaseOrderRequest" part="purchaseOrder"/>
+                <to variable="purchaseOrderReply" part="purchaseOrder"/>
+            </copy>
+            <copy>
+                <from variable="inventoryServiceReply"/>
+                <to variable="inventoryServiceReply"/>
             </copy>
         </assign>
         <reply name="sendPurchaseOrder.Reply"

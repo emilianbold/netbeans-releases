@@ -63,11 +63,11 @@ public class NbEditorToolBarTest extends NbTestCase {
         super(testName);
     }
 
-    public boolean runInEQ() {
+    public @Override boolean runInEQ() {
         return true;
     }
 
-    protected void setUp() throws Exception {
+    protected @Override void setUp() throws Exception {
         super.setUp();
 
         clearWorkDir();
@@ -96,8 +96,7 @@ public class NbEditorToolBarTest extends NbTestCase {
         assertNotNull(docDataObject);
         editor.getDocument().putProperty(Document.StreamDescriptionProperty, docDataObject);
 
-        NbEditorToolBar toolbar = new NbEditorToolBar(editor);
-        Lookup actionContext = toolbar.createActionContext(editor);
+        Lookup actionContext = NbEditorToolBar.createActionContext(editor);
         assertNotNull(actionContext.lookup(Bar.class));
         assertNotNull(actionContext.lookup(Node.class));
         assertNull(actionContext.lookup(Foo.class));
@@ -117,8 +116,7 @@ public class NbEditorToolBarTest extends NbTestCase {
         assertNotNull(docDataObject);
         editor.getDocument().putProperty(Document.StreamDescriptionProperty, docDataObject);
 
-        NbEditorToolBar toolbar = new NbEditorToolBar(editor);
-        Lookup actionContext = toolbar.createActionContext(editor);
+        Lookup actionContext = NbEditorToolBar.createActionContext(editor);
         assertNotNull(actionContext.lookup(Node.class));
         assertNull(actionContext.lookup(Foo.class));
     }
@@ -134,8 +132,7 @@ public class NbEditorToolBarTest extends NbTestCase {
         editor.setEditorKit(new NbEditorKit());
         parent.add(editor);
 
-        NbEditorToolBar toolbar = new NbEditorToolBar(editor);
-        Lookup actionContext = toolbar.createActionContext(editor);
+        Lookup actionContext = NbEditorToolBar.createActionContext(editor);
         assertNull(actionContext);
     }
 
@@ -154,8 +151,7 @@ public class NbEditorToolBarTest extends NbTestCase {
         parent.add(editor);
         editor.getDocument().putProperty(Document.StreamDescriptionProperty, docDataObject);
 
-        NbEditorToolBar toolbar = new NbEditorToolBar(editor);
-        Lookup actionContext = toolbar.createActionContext(editor);
+        Lookup actionContext = NbEditorToolBar.createActionContext(editor);
         assertNotNull(actionContext.lookup(Bar.class));
         assertNotNull(actionContext.lookup(Node.class));
         assertEquals(1, actionContext.lookup(new Lookup.Template(Node.class)).allInstances().size());

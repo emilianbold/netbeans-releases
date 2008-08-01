@@ -47,6 +47,7 @@ import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.autoupdate.ui.PluginManagerUI;
 
 /**
@@ -75,12 +76,9 @@ public class PluginManagerActionTest extends NbTestCase {
     private JButton close = null;
     
     private static Object help;
-    
-    public void testMemLeakPluginManagerUI () throws Exception {
-        if (Boolean.getBoolean("ignore.random.failures")) {
-            return;
-        }
 
+    @RandomlyFails
+    public void testMemLeakPluginManagerUI () throws Exception {
         help = this;
         
         close = new JButton ();

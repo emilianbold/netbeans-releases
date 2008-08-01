@@ -48,10 +48,11 @@ import java.util.*;
 import org.netbeans.modules.dbschema.util.*;
 
 import org.netbeans.modules.dbschema.migration.archiver.*;
+import org.openide.nodes.Node;
 
 /** Describes an entire database schema.
  */
-public class SchemaElement extends DBElement {
+public class SchemaElement extends DBElement implements Node.Cookie {
     /** Status when the schema element is not yet prepared. */
     public static final int STATUS_NOT = 0;
 

@@ -52,6 +52,7 @@ import java.util.List;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.CsmObject;
@@ -61,6 +62,8 @@ import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.CsmVariableDefinition;
+import org.netbeans.modules.cnd.api.model.services.CsmSelect;
+import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Resolver;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ResolverFactory;
@@ -189,18 +192,25 @@ public final class VariableDefinitionImpl extends VariableImpl<CsmVariableDefini
 	if( def == null ) {
 	    CsmObject owner = findOwner();
 	    if( owner instanceof CsmClass ) {
-		def = findByName(((CsmClass) owner).getMembers(), getName());
-	    }
-	    else if( owner instanceof CsmNamespace ) {
-		def = findByName(((CsmNamespace) owner).getDeclarations(), getName());
+                CsmFilter filter = CsmSelect.getDefault().getFilterBuilder().createNameFilter(getName().toString(), true, true, false);
+		def = findByName(CsmSelect.getDefault().getClassMembers((CsmClass)owner, filter), getName());
+	    }  else if( owner instanceof CsmNamespace ) {
+                CsmFilter filter = CsmSelect.getDefault().getFilterBuilder().createCompoundFilter(
+                         CsmSelect.getDefault().getFilterBuilder().createKindFilter(
+                         new CsmDeclaration.Kind[]{CsmDeclaration.Kind.VARIABLE}),
+                         CsmSelect.getDefault().getFilterBuilder().createNameFilter(getName().toString(), true, true, false));
+                Iterator<CsmOffsetableDeclaration> it = CsmSelect.getDefault().getDeclarations(((CsmNamespace)owner), filter);
+                while (it.hasNext()) {
+                    def = it.next();
+                }
 	    }
 	}
         return (CsmVariable) def;
     }
 
-    private CsmVariable findByName(Collection/*CsmDeclaration*/ declarations, CharSequence name) {
-	for (Iterator it = declarations.iterator(); it.hasNext();) {
-	    CsmDeclaration decl = (CsmDeclaration) it.next();
+    private CsmVariable findByName(Iterator<CsmMember> it, CharSequence name) {
+	while(it.hasNext()) {
+	    CsmMember decl = it.next();
 	    if( decl.getName().equals(name) ) {
 		if( decl instanceof  CsmVariable ) { // paranoja
 		    return (CsmVariable) decl;
@@ -268,8 +278,9 @@ public final class VariableDefinitionImpl extends VariableImpl<CsmVariableDefini
     @Override
     public void write(DataOutput output) throws IOException {
         super.write(output);    
-        assert this.qualifiedName != null;
-        output.writeUTF(this.qualifiedName.toString());
+        
+        PersistentUtils.writeUTF(this.qualifiedName, output);
+        
         PersistentUtils.writeStrings(this.classOrNspNames, output);
         
         UIDObjectFactory.getDefaultFactory().writeUID(this.declarationUID, output);
@@ -277,8 +288,13 @@ public final class VariableDefinitionImpl extends VariableImpl<CsmVariableDefini
     
     public VariableDefinitionImpl(DataInput input) throws IOException {
         super(input);
-        this.qualifiedName = QualifiedNameCache.getManager().getString(input.readUTF());
-        assert this.qualifiedName != null;
+        
+        this.qualifiedName = PersistentUtils.readUTF(input);
+        
+        if(this.qualifiedName != null) {    
+            this.qualifiedName = QualifiedNameCache.getManager().getString(this.qualifiedName);
+        }
+
         this.classOrNspNames = PersistentUtils.readStrings(input, NameCache.getManager());
         
         this.declarationUID = UIDObjectFactory.getDefaultFactory().readUID(input);

@@ -45,6 +45,7 @@ import java.io.IOException;
 import java.util.Collection;
 
 import org.netbeans.modules.cnd.MIMENames;
+import org.netbeans.modules.cnd.editor.filecreation.ExtensionsSettings;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 import org.openide.loaders.MultiDataObject;
@@ -65,14 +66,10 @@ public final class HDataLoader extends CndAbstractDataLoaderExt {
     /** Serial version number */
     static final long serialVersionUID = -2924582006340980748L;
 
-    /** The suffix list for C/C++ header files */
-    private static final String[] hdrExtensions =
-				{ "h", "H", "hpp", "hxx", "SUNWCCh", "tcc" }; // NOI18N
-
     public HDataLoader() {
         super("org.netbeans.modules.cnd.loaders.HDataObject"); // NOI18N
         instance = this;
-        createExtentions(hdrExtensions);
+        //createExtentions(hdrExtensions);
     }
 
     public static HDataLoader getInstance(){
@@ -123,15 +120,11 @@ public final class HDataLoader extends CndAbstractDataLoaderExt {
 	return new HDataObject(primaryFile, this);
     }
 
-    public ExtensionList getDefaultExtensionList() {
-        return arrayToExtensionList(hdrExtensions);
-    }
+        public String getDisplayNameForExtensionList() {
+            return NbBundle.getMessage(HDataLoader.class, "HDataLoader_Name_ForExtList"); // NOI18N
+        }
 
-    public String getDisplayNameForExtensionList() {
-	return NbBundle.getMessage(HDataLoader.class, "HDataLoader_Name_ForExtList"); // NOI18N
-    }
-
-    public String getDefaultDefaultExtension() {
-        return hdrExtensions[0];
-    }
+        public String getSettingsName() {
+            return ExtensionsSettings.HEADER;
+        }
 }

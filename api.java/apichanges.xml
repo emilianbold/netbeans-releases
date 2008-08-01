@@ -73,7 +73,22 @@ made subject to such option by the copyright holder.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
 <changes>
-
+        <change id="classpath-api-module">
+            <api name="classpath"/>
+            <summary>Splitting the java API to independent ClassPath API and the rest of the java API</summary>
+            <version major="1" minor="18"/>
+            <date day="5" month="6" year="2008"/>
+            <author login="tzezula"/>
+            <compatibility addition="no" modification="no" semantic="compatible" source="incompatible" binary="compatible"/>
+            <description>
+                <p>
+                    The copy of the ClassPath API was used by generic scripting framework, which cannot depend on the java cluster.
+                    To remove this copy of the ClassPath API the java API needs to be splitted into the ClassPath API (IDE cluster)
+                    and the rest of the java API (java cluster).
+                </p>
+            </description>
+            <issue number="136169"/>
+        </change>
         <change id="ClassPath.string">
             <api name="classpath"/>
             <summary>Interconversions with string-format classpaths</summary>
@@ -89,11 +104,10 @@ made subject to such option by the copyright holder.
                     and NetBeans' internal representation.
                 </p>
             </description>
-            <class package="org.netbeans.api.java.classpath" name="ClassPath"/>
-            <class package="org.netbeans.spi.java.classpath.support" name="ClassPathSupport"/>
+            <!-- <class package="org.netbeans.api.java.classpath" name="ClassPath"/>
+            <class package="org.netbeans.spi.java.classpath.support" name="ClassPathSupport"/> -->
             <issue number="59311"/>
         </change>
-
         <change id="queries-spi-support">
             <api name="queries"/>
             <summary>Support for delegating SourceForBinaryQueryImplementation2</summary>
@@ -106,7 +120,7 @@ made subject to such option by the copyright holder.
                     Added support base class for SourceForBinaryQueryImplementation2 which delegates to other SourceForBinaryQueryImplementations.
                 </p>
             </description>
-            <class package="org.netbeans.spi.java.queries.support" name="SourceForBinaryQueryImpl2Base"/>
+            <!-- <class package="org.netbeans.spi.java.queries.support" name="SourceForBinaryQueryImpl2Base"/> -->
             <issue number="129884"/>
         </change>
         <change id="source-for-binary-query2">
@@ -123,8 +137,8 @@ made subject to such option by the copyright holder.
                     The binaries should be preferred for libraries and platforms where sources may not be complete or correct.
                 </p>
             </description>
-            <class package="org.netbeans.api.java.queries" name="SourceForBinaryQuery"/>
-            <class package="org.netbeans.spi.java.queries" name="SourceForBinaryQueryImplementation2"/>
+            <!-- <class package="org.netbeans.api.java.queries" name="SourceForBinaryQuery"/>
+            <class package="org.netbeans.spi.java.queries" name="SourceForBinaryQueryImplementation2"/> -->
             <issue number="128695"/>
         </change>
         <change id="includes-excludes.classpath">
@@ -146,8 +160,8 @@ made subject to such option by the copyright holder.
                     currently only excludes on <code>SOURCE</code> paths are honored by Java language features.)
                 </p>
             </description>
-            <class package="org.netbeans.api.java.classpath" name="ClassPath"/>
-            <class package="org.netbeans.spi.java.classpath" name="FilteringPathResourceImplementation"/>
+            <!-- <class package="org.netbeans.api.java.classpath" name="ClassPath"/>
+            <class package="org.netbeans.spi.java.classpath" name="FilteringPathResourceImplementation"/> -->
             <issue number="49026"/>
         </change>
 
@@ -166,8 +180,8 @@ made subject to such option by the copyright holder.
                 (SFBQ.findSources(ClassPath.EXECUTE) == sourceRoot)
                 </p>
             </description>
-            <class package="org.netbeans.api.java.queries" name="BinaryForSourceQuery"/>
-            <class package="org.netbeans.spi.java.queries" name="BinaryForSourceQueryImplementation"/>
+            <!-- <class package="org.netbeans.api.java.queries" name="BinaryForSourceQuery"/>
+            <class package="org.netbeans.spi.java.queries" name="BinaryForSourceQueryImplementation"/> -->
         </change>
         <change id="UnitTestForSourceQuery.multiple">
             <api name="queries"/>
@@ -190,9 +204,9 @@ made subject to such option by the copyright holder.
                 The change was required to allow support of multiple source and test roots.
                 </p>
             </description>
-            <class package="org.netbeans.api.java.queries" name="UnitTestForSourceQuery"/>
+            <!-- <class package="org.netbeans.api.java.queries" name="UnitTestForSourceQuery"/>
             <class package="org.netbeans.spi.java.queries" name="UnitTestForSourceQueryImplementation"/>
-            <class package="org.netbeans.spi.java.queries" name="MultipleRootsUnitTestForSourceQueryImplementation"/>
+            <class package="org.netbeans.spi.java.queries" name="MultipleRootsUnitTestForSourceQueryImplementation"/> -->
         </change>
 
         <change>
@@ -207,8 +221,8 @@ made subject to such option by the copyright holder.
                     Added query answering the source level of a Java file.
                 </p>
             </description>
-            <class package="org.netbeans.api.java.queries" name="SourceLevelQuery"/>
-            <class package="org.netbeans.spi.java.queries" name="SourceLevelQueryImplementation"/>
+            <!-- <class package="org.netbeans.api.java.queries" name="SourceLevelQuery"/>
+            <class package="org.netbeans.spi.java.queries" name="SourceLevelQueryImplementation"/> -->
         </change>
 
         <change id="ClassPath.buildsys">
@@ -247,14 +261,14 @@ made subject to such option by the copyright holder.
                     instances.
                 </p>
             </description>
-            <class package="org.netbeans.api.java.classpath" name="ClassPath"/>
+            <!-- <class package="org.netbeans.api.java.classpath" name="ClassPath"/>
             <class package="org.netbeans.spi.java.classpath" name="ClassPathProvider"/>
             <class package="org.netbeans.spi.java.classpath" name="ClassPathFactory"/>
             <class package="org.netbeans.spi.java.classpath" name="ClassPathImplementation"/>
             <class package="org.netbeans.spi.java.classpath" name="PathResourceImplementation"/>
             <class package="org.netbeans.spi.java.classpath.support" name="ClassPathSupport"/>
             <class package="org.netbeans.spi.java.classpath.support" name="CompositePathResourceBase"/>
-            <class package="org.netbeans.spi.java.classpath.support" name="PathResourceBase"/>
+            <class package="org.netbeans.spi.java.classpath.support" name="PathResourceBase"/> -->
         </change>
 
         <change id="GlobalPathRegistry">
@@ -274,7 +288,7 @@ made subject to such option by the copyright holder.
                 Added a new class <code>GlobalPathRegistry</code> to represent
                 classpaths of current interest, typically from open projects.
             </description>
-            <class package="org.netbeans.api.java.classpath" name="GlobalPathRegistry"/>
+            <!-- <class package="org.netbeans.api.java.classpath" name="GlobalPathRegistry"/> -->
         </change>
 
         <change id="new-queries">
@@ -290,14 +304,14 @@ made subject to such option by the copyright holder.
                     various aspects of Java sources.
                 </p>
             </description>
-            <class package="org.netbeans.api.java.queries" name="AccessibilityQuery"/>
+            <!-- <class package="org.netbeans.api.java.queries" name="AccessibilityQuery"/>
             <class package="org.netbeans.api.java.queries" name="JavadocForBinaryQuery"/>
             <class package="org.netbeans.api.java.queries" name="SourceForBinaryQuery"/>
             <class package="org.netbeans.api.java.queries" name="UnitTestForSourceQuery"/>
             <class package="org.netbeans.spi.java.queries" name="AccessibilityQueryImplementation"/>
             <class package="org.netbeans.spi.java.queries" name="JavadocForBinaryQueryImplementation"/>
             <class package="org.netbeans.spi.java.queries" name="SourceForBinaryQueryImplementation"/>
-            <class package="org.netbeans.spi.java.queries" name="UnitTestForSourceQueryImplementation"/>
+            <class package="org.netbeans.spi.java.queries" name="UnitTestForSourceQueryImplementation"/> -->
         </change>
 
     <change>

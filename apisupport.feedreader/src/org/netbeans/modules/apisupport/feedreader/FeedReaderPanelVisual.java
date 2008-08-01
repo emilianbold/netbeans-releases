@@ -179,13 +179,13 @@ public class FeedReaderPanelVisual extends JPanel implements DocumentListener {
     
     boolean valid( WizardDescriptor wizardDescriptor ) {
         if ( projectNameTextField.getText().length() == 0 ) {
-            wizardDescriptor.putProperty( "WizardPanel_errorMessage", // NOI18N
+            wizardDescriptor.putProperty( WizardDescriptor.PROP_ERROR_MESSAGE, // NOI18N
                     NbBundle.getMessage(FeedReaderPanelVisual.class, "MSG_InvalidProjectFolderName"));
             return false; // Display name not specified
         }
         File f = FileUtil.normalizeFile(new File(projectLocationTextField.getText()).getAbsoluteFile());
         if (!f.isDirectory()) {
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", // NOI18N
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, // NOI18N
                     NbBundle.getMessage(FeedReaderPanelVisual.class, "MSG_InvalidProjectFolderPath"));
             return false;
         }
@@ -196,13 +196,13 @@ public class FeedReaderPanelVisual extends JPanel implements DocumentListener {
             projLoc = projLoc.getParentFile();
         }
         if (projLoc == null || !projLoc.canWrite()) {
-            wizardDescriptor.putProperty( "WizardPanel_errorMessage", // NOI18N
+            wizardDescriptor.putProperty( WizardDescriptor.PROP_ERROR_MESSAGE, // NOI18N
                     NbBundle.getMessage(FeedReaderPanelVisual.class, "MSG_CanNotCreateProjectFolder"));
             return false;
         }
         
         if (FileUtil.toFileObject(projLoc) == null) {
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", // NOI18N
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, // NOI18N
                     NbBundle.getMessage(FeedReaderPanelVisual.class, "MSG_InvalidProjectFolderPath"));
             return false;
         }
@@ -210,11 +210,11 @@ public class FeedReaderPanelVisual extends JPanel implements DocumentListener {
         File[] kids = destFolder.listFiles();
         if ( destFolder.exists() && kids != null && kids.length > 0) {
             // Folder exists and is not empty
-            wizardDescriptor.putProperty( "WizardPanel_errorMessage", // NOI18N
+            wizardDescriptor.putProperty( WizardDescriptor.PROP_ERROR_MESSAGE, // NOI18N
                     NbBundle.getMessage(FeedReaderPanelVisual.class, "MSG_ProjectFolderAlreadyExists"));
             return false;
         }
-        wizardDescriptor.putProperty("WizardPanel_errorMessage", ""); // NOI18N
+        wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, ""); // NOI18N
         return true;
     }
     

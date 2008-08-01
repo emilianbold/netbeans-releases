@@ -42,6 +42,7 @@
 package org.netbeans.modules.autoupdate.ui;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URL;
 import java.text.Collator;
@@ -63,7 +64,6 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
 import org.netbeans.api.autoupdate.OperationContainer;
 import org.netbeans.api.autoupdate.OperationContainer.OperationInfo;
 import org.netbeans.api.autoupdate.OperationSupport;
@@ -106,6 +106,9 @@ public class Utilities {
     
     private static final String FIRST_CLASS_MODULES = "org.netbeans.modules.autoupdate.services, org.netbeans.modules.autoupdate.ui"; // NOI18N
     private static final String PLUGIN_MANAGER_FIRST_CLASS_MODULES = "plugin.manager.first.class.modules"; // NOI18N
+    
+    private static final String ALLOW_SHOWING_BALLOON = "plugin.manager.allow.showing.balloon"; // NOI18N
+    private static final String SHOWING_BALLOON_TIMEOUT = "plugin.manager.showing.balloon.timeout"; // NOI18N
     
     private static Collection<String> first_class_modules = null;
     
@@ -258,10 +261,6 @@ public class Utilities {
         return reqs;
     }        
         
-    public static boolean isGtk () {
-        return "GTK".equals (UIManager.getLookAndFeel ().getID ()); // NOI18N
-    }
-    
     public static String getDownloadSizeAsString (int size) {
         int gbSize = size / (1024 * 1024 * 1024);
         if (gbSize > 0) {
@@ -380,7 +379,8 @@ public class Utilities {
                         runnableCode.run ();
                     } else {
                         assert estimatedTime > 0 : "Estimated time " + estimatedTime;
-                        handle.start ((int) estimatedTime * 10, estimatedTime); 
+                        final long friendlyEstimatedTime = estimatedTime + 2/*friendly constant*/;
+                        handle.start ((int) friendlyEstimatedTime * 10, friendlyEstimatedTime); 
                         handle.progress (progressDisplayName, 0);
                         final RequestProcessor.Task runnableTask = RequestProcessor.getDefault ().post (runnableCode);
                         RequestProcessor.getDefault ().post (new Runnable () {
@@ -388,7 +388,13 @@ public class Utilities {
                                 int i = 0;
                                 while (! runnableTask.isFinished ()) {
                                     try {
-                                        handle.progress (progressDisplayName, (int) (estimatedTime * 10 > i++ ? i : estimatedTime * 10));
+                                        if (friendlyEstimatedTime * 10 > i++) {
+                                            handle.progress (progressDisplayName, i);
+                                        } else {
+                                            handle.switchToIndeterminate ();
+                                            handle.progress (progressDisplayName);
+                                            return ;
+                                        }
                                         Thread.sleep (100);
                                     } catch (InterruptedException ex) {
                                         // no worries
@@ -482,6 +488,34 @@ public class Utilities {
         }
         return first_class_modules;
     }
+    
+    /** Allow show Windows-like balloon in the status line.
+     * 
+     * @return <code>true</code> if showing is allowed, <code>false</code> if don't, or <code>null</code> was not specified in <code>plugin.manager.allow.showing.balloon</code>
+     */
+    public static Boolean allowShowingBalloon () {
+        String allowShowing = System.getProperty (ALLOW_SHOWING_BALLOON);
+        return allowShowing == null ? null : Boolean.valueOf (allowShowing);
+    }
+
+    /** Gets defalut timeout for showing Windows-like balloon in the status line.
+     * The timeout can be specified in <code>plugin.manager.showing.balloon.timeout</code>. The dafault value is 30*1000.
+     * The value 0 means unlimited timeout.
+     * 
+     * @return the amout of time to show the ballon in miliseconds.
+     */
+    public static int getShowingBalloonTimeout () {
+        String timeoutS = System.getProperty (SHOWING_BALLOON_TIMEOUT);
+        int timeout = 30 * 1000;
+        try {
+            if (timeoutS != null) {
+                timeout = Integer.parseInt (timeoutS);
+            }
+        } catch (NumberFormatException nfe) {
+            logger.log (Level.INFO, nfe + " while parsing " + timeoutS + " for " + SHOWING_BALLOON_TIMEOUT);
+        }
+        return timeout;
+    }
 
     /** Do auto-check for available new plugins a while after startup.
      * 
@@ -574,6 +608,46 @@ public class Utilities {
         }
         
         return Collections.unmodifiableList (files);
+    }
+    
+    public static boolean canWriteInCluster (File cluster) {
+        assert cluster != null : "dir cannot be null";
+        assert cluster.exists () : cluster + " must exists";
+        assert cluster.isDirectory () : cluster + " is directory";
+        if (cluster == null || ! cluster.exists () || ! cluster.isDirectory ()) {
+            logger.log (Level.INFO, "Invalid cluster " + cluster);
+            return false;
+        }
+        // workaround the bug: http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4420020
+        if (cluster.canWrite () && cluster.canRead () && org.openide.util.Utilities.isWindows ()) {
+            File trackings = new File (cluster, "update_tracking"); // NOI18N
+            if (trackings.exists () && trackings.isDirectory ()) {
+                for (File f : trackings.listFiles ()) {
+                    if (f.exists () && f.isFile ()) {
+                        FileWriter fw = null;
+                        try {
+                            fw = new FileWriter (f, true);
+                        } catch (IOException ioe) {
+                            // just check of write permission
+                            logger.log (Level.FINE, f + " has no write permission", ioe);
+                            return false;
+                        } finally {
+                            try {
+                                if (fw != null) {
+                                    fw.close ();
+                                }
+                            } catch (IOException ex) {
+                                logger.log (Level.INFO, ex.getLocalizedMessage (), ex);
+                            }
+                        }
+                        logger.log (Level.FINE, f + " has write permission");
+                        return true;
+                    }
+                }
+            }
+        }
+        logger.log (Level.FINE, "Can write into " + cluster + "? " + cluster.canWrite ());
+        return cluster.canWrite ();
     }
     
     private static File getPlatformDir () {

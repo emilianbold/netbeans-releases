@@ -46,6 +46,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
 import java.beans.*;
+import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.*;
@@ -55,7 +56,6 @@ import org.netbeans.api.db.explorer.DatabaseException;
 import org.openide.*;
 import org.openide.util.NbBundle;
 import org.netbeans.lib.ddl.impl.*;
-import org.netbeans.lib.ddl.util.*;
 import org.netbeans.modules.db.explorer.DbUtilities;
 import org.netbeans.modules.db.util.*;
 import org.netbeans.modules.db.explorer.infos.*;
@@ -493,11 +493,15 @@ public class AddTableColumnDialog {
                       }
 
                       colname = colnamefield.getText();
-                      ColumnItem citem = (ColumnItem)dmodel.getData().elementAt(0);
-                      String indexName = (String)idxcombo.getSelectedItem();
+                      final ColumnItem citem = (ColumnItem)dmodel.getData().elementAt(0);
+                      final String indexName = (String)idxcombo.getSelectedItem();
                       boolean wasException;
                       try {
-                          wasException = ddl.execute(colname, citem, indexName);
+                          wasException = DbUtilities.doWithProgress(null, new Callable<Boolean>() {
+                              public Boolean call() throws Exception {
+                                  return ddl.execute(colname, citem, indexName);
+                              }
+                          });
                       } catch ( Exception e ) {
                         LOGGER.log(Level.WARNING, null, e);
                           

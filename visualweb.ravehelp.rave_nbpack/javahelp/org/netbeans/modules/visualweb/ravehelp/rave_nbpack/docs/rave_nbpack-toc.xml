@@ -32,6 +32,11 @@
 					<tocitem text="Adding a JSF Form to a JSP Page" target="framework_jsf_form" />
 					<tocitem text="Adding a JSF Data Table to a JSP Page" target="framework_jsf_datatable" />
 				</tocitem>
+                                <tocitem text="Grails">
+					<tocitem text="About Grails Framework Support" target="framework_grails_about" />
+                                        <tocitem text="Creating a New Web Application with Grails Framework Support" target="framework_grails_create" />                                        
+                                        <tocitem text="Installing a Grails Plugin into a Grails Application" target="framework_grails_install" />                                        
+				</tocitem> 
                                 <tocitem text="Spring">
 					<tocitem text="About Spring Web MVC Framework Support" target="framework_spring_about" />
                                         <tocitem text="Creating a New Web Application with Spring MVC Framework Support" target="framework_spring_create" />                                        
@@ -59,7 +64,6 @@
 					</tocitem>
 					<tocitem text="Setting Up Database Connections">
 						<tocitem text="Data Source Drag and Drop" target="projrave_ui_elements_options_visual_editor" />
-						<tocitem text="Resolving a Data Source" target="projrave_ui_elements_dialogs_resolve_data_source_db" />
 					</tocitem>
 					<tocitem text="Using the Java DB Database Server" expand="false">
 						<tocitem text="Java DB Database Tasks: Quick Reference" target="projrave_connect_data_howtodata_howtoconnectdata" />

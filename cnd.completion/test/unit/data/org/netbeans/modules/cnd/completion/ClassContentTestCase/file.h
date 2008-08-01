@@ -15,7 +15,7 @@ public:
     E() {
         //
     }
-
+    //
     virtual ~E() {
         //
     }

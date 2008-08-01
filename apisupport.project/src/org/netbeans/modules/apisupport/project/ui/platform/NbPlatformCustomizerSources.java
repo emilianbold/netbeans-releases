@@ -263,7 +263,7 @@ final class NbPlatformCustomizerSources extends JPanel {
                         getMessage("MSG_NotValidNBSrcZIP")));
             } else {
                 ModuleUISettings.getDefault().setLastUsedNbPlatformLocation(file.getParentFile().getAbsolutePath());
-                URL newUrl = Util.urlForDirOrJar(file);
+                URL newUrl = FileUtil.urlForArchiveOrDir(file);
                 model.addSourceRoot(newUrl);
                 sourceList.setSelectedValue(newUrl, true);
             }

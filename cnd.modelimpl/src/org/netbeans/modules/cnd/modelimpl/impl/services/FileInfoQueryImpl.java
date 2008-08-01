@@ -27,6 +27,9 @@
  */
 package org.netbeans.modules.cnd.modelimpl.impl.services;
 
+import antlr.Token;
+import antlr.TokenStream;
+import antlr.TokenStreamException;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
@@ -39,11 +42,15 @@ import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.apt.structure.APT;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
+import org.netbeans.modules.cnd.apt.support.APTToken;
+import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTFindMacrosWalker;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTFindUnusedBlocksWalker;
+import org.netbeans.modules.cnd.modelimpl.parser.apt.GuardBlockWalker;
 
 /**
  * implementaion of CsmFileInfoQuery
@@ -129,13 +136,20 @@ public class FileInfoQueryImpl extends CsmFileInfoQuery {
         List<CsmReference> out = Collections.<CsmReference>emptyList();
         if (file instanceof FileImpl) {
             FileImpl fileImpl = (FileImpl) file;
-
+            List<CsmReference> res = fileImpl.getLastMacroUsages();
+            if (res != null) {
+                return res;
+            }
             try {
+                long lastParsedTime = fileImpl.getLastParsedTime();
                 APTFile apt = APTDriver.getInstance().findAPT(fileImpl.getBuffer());
                 if (apt != null) {
                     APTFindMacrosWalker walker = new APTFindMacrosWalker(apt, fileImpl, fileImpl.getPreprocHandler());
                     walker.getTokenStream();
                     out = walker.getCollectedData();
+                }
+                if (lastParsedTime == fileImpl.getLastParsedTime()) {
+                    fileImpl.setLastMacroUsages(out);
                 }
             } catch (IOException ex) {
                 System.err.println("skip marking macros\nreason:" + ex.getMessage()); //NOI18N
@@ -144,5 +158,47 @@ public class FileInfoQueryImpl extends CsmFileInfoQuery {
         }
         return out;
     }
+    
+    public CsmOffsetable getGuardOffset(CsmFile file) {
+        if (file instanceof FileImpl) {
+            FileImpl fileImpl = (FileImpl) file;
+            try {
+                APTFile apt = APTDriver.getInstance().findAPT(fileImpl.getBuffer());
 
+                GuardBlockWalker guardWalker = new GuardBlockWalker(apt, fileImpl.getPreprocHandler());
+                TokenStream ts = guardWalker.getTokenStream();
+                try {
+                    Token token = ts.nextToken();
+                    while (!APTUtils.isEOF(token)) {
+                        if (!APTUtils.isCommentToken(token)) {
+                            guardWalker.clearGuard();
+                            break;
+                        }
+                        token = ts.nextToken();
+                    }
+                } catch (TokenStreamException ex) {
+                    guardWalker.clearGuard();
+                }
+
+                Token guard = guardWalker.getGuard();
+                if (guard != null) {
+                    if (guard instanceof APTToken) {
+                        APTToken aptGuard = ((APTToken) guard);
+                        return new OffsetableBase(file, aptGuard.getOffset(), aptGuard.getEndOffset());
+                    }
+                }
+            } catch (IOException ex) {
+                System.err.println("IOExeption in getGuardOffset:" + ex.getMessage()); //NOI18N
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public NativeFileItem getNativeFileItem(CsmFile file) {
+        if (file instanceof FileImpl) {
+            return ((FileImpl)file).getNativeFileItem();
+        }
+        return null;
+    }
 }

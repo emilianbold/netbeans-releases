@@ -29,18 +29,16 @@ package org.netbeans.modules.cnd.modelui.switcher;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import javax.swing.Action;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 import org.openide.util.actions.NodeAction;
 import org.openide.util.actions.Presenter;
-import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -67,24 +65,8 @@ public class CodeAssistanceSubmenuAction extends NodeAction {
             popupMenu = new LazyPopupMenu(getName(), items); 
         }
         items.clear();
-        boolean enabled = false;
-        for(Action action : addActionsFromLayers()) {
-            items.add(action);
-            enabled = true;
-        }
-        popupMenu.setEnabled(enabled);
-    }
-
-    private List<Action> addActionsFromLayers() {
-        String path = "NativeProjects/Actions"; // NOI18N
-        List<Action> popup = new ArrayList<Action>();
-        Lookup look = Lookups.forPath(path);
-        for (Object next : look.lookupAll(Object.class)) {
-            if (next instanceof Action) {
-                popup.add((Action) next);
-            }
-        }
-        return popup;
+        items.addAll(Utilities.actionsForPath("NativeProjects/Actions")); // NOI18N
+        popupMenu.setEnabled(!items.isEmpty());
     }
 
     protected void performAction(Node[] activatedNodes) {

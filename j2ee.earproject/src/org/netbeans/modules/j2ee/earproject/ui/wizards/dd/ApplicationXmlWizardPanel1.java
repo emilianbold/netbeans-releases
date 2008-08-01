@@ -102,10 +102,10 @@ public class ApplicationXmlWizardPanel1 implements WizardDescriptor.Panel {
         if (component.getSelectedLocation() == null
                 || component.getCreatedFile() == null
                 || component.getCreatedFile().canRead()) {
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(ApplicationXmlWizardPanel1.class,"ERR_FileExistsOrNoValidLocation")); //NOI18N
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(ApplicationXmlWizardPanel1.class,"ERR_FileExistsOrNoValidLocation")); //NOI18N
             return false;
         }
-        wizardDescriptor.putProperty("WizardPanel_errorMessage", " "); //NOI18N
+        wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, " "); //NOI18N
         return true;
     }
 
@@ -138,6 +138,10 @@ public class ApplicationXmlWizardPanel1 implements WizardDescriptor.Panel {
             project = (EarProject)Templates.getProject(wizardDescriptor);
             component.setProject(project);
         }
+
+        wizardDescriptor.putProperty ("NewFileWizard_Title", // NOI18N
+            NbBundle.getMessage(ApplicationXmlWizardPanel1.class, "TITLE_StdDdFile"));
+        
     }
 
     public void storeSettings(Object settings) {}

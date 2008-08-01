@@ -41,11 +41,8 @@
 package org.netbeans.modules.xml;
 
 import java.beans.*;
-
 import javax.xml.transform.Source;
-
 import org.xml.sax.*;
-
 import org.openide.awt.HtmlBrowser;
 import org.openide.filesystems.*;
 import org.openide.loaders.*;
@@ -55,14 +52,12 @@ import org.openide.cookies.*;
 import org.openide.actions.*;
 import org.openide.windows.CloneableOpenSupport;
 import org.openide.util.actions.SystemAction;
-
 import org.netbeans.modules.xml.text.TextEditorSupport;
 import org.netbeans.modules.xml.sync.*;
 import org.netbeans.modules.xml.cookies.*;
-
+import org.netbeans.modules.xml.lib.Util;
 import org.netbeans.modules.xml.text.syntax.XMLKit;
 import org.netbeans.spi.xml.cookies.*;
-import org.openide.util.lookup.Lookups;
 
 /** Object that provides main functionality for xml document.
  * Instance holds all synchronization related state information.
@@ -176,10 +171,8 @@ public final class XMLDataObject extends org.openide.loaders.XMLDataObject
 
     /** Delegate to super with possible debug messages. */
     @Override
-    public org.openide.nodes.Node.Cookie getCookie(Class klass) {       
-                
+    public org.openide.nodes.Node.Cookie getCookie(Class klass) {                       
         Node.Cookie cake = null;
-        boolean change = false;
 
         if (SaveCookie.class.equals (klass) ) {
             if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("XMLDataObject::getCookie");//, new RuntimeException ("Save cookie check")); // NOI18N
@@ -206,22 +199,6 @@ public final class XMLDataObject extends org.openide.loaders.XMLDataObject
         return cookieManager;
     }
     
-    
-/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * UPDATE section
- *   handles updating one representation by changed another one
- *
- * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- */
-
-//     // from XMLDataObjectLook
-//     public void updateTextDocument () {
-//         EditorCookie es = (EditorCookie)getCookie (EditorCookie.class);
-//         if (es != null) {
-//             es.close();
-//         }
-//     }
-
     /** TREE -> TEXT
      * Updates document by content of parsed tree based on the 
      * last document version.
@@ -289,7 +266,7 @@ public final class XMLDataObject extends org.openide.loaders.XMLDataObject
             super (obj, Children.LEAF);
 
             setIconBaseWithExtension ("org/netbeans/modules/xml/resources/xmlObject.gif"); // NOI18N
-            setShortDescription (Util.THIS.getString ("PROP_XMLDataNode_description"));
+            setShortDescription (Util.THIS.getString (XMLDataObject.class, "PROP_XMLDataNode_description"));
         }
 
         @Override

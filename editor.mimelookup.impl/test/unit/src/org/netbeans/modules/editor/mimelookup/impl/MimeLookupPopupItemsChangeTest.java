@@ -43,12 +43,16 @@ package org.netbeans.modules.editor.mimelookup.impl;
 
 import java.io.IOException;
 import java.util.List;
+import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 import junit.framework.*;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.junit.NbTestCase;
+import org.openide.actions.CopyAction;
 import org.openide.actions.CutAction;
 import org.openide.actions.FindAction;
+import org.openide.actions.PasteAction;
 import org.openide.actions.RenameAction;
 import org.openide.actions.ReplaceAction;
 import org.openide.util.Lookup;
@@ -85,14 +89,36 @@ public class MimeLookupPopupItemsChangeTest extends NbTestCase {
                    getClass().getClassLoader());
         
     }
-
+    
+    /** This method is here to simulate that it is possible to get
+     * instance of the lookup without querying any of registered InstanceProvider.
+     * They could acquire AWT lock and that can cause deadlocks.
+     */
+    private Lookup getLookup(final MimePath path) throws Exception {
+        
+        class BlockAWTLock implements Runnable {
+            Lookup l;
+            
+            public void run() {
+                l = MimeLookup.getLookup(path);
+            }
+        }
+        BlockAWTLock b = new BlockAWTLock();
+        
+        synchronized (PopupActions.LOCK) {
+            SwingUtilities.invokeAndWait(b);
+        }
+        
+        return b.l;
+    }
+    
     /** Testing Base level popup items lookup and sorting */
-    public void testDynamicChangeInPopupFolders() throws IOException{
+    public void testDynamicChangeInPopupFolders() throws Exception {
         final int resultChangedCount[] = new int[1];
         resultChangedCount[0] = 0;
 
         MimePath mp = MimePath.parse("text/x-java/text/xml/text/html");
-        Lookup lookup = MimeLookup.getLookup(mp);
+        Lookup lookup = getLookup(mp);
         Lookup.Result result = lookup.lookup(new Template(PopupActions.class));
         result.allInstances(); // remove this line if issue #60010 is fixed
         LookupListener listener = new LookupListener(){
@@ -145,7 +171,7 @@ public class MimeLookupPopupItemsChangeTest extends NbTestCase {
         //ReplaceAction was created in the uppermost folder
         // let's try it is missing in the lower lookup
         mp = MimePath.get(MimePath.get("text/x-java"), "text/xml");
-        lookup = MimeLookup.getLookup(mp);
+        lookup = getLookup(mp);
         checkPopupItemPresence(lookup, ReplaceAction.class, false);        
         checkPopupItemPresence(lookup, FindAction.class, true);
         

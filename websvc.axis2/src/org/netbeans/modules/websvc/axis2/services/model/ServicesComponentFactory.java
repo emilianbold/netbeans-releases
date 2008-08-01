@@ -48,6 +48,7 @@ public interface ServicesComponentFactory {
     ServiceGroup createServiceGroup();
     Schema createSchema();
     Parameter createParameter();
+    Operation createOperation();
     MessageReceivers createMessageReceivers();
     MessageReceiver createMessageReceiver();
 }

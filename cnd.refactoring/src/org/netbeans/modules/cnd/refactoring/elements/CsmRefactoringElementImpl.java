@@ -27,22 +27,17 @@
  */
 package org.netbeans.modules.cnd.refactoring.elements;
 
-import java.io.IOException;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.StyledDocument;
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Utilities;
+import javax.swing.text.JTextComponent;
+import org.netbeans.api.editor.EditorRegistry;
+import org.netbeans.editor.JumpList;
 import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
+import org.netbeans.modules.cnd.api.model.xref.CsmReferenceSupport;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
-import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
-import org.netbeans.modules.cnd.refactoring.support.ElementGrip;
 import org.netbeans.modules.cnd.refactoring.support.ElementGripFactory;
 import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
 import org.openide.filesystems.FileObject;
-import org.openide.text.CloneableEditorSupport;
 import org.openide.text.PositionBounds;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
@@ -95,34 +90,22 @@ public class CsmRefactoringElementImpl extends
     public PositionBounds getPosition() {
         return bounds;
     }
+
+    @Override
+    public void openInEditor() {
+        // remember last position
+        JTextComponent lastFocusedComponent = EditorRegistry.lastFocusedComponent();
+        if (lastFocusedComponent != null) {
+            JumpList.addEntry(lastFocusedComponent, lastFocusedComponent.getSelectionStart());
+        }
+        super.openInEditor();
+    }
     
     public static RefactoringElementImplementation create(CsmReference ref,boolean nameInBold) {
         CsmFile csmFile = ref.getContainingFile();
         FileObject fo = CsmUtilities.getFileObject(csmFile);
         PositionBounds bounds = CsmUtilities.createPositionBounds(ref);
-        CloneableEditorSupport ces = CsmUtilities.findCloneableEditorSupport(csmFile);
-        StyledDocument stDoc = null;
-        try {
-            stDoc = ces.openDocument();
-        } catch (IOException iOException) {
-        }
-
-        String displayText = null;
-        if (stDoc instanceof BaseDocument) {
-            BaseDocument doc = (BaseDocument) stDoc;
-            try {
-                int stOffset = ref.getStartOffset();
-                int endOffset = ref.getEndOffset();
-                int startLine = Utilities.getRowFirstNonWhite(doc, stOffset);
-                int endLine = Utilities.getRowLastNonWhite(doc, endOffset) + 1;
-                if (!nameInBold) {
-                    stOffset = -1;
-                    endOffset = -1;
-                }
-                displayText = CsmRefactoringUtils.getHtml(startLine, endLine, stOffset, endOffset, doc);
-            } catch (BadLocationException ex) {
-            }
-        }
+        String displayText = CsmReferenceSupport.getContextLineHtml(ref, nameInBold).toString();
         return new CsmRefactoringElementImpl(bounds, ref, fo, displayText);
     }
 }

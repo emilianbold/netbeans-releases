@@ -80,6 +80,9 @@ public final class ClassMemberFilters {
     
     private boolean naturalSort = false;
     
+    //issue #132883 workaround
+    boolean disableFiltering = false;
+    
     /** Creates a new instance of ClassMemberFilters */
     ClassMemberFilters( ClassMemberPanelUI ui ) {
         this.ui = ui;
@@ -99,6 +102,10 @@ public final class ClassMemberFilters {
     }
     
     public Collection<StructureItem> filter( Collection<StructureItem> original ) {
+        
+        if(disableFiltering) {
+            return original;
+        }
         
         boolean non_public = filters.isSelected(SHOW_NON_PUBLIC);
         boolean statik = filters.isSelected(SHOW_STATIC);

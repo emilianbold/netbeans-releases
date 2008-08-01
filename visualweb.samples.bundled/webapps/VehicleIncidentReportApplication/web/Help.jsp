@@ -31,34 +31,43 @@
 <jsp:root version="2.1" xmlns:f="http://java.sun.com/jsf/core" xmlns:h="http://java.sun.com/jsf/html" xmlns:jsp="http://java.sun.com/JSP/Page" xmlns:webuijsf="http://www.sun.com/webui/webuijsf">
     <jsp:directive.page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8"/>
     <f:view>
-        <webuijsf:page binding="#{Help.page1}" id="page1">
-            <webuijsf:html binding="#{Help.html1}" id="html1">
-                <webuijsf:head binding="#{Help.head1}" id="head1">
-                    <webuijsf:link binding="#{Help.link1}" id="link1" url="/resources/stylesheet.css"/>
+        <webuijsf:page id="page1">
+            <webuijsf:html id="html1">
+                <webuijsf:head id="head1">
+                    <webuijsf:link id="link1" url="/resources/stylesheet.css"/>
                 </webuijsf:head>
-                <webuijsf:body binding="#{Help.body1}" id="body1" style="-rave-layout: grid">
-                    <webuijsf:form binding="#{Help.form1}" id="form1">
+                <webuijsf:body id="body1" style="-rave-layout: grid">
+                    <webuijsf:form id="form1">
                         <div style="position: absolute; left: 0px; top: 0px">
                             <jsp:directive.include file="Header.jspf"/>
-                            <h:panelGrid binding="#{Help.content}" id="content" style="left: -; top: 240px; position: absolute; width: 800px" styleClass="contents">
+                            <h:panelGrid id="content" style="left: -; top: 240px; position: absolute; width: 800px" styleClass="contents">
                                 <f:verbatim>
                                     <h3>Vehicle Incident Report Application</h3>
                                     <h4>Pages available to all users</h4>
                                     <ul>
-                                        <li><b>Find Vehicle Page</b>: Search the database for the specified vehicle to report an incident. 
+                                        <li>
+                                            <b>Find Vehicle Page</b>: Search the database for the specified vehicle to report an incident. 
                                             Use % for wildcard search.</li>
-                                        <li><b>Login Page</b>: Login to the application to managed owned vehicles and profile. Use 1/johndoe, 
+                                        <li>
+                                            <b>Login Page</b>: Login to the application to managed owned vehicles and profile. Use 1/johndoe, 
                                             2/janedoe, 3/jackdoe, 4/jilldoe, 5/sallyable, 6/zoezack, 7/suejacobs to log in to existing accounts or create a new user.</li>
-                                        <li><b>New User Page</b>: Register as a new user.</li>
-                                        <li><b>Help Page</b> - This page </li>
+                                        <li>
+                                            <b>New User Page</b>: Register as a new user.</li>
+                                        <li>
+                                            <b>Help Page</b> - This page </li>
                                     </ul>
                                     <h4>Pages available to logged in users</h4>
                                     <ul>
-                                        <li><b>Choose Vehicle Page</b>: Select a vehicle to report an incident for.</li>
-                                        <li><b>Report Incident Page</b>: Enter the specifics of the incident</li>
-                                        <li><b>Incident Reported Page</b>: Informational indicating notification of the incident to the vehicle's owner.</li>
-                                        <li><b>Vehicles Page</b>: View the vehicles owned by logged in user. Also allow deleting an owned vehicle. </li>
-                                        <li><b>Add Vehicle Page</b>: Add a vehicle to list of owned vehicles</li>
+                                        <li>
+                                            <b>Choose Vehicle Page</b>: Select a vehicle to report an incident for.</li>
+                                        <li>
+                                            <b>Report Incident Page</b>: Enter the specifics of the incident</li>
+                                        <li>
+                                            <b>Incident Reported Page</b>: Informational indicating notification of the incident to the vehicle's owner.</li>
+                                        <li>
+                                            <b>Vehicles Page</b>: View the vehicles owned by logged in user. Also allow deleting an owned vehicle. </li>
+                                        <li>
+                                            <b>Add Vehicle Page</b>: Add a vehicle to list of owned vehicles</li>
                                     </ul>
                                     <p>The Vehicle Incident Report Application was created using NetBeans 6.0 IDE.</p>
                                 </f:verbatim>

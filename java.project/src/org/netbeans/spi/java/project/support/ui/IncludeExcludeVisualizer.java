@@ -47,12 +47,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import java.util.regex.Pattern;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.spi.project.support.ant.PathMatcher;
-import org.openide.util.NbPreferences;
 import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
 
@@ -229,19 +228,19 @@ public class IncludeExcludeVisualizer {
 
     private int scanCounter;
     private static final int GRANULARITY = 1000;
-    private void scan(File d, String prefix, PathMatcher matcher, Pattern ignoredFiles) {
+    private void scan(File d, String prefix, PathMatcher matcher) {
         String[] children = d.list();
         if (children == null) {
             return;
         }
         for (String child : children) {
-            if (ignoredFiles.matcher(child).find()) {
+            File f = new File(d, child);
+            if (!VisibilityQuery.getDefault().isVisible(f)) {
                 continue;
             }
-            File f = new File(d, child);
             boolean dir = f.isDirectory();
             if (dir) {
-                scan(f, prefix + child + "/", matcher, ignoredFiles); // NOI18N
+                scan(f, prefix + child + "/", matcher); // NOI18N
             } else {
                 synchronized (this) {
                     if (interrupted) {
@@ -262,10 +261,6 @@ public class IncludeExcludeVisualizer {
 
     private final class RecalculateTask implements Runnable {
 
-        // XXX #95974: VisibilityQuery only works on FileObject, and that would be too slow
-        // copied from: org.netbeans.modules.masterfs.GlobalVisibilityQueryImpl
-        final Pattern ignoredFiles = Pattern.compile(NbPreferences.root().node("/org/netbeans/core"). // NOI18N
-                get("IgnoredFiles", "^(CVS|SCCS|vssver.?\\.scc|#.*#|%.*%|\\.(cvsignore|svn|DS_Store)|_svn)$|~$|^\\..*$")); // NOI18N
 
         public void run() {
             File[] _roots;
@@ -282,7 +277,7 @@ public class IncludeExcludeVisualizer {
             }
             PathMatcher matcher = new PathMatcher(_includes, _excludes, null);
             for (File root : _roots) {
-                scan(root, "", matcher, ignoredFiles);
+                scan(root, "", matcher);
             }
             synchronized (IncludeExcludeVisualizer.this) {
                 busy = false;

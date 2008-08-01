@@ -42,25 +42,38 @@
 package org.netbeans.modules.debugger.jpda.ui.breakpoints;
 
 import java.awt.Dimension;
-import java.awt.Rectangle;
 
+import java.util.ResourceBundle;
+import java.util.prefs.Preferences;
 import org.netbeans.api.debugger.jpda.JPDABreakpoint;
+import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 
 /**
  * @author  jj97931
  */
 public class ActionsPanel extends javax.swing.JPanel {
 
+    // [TODO] move property name constant to JPDABreakpoint
+    private static final String DEFAULT_SUSPEND_ACTION = "default.suspend.action"; // NOI18N
+    
     private JPDABreakpoint  breakpoint;
+    private int defaultSuspendAction;
+    private int checkedSuspendAction;
+    private Preferences preferences = NbPreferences.forModule(JPDABreakpoint.class).node("debugging"); // NOI18N
 
     /** Creates new form LineBreakpointPanel */
     public ActionsPanel (JPDABreakpoint b) {
         breakpoint = b;
         initComponents ();
 
-        cbSuspend.addItem (java.util.ResourceBundle.getBundle("org/netbeans/modules/debugger/jpda/ui/breakpoints/Bundle").getString("LBL_CB_Actions_Panel_Suspend_None"));
-        cbSuspend.addItem (java.util.ResourceBundle.getBundle("org/netbeans/modules/debugger/jpda/ui/breakpoints/Bundle").getString("LBL_CB_Actions_Panel_Suspend_Current"));
-        cbSuspend.addItem (java.util.ResourceBundle.getBundle("org/netbeans/modules/debugger/jpda/ui/breakpoints/Bundle").getString("LBL_CB_Actions_Panel_Suspend_All"));
+        ResourceBundle bundle = NbBundle.getBundle(ActionsPanel.class);
+        org.openide.awt.Mnemonics.setLocalizedText(defaultActionCheckBox, bundle.getString("LBL_Use_As_Default_Option")); // NOI18N
+        defaultActionCheckBox.setToolTipText(bundle.getString("TTT_Use_As_Default_Option"));
+        
+        cbSuspend.addItem (bundle.getString("LBL_CB_Actions_Panel_Suspend_None"));
+        cbSuspend.addItem (bundle.getString("LBL_CB_Actions_Panel_Suspend_Current"));
+        cbSuspend.addItem (bundle.getString("LBL_CB_Actions_Panel_Suspend_All"));
         switch (b.getSuspend ()) {
             case JPDABreakpoint.SUSPEND_NONE:
                 cbSuspend.setSelectedIndex (0);
@@ -72,6 +85,16 @@ public class ActionsPanel extends javax.swing.JPanel {
                 cbSuspend.setSelectedIndex (2);
                 break;
         }
+        defaultSuspendAction = preferences.getInt(DEFAULT_SUSPEND_ACTION, 1);
+        checkedSuspendAction = defaultSuspendAction;
+        
+        if (defaultSuspendAction == cbSuspend.getSelectedIndex()) {
+            defaultActionCheckBox.setVisible(false);
+        } else {
+            defaultActionCheckBox.setVisible(true);
+            defaultActionCheckBox.setSelected(false);
+        }
+        
         if (b.getPrintText () != null)
             tfPrintText.setText (b.getPrintText ());
         tfPrintText.setPreferredSize(new Dimension(
@@ -93,20 +116,17 @@ public class ActionsPanel extends javax.swing.JPanel {
         jLabel1 = new javax.swing.JLabel();
         cbSuspend = new javax.swing.JComboBox();
         jLabel2 = new javax.swing.JLabel();
+        defaultActionCheckBox = new javax.swing.JCheckBox();
 
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/debugger/jpda/ui/breakpoints/Bundle"); // NOI18N
         setBorder(javax.swing.BorderFactory.createTitledBorder(bundle.getString("L_Actions_Panel_BorderTitle"))); // NOI18N
         setLayout(new java.awt.GridBagLayout());
 
         tfPrintText.setToolTipText(bundle.getString("TTT_TF_Actions_Panel_Print_Text")); // NOI18N
-        tfPrintText.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                tfPrintTextActionPerformed(evt);
-            }
-        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
@@ -129,6 +149,8 @@ public class ActionsPanel extends javax.swing.JPanel {
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
         add(cbSuspend, gridBagConstraints);
@@ -143,18 +165,36 @@ public class ActionsPanel extends javax.swing.JPanel {
         add(jLabel2, gridBagConstraints);
         jLabel2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ActionsPanel.class, "ACSD_PrintText")); // NOI18N
 
+        org.openide.awt.Mnemonics.setLocalizedText(defaultActionCheckBox, "jCheckBox1");
+        defaultActionCheckBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                defaultActionCheckBoxActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 10, 0, 10);
+        add(defaultActionCheckBox, gridBagConstraints);
+
         getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ActionsPanel.class, "ACSD_Actions")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
-    private void tfPrintTextActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_tfPrintTextActionPerformed
-    {//GEN-HEADEREND:event_tfPrintTextActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_tfPrintTextActionPerformed
+private void defaultActionCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_defaultActionCheckBoxActionPerformed
+    checkedSuspendAction = cbSuspend.getSelectedIndex();
+}//GEN-LAST:event_defaultActionCheckBoxActionPerformed
 
-    private void cbSuspendActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_cbSuspendActionPerformed
-    {//GEN-HEADEREND:event_cbSuspendActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_cbSuspendActionPerformed
+private void cbSuspendActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbSuspendActionPerformed
+    int selectedIndex = cbSuspend.getSelectedIndex();
+    if (defaultSuspendAction == selectedIndex) {
+        defaultActionCheckBox.setVisible(false);
+    } else {
+        defaultActionCheckBox.setVisible(true);
+        defaultActionCheckBox.setSelected(false);
+    }
+    checkedSuspendAction = defaultSuspendAction;
+}//GEN-LAST:event_cbSuspendActionPerformed
     
     /**
      * Called when "Ok" button is pressed.
@@ -177,11 +217,15 @@ public class ActionsPanel extends javax.swing.JPanel {
                 breakpoint.setSuspend (JPDABreakpoint.SUSPEND_ALL);
                 break;
         }
+        if (checkedSuspendAction != defaultSuspendAction) {
+            preferences.putInt(DEFAULT_SUSPEND_ACTION, checkedSuspendAction);
+        }
     }
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox cbSuspend;
+    private javax.swing.JCheckBox defaultActionCheckBox;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JTextField tfPrintText;

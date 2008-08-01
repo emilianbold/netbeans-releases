@@ -29,6 +29,7 @@ public final class NewFlatfileDatabaseWizardAction extends CallableSystemAction 
     public static final String DEFAULT_FLATFILE_JDBC_URL_PREFIX = "jdbc:axiondb:";
     private static transient final Logger mLogger = Logger.getLogger(NewFlatfileDatabaseWizardAction.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
+    public String nbBundle6 = mLoc.t("BUND773: Create Mashup Database...");
     public String nbBundle1 = mLoc.t("BUND265: Create Mashup Database");
     public void performAction() {
         WizardDescriptor wizardDescriptor = new WizardDescriptor(getPanels());
@@ -72,15 +73,15 @@ public final class NewFlatfileDatabaseWizardAction extends CallableSystemAction 
                 if (c instanceof JComponent) { // assume Swing components
                     JComponent jc = (JComponent) c;
                     // Sets step number of a component
-                    jc.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(i));
+                    jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer(i));
                     // Sets steps names for a panel
-                    jc.putClientProperty("WizardPanel_contentData", steps);
+                    jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps);
                     // Turn on subtitle creation on each step
-                    jc.putClientProperty("WizardPanel_autoWizardStyle", Boolean.TRUE);
+                    jc.putClientProperty(WizardDescriptor.PROP_AUTO_WIZARD_STYLE, Boolean.TRUE);
                     // Show steps on the left side with the image on the background
-                    jc.putClientProperty("WizardPanel_contentDisplayed", Boolean.TRUE);
+                    jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DISPLAYED, Boolean.TRUE);
                     // Turn on numbering of all steps
-                    jc.putClientProperty("WizardPanel_contentNumbered", Boolean.TRUE);
+                    jc.putClientProperty(WizardDescriptor.PROP_CONTENT_NUMBERED, Boolean.TRUE);
                 }
             }
         }
@@ -88,7 +89,7 @@ public final class NewFlatfileDatabaseWizardAction extends CallableSystemAction 
     }
 
     public String getName() {
-        return nbBundle1.substring(15);
+        return nbBundle6.substring(15);
     }
 
     @Override
@@ -127,13 +128,15 @@ public final class NewFlatfileDatabaseWizardAction extends CallableSystemAction 
     private boolean handle(String name) {
         String location = null;
         if (MashupTableWizardIterator.IS_PROJECT_CALL) {
-            location = ETLEditorSupport.PRJ_PATH + "\\nbproject\\private\\databases";
+            location = ETLEditorSupport.PRJ_PATH + File.separator + "nbproject" +
+                    File.separator + "private" + File.separator + "databases";
         } else {
             location = getDefaultWorkingFolder();
+			name = name + "_" + System.currentTimeMillis();
         }       
         MashupTableWizardIterator.IS_PROJECT_CALL = false;
         boolean status = false;
-        String url = DEFAULT_FLATFILE_JDBC_URL_PREFIX + name + ":" + location + "\\" + name;
+        String url = DEFAULT_FLATFILE_JDBC_URL_PREFIX + name + ":" + location + File.separator + name;
         File f = new File(location + name);
         char[] ch = name.toCharArray();
         if (ch == null) {

@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.project.ui;
 
 import java.beans.PropertyChangeEvent;
@@ -58,53 +57,53 @@ import org.openide.loaders.TemplateWizard;
 import org.openide.util.NbBundle;
 
 public final class NewFileWizard extends TemplateWizard {
-        
+
     private Project currP;
     private MessageFormat format;
     // private String[] recommendedTypes;
-    
-    private Project getCurrentProject () {
+    private Project getCurrentProject() {
         return currP;
     }
 
-    private void setCurrentProject (Project p) {
+    private void setCurrentProject(Project p) {
         this.currP = p;
     }
 
-    public NewFileWizard( Project project /*, String recommendedTypes[] */ ) {
-        setCurrentProject (project);
-        putProperty( ProjectChooserFactory.WIZARD_KEY_PROJECT, getCurrentProject () );
-        format = new MessageFormat (NbBundle.getBundle (NewFileWizard.class).getString ("LBL_NewFileWizard_MessageFormat"));
+    public NewFileWizard(Project project /*, String recommendedTypes[] */) {
+        setCurrentProject(project);
+        putProperty(ProjectChooserFactory.WIZARD_KEY_PROJECT, getCurrentProject());
+        format = new MessageFormat(NbBundle.getBundle(NewFileWizard.class).getString("LBL_NewFileWizard_MessageFormat"));
         // this.recommendedTypes = recommendedTypes;        
         //setTitleFormat( new MessageFormat( "{0}") );
-        addPropertyChangeListener (new PropertyChangeListener () {
-            public void propertyChange (PropertyChangeEvent evt) {
+        addPropertyChangeListener(new PropertyChangeListener() {
+
+            public void propertyChange(PropertyChangeEvent evt) {
                 // check ProjectChooserFactory.WIZARD_KEY_PROJECT property
-                if (ProjectChooserFactory.WIZARD_KEY_PROJECT.equals (evt.getPropertyName ())) {
-                    Project newProject = (Project)evt.getNewValue ();
-                    if (!getCurrentProject ().equals (newProject)) {
+                if (ProjectChooserFactory.WIZARD_KEY_PROJECT.equals(evt.getPropertyName())) {
+                    Project newProject = (Project) evt.getNewValue();
+                    if (!getCurrentProject().equals(newProject)) {
                         // set the new project and force reload panels in wizard
-                        setCurrentProject (newProject);
+                        setCurrentProject(newProject);
                         try {
                             //reload (DataObject.find (Templates.getTemplate (NewFileWizard.this)));
                             // bugfix #44481, check if the template is null
-                            if (Templates.getTemplate (NewFileWizard.this) != null) {
-                                DataObject obj = DataObject.find (Templates.getTemplate (NewFileWizard.this));
+                            if (Templates.getTemplate(NewFileWizard.this) != null) {
+                                DataObject obj = DataObject.find(Templates.getTemplate(NewFileWizard.this));
 
                                 // read the attributes declared in module's layer
-                                Object unknownIterator = obj.getPrimaryFile ().getAttribute ("instantiatingIterator"); //NOI18N
+                                Object unknownIterator = obj.getPrimaryFile().getAttribute("instantiatingIterator"); //NOI18N
                                 if (unknownIterator == null) {
-                                    unknownIterator = obj.getPrimaryFile ().getAttribute ("templateWizardIterator"); //NOI18N
+                                    unknownIterator = obj.getPrimaryFile().getAttribute("templateWizardIterator"); //NOI18N
                                 }
                                 // set default NewFileIterator if no attribute is set
                                 if (unknownIterator == null) {
                                     try {
-                                        obj.getPrimaryFile ().setAttribute ("instantiatingIterator", NewFileIterator.genericFileIterator ()); //NOI18N
+                                        obj.getPrimaryFile().setAttribute("instantiatingIterator", NewFileIterator.genericFileIterator()); //NOI18N
                                     } catch (java.io.IOException e) {
                                         // can ignore it because a iterator will created though
                                     }
                                 }
-                                Hacks.reloadPanelsInWizard (NewFileWizard.this, obj);
+                                Hacks.reloadPanelsInWizard(NewFileWizard.this, obj);
                             }
                         } catch (DataObjectNotFoundException ex) {
                             ex.printStackTrace();
@@ -114,41 +113,42 @@ public final class NewFileWizard extends TemplateWizard {
             }
         });
     }
-    
-    public void updateState () {
-        super.updateState ();
-        String substitute = (String)getProperty ("NewFileWizard_Title"); // NOI18N
+
+    public void updateState() {
+        super.updateState();
+        String substitute = (String) getProperty("NewFileWizard_Title"); // NOI18N
         String title;
         if (substitute == null) {
-            title = NbBundle.getBundle (NewFileWizard.class).getString ("LBL_NewFileWizard_Title"); // NOI18N
+            title = NbBundle.getBundle(NewFileWizard.class).getString("LBL_NewFileWizard_Title"); // NOI18N
         } else {
-            Object[] args = new Object[] {
-                    NbBundle.getBundle (NewFileWizard.class).getString ("LBL_NewFileWizard_Subtitle"), // NOI18N
-                    substitute};
-            title = format.format (args);
+            Object[] args = new Object[]{
+                NbBundle.getBundle(NewFileWizard.class).getString("LBL_NewFileWizard_Subtitle"), // NOI18N
+                substitute
+            };
+            title = format.format(args);
         }
-        super.setTitle (title);
+        super.setTitle(title);
     }
-    
-    public void setTitle (String ignore) {}
-    
+
+    public void setTitle(String ignore) {
+    }
+
     protected WizardDescriptor.Panel<WizardDescriptor> createTemplateChooser() {
-        WizardDescriptor.Panel<WizardDescriptor> panel = new TemplateChooserPanel( getCurrentProject () /*, recommendedTypes */ );
-        JComponent jc = (JComponent)panel.getComponent ();
-        jc.getAccessibleContext ().setAccessibleName (NbBundle.getBundle (NewProjectWizard.class).getString ("ACSN_NewFileWizard")); // NOI18N
-        jc.getAccessibleContext ().setAccessibleDescription (NbBundle.getBundle (NewProjectWizard.class).getString ("ACSD_NewFileWizard")); // NOI18N
+        WizardDescriptor.Panel<WizardDescriptor> panel = new TemplateChooserPanel(getCurrentProject() /*, recommendedTypes */);
+        JComponent jc = (JComponent) panel.getComponent();
+        jc.getAccessibleContext().setAccessibleName(NbBundle.getBundle(NewProjectWizard.class).getString("ACSN_NewFileWizard")); // NOI18N
+        jc.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(NewProjectWizard.class).getString("ACSD_NewFileWizard")); // NOI18N
         return panel;
-    }        
+    }
 
     protected WizardDescriptor.Panel<WizardDescriptor> createTargetChooser() {
-        Sources c = ProjectUtils.getSources(getCurrentProject ());
-        return Templates.createSimpleTargetChooser(getCurrentProject (), c.getSourceGroups(Sources.TYPE_GENERIC));
+        Sources c = ProjectUtils.getSources(getCurrentProject());
+        return Templates.createSimpleTargetChooser(getCurrentProject(), c.getSourceGroups(Sources.TYPE_GENERIC));
     }
-    
 }
-
+ 
 /** Old impl might be usefull later in Wizards API
-    
+
 ///** Wizard for creating new files in a project.
 // *
 // * @author  Jesse Glick, Petr Hrebejk

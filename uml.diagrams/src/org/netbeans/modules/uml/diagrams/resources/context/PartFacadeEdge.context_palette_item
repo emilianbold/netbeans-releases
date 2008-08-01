@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<palette_item version="1.0">
+
+  <icon16 urlvalue="nbres:/org/netbeans/modules/uml/resources/images/connector.png" />
+  <icon32 urlvalue="nbres:/org/netbeans/modules/uml/resources/images/connector-32.png" />
+
+  <description localizing-bundle="org.netbeans.modules.uml.diagrams.resources.palette.Bundle"
+               display-name-key="NAME_Role_Binding" 
+               tooltip-key="HINT_Role_Binding" />
+</palette_item>

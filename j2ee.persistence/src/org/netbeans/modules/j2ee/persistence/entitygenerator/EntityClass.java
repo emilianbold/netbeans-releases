@@ -43,6 +43,7 @@ package org.netbeans.modules.j2ee.persistence.entitygenerator;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -52,11 +53,13 @@ import org.openide.filesystems.FileObject;
  * @author Chris Webster, Martin Adamek, Andrei Badea
  */
 public class EntityClass {
-    
+    private final String catalogName;
+    private final String schemaName;
     private final String tableName;
     private final FileObject rootFolder;
     private final String className;
     private final String packageName;
+    private final Set<List<String>> uniqueConstraints;
     
     private List<RelationshipRole> roles;
     private List<EntityMember> fields;
@@ -64,15 +67,33 @@ public class EntityClass {
     private String pkFieldName;
     private CMPMappingModel mappingModel;
     
-    public EntityClass(String tableName, FileObject rootFolder, String packageName, String className) {
+    private boolean forTable = true;  // false means forView
+    
+    public EntityClass( String catalogName, String schemaName, String tableName, 
+            FileObject rootFolder, String packageName, String className, Set<List<String>> uniqueConstraints) {
+        this.catalogName = catalogName;
+        this.schemaName = schemaName;
         this.tableName = tableName;
         this.rootFolder = rootFolder;
         this.packageName = packageName;
         this.className = className;
+        this.uniqueConstraints = uniqueConstraints;
         
         roles = Collections.<RelationshipRole>emptyList();
         fields = new ArrayList<EntityMember>();
         mappingModel = new CMPMappingModel();
+    }
+    
+    public boolean isForTable() {
+        return this.forTable;
+    }
+    
+    public void setIsForTable( boolean forTable) {
+        this.forTable = forTable;
+    }
+    
+    public Set<List<String>> getUniqueConstraints() {
+        return this.uniqueConstraints;
     }
     
     public void addRole(RelationshipRole role) {
@@ -94,6 +115,7 @@ public class EntityClass {
         this.fields = fields;
     }
     
+    @Override
     public String toString() {
         String cmpFields = ""; // NOI18N
         for (EntityMember entityMember : getFields()) {
@@ -111,6 +133,14 @@ public class EntityClass {
         return packageName;
     }
     
+    public String getCatalogName() {
+        return catalogName;
+    }
+    
+    public String getSchemaName() {
+        return schemaName;
+    }
+    
     public String getTableName() {
         return tableName;
     }
@@ -118,7 +148,7 @@ public class EntityClass {
     public String getClassName() {
         return className;
     }
-    
+
     public FileObject getPackageFileObject() {
         String relative = packageName.replace('.', '/');
         return rootFolder.getFileObject(relative);

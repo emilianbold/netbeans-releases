@@ -71,4 +71,14 @@ made subject to such option by the copyright holder.
          </xsd:sequence>
      </xsd:complexType>
 
+    <xsd:element name="camera">
+        <xsd:complexType>
+             <xsd:sequence>
+                 <xsd:element name="body" type="nikon:body"/>
+                 <xsd:element name="lens" type="nikon:lens"/>
+                 <xsd:element name="manualAdapter" type="nikon:manualAdapter"/>
+             </xsd:sequence>
+         </xsd:complexType>
+     </xsd:element>     
+
 </xsd:schema>

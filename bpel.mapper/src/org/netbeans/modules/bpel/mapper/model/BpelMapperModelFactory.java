@@ -27,9 +27,11 @@ import java.util.List;
 import java.util.Set;
 import javax.swing.tree.TreePath;
 import org.netbeans.modules.bpel.mapper.model.CopyToProcessor.CopyToForm;
+import org.netbeans.modules.bpel.mapper.model.EditorExtensionProcessor.BpelEditorExtensions;
 import org.netbeans.modules.bpel.mapper.predicates.PredicateFinderVisitor;
 import org.netbeans.modules.bpel.mapper.predicates.PredicateManager;
 import org.netbeans.modules.bpel.mapper.multiview.BpelDesignContext;
+import org.netbeans.modules.bpel.mapper.multiview.DesignContextControllerImpl2;
 import org.netbeans.modules.bpel.mapper.predicates.SpecialStepManager;
 import org.netbeans.modules.bpel.mapper.tree.MapperSwingTreeModel;
 import org.netbeans.modules.bpel.mapper.tree.models.ConditionValueTreeModel;
@@ -40,12 +42,10 @@ import org.netbeans.modules.bpel.mapper.tree.models.PartnerLinkTreeExtModel;
 import org.netbeans.modules.bpel.mapper.tree.models.SimpleTreeInfoProvider;
 import org.netbeans.modules.bpel.mapper.tree.models.VariableTreeModel;
 import org.netbeans.modules.bpel.mapper.tree.search.ResultNodeFinder;
-import org.netbeans.modules.bpel.mapper.tree.spi.MapperModelFactory;
-import org.netbeans.modules.bpel.mapper.tree.spi.MapperTcContext;
-import org.netbeans.modules.bpel.mapper.tree.spi.MapperTreeModel;
-import org.netbeans.modules.bpel.mapper.tree.spi.TreeItemFinder;
+import org.netbeans.modules.soa.ui.tree.impl.TreeFinderProcessor;
+import org.netbeans.modules.bpel.mapper.model.MapperModelFactory;
+import org.netbeans.modules.bpel.mapper.model.MapperTcContext;
 import org.netbeans.modules.bpel.model.api.Assign;
-import org.netbeans.modules.bpel.model.api.AssignChild;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.CompletionCondition;
 import org.netbeans.modules.bpel.model.api.ConditionHolder;
@@ -65,21 +65,26 @@ import org.netbeans.modules.bpel.model.api.TimeEventHolder;
 import org.netbeans.modules.bpel.model.api.To;
 import org.netbeans.modules.bpel.model.api.Wait;
 import org.netbeans.modules.bpel.model.api.While;
-import org.netbeans.modules.bpel.model.api.support.XPathModelFactory;
+import org.netbeans.modules.bpel.model.api.support.BpelXPathModelFactory;
+import org.netbeans.modules.bpel.model.ext.editor.api.Cast;
+import org.netbeans.modules.bpel.model.ext.editor.api.PseudoComp;
+import org.netbeans.modules.soa.mappercore.Mapper;
 import org.netbeans.modules.soa.mappercore.model.Graph;
 import org.netbeans.modules.soa.mappercore.model.MapperModel;
 import org.netbeans.modules.soa.mappercore.utils.GraphLayout;
+import org.netbeans.modules.soa.ui.tree.SoaTreeModel;
+import org.netbeans.modules.soa.ui.tree.TreeItemFinder;
 import org.netbeans.modules.xml.xpath.ext.XPathException;
 import org.netbeans.modules.xml.xpath.ext.XPathExpression;
 import org.netbeans.modules.xml.xpath.ext.XPathModel;
+import org.netbeans.modules.xml.xpath.ext.schema.CachingSchemaSearchVisitor;
 
 /**
- * Implementaiton of the MapperModelFactory for the BPEL mapper.
+ * Implementation of the MapperModelFactory for the BPEL mapper.
  * 
  * @author nk160297
  */
 public class BpelMapperModelFactory implements MapperModelFactory {
-
     private static Set<Class> mMappableObjects = new HashSet<Class>();
     
     static {
@@ -97,7 +102,7 @@ public class BpelMapperModelFactory implements MapperModelFactory {
         //
         mMappableObjects.add(ForEach.class);
     }
-   
+            
     public static boolean needShowMapper(Object source) {
         if (source instanceof BpelEntity) {
             Class bpelClass = ((BpelEntity)source).getElementType();
@@ -115,41 +120,71 @@ public class BpelMapperModelFactory implements MapperModelFactory {
 
     protected ArrayList<PreprocessedGraphLocation> mPreprGraphLocationList = 
             new ArrayList<PreprocessedGraphLocation>();
+  
+    protected EditorExtensionProcessor editorExtProcessor;
     
-    public BpelMapperModelFactory() {
+    protected CachingSchemaSearchVisitor mCachingSchemaSearchVisitor;
+
+    protected MapperTcContext currentMapperTcContext;
+    protected BpelDesignContext currentBpelDesignContext;   
+    
+    public BpelMapperModelFactory(MapperTcContext mapperTcContext, BpelDesignContext context) {
+        currentMapperTcContext = mapperTcContext;
+        currentBpelDesignContext = context;
+    }
+
+    public BpelDesignContext getCurrentBpelDesignContext() {
+        return currentBpelDesignContext;
+    }
+
+    public MapperTcContext getCurrentMapperTcContext() {
+        return currentMapperTcContext;
+    }
+
+    public MapperModel constructModel() {
+        mCachingSchemaSearchVisitor = new CachingSchemaSearchVisitor();
+        try {
+            return constructModelImpl();
+        } finally {
+            mCachingSchemaSearchVisitor = null;
+        }
     }
     
-    public MapperModel constructModel(
-            MapperTcContext mapperTcContext, BpelDesignContext context) {
+    public MapperModel constructModelImpl () {
         //
-        BpelChangeProcessor changeProcessor = 
-                new BpelChangeProcessor(new BpelModelUpdater(mapperTcContext));
-        mapperTcContext.getDesignContextController().
-                setBpelModelUpdateSource(changeProcessor);
+        Mapper mapper = currentMapperTcContext.getMapper();
+        BpelChangeProcessor changeProcessor = new BpelChangeProcessor(
+                mapper, new BpelModelUpdater(currentMapperTcContext));
         //
-        BpelEntity bpelEntity = context.getContextEntity();
+        BpelEntity bpelEntity = currentBpelDesignContext.getContextEntity();
         if (bpelEntity instanceof Assign) {
             Assign assign = (Assign)bpelEntity;
             //
             EmptyTreeModel sourceModel = new EmptyTreeModel();
-            VariableTreeModel sourceVariableModel = new VariableTreeModel(context);
+            VariableTreeModel sourceVariableModel = 
+                    new VariableTreeModel(currentBpelDesignContext, true, mapper);
             sourceModel.addExtensionModel(sourceVariableModel);
             PartnerLinkTreeExtModel pLinkExtModel = 
                     new PartnerLinkTreeExtModel(assign, true);
-            //sourceModel.addExtensionModel(pLinkExtModel);   [Issue 125124]
+            sourceModel.addExtensionModel(pLinkExtModel);
             //
             EmptyTreeModel targetModel = new EmptyTreeModel();
-            VariableTreeModel targetVariableModel = new VariableTreeModel(context);
+            VariableTreeModel targetVariableModel = 
+                    new VariableTreeModel(currentBpelDesignContext, false, mapper);
             targetModel.addExtensionModel(targetVariableModel);
             pLinkExtModel = new PartnerLinkTreeExtModel(assign, false);
             targetModel.addExtensionModel(pLinkExtModel);
             //
             BpelMapperModel newMapperModel = new BpelMapperModel(
-                    mapperTcContext, changeProcessor, sourceModel, targetModel);
-            for (AssignChild assignChild : assign.getAssignChildren()) {
-                if (assignChild instanceof Copy) {
-                    addCopyGraph((Copy)assignChild, newMapperModel);
-                }
+                    currentMapperTcContext, changeProcessor, sourceModel, targetModel);
+            //
+            editorExtProcessor = new EditorExtensionProcessor(newMapperModel, currentBpelDesignContext);
+            editorExtProcessor.processVariables();
+            for (Copy copy : assign.getChildren(Copy.class)) {
+                BpelEditorExtensions extList = editorExtProcessor.getExtList(copy);
+                editorExtProcessor.registerCasts(extList);
+                editorExtProcessor.registerPseudoComps(extList);
+                addCopyGraph(copy, newMapperModel, extList);
             }
             //
             postProcess(newMapperModel);
@@ -162,25 +197,36 @@ public class BpelMapperModelFactory implements MapperModelFactory {
             TimeEventHolder timeEH = (TimeEventHolder)bpelEntity;
             //
             EmptyTreeModel sourceModel = new EmptyTreeModel();
-            VariableTreeModel variableModel = new VariableTreeModel(context);
+            VariableTreeModel variableModel = 
+                    new VariableTreeModel(currentBpelDesignContext, true, mapper);
             sourceModel.addExtensionModel(variableModel);
             //
             DateValueTreeModel targetTreeModel = new DateValueTreeModel(timeEH);
             SimpleTreeInfoProvider targetIP = new SimpleTreeInfoProvider();
             //
             BpelMapperModel newMapperModel = new BpelMapperModel(
-                    mapperTcContext, changeProcessor, sourceModel, targetTreeModel);
+                    currentMapperTcContext, changeProcessor, sourceModel, targetTreeModel);
+            editorExtProcessor = new EditorExtensionProcessor(newMapperModel, currentBpelDesignContext);
+            editorExtProcessor.processVariables();
             //
             TimeEvent timeEvent = timeEH.getTimeEvent();
             if (timeEvent != null) {
                 if (timeEvent instanceof For) {
-                    Expression expr = (For)timeEvent;
+                    For expr = (For)timeEvent;
+                    BpelEditorExtensions extList = editorExtProcessor.getExtList(expr);
+                    editorExtProcessor.registerCasts(extList);
+                    editorExtProcessor.registerPseudoComps(extList);
                     addExpressionGraph(expr, newMapperModel, 
-                            DateValueTreeModel.DURATION_CONDITION, timeEH);
+                            DateValueTreeModel.DURATION_CONDITION, 
+                            timeEH, extList);
                 } else if (timeEvent instanceof DeadlineExpression) {
-                    Expression expr = (DeadlineExpression)timeEvent;
+                    DeadlineExpression expr = (DeadlineExpression)timeEvent;
+                    BpelEditorExtensions extList = editorExtProcessor.getExtList(bpelEntity);
+                    editorExtProcessor.registerCasts(extList);
+                    editorExtProcessor.registerPseudoComps(extList);
                     addExpressionGraph(expr, newMapperModel, 
-                            DateValueTreeModel.DEADLINE_CONDITION, timeEH);
+                            DateValueTreeModel.DEADLINE_CONDITION, 
+                            timeEH, extList);
                 }
             }
             //
@@ -193,21 +239,28 @@ public class BpelMapperModelFactory implements MapperModelFactory {
                 bpelEntity instanceof RepeatUntil) {
             //
             EmptyTreeModel sourceModel = new EmptyTreeModel();
-            VariableTreeModel variableModel = new VariableTreeModel(context);
+            VariableTreeModel variableModel = 
+                    new VariableTreeModel(currentBpelDesignContext, true, mapper);
             sourceModel.addExtensionModel(variableModel);
             //
             ConditionValueTreeModel targetTreeModel = 
                     new ConditionValueTreeModel(bpelEntity);
             //
             BpelMapperModel newMapperModel = new BpelMapperModel(
-                    mapperTcContext, changeProcessor, sourceModel, targetTreeModel);
+                    currentMapperTcContext, changeProcessor, sourceModel, targetTreeModel);
+            editorExtProcessor = new EditorExtensionProcessor(newMapperModel, currentBpelDesignContext);
+            editorExtProcessor.processVariables();
             //
             // Add Graphs
             assert bpelEntity instanceof ConditionHolder;
             Expression expr = ((ConditionHolder)bpelEntity).getCondition();
             if (expr != null) {
+                BpelEditorExtensions extList = editorExtProcessor.getExtList(bpelEntity);
+                editorExtProcessor.registerCasts(extList);
+                editorExtProcessor.registerPseudoComps(extList);
                 addExpressionGraph(expr, newMapperModel, 
-                        ConditionValueTreeModel.BOOLEAN_CONDITION, bpelEntity);
+                        ConditionValueTreeModel.BOOLEAN_CONDITION, 
+                        bpelEntity, extList);
             }
             //
             postProcess(newMapperModel);
@@ -217,26 +270,34 @@ public class BpelMapperModelFactory implements MapperModelFactory {
             ForEach forEach = (ForEach)bpelEntity;
             //
             EmptyTreeModel sourceModel = new EmptyTreeModel();
-            VariableTreeModel variableModel = new VariableTreeModel(context);
+            VariableTreeModel variableModel = 
+                    new VariableTreeModel(currentBpelDesignContext, true, mapper);
             sourceModel.addExtensionModel(variableModel);
             //
             ForEachConditionsTreeModel targetTreeModel = 
                     new ForEachConditionsTreeModel(forEach);
             //
             BpelMapperModel newMapperModel = new BpelMapperModel(
-                    mapperTcContext, changeProcessor, sourceModel, targetTreeModel);
+                    currentMapperTcContext, changeProcessor, sourceModel, targetTreeModel);
+            editorExtProcessor = new EditorExtensionProcessor(newMapperModel, currentBpelDesignContext);
+            editorExtProcessor.processVariables();
             //
             // Add Graphs
             Expression expr = forEach.getStartCounterValue();
+            BpelEditorExtensions extList = editorExtProcessor.getExtList(bpelEntity);
+            editorExtProcessor.registerCasts(extList);
+            editorExtProcessor.registerPseudoComps(extList);
             if (expr != null) {
                 addExpressionGraph(expr, newMapperModel, 
-                        ForEachConditionsTreeModel.START_VALUE, forEach);
+                        ForEachConditionsTreeModel.START_VALUE, 
+                        forEach, extList);
             }
             //
             expr = forEach.getFinalCounterValue();
             if (expr != null) {
                 addExpressionGraph(expr, newMapperModel, 
-                        ForEachConditionsTreeModel.FINAL_VALUE, forEach);
+                        ForEachConditionsTreeModel.FINAL_VALUE, 
+                        forEach, extList);
             }
             //
             CompletionCondition cc = forEach.getCompletionCondition();
@@ -245,7 +306,7 @@ public class BpelMapperModelFactory implements MapperModelFactory {
                 if (expr != null) {
                     addExpressionGraph(expr, newMapperModel, 
                             ForEachConditionsTreeModel.COMPLETION_CONDITION, 
-                            forEach);
+                            forEach, extList);
                 }
             }
             //
@@ -257,7 +318,12 @@ public class BpelMapperModelFactory implements MapperModelFactory {
         return null;
     }
 
-    private void addCopyGraph(Copy copy, BpelMapperModel newMapperModel) {
+    public CachingSchemaSearchVisitor getCachingSchemaSearchVisitor() {
+        return mCachingSchemaSearchVisitor;
+    }
+    
+    private void addCopyGraph(Copy copy, BpelMapperModel newMapperModel, 
+            BpelEditorExtensions extList) {
         //
         From copyFrom = copy.getFrom();
         if (copyFrom == null) {
@@ -266,9 +332,9 @@ public class BpelMapperModelFactory implements MapperModelFactory {
         //
         Graph newGraph = new Graph(newMapperModel, copy);
         //
-        CopyFromProcessor fromProcessor = new CopyFromProcessor(this, copy);
+        FromProcessor fromProcessor = new FromProcessor(this, copy);
         MapperSwingTreeModel leftTreeModel = newMapperModel.getLeftTreeModel();
-        newGraph = fromProcessor.populateGraph(newGraph, leftTreeModel);
+        newGraph = fromProcessor.populateGraph(newGraph, leftTreeModel, extList);
         if (newGraph == null) {
             return;
         }
@@ -278,15 +344,24 @@ public class BpelMapperModelFactory implements MapperModelFactory {
         CopyToForm form = CopyToProcessor.getCopyToForm(copyTo);
         XPathExpression toExpr = null;
         if (form == CopyToForm.EXPRESSION) {
-            toExpr = CopyToProcessor.constructExpression(copy, copyTo);
+            toExpr = CopyToProcessor.constructExpression(copy, copyTo, 
+                    extList.getToCasts(), extList.getToPseudoComps(), this);
             //
             // Populate predicate manager  
             if (toExpr != null) {
                 BpelMapperModelFactory.collectPredicates(toExpr, rightTreeModel);
             }
         }
-        ArrayList<TreeItemFinder> toNodeFinderList = CopyToProcessor.
-                constructFindersList(form, copy, copyTo, toExpr);
+        ArrayList<TreeItemFinder> toNodeFinderList = 
+                CopyToProcessor.constructFindersList(form, copy, copyTo, toExpr, 
+                extList.getToCasts(), extList.getToPseudoComps(), this);
+        
+        if (toNodeFinderList.isEmpty() && (currentBpelDesignContext != null)) {
+            // add warning message about wrong "toExpr"
+            DesignContextControllerImpl2.addErrMessage(
+                currentBpelDesignContext.getValidationErrMsgBuffer(), 
+                toExpr.getExpressionString(), "to");
+        }
         //
         PreprocessedGraphLocation graphLocation = 
                 new PreprocessedGraphLocation(newGraph, toNodeFinderList);
@@ -296,13 +371,14 @@ public class BpelMapperModelFactory implements MapperModelFactory {
     private void addExpressionGraph(Expression expr, 
             BpelMapperModel newMapperModel, 
             String targetNodeName, 
-            BpelEntity contextEntity) {
+            BpelEntity contextEntity, 
+            BpelEditorExtensions extList) {
         assert expr != null && newMapperModel != null && targetNodeName != null;
         //
         Graph newGraph = new Graph(newMapperModel);
         //
         MapperSwingTreeModel leftTreeModel = newMapperModel.getLeftTreeModel();
-        populateGraph(newGraph, leftTreeModel, contextEntity, expr);
+        populateGraph(newGraph, leftTreeModel, contextEntity, expr, extList);
         //
         List<TreeItemFinder> finderList = Collections.singletonList(
                 (TreeItemFinder)new ResultNodeFinder(targetNodeName));
@@ -358,21 +434,23 @@ public class BpelMapperModelFactory implements MapperModelFactory {
     
     public void populateGraph(Graph graph, 
             MapperSwingTreeModel leftTreeModel, 
-            BpelEntity contextEntity, Expression expr) {
+            BpelEntity contextEntity, Expression expr, 
+            BpelEditorExtensions extList) {
         //
         String exprLang = expr.getExpressionLanguage();
         String exprText = expr.getContent();
         boolean isXPathExpr = (exprLang == null || exprLang.length() == 0 ||
-                XPathModelFactory.DEFAULT_EXPR_LANGUAGE.equals(exprLang));
+                BpelXPathModelFactory.DEFAULT_EXPR_LANGUAGE.equals(exprLang));
         //
         ArrayList<XPathExpression> exprList = new ArrayList<XPathExpression>();
         boolean hasConnectedExpr = exprText != null && !exprText.trim()
-                .startsWith(XPathModelFactory.XPATH_EXPR_DELIMITER);
+                .startsWith(BpelXPathModelFactory.XPATH_EXPR_DELIMITER);
         if (isXPathExpr && exprText != null && exprText.length() != 0) {
-            String[] partsArr = XPathModelFactory.split(exprText);
+            String[] partsArr = BpelXPathModelFactory.split(exprText);
             for (String anExprText : partsArr) {
-                XPathExpression newXPathExpr = 
-                        parseExpression(contextEntity, anExprText);
+                XPathExpression newXPathExpr = parseExpression(
+                        contextEntity, anExprText, 
+                        extList.getFromCasts(), extList.getFromPseudoComps());
                 if (newXPathExpr != null) {
                     exprList.add(newXPathExpr);
                 }
@@ -396,12 +474,18 @@ public class BpelMapperModelFactory implements MapperModelFactory {
         }
     }
     
-    private XPathExpression parseExpression(
-            BpelEntity contextEntity, String exprText) {
+    private XPathExpression parseExpression(BpelEntity contextEntity, 
+            String exprText, List<Cast> castList, List<PseudoComp> pseudoComps) {
         //
         XPathExpression expr = null;
         try {
-            XPathModel newXPathModel = XPathModelFactory.create(contextEntity);
+            XPathModel newXPathModel = BpelXPathModelFactory.create(
+                    contextEntity, castList, pseudoComps);
+            //
+            // Specify the Caching visitor for optimization!
+            newXPathModel.setCachingSchemaSearchVisitor(
+                    mCachingSchemaSearchVisitor);
+            //
             // NOT NEED to specify schema context because of an 
             // expression with variable is implied here. 
             //
@@ -418,10 +502,10 @@ public class BpelMapperModelFactory implements MapperModelFactory {
     public static void collectPredicates(
             XPathExpression expr, MapperSwingTreeModel treeModel) {
         //
-        MapperTreeModel sourceTreeModel = treeModel.getSourceModel();
+        SoaTreeModel sourceTreeModel = treeModel.getSourceModel();
         //
         // Look for the VariableTreeModel tree extension
-        VariableTreeModel varTreeModel = MapperTreeModel.Utils.findExtensionModel(
+        VariableTreeModel varTreeModel = SoaTreeModel.MyUtils.findExtensionModel(
                 sourceTreeModel, VariableTreeModel.class);
         //    
         if (varTreeModel != null) {
@@ -467,9 +551,8 @@ public class BpelMapperModelFactory implements MapperModelFactory {
          * @param leftTreeModel
          */
         public void populateGraph(MapperSwingTreeModel leftTreeModel) {
-            GraphBuilderVisitor graphBuilderVisitor = 
-                    new GraphBuilderVisitor(mGraph, leftTreeModel, 
-                    mConnectToTargetTree);
+            GraphBuilderVisitor graphBuilderVisitor = new GraphBuilderVisitor(mGraph, 
+                leftTreeModel, mConnectToTargetTree, currentBpelDesignContext);
             mExpr.accept(graphBuilderVisitor);
         }
     }
@@ -494,14 +577,16 @@ public class BpelMapperModelFactory implements MapperModelFactory {
         }
         
         public void bindGraph(BpelMapperModel newMapperModel) {
-            TreePath targetTreePath = newMapperModel.getRightTreeModel().
-                    findFirstNode(mFindersList);
+            TreeFinderProcessor fProcessor = new TreeFinderProcessor(
+                    newMapperModel.getRightTreeModel());
+            TreePath targetTreePath = fProcessor.findFirstNode(mFindersList);
+            // TreePath targetTreePath = newMapperModel.getRightTreeModel().
+            //        findFirstNode(mFindersList);
             if (targetTreePath != null) {
                 newMapperModel.addGraph(mGraph, targetTreePath);
             }
         }
         
     }
-    
     
 }

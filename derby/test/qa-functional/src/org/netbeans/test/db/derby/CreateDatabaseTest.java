@@ -42,11 +42,15 @@
 package org.netbeans.test.db.derby;
 
 import junit.framework.Test;
-import junit.framework.TestSuite;
+import org.netbeans.jellytools.RuntimeTabOperator;
+import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.modules.db.derby.CreateJavaDBDatabaseOperator;
 import org.netbeans.jellytools.modules.db.derby.actions.CreateDatabaseAction;
 import org.netbeans.jellytools.modules.db.derby.actions.StopServerAction;
 import org.netbeans.jellytools.modules.db.nodes.ConnectionNode;
+import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jemmy.operators.JTreeOperator;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.derby.DerbyOptions;
 import org.netbeans.modules.derby.StartAction;
 import org.openide.util.actions.SystemAction;
@@ -56,27 +60,37 @@ import org.openide.util.actions.SystemAction;
  * @author lg198683
  */
 public class CreateDatabaseTest  extends DbJellyTestCase {
-    private static String location="";
     private static String USER="czesiu";
     private static String PASSWORD="czesiu";
     private static String DB="newdatabase";
     private static String URL="jdbc:derby://localhost:1527/newdatabase";
-
+    
     public CreateDatabaseTest(String s) {
         super(s);
     }
     
-    public void testCreateDatabase(){
+    @Override
+    public void setUp() {
+        DerbyOptions.getDefault().setSystemHome(getDataDir().getAbsolutePath());
+        DerbyOptions.getDefault().setLocation(System.getProperty("derby.location"));
+    }
+    
+    public void testCreateDatabase(){        
         // <workaround for #112788> - FIXME
         SystemAction.get(StartAction.class).performAction();
         sleep(2000);
         // </workaround>
-        new CreateDatabaseAction().perform();
+        
+        JTreeOperator rtt = RuntimeTabOperator.invoke().tree();
+        Node n = new Node(rtt, "Databases|Java DB");
+        new ActionNoBlock(null, "Create Database").performPopup(n);
+        
         CreateJavaDBDatabaseOperator operator = new CreateJavaDBDatabaseOperator();
         operator.setDatabaseName(DB);
         operator.setUserName(USER);
         operator.setPassword(PASSWORD);
         operator.ok();
+        sleep(3000);
     }
     
     public void testConnect() throws Exception {
@@ -86,21 +100,20 @@ public class CreateDatabaseTest  extends DbJellyTestCase {
         connection.disconnect();
         sleep(1000);
     }
-    
-    public void testStopServer(){
-         new StopServerAction().perform();
-         sleep(5000);
-    }
-    
-    public static Test suite() {
-        String tmpdir = System.getProperty("xtest.tmpdir");
-        System.out.println("> Setting the Derby System Home to: "+tmpdir);
-        DerbyOptions.getDefault().setSystemHome(tmpdir);
         
-        TestSuite suite=new TestSuite();
-        suite.addTest(new CreateDatabaseTest("testCreateDatabase"));
-        suite.addTest(new CreateDatabaseTest("testConnect"));
-        suite.addTest(new CreateDatabaseTest("testStopServer"));        
-        return suite;
+    public void testStopServer(){
+        JTreeOperator rtt = RuntimeTabOperator.invoke().tree();
+        Node n = new Node(rtt, "Databases|Java DB");
+        new ActionNoBlock(null, "Stop Server").performPopup(n);
+        //new StopServerAction().perform();
+        sleep(5000);
+    }    
+       
+    public static Test suite() {
+        return NbModuleSuite.create(NbModuleSuite.createConfiguration(CreateDatabaseTest.class)
+                .addTest("testCreateDatabase", "testConnect", "testStopServer")
+                .enableModules(".*")
+                .clusters(".*")
+                );
     }
 }

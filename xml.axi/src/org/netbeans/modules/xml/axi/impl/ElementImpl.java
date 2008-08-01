@@ -53,8 +53,10 @@ import org.netbeans.modules.xml.axi.Element;
 import org.netbeans.modules.xml.axi.datatype.Datatype;
 import org.netbeans.modules.xml.axi.visitor.AXIVisitor;
 import org.netbeans.modules.xml.schema.model.Form;
+import org.netbeans.modules.xml.schema.model.GlobalElement;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.schema.model.SimpleType;
+import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 
 /**
  * Element implementation.
@@ -230,8 +232,12 @@ public final class ElementImpl extends Element {
     public AXIType getType() {
         if(axiType != null)
             return axiType;
+        if(getTypeSchemaComponent() == null) {
+            SchemaComponent type = Util.getSchemaType((AXIModelImpl)getModel(), getPeer());
+            setTypeSchemaComponent(type);
+        }
         
-        this.axiType = Util.getAXIType(this, typeSchemaComponent);
+        this.axiType = Util.getAXIType(this, getTypeSchemaComponent());
         return axiType;
     }
     
@@ -286,11 +292,27 @@ public final class ElementImpl extends Element {
         SchemaComponent type = Util.getSchemaType((AXIModelImpl)getModel(), getPeer());
         setTypeSchemaComponent(type);
         
-        if(type == null || type instanceof SimpleType)
+        if(type == null || type instanceof SimpleType) {
+            if(this.isGlobal()) {
+                handleSubstitutionGroup(getPeer(), children);
+            }
             return;
+        }
         
         AXIModelBuilder builder = new AXIModelBuilder(this);
         builder.populateChildren(type, false, children);
+    }
+    
+    private void handleSubstitutionGroup(SchemaComponent sc, List<AXIComponent> children) {
+        if(!(sc instanceof GlobalElement))
+            return;
+        GlobalElement ge = (GlobalElement)sc;
+        NamedComponentReference<GlobalElement> ncr = ge.getSubstitutionGroup();
+        if(ncr == null || ncr.get() ==null)
+            return;
+        GlobalElement head = ncr.get();
+        Element axiHead = (Element)((AXIModelImpl)getModel()).findChild(head);
+        Util.addProxyChildren(this, axiHead, children);        
     }
     
     /**

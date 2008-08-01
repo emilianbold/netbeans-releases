@@ -51,9 +51,12 @@ import antlr.collections.AST;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import org.netbeans.modules.cnd.api.model.services.CsmSelect;
+import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
+import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
@@ -81,29 +84,27 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
     
     // only one of scopeRef/scopeAccessor must be used 
     private /*final*/ CsmScope scopeRef;// can be set in onDispose or contstructor only
-    private final CsmUID<CsmScope> scopeUID;
+    private CsmUID<CsmScope> scopeUID;
     
     private final CharSequence[] rawName;
+
+    private TemplateDescriptor templateDescriptor = null;
     
-    private List<CsmTemplateParameter> templateParams = Collections.emptyList();
-    
-    private CharSequence templateSuffix;
     protected CharSequence classTemplateSuffix;
     
     private static final byte FLAGS_VOID_PARMLIST = 1 << 0;
     private static final byte FLAGS_STATIC = 1 << 1;
     private static final byte FLAGS_CONST = 1 << 2;
     private static final byte FLAGS_OPERATOR = 1 << 3;
-    private static final byte FLAGS_TEMPLATE = 1 << 4;
     private byte flags;
     
-    public FunctionImpl(AST ast, CsmFile file, CsmScope scope) {
+    public FunctionImpl(AST ast, CsmFile file, CsmScope scope) throws AstRendererException {
         this(ast, file, scope, true);
     }
     
     private static final boolean CHECK_SCOPE = false;
     
-    protected FunctionImpl(AST ast, CsmFile file, CsmScope scope, boolean register) {
+    protected FunctionImpl(AST ast, CsmFile file, CsmScope scope, boolean register) throws AstRendererException {
         
         super(ast, file);
         assert !CHECK_SCOPE || (scope != null);
@@ -130,23 +131,21 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         
         // change scope to file for static methods, but only to prevent 
         // registration in global  namespace
-        if( isStatic() && CsmKindUtilities.isNamespace(scope) &&
-                ((CsmNamespace)scope).isGlobal()) {
-            scope = file;
+        if(scope instanceof CsmNamespace) {
+            if( !NamespaceImpl.isNamespaceScope(this) ) {
+                    scope = file;
+            }
         }
-        
-        // set scope, do it in constructor to have final fields
-        this.scopeUID = UIDCsmConverter.scopeToUID(scope);
-        assert (this.scopeUID != null || scope == null);
-        this.scopeRef = null;
+
+        _setScope(scope);
         
         RepositoryUtils.hang(this); // "hang" now and then "put" in "register()"
 	
         boolean _const = initConst(ast);
         setFlags(FLAGS_CONST, _const);
-        returnType = initReturnType(ast, scope);
         initTemplate(ast);
-        
+        returnType = initReturnType(ast);
+
         // set parameters, do it in constructor to have final fields
         List<CsmParameter> params = initParameters(ast);
         if (params == null) {
@@ -170,6 +169,40 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         if (register) {
             registerInProject();
         }
+    }
+
+    public void setScope(CsmScope scope) {
+        unregisterInProject();
+        try {
+            this._setScope(scope);
+        } catch(AstRendererException e) {
+            DiagnosticExceptoins.register(e);
+        }
+        registerInProject();
+    }
+
+    private void _setScope(CsmScope scope) throws AstRendererException {
+        this.scopeUID = UIDCsmConverter.scopeToUID(scope);
+        boolean assertionCondition = (this.scopeUID != null || scope == null);
+        if (!assertionCondition) {
+            throw new AstRendererException((FileImpl)getContainingFile(), getStartOffset(),
+                    "Cannot find function scope."); // NOI18N
+            //assert (this.scopeUID != null || scope == null);
+        }
+        this.scopeRef = null;
+
+    }
+
+    /**
+     * Return true, if this is a definition of function
+     * that is declared in some other place
+     * (in other words, that is prefixed with class or namespace.
+     * Otherwise - for simple functions with body as the one below:
+     * void foo() {}
+     * returns false
+     */
+    public boolean isPureDefinition() {
+        return getKind() == CsmDeclaration.Kind.FUNCTION_DEFINITION;
     }
 
     private boolean hasFlags(byte mask) {
@@ -204,7 +237,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         return ast;
     }
     
-    private void initTemplate(AST node) {
+    private void initTemplate(AST node) throws AstRendererException {
         boolean _template = false, specialization = false;
         switch(node.getType()) {
             case CPPTokenTypes.CSM_FUNCTION_TEMPLATE_DECLARATION: 
@@ -221,11 +254,19 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         }
 
         if (_template) {
+            boolean templateClass = false;
+            List<CsmTemplateParameter> templateParams = null;
             AST templateNode = node.getFirstChild();
-            assert ( templateNode != null && templateNode.getType() == CPPTokenTypes.LITERAL_template );
+            AST templateClassNode = templateNode;            
+            boolean assertionCondition = ( templateNode != null && templateNode.getType() == CPPTokenTypes.LITERAL_template );
+            if (!assertionCondition) {
+                RepositoryUtils.remove(getUID());
+                throw new AstRendererException((FileImpl)getContainingFile(), getStartOffset(),
+                        "Template expected. "+templateNode+" found."); // NOI18N
+                //assert assertionCondition : message;
+            }
             // 0. our grammar can't yet differ template-class's method from template-method
             // so we need to check here if we has template-class or not
-            boolean templateClass = false;
             AST qIdToken = AstUtil.findChildOfType(node, CPPTokenTypes.CSM_QUALIFIED_ID);
             // 1. check for definition of template class's method
             // like template<class A> C<A>:C() {}
@@ -256,18 +297,26 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
                         if ( templateSiblingNode != null && templateSiblingNode.getType() == CPPTokenTypes.LITERAL_template ) {
                             // it is template-method of template-class
                             templateNode = templateSiblingNode;
+                            templateClass = true;
                         } else {
                             // we have no template-method at all
+                            templateClass = true;
                             _template = false;
                         }
                     }
                 }
             }
-            
-            if (_template) {
+            int inheritedTemplateParametersNumber = 0;
+            if(templateClass){
+                templateParams = TemplateUtils.getTemplateParameters(templateClassNode,
+                    getContainingFile(), this);
+                inheritedTemplateParametersNumber = templateParams.size();
+            }
+            CharSequence templateSuffix = "";
+            if (_template) {                
                 // 3. We are sure now what we have template-method, 
                 // let's check is it specialization template or not
-                if (specialization) { 
+                if (specialization) {
                     // 3a. specialization
                     if (qIdToken == null) {
                         // malformed template specification
@@ -280,12 +329,17 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
                     StringBuilder sb  = new StringBuilder();
                     TemplateUtils.addSpecializationSuffix(templateNode.getFirstChild(), sb);
                     templateSuffix = '<' + sb.toString() + '>';
+                }                
+                if(templateParams != null) {
+                    templateParams.addAll(TemplateUtils.getTemplateParameters(templateNode,
+                        getContainingFile(), this));
+                } else {
+                    templateParams = TemplateUtils.getTemplateParameters(templateNode,
+                        getContainingFile(), this);                    
                 }
-            }
-        }
-        setFlags(FLAGS_TEMPLATE, _template);
-        if (_template) {
-            this.templateParams = TemplateUtils.getTemplateParameters(node.getFirstChild(), this);
+            }            
+            this.templateDescriptor = new TemplateDescriptor(
+                templateParams, templateSuffix, inheritedTemplateParametersNumber);
         }
     }
     
@@ -298,11 +352,11 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
     }
     
     public CharSequence getDisplayName() {
-        return isTemplate() ? CharSequenceKey.create(getName().toString() + templateSuffix) : getName();
+        return (templateDescriptor != null) ? CharSequenceKey.create((getName().toString() + templateDescriptor.getTemplateSuffix())) : getName(); // NOI18N
     }
     
     public List<CsmTemplateParameter> getTemplateParameters() {
-        return templateParams;
+        return (templateDescriptor != null) ? templateDescriptor.getTemplateParameters() : Collections.<CsmTemplateParameter>emptyList();
     }    
     
     public boolean isVoidParameterList(){
@@ -389,7 +443,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
     
     public CharSequence getQualifiedName() {
         CsmScope scope = getScope();
-        if( (scope instanceof CsmNamespace) || (scope instanceof CsmClass) ) {
+        if( (scope instanceof CsmNamespace) || (scope instanceof CsmClass) || (scope instanceof CsmNamespaceDefinition) ) {
             CharSequence scopeQName = ((CsmQualifiedNamedElement) scope).getQualifiedName();
             if( scopeQName != null && scopeQName.length() > 0 ) {
                 return CharSequenceKey.create(scopeQName.toString() + getScopeSuffix() + "::" + getQualifiedNamePostfix()); // NOI18N
@@ -404,9 +458,9 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
     
     @Override
     public CharSequence getUniqueNameWithoutPrefix() {
-        return getQualifiedName().toString() + (isTemplate() ? templateSuffix : "") + getSignature().toString().substring(getName().length());
+        return getQualifiedName().toString() + getSignature().toString().substring(getName().length());
     }
-    
+
     public Kind getKind() {
         return CsmDeclaration.Kind.FUNCTION;
     }
@@ -425,7 +479,11 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
      */
     public CsmFunctionDefinition getDefinition() {
         if( isCStyleStatic() ) {
-            for( CsmDeclaration decl : getContainingFile().getDeclarations() ) {
+            CsmFilter filter = CsmSelect.getDefault().getFilterBuilder().createNameFilter(
+                               getName().toString(), true, true, false);
+            Iterator<CsmOffsetableDeclaration> it = CsmSelect.getDefault().getDeclarations(getContainingFile(), filter);
+            while(it.hasNext()){
+                CsmDeclaration decl = it.next();
                 if( CsmKindUtilities.isFunctionDefinition(decl) ) {
                     if( getName().equals(decl.getName()) ) {
                         CsmFunctionDefinition fun = (CsmFunctionDefinition) decl;
@@ -483,11 +541,10 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
     
     /**
      * Returns true if this class is template, otherwise false.
-     * If isTemplate() returns true, this class is an instance of CsmTemplate
      * @return flag indicated if function is template
      */
     public boolean isTemplate() {
-        return hasFlags(FLAGS_TEMPLATE);
+        return templateDescriptor != null;
     }
     
     /**
@@ -514,7 +571,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
 //        return false;
 //    }
     
-    private CsmType initReturnType(AST node, CsmScope scope) {
+    private CsmType initReturnType(AST node) {
         CsmType ret = null;
         AST token = getTypeToken(node);
         if( token != null ) {
@@ -523,7 +580,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         if( ret == null ) {
             ret = TypeFactory.createBuiltinType("int", (AST) null, 0,  null/*getAst().getFirstChild()*/, getContainingFile()); // NOI18N
         }
-        return TemplateUtils.checkTemplateType(ret, scope);
+        return TemplateUtils.checkTemplateType(ret, FunctionImpl.this);
     }
     
     public CsmType getReturnType() {
@@ -570,7 +627,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         }
         return signature;
     }
-    
+
     public CsmFunction getDeclaration() {
         return this;
     }
@@ -603,6 +660,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         // we should resolve parameter types and provide
         // kind of canonical representation here
         StringBuilder sb = new StringBuilder(getName());
+        sb.append(createTemplateSignature());
         sb.append('(');
         for( Iterator iter = getParameters().iterator(); iter.hasNext(); ) {
             CsmParameter param = (CsmParameter) iter.next();
@@ -619,6 +677,56 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         sb.append(')');
         if( isConst() ) {
             sb.append(" const"); // NOI18N
+        }
+        return sb.toString();
+    }
+
+    private String createTemplateSignature() {
+        List<CsmTemplateParameter> allTemplateParams = getTemplateParameters();
+        List<CsmTemplateParameter> params = new ArrayList<CsmTemplateParameter>();
+        if(allTemplateParams != null) {
+            int inheritedTemplateParametersNumber = (templateDescriptor != null) ? templateDescriptor.getInheritedTemplateParametersNumber() : 0;
+            if(allTemplateParams.size() > inheritedTemplateParametersNumber) {
+                Iterator<CsmTemplateParameter> iter = allTemplateParams.iterator();
+                for (int i = 0; i < inheritedTemplateParametersNumber && iter.hasNext(); i++) {
+                    iter.next();
+                }
+                for ( ;iter.hasNext();) {
+                    params.add(iter.next());
+                }
+            }
+        }
+        return createTemplateParamsSignature(params);
+    }
+    
+    private String createTemplateParamsSignature(List<CsmTemplateParameter> params) {
+        StringBuilder sb = new StringBuilder("");
+        if(params != null && params.size() > 0) {
+            sb.append('<');
+            for (Iterator iter = params.iterator(); iter.hasNext();) {
+                CsmTemplateParameter param = (CsmTemplateParameter) iter.next();
+                if (CsmKindUtilities.isVariableDeclaration(param)) {
+                    CsmVariable var = (CsmVariable) param;
+                    CsmType type = var.getType();
+                    if (type != null) {
+                        sb.append(type.getCanonicalText());
+                        if (iter.hasNext()) {
+                            sb.append(',');
+                        }
+                    }
+                }
+                if (CsmKindUtilities.isClassifier(param)) {
+                    CsmClassifier classifier = (CsmClassifier) param;
+                    sb.append("class"); // NOI18N // Name of parameter does not matter
+                    if (CsmKindUtilities.isTemplate(param)) {
+                        sb.append(createTemplateParamsSignature(((CsmTemplate)classifier).getTemplateParameters()));
+                    }                    
+                    if (iter.hasNext()) {
+                        sb.append(',');
+                    }
+                }
+            }
+            sb.append('>');
         }
         return sb.toString();
     }
@@ -644,21 +752,17 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
     }
     
     private static boolean initConst(AST node) {
-        boolean ret = false;
         AST token = node.getFirstChild();
         while( token != null &&  token.getType() != CPPTokenTypes.CSM_QUALIFIED_ID) {
             token = token.getNextSibling();
         }
         while( token != null ) {
-            if( token.getType() == CPPTokenTypes.LITERAL_const ||
-                token.getType() == CPPTokenTypes.LITERAL___const ||
-                token.getType() == CPPTokenTypes.LITERAL___const__) {
-                ret = true;
-                break;
+            if (AstRenderer.isConstQualifier(token.getType())) {
+                return true;
             }
             token = token.getNextSibling();
         }
-        return ret;
+        return false;
     }
     
     /**
@@ -680,9 +784,9 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         return scope;
     }
     
-    private Collection _getParameters() {
+    private Collection<CsmParameter> _getParameters() {
         if (this.parameters == null) {
-            return Collections.EMPTY_LIST;
+            return Collections.<CsmParameter>emptyList();
         } else {
             Collection<CsmParameter> out = UIDCsmConverter.UIDsToDeclarations(parameters);
             return out;
@@ -715,12 +819,10 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         PersistentUtils.writeUTF(this.signature, output);
         output.writeByte(flags);
         output.writeUTF(this.getScopeSuffix().toString());
-        if (isTemplate()) {
-            output.writeUTF(this.templateSuffix.toString());
-        }
-        PersistentUtils.writeTemplateParameters(templateParams, output);
+        PersistentUtils.writeTemplateDescriptor(templateDescriptor, output);
     }
 
+    @SuppressWarnings("unchecked")
     public FunctionImpl(DataInput input) throws IOException {
         super(input);
         this.name = QualifiedNameCache.getManager().getString(input.readUTF());
@@ -741,9 +843,6 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         }
         this.flags = input.readByte();
         this.classTemplateSuffix = NameCache.getManager().getString(input.readUTF());
-        if (isTemplate()) {
-            this.templateSuffix = NameCache.getManager().getString(input.readUTF());
-        }
-        this.templateParams = PersistentUtils.readTemplateParameters(input);
+        this.templateDescriptor = PersistentUtils.readTemplateDescriptor(input);
     }
 }

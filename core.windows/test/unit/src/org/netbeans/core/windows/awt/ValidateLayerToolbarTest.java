@@ -41,13 +41,10 @@
 
 package org.netbeans.core.windows.awt;
 
-import java.io.InputStream;
-import junit.framework.*;
-import org.netbeans.junit.*;
-import org.openide.cookies.InstanceCookie;
 
+import junit.framework.Test;
+import org.netbeans.junit.NbModuleSuite;
 import org.openide.filesystems.*;
-import org.openide.loaders.*;
 
 /** Checks the consistence of Toolbar folder.
  *
@@ -60,17 +57,11 @@ public class ValidateLayerToolbarTest extends ValidateLayerMenuTest {
         super (name);
     }
 
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
-    
     public static Test suite() {
-        TestSuite suite = new NbTestSuite(ValidateLayerToolbarTest.class);
-        
-        return suite;
+        return NbModuleSuite.create(
+            NbModuleSuite.createConfiguration(ValidateLayerToolbarTest.class).
+                clusters(".*").enableModules(".*").gui(false)
+        );
     }
     
     //

@@ -69,7 +69,8 @@ import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
 
 import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.ide.ProjectSupport;
+import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.test.ide.WatchProjects;
 
 /**
  * Overall validation suite for j2ee cluster.
@@ -77,18 +78,32 @@ import org.netbeans.junit.ide.ProjectSupport;
  * @author Jiri.Skrivanek@sun.com
  */
 public class J2EEValidation extends JellyTestCase {
+
+    static final String [] tests = {
+                "testWebApplication"
+    };
     
     /** Need to be defined because of JUnit */
     public J2EEValidation(String name) {
         super(name);
     }
 
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new J2EEValidation("testWebApplication"));
-        return suite;
+//    public static NbTestSuite suite() {
+//        NbTestSuite suite = new NbTestSuite();
+//        suite.addTest(new J2EEValidation("testWebApplication"));
+//        return suite;
+//    }
+    public static junit.framework.Test suite() {
+        return NbModuleSuite.create(
+                NbModuleSuite.createConfiguration(J2EEValidation.class)
+                .addTest(tests)
+                .clusters(".*")
+                .enableModules(".*")
+                .gui(true)
+                );
     }
-    
+
+
     /** Use for execution inside IDE */
     public static void main(java.lang.String[] args) {
         // run whole suite
@@ -138,7 +153,7 @@ public class J2EEValidation extends JellyTestCase {
         // wait index.jsp is opened in editor
         EditorOperator editor = new EditorOperator("index.jsp"); // NOI18N
         // wait classpath scanning finished
-        ProjectSupport.waitScanFinished();
+        WatchProjects.waitScanFinished();
         
         // not display browser on run
         
@@ -247,7 +262,7 @@ public class J2EEValidation extends JellyTestCase {
                 return null;
             }
             public String getDescription() {
-                return("Text \""+text+"\" at http://localhost:8080/"+urlSuffix);
+                return("Text \""+text+"\" at http://localhost:8090/"+urlSuffix);
             }
         };
         Waiter waiter = new Waiter(waitable);

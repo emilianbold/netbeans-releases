@@ -55,6 +55,7 @@ import java.util.HashSet;
 import java.util.List;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -65,8 +66,8 @@ import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Mutex.Action;
 import org.openide.util.NbBundle;
-import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -97,147 +98,148 @@ public class J2SEProjectJaxRpcClientSupport implements WebServicesClientSupportI
     }
     
     // Implementation of WebServiceClientSupportImpl
-    public void addServiceClient(String serviceName, String packageName, String sourceUrl, FileObject configFile, ClientStubDescriptor stubDescriptor, String[] wscompileFeatures) {
-        // !PW FIXME I have two concerns with this implementation:
-        // 1. Since it modifies project.xml, I suspect it should be acquiring
-        //    ProjectManager.mutex() for write access.
-        // 2. It seems like it ought to be implemented via the AuxiliaryConfiguration
-        //    interface.
-        boolean needsSave = false;
-        boolean modifiedProjectProperties = false;
-        boolean modifiedPrivateProperties = false;
-        
-        /** Locate root of web service client node structure in project,xml, creating it
-         *  if it's not found.
-         */
-        //Element data = helper.getPrimaryConfigurationData(true);
-        AuxiliaryConfiguration aux = project.getLookup().lookup(AuxiliaryConfiguration.class);
-        Element clientElements = aux.getConfigurationFragment(WebServicesClientConstants.WEB_SERVICE_CLIENTS,
-                                    JAX_RPC_NAMESPACE, true);
-        if (clientElements==null) {
-            Document doc = createNewDocument();
-            Element root = doc.createElementNS(JAX_RPC_NAMESPACE, WebServicesClientConstants.WEB_SERVICE_CLIENTS);
-            aux.putConfigurationFragment(root, true);
-            clientElements = aux.getConfigurationFragment(WebServicesClientConstants.WEB_SERVICE_CLIENTS,
-                                    JAX_RPC_NAMESPACE, true);
-        }
-        Document doc = clientElements.getOwnerDocument();
-        
-        /** Make sure this service is not already registered in project.xml
-         */
-        boolean serviceAlreadyAdded = false;
-        NodeList clientNameList = clientElements.getElementsByTagNameNS(JAX_RPC_NAMESPACE, WebServicesClientConstants.WEB_SERVICE_CLIENT_NAME);
-        for(int i = 0; i < clientNameList.getLength(); i++ ) {
-            Element clientNameElement = (Element) clientNameList.item(i);
-            NodeList nl = clientNameElement.getChildNodes();
-            if(nl.getLength() >= 1) {
-                org.w3c.dom.Node n = nl.item(0);
-                if(Node.TEXT_NODE == n.getNodeType() ) {
-                    if(serviceName.equalsIgnoreCase(n.getNodeValue())) {
-                        serviceAlreadyAdded = true;
-                        
-                        // !PW FIXME should force stub type to match value passed in
-                        // in case someone is overwriting a current service with a different
-                        // stub type.
+    public void addServiceClient(final String serviceName, final String packageName, final String sourceUrl, final FileObject configFile, final ClientStubDescriptor stubDescriptor, final String[] wscompileFeatures) {
+        // It seems like it ought to be implemented via the AuxiliaryConfiguration interface.
+        boolean needToSave = ProjectManager.mutex().writeAccess(new Action<Boolean>() {
+            public Boolean run() {
+                boolean needsSave = false;
+                boolean modifiedProjectProperties = false;
+                boolean modifiedPrivateProperties = false;
+
+                /** Locate root of web service client node structure in project,xml, creating it
+                 *  if it's not found.
+                 */
+                //Element data = helper.getPrimaryConfigurationData(true);
+                AuxiliaryConfiguration aux = ProjectUtils.getAuxiliaryConfiguration(project);
+                Element clientElements = aux.getConfigurationFragment(WebServicesClientConstants.WEB_SERVICE_CLIENTS,
+                                            JAX_RPC_NAMESPACE, true);
+                if (clientElements==null) {
+                    Document doc = createNewDocument();
+                    Element root = doc.createElementNS(JAX_RPC_NAMESPACE, WebServicesClientConstants.WEB_SERVICE_CLIENTS);
+                    aux.putConfigurationFragment(root, true);
+                    clientElements = aux.getConfigurationFragment(WebServicesClientConstants.WEB_SERVICE_CLIENTS,
+                                            JAX_RPC_NAMESPACE, true);
+                }
+                Document doc = clientElements.getOwnerDocument();
+
+                /** Make sure this service is not already registered in project.xml
+                 */
+                boolean serviceAlreadyAdded = false;
+                NodeList clientNameList = clientElements.getElementsByTagNameNS(JAX_RPC_NAMESPACE, WebServicesClientConstants.WEB_SERVICE_CLIENT_NAME);
+                for(int i = 0; i < clientNameList.getLength(); i++ ) {
+                    Element clientNameElement = (Element) clientNameList.item(i);
+                    NodeList nl = clientNameElement.getChildNodes();
+                    if(nl.getLength() >= 1) {
+                        org.w3c.dom.Node n = nl.item(0);
+                        if(Node.TEXT_NODE == n.getNodeType() ) {
+                            if(serviceName.equalsIgnoreCase(n.getNodeValue())) {
+                                serviceAlreadyAdded = true;
+
+                                // !PW FIXME should force stub type to match value passed in
+                                // in case someone is overwriting a current service with a different
+                                // stub type.
+                            }
+                        }
                     }
                 }
+
+                /** Add entry for the client to project.xml and regenerate build-impl.xml.
+                 */
+                if(!serviceAlreadyAdded) {
+                    Element clientElement = doc.createElementNS(JAX_RPC_NAMESPACE, WebServicesClientConstants.WEB_SERVICE_CLIENT);
+                    clientElements.appendChild(clientElement);
+                    Element clientElementName = doc.createElementNS(JAX_RPC_NAMESPACE, WebServicesClientConstants.WEB_SERVICE_CLIENT_NAME);
+                    clientElement.appendChild(clientElementName);
+                    clientElementName.appendChild(doc.createTextNode(serviceName));
+                    Element clientElementStubType = doc.createElementNS(JAX_RPC_NAMESPACE, WebServicesClientConstants.WEB_SERVICE_STUB_TYPE);
+                    clientElement.appendChild(clientElementStubType);
+                    clientElementStubType.appendChild(doc.createTextNode(stubDescriptor.getName()));
+                    Element clientElementSourceUrl = doc.createElementNS(JAX_RPC_NAMESPACE, WebServicesClientConstants.CLIENT_SOURCE_URL);
+                    clientElement.appendChild(clientElementSourceUrl);
+                    clientElementSourceUrl.appendChild(doc.createTextNode(sourceUrl));
+                    aux.putConfigurationFragment(clientElements, true);
+                    //helper.putPrimaryConfigurationData(data, true);
+                    needsSave = true;
+                }
+                EditableProperties projectProperties = null;
+                EditableProperties privateProperties = null;
+                try {
+                    projectProperties = WSUtils.getEditableProperties(project, AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                    privateProperties = WSUtils.getEditableProperties(project, AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+                } catch (IOException ex) {
+
+                }
+                assert projectProperties!=null && privateProperties!=null;
+                // Add property for wscompile features
+                {
+                    String featurePropertyName = "wscompile.client." + serviceName + ".features"; // NOI18N
+                    String defaultFeatures = "wsi, strict"; // NOI18N -- defaults if stub descriptor is bad type (should never happen?)
+                    if(stubDescriptor instanceof JAXRPCClientStubDescriptor) {
+                        JAXRPCClientStubDescriptor stubDesc = (JAXRPCClientStubDescriptor) stubDescriptor;
+                        if (wscompileFeatures!=null) stubDesc.setDefaultFeatures(wscompileFeatures);
+                        defaultFeatures = stubDesc.getDefaultFeaturesAsArgument();
+                    } else {
+                        // !PW FIXME wrong stub type -- log error message.
+                    }
+                    String oldFeatures = projectProperties.getProperty(featurePropertyName);
+                    if(!defaultFeatures.equals(oldFeatures)) {
+                        projectProperties.put(featurePropertyName, defaultFeatures);
+                        modifiedProjectProperties = true;
+                    }
+                }
+
+                // Add package name property
+                {
+                    String packagePropertyName = "wscompile.client." + serviceName + ".package"; // NOI18N
+                    String oldPackageName = projectProperties.getProperty(packagePropertyName);
+                    if(!packageName.equals(oldPackageName)) {
+                        projectProperties.put(packagePropertyName, packageName);
+                        modifiedProjectProperties = true;
+                    }
+                }
+
+                // Add http.proxyHost, http.proxyPort and http.nonProxyHosts JVM options
+                // create wscompile:httpproxy property
+                if (proxyHost!=null && proxyHost.length()>0) {
+                    boolean modif = addJVMProxyOptions(projectProperties,proxyHost,proxyPort);
+                    if (modif) modifiedProjectProperties = true;
+                    String proxyProperty = "wscompile.client." + serviceName + ".proxy"; // NOI18N
+                    String oldProxyProperty = privateProperties.getProperty(proxyProperty);
+                    if(!proxyProperty.equals(oldProxyProperty)) {
+                        privateProperties.put(proxyProperty, proxyHost+":"+(proxyPort==null?"8080":proxyPort)); //NOI18N
+                        modifiedPrivateProperties = true;
+                    }
+                }
+
+                if(modifiedProjectProperties) {
+                    try {
+                        WSUtils.storeEditableProperties(project, AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties);
+                        needsSave = true;
+                    } catch (IOException ex) {
+                    }
+                }
+                if(modifiedPrivateProperties) {
+                    //helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProperties);
+                    try {
+                        WSUtils.storeEditableProperties(project, AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProperties);
+                        needsSave = true;
+                    } catch (IOException ex) {
+                    }
+
+                }
+
+                // Update wscompile related properties.  boolean return indicates whether
+                // any changes were made.
+                if(updateWsCompileProperties(serviceName)) {
+                    needsSave = true;
+                }
+                return needsSave;
             }
-        }
-        
-        /** Add entry for the client to project.xml and regenerate build-impl.xml.
-         */
-        if(!serviceAlreadyAdded) {
-            Element clientElement = doc.createElementNS(JAX_RPC_NAMESPACE, WebServicesClientConstants.WEB_SERVICE_CLIENT);
-            clientElements.appendChild(clientElement);
-            Element clientElementName = doc.createElementNS(JAX_RPC_NAMESPACE, WebServicesClientConstants.WEB_SERVICE_CLIENT_NAME);
-            clientElement.appendChild(clientElementName);
-            clientElementName.appendChild(doc.createTextNode(serviceName));
-            Element clientElementStubType = doc.createElementNS(JAX_RPC_NAMESPACE, WebServicesClientConstants.WEB_SERVICE_STUB_TYPE);
-            clientElement.appendChild(clientElementStubType);
-            clientElementStubType.appendChild(doc.createTextNode(stubDescriptor.getName()));
-            Element clientElementSourceUrl = doc.createElementNS(JAX_RPC_NAMESPACE, WebServicesClientConstants.CLIENT_SOURCE_URL);
-            clientElement.appendChild(clientElementSourceUrl);
-            clientElementSourceUrl.appendChild(doc.createTextNode(sourceUrl));
-            aux.putConfigurationFragment(clientElements, true);
-            //helper.putPrimaryConfigurationData(data, true);
-            needsSave = true;
-        }
-        EditableProperties projectProperties = null;
-        EditableProperties privateProperties = null;
-        try {
-            projectProperties = WSUtils.getEditableProperties(project, AntProjectHelper.PROJECT_PROPERTIES_PATH);
-            privateProperties = WSUtils.getEditableProperties(project, AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-        } catch (IOException ex) {
-            
-        }
-        assert projectProperties!=null && privateProperties!=null;
-        // Add property for wscompile features
-        {
-            String featurePropertyName = "wscompile.client." + serviceName + ".features"; // NOI18N
-            String defaultFeatures = "wsi, strict"; // NOI18N -- defaults if stub descriptor is bad type (should never happen?)
-            if(stubDescriptor instanceof JAXRPCClientStubDescriptor) {
-                JAXRPCClientStubDescriptor stubDesc = (JAXRPCClientStubDescriptor) stubDescriptor;
-                if (wscompileFeatures!=null) stubDesc.setDefaultFeatures(wscompileFeatures);
-                defaultFeatures = stubDesc.getDefaultFeaturesAsArgument();
-            } else {
-                // !PW FIXME wrong stub type -- log error message.
-            }
-            String oldFeatures = projectProperties.getProperty(featurePropertyName);
-            if(!defaultFeatures.equals(oldFeatures)) {
-                projectProperties.put(featurePropertyName, defaultFeatures);
-                modifiedProjectProperties = true;
-            }
-        }
-        
-        // Add package name property
-        {
-            String packagePropertyName = "wscompile.client." + serviceName + ".package"; // NOI18N
-            String oldPackageName = projectProperties.getProperty(packagePropertyName);
-            if(!packageName.equals(oldPackageName)) {
-                projectProperties.put(packagePropertyName, packageName);
-                modifiedProjectProperties = true;
-            }
-        }
-        
-        // Add http.proxyHost, http.proxyPort and http.nonProxyHosts JVM options
-        // create wscompile:httpproxy property
-        if (proxyHost!=null && proxyHost.length()>0) {
-            boolean modif = addJVMProxyOptions(projectProperties,proxyHost,proxyPort);
-            if (modif) modifiedProjectProperties = true;
-            String proxyProperty = "wscompile.client." + serviceName + ".proxy"; // NOI18N
-            String oldProxyProperty = privateProperties.getProperty(proxyProperty);
-            if(!proxyProperty.equals(oldProxyProperty)) {
-                privateProperties.put(proxyProperty, proxyHost+":"+(proxyPort==null?"8080":proxyPort)); //NOI18N
-                modifiedPrivateProperties = true;
-            }
-        }
-        
-        if(modifiedProjectProperties) {
-            try {
-                WSUtils.storeEditableProperties(project, AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties);
-                needsSave = true;
-            } catch (IOException ex) {
-            }
-        }
-        if(modifiedPrivateProperties) {
-            //helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProperties);
-            try {
-                WSUtils.storeEditableProperties(project, AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProperties);
-                needsSave = true;
-            } catch (IOException ex) {
-            }
-            
-        }
-        
-        // Update wscompile related properties.  boolean return indicates whether
-        // any changes were made.
-        if(updateWsCompileProperties(serviceName)) {
-            needsSave = true;
-        }
+        });
         
         // !PW Lastly, save the project if we actually made any changes to any
         // properties or the build script.
-        if(needsSave) {
+        if(needToSave) {
             try {
                 ProjectManager.getDefault().saveProject(project);
             } catch(IOException ex) {
@@ -344,91 +346,97 @@ public class J2SEProjectJaxRpcClientSupport implements WebServicesClientSupportI
         return globalPropertiesChanged || projectPropertiesChanged;
     }
     
-    public void removeServiceClient(String serviceName) {
+    public void removeServiceClient(final String serviceName) {
         // 2. Remove service from project.xml
         //    Side effect: Regenerate build-impl.xsl
         //    Optional - if last service, remove properties we generated.
-        boolean needsSave = false;
-        boolean needsSave1 = false;
         
-        /** Remove properties from project.properties
-         */
-        String featureProperty = "wscompile.client." + serviceName + ".features"; // NOI18N
-        String packageProperty = "wscompile.client." + serviceName + ".package"; // NOI18N
-        String proxyProperty = "wscompile.client." + serviceName + ".proxy"; //NOI18N
-        
-        EditableProperties ep = null;
-        EditableProperties ep1 =  null;
-        try {
-            ep = WSUtils.getEditableProperties(project, AntProjectHelper.PROJECT_PROPERTIES_PATH);
-            ep1 = WSUtils.getEditableProperties(project, AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-        } catch (IOException ex) {
-            ErrorManager.getDefault().notify(ex);
-        }
-        assert ep!=null && ep1!=null;
-        
-        if(ep.getProperty(featureProperty) != null) {
-            ep.remove(featureProperty);
-            needsSave = true;
-        }
-        
-        if(ep.getProperty(packageProperty) != null) {
-            ep.remove(packageProperty);
-            needsSave = true;
-        }
-        
-        if(ep1.getProperty(proxyProperty) != null) {
-            ep1.remove(proxyProperty);
-            needsSave1 = true;
-        }
-        
-        if(needsSave) {
-            //helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
-            try {
-                WSUtils.storeEditableProperties(project, AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
-            } catch (IOException ex) {
-                ErrorManager.getDefault().notify(ex);
-            }
-        }
-        
-        if(needsSave1) {
-            //helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep1);
-            try {
-                WSUtils.storeEditableProperties(project, AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep1);
-            } catch (IOException ex) {
-                ErrorManager.getDefault().notify(ex);
-            }
-        }
-        
-        /** Locate root of web service client node structure in project,xml
-         */
-        AuxiliaryConfiguration aux = project.getLookup().lookup(AuxiliaryConfiguration.class);
-        Element clientElements = aux.getConfigurationFragment(WebServicesClientConstants.WEB_SERVICE_CLIENTS,
-                                    JAX_RPC_NAMESPACE, true);
-        if (clientElements!=null) {
-            NodeList clientNameList = clientElements.getElementsByTagNameNS(JAX_RPC_NAMESPACE, WebServicesClientConstants.WEB_SERVICE_CLIENT_NAME);
-            for(int i = 0; i < clientNameList.getLength(); i++ ) {
-                Element clientNameElement = (Element) clientNameList.item(i);
-                NodeList nl = clientNameElement.getChildNodes();
-                if(nl.getLength() == 1) {
-                    org.w3c.dom.Node n = nl.item(0);
-                    if(n.getNodeType() == org.w3c.dom.Node.TEXT_NODE) {
-                        if(serviceName.equalsIgnoreCase(n.getNodeValue())) {
-                            // Found it!  Now remove it.
-                            org.w3c.dom.Node clientNode = clientNameElement.getParentNode();
-                            clientElements.removeChild(clientNode);
-                            //helper.putPrimaryConfigurationData(data, true);
-                            aux.putConfigurationFragment(clientElements, true);
-                            needsSave = true;
-                        }
+        boolean needToSave = ProjectManager.mutex().writeAccess(new Action<Boolean>() {
+            public Boolean run() {
+                boolean needsSave = false;
+                boolean needsSave1 = false;
+
+                /** Remove properties from project.properties
+                 */
+                String featureProperty = "wscompile.client." + serviceName + ".features"; // NOI18N
+                String packageProperty = "wscompile.client." + serviceName + ".package"; // NOI18N
+                String proxyProperty = "wscompile.client." + serviceName + ".proxy"; //NOI18N
+
+                EditableProperties ep = null;
+                EditableProperties ep1 =  null;
+                try {
+                    ep = WSUtils.getEditableProperties(project, AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                    ep1 = WSUtils.getEditableProperties(project, AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+                } catch (IOException ex) {
+                    ErrorManager.getDefault().notify(ex);
+                }
+                assert ep!=null && ep1!=null;
+
+                if(ep.getProperty(featureProperty) != null) {
+                    ep.remove(featureProperty);
+                    needsSave = true;
+                }
+
+                if(ep.getProperty(packageProperty) != null) {
+                    ep.remove(packageProperty);
+                    needsSave = true;
+                }
+
+                if(ep1.getProperty(proxyProperty) != null) {
+                    ep1.remove(proxyProperty);
+                    needsSave1 = true;
+                }
+
+                if(needsSave) {
+                    //helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
+                    try {
+                        WSUtils.storeEditableProperties(project, AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
+                    } catch (IOException ex) {
+                        ErrorManager.getDefault().notify(ex);
                     }
                 }
-            }        
-        }        
+
+                if(needsSave1) {
+                    //helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep1);
+                    try {
+                        WSUtils.storeEditableProperties(project, AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep1);
+                    } catch (IOException ex) {
+                        ErrorManager.getDefault().notify(ex);
+                    }
+                }
+
+                /** Locate root of web service client node structure in project,xml
+                 */
+                AuxiliaryConfiguration aux = ProjectUtils.getAuxiliaryConfiguration(project);
+                Element clientElements = aux.getConfigurationFragment(WebServicesClientConstants.WEB_SERVICE_CLIENTS,
+                                            JAX_RPC_NAMESPACE, true);
+                if (clientElements!=null) {
+                    NodeList clientNameList = clientElements.getElementsByTagNameNS(JAX_RPC_NAMESPACE, WebServicesClientConstants.WEB_SERVICE_CLIENT_NAME);
+                    for(int i = 0; i < clientNameList.getLength(); i++ ) {
+                        Element clientNameElement = (Element) clientNameList.item(i);
+                        NodeList nl = clientNameElement.getChildNodes();
+                        if(nl.getLength() == 1) {
+                            org.w3c.dom.Node n = nl.item(0);
+                            if(n.getNodeType() == org.w3c.dom.Node.TEXT_NODE) {
+                                if(serviceName.equalsIgnoreCase(n.getNodeValue())) {
+                                    // Found it!  Now remove it.
+                                    org.w3c.dom.Node clientNode = clientNameElement.getParentNode();
+                                    clientElements.removeChild(clientNode);
+                                    //helper.putPrimaryConfigurationData(data, true);
+                                    aux.putConfigurationFragment(clientElements, true);
+                                    needsSave = true;
+                                }
+                            }
+                        }
+                    }        
+                }
+                return needsSave || needsSave1;
+            }
+        });
       
         // !PW Lastly, save the project if we actually made any changes to any
         // properties or the build script.
-        if(needsSave || needsSave1) {
+        if(needToSave) {
             try {
                 ProjectManager.getDefault().saveProject(project);
             } catch(IOException ex) {
@@ -462,8 +470,8 @@ public class J2SEProjectJaxRpcClientSupport implements WebServicesClientSupportI
         return wsdlFolder;
     }
     
-    public List/*ClientStubDescriptor*/ getStubDescriptors() {
-        ArrayList stubs = new ArrayList(2);
+    public List<ClientStubDescriptor> getStubDescriptors() {
+        List<ClientStubDescriptor> stubs = new ArrayList<ClientStubDescriptor>(2);
         stubs.add(jaxrpcClientStub);
         return stubs;
     }
@@ -527,8 +535,8 @@ public class J2SEProjectJaxRpcClientSupport implements WebServicesClientSupportI
     
         public List getServiceClients() {
         
-        List serviceNames = new ArrayList();
-        AuxiliaryConfiguration aux = project.getLookup().lookup(AuxiliaryConfiguration.class);
+        List<WsCompileClientEditorSupport.ServiceSettings> serviceNames = new ArrayList<WsCompileClientEditorSupport.ServiceSettings>();
+        AuxiliaryConfiguration aux = ProjectUtils.getAuxiliaryConfiguration(project);
         Element clientElements = aux.getConfigurationFragment(WebServicesClientConstants.WEB_SERVICE_CLIENTS,
                                     JAX_RPC_NAMESPACE, true);
         if (clientElements!=null) {

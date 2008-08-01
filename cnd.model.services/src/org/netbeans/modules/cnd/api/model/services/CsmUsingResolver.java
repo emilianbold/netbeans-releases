@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.api.model.services;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
@@ -94,6 +95,14 @@ public abstract class CsmUsingResolver {
     public abstract Collection<CsmDeclaration> findUsedDeclarations(CsmFile file, int offset, CsmProject onlyInProject);
     
     /**
+     * Finds all declarations visible in given namespace through "using" delcarations.
+     * 
+     * @param namespace  namespace of interest
+     * @return unmodifiable collection of declarations visible in given namespace through "using" declarations
+     */
+    public abstract Collection<CsmDeclaration> findUsedDeclarations(CsmNamespace namespace);
+    
+    /**
      * return all namespace visible for offsetable element, i.e.
      *  using namespace std;
      *  using namespace myNS;
@@ -104,6 +113,32 @@ public abstract class CsmUsingResolver {
      * @return sorted unmodifiable collection of namespaces visible for input offsetable element
      */
     public abstract Collection<CsmNamespace> findVisibleNamespaces(CsmFile file, int offset, CsmProject onlyInProject);
+
+    /**
+     * Finds all "using" directives in given namespace.
+     * 
+     * @param namespace  namespace of interest
+     * @return unmodifiable collection of "using" directives in given namespace
+     */
+    public abstract Collection<CsmUsingDirective> findUsingDirectives(CsmNamespace namespace);
+
+    /**
+     * Finds all namespaces visible in given namespace through "using" directives.
+     * 
+     * @param namespace  namespace of interest
+     * @return unmodifiable collection of namespaces visible in given namespace though "using" directives
+     */
+    public Collection<CsmNamespace> findVisibleNamespaces(CsmNamespace namespace) {
+        return extractNamespaces(findUsingDirectives(namespace));
+    }
+
+//    /**
+//     * Finds all direct visible namespace definitions.
+//     * 
+//     * @param namespace  namespace of interest
+//     * @return unmodifiable collection of namespace definitions direct visible in includes
+//     */
+//    public abstract Collection<CsmNamespaceDefinition> findDirectVisibleNamespaceDefinitions(CsmFile file, int offset, CsmProject onlyInProject);
 
     /**
      * return all namespace aliases visible for offsetable element, i.e.
@@ -123,18 +158,63 @@ public abstract class CsmUsingResolver {
      */
     public static Collection<CsmNamespace> extractNamespaces(Collection<CsmUsingDirective> decls) {
         // TODO check the correctness of order
-        LinkedHashMap<String, CsmNamespace> out = new LinkedHashMap<String, CsmNamespace>(decls.size());
+        Collection<CsmNamespace> out = new ArrayList<CsmNamespace>();
         for (CsmUsingDirective decl : decls) {
             CsmNamespace ref = decl.getReferencedNamespace();
             if (ref != null) {
-                String name = decl.getName().toString();
-                // remove previous inclusion
-                out.remove(name);
-                out.put(name, ref);
+                CsmFile file = decl.getContainingFile();
+                if(file != null) {
+                    CsmProject proj = file.getProject();
+                    if(proj != null) {
+                        out.addAll(findNamespacesInProject(proj, ref.getQualifiedName()));
+                    }
+                }
             }
         }
-        return new ArrayList<CsmNamespace>(out.values());
+        return out;
     }
+
+    /**
+     * Finds namespace in project and it's libraries
+     * 
+     * @param project - project
+     * @param namespaceQualifiedName - namespace name
+     * @return collection of namespaces
+     */
+    private static Collection<CsmNamespace> findNamespacesInProject(CsmProject project, CharSequence namespaceQualifiedName) {
+        HashSet<CsmProject> scannedProjects = new HashSet<CsmProject>();
+        Collection<CsmNamespace> out = new ArrayList<CsmNamespace>();
+        CsmNamespace namespace = project.findNamespace(namespaceQualifiedName);
+        if(namespace != null) {                
+            out.add(namespace);
+        }
+        scannedProjects.add(project);
+        out.addAll(findNamespacesInProjects(project.getLibraries(), namespaceQualifiedName, scannedProjects));
+        return out;        
+    }
+    
+    /**
+     * Finds namespace in projects and libraries
+     * 
+     * @param project - project
+     * @param namespaceQualifiedName - namespace name
+     * @param scannedProjects - set of already scanned projects
+     * @return collection of namespaces
+     */
+    private static Collection<CsmNamespace> findNamespacesInProjects(Collection<CsmProject> projects, CharSequence namespaceQualifiedName, HashSet<CsmProject> scannedProjects) {
+        Collection<CsmNamespace> out = new ArrayList<CsmNamespace>();
+        for (CsmProject proj : projects) {
+            if(!scannedProjects.contains(proj)) {
+                CsmNamespace namespace = proj.findNamespace(namespaceQualifiedName);
+                if (namespace != null) {
+                    out.add(namespace);
+                }
+                scannedProjects.add(proj);
+                out.addAll(findNamespacesInProjects(proj.getLibraries(), namespaceQualifiedName, scannedProjects));
+            }
+        }        
+        return out;
+    }    
     
     /**
      * converts collection of using declarations into ordered list of namespaces
@@ -152,9 +232,9 @@ public abstract class CsmUsingResolver {
                 out.put(name, ref);
             }
         }
-        return new ArrayList<CsmDeclaration>(out.values());        
+        return new ArrayList<CsmDeclaration>(out.values());
     }
-    
+
     //
     // Implementation of the default resolver
     //
@@ -165,13 +245,25 @@ public abstract class CsmUsingResolver {
         public Collection<CsmDeclaration> findUsedDeclarations(CsmFile file, int offset, CsmProject onlyInProject) {
             return Collections.<CsmDeclaration>emptyList();
         }
+        
+        public Collection<CsmDeclaration> findUsedDeclarations(CsmNamespace namespace) {
+            return Collections.<CsmDeclaration>emptyList();
+        }
+
+        public Collection<CsmUsingDirective> findUsingDirectives(CsmNamespace namespace) {
+            return Collections.<CsmUsingDirective>emptyList();
+        }
 
         public Collection<CsmNamespace> findVisibleNamespaces(CsmFile file, int offset, CsmProject onlyInProject) {
             return Collections.<CsmNamespace>emptyList();
         }
-
+        
+//        public Collection<CsmNamespaceDefinition> findDirectVisibleNamespaceDefinitions(CsmFile file, int offset, CsmProject onlyInProject) {
+//            return Collections.<CsmNamespaceDefinition>emptyList();
+//        }
+    
         public Collection<CsmNamespaceAlias> findNamespaceAliases(CsmFile file, int offset, CsmProject onlyInProject) {
             return Collections.<CsmNamespaceAlias>emptyList();
-        }
+        }        
     }    
 }

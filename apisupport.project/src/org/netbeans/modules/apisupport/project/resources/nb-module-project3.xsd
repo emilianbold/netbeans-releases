@@ -88,8 +88,10 @@ made subject to such option by the copyright holder.
             <xsd:element name="release-version" type="releaseVersionType" minOccurs="0"/>
             <xsd:choice minOccurs="0">
                 <xsd:element name="specification-version" type="specificationVersionType"/>
-                <!-- Empty; actual impl version to use determined during the build -->
-                <xsd:element name="implementation-version"/>
+                <xsd:element name="implementation-version">
+                    <!-- Empty; actual impl version to use determined during the build -->
+                    <xsd:complexType/>
+                </xsd:element>
             </xsd:choice>
         </xsd:sequence>
     </xsd:complexType>

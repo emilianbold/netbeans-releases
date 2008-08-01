@@ -45,14 +45,9 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Set;
-import java.util.TreeSet;
-import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.api.model.CsmFunction;
-import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
-import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceAlias;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
@@ -61,10 +56,11 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmScopeElement;
-import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.api.model.CsmUsingDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmUsingDirective;
 import org.netbeans.modules.cnd.api.model.deep.CsmDeclarationStatement;
+import org.netbeans.modules.cnd.api.model.services.CsmSelect;
+import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.services.CsmUsingResolver;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
@@ -77,67 +73,40 @@ import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
  */
 public class FileElementsCollector {
     private final CsmFile destFile;
+    private int startOffset;
     private int destOffset;
     private final CsmProject onlyInProject;
     
-    private Set<CsmFile> visitedFiles = new HashSet<CsmFile>();
-    
     private final ProjectBase project;
-    
-//    public FileElementsCollector(CsmOffsetable offsetable) {
-//        this(offsetable.getContainingFile(), offsetable.getStartOffset(), null);
-//    }
     
     public FileElementsCollector(CsmFile file, int offset, CsmProject onlyInProject) {
         this.destFile = file;
         this.project = (ProjectBase) file.getProject();
         this.destOffset = offset;
+        this.startOffset = 0;
         this.onlyInProject = onlyInProject;
     }
     
-    //private CsmNamespace currentNamespace;
-    
-//    public FileElementsCollector(CsmFile destFile, int destOffset, Resolver parent) {
-//        this.destFile = destFile;
-//        this.destOffset = destOffset;
-//        parentResolver = parent;
-//        this.project = (ProjectBase) destFile.getProject();
-//    }
-//
-//    public FileElementsCollector(CsmOffsetable context, Resolver parent) {
-//        this.destFile = context.getContainingFile();
-//        this.destOffset = context.getStartOffset();
-//        parentResolver = parent;
-//        this.project = (ProjectBase) context.getContainingFile().getProject();
-//    }
+    public void incrementOffset(int newOffset){
+        if (mapsGathered) {
+            startOffset = destOffset;
+        }
+        destOffset = newOffset;
+        if (startOffset < destOffset) {
+            mapsGathered = false;
+            visibleUsedDeclarations = null;
+            visibleNamespaces = null;
+        } else if (startOffset > destOffset) {
+            throw new IllegalArgumentException("Start offset "+startOffset+" > destination offset "+destOffset); // NOI18N
+        }
+    }
     
     
     private LinkedHashSet<CsmNamespace> directVisibleNamespaces = new LinkedHashSet<CsmNamespace>();
     private LinkedHashSet<CsmUsingDirective> usingNamespaces = new LinkedHashSet<CsmUsingDirective>();
     private LinkedHashSet<CsmNamespaceAlias> namespaceAliases = new LinkedHashSet<CsmNamespaceAlias>()/*<String, CsmNamespace>*/;
     private LinkedHashSet<CsmUsingDeclaration> usingDeclarations = new LinkedHashSet<CsmUsingDeclaration>()/*<String, CsmDeclaration>*/;
-    
-    private CsmTypedef currTypedef;
-    
-    private String[] names;
-    private int currNamIdx;
-    
-    private String currName() {
-        return (names != null && currNamIdx < names.length) ? names[currNamIdx] : "";
-    }
-    
-    private CsmNamespace containingNamespace;
-    private CsmClass containingClass;
-    
-    private CsmNamespace getContainingNamespace() {
-        initContext();
-        return containingNamespace;
-    }
-    
-    private CsmClass getContainingClass() {
-        initContext();
-        return containingClass;
-    }
+//    private LinkedHashSet<CsmNamespaceDefinition> directVisibleNamespaceDefinitions = new LinkedHashSet<CsmNamespaceDefinition>();
     
     public Collection<CsmUsingDeclaration> getUsingDeclarations() {
         initMaps();
@@ -177,15 +146,11 @@ public class FileElementsCollector {
         }
         return Collections.unmodifiableCollection(visibleNamespaces);
     }
-    
-    private boolean contextFound = false;
-    private synchronized void initContext() {
-        if( contextFound ) {
-            return;
-        }
-        contextFound = true;
-        findContext(destFile.getDeclarations());
-    }
+
+//    public Collection<CsmNamespaceDefinition> getDirectVisibleNamespaceDefinitions() {
+//        initMaps();
+//        return Collections.unmodifiableCollection(directVisibleNamespaceDefinitions);
+//    }
     
     private boolean mapsGathered = false;
     private synchronized void initMaps() {
@@ -194,155 +159,56 @@ public class FileElementsCollector {
         }
         mapsGathered = true;
         gatherFileMaps(this.destFile);
-//        initContext();
-    }
-    
-//    private CsmClassifier findClassifier(CsmNamespace ns, String qulifiedNamePart) {
-//        CsmClassifier result = null;
-//        while ( ns != null  && result == null) {
-//            String fqn = ns.getQualifiedName() + "::" + qulifiedNamePart; // NOI18N
-//            result = findClassifier(fqn);
-//            ns = ns.getParent();
-//        }
-//        return result;
-//    }
-//
-//    private CsmClassifier findClassifier(String qualifiedName) {
-//        CsmClassifier result = project.findClassifier(qualifiedName);
-//        if( result == null ) {
-//            for (Iterator iter = project.getLibraries().iterator(); iter.hasNext() && result == null;) {
-//                CsmProject lib = (CsmProject) iter.next();
-//                result = lib.findClassifier(qualifiedName);
-//            }
-//        }
-//        return result;
-//    }
-//
-//    public CsmNamespace findNamespace(String qualifiedName) {
-//        CsmNamespace result = project.findNamespace(qualifiedName);
-//        if( result == null ) {
-//            for (Iterator iter = project.getLibraries().iterator(); iter.hasNext() && result == null;) {
-//                CsmProject lib = (CsmProject) iter.next();
-//                result = lib.findNamespace(qualifiedName);
-//            }
-//        }
-//        return result;
-//    }
-    
-    private boolean isInside(CsmOffsetable elem, int offset) {
-        return elem.getStartOffset() < offset && offset < elem.getEndOffset();
-    }
-    
-    private void findContext(Iterable declarations) {
-        for (Iterator it = declarations.iterator(); it.hasNext();) {
-            CsmDeclaration decl = (CsmDeclaration) it.next();
-            if(CsmKindUtilities.isNamespaceDefinition(decl)) {
-                CsmNamespaceDefinition nd = (CsmNamespaceDefinition) decl;
-                if( isInside(nd, this.destOffset) ) {
-                    containingNamespace = nd.getNamespace();
-                    findContext(nd.getDeclarations());
-                }
-            } else if(CsmKindUtilities.isClass(decl)) {
-                
-                CsmClass cls = (CsmClass) decl;
-                if( isInside(cls, this.destOffset)  ) {
-                    containingClass = cls;
-                    Collection inners;
-                    if (cls.getFriends().size() > 0) {
-                        inners = new TreeSet(FileImpl.START_OFFSET_COMPARATOR);
-                        inners.addAll(cls.getMembers());
-                        inners.addAll(cls.getFriends());
-                    } else {
-                        inners = cls.getMembers();
-                    }
-                    findContext(inners);
-                }
-            } else if(CsmKindUtilities.isFunctionDefinition(decl)) {
-                CsmFunctionDefinition fd = (CsmFunctionDefinition) decl;
-                if( isInside(fd, this.destOffset) ) {
-                    CsmNamespace ns = getFunctionDefinitionNamespace(fd);
-                    if( ns != null && ! ns.isGlobal() ) {
-                        containingNamespace = ns;
-                    }
-                    CsmFunction fun = getFunctionDeclaration(fd);
-                    if( fun != null && CsmKindUtilities.isMethodDeclaration(fun) ) {
-                        containingClass = ((CsmMethod) fun).getContainingClass();
-                    }
-                }
-            }
-        }
-    }
-    
-    private CsmFunction getFunctionDeclaration(CsmFunctionDefinition fd){
-        return fd.getDeclaration();
-    }
-    
-    private CsmNamespace getFunctionDefinitionNamespace(CsmFunctionDefinition def) {
-        CsmFunction fun = getFunctionDeclaration(def);
-        if( fun != null ) {
-            CsmScope scope = fun.getScope();
-            if( CsmKindUtilities.isNamespace(scope)) {
-                CsmNamespace ns = (CsmNamespace) scope;
-                return ns;
-            } else if( CsmKindUtilities.isClass(scope) ) {
-                return getClassNamespace((CsmClass) scope);
-            }
-        }
-        return null;
-    }
-    
-    private CsmNamespace getClassNamespace(CsmClass cls) {
-        CsmScope scope = cls.getScope();
-        while( scope != null ) {
-            if( CsmKindUtilities.isNamespace(scope) ) {
-                return (CsmNamespace) scope;
-            }
-            if( CsmKindUtilities.isScopeElement(scope) ) {
-                scope = ((CsmScopeElement)scope).getScope();
-            } else {
-                break;
-            }
-        }
-        return null;
     }
     
     protected void gatherFileMaps(CsmFile file) {
+        gatherFileMaps(new HashSet<CsmFile>(), file, this.startOffset, this.destOffset);
+    }
+    
+    protected void gatherFileMaps(Set<CsmFile> visitedFiles, CsmFile file, int startOffset, int endOffset) {
         if( visitedFiles.contains(file) ) {
             return;
         }
         visitedFiles.add(file);
-        
-        for (Iterator<CsmInclude> iter = file.getIncludes().iterator(); iter.hasNext();) {
+        CsmFilter filter = CsmSelect.getDefault().getFilterBuilder().createOffsetFilter(startOffset, endOffset);
+        Iterator<CsmInclude> iter = CsmSelect.getDefault().getIncludes(file, filter);
+        while (iter.hasNext()){
             CsmInclude inc = iter.next();
+            if (inc.getStartOffset() < startOffset) {
+                continue;
+            }
             // check that include is above the end offset
-            if (inc.getEndOffset() < this.destOffset) {
+            if (inc.getEndOffset() < endOffset) {
                 CsmFile incFile = inc.getIncludeFile();
                 if( incFile != null && (onlyInProject == null || incFile.getProject() == onlyInProject)) {
                     // in includes look for everything
-                    int oldOffset = this.destOffset;
-                    this.destOffset = Integer.MAX_VALUE;
-                    gatherFileMaps(incFile);
-                    // restore previous value
-                    this.destOffset = oldOffset;
+                    gatherFileMaps(visitedFiles, incFile, 0, Integer.MAX_VALUE);
                 }
             }
         }
-        // gother this file maps 
-        gatherDeclarationsMaps(file.getDeclarations());
+        // gather this file maps 
+        gatherDeclarationsMaps(CsmSelect.getDefault().getDeclarations(file, filter), startOffset, endOffset);
     }
     
-    protected void gatherDeclarationsMaps(Iterable declarations) {
-        for( Iterator it = declarations.iterator(); it.hasNext(); ) {
+    protected void gatherDeclarationsMaps(Iterable declarations, int startOffset, int endOffset) {
+        gatherDeclarationsMaps(declarations.iterator(), startOffset, endOffset);
+    }
+
+    protected void gatherDeclarationsMaps(Iterator it, int startOffset, int endOffset) {
+        while(it.hasNext()) {
             CsmOffsetable o = (CsmOffsetable) it.next();
             try {
                 int start = o.getStartOffset();
                 int end = o.getEndOffset();
-                if( start >= this.destOffset ) {
+                if (end < startOffset) {
+                    continue;
+                }
+                if( start >= endOffset ) {
                     break;
                 }
                 //assert o instanceof CsmScopeElement;
                 if(CsmKindUtilities.isScopeElement((CsmObject)o)) {
-                    gatherScopeElementMaps((CsmScopeElement) o, end);
+                    gatherScopeElementMaps((CsmScopeElement) o, end, endOffset);
                 } else {
                     if( FileImpl.reportErrors ) {
                         System.err.println("Expected CsmScopeElement, got " + o);
@@ -358,38 +224,10 @@ public class FileElementsCollector {
         }
     }
     
-    private void doProcessTypedefsInUpperNamespaces(CsmNamespaceDefinition nsd) {
-        for (Iterator iter = nsd.getDeclarations().iterator(); iter.hasNext();) {
-            CsmDeclaration decl = (CsmDeclaration) iter.next();
-            if( decl.getKind() == CsmDeclaration.Kind.NAMESPACE_DEFINITION ) {
-                processTypedefsInUpperNamespaces((CsmNamespaceDefinition) decl);
-            } else if( decl.getKind() == CsmDeclaration.Kind.TYPEDEF ) {
-                CsmTypedef typedef = (CsmTypedef) decl;
-                if( currName().equals(typedef.getName()) ) {
-                    currTypedef = typedef;
-                }
-            }
-        }
-    }
-    
-    private void processTypedefsInUpperNamespaces(CsmNamespaceDefinition nsd) {
-        if( nsd.getName().equals(currName()) ) {
-            currNamIdx++;
-            doProcessTypedefsInUpperNamespaces(nsd);
-        } else {
-            CsmNamespace cns = getContainingNamespace();
-            if( cns != null ) {
-                if( cns.equals(nsd.getNamespace())) {
-                    doProcessTypedefsInUpperNamespaces(nsd);
-                }
-            }
-        }
-    }
-    
     /**
      * It is quaranteed that element.getStartOffset < this.destOffset
      */
-    protected void gatherScopeElementMaps(CsmScopeElement element, int end) {
+    protected void gatherScopeElementMaps(CsmScopeElement element, int end, int endOffset) {
         
         CsmDeclaration.Kind kind = CsmKindUtilities.isDeclaration(element) ? ((CsmDeclaration) element).getKind() : null;
         if( kind == CsmDeclaration.Kind.NAMESPACE_DEFINITION ) {
@@ -399,15 +237,15 @@ public class FileElementsCollector {
                 // it declares using itself
                 directVisibleNamespaces.add(nsd.getNamespace());
             }
-            if( this.destOffset < end ) {
+            if( endOffset < end ) {
                 // put in the end of list
                 directVisibleNamespaces.remove(nsd.getNamespace());
                 directVisibleNamespaces.add(nsd.getNamespace());
                 //currentNamespace = nsd.getNamespace();
-                gatherDeclarationsMaps(nsd.getDeclarations());
-//            } else {
-//                processTypedefsInUpperNamespaces(nsd);
+                gatherDeclarationsMaps(nsd.getDeclarations(), 0, endOffset);
             }
+//            directVisibleNamespaceDefinitions.add(nsd);
+//            gatherDeclarationsMaps(nsd.getDeclarations(), 0, endOffset);
         } else if( kind == CsmDeclaration.Kind.NAMESPACE_ALIAS ) {
             CsmNamespaceAlias alias = (CsmNamespaceAlias) element;
             namespaceAliases.add(alias);
@@ -415,36 +253,19 @@ public class FileElementsCollector {
         } else if( kind == CsmDeclaration.Kind.USING_DECLARATION ) {
             CsmUsingDeclaration udecl = (CsmUsingDeclaration) element;
             usingDeclarations.add(udecl);
-//            CsmDeclaration decl = udecl.getReferencedDeclaration();
-//            if( decl != null ) {
-//                String id;
-//                if( decl.getKind() == CsmDeclaration.Kind.FUNCTION || decl.getKind() == CsmDeclaration.Kind.FUNCTION_DEFINITION ) {
-//                    // TODO: decide how to resolve functions
-//                    id = ((CsmFunction) decl).getSignature();
-//                } else {
-//                    id = decl.getName();
-//                }
-//                usingDeclarations.put(id, decl);
-//            }
         } else if( kind == CsmDeclaration.Kind.USING_DIRECTIVE ) {
             CsmUsingDirective udir = (CsmUsingDirective) element;
             usingNamespaces.add(udir);
 //            directVisibleNamespaces.add(udir.getName()); // getReferencedNamespace()
         } else if( CsmKindUtilities.isDeclarationStatement(element) ) {
             CsmDeclarationStatement ds = (CsmDeclarationStatement) element;
-            if( ds.getStartOffset() < this.destOffset ) {
-                gatherDeclarationsMaps( ((CsmDeclarationStatement) element).getDeclarators());
+            if( ds.getStartOffset() < endOffset ) {
+                gatherDeclarationsMaps( ((CsmDeclarationStatement) element).getDeclarators(), 0, endOffset);
             }
         } else if( CsmKindUtilities.isScope(element) ) {
-            if( this.destOffset < end ) {
-                gatherDeclarationsMaps( ((CsmScope) element).getScopeElements());
-            }
-        } else if( kind == CsmDeclaration.Kind.TYPEDEF ) {
-            CsmTypedef typedef = (CsmTypedef) element;
-            if( currName().equals(typedef.getName()) ) {
-                currTypedef = typedef;
+            if( endOffset < end ) {
+                gatherDeclarationsMaps( ((CsmScope) element).getScopeElements(), 0, endOffset);
             }
         }
     }    
-    
 }

@@ -44,7 +44,7 @@ made subject to such option by the copyright holder.
 <filesystem>
     <folder name="Editors">
         <folder name="text">
-            <folder name="base">
+            <folder name="plain">
                 <folder name="UpToDateStatusProvider">
                     <file name="org-netbeans-modules-editor-errorstripe-TestMarkProviderCreator.instance">
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.editor.errorstripe.TestMarkProviderCreator.getDefault" />

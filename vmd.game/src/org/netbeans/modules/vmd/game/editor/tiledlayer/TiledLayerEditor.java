@@ -64,6 +64,8 @@ import org.openide.util.NbBundle;
  */
 public class TiledLayerEditor extends javax.swing.JPanel implements TiledLayerListener, PropertyChangeListener {
 	
+    public static final int MAX_COMPILABLE_CELLS = 8000;
+    
 	private TiledLayer tiledLayer;
 	private TiledLayerEditorComponent editorComponent;
 	private JScrollPane editorScroll;
@@ -124,6 +126,8 @@ public class TiledLayerEditor extends javax.swing.JPanel implements TiledLayerLi
 		JScrollPane scrollAnimTiles = new JScrollPane(new AnimatedTileList(editorComponent));
 		scrollAnimTiles.setBorder(null);
 		this.panelAnimatedTiles.add(scrollAnimTiles, BorderLayout.CENTER);
+        
+        this.updateTextLabels();
 	}
 	
 	/** This method is called from within the constructor to
@@ -295,6 +299,16 @@ public class TiledLayerEditor extends javax.swing.JPanel implements TiledLayerLi
     public void updateTextLabels() {
 		textFieldRows.setText(Integer.toString(this.tiledLayer.getRowCount()));
 		textFieldCols.setText(Integer.toString(this.tiledLayer.getColumnCount()));
+        Color textColor = null;
+        if (this.tiledLayer.getRowCount() * this.tiledLayer.getColumnCount() > MAX_COMPILABLE_CELLS) {
+            textColor = Color.RED;
+            textFieldName.setToolTipText(NbBundle.getMessage(TiledLayerEditor.class, "TiledLayerEditor.textFieldName.err.tooltip"));
+        }
+        else {
+            textColor = Color.BLACK;
+            textFieldName.setToolTipText(null);
+        }
+        textFieldName.setForeground(textColor);
     }
 
     public void tileChanged(TiledLayer t, int row, int col) {

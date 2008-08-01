@@ -19,6 +19,11 @@
 
 set -e
 
+script_dir=`dirname "$0"`
+
+#add Product ID
+"$script_dir"/addproduct_id.sh "SOA"
+
 if [ -d "/Library/Receipts/soa.pkg" ] ; then
     rm -rf "/Library/Receipts/soa.pkg"
 fi

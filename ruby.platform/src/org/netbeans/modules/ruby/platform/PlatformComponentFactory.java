@@ -91,7 +91,7 @@ public final class PlatformComponentFactory {
     public static JComboBox getRubyPlatformsComboxBox() {
         final JComboBox plafComboBox = new JComboBox();
         plafComboBox.setRenderer(new RubyPlatformListRenderer());
-        if (Util.isFirstPlatformTouch()) {
+        if (RubyPreferences.isFirstPlatformTouch()) {
             plafComboBox.setModel(createComboWaitModel());
             plafComboBox.setEnabled(false);
             RequestProcessor.getDefault().post(new Runnable() {
@@ -155,7 +155,9 @@ public final class PlatformComponentFactory {
         public abstract void platformChanged();
 
         public void itemStateChanged(ItemEvent e) {
-            platformChanged();
+            if (e.getStateChange() == ItemEvent.SELECTED) {
+                platformChanged();
+            }
         }
 
         public void propertyChange(PropertyChangeEvent evt) {

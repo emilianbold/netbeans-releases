@@ -1,0 +1,48 @@
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+
+package o.n.m.ws.qaf.rest.patterns;
+
+import java.util.prefs.Preferences;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.UriInfo;
+import javax.ws.rs.Path;
+import javax.ws.rs.GET;
+import javax.ws.rs.ProduceMime;
+
+/**
+ * REST Web Service
+ *
+ * @author lukas
+ */
+
+@Path("/CcCI2ContainerURI")
+public class CcCI2CClass {
+    @Context
+    private UriInfo context;
+
+    /** Creates a new instance of CcCI2CClass */
+    public CcCI2CClass() {
+    }
+
+    /**
+     * Retrieves representation of an instance of o.n.m.ws.qaf.rest.patterns.CcCI2CClass
+     * @return an instance of java.util.prefs.Preferences
+     */
+    @GET
+    @ProduceMime("text/plain")
+    public Preferences getText() {
+        //TODO return proper representation object
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * Sub-resource locator method for  {CcCI2URI}
+     */
+    @Path("{CcCI2URI}")
+    public CcCI2Cl getCcCI2Cl() {
+        return new CcCI2Cl();
+    }
+}

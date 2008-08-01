@@ -45,7 +45,9 @@ import com.sun.tools.javac.api.JavacTaskImpl;
 import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.jvm.Target;
 import com.sun.tools.javac.model.JavacElements;
+import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -57,6 +59,7 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import org.netbeans.modules.java.source.ElementHandleAccessor;
 import org.netbeans.modules.java.source.usages.ClassFileUtil;
+import org.openide.util.Parameters;
 
 /**
  * Represents a handle for {@link Element} which can be kept and later resolved
@@ -121,8 +124,12 @@ public final class ElementHandle<T extends Element> {
      */
     @SuppressWarnings ("unchecked")     // NOI18N
     public T resolve (final CompilationInfo compilationInfo) {
-        assert compilationInfo != null;
-        return resolveImpl (compilationInfo.impl.getJavacTask());
+        Parameters.notNull("compilationInfo", compilationInfo);
+        T result = resolveImpl (compilationInfo.impl.getJavacTask());
+        if (result == null) {
+            Logger.getLogger(ElementHandle.class.getName()).info("Cannot resolve: "+toString());    //NOI18N
+        }
+        return result;
     }
     
     private T resolveImpl (final JavacTaskImpl jt) {
@@ -352,7 +359,7 @@ public final class ElementHandle<T extends Element> {
      * @throws IllegalArgumentException if the element is of an unsupported {@link ElementKind}
      */
     public static<T extends Element> ElementHandle<T> create (final T element) throws IllegalArgumentException {
-        assert element != null;
+        Parameters.notNull("element", element);
         ElementKind kind = element.getKind();
         String[] signatures;
         switch (kind) {
@@ -415,7 +422,10 @@ public final class ElementHandle<T extends Element> {
      * @since 0.29.0
      */
     public static ElementHandle<? extends TypeElement> from (final TypeMirrorHandle<? extends DeclaredType> typeMirrorHandle) {
-        assert typeMirrorHandle.getKind() == TypeKind.DECLARED;
+        Parameters.notNull("typeMirrorHandle", typeMirrorHandle);
+        if (typeMirrorHandle.getKind() != TypeKind.DECLARED) {
+            throw new IllegalStateException("Incorrect kind: " + typeMirrorHandle.getKind());
+        }
         return (ElementHandle<TypeElement>)typeMirrorHandle.getElementHandle();
     }
     

@@ -45,7 +45,6 @@ import java.io.IOException;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.uml.documentation.ui.DocumentationTopComponnet;
-import org.netbeans.modules.uml.project.ui.nodes.UMLModelRootNode;
 import org.netbeans.modules.uml.resources.images.ImageUtil;
 import org.openide.cookies.CloseCookie;
 import org.openide.cookies.EditorCookie;
@@ -64,10 +63,7 @@ import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
 import org.openide.text.DataEditorSupport;
 import org.openide.util.NbBundle;
-import org.openide.util.Lookup;
 import org.openide.windows.CloneableOpenSupport;
-import org.openide.windows.TopComponent;
-import org.openide.windows.WindowManager;
 
 /**
  *
@@ -141,10 +137,6 @@ public class UMLProjectDataObject extends MultiDataObject
         getCookieSet().remove(save);
     }
     
-    public Lookup getLookup() {
-        return getCookieSet().getLookup();
-    }
-
     private String getDisplayName()
     {
         Project proj = FileOwnerQuery.getOwner(getFileObject());
@@ -196,7 +188,8 @@ public class UMLProjectDataObject extends MultiDataObject
     }
     
     
-    private static class UMLEditorSupport extends DataEditorSupport implements OpenCookie, EditorCookie.Observable, PrintCookie, CloseCookie
+    private static class UMLEditorSupport extends DataEditorSupport 
+            implements OpenCookie, EditorCookie.Observable, PrintCookie, CloseCookie
     {
         public UMLEditorSupport(UMLProjectDataObject obj)
         {

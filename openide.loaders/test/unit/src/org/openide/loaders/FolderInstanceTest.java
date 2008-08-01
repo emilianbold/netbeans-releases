@@ -49,21 +49,15 @@ import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 
 import org.openide.filesystems.*;
-import org.openide.loaders.*;
 import org.openide.cookies.*;
 import org.openide.util.*;
 
 import org.netbeans.junit.*;
 import java.util.Enumeration;
-import junit.framework.Test;
 
 public class FolderInstanceTest extends NbTestCase {
     private Logger err;
 
-    public FolderInstanceTest() {
-        super("");
-    }
-    
     public FolderInstanceTest(java.lang.String testName) {
         super(testName);
     }
@@ -78,16 +72,6 @@ public class FolderInstanceTest extends NbTestCase {
         return 20000;
     }
 
-    public static Test suite() {
-        return new NbTestSuite(FolderInstanceTest.class);
-    }
-    
-    private static void setSystemProp(String key, String value) {
-        java.util.Properties prop = System.getProperties();
-        if (prop.get(key) != null) return;
-        prop.put(key, value);
-    }
-    
     protected void setUp () throws Exception {
         MockServices.setServices(Pool.class);
         
@@ -99,7 +83,8 @@ public class FolderInstanceTest extends NbTestCase {
         
         clearWorkDir ();
         
-        err = Logger.getLogger("TEST-" + getName());
+        err = Logger.getLogger("test." + getName());
+        err.info("setUp over: " + getName());
     }
 
     /** Checks whether only necessary listeners are attached to the objects.
@@ -192,13 +177,17 @@ public class FolderInstanceTest extends NbTestCase {
 
     /** Checks whether folder instance correctly reacts to changes of cookies in data objects.
      */
+    @RandomlyFails
     public void testChangeCookie () throws Exception {
         String fsstruct [] = new String [] {
             "AA/A.simple"
         };
         
+        
         TestUtilHid.destroyLocalFileSystem (getName());
+        err.info("destroyLocalFileSystem");
         FileSystem lfs = TestUtilHid.createLocalFileSystem(getWorkDir(), fsstruct);
+        err.info("lfs: " + lfs);
 
         FileObject bb = lfs.findResource("/AA");
         
@@ -206,7 +195,11 @@ public class FolderInstanceTest extends NbTestCase {
         
 
         DataLoader l = DataLoader.getLoader(DataLoaderOrigTest.SimpleUniFileLoader.class);
+        err.info("Changing the loader: " + l);
         Pool.setExtra(l);
+        err.info("Changing the loader done: " + l);
+        
+        
         try {
             FileObject aa = lfs.findResource("/AA/A.simple");
             DataObject obj = DataObject.find (aa);
@@ -215,7 +208,9 @@ public class FolderInstanceTest extends NbTestCase {
                 fail ("Not instance of desired object");
             }
 
+            err.info("Create instance F");
             F instance = new F (folder);
+            err.info("Instance is created");
             
             org.openide.nodes.CookieSet set = ((DataLoaderOrigTest.SimpleDataObject)obj).cookieSet ();
             
@@ -225,33 +220,42 @@ public class FolderInstanceTest extends NbTestCase {
                 fail ("Should be empty with object with no cookies");
             }
             
+            err.info("changing instance in cookie set");
             InstanceSupport.Instance is = new InstanceSupport.Instance (new Integer (100));
             set.add (is);
+            err.info("changing instance in cookie set, done");
             
             list = (List)instance.instanceCreate ();
             if (list.isEmpty ()) {
                 fail ("Cookie added, should return instance");
             }
             
+            err.info("removing instance from the cookie set");        
             set.remove (is);
+            err.info("removing instance from the cookie set, done");        
             
             list = (List)instance.instanceCreate ();
             if (!list.isEmpty ()) {
                 fail ("Cookie removed should be empty");
             }
             
+            err.info("adding again");
             set.add (is);
             list = (List)instance.instanceCreate ();
             if (list.isEmpty ()) {
                 fail ("Cookie added again, should return instance");
             }
+            err.info("adding again, done");
         } finally {
+            err.info("finally: cleaning the Pool");
             Pool.setExtra(null);
+            err.info("finally: cleaning the Pool, done");
         }
     }
     
     /** Does FolderInstance react to change of order?
      */
+    @RandomlyFails
     public void testChangeOfOrder () throws Exception {
         String fsstruct [] = new String [] {
             "AA/A.simple",
@@ -317,6 +321,7 @@ public class FolderInstanceTest extends NbTestCase {
     /** Tests whether correct result is returned when an object is added and removed
      * from the folder.
      */
+    @RandomlyFails
     public void testModification () throws Exception {
         String fsstruct [] = new String [] {
             "AA/"
@@ -337,6 +342,7 @@ public class FolderInstanceTest extends NbTestCase {
     /** Tests whether correct result is returned when an object is added and removed
      * from the folder.
      */
+    @RandomlyFails
     public void testModificationOnSubfolder () throws Exception {
         String fsstruct [] = new String [] {
             "AA/BB/"
@@ -356,6 +362,7 @@ public class FolderInstanceTest extends NbTestCase {
     /** Tests whether correct result is returned when an object is added and removed
      * from the folder.
      */
+    @RandomlyFails
     public void testModificationOnSubSubfolder () throws Exception {
         String fsstruct [] = new String [] {
             "/AA/BB/CC/DD/EE/FF/GG/HH/II/JJ/KK"
@@ -382,6 +389,7 @@ public class FolderInstanceTest extends NbTestCase {
         modification (new F (folder), subfolder);
     }
     
+    @RandomlyFails
     public void testWhetherRenameTriggersRevalidationOfTheFolderInstance() throws Exception {
         String fsstruct [] = new String [] {
             "/AAXX/OldName.shadow"
@@ -520,6 +528,7 @@ public class FolderInstanceTest extends NbTestCase {
      * on occasion, which of course it was not prepared to deal with.
      * @author Jesse Glick
      */
+    @RandomlyFails
     public void testFolderInstanceNeverPassesInvObjects() throws Exception {
         doFolderInstanceNeverPassesInvObjects (100, 1000);
     }
@@ -604,7 +613,7 @@ public class FolderInstanceTest extends NbTestCase {
         }
     }
 
-    
+    @RandomlyFails
     public void testFolderInstanceNeverPassesInvFolders() throws Exception {
         String[] names = {
             "folder/sub/"

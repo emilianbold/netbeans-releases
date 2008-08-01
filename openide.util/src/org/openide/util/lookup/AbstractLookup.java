@@ -63,6 +63,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
+import java.util.concurrent.Executor;
 import org.openide.util.Utilities;
 
 
@@ -200,10 +201,19 @@ public class AbstractLookup extends Lookup implements Serializable {
      * @param pair class/instance pair
      */
     protected final void addPair(Pair<?> pair) {
-        addPairImpl(pair);
+        addPairImpl(pair, null);
     }
 
-    private final <Transaction> void addPairImpl(Pair<?> pair) {
+    /** The method to add instance to the lookup with.
+     * @param pair class/instance pair
+     * @param notifyIn the executor that will handle the notification of events
+     * @since 7.16
+     */
+    protected final void addPair(Pair<?> pair, Executor notifyIn) {
+        addPairImpl(pair, notifyIn);
+    }
+
+    private final <Transaction> void addPairImpl(Pair<?> pair, Executor notifyIn) {
         HashSet<R> toNotify = new HashSet<R>();
 
         AbstractLookup.Storage<Transaction> t = enterStorage();
@@ -233,17 +243,25 @@ public class AbstractLookup extends Lookup implements Serializable {
             exitStorage();
         }
 
-        notifyListeners(toNotify);
+        notifyIn(notifyIn, toNotify);
     }
 
     /** Remove instance.
      * @param pair class/instance pair
      */
     protected final void removePair(Pair<?> pair) {
-        removePairImpl(pair);
+        removePairImpl(pair, null);
+    }
+    /** Remove instance.
+     * @param pair class/instance pair
+     * @param notifyIn the executor that will handle the notification of events
+     * @since 7.16
+     */
+    protected final void removePair(Pair<?> pair, Executor notifyIn) {
+        removePairImpl(pair, notifyIn);
     }
 
-    private <Transaction> void removePairImpl(Pair<?> pair) {
+    private <Transaction> void removePairImpl(Pair<?> pair, Executor notifyIn) {
         HashSet<R> toNotify = new HashSet<R>();
 
         AbstractLookup.Storage<Transaction> t = enterStorage();
@@ -257,14 +275,40 @@ public class AbstractLookup extends Lookup implements Serializable {
             exitStorage();
         }
 
-        notifyListeners(toNotify);
+        notifyIn(notifyIn, toNotify);
     }
 
     /** Changes all pairs in the lookup to new values.
      * @param collection the collection of (Pair) objects
      */
     protected final void setPairs(Collection<? extends Pair> collection) {
-        notifyCollectedListeners(setPairsAndCollectListeners(collection));
+        setPairs(collection, null);
+    }
+
+    /** Changes all pairs in the lookup to new values, notifies listeners
+     * using provided executor.
+     * 
+     * @param collection the collection of (Pair) objects
+     * @param notifyIn the executor that will handle the notification of events
+     * @since 7.16
+     */
+    protected final void setPairs(Collection<? extends Pair> collection, Executor notifyIn) {
+        HashSet<R> listeners = setPairsAndCollectListeners(collection);
+        notifyIn(notifyIn, listeners);
+    }
+    
+    private final void notifyIn(Executor notifyIn, final HashSet<R> listeners) {
+        if (notifyIn == null) {
+            notifyListeners(listeners);
+            return;
+        }
+        
+        class Notify implements Runnable {
+            public void run() {
+                notifyListeners(listeners);
+            }
+        }
+        notifyIn.execute(new Notify());
     }
     
     /** Getter for set of pairs. Package private contract with MetaInfServicesLookup.
@@ -349,13 +393,6 @@ public class AbstractLookup extends Lookup implements Serializable {
         }
 
         return toNotify;
-    }
-
-    /** Notifies all collected listeners. Needed by MetaInfServicesLookup,
-     * maybe it will be an API later.
-     */
-    final void notifyCollectedListeners(Set<R> listeners) {
-        notifyListeners(listeners);
     }
 
     private final void writeObject(ObjectOutputStream oos)
@@ -461,7 +498,7 @@ public class AbstractLookup extends Lookup implements Serializable {
     /** Notifies listeners.
      * @param allAffectedResults set of R
      */
-    private static void notifyListeners(Set<R> allAffectedResults) {
+    static void notifyListeners(Set<R> allAffectedResults) {
         if (allAffectedResults.isEmpty()) {
             return;
         }
@@ -525,7 +562,7 @@ public class AbstractLookup extends Lookup implements Serializable {
     static boolean matches(Template<?> t, Pair<?> item, boolean deepCheck) {
         String id = t.getId();
 
-        if ((id != null) && !item.getId().equals(id)) {
+        if (id != null && !id.equals(item.getId())) {
             return false;
         }
 
@@ -1078,8 +1115,28 @@ public class AbstractLookup extends Lookup implements Serializable {
         // one of them is always null (except attach stage)
 
         /** abstract lookup we are connected to */
-        private AbstractLookup al = null;
-        private transient ArrayList<Pair> earlyPairs;
+        private AbstractLookup al;
+        private transient Object notifyIn;
+        
+        /** Default constructor.
+         */
+        public Content() {
+            this(null);
+        }
+        
+        /** Creates a content associated with an executor to handle dispatch
+         * of changes.
+         * @param notifyIn the executor to notify changes in
+         * @since  7.16
+         */
+        public Content(Executor notifyIn) {
+            this.notifyIn = notifyIn;
+        }
+        
+        /** for testing purposes */
+        final void attachExecutor(Executor notifyIn) {
+            this.notifyIn = notifyIn;
+        }
 
         /** A lookup attaches to this object.
          */
@@ -1087,9 +1144,9 @@ public class AbstractLookup extends Lookup implements Serializable {
             if (this.al == null) {
                 this.al = al;
 
-                if (earlyPairs != null) {
-                    ArrayList<Pair> ep = earlyPairs;
-                    earlyPairs = null;
+                ArrayList<Pair> ep = getEarlyPairs();
+                if (ep != null) {
+                    notifyIn = null;
                     setPairs(ep);
                 }
             } else {
@@ -1104,15 +1161,16 @@ public class AbstractLookup extends Lookup implements Serializable {
          */
         public final void addPair(Pair<?> pair) {
             AbstractLookup a = al;
+            Executor e = getExecutor();
 
-            if (a != null) {
-                a.addPair(pair);
+            if (a != null || e != null) {
+                a.addPair(pair, e);
             } else {
-                if (earlyPairs == null) {
-                    earlyPairs = new ArrayList<Pair>(3);
+                if (notifyIn == null) {
+                    notifyIn = new ArrayList<Pair>(3);
                 }
 
-                earlyPairs.add(pair);
+                getEarlyPairs().add(pair);
             }
         }
 
@@ -1121,15 +1179,16 @@ public class AbstractLookup extends Lookup implements Serializable {
          */
         public final void removePair(Pair<?> pair) {
             AbstractLookup a = al;
+            Executor e = getExecutor();
 
-            if (a != null) {
-                a.removePair(pair);
+            if (a != null || e != null) {
+                a.removePair(pair, e);
             } else {
-                if (earlyPairs == null) {
-                    earlyPairs = new ArrayList<Pair>(3);
+                if (notifyIn == null) {
+                    notifyIn = new ArrayList<Pair>(3);
                 }
 
-                earlyPairs.remove(pair);
+                getEarlyPairs().remove(pair);
             }
         }
 
@@ -1138,12 +1197,24 @@ public class AbstractLookup extends Lookup implements Serializable {
          */
         public final void setPairs(Collection<? extends Pair> c) {
             AbstractLookup a = al;
-
-            if (a != null) {
-                a.setPairs(c);
+            Executor e = getExecutor();
+            
+            if (a != null || e != null) {
+                a.setPairs(c, e);
             } else {
-                earlyPairs = new ArrayList<Pair>(c);
+                notifyIn = new ArrayList<Pair>(c);
             }
+        }
+
+        @SuppressWarnings("unchecked")
+        private ArrayList<Pair> getEarlyPairs() {
+            Object o = notifyIn;
+            return o instanceof ArrayList ? (ArrayList<Pair>)o : null;
+        }
+        
+        private Executor getExecutor() {
+            Object o = notifyIn;
+            return o instanceof Executor ? (Executor)o : null;
         }
     }
      // end of Content

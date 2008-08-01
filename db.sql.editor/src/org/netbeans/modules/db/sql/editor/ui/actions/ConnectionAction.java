@@ -180,13 +180,13 @@ public class ConnectionAction extends SQLExecutionBaseAction {
     private static final class DatabaseConnectionModel extends AbstractListModel implements ComboBoxModel, ConnectionListener, PropertyChangeListener {
 
         private ConnectionListener listener;
-        private List connectionList; // must be ArrayList
+        private List<DatabaseConnection> connectionList; // must be ArrayList
         private SQLExecution sqlExecution;
 
         public DatabaseConnectionModel() {
             listener = (ConnectionListener)WeakListeners.create(ConnectionListener.class, this, ConnectionManager.getDefault());
             ConnectionManager.getDefault().addConnectionListener(listener);
-            connectionList = new ArrayList();
+            connectionList = new ArrayList<DatabaseConnection>();
             connectionList.addAll(Arrays.asList(ConnectionManager.getDefault().getConnections()));
         }
 

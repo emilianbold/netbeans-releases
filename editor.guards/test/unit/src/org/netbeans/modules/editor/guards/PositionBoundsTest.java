@@ -45,7 +45,6 @@ import javax.swing.text.StyledDocument;
 import junit.framework.TestCase;
 import org.netbeans.api.editor.guards.Editor;
 import org.netbeans.api.editor.guards.GuardUtils;
-import org.netbeans.modules.editor.guards.GuardedSectionsImpl;
 import org.openide.text.NbDocument;
 
 /**
@@ -62,6 +61,7 @@ public class PositionBoundsTest extends TestCase {
         super(testName);
     }
     
+    @Override
     protected void setUp() throws Exception {
         this.editor = new Editor();
         this.guardsImpl = new GuardedSectionsImpl(this.editor);
@@ -94,14 +94,45 @@ public class PositionBoundsTest extends TestCase {
     public void testSetText() throws BadLocationException {
         editor.doc.insertString(0, "_abcd", null);
         PositionBounds bounds = PositionBounds.create(1, 4, guardsImpl);
+        doTestSetText(bounds);
+    }
+
+    public void testSetTextWithUnresolvedBounds() throws BadLocationException {
+        editor.doc.insertString(0, "_abcd", null);
+        PositionBounds bounds = PositionBounds.createUnresolved(1, 4, guardsImpl);
+        bounds.resolvePositions();
+        doTestSetText(bounds);
+    }
+
+    public void testSetTextWithBodyBounds() throws BadLocationException {
+        editor.doc.insertString(0, "_abcd", null);
+        PositionBounds bounds = PositionBounds.createBodyBounds(1, 4, guardsImpl);
+        doTestSetText(bounds);
+    }
+
+    public void testSetTextWithUnresolvedBodyBounds() throws BadLocationException {
+        editor.doc.insertString(0, "_abcd", null);
+        PositionBounds bounds = PositionBounds.createBodyUnresolved(1, 4, guardsImpl);
+        bounds.resolvePositions();
+        doTestSetText(bounds);
+    }
+
+    private void doTestSetText(PositionBounds bounds) throws BadLocationException {
         // test position bounds content changes; doc="_abcd"; pb="abc"
         bounds.setText("xy");
         assertEquals("start", 1, bounds.getBegin().getOffset());
         assertEquals("end", 3, bounds.getEnd().getOffset());
         assertEquals("getText", "xy", bounds.getText());
         assertEquals("doc length", "_xyd".length(), editor.doc.getLength());
+
+        // test position bounds content changes; doc="_xyd"; pb="xy"
+        bounds.setText("1234");
+        assertEquals("start", 1, bounds.getBegin().getOffset());
+        assertEquals("end", 5, bounds.getEnd().getOffset());
+        assertEquals("getText", "1234", bounds.getText());
+        assertEquals("doc length", "_1234d".length(), editor.doc.getLength());
     }
-    
+
     public void testInsertionBeforeBounds() throws BadLocationException {
         editor.doc.insertString(0, "_xyd", null);
         PositionBounds bounds = PositionBounds.create(1, 3, guardsImpl);

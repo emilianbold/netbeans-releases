@@ -113,11 +113,6 @@ public class ProjectsRootNodePhysicalViewModeSourcesTest extends NbTestCase {
         OpenProjectListSettings.getInstance().setOpenProjectsIcons(icons);
     }
 
-    @Override
-    protected void tearDown() throws Exception {
-        super.tearDown();
-    }
-
     public void testBehaviourOfProjectsLogicNode() throws InterruptedException {
         Node view = new ProjectsRootNode(ProjectsRootNode.PHYSICAL_VIEW);
         L listener = new L();

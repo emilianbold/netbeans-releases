@@ -3,7 +3,7 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
 
 
 The contents of this file are subject to the terms of either the GNU
@@ -27,7 +27,7 @@ your own identifying information:
 Contributor(s):
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
 Microsystems, Inc. All Rights Reserved.
 
 If you wish your version of this file to be governed by only the CDDL
@@ -105,6 +105,53 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="BuildArtifactMapper">
+             <api name="general"/>
+             <summary>Added BuildArtifactMapper</summary>
+             <version major="0" minor="38"/>
+             <date day="7" month="7" year="2008"/>
+             <author login="jlahoda"/>
+             <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="no" semantic="compatible" source="compatible"/>
+             <description>
+                 Added BuildArtifactMapper.
+             </description>
+             <class package="org.netbeans.api.java.source" name="BuildArtifactMapper" />
+        </change>
+        <change id="TaggingSupport">
+             <api name="general"/>
+             <summary>Added ModificationResult.getSpan and WorkingCopy.tag</summary>
+             <version major="0" minor="37"/>
+             <date day="25" month="6" year="2008"/>
+             <author login="msauer"/>
+             <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="no" semantic="compatible" source="compatible"/>
+             <description>
+                 Added Methods allowing tagging of trees and getting their span inside modified document.
+             </description>
+        </change>
+        <change id="TypeUtilities.substitute">
+             <api name="general"/>
+             <summary>Added TypeUtilities.substitute</summary>
+             <version major="0" minor="36"/>
+             <date day="6" month="5" year="2008"/>
+             <author login="jlahoda"/>
+             <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="no" semantic="compatible" source="compatible"/>
+             <description>
+                 Added TypeUtilities.substitute.
+             </description>
+             <class package="org.netbeans.api.java.source" name="TypeUtilities" />
+        </change>
+        <change id="GeneratorUtilities.createMethod">
+             <api name="general"/>
+             <summary>Added GeneratorUtilities.createMethod</summary>
+             <version major="0" minor="34"/>
+             <date day="25" month="3" year="2008"/>
+             <author login="jlahoda"/>
+             <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="no" semantic="compatible" source="compatible"/>
+             <description>
+                 Added method to create a new method tree for given method element.
+             </description>
+            <issue number="130240"/>
+        </change>
         <change id="CommitToGuards">
             <api name="general"/>
             <summary>Added ModificationResult.Difference.setCommitToGuards(boolean) and isCommitToGuards() methods permitting to write modifications even to guarded sections</summary>

@@ -64,6 +64,9 @@
                         <code-name-base>org.netbeans.api.java</code-name-base>
                     </test-dependency>
                     <test-dependency>
+                        <code-name-base>org.netbeans.api.java.classpath</code-name-base>
+                    </test-dependency>
+                    <test-dependency>
                         <!-- for the nbinst: protocol -->
                         <code-name-base>org.netbeans.core.startup</code-name-base>
                         <recursive/>

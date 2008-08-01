@@ -40,9 +40,7 @@
  */
 package org.netbeans.modules.gsfret.editor.semantic;
 
-import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
-import org.netbeans.editor.Registry;
 import org.netbeans.modules.editor.errorstripe.privatespi.MarkProvider;
 import org.netbeans.modules.editor.errorstripe.privatespi.MarkProviderCreator;
 

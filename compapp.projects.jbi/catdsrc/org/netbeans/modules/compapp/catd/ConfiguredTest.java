@@ -1951,9 +1951,12 @@ public class ConfiguredTest extends TestCase {
         if (destination.indexOf("${") != -1 && destination.indexOf("}") != -1) {
 
             String nbUserDir = System.getProperty("NetBeansUserDir");
-            // FIXME: use the first instance for now
-            ServerInstance serverInstance = getFirstServerInstance(nbUserDir);
+            
+            ServerInstance serverInstance = getServerInstance(nbUserDir);
 
+            if (serverInstance == null) {
+                throw new RuntimeException("Unknown server instance.");
+            } else {
             // Translate ${HttpDefaultPort} first
             String httpDefaultPort = "HttpDefaultPort";
             if (destination.indexOf("${" + httpDefaultPort + "}") != -1) {
@@ -2025,24 +2028,7 @@ public class ConfiguredTest extends TestCase {
                     throw ex;
                 }
             }
-
-//            // Temporarily disabled
-//            // Translate other Application Variables.
-//            try {
-//                AdministrationService adminService = 
-//                        AdministrationServiceHelper.get(serverInstance);
-//                destination = 
-//                        adminService.translateEnvrionmentVariables(
-//                        destination, "bindingComponents", "sun-http-binding");
-//            } catch (Exception ex) {
-//                if (stdErr != null) {
-//                    System.setErr(origErr);
-//                    stdErr.flush();
-//                    stdErr.close();
-//                    origErr.print(bufferedErr.toString());
-//                }
-//                throw ex;
-//            }
+            }
         }
 
         boolean httpSuccess = true;
@@ -3013,29 +2999,28 @@ public class ConfiguredTest extends TestCase {
 
     /*
      * filters or removes diffs that are ns attr "xmlns:prefix='some url'"
-     */
-    /*
+     *
     private void filterNSAttrDiffs(final List diffs) {
-    List removeDiffs = new ArrayList();
-    Iterator itr = diffs.iterator();
-    while (itr.hasNext()) {
-    Difference dif = (Difference) itr.next();
-    if(dif instanceof Change) {
-    Change c = (Change)dif;
-    //filter namespace attibute changes only
-    if(c.isAttributeChanged() && !c.isPositionChanged() &&
-    !c.isTokenChanged() && (removeNSAttrDiffs(c) ||
-    removeSchemaLocationAttrDiffs(c))) {
-    removeDiffs.add(dif);
-    }
-    }
-    }
-    Iterator removeItr = removeDiffs.iterator();
-    while (removeItr.hasNext()) {
-    diffs.remove((Difference) removeItr.next());
-    }
-    }
-     */
+        List removeDiffs = new ArrayList();
+        Iterator itr = diffs.iterator();
+        while (itr.hasNext()) {
+            Difference dif = (Difference) itr.next();
+            if (dif instanceof Change) {
+                Change c = (Change) dif;
+                //filter namespace attibute changes only
+                if (c.isAttributeChanged() && !c.isPositionChanged() &&
+                        !c.isTokenChanged() && (removeNSAttrDiffs(c) ||
+                        removeSchemaLocationAttrDiffs(c))) {
+                    removeDiffs.add(dif);
+                }
+            }
+        }
+        Iterator removeItr = removeDiffs.iterator();
+        while (removeItr.hasNext()) {
+            diffs.remove((Difference) removeItr.next());
+        }
+    }*/
+    
     /**
      * Filters out namespace definition differences on
      * {http://schemas.xmlsoap.org/soap/envelope/}Envelope.
@@ -3452,30 +3437,32 @@ public class ConfiguredTest extends TestCase {
      * @param netBeansUserDir   NetBeans user directory
      * @return  server instance configuration
      */
-    private static ServerInstance getFirstServerInstance(String netBeansUserDir) {
+    private static ServerInstance getServerInstance(String netBeansUserDir) {
         ServerInstance instance = null;
-
+        
         if (netBeansUserDir != null) {
-            String settingsFileName = netBeansUserDir + ServerInstanceReader.RELATIVE_FILE_PATH;
-            File settingsFile = new File(settingsFileName);
-            if (settingsFile.exists()) {
-                try {
-                    ServerInstanceReader settings = new ServerInstanceReader(settingsFileName);
-                    List<ServerInstance> list = settings.getServerInstances();
-                    if (list.size() > 0) {
-                        instance = list.get(0);
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+            String j2eeServerInstanceUrl = null;
+            try {
+                Properties privateProps = loadProperties("nbproject/private/private.properties");
+                j2eeServerInstanceUrl = (String) privateProps.get("j2ee.server.instance");
+            } catch (IOException ex) {
+                System.err.println("Error: Failed to load project properties.");
             }
 
-            if (instance == null) {
-                throw new RuntimeException(
-                        "The application server definition file " + // NOI18N
-                        settingsFileName +
-                        " is missing or does not contain the expected server instance." // NOI18N
-                        );
+            if (j2eeServerInstanceUrl != null) {
+                String settingsFileName = netBeansUserDir + ServerInstanceReader.RELATIVE_FILE_PATH;
+                File settingsFile = new File(settingsFileName);
+                if (settingsFile.exists()) {
+                    ServerInstanceReader settings = new ServerInstanceReader(settingsFileName);
+                    List<ServerInstance> list = settings.getServerInstances();
+                    for (ServerInstance serverInstance : list) {
+                        String url = serverInstance.getUrl();
+                        if (j2eeServerInstanceUrl.equals(url)) {
+                            instance = serverInstance;
+                            break;
+                        }
+                    }
+                }
             }
         }
 

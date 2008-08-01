@@ -41,30 +41,24 @@
 
 package org.openide.filesystems;
 
+import java.beans.PropertyVetoException;
+import java.net.URL;
 import junit.framework.*;
 import java.io.*;
-import java.util.*;
-import java.util.jar.*;
-import java.util.zip.*;
-import java.net.*;
 import org.netbeans.junit.*;
-
-//import org.openide.filesystems.hidden.*;
+import org.openide.util.Exceptions;
 
 /**
  *
  * @author  rm111737
  * @version
  */
-public class XMLFileSystemTest extends FileSystemFactoryHid {
+public class XMLFileSystemTest extends FileSystemFactoryHid
+implements XMLFileSystemTestHid.Factory {
 
     /** Creates new XMLFileSystemTest */
     public XMLFileSystemTest(Test test) {
         super(test);
-    }
-
-    public static void main(String args[]) {
-        junit.textui.TestRunner.run(suite());
     }
 
     public static Test suite() {
@@ -75,10 +69,31 @@ public class XMLFileSystemTest extends FileSystemFactoryHid {
                 
         return new XMLFileSystemTest(suite);
     }
+
     protected void destroyFileSystem(String testName) throws IOException {}
     
     protected FileSystem[] createFileSystem(String testName, String[] resources) throws IOException{
         return new FileSystem[] {TestUtilHid.createXMLFileSystem(testName, resources)};
+    }
+
+    public FileSystem createLayerSystem(String testName, URL[] layers) throws IOException {
+        XMLFileSystem xfs = new XMLFileSystem();
+        try {
+            xfs.setXmlUrls(layers);
+        } catch (PropertyVetoException ex) {
+            throw (IOException)new IOException().initCause(ex);
+        }
+        return xfs;
+    }
+
+    public boolean setXmlUrl(org.openide.filesystems.FileSystem fs, URL[] layers) throws IOException {
+        XMLFileSystem xfs = (XMLFileSystem)fs;
+        try {
+            xfs.setXmlUrls(layers);
+        } catch (PropertyVetoException ex) {
+            throw (IOException)new IOException().initCause(ex);
+        }
+        return true;
     }
     
 

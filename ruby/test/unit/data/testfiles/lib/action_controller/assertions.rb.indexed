@@ -1,17 +1,12 @@
 
 
 Document 0
-Delete:  source : <TESTURL>/assertions.rb
-
-
-
-Document 1
-Indexed:
+Searchable Keys:
   class : TestCase
   class-ig : TestCase
   fqn : Test::Unit::TestCase
 
-Not Indexed:
+Not Searchable Keys:
   attrs : |CLASS|
   in : Test::Unit
   includes : ActionController::Assertions,ActionController::Assertions::DeprecatedAssertions,ActionController::Assertions::DomAssertions,ActionController::Assertions::ModelAssertions,ActionController::Assertions::ResponseAssertions,ActionController::Assertions::RoutingAssertions,ActionController::Assertions::SelectorAssertions,ActionController::Assertions::TagAssertions

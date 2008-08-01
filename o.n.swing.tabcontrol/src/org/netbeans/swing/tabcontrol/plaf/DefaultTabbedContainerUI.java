@@ -88,7 +88,7 @@ import org.netbeans.swing.tabcontrol.TabData;
 import org.netbeans.swing.tabcontrol.TabDisplayer;
 import org.netbeans.swing.tabcontrol.TabbedContainer;
 import org.netbeans.swing.tabcontrol.TabbedContainerUI;
-import org.netbeans.swing.tabcontrol.WinsysInfoForTabbed;
+import org.netbeans.swing.tabcontrol.WinsysInfoForTabbedContainer;
 import org.netbeans.swing.tabcontrol.event.ArrayDiff;
 import org.netbeans.swing.tabcontrol.event.ComplexListDataEvent;
 import org.netbeans.swing.tabcontrol.event.ComplexListDataListener;
@@ -427,7 +427,7 @@ public class DefaultTabbedContainerUI extends TabbedContainerUI {
      */
     protected TabDisplayer createTabDisplayer() {
         TabDisplayer result = null;
-        WinsysInfoForTabbed winsysInfo = container.getWinsysInfo();
+        WinsysInfoForTabbedContainer winsysInfo = container.getContainerWinsysInfo();
         if (winsysInfo != null) {
             result = new TabDisplayer(
                     container.getModel(), container.getType(), winsysInfo);

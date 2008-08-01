@@ -325,10 +325,10 @@ public class JspCompletionItem {
         
         protected boolean substituteText( JTextComponent c, int offset, int len, String fill, int moveBack) {
             BaseDocument doc = (BaseDocument)c.getDocument();
-            boolean value = false;
+            boolean value = super.substituteText(c, offset, len, fill, moveBack);
             try {
                 doc.atomicLock();
-                value = super.substituteText(c, offset, len, fill, moveBack);
+                
                 String mimeType = NbEditorUtilities.getFileObject(c.getDocument()).getMIMEType();
                 Lookup mimeLookup = MimeLookup.getLookup(MimePath.get(mimeType));
                 Collection<? extends AutoTagImporterProvider> providers = mimeLookup.lookup(new Lookup.Template<AutoTagImporterProvider>(AutoTagImporterProvider.class)).allInstances();

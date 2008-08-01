@@ -1,6 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
- * Copyright 2007 Sun Microsystems, Inc. All rights reserved. 
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved. 
  * Use is subject to license terms.
 -->
 <html>
@@ -11,7 +11,7 @@
 <body>
 <h2>XPath Function Reference</h2>
 <p><small><a href="#seealso">See Also</a></small></p>
-<p>A collection of XPath functions are available in the BPEL Mapper's menu bar. These functions are based on the XPath 1.0 specification.</p>
+<p>A collection of XPath functions are available in the BPEL Mapper's menu bar. These functions are based on the XPath 1.0 specification. Also the menu contains some XPath extension functions. </p>
 <p>Each function has zero or more arguments. Each function returns a single result.</p>
 <p>The menu bar contains the following drop-down menus: <a href="#operator">Operator</a>, <a href="#boolean">Boolean</a>, <a href="#string">String</a>, <a href="#node">Node</a>, <a href="#number">Number</a>, <a href="#datetime">Date&amp;Time</a>, <a href="#bpel">BPEL</a>. </p>
 
@@ -72,27 +72,28 @@
 <p>The Number menu contains the following functions:</p>
 <ul>
   <li> <tt><b>Number</b></tt> converts the argument to a number. For detailed information about the logic, see the XPath 1.0 specification.</li>
-  <li> <tt><b>Number Literal</b></tt> enables you to enter a number literal.
+  <li> <tt><b>Numeric Literal</b></tt> enables you to enter a number literal.
   <li> <tt><b>Round</b></tt> returns the number that is closest to the argument and that is an integer.</li>
   <li> <tt><b>Sum</b></tt> returns the sum, for each node in the argument node-set, of the result of converting the string values of the node to a number.</li>
   <li> <tt><b>Floor</b></tt> returns the largest number that is not greater than the argument and that is an integer.</li>
   <li> <tt><b>Ceiling</b></tt> returns the smallest number that is not less than the argument and that is an integer.</li>
 </ul>
 <h3><a name="datetime"></a>Date&Time </h3>
-<p>The Datetime menu contains the following functions:</p>
+<p>The Datetime menu contains the following  functions:</p>
 <ul>
-  <li> <tt><b>Current Date</b></tt> provides the current date.</li>
+  <li> <tt><b>Current Date</b></tt> provides the current date.  </li>
     <li> <tt><b>Current Time</b></tt> provides the current time.</li>
     <li> <tt><b>Current Date and Time</b></tt> provides the current date and time.<br>
 	<li> <tt><b>Duration Literal</b></tt> enables you to enter a duration literal. Use the format specified in the XML Schema specification.</li>
 </li>
 </ul>
 <h3><a name="bpel"></a>BPEL</h3>
+<p>The BPEL menu contains  the following XPath extension functions:</p>
 <ul>
-<li><tt><b>doXslTransform</b></tt></li>
-<li><tt><b>Wrap with Service Reference</b></tt></li>
-<li><tt><b>doMarshal</b></tt></li>
-<li><tt><b>doUnMarshal</b></tt></li>
+<li><tt><b>doXslTransform.</b></tt>  This is an XPath extension function defined in WS-BPEL specification. It can be used in a BPEL Assign activity to call an XSLT transformation.</li>
+<li><tt><b>Wrap with Service Reference. </b></tt>This is a special case of doXslTransform function used to transform data into ServiceRefType. The function is intended to facilitate <a href="../elements/partner_link.html#dynamic_addr">Dynamic Addressing</a> usage. </li>
+<li><tt><b>doMarshal </b></tt>performs   serialization of an object. </li> <!-- of structured data? -->
+<li><tt><b>doUnMarshal </b></tt>performs   deserialization of an object.</li>
 </ul>
 
 <dl>

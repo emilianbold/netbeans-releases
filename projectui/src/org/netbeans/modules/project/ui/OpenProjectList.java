@@ -105,6 +105,7 @@ import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.modules.ModuleInfo;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -141,7 +142,7 @@ public final class OpenProjectList {
 
     /** List which holds the open projects */
     private List<Project> openProjects;
-    private HashMap<ModuleInfo, List<Project>> openProjectsModuleInfos;
+    private final HashMap<ModuleInfo, List<Project>> openProjectsModuleInfos;
     
     /** Main project */
     private Project mainProject;
@@ -149,8 +150,6 @@ public final class OpenProjectList {
     /** List of recently closed projects */
     private final RecentProjectList recentProjects;
 
-    /** lock to prevent modifications of the recentTemplates variable from multiple threads */
-    private static Object RECENT_TEMPLATES_LOCK = new Object();
     /** LRU List of recently used templates */
     private final List<String> recentTemplates;
     
@@ -183,9 +182,6 @@ public final class OpenProjectList {
     // Implementation of the class ---------------------------------------------
     
     public static OpenProjectList getDefault() {
-        boolean needNotify = false;
-        
-        Project[] inital = null;
         synchronized ( OpenProjectList.class ) {
             if ( INSTANCE == null ) {
                 INSTANCE = new OpenProjectList();
@@ -212,6 +208,20 @@ public final class OpenProjectList {
         return LOAD;
     }
 
+    final Project unwrapProject(Project wrap) {
+        Project[] now = getOpenProjects();
+
+        if (wrap instanceof LazyProject) {
+            LazyProject lp = (LazyProject)wrap;
+            for (Project p : now) {
+                if (lp.getProjectDirectory().equals(p.getProjectDirectory())) {
+                    return p;
+                }
+            }
+        }
+        return wrap;
+    }
+
     /** Modifications to the recentTemplates variables shall be done only 
      * when hodling a lock.
      * @return the list
@@ -225,7 +235,7 @@ public final class OpenProjectList {
         final RequestProcessor RP = new RequestProcessor("Load Open Projects"); // NOI18N
         final RequestProcessor.Task TASK = RP.create(this);
         private int action;
-        private LinkedList<Project> toOpenProjects = new LinkedList<Project>();
+        private final LinkedList<Project> toOpenProjects = new LinkedList<Project>();
         private List<Project> lazilyOpenedProjects;
         private List<String> recentTemplates;
         private Project lazyMainProject;
@@ -284,7 +294,10 @@ public final class OpenProjectList {
             LOGGER.log(Level.FINER, "updateGlobalState"); // NOI18N
             synchronized (INSTANCE) {
                 INSTANCE.openProjects = lazilyOpenedProjects;
-                INSTANCE.mainProject = lazyMainProject;
+                if (lazyMainProject != null) {
+                    INSTANCE.mainProject = lazyMainProject;
+                }
+                INSTANCE.mainProject = unwrapProject(INSTANCE.mainProject);
                 INSTANCE.getRecentTemplates().addAll(recentTemplates);
                 LOGGER.log(Level.FINER, "updateGlobalState, applied"); // NOI18N
             }
@@ -347,7 +360,8 @@ public final class OpenProjectList {
             }
 
             if (inital != null) {
-                log(createRecord("UI_INIT_PROJECTS", inital));
+                log(createRecord("UI_INIT_PROJECTS", inital),"org.netbeans.ui.projects");
+                log(createRecordMetrics("USG_PROJECT_OPEN", inital),"org.netbeans.ui.metrics.projects");
             }
 
         }
@@ -436,7 +450,11 @@ public final class OpenProjectList {
 	open(projects, openSubprojects, false);
     }
     
-    public void open(final Project[] projects, final boolean openSubprojects, final boolean asynchronously ) {
+    public void open(final Project[] projects, final boolean openSubprojects, final boolean asynchronously) {
+        open(projects, openSubprojects, asynchronously, null);
+    }
+    
+    public void open(final Project[] projects, final boolean openSubprojects, final boolean asynchronously, final Project/*|null*/ mainProject) {
         if (projects.length == 0) {
             //nothing to do:
             return ;
@@ -448,7 +466,7 @@ public final class OpenProjectList {
             if (!EventQueue.isDispatchThread()) { // #89935
                 EventQueue.invokeLater(new Runnable() {
                     public void run() {
-                        open(projects, openSubprojects, asynchronously);
+                        open(projects, openSubprojects, asynchronously, mainProject);
                     }
                 });
                 return;
@@ -475,6 +493,9 @@ public final class OpenProjectList {
 		public void run() {
 		    try {
 			doOpen(projects, openSubprojects, handle, panel);
+                        if (mainProject != null && Arrays.asList(projects).contains(mainProject) && openProjects.contains(mainProject)) {
+                            setMainProject(mainProject);
+                        }
 		    } finally {
 			SwingUtilities.invokeLater(new Runnable() {
 			    public void run() {
@@ -495,6 +516,9 @@ public final class OpenProjectList {
 	    dialog.setVisible(true);
 	} else {
 	    doOpen(projects, openSubprojects, null, null);
+            if (mainProject != null && Arrays.asList(projects).contains(mainProject) && openProjects.contains(mainProject)) {
+                setMainProject(mainProject);
+            }
 	}
         
         long end = System.currentTimeMillis();
@@ -604,7 +628,9 @@ public final class OpenProjectList {
         final boolean recentProjectsChangedCopy = recentProjectsChanged;
         
         LogRecord[] addedRec = createRecord("UI_OPEN_PROJECTS", projectsToOpen.toArray(new Project[0])); // NOI18N
-        log(addedRec);
+        log(addedRec,"org.netbeans.ui.projects");
+        addedRec = createRecordMetrics("USG_PROJECT_OPEN", projectsToOpen.toArray(new Project[0])); // NOI18N
+        log(addedRec,"org.netbeans.ui.metrics.projects");
         
         Mutex.EVENT.readAccess(new Action<Void>() {
             public Void run() {
@@ -626,18 +652,8 @@ public final class OpenProjectList {
         LOAD.waitFinished();
         
         Project[] projects = new Project[someProjects.length];
-        Project[] now = getOpenProjects();
         for (int i = 0; i < someProjects.length; i++) {
-            projects[i] = someProjects[i];
-            if (someProjects[i] instanceof LazyProject) {
-                LazyProject lp = (LazyProject)someProjects[i];
-                for (Project p : now) {
-                    if (lp.getProjectDirectory().equals(p.getProjectDirectory())) {
-                        projects[i] = p;
-                        break;
-                    }
-                }
-            }
+            projects[i] = unwrapProject(someProjects[i]);
         }
         
         
@@ -709,7 +725,9 @@ public final class OpenProjectList {
             }
         }
         LogRecord[] removedRec = createRecord("UI_CLOSED_PROJECTS", projects); // NOI18N
-        log(removedRec);
+        log(removedRec,"org.netbeans.ui.projects");
+        removedRec = createRecordMetrics("USG_PROJECT_CLOSE", projects); // NOI18N
+        log(removedRec,"org.netbeans.ui.metrics.projects");
         } finally {
             LOAD.exit();
     }
@@ -753,8 +771,21 @@ public final class OpenProjectList {
         logProjects("setMainProject(): openProjects == ", openProjects.toArray(new Project[0])); // NOI18N
         synchronized ( this ) {
             if (mainProject != null && !openProjects.contains(mainProject)) {
-                logProjects("setMainProject(): openProjects == ", openProjects.toArray(new Project[0])); // NOI18N
-                throw new IllegalArgumentException("Project " + ProjectUtils.getInformation(mainProject).getDisplayName() + " is not open and cannot be set as main.");
+                //#139965 the project passed in here can be different from the current one.
+                // eg when the ManProjectAction shows a list of opened projects, it lists the "non-loaded skeletons"
+                // but when the user eventually selects one, the openProjects list already might hold the 
+                // correct loaded list.
+                try {
+                    mainProject = ProjectManager.getDefault().findProject(mainProject.getProjectDirectory());
+                    if (mainProject != null && !openProjects.contains(mainProject)) {
+                        logProjects("setMainProject(): openProjects == ", openProjects.toArray(new Project[0])); // NOI18N
+                        throw new IllegalArgumentException("NB_REPORTER_IGNORE: Project " + ProjectUtils.getInformation(mainProject).getDisplayName() + " is not open and cannot be set as main.");
+                    }
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (IllegalArgumentException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
             }
         
             this.mainProject = mainProject;
@@ -763,16 +794,34 @@ public final class OpenProjectList {
         pchSupport.firePropertyChange( PROPERTY_MAIN_PROJECT, null, null );
     }
     
-    public synchronized List<Project> getRecentProjects() {
-        return recentProjects.getProjects();
+    public List<Project> getRecentProjects() {
+        return ProjectManager.mutex().readAccess(new Mutex.Action<List<Project>>() {
+            public List<Project> run() {
+                synchronized (OpenProjectList.class) {
+                    return recentProjects.getProjects();
+                }
+            }
+        });
     }
     
-    public synchronized boolean isRecentProjectsEmpty() {
-        return recentProjects.isEmpty();
+    public boolean isRecentProjectsEmpty() {
+        return ProjectManager.mutex().readAccess(new Mutex.Action<Boolean>() {
+            public Boolean run() {
+                synchronized (OpenProjectList.class) {
+                    return recentProjects.isEmpty();
+                }
+            }
+        });         
     }
     
-    public synchronized List<UnloadedProjectInformation> getRecentProjectsInformation() {
-        return recentProjects.getRecentProjectsInfo();
+    public List<UnloadedProjectInformation> getRecentProjectsInformation() {
+        return ProjectManager.mutex().readAccess(new Mutex.Action<List<UnloadedProjectInformation>>() {
+            public List<UnloadedProjectInformation> run() {
+                synchronized (OpenProjectList.class) {
+                    return recentProjects.getRecentProjectsInfo();
+                }
+            }
+        });
     }
     
     /** As this class is singletnon, which is not GCed it is good idea to 
@@ -789,8 +838,8 @@ public final class OpenProjectList {
 
                
     // Used from NewFile action        
-    public List<DataObject> getTemplatesLRU( Project project ) {
-        List<FileObject> pLRU = getTemplateNamesLRU( project );
+    public List<DataObject> getTemplatesLRU( Project project,  PrivilegedTemplates priv ) {
+        List<FileObject> pLRU = getTemplateNamesLRU( project,  priv );
         List<DataObject> templates = new ArrayList<DataObject>();
         FileSystem sfs = Repository.getDefault().getDefaultFileSystem();
         for( Iterator<FileObject> it = pLRU.iterator(); it.hasNext(); ) {
@@ -1031,7 +1080,7 @@ public final class OpenProjectList {
         }
     }
         
-    private ArrayList<FileObject> getTemplateNamesLRU( Project project ) {
+    private ArrayList<FileObject> getTemplateNamesLRU( Project project, PrivilegedTemplates priv ) {
         // First take recently used templates and try to find those which
         // are supported by the project.
         
@@ -1039,25 +1088,31 @@ public final class OpenProjectList {
         
         RecommendedTemplates rt = project.getLookup().lookup( RecommendedTemplates.class );
         String rtNames[] = rt == null ? new String[0] : rt.getRecommendedTypes();
-        PrivilegedTemplates pt = project.getLookup().lookup( PrivilegedTemplates.class );
-        String ptNames[] = pt == null ? null : pt.getPrivilegedTemplates();
+        PrivilegedTemplates pt = priv != null ? priv : project.getLookup().lookup( PrivilegedTemplates.class );
+        String ptNames[] = pt == null ? null : pt.getPrivilegedTemplates();        
         ArrayList<String> privilegedTemplates = new ArrayList<String>( Arrays.asList( pt == null ? new String[0]: ptNames ) );
         FileSystem sfs = Repository.getDefault().getDefaultFileSystem();            
-                
-        synchronized (this) {
-            Iterator<String> it = getRecentTemplates().iterator();
-            for( int i = 0; i < NUM_TEMPLATES && it.hasNext(); i++ ) {
-                String templateName = it.next();
-                FileObject fo = sfs.findResource( templateName );
-                if ( fo == null ) {
-                    it.remove(); // Does not exists remove
-                }
-                else if ( isRecommended( project, fo ) ) {
-                    result.add( fo );
-                    privilegedTemplates.remove( templateName ); // Not to have it twice
-                }
-                else {
-                    continue;
+        
+        if (priv == null) {
+            // when the privileged templates are part of the active lookup,
+            // do not mix them with the recent templates, but use only the privileged ones.
+            // eg. on Webservices node, one is not interested in a recent "jsp" file template..
+            
+            synchronized (this) {
+                Iterator<String> it = getRecentTemplates().iterator();
+                for( int i = 0; i < NUM_TEMPLATES && it.hasNext(); i++ ) {
+                    String templateName = it.next();
+                    FileObject fo = sfs.findResource( templateName );
+                    if ( fo == null ) {
+                        it.remove(); // Does not exists remove
+                    }
+                    else if ( isRecommended( project, fo ) ) {
+                        result.add( fo );
+                        privilegedTemplates.remove( templateName ); // Not to have it twice
+                    }
+                    else {
+                        continue;
+                    }
                 }
             }
         }
@@ -1600,12 +1655,32 @@ public final class OpenProjectList {
         
         return arr;
     }
+
+   private static LogRecord[] createRecordMetrics (String msg, Project[] projects) {
+        if (projects.length == 0) {
+            return null;
+        }
+
+        Logger logger = Logger.getLogger("org.netbeans.ui.metrics.projects"); // NOI18N
+
+        LogRecord[] arr = new LogRecord[projects.length];
+        int i = 0;
+        for (Project p : projects) {
+            LogRecord rec = new LogRecord(Level.INFO, msg);
+            rec.setParameters(new Object[] { p.getClass().getName() });
+            rec.setLoggerName(logger.getName());
+
+            arr[i++] = rec;
+        }
+
+        return arr;
+    }
     
-    private static void log(LogRecord[] arr) {
+    private static void log(LogRecord[] arr, String loggerName) {
         if (arr == null) {
             return;
         }
-        Logger logger = Logger.getLogger("org.netbeans.ui.projects"); // NOI18N
+        Logger logger = Logger.getLogger(loggerName); // NOI18N
         for (LogRecord r : arr) {
             logger.log(r);
         }

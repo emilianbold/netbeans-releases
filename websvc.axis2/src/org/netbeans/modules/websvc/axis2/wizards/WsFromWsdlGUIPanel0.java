@@ -57,22 +57,22 @@ public class WsFromWsdlGUIPanel0 extends javax.swing.JPanel {
     private File lastWsdl;
     
     /** Creates new form WsFromJavaGUIPanel1 */
-    public WsFromWsdlGUIPanel0(WsFromWsdlPanel0 wizardPanel) {
+    public WsFromWsdlGUIPanel0(final WsFromWsdlPanel0 wizardPanel) {
         this.wizardPanel = wizardPanel;
         initComponents();
-        setName("WSDL Selection");
+        setName("WSDL Selection"); //NOI18N
         tfWsdlUrl.getDocument().addDocumentListener(new DocumentListener() {
 
             public void insertUpdate(DocumentEvent e) {
-                WsFromWsdlGUIPanel0.this.wizardPanel.fireChange();
+                wizardPanel.fireChange();
             }
 
             public void removeUpdate(DocumentEvent e) {
-                WsFromWsdlGUIPanel0.this.wizardPanel.fireChange();
+                wizardPanel.fireChange();
             }
 
             public void changedUpdate(DocumentEvent e) {
-                WsFromWsdlGUIPanel0.this.wizardPanel.fireChange();
+                wizardPanel.fireChange();
             }
         });
     }
@@ -90,9 +90,11 @@ public class WsFromWsdlGUIPanel0 extends javax.swing.JPanel {
         tfWsdlUrl = new javax.swing.JTextField();
         browseButton = new javax.swing.JButton();
 
-        jLabel1.setText(org.openide.util.NbBundle.getMessage(WsFromWsdlGUIPanel0.class, "WsFromWsdlGUIPanel0.jLabel1.text")); // NOI18N
+        jLabel1.setLabelFor(tfWsdlUrl);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(WsFromWsdlGUIPanel0.class, "WsFromWsdlGUIPanel0.jLabel1.text")); // NOI18N
 
-        browseButton.setText(org.openide.util.NbBundle.getMessage(WsFromWsdlGUIPanel0.class, "WsFromJavaGUIPanel0.jButton1.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(browseButton, org.openide.util.NbBundle.getMessage(WsFromWsdlGUIPanel0.class, "WsFromJavaGUIPanel0.jButton1.text")); // NOI18N
+        browseButton.setActionCommand(org.openide.util.NbBundle.getMessage(WsFromWsdlGUIPanel0.class, "WsFromWsdlGUIPanel0.browseButton.actionCommand")); // NOI18N
         browseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 browseButtonActionPerformed(evt);
@@ -107,7 +109,7 @@ public class WsFromWsdlGUIPanel0 extends javax.swing.JPanel {
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .add(tfWsdlUrl, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 534, Short.MAX_VALUE)
+                        .add(tfWsdlUrl, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 366, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(browseButton))
                     .add(jLabel1))
@@ -122,8 +124,13 @@ public class WsFromWsdlGUIPanel0 extends javax.swing.JPanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(browseButton)
                     .add(tfWsdlUrl, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(254, Short.MAX_VALUE))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
+
+        tfWsdlUrl.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(WsFromWsdlGUIPanel0.class, "WsFromWsdlGUIPanel0.tfWsdlUrl.AccessibleContext.accessibleDescription")); // NOI18N
+        browseButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(WsFromWsdlGUIPanel0.class, "WsFromWsdlGUIPanel0.browseButton.AccessibleContext.accessibleDescription")); // NOI18N
+
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(WsFromWsdlGUIPanel0.class, "WsFromWsdlGUIPanel0.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
 private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
@@ -140,7 +147,7 @@ private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
 
             @Override
             public String getDescription() {
-                return "WSDL file";
+                return org.openide.util.NbBundle.getMessage(WsFromWsdlGUIPanel0.class,"DESC_FileFilter");
             }
             
         };

@@ -5,60 +5,10 @@
 @media
 @page
 End cursor position = 34
-[@|, @charset, @charset, 58]
+[@|, @charset, @charset, 59]
 @charset
 @font-face
 @import
 @media
 @page
-End cursor position = 67
-[background: |, uri, background: uri, 133]
-black
-blue
-bottom
-brown
-center
-fixed
-green
-grey
-inherit
-left
-magenta
-no-repeat
-none
-olive
-orange
-pink
-purple
-red
-repeat
-repeat-x
-repeat-y
-right
-scroll
-silver
-top
-transparent
-uri
-violet
-white
-yellow
-End cursor position = 149
-[color: |, green, color: green, 171]
-black
-blue
-brown
-green
-grey
-inherit
-magenta
-olive
-orange
-pink
-purple
-red
-silver
-violet
-white
-yellow
-End cursor position = 184
+End cursor position = 68

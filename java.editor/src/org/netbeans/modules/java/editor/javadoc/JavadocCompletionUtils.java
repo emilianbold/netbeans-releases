@@ -45,8 +45,8 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.EnumSet;
+import java.util.Set;
 import java.util.regex.Pattern;
 import javax.lang.model.element.Element;
 import javax.swing.text.BadLocationException;
@@ -67,11 +67,11 @@ import org.netbeans.api.lexer.TokenSequence;
  */
 final class JavadocCompletionUtils {
     
-    public static final Logger LOG = Logger.getLogger("org.netbeans.modules.javadoc.completion"); // NOI18N
-    
-    static final Pattern JAVADOC_LINE_BREAK = Pattern.compile("\\n[ \\t]*\\*?[ \\t]*\\z"); // NOI18N
-    static final Pattern JAVADOC_LINE_INDENT = Pattern.compile("\\A[ \\t]*\\*.*"); // NOI18N
+    static final Pattern JAVADOC_LINE_BREAK = Pattern.compile("\\n[ \\t]*\\**[ \\t]*\\z"); // NOI18N
     static final Pattern JAVADOC_WHITE_SPACE = Pattern.compile("[^ \\t]"); // NOI18N
+    static final Pattern JAVADOC_FIRST_WHITE_SPACE = Pattern.compile("[ \\t]*\\**[ \\t]*"); // NOI18N
+    private static Set<JavaTokenId> IGNORE_TOKES = EnumSet.of(
+            JavaTokenId.WHITESPACE, JavaTokenId.BLOCK_COMMENT, JavaTokenId.LINE_COMMENT);
     
     /**
      * Checks if the offset is part of some javadoc block. The javadoc content
@@ -108,8 +108,8 @@ final class JavadocCompletionUtils {
     }
     
     public static Doc findJavadoc(CompilationInfo javac, Document doc, int offset) {
-        TokenSequence<JavaTokenId> ts = SourceUtils.getJavaTokenSequence(TokenHierarchy.get(doc), offset);
-        if (!movedToJavadocToken(ts, offset)) {
+        TokenSequence<JavaTokenId> ts = SourceUtils.getJavaTokenSequence(javac.getTokenHierarchy(), offset);
+        if (ts == null || !movedToJavadocToken(ts, offset)) {
             return null;
         }
         
@@ -117,7 +117,7 @@ final class JavadocCompletionUtils {
 
         while (ts.moveNext()) {
             TokenId tid = ts.token().id();
-            if (tid != JavaTokenId.WHITESPACE && tid != JavaTokenId.LINE_COMMENT && tid != JavaTokenId.BLOCK_COMMENT) {
+            if (!IGNORE_TOKES.contains(tid)) {
                 offsetBehindJavadoc = ts.offset();
                 // it is magic for TreeUtilities.pathFor
                 ++offsetBehindJavadoc;
@@ -151,9 +151,9 @@ final class JavadocCompletionUtils {
         return el != null? javac.getElementUtilities().javaDocFor(el): null;
     }
     
-    static TokenSequence<JavadocTokenId> findJavadocTokenSequence(Document doc, int offset) {
-        TokenSequence<JavaTokenId> ts = SourceUtils.getJavaTokenSequence(TokenHierarchy.get(doc), offset);
-        if (!movedToJavadocToken(ts, offset)) {
+    static TokenSequence<JavadocTokenId> findJavadocTokenSequence(CompilationInfo javac, int offset) {
+        TokenSequence<JavaTokenId> ts = SourceUtils.getJavaTokenSequence(javac.getTokenHierarchy(), offset);
+        if (ts == null || !movedToJavadocToken(ts, offset)) {
             return null;
         }
         
@@ -165,9 +165,43 @@ final class JavadocCompletionUtils {
         jdts.move(offset);
         return jdts;
     }
+    
+    /**
+     * Finds javadoc token sequence.
+     * @param javac compilation info
+     * @param e element for which the tokens are queried
+     * @return javadoc token sequence or null.
+     */
+    static TokenSequence<JavadocTokenId> findJavadocTokenSequence(CompilationInfo javac, Element e) {
+        if (e == null || javac.getElementUtilities().isSynthetic(e) || javac.getElements().getDocComment(e) == null)
+            return null;
+        
+        Tree tree = javac.getTrees().getTree(e);
+        if (tree == null)
+            return null;
+        
+        int elementStartOffset = (int) javac.getTrees().getSourcePositions().getStartPosition(javac.getCompilationUnit(), tree);
+        TokenSequence<JavaTokenId> s = SourceUtils.getJavaTokenSequence(javac.getTokenHierarchy(), elementStartOffset);
+        if (s == null) {
+            return null;
+        }
+        s.move(elementStartOffset);
+        Token<JavaTokenId> token = null;
+        while (s.movePrevious()) {
+            token = s.token();
+            if (!IGNORE_TOKES.contains(token.id())) {
+                break;
+            }
+        }
+        if (token == null || token.id() != JavaTokenId.JAVADOC_COMMENT) {
+            return null;
+        }
+        
+        return s.embedded(JavadocTokenId.language());
+    }
 
     static boolean isInsideIndent(Token<JavadocTokenId> token, int offset) {
-        boolean indent = false;
+        int indent = -1;
         if (token.id() == JavadocTokenId.OTHER_TEXT) {
             CharSequence text = token.text();
             for (int i = 0; i < text.length(); i++) {
@@ -175,7 +209,7 @@ final class JavadocCompletionUtils {
                 if (c == '\n') {
                     if (i <= offset) {
                         // new line; reset status
-                        indent = false;
+                        indent = -1;
                         if (i < offset) {
                             continue;
                         }
@@ -187,8 +221,8 @@ final class JavadocCompletionUtils {
                     break;
                 }
 
-                if (c == '*') {
-                    indent = true;
+                if (c == '*' && indent < 0) {
+                    indent = i;
                     if (offset <= i) {
                         // stop, offset is inside indentation
                         break;
@@ -196,7 +230,7 @@ final class JavadocCompletionUtils {
                 }
             }
         }
-        return indent;
+        return indent >= offset;
     }
     
     /**
@@ -226,7 +260,7 @@ final class JavadocCompletionUtils {
         CharSequence text = token.text();
         boolean result = pos > 0
                 && JAVADOC_LINE_BREAK.matcher(text.subSequence(0, pos)).find()
-                && (pos == token.length() || !JAVADOC_LINE_INDENT.matcher(text.subSequence(pos, text.length())).find());
+                && (pos == token.length() || !isInsideIndent(token, pos));
         return result;
     }
     
@@ -240,9 +274,23 @@ final class JavadocCompletionUtils {
         }
 
         CharSequence text = token.text();
-        LOG.log(Level.FINE, "isWhiteSpace: text: '" + text);
         boolean result = !JAVADOC_WHITE_SPACE.matcher(text).find();
-        LOG.log(Level.FINE, "isWhiteSpace: " + result);
+        return result;
+    }
+    
+    /**
+     * enhanced {@link #isWhiteSpace(org.netbeans.api.lexer.Token) isWhiteSpace}
+     * @param token "\t" or "\t**\t"
+     * @return same value as isWhiteSpace
+     * @see <a href="http://www.netbeans.org/issues/show_bug.cgi?id=131826">#131826</a>
+     */
+    public static boolean isFirstWhiteSpaceAtFirstLine(Token<JavadocTokenId> token) {
+        if (token == null || token.id() != JavadocTokenId.OTHER_TEXT) {
+            return false;
+        }
+
+        CharSequence text = token.text();
+        boolean result = JAVADOC_FIRST_WHITE_SPACE.matcher(text).matches();
         return result;
     }
     

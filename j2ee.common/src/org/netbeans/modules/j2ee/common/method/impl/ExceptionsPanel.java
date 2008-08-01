@@ -125,6 +125,8 @@ public final class ExceptionsPanel extends javax.swing.JPanel {
             }
         ));
         jScrollPane1.setViewportView(table);
+        table.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ExceptionsPanel.class, "ACSN_ExceptionsTab")); // NOI18N
+        table.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ExceptionsPanel.class, "ACSD_ExceptionsTab")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(addButton, org.openide.util.NbBundle.getMessage(ExceptionsPanel.class, "ParametersPanel.addButton.text")); // NOI18N
         addButton.addActionListener(new java.awt.event.ActionListener() {
@@ -205,6 +207,7 @@ public final class ExceptionsPanel extends javax.swing.JPanel {
         removeButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ExceptionsPanel.class, "ACSD_RemoveExceptionFromTab")); // NOI18N
         upButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ExceptionsPanel.class, "ACSD_MoveUpInExcepTab")); // NOI18N
         downButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ExceptionsPanel.class, "ACSD_MoveDownInExceptionTab")); // NOI18N
+        editButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ExceptionsPanel.class, "ACSD_editExceptionButton")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
 private void downButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_downButtonActionPerformed

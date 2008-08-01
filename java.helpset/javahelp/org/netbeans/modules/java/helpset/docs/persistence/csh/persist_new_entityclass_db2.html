@@ -1,6 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--       
-*     Copyright © 2007 Sun Microsystems, Inc. All rights reserved.
+*     Copyright ï¿½ 2008 Sun Microsystems, Inc. All rights reserved.
 *     Use is subject to license terms.
 -->
 <html>
@@ -15,7 +15,9 @@
         <p>This wizard generates a set of entity classes from an existing database connection or schema. 
         The IDE generates an entity class for each related table with persistent fields. 
         The wizard takes you through the steps of choosing the database connection or schema, 
-        and then selecting the tables in the database that will be used to generate the entity classes.</p>
+        and then selecting the tables in the database that will be used to generate the entity classes.
+        You can also use the optional mapping page to configure annotation elements that are generated in the entity class.
+        </p>
         <p>You open the wizard by right-clicking a 
         project node or subnode and choosing New &gt; Other, selecting the Persistence category and then selecting Entity Classes from Database.</p>
         <p>In this page of the wizard you set the following:</p>
@@ -27,8 +29,9 @@
             <li><b>Generate Named Query Annotations for Persistent Fields.</b> If selected, the IDE generates named query annotations in the entity classes.</li>
         </ul>
         
-        <p>When you click Finish, the IDE creates entity classes for each of the tables you specified in the wizard.</p>
-        
+        <p>From this page you can click Finish to create entity classes for each of the specified tables or 
+        click Next to modify the default settings used when generating the mapping annotations.</p>
+
         <ul class="note">
             <li>When you select a data source or JDBC connection, the IDE also creates a database schema for the database and saves it in your <tt>src/conf </tt>folder.</li>
             <li>To persist entity classes, your project requires a persistence unit.

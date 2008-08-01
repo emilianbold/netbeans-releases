@@ -45,9 +45,9 @@ import org.openide.util.actions.CookieAction;
 public class IncludeHierarchyPopupAction extends CookieAction {
 
     protected void performAction(Node[] activatedNodes) {
-        CsmFile decl = ContextUtils.findFile(activatedNodes);
-        if (decl != null){
-            HierarchyDialog.show(decl);
+        CsmFile file = ContextUtils.findFile(activatedNodes);
+        if (file != null){
+            HierarchyDialog.show(file);
         }
     }
     

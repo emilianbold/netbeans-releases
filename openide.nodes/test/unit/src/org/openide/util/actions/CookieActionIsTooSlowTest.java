@@ -60,6 +60,10 @@ import org.openide.util.HelpCtx;
  */
 public class CookieActionIsTooSlowTest extends NbTestCase implements PropertyChangeListener {
     
+    static {
+        NodeActionsInfraHid.install();
+    }
+
     public CookieActionIsTooSlowTest(String name) {
         super(name);
     }
@@ -100,7 +104,7 @@ public class CookieActionIsTooSlowTest extends NbTestCase implements PropertyCha
         assertEquals("One call to enabled method", 1, a1.queried);
         a1.queried = 0;
         
-        ActionsInfraHid.setCurrentNodes(arr);
+        NodeActionsInfraHid.setCurrentNodes(arr);
         
         assertTrue("All nodes have open cookie", a1.isEnabled());
         assertEquals("The enable method has been called once", 1, a1.queried);

@@ -53,7 +53,6 @@ import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation2;
-import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -84,7 +83,7 @@ public class J2SELibrarySourceForBinaryQuery implements SourceForBinaryQueryImpl
             for (Library lib : mgr.getLibraries()) {
                 if (lib.getType().equals(J2SELibraryTypeProvider.LIBRARY_TYPE)) {
                     for (URL entry : lib.getContent(J2SELibraryTypeProvider.VOLUME_TYPE_CLASSPATH)) {
-                        URL normalizedEntry = LibrariesSupport.resolveLibraryEntryURL(lib.getManager().getLocation(), entry);
+                        URL normalizedEntry = entry;
                         if (isNormalizedURL) {
                             normalizedEntry = getNormalizedURL(normalizedEntry);
                         }
@@ -161,10 +160,9 @@ public class J2SELibrarySourceForBinaryQuery implements SourceForBinaryQueryImpl
                 if (this.lib.getContent(J2SELibraryTypeProvider.VOLUME_TYPE_CLASSPATH).contains(entry)) {
                     List<FileObject> result = new ArrayList<FileObject>();
                     for (URL u : lib.getContent(J2SELibraryTypeProvider.VOLUME_TYPE_SRC)) {
-                        u = LibrariesSupport.resolveLibraryEntryURL(lib.getManager().getLocation(), u);
-                        FileObject sourceRootURL = URLMapper.findFileObject(u);
-                        if (sourceRootURL!=null) {
-                            result.add (sourceRootURL);
+                        FileObject sourceRoot = URLMapper.findFileObject(u);
+                        if (sourceRoot!=null) {
+                            result.add (sourceRoot);
                         }
                     }
                     this.cache = result.toArray(new FileObject[result.size()]);

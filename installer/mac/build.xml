@@ -51,7 +51,7 @@
   <condition property="build_openesb">
     <and>
     <isset property="openesb_location"/>
-    <isset property="jbicore_location"/>
+    <!--isset property="jbicore_location"/-->
     </and>
   </condition>
 
@@ -60,7 +60,7 @@
   <property name="appname" value="${netbeans.appname}"/>
   <property name="appversion" value="6.1 Development Version"/>
   <property name="version" value="6.1 Development Version"/>
-  <property name="nbClusterDir" value="nb6.1"/>
+  <property name="nbClusterDir" value="nb6.5"/>
   
   <property name="appdir" value="build/app/${appname}.app"/>
   <property name="zipname" value="netbeans-6.1dev-macosx.zip"/>
@@ -133,7 +133,7 @@
     </exec>
   </target>
 
-  <property name="glassfish.appname" value="glassfish-v2ur1"/>
+  <property name="glassfish.appname" value="glassfish-v2ur2"/>
   <target name="build-glassfish-pkg" if="build_glassfish">
     <echo message="Building ${glassfish.appname} into ${basedir}/glassfish"/>
     <ant dir="glassfish" target="build-pkg" inheritAll="false">

@@ -1,48 +1,43 @@
 
 
 Document 0
-Delete:  source : <TESTURL>/044_store_single_filter.rb
-
-
-
-Document 1
-Indexed:
+Searchable Keys:
   class : Content
   class-ig : content
   extends : ActiveRecord::Base
   fqn : StoreSingleFilter::Content
 
-Not Indexed:
+Not Searchable Keys:
   attrs : |CLASS|
   in : StoreSingleFilter
 
 
-Document 2
-Indexed:
+Document 1
+Searchable Keys:
   class : ContentVersion
   class-ig : contentversion
   extends : ActiveRecord::Base
   fqn : StoreSingleFilter::ContentVersion
 
-Not Indexed:
+Not Searchable Keys:
   attrs : |CLASS|
   in : StoreSingleFilter
 
 
-Document 3
-Indexed:
+Document 2
+Searchable Keys:
   class : Site
   class-ig : site
   extends : ActiveRecord::Base
   fqn : StoreSingleFilter::Site
 
-Not Indexed:
+Not Searchable Keys:
   attrs : |CLASS|
   in : StoreSingleFilter
 
 
-Document 4
-Indexed:
+Document 3
+Searchable Keys:
   class : StoreSingleFilter
   class-ig : storesinglefilter
   constant : FILTERED_MODELS
@@ -51,26 +46,26 @@ Indexed:
   method : down|STATIC|
   method : up|STATIC|
 
-Not Indexed:
+Not Searchable Keys:
   attrs : |CLASS|
 
 
-Document 5
-Indexed:
+Document 4
+Searchable Keys:
   class : User
   class-ig : user
   extends : ActiveRecord::Base
   fqn : StoreSingleFilter::User
 
-Not Indexed:
+Not Searchable Keys:
   attrs : |CLASS|
   in : StoreSingleFilter
 
 
-Document 6
-Indexed:
+Document 5
+Searchable Keys:
   dbtable : filter
 
-Not Indexed:
+Not Searchable Keys:
   dbcolumn : string;
   dbversion : 044

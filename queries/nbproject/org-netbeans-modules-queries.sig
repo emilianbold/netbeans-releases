@@ -1,5 +1,5 @@
 #API master signature file
-#Version 1.10.1
+#Version 1.12
 CLSS public static abstract interface org.netbeans.api.queries.FileBuiltQuery$Status
 meth public abstract boolean org.netbeans.api.queries.FileBuiltQuery$Status.isBuilt()
 meth public abstract void org.netbeans.api.queries.FileBuiltQuery$Status.addChangeListener(javax.swing.event.ChangeListener)
@@ -76,6 +76,7 @@ CLSS public final org.netbeans.api.queries.VisibilityQuery
 meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
 meth protected void java.lang.Object.finalize() throws java.lang.Throwable
 meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public boolean org.netbeans.api.queries.VisibilityQuery.isVisible(java.io.File)
 meth public boolean org.netbeans.api.queries.VisibilityQuery.isVisible(org.openide.filesystems.FileObject)
 meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
 meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
@@ -117,6 +118,13 @@ meth public abstract int org.netbeans.spi.queries.SharabilityQueryImplementation
 supr null
 CLSS public abstract interface org.netbeans.spi.queries.VisibilityQueryImplementation
 meth public abstract boolean org.netbeans.spi.queries.VisibilityQueryImplementation.isVisible(org.openide.filesystems.FileObject)
+meth public abstract void org.netbeans.spi.queries.VisibilityQueryImplementation.addChangeListener(javax.swing.event.ChangeListener)
+meth public abstract void org.netbeans.spi.queries.VisibilityQueryImplementation.removeChangeListener(javax.swing.event.ChangeListener)
+supr null
+CLSS public abstract interface org.netbeans.spi.queries.VisibilityQueryImplementation2
+intf org.netbeans.spi.queries.VisibilityQueryImplementation
+meth public abstract boolean org.netbeans.spi.queries.VisibilityQueryImplementation.isVisible(org.openide.filesystems.FileObject)
+meth public abstract boolean org.netbeans.spi.queries.VisibilityQueryImplementation2.isVisible(java.io.File)
 meth public abstract void org.netbeans.spi.queries.VisibilityQueryImplementation.addChangeListener(javax.swing.event.ChangeListener)
 meth public abstract void org.netbeans.spi.queries.VisibilityQueryImplementation.removeChangeListener(javax.swing.event.ChangeListener)
 supr null

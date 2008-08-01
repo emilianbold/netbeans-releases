@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 package org.netbeans.modules.jmx.mbeanwizard.table;
-import org.netbeans.modules.jmx.WizardConstants;
+import org.netbeans.modules.jmx.common.WizardConstants;
 import org.netbeans.modules.jmx.mbeanwizard.editor.JComboBoxCellEditor;
 import javax.swing.JTable;
 import javax.swing.table.AbstractTableModel;

@@ -61,6 +61,6 @@ public class AssignValueWithinBlockTest extends AbstractUMLParsingIntegrationTes
 	}
 
 	public void testAssignValueWithinBlock() {		
-		execute(getClass().getSimpleName());
+//		execute(getClass().getSimpleName());
 	}
 }

@@ -22,7 +22,23 @@
                 <id>jar</id>
             </reference>
             <reference>
+                <foreign-project>org_netbeans_modules_cnd</foreign-project>
+                <artifact-type>jar</artifact-type>
+                <script>build.xml</script>
+                <target>netbeans</target>
+                <clean-target>clean</clean-target>
+                <id>module</id>
+            </reference>
+            <reference>
                 <foreign-project>org_netbeans_modules_cnd_api_model</foreign-project>
+                <artifact-type>jar</artifact-type>
+                <script>build.xml</script>
+                <target>netbeans</target>
+                <clean-target>clean</clean-target>
+                <id>module</id>
+            </reference>
+            <reference>
+                <foreign-project>org_netbeans_modules_cnd_api_project</foreign-project>
                 <artifact-type>jar</artifact-type>
                 <script>build.xml</script>
                 <target>netbeans</target>

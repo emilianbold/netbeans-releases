@@ -52,7 +52,7 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 
 import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.Completable;
+import org.netbeans.modules.gsf.api.CodeCmpletionHandler;
 import org.netbeans.modules.gsf.api.CompletionProposal;
 import org.netbeans.modules.gsf.api.Element;
 import org.netbeans.modules.gsf.api.ElementHandle;
@@ -81,7 +81,7 @@ import org.openide.util.Lookup;
 public class CodeCompleter implements Completable {
     
     /* (non-Javadoc)
-     * @see org.netbeans.modules.gsf.api.Completable#complete(org.netbeans.modules.gsf.api.CompilationInfo, int, java.lang.String, org.netbeans.modules.gsf.api.NameKind, org.netbeans.modules.gsf.api.Completable.QueryType, boolean, org.netbeans.modules.gsf.api.HtmlFormatter)
+     * @see org.netbeans.modules.gsf.api.CodeCmpletionHandler#complete(org.netbeans.modules.gsf.api.CompilationInfo, int, java.lang.String, org.netbeans.modules.gsf.api.NameKind, org.netbeans.modules.gsf.api.CodeCmpletionHandler.QueryType, boolean, org.netbeans.modules.gsf.api.HtmlFormatter)
      */
     public List<CompletionProposal> complete( CompilationInfo info,
             int caretOffset, String prefix, NameKind kind, QueryType queryType,
@@ -108,7 +108,7 @@ public class CodeCompleter implements Completable {
    }
     
     /* (non-Javadoc)
-     * @see org.netbeans.modules.gsf.api.Completable#document(org.netbeans.modules.gsf.api.CompilationInfo, org.netbeans.modules.gsf.api.Element)
+     * @see org.netbeans.modules.gsf.api.CodeCmpletionHandler#document(org.netbeans.modules.gsf.api.CompilationInfo, org.netbeans.modules.gsf.api.Element)
      */
     public String document( CompilationInfo info, Element element ) {
         if(element instanceof DocumentableElement) {
@@ -122,7 +122,7 @@ public class CodeCompleter implements Completable {
     }
 
     /* (non-Javadoc)
-     * @see org.netbeans.modules.gsf.api.Completable#getApplicableTemplates(org.netbeans.modules.gsf.api.CompilationInfo, int, int)
+     * @see org.netbeans.modules.gsf.api.CodeCmpletionHandler#getApplicableTemplates(org.netbeans.modules.gsf.api.CompilationInfo, int, int)
      */
     
     /**
@@ -161,7 +161,7 @@ public class CodeCompleter implements Completable {
         
 
     /* (non-Javadoc)
-     * @see org.netbeans.modules.gsf.api.Completable#getPrefix(org.netbeans.modules.gsf.api.CompilationInfo, int, boolean)
+     * @see org.netbeans.modules.gsf.api.CodeCmpletionHandler#getPrefix(org.netbeans.modules.gsf.api.CompilationInfo, int, boolean)
      */
     public String getPrefix( CompilationInfo info, int caretOffset,
             boolean upToOffset )
@@ -180,7 +180,7 @@ public class CodeCompleter implements Completable {
     }
 
     /* (non-Javadoc)
-     * @see org.netbeans.modules.gsf.api.Completable#resolveTemplateVariable(java.lang.String, org.netbeans.modules.gsf.api.CompilationInfo, int, java.lang.String, java.util.Map)
+     * @see org.netbeans.modules.gsf.api.CodeCmpletionHandler#resolveTemplateVariable(java.lang.String, org.netbeans.modules.gsf.api.CompilationInfo, int, java.lang.String, java.util.Map)
      */
     public String resolveTemplateVariable( String variable,
             CompilationInfo info, int caretOffset, String name, Map parameters )
@@ -208,7 +208,7 @@ public class CodeCompleter implements Completable {
      * @return a <code>ParameterInfo</code> instance with actual info about 
      * a parameter specified by the <code>caretOffset</code> if it is possible,
      * otherwise <code>ParameterInfo.NONE</code>.
-     * @see org.netbeans.modules.gsf.api.Completable#parameters(org.netbeans.modules.gsf.api.CompilationInfo, int, org.netbeans.modules.gsf.api.CompletionProposal)
+     * @see org.netbeans.modules.gsf.api.CodeCmpletionHandler#parameters(org.netbeans.modules.gsf.api.CompilationInfo, int, org.netbeans.modules.gsf.api.CompletionProposal)
      */
     public ParameterInfo parameters( CompilationInfo info, int caretOffset, 
             CompletionProposal proposal ) 

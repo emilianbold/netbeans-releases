@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.gsf.api;
 
-
 /**
  * An offset range provides a range (start, end) pair of offsets
  * that indicate a range in a character buffer. The range represented
@@ -49,9 +48,11 @@ package org.netbeans.modules.gsf.api;
  * Put yet another way, the starting offset is inclusive, and the ending
  * offset is exclusive.
  *
+ * @todo This class should be final
+ * 
  * @author Tor Norbye
  */
-public class OffsetRange {
+public final class OffsetRange implements Comparable<OffsetRange> {
     public static final OffsetRange NONE = new OffsetRange(0, 0);
     private final int start;
     private final int end;
@@ -80,6 +81,20 @@ public class OffsetRange {
         return getEnd()-getStart();
     }
 
+    /**
+     * Return true if the given range overlaps with the current range.
+     * Full containment one way or the other is also considered overlapping.
+     */
+    public boolean overlaps(OffsetRange range) {
+        if (range == OffsetRange.NONE) {
+            return false;
+        } else if (this == OffsetRange.NONE) {
+            return false;
+        } else {
+            return end > range.start && start < range.end;
+        }
+    }
+
     @Override
     public String toString() {
         if (this == NONE) {
@@ -95,17 +110,17 @@ public class OffsetRange {
             return false;
         }
 
-        if (getClass() != o.getClass()) {
+        if (o.getClass() != OffsetRange.class) {
             return false;
         }
 
         final OffsetRange test = (OffsetRange)o;
 
-        if (this.getStart() != test.getStart()) {
+        if (this.start != test.start) {
             return false;
         }
 
-        if (this.getEnd() != test.getEnd()) {
+        if (this.end != test.end) {
             return false;
         }
 
@@ -114,12 +129,15 @@ public class OffsetRange {
 
     @Override
     public int hashCode() {
-        int hash = 7;
-
-        hash = (23 * hash) + this.getStart();
-        hash = (23 * hash) + this.getEnd();
-
-        return hash;
+        // OffsetRanges are typically not overlapping so the start is as
+        // good a hash as any.
+        //int hash = 7;
+        //
+        //hash = (23 * hash) + this.start;
+        //hash = (23 * hash) + this.end;
+        //
+        //return hash;
+        return start;
     }
 
     /** Return true iff the given offset is within the bounds (or at the bounds) of the range */
@@ -129,5 +147,20 @@ public class OffsetRange {
         }
 
         return (offset >= getStart()) && (offset <= getEnd());
+    }
+    
+    public int compareTo(OffsetRange o) {
+        if (start != o.start) {
+            return start - o.start;
+        } else {
+            // Most GSF services do not allow overlapping offset ranges!
+            //assert end == o.end : this;
+            
+            return end - o.end;
+        }
+    }
+    
+    public boolean isEmpty() {
+        return start == end;
     }
 }

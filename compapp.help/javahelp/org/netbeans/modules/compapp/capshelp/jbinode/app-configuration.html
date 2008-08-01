@@ -1,0 +1,67 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+* Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+* Use is subject to license terms.
+-->
+<html>
+<head>
+<link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+<title>Dynamically Configuring Endpoint Connection Properties</title>
+</head>
+<body>
+<h2>Dynamically Configuring Endpoint Connection Properties </h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+<p>The binding component Application Configuration property allows you to specify 
+  values for the component's endpoint connectivity parameters, which are normally 
+  defined in the WSDL service extensibility elements, and apply these values to 
+  a user-named endpoint <a href="../casaeditor/config-extension.html" title="Dynamically Configuring Endpoint Connection Properties">ConfigExtension 
+    Property</a>.  The Application Configuration property editor includes fields for all of the 
+  connectivity parameters that apply to that component's binding protocol. When 
+  you enter the name of a saved ConfigExtension and define the connectivity parameters 
+  in the Application Configuration editor, these values will override the WSDL 
+  defined connectivity attributes when your project is deployed. To change these 
+  connectivity parameters again, you simply change the values in the Application 
+  Configuration editor, then shutdown and start your Service Assembly to apply 
+  the new values. </p>
+<p>The Application Configuration property editor allows you to create several 
+  application configurations referenced the user-defined names. Note that different 
+  binding component protocols will have different attributes. For example, HTTP 
+  binding attributes are not the same as the JMS binding attributes, and therefore, 
+  the Application Configuration property editors for each of these binding components 
+  will contain different attributes .</p>
+<p><b>To apply a named ConfigExtension to the Application Configuration:</b></p>
+<ol>
+  <li>In the CASA editor, specify a name for your endpoint Configuration Extension 
+    (see <a href="../casaeditor/config-extension.html" title="Dynamically Configuring Endpoint Connection Properties">ConfigExtension 
+    Property</a>).</li>
+  <li>In the Services window, go to the Binding Components directory under the 
+    JBI node, right-click the binding component used by your application, and 
+    select Properties. The Properties window appears.</li>
+  <li>In the binding component's properties, click on the Application Configuration 
+    property ellipsis (...) button. The Application Configuration property editor 
+    appears.</li>
+  <li>Enter the user-defined name of the ConfigExtension you want and define the 
+    values for the connection parameters.</li>
+  <li>Once the Application Configuration values have been defined, deploy your 
+    application.</li>
+</ol>
+<p>&nbsp;</p>
+<dl>
+<dt><a name="seealso">See Also</a></dt>
+  <dd><a href="caps_jbi_node.html" title="JBI Node (Under Services/Servers)">JBI 
+    Node (Under Services/Servers)</a></dd>
+  <dd><a href="app-variables.html" title="Creating Application Variables for WSDL Attributes">Application 
+    Variables Property </a></dd>
+  <dd><a href="../casaeditor/config-extension.html" title="ConfigExtension Properties">ConfigExtension 
+    Property</a></dd>
+</dl>
+<hr>
+<small>
+<a href="../credits.html">Legal Notices</a></small>
+<table border="0" cellpadding="150">
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+</table>
+</body>
+</html>

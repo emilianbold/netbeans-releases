@@ -53,10 +53,14 @@ public class RelatedEntityResource {
     
     private FieldInfo fieldInfo;
     
+    private FieldInfo reverseFieldInfo;
+    
     /** Creates a new instance of RelatedResource */
-    public RelatedEntityResource(EntityResourceBean bean, FieldInfo fieldInfo) {
+    public RelatedEntityResource(EntityResourceBean bean, FieldInfo fieldInfo, 
+            FieldInfo reverseFieldInfo) {
         this.bean = bean;
         this.fieldInfo = fieldInfo;
+        this.reverseFieldInfo = reverseFieldInfo;
     }
     
     public EntityResourceBean getResourceBean() {
@@ -65,5 +69,9 @@ public class RelatedEntityResource {
     
     public FieldInfo getFieldInfo() {
         return fieldInfo;
+    }
+    
+    public FieldInfo getReverseFieldInfo() {
+        return reverseFieldInfo;
     }
 }

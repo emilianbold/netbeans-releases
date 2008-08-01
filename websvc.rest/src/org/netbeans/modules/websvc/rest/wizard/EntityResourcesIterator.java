@@ -49,8 +49,9 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.rest.RestUtils;
 import org.netbeans.modules.websvc.rest.codegen.EntityResourcesGenerator;
+import org.netbeans.modules.websvc.rest.codegen.EntityResourcesGeneratorFactory;
 import org.netbeans.modules.websvc.rest.codegen.model.EntityResourceBeanModel;
-import org.netbeans.modules.websvc.rest.support.PersistenceHelper;
+import org.netbeans.modules.websvc.rest.support.PersistenceHelper.PersistenceUnit;
 import org.netbeans.modules.websvc.rest.support.SourceGroupSupport;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
@@ -79,15 +80,10 @@ public class EntityResourcesIterator implements TemplateWizard.Iterator {
         String resourcePackage = (String) wizard.getProperty(WizardProperties.RESOURCE_PACKAGE);
         String converterPackage = (String) wizard.getProperty(WizardProperties.CONVERTER_PACKAGE);
         EntityResourceBeanModel model = (EntityResourceBeanModel) wizard.getProperty(WizardProperties.ENTITY_RESOURCE_MODEL);
-        String puName = (String) wizard.getProperty(WizardProperties.PERSISTENCE_UNIT_NAME);
-        
-        // Add the entity classes to persistence.xml,
-        // Note: this is a work-around for TopLink PM implementation not compliant to persistence.xml schema.
-        //PersistenceHelper.addEntityClasses(project, model.getBuilder().getAllEntityNames());
-        PersistenceHelper.unsetExcludeEnlistedClasses(project);
-        
-        final EntityResourcesGenerator generator = new EntityResourcesGenerator(
-                model, targetFolder, targetPackage, resourcePackage, converterPackage, puName);
+        final PersistenceUnit pu = (PersistenceUnit) wizard.getProperty(WizardProperties.PERSISTENCE_UNIT);
+    
+        final EntityResourcesGenerator generator = EntityResourcesGeneratorFactory.newInstance(project);
+        generator.initialize(model, project, targetFolder, targetPackage, resourcePackage, converterPackage, pu);
         final ProgressDialog progressDialog = new ProgressDialog(NbBundle.getMessage(
                 EntityResourcesIterator.class,
                 "LBL_RestSevicicesFromEntitiesProgress"));
@@ -97,7 +93,6 @@ public class EntityResourcesIterator implements TemplateWizard.Iterator {
                 try {
                     RestUtils.disableRestServicesChangeListner(project);
                     generator.generate(progressDialog.getProgressHandle());
-                    
                 } catch(Exception iox) {
                     Exceptions.printStackTrace(iox);
                 } finally {
@@ -122,10 +117,7 @@ public class EntityResourcesIterator implements TemplateWizard.Iterator {
         panels = new WizardDescriptor.Panel[] { secondPanel, thirdPanel };
         String names[] = new String[] {
             NbBundle.getMessage(EntityResourcesIterator.class, "LBL_EntityClasses"),
-            NbBundle.getMessage(EntityResourcesIterator.class, "LBL_RestResourcesAndClasses")
-        
-        
-        
+            NbBundle.getMessage(EntityResourcesIterator.class, "LBL_RestResourcesAndClasses")    
         };
         wizard.putProperty("NewFileWizard_Title",
                 NbBundle.getMessage(EntityResourcesIterator.class, "Templates/WebServices/RestServicesFromEntities"));

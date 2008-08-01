@@ -18,18 +18,12 @@
  */
 package org.netbeans.modules.xslt.tmap.model.impl;
 
-import java.net.URI;
-import java.net.URISyntaxException;
 import org.netbeans.modules.xml.xam.Reference;
 import org.netbeans.modules.xslt.tmap.model.api.Param;
 import org.netbeans.modules.xslt.tmap.model.api.ParamType;
 import org.netbeans.modules.xslt.tmap.model.api.TMapAttributes;
-import org.netbeans.modules.xslt.tmap.model.api.TMapReference;
 import org.netbeans.modules.xslt.tmap.model.api.TMapVisitor;
-import org.netbeans.modules.xslt.tmap.model.api.Variable;
-import org.netbeans.modules.xslt.tmap.model.api.VariableDeclarator;
 import org.netbeans.modules.xslt.tmap.model.api.VariableReference;
-import org.openide.ErrorManager;
 import org.w3c.dom.Element;
 
 /**
@@ -37,9 +31,7 @@ import org.w3c.dom.Element;
  * @author Vitaly Bychkov
  * @version 1.0
  */
-public class ParamImpl extends TMapComponentAbstract 
-    implements Param 
-{
+public class ParamImpl extends NameableImpl implements Param {
 
     public ParamImpl(TMapModelImpl model) {
         this(model, createNewElement(TMapComponents.PARAM, model));
@@ -57,20 +49,12 @@ public class ParamImpl extends TMapComponentAbstract
         return Param.class;
     }
 
-    public String getName() {
-        return getAttribute(TMapAttributes.NAME);
-    }
-
-    public void setName(String name) {
-        setAttribute(Param.NAME, TMapAttributes.NAME, name);
-    }
-
     public ParamType getType() {
         return ParamType.parseParamType(getAttribute(TMapAttributes.TYPE));
     }
 
     public void setType(ParamType type) {
-        setAttribute(Param.TYPE, TMapAttributes.TYPE, 
+        setAttribute(Param.TYPE, TMapAttributes.TYPE,
                 ParamType.INVALID.equals(type) ? null : type);
     }
 
@@ -93,26 +77,13 @@ public class ParamImpl extends TMapComponentAbstract
     }
 
     public VariableReference getVariableReference() {
-        return ParamType.PART.equals(getType()) ? 
+        return ParamType.PART.equals(getType()) ?
             getTMapVarReference(TMapAttributes.VALUE) : null;
     }
 
     public void setVariableReference(VariableReference varRef) {
         setTMapVarReference(TMapAttributes.VALUE, varRef);
         setType(ParamType.PART);
-    }
-
-    public URI getUri() throws URISyntaxException {
-        URI uri = null;
-        if (ParamType.URI.equals(getType())) {
-            uri = new URI(getValue());
-        }
-        return uri;
-    }
-
-    public void setUri(URI uri) {
-        setValue(uri.toString());
-        setType(ParamType.URI);
     }
 
     public Reference[] getReferences() {
@@ -123,7 +94,7 @@ public class ParamImpl extends TMapComponentAbstract
         } else {
             refs = new Reference[0];
         }
-        
+
         return refs;
     }
 

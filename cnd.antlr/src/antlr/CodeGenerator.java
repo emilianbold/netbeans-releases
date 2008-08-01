@@ -81,7 +81,7 @@ public abstract class CodeGenerator {
     /** If there are more than 8 long words to init in a bitset,
      *  try to optimize it; e.g., detect runs of -1L and 0L.
      */
-    protected static final int BITSET_OPTIMIZE_INIT_THRESHOLD = 8;
+    protected static final int BITSET_OPTIMIZE_INIT_THRESHOLD = 9;
 
     /** This is a hint for the language-specific code generator.
      * A switch() or language-specific equivalent will be generated instead

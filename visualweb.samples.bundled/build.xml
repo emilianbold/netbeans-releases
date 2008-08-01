@@ -46,30 +46,26 @@ made subject to such option by the copyright holder.
 
     <target name="jar" depends="gather-samples,projectized-common.jar"/>
     
-    <target name="-init" >
-        <!-- properties -->
+    <target name="gather-samples" depends="build-init">
+        <echo message="Zipping up and copying sample web app projects." />
         <property name="webapps.dest"       location="${build.classes.dir}/org/netbeans/modules/visualweb/samples/bundled" />
         <property name="webapps.desc.dest"  location="${webapps.dest}/descriptions" />
         <property name="webapps.repos"      location="webapps" />
         <property name="webapps.desc"       location="${webapps.repos}/descriptions" />
-    </target>
-
-    <target name="gather-samples" depends="-init">
-        <echo message="Zipping up and copying sample web app projects." />
         <!-- sample webapps -->
         <mkdir dir="${webapps.desc.dest}" />
         <copy file="${webapps.desc}/TravelCenter.html" todir="${webapps.desc.dest}" />
-        <zip basedir="${webapps.repos}/TravelCenter" excludes="CVS,private,.cvsignore" destfile="${webapps.dest}/TravelCenter.zip" />
+        <zip basedir="${webapps.repos}/TravelCenter" excludes="private" destfile="${webapps.dest}/TravelCenter.zip" />
         <copy file="${webapps.desc}/SinglePageCrudForm.html" todir="${webapps.desc.dest}" />
-        <zip basedir="${webapps.repos}/SinglePageCrudForm" excludes="CVS,private,.cvsignore" destfile="${webapps.dest}/SinglePageCrudForm.zip" />
+        <zip basedir="${webapps.repos}/SinglePageCrudForm" excludes="private" destfile="${webapps.dest}/SinglePageCrudForm.zip" />
         <copy file="${webapps.desc}/SinglePageCrudTable.html" todir="${webapps.desc.dest}" />
-        <zip basedir="${webapps.repos}/SinglePageCrudTable" excludes="CVS,private,.cvsignore" destfile="${webapps.dest}/SinglePageCrudTable.zip" />   
+        <zip basedir="${webapps.repos}/SinglePageCrudTable" excludes="private" destfile="${webapps.dest}/SinglePageCrudTable.zip" />   
         <copy file="${webapps.desc}/TwoPageCrudTable.html" todir="${webapps.desc.dest}" />
-        <zip basedir="${webapps.repos}/TwoPageCrudTable" excludes="CVS,private,.cvsignore" destfile="${webapps.dest}/TwoPageCrudTable.zip" />
+        <zip basedir="${webapps.repos}/TwoPageCrudTable" excludes="private" destfile="${webapps.dest}/TwoPageCrudTable.zip" />
         <copy file="${webapps.desc}/MovieAdmin.html" todir="${webapps.desc.dest}" />
-        <zip basedir="${webapps.repos}/MovieAdmin" excludes="CVS,private,.cvsignore" destfile="${webapps.dest}/MovieAdmin.zip" />
+        <zip basedir="${webapps.repos}/MovieAdmin" excludes="private" destfile="${webapps.dest}/MovieAdmin.zip" />
         <copy file="${webapps.desc}/VehicleIncidentReportApplication.html" todir="${webapps.desc.dest}" />
-        <zip basedir="${webapps.repos}/VehicleIncidentReportApplication" excludes="CVS,private,.cvsignore" destfile="${webapps.dest}/VehicleIncidentReportApplication.zip" />
+        <zip basedir="${webapps.repos}/VehicleIncidentReportApplication" excludes="private" destfile="${webapps.dest}/VehicleIncidentReportApplication.zip" />
     </target>
     
 </project>

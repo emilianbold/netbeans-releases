@@ -50,7 +50,7 @@ import javax.swing.SwingUtilities;
 import javax.xml.namespace.QName;
 import org.netbeans.modules.sun.manager.jbi.management.model.JBIComponentConfigurationDescriptor;
 import org.netbeans.modules.sun.manager.jbi.management.model.JBIComponentConfigurationMBeanAttributeInfo;
-import org.netbeans.modules.sun.manager.jbi.nodes.property.NewSchemaBasedConfigPropertySupportFactory;
+import org.netbeans.modules.sun.manager.jbi.nodes.property.SchemaBasedConfigPropertySupportFactory;
 import org.netbeans.modules.sun.manager.jbi.nodes.property.PropertySheetOwner;
 import org.openide.explorer.propertysheet.PropertySheetView;
 import org.openide.nodes.AbstractNode;
@@ -193,7 +193,7 @@ public class JBIComponentInstallationConfigurationDialog
                     true, true, false);
 
             propertySupports.add(
-                    NewSchemaBasedConfigPropertySupportFactory.getPropertySupport(
+                    SchemaBasedConfigPropertySupportFactory.getPropertySupport(
                     this, attr, attrInfo));
 
         } else { // PropertyGroup or root descriptor

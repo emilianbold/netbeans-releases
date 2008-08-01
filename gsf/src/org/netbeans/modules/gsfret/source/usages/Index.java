@@ -109,6 +109,11 @@ public abstract class Index extends org.netbeans.modules.gsf.api.Index {
     // Store map of class names, where each entry has a map of fields and values (fields might be "name", "fqn", "case insensitive name", etc.
     // The same fields can be looked up later.
     public abstract void store(String fileUrl, List<IndexDocument> documents) throws IOException;
+    /** 
+     * Update the index. If create is true, there is no need to look for existing
+     * old documents for the same files to update them.
+     */
+    public abstract void batchStore(List<IndexBatchEntry> list, boolean create) throws IOException;
     // END TOR MODIFICATIONS
     
     public abstract boolean isValid (boolean tryOpen) throws IOException;    
@@ -297,7 +302,7 @@ public abstract class Index extends org.netbeans.modules.gsf.api.Index {
                     // Compute relative path
                     rootSearch:
                     for (FileObject fo : getPreindexRoots()) {
-                        if (FileUtil.isParentOf(fo, rootFo)) {
+                        if (fo != null && FileUtil.isParentOf(fo, rootFo)) {
                             // getRelativePath performs a isParentOf check and returns null if not
                             String relative = FileUtil.getRelativePath(fo, rootFo);
                             if (relative != null && relative.length() > 0) {
@@ -393,11 +398,14 @@ public abstract class Index extends org.netbeans.modules.gsf.api.Index {
     // Only done at build time / ahead of time.
     static void preindex(Language language, URL root) {
         try {
+            Indexer indexer = language.getIndexer();
+            if (!indexer.acceptQueryPath(root.toExternalForm())) {
+                return;
+            }
             FileObject rootFo = URLMapper.findFileObject(root);
             File dataFile = getDataFolder(language, root);
             // Create "preindexed" file
             // Zip contents of data folder up and store it as a preindexed file in the rootFo
-            Indexer indexer = language.getIndexer();
             String indexedFileName = PREINDEXED + indexer.getIndexerName() + "-" + indexer.getIndexVersion();
             File output = new File(FileUtil.toFile(rootFo), indexedFileName + ".zip"); // NOI18N
             OutputStream os = new BufferedOutputStream(new FileOutputStream(output));

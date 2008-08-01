@@ -43,58 +43,6 @@ made subject to such option by the copyright holder.
 
 <project name="xtest-init" basedir=".">
 
-    <!-- Root folder of modules -->
-    <dirname property="nb_all" file="${ant.file.xtest-init}/../.."/>
-
-    <!-- If jellytools repository available and jar not up to date, build jelly2-nb.jar -->
-    <condition property="need.to.build.jellytools">
-        <and>
-            <available file="${nb_all}/jellytools/src" type="dir"/>
-            <not>
-                <uptodate targetfile="${nb_all}/jellytools/jelly2-nb.jar" >
-                    <srcfiles dir= "${nb_all}/jellytools/src"/>
-                </uptodate>
-            </not>
-        </and>
-    </condition>
-                
-    <target name="init" depends="init-parse-project-xml,init-distribution-env">
-        <property file="../nbproject/private/private.properties"/>
-        <property file="../nbproject/project.properties"/>
-        <property name="build.compiler.debug" value="true"/>
-        <property name="javac.source" value="1.5"/>
-        <property name="build.compiler.source" value="${javac.source}"/> 
-        <property name="build.compiler.deprecation" value="true"/>
-        <property name="build.sysclasspath" value="ignore"/>
-    </target>
-    
-   <target name="init-distribution-env" if="exists.test.properties" depends="check-distribution">
-        <property name="test.dist.dir" location="../.."/>
-        <property name="extra.test.libs" location="${test.dist.dir}/extralibs"/>
-        <property name="jemmy.jar" location="${extra.test.libs}/jemmy.jar"/>
-        <property name="jelly.jar" location="${extra.test.libs}/jelly2-nb.jar"/>
-        <property file="test.properties"/>
-    </target>
-    
-    <target name="check-distribution">
-        <available file="test.properties" property="exists.test.properties"/>
-    </target>
-
-    <target name="build-jellytools" if="need.to.build.jellytools">
-        <!-- <ant dir="${nb_all}/jellytools" target="jar-library" inheritAll="false"/> -->
-        <!-- The following is used instead of above because inheritAll="false"
-        doesn't work for all properties. Properties xtest.home and xtest.testtype
-        has to be null to not scan module binaries because modules jemmy.module and
-        nbjunit are not within IDE binaries (see
-        nbbuild/antsrc/org/netbeans/nbbuild/ModuleListParser.java).
-        -->
-        <java classname="org.apache.tools.ant.Main" classpath="${java.class.path}" fork="true">
-            <arg value="-f"/>
-            <arg value="${nb_all}/jellytools/build.xml"/>
-            <arg value="jar-library"/>
-        </java>
-    </target>
-
     <!-- ====================== -->
     <!-- Run IDE with AppServer -->
     <!-- ====================== -->
@@ -161,4 +109,3 @@ made subject to such option by the copyright holder.
         <echo>Continuing with default domain, data in this domain will be modified....</echo>
     </target>
 </project>
-

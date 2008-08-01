@@ -41,11 +41,9 @@
 
 package org.netbeans.modules.editor.java;
 
-import java.io.*;
+import org.netbeans.api.java.source.CodeStyle;
 import org.netbeans.editor.ext.ExtFormatter;
 import org.netbeans.editor.ext.java.JavaFormatter;
-import org.netbeans.editor.ext.java.JavaSettingsNames;
-import org.netbeans.editor.ext.java.JavaSettingsDefaults;
 import org.netbeans.modules.editor.FormatterIndentEngine;
 
 /**
@@ -80,82 +78,67 @@ public class JavaIndentEngine extends FormatterIndentEngine {
 
 
     public boolean getJavaFormatSpaceBeforeParenthesis() {
-        Boolean b = (Boolean)getValue(JavaSettingsNames.JAVA_FORMAT_SPACE_BEFORE_PARENTHESIS);
-        if (b == null) {
-            b = JavaSettingsDefaults.defaultJavaFormatSpaceBeforeParenthesis;
-        }
-        return b.booleanValue();
+        return CodeStyle.getDefault(null).spaceBeforeMethodDeclParen();
     }
     public void setJavaFormatSpaceBeforeParenthesis(boolean b) {
-        setValue(JavaSettingsNames.JAVA_FORMAT_SPACE_BEFORE_PARENTHESIS, b ? Boolean.TRUE : Boolean.FALSE, JAVA_FORMAT_SPACE_BEFORE_PARENTHESIS_PROP);
+        assert false : "Java formatting options can only be customized from Tools-Options -> Java Code"; //NOI18N
     }
 
     public boolean getJavaFormatNewlineBeforeBrace() {
-        Boolean b = (Boolean)getValue(JavaSettingsNames.JAVA_FORMAT_NEWLINE_BEFORE_BRACE);
-        if (b == null) {
-            b = JavaSettingsDefaults.defaultJavaFormatNewlineBeforeBrace;
-        }
-        return b.booleanValue();
+        return CodeStyle.getDefault(null).getMethodDeclBracePlacement() == CodeStyle.BracePlacement.NEW_LINE;
     }
     public void setJavaFormatNewlineBeforeBrace(boolean b) {
-        setValue(JavaSettingsNames.JAVA_FORMAT_NEWLINE_BEFORE_BRACE, b ? Boolean.TRUE : Boolean.FALSE, JAVA_FORMAT_NEWLINE_BEFORE_BRACE_PROP);
+        assert false : "Java formatting options can only be customized from Tools-Options -> Java Code"; //NOI18N
     }
     
     public boolean getJavaFormatLeadingStarInComment() {
-        Boolean b = (Boolean)getValue(JavaSettingsNames.JAVA_FORMAT_LEADING_STAR_IN_COMMENT);
-        if (b == null) {
-            b = JavaSettingsDefaults.defaultJavaFormatLeadingStarInComment;
-        }
-        return b.booleanValue();
+        // XXX: add support for this to FmtOptions
+        return true;
     }        
     public void setJavaFormatLeadingStarInComment(boolean b) {
-        setValue(JavaSettingsNames.JAVA_FORMAT_LEADING_STAR_IN_COMMENT, b ? Boolean.TRUE : Boolean.FALSE, JAVA_FORMAT_LEADING_STAR_IN_COMMENT_PROP);
+        assert false : "Java formatting options can only be customized from Tools-Options -> Java Code"; //NOI18N
     }
     
     public int getJavaFormatStatementContinuationIndent() {
-        Integer i = (Integer)getValue(JavaSettingsNames.JAVA_FORMAT_STATEMENT_CONTINUATION_INDENT);
-        if (i == null) {
-            i = JavaSettingsDefaults.defaultJavaFormatStatementContinuationIndent;
-        }
-        return i.intValue();
+        return CodeStyle.getDefault(null).getContinuationIndentSize();
     }
 
     public void setJavaFormatStatementContinuationIndent(int javaFormatStatementContinuationIndent) {
-        setValue(JavaSettingsNames.JAVA_FORMAT_STATEMENT_CONTINUATION_INDENT,
-            new Integer(javaFormatStatementContinuationIndent), JAVA_FORMAT_STATEMENT_CONTINUATION_INDENT_PROP);
+        assert false : "Java formatting options can only be customized from Tools-Options -> Java Code"; //NOI18N
     }
 
-    // Serialization ------------------------------------------------------------
-
-    private static final ObjectStreamField[] serialPersistentFields = {
-        new ObjectStreamField(JAVA_FORMAT_NEWLINE_BEFORE_BRACE_PROP, Boolean.TYPE),
-        new ObjectStreamField(JAVA_FORMAT_SPACE_BEFORE_PARENTHESIS_PROP, Boolean.TYPE),
-        new ObjectStreamField(JAVA_FORMAT_LEADING_STAR_IN_COMMENT_PROP, Boolean.TYPE),
-        new ObjectStreamField(JAVA_FORMAT_STATEMENT_CONTINUATION_INDENT_PROP, Integer.TYPE)
-    };
-    
-    private void readObject(java.io.ObjectInputStream ois)
-    throws IOException, ClassNotFoundException {
-        ObjectInputStream.GetField fields = ois.readFields();
-        setJavaFormatNewlineBeforeBrace(fields.get(JAVA_FORMAT_NEWLINE_BEFORE_BRACE_PROP,
-            getJavaFormatNewlineBeforeBrace()));
-        setJavaFormatSpaceBeforeParenthesis(fields.get(JAVA_FORMAT_SPACE_BEFORE_PARENTHESIS_PROP,
-            getJavaFormatSpaceBeforeParenthesis()));
-        setJavaFormatLeadingStarInComment(fields.get(JAVA_FORMAT_LEADING_STAR_IN_COMMENT_PROP,
-            getJavaFormatLeadingStarInComment()));
-        setJavaFormatStatementContinuationIndent(fields.get(JAVA_FORMAT_STATEMENT_CONTINUATION_INDENT_PROP,
-            getJavaFormatStatementContinuationIndent()));
-    }
-
-    private void writeObject(java.io.ObjectOutputStream oos)
-    throws IOException, ClassNotFoundException {
-        ObjectOutputStream.PutField fields = oos.putFields();
-        fields.put(JAVA_FORMAT_NEWLINE_BEFORE_BRACE_PROP, getJavaFormatNewlineBeforeBrace());
-        fields.put(JAVA_FORMAT_SPACE_BEFORE_PARENTHESIS_PROP, getJavaFormatSpaceBeforeParenthesis());
-        fields.put(JAVA_FORMAT_LEADING_STAR_IN_COMMENT_PROP, getJavaFormatLeadingStarInComment());
-        fields.put(JAVA_FORMAT_STATEMENT_CONTINUATION_INDENT_PROP, getJavaFormatStatementContinuationIndent());
-        oos.writeFields();
-    }
+// XXX: remove
+//    // Serialization ------------------------------------------------------------
+//
+//    private static final ObjectStreamField[] serialPersistentFields = {
+//        new ObjectStreamField(JAVA_FORMAT_NEWLINE_BEFORE_BRACE_PROP, Boolean.TYPE),
+//        new ObjectStreamField(JAVA_FORMAT_SPACE_BEFORE_PARENTHESIS_PROP, Boolean.TYPE),
+//        new ObjectStreamField(JAVA_FORMAT_LEADING_STAR_IN_COMMENT_PROP, Boolean.TYPE),
+//        new ObjectStreamField(JAVA_FORMAT_STATEMENT_CONTINUATION_INDENT_PROP, Integer.TYPE)
+//    };
+//    
+//    private void readObject(java.io.ObjectInputStream ois)
+//    throws IOException, ClassNotFoundException {
+//        ObjectInputStream.GetField fields = ois.readFields();
+//        setJavaFormatNewlineBeforeBrace(fields.get(JAVA_FORMAT_NEWLINE_BEFORE_BRACE_PROP,
+//            getJavaFormatNewlineBeforeBrace()));
+//        setJavaFormatSpaceBeforeParenthesis(fields.get(JAVA_FORMAT_SPACE_BEFORE_PARENTHESIS_PROP,
+//            getJavaFormatSpaceBeforeParenthesis()));
+//        setJavaFormatLeadingStarInComment(fields.get(JAVA_FORMAT_LEADING_STAR_IN_COMMENT_PROP,
+//            getJavaFormatLeadingStarInComment()));
+//        setJavaFormatStatementContinuationIndent(fields.get(JAVA_FORMAT_STATEMENT_CONTINUATION_INDENT_PROP,
+//            getJavaFormatStatementContinuationIndent()));
+//    }
+//
+//    private void writeObject(java.io.ObjectOutputStream oos)
+//    throws IOException, ClassNotFoundException {
+//        ObjectOutputStream.PutField fields = oos.putFields();
+//        fields.put(JAVA_FORMAT_NEWLINE_BEFORE_BRACE_PROP, getJavaFormatNewlineBeforeBrace());
+//        fields.put(JAVA_FORMAT_SPACE_BEFORE_PARENTHESIS_PROP, getJavaFormatSpaceBeforeParenthesis());
+//        fields.put(JAVA_FORMAT_LEADING_STAR_IN_COMMENT_PROP, getJavaFormatLeadingStarInComment());
+//        fields.put(JAVA_FORMAT_STATEMENT_CONTINUATION_INDENT_PROP, getJavaFormatStatementContinuationIndent());
+//        oos.writeFields();
+//    }
 
 }
 

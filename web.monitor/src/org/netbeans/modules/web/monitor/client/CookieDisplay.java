@@ -96,7 +96,7 @@ public class CookieDisplay extends DataDisplay {
 
 	} else {
 	    headerIn = NbBundle.getBundle(CookieDisplay.class).getString("MON_Incoming_cookie");
-	    incomingLabel = createHeaderLabel(headerIn, NbBundle.getBundle(CookieDisplay.class).getString("MON_Incoming_cookie_Mnemonic").charAt(0), NbBundle.getBundle(CookieDisplay.class).getString("ACS_MON_Incoming_cookieA11yDesc"), null);
+	    incomingLabel = createHeaderLabel(headerIn, NbBundle.getBundle(CookieDisplay.class).getString("ACS_MON_Incoming_cookieA11yDesc"), null);
 	}
 
 	addGridBagComponent(this, createTopSpacer(), 0, ++gridy,
@@ -160,7 +160,7 @@ public class CookieDisplay extends DataDisplay {
 	    outgoingLabel = createDataLabel(headerOut);
 	} else {
 	    headerOut = NbBundle.getBundle(CookieDisplay.class).getString("MON_Outgoing_cookie");
-	    outgoingLabel = createHeaderLabel(headerOut, NbBundle.getBundle(CookieDisplay.class).getString("MON_Outgoing_cookie_Mnemonic").charAt(0), NbBundle.getBundle(CookieDisplay.class).getString("ACS_MON_Outgoing_cookieA11yDesc"), null);
+	    outgoingLabel = createHeaderLabel(headerOut, NbBundle.getBundle(CookieDisplay.class).getString("ACS_MON_Outgoing_cookieA11yDesc"), null);
 	}
 	addGridBagComponent(this, outgoingLabel, 0, ++gridy,
 			    fullGridWidth, 1, 0, 0, 

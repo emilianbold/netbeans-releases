@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -81,10 +81,10 @@ public class TemplateWizard extends WizardDescriptor {
     
     /** See org.openide.WizardDescriptor.PROP_CONTENT_SELECTED_INDEX
      */
-    private static final String PROP_CONTENT_SELECTED_INDEX = "WizardPanel_contentSelectedIndex"; // NOI18N
+    private static final String PROP_CONTENT_SELECTED_INDEX = WizardDescriptor.PROP_CONTENT_SELECTED_INDEX; // NOI18N
     /** See org.openide.WizardDescriptor.PROP_CONTENT_DATA
      */
-    private static final String PROP_CONTENT_DATA = "WizardPanel_contentData"; // NOI18N
+    private static final String PROP_CONTENT_DATA = WizardDescriptor.PROP_CONTENT_DATA; // NOI18N
 
     /** prefered dimmension of the panels */
     static java.awt.Dimension PREF_DIM = new java.awt.Dimension (560, 350);
@@ -139,9 +139,9 @@ public class TemplateWizard extends WizardDescriptor {
         // pass this to iterator
         iterator.initialize(this);
 
-        putProperty("WizardPanel_autoWizardStyle", Boolean.TRUE); // NOI18N
-        putProperty("WizardPanel_contentDisplayed", Boolean.TRUE); // NOI18N
-        putProperty("WizardPanel_contentNumbered", Boolean.TRUE); // NOI18N
+        putProperty(WizardDescriptor.PROP_AUTO_WIZARD_STYLE, Boolean.TRUE); // NOI18N
+        putProperty(WizardDescriptor.PROP_CONTENT_DISPLAYED, Boolean.TRUE); // NOI18N
+        putProperty(WizardDescriptor.PROP_CONTENT_NUMBERED, Boolean.TRUE); // NOI18N
         setTitle(NbBundle.getMessage(TemplateWizard.class,"CTL_TemplateTitle")); //NOI18N
         setTitleFormat(new MessageFormat("{0}")); // NOI18N
     }
@@ -1017,12 +1017,18 @@ public class TemplateWizard extends WizardDescriptor {
         
         public Set<DataObject> instantiate (TemplateWizard wiz) throws IOException {
             // iterate Set and replace unexpected object with dataobjects
-            Set workSet = null;
+            Set workSet;
             if (instantiatingIterator instanceof WizardDescriptor.ProgressInstantiatingIterator) {
                 assert wiz.getProgressHandle () != null : "ProgressHandle cannot be null.";
                 workSet = ((ProgressInstantiatingIterator)instantiatingIterator).instantiate (wiz.getProgressHandle ());
             } else {
                 workSet = instantiatingIterator.instantiate ();
+            }
+            if (workSet == null) {
+                Logger.getLogger(TemplateWizard.class.getName()).warning(
+                        "Wizard iterator of type " + instantiatingIterator.getClass().getName() +
+                        " illegally returned null from the instantiate method");
+                return Collections.emptySet ();
             }
             java.util.Iterator it = workSet.iterator ();
             Object obj;

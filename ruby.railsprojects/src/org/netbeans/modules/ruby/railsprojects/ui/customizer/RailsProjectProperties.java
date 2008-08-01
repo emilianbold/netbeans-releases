@@ -58,12 +58,12 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.railsprojects.RailsProject;
-import org.netbeans.modules.ruby.railsprojects.UpdateHelper;
 import org.netbeans.modules.ruby.railsprojects.server.spi.RubyInstance;
 import org.netbeans.modules.ruby.rubyproject.JavaClassPathUi;
 import org.netbeans.modules.ruby.rubyproject.ProjectPropertyExtender;
 import org.netbeans.modules.ruby.rubyproject.ProjectPropertyExtender.Item;
 import org.netbeans.modules.ruby.rubyproject.SharedRubyProjectProperties;
+import org.netbeans.modules.ruby.rubyproject.UpdateHelper;
 import org.netbeans.modules.ruby.spi.project.support.rake.RakeProjectHelper;
 import org.netbeans.modules.ruby.spi.project.support.rake.EditableProperties;
 import org.netbeans.modules.ruby.spi.project.support.rake.GeneratedFilesHelper;
@@ -91,7 +91,7 @@ public class RailsProjectProperties extends SharedRubyProjectProperties {
     // Special properties of the project
     //public static final String Ruby_PROJECT_NAME = "rails.project.name"; // NOI18N
     public static final String JAVA_PLATFORM = "platform.active"; // NOI18N
-
+    
     // Properties stored in the PROJECT.PROPERTIES    
     // TODO - nuke me!
     public static final String MAIN_CLASS = "main.file"; // NOI18N
@@ -184,14 +184,14 @@ public class RailsProjectProperties extends SharedRubyProjectProperties {
         EditableProperties projectProperties = updateHelper.getProperties( RakeProjectHelper.PROJECT_PROPERTIES_PATH );         
         String cp = projectProperties.get( JAVAC_CLASSPATH )  ;
         JAVAC_CLASSPATH_MODEL = /*ClassPathUiSupport.*/createListModel(cs.itemsIterator(cp) );
-        INCLUDE_JAVA_MODEL = projectGroup.createToggleButtonModel( evaluator, INCLUDE_JAVA );
+        //INCLUDE_JAVA_MODEL = projectGroup.createToggleButtonModel( evaluator, INCLUDE_JAVA );
         
         JAVAC_COMPILER_ARG_MODEL = projectGroup.createStringDocument( evaluator, JAVAC_COMPILER_ARG );
         
         // CustomizerRun
         RUN_CONFIGS = readRunConfigs();
         activeConfig = evaluator.getProperty("config");
-                
+        
     }
     
     // From ClassPathUiSupport:
@@ -212,9 +212,10 @@ public class RailsProjectProperties extends SharedRubyProjectProperties {
     }
     
     // From ClassPathUiSupport:
-    @SuppressWarnings("unchecked")
-    public static List<Item> getList( DefaultListModel model ) {
-        return (List<Item>) Collections.list( model.elements() );
+    public static List<Item> getList(DefaultListModel model) {
+        @SuppressWarnings("unchecked")
+        List<Item> items = (List<Item>) Collections.list(model.elements());
+        return items;
     }
     
     public void save() {

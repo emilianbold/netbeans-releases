@@ -51,7 +51,8 @@ import org.openide.util.HelpCtx;
 
 abstract class BaseWizardPanel extends JPanel {
 
-    private final Set listeners = new HashSet(1); // Set<ChangeListener>
+    // FIXME: use org.openide.util.ChangeSupport for ChangeListeners
+    private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
 
     private static final long serialVersionUID = -2938499199217476217L;
 
@@ -66,13 +67,13 @@ abstract class BaseWizardPanel extends JPanel {
         }
     }
     protected final void fireChangeEvent() {
-        Iterator it;
+        Iterator<ChangeListener> it;
         synchronized(listeners) {
-            it = new HashSet(listeners).iterator();
+            it = new HashSet<ChangeListener>(listeners).iterator();
         }
         ChangeEvent ev = new ChangeEvent(this);
         while (it.hasNext()) {
-            ((ChangeListener)it.next()).stateChanged (ev);
+            it.next().stateChanged(ev);
         }
     }
     abstract void setData(); 

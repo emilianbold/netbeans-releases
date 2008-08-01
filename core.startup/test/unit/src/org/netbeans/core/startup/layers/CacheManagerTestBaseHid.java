@@ -41,10 +41,15 @@
 
 package org.netbeans.core.startup.layers;
 
+import java.awt.Image;
+import java.awt.image.BufferedImage;
+import java.awt.image.ImageObserver;
+import java.beans.BeanInfo;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.junit.NbTestCase;
@@ -54,7 +59,7 @@ import org.openide.filesystems.MultiFileSystem;
 /** Test layer cache managers generally.
  * @author Jesse Glick
  */
-public abstract class CacheManagerTestBaseHid extends NbTestCase {
+public abstract class CacheManagerTestBaseHid extends NbTestCase implements ImageObserver {
     private long initTime = System.currentTimeMillis ();
     
     /**
@@ -70,6 +75,12 @@ public abstract class CacheManagerTestBaseHid extends NbTestCase {
     }
     public static Object map2(Map map, String attr) {
         return String.valueOf(map.get("x")) + "/" + attr;
+    }
+    public static Object mapImage(Map map) {
+        return map.get("image");
+    }
+    public static Object mapDisplayName(Map map) {
+        return map.get("displayName");
     }
     
     protected CacheManagerTestBaseHid(String name) {
@@ -143,6 +154,24 @@ public abstract class CacheManagerTestBaseHid extends NbTestCase {
         assertEquals("val/a", attr(mfs, "foo/29356", "a"));
         assertEquals("val", attr(mfs, "foo/29356", "map1"));
         assertEquals("val/map2", attr(mfs, "foo/29356", "map2"));
+        assertEquals("Ahoj", attr(mfs, "foo/29356", "mapDisplayName"));
+
+        FileObject annot = f.findResource("foo/29356");
+        String annotName = SystemFileSystem.annotateName(annot);
+        assertEquals("Ahoj", annotName);
+
+        Image img = SystemFileSystem.annotateIcon(annot, BeanInfo.ICON_COLOR_16x16);
+        assertNotNull("Icon provided", img);
+        assertEquals("height", 16, img.getHeight(this));
+        assertEquals("width", 16, img.getHeight(this));
+        Image img32 = SystemFileSystem.annotateIcon(annot, BeanInfo.ICON_COLOR_32x32);
+        assertNotNull("Icon 32 provided", img32);
+        assertEquals("height", 32, img32.getHeight(this));
+        assertEquals("width", 32, img32.getHeight(this));
+    }
+
+    public boolean imageUpdate(Image img, int infoflags, int x, int y, int width, int height) {
+        return true;
     }
     
     private static String slurp(FileSystem f, String path) throws IOException {

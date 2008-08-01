@@ -70,6 +70,7 @@ public class PropertyTest extends JellyTestCase {
      * @return  created suite
      */
     public static NbTestSuite suite() {
+        /*
         NbTestSuite suite = new NbTestSuite();
         suite.addTest(new PropertyTest("testGetName"));
         suite.addTest(new PropertyTest("testGetValue"));
@@ -82,6 +83,18 @@ public class PropertyTest extends JellyTestCase {
         suite.addTest(new PropertyTest("testClose"));
         suite.addTest(new PropertyTest("testSetValue"));
         return suite;
+         */
+        return (NbTestSuite) createModuleTest(PropertyTest.class, 
+        "testGetName",
+        "testGetValue",
+        "testGetShortDescription",
+        "testOpenEditor",
+        "testSetDefaultValue",
+        "testGetRendererName",
+        "testCanEditAsText",
+        "testIsEnabled",
+        "testClose"/*,
+        there is no print settings! "testSetValue"*/);
     }
     
     private static Property property;
@@ -99,6 +112,7 @@ public class PropertyTest extends JellyTestCase {
     /** Open property sheet and find sample property. */
     protected void setUp() throws Exception {
         System.out.println("### "+getName()+" ###");
+        openDataProjects("SampleProject");
         if(property == null) {
             // opens properties window
             Node sample1 = new Node(new SourcePackagesNode("SampleProject"), "sample1");  // NOI18N
@@ -193,9 +207,9 @@ public class PropertyTest extends JellyTestCase {
         optionsOperator.switchToClassicView();
         // "IDE Configuration|System|Print Settings"
         String printSettingsPath = 
-                Bundle.getString("org.netbeans.core.Bundle", "UI/Services/IDEConfiguration")+"|"+
-                Bundle.getString("org.netbeans.core.Bundle", "UI/Services/IDEConfiguration/System")+"|"+
-                Bundle.getString("org.netbeans.core.Bundle", "Services/org-openide-text-PrintSettings.settings");
+                Bundle.getString("org.netbeans.core.ui.resources.Bundle", "UI/Services/IDEConfiguration")+"|"+
+                Bundle.getString("org.netbeans.core.ui.resources.Bundle", "UI/Services/IDEConfiguration/System")+"|"+
+                Bundle.getString("org.netbeans.core.ui.resources.Bundle", "Services/org-openide-text-PrintSettings.settings");
         PropertySheetOperator printPso = optionsOperator.getPropertySheet(printSettingsPath);
         try{
             // test boolean property

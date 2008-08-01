@@ -38,7 +38,7 @@ import org.netbeans.modules.php.dbgp.StartActionProviderImpl;
 import org.netbeans.modules.php.dbgp.actions.AbstractActionProvider;
 import org.netbeans.modules.php.dbgp.annotations.CurrentLineAnnotation;
 import org.netbeans.modules.php.dbgp.annotations.DebuggerAnnotation;
-import org.netbeans.modules.php.dbgp.api.SessionId;
+import org.netbeans.modules.php.dbgp.SessionId;
 import org.netbeans.modules.php.dbgp.breakpoints.BreakpointModel;
 import org.netbeans.spi.debugger.ActionsProvider;
 import org.netbeans.spi.viewmodel.TableModel;
@@ -156,7 +156,7 @@ public abstract class AbstractIDEBridge {
             }
             DebugSession current = 
                 StartActionProviderImpl.getInstance().getCurrentSession(id);
-            if ( !current.equals( getDebugSession() ) ){
+            if ( current != null && !current.equals( getDebugSession() ) ){
                 return;
             }
         }

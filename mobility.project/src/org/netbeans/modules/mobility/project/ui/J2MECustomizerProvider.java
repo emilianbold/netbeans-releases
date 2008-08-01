@@ -43,11 +43,9 @@ package org.netbeans.modules.mobility.project.ui;
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.IOException;
 import javax.swing.JButton;
 
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.mobility.project.ui.customizer.J2MECustomizer;
 import org.netbeans.modules.mobility.project.ui.customizer.J2MEProjectProperties;
@@ -57,7 +55,6 @@ import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.ui.CustomizerProvider;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -163,17 +160,6 @@ public class J2MECustomizerProvider implements CustomizerProvider
             {
                 // Store the properties
                 j2meProperties.store();
-                
-                // XXX Maybe move into J2MEProjectProperties
-                // And save the project
-                try
-                {
-                    ProjectManager.getDefault().saveProject(project);
-                }
-                catch ( IOException ex )
-                {
-                    ErrorManager.getDefault().notify( ex );
-                }
                 
                 // close the customizer
                 if (provider.getDialog()!=null)

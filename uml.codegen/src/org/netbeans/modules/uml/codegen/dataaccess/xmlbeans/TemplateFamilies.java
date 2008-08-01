@@ -74,6 +74,8 @@ import java.util.*;
 import java.io.*;
 
 // BEGIN_NOI18N
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 public class TemplateFamilies extends org.netbeans.modules.schema2beans.BaseBean
     implements org.netbeans.modules.uml.codegen.dataaccess.xmlbeans.TemplateFamiliesInterface, org.netbeans.modules.uml.codegen.dataaccess.xmlbeans.CommonBean
@@ -224,7 +226,9 @@ public class TemplateFamilies extends org.netbeans.modules.schema2beans.BaseBean
     
     public static TemplateFamilies createGraph(java.io.File f) throws org.netbeans.modules.schema2beans.Schema2BeansException, java.io.IOException
     {
-        java.io.InputStream in = new java.io.FileInputStream(f);
+        FileObject fo=FileUtil.toFileObject(f);
+        java.io.InputStream in = fo.getInputStream();
+        //java.io.InputStream in = new java.io.FileInputStream(f);
         try
         {
             return createGraph(in, false);

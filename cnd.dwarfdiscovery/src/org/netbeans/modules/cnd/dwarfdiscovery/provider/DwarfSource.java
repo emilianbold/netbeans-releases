@@ -56,6 +56,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import org.netbeans.modules.cnd.discovery.api.ItemProperties;
+import org.netbeans.modules.cnd.discovery.api.DiscoveryUtils;
 import org.netbeans.modules.cnd.discovery.api.SourceFileProperties;
 import org.netbeans.modules.cnd.dwarfdump.CompilationUnit;
 import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfMacinfoEntry;
@@ -187,69 +188,6 @@ public class DwarfSource implements SourceFileProperties{
         return language;
     }
     
-    /**
-     * Path is include path like:
-     * .
-     * ../
-     * include
-     * Returns path in unix style
-     */
-    public static String convertRelativePathToAbsolute(SourceFileProperties source, String path){
-        if ( !( path.startsWith("/") || (path.length()>1 && path.charAt(1)==':') ) ) { // NOI18N
-            if (path.equals(".")) { // NOI18N
-                path = source.getCompilePath();
-            } else {
-                path = source.getCompilePath()+File.separator+path;
-            }
-            File file = new File(path);
-            path = FileUtil.normalizeFile(file).getAbsolutePath();
-        }
-        if (Utilities.isWindows()) {
-            path = path.replace('\\', '/');
-        }
-        return path;
-    }
-
-    public static final String getRelativePath(String base, String path) {
-        if (path.equals(base)) {
-            return path;
-        } else if (path.startsWith(base + '/')) {
-            return path.substring(base.length()+1);
-        } else if (path.startsWith(base + '\\')) {
-            return path.substring(base.length() + 1);
-        } else if (!(path.startsWith("/") || path.startsWith("\\") || // NOI18N
-                     path.length() > 2 && path.charAt(2)==':')) {
-            return path;
-        } else {
-            StringTokenizer stb = new StringTokenizer(base, "\\/"); // NOI18N
-            StringTokenizer stp = new StringTokenizer(path, "\\/"); // NOI18N
-            int match = 0;
-            String pstring = null;
-            while(stb.hasMoreTokens() && stp.hasMoreTokens()) {
-                String bstring = stb.nextToken();
-                pstring = stp.nextToken();
-                if (bstring.equals(pstring)) {
-                    match++;
-                } else {
-                    break;
-                }
-            }
-            if (match <= 1){
-                return path;
-            }
-            StringBuilder s = new StringBuilder();
-            while(stb.hasMoreTokens()) {
-                String bstring = stb.nextToken();
-                s.append(".." + File.separator); // NOI18N
-            }
-            s.append(".." + File.separator + pstring); // NOI18N
-            while(stp.hasMoreTokens()) {
-                s.append(File.separator + stp.nextToken() ); // NOI18N
-            }
-            return s.toString();
-        }
-    }
-
     private String fixFileName(String fileName) {
         if (fileName == null){
             return fileName;
@@ -361,7 +299,15 @@ public class DwarfSource implements SourceFileProperties{
             sourceName = sourceName.substring(i+1);
         } else {
             if (sourceName.startsWith("/")) { // NOI18N
-                sourceName = getRelativePath(compilePath, sourceName);
+                sourceName = DiscoveryUtils.getRelativePath(compilePath, sourceName);
+            }
+            if (compilePath == null) {
+                if (fullName != null && fullName.lastIndexOf('/')>0) {
+                    int i = fullName.lastIndexOf('/');
+                    compilePath = fullName.substring(0,i);
+                } else {
+                    compilePath = ""; // NOI18N
+                }
             }
         }
         if (isCPP) {
@@ -388,55 +334,10 @@ public class DwarfSource implements SourceFileProperties{
         }
     }
 
-    // public because method is used in unit tests.
-    public static List<String> scanCommandLine(String line){
-        List<String> res = new ArrayList<String>();
-        int i = 0;
-        StringBuilder current = new StringBuilder();
-        boolean isSingleQuoteMode = false;
-        boolean isDoubleQuoteMode = false;
-        while (i < line.length()) {
-            char c = line.charAt(i);
-            i++;
-            if (c == '\'') {
-                if (isSingleQuoteMode) {
-                    isSingleQuoteMode = false;
-                } else if (!isDoubleQuoteMode) {
-                    isSingleQuoteMode = true;
-                }
-                current.append(c);
-                continue;
-            } else if (c == '\"') {
-                if (isDoubleQuoteMode) {
-                    isDoubleQuoteMode = false;
-                } else if (!isSingleQuoteMode) {
-                    isDoubleQuoteMode = true;
-                }
-                current.append(c);
-                continue;
-            } else if (isSingleQuoteMode || isDoubleQuoteMode) {
-                current.append(c);
-                continue;
-            }
-            if (Character.isWhitespace(c)) {
-                if (current.length()>0) {
-                    res.add(current.toString());
-                    current.setLength(0);
-                }
-            } else {
-                current.append(c);
-            }
-        }
-        if (current.length()>0) {
-            res.add(current.toString());
-        }
-        return res;
-    }
-    
     private void gatherLine(String line) {
         // /set/c++/bin/5.9/intel-S2/prod/bin/CC -c -g -DHELLO=75 -Idist  main.cc -Qoption ccfe -prefix -Qoption ccfe .XAKABILBpivFlIc.
         if (FULL_TRACE) System.out.println("Process command line "+line); // NOI18N
-        Iterator<String> st = scanCommandLine(line).iterator();
+        Iterator<String> st = DiscoveryUtils.scanCommandLine(line).iterator();
         while(st.hasNext()){
             String option = st.next();
             if (option.startsWith("-D")){ // NOI18N
@@ -709,7 +610,7 @@ public class DwarfSource implements SourceFileProperties{
         }
         res = new ArrayList<String>();
         File file = new File(fileName);
-        if (file.exists() && file.canRead()){
+        if (file.exists() && file.canRead() && !file.isDirectory()){
             try {
                 BufferedReader in = new BufferedReader(new FileReader(file));
                 while(true){

@@ -56,7 +56,7 @@ import javax.swing.JTextField;
 import org.openide.util.NbBundle;
 import org.openide.NotifyDescriptor;
 import org.netbeans.modules.jmx.mbeanwizard.tablemodel.MBeanOperationTableModel;
-import org.netbeans.modules.jmx.runtime.ManagementDialogs;
+import org.netbeans.modules.jmx.common.runtime.ManagementDialogs;
 import org.netbeans.modules.jmx.mbeanwizard.table.OperationExceptionPopupTable;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeEvent;

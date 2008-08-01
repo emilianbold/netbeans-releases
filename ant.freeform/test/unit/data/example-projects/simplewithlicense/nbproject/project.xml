@@ -16,6 +16,11 @@
                     <location>src</location>
                     <encoding>UTF-8</encoding>
                 </source-folder>
+                <source-folder>
+                    <label>src2</label>
+                    <type>java</type>
+                    <location>src2</location>
+                </source-folder>
             </folders>
             <ide-actions>
                 <action name="build">

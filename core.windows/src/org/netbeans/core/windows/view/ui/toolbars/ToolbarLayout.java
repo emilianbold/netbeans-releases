@@ -55,6 +55,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 
+import javax.swing.JFrame;
 import org.openide.awt.ToolbarPool;
 import org.openide.windows.WindowManager;
 
@@ -196,13 +197,8 @@ public class ToolbarLayout implements LayoutManager2, java.io.Serializable {
             //Insets insets = parent.getInsets();
             //int maxPosition = parent.getWidth() - (insets.left + insets.right) - HGAP;
             Insets insets = WindowManager.getDefault().getMainWindow().getInsets();
-            int maxPosition;
             Frame f = WindowManager.getDefault().getMainWindow();
-            if ((f.getExtendedState() & Frame.MAXIMIZED_BOTH) == Frame.MAXIMIZED_BOTH) {
-                maxPosition = f.getWidth() - HGAP;
-            } else {
-                maxPosition = f.getWidth() - (insets.left + insets.right) - HGAP;
-            }
+            int maxPosition = f.getWidth() - (insets.left + insets.right) - HGAP;
             Component comp;
             ToolbarConstraints constr;
 
@@ -219,7 +215,16 @@ public class ToolbarLayout implements LayoutManager2, java.io.Serializable {
 	    /* Setting components' bounds. */
             HashSet<ToolbarConstraints> completed = new HashSet<ToolbarConstraints>(componentMap.size()*2);
             for (int i = 0; i < toolbarConfig.getRowCount(); i++) {
-                ToolbarConstraints overflownTC = processRow(toolbarConfig.getRow(i), completed, maxPosition);
+                ToolbarRow row = toolbarConfig.getRow(i);
+                int rightWidth = 0;
+                Iterator<ToolbarConstraints> tcIt = row.iterator();
+                while( tcIt.hasNext() ) {
+                    ToolbarConstraints tc=tcIt.next();
+                    if( tc.isAlwaysRight() ) {
+                        rightWidth += tc.getWidth();
+                    }
+                }
+                ToolbarConstraints overflownTC = processRow(toolbarConfig.getRow(i), completed, maxPosition-rightWidth );
                 // add row members to completed
                 for (Iterator<ToolbarConstraints> iter = toolbarConfig.getRow(i).iterator(); it.hasNext(); ) {
                     completed.add(iter.next());
@@ -228,7 +233,7 @@ public class ToolbarLayout implements LayoutManager2, java.io.Serializable {
             parent.repaint();
         }
     }
-     
+    
     private ToolbarConstraints processRow (ToolbarRow row, Collection completed, int maxPosition) {
         Rectangle bounds;
         Component comp;
@@ -244,21 +249,28 @@ public class ToolbarLayout implements LayoutManager2, java.io.Serializable {
 
             /* ToolbarConstraints has component bounds prepared. */
             bounds = constr.getBounds();
-            if ((bounds.x < maxPosition) &&                 // If component starts on visible position ...
-                (bounds.x + bounds.width > maxPosition)) {  // ... but with width it is over visible area ...
-                bounds.width = maxPosition - bounds.x;      // ... so width is cropped to max possible.
-                comp.setBounds(bounds);
-            } else if ((maxPosition == 0) || (maxPosition == 1)) {
-                bounds.width = maxPosition;
+            if( constr.isAlwaysRight() ) {
+                bounds.x = maxPosition;
+                bounds.width = constr.getWidth();
                 comp.setBounds(bounds);
             } else {
-                if (constr.getPosition() > maxPosition + HGAP) {
-                    // mark toolbar as candidate for move to next row down
-                    if (!constr.isAlone() && ((row.toolbarCount() - moveDownCandidates.size()) > 1)) {
-                        moveDownCandidates.add(constr);
-                    }
-                } else {
+                if ((bounds.x < maxPosition) &&                 // If component starts on visible position ...
+                    (bounds.x + bounds.width - maxPosition >15)) {  // ... but with width it is over visible area ...
+                    bounds.width = maxPosition - bounds.x;      // ... so width is cropped to max possible.
                     comp.setBounds(bounds);
+                } else if ((maxPosition == 0) || (maxPosition == 1)) {
+                    bounds.width = maxPosition;
+                    comp.setBounds(bounds);
+                } else {
+                    if (constr.getPosition() > maxPosition ) {
+                        // mark toolbar as candidate for move to next row down
+                        if (!constr.isAlone() /*&& ((row.toolbarCount() - moveDownCandidates.size()) > 1)*/ 
+                                && !constr.isAlwaysRight()) {
+                            moveDownCandidates.add(constr);
+                        }
+                    } else {
+                        comp.setBounds(bounds);
+                    }
                 }
             }
         }

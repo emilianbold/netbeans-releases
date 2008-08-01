@@ -43,15 +43,12 @@ package org.netbeans.modules.debugger.jpda.ui.models;
 
 import com.sun.jdi.AbsentInformationException;
 import java.awt.event.ActionEvent;
-import java.util.Vector;
 import javax.swing.Action;
 import javax.swing.AbstractAction;
 import javax.swing.SwingUtilities;
 
-import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.spi.debugger.ContextProvider;
-import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.CallStackFrame;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
@@ -61,10 +58,8 @@ import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.netbeans.spi.viewmodel.Models;
 import org.netbeans.spi.viewmodel.TreeModel;
 
-import org.netbeans.modules.debugger.jpda.ui.EditorContextBridge;
 import org.netbeans.modules.debugger.jpda.ui.SourcePath;
 
-import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -108,6 +103,11 @@ public class CallStackActionsProvider implements NodeActionsProvider {
         
     private final Action COPY_TO_CLBD_ACTION = new AbstractAction (
         NbBundle.getBundle(ThreadsActionsProvider.class).getString("CTL_CallstackAction_Copy2CLBD_Label")) {
+        @Override
+        public boolean isEnabled () {
+            JPDAThread t = debugger.getCurrentThread();
+            return t != null && t.isSuspended();
+        }
         public void actionPerformed (ActionEvent e) {
             stackToCLBD ();
         }
@@ -151,10 +151,20 @@ public class CallStackActionsProvider implements NodeActionsProvider {
             throw new UnknownTypeException (node);
         
         boolean popToHere = debugger.canPopFrames ();
-        if (popToHere)
-            return new Action [] { MAKE_CURRENT_ACTION, POP_TO_HERE_ACTION, COPY_TO_CLBD_ACTION };
-        else
-            return new Action [] { MAKE_CURRENT_ACTION, COPY_TO_CLBD_ACTION };
+        if (popToHere) {
+            return new Action [] {
+                MAKE_CURRENT_ACTION,
+                POP_TO_HERE_ACTION,
+                DebuggingActionsProvider.GO_TO_SOURCE_ACTION,
+                COPY_TO_CLBD_ACTION
+            };
+        } else {
+            return new Action [] {
+                MAKE_CURRENT_ACTION,
+                DebuggingActionsProvider.GO_TO_SOURCE_ACTION,
+                COPY_TO_CLBD_ACTION
+            };
+        }
     }
     
     public void performDefaultAction (Object node) throws UnknownTypeException {
@@ -192,6 +202,7 @@ public class CallStackActionsProvider implements NodeActionsProvider {
     
     private void stackToCLBD() {
         JPDAThread t = debugger.getCurrentThread();
+        if (t == null) return ;
         StringBuffer frameStr = new StringBuffer(50);
         CallStackFrame[] stack;
         try {

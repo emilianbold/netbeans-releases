@@ -153,6 +153,10 @@ public final class SuiteProject implements Project {
     public PropertyEvaluator getEvaluator() {
         return eval;
     }
+
+    public File getTestUserDirLockFile() {
+        return getHelper().resolveFile(getEvaluator().evaluate("${test.user.dir}/lock"));
+    }
     
     /**
      * Get the platform selected for use with this suite.
@@ -211,6 +215,7 @@ public final class SuiteProject implements Project {
         fixedProps.put(SuiteProperties.DISABLED_MODULES_PROPERTY, "");
         fixedProps.put(BrandingSupport.BRANDING_DIR_PROPERTY, "branding"); // NOI18N
         fixedProps.put("dist.dir", "dist"); // NOI18N
+        fixedProps.put("test.user.dir", "build/testuserdir"); // NOI18N
         providers.add(PropertyUtils.fixedPropertyProvider(fixedProps));
         return PropertyUtils.sequentialPropertyEvaluator(predefs, providers.toArray(new PropertyProvider[providers.size()]));
     }

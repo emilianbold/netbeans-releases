@@ -46,7 +46,14 @@
             </target>
             
             <target name="test-restbeans" depends="run-deploy,-init-display-browser,-check-trim,-trim-url,-spare-url">
-                <replace file="${{restbeans.test.file}}" token="${{base.url.token}}" value="${{rest.base.url}}"/>
+                <xmlproperty file="${{webinf.dir}}/web.xml"/>
+                <replace file="${{restbeans.test.file}}" token="${{base.url.token}}" value="${{rest.base.url}}||${{web-app.servlet-mapping.servlet-name}}||${{web-app.servlet-mapping.url-pattern}}"/>
+                <condition property="do.browse-url">
+                    <istrue value="${{display.browser}}"/>
+                </condition>
+                <antcall target="browse-url"/>
+            </target>
+            <target name="browse-url" if="do.browse-url">
                 <nbbrowse url="${{restbeans.test.url}}"/>
             </target>
         </project>

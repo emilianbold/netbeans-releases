@@ -62,19 +62,13 @@ public class ValidateLayerMenuTest extends NbTestCase {
         super (name);
     }
 
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
-    
     public static Test suite() {
-        TestSuite suite = new NbTestSuite(ValidateLayerMenuTest.class);
-        
-        return suite;
+        return NbModuleSuite.create(
+            NbModuleSuite.createConfiguration(ValidateLayerMenuTest.class)
+                .clusters(".*").enableModules(".*").gui(false)
+        );
     }
-    
+
     //
     // override in subclasses
     //

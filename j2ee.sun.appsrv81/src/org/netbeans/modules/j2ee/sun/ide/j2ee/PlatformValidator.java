@@ -65,6 +65,8 @@ public class PlatformValidator {
             if(serverVersion.equals(SAILFIN_V1)){
                 if (!sipDescriminator.exists() || !sipDescriminator.isFile()) { 
                    return false;
+                } else {
+                    return retVal;
                 }
             } else {
                 //V1 or V2 or SJSAS

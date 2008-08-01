@@ -43,10 +43,12 @@ package org.netbeans.modules.gsfret.editor.completion;
 import java.awt.event.ActionEvent;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.api.editor.completion.Completion;
-import org.netbeans.modules.gsf.api.Completable;
+import org.netbeans.modules.gsf.api.CodeCompletionHandler;
 import org.netbeans.modules.gsf.api.ElementHandle;
 import org.netbeans.modules.gsf.LanguageRegistry;
 import org.netbeans.napi.gsfret.source.CompilationController;
@@ -81,7 +83,7 @@ public class GsfCompletionDoc implements CompletionDocumentation {
             }
         }
 
-        Completable completer = language.getCompletionProvider();
+        CodeCompletionHandler completer = language.getCompletionProvider();
 
         this.elementHandle = elementHandle;
 
@@ -136,7 +138,17 @@ public class GsfCompletionDoc implements CompletionDocumentation {
         
         ElementHandle handle = language.getCompletionProvider().resolveLink(link, elementHandle);
         if (handle != null) {
-            return new GsfCompletionDoc(controller, handle, null);
+            URL url = null;
+            if(handle instanceof ElementHandle.UrlHandle) {
+                String url_text = ((ElementHandle.UrlHandle)handle).getUrl();
+                try {
+                    url = new URL(url_text);
+                } catch (MalformedURLException mue) {
+                    Logger.getLogger("global").log(Level.INFO, null, mue);
+                }
+            }
+            
+            return new GsfCompletionDoc(controller, handle, url);
         }
         return null;
     }

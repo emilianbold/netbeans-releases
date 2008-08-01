@@ -44,6 +44,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.management.MBeanServerConnection;
 import org.netbeans.modules.j2ee.sun.api.SimpleNodeExtensionProvider;
 import org.netbeans.modules.j2ee.sun.bridge.apis.AppserverMgmtContainerNode;
@@ -263,10 +265,32 @@ public class ContainerChildFactory {
        while (ps.hasNext()) {
            SimpleNodeExtensionProvider nep = (SimpleNodeExtensionProvider)ps.next();
            if (nep != null) {
-                Node node = nep.getExtensionNode(connection);
-                if (node != null){
-                    nodes.add(node);
-                }
+               Node node;
+               try {
+                   node = nep.getExtensionNode(connection);
+                   if (node != null) {
+                       nodes.add(node);
+                   }
+               } catch (Exception ex) {
+                   Logger.getLogger("global").log(Level.SEVERE,
+                           NbBundle.getMessage(this.getClass(),
+                           "WARN_BOGUS_GET_EXTENSION_NODE_IMPL", // NOI18N
+                           nep.getClass().getName()));
+                   Logger.getLogger("global").log(Level.FINER,
+                           NbBundle.getMessage(this.getClass(),
+                           "WARN_BOGUS_GET_EXTENSION_NODE_IMPL", // NOI18N
+                           nep.getClass().getName()), ex);
+               } catch (AssertionError ae) {
+                   // deal with JBI failure mode explicitly.
+                   Logger.getLogger("global").log(Level.SEVERE,
+                           NbBundle.getMessage(this.getClass(),
+                           "WARN_BOGUS_GET_EXTENSION_NODE_IMPL", // NOI18N
+                           nep.getClass().getName()+".")); // NOI18N
+                   Logger.getLogger("global").log(Level.FINER,
+                           NbBundle.getMessage(this.getClass(),
+                           "WARN_BOGUS_GET_EXTENSION_NODE_IMPL", // NOI18N
+                           nep.getClass().getName()), ae);
+               }
             }
        }
        

@@ -65,8 +65,4 @@ public class BPELExtensionSemanticValidator extends AbstractValidator {
     {
         return new BPELExtensionSemanticVisitor(this);
     }
-
-
-    
 }
-

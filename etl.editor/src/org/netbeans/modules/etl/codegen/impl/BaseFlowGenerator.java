@@ -58,6 +58,12 @@ public abstract class BaseFlowGenerator implements ETLProcessFlowGenerator {
         this.builderModel.applyConnectionDefinitions();
         this.builderModel.buildRuntimeDatabaseModel();
     }
+    public void applyConnectionDefinitions(boolean useInstanceDB, boolean useMemoryMonitorDB) throws BaseException {
+        this.builderModel.setUseInstanceDB(useInstanceDB);
+        this.builderModel.setMemoryMonitorDB(useMemoryMonitorDB);
+        this.builderModel.applyConnectionDefinitions();
+        this.builderModel.buildRuntimeDatabaseModel();
+    }
 
     public void applyConnectionDefinitions(Map name2connectionDefMap, Map connDefNameMap, Map intDbConfigParams) throws BaseException {
         if ((intDbConfigParams != null) && (intDbConfigParams.size() > 0)) {

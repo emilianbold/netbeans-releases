@@ -52,10 +52,12 @@ import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.spi.editor.mimelookup.MimeDataProvider;
 import org.netbeans.spi.editor.mimelookup.MimeLookupInitializer;
 import org.openide.util.Lookup;
+import org.openide.util.Lookup.Template;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.WeakListeners;
 import org.openide.util.lookup.ProxyLookup;
+
 
 /**
  *
@@ -63,41 +65,56 @@ import org.openide.util.lookup.ProxyLookup;
  */
 @SuppressWarnings("deprecation")
 public final class MimePathLookup extends ProxyLookup implements LookupListener {
-    
+
     private static final Logger LOG = Logger.getLogger(MimePathLookup.class.getName());
-    
-    private MimePath mimePath;
-    private Lookup.Result<MimeDataProvider> dataProviders;
-    private Lookup.Result<MimeLookupInitializer> mimeInitializers; // This is supported for backwards compatibility only.
-    
+
+    private final MimePath mimePath;
+    private final boolean mimePathBanned;
+    private final Lookup.Result<MimeDataProvider> dataProviders;
+    private final Lookup.Result<MimeLookupInitializer> mimeInitializers; // This is supported for backwards compatibility only.
+    private boolean initialized = false;
+
     /** Creates a new instance of MimePathLookup */
     public MimePathLookup(MimePath mimePath) {
         super();
-        
+
         if (mimePath == null) {
             throw new NullPointerException("Mime path can't be null."); //NOI18N
         }
-        
+
         this.mimePath = mimePath;
+        this.mimePathBanned = mimePath.size() > 0 && mimePath.getMimeType(0).contains("text/base"); //NOI18N
 
         dataProviders = Lookup.getDefault().lookup(new Lookup.Template<MimeDataProvider>(MimeDataProvider.class));
         dataProviders.addLookupListener(WeakListeners.create(LookupListener.class, this, dataProviders));
 
         mimeInitializers = Lookup.getDefault().lookup(new Lookup.Template<MimeLookupInitializer>(MimeLookupInitializer.class));
         mimeInitializers.addLookupListener(WeakListeners.create(LookupListener.class, this, mimeInitializers));
-        
-        rebuild();
     }
+
+    @Override
+    protected void beforeLookup(Template<?> template) {
+        synchronized (this) {
+            if (!initialized) {
+                initialized = true;
+                rebuild();
+            }
+        }
+    }
+
 
     public MimePath getMimePath() {
         return mimePath;
     }
-    
+
     private void rebuild() {
         ArrayList<Lookup> lookups = new ArrayList<Lookup>();
 
         // Add lookups from MimeDataProviders
         for (MimeDataProvider provider : dataProviders.allInstances()) {
+            if (mimePathBanned && !isDefaultProvider(provider)) {
+                continue;
+            }
             Lookup mimePathLookup = provider.getLookup(mimePath);
             if (mimePathLookup != null) {
                 lookups.add(mimePathLookup);
@@ -105,7 +122,7 @@ public final class MimePathLookup extends ProxyLookup implements LookupListener 
         }
 
         // XXX: This hack here is to make GSF and Schliemann frameworks work.
-        // Basically we should somehow enforce the composition of lookups 
+        // Basically we should somehow enforce the composition of lookups
         // for MimeDataProviders too. But some providers such as the one from
         // editor/mimelookup/impl do the composition in their own way. So we
         // will probably have to extend the SPI somehow to accomodate both simple
@@ -146,10 +163,14 @@ public final class MimePathLookup extends ProxyLookup implements LookupListener 
                 }
             }
         }
-        
+
         setLookups(lookups.toArray(new Lookup[lookups.size()]));
     }
-    
+
+    private boolean isDefaultProvider(MimeDataProvider provider) {
+        return provider.getClass().getName().equals("org.netbeans.modules.editor.mimelookup.impl.DefaultMimeDataProvider"); //NOI18N
+    }
+
     //-------------------------------------------------------------
     // LookupListener implementation
     //-------------------------------------------------------------
@@ -157,5 +178,5 @@ public final class MimePathLookup extends ProxyLookup implements LookupListener 
     public void resultChanged(LookupEvent ev) {
         rebuild();
     }
-    
+
 }

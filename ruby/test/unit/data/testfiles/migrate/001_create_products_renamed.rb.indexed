@@ -1,12 +1,7 @@
 
 
 Document 0
-Delete:  source : <TESTURL>/001_create_products_renamed.rb
-
-
-
-Document 1
-Indexed:
+Searchable Keys:
   class : CreateProductsRenamed
   class-ig : createproductsrenamed
   extends : ActiveRecord::Migration
@@ -14,15 +9,15 @@ Indexed:
   method : down|STATIC|
   method : up|STATIC|
 
-Not Indexed:
+Not Searchable Keys:
   attrs : |DOCUMENTED|;1429
 
 
-Document 2
-Indexed:
+Document 1
+Searchable Keys:
   dbtable : products
 
-Not Indexed:
+Not Searchable Keys:
   dbcolumn : desc
   dbcolumn : description;-
   dbcolumn : description;text

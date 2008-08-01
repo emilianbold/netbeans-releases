@@ -1,31 +1,53 @@
 /*
- * The contents of this file are subject to the terms of the Common Development
- * and Distribution License (the License). You may not use this file except in
- * compliance with the License.
- * 
- * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
- * or http://www.netbeans.org/cddl.txt.
- * 
- * When distributing Covered Code, include this CDDL Header Notice in each file
- * and include the License file at http://www.netbeans.org/cddl.txt.
- * If applicable, add the following below the CDDL Header, with the fields
- * enclosed by brackets [] replaced by your own identifying information:
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License. When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Sun in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
+ * Contributor(s):
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.bpel.design.decoration.providers;
 
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.SwingUtilities;
-import org.netbeans.modules.bpel.core.util.BPELValidationController;
-import org.netbeans.modules.bpel.core.util.BPELValidationListener;
-import org.netbeans.modules.bpel.core.util.ValidationUtil;
+
+import org.netbeans.modules.soa.validation.core.Controller;
+import org.netbeans.modules.soa.validation.core.Listener;
+import org.netbeans.modules.bpel.editors.api.EditorUtil;
 import org.netbeans.modules.bpel.design.DesignView;
 import org.netbeans.modules.bpel.design.decoration.ComponentsDescriptor;
 import org.netbeans.modules.bpel.design.decoration.Decoration;
@@ -42,54 +64,42 @@ import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultType;
+
 /**
- *
  * @author aa160298
  */
-public class ValidationDecorationProvider extends DecorationProvider
-        implements BPELValidationListener {
+public class ValidationDecorationProvider extends DecorationProvider implements Listener {
     
-        
     private Object list_key = new Object();
     private Object decoration_key = new Object();
     
     private List<ResultItem> results = new ArrayList<ResultItem>();
     
-    /** Creates a new instance of ValidationDecorationProvider */
     public ValidationDecorationProvider(DesignView designView) {
         super(designView);
-        
-        
-  
-        
-        
-        final BPELValidationController vc = getDesignView().getValidationController();
-        
-        vc.addValidationListener(this);
-        
+        final Controller controller = getDesignView().getValidationController();
+        controller.addListener(this);
+
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                vc.triggerValidation();
+                controller.triggerValidation();
             }
         });
-        
-        
     }
-    
     
     public void release(){
-        // Removed validation listener.
-        getDesignView().getValidationController().removeValidationListener(this);
-        
+        getDesignView().getValidationController().removeListener(this);
+        list_key = null;
+        decoration_key = null;
     }
+
     public Decoration getDecoration(BpelEntity entity){
         return (Decoration) entity.getCookie(decoration_key);
-        
     }
     
     public void updateDecorations(){
         
-        final List<ResultItem> resultsFiltered = ValidationUtil.filterBpelResultItems(results);
+        final List<ResultItem> resultsFiltered = EditorUtil.filterBpelResultItems(results);
        
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
@@ -208,7 +218,7 @@ public class ValidationDecorationProvider extends DecorationProvider
         for (ResultItem item1: list1){
             boolean found = false;
             for (ResultItem item2: list2){
-                if (ValidationUtil.equals(item1, item2)){
+                if (EditorUtil.equals(item1, item2)){
                     found = true;
                     break;
                 }

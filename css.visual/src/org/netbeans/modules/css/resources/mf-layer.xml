@@ -76,9 +76,10 @@ made subject to such option by the copyright holder.
             <folder name="CssPreviewTCWsmode">
                 <file name="CssPreviewTC.wstcref" url="CssPreviewTCWstcref.xml"/>
             </folder>
-            <file name="StyleBuilderTCWsmode.wsmode" url="StyleBuilderTCWsmode.xml"/>
-            <folder name="StyleBuilderTCWsmode">
-                <file name="StyleBuilderTC.wstcref" url="StyleBuilderTCWstcref.xml"/>
+            <folder name="output">
+                <file name="StyleBuilderTC.wstcref" url="StyleBuilderTCWstcref.xml">
+                    <attr name="position" intvalue="2700"/>
+                </file>
             </folder>
         </folder>
         <folder name="Groups">

@@ -43,6 +43,8 @@ package org.netbeans.modules.editor.mimelookup.impl;
 
 import java.net.URL;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JSeparator;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
@@ -78,6 +80,7 @@ public class MimeLookupInheritanceTest extends NbTestCase {
             getClass().getClassLoader(), 
             null
         );
+        Logger.getLogger("org.openide.filesystems.Ordering").setLevel(Level.OFF);
     }
 
     private void testPopupItems(Lookup lookup, Class[] layerObjects){

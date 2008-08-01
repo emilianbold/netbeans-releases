@@ -5,7 +5,6 @@ package antlr;
  * Software rights: http://www.antlr.org/license.html
  */
 
-import java.io.*;
 import java.util.Hashtable;
 import java.util.Enumeration;
 
@@ -41,6 +40,7 @@ class SimpleTokenManager implements TokenManager, Cloneable {
         vocabulary.setElementAt("NULL_TREE_LOOKAHEAD", Token.NULL_TREE_LOOKAHEAD);
     }
 
+    @Override
     public Object clone() {
         SimpleTokenManager tm;
         try {

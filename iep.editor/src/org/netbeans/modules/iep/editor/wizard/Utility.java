@@ -24,15 +24,25 @@ import java.util.Iterator;
 
 import javax.xml.namespace.QName;
 
+import org.netbeans.modules.iep.editor.PlanDataObject;
 import org.netbeans.modules.xml.schema.model.GlobalElement;
 import org.netbeans.modules.xml.schema.model.GlobalType;
 import org.netbeans.modules.xml.schema.model.Schema;
 import org.openide.explorer.view.TreeView;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 
 public class Utility {
     
+    public static String IEP_TARGETNAMESPACE_PREFIX = "http://enterprise.netbeans.org/iep";
     
     public static GlobalElement findGlobalElement(Schema schema, String elementName) {
         Collection gElem = schema.findAllGlobalElements();
@@ -92,5 +102,25 @@ public class Utility {
         }
     }
     
+    
+    public static String generateTargetNamespace(PlanDataObject dataObject) {
+        Project project = FileOwnerQuery.getOwner(dataObject.getPrimaryFile());
+        StringBuffer tns = new StringBuffer(IEP_TARGETNAMESPACE_PREFIX);
         
+        if(project != null) {
+            ProjectInformation pi = ProjectUtils.getInformation(project);
+            tns.append("/");
+            tns.append(pi.getName());
+            tns.append("/");
+            tns.append(dataObject.getName());
+        } else {
+            tns.append("/");
+            tns.append(dataObject.getName());
+        }
+        
+        
+        return tns.toString();
+    }
+    
+    
 }

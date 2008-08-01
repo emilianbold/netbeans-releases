@@ -95,7 +95,6 @@ public final class ClassPathSupportCallbackImpl implements org.netbeans.modules.
 
     public static final String PATH_IN_WAR_LIB = "WEB-INF/lib"; //NOI18N
     public static final String PATH_IN_WAR_DIR = "WEB-INF/classes"; //NOI18N
-    public static final String PATH_IN_WAR_APPLET = ""; //NOI18N
     public static final String PATH_IN_WAR_NONE = null;
     
     private static Map<String, String> createWarIncludesMap(AntProjectHelper uh, String webModuleLibraries) {
@@ -123,7 +122,7 @@ public final class ClassPathSupportCallbackImpl implements org.netbeans.modules.
                                 if (pathInWarElements.getLength() > 0) {
                                     pathInWar = findText((Element) pathInWarElements.item(0));
                                     if (pathInWar == null)
-                                        pathInWar = PATH_IN_WAR_APPLET;
+                                        pathInWar = "";
                                 }
                                 warIncludesMap.put(webFileText, pathInWar);
                             } else
@@ -191,25 +190,15 @@ public final class ClassPathSupportCallbackImpl implements org.netbeans.modules.
         }
         
         for (Item item : classpath) {
-            webModuleLibs.appendChild(createLibraryElement(doc, 
-                CommonProjectUtils.getAntPropertyName( item.getReference() ), item, 
-                antProjectHelper.getProjectDirectory()));
+            webModuleLibs.appendChild(createLibraryElement(antProjectHelper, doc, 
+                CommonProjectUtils.getAntPropertyName( item.getReference() ), item));
         }
 
         antProjectHelper.putPrimaryConfigurationData( data, true );
     }
     
-    private static Element createLibraryElement(Document doc, String pathItem, Item item, FileObject projectFolder) {
+    private static Element createLibraryElement(AntProjectHelper antProjectHelper, Document doc, String pathItem, Item item) {
         Element libraryElement = doc.createElementNS(WebProjectType.PROJECT_CONFIGURATION_NAMESPACE, TAG_LIBRARY);
-        ArrayList<String> files = new ArrayList<String>();
-        ArrayList<String> dirs = new ArrayList<String>();
-        ProjectProperties.getFilesForItem(item, files, dirs, projectFolder);
-        if (files.size() > 0) {
-            libraryElement.setAttribute(ATTR_FILES, "" + files.size());
-        }
-        if (dirs.size() > 0) {
-            libraryElement.setAttribute(ATTR_DIRS, "" + dirs.size());
-        }
         Element webFile = doc.createElementNS(WebProjectType.PROJECT_CONFIGURATION_NAMESPACE, TAG_FILE);
         libraryElement.appendChild(webFile);
         webFile.appendChild(doc.createTextNode("${" + pathItem + "}"));

@@ -90,8 +90,7 @@ public class SourceForBinaryQueryImpl implements SourceForBinaryQueryImplementat
                 if (lib.getType().equals(ServerLibraryTypeProvider.LIBRARY_TYPE)) {
                     for (String type : CLASSPATH_VOLUMES) {
                         for (URL entry : lib.getContent(type)) {
-                            URL normalizedEntry = LibrariesSupport.resolveLibraryEntryURL(
-                                    mgr.getLocation(), entry);
+                            URL normalizedEntry = entry;
                             if (isNormalizedURL) {
                                 normalizedEntry = getNormalizedURL(normalizedEntry);
                             }
@@ -177,7 +176,6 @@ public class SourceForBinaryQueryImpl implements SourceForBinaryQueryImplementat
                 if (contains) {
                     List<FileObject> result = new ArrayList<FileObject>();
                     for (URL u : lib.getContent(ServerLibraryTypeProvider.VOLUME_SOURCE)) {
-                        u = LibrariesSupport.resolveLibraryEntryURL(lib.getManager().getLocation(), u);
                         FileObject sourceRootURL = URLMapper.findFileObject(u);
                         if (sourceRootURL != null) {
                             result.add(sourceRootURL);

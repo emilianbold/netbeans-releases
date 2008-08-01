@@ -10,9 +10,10 @@
     <kind type="view" />
     <state type="joined" />
     <constraints>
-        <path orientation="vertical" number="20" weight="0.7" />
-        <path orientation="horizontal" number="60" weight="0.27" />
-        <path orientation="vertical" number="20" weight="0.6" />
+        <path orientation="horizontal" number="60" weight="0.7" />
+        <path orientation="vertical" number="40" weight="0.7" />
+        <path orientation="horizontal" number="80" weight="0.3" />
+        <path orientation="vertical" number="40" weight="0.5" />
     </constraints>
     <relative-bounds x="75" y="24" width="15" height="32" />
     <active-tc id="CommonPalette" />

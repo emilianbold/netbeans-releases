@@ -53,8 +53,14 @@ public class TestSequence extends SequentialTest {
     
     /** Creates a new instance of TestSequence */
     public TestSequence() {
+      super( );
     }
     
+  public TestSequence( String s )
+  {
+    super( s );
+  }
+
     // Execute never runs as needsExecution() always 
     // returns false for TestSequence
     public final boolean needsExecution() {
@@ -67,4 +73,5 @@ public class TestSequence extends SequentialTest {
         else
             return m_testList.iterator();
     }
+
 }

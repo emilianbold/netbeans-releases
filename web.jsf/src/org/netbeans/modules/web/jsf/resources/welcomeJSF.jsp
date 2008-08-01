@@ -10,15 +10,14 @@
 <%--
     This file is an entry point for JavaServer Faces application.
 --%>
-
+<f:view>
 <html>
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=__ENCODING__">
         <title>JSP Page</title>
     </head>
     <body>
-        <f:view>
-            <h1><h:outputText value="JavaServer Faces" /></h1>
-        </f:view>
+        <h1><h:outputText value="JavaServer Faces" /></h1>
     </body>
 </html>
+</f:view>

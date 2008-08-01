@@ -63,6 +63,6 @@ public class MLSSBean implements SessionBean {
     }
     
     // Add business logic below. (Right-click in editor and choose
-    // "EJB Methods > Add Business Method" or "Web Service > Add Operation")
+    // "Insert Code > Add Business Method" or "Web Service > Add Operation")
     
 }

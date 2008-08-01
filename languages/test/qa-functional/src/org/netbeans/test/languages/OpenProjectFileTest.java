@@ -19,6 +19,9 @@
 
 package org.netbeans.test.languages;
 
+import java.io.IOException;
+import junit.framework.Test;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.test.lib.BasicOpenFileTest;
 
 /**
@@ -26,41 +29,40 @@ import org.netbeans.test.lib.BasicOpenFileTest;
  * @author Jindrich Sedek
  */
 public class OpenProjectFileTest extends BasicOpenFileTest {
-
+    private static final String projectName = "OpenFileProj";
     public OpenProjectFileTest(String str) {
         super(str);
     }
 
-    @Override
-    public void setUp(){
-        openProject("OpenFileProj");
+    public static Test suite(){
+        return NbModuleSuite.allModules(OpenProjectFileTest.class);
     }
     
     @Override
-    public void tearDown(){
-        closeProject();
+    public void setUp() throws IOException{
+        openDataProjects(projectName);
     }
     
     public void testBAT()throws Exception{
-        openFile("sample.bat");
+        openFile(projectName, "sample.bat");
         edit("FOR %%b in (A, B, C) DO IF %%b == B echo B is in the set!");
         closeFile();
     }
 
     public void testDIFF()throws Exception{
-        openFile("sample.diff");
+        openFile(projectName, "sample.diff");
         edit("0a1,6");
         closeFile();
     }
     
     public void testSH()throws Exception{
-        openFile("sample.sh");
+        openFile(projectName, "sample.sh");
         edit("ls -l | sed -e 's/[aeio]/u/g'");
         closeFile();
     }
     
     public void testMF()throws Exception{
-        openFile("sample.mf");
+        openFile(projectName, "sample.mf");
         edit("OpenIDE-Module: org.netbeans.modules.web.core.syntax/1");
         closeFile();
     }

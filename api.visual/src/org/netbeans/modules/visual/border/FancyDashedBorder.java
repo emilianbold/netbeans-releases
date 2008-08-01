@@ -41,6 +41,8 @@
 package org.netbeans.modules.visual.border;
 
 import java.awt.*;
+import org.netbeans.api.visual.widget.ResourceTable;
+import org.netbeans.api.visual.widget.Widget;
 
 /**
  *
@@ -56,7 +58,15 @@ public final class FancyDashedBorder extends DashedBorder {
     public FancyDashedBorder(Color color, int width, int height) {
         super (color, width, height);
     }
-
+    
+    public FancyDashedBorder (String property, Widget associated, int width, int height) {
+        super (property, associated, width, height);
+    }
+    
+    public FancyDashedBorder (String property, ResourceTable table, int width, int height) {
+        super (property, table, width, height);
+    }
+    
     public void paint(Graphics2D g, Rectangle bounds) {
         int x=bounds.x,y=bounds.y,width=bounds.width,height=bounds.height;
         //x=x+halfRectSize;y=y+halfRectSize;width=width-rectSize;height=height-rectSize;

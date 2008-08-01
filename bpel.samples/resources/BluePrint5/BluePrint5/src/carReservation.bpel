@@ -34,6 +34,8 @@
          xmlns:bpws="http://docs.oasis-open.org/wsbpel/2.0/process/executable"
          xmlns:ns0="http://localhost/BluePrint5/CarReservation"
          xmlns="http://docs.oasis-open.org/wsbpel/2.0/process/executable"
+         xmlns:sxt="http://www.sun.com/wsbpel/2.0/process/executable/SUNExtension/Trace" 
+         xmlns:sxed="http://www.sun.com/wsbpel/2.0/process/executable/SUNExtension/Editor"
          xmlns:rsrv="http://ReservationSystem.org/xsd/reserve">
     
     <import namespace="http://localhost/BluePrint5/CarReservation"
@@ -49,19 +51,13 @@
             importType="http://www.w3.org/2001/XMLSchema"></import>
     
     <partnerLinks>
-        <partnerLink name="reservationPLink"
-                     partnerLinkType="ns0:CarReservationPLinkType"
-                     myRole="reservingRole"/>
-        <partnerLink name="reservationStatusPLink"
-                     partnerLinkType="ns0:CarReservStatusPLinkType"
-                     partnerRole="statusReceivingRole"/>
+        <partnerLink name="reservationPLink" partnerLinkType="ns0:CarReservationPLinkType" myRole="reservingRole"/>
+        <partnerLink name="reservationStatusPLink" partnerLinkType="ns0:CarReservStatusPLinkType" partnerRole="statusReceivingRole"/>
     </partnerLinks>
     
     <variables>
-        <variable name="reserveCar"
-                  messageType="ns0:CarReservation"></variable>
-        <variable name="sendCarStatus"
-                  messageType="ns0:CarReservationStatus"></variable>
+        <variable name="reserveCar" messageType="ns0:CarReservation"></variable>
+        <variable name="sendCarStatus" messageType="ns0:CarReservationStatus"></variable>
     </variables>
     
     <sequence>

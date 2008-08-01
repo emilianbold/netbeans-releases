@@ -41,21 +41,19 @@
 
 package org.netbeans.editor.ext.java;
 
-import java.util.List;
-import java.util.HashMap;
 import javax.swing.text.BadLocationException;
-import javax.swing.event.DocumentListener;
-import javax.swing.event.DocumentEvent;
 
 import org.netbeans.editor.*;
 import org.netbeans.editor.ext.ExtSyntaxSupport;
 
 /**
-* Various java-layers
-*
-* @author Miloslav Metelka
-* @version 1.00
-*/
+ * Various java-layers
+ *
+ * @author Miloslav Metelka
+ * @version 1.00
+ * @deprecated Please use Highlighting SPI instead, for details see
+ *   <a href="@org-netbeans-modules-editor-lib2@/overview-summary.html">Editor Library 2</a>.
+ */
 
 public class JavaDrawLayerFactory {
 
@@ -65,6 +63,9 @@ public class JavaDrawLayerFactory {
 
     /** Layer that colors extra java information like the methods or special
      * characters in the character and string literals.
+     * 
+     * @deprecated Please use Highlighting SPI instead, for details see
+     *   <a href="@org-netbeans-modules-editor-lib2@/overview-summary.html">Editor Library 2</a>.
      */
     public static class JavaLayer extends DrawLayer.AbstractLayer {
 

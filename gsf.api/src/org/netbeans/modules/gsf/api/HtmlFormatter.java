@@ -41,6 +41,8 @@
 
 package org.netbeans.modules.gsf.api;
 
+import org.netbeans.modules.gsf.api.annotations.NonNull;
+
 /**
  * A formatter used to format items for navigation, code completion, etc.
  * Language plugins should build up HTML strings by calling logical
@@ -59,17 +61,17 @@ public abstract class HtmlFormatter {
     }
     public abstract void reset();
     public abstract void appendHtml(String html);
-    public void appendText(String text) {
+    public void appendText(@NonNull String text) {
         appendText(text, 0, text.length());
     }
-    public abstract void appendText(String text, int fromInclusive, int toExclusive);
+    public abstract void appendText(@NonNull String text, int fromInclusive, int toExclusive);
 
     public abstract void emphasis(boolean start);
-    public abstract void name(ElementKind kind, boolean start);
+    public abstract void name(@NonNull ElementKind kind, boolean start);
     public abstract void parameters(boolean start);
     public abstract void active(boolean start);
     public abstract void type(boolean start);
     public abstract void deprecated(boolean start);
     
-    public abstract String getText();
+    public abstract @NonNull String getText();
 }

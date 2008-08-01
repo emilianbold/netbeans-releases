@@ -41,6 +41,7 @@ package org.netbeans.modules.editor.macros.storage;
 
 import java.util.List;
 import org.netbeans.api.editor.settings.MultiKeyBinding;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -83,24 +84,16 @@ public final class MacroDescription {
             return false;
         }
         final MacroDescription other = (MacroDescription) obj;
-        if (System.identityHashCode(this.name) != System.identityHashCode(other.name) &&
-            (this.name == null || !this.name.equals(other.name))
-        ) {
+        if (!Utilities.compareObjects(this.name, other.name)) {
             return false;
         }
-        if (System.identityHashCode(this.code) != System.identityHashCode(other.code) &&
-            (this.code == null || !this.code.equals(other.code))
-        ) {
+        if (!Utilities.compareObjects(this.code, other.code)) {
             return false;
         }
-        if (System.identityHashCode(this.description) != System.identityHashCode(other.description) && 
-            (this.description == null || !this.description.equals(other.description))
-        ) {
+        if (!Utilities.compareObjects(this.description, other.description)) {
             return false;
         }
-        if (System.identityHashCode(this.shortcuts) != System.identityHashCode(other.shortcuts) && 
-            (this.shortcuts == null || !this.shortcuts.equals(other.shortcuts))
-        ) {
+        if (!Utilities.compareObjects(this.shortcuts, other.shortcuts)) {
             return false;
         }
         return true;

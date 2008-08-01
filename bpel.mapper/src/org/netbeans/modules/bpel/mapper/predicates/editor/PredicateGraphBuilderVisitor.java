@@ -20,12 +20,13 @@
 package org.netbeans.modules.bpel.mapper.predicates.editor;
 
 import org.netbeans.modules.bpel.mapper.model.GraphBuilderVisitor;
+import org.netbeans.modules.bpel.mapper.multiview.BpelDesignContext;
 import org.netbeans.modules.bpel.mapper.tree.MapperSwingTreeModel;
 import org.netbeans.modules.bpel.mapper.tree.search.FinderListBuilder;
 import org.netbeans.modules.soa.mappercore.model.Graph;
 import org.netbeans.modules.xml.xpath.ext.LocationStep;
 import org.netbeans.modules.xml.xpath.ext.XPathLocationPath;
-import org.netbeans.modules.xml.xpath.ext.XPathSchemaContext;
+import org.netbeans.modules.xml.xpath.ext.schema.resolver.XPathSchemaContext;
 
 /**
  * Populates the Graph object with a complex content by an XPath expression.
@@ -33,13 +34,12 @@ import org.netbeans.modules.xml.xpath.ext.XPathSchemaContext;
  * @author nk160297
  */
 public class PredicateGraphBuilderVisitor extends GraphBuilderVisitor {
-        
     private XPathSchemaContext mSContext;
     
     public PredicateGraphBuilderVisitor(XPathSchemaContext sContext, 
-            Graph graph, MapperSwingTreeModel leftTreeModel, 
-            boolean connectToTargetTree) {
-        super(graph, leftTreeModel, connectToTargetTree);
+        Graph graph, MapperSwingTreeModel leftTreeModel, 
+        boolean connectToTargetTree, BpelDesignContext context) {
+        super(graph, leftTreeModel, connectToTargetTree, context);
         mSContext = sContext;
     }
 

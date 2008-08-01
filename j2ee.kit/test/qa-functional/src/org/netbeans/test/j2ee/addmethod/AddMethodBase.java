@@ -38,14 +38,12 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.test.j2ee.addmethod;
 
 import java.io.File;
 import java.io.IOException;
-import org.netbeans.jellytools.*;
-import org.netbeans.jellytools.actions.OpenAction;
-import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jellytools.EditorOperator;
+import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
 import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
@@ -56,7 +54,7 @@ import org.netbeans.test.j2ee.lib.Utils;
  *
  * @author lm97939
  */
-public abstract class AddMethodBase extends JellyTestCase {
+public abstract class AddMethodBase extends J2eeTestCase {
 
     protected String beanName;
     protected String editorPopup;
@@ -64,44 +62,45 @@ public abstract class AddMethodBase extends JellyTestCase {
     protected boolean isDDModified = false;
     protected String toSearchInEditor;
     protected boolean saveFile = false;
-    
+
     /** Creates a new instance of AddMethodTest */
     public AddMethodBase(String name) {
         super(name);
     }
-    
+
     protected void waitForEditorText(final EditorOperator editor, final String toSearchInEditor) {
         try {
             new Waiter(new Waitable() {
-                    public Object actionProduced(Object obj) {
-                        return editor.contains(toSearchInEditor)?Boolean.TRUE:null; 
-                    }
-                    public String getDescription() {
-                        return("Editor contains "+ toSearchInEditor); // NOI18N
-                    }
-                }).waitAction(null);
+
+                public Object actionProduced(Object obj) {
+                    return editor.contains(toSearchInEditor) ? Boolean.TRUE : null;
+                }
+
+                public String getDescription() {
+                    return ("Editor contains " + toSearchInEditor); // NOI18N
+                }
+            }).waitAction(null);
         } catch (InterruptedException ie) {
             throw new JemmyException("Interrupted.", ie);
         }
     }
-    
+
     protected void compareFiles() throws IOException {
         new org.netbeans.jemmy.EventTool().waitNoEvent(2000);
         Utils utils = new Utils(this);
-        String beanNames[] = { beanName+"Bean.java", 
-                               beanName+"Local.java", 
-                               beanName+"LocalBusiness.java",
-                               beanName+"LocalHome.java", 
-                               beanName+"Remote.java", 
-                               beanName+"RemoteBusiness.java",
-                               beanName+"RemoteHome.java",                      
+        String beanNames[] = {beanName + "Bean.java",
+            beanName + "Local.java",
+            beanName + "LocalBusiness.java",
+            beanName + "LocalHome.java",
+            beanName + "Remote.java",
+            beanName + "RemoteBusiness.java",
+            beanName + "RemoteHome.java",
         };
-        File EJB_PROJECT_FILE = new File(new File(getDataDir(), EJBValidation.EAR_PROJECT_NAME), EJBValidation.EAR_PROJECT_NAME+"-ejb");
-        utils.assertFiles(new File(EJB_PROJECT_FILE, "src/java/test"), beanNames, getName()+"_");
-        String ddNames[] = { "ejb-jar.xml", 
-                             "sun-ejb-jar.xml"
+        File EJB_PROJECT_FILE = new File(new File(getDataDir(), EJBValidation.EAR_PROJECT_NAME), EJBValidation.EAR_PROJECT_NAME + "-ejb");
+        utils.assertFiles(new File(EJB_PROJECT_FILE, "src/java/test"), beanNames, getName() + "_");
+        String ddNames[] = {"ejb-jar.xml",
+            "sun-ejb-jar.xml"
         };
-        utils.assertFiles(new File(EJB_PROJECT_FILE, "src/conf"), ddNames, isDDModified?getName()+"_":"");
-
+        utils.assertFiles(new File(EJB_PROJECT_FILE, "src/conf"), ddNames, isDDModified ? getName() + "_" : "");
     }
 }

@@ -58,7 +58,9 @@ import org.netbeans.api.java.project.JavaProjectConstants;
 
 import org.openide.filesystems.FileObject;
 import org.openide.WizardDescriptor;
-import org.openide.loaders.*;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.TemplateWizard;
 import org.openide.util.NbBundle;
 
 import org.netbeans.spi.project.ui.templates.support.Templates;
@@ -68,7 +70,7 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.bpel.model.api.support.Utils;
 import org.openide.ErrorManager;
 import org.netbeans.api.queries.FileEncodingQuery;
-import org.netbeans.modules.soa.ui.SoaUiUtil;
+import org.netbeans.modules.soa.ui.SoaUtil;
 
 /**
  * A template wizard iterator (sequence of panels).
@@ -112,7 +114,7 @@ public class NewBpelFileIterator implements TemplateWizard.Iterator {
         };
     }
     
-    public Set instantiate(TemplateWizard wiz) throws IOException {
+    public Set instantiate(TemplateWizard aWiz) throws IOException {
       NewBpelFilePanel panel = (NewBpelFilePanel)folderPanel;
       org.openide.filesystems.FileObject dir = Templates.getTargetFolder(wiz);
       DataObject data = createBpelFile(Templates.getTargetName(wiz), dir, panel.getNS());
@@ -120,19 +122,19 @@ public class NewBpelFileIterator implements TemplateWizard.Iterator {
       if (data == null) {
         return Collections.emptySet();
       }
-      SoaUiUtil.fixEncoding(data, dir);
+      SoaUtil.fixEncoding(data, dir);
       
       return Collections.singleton(data);
     }
 
-    public void initialize(TemplateWizard wiz) {
-        this.wiz = wiz;
+    public void initialize(TemplateWizard aWiz) {
+        this.wiz = aWiz;
         index = 0;
-        Project project = Templates.getProject( wiz );
+        Project project = Templates.getProject(wiz);
         panels = createPanels(project, wiz);
         
         // Creating steps.
-        Object prop = wiz.getProperty("WizardPanel_contentData"); // NOI18N
+        Object prop = wiz.getProperty(WizardDescriptor.PROP_CONTENT_DATA); // NOI18N
         String[] beforeSteps = null;
         if (prop != null && prop instanceof String[]) {
             beforeSteps = (String[])prop;
@@ -150,20 +152,20 @@ public class NewBpelFileIterator implements TemplateWizard.Iterator {
             if (c instanceof JComponent) { // assume Swing components
                 JComponent jc = (JComponent) c;
                 // Step #.
-                jc.putClientProperty("WizardPanel_contentSelectedIndex", // NOI18N
+                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, // NOI18N
                         Integer.valueOf(i));
                 // Step name (actually the whole list for reference).
-                jc.putClientProperty("WizardPanel_contentData", steps); // NOI18N
+                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps); // NOI18N
             }
         }
     }
-    public void uninitialize(TemplateWizard wiz) {
+    public void uninitialize(TemplateWizard aWiz) {
         this.wiz = null;
         panels = null;
     }
     
     public String name() {
-        return NbBundle.getMessage(NewBpelFileIterator.class, "TITLE_x_of_y", index + 1, panels.length);
+        return NbBundle.getMessage(NewBpelFileIterator.class, "TITLE_x_of_y", index + 1, panels.length); // NOI18N
     }
     
     public boolean hasNext() {
@@ -200,9 +202,9 @@ public class NewBpelFileIterator implements TemplateWizard.Iterator {
         boolean importSchemas=false;
         
         DataObject dTemplate = DataObject.find( template );
-        DataObject dobj = dTemplate.createFromTemplate( df, Templates.getTargetName( wiz )  );
+        DataObject dobj = dTemplate.createFromTemplate( df, Templates.getTargetName(wiz));
         
-        initialiseNames(dobj.getPrimaryFile(), bpelFileName, namespace, "url1");
+        initialiseNames(dobj.getPrimaryFile(), bpelFileName, namespace, "url1"); // NOI18N
         
         return dobj;
     }

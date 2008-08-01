@@ -29,18 +29,14 @@ package org.netbeans.test.mercurial.main.properties;
 
 import java.io.File;
 import java.io.PrintStream;
-import junit.textui.TestRunner;
+import junit.framework.Test;
 import org.netbeans.jellytools.JellyTestCase;
-import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.OutputTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
-import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
-import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.junit.ide.ProjectSupport;
 import org.netbeans.test.mercurial.operators.HgPropertiesOperator;
-import org.netbeans.test.mercurial.operators.VersioningOperator;
-import org.netbeans.test.mercurial.utils.RepositoryMaintenance;
 import org.netbeans.test.mercurial.utils.TestKit;
 
 /**
@@ -57,6 +53,7 @@ public class HgPropertiesTest extends JellyTestCase {
         super(name);
     }
 
+    @Override
     protected void setUp() throws Exception {
         os_name = System.getProperty("os.name");
         //System.out.println(os_name);
@@ -71,46 +68,52 @@ public class HgPropertiesTest extends JellyTestCase {
         return unix;
     }
 
-    public static void main(String[] args) {
-        // TODO code application logic here
-        TestRunner.run(suite());
+    public static Test suite() {
+        return NbModuleSuite.create(
+                NbModuleSuite.createConfiguration(HgPropertiesTest.class).addTest("testHgPropertiesTest").enableModules(".*").clusters(".*"));
     }
 
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new HgPropertiesTest("HgPropertiesTest"));
-        return suite;
-    }
-
-    public void HgPropertiesTest() throws Exception {
+    public void testHgPropertiesTest() throws Exception {
         try {
-            TestKit.closeProject(PROJECT_NAME);
-
             stream = new PrintStream(new File(getWorkDir(), getName() + ".log"));
             TestKit.loadOpenProject(PROJECT_NAME, getDataDir());
-
+            ProjectSupport.waitScanFinished();
+            Thread.sleep(2000);
+            
             // set hgProperty for file
             Node node = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp|Main.java");
             HgPropertiesOperator hgpo = HgPropertiesOperator.invoke(node);
             Thread.sleep(2000);
-            // username should be in the table.
-            assertEquals("Wrong row count of table at start.", 1, hgpo.propertiesTable().getRowCount());
-            hgpo.typePropertyName("default-push");
-            hgpo.typePropertyValue("fileValue");
-            hgpo.add();
-            Thread.sleep(500);
-            assertEquals("Wrong row count of table.", 2, hgpo.propertiesTable().getRowCount());
-            Thread.sleep(500);
             
-            hgpo.propertiesTable().selectCell(1, 0);
-            hgpo.remove();
-            Thread.sleep(500);
-            assertEquals("Wrong row count of table after remove.", 1, hgpo.propertiesTable().getRowCount());
-            hgpo.cancel();
-        } catch (Exception e) {
-            throw new Exception("Test failed: " + e);
-        } finally {
+            // username, default-pull and default-push should be in the table.
+            JTableOperator jto = hgpo.propertiesTable();
+            assertEquals("Wrong row count of table at start.", 3, jto.getRowCount());
+            Thread.sleep(1000);
+            assertEquals("1st row should be defaut-pull.", (String)(jto.getValueAt(0, 0)), "default-pull");
+            Thread.sleep(1000);
+            assertEquals("2nd row should be defaut-push.", (String)(jto.getValueAt(1, 0)), "default-push");
+            Thread.sleep(1000);
+            assertEquals("3rd row should be username.", (String)(jto.getValueAt(2, 0)), "username");
+            Thread.sleep(1000);
+            hgpo.ok();
             TestKit.closeProject(PROJECT_NAME);
+            
+//            assertEquals("Wrong row count of table at start.", 1, hgpo.propertiesTable().getRowCount());
+//            hgpo.typePropertyName("default-push");
+//            hgpo.typePropertyValue("fileValue");
+//            hgpo.add();
+//            Thread.sleep(500);
+//            assertEquals("Wrong row count of table.", 2, hgpo.propertiesTable().getRowCount());
+//            Thread.sleep(500);
+//            
+//            hgpo.propertiesTable().selectCell(1, 0);
+//            hgpo.remove();
+//            Thread.sleep(500);
+//            assertEquals("Wrong row count of table after remove.", 1, hgpo.propertiesTable().getRowCount());
+//            hgpo.cancel();
+        } catch (Exception e) {
+            TestKit.closeProject(PROJECT_NAME);
+            throw new Exception("Test failed: " + e);
         }
     }
 }

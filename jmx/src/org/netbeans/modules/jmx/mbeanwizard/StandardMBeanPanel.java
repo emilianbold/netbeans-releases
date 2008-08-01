@@ -49,9 +49,9 @@ import org.openide.loaders.TemplateWizard;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.netbeans.modules.jmx.WizardConstants;
-import org.netbeans.modules.jmx.WizardHelpers;
-import org.netbeans.modules.jmx.GenericWizardPanel;
+import org.netbeans.modules.jmx.common.WizardConstants;
+import org.netbeans.modules.jmx.common.WizardHelpers;
+import org.netbeans.modules.jmx.common.GenericWizardPanel;
 import java.awt.Container;
 import javax.swing.JTextField;
 import org.netbeans.api.project.ProjectUtils;
@@ -323,7 +323,7 @@ public class StandardMBeanPanel extends javax.swing.JPanel
          */
         private void setErrorMsg(String message) {
             if (templateWiz != null) {
-                templateWiz.putProperty(WizardConstants.WIZARD_ERROR_MESSAGE, 
+                templateWiz.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, 
                         message);    //NOI18N
             }
         }

@@ -44,7 +44,7 @@ package org.netbeans.editor.ext;
 import java.awt.Dimension;
 import java.util.ResourceBundle;
 import javax.swing.JCheckBox;
-import org.netbeans.editor.SettingsNames;
+import org.netbeans.modules.editor.lib2.search.EditorFindSupport;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 
@@ -65,8 +65,8 @@ public class FindDialogPanel extends javax.swing.JPanel {
         initComponents ();
         getAccessibleContext().setAccessibleName(bundle.getString("find-title")); // NOI18N
         getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_find")); // NOI18N
-        findWhat.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_" + SettingsNames.FIND_WHAT)); // NOI18N
-        replaceWith.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_" + SettingsNames.FIND_REPLACE_WITH)); // NOI18N
+        findWhat.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_" + EditorFindSupport.FIND_WHAT)); // NOI18N
+        replaceWith.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_" + EditorFindSupport.FIND_REPLACE_WITH)); // NOI18N
         
         // #71956
         Dimension findPrefSize = findWhat.getPreferredSize();
@@ -93,14 +93,14 @@ public class FindDialogPanel extends javax.swing.JPanel {
         findWhat = new javax.swing.JComboBox();
         replaceWithLabel = new javax.swing.JLabel();
         replaceWith = new javax.swing.JComboBox();
-        highlightSearch = createCheckBox( SettingsNames.FIND_HIGHLIGHT_SEARCH);
-        incSearch = createCheckBox( SettingsNames.FIND_INC_SEARCH);
-        matchCase = createCheckBox( SettingsNames.FIND_MATCH_CASE);
-        wholeWords = createCheckBox( SettingsNames.FIND_WHOLE_WORDS);
-        bwdSearch = createCheckBox( SettingsNames.FIND_BACKWARD_SEARCH);
-        wrapSearch = createCheckBox( SettingsNames.FIND_WRAP_SEARCH);
-        regExp = createCheckBox( SettingsNames.FIND_REG_EXP);
-        blockSearch = createCheckBox( SettingsNames.FIND_BLOCK_SEARCH);
+        highlightSearch = createCheckBox( EditorFindSupport.FIND_HIGHLIGHT_SEARCH );
+        incSearch = createCheckBox( EditorFindSupport.FIND_INC_SEARCH );
+        matchCase = createCheckBox( EditorFindSupport.FIND_MATCH_CASE );
+        wholeWords = createCheckBox( EditorFindSupport.FIND_WHOLE_WORDS );
+        bwdSearch = createCheckBox( EditorFindSupport.FIND_BACKWARD_SEARCH );
+        wrapSearch = createCheckBox( EditorFindSupport.FIND_WRAP_SEARCH );
+        regExp = createCheckBox( EditorFindSupport.FIND_REG_EXP );
+        blockSearch = createCheckBox( EditorFindSupport.FIND_BLOCK_SEARCH );
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -116,8 +116,8 @@ public class FindDialogPanel extends javax.swing.JPanel {
         add(findWhatPanel, gridBagConstraints);
 
         findWhatLabel.setLabelFor(findWhat);
-        findWhatLabel.setText(bundle.getString(SettingsNames.FIND_WHAT ) );
-        findWhatLabel.setDisplayedMnemonic(bundle.getString(SettingsNames.FIND_WHAT + "-mnemonic").charAt(0));
+        findWhatLabel.setText(bundle.getString(EditorFindSupport.FIND_WHAT ) );
+        findWhatLabel.setDisplayedMnemonic(bundle.getString(EditorFindSupport.FIND_WHAT + "-mnemonic").charAt(0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -136,8 +136,8 @@ public class FindDialogPanel extends javax.swing.JPanel {
         add(findWhat, gridBagConstraints);
 
         replaceWithLabel.setLabelFor(replaceWith);
-        replaceWithLabel.setText(bundle.getString(SettingsNames.FIND_REPLACE_WITH ) );
-        replaceWithLabel.setDisplayedMnemonic(bundle.getString(SettingsNames.FIND_REPLACE_WITH + "-mnemonic").charAt(0));
+        replaceWithLabel.setText(bundle.getString(EditorFindSupport.FIND_REPLACE_WITH ) );
+        replaceWithLabel.setDisplayedMnemonic(bundle.getString(EditorFindSupport.FIND_REPLACE_WITH + "-mnemonic").charAt(0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;

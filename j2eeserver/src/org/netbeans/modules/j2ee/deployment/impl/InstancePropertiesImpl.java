@@ -126,36 +126,14 @@ public class InstancePropertiesImpl extends InstanceProperties implements Instan
             String propValue = props.getProperty(propName);
             setProperty(propName, propValue);
         }
-    }    
-    
+    }
+
     public javax.enterprise.deploy.spi.DeploymentManager getDeploymentManager() {
         ServerRegistry registry = ServerRegistry.getInstance();
         ServerInstance inst = registry.getServerInstance(url);
         return inst.getDeploymentManager();
     }
-    
-    public javax.enterprise.deploy.spi.Target getDefaultTarget() {
-        ServerRegistry registry = ServerRegistry.getInstance();
-        ServerString ss = registry.getDefaultInstance();
-        javax.enterprise.deploy.spi.Target[] targets = ss.toTargets();
-        if (targets != null && targets.length > 0)
-            return targets[0];
-        return null;
-    }
-    
-    public void setAsDefaultServer(String targetName) {
-        ServerRegistry registry = ServerRegistry.getInstance();
-        ServerInstance inst = registry.getServerInstance(url);
-        ServerString server = new ServerString(inst, targetName);
-        registry.setDefaultInstance(server);
-    }
-    
-    public boolean isDefaultInstance() {
-        ServerRegistry registry = ServerRegistry.getInstance();
-        ServerString ss = registry.getDefaultInstance();
-        return ss.getUrl().equals(url);
-    }
-    
+
     public void refreshServerInstance() {
         ServerRegistry registry = ServerRegistry.getInstance();
         ServerInstance inst = registry.getServerInstance(url);

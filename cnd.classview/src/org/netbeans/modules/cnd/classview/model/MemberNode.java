@@ -62,10 +62,10 @@ public class MemberNode extends ObjectNode {
         boolean isTemplate = false;
         String text = mem.getName().toString();
         if( mem.getKind() == CsmDeclaration.Kind.CLASS ) {
-            isTemplate = ((CsmClass) mem) .isTemplate();
+            isTemplate = CsmKindUtilities.isTemplate(mem);
         } else if( CsmKindUtilities.isFunction(mem) ) {
             CsmFunction fun = (CsmFunction) mem;
-            isTemplate = fun.isTemplate();
+            isTemplate = CsmKindUtilities.isTemplate(fun);
             text = CVUtil.getSignature(fun).toString();
         }
         String name = text;

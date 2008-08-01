@@ -49,10 +49,10 @@ import org.netbeans.modules.vmd.api.io.DataObjectContext;
  */
 public class DocumentEditorViewFactory implements DataEditorViewFactory {
 
-    public static final boolean AVAILABLE = Boolean.getBoolean ("vmd.structure.show"); // NOI18N
+    public static final String VMD_STRUCTURE_SHOW = "vmd.structure.show"; // NOI18N
 
     public DataEditorView createEditorView (DataObjectContext context) {
-        if (AVAILABLE)
+        if (Boolean.getBoolean (VMD_STRUCTURE_SHOW))
             return new DocumentEditorView (context);
         return null;
     }

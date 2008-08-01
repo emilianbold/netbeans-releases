@@ -1,0 +1,21 @@
+<?php
+    session_start();
+    
+    include_once "FlickrPhotoServiceAuthenticator.php";
+    
+    $frob = $_GET["frob"];
+    FlickrPhotoServiceAuthenticator::saveSession("flickr_frob", $frob);
+
+    FlickrPhotoServiceAuthenticator::login();
+    $authToken = FlickrPhotoServiceAuthenticator::getAuthToken();
+
+    printf("<html>");
+    printf("<head>");
+    printf("<title>Servlet FlickrPhotoServiceCallback</title>");
+    printf("</head>");
+    printf("<body>");
+    printf("<h1>Servlet FlickrPhotoServiceCallback at " . $_SERVER['REQUEST_URI'] . "</h1>");
+    printf("<p> Your authentication token is " . $authToken . "</p>");
+    printf("</body>");
+    printf("</html>");
+?>

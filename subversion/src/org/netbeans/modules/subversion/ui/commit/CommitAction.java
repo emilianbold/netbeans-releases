@@ -270,19 +270,25 @@ public class CommitAction extends ContextAction {
         panel.filesPanel.setLayout(new BorderLayout());
         panel.filesPanel.add(component, BorderLayout.CENTER);
 
-        DialogDescriptor dd = new DialogDescriptor(panel, org.openide.util.NbBundle.getMessage(CommitAction.class, "CTL_CommitDialog_Title", contentTitle)); // NOI18N
-        dd.setModal(true);        
-        org.openide.awt.Mnemonics.setLocalizedText(commitButton, org.openide.util.NbBundle.getMessage(CommitAction.class, "CTL_Commit_Action_Commit"));
-        commitButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CommitAction.class, "ACSN_Commit_Action_Commit"));
-        commitButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CommitAction.class, "ACSD_Commit_Action_Commit"));
+        org.openide.awt.Mnemonics.setLocalizedText(commitButton, org.openide.util.NbBundle.getMessage(CommitAction.class, "CTL_Commit_Action_Commit")); // NOI18N
+        commitButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CommitAction.class, "ACSN_Commit_Action_Commit")); // NOI18N
+        commitButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CommitAction.class, "ACSD_Commit_Action_Commit")); // NOI18N
         final JButton cancelButton = new JButton(org.openide.util.NbBundle.getMessage(CommitAction.class, "CTL_Commit_Action_Cancel")); // NOI18N
-        org.openide.awt.Mnemonics.setLocalizedText(cancelButton, org.openide.util.NbBundle.getMessage(CommitAction.class, "CTL_Commit_Action_Cancel"));
-        cancelButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CommitAction.class, "ACSN_Commit_Action_Cancel"));
-        cancelButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CommitAction.class, "ACSD_Commit_Action_Cancel"));
+        org.openide.awt.Mnemonics.setLocalizedText(cancelButton, org.openide.util.NbBundle.getMessage(CommitAction.class, "CTL_Commit_Action_Cancel")); // NOI18N
+        cancelButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CommitAction.class, "ACSN_Commit_Action_Cancel")); // NOI18N
+        cancelButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CommitAction.class, "ACSD_Commit_Action_Cancel")); // NOI18N
+        cancelButton.setDefaultCapable(false);
         
         commitButton.setEnabled(false);
-        dd.setOptions(new Object[] {commitButton, cancelButton}); // NOI18N
-        dd.setHelpCtx(new HelpCtx(CommitAction.class));
+
+        DialogDescriptor dd = new DialogDescriptor(panel,
+              org.openide.util.NbBundle.getMessage(CommitAction.class, "CTL_CommitDialog_Title", contentTitle), // NOI18N
+              true, 
+              new Object[] {commitButton, cancelButton},
+              commitButton, 
+              DialogDescriptor.DEFAULT_ALIGN, 
+              new HelpCtx(CommitAction.class), 
+              null);
         panel.addVersioningListener(new VersioningListener() {
             public void versioningEvent(VersioningEvent event) {
                 refreshCommitDialog(panel, data, commitButton);
@@ -350,7 +356,7 @@ public class CommitAction extends ContextAction {
                     // make a deep refresh to get the not yet notified external changes
                     FileStatusCache cache = Subversion.getInstance().getStatusCache();
                     for(File f : contextFiles) {
-                        SvnUtils.refreshRecursively(f);
+                        cache.refreshRecursively(f);
                     }                        
                     // get all changed files while honoring the flat folder logic
                     File[][] split = Utils.splitFlatOthers(contextFiles);
@@ -511,7 +517,7 @@ public class CommitAction extends ContextAction {
             List<File> removeCandidates = new ArrayList<File>();
             Set<File> commitCandidates = new LinkedHashSet<File>();
             Set<File> binnaryCandidates = new HashSet<File>();
-            
+                        
             Iterator<SvnFileNode> it = commitFiles.keySet().iterator();
             // XXX refactor the olowing loop. there seem to be redundant blocks
             while (it.hasNext()) {
@@ -561,8 +567,8 @@ public class CommitAction extends ContextAction {
                     commitCandidates.add(node.getFile());
                 } else if (CommitOptions.COMMIT == option) {
                     commitCandidates.add(node.getFile());
-                }
-            }
+                } 
+            }                       
             
             // perform adds
             performAdds(client, support, addCandidates);
@@ -728,14 +734,20 @@ public class CommitAction extends ContextAction {
             }
         }
         if(dirsToAdd.size() > 0) {
-            client.addFile(dirsToAdd.toArray(new File[dirsToAdd.size()]), false);
+            // XXX JAVAHL client.addFile(dirsToAdd.toArray(new File[dirsToAdd.size()]), false);
+            for (File file : dirsToAdd) {
+                client.addFile(file);
+            }
         }
         if(support.isCanceled()) {
             return;
         }
 
         if(addFiles.size() > 0) {
-            client.addFile(addFiles.toArray(new File[addFiles.size()]), false);       
+            // XXX JAVAHL client.addFile(addFiles.toArray(new File[addFiles.size()]), false);
+            for (File file : addFiles) {
+                client.addFile(file);
+            }
         }
     }
     
@@ -812,7 +824,7 @@ public class CommitAction extends ContextAction {
         File file = node.getFile();
         File parent = file.getParentFile();
         while (true) {
-            if (new File(parent, ".svn/entries").canRead() || new File(parent, "_svn/entries").canRead()) { // NOI18N
+            if (new File(parent, SvnUtils.SVN_ENTRIES_DIR).canRead()) { // NOI18N
                 break;
             }
             unmanaged.add(0, parent);

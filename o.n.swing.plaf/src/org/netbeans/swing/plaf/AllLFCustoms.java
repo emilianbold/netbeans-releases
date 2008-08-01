@@ -170,12 +170,17 @@ final class AllLFCustoms extends LFCustoms {
     }
 
     private static final boolean isMetal = UIManager.getLookAndFeel().getClass() == MetalLookAndFeel.class;
+    private static final boolean isWindows = "Windows".equals( UIManager.getLookAndFeel().getID() );
     
     private static void switchFont( String uiKey, Map<Font, Font> fontTranslation, int uiFontSize, Font defaultFont ) {
         Font oldFont = UIManager.getFont(uiKey);
         Font newFont = (null == oldFont || isMetal) ? defaultFont : fontTranslation.get(oldFont);
         if( null == newFont ) {
-            newFont = new FontUIResource( oldFont.getFontName(), oldFont.getStyle(), uiFontSize );
+            if( isWindows ) {
+                newFont = oldFont.deriveFont( (float)uiFontSize );
+            } else {
+                newFont = new FontUIResource( oldFont.getFontName(), oldFont.getStyle(), uiFontSize );
+            }
             fontTranslation.put( oldFont, newFont );
         }
         UIManager.put( uiKey, newFont );

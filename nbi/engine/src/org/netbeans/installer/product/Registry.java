@@ -53,6 +53,7 @@ import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import org.netbeans.installer.product.components.Group;
 import org.netbeans.installer.product.components.Product;
+import org.netbeans.installer.product.components.ProductConfigurationLogic;
 import org.netbeans.installer.product.dependencies.Conflict;
 import org.netbeans.installer.product.dependencies.InstallAfter;
 import org.netbeans.installer.product.dependencies.Requirement;
@@ -81,6 +82,7 @@ import org.netbeans.installer.utils.exceptions.ParseException;
 import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.helper.Platform;
 import org.netbeans.installer.utils.exceptions.XMLException;
+import org.netbeans.installer.utils.helper.EngineResources;
 import org.netbeans.installer.utils.helper.ExecutionMode;
 import org.netbeans.installer.utils.helper.Feature;
 import org.netbeans.installer.utils.helper.FinishHandler;
@@ -784,17 +786,69 @@ public class Registry implements PropertyContainer {
         return new ArrayList<Product>(dependents);
     }
     
-    private void validateInstallations(
-            ) throws InitializationException {
+    private void validateInstallations() throws InitializationException {
+        LogManager.logEntry("validating previous installations");
+        
+        final String LIST_ONE_PRODUCT_MESSAGE = "-> {0} ({1}/{2})";//NOI18N
+        final String CANNOT_GET_LOGIC_MAKE_INVISIBLE_MESSAGE =
+                            "Cannot load configuration logic for {0} ({1}/{2}), marking it as invisible";//NOI18N
+        final String INSTALLATION_VALIDATION_MESSAGE = 
+                            "Installation validation of {0} ({1}/{2}):";//NOI18N                            
+        
         for (Product product: getProducts()) {
-            if (product.getStatus() == Status.INSTALLED) {
-                final String message = product.getLogic().validateInstallation();
-                
+            if (product.getStatus() == Status.INSTALLED && product.isVisible()) {
+                ProductConfigurationLogic logic = null;
+                try {
+                    logic = product.getLogic();
+                } catch (InitializationException e) {
+                    LogManager.log(ErrorLevel.WARNING,
+                            StringUtils.format(CANNOT_GET_LOGIC_MAKE_INVISIBLE_MESSAGE,
+                            product.getDisplayName(), product.getUid(), product.getVersion()));
+
+                    LogManager.log(ErrorLevel.WARNING, e);
+                    product.setVisible(false);
+
+                    final List<Product> inavoidableDependents =
+                            getInavoidableDependents(product);
+                    if (!inavoidableDependents.isEmpty()) {
+                        LogManager.indent();
+                        LogManager.log(ErrorLevel.WARNING, 
+                                "Also make the dependent products invisible: ");//NOI18N                        
+
+                        for (Product p : inavoidableDependents) {
+                            LogManager.log(ErrorLevel.WARNING,
+                                    StringUtils.format(LIST_ONE_PRODUCT_MESSAGE,
+                                    p.getDisplayName(), p.getUid(), p.getVersion()));
+                            p.setVisible(false);
+                        }
+                        LogManager.unindent();
+                    }                    
+                    continue;
+                }
+
+                final String message = logic.validateInstallation();
+
                 if (message != null) {
                     final List<Product> inavoidableDependents =
                             getInavoidableDependents(product);
+                    LogManager.logIndent(
+                            StringUtils.format(INSTALLATION_VALIDATION_MESSAGE,
+                            product.getDisplayName(), product.getUid(), product.getVersion()));
                     
-                    boolean result = UiUtils.showYesNoDialog(
+                    LogManager.log(message);
+                    if(!inavoidableDependents.isEmpty()) {
+                        LogManager.logIndent("Dependent Products: ");
+                        for(Product p : inavoidableDependents) {
+                            LogManager.log(StringUtils.format(LIST_ONE_PRODUCT_MESSAGE,
+                            p.getDisplayName(), p.getUid(), p.getVersion()));
+                        }
+                        LogManager.unindent();
+                    }
+                    LogManager.unindent();
+
+
+                    boolean result = Boolean.getBoolean(REMOVE_CORRUPTED_PRODUCTS_SILENTLY_PROPERTY) || 
+                            UiUtils.showYesNoDialog(
                             ResourceUtils.getString(Registry.class,
                             ERROR_VALIDATION_TITLE_KEY),
                             ResourceUtils.getString(Registry.class,
@@ -804,7 +858,7 @@ public class Registry implements PropertyContainer {
                             product.getDisplayName(),
                             StringUtils.asString(inavoidableDependents)),
                             true);
-                    
+
                     if (result) {
                         product.setStatus(Status.NOT_INSTALLED);
                         product.getParent().removeChild(product);
@@ -818,6 +872,7 @@ public class Registry implements PropertyContainer {
                 }
             }
         }
+        LogManager.logExit("... validating installations finished");
     }
     
     // registry <-> dom <-> xml operations //////////////////////////////////////////
@@ -1043,7 +1098,12 @@ public class Registry implements PropertyContainer {
                         parentNode.addChild(product);
                         loadRegistryComponents(product, child, registryType);
                     } else {
-                        loadRegistryComponents(existing.get(0), child, registryType);
+                        final RegistryNode existingNode = existing.get(0);
+                        if(!existingNode.getParent().getUid().equals(parentNode.getUid())){                            
+                            existingNode.getParent().removeChild(existingNode);                                                       
+                            parentNode.addChild(existingNode);                                                                             
+                        }                                                
+                        loadRegistryComponents(existingNode, child, registryType);
                     }
                 }
                 
@@ -1673,6 +1733,8 @@ public class Registry implements PropertyContainer {
     
     public static final String DEFAULT_LOCAL_REGISTRY_FILE_NAME =
             "registry.xml";
+    public static final String DEFAULT_BUNDLED_REGISTRY_FILE_NAME =
+            "registry.xml";
     
     public static final String LOCAL_PRODUCT_REGISTRY_PROPERTY =
             "nbi.product.local.registry.file.name";
@@ -1686,7 +1748,8 @@ public class Registry implements PropertyContainer {
     
     public static final String DEFAULT_BUNDLED_PRODUCT_REGISTRY_URI =
             FileProxy.RESOURCE_SCHEME_PREFIX +
-            "data/registry.xml";
+            EngineResources.DATA_DIRECTORY + StringUtils.FORWARD_SLASH + 
+            DEFAULT_BUNDLED_REGISTRY_FILE_NAME;
     
     public static final String BUNDLED_PRODUCT_REGISTRY_URI_PROPERTY =
             "nbi.product.bundled.registry.uri";
@@ -1744,10 +1807,21 @@ public class Registry implements PropertyContainer {
     
     public static final String CREATE_BUNDLE_PATH_PROPERTY =
             "nbi.create.bundle.path";
+    public static final String CREATE_BUNDLE_SKIP_NATIVE_LAUNCHER_PROPERTY =
+            "nbi.create.bundle.skip.native.launcher";
     
     public static final String LAZY_LOAD_ICONS_PROPERTY =
             "nbi.product.lazy.load.icons";
-    
+    /**
+     * If this property is set to true then all products which 
+     * ProductConfigurationLogic.validateInstallation() invokation returned not-null message 
+     * will be removed (together with all dependent products) silently from the registry.
+     * Such removal do nothing with the product uninstallation.
+     * 
+     */
+    public static final String REMOVE_CORRUPTED_PRODUCTS_SILENTLY_PROPERTY =
+            "nbi.product.remove.corrupted.products.silently";//NOI18N
+            
     private static final String LOADING_LOCAL_REGISTRY_KEY =
             "R.loading.local.registry"; //NOI18N
     private static final String ERROR_LOADING_LOCAL_REGISTRY_TITLE_KEY =

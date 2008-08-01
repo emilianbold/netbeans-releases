@@ -57,6 +57,7 @@ public class BackTickExpression extends Expression {
             throw new IllegalArgumentException();
         }
         for (Expression expression : expressions) {
+//            expression.setParent(this);
             this.expressions.add(expression);
         }
     }

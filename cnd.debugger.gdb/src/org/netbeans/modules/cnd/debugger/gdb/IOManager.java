@@ -53,11 +53,9 @@ import org.openide.windows.OutputEvent;
 import org.openide.windows.OutputListener;
 import org.openide.windows.OutputWriter;
 
-import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
-import org.netbeans.modules.cnd.debugger.gdb.EditorContextBridge;
 
 public class IOManager {
-
+    
 //    /** DebuggerManager output constant. */
 //    public static final int                 DEBUGGER_OUT = 1;
 //    /** Process output constant. */
@@ -83,7 +81,7 @@ public class IOManager {
     /** output writer Thread */
     private Hashtable                       lines = new Hashtable();
     private Listener                        listener = new Listener();
-
+    
     
     // init ....................................................................
     
@@ -100,8 +98,8 @@ public class IOManager {
     private RequestProcessor.Task task;
     
     /**
-    * Prints given text to the output.
-    */
+     * Prints given text to the output.
+     */
     public void println(final String text, final Line line) {
         if (text == null) {
             throw new NullPointerException();
@@ -182,7 +180,7 @@ public class IOManager {
         }
     }
     
-    static class Line {
+    public static class Line {
         private String url;
         private int lineNumber;
         private GdbDebugger debugger;

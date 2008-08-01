@@ -5,7 +5,3 @@ OpenIDE-Module-Install: org/netbeans/modules/languages/dataobject/Install.class
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/languages/Bundle.properties
 OpenIDE-Module-Implementation-Version: 1
 AutoUpdate-Show-In-Client: false
-
-Name: org/netbeans/modules/languages/dataobject/LanguagesDataLoader.class
-OpenIDE-Module-Class: Loader
-

@@ -42,7 +42,11 @@ package org.netbeans.modules.xml.schema.completion;
 
 import java.util.List;
 import junit.framework.*;
-import javax.swing.text.Document;
+import org.netbeans.api.lexer.Language;
+import org.netbeans.api.xml.lexer.XMLTokenId;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.xml.schema.completion.util.CompletionContextImpl;
+import org.netbeans.modules.xml.text.syntax.XMLSyntaxSupport;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -53,15 +57,18 @@ public abstract class AbstractTestCase extends TestCase {
     
     protected String instanceResourcePath;
     protected FileObject instanceFileObject;
-    protected Document instanceDocument;
+    protected BaseDocument instanceDocument;
+    protected XMLSyntaxSupport support;
     
     public AbstractTestCase(String testName) {
         super(testName);
     }
 
+    @Override
     protected void setUp() throws Exception {
     }
 
+    @Override
     protected void tearDown() throws Exception {
     }
     
@@ -69,10 +76,12 @@ public abstract class AbstractTestCase extends TestCase {
         this.instanceResourcePath = path;
         this.instanceFileObject = Util.getResourceAsFileObject(path);
         this.instanceDocument = Util.getResourceAsDocument(path);
+        this.support = ((XMLSyntaxSupport)instanceDocument.getSyntaxSupport());
         if(buffer != null) {
             instanceDocument.remove(0, instanceDocument.getLength());
             instanceDocument.insertString(0, buffer.toString(), null);
         }
+        instanceDocument.putProperty(Language.class, XMLTokenId.language());        
     }
     
     /**
@@ -122,5 +131,23 @@ public abstract class AbstractTestCase extends TestCase {
             }            
             assert(found);
         }
+    }
+    
+    BaseDocument getDocument() {
+        return instanceDocument;
+    }
+    
+    XMLSyntaxSupport getXMLSyntaxSupport() {
+        return support;
+    }
+    
+    FileObject getFileObject() {
+        return instanceFileObject;
+    }
+    
+    CompletionContextImpl getContextAtOffset(int offset) {
+        CompletionContextImpl context = new CompletionContextImpl(instanceFileObject, support, offset);
+        context.initContext();
+        return context;
     }
 }

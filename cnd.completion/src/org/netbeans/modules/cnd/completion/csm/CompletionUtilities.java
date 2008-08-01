@@ -49,6 +49,7 @@ import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.editor.BaseDocument;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.editor.SyntaxSupport;
 import org.netbeans.editor.ext.CompletionQuery;
@@ -105,12 +106,14 @@ public class CompletionUtilities {
     }
 
     public static CsmOffsetableDeclaration findFunDefinitionOrClassOnPosition(BaseDocument doc, int offset) {
-        CsmFile file = CsmUtilities.getCsmFile(doc, true);
-        CsmContext context = CsmOffsetResolver.findContext(file, offset);
         CsmOffsetableDeclaration out = null;
-        out = CsmContextUtilities.getFunctionDefinition(context);
-        if (out == null || !CsmContextUtilities.isInFunctionBodyOrInitializerList(context, offset)) {
-            out = CsmContextUtilities.getClass(context, false);
+        CsmFile file = CsmUtilities.getCsmFile(doc, true);
+        if (file != null) {
+            CsmContext context = CsmOffsetResolver.findContext(file, offset);
+            out = CsmContextUtilities.getFunctionDefinition(context);
+            if (out == null || !CsmContextUtilities.isInFunctionBodyOrInitializerList(context, offset)) {
+                out = CsmContextUtilities.getClass(context, false);
+            }
         }
         return out;
     }
@@ -119,11 +122,15 @@ public class CompletionUtilities {
         return findItemAtCaretPos(target, null, CsmCompletionProvider.getCompletionQuery(), dotPos);
     }
 
-    public static CsmObject findItemAtCaretPos(JTextComponent target, BaseDocument doc, CsmCompletionQuery query, int dotPos){
+    public static CsmObject findItemAtCaretPos(JTextComponent target, Document doc, CsmCompletionQuery query, int dotPos){
         try {
-            doc = doc != null ? doc : (BaseDocument)target.getDocument();
-            SyntaxSupport sup = doc.getSyntaxSupport();
-            int[] idFunBlk = NbEditorUtilities.getIdentifierAndMethodBlock(doc, dotPos);
+            BaseDocument baseDoc = null;
+            if (doc instanceof BaseDocument) {
+                baseDoc = (BaseDocument)doc;
+            }
+            baseDoc = baseDoc != null ? baseDoc : (BaseDocument)target.getDocument();
+            SyntaxSupport sup = baseDoc.getSyntaxSupport();
+            int[] idFunBlk = NbEditorUtilities.getIdentifierAndMethodBlock(baseDoc, dotPos);
             
             if (idFunBlk == null) {
                 idFunBlk = new int[] { dotPos, dotPos };
@@ -131,15 +138,15 @@ public class CompletionUtilities {
             
             boolean searchFuncsOnly = (idFunBlk.length == 3);
             for (int ind = idFunBlk.length - 1; ind >= 1; ind--) {
-                CompletionQuery.Result result = query.query(target, doc, idFunBlk[ind], sup, true, false);
+                CompletionQuery.Result result = query.query(target, baseDoc, idFunBlk[ind], sup, true, false);
                 if (result != null && result.getData().size() > 0) {
                     List<CsmObject> filter = getAssociatedObjects(result.getData(), searchFuncsOnly);
                     CsmObject itm = filter.size() > 0 ? filter.get(0) : getAssociatedObject(result.getData().get(0));
                     if (filter.size() > 1 && searchFuncsOnly) {
                         // It is overloaded method, lets check for the right one
-                        int endOfMethod = findEndOfMethod(doc, idFunBlk[ind]-1);
+                        int endOfMethod = findEndOfMethod(baseDoc, idFunBlk[ind]-1);
                         if (endOfMethod > -1){
-                            CompletionQuery.Result resultx = query.query(target, doc, endOfMethod, sup, true, false);
+                            CompletionQuery.Result resultx = query.query(target, baseDoc, endOfMethod, sup, true, false);
                             if (resultx != null && resultx.getData().size() > 0) {
                                 return getAssociatedObject(resultx.getData().get(0));
                             }

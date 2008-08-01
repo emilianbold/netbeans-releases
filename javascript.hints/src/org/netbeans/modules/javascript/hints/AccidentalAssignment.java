@@ -50,15 +50,16 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.Error;
 import org.netbeans.modules.gsf.api.OffsetRange;
+import org.netbeans.modules.gsf.api.Hint;
+import org.netbeans.modules.gsf.api.EditList;
+import org.netbeans.modules.gsf.api.HintFix;
+import org.netbeans.modules.gsf.api.HintSeverity;
+import org.netbeans.modules.gsf.api.PreviewableFix;
+import org.netbeans.modules.gsf.api.RuleContext;
 import org.netbeans.modules.javascript.editing.AstUtilities;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
-import org.netbeans.modules.javascript.hints.spi.Description;
-import org.netbeans.modules.javascript.hints.spi.EditList;
-import org.netbeans.modules.javascript.hints.spi.ErrorRule;
-import org.netbeans.modules.javascript.hints.spi.Fix;
-import org.netbeans.modules.javascript.hints.spi.HintSeverity;
-import org.netbeans.modules.javascript.hints.spi.PreviewableFix;
-import org.netbeans.modules.javascript.hints.spi.RuleContext;
+import org.netbeans.modules.javascript.hints.infrastructure.JsErrorRule;
+import org.netbeans.modules.javascript.hints.infrastructure.JsRuleContext;
 import org.openide.util.NbBundle;
 
 /**
@@ -66,13 +67,13 @@ import org.openide.util.NbBundle;
  *
  * @author Tor Norbye
  */
-public class AccidentalAssignment implements ErrorRule {
+public class AccidentalAssignment extends JsErrorRule {
 
     public Set<String> getCodes() {
         return Collections.singleton("msg.equal.as.assign"); // NOI18N
     }
 
-    public void run(RuleContext context, Error error, List<Description> result) {
+    public void run(JsRuleContext context, Error error, List<Hint> result) {
         CompilationInfo info = context.compilationInfo;
         BaseDocument doc = context.doc;
 
@@ -83,15 +84,15 @@ public class AccidentalAssignment implements ErrorRule {
         if (range != OffsetRange.NONE) {
             range = StrictWarning.limitErrorToLine(doc, range, astOffset);
 
-            List<Fix> fixList = new ArrayList<Fix>(2);
-            fixList.add(new ConvertAssignmentFix(info, node, error, false));
-            fixList.add(new ConvertAssignmentFix(info, node, error, true));
-            Description desc = new Description(this, getDisplayName(), info.getFileObject(), range, fixList, 500);
+            List<HintFix> fixList = new ArrayList<HintFix>(2);
+            fixList.add(new ConvertAssignmentFix(context, node, error, false));
+            fixList.add(new ConvertAssignmentFix(context, node, error, true));
+            Hint desc = new Hint(this, getDisplayName(), info.getFileObject(), range, fixList, 500);
             result.add(desc);
         }
     }
 
-    public boolean appliesTo(CompilationInfo compilationInfo) {
+    public boolean appliesTo(RuleContext context) {
         return true;
     }
 
@@ -125,13 +126,13 @@ public class AccidentalAssignment implements ErrorRule {
 
     private static class ConvertAssignmentFix implements PreviewableFix {
 
-        private CompilationInfo info;
-        private Node assignment;
-        private Error error;
-        private boolean ignore;
+        private final JsRuleContext context;
+        private final Node assignment;
+        private final Error error;
+        private final boolean ignore;
 
-        public ConvertAssignmentFix(CompilationInfo info, Node assignment, Error error, boolean ignore) {
-            this.info = info;
+        public ConvertAssignmentFix(JsRuleContext context, Node assignment, Error error, boolean ignore) {
+            this.context = context;
             this.assignment = assignment;
             this.error = error;
             this.ignore = ignore;
@@ -150,8 +151,8 @@ public class AccidentalAssignment implements ErrorRule {
         }
 
         public EditList getEditList() throws Exception {
-            // TODO - offer to add double parentheses around the expression to "really mean it"
-            BaseDocument doc = (BaseDocument) info.getDocument();
+            BaseDocument doc = context.doc;
+            CompilationInfo info = context.compilationInfo;
             EditList list = new EditList(doc);
             OffsetRange astRange = AstUtilities.getNameRange(assignment);
             OffsetRange lexRange = LexUtilities.getLexerOffsets(info, astRange);

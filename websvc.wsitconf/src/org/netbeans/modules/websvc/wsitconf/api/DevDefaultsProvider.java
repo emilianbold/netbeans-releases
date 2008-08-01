@@ -67,8 +67,8 @@ public final class DevDefaultsProvider extends Object {
       * Sets up the server environment by creating proper keystores if required, and 
       * filling proper keys into them
       */
-    public synchronized final void fillDefaultsToDefaultServer() {
-        Util.fillDefaultsToDefaultServer();
+    public synchronized final void fillDefaultsToServer(String serverID) {
+        Util.fillDefaultsToServer(serverID);
     }
     
 }

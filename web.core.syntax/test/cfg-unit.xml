@@ -43,10 +43,18 @@ made subject to such option by the copyright holder.
 
 <mconfig name="unit test config">
 
-    <testbag testattribs="stable" executor="ide" name="jsp syntax parser tests">
+    <testbag testattribs="stable" executor="code" name="jsp syntax parser tests">
         <testset dir="unit/src">
             <patternset>
                 <include name="org/netbeans/test/web/core/syntax/*Test.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+
+    <testbag testattribs="perf,stable" executor="ide" name="performance test">
+        <testset dir="unit/src">
+            <patternset>
+                <include name="org/netbeans/test/web/core/syntax/performance/*Test.class"/>
             </patternset>
         </testset>
     </testbag>
@@ -59,6 +67,8 @@ made subject to such option by the copyright holder.
         </testset>
     </testbag>-->
         
+    <executor name="code" antfile="build-unit.xml" target="run-unit-test"/>
+    
     <executor name="ide" antfile="build-unit.xml" target="runidetest" default="true"/>
     
     <executor name="unit-executor" antfile="build-unit.xml" target="run-unit-test"/>

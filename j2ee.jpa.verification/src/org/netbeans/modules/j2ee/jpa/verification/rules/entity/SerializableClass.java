@@ -43,6 +43,7 @@ package org.netbeans.modules.j2ee.jpa.verification.rules.entity;
 
 import java.util.Arrays;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.j2ee.jpa.verification.JPAClassRule;
@@ -67,15 +68,36 @@ public class SerializableClass  extends JPAClassRule {
     }
     
     @Override public ErrorDescription[] apply(TypeElement subject, ProblemContext ctx){
-        for (TypeMirror iface : subject.getInterfaces()){
-            if ("java.io.Serializable".equals(iface.toString())){ //NOI18N
+        // Does the entity directly implement java.io.Serializable
+        if(extendsFromSerializable(subject)) {
+            return null;
+        }
+        
+        // Check if the super class implements java.io.Serializable
+        // See issue 139751
+        TypeMirror superCls = subject.getSuperclass();
+        while (superCls != null && (superCls instanceof DeclaredType)) {
+            TypeElement superElem = (TypeElement) ((DeclaredType) superCls).asElement();
+            if(extendsFromSerializable(superElem)) {
                 return null;
             }
+            superCls = superElem.getSuperclass();
         }
+        
         
         Fix fix = new ImplementSerializable(ctx.getFileObject(), ElementHandle.create(subject));
         return new ErrorDescription[]{createProblem(subject, ctx,
                 NbBundle.getMessage(IdDefinedInHierarchy.class, "MSG_NonSerializableClass"),
                 Severity.WARNING, fix)};
+    }
+    
+    private boolean extendsFromSerializable(TypeElement subject) {
+        for (TypeMirror iface : subject.getInterfaces()){
+            if ("java.io.Serializable".equals(iface.toString())){ //NOI18N
+                return true;
+            }
+        }
+        
+        return false;
     }
 }

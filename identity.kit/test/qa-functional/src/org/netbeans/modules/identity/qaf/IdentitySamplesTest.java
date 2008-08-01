@@ -40,10 +40,9 @@
 package org.netbeans.modules.identity.qaf;
 
 import java.io.IOException;
-import junit.framework.TestSuite;
-import junit.textui.TestRunner;
+import junit.framework.Test;
 import org.netbeans.jellytools.Bundle;
-import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.ws.qaf.WebServiceSamplesTest;
 
 /**
@@ -88,18 +87,26 @@ public class IdentitySamplesTest extends WebServiceSamplesTest {
     }
     
      /** Creates suite from particular test cases. You can define order of testcases here. */
-    public static TestSuite suite() {
-        TestSuite suite = new NbTestSuite();
-        suite.addTest(new IdentitySamplesTest("testStockQuoteService"));
-        suite.addTest(new IdentitySamplesTest("testStockQuoteClient"));
-        suite.addTest(new IdentitySamplesTest("testUndeployAll"));
-        return suite;
+    public static Test suite() {
+        return NbModuleSuite.create(addServerTests(NbModuleSuite.createConfiguration(IdentitySamplesTest.class),
+                "testStockQuoteService",
+                "testStockQuoteClient",
+                "testUndeployAll"
+                ).enableModules(".*").clusters(".*"));
     }
-
-    /* Method allowing test execution directly from the IDE. */
-    public static void main(java.lang.String[] args) {
-        // run whole suite
-        TestRunner.run(suite());
-    }
+    
+//    public static TestSuite suite() {
+//        TestSuite suite = new NbTestSuite();
+//        suite.addTest(new IdentitySamplesTest("testStockQuoteService"));
+//        suite.addTest(new IdentitySamplesTest("testStockQuoteClient"));
+//        suite.addTest(new IdentitySamplesTest("testUndeployAll"));
+//        return suite;
+//    }
+//
+//    /* Method allowing test execution directly from the IDE. */
+//    public static void main(java.lang.String[] args) {
+//        // run whole suite
+//        TestRunner.run(suite());
+//    }
 
 }

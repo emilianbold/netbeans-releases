@@ -70,3 +70,9 @@ void usingCout() {
     using S1::myCout;
     myCout;
 }
+
+void usingS1AccessNestedTypesOfTemplatedClass {
+    S1::myType::reference ref1;
+    using namespace S1;
+    myType::reference ref2;
+}

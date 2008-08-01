@@ -47,6 +47,7 @@ import java.awt.GridLayout;
 import java.awt.Insets;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import org.netbeans.modules.welcome.content.BackgroundPanel;
 import org.netbeans.modules.welcome.content.Constants;
 import org.netbeans.modules.welcome.content.SampleProjectLink;
 import org.openide.filesystems.FileObject;
@@ -60,12 +61,11 @@ import org.openide.loaders.DataShadow;
  *
  * @author S. Aubrecht
  */
-class Samples extends JPanel implements Constants {
+class Samples extends BackgroundPanel implements Constants {
 
     /** Creates a new instance of RecentProjects */
     public Samples() {
         super( new GridBagLayout() );
-        setOpaque( false );
         
         createLinks();
     }

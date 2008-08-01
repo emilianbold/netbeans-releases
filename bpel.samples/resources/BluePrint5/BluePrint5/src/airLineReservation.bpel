@@ -33,6 +33,8 @@
          xmlns:tns="http://www.seebeyond.com/eInsight/airLineReservation"
          xmlns:ns0="http://localhost/BluePrint5/AirLineReservation"
          xmlns="http://docs.oasis-open.org/wsbpel/2.0/process/executable"
+         xmlns:sxt="http://www.sun.com/wsbpel/2.0/process/executable/SUNExtension/Trace" 
+         xmlns:sxed="http://www.sun.com/wsbpel/2.0/process/executable/SUNExtension/Editor"
          xmlns:rsrv="http://ReservationSystem.org/xsd/reserve">
     
     <import namespace="http://localhost/BluePrint5/AirLineReservation"
@@ -48,19 +50,13 @@
             importType="http://www.w3.org/2001/XMLSchema"></import>
     
     <partnerLinks>
-        <partnerLink name="airlineReservationPLink"
-                     partnerLinkType="ns0:AirlineReservationPLinkType"
-                     myRole="reservingRole"/>
-        <partnerLink name="airlineStatusPLink"
-                     partnerLinkType="ns0:AirLineReservStatusPLinkType"
-                     partnerRole="statusReceivingRole"/>
+        <partnerLink name="airlineReservationPLink" partnerLinkType="ns0:AirlineReservationPLinkType" myRole="reservingRole"/>
+        <partnerLink name="airlineStatusPLink" partnerLinkType="ns0:AirLineReservStatusPLinkType" partnerRole="statusReceivingRole"/>
     </partnerLinks>
     
     <variables>
-        <variable name="reservationMesg"
-                  messageType="ns0:AirlineReservation"></variable>
-        <variable name="sendAirlineStatus"
-                  messageType="ns0:AirlineReservationStatus"></variable>
+        <variable name="reservationMesg" messageType="ns0:AirlineReservation"></variable>
+        <variable name="sendAirlineStatus" messageType="ns0:AirlineReservationStatus"></variable>
     </variables>
     
     <sequence>

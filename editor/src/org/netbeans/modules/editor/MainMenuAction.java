@@ -41,9 +41,7 @@
 
 package org.netbeans.modules.editor;
 
-import java.awt.event.InputEvent;
-import java.awt.event.KeyEvent;
-import java.util.List;
+import java.util.prefs.Preferences;
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.Icon;
@@ -59,19 +57,15 @@ import javax.swing.text.Keymap;
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
-import org.netbeans.api.editor.settings.KeyBindingSettings;
-import org.netbeans.api.editor.settings.MultiKeyBinding;
+import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.Registry;
-import org.netbeans.editor.Settings;
-import org.netbeans.editor.SettingsNames;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.ExtKit;
-import org.netbeans.modules.editor.options.AllOptionsFolder;
-import org.netbeans.modules.editor.options.BaseOptions;
+import org.netbeans.lib.editor.util.swing.DocumentUtilities;
+import org.netbeans.modules.editor.lib.EditorPreferencesDefaults;
 import org.openide.awt.Mnemonics;
 import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.Presenter;
 
@@ -128,7 +122,7 @@ public abstract class MainMenuAction extends GlobalContextAction implements Pres
     }
 
     /** Returns the action by given name */
-    private static Action getActionByName(String actionName){
+    protected static Action getActionByName(String actionName){
         BaseKit bKit = getKit();
         if (bKit!=null){
             Action action = bKit.getActionByName(actionName);
@@ -173,18 +167,6 @@ public abstract class MainMenuAction extends GlobalContextAction implements Pres
         return false;
     }
     
-    private static Object getSettingValue(BaseKit kit, String settingName) {
-        return Settings.getValue(kit.getClass(), settingName);
-    }
-
-    /** Get the value of the boolean setting from the <code>Settings</code>
-     * @param settingName name of the setting to get.
-     */
-    private static boolean getSettingBoolean(BaseKit kit, String settingName) {
-        Boolean val = (Boolean)getSettingValue(kit, settingName);
-        return (val != null) ? val.booleanValue() : false;
-    }
-
     /** If there is no kit sensitive action, some global kit action can be returned
      * by subclasses. Returning null by default */
     protected Action getGlobalKitAction(){
@@ -268,22 +250,27 @@ public abstract class MainMenuAction extends GlobalContextAction implements Pres
     
     public static class ShowToolBarAction extends MainMenuAction{
 
-        private static JCheckBoxMenuItem SHOW_TOOLBAR_MENU;
+        private static JCheckBoxMenuItem SHOW_TOOLBAR_MENU = null;
         private Action delegate = null;
         
         public ShowToolBarAction(){
             super(false, null);
-            SHOW_TOOLBAR_MENU = new JCheckBoxMenuItem(getMenuItemText());
-            setMenu();
         }
 
-        protected void setMenu(){
+        protected @Override void setMenu(){
             super.setMenu();
-            boolean visible = AllOptionsFolder.getDefault().isToolbarVisible();
+            JTextComponent c = getComponent();
+            MimePath mimePath = c == null ? MimePath.EMPTY : MimePath.parse(DocumentUtilities.getMimeType(c));
+            Preferences prefs = MimeLookup.getLookup(mimePath).lookup(Preferences.class);
+            boolean visible = prefs.getBoolean(SimpleValueNames.TOOLBAR_VISIBLE_PROP, EditorPreferencesDefaults.defaultToolbarVisible);
             SHOW_TOOLBAR_MENU.setState(visible);
         }
-        
+
         public JMenuItem getMenuPresenter() {
+            if (SHOW_TOOLBAR_MENU == null) {
+                SHOW_TOOLBAR_MENU = new JCheckBoxMenuItem(getMenuItemText());
+                setMenu();
+            }
             return SHOW_TOOLBAR_MENU;
         }
 
@@ -296,7 +283,7 @@ public abstract class MainMenuAction extends GlobalContextAction implements Pres
             return ExtKit.toggleToolbarAction;
         }        
         
-        protected Action getGlobalKitAction() {
+        protected @Override Action getGlobalKitAction() {
             if (delegate == null) {
                 delegate = new NbEditorKit.ToggleToolbarAction();
             }
@@ -307,18 +294,19 @@ public abstract class MainMenuAction extends GlobalContextAction implements Pres
     
     public static class ShowLineNumbersAction extends MainMenuAction{
 
-        private JCheckBoxMenuItem SHOW_LINE_MENU;
+        private static JCheckBoxMenuItem SHOW_LINE_MENU = null;
         private Action delegate = null;
         
         public ShowLineNumbersAction(){
             super(false, null);
-            SHOW_LINE_MENU  = new JCheckBoxMenuItem(getMenuItemText());
-            setMenu();
         }
         
-        protected void setMenu(){
+        protected @Override void setMenu(){
             super.setMenu();
-            boolean visible = AllOptionsFolder.getDefault().getLineNumberVisible();
+            JTextComponent c = getComponent();
+            MimePath mimePath = c == null ? MimePath.EMPTY : MimePath.parse(DocumentUtilities.getMimeType(c));
+            Preferences prefs = MimeLookup.getLookup(mimePath).lookup(Preferences.class);
+            boolean visible = prefs.getBoolean(SimpleValueNames.LINE_NUMBER_VISIBLE, EditorPreferencesDefaults.defaultLineNumberVisible);
             SHOW_LINE_MENU.setState(visible);
         }
         
@@ -327,11 +315,15 @@ public abstract class MainMenuAction extends GlobalContextAction implements Pres
                 "show_line_numbers_main_menu_view_item"); //NOI18N
         }
         
-        public String getName() {
+        public @Override String getName() {
             return getMenuItemText();
         }   
         
         public javax.swing.JMenuItem getMenuPresenter() {
+            if (SHOW_LINE_MENU == null) {
+                SHOW_LINE_MENU  = new JCheckBoxMenuItem(getMenuItemText());
+                setMenu();
+            }
             return SHOW_LINE_MENU;
         }
         
@@ -339,7 +331,7 @@ public abstract class MainMenuAction extends GlobalContextAction implements Pres
             return ExtKit.toggleLineNumbersAction;
         }
         
-        protected Action getGlobalKitAction() {
+        protected @Override Action getGlobalKitAction() {
             if (delegate == null) {
                 delegate = new NbEditorKit.NbToggleLineNumbersAction();
             }

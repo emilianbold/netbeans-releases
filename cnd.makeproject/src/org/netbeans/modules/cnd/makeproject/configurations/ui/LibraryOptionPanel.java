@@ -41,8 +41,9 @@
 
 package org.netbeans.modules.cnd.makeproject.configurations.ui;
 
+import org.netbeans.modules.cnd.api.compilers.CompilerSet;
+import org.netbeans.modules.cnd.api.compilers.ToolchainManager.LinkerDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
-import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.openide.util.NbBundle;
 
 public class LibraryOptionPanel extends javax.swing.JPanel {
@@ -150,26 +151,31 @@ public class LibraryOptionPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_staticRadioButtonActionPerformed
     
     public String getOption(MakeConfiguration conf) {
-        if (dynamicRadioButton.isSelected()) {
-            if (CompilerSetManager.getDefault().getCompilerSet(conf.getCompilerSet().getValue()).isSunCompiler())
-                return "-Bdynamic"; // NOI18N
-            else if (CompilerSetManager.getDefault().getCompilerSet(conf.getCompilerSet().getValue()).isGnuCompiler())
-                return "-dynamic"; // NOI18N
-            else
-                assert false;
-            return ""; // NOI18N
-        }
-        else if (staticRadioButton.isSelected()) {
-            if (CompilerSetManager.getDefault().getCompilerSet(conf.getCompilerSet().getValue()).isSunCompiler())
-                return "-Bstatic"; // NOI18N
-            else if (CompilerSetManager.getDefault().getCompilerSet(conf.getCompilerSet().getValue()).isGnuCompiler())
-                return "-static"; // NOI18N
-            else
-                assert false;
-            return ""; // NOI18N
-        }
-        else
+        CompilerSet cs = conf.getCompilerSet().getCompilerSet();
+        if (cs == null) {
             return otherTextField.getText();
+        }
+        if (dynamicRadioButton.isSelected()) {
+            LinkerDescriptor linker = cs.getCompilerFlavor().getToolchainDescriptor().getLinker();
+            if (linker != null) {
+                String res = linker.getDynamicLibraryFlag();
+                if (res != null) {
+                    return res;
+                }
+            }
+            return ""; // NOI18N
+        }  else if (staticRadioButton.isSelected()) {
+            LinkerDescriptor linker = cs.getCompilerFlavor().getToolchainDescriptor().getLinker();
+            if (linker != null) {
+                String res = linker.getStaticLibraryFlag();
+                if (res != null) {
+                    return res;
+                }
+            }
+            return ""; // NOI18N
+        } else {
+            return otherTextField.getText();
+        }
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

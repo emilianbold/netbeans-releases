@@ -43,13 +43,16 @@
 package org.netbeans.modules.i18n;
 
 
+import java.awt.Component;
 import java.awt.Dialog;
+import java.awt.TextComponent;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.io.IOException;
 import java.util.Arrays;
+import javax.swing.ComboBoxEditor;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -61,6 +64,7 @@ import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
+import javax.swing.text.BadLocationException;
 import org.jdesktop.layout.GroupLayout;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -72,6 +76,7 @@ import static org.jdesktop.layout.GroupLayout.BASELINE;
 import static org.jdesktop.layout.GroupLayout.TRAILING;
 import static org.jdesktop.layout.LayoutStyle.RELATED;
 import static org.jdesktop.layout.LayoutStyle.UNRELATED;
+import org.openide.util.Exceptions;
 
 
 /**
@@ -494,6 +499,12 @@ public class PropertyPanel extends JPanel {
         // Accessibility
         replaceFormatTextField.selectAll();
     }
+    
+    private boolean isReplaceFormatValid(String replaceFormat) {
+        I18nString i18nReplaceCheck = (I18nString) i18nString.clone();
+        i18nReplaceCheck.setReplaceFormat(replaceFormat);
+        return i18nReplaceCheck.getReplaceString() != null;
+    }
 
     private void replaceFormatButtonActionPerformed(ActionEvent evt) {
         final Dialog[] dialogs = new Dialog[1];
@@ -503,8 +514,7 @@ public class PropertyPanel extends JPanel {
                                                         I18nUtil.getReplaceHelpItems(),
                                                         I18nUtil.getBundle().getString("LBL_ReplaceCodeFormat"),
                                                         I18nUtil.PE_REPLACE_CODE_HELP_ID);
-
-        DialogDescriptor dd = new DialogDescriptor(
+        final DialogDescriptor dd = new DialogDescriptor(
             customPanel,
             I18nUtil.getBundle().getString("LBL_ReplaceStringFormatEditor"),//NOI18N
             true,
@@ -517,7 +527,7 @@ public class PropertyPanel extends JPanel {
                         String newText = (String) customPanel.getPropertyValue();
                         
                         if (!newText.equals(replaceFormatTextField.getText())) {
-                            i18nString.setReplaceFormat(newText);                            
+                            i18nString.setReplaceFormat(newText);
                             updateReplaceText();
                             firePropertyChange(PROP_STRING, null, null);
                             
@@ -533,7 +543,45 @@ public class PropertyPanel extends JPanel {
                     }
                 }
                        });
-                       dialogs[0] = DialogDisplayer.getDefault().createDialog(dd);
+        dd.setValid(isReplaceFormatValid(i18nString.getReplaceFormat()));
+        // look for ComboBox to create a hook, which would disable/enable
+        // the OK button based on validity of replace format string
+        for (Component c : customPanel.getComponents()) {
+            if (c instanceof JComboBox) {
+                try {
+                ((JTextField) ((JComboBox) c).getEditor().getEditorComponent()).getDocument().addDocumentListener(new DocumentListener() {
+
+                        public void insertUpdate(DocumentEvent e) {
+                            try {
+                                dd.setValid(isReplaceFormatValid(e.getDocument().getText(0, e.getDocument().getLength())));
+                            } catch (BadLocationException ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
+                        }
+
+                        public void removeUpdate(DocumentEvent e) {
+                            try {
+                                dd.setValid(isReplaceFormatValid(e.getDocument().getText(0, e.getDocument().getLength())));
+                            } catch (BadLocationException ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
+                        }
+
+                        public void changedUpdate(DocumentEvent e) {
+                            try {
+                                dd.setValid(isReplaceFormatValid(e.getDocument().getText(0, e.getDocument().getLength())));
+                            } catch (BadLocationException ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
+                        }
+                    });
+                } catch (Exception e) {
+                    Exceptions.printStackTrace(e);
+                }
+                break;
+            }
+        }
+        dialogs[0] = DialogDisplayer.getDefault().createDialog(dd);
         dialogs[0].setVisible(true);
     }
 

@@ -68,7 +68,7 @@ public class JSR45DebuggerEngineProvider extends DebuggerEngineProvider {
     }
 
     public Object[] getServices () {
-        return new Object [0];
+        return JavaEngineProvider.getUIComponentProxies();
     }
 
     public void setDestructor (DebuggerEngine.Destructor desctuctor) {

@@ -44,12 +44,12 @@ package org.netbeans.modules.cnd.modelimpl.impl.services;
 import antlr.TokenStream;
 import antlr.TokenStreamException;
 import java.io.IOException;
-import java.io.InputStream;
+import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.EnumSet;
+import java.util.Set;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -63,6 +63,8 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmScopeElement;
+import org.netbeans.modules.cnd.api.model.deep.CsmGotoStatement;
+import org.netbeans.modules.cnd.api.model.deep.CsmLabel;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
@@ -78,6 +80,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
+import org.openide.util.Exceptions;
 
 /**
  * prototype implementation of service
@@ -88,7 +91,7 @@ public class ReferenceRepositoryImpl extends CsmReferenceRepository {
     public ReferenceRepositoryImpl() {
     }
     
-    public Collection<CsmReference> getReferences(CsmObject target, CsmProject project, EnumSet<CsmReferenceKind> kinds) {
+    public Collection<CsmReference> getReferences(CsmObject target, CsmProject project, Set<CsmReferenceKind> kinds) {
         if (!(project instanceof ProjectBase)) {
             return Collections.<CsmReference>emptyList();
         }
@@ -116,7 +119,7 @@ public class ReferenceRepositoryImpl extends CsmReferenceRepository {
         return out;
     }
     
-    public Collection<CsmReference> getReferences(CsmObject target, CsmFile file, EnumSet<CsmReferenceKind> kinds) {
+    public Collection<CsmReference> getReferences(CsmObject target, CsmFile file, Set<CsmReferenceKind> kinds) {
         CsmScope scope = getDeclarationScope(target);
         CsmFile scopeFile = CsmKindUtilities.isOffsetable(scope) ? ((CsmOffsetable)scope).getContainingFile() : null;
         if (!(file instanceof FileImpl)) {
@@ -138,7 +141,7 @@ public class ReferenceRepositoryImpl extends CsmReferenceRepository {
         }
     }
     
-    public Map<CsmObject, Collection<CsmReference>> getReferences(CsmObject[] targets, CsmProject project, EnumSet<CsmReferenceKind> kinds) {
+    public Map<CsmObject, Collection<CsmReference>> getReferences(CsmObject[] targets, CsmProject project, Set<CsmReferenceKind> kinds) {
         Map<CsmObject, Collection<CsmReference>> out = new HashMap<CsmObject, Collection<CsmReference>>(targets.length);
         for (CsmObject target : targets) {
             out.put(target, getReferences(target, project, kinds));
@@ -146,7 +149,7 @@ public class ReferenceRepositoryImpl extends CsmReferenceRepository {
         return out;
     }
     
-    public Collection<CsmReference> getReferences(CsmObject[] targets, CsmFile file, EnumSet<CsmReferenceKind> kinds) {
+    public Collection<CsmReference> getReferences(CsmObject[] targets, CsmFile file, Set<CsmReferenceKind> kinds) {
         Collection<CsmReference> refs = new LinkedHashSet<CsmReference>(1024);
         // TODO: optimize performance
         for (CsmObject target : targets) {            
@@ -169,12 +172,18 @@ public class ReferenceRepositoryImpl extends CsmReferenceRepository {
     // prototype of impl
     
     private Collection<CsmReference> getReferences(CsmObject targetDecl, CsmObject targetDef, FileImpl file, 
-            EnumSet<CsmReferenceKind> kinds, boolean unboxInstantiation, int startOffset, int endOffset) {
+            Set<CsmReferenceKind> kinds, boolean unboxInstantiation, int startOffset, int endOffset) {
         assert targetDecl != null;
         assert file != null;
         CharSequence name = "";
         if (CsmKindUtilities.isNamedElement(targetDecl)) {
             name = ((CsmNamedElement)targetDecl).getName();
+        } else if (CsmKindUtilities.isStatement(targetDecl)) {
+            if (targetDecl instanceof CsmLabel) {
+                name = ((CsmLabel)targetDecl).getLabel();
+            } else if (targetDecl instanceof CsmGotoStatement){
+                name = ((CsmGotoStatement)targetDecl).getLabel();
+            }
         }
         if (name.length() == 0) {
             if (TraceFlags.TRACE_XREF_REPOSITORY) {
@@ -206,8 +215,25 @@ public class ReferenceRepositoryImpl extends CsmReferenceRepository {
         return out;
     }
     
+    // Fast check of name.
+    private boolean hasName(FileImpl file, String name){
+        try {
+            String text = file.getBuffer().getText();
+            if (text.indexOf(name) < 0) {
+                return false;
+            }
+            // TODO use grep by line and detect whole word
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return true;
+    }
+    
     private Collection<APTToken> getTokensToResolve(FileImpl file, String name, int startOffset, int endOffset) {
         // in prototype use just unexpanded identifier tokens in file
+        if (!hasName(file, name)){
+            return Collections.<APTToken>emptyList();
+        }
         TokenStream ts = getTokenStream(file);
         Collection<APTToken> tokens = new ArrayList<APTToken>(100);
         boolean destructor = false;
@@ -221,7 +247,9 @@ public class ReferenceRepositoryImpl extends CsmReferenceRepository {
                 APTToken prev = null;
                 while (!APTUtils.isEOF(token)) {
                     if (token.getOffset() >= startOffset) {
-                        if (APTUtils.isID(token) && name.equals(token.getText())) {
+                        int id = token.getType();
+                        if ((id == APTTokenTypes.ID || id == APTTokenTypes.ID_DEFINED) &&
+                                name.equals(token.getText())) {
                             // this is candidate to resolve
                             if (!destructor || (prev != null && prev.getType() == APTTokenTypes.TILDE)) {
                                 tokens.add(token);
@@ -243,18 +271,18 @@ public class ReferenceRepositoryImpl extends CsmReferenceRepository {
     
     private TokenStream getTokenStream(FileImpl file) {
         // build token stream for file
-        InputStream stream = null;
+        Reader reader = null;
         TokenStream ts = null;
         try {
-            stream = file.getBuffer().getInputStream();
-            ts = APTTokenStreamBuilder.buildTokenStream(file.getAbsolutePath(), stream);
+            reader = file.getBuffer().getReader();
+            ts = APTTokenStreamBuilder.buildTokenStream(file.getAbsolutePath(), reader);
         } catch (IOException ex) {
             DiagnosticExceptoins.register(ex);
             ts = null;
         } finally {
-            if (stream != null) {
+            if (reader != null) {
                 try {
-                    stream.close();
+                    reader.close();
                 } catch (IOException ex) {
                     DiagnosticExceptoins.register(ex);
                 }
@@ -264,14 +292,14 @@ public class ReferenceRepositoryImpl extends CsmReferenceRepository {
     }
 
     private boolean acceptReference(CsmReference ref, CsmObject targetDecl, CsmObject targetDef, 
-            EnumSet<CsmReferenceKind> kinds, boolean unboxInstantiation) {
+            Set<CsmReferenceKind> kinds, boolean unboxInstantiation) {
         assert targetDecl != null;
         boolean accept = false;
         CsmObject referencedObj = ref == null ? null : ref.getReferencedObject();
         if (unboxInstantiation && CsmKindUtilities.isTemplateInstantiation(referencedObj)) {
             referencedObj = ((CsmInstantiation)referencedObj).getTemplateDeclaration();
         }
-        if (targetDecl.equals(referencedObj)) {
+        if (targetDecl.equals(referencedObj) || (targetDef != null && targetDef.equals(referencedObj))) {
             if (kinds == CsmReferenceKind.ALL) {
                 accept = true;
             } else { 

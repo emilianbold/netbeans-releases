@@ -47,7 +47,6 @@ import java.util.logging.Logger;
 import org.netbeans.api.java.source.Comment.Style;
 import org.netbeans.modules.java.source.transform.FieldGroupTree;
 import static com.sun.source.tree.Tree.*;
-import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.java.source.builder.CommentHandlerService;
 import org.netbeans.api.java.source.Comment;
@@ -85,19 +84,23 @@ public class CasualDiff {
     private static final Logger LOG = Logger.getLogger(CasualDiff.class.getName());
 
     private Map<Integer, String> diffInfo = new HashMap<Integer, String>();
+    private final Map<Tree, ?> tree2Tag;
+    private final Map<Object, int[]> tag2Span;
     
     // used for diffing var def, when parameter is printed, annotation of
     // such variable should not provide new line at the end.
     private boolean parameterPrint = false;
     
-    protected CasualDiff(Context context, WorkingCopy workingCopy) {
+    protected CasualDiff(Context context, WorkingCopy workingCopy, Map<Tree, ?> tree2Tag, Map<?, int[]> tag2Span) {
         diffs = new ListBuffer<Diff>();
         comments = CommentHandlerService.instance(context);
         this.workingCopy = workingCopy;
         this.tokenSequence = workingCopy.getTokenHierarchy().tokenSequence(JavaTokenId.language());
         this.origText = workingCopy.getText();
         this.context = context;
-        printer = new VeryPretty(workingCopy, CodeStyle.getDefault(null));
+        this.tree2Tag = tree2Tag;
+        this.tag2Span = (Map<Object, int[]>) tag2Span;//XXX
+        printer = new VeryPretty(workingCopy, CodeStyle.getDefault(null), tree2Tag, tag2Span);
     }
     
     public com.sun.tools.javac.util.List<Diff> getDiffs() {
@@ -108,9 +111,11 @@ public class CasualDiff {
             WorkingCopy copy,
             TreePath oldTreePath,
             JCTree newTree,
-            Map<Integer, String> userInfo)
+            Map<Integer, String> userInfo,
+            Map<Tree, ?> tree2Tag,
+            Map<?, int[]> tag2Span)
     {
-        CasualDiff td = new CasualDiff(context, copy);
+        CasualDiff td = new CasualDiff(context, copy, tree2Tag, tag2Span);
         JCTree oldTree = (JCTree) oldTreePath.getLeaf();
         td.oldTopLevel =  (JCCompilationUnit) (oldTree.getKind() == Kind.COMPILATION_UNIT ? oldTree : copy.getCompilationUnit());
         
@@ -125,6 +130,8 @@ public class CasualDiff {
         }
         
         int[] bounds = td.getBounds(oldTree);
+        if(!(oldTree instanceof CompilationUnitTree)) // set up offset for non top level classes
+            td.printer.setInitialOffset(bounds[0]);
         boolean isCUT = oldTree.getKind() == Kind.COMPILATION_UNIT;
         int start = isCUT ? 0 : bounds[0];
         int end   = isCUT ? td.workingCopy.getText().length() : bounds[1];
@@ -175,9 +182,11 @@ public class CasualDiff {
             WorkingCopy copy,
             List<? extends ImportTree> original,
             List<? extends ImportTree> nue,
-            Map<Integer, String> userInfo)
+            Map<Integer, String> userInfo,
+            Map<Tree, ?> tree2Tag,
+            Map<?, int[]> tag2Span)
     {
-        CasualDiff td = new CasualDiff(context, copy);
+        CasualDiff td = new CasualDiff(context, copy, tree2Tag, tag2Span);
         td.oldTopLevel = (JCCompilationUnit) copy.getCompilationUnit();
         int start = td.oldTopLevel.getPackageName() != null ? td.endPos(td.oldTopLevel.getPackageName()) : 0;
         
@@ -2058,6 +2067,14 @@ public class CasualDiff {
                     copyTo(start, pos = end, printer);
                     break;
                 }
+                case DELETE: {
+                    oldIndex++;
+                    int[] bounds = getBounds(item.element);
+                    tokenSequence.move(bounds[1] - 1);
+                    moveToSrcRelevant(tokenSequence, Direction.FORWARD);
+                    pos = tokenSequence.offset();
+                    break;
+                }
                 default: 
                     break;
             }
@@ -2242,7 +2259,7 @@ public class CasualDiff {
                                 found = true;
                                 VeryPretty oldPrinter = this.printer;
                                 int old = oldPrinter.indent();
-                                this.printer = new VeryPretty(workingCopy);
+                                this.printer = new VeryPretty(workingCopy, CodeStyle.getDefault(null), tree2Tag, tag2Span, oldPrinter.toString().length() + oldPrinter.getInitialOffset());//XXX
                                 this.printer.reset(old);
                                 int index = oldList.indexOf(oldT);
                                 int[] poss = estimator.getPositions(index);
@@ -2258,7 +2275,7 @@ public class CasualDiff {
                         if (lastdel != null && treesMatch(item.element, lastdel, false)) {
                             VeryPretty oldPrinter = this.printer;
                             int old = oldPrinter.indent();
-                            this.printer = new VeryPretty(workingCopy);
+                            this.printer = new VeryPretty(workingCopy, CodeStyle.getDefault(null), tree2Tag, tag2Span, oldPrinter.toString().length() + oldPrinter.getInitialOffset());//XXX
                             this.printer.reset(old);
                             int index = oldList.indexOf(lastdel);
                             int[] poss = estimator.getPositions(index);
@@ -2457,7 +2474,7 @@ public class CasualDiff {
      * just returns.
      * 
      * @param  oldT  original tree in source code
-     * @param  newT  tree to repace the original tree
+     * @param  newT  tree to replace the original tree
      * @return position in original source
      */
     protected int diffTree(JCTree oldT, JCTree newT, int[] elementBounds) {
@@ -2465,6 +2482,20 @@ public class CasualDiff {
     }
     
     protected int diffTree(JCTree oldT, JCTree newT, JCTree parent /*used only for modifiers*/, int[] elementBounds) {
+        Object t = tree2Tag.get(newT);
+        int result;
+        if (t != null) {
+            int start = printer.toString().length();
+            result = diffTreeImpl(oldT, newT, parent, elementBounds);
+            int end = printer.toString().length();
+            tag2Span.put(t, new int[]{start + printer.getInitialOffset(), end + printer.getInitialOffset()});
+        } else {
+            result = diffTreeImpl(oldT, newT, parent, elementBounds);
+        }
+        return result;
+    }
+    
+    protected int diffTreeImpl(JCTree oldT, JCTree newT, JCTree parent /*used only for modifiers*/, int[] elementBounds) {
         if (oldT == null && newT != null)
             throw new IllegalArgumentException("Null is not allowed in parameters.");
  

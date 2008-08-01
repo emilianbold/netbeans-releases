@@ -68,10 +68,7 @@ import org.netbeans.modules.uml.core.roundtripframework.IAttributeChangeFacility
 import org.netbeans.modules.uml.core.support.umlsupport.Log;
 import org.netbeans.modules.uml.core.support.umlutils.ETArrayList;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
-import org.netbeans.modules.uml.ui.support.applicationmanager.IAssociationEdgePresentation;
 import org.netbeans.modules.uml.ui.support.applicationmanager.IProductDiagramManager;
-import org.netbeans.modules.uml.ui.support.applicationmanager.IProductGraphPresentation;
-import org.netbeans.modules.uml.ui.support.viewfactorysupport.ILabelManager;
 
 /**
  * Processes the events recieved from the IDE.  The events are translated into
@@ -335,13 +332,14 @@ public class IDEProcessor implements EventProcessor {
                         = rel.createPresentationElement(elem);
 //                    dia.addPresentationElement(ipe);
                     if (elem != null && elem instanceof IAssociation) {
+// TODO: meteora
 
-                        if (ipe instanceof IAssociationEdgePresentation) {
-                            IProductGraphPresentation edPre =
-                                (IProductGraphPresentation) ipe;
-                            ILabelManager lblMgr = edPre.getLabelManager();
-                            lblMgr.showLabel(4, true);
-                        }
+//                        if (ipe instanceof IAssociationEdgePresentation) {
+//                            IProductGraphPresentation edPre =
+//                                (IProductGraphPresentation) ipe;
+//                            ILabelManager lblMgr = edPre.getLabelManager();
+//                            lblMgr.showLabel(4, true);
+//                        }
                     }
                 }
                 catch (Exception e) {
@@ -361,21 +359,22 @@ public class IDEProcessor implements EventProcessor {
             for (int i = 0; i < count; i++) {
                 pElem = pElems.item(i);
 
-                if (pElem instanceof IAssociationEdgePresentation) {
-                    IProductGraphPresentation edPre = 
-                        (IProductGraphPresentation) pElem;
-                    ILabelManager lblMgr = edPre.
-                        getLabelManager();
-                    Log.out("addRelationshipLinkToDiagram: Showing label");
-                    //if(!lblMgr.isDisplayed(4)){
-                        lblMgr.createInitialLabels();
-                        lblMgr.resetLabels();
-                        lblMgr.showLabel(4,true);
-                        //lblMgr.relayoutLabels();
-                    //}
-                }
-                else
-                    Log.out("Ignoring presentation element");
+// TODO: meteora
+//                if (pElem instanceof IAssociationEdgePresentation) {
+//                    IProductGraphPresentation edPre = 
+//                        (IProductGraphPresentation) pElem;
+//                    ILabelManager lblMgr = edPre.
+//                        getLabelManager();
+//                    Log.out("addRelationshipLinkToDiagram: Showing label");
+//                    //if(!lblMgr.isDisplayed(4)){
+//                        lblMgr.createInitialLabels();
+//                        lblMgr.resetLabels();
+//                        lblMgr.showLabel(4,true);
+//                        //lblMgr.relayoutLabels();
+//                    //}
+//                }
+//                else
+//                    Log.out("Ignoring presentation element");
             }
         }
     }

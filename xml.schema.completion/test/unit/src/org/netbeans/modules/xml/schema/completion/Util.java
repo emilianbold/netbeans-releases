@@ -47,7 +47,6 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import javax.swing.text.Document;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.xml.text.syntax.XMLKit;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -68,9 +67,9 @@ public class Util {
         return fileObj;
     }
     
-    public static Document getResourceAsDocument(String path) throws Exception {
+    public static BaseDocument getResourceAsDocument(String path) throws Exception {
         InputStream in = Util.class.getResourceAsStream(path);
-        Document sd = new BaseDocument(XMLKit.class, false);
+        BaseDocument sd = new BaseDocument(org.netbeans.modules.xml.text.syntax.XMLKit.class, false);
         BufferedReader br = new BufferedReader(new InputStreamReader(in,"UTF-8"));
         StringBuffer sbuf = new StringBuffer();
         try {

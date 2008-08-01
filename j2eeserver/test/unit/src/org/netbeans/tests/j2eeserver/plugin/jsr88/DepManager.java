@@ -56,13 +56,26 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.*;
  * @author nn136682
  */
 public class DepManager implements DeploymentManager {
-    String name;
+    
+    public static final String PLATFORM_ROOT_PROPERTY = "platform";
+    
+    public static final String MULTIPLE_TARGETS = "multitargets";
+    
+    public static final String WORK_DIR = "workdir";
+    
+    private final String url;
 
+    private Targ[] targets;
+    
     /** Creates a new instance of DepFactory */
     public DepManager(String url, String user, String password) {
-        name = url;
+        this.url = url;
     }
-    public String getName() { return name ; }
+    public String getName() { return url ; }
+    
+    public InstanceProperties getInstanceProperties() {
+        return InstanceProperties.getInstanceProperties(url);
+    }
     
     public DeploymentConfiguration createConfiguration(DeployableObject deployableObject) throws InvalidModuleException {
         return null;
@@ -165,13 +178,14 @@ public class DepManager implements DeploymentManager {
         return new Locale[] { Locale.getDefault() };
     }
     
-    Targ[] targets;
-    public Target[] getTargets() throws java.lang.IllegalStateException {
+    public synchronized Target[] getTargets() throws IllegalStateException {
         if (targets == null) {
-            targets = new Targ[] {
-            new Targ("Target 1"),
-            new Targ("Target 2")
-        };
+            if (getInstanceProperties().getProperty(MULTIPLE_TARGETS) == null
+                    || Boolean.parseBoolean(getInstanceProperties().getProperty(MULTIPLE_TARGETS))) {
+                targets = new Targ[] {new Targ("Target 1"), new Targ("Target 2")};
+            } else {
+                targets = new Targ[] {new Targ("Target")};
+            }
         }
         return targets;
     }

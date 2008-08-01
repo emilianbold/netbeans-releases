@@ -39,7 +39,7 @@
 
 package org.netbeans.modules.ruby.hints;
 
-import org.netbeans.modules.ruby.hints.HintTestBase;
+import org.netbeans.modules.ruby.hints.infrastructure.RubyAstRule;
 
 /**
  *
@@ -49,39 +49,47 @@ public class ColonToThenTest extends HintTestBase  {
     
     public ColonToThenTest(String testName) {
         super(testName);
-    }            
+    }         
+    
+    private RubyAstRule createRule() {
+        return new ColonToThen();
+    }
+
+    public void testRegistered() throws Exception {
+        ensureRegistered(createRule());
+    }
 
     public void testHints1() throws Exception {
-        findHints(this, new ColonToThen(), "testfiles/colontothen.rb", null);
+        checkHints(this, createRule(), "testfiles/colontothen.rb", null);
     }
 
     public void testFix1() throws Exception {
-        applyHint(this, new ColonToThen(), "testfiles/colontothen.rb", 
+        applyHint(this, createRule(), "testfiles/colontothen.rb",
                 "when Regexp  ^: puts 'a regex'", "then");
     }
     
     public void testFix2() throws Exception {
-        applyHint(this, new ColonToThen(), "testfiles/colontothen.rb", 
+        applyHint(this, createRule(), "testfiles/colontothen.rb",
                 "when String^: puts 'a string'", "then");
     }
     
     public void testFix3() throws Exception {
-        applyHint(this, new ColonToThen(), "testfiles/colontothen.rb", 
+        applyHint(this, createRule(), "testfiles/colontothen.rb",
                 "when Regexp  ^: puts 'a regex'", "Move");
     }
     
     public void testFix4() throws Exception {
-        applyHint(this, new ColonToThen(), "testfiles/colontothen.rb", 
+        applyHint(this, createRule(), "testfiles/colontothen.rb",
                 "when String^: puts 'a string'", "Move");
     }
     
     public void testFix5() throws Exception {
-        applyHint(this, new ColonToThen(), "testfiles/colontothen.rb", 
+        applyHint(this, createRule(), "testfiles/colontothen.rb",
                 "when Regexp  ^: puts 'a regex'", ";");
     }
     
     public void testFix6() throws Exception {
-        applyHint(this, new ColonToThen(), "testfiles/colontothen.rb", 
+        applyHint(this, createRule(), "testfiles/colontothen.rb",
                 "when String^: puts 'a string'", ";");
     }
     
@@ -93,7 +101,7 @@ public class ColonToThenTest extends HintTestBase  {
 //            // Known exceptions
 //            exceptions.add("invokemethod.rb");
 //        
-//            assertNoJRubyMatches(new ColonToThen(), exceptions);
+//            assertNoJRubyMatches(createRule(), exceptions);
 //            
 //        } finally {
 //            parseErrorsOk = false;

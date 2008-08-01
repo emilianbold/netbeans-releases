@@ -53,39 +53,70 @@ import org.netbeans.modules.vmd.api.model.Presenter;
 import org.openide.util.Exceptions;
 import javax.swing.text.StyledDocument;
 import java.io.IOException;
+import org.netbeans.modules.vmd.api.model.DesignComponent;
+import org.netbeans.modules.vmd.midp.components.databinding.MidpDatabindingSupport;
 
 /**
- * @author David Kaspar
+ * @author Karol Harezlak
  */
 public class MidpCodePresenterSupport {
-    
-    public static Presenter createAddImportPresenter(final String...fullyNames) {
-        final List<String> fullyNamesList = new ArrayList(Arrays.asList(fullyNames));  
-        
-        return new CodeGlobalLevelPresenter() {
-            protected void performGlobalGeneration(StyledDocument styledDocument) {
-                try {
-                    JavaSource.forDocument(styledDocument).runModificationTask(new CancellableTask<WorkingCopy>() {
-                        public void cancel() {
+
+    public static Presenter createAddImportPresenter(String... fullyNames) {
+        return new CodePresenterSupport(fullyNames);
+    }
+
+    public static Presenter createAddImportDatabindingPresenter(String bindedProperty, String[] fullyNames) {
+        assert bindedProperty != null;
+        return new CodePresenterSupport(bindedProperty, fullyNames);
+    }
+
+    private static class CodePresenterSupport extends CodeGlobalLevelPresenter {
+
+        final private List<String> fullyNamesList;
+       
+        final private String bindedProperty;
+
+        private CodePresenterSupport(String... fullyNames) {
+            this.fullyNamesList = new ArrayList(Arrays.asList(fullyNames));
+            this.bindedProperty = null;
+        }
+
+        private CodePresenterSupport(String bindedProperty,String... fullyNames) {
+            this.fullyNamesList = new ArrayList<String>(Arrays.asList(fullyNames));
+            this.bindedProperty = bindedProperty;
+        }
+
+        @Override
+        protected void performGlobalGeneration(StyledDocument styledDocument) {
+            addImports(styledDocument);
+        }
+
+        private void addImports(final StyledDocument styledDocument) {
+            try {
+                JavaSource.forDocument(styledDocument).runModificationTask(new CancellableTask<WorkingCopy>() {
+
+                    public void cancel() {
+                    }
+
+                    public void run(WorkingCopy parameter) throws Exception {
+                        parameter.toPhase(JavaSource.Phase.PARSED);
+                        String typeFqn = getComponent().getType().getString();
+                        if (!fullyNamesList.contains(typeFqn)) {
+                            fullyNamesList.add(typeFqn);
                         }
-                        
-                        public void run(WorkingCopy parameter) throws Exception {
-                            parameter.toPhase(JavaSource.Phase.PARSED);
-                            String typeFqn = getComponent().getType().getString();
-                            if (! fullyNamesList.contains(typeFqn))
-                                fullyNamesList.add(typeFqn);
-                            for (String fqn : fullyNamesList) {
+                        DesignComponent connector = MidpDatabindingSupport.getConnector(getComponent(), bindedProperty);
+                        for (String fqn : fullyNamesList) {
+                            if (bindedProperty == null) {
+                                SourceUtils.resolveImport(parameter, new TreePath(parameter.getCompilationUnit()), fqn);
+                            } else if (connector != null) {
                                 SourceUtils.resolveImport(parameter, new TreePath(parameter.getCompilationUnit()), fqn);
                             }
                         }
-                    }).commit();
-                } catch (IOException e) {
-                    Exceptions.printStackTrace(e);
-                }
+                    }
+                }).commit();
+            } catch (IOException e) {
+                Exceptions.printStackTrace(e);
             }
-        };
-        
+        }
     }
-    
-    
 }

@@ -50,12 +50,15 @@ import java.io.PrintWriter;
 import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
 import java.net.Socket;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.Semaphore;
 import java.util.logging.Level;
@@ -86,8 +89,18 @@ import org.netbeans.modules.ruby.platform.RubyExecution;
 import org.netbeans.modules.ruby.railsprojects.RailsProject;
 import org.netbeans.modules.ruby.railsprojects.server.spi.RubyInstance;
 import org.netbeans.modules.ruby.railsprojects.ui.customizer.RailsProjectProperties;
+import org.netbeans.modules.web.client.tools.api.JSToNbJSLocationMapper;
+import org.netbeans.modules.web.client.tools.api.LocationMappersFactory;
+import org.netbeans.modules.web.client.tools.api.NbJSToJSLocationMapper;
+import org.netbeans.modules.web.client.tools.api.WebClientToolsProjectUtils;
+import org.netbeans.modules.web.client.tools.api.WebClientToolsSessionException;
+import org.netbeans.modules.web.client.tools.api.WebClientToolsSessionStarterService;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileObject;
+import org.openide.util.Lookup;
+import org.openide.util.Utilities;
+import org.openide.util.lookup.Lookups;
 
 /**
  * Support for the builtin Ruby on Rails web server: WEBrick, Mongrel, Lighttpd
@@ -104,7 +117,13 @@ import org.openide.NotifyDescriptor;
  * @author Tor Norbye, Pavel Buzek, Erno Mononen
  */
 public final class RailsServerManager {
-    
+     /**
+      * A hidden flag to turn off automatic browser display on server startup.
+      * Should probably be exposed as a user visible option somewhere.
+      */
+    private static boolean NO_BROWSER = Boolean.getBoolean("rails.nobrowser");
+
+   
     enum ServerStatus { NOT_STARTED, STARTING, RUNNING; }
 
     private static final Logger LOGGER = Logger.getLogger(RailsServerManager.class.getName());
@@ -133,6 +152,7 @@ public final class RailsServerManager {
     private RubyExecution execution;
     private File dir;
     private boolean debug;
+    private boolean clientDebug;
     private boolean switchToDebugMode;
     private Semaphore debugSemaphore;
     
@@ -146,6 +166,10 @@ public final class RailsServerManager {
             switchToDebugMode = true;
         }
         this.debug = debug;
+    }
+    
+    public void setClientDebug(boolean clientDebug) {
+        this.clientDebug = clientDebug;
     }
     
     private void ensureRunning() {
@@ -165,7 +189,9 @@ public final class RailsServerManager {
         }
         if (debugSemaphore != null) {
             try {
-                execution.kill();
+                if(execution != null) {
+                    execution.kill();
+                }
                 debugSemaphore.acquire();
                 debugSemaphore = null;
             } catch (InterruptedException ex) {
@@ -233,36 +259,78 @@ public final class RailsServerManager {
             assert instance != null : "No servers found for " + platform;
         }
         if (!(instance instanceof RubyServer)){
-            final Future<RubyInstance.OperationState> result = 
-                    instance.runApplication(platform, projectName, dir);
+            if(!debug) {
+                final Future<RubyInstance.OperationState> result = 
+                        instance.runApplication(platform, projectName, dir);
 
-            final RubyInstance serverInstance = instance;
-            RequestProcessor.getDefault().post(new Runnable() {
-                public void run() {
-                    try {
-                        RubyInstance.OperationState state = result.get();
-                        if(state == RubyInstance.OperationState.COMPLETED) {
-                            synchronized(RailsServerManager.this) {
-                                port = serverInstance.getRailsPort();
-                                status = ServerStatus.RUNNING;
+                final RubyInstance serverInstance = instance;
+                RequestProcessor.getDefault().post(new Runnable() {
+                    public void run() {
+                        try {
+                            RubyInstance.OperationState state = result.get();
+                            if(state == RubyInstance.OperationState.COMPLETED) {
+                                synchronized(RailsServerManager.this) {
+                                    port = serverInstance.getRailsPort();
+                                    status = ServerStatus.RUNNING;
+                                }
+                            } else {
+                                synchronized(RailsServerManager.this) {
+                                    status = ServerStatus.NOT_STARTED;
+                                }
                             }
-                        } else {
+                        } catch (Exception ex) {
+                            LOGGER.log(Level.INFO, ex.getMessage(), ex);
+
+                            // Ensure status value is reset on exceptions too...
                             synchronized(RailsServerManager.this) {
                                 status = ServerStatus.NOT_STARTED;
                             }
                         }
-                    } catch (Exception ex) {
-                        LOGGER.log(Level.INFO, ex.getMessage(), ex);
-                        
-                        // Ensure status value is reset on exceptions too...
-                        synchronized(RailsServerManager.this) {
-                            status = ServerStatus.NOT_STARTED;
-                        }
                     }
-                }
-            });
+                });
+
+                return;
+            } else {
+                /**
+                 * Rails debugging on V3 via grizzly-jruby connector
+                 * 
+                 * Example launch command for Grizzly + Rails
+                 * java
+                 *   -cp
+                 *     ${server}/modules/grizzly-jruby-1.7.8-SNAPSHOT.jar:
+                 *     ${server}/modules/grizzly-module-1.8.2.jar:
+                 *     ${jruby.home}/lib/jruby.jar
+                 *   -Djruby.home=${jruby.home}
+                 *   -Xdebug
+                 *   -Xrunjdwp:transport=dt_socket,address=4101,server=y,suspend=n
+                 *   -Dglassfish.rdebug=${rdebug.path}
+                 *   -Dglassfish.rdebug.port=${rdebug.port}
+                 *   -Dglassfish.rdebug.version=${rdebug.version}
+                 *   -Dglassfish.rdebug.iosynch=${rdebug.iosynch}
+                 *   com.sun.grizzly.standalone.JRuby
+                 *     -p <Rails HTTP Port> -n 1 <Rails Application Folder>
+                 */         
+                String displayName = NbBundle.getMessage(RailsServerManager.class,
+                        "LBL_ServerTab" , instance.getDisplayName(), projectName, Integer.toString(port)); // NOI18N
+                ExecutionDescriptor desc = new ExecutionDescriptor(platform, displayName, dir, "unknown"); // NOI18N
+                desc.cmd(getJavaExecutable());
+                desc.useInterpreter(false);
+                desc.initialArgs(instance.getServerCommand(platform, classPath, dir, port, debug));
+                desc.postBuild(finishedAction);
+                desc.addStandardRecognizers();
+                desc.addOutputRecognizer(new GrizzlyServerRecognizer(instance));
+                desc.frontWindow(false);
+                desc.debug(debug);
+                desc.fastDebugRequired(debug);
+                desc.fileLocator(new DirectoryFileLocator(FileUtil.toFileObject(dir)));
+                desc.showSuspended(true);
                 
-            return;
+                String charsetName = project.evaluator().getProperty(RailsProjectProperties.SOURCE_ENCODING);
+                IN_USE_PORTS.add(port);
+                execution = new RubyExecution(desc, charsetName);
+                execution.run();
+                return;
+            }
         }
         // check whether the user has modified script/server to use another server
         RubyInstance explicitlySpecified = ServerResolver.getExplicitlySpecifiedServer(project);
@@ -270,7 +338,19 @@ public final class RailsServerManager {
         
         String displayName = getServerTabName(server, projectName, port);
         String serverPath = server.getServerPath();
-        ExecutionDescriptor desc = new ExecutionDescriptor(RubyPlatform.platformFor(project), displayName, dir, serverPath);
+        ExecutionDescriptor desc = new ExecutionDescriptor(platform, displayName, dir, serverPath);
+// can place debug flags here to allow attaching NB debugger to jruby process
+// running server that is started in debug-commons.
+//        if(debug && "true".equals(System.getProperty("rdebug.enable.debug"))) {
+//            desc.initialArgs("-J-Xdebug -J-Xrunjdwp:transport=dt_socket,address=3105,server=y,suspend=y");
+//        }
+        // Paths required for GlassFish gem.  Not used or required for WEBrick or Mongrel.
+        String gemPath = server.getLocation();
+        if(gemPath != null) {
+            desc.initialArgs("-I \"" + gemPath + File.separatorChar + "bin\" " +
+                    "-I \"" + gemPath + File.separatorChar + "lib\"");
+        }
+        desc.scriptPrefix(server.getScriptPrefix());
         desc.additionalArgs(buildStartupArgs());
         desc.postBuild(finishedAction);
         desc.classPath(classPath);
@@ -298,9 +378,23 @@ public final class RailsServerManager {
             result.add("-e");
             result.add(railsEnv);
         }
-        result.add("--port");
-        result.add(Integer.toString(port));
+        if(server instanceof GlassFishGem) {
+            result.add(dir.getAbsolutePath());
+        } else {
+            result.add("--port");
+            result.add(Integer.toString(port));
+        }
         return result.toArray(new String[result.size()]);
+    }
+
+    private File getJavaExecutable() {
+        String javaPath = System.getProperty("java.home") + File.separatorChar +
+                "bin" + File.separatorChar + (Utilities.isWindows() ? "java.exe" : "java");
+        File javaExe = new File(javaPath);
+        if(!javaExe.exists()) {
+            LOGGER.log(Level.SEVERE, "Unable to locate java executable: " + javaPath);
+        }
+        return javaExe;
     }
     
     private static String getServerTabName(RubyServer server, String projectName, int port) {
@@ -323,7 +417,7 @@ public final class RailsServerManager {
     public void showUrl(final String relativeUrl) {
         synchronized (RailsServerManager.this) {
             if (!switchToDebugMode && status == ServerStatus.RUNNING && isPortInUse(port)) {
-                RailsServerManager.showURL(relativeUrl, port);
+                RailsServerManager.showURL(relativeUrl, port, clientDebug, project);
                 return;
             }
         }
@@ -345,6 +439,7 @@ public final class RailsServerManager {
         handle.start();
         handle.switchToIndeterminate();
 
+        final boolean runClientDebug = clientDebug;
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
                 try {
@@ -361,7 +456,7 @@ public final class RailsServerManager {
                         synchronized (RailsServerManager.this) {
                             if (status == ServerStatus.RUNNING) {
                                 LOGGER.fine("Server " + server + " started in " + i + " seconds.");
-                                RailsServerManager.showURL(relativeUrl, port);
+                                RailsServerManager.showURL(relativeUrl, port, runClientDebug, project);
                                 return;
                             }
 
@@ -425,16 +520,68 @@ public final class RailsServerManager {
         }
     }
 
-    private static void showURL(String relativeUrl, int port) {
+    private static void showURL(String relativeUrl, int port, boolean runClientDebugger, RailsProject project) {
+        if (NO_BROWSER) {
+            return;
+        }
+
         LOGGER.fine("Opening URL: " + "http://localhost:" + port + "/" + relativeUrl);
         try {
             URL url = new URL("http://localhost:" + port + "/" + relativeUrl); // NOI18N
-            HtmlBrowser.URLDisplayer.getDefault().showURL(url);
+            
+            if (!runClientDebugger) {
+                HtmlBrowser.URLDisplayer.getDefault().showURL(url);
+            } else {
+                // launch browser with clientside debugger
+                FileObject projectDocBase = project.getRakeProjectHelper().resolveFileObject("public"); // NOI18N
+                String hostPrefix = "http://localhost:" + port + "/"; // NOI18N
+                
+                HtmlBrowser.Factory browser = null;
+                if (WebClientToolsProjectUtils.isInternetExplorer(project)) {
+                    browser = WebClientToolsProjectUtils.getInternetExplorerBrowser();
+                } else {
+                    browser = WebClientToolsProjectUtils.getFirefoxBrowser();
+                }
+                
+                if (browser == null) {
+                    HtmlBrowser.URLDisplayer.getDefault().showURL(url);
+                    return;
+                }
+                                 
+                LocationMappersFactory mapperFactory = Lookup.getDefault().lookup(LocationMappersFactory.class);
+
+                Lookup debuggerLookup = null;
+                if (mapperFactory != null) {
+                    URI appContext = new URI(hostPrefix);
+
+                    // If the public/index.html file exists assume that it is the welcome file.
+                    Map<String, Object> extendedInfo = null;
+                    FileObject welcomeFile = projectDocBase.getFileObject("index.html");  //NOI18N
+                    if (welcomeFile != null) {
+                        extendedInfo = new HashMap<String, Object>();
+                        extendedInfo.put("welcome-file", "index.html"); //NOI18N
+                    }
+                    
+                    JSToNbJSLocationMapper forwardMapper =
+                            mapperFactory.getJSToNbJSLocationMapper(projectDocBase, appContext, extendedInfo);
+                    NbJSToJSLocationMapper reverseMapper =
+                            mapperFactory.getNbJSToJSLocationMapper(projectDocBase, appContext, extendedInfo);
+                    debuggerLookup = Lookups.fixed(forwardMapper, reverseMapper, project);
+                } else {
+                    debuggerLookup = Lookups.fixed(project);
+                }
+                
+                WebClientToolsSessionStarterService.startSession(url.toURI(), browser, debuggerLookup);
+            }
         } catch (MalformedURLException ex) {
+            ErrorManager.getDefault().notify(ex);
+        } catch (URISyntaxException ex) {
+            ErrorManager.getDefault().notify(ex);
+        } catch (WebClientToolsSessionException ex) {
             ErrorManager.getDefault().notify(ex);
         }
     }
-
+    
     /**
      * @param outputLine the output line to check.
      * @return true if the given <code>outputLine</code> represented 'address in use'
@@ -481,6 +628,51 @@ public final class RailsServerManager {
             }
 
             return null;
+        }
+    }
+
+    private class GrizzlyServerRecognizer extends OutputRecognizer {
+
+        private RubyInstance server;
+
+        GrizzlyServerRecognizer(RubyInstance server) {
+            this.server = server;
+        }
+
+        @Override
+        public ActionText processLine(String outputLine) {
+            
+            if (LOGGER.isLoggable(Level.FINEST)){
+                LOGGER.log(Level.FINEST, "Processing output line: " + outputLine);
+            }
+
+            String line = outputLine;
+            
+            if (isStartupMsg(outputLine)) {
+                synchronized (RailsServerManager.this) {
+                    LOGGER.fine("Identified " + server + " as running");
+                    status = ServerStatus.RUNNING;
+//                    String projectName = project.getLookup().lookup(ProjectInformation.class).getDisplayName();
+//                    server.addApplication(new RailsApplication(projectName, port, execution));
+                }
+            } else if (isAddressInUseMsg(outputLine)) {
+                LOGGER.fine("Detected port conflict: " + outputLine);
+                portConflict = true;
+            }
+
+            if (!line.equals(outputLine)) {
+                return new ActionText(new String[] { line }, null, null, null);
+            }
+
+            return null;
+        }
+
+        private boolean isStartupMsg(String line) {
+            return line.contains("Grizzly configuration for port");
+        }
+
+        private boolean isAddressInUseMsg(String line) {
+            return line.contains("BindException");
         }
     }
 
@@ -541,5 +733,4 @@ public final class RailsServerManager {
         }
     }
 
-    
 }

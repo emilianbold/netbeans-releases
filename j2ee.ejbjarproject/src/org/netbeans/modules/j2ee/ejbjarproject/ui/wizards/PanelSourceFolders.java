@@ -181,7 +181,7 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
         File projectLocation = (File) settings.getProperty (ProjectLocationWizardPanel.PROJECT_DIR);  //NOI18N
         File confFolder = getConfigFiles();
         if (confFolder == null) {
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", // NOI18N
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, // NOI18N
                     NbBundle.getMessage(PanelSourceFolders.class, "MSG_BlankConfigurationFilesFolder"));
             return false;
         }
@@ -189,11 +189,11 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
         File[] testRoots = ((FolderList)this.testsPanel).getFiles();
         String result = checkValidity (projectLocation, confFolder, getLibraries(), sourceRoots, testRoots);
         if (result == null) {
-            wizardDescriptor.putProperty( "WizardPanel_errorMessage"," ");   //NOI18N
+            wizardDescriptor.putProperty( WizardDescriptor.PROP_ERROR_MESSAGE," ");   //NOI18N
             return true;
         }
         else {
-            wizardDescriptor.putProperty( "WizardPanel_errorMessage",result);       //NOI18N
+            wizardDescriptor.putProperty( WizardDescriptor.PROP_ERROR_MESSAGE,result);       //NOI18N
             return false;
         }
     }

@@ -51,6 +51,7 @@ import javax.swing.Action;
 import javax.swing.KeyStroke;
 import javax.swing.text.Keymap;
 import org.netbeans.core.NbKeymap.KeymapAction;
+import org.netbeans.core.startup.StartLog;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeAdapter;
@@ -85,8 +86,13 @@ class ShortcutsFolder {
     
     
     static void initShortcuts () {
-        if (shortcutsFolder != null) return;
-        shortcutsFolder = new ShortcutsFolder ();
+        StartLog.logStart("initShortcuts");
+        try {
+            if (shortcutsFolder != null) return;
+            shortcutsFolder = new ShortcutsFolder ();
+        } finally {
+            StartLog.logEnd("initShortcuts");
+        }
     }
     
     private ShortcutsFolder () {

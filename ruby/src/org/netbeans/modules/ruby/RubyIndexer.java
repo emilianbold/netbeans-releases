@@ -74,7 +74,7 @@ import org.netbeans.modules.gsf.api.ParserResult;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.gsf.api.IndexDocument;
 import org.netbeans.modules.gsf.api.IndexDocumentFactory;
-import org.netbeans.modules.ruby.StructureAnalyzer.AnalysisResult;
+import org.netbeans.modules.ruby.RubyStructureAnalyzer.AnalysisResult;
 import org.netbeans.modules.ruby.elements.AstElement;
 import org.netbeans.modules.ruby.elements.ClassElement;
 import org.netbeans.modules.ruby.elements.IndexedClass;
@@ -211,6 +211,14 @@ public class RubyIndexer implements Indexer {
     public RubyIndexer() {
     }
 
+    public String getIndexVersion() {
+        return "6.103"; // NOI18N
+    }
+
+    public String getIndexerName() {
+        return "ruby"; // NOI18N
+    }
+    
     public String getPersistentUrl(File file) {
         String url;
         try {
@@ -253,14 +261,10 @@ public class RubyIndexer implements Indexer {
         return file.getNameExt().endsWith(".rb");
     }
     
-    public String getIndexVersion() {
-        return "6.102"; // NOI18N
+    public boolean acceptQueryPath(String url) {
+        return url.indexOf("jsstubs") == -1; // NOI18N
     }
 
-    public String getIndexerName() {
-        return "ruby"; // NOI18N
-    }
-    
     private static int getModifiersFlag(Set<Modifier> modifiers) {
         int flags = modifiers.contains(Modifier.STATIC) ? IndexedMethod.STATIC : 0;
         if (modifiers.contains(Modifier.PRIVATE)) {
@@ -277,7 +281,7 @@ public class RubyIndexer implements Indexer {
         private String url;
         private String requires;
         private final RubyParseResult result;
-        private final BaseDocument doc;
+        private BaseDocument doc;
         private int docMode;
         private IndexDocumentFactory factory;
         private List<IndexDocument> documents = new ArrayList<IndexDocument>();
@@ -286,24 +290,6 @@ public class RubyIndexer implements Indexer {
             this.result = result;
             this.file = result.getFile();
             this.factory = factory;
-
-            FileObject fo = file.getFileObject();
-
-            if (fo != null) {
-                this.doc = NbUtilities.getBaseDocument(fo, true);
-            } else {
-                this.doc = null;
-            }
-
-            try {
-                url = file.getFileObject().getURL().toExternalForm();
-
-                // Make relative URLs for urls in the libraries
-                url = RubyIndex.getPreindexUrl(url);
-            } catch (IOException ioe) {
-                Exceptions.printStackTrace(ioe);
-            }
-           
         }
 
         private String getRequireString(Set<String> requireSet) {
@@ -348,16 +334,43 @@ public class RubyIndexer implements Indexer {
         }
 
         public void analyze() throws IOException {
+            FileObject fo = file.getFileObject();
+
+            if (fo != null) {
+                // openide.loaders/src/org/openide/text/DataEditorSupport.java
+                // has an Env#inputStream method which posts a warning to the user
+                // if the file is greater than 1Mb...
+                //SG_ObjectIsTooBig=The file {1} seems to be too large ({2,choice,0#{2}b|1024#{3} Kb|1100000#{4} Mb|1100000000#{5} Gb}) to safely open. \n\
+                //  Opening the file could cause OutOfMemoryError, which would make the IDE unusable. Do you really want to open it?
+                // I don't want to try indexing these files... (you get an interactive
+                // warning during indexing
+                if (fo.getSize () > 1024 * 1024) {
+                    return;
+                }
+                
+                this.doc = NbUtilities.getBaseDocument(fo, true);
+            } else {
+                this.doc = null;
+            }
+
+            try {
+                url = file.getFileObject().getURL().toExternalForm();
+
+                // Make relative URLs for urls in the libraries
+                url = RubyIndex.getPreindexUrl(url);
+            } catch (IOException ioe) {
+                Exceptions.printStackTrace(ioe);
+            }
+           
             String fileName = file.getNameExt();
             // DB migration?
-            if (Character.isDigit(fileName.charAt(0)) && fileName.matches("^\\d\\d\\d_.*")) { // NOI18N
-                FileObject fo = file.getFileObject();
+            if (Character.isDigit(fileName.charAt(0)) && 
+                    (fileName.matches("^\\d\\d\\d_.*") || fileName.matches("^\\d\\d\\d\\d\\d\\d\\d\\d\\d\\d\\d\\d\\d\\d_.*"))) { // NOI18N
                 if (fo != null && fo.getParent() != null && fo.getParent().getName().equals("migrate")) { // NOI18N
                     handleMigration();
                     // Don't exit here - proceed to also index the class as Ruby code
                 }
             } else if ("schema.rb".equals(fileName)) { //NOI18N
-                FileObject fo = file.getFileObject();
                 if (fo != null && fo.getParent() != null && fo.getParent().getName().equals("db")) { // NOI18N
                     handleMigration();
                     // Don't exit here - proceed to also index the class as Ruby code
@@ -590,7 +603,6 @@ public class RubyIndexer implements Indexer {
             
             // Find self.up
             String fileName = file.getFileObject().getName();
-            String migrationClass = RubyUtils.underlinedNameToCamel(fileName.substring(4)); // Strip off version prefix
             Node top = null;
             String version;
             if ("schema".equals(fileName)) { // NOI18N
@@ -599,7 +611,15 @@ public class RubyIndexer implements Indexer {
                 // that I can find this when querying
                 version = SCHEMA_INDEX_VERSION; // NOI18N
             } else {
-                version = fileName.substring(0,3);
+                String migrationClass;
+                if (fileName.charAt(3) == '_') {
+                    version = fileName.substring(0,3);
+                    migrationClass = RubyUtils.underlinedNameToCamel(fileName.substring(4)); // Strip off version prefix
+                } else {
+                    // Rails 2.1 stores it in UTC format
+                    version = fileName.substring(0,14);
+                    migrationClass = RubyUtils.underlinedNameToCamel(fileName.substring(15)); // Strip off version prefix
+                }
                 String sig = migrationClass + "#up"; // NOI18N
                 Node def = AstUtilities.findBySignature(root, sig);
 
@@ -792,7 +812,6 @@ public class RubyIndexer implements Indexer {
                             }
 
                             child = (Node)childNodes.get(1);
-                            @SuppressWarnings("unchecked")
                             List<Node> args = child.childNodes();
                             for (Node n : args) {
                                 if (n.nodeId == NodeType.SYMBOLNODE || n.nodeId == NodeType.STRNODE) {
@@ -818,10 +837,12 @@ public class RubyIndexer implements Indexer {
                 }
             }
 
-            @SuppressWarnings("unchecked")
             List<Node> list = node.childNodes();
 
             for (Node child : list) {
+                if (child.isInvisible()) {
+                    continue;
+                }
                 scanMigration(child, items, currentTable);
             }            
         }
@@ -929,10 +950,12 @@ public class RubyIndexer implements Indexer {
                 }
             }
 
-            @SuppressWarnings("unchecked")
             List<Node> list = node.childNodes();
 
             for (Node child : list) {
+                if (child.isInvisible()) {
+                    continue;
+                }
                 if (scan(child, includes, requires)) {
                     found = true;
                 }

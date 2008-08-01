@@ -51,13 +51,17 @@ public class Installer extends ModuleInstall implements Runnable {
                 break;
             }
         }
-        if(topComp == null){            
-            topComp = WelcomeComponent.findComp();
+        if( WelcomeOptions.getDefault().isShowOnStartup() ) {
+            if(topComp == null){            
+                topComp = WelcomeComponent.findComp();
+            }
+            //activate welcome screen at shutdown to avoid editor initialization
+            //before the welcome screen is activated again at startup
+            topComp.open();
+            topComp.requestActive();
+        } else if( topComp != null ) {
+            topComp.close();
         }
-        //activate welcome screen at shutdown to avoid editor initialization
-        //before the welcome screen is activated again at startup
-        topComp.open();
-        topComp.requestActive();
         return super.closing();
     }
 

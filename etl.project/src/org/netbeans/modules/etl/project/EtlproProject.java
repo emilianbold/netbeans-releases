@@ -72,7 +72,7 @@ import org.w3c.dom.Text;
 public final class EtlproProject implements Project, AntProjectListener, ProjectPropertyProvider {
 
     private static transient final Logger mLogger = Logger.getLogger(EtlproProject.class.getName());
-    private static transient final Localizer mLoc = Localizer.get();
+    //private static transient final Localizer mLoc = Localizer.get();
     private static final Icon PROJECT_ICON = new ImageIcon(Utilities.loadImage("org/netbeans/modules/etl/project/ui/resources/etlproProjectIcon.gif")); // NOI18N
     public static final String SOURCES_TYPE_ICANPRO = "BIZPRO";
     public static final String MODULE_INSTALL_NAME = "modules/org-netbeans-modules-etl-project.jar";
@@ -133,10 +133,13 @@ public final class EtlproProject implements Project, AntProjectListener, Project
                 new String[]{"${build.classes.dir}/*.class"} // NOI18N
                 );
         final SourcesHelper sourcesHelper = new SourcesHelper(helper, evaluator());
-        String nbBundle1 = mLoc.t("BUND711: EJB Module");
+        /*String nbBundle1 = mLoc.t("BUND711: EJB Module");
         String nbBundle2 = mLoc.t("BUND712: Source Packages");
         String webModuleLabel = nbBundle1.substring(15); //NOI18N
-        String srcJavaLabel = nbBundle2.substring(15); //NOI18N
+        String srcJavaLabel = nbBundle2.substring(15); //NOI18N*/
+
+		String webModuleLabel = "EJB Module";
+        String srcJavaLabel =  "Source Packages";
 
         sourcesHelper.addPrincipalSourceRoot("${" + IcanproProjectProperties.SOURCE_ROOT + "}", webModuleLabel, /*XXX*/ null, null);
         sourcesHelper.addPrincipalSourceRoot("${" + IcanproProjectProperties.SRC_DIR + "}", srcJavaLabel, /*XXX*/ null, null);

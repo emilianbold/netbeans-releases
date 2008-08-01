@@ -67,6 +67,7 @@ public class FontColorSettingsImplTest extends NbTestCase {
     
     protected void setUp() throws Exception {
         super.setUp();
+        clearWorkDir();
     
         EditorTestLookup.setLookup(
             new URL[] {

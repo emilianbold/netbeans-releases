@@ -94,7 +94,7 @@ public class ImportAppClientProjectWizardIterator implements WizardDescriptor.Pr
             new ProjectServerWizardPanel(J2eeModule.CLIENT, 
                     NbBundle.getMessage(NewAppClientProjectWizardIterator.class, "NewAppClientProjectWizardIterator.secondStep"),
                     NbBundle.getMessage(NewAppClientProjectWizardIterator.class, "TXT_ImportAppClientModule"),
-                    true, true, false, false, false),
+                    true, true, false, false, true, false),
             new PanelSourceFolders.Panel()
         };
     }

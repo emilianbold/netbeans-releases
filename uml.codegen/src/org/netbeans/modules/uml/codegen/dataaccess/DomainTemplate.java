@@ -41,8 +41,9 @@
 package org.netbeans.modules.uml.codegen.dataaccess;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import org.openide.filesystems.FileAlreadyLockedException;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -140,12 +141,9 @@ public class DomainTemplate
         return FileUtil.toFileObject(getTemplateFile());
     }
     
-    public FileOutputStream getTemplateFileOutputStream()
-        throws FileNotFoundException 
+    public OutputStream getTemplateFileOutputStream() throws FileAlreadyLockedException, IOException
     {
-        //TODO: using FileObject
-        return new FileOutputStream(getTemplateFile());
-        // return this.getTemplateFileObject().getOutputStream();
+        return getTemplateFileObject().getOutputStream();
     }
     
     public void setTemplateFilename(String val)

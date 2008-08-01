@@ -92,7 +92,7 @@ public class DiscoveryProjectGenerator {
         }
     }
     
-    public Set makeProject(){
+    public void process(){
         List<ProjectConfiguration> projectConfigurations = wizard.getConfigurations();
         Folder sourceRoot = projectBridge.getRoot();
         level = wizard.getLevel();
@@ -103,12 +103,16 @@ public class DiscoveryProjectGenerator {
         }
         // add other files
         addAdditional(sourceRoot, baseFolder, used);
+        projectBridge.save();
+    }
+    
+    public Set makeProject(){
+        process();
         return projectBridge.getResult();
     }
     
     private Set<String> getSourceFolders(){
         Set<String> used = new HashSet<String>();
-        Set<String> folders = new HashSet<String>();
         List<ProjectConfiguration> projectConfigurations = wizard.getConfigurations();
         for (ProjectConfiguration conf : projectConfigurations) {
             for (FileConfiguration file : conf.getFiles()){
@@ -215,7 +219,6 @@ public class DiscoveryProjectGenerator {
                 sorted.put(item.getPath(),item);
             }
         }
-        Map<String,Item> unused = new HashMap<String,Item>();
         for (Map.Entry<String,Item> entry : sorted.entrySet()){
             String path = entry.getKey();
             Item item = entry.getValue();
@@ -223,7 +226,6 @@ public class DiscoveryProjectGenerator {
             if (!(relatives.contains(path) || used.contains(path) ||
                   relatives.contains(canonicalPath) || used.contains(canonicalPath))) {
                 // remove item;
-                Folder parent = item.getFolder();
                 if (DEBUG) System.out.println("Exclude Item "+path); // NOI18N
                 projectBridge.setExclude(item,true);
             }
@@ -252,7 +254,7 @@ public class DiscoveryProjectGenerator {
         }
         if (usedExtension.size()>0 && addNewExtensionDialog(usedExtension)){
             // add unknown extensin to HDataLoader
-            HDataLoader.getInstance().addExtensions(usedExtension);
+            projectBridge.addExtensions(usedExtension);
         }
     }
     
@@ -382,9 +384,9 @@ public class DiscoveryProjectGenerator {
     
     private boolean isDifferentCompilePath(String name, String path){
         if (Utilities.isWindows()) {
-            name = name.replace('\\', '/');
+            name = name.replace('\\', '/'); // NOI18N
         }
-        int i = name.lastIndexOf('/');
+        int i = name.lastIndexOf('/'); // NOI18N
         if (i > 0) {
             name = name.substring(0,i);
             if (!name.equals(path)) {
@@ -405,7 +407,6 @@ public class DiscoveryProjectGenerator {
             // reconsolidate folders;
             Map<Folder,Set<FileConfiguration>> folders = new HashMap<Folder,Set<FileConfiguration>>();
             for(Map.Entry<String,Set<Pair>> entry : configurationStructure.entrySet()){
-                String path = entry.getKey();
                 Set<Pair> files = entry.getValue();
                 for(Pair pair : files){
                     if (pair.item != null) {
@@ -417,7 +418,7 @@ public class DiscoveryProjectGenerator {
                         }
                         content.add(pair.fileConfiguration);
                     } else {
-                        if (DEBUG) System.err.println("Cannot find pair by path "+pair.fileConfiguration.getFilePath());
+                        if (DEBUG) System.err.println("Cannot find pair by path "+pair.fileConfiguration.getFilePath()); // NOI18N
                     }
                 }
             }
@@ -492,12 +493,12 @@ public class DiscoveryProjectGenerator {
                     item = projectBridge.createItem(file);
                     added.addItem(item);
                 } else {
-                    if (DEBUG) System.err.println("Orphan pair found by path "+file);
+                    if (DEBUG) System.err.println("Orphan pair found by path "+file); // NOI18N
                 }
                 pair.item = item;
                 setupFile(pair.fileConfiguration, pair.item, isCPP);
             } else {
-                if (DEBUG) System.err.println("Cannot find pair by path "+file);
+                if (DEBUG) System.err.println("Cannot find pair by path "+file); // NOI18N
             }
         }
     }
@@ -507,7 +508,6 @@ public class DiscoveryProjectGenerator {
         Map<String,Folder> preffered = prefferedFolders();
         List<Pair> orphan = new ArrayList<Pair>();
         for(Map.Entry<String,Set<Pair>> entry : configurationStructure.entrySet()){
-            String path = entry.getKey();
             Set<Pair> files = entry.getValue();
             Folder folder = null;
             List<Pair> list = new ArrayList<Pair>();
@@ -520,26 +520,26 @@ public class DiscoveryProjectGenerator {
                 } else {
                     String prefferedFolder = pair.fileConfiguration.getFilePath();
                     if (Utilities.isWindows()) {
-                        prefferedFolder = prefferedFolder.replace('\\', '/');
+                        prefferedFolder = prefferedFolder.replace('\\', '/'); // NOI18N
                     }
-                    int i = prefferedFolder.lastIndexOf('/');
+                    int i = prefferedFolder.lastIndexOf('/'); // NOI18N
                     if (i >= 0){
                         prefferedFolder = prefferedFolder.substring(0,i);
                         folder = preffered.get(prefferedFolder);
                     }
-                    if (folder == null) {
+                    //if (folder == null) {
                         list.add(pair);
-                    }
+                    //}
                 }
             }
             if (folder != null) {
                 for(Pair pair : list){
                     String relPath = projectBridge.getRelativepath(pair.fileConfiguration.getFilePath());
-                    Item item = projectBridge.getProjectItem(path);
+                    Item item = projectBridge.getProjectItem(relPath);
                     if (item == null){
                         item = projectBridge.createItem(pair.fileConfiguration.getFilePath());
-                        folder.addItem(item);
                         pair.item = item;
+                        folder.addItem(item);
                     }
                     setupFile(pair.fileConfiguration, item, isCPP);
                 }

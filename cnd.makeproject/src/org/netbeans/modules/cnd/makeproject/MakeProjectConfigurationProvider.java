@@ -46,6 +46,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Collections;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
@@ -63,10 +64,16 @@ public class MakeProjectConfigurationProvider implements ProjectConfigurationPro
     }
 
     public Collection getConfigurations() {
+        if (projectDescriptorProvider.getConfigurationDescriptor() == null) {
+            return Collections.EMPTY_SET;
+        }
         return projectDescriptorProvider.getConfigurationDescriptor().getConfs().getConfsAsCollection();
     }
 
     public ProjectConfiguration getActiveConfiguration() {
+        if (projectDescriptorProvider.getConfigurationDescriptor() == null) {
+            return null;
+        }
         return projectDescriptorProvider.getConfigurationDescriptor().getConfs().getActive();
     }
 

@@ -55,6 +55,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.jdesktop.layout.GroupLayout;
 import org.netbeans.api.editor.guards.SimpleSection;
+import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 /**
@@ -94,6 +95,9 @@ class CodeCustomEditor extends javax.swing.JPanel implements DocumentListener, R
         this.propertyEditor = propertyEditor;
         
         codePane = new JEditorPane();
+        codePane.getAccessibleContext().setAccessibleName(
+            NbBundle.getBundle(CodeCustomEditor.class).getString("ACSN_CustomCode_EditorPane")); //NOI18N
+        headerLabel.setLabelFor(codePane);
         jScrollPane.setViewportView(codePane);
         
         resetLayout();

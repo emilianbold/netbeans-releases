@@ -82,6 +82,13 @@ public class CopyNode extends BpelNode<Copy> {
         PropertyUtils.registerProperty(this, mainPropertySet,
                 DOCUMENTATION, "getDocumentation", "setDocumentation", "removeDocumentation"); // NOI18N
         //
+// TODO add after the runtime will supported it
+//        PropertyUtils.registerProperty(this, mainPropertySet,
+//                KEEP_SRC_ELEMENT_NAME, "getKeepSrcElementName", "setKeepSrcElementName", "removeKeepSrcElementName"); // NOI18N
+//        //
+        PropertyUtils.registerProperty(this, mainPropertySet,
+                IGNORE_MISSING_FROM_DATA, "getIgnoreMissingFromData", "setIgnoreMissingFromData", "removeIgnoreMissingFromData"); // NOI18N
+        //
         return sheet;
     }
     
@@ -155,13 +162,13 @@ public class CopyNode extends BpelNode<Copy> {
         }
 
         Copy ref = getReference();
-        From from = ref.getFrom();
+        From from = (ref == null) ? null : ref.getFrom();
         
         if (from != null && from.equals(component)) {
             return true;
         }
         
-        To to = ref.getTo();
+        To to = (ref == null) ? null : ref.getTo();
         if (to != null && to.equals(component)) {
             return true;
         }
@@ -347,7 +354,7 @@ public class CopyNode extends BpelNode<Copy> {
             stringFrom = stringFrom == null ? "" : stringFrom;
             stringTo = stringTo == null ? "" : stringTo;
         }
-        return org.netbeans.modules.bpel.editors.api.utils.Util.getCorrectedHtmlRenderedString(
+        return org.netbeans.modules.bpel.editors.api.EditorUtil.getCorrectedHtmlRenderedString(
                     NbBundle.getMessage(CopyNode.class,"LBL_Copy",stringTo,stringFrom)); // NOI18N
     }
     

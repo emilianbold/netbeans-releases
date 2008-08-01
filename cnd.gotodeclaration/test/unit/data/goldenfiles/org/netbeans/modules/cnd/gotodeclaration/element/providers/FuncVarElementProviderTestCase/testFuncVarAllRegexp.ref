@@ -1,0 +1,10 @@
+DummyProject customers
+DummyProject fetchCustomersList()
+DummyProject getDiscountFor(string)
+DummyProject main(int,char**)
+DummyProject operator <<(ostream&,const Customer&)
+DummyProject operator <<(ostream&,const Module&)
+DummyProject operator <<(ostream&,const System&)
+DummyProject outCustomersList()
+DummyProject readChar(const char*,char)
+DummyProject readNumberOf(const char*,int,int)

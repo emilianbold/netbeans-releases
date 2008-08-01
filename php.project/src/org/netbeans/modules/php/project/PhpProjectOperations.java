@@ -49,128 +49,64 @@ import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.CopyOperationImplementation;
 import org.netbeans.spi.project.DeleteOperationImplementation;
 import org.netbeans.spi.project.MoveOperationImplementation;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.filesystems.FileObject;
 
 
 /**
  * @author ads
- *
  */
-public class PhpProjectOperations implements DeleteOperationImplementation, 
-        CopyOperationImplementation, MoveOperationImplementation 
-{
+public class PhpProjectOperations implements DeleteOperationImplementation, CopyOperationImplementation,
+        MoveOperationImplementation {
+
+    private PhpProject project;
 
     public PhpProjectOperations(PhpProject project) {
-        this.myProject = project;
+        assert project != null;
+        this.project = project;
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.spi.myProject.DeleteOperationImplementation#notifyDeleted()
-     */
     public void notifyDeleted() throws IOException {
-        myProject.getHelper().notifyDeleted();
+        project.getHelper().notifyDeleted();
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.spi.myProject.DeleteOperationImplementation#notifyDeleting()
-     */
     public void notifyDeleting() throws IOException {
-        // TODO Auto-generated method stub
     }
 
 
-    /* (non-Javadoc)
-     * @see org.netbeans.spi.myProject.CopyOperationImplementation#notifyCopied(org.netbeans.api.myProject.Project, java.io.File, java.lang.String)
-     */
     public void notifyCopied(Project originalProject, File file, String newName) throws IOException {
         if (originalProject == null) {
-            // do nothing for the original myProject.
-            return ;
+            // do nothing for the original project.
+            return;
         }
-        
-        String oldName = myProject.getName();
-        myProject.setName(newName);
+        project.setName(newName);
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.spi.myProject.CopyOperationImplementation#notifyCopying()
-     */
     public void notifyCopying() throws IOException {
-        // TODO Auto-generated method stub
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.spi.myProject.MoveOperationImplementation#notifyMoved(org.netbeans.api.myProject.Project, java.io.File, java.lang.String)
-     */
     public void notifyMoved(Project originalProject, File file, String newName) throws IOException {
         if (originalProject == null) {
-            myProject.getHelper().notifyDeleted();
-            return ;
+            project.getHelper().notifyDeleted();
+            return;
         }
-        String oldName = myProject.getName();
-        myProject.setName(newName);
+        project.setName(newName);
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.spi.myProject.MoveOperationImplementation#notifyMoving()
-     */
     public void notifyMoving() throws IOException {
-        // TODO Auto-generated method stub
     }
 
-    
-    /* (non-Javadoc)
-     * @see org.netbeans.spi.myProject.DataFilesProviderImplementation#getDataFiles()
-     */
     public List<FileObject> getDataFiles() {
-        List<FileObject> files = new ArrayList<FileObject>();
-
-        // It seems that we add all sources, including external
-        FileObject[] sources = Utils.getSourceObjects(myProject);
-        files.addAll(Arrays.asList(sources));
-
-        // TODO check that all files are added...
-        /* SRC directory = myProject directory in our case.
-            Therefore myProject dir wasn't removed
-            - as non empty src dir because of 'nbbroject'
-            - as non empty myProject dir bercause of source files.
-            The folowing should help: */
-        //copied from org.netbeans.modules.cnd.makeproject.MakeProjectOperations
-        FileObject[] projectContent = myProject.getProjectDirectory().getChildren();
-        List metadataFiles = getMetadataFiles();
-        for (int i = 0; i < projectContent.length; i++) {
-            if (metadataFiles.indexOf(projectContent[i]) < 0) {
-                files.add(projectContent[i]);
-            }
-        }
-        if (files.size() == 0) {
-            // FIXUP: Don't return empty list. If the list is empty, the "Also Delete Sources" checkbox in the dialog is disabled and the myProject dir cannot be deleted.
-            files.add(myProject.getProjectDirectory());
-        }
-        return files;
+        // all the sources, including external
+        return Arrays.asList(Utils.getSourceObjects(project));
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.spi.myProject.DataFilesProviderImplementation#getMetadataFiles()
-     */
     public List<FileObject> getMetadataFiles() {
-        List<FileObject> files = new ArrayList<FileObject>();
-
+        List<FileObject> files = new ArrayList<FileObject>(1);
         // add nbproject dir
-        FileObject projectXml = myProject.getHelper().resolveFileObject(AntProjectHelper.PROJECT_XML_PATH);
-        if (projectXml != null) {
-            FileObject nbProject = projectXml.getParent();
-            if (nbProject != null) {
-                files.add(nbProject);
-            }
+        FileObject nbProject = project.getHelper().getProjectDirectory().getFileObject("nbproject"); // NOI18N
+        if (nbProject != null) {
+            files.add(nbProject);
         }
-
-        // add myProject dir ?
-        files.add(myProject.getProjectDirectory());
         return files;
     }
-
-
-    private PhpProject myProject;
 }

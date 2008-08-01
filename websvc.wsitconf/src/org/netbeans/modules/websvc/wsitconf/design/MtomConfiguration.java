@@ -48,10 +48,7 @@ import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
-import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
-import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
@@ -78,11 +75,11 @@ public class MtomConfiguration  implements WSConfiguration{
   
     private Service service;
     private DataObject implementationFile;
-
+    private Project project;
+    
     private ArrayList<PropertyChangeListener> listeners = new ArrayList<PropertyChangeListener>();
     
-    private Project project;
-
+    private Collection<FileObject> createdFiles = new LinkedList<FileObject>();
     private Binding binding;
     
     private ComponentListener cl;
@@ -91,13 +88,11 @@ public class MtomConfiguration  implements WSConfiguration{
     
     private PropertyChangeListener configCreationListener = null;
     
-    private Collection<FileObject> createdFiles = new LinkedList<FileObject>();
-    
     /** Creates a new instance of WSITWsConfiguration */
 
     public MtomConfiguration(final Service service, final FileObject implementationFile) {
-        this.service = service;
         try {
+            this.service = service;
             this.implementationFile = DataObject.find(implementationFile);
             this.project = FileOwnerQuery.getOwner(implementationFile);
             this.binding = WSITModelSupport.getBinding(service, implementationFile, project, false, createdFiles);
@@ -172,73 +167,32 @@ public class MtomConfiguration  implements WSConfiguration{
     }
     
     public void set() {
+        switchIt(true);
+    }
 
-        final ProgressPanel progressPanel = new ProgressPanel(
-                NbBundle.getMessage(MtomConfiguration.class, "LBL_Wait")); //NOI18N
-        
-        final ProgressHandle progressHandle = ProgressHandleFactory.createHandle(null);
-        final JComponent progressComponent = ProgressHandleFactory.createProgressComponent(progressHandle);
-                
-        SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    progressHandle.start();
-                    progressHandle.switchToIndeterminate();
-                    progressPanel.open(progressComponent);
-                }
-        });
+    public void unset() {
+        switchIt(false);
+    }
 
+    private void switchIt(final boolean enable) {
+        final ConfigRunnable r = new ConfigRunnable();        
+        SwingUtilities.invokeLater(r);
         RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
                     try {
                         binding = WSITModelSupport.getBinding(service, implementationFile.getPrimaryFile(), project, true, createdFiles);
-                        if (binding == null) {
-                            return;
-                        }
-                        binding.getModel().addComponentListener(cl);
-                        if (!(TransportModelHelper.isMtomEnabled(binding))) {
-                            TransportModelHelper.enableMtom(binding);
-                            WSITModelSupport.save(binding);
-                        }
-                    } finally {
-                        progressHandle.finish();
-                        progressPanel.close();
-                    }
-                }
-        });
-        
-    }
-
-    public void unset() {
-        final ProgressPanel progressPanel = new ProgressPanel(
-                NbBundle.getMessage(MtomConfiguration.class, "LBL_Wait")); //NOI18N
-        
-        final ProgressHandle progressHandle = ProgressHandleFactory.createHandle(null);
-        final JComponent progressComponent = ProgressHandleFactory.createProgressComponent(progressHandle);
-                
-        SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    progressHandle.start();
-                    progressHandle.switchToIndeterminate();
-                    progressPanel.open(progressComponent);
-                }
-        });
-
-        RequestProcessor.getDefault().post(new Runnable() {
-                public void run() {
-                    try {
                         if (binding == null) return;
-                        if (TransportModelHelper.isMtomEnabled(binding)) {
-                            TransportModelHelper.disableMtom(binding);
+                        if (!(TransportModelHelper.isMtomEnabled(binding) == enable)) {
+                            TransportModelHelper.enableMtom(binding, enable);
                             WSITModelSupport.save(binding);
                         }
                     } finally {
-                        progressHandle.finish();
-                        progressPanel.close();
+                        r.stop();
                     }
                 }
         });
     }
-
+    
     public void registerListener(PropertyChangeListener listener) {
         listeners.add(listener);
     }

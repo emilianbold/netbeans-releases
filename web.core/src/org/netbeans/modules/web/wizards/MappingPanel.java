@@ -46,7 +46,6 @@ import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -56,14 +55,12 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
-
 import org.openide.util.NbBundle;
 
-/* 
+/**
  * Wizard panel that collects deployment data for Servlets and Filters
  * @author Ana von Klopp 
  */
-
 class MappingPanel extends JPanel implements ActionListener, 
 					     TableModelListener, 
 					     ListSelectionListener { 
@@ -83,8 +80,6 @@ class MappingPanel extends JPanel implements ActionListener,
     private BaseWizardPanel parent;
 
     private boolean edited = false; 
-
-    private static final boolean debug = false; 
 
     private static final long serialVersionUID = 6540270797782597645L;
     
@@ -211,15 +206,11 @@ class MappingPanel extends JPanel implements ActionListener,
     }
 
     void setData() { 
-	if(debug) log("::setData()"); //NOi18N
-	    
 	// Check if the name has changed - if it has, then we
 	// change all the entries for this filter.
-	
 	table.setFilterName(deployData.getName()); 
     
 	if(!edited) { 
-
 	    if(!deployData.makeEntry()) { 
 		this.setEnabled(false); 
 		return; 
@@ -228,13 +219,9 @@ class MappingPanel extends JPanel implements ActionListener,
 	    table.setRowSelectionInterval(0,0);
 	    edited = true; 
 	} 
-
-	//scrollP.repaint(); 
     } 
 
     public void actionPerformed(ActionEvent evt) { 
-
-	if(debug) log("::actionPerformed()"); //NOI18n
 	if(evt.getSource() instanceof JButton) { 
 	    if(evt.getActionCommand() == ADD) { 
 		FilterMappingData fmd =  new FilterMappingData(deployData.getName()); 
@@ -244,7 +231,6 @@ class MappingPanel extends JPanel implements ActionListener,
 		editor.showEditor(); 
 		if(editor.isOK()) { 
 		    table.addRow(0, fmd); 
-		    if(debug) log(fmd.toString()); 
 		} 
 	    } 
 
@@ -258,7 +244,6 @@ class MappingPanel extends JPanel implements ActionListener,
 		editor.showEditor(); 
 		if(editor.isOK()) { 
 		    table.setRow(index, fmd2); 
-		    if(debug) log(fmd2.toString()); 
 		} 
 	    }
 	    else if (evt.getActionCommand() == REMOVE) { 
@@ -267,7 +252,6 @@ class MappingPanel extends JPanel implements ActionListener,
 		table.clearSelection(); 
 	    }
 	    else if (evt.getActionCommand() == UP) { 
-		if(debug) log("\tMove up");//NOI18N
 		int index = table.getSelectedRow(); 
 		table.moveRowUp(index); 
 		table.setRowSelectionInterval(index-1, index-1); 
@@ -286,7 +270,6 @@ class MappingPanel extends JPanel implements ActionListener,
     }
 
     public void tableChanged(TableModelEvent e) {
-	if(debug) log("::tableChanged()"); //NOI18N
 	edited = true; 
 	deployData.setFilterMappings(table.getFilterMappings()); 
 	parent.fireChangeEvent();
@@ -298,9 +281,8 @@ class MappingPanel extends JPanel implements ActionListener,
 	this.setEnabled(deployData.makeEntry()); 
     }
 
+    @Override
     public void setEnabled(boolean enable) { 
-	if(debug) log("::setEnabled()"); //NOI18N
-
 	jLtableheader.setEnabled(enable);
 	jBnew.setEnabled(enable); 
 
@@ -339,8 +321,4 @@ class MappingPanel extends JPanel implements ActionListener,
 	}
     } 
 
-
-    private void log(String s) { 
-	System.out.println("MappingPanel" + s); 
-    }
 }

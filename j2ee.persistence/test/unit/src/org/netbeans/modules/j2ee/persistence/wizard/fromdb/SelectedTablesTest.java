@@ -87,7 +87,7 @@ public class SelectedTablesTest extends NbTestCase {
         tablesAndRefs.put("TABLE1", Collections.<String>emptySet());
         tablesAndRefs.put("TABLE2", Collections.<String>emptySet());
 
-        TableProviderImpl provider = new TableProviderImpl(tablesAndRefs);
+        TableProviderImpl provider = new TableProviderImpl(null, null, tablesAndRefs);
         TableClosure closure = new TableClosure(provider);
         PersistenceGenerator persistenceGen = new PersistenceGeneratorImpl();
 

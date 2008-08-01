@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -124,6 +124,41 @@ public class FolderObjTest extends NbTestCase {
         workDirFo.createFolder("a").delete();
         assertNotNull(workDirFo.createData("a"));
     }
+    
+    public void testAsyncCall() throws Exception {
+        final FileObject workDirFo = FileBasedFileSystem.getFileObject(getWorkDir());
+        File f = new File(getWorkDir(), "a");
+        assertNull(workDirFo.getFileObject("a"));
+        assertTrue(f.createNewFile());
+        final Thread t = Thread.currentThread();
+        class FileChange extends FileChangeAdapter {
+            private boolean called = false;
+            @Override
+            public void fileDataCreated(FileEvent fe) {
+                assertNotSame(t, Thread.currentThread());
+                called = true;
+                synchronized (workDirFo) {
+                    workDirFo.notifyAll();
+                }
+            }
+            public boolean isCalled() {
+                return called;
+            }            
+        } 
+        FileChange fcl = new FileChange();
+        workDirFo.addFileChangeListener(fcl);
+        try {
+            assertNotNull(FileUtil.toFileObject(f));
+            synchronized(workDirFo) {
+                workDirFo.wait();
+            }
+            assertNotNull(workDirFo.getFileObject("a"));                
+            assertTrue(fcl.isCalled());
+        } finally {
+            workDirFo.removeFileChangeListener(fcl);
+        }
+    }
+    
     
     public void testBug128234() throws Exception {
         final FileObject workDirFo = FileBasedFileSystem.getFileObject(getWorkDir());
@@ -333,8 +368,49 @@ public class FolderObjTest extends NbTestCase {
         assertNotNull(testRoot);
         FileObj bfo = (FileObj)testRoot.createData(getName());
 
-        assertSize("",Collections.singleton(bfo),264,new Object[] {bfo.getFileName()});        
-        assertSize("",Collections.singleton(testRoot),264,new Object[] {testRoot.getFileName(), 
+        int expectedSize = 264;
+        if(System.getProperty("java.version").startsWith("1.5")) {
+            /* java.lang.ref.ReferenceQueue has one more field (queueEmpty) on JDK1.5
+             * and that's why size is bigger of 2x8 bytes.
+             * JDK1.5:
+             * java.lang.ref.ReferenceQueue$Null: 1, 32B
+             * org.openide.util.Utilities$ActiveQueue: 1, 40B 
+             * JDK1.6:
+             * java.lang.ref.ReferenceQueue$Null: 1, 24B
+             * org.openide.util.Utilities$ActiveQueue: 1, 32B
+             */
+            expectedSize = 280;
+        }
+        /* assertSize(FileObj) JDK1.6.0:
+         * 
+         * java.lang.ref.ReferenceQueue$Null: 1, 32B
+         * $Proxy0: 1, 16B
+         * java.lang.ref.ReferenceQueue$Lock: 2, 16B
+         * org.netbeans.modules.masterfs.filebasedfs.fileobjects.BaseFileObj$FileChangeListenerForVersioning: 1, 16B
+         * java.lang.ref.WeakReference: 1, 24B
+         * org.openide.util.Utilities$ActiveQueue: 1, 40B
+         * org.openide.util.WeakListenerImpl$ProxyListener: 1, 24B
+         * [Ljava.lang.Object;: 1, 24B
+         * org.openide.util.WeakListenerImpl$ListenerReference: 1, 32B
+         * javax.swing.event.EventListenerList: 1, 16B
+         * org.netbeans.modules.masterfs.filebasedfs.fileobjects.FileObj: 1, 40B
+         */
+        assertSize("", Collections.singleton(bfo), expectedSize, new Object[] {bfo.getFileName()});        
+        /* assertSize(FolderObj) JDK1.6.0:
+         * 
+         * java.lang.ref.ReferenceQueue$Null: 1, 32B
+         * $Proxy0: 1, 16B
+         * org.openide.util.WeakListenerImpl$ListenerReference: 1, 32B
+         * org.netbeans.modules.masterfs.filebasedfs.fileobjects.BaseFileObj$FileChangeListenerForVersioning: 1, 16B
+         * org.openide.util.WeakListenerImpl$ProxyListener: 1, 24B
+         * javax.swing.event.EventListenerList: 1, 16B
+         * org.openide.util.Utilities$ActiveQueue: 1, 40B
+         * [Ljava.lang.Object;: 1, 24B
+         * java.lang.ref.WeakReference: 1, 24B
+         * org.netbeans.modules.masterfs.filebasedfs.fileobjects.FolderObj: 1, 40B
+         * java.lang.ref.ReferenceQueue$Lock: 2, 16B
+         */
+        assertSize("", Collections.singleton(testRoot), expectedSize, new Object[] {testRoot.getFileName(), 
         testRoot.getChildrenCache()});                        
     }
     
@@ -558,8 +634,8 @@ public class FolderObjTest extends NbTestCase {
                 fs.getRoot().getFileObject(f.getAbsolutePath().replace('\\','/'));
             }
             assertSame(fo.toString(), fo0, fo);
-            
-            if (f.getParentFile() != null) {
+
+            if(!f.getParentFile().equals(FileUtil.toFile(FileObjectFactory.getInstance(f).getRoot()))) {
                 FileObject parent = fo.getParent();
                 assertNotNull(parent);
                 String nameExt = fo.getNameExt();
@@ -576,11 +652,12 @@ public class FolderObjTest extends NbTestCase {
                 fo = null; fo0 = null; fo2 = null; parent = null;fos = null; list = null;
                 assertGC(msg, ref);                
             } else {
-                //dsik roots are kept by hard reference
+                //disk roots are kept by hard reference
                 WeakReference ref = new WeakReference (fo);
                 String msg = fo.toString();
                 fo = null; fo0 = null; 
                 assertNotNull(msg, ref.get());                                
+                break;
             }
             
             f = f.getParentFile();
@@ -634,7 +711,7 @@ public class FolderObjTest extends NbTestCase {
         FileSystem fs = FileBasedFileSystem.getInstance();
         assertNotNull(fs);
         
-        while (f != null) {            
+        while (f != null && f.exists()) {            
             FileObject fo = FileBasedFileSystem.getFileObject(f);
             assertNotNull(f.getAbsolutePath(),fo);
             assertEquals(f.isFile(), fo.isData());
@@ -654,7 +731,7 @@ public class FolderObjTest extends NbTestCase {
         FileSystem fs = FileBasedFileSystem.getInstance();
         assertNotNull(fs);
         
-        while (f != null) {            
+        while (f != null && f.exists()) {            
             FileObject fo = FileBasedFileSystem.getFileObject(f);
             assertNotNull(f.getAbsolutePath(),fo);
             if (fo.isFolder() && !fo.isRoot()) {
@@ -673,7 +750,7 @@ public class FolderObjTest extends NbTestCase {
         FileSystem fs = FileBasedFileSystem.getInstance();
         assertNotNull(fs);
         FileObject fo = null;
-        while (f != null) {            
+        while (f != null && f.exists()) {
             fo = FileBasedFileSystem.getFileObject(f);
             assertNotNull(f.getAbsolutePath(),fo);
             f = f.getParentFile();            
@@ -699,7 +776,7 @@ public class FolderObjTest extends NbTestCase {
         FileSystem fs = FileBasedFileSystem.getInstance();
         assertNotNull(fs);
         
-        while (f != null) {            
+        while (f != null && f.exists()) {
             FileObject fo = FileBasedFileSystem.getFileObject(f);
             assertNotNull(f.getAbsolutePath(),fo);
             FileObject parent = fo.getParent();

@@ -64,6 +64,7 @@ import org.openide.windows.WindowManager;
 public class ClassesCountsViewAction extends AbstractAction {
 
     public ClassesCountsViewAction () {
+        // When changed, update also mf-layer.xml, where are the properties duplicated because of Actions.alwaysEnabled()
         putValue (
             Action.NAME,
             NbBundle.getMessage (

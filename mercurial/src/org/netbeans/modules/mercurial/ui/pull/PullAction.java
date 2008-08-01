@@ -55,6 +55,7 @@ import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.OutputLogger;
 import org.netbeans.modules.mercurial.ui.merge.MergeAction;
+import org.netbeans.modules.mercurial.ui.push.PushAction;
 import org.netbeans.modules.mercurial.ui.actions.ContextAction;
 import org.netbeans.modules.mercurial.util.HgCommand;
 import org.netbeans.modules.mercurial.util.HgProjectUtils;
@@ -196,7 +197,7 @@ public class PullAction extends ContextAction {
     }
 
     static void getDefaultAndPerformPull(VCSContext ctx, File root, OutputLogger logger) {
-        final String pullPath = HgCommand.getPullDefault(root);
+        final String pullPath = HgRepositoryContextCache.getPullDefault(ctx);
         // If the repository has no default pull path then inform user
         if(pullPath == null) {
             logger.outputInRed( NbBundle.getMessage(PullAction.class,"MSG_PULL_TITLE")); // NOI18N
@@ -226,7 +227,15 @@ public class PullAction extends ContextAction {
         try {
             logger.outputInRed(NbBundle.getMessage(PullAction.class, "MSG_PULL_TITLE")); // NOI18N
             logger.outputInRed(NbBundle.getMessage(PullAction.class, "MSG_PULL_TITLE_SEP")); // NOI18N
-            
+
+            if (fromPrjName != null) {
+                logger.outputInRed(NbBundle.getMessage(
+                        PullAction.class, "MSG_PULLING_FROM", fromPrjName, HgUtils.stripDoubleSlash(HgUtils.replaceHttpPassword(pullPath)))); // NOI18N
+            } else {
+                logger.outputInRed(NbBundle.getMessage(
+                        PullAction.class, "MSG_PULLING_FROM_NONAME", HgUtils.stripDoubleSlash(HgUtils.replaceHttpPassword(pullPath)))); // NOI18N
+            }
+
             List<String> listIncoming;
             if(type == PullType.LOCAL){
                 listIncoming = HgCommand.doIncoming(root, logger);
@@ -310,6 +319,7 @@ public class PullAction extends ContextAction {
             }
 
             if (!bNoChanges) {
+                PushAction.notifyUpdatedFiles(root, list);
                 HgUtils.forceStatusRefreshProject(ctx);
                 // refresh filesystem to take account of deleted files.
                 FileObject rootObj = FileUtil.toFileObject(root);

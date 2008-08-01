@@ -1,16 +1,16 @@
-'DISK_H', tokenID=identifier, offset=2113 [42:9/2113-42:15/2119]
+'DISK_H', tokenID=preprocessor_identifier, offset=2113 [42:9/2113-42:15/2119]
 --OWNER:
     null
 --RESOLVED TO:
     MACROS #define 'DISK_H' [43:1/2120-43:15/2134]
 ==============================================================
-'DISK_H', tokenID=identifier, offset=2128 [43:9/2128-43:15/2134]
+'DISK_H', tokenID=preprocessor_identifier, offset=2128 [43:9/2128-43:15/2134]
 --OWNER:
     MACROS #define 'DISK_H' [43:1/2120-43:15/2134]
 --RESOLVED TO:
     MACROS #define 'DISK_H' [43:1/2120-43:15/2134]
 ==============================================================
-'"module.h"', tokenID=user-include, offset=2144 [44:10/2144-44:20/2154]
+'"module.h"', tokenID=preprocessor_user_include, offset=2144 [44:10/2144-44:20/2154]
 --OWNER:
     INCLUDE "module.h" [44:1/2135-44:20/2154]
 --RESOLVED TO:

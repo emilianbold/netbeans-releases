@@ -344,6 +344,46 @@ public class WritableXMLFileSystemTest extends LayerTestBase {
                 "        <attr name=\"nv\" newvalue=\"org.foo.Clazz\"/>\n" +
                 "    </file>\n",
                 l.write());
+
+
+        String  txt = TestBase.slurp(l.f);
+        if (txt.indexOf("-//NetBeans//DTD Filesystem 1.1//EN") == -1) {
+            fail("Enough to use DTD 1.1: " + txt);
+        }
+
+        if (txt.indexOf("http://www.netbeans.org/dtds/filesystem-1_1.dtd") == -1) {
+            fail("Enough2 to use DTD 1.1: " + txt);
+        }
+    }
+
+    public void testBundleValueAttributeWrites() throws Exception {
+        Layer l = new Layer("");
+        FileSystem fs = l.read();
+        FileObject x = fs.getRoot().createData("x");
+        x.setAttribute("bv", "bundlevalue:org.netbeans.modules.apisupport.project.layers#AHOJ");
+        assertEquals("special attrs written to XML",
+                "    <file name=\"x\">\n" +
+                "        <attr name=\"bv\" bundlevalue=\"org.netbeans.modules.apisupport.project.layers#AHOJ\"/>\n" +
+                "    </file>\n",
+                l.write());
+
+        Object lit = x.getAttribute("literal:bv");
+        assertEquals("Literal value is returned prefixed with bundle", "bundle:org.netbeans.modules.apisupport.project.layers#AHOJ", lit);
+
+        Object value = x.getAttribute("bv");
+        // not working:
+        //assertEquals("value is returned localized", "Hello", value);
+        // currently returns null:
+        assertNull("Current behaviour. Improve. XXX", value);
+
+        String  txt = TestBase.slurp(l.f);
+        if (txt.indexOf("-//NetBeans//DTD Filesystem 1.2//EN") == -1) {
+            fail("Wrong DTD: " + txt);
+        }
+
+        if (txt.indexOf("http://www.netbeans.org/dtds/filesystem-1_2.dtd") == -1) {
+            fail("Wrong DTD2: " + txt);
+        }
     }
     
     public void testFolderOrder() throws Exception {
@@ -603,9 +643,16 @@ public class WritableXMLFileSystemTest extends LayerTestBase {
         public String write() throws Exception {
             cookie.save();
             String raw = TestBase.slurp(f);
-            assertTrue("unexpected header in '" + raw + "'", raw.startsWith(HEADER));
-            assertTrue("unexpected footer in '" + raw + "'", raw.endsWith(FOOTER));
-            return raw.substring(HEADER.length(), raw.length() - FOOTER.length());
+
+            for (int i = 1; i <= 2; i++) {
+                String header = new String(HEADER).replace("1_1", "1_"+ i).replace("1.1", "1."+ i);
+                String footer = new String(FOOTER).replace("1_1", "1_"+ i).replace("1.1", "1."+ i);
+                if (raw.startsWith(header) && raw.endsWith(footer)) {
+                    return raw.substring(HEADER.length(), raw.length() - FOOTER.length());
+                }
+            }
+            fail("unexpected header or footer in:\n" + raw);
+            return null;
         }
         /**
          * Edit the text of the layer.

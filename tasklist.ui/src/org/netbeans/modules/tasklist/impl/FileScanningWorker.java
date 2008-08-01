@@ -277,7 +277,7 @@ class FileScanningWorker implements Runnable {
     private void cleanUp( Set<FileTaskScanner> scannersToNotify ) {
         progress.finished();
         
-        synchronized( this ) {
+        synchronized( SCAN_LOCK ) {
             resourceIterator = null;
             priorityResourceIterator.clear();
             priorityResource2scanner.clear();

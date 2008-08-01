@@ -33,11 +33,18 @@
  * the option applies only if the new code is made subject to such option by the
  * copyright holder.
  */
-
 package org.netbeans.installer.products.nb.javaee;
 
+import java.util.List;
+import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.product.components.NbClusterConfigurationLogic;
+import org.netbeans.installer.product.components.Product;
+import org.netbeans.installer.utils.applications.NetBeansUtils;
 import org.netbeans.installer.utils.exceptions.InitializationException;
+import org.netbeans.installer.utils.exceptions.InstallationException;
+import org.netbeans.installer.utils.helper.Dependency;
+import org.netbeans.installer.utils.helper.Status;
+import org.netbeans.installer.utils.progress.Progress;
 
 /**
  *
@@ -46,24 +53,53 @@ import org.netbeans.installer.utils.exceptions.InitializationException;
 public class ConfigurationLogic extends NbClusterConfigurationLogic {
     /////////////////////////////////////////////////////////////////////////////////
     // Constants
-    private static final String ENTERPRISE_CLUSTER = 
+    private static final String ENTERPRISE_CLUSTER =
             "{enterprise-cluster}"; // NOI18N
-    private static final String VISUALWEB_CLUSTER = 
+    private static final String VISUALWEB_CLUSTER =
             "{visualweb-cluster}"; // NOI18N
-    private static final String IDENTITY_CLUSTER = 
+    private static final String IDENTITY_CLUSTER =
             "{identity-cluster}"; // NOI18N
     private static final String XML_CLUSTER =
             "{xml-cluster}"; // NOI18N
-    private static final String ID = 
+    private static final String GROOVY_CLUSTER =
+            "{groovy-cluster}"; // NOI18N
+    private static final String ID =
             "WEBEE"; // NOI18N
+    private static final String MOBILITY_END_2_END_KIT =
+            "org-netbeans-modules-mobility-end2end-kit";
     
+    private static final String NB_JAVAME_UID = "nb-javame";
+    
+    private static final String MOBILITY_CLUSTER =
+            "{mobility-cluster}";
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
     public ConfigurationLogic() throws InitializationException {
         super(new String[]{
-            ENTERPRISE_CLUSTER, 
-            VISUALWEB_CLUSTER,
-            IDENTITY_CLUSTER,
-            XML_CLUSTER}, ID);
+                    ENTERPRISE_CLUSTER,
+                    VISUALWEB_CLUSTER,
+                    IDENTITY_CLUSTER,
+                    XML_CLUSTER,
+                    GROOVY_CLUSTER}, ID);
+    }
+
+    @Override
+    public void install(Progress progress) throws InstallationException {
+        super.install(progress);
+        List<Dependency> dependencies =
+                getProduct().getDependencyByUid(BASE_IDE_UID);
+        final Product nbProduct =
+                Registry.getInstance().getProducts(dependencies.get(0)).get(0);
+
+        for (Product product : Registry.getInstance().getInavoidableDependents(nbProduct)) {
+            if (product.getUid().equals(NB_JAVAME_UID) && product.getStatus().equals(Status.INSTALLED)) {
+                //mobility installed, enable end2end kit                
+                NetBeansUtils.setModuleStatus(product.getInstallationLocation(),
+                        MOBILITY_CLUSTER,
+                        MOBILITY_END_2_END_KIT,
+                        true);
+                break;
+            }
+        }
     }
 }

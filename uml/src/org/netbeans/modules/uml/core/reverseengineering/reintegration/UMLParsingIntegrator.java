@@ -153,9 +153,6 @@ import org.netbeans.modules.uml.core.support.umlutils.ETList;
 import org.netbeans.modules.uml.core.support.umlutils.ElementLocator;
 import org.netbeans.modules.uml.core.support.umlutils.IElementLocator;
 import org.netbeans.modules.uml.core.workspacemanagement.IWSProject;
-import org.netbeans.modules.uml.ui.controls.drawingarea.DiagramAreaEnumerations;
-import org.netbeans.modules.uml.ui.controls.drawingarea.ElementBroadcastAction;
-import org.netbeans.modules.uml.ui.controls.drawingarea.IElementBroadcastAction;
 import org.netbeans.modules.uml.ui.controls.newdialog.INewDialogProjectDetails;
 import org.netbeans.modules.uml.ui.controls.newdialog.NewDialogProjectDetails;
 import org.netbeans.modules.uml.ui.controls.projecttree.IProjectTreeControl;
@@ -832,11 +829,10 @@ public class UMLParsingIntegrator
         Node foundNode = null;
         try
         {
-
             // Attempt to get the value of the @name attribute. It QUITE possible that xml attribute
             // doesn't exist...
             String value = XMLManip.getAttributeValue(prototypeNode, "name"); // NOI18N
-             if (value != null)
+            if (value != null)
             {
                 // We've got a name, so let's see if we get lucky...
                 String query = ".//*[@name=\""; // NOI18N
@@ -879,7 +875,7 @@ public class UMLParsingIntegrator
         }
         return foundNode;
     }
-
+    
     public void ensureXMLAttrValues(String query, Node childInDestinationNamespace, Node elmentBeingInjected, String attrName)
     {
         try
@@ -1034,7 +1030,7 @@ public class UMLParsingIntegrator
                 ensureXMLAttrValues(query, childInDestinationNamespace, elementBeingInjected, attrName);
             }
 
-            // Make sure to check the current element as well                        
+            // Make sure to check the current element as well
             if (element != null)
             {
                 Attribute attr = element.attribute(attrName);
@@ -1167,18 +1163,23 @@ public class UMLParsingIntegrator
                     int count = m_ItemsToSink.size();
                     
                     // Create a broadcast to update the open diagrams
-                    IElementBroadcastAction elementAction = new ElementBroadcastAction();
-                    elementAction.setKind(DiagramAreaEnumerations.EBK_DEEP_SYNC);
+//                    IElementBroadcastAction elementAction = new ElementBroadcastAction();
+//                    elementAction.setKind(DiagramAreaEnumerations.EBK_DEEP_SYNC);
                     
                     for (int i = 0; i < count; ++i)
                     {
                         IElement element = fact.createTypeAndFill(m_ItemsToSink.get(i));
-                        // Add this model element to our broadcast
-                        elementAction.add(element);
+//                         // Add this model element to our broadcast
+//                        elementAction.add(element);
                         reinitializePresentationElement(element);
+                        
+                        for(IPresentationElement presentation : element.getPresentationElements())
+                        {
+                            proxyMan.refresh(presentation,true);
+                        }
                     }
                     
-                    proxyMan.broadcastToAllOpenDiagrams(elementAction);
+//                    proxyMan.broadcastToAllOpenDiagrams(elementAction);
                     m_ItemsToSink.clear();
                 }
             }
@@ -1197,10 +1198,11 @@ public class UMLParsingIntegrator
         while(iter.hasNext() == true)
         {
             IPresentationElement curElement = iter.next();
-            if (curElement instanceof org.netbeans.modules.uml.ui.support.applicationmanager.IGraphPresentation)
-            {
-                ((org.netbeans.modules.uml.ui.support.applicationmanager.IGraphPresentation)curElement).setModelElement(null);
-            }
+            // TODO: meteora
+//            if (curElement instanceof org.netbeans.modules.uml.ui.support.applicationmanager.IGraphPresentation)
+//            {
+//                ((org.netbeans.modules.uml.ui.support.applicationmanager.IGraphPresentation)curElement).setModelElement(null);
+//            }
         }
     }
     
@@ -1614,7 +1616,7 @@ public class UMLParsingIntegrator
             sendExceptionMessage(e);
         }
     }
-
+    
     private void handleClientDependenciesAttr(Node childInDestinationNamespace, Node elementBeingInjected)
     {
         String clientDeps 
@@ -1907,16 +1909,42 @@ public class UMLParsingIntegrator
         if ((parent != null) && (elementBeingInjected != null))
         {
             ok = true;
-            String childName =
+            Node childInDestinationNamespace = null;
+
+            // look up by MarkerId             
+            String markerID = XMLManip.retrieveNodeTextValue(elementBeingInjected, 
+                "./UML:Element.ownedElement/UML:TaggedValue[@name='MarkerID']/UML:TaggedValue.dataValue");
+            if (markerID != null) 
+            {
+                Node guess = parent.getDocument().elementByID(markerID);  
+                if (guess != null && (guess instanceof Element) && (elementBeingInjected instanceof Element)) 
+                {
+                    String gType = ((Element)guess).getQualifiedName();
+                    String injType = ((Element)elementBeingInjected).getQualifiedName();
+                    if ( (  gType != null 
+                            && ( gType.equals("UML:Class") || gType.equals("UML:Interface") || gType.equals("UML:Enumeration")))
+                         && (injType != null
+                             && ( injType.equals("UML:Class") || injType.equals("UML:Interface") || injType.equals("UML:Enumeration"))))
+                    {
+                        childInDestinationNamespace = guess;  
+                    }
+                }                  
+            }
+
+            Element injected = (Element) elementBeingInjected;
+            String injectNodeName = injected.getQualifiedName();
+            if (childInDestinationNamespace == null) 
+            {
+                // now let's try by name
+                String childName =
                     XMLManip.getAttributeValue(elementBeingInjected, "name");
             
-            ETList<Node> temp = namedNodes.get(childName);
-            
-            if (temp != null)
-            {
-                Element injected = (Element) elementBeingInjected;
-                String injectNodeName = injected.getQualifiedName();
-                Node childInDestinationNamespace = getElementOfType(temp, injectNodeName);
+                ETList<Node> temp = namedNodes.get(childName);            
+                if (temp != null)
+                {
+                    childInDestinationNamespace = getElementOfType(temp, injectNodeName);
+                }
+            }
                 
                 if ((childInDestinationNamespace != null) &&
                         !m_CancelDueToConflict)
@@ -1960,7 +1988,7 @@ public class UMLParsingIntegrator
                     //ok = false;
                     ok = true;
                 }
-            }
+            
         }
         
         return ok;
@@ -5643,7 +5671,7 @@ public class UMLParsingIntegrator
             }
             else
             {
-                descriptors = node.selectNodes("./TokenDescriptors/TDescriptor[not( @type='Comment' or @type='Class Dependency')]");
+                descriptors = node.selectNodes("./TokenDescriptors/TDescriptor[not( @type='Comment' or @type='Class Dependency' or @type='Marker-id')]");
             }
             if (descriptors != null)
             {
@@ -6235,7 +6263,6 @@ public class UMLParsingIntegrator
                     for (int index = 0; index < max; index++)
                     {
                         IDependency pDep = pDependencies.get(index);
-
                         if(pDep!=null 
                            && ( ! ( pDep instanceof Dependency
                                   || pDep instanceof Realization                                 
@@ -6248,7 +6275,7 @@ public class UMLParsingIntegrator
                         {
                             pNamedElement.removeClientDependency(pDep);
                             pDep.delete();
-                        }                        
+                        }                                                
                     }
                 }
             }

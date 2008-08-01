@@ -74,7 +74,7 @@ public class JsAnalyzer implements StructureScanner {
     public static final String NETBEANS_IMPORT_FILE = "__netbeans_import__"; // NOI18N
     private static final String DOT_CALL = ".call"; // NOI18N
     
-    public List<? extends StructureItem> scan(CompilationInfo info, HtmlFormatter formatter) {
+    public List<? extends StructureItem> scan(CompilationInfo info) {
         JsParseResult result = AstUtilities.getParseResult(info);
         AnalysisResult ar = result.getStructure();
 
@@ -124,7 +124,7 @@ public class JsAnalyzer implements StructureScanner {
                 }
                 list.add(e);
             } else {
-                JsAnalyzer.JsStructureItem item = new JsStructureItem(e, info, formatter);
+                JsAnalyzer.JsStructureItem item = new JsStructureItem(e, info);
                 itemList.add(item);
             }
         }
@@ -134,8 +134,8 @@ public class JsAnalyzer implements StructureScanner {
             assert list != null;
 
             AstElement first = list.get(0);
-            JsFakeClassStructureItem currentClass = new JsFakeClassStructureItem(clz, ElementKind.CLASS, 
-                    first, info, formatter);
+            JsFakeStructureItem currentClass = new JsFakeStructureItem(clz, ElementKind.CLASS,
+                    first, info);
             itemList.add(currentClass);
             
             int firstAstOffset = first.getNode().getSourceStart();
@@ -143,7 +143,7 @@ public class JsAnalyzer implements StructureScanner {
             
             for (AstElement e : list) {
                 if (e.getKind() != ElementKind.CLASS) {
-                    JsAnalyzer.JsStructureItem item = new JsStructureItem(e, info, formatter);
+                    JsAnalyzer.JsStructureItem item = new JsStructureItem(e, info);
                     currentClass.addChild(item);
                 } else {
                     currentClass.element = e;
@@ -178,6 +178,9 @@ public class JsAnalyzer implements StructureScanner {
 
         try {
             BaseDocument doc = (BaseDocument)info.getDocument();
+            if (doc == null) {
+                return Collections.emptyMap();
+            }
 
             for (AstElement element : elements) {
                 ElementKind kind = element.getKind();
@@ -189,7 +192,7 @@ public class JsAnalyzer implements StructureScanner {
                     Node node = element.getNode();
                     OffsetRange range = AstUtilities.getRange(node);
                     
-                    if(source != null) {
+                    if (source != null) {
                         int lexStart = source.getLexicalOffset(range.getStart());
                         int lexEnd = source.getLexicalOffset(range.getEnd());
                         if (lexStart < lexEnd) {
@@ -225,14 +228,27 @@ public class JsAnalyzer implements StructureScanner {
     
     static AnalysisResult analyze(JsParseResult result, CompilationInfo info) {
         AnalysisResult analysisResult = new AnalysisResult(info);
-        ParseTreeWalker walker = new ParseTreeWalker(analysisResult);
-        Node root = result.getRootNode();
-        if (root != null) {
-            walker.walk(root);
+        BaseDocument doc = LexUtilities.getDocument(info, true);
+        if (doc != null) {
+            try {
+                doc.readLock(); // Read-lock due to token hierarchy use
+
+                ParseTreeWalker walker = new ParseTreeWalker(analysisResult);
+                Node root = result.getRootNode();
+                if (root != null) {
+                    walker.walk(root);
+                }
+                analysisResult.postProcess(result);
+            } finally {
+                doc.readUnlock();
+            }
         }
-        analysisResult.postProcess(result);
         
         return analysisResult;
+    }
+
+    public Configuration getConfiguration() {
+        return null;
     }
 
     public static class AnalysisResult implements ParseTreeVisitor {
@@ -245,7 +261,7 @@ public class JsAnalyzer implements StructureScanner {
         private Node currentFunction;
         /** Namespace map */
         private Map<String,String> classToFqn;
-        
+
         private AnalysisResult(CompilationInfo info) {
             this.info = info;
         }
@@ -353,7 +369,19 @@ public class JsAnalyzer implements StructureScanner {
                         if (child.getType() == Token.OBJLITNAME) {
                             Node f = AstUtilities.getLabelledNode(child);
                             if (f != null) {
-                                AstElement js = AstElement.createElement(info, f, child.getString(), className, this);
+                                if (f.getType() == Token.FUNCTION && ((FunctionNode)f).getFunctionName().length() > 0) {
+                                    // This is a function whose name we already know
+                                    // Unusual syntax but yuiloader.html for example has it:
+                                    //    var YAHOO_config = {
+                                    //        listener: function g_mycallback(info) {
+                                    //            g_modules.push(info.name);
+                                    //        }
+                                    //    };
+                                    // Here the function is named both listener: and g_mycallback.
+                                    break;
+                                }
+                                String funcName = child.getString();
+                                AstElement js = AstElement.createElement(info, f, funcName, className, this);
                                 if (js != null) {
                                     checkDocumentation(js);
                                     if (f.getType() != Token.FUNCTION) {
@@ -555,7 +583,7 @@ public class JsAnalyzer implements StructureScanner {
                         currentFunction.nodeType = Node.UNKNOWN_TYPE;
                     } else if (currentFunction.nodeType == null) {
                         currentFunction.nodeType = type;
-                    } else {
+                    } else if (type != null) {
                         if (currentFunction.nodeType.indexOf(type) == -1) {
                             currentFunction.nodeType = currentFunction.nodeType + "|" + type; // NOI18N
                         }
@@ -612,20 +640,23 @@ public class JsAnalyzer implements StructureScanner {
             
             Map<String, String> typeMap = element.getDocProps();
             if (typeMap != null) {
-                String clz = typeMap.get("@class"); // NOI18N
-                if (clz != null) {
-                    int dot = clz.lastIndexOf('.');
-                    if (dot != -1) {
-                        element.in = clz.substring(0, dot);
-                        element.name = clz.substring(dot+1);
-                    } else {
-                        element.name = clz;
-                    }
+// I can't look at @class since for Jsdoc (such as in Woodstock) the @class is just
+// a marker and it may not actually specify the class - it could just be the first
+// word of the class description!                
+//                String clz = typeMap.get("@class"); // NOI18N
+//                if (clz != null) {
+//                    int dot = clz.lastIndexOf('.');
+//                    if (dot != -1) {
+//                        element.in = clz.substring(0, dot);
+//                        element.name = clz.substring(dot+1);
+//                    } else {
+//                        element.name = clz;
+//                    }
                     String s = typeMap.get("@extends"); // NOI18N
                     if (s != null) {
                         addSuperClass(element.name, s);
                     }
-                }
+//                }
                 String namespace = typeMap.get("@namespace"); // NOI18N
                 if (namespace != null) {
                     addNameSpace(element.name, namespace);
@@ -694,22 +725,20 @@ public class JsAnalyzer implements StructureScanner {
      *  This creates a fake class "Spry", containing "Effect", containing
      *  "Animator", and so on.
      */
-    private class JsFakeClassStructureItem implements StructureItem {
-        private List<StructureItem> children = new ArrayList<StructureItem>();
+    class JsFakeStructureItem implements StructureItem {
         private String name;
         private AstElement element;
         private ElementKind kind;
         private CompilationInfo info;
-        private HtmlFormatter formatter;
-        private int begin;
-        private int end;
+        List<StructureItem> children = new ArrayList<StructureItem>();
+        int begin;
+        int end;
 
-        private JsFakeClassStructureItem(String name, ElementKind kind, AstElement node, CompilationInfo info, HtmlFormatter formatter) {
+        JsFakeStructureItem(String name, ElementKind kind, AstElement node, CompilationInfo info) {
             this.name = name;
             this.kind = kind;
             this.element = node;
             this.info = info;
-            this.formatter = formatter;
         }
         
         private void addChild(StructureItem child) {
@@ -724,8 +753,7 @@ public class JsAnalyzer implements StructureScanner {
             return getName();
         }
 
-        public String getHtml() {
-            formatter.reset();
+        public String getHtml(HtmlFormatter formatter) {
             formatter.appendText(name);
 
             return formatter.getText();
@@ -765,17 +793,21 @@ public class JsAnalyzer implements StructureScanner {
                 return false;
             }
 
-            if (!(o instanceof JsFakeClassStructureItem)) {
+            if (!(o instanceof JsFakeStructureItem)) {
                 return false;
             }
 
-            JsFakeClassStructureItem d = (JsFakeClassStructureItem)o;
+            JsFakeStructureItem d = (JsFakeStructureItem)o;
 
             if (kind != d.kind) {
                 return false;
             }
 
             if (!getName().equals(d.getName())) {
+                return false;
+            }
+
+            if (isLeaf() != d.isLeaf()) {
                 return false;
             }
 
@@ -806,13 +838,11 @@ public class JsAnalyzer implements StructureScanner {
         private AstElement element;
         private ElementKind kind;
         private CompilationInfo info;
-        private HtmlFormatter formatter;
         private String name;
 
-        private JsStructureItem(AstElement node, CompilationInfo info, HtmlFormatter formatter) {
+        private JsStructureItem(AstElement node, CompilationInfo info) {
             this.element = node;
             this.info = info;
-            this.formatter = formatter;
 
             kind = node.getKind();
         }
@@ -837,8 +867,7 @@ public class JsAnalyzer implements StructureScanner {
             return getName();
         }
 
-        public String getHtml() {
-            formatter.reset();
+        public String getHtml(HtmlFormatter formatter) {
             boolean strike = element.getModifiers().contains(Modifier.DEPRECATED);
             if (strike) {
                 formatter.deprecated(true);
@@ -877,7 +906,7 @@ public class JsAnalyzer implements StructureScanner {
 
             if (element.getType() != null && element.getType() != Node.UNKNOWN_TYPE) {
                 formatter.appendHtml(" : ");
-                formatter.appendText(element.getType());
+                formatter.appendText(JsUtils.normalizeTypeString(element.getType()));
             }
 
             return formatter.getText();
@@ -926,7 +955,7 @@ public class JsAnalyzer implements StructureScanner {
                 List<JsStructureItem> children = new ArrayList<JsStructureItem>(nested.size());
 
                 for (Element co : nested) {
-                    children.add(new JsStructureItem((AstElement)co, info, formatter));
+                    children.add(new JsStructureItem((AstElement)co, info));
                 }
 
                 return children;

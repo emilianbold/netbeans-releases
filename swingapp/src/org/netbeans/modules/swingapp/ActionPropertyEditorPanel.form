@@ -29,11 +29,11 @@
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="actionsCombo" min="-2" pref="200" max="-2" attributes="0"/>
                       <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
-                      <Component id="actionsField" pref="136" max="32767" attributes="0"/>
+                      <Component id="actionsField" pref="149" max="32767" attributes="0"/>
                   </Group>
                   <Component id="jPanel1" alignment="0" max="32767" attributes="0"/>
-                  <Component id="jTabbedPane1" alignment="0" pref="336" max="32767" attributes="0"/>
-                  <Component id="methodField" alignment="0" pref="336" max="32767" attributes="0"/>
+                  <Component id="jTabbedPane1" alignment="0" pref="349" max="32767" attributes="0"/>
+                  <Component id="methodField" alignment="0" pref="349" max="32767" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
@@ -108,8 +108,8 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="jPanel7" alignment="0" max="32767" attributes="0"/>
-                          <Component id="tooltipField" alignment="0" pref="248" max="32767" attributes="2"/>
-                          <Component id="textField" alignment="0" pref="248" max="32767" attributes="2"/>
+                          <Component id="tooltipField" alignment="0" pref="270" max="32767" attributes="2"/>
+                          <Component id="textField" alignment="0" pref="270" max="32767" attributes="2"/>
                           <Group type="102" alignment="0" attributes="0">
                               <Group type="103" groupAlignment="2" attributes="0">
                                   <Component id="iconButtonSmall" alignment="2" min="-2" max="-2" attributes="1"/>
@@ -483,38 +483,32 @@
                           <Component id="jLabel6" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="jLabel1" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace max="-2" attributes="0"/>
+                      <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="enabledTextfield" alignment="0" pref="188" max="32767" attributes="1"/>
-                          <Component id="selectedTextfield" alignment="0" pref="188" max="32767" attributes="1"/>
-                          <Component id="blockingDialogTitle" alignment="0" pref="188" max="32767" attributes="1"/>
-                          <Component id="blockingDialogText" alignment="0" pref="188" max="32767" attributes="0"/>
-                          <Component id="enabledCombo" alignment="0" pref="188" max="32767" attributes="0"/>
-                          <Component id="selectedCombo" alignment="0" pref="188" max="32767" attributes="0"/>
-                          <Component id="blockingType" alignment="0" pref="188" max="32767" attributes="0"/>
+                          <Component id="blockingDialogTitle" alignment="0" pref="163" max="32767" attributes="1"/>
+                          <Component id="blockingDialogText" alignment="0" pref="163" max="32767" attributes="0"/>
+                          <Component id="enabledCombo" alignment="0" pref="163" max="32767" attributes="0"/>
+                          <Component id="selectedCombo" alignment="0" pref="163" max="32767" attributes="0"/>
+                          <Component id="blockingType" alignment="0" pref="163" max="32767" attributes="0"/>
                       </Group>
-                      <EmptySpace max="-2" attributes="0"/>
+                      <EmptySpace min="-2" max="-2" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
             <DimensionLayout dim="1">
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
-                      <EmptySpace max="-2" attributes="0"/>
+                      <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="3" attributes="0">
                           <Component id="jLabel8" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="enabledCombo" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="enabledTextfield" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
+                      <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="3" attributes="0">
                           <Component id="jLabel11" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="selectedCombo" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="selectedTextfield" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace type="separate" max="-2" attributes="0"/>
+                      <EmptySpace type="separate" min="-2" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="3" attributes="0">
                           <Component id="jLabel1" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="blockingType" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -529,7 +523,7 @@
                           <Component id="jLabel6" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="blockingDialogText" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace pref="53" max="32767" attributes="0"/>
+                      <EmptySpace pref="107" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -585,26 +579,6 @@
                 </Property>
               </Properties>
             </Component>
-            <Component class="javax.swing.JTextField" name="enabledTextfield">
-              <AccessibilityProperties>
-                <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                  <ResourceString bundle="org/netbeans/modules/swingapp/Bundle.properties" key="ActionPropertyEditorPanel.jLabel8.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-                </Property>
-                <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                  <ResourceString bundle="org/netbeans/modules/swingapp/Bundle.properties" key="ActionPropertyEditorPanel.jLabel8.ACSD" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-                </Property>
-              </AccessibilityProperties>
-            </Component>
-            <Component class="javax.swing.JTextField" name="selectedTextfield">
-              <AccessibilityProperties>
-                <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                  <ResourceString bundle="org/netbeans/modules/swingapp/Bundle.properties" key="ActionPropertyEditorPanel.jLabel11.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-                </Property>
-                <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                  <ResourceString bundle="org/netbeans/modules/swingapp/Bundle.properties" key="ActionPropertyEditorPanel.jLabel11.ACSD" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-                </Property>
-              </AccessibilityProperties>
-            </Component>
             <Component class="javax.swing.JComboBox" name="blockingType">
               <Properties>
                 <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
@@ -646,6 +620,9 @@
               </AccessibilityProperties>
             </Component>
             <Component class="javax.swing.JComboBox" name="enabledCombo">
+              <Properties>
+                <Property name="editable" type="boolean" value="true"/>
+              </Properties>
               <AccessibilityProperties>
                 <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
                   <ResourceString bundle="org/netbeans/modules/swingapp/Bundle.properties" key="ActionPropertyEditorPanel.jLabel8.ACSD" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
@@ -653,6 +630,9 @@
               </AccessibilityProperties>
             </Component>
             <Component class="javax.swing.JComboBox" name="selectedCombo">
+              <Properties>
+                <Property name="editable" type="boolean" value="true"/>
+              </Properties>
               <AccessibilityProperties>
                 <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
                   <ResourceString bundle="org/netbeans/modules/swingapp/Bundle.properties" key="ActionPropertyEditorPanel.jLabel11.ACSD" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>

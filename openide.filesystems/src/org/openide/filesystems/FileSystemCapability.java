@@ -72,19 +72,19 @@ public class FileSystemCapability extends Object {
         };
 
     /** Well known capability of being compiled.
-     * @deprecated Please use the <a href="@org-netbeans-api-java@/org/netbeans/api/java/classpath/ClassPath.html">ClassPath API</a> instead.
+     * @deprecated Please use the <a href="@org-netbeans-api-java-classpath@/org/netbeans/api/java/classpath/ClassPath.html">ClassPath API</a> instead.
      */
     @Deprecated
     public static final FileSystemCapability COMPILE = new FileSystemCapability();
 
     /** Well known ability to be executed.
-     * @deprecated Please use the <a href="@org-netbeans-api-java@/org/netbeans/api/java/classpath/ClassPath.html">ClassPath API</a> instead.
+     * @deprecated Please use the <a href="@org-netbeans-api-java-classpath@/org/netbeans/api/java/classpath/ClassPath.html">ClassPath API</a> instead.
      */
     @Deprecated
     public static final FileSystemCapability EXECUTE = new FileSystemCapability();
 
     /** Well known ability to be debugged.
-     * @deprecated Please use the <a href="@org-netbeans-api-java@/org/netbeans/api/java/classpath/ClassPath.html">ClassPath API</a> instead.
+     * @deprecated Please use the <a href="@org-netbeans-api-java-classpath@/org/netbeans/api/java/classpath/ClassPath.html">ClassPath API</a> instead.
      */
     @Deprecated
     public static final FileSystemCapability DEBUG = new FileSystemCapability();
@@ -119,7 +119,7 @@ public class FileSystemCapability extends Object {
 
     /** All filesystems that are capable of this capability.
     * @return enumeration of FileSystems that satifies this capability
-    * @deprecated Please use the <a href="@org-netbeans-api-java@/org/netbeans/api/java/classpath/ClassPath.html">ClassPath API</a> instead.
+    * @deprecated Please use the <a href="@org-netbeans-api-java-classpath@/org/netbeans/api/java/classpath/ClassPath.html">ClassPath API</a> instead.
     */
     @Deprecated
     public Enumeration<? extends FileSystem> fileSystems() {
@@ -135,7 +135,7 @@ public class FileSystemCapability extends Object {
 
     /** Find a resource in repository, ignoring not capable filesystems.
     * @param resName name of the resource
-    * @deprecated Please use the <a href="@org-netbeans-api-java@/org/netbeans/api/java/classpath/ClassPath.html">ClassPath API</a> instead.
+    * @deprecated Please use the <a href="@org-netbeans-api-java-classpath@/org/netbeans/api/java/classpath/ClassPath.html">ClassPath API</a> instead.
     */
     @Deprecated
     public FileObject findResource(String resName) {
@@ -158,7 +158,7 @@ public class FileSystemCapability extends Object {
     * that satifies this capability, returning all matches.
     * @param name name of the resource
     * @return enumeration of {@link FileObject}s
-    * @deprecated Please use the <a href="@org-netbeans-api-java@/org/netbeans/api/java/classpath/ClassPath.html">ClassPath API</a> instead.
+    * @deprecated Please use the <a href="@org-netbeans-api-java-classpath@/org/netbeans/api/java/classpath/ClassPath.html">ClassPath API</a> instead.
     */
     @Deprecated
     public Enumeration<? extends FileObject> findAllResources(String name) {
@@ -190,7 +190,7 @@ public class FileSystemCapability extends Object {
     *
     * @return {@link FileObject} that represents file with given name or
     *   <CODE>null</CODE> if the file does not exist
-    * @deprecated Please use the <a href="@org-netbeans-api-java@/org/netbeans/api/java/classpath/ClassPath.html">ClassPath API</a> instead.
+    * @deprecated Please use the <a href="@org-netbeans-api-java-classpath@/org/netbeans/api/java/classpath/ClassPath.html">ClassPath API</a> instead.
     */
     @Deprecated
     public final FileObject find(String aPackage, String name, String ext) {
@@ -220,7 +220,7 @@ public class FileSystemCapability extends Object {
     *    a package and not a file name
     *
     * @return enumeration of {@link FileObject}s
-    * @deprecated Please use the <a href="@org-netbeans-api-java@/org/netbeans/api/java/classpath/ClassPath.html">ClassPath API</a> instead.
+    * @deprecated Please use the <a href="@org-netbeans-api-java-classpath@/org/netbeans/api/java/classpath/ClassPath.html">ClassPath API</a> instead.
     */
     @Deprecated
     public final Enumeration<? extends FileObject> findAll(String aPackage, String name, String ext) {
@@ -316,7 +316,7 @@ public class FileSystemCapability extends Object {
         }
 
         /** Getter for value of compiling capability.
-         * @deprecated Please use the <a href="@org-netbeans-api-java@/org/netbeans/api/java/classpath/ClassPath.html">ClassPath API</a> instead.
+         * @deprecated Please use the <a href="@org-netbeans-api-java-classpath@/org/netbeans/api/java/classpath/ClassPath.html">ClassPath API</a> instead.
         */
         @Deprecated
         public boolean getCompile() {
@@ -324,7 +324,7 @@ public class FileSystemCapability extends Object {
         }
 
         /** Setter for allowing compiling capability.
-         * @deprecated Please use the <a href="@org-netbeans-api-java@/org/netbeans/api/java/classpath/ClassPath.html">ClassPath API</a> instead.
+         * @deprecated Please use the <a href="@org-netbeans-api-java-classpath@/org/netbeans/api/java/classpath/ClassPath.html">ClassPath API</a> instead.
         */
         @Deprecated
         public void setCompile(boolean val) {
@@ -341,7 +341,7 @@ public class FileSystemCapability extends Object {
         }
 
         /** Getter for value of executiong capability.
-         * @deprecated Please use the <a href="@org-netbeans-api-java@/org/netbeans/api/java/classpath/ClassPath.html">ClassPath API</a> instead.
+         * @deprecated Please use the <a href="@org-netbeans-api-java-classpath@/org/netbeans/api/java/classpath/ClassPath.html">ClassPath API</a> instead.
         */
         @Deprecated
         public boolean getExecute() {
@@ -349,7 +349,7 @@ public class FileSystemCapability extends Object {
         }
 
         /** Setter for allowing executing capability.
-         * @deprecated Please use the <a href="@org-netbeans-api-java@/org/netbeans/api/java/classpath/ClassPath.html">ClassPath API</a> instead.
+         * @deprecated Please use the <a href="@org-netbeans-api-java-classpath@/org/netbeans/api/java/classpath/ClassPath.html">ClassPath API</a> instead.
         */
         @Deprecated
         public void setExecute(boolean val) {
@@ -366,7 +366,7 @@ public class FileSystemCapability extends Object {
         }
 
         /** Getter for value of debugging capability.
-         * @deprecated Please use the <a href="@org-netbeans-api-java@/org/netbeans/api/java/classpath/ClassPath.html">ClassPath API</a> instead.
+         * @deprecated Please use the <a href="@org-netbeans-api-java-classpath@/org/netbeans/api/java/classpath/ClassPath.html">ClassPath API</a> instead.
         */
         @Deprecated
         public boolean getDebug() {
@@ -374,7 +374,7 @@ public class FileSystemCapability extends Object {
         }
 
         /** Setter for allowing debugging capability.
-         * @deprecated Please use the <a href="@org-netbeans-api-java@/org/netbeans/api/java/classpath/ClassPath.html">ClassPath API</a> instead.
+         * @deprecated Please use the <a href="@org-netbeans-api-java-classpath@/org/netbeans/api/java/classpath/ClassPath.html">ClassPath API</a> instead.
         */
         @Deprecated
         public void setDebug(boolean val) {

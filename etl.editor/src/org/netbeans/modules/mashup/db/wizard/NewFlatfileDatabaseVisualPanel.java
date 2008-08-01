@@ -15,11 +15,12 @@ import org.netbeans.modules.mashup.tables.wizard.MashupTableWizardIterator;
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
 
-
 public final class NewFlatfileDatabaseVisualPanel extends JPanel {
+
     private static transient final Logger mLogger = Logger.getLogger(NewFFDBAction.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
     public String nbBundle1 = mLoc.t("BUND265: Create Mashup Database");
+
     class NameFieldKeyAdapter extends KeyAdapter {
 
         /**
@@ -43,8 +44,9 @@ public final class NewFlatfileDatabaseVisualPanel extends JPanel {
     public NewFlatfileDatabaseVisualPanel() {
         initComponents();
         errorMsg.setForeground(Color.RED);
-        dbLoc.setForeground(Color.BLUE);
-        driverClass.setForeground(Color.BLUE);
+        jLabel1.setForeground(Color.BLACK);
+        dbLoc.setForeground(Color.BLACK);
+        driverClass.setForeground(Color.BLACK);
         dbName.setText("");
         errorMsg.setText("");
         dbName.addKeyListener(new NameFieldKeyAdapter());
@@ -61,7 +63,7 @@ public final class NewFlatfileDatabaseVisualPanel extends JPanel {
     }
 
     public void clearText() {
-        dbName.setText("");
+        dbName.setText("newMashupDB");
     }
 
     public boolean canProceed() {
@@ -76,14 +78,14 @@ public final class NewFlatfileDatabaseVisualPanel extends JPanel {
             FileInputStream in = new FileInputStream(conf);
             prop.load(in);
         } catch (FileNotFoundException ex) {
-        //ignore
+            //ignore
         } catch (IOException ex) {
-        //ignore
+            //ignore
         }
         String defaultDir = prop.getProperty(AxionDBConfiguration.PROP_DB_LOC);
-        defaultDir = defaultDir.replace('/', '\\');
-        if (!defaultDir.endsWith("\\")) {
-            defaultDir = defaultDir + "\\";
+        //defaultDir = defaultDir.replace('/', '\\');
+        if (!defaultDir.endsWith(File.separator)) {
+            defaultDir = defaultDir + File.separator;
         }
         return defaultDir;
     }
@@ -109,11 +111,15 @@ public final class NewFlatfileDatabaseVisualPanel extends JPanel {
      */
     private void initComponents() {
         jLabel1 = new javax.swing.JLabel();
+        jLabel1.setText("Database Name:  ");
         dbName = new javax.swing.JTextField();
         jLabel2 = new javax.swing.JLabel();
-        dbLoc = new javax.swing.JLabel();
+        dbLoc = new javax.swing.JTextField();
+        dbLoc.setEditable(false);
         driver = new javax.swing.JLabel();
-        driverClass = new javax.swing.JLabel();
+        driverClass = new javax.swing.JTextField();
+        driverClass.setText("org.axiondb.jdbc.AxionDriver".trim());
+        driverClass.setEditable(false);
         errorMsg = new javax.swing.JLabel();
 
         setMaximumSize(new java.awt.Dimension(10000, 4000));
@@ -125,14 +131,14 @@ public final class NewFlatfileDatabaseVisualPanel extends JPanel {
         String nbBundle2 = mLoc.t("BUND267: Database name should start with an alphabet.");
         dbName.setToolTipText(nbBundle2.substring(15));
         dbName.addKeyListener(new NameFieldKeyAdapter());
-        String nbBundle3 = mLoc.t("BUND268: Location");
-        String nbBundle4 = mLoc.t("BUND269: Driver Class");
+        String nbBundle3 = mLoc.t("BUND109: Location:");
+        String nbBundle4 = mLoc.t("BUND269: Driver Class:");
         jLabel2.setDisplayedMnemonic(nbBundle3.substring(15).charAt(0));
         jLabel2.getAccessibleContext().setAccessibleName(nbBundle3.substring(15));
         org.openide.awt.Mnemonics.setLocalizedText(jLabel2, nbBundle3.substring(15));
         driver.getAccessibleContext().setAccessibleName(nbBundle4.substring(15));
         org.openide.awt.Mnemonics.setLocalizedText(driver, nbBundle4.substring(15));
-        org.openide.awt.Mnemonics.setLocalizedText(driverClass, "org.axiondb.jdbc.AxionDriver");
+        //org.openide.awt.Mnemonics.setLocalizedText(driverClass, "org.axiondb.jdbc.AxionDriver");
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -145,20 +151,21 @@ public final class NewFlatfileDatabaseVisualPanel extends JPanel {
     private void checkDBName() {
         String name = dbName.getText().trim();
         String location = null;
-
         if (MashupTableWizardIterator.IS_PROJECT_CALL) {
-            location = ETLEditorSupport.PRJ_PATH + "\\nbproject\\private\\databases";
-            dbLoc.setText("${project.home}" + "\\nbproject\\private\\databases");
+            location = ETLEditorSupport.PRJ_PATH + File.separator + "nbproject" +
+                    File.separator + "private" + File.separator + "databases";
+            dbLoc.setText("${project.home}" + File.separator + "nbproject" +
+                    File.separator + "private" + File.separator + "databases");
         } else {
             location = getDefaultWorkingFolder();
             dbLoc.setText(location);
         }
 
-        File f = new File(location + "\\" + name);
+        File f = new File(location + File.separator + name);
         char[] ch = name.toCharArray();
         if (ch.length != 0) {
             if (f.exists()) {
-                String nbBundle5 = mLoc.t("BUND270: Database {0} already exists. ",name);
+                String nbBundle5 = mLoc.t("BUND270: Database {0} already exists. ", name);
                 errorMsg.setText(nbBundle5.substring(15));
                 canProceed = false;
             } else if (Character.isDigit(ch[0])) {
@@ -174,10 +181,10 @@ public final class NewFlatfileDatabaseVisualPanel extends JPanel {
             canProceed = false;
         }
     }
-    private javax.swing.JLabel dbLoc;
+    private javax.swing.JTextField dbLoc;
     private javax.swing.JTextField dbName;
     private javax.swing.JLabel driver;
-    private javax.swing.JLabel driverClass;
+    private javax.swing.JTextField driverClass;
     private javax.swing.JLabel errorMsg;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;

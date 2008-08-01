@@ -51,6 +51,6 @@ import org.netbeans.api.project.Project;
  */
 public interface CommandProvider {
 
-    Command[] getCommands( Project project );
-
+    Command[] getEnabledCommands( Project project );
+    Command[] getAllSupportedCommands( Project project );
 }

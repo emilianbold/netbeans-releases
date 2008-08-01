@@ -63,12 +63,12 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 public enum JsCommentTokenId implements TokenId {
 
     IDENT("comment"),
-    TAG("js-comment-tag"),
+    COMMENT_TAG("js-comment-tag"),
     HTML_TAG("html-tag"),
     DOT("comment"),
     HASH("comment"),
-    LCURL("left-curly"),
-    RCURL("right-curly"),
+    LCURL("comment"),
+    RCURL("comment"),
     OTHER_TEXT("comment");
 
     private final String primaryCategory;
@@ -103,7 +103,7 @@ public enum JsCommentTokenId implements TokenId {
 
         @Override
         protected String mimeType() {
-            return "text/javascript-comment";
+            return "text/x-javascript-comment";
         }
     }.language();
 

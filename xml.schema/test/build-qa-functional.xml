@@ -45,49 +45,6 @@ made subject to such option by the copyright holder.
 
     <property name="xtest.ide.commandline.suffix" value="-J-Dnetbeans.javacore.noscan=true"/>
 
-    <property name="test.qa-functional.runtime.cp" value=""/>
-    <property name="test.qa-functional.compile.cp" value=""/>
-
     <import file="../../nbbuild/templates/xtest-qa-functional.xml"/>
          
-    <path id="cp.extra">
-        <pathelement location="../../jemmy/builds/jemmy.jar"/>                    
-        <pathelement location="../../jellytools/builds/jelly2-nb.jar"/>
-        <pathelement location="${xtest.home}/lib/junit.jar"/>                    
-        <pathelement location="${xtest.home}/lib/nbjunit.jar"/> 
-    </path>    
-<!--
-    <pathconvert property="cp" refid="cp.extra" targetos="unix"/>
-    <property name="test.qa-functional.cp.extra" value="${cp}"/>
-    <property name="test.qa-functional.run.cp.extra" value="${cp}"/>
--->
-    <!-- ========= -->
-    <!-- Compilers -->
-    <!-- ========= -->
-
-    <!-- You can override default qa-functional-compiler if you need something special -->
-
-    <target name="qa-functional-compiler" depends="init-cp">
-        <buildTests srcDir="qa-functional/src" compileExcludes="**/data/**">
-            <classpath>
-                <path refid="cp.extra"/>
-            </classpath>
-        </buildTests>
-    </target>
-    
-    <!-- ========= -->
-    <!-- Executors -->
-    <!-- ========= -->
-    
-    <!--This target executes tests inside IDE. It is defined in default-build-qa-functional.xml.
-         If you need to customize it, you can uncomment the following and override it.-->
-
-    <target name="runidetest">        
-        <executeTests  pluginName="ide">
-            <classpath>
-                <path refid="cp.extra"/>
-            </classpath>
-        </executeTests>
-    </target>
-    
 </project>

@@ -125,7 +125,7 @@ public class ImportStep extends AbstractStep implements DocumentListener, Wizard
         
         String text = importPanel.repositoryPathTextField.getText().trim();
         if (text.length() == 0) {
-            invalid(org.openide.util.NbBundle.getMessage(ImportStep.class, "BK2014")); // NOI18N
+            invalid(new AbstractStep.WizardMessage(org.openide.util.NbBundle.getMessage(ImportStep.class, "BK2014"), true)); // NOI18N
             return false;
         }        
         
@@ -134,7 +134,7 @@ public class ImportStep extends AbstractStep implements DocumentListener, Wizard
         if(valid) {
             valid();
         } else {
-            invalid(org.openide.util.NbBundle.getMessage(ImportStep.class, "CTL_Import_MessageRequired")); // NOI18N
+            invalid(new AbstractStep.WizardMessage(org.openide.util.NbBundle.getMessage(ImportStep.class, "CTL_Import_MessageRequired"), true)); // NOI18N
         }
 
         return valid;
@@ -214,7 +214,7 @@ public class ImportStep extends AbstractStep implements DocumentListener, Wizard
             super(panel);
         }
         public void perform() {
-            String invalidMsg = null;
+            AbstractStep.WizardMessage invalidMsg = null;
             try {
                 if(!validateUserInput()) {
                     return;
@@ -227,7 +227,7 @@ public class ImportStep extends AbstractStep implements DocumentListener, Wizard
                     client = Subversion.getInstance().getClient(repositoryPaths.getRepositoryUrl(), this);
                 } catch (SVNClientException ex) {
                     SvnClientExceptionHandler.notifyException(ex, true, true);
-                    invalidMsg = SvnClientExceptionHandler.parseExceptionMessage(ex);
+                    invalidMsg = new AbstractStep.WizardMessage(SvnClientExceptionHandler.parseExceptionMessage(ex), false);
                     return;
                 }
 
@@ -237,8 +237,7 @@ public class ImportStep extends AbstractStep implements DocumentListener, Wizard
                     try {
                         // if the user came back from the last step and changed the repository folder name,
                         // then this could be already a working copy ...    
-                        FileUtils.deleteRecursively(new File(importDirectory.getAbsoluteFile() + "/" + ".svn")); // NOI18N
-                        FileUtils.deleteRecursively(new File(importDirectory.getAbsoluteFile() + "/" + "_svn")); // NOI18N
+                        FileUtils.deleteRecursively(new File(importDirectory.getAbsoluteFile() + "/" + SvnUtils.SVN_ADMIN_DIR)); // NOI18N
                         File importDummyFolder = new File(System.getProperty("java.io.tmpdir") + "/svn_dummy/" + importDirectory.getName()); // NOI18N
                         importDummyFolder.mkdirs();                     
                         importDummyFolder.deleteOnExit();
@@ -259,21 +258,20 @@ public class ImportStep extends AbstractStep implements DocumentListener, Wizard
                     Subversion.getInstance().versionedFilesChanged();
                     SvnUtils.refreshParents(importDirectory);
                     // XXX this is ugly and expensive! the client should notify (onNotify()) the cache. find out why it doesn't work...
-                    forceStatusRefresh(importDirectory);  // XXX the same for another implementations like this in the code.... (see SvnUtils.refreshRecursively() )
+                    Subversion.getInstance().getStatusCache().refreshRecursively(importDirectory);
                     if(isCanceled()) {                        
-                        FileUtils.deleteRecursively(new File(importDirectory.getAbsoluteFile() + "/" + ".svn")); // NOI18N
-                        FileUtils.deleteRecursively(new File(importDirectory.getAbsoluteFile() + "/" + "_svn")); // NOI18N
+                        FileUtils.deleteRecursively(new File(importDirectory.getAbsoluteFile() + "/" + SvnUtils.SVN_ADMIN_DIR)); // NOI18N
                         return;
                     }
                 } catch (SVNClientException ex) {
                     annotate(ex);
-                    invalidMsg = SvnClientExceptionHandler.parseExceptionMessage(ex);
+                    invalidMsg = new AbstractStep.WizardMessage(SvnClientExceptionHandler.parseExceptionMessage(ex), false);
                 }
 
             } finally {
                 Subversion.getInstance().versionedFilesChanged();
                 if(isCanceled()) {
-                    valid(org.openide.util.NbBundle.getMessage(ImportStep.class, "MSG_Import_ActionCanceled")); // NOI18N
+                    valid(new AbstractStep.WizardMessage(org.openide.util.NbBundle.getMessage(ImportStep.class, "MSG_Import_ActionCanceled"), false)); // NOI18N
                 } else if(invalidMsg != null) {
                     valid(invalidMsg);
                 } else {
@@ -303,18 +301,5 @@ public class ImportStep extends AbstractStep implements DocumentListener, Wizard
         }
     };
 
-    private static void forceStatusRefresh(File file) {
-        Subversion.getInstance().getStatusCache().refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
-        if(!file.isFile()) {
-            File[] files = file.listFiles();
-            if(files == null) {
-                return;
-            }
-            for (int i = 0; i < files.length; i++) {
-                forceStatusRefresh(files[i]);
-            }
-        }                
-    }
-    
 }
 

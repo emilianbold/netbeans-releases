@@ -135,7 +135,6 @@ public class SenderVouchesProfile extends ProfileBase
     }
 
     public void setClientDefaults(WSDLComponent component, WSDLComponent serviceBinding, Project p) {
-//        ProprietarySecurityPolicyModelHelper pmh = ProprietarySecurityPolicyModelHelper.getInstance(cfgVersion);
         ProprietarySecurityPolicyModelHelper.setStoreLocation(component, null, false, true);
         ProprietarySecurityPolicyModelHelper.setStoreLocation(component, null, true, true);
         ProprietarySecurityPolicyModelHelper.removeCallbackHandlerConfiguration((Binding) component);
@@ -194,7 +193,7 @@ public class SenderVouchesProfile extends ProfileBase
     }
 
     public void setServiceDefaults(WSDLComponent component, Project p) {
-//        ProprietarySecurityPolicyModelHelper pmh = ProprietarySecurityPolicyModelHelper.getInstance(cfgVersion);
+        ProprietarySecurityPolicyModelHelper.clearValidators(component);
         ProprietarySecurityPolicyModelHelper.setStoreLocation(component, null, false, false);
         ProprietarySecurityPolicyModelHelper.setStoreLocation(component, null, true, false);
 //        if (Util.isTomcat(p)) {
@@ -207,24 +206,21 @@ public class SenderVouchesProfile extends ProfileBase
     }
     
     public boolean isServiceDefaultSetupUsed(WSDLComponent component, Project p) {
+        if (ProprietarySecurityPolicyModelHelper.isAnyValidatorSet(component)) return false;
         String keyAlias = ProprietarySecurityPolicyModelHelper.getStoreAlias(component, false);
         String keyLoc = ProprietarySecurityPolicyModelHelper.getStoreLocation(component, false);
         String keyPasswd = ProprietarySecurityPolicyModelHelper.getStorePassword(component, false);
-        if (ProfilesModelHelper.XWS_SECURITY_SERVER.equals(keyAlias)) {
-            String defPassword = Util.getDefaultPassword(p);
-            String defLocation = Util.getStoreLocation(p, false, false);
-            if ((defPassword != null) && (defLocation != null)) {
-                if ((defPassword.equals(keyPasswd)) && 
-                    (defLocation.equals(keyLoc))) {
-                        return true;
-                }
-            }
+        if ((Util.isEqual(Util.getDefaultPassword(p), keyPasswd)) &&
+            (Util.isEqual(Util.getStoreLocation(p, false, false), keyLoc)) &&
+            (Util.isEqual(ProfilesModelHelper.XWS_SECURITY_SERVER, keyAlias))) { 
+            return true;
         }
         return false;
     }
 
     public boolean isClientDefaultSetupUsed(WSDLComponent component, Binding serviceBinding, Project p) {
         
+        if (ProprietarySecurityPolicyModelHelper.isAnyValidatorSet(component)) return false;
         String samlVersion = getSamlVersion(serviceBinding);
         String cbName = null;
         
@@ -242,19 +238,15 @@ public class SenderVouchesProfile extends ProfileBase
         String trustPasswd = ProprietarySecurityPolicyModelHelper.getStorePassword(component, true);
         
         String cbHandler = ProprietarySecurityPolicyModelHelper.getCallbackHandler((Binding)component, CallbackHandler.SAML_CBHANDLER);
-        if ((PKGNAME + "." + cbName).equals(cbHandler)) {
-            if (ProfilesModelHelper.XWS_SECURITY_CLIENT.equals(keyAlias) && 
-                ProfilesModelHelper.XWS_SECURITY_SERVER.equals(trustAlias)) {
-                    String defPassword = Util.getDefaultPassword(p);
-                    String defKeyLocation = Util.getStoreLocation(p, false, false);
-                    String defTrustLocation = Util.getStoreLocation(p, true, true);
-                    if ((defPassword != null) && (defKeyLocation != null) && (defTrustLocation != null)) {
-                        if ((defPassword.equals(keyPasswd)) && defPassword.equals(trustPasswd) &&
-                            (defKeyLocation.equals(keyLoc)) && (defTrustLocation.equals(trustLoc))) {
-                                return true;
-                        }
-                    }
-            }
+        
+        if ((Util.isEqual(PKGNAME + "." + cbName, cbHandler)) &&
+            (Util.isEqual(ProfilesModelHelper.XWS_SECURITY_CLIENT, keyAlias)) &&
+            (Util.isEqual(ProfilesModelHelper.XWS_SECURITY_SERVER, trustAlias)) &&
+            (Util.isEqual(Util.getDefaultPassword(p), keyPasswd)) &&
+            (Util.isEqual(Util.getDefaultPassword(p), trustPasswd)) &&
+            (Util.isEqual(Util.getStoreLocation(p, true, true), trustLoc)) &&
+            (Util.isEqual(Util.getStoreLocation(p, false, false), keyLoc))) {
+            return true;
         }
         return false;
     }
@@ -269,7 +261,7 @@ public class SenderVouchesProfile extends ProfileBase
         
         if (secConv) {
             WSDLComponent bootPolicy = SecurityTokensModelHelper.getTokenElement(protToken, BootstrapPolicy.class);
-            Policy pp = PolicyModelHelper.getTopLevelElement(bootPolicy, Policy.class);
+            Policy pp = PolicyModelHelper.getTopLevelElement(bootPolicy, Policy.class,false);
             tokenKind = SecurityTokensModelHelper.getSupportingToken(pp, SecurityTokensModelHelper.SIGNED_SUPPORTING);
         } else {
             tokenKind = SecurityTokensModelHelper.getSupportingToken(serviceBinding, SecurityTokensModelHelper.SIGNED_SUPPORTING);
@@ -287,7 +279,7 @@ public class SenderVouchesProfile extends ProfileBase
     }
 
     public void enableSecureConversation(WSDLComponent component, boolean enable) {
-        ProfilesModelHelper.enableSecureConversation(component, enable);
+        ProfilesModelHelper.getInstance(PolicyModelHelper.getConfigVersion(component)).setSecureConversation(component, enable);
     }
     
 }

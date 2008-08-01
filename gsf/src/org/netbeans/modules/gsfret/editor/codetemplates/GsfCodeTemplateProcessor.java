@@ -46,7 +46,7 @@ import java.util.*;
 import javax.swing.text.JTextComponent;
 
 import org.netbeans.modules.gsf.api.CancellableTask;
-import org.netbeans.modules.gsf.api.Completable;
+import org.netbeans.modules.gsf.api.CodeCompletionHandler;
 import org.netbeans.napi.gsfret.source.CompilationController;
 import org.netbeans.napi.gsfret.source.CompilationInfo;
 import org.netbeans.napi.gsfret.source.Phase;
@@ -123,7 +123,7 @@ public class GsfCodeTemplateProcessor implements CodeTemplateProcessor {
         try {
             if (initParsing()) {
 
-                Completable completer = GsfCompletionProvider.getCompletable(cInfo, caretOffset);
+                CodeCompletionHandler completer = GsfCompletionProvider.getCompletable(cInfo, caretOffset);
 
                 if (completer == null) {
                     return null;

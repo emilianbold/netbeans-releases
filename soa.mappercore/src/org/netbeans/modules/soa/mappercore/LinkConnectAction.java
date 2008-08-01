@@ -66,17 +66,16 @@ import org.netbeans.modules.soa.mappercore.utils.Utils;
 
 /**
  *
- * @author AlexanderPermyacov
+ * @author AlexanderPermyakov
  */
 public class LinkConnectAction extends MapperKeyboardAction implements 
         MapperSelectionListener, TreeExpansionListener, FocusListener,
         TreeSelectionListener
 {
     private TreePath treePath;
-    private Canvas canvas;
-    
+        
     public LinkConnectAction(Canvas canvas) {
-        this.canvas = canvas;
+        super(canvas);
         treePath = null;
 
         MapperKeyboardAction action = new LinkConnectDone(canvas);
@@ -174,8 +173,8 @@ public class LinkConnectAction extends MapperKeyboardAction implements
         if (treePath == null) { treePath = selectionModel.getSelectedPath(); }
         if (treePath == null) { return; }
         if (selectionModel.getSelectedPath() != treePath) {
-            if (!(linkTool.getSourcePin() instanceof TreeSourcePin) 
-                    || canvas.hasFocus()) 
+            if (!(linkTool.getSourcePin() instanceof TreeSourcePin)) 
+//                    || canvas.hasFocus())
             {
                 linkTool.done();
                 return;

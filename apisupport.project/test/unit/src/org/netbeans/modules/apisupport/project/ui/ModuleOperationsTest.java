@@ -59,6 +59,7 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.ContextAwareAction;
 import org.openide.util.ContextGlobalProvider;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -125,7 +126,7 @@ public class ModuleOperationsTest extends TestBase {
     }
     
     public void testOperationActions() throws Exception { // #72397
-        NbModuleProject project = generateStandaloneModule("module");
+        final NbModuleProject project = generateStandaloneModule("module");
         cgpi.setProject(project);
         DialogDisplayerImpl dd = (DialogDisplayerImpl) Lookup.getDefault().lookup(DialogDisplayer.class);
         dd.setDialog(new JDialog() {
@@ -134,7 +135,7 @@ public class ModuleOperationsTest extends TestBase {
         FileObject lock = FileUtil.createData(project.getProjectDirectory(), "build/testuserdir/lock");
         EventQueue.invokeAndWait(new Runnable() {
             public void run() {
-                CommonProjectActions.deleteProjectAction().actionPerformed(null);
+                ((ContextAwareAction) CommonProjectActions.deleteProjectAction()).createContextAwareInstance(Lookups.singleton(project)).actionPerformed(null);
             }
         });
         assertNotNull("warning message emitted", dd.getLastNotifyDescriptor());

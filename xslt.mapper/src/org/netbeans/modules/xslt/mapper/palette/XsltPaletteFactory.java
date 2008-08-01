@@ -65,6 +65,10 @@ public final class XsltPaletteFactory {
     }
     
     public static class MyDnDHandler extends DragAndDropHandler {
+        public MyDnDHandler() {
+            super( true );
+        }
+        
         public void customize(ExTransferable t, Lookup item) {
             try {
                 DataFlavor mapperFlavor =

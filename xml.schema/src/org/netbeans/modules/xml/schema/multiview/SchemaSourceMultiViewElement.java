@@ -74,6 +74,7 @@ import org.openide.nodes.NodeAdapter;
 import org.openide.nodes.NodeEvent;
 import org.openide.text.CloneableEditor;
 import org.openide.text.NbDocument;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
@@ -176,6 +177,14 @@ public class SchemaSourceMultiViewElement extends CloneableEditor
         timerSelNodes = new Timer(1, new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 if (!isActiveTC() || getEditorPane() == null) {
+                    return;
+                }
+                try {
+                    SchemaEditorSupport support = schemaDataObject.getSchemaEditorSupport();
+                    if (support == null || support.getModel().inSync()) {
+                        return;
+                    }
+                } catch (IOException ex) {
                     return;
                 }
                 selectElementsAtOffset();

@@ -152,7 +152,7 @@ public final class MessageEJBWizard implements WizardDescriptor.InstantiatingIte
 
         public boolean isValid() {
             if (!org.netbeans.modules.j2ee.common.Util.isValidServerInstance(getProject())) {
-                getWizardDescriptor().putProperty("WizardPanel_errorMessage",
+                getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
                         NbBundle.getMessage(MessageEJBWizard.class, "ERR_MissingServer")); // NOI18N
                 return false;
             }

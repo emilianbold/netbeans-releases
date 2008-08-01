@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -43,12 +43,14 @@
 package org.netbeans.modules.search;
 
 
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import org.openide.ErrorManager;
 import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
 import org.openidex.search.SearchType;
 
 
@@ -65,6 +67,26 @@ public final class ResultModel {
     /** maximum total number of detail entries for found objects */
     private static final int DETAILS_COUNT_LIMIT = 5000;
     
+    enum Limit {
+
+        FILES_COUNT_LIMIT("TEXT_MSG_LIMIT_REACHED_FILES_COUNT",         //NOI18N
+                          COUNT_LIMIT),
+        MATCHES_COUNT_LIMIT("TEXT_MSG_LIMIT_REACHED_MATCHES_COUNT",     //NOI18N
+                            DETAILS_COUNT_LIMIT);
+
+        private final String bundleKey;
+        private final Integer msgParam;
+
+        private Limit(String bundleKey, Integer limit) {
+            this.bundleKey = bundleKey;
+            this.msgParam = limit;
+        }
+
+        String getDisplayName() {
+            return NbBundle.getMessage(Limit.class, bundleKey, msgParam);
+        }
+    }
+
     /** */
     private final long creationTime;
     
@@ -79,11 +101,9 @@ public final class ResultModel {
     private ResultView resultView;
     
     /**
-     * flag - did number of found objects reach the limit?
-     *
-     * @see  #COUNT_LIMIT
+     * limit (number of found files or matches) reached during search
      */
-    private boolean limitReached = false;
+    private Limit limitReached = null;
 
     /** Search group this result shows search results for. */
     private SpecialSearchGroup searchGroup;
@@ -166,23 +186,25 @@ public final class ResultModel {
 
         searchGroup = null;
     }
-    
+
     /**
      * Notifies ths result model of a newly found matching object.
      *
      * @param  object  matching object
      * @return  {@code true} if this result model can accept more objects,
      *          {@code false} if number of found objects reached the limit
+     * @param  charset  charset used for full-text search of the object,
+     *                  or {@code null} if the object was not full-text searched
      */
-    synchronized boolean objectFound(Object object) {
-        MatchingObject matchingObject = new MatchingObject(this, object);
+    synchronized boolean objectFound(Object object, Charset charset) {
+        MatchingObject matchingObject = new MatchingObject(this, object, charset);
         if (matchingObjectsSet.add(matchingObject) == false) {
             return true;
         }
 
         matchingObjects.add(matchingObject);
         
-        assert limitReached == false;
+        assert limitReached == null;
         assert treeModel != null;
         assert resultView != null;
         
@@ -191,7 +213,12 @@ public final class ResultModel {
         treeModel.objectFound(matchingObject, size++);
         resultView.objectFound(matchingObject, totalDetailsCount);
         
-        return size < COUNT_LIMIT && totalDetailsCount < DETAILS_COUNT_LIMIT;
+        if (size >= COUNT_LIMIT) {
+            limitReached = Limit.FILES_COUNT_LIMIT;
+        } else if (totalDetailsCount >= DETAILS_COUNT_LIMIT) {
+            limitReached = Limit.MATCHES_COUNT_LIMIT;
+        }
+        return limitReached == null;
     }
 
     /**
@@ -456,7 +483,13 @@ public final class ResultModel {
     /**
      */
     boolean wasLimitReached() {
-        return limitReached;
+        return limitReached != null;
+    }
+
+    /**
+     */
+    String getLimitDisplayName() {
+        return (limitReached != null) ? limitReached.getDisplayName() : null;
     }
 
     /** This exception stoped search */

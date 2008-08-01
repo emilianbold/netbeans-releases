@@ -196,7 +196,7 @@ public class DesignView extends JPanel  {
         });
         
         // vlv: print
-        getContent().putClientProperty(java.awt.print.Printable.class, "");
+        getContent().putClientProperty("print.printable", Boolean.TRUE); // NOI18N
     }
     
     /**

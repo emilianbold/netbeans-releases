@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.xml.wsdl.ui.netbeans.module;
 
 import java.awt.EventQueue;
@@ -79,12 +78,13 @@ import org.openide.text.NbDocument;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
+import org.openide.loaders.DataObject;
+import org.openide.cookies.LineCookie;
+import org.openide.text.Line;
 
 /**
- *
  * @author Jeri Lockhart
  */
-
 public class WSDLSourceMultiViewElement extends CloneableEditor implements MultiViewElement {
     
     private static final long serialVersionUID = 4403502726950453345L;
@@ -117,6 +117,53 @@ public class WSDLSourceMultiViewElement extends CloneableEditor implements Multi
         // listener is registered with the DataObject Node delegate.
         wsdlDataObject.getWSDLEditorSupport().initializeCloneableEditor(this);
         initialize();
+    }
+
+    public static void gotoSource(Component component, DataObject data) {
+      if ( !(component instanceof DocumentComponent)) {
+          return;
+      }
+      DocumentComponent document = (DocumentComponent) component;
+      LineCookie lc = data.getCookie(LineCookie.class);
+
+      if (lc == null) {
+          return;
+      }
+      int lineNum = getLineNum(document);
+
+      if (lineNum < 0) {
+          return;
+      }
+      final Line line = lc.getLineSet().getCurrent(lineNum);
+      final int column = getColumnNum(document);
+
+      if (column < 0) {
+        return;
+      }
+      javax.swing.SwingUtilities.invokeLater(new Runnable() {
+          public void run() {
+              line.show(Line.SHOW_GOTO, column);
+//todo r              openActiveSourceEditor();
+          }
+      });
+    }
+    
+    private static int getLineNum(DocumentComponent entity) {
+        StyledDocument document = entity.getModel().getModelSource().getLookup().lookup(StyledDocument.class);
+
+        if (document == null) {
+          return -1;
+        }
+        return NbDocument.findLineNumber(document, entity.findPosition());
+    }
+    
+    private static int getColumnNum(DocumentComponent entity) {
+        StyledDocument document = entity.getModel().getModelSource().getLookup().lookup(StyledDocument.class);
+
+        if (document == null) {
+          return -1;
+        }
+        return NbDocument.findLineColumn(document, entity.findPosition());
     }
 
     /**
@@ -184,7 +231,7 @@ public class WSDLSourceMultiViewElement extends CloneableEditor implements Multi
         });
         timerSelNodes.setRepeats(false);
     }
-	
+    
     public JComponent getToolbarRepresentation() {
         Document doc = getEditorPane().getDocument();
         if (doc instanceof NbDocument.CustomToolbar) {
@@ -243,12 +290,12 @@ public class WSDLSourceMultiViewElement extends CloneableEditor implements Multi
      */ 
     @Override
     protected boolean closeLast() {
-	WSDLEditorSupport support = wsdlDataObject.getWSDLEditorSupport();
-	JEditorPane[] editors = support.getOpenedPanes();
-	if (editors == null || editors.length == 0) {
-	    return support.silentClose();
-	}
-	return false;
+    WSDLEditorSupport support = wsdlDataObject.getWSDLEditorSupport();
+    JEditorPane[] editors = support.getOpenedPanes();
+    if (editors == null || editors.length == 0) {
+        return support.silentClose();
+    }
+    return false;
     }
 
     public CloseOperationState canCloseElement() {
@@ -306,7 +353,7 @@ public class WSDLSourceMultiViewElement extends CloneableEditor implements Multi
     
     @Override
     public void componentOpened() {
-    	super.componentOpened();
+        super.componentOpened();
     }
     
     

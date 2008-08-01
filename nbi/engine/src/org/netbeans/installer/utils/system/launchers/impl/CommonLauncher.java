@@ -36,27 +36,29 @@
 
 package org.netbeans.installer.utils.system.launchers.impl;
 
+import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.jar.Attributes;
+import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
-import org.netbeans.installer.utils.FileProxy;
 import org.netbeans.installer.utils.FileUtils;
 import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StreamUtils;
 import org.netbeans.installer.utils.StringUtils;
-
 import org.netbeans.installer.utils.applications.JavaUtils;
-import org.netbeans.installer.utils.exceptions.DownloadException;
 import org.netbeans.installer.utils.helper.EngineResources;
 import org.netbeans.installer.utils.helper.ErrorLevel;
+import org.netbeans.installer.utils.helper.JavaCompatibleProperties;
+import org.netbeans.installer.utils.helper.Version;
 import org.netbeans.installer.utils.system.launchers.Launcher;
 import org.netbeans.installer.utils.system.launchers.LauncherProperties;
 import org.netbeans.installer.utils.system.launchers.LauncherResource;
@@ -232,7 +234,7 @@ public abstract class CommonLauncher extends Launcher {
                 if(file.isBundled() && !file.isBasedOnResource() ) {
                     JarFile jarFile = new JarFile(new File(file.getPath()));
                     boolean mainClassExists = jarFile.getJarEntry(
-                            mainClass.replace(".","/") + ".class") != null;
+                            ResourceUtils.getResourceClassName(mainClass))!= null;
                     jarFile.close();
                     if(mainClassExists) {                        
                         return;
@@ -271,9 +273,123 @@ public abstract class CommonLauncher extends Launcher {
     protected void checkCompatibleJava() throws IOException {
         LogManager.log(ErrorLevel.DEBUG, "Checking compatible java properties...");
         if(compatibleJava.isEmpty()) {
-            compatibleJava.addAll(getDefaultCompatibleJava());
+            compatibleJava.addAll(getDefaultCompatibleJava(getMinimumJavaVersion()));
+        }        
+    }
+
+    @Override
+    public List<JavaCompatibleProperties> getDefaultCompatibleJava(Version version) {
+        final List<JavaCompatibleProperties> list = new ArrayList<JavaCompatibleProperties>();
+        list.add(new JavaCompatibleProperties(version.toJdkStyle(), null, null, null, null));
+        return list;
+    }
+    
+    private int getMajorVersion(InputStream is) throws IOException {
+        DataInputStream classfile = null;
+        int minor_version = 0;
+        int major_version = 0;
+        classfile = new DataInputStream(is);
+        int magic = classfile.readInt();
+        if (magic == 0xcafebabe) {
+            minor_version = classfile.readUnsignedShort();
+            major_version = classfile.readUnsignedShort();
+        }
+
+        if (major_version == 45 && minor_version == 3) {
+            return 1;
+        } else if (minor_version == 0) {
+            switch(major_version) {
+                case 46: return 2;
+                case 47: return 3;
+                case 48: return 4;
+                case 49: return 5;
+                case 50: return 6;
+                case 51: return 7;
+                default : return -1;
+            }
+        } else {            
+            return -1;
+        }
+    }
+    private int getMajorVersion(JarFile jar, final String resource) {
+        
+        InputStream is = null;
+
+        try {
+            is = jar.getInputStream(jar.getJarEntry(resource));
+            if (is != null) {
+                return getMajorVersion(is);
+            }
+        } catch (IOException e) {
+            LogManager.log(e);
+        } finally {
+            try {
+                if (is != null) {
+                    is.close();
+                }
+            } catch (IOException e) {
+                LogManager.log(e);
+            }
+        }
+        return -1;
+    }
+          
+    protected Version getMinimumJavaVersion() {
+        int majorVersion = -1;
+
+        for (LauncherResource file : jars) {
+            if (file.isBundled() && !file.isBasedOnResource()) {
+                File jarFile = new File(file.getPath());
+                JarFile jar = null;
+                try {
+                    jar = new JarFile(jarFile);
+                    Manifest manifest = jar.getManifest();
+                    String resource = null;
+                    if (manifest != null) {
+                        String mainClassName = manifest.getMainAttributes().getValue(Attributes.Name.MAIN_CLASS);
+                        if (mainClassName != null) {
+                            resource = ResourceUtils.getResourceClassName(mainClassName);
+                        }
+                    }
+                    if (resource == null) {
+                        // no main class.. search for other .class resources
+                        Enumeration<JarEntry> entries = jar.entries();
+                        while (entries.hasMoreElements()) {
+                            JarEntry e = entries.nextElement();
+                            if (e.getName().endsWith(".class")) {
+                                resource = e.getName();
+                                break;
+                            }
+                        }
+                    }
+                    if (resource != null) {
+                        majorVersion = Math.max(majorVersion, getMajorVersion(jar, resource));
+                    }
+                } catch (IOException e) {
+                    LogManager.log(e);
+                } finally {
+                    if (jar != null) {
+                        try {
+                            jar.close();
+                        } catch (IOException e) {
+                            LogManager.log(e);
+                        }
+                    }
+                }
+            }
+        }
+        if (majorVersion == -1) {
+            try {
+                final String resource = ResourceUtils.getResourceClassName(CommonLauncher.class);
+                majorVersion = getMajorVersion(ResourceUtils.getResource(resource));
+            } catch (IOException e) {
+                LogManager.log(e);
+            }
         }
         
+        return Version.getVersion((majorVersion == -1) ?
+             System.getProperty("java.specification.version") :
+                 "1." + majorVersion);
     }
     protected void checkTestJVMFile()   throws IOException {
         LogManager.log(ErrorLevel.DEBUG, "Checking testJVM file...");

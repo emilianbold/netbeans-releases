@@ -41,12 +41,16 @@
 package org.netbeans.modules.gsf.api;
 
 import java.util.List;
+import org.netbeans.modules.gsf.api.annotations.CheckForNull;
 import org.netbeans.modules.gsf.api.annotations.NonNull;
 
 
 /**
- *
- * @author <a href="mailto:tor.norbye@sun.com">Tor Norbye</a>
+ * Interface for a Parser registered with GSF. A parser takes a parse request
+ * and fires parsing events including the parse result at the end of parsing
+ * each file.
+ * 
+ * @author Tor Norbye
  */
 public interface Parser {
     /** Parse the given set of files, and notify the parse listener for each transition 
@@ -56,10 +60,10 @@ public interface Parser {
     void parseFiles(@NonNull Job request);
     
     public final class Job {
-        public final List<ParserFile> files;
-        public final ParseListener listener;
-        public final SourceFileReader reader;
-        public final TranslatedSource translatedSource;
+        @NonNull public final List<ParserFile> files;
+        @NonNull public final ParseListener listener;
+        @NonNull public final SourceFileReader reader;
+        @CheckForNull public final TranslatedSource translatedSource;
 
         public Job(@NonNull List<ParserFile> files, 
                 @NonNull ParseListener listener,
@@ -75,5 +79,5 @@ public interface Parser {
     /**
      * Return an object capable of providing source offsets for objects produced by the parser
      */
-    PositionManager getPositionManager();
+    @NonNull PositionManager getPositionManager();
 }

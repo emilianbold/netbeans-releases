@@ -1,23 +1,18 @@
-// 
-// File:   %<%NAME%>%.%<%EXTENSION%>%
-// Author: %<%USER%>%
-//
-// Created on %<%DATE%>%, %<%TIME%>%
-//
+/* 
+ * File:   %<%NAME%>%.%<%EXTENSION%>%
+ * Author: %<%USER%>%
+ * 
+ * Created on %<%DATE%>%, %<%TIME%>%
+ */
 
-#include %<%QUOTES%>%%<%NAME%>%.h%<%QUOTES%>%
+#include %<%QUOTES%>%%<%NAME%>%.%<%DEFAULT_HEADER_EXT%>%%<%QUOTES%>%
 
-//
-// Constructor
-///
-%<%NAME%>%::%<%NAME%>%()
-{
+%<%CLASSNAME%>%::%<%CLASSNAME%>%() {
 }
 
-//
-// Destructor
-//
-%<%NAME%>%::~%<%NAME%>%()
-{
+%<%CLASSNAME%>%::%<%CLASSNAME%>%(const %<%CLASSNAME%>%& orig) {
+}
+
+%<%CLASSNAME%>%::~%<%CLASSNAME%>%() {
 }
 

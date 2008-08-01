@@ -5,8 +5,8 @@
 <code><![CDATA[=> ]]></code>
     </codetemplate>
     <codetemplate abbreviation="jc" descriptionId="ct_jc" contexts="ruby">
-<code><![CDATA[require 'java'
-include_class '${0 default="package.class"}']]></code>
+<code><![CDATA[include Java
+import ${0 default="package.class"}]]></code>
     </codetemplate>
     <codetemplate abbreviation="do" descriptionId="ct_do" contexts="ruby" uuid="4B72C5C3-6CA7-41AC-B2F9-51DEA25D469E">
 <code><![CDATA[do |${1 unusedlocal defaults="i,j,k"}|
@@ -881,7 +881,7 @@ end]]>
   </codetemplate>
   <codetemplate abbreviation="vpif" descriptionId="ct_vpif" uuid="F5CBBE16-F5CC-4EDA-8BC6-30281BD7D854">
     <code>
-<![CDATA[validates_presence_of :${1 default="attribute"}, :if => proc { |obj| ${5 default="obj.condition?"} }}]]>
+<![CDATA[validates_presence_of :${1 default="attribute"}, :if => proc { |obj| ${5 default="obj.condition?"} }]]>
     </code>
   </codetemplate>
   <codetemplate abbreviation="vu" descriptionId="ct_vu" uuid="F8316545-9AE4-4C7F-87ED-A2C00E6637FA">

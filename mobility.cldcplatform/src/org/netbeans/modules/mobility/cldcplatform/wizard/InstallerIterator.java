@@ -119,7 +119,7 @@ public class InstallerIterator implements WizardDescriptor.InstantiatingIterator
         String[] strs = new String[panels.length];
         for (int i = 0; i < strs.length; i++)
             strs[i] = panels[i].getComponent().getName();
-        ((JComponent)panels[0].getComponent()).putClientProperty("WizardPanel_contentData", strs); // NOI18N
+        ((JComponent)panels[0].getComponent()).putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, strs); // NOI18N
     }
     
     public void uninitialize(@SuppressWarnings("unused")

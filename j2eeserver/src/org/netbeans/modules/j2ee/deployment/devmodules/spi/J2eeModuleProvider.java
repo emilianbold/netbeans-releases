@@ -41,10 +41,14 @@
 
 package org.netbeans.modules.j2ee.deployment.devmodules.spi;
 
+import java.beans.PropertyChangeListener;
 import java.io.OutputStream;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.Iterator;
+import java.util.Properties;
 import java.util.Set;
+import javax.enterprise.deploy.spi.DeploymentManager;
 import javax.enterprise.deploy.spi.Target;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.common.api.OriginalCMPMapping;
@@ -76,6 +80,8 @@ import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
  * @author  Pavel Buzek
  */
 public abstract class J2eeModuleProvider {
+    
+    private static final Logger LOGGER = Logger.getLogger(J2eeModuleProvider.class.getName());
     
     private ConfigSupportImpl configSupportImpl;
     final List listeners = new ArrayList();
@@ -261,7 +267,7 @@ public abstract class J2eeModuleProvider {
      * Configuration support to allow development module code to access well-known 
      * configuration propeties, such as web context root, cmp mapping info...
      * The setters and getters work with server specific data on the server returned by
-     * {@link getServerID} method.
+     * {@link #getServerID} method.
      */
     public static interface ConfigSupport {
         /**
@@ -438,7 +444,7 @@ public abstract class J2eeModuleProvider {
          * Finds data source with the given JNDI name.
          * 
          * @param jndiName JNDI name of a data source
-         * @param return data source if it exists, null otherwise
+         * @return data source if it exists, null otherwise
          *
          * @throws NullPointerException if JNDI name is null
          * @throws ConfigurationException if there is some problem with data source configuration
@@ -526,7 +532,7 @@ public abstract class J2eeModuleProvider {
          * Finds message destination with the given name.
          * 
          * @param name message destination name
-         * @param return message destination if it exists, null otherwise
+         * @return message destination if it exists, null otherwise
          *
          * @throws NullPointerException if name is null
          * @throws ConfigurationException if there is some problem with message destination configuration
@@ -646,13 +652,6 @@ public abstract class J2eeModuleProvider {
         return new DefaultSourceMap(this);
     }
     
-    /** If the module wants to specify a target server instance for deployment 
-     * it needs to override this method to return false. 
-     */
-    public boolean useDefaultServer () {
-        return true;
-    }
-    
     /**
      * Set ID of the server instance that will be used for deployment.
      * 
@@ -661,28 +660,51 @@ public abstract class J2eeModuleProvider {
      */
     public abstract void setServerInstanceID(String severInstanceID);
     
-    /** Id of server isntance for deployment. The default implementation returns
-     * the default server instance selected in Server Registry. 
-     * The return value may not be null.
-     * If modules override this method they also need to override {@link useDefaultServer}.
+    /** 
+     * Id of server instance for deployment or null if the module has no server
+     * instance set.
+     *
+     * @return Id of server instance for deployment or <code>null</code> if the module has no server
+     *         instance set.
      */
-    public String getServerInstanceID () {
-        return ServerRegistry.getInstance ().getDefaultInstance ().getUrl ();
+    public abstract String getServerInstanceID();
+    
+    /**
+     * 
+     * @return
+     * @since 1.48
+     */
+    public DeployOnSaveSupport getDeployOnSaveSupport() {
+        return null;
     }
     
     /**
      * Return InstanceProperties of the server instance
      **/
-    public InstanceProperties getInstanceProperties(){
-        return InstanceProperties.getInstanceProperties(getServerInstanceID());
+    public InstanceProperties getInstanceProperties() {
+        String serverInstanceID = getServerInstanceID();
+        if (serverInstanceID == null) {
+            return null;
+        }
+        InstanceProperties props = InstanceProperties.getInstanceProperties(serverInstanceID);
+
+        boolean asserts = false;
+        assert asserts = true;
+
+        if (asserts && props != null) {
+            return new WarningInstanceProperties(props);
+        }
+        return props;
     }
 
-    /** This method is used to determin type of target server.
-     * The return value must correspond to value returned from {@link getServerInstanceID}.
+    /** 
+     * This method is used to determin type of target server. The return value 
+     * must correspond to the value returned from {@link getServerInstanceID}.
+     *
+     * @return the target server type or null if the module has no target server
+     *         type set.
      */
-    public String getServerID () {
-        return ServerRegistry.getInstance ().getDefaultInstance ().getServer ().getShortName ();
-    }
+    public abstract String getServerID();
     
     /**
      * Return name to be used in deployment of the module.
@@ -709,7 +731,6 @@ public abstract class J2eeModuleProvider {
      * Invoke verifier from current platform on the provided target file.
      * @param target File to run verifier against.
      * @param logger output stream to write verification resutl to.
-     * @return true
      */
     public void verify(FileObject target, OutputStream logger) throws ValidationException {
         VerifierSupport verifier = ServerRegistry.getInstance().getServer(getServerID()).getVerifierSupport();
@@ -817,7 +838,7 @@ public abstract class J2eeModuleProvider {
     /**
      * Register an instance listener that will listen to server instances changes.
      *
-     * @l listener which should be added.
+     * @param l listener which should be added.
      *
      * @since 1.6
      */
@@ -828,7 +849,7 @@ public abstract class J2eeModuleProvider {
     /**
      * Remove an instance listener which has been registered previously.
      *
-     * @l listener which should be removed.
+     * @param l listener which should be removed.
      *
      * @since 1.6
      */
@@ -847,4 +868,58 @@ public abstract class J2eeModuleProvider {
         return (ConfigSupportImpl) getConfigSupport();
     }
 
+    /**
+     * @since 1.48
+     */
+    public static interface DeployOnSaveSupport {
+        
+        public void addArtifactListener(ArtifactListener listner);
+        
+        public void removeArtifactListener(ArtifactListener listener);
+        
+    }
+    
+    private static class WarningInstanceProperties extends InstanceProperties {
+
+        private final InstanceProperties delegate;
+
+        public WarningInstanceProperties(InstanceProperties delegate) {
+            this.delegate = delegate;
+        }
+
+        public String getProperty(String propname) throws IllegalStateException {
+            LOGGER.log(Level.WARNING, "Accessing instance property through "
+                    + J2eeModuleProvider.class.getName() + " is pointing to a missing API or a bad design of the module");
+            return delegate.getProperty(propname);
+        }
+
+        public void setProperty(String propname, String value) throws IllegalStateException {
+            LOGGER.log(Level.WARNING, "Accessing instance property through "
+                    + J2eeModuleProvider.class.getName() + " is pointing to a missing API or a bad design of the module");
+            delegate.setProperty(propname, value);
+        }
+
+        public void setProperties(Properties props) throws IllegalStateException {
+            LOGGER.log(Level.WARNING, "Accessing instance property through "
+                    + J2eeModuleProvider.class.getName() + " is pointing to a missing API or a bad design of the module");
+            delegate.setProperties(props);
+        }
+
+        public void refreshServerInstance() {
+            delegate.refreshServerInstance();
+        }
+
+        public Enumeration propertyNames() throws IllegalStateException {
+            return delegate.propertyNames();
+        }
+
+        public DeploymentManager getDeploymentManager() {
+            return delegate.getDeploymentManager();
+        }
+
+        @Override
+        public void addPropertyChangeListener(PropertyChangeListener listener) {
+            delegate.addPropertyChangeListener(listener);
+        }
+    }
 }

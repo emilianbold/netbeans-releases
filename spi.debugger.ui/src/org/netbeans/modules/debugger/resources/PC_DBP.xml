@@ -54,7 +54,7 @@ made subject to such option by the copyright holder.
     priority='100'
     custom_sidebar_color='0xBDE6AA'>
     
-    <combination order='200'>
+    <combination order='600'>
         <combine annotationtype='DisabledBreakpoint'/>
         <combine annotationtype='CurrentPC'/>
     </combination>

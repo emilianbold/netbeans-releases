@@ -3,7 +3,7 @@
 rm -rf nbbuild/netbeans/ nbrubyide applemenu netbeans.png netbeans.icns conf
 unzip -d nbbuild/ ../../trunk/lastSuccessful/archive/nbbuild/dist/zip/netbeans-hudson-trunk-*-basic.zip
 
-cp nbbuild/netbeans/nb6.1/netbeans.icns nbbuild/netbeans/nb6.1/netbeans.png .
+cp nbbuild/netbeans/nb6.5/netbeans.icns nbbuild/netbeans/nb6.5/netbeans.png .
 
 mkdir core
 ant -Dverify.checkout=false -f ruby/build.xml clean build-experimental-zip && \

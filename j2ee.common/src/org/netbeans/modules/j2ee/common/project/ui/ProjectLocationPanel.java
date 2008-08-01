@@ -59,6 +59,7 @@ import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 final class ProjectLocationPanel extends JPanel implements DocumentListener {
@@ -66,7 +67,7 @@ final class ProjectLocationPanel extends JPanel implements DocumentListener {
     public static final String PROP_PROJECT_NAME = "projectName"; //NOI18N
     public static final String PROP_PROJECT_LOCATION = "projectLocation"; //NOI18N
     
-    static final String PROP_ERROR_MESSAGE = "WizardPanel_errorMessage"; // NOI18N
+    static final String PROP_ERROR_MESSAGE = WizardDescriptor.PROP_ERROR_MESSAGE; // NOI18N
     
     private String generatedProjectName = "";
     private int generatedProjectNameIndex = 0;
@@ -79,6 +80,7 @@ final class ProjectLocationPanel extends JPanel implements DocumentListener {
     public ProjectLocationPanel(Object j2eeModuleType, String name, String title, 
             ProjectLocationWizardPanel wizard, String defaultNameFormatter) {
         initComponents();
+        setAsMainCheckBox.setSelected(UserProjectSettings.getDefault().getSetAsMainProject(j2eeModuleType));
         this.wizard = wizard;
         this.j2eeModuleType = j2eeModuleType;
         this.nameFormatter = defaultNameFormatter;
@@ -117,6 +119,7 @@ final class ProjectLocationPanel extends JPanel implements DocumentListener {
         sharableProject = new javax.swing.JCheckBox();
         setAsMainCheckBox = new javax.swing.JCheckBox();
         jPanel1 = new javax.swing.JPanel();
+        lblHint = new javax.swing.JLabel();
 
         projectNameLabel.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(ProjectLocationPanel.class, "LBL_NWP1_ProjectName_LabelMnemonic").charAt(0));
         projectNameLabel.setLabelFor(projectNameTextField);
@@ -141,6 +144,7 @@ final class ProjectLocationPanel extends JPanel implements DocumentListener {
 
         createdFolderTextField.setEditable(false);
 
+        librariesLabel.setLabelFor(librariesLocation);
         org.openide.awt.Mnemonics.setLocalizedText(librariesLabel, org.openide.util.NbBundle.getMessage(ProjectLocationPanel.class, "ProjectLocationPanel.librariesLabel.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(browseLibraries, org.openide.util.NbBundle.getMessage(ProjectLocationPanel.class, "PanelSharabilityVisual.browseLibraries.text")); // NOI18N
@@ -159,45 +163,49 @@ final class ProjectLocationPanel extends JPanel implements DocumentListener {
             }
         });
 
-        setAsMainCheckBox.setSelected(true);
-        setAsMainCheckBox.setText(org.openide.util.NbBundle.getMessage(ProjectLocationPanel.class, "LBL_NWP1_SetAsMain_CheckBox")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(setAsMainCheckBox, org.openide.util.NbBundle.getMessage(ProjectLocationPanel.class, "LBL_NWP1_SetAsMain_CheckBox")); // NOI18N
         setAsMainCheckBox.setMargin(new java.awt.Insets(2, 0, 2, 2));
+
+        org.openide.awt.Mnemonics.setLocalizedText(lblHint, org.openide.util.NbBundle.getMessage(ProjectLocationPanel.class, "HINT_LibrariesFolder")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(createdFolderLabel)
-                .add(339, 339, 339))
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                        .add(projectNameLabel)
-                        .add(18, 18, 18)
-                        .add(projectNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 237, Short.MAX_VALUE))
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                        .add(projectLocationLabel)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(createdFolderTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 238, Short.MAX_VALUE)
-                            .add(projectLocationTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 238, Short.MAX_VALUE))))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(browseButton))
-            .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 410, Short.MAX_VALUE)
+            .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 491, Short.MAX_VALUE)
             .add(layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(sharableProject)
                     .add(layout.createSequentialGroup()
                         .add(librariesLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(librariesLocation, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 242, Short.MAX_VALUE)))
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(lblHint, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 296, Short.MAX_VALUE)
+                            .add(librariesLocation, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 296, Short.MAX_VALUE))))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(browseLibraries))
-            .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 410, Short.MAX_VALUE)
             .add(layout.createSequentialGroup()
                 .add(setAsMainCheckBox)
                 .addContainerGap())
+            .add(layout.createSequentialGroup()
+                .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 479, Short.MAX_VALUE)
+                .addContainerGap())
+            .add(layout.createSequentialGroup()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(projectLocationLabel)
+                    .add(projectNameLabel)
+                    .add(createdFolderLabel))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(layout.createSequentialGroup()
+                        .add(createdFolderTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 297, Short.MAX_VALUE)
+                        .add(76, 76, 76))
+                    .add(layout.createSequentialGroup()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, projectNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 297, Short.MAX_VALUE)
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, projectLocationTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 297, Short.MAX_VALUE))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(browseButton))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -205,13 +213,13 @@ final class ProjectLocationPanel extends JPanel implements DocumentListener {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(projectNameLabel)
                     .add(projectNameTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(projectLocationLabel)
                     .add(browseButton)
                     .add(projectLocationTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(createdFolderLabel)
                     .add(createdFolderTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
@@ -223,23 +231,38 @@ final class ProjectLocationPanel extends JPanel implements DocumentListener {
                     .add(librariesLabel)
                     .add(browseLibraries)
                     .add(librariesLocation, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .add(18, 18, 18)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(lblHint)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(setAsMainCheckBox)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 105, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 14, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         );
 
         projectNameLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getBundle(ProjectLocationPanel.class).getString("ACSN_projectNameLabel")); // NOI18N
         projectNameLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(ProjectLocationPanel.class).getString("ACSD_projectNameLabel")); // NOI18N
+        projectNameTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectLocationPanel.class, "ACSD_ProjectLocationPanel_NA")); // NOI18N
         projectLocationLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getBundle(ProjectLocationPanel.class).getString("ACSN_projectLocationLabel")); // NOI18N
-        projectLocationLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(ProjectLocationPanel.class).getString("ACSD_projectLocationLabel")); // NOI18N
+        projectLocationLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectLocationPanel.class, "ACSD_ProjectLocationPanel_NA")); // NOI18N
+        projectLocationTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectLocationPanel.class, "ACSD_ProjectLocationPanel_NA")); // NOI18N
         browseButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getBundle(ProjectLocationPanel.class).getString("ACSN_browseButton")); // NOI18N
-        browseButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(ProjectLocationPanel.class).getString("ACSD_browseButton")); // NOI18N
+        browseButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectLocationPanel.class, "ACSD_ProjectLocationPanel_NA")); // NOI18N
         createdFolderLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getBundle(ProjectLocationPanel.class).getString("ACSN_createdFolderLabel")); // NOI18N
-        createdFolderLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(ProjectLocationPanel.class).getString("ACSD_createdFolderLabel")); // NOI18N
+        createdFolderLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectLocationPanel.class, "ACSD_ProjectLocationPanel_NA")); // NOI18N
+        createdFolderTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectLocationPanel.class, "ACSD_ProjectLocationPanel_NA")); // NOI18N
+        jSeparator1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ProjectLocationPanel.class, "ACSD_ProjectLocationPanel_NA")); // NOI18N
+        jSeparator1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectLocationPanel.class, "ACSD_ProjectLocationPanel_NA")); // NOI18N
+        librariesLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectLocationPanel.class, "ACSD_ProjectLocationPanel_NA")); // NOI18N
+        librariesLocation.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectLocationPanel.class, "ACSD_ProjectLocationPanel_NA")); // NOI18N
+        browseLibraries.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectLocationPanel.class, "ACSD_ProjectLocationPanel_NA")); // NOI18N
+        sharableProject.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectLocationPanel.class, "ACSD_ProjectLocationPanel_NA")); // NOI18N
+        setAsMainCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectLocationPanel.class, "ACSD_ProjectLocationPanel_NA")); // NOI18N
+        jPanel1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ProjectLocationPanel.class, "ACSD_ProjectLocationPanel_NA")); // NOI18N
+        jPanel1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectLocationPanel.class, "ACSD_ProjectLocationPanel_NA")); // NOI18N
+        lblHint.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectLocationPanel.class, "ACSD_ProjectLocationPanel_NA")); // NOI18N
 
         getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ProjectLocationPanel.class, "ACSN_PanelProjectLocationVisual")); // NOI18N
-        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectLocationPanel.class, "ACSD_PanelProjectLocationVisual")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectLocationPanel.class, "ACSD_ProjectLocationPanel_NA")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void browseLocationAction(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseLocationAction
@@ -280,6 +303,7 @@ private void sharableProjectActionPerformed(java.awt.event.ActionEvent evt) {//G
         librariesLocation.setEnabled(sharableProject.isSelected());
         browseLibraries.setEnabled(sharableProject.isSelected());
         librariesLabel.setEnabled(sharableProject.isSelected());
+        lblHint.setEnabled(sharableProject.isSelected());
         if (sharableProject.isSelected()) {
            librariesLocation.setText(currentLibrariesLocation);
         } else {
@@ -298,20 +322,20 @@ private void sharableProjectActionPerformed(java.awt.event.ActionEvent evt) {//G
     boolean valid( WizardDescriptor wizardDescriptor ) {
         
         if ( projectNameTextField.getText().length() == 0 ) {
-            wizardDescriptor.putProperty( "WizardPanel_errorMessage", // NOI18N
+            wizardDescriptor.putProperty( WizardDescriptor.PROP_ERROR_MESSAGE, // NOI18N
             NbBundle.getMessage(ProjectLocationPanel.class,"MSG_IllegalProjectName"));
             return false; // Display name not specified
         }
         File f = new File (projectLocationTextField.getText()).getAbsoluteFile();
         if (getCanonicalFile (f)==null) {
             String message = NbBundle.getMessage (ProjectLocationPanel.class,"MSG_IllegalProjectLocation");
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", message);
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, message);
             return false;
         }
         final File destFolder = getCanonicalFile(new File( createdFolderTextField.getText() ).getAbsoluteFile());
         if (destFolder == null) {
             String message = NbBundle.getMessage (ProjectLocationPanel.class,"MSG_IllegalProjectName");
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", message);
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, message);
             return false;
         }
 
@@ -320,26 +344,26 @@ private void sharableProjectActionPerformed(java.awt.event.ActionEvent evt) {//G
             projLoc = projLoc.getParentFile();
         }
         if (projLoc == null || !projLoc.canWrite()) {
-            wizardDescriptor.putProperty( "WizardPanel_errorMessage", // NOI18N
+            wizardDescriptor.putProperty( WizardDescriptor.PROP_ERROR_MESSAGE, // NOI18N
             NbBundle.getMessage(ProjectLocationPanel.class,"MSG_ProjectFolderReadOnly"));
             return false;
         }
         
         if (FileUtil.toFileObject(projLoc) == null) {
             String message = NbBundle.getMessage (ProjectLocationPanel.class,"MSG_IllegalProjectLocation");
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", message);
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, message);
             return false;
         }
         
         File[] kids = destFolder.listFiles();
         if ( destFolder.exists() && kids != null && kids.length > 0) {
             // Folder exists and is not empty
-            wizardDescriptor.putProperty( "WizardPanel_errorMessage", // NOI18N
+            wizardDescriptor.putProperty( WizardDescriptor.PROP_ERROR_MESSAGE, // NOI18N
             NbBundle.getMessage(ProjectLocationPanel.class,"MSG_ProjectFolderExists"));
             return false;
         }
         
-        wizardDescriptor.putProperty( "WizardPanel_errorMessage", "");
+        wizardDescriptor.putProperty( WizardDescriptor.PROP_ERROR_MESSAGE, "");
         
         if (sharableProject.isSelected()) {
             String location = librariesLocation.getText();
@@ -369,6 +393,7 @@ private void sharableProjectActionPerformed(java.awt.event.ActionEvent evt) {//G
         
         d.putProperty(ProjectLocationWizardPanel.SET_AS_MAIN, setAsMainCheckBox.isSelected() ? Boolean.TRUE : Boolean.FALSE );
         d.putProperty(ProjectLocationWizardPanel.SHARED_LIBRARIES, sharableProject.isSelected() ? librariesLocation.getText() : null);
+        UserProjectSettings.getDefault().setSetAsMainProject(setAsMainCheckBox.isSelected(), j2eeModuleType);
     }
     
     void read (WizardDescriptor settings) {
@@ -415,6 +440,7 @@ private void sharableProjectActionPerformed(java.awt.event.ActionEvent evt) {//G
     private javax.swing.JTextField createdFolderTextField;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JSeparator jSeparator1;
+    private javax.swing.JLabel lblHint;
     private javax.swing.JLabel librariesLabel;
     private javax.swing.JTextField librariesLocation;
     private javax.swing.JLabel projectLocationLabel;
@@ -523,4 +549,7 @@ private void sharableProjectActionPerformed(java.awt.event.ActionEvent evt) {//G
         return null;
     }
 
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(ProjectImportLocationPanel.generateHelpID(ProjectLocationPanel.class, j2eeModuleType));
+    }
 }

@@ -1,11 +1,7 @@
 package antlr.debug;
 
 import antlr.collections.impl.BitSet;
-import java.io.IOException;
-import antlr.TokenStreamException;
 import antlr.*;
-
-import antlr.debug.ParserEventSupport;
 
 import java.lang.reflect.Constructor;
 
@@ -19,9 +15,6 @@ public class LLkDebuggingParser extends LLkParser implements DebuggingParser {
 
 	public LLkDebuggingParser(int k_) {
 		super(k_);
-	}
-	public LLkDebuggingParser(ParserSharedInputState state, int k_) {
-		super(state, k_);
 	}
 	public LLkDebuggingParser(TokenBuffer tokenBuf, int k_) {
 		super(tokenBuf, k_);
@@ -59,29 +52,29 @@ public class LLkDebuggingParser extends LLkParser implements DebuggingParser {
 	}*/
 	protected void fireEnterRule(int num,int data) {
 		if (isDebugMode())
-			parserEventSupport.fireEnterRule(num,inputState.guessing,data);
+			parserEventSupport.fireEnterRule(num,guessing,data);
 	}
 	protected void fireExitRule(int num,int data) {
 		if (isDebugMode())
-			parserEventSupport.fireExitRule(num,inputState.guessing,data);
+			parserEventSupport.fireExitRule(num,guessing,data);
 	}
 	protected boolean fireSemanticPredicateEvaluated(int type, int num, boolean condition) {
 		if (isDebugMode())
-			return parserEventSupport.fireSemanticPredicateEvaluated(type,num,condition,inputState.guessing);
+			return parserEventSupport.fireSemanticPredicateEvaluated(type,num,condition,guessing);
 		else
 			return condition;
 	}
 	protected void fireSyntacticPredicateFailed() {
 		if (isDebugMode())
-			parserEventSupport.fireSyntacticPredicateFailed(inputState.guessing);
+			parserEventSupport.fireSyntacticPredicateFailed(guessing);
 	}
 	protected void fireSyntacticPredicateStarted() {
 		if (isDebugMode())
-			parserEventSupport.fireSyntacticPredicateStarted(inputState.guessing);
+			parserEventSupport.fireSyntacticPredicateStarted(guessing);
 	}
 	protected void fireSyntacticPredicateSucceeded() {
 		if (isDebugMode())
-			parserEventSupport.fireSyntacticPredicateSucceeded(inputState.guessing);
+			parserEventSupport.fireSyntacticPredicateSucceeded(guessing);
 	}
 	public String getRuleName(int num) {
 		return ruleNames[num];
@@ -97,7 +90,7 @@ public class LLkDebuggingParser extends LLkParser implements DebuggingParser {
 		return !_notDebugMode;
 	}
 	public boolean isGuessing() {
-		return inputState.guessing > 0;
+		return guessing > 0;
 	}
 	/** Return the token type of the ith token of lookahead where i=1
 	 * is the current token being examined by the parser (i.e., it
@@ -117,11 +110,11 @@ public class LLkDebuggingParser extends LLkParser implements DebuggingParser {
 		int la_1 = LA(1);
 		try {
 			super.match(t);
-			parserEventSupport.fireMatch(t, text, inputState.guessing);
+			parserEventSupport.fireMatch(t, text, guessing);
 		}
 		catch (MismatchedTokenException e) {
-			if (inputState.guessing == 0)
-				parserEventSupport.fireMismatch(la_1, t, text, inputState.guessing);
+			if (guessing == 0)
+				parserEventSupport.fireMismatch(la_1, t, text, guessing);
 			throw e;
 		}
 	}
@@ -134,11 +127,11 @@ public class LLkDebuggingParser extends LLkParser implements DebuggingParser {
 		int la_1 = LA(1);
 		try {
 			super.match(b);
-			parserEventSupport.fireMatch(la_1,b, text, inputState.guessing);
+			parserEventSupport.fireMatch(la_1,b, text, guessing);
 		}
 		catch (MismatchedTokenException e) {
-			if (inputState.guessing == 0)
-				parserEventSupport.fireMismatch(la_1, b, text, inputState.guessing);
+			if (guessing == 0)
+				parserEventSupport.fireMismatch(la_1, b, text, guessing);
 			throw e;
 		}
 	}
@@ -147,11 +140,11 @@ public class LLkDebuggingParser extends LLkParser implements DebuggingParser {
 		int la_1 = LA(1);
 		try {
 			super.matchNot(t);
-			parserEventSupport.fireMatchNot(la_1, t, text, inputState.guessing);
+			parserEventSupport.fireMatchNot(la_1, t, text, guessing);
 		}
 		catch (MismatchedTokenException e) {
-			if (inputState.guessing == 0)
-				parserEventSupport.fireMismatchNot(la_1, t, text, inputState.guessing);
+			if (guessing == 0)
+				parserEventSupport.fireMismatchNot(la_1, t, text, guessing);
 			throw e;
 		}
 	}

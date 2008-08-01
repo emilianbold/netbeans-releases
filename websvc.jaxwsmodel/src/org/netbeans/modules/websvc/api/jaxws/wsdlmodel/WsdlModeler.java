@@ -336,6 +336,15 @@ public class WsdlModeler {
                 }
             }
         }
+
+        @Override
+        public void debug(SAXParseException ex) {
+            Logger.getLogger(this.getClass().getName()).log(Level.FINE,
+                    "WsdlModeler.generateWsdlModel", ex); //NOI18N
+            if (errorHandler != null) {
+                errorHandler.info(ex);
+            }
+        }
     }
 
     public synchronized void addWsdlChangeListener(WsdlChangeListener wsdlChangeListener) {

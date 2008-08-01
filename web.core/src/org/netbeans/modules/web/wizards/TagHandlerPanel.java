@@ -75,7 +75,7 @@ public class TagHandlerPanel extends javax.swing.JPanel {
         // You must have turned on WizardDescriptor.WizardPanel_helpDisplayed
         // (see descriptor in standard iterator template for an example of this).
         try {
-            putClientProperty ("WizardPanel_helpURL", // NOI18N
+            putClientProperty (WizardDescriptor.PROP_HELP_URL, // NOI18N
                 new URL ("nbresloc:/org/netbeans/modules/web/wizards/TagHandlerHelp.html")); // NOI18N
         } catch (MalformedURLException mfue) {
             throw new IllegalStateException (mfue.toString ());
@@ -185,7 +185,6 @@ public class TagHandlerPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
     
     private void itemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_itemStateChanged
-        // TODO add your handling code here:
         if (simpleTagButton.isSelected())
             descriptionArea.setText(org.openide.util.NbBundle.getMessage(TagHandlerPanel.class, "DESC_SimpleTag"));
         else

@@ -1,2 +1,3 @@
+fieldBA A*
 boo() void
 operator ->() A*

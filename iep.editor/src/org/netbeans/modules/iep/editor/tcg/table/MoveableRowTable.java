@@ -33,6 +33,7 @@ import java.awt.dnd.DropTargetEvent;
 import java.awt.dnd.DropTargetListener;
 
 import java.util.ArrayList;
+import java.util.Vector;
 
 import javax.swing.JTable;
 
@@ -53,6 +54,10 @@ public class MoveableRowTable
     extends JTable
     implements DragGestureListener, DropTargetListener {
 
+    /**
+     * 
+     */
+    private static final long serialVersionUID = -9061291731143514732L;
     private static final java.util.logging.Logger mLog = java.util.logging.Logger.getLogger(MoveableRowTable.class.getName());
 
     /**
@@ -102,16 +107,16 @@ public class MoveableRowTable
      */
     public static void main(String[] args) {
 
-        java.util.Vector colNames = new java.util.Vector();
+        Vector<String> colNames = new Vector<String>();
 
         colNames.add("Variable");
         colNames.add("Label");
         colNames.add("Value");
 
-        java.util.Vector data = new java.util.Vector();
+        Vector<Vector<String>> data = new Vector<Vector<String>>();
 
         for (int i = 1; i <= 30; i++) {
-            java.util.Vector aRow = new java.util.Vector();
+            Vector<String> aRow = new Vector<String>();
 
             aRow.add("variable " + i);
             aRow.add("label " + i);

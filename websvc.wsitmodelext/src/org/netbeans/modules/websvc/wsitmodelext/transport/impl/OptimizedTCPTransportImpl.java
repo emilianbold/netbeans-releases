@@ -42,9 +42,7 @@
 package org.netbeans.modules.websvc.wsitmodelext.transport.impl;
 
 import org.netbeans.modules.websvc.wsitmodelext.transport.OptimizedTCPTransport;
-import org.netbeans.modules.websvc.wsitmodelext.transport.TCPQName;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import org.netbeans.modules.xml.wsdl.model.visitor.WSDLVisitor;
 import org.w3c.dom.Element;
 
 /**
@@ -60,20 +58,20 @@ public class OptimizedTCPTransportImpl extends TCPComponentImpl implements Optim
         super(model, e);
     }
     
-    public OptimizedTCPTransportImpl(WSDLModel model){
-        this(model, createPrefixedElement(TCPQName.OPTIMIZEDTCPTRANSPORT.getQName(), model));
-    }
-
-    @Override
-    public void accept(WSDLVisitor visitor) {
-        visitor.visit(this);
-    }
-
     public void enable(boolean enabled) {
         setAttribute(TCP_CONTENT_VALUE_PROPERTY, TransportAttribute.ENABLED, enabled);        
     }
 
     public boolean isEnabled() {
         return Boolean.parseBoolean(getAttribute(TransportAttribute.ENABLED));
-    }    
+    }
+    
+    public void setPort(String port) {
+        setAttribute(PORT, TransportAttribute.PORT, port);
+    }
+
+    public String getPort() {
+        return getAttribute(TransportAttribute.PORT);
+    }
+
 }

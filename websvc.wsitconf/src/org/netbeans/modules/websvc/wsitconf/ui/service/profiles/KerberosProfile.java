@@ -45,20 +45,16 @@ import java.awt.Dialog;
 import javax.swing.JPanel;
 import javax.swing.undo.UndoManager;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.websvc.wsitconf.spi.features.ClientDefaultsFeature;
 import org.netbeans.modules.websvc.wsitconf.spi.features.SecureConversationFeature;
-import org.netbeans.modules.websvc.wsitconf.spi.features.ServiceDefaultsFeature;
 import org.netbeans.modules.websvc.wsitconf.ui.ComboConstants;
-import org.netbeans.modules.websvc.wsitconf.ui.service.subpanels.KeystorePanel;
 import org.netbeans.modules.websvc.wsitconf.util.UndoCounter;
-import org.netbeans.modules.websvc.wsitconf.util.Util;
+import org.netbeans.modules.websvc.wsitmodelext.versioning.ConfigVersion;
+import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.PolicyModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.ProfilesModelHelper;
-import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.ProprietarySecurityPolicyModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.SecurityPolicyModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.SecurityTokensModelHelper;
 import org.netbeans.modules.websvc.wsitmodelext.security.tokens.ProtectionToken;
 import org.netbeans.modules.websvc.wsitmodelext.security.tokens.SecureConversationToken;
-import org.netbeans.modules.xml.wsdl.model.Binding;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.openide.DialogDescriptor;
@@ -70,7 +66,7 @@ import org.openide.DialogDisplayer;
  * @author Martin Grebac
  */
 public class KerberosProfile extends ProfileBase 
-        implements SecureConversationFeature,ClientDefaultsFeature,ServiceDefaultsFeature {
+        implements SecureConversationFeature {
     
     public int getId() {
         return 25;
@@ -82,6 +78,12 @@ public class KerberosProfile extends ProfileBase
 
     public String getDescription() {
         return ComboConstants.PROF_KERBEROS_INFO;
+    }
+    
+    @Override
+    public boolean isProfileSupported(Project p, WSDLComponent component, boolean sts) {
+        ConfigVersion configVersion = PolicyModelHelper.getConfigVersion(component);
+        return ConfigVersion.CONFIG_1_3.equals(configVersion);
     }
     
     /**
@@ -113,44 +115,6 @@ public class KerberosProfile extends ProfileBase
         
         model.removeUndoableEditListener(undoCounter);
     }
-    
-    public void setServiceDefaults(WSDLComponent component, Project p) {
-        ProprietarySecurityPolicyModelHelper.setStoreLocation(component, null, false, false);
-        ProprietarySecurityPolicyModelHelper.setStoreLocation(component, null, true, false);
-    }    
-
-    public void setClientDefaults(WSDLComponent component, WSDLComponent serviceBinding, Project p) {
-        ProprietarySecurityPolicyModelHelper.setStoreLocation(component, null, false, true);
-        ProprietarySecurityPolicyModelHelper.setStoreLocation(component, null, true, true);
-        ProprietarySecurityPolicyModelHelper.removeCallbackHandlerConfiguration((Binding) component);
-    }    
-    
-    public boolean isClientDefaultSetupUsed(WSDLComponent component, Binding serviceBinding, Project p) {
-        if (ProprietarySecurityPolicyModelHelper.getCBHConfiguration((Binding) component) != null) {
-            return false;
-        }
-        String keyAlias = ProprietarySecurityPolicyModelHelper.getStoreAlias(component, false);
-        String trustAlias = ProprietarySecurityPolicyModelHelper.getStoreAlias(component, true);
-        String trustPasswd = ProprietarySecurityPolicyModelHelper.getStorePassword(component, true);
-        String keyPasswd = ProprietarySecurityPolicyModelHelper.getStorePassword(component, false);
-        String keyLoc = ProprietarySecurityPolicyModelHelper.getStoreLocation(component, false);
-        String trustLoc = ProprietarySecurityPolicyModelHelper.getStoreLocation(component, true);        
-        if ((keyAlias == null) && (trustAlias == null) && (trustPasswd == null) && 
-            (keyPasswd == null) && (keyLoc == null) && (trustLoc == null)) {
-                return true;
-        }
-        return false;
-    }
-
-    public boolean isServiceDefaultSetupUsed(WSDLComponent component, Project p) {
-        String storeAlias = ProprietarySecurityPolicyModelHelper.getStoreAlias(component, false);
-        String storeLoc = ProprietarySecurityPolicyModelHelper.getStoreLocation(component, false);
-        String storePasswd = ProprietarySecurityPolicyModelHelper.getStorePassword(component, false);
-        if ((storeAlias == null) && (storeLoc == null) && (storePasswd == null)) {
-            return true;
-        }
-        return false;
-    }
 
     public boolean isSecureConversation(WSDLComponent component) {
         WSDLComponent topSecBinding = SecurityPolicyModelHelper.getSecurityBindingTypeElement(component);
@@ -160,8 +124,8 @@ public class KerberosProfile extends ProfileBase
     }
 
     public void enableSecureConversation(WSDLComponent component, boolean enable) {
-//        ProfilesModelHelper pmh = ProfilesModelHelper.getInstance(cfgVersion);
-        ProfilesModelHelper.enableSecureConversation(component, enable);
+        ProfilesModelHelper pmh = ProfilesModelHelper.getInstance(PolicyModelHelper.getConfigVersion(component));
+        pmh.setSecureConversation(component, enable);
     }
     
 }

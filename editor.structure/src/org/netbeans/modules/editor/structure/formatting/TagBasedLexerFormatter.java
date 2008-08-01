@@ -165,14 +165,15 @@ public abstract class TagBasedLexerFormatter {
         List<TagIndentationData> matchedOpeningTags = new ArrayList<TagIndentationData>();
         BaseDocument doc = (BaseDocument) context.document();
         doc.atomicLock();
-        TokenHierarchy tokenHierarchy = TokenHierarchy.get(doc);
-
-        if (tokenHierarchy == null) {
-            logger.severe("Could not retrieve TokenHierarchy for document " + doc);
-            return;
-        }
-
+        
         try {
+            TokenHierarchy tokenHierarchy = TokenHierarchy.get(doc);
+
+            if (tokenHierarchy == null) {
+                logger.severe("Could not retrieve TokenHierarchy for document " + doc);
+                return;
+            }
+            
             TransferData transferData = null;
             
             if (isTopLevelLanguage(doc)){
@@ -505,6 +506,11 @@ public abstract class TagBasedLexerFormatter {
         // format content of a tag that spans across multiple lines
         int firstTagLine = Utilities.getLineOffset(doc, tokenSequence.offset());
         int tagEndOffset = getTagEndOffset(tokenSequence, tokenSequence.offset());
+        
+        if (tagEndOffset == -1){
+            return true; // unterminated tag, ignore
+        }
+        
         int lastTagLine = Utilities.getLineOffset(doc, tagEndOffset);
 
         TagIndentationData tagData = new TagIndentationData(tagName, lastTagLine);
@@ -695,7 +701,11 @@ public abstract class TagBasedLexerFormatter {
             }
 
             Integer dotPos = (Integer) doc.getProperty(TransferData.ORG_CARET_OFFSET_DOCPROPERTY);
-            assert dotPos != null;
+            //assert dotPos != null;
+            if(dotPos == null) {
+                dotPos = context.caretOffset();
+            }
+            
             int origDotPos = dotPos.intValue() - 1; // dotPos - "\n".length()
             
             if (indexWithinCurrentLanguage(doc, origDotPos - 1)) {

@@ -42,7 +42,6 @@ package org.netbeans.modules.subversion.client.parser;
 
 /**
  *
- * XXX find same handling for this and the "Action cancelled by user" exception
  * @author Ed Hillmann
  */
 public class LocalSubversionException extends Exception {

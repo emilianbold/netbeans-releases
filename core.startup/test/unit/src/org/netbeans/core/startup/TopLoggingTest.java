@@ -57,6 +57,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.SwingUtilities;
 import org.netbeans.junit.NbTestCase;
+import org.openide.util.RequestProcessor;
 
 
 /**
@@ -335,6 +336,17 @@ public class TopLoggingTest extends NbTestCase {
         if (log.indexOf("IllegalStateException") == -1) {
             fail("There should be IllegalStateException:\n" + log);
         }
+    }
+    
+    public void testLoggingFromRequestProcessor() throws Exception {
+        Logger.getLogger("org.openide.util.RequestProcessor").setLevel(Level.ALL);
+
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                
+            }
+        }).waitFinished();
+        
     }
 
     private String readLog(boolean doFlush) throws IOException {

@@ -1,23 +1,21 @@
-// 
-// File:   %<%NAME%>%.%<%EXTENSION%>%
-// Author: %<%USER%>%
-//
-// Created on %<%DATE%>%, %<%TIME%>%
-//
+/* 
+ * File:   %<%NAME%>%.%<%EXTENSION%>%
+ * Author: %<%USER%>%
+ *
+ * Created on %<%DATE%>%, %<%TIME%>%
+ */
 
-#ifndef _%<%GUARD_NAME%>%_H
-#define	_%<%GUARD_NAME%>%_H
+#ifndef _%<%GUARD_NAME%>%
+#define	_%<%GUARD_NAME%>%
 
-class %<%NAME%>% {
+class %<%CLASSNAME%>% {
 public:
-	%<%NAME%>%();
-	~%<%NAME%>%();
-
-protected:
-
+	%<%CLASSNAME%>%();
+	%<%CLASSNAME%>%(const %<%CLASSNAME%>%& orig);
+	virtual ~%<%CLASSNAME%>%();
 private:
 
 };
 
-#endif	/* _%<%GUARD_NAME%>%_H */
+#endif	/* _%<%GUARD_NAME%>% */
 

@@ -109,8 +109,7 @@ public final class LanguageOperation<T extends TokenId> implements PropertyChang
         if (!existingLanguagePaths.contains(lp)) {
             newLanguagePaths.add(lp);
         }
-        @SuppressWarnings("unchecked")
-        Language<T> language = (Language<T>)lp.innerLanguage();
+        Language<T> language = (Language<T>)LexerUtilsConstants.<T>innerLanguage(lp);
         if (!exploredLanguages.contains(language)) {
             exploredLanguages.add(language);
             Set<T> ids = language.tokenIds();
@@ -162,6 +161,10 @@ public final class LanguageOperation<T extends TokenId> implements PropertyChang
         WeakListeners.create(PropertyChangeListener.class, this, LanguageManager.getInstance()));
     }
     
+    public Language<T> language() {
+        return language;
+    }
+    
     public synchronized TokenValidator<T> tokenValidator(T id) {
         if (tokenValidators == null) {
             tokenValidators = allocateTokenValidatorArray(language.maxOrdinal() + 1);
@@ -188,31 +191,10 @@ public final class LanguageOperation<T extends TokenId> implements PropertyChang
         }
         FlyItem<T> item = flyItems[id.ordinal()];
         if (item == null) {
-            token = new TextToken<T>(id, text); // create flyweight token
-            token.makeFlyweight();
-            flyItems[id.ordinal()] = new FlyItem<T>(token);
-        } else { // already a valid item
-            token = item.token();
-            if (token.text() != text) {
-                token = item.token2();
-                if (token == null || token.text() != text) {
-                    token = item.token();
-                    if (!CharSequenceUtilities.textEquals(token.text(), text)) {
-                        token = item.token2();
-                        if (token == null || !CharSequenceUtilities.textEquals(token.text(), text)) {
-                            // Create new token
-                            token = new TextToken<T>(id, text);
-                            token.makeFlyweight();
-                        }
-                        item.pushToken(token);
-                    }
-                } else { // found token2
-                    item.pushToken(token);
-                }
-            }
+            item = new FlyItem<T>(id, text);
+            flyItems[id.ordinal()] = item;
         }
-        assert (token != null); // Should return non-null token
-        return token;
+        return item.flyToken(id, text);
     }
     
     public synchronized EmbeddingPresence embeddingPresence(T id) {
@@ -322,27 +304,49 @@ public final class LanguageOperation<T extends TokenId> implements PropertyChang
         return (TokenValidator<T>[]) new TokenValidator[length];
     }
 
+    
     private static final class FlyItem<T extends TokenId> {
         
-        private TextToken<T> token;
+        private TextToken<T> token; // Most used (first candidate)
         
-        private TextToken<T> token2;
+        private TextToken<T> token2; // Second most used
         
-        public FlyItem(TextToken<T> token) {
-            this.token = token;
+        FlyItem(T id, String text) {
+            newToken(id, text);
+            token2 = token; // Make both item non-null
         }
-        
-        public TextToken<T> token() {
+
+        TextToken<T> flyToken(T id, String text) {
+            // First do a quick check for equality only in both items
+            if (token.text() != text) {
+                if (token2.text() == text) {
+                    // Swap token and token2 => token will contain the right value
+                    swap();
+                } else { // token.text() != text && token2.text() != text
+                    // Now deep-compare of text of both tokens
+                    if (!CharSequenceUtilities.textEquals(token.text(), text)) {
+                        if (!CharSequenceUtilities.textEquals(token2.text(), text)) {
+                            token2 = token;
+                            newToken(id, text);
+                        } else { // swap
+                            swap();
+                        }
+                    }
+                }
+            }
             return token;
         }
         
-        public TextToken<T> token2() {
-            return token2;
+        void newToken(T id, String text) {
+            // Create new token
+            token = new TextToken<T>(id, text);
+            token.makeFlyweight();
         }
         
-        public void pushToken(TextToken<T> token) {
-            this.token2 = this.token;
-            this.token = token;
+        private void swap() {
+            TextToken<T> tmp = token;
+            token = token2;
+            token2 = tmp;
         }
         
     }

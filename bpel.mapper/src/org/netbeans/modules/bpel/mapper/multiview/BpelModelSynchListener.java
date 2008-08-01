@@ -156,6 +156,7 @@ public class BpelModelSynchListener implements Runnable,
     }
 
     public void notifyArrayUpdated(ArrayUpdateEvent event) {
+        reloadMapper(event);
     }
 
     public void notifyEntityInserted(EntityInsertEvent event) {

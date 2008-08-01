@@ -65,7 +65,7 @@ public class WrapperPanel extends javax.swing.JPanel {
         // You must have turned on WizardDescriptor.WizardPanel_helpDisplayed
         // (see descriptor in standard iterator template for an example of this).
         try {
-            putClientProperty ("WizardPanel_helpURL", // NOI18N
+            putClientProperty (WizardDescriptor.PROP_HELP_URL, // NOI18N
                 new URL ("nbresloc:/org/netbeans/modules/web/wizards/WrapperPanelHelp.html")); // NOI18N
         } catch (MalformedURLException mfue) {
             throw new IllegalStateException (mfue.toString ());

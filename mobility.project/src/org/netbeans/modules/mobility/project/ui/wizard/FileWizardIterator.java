@@ -291,10 +291,10 @@ public class FileWizardIterator implements TemplateWizard.Iterator {
     
     private void updateStepsList() {
         final JComponent component = (JComponent) current().getComponent();
-        component.putClientProperty("WizardPanel_contentData", new String[] {// NOI18N
+        component.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, new String[] {// NOI18N
             NbBundle.getMessage(MIDPTargetChooserPanel.class, "TITLE_File"), // NOI18N
         }); // NOI18N
-        component.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(panelIndex)); // NOI18N
+        component.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer(panelIndex)); // NOI18N
     }
     
 }

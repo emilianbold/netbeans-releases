@@ -42,9 +42,7 @@
 package org.netbeans.modules.websvc.wsitmodelext.transport.impl;
 
 import org.netbeans.modules.websvc.wsitmodelext.transport.AutomaticallySelectOptimalTransport;
-import org.netbeans.modules.websvc.wsitmodelext.transport.TCPQName;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import org.netbeans.modules.xml.wsdl.model.visitor.WSDLVisitor;
 import org.w3c.dom.Element;
 
 /**
@@ -60,13 +58,4 @@ public class AutomaticallySelectOptimalTransportImpl extends TCPClientComponentI
         super(model, e);
     }
     
-    public AutomaticallySelectOptimalTransportImpl(WSDLModel model){
-        this(model, createPrefixedElement(TCPQName.AUTOMATICALLYSELECTOPTIMALTRANSPORT.getQName(), model));
-    }
-
-    @Override
-    public void accept(WSDLVisitor visitor) {
-        visitor.visit(this);
-    }
-
 }

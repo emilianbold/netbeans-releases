@@ -1,0 +1,75 @@
+/*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Sun in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *      jdeva <deva@neteans.org>
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ */
+// NetBeansExtension.idl : IDL source for NetBeansExtension
+//
+
+// This file will be processed by the MIDL tool to
+// produce the type library (NetBeansExtension.tlb) and marshalling code.
+
+import "oaidl.idl";
+import "ocidl.idl";
+
+[
+	object,
+	uuid(75E82E35-705C-4D14-8B2B-60501EC96983),
+	dual,
+	nonextensible,
+	helpstring("INetBeansBHO Interface"),
+	pointer_default(unique)
+]
+interface INetBeansBHO : IDispatch{
+};
+[
+	uuid(4BC81E1E-9971-4589-A3D4-8F7786CBBD0E),
+	version(1.0),
+	helpstring("NetBeansExtension 1.0 Type Library")
+]
+library NetBeansExtensionLib
+{
+	importlib("stdole2.tlb");
+	[
+		uuid(25CE9541-A839-46B4-81C6-1FAE46AD2EDE),
+		helpstring("NetBeansBHO Class")
+	]
+	coclass NetBeansBHO
+	{
+		[default] interface INetBeansBHO;
+	};
+};

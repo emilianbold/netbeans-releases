@@ -82,7 +82,7 @@ made subject to such option by the copyright holder.
 
             <file name="VisualDesign.java" url="templates/emptyvisualdesign_java.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.vmd.midp.resources.Bundle"/>
-                <attr name="position" intvalue="500"/>
+                <attr name="position" intvalue="501"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:org/netbeans/modules/vmd/midp/resources/templates/emptyvisualdesign.html"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
@@ -127,6 +127,7 @@ made subject to such option by the copyright holder.
             <file name="org-netbeans-modules-vmd-midp-components-categories-DisplayablesCategoryCD.instance"/>
             <file name="org-netbeans-modules-vmd-midp-components-categories-PointsCategoryCD.instance"/>
             <file name="org-netbeans-modules-vmd-midp-components-categories-ResourcesCategoryCD.instance"/>
+            <file name="org-netbeans-modules-vmd-midp-components-categories-DatabindingCategoryCD.instance"/>
 
             <file name="org-netbeans-modules-vmd-midp-components-resources-ResourceCD.instance"/>
             <file name="org-netbeans-modules-vmd-midp-components-resources-FontCD.instance"/>
@@ -190,7 +191,22 @@ made subject to such option by the copyright holder.
             <file name="org-netbeans-modules-vmd-midp-components-listeners-CommandListenerCD.instance"/>
             <file name="org-netbeans-modules-vmd-midp-components-listeners-ItemCommandListenerCD.instance"/>
             <file name="org-netbeans-modules-vmd-midp-components-listeners-ItemStateListenerCD.instance"/>
-
+            <file name="org-netbeans-modules-vmd-midp-components-databinding-DataSetAbstractCD.instance"/>
+            <file name="org-netbeans-modules-vmd-midp-components-databinding-DataSetCD.instance"/>
+            <file name="org-netbeans-modules-vmd-midp-components-databinding-DataSetConnectorCD.instance"/>
+            <file name="org-netbeans-modules-vmd-midp-components-databinding-IndexableDataSetCD.instance"/>
+            <file name="org-netbeans-modules-vmd-midp-components-databinding-ContactsDataSetCD.instance"/>
+            <file name="org-netbeans-modules-vmd-midp-components-databinding-IndexableDataAbstractSetCD.instance"/>
+            <file name="org-netbeans-modules-vmd-midp-components-databinding-IndexableDataSetIndexCD.instance"/>
+            <!--
+            <file name="org-netbeans-modules-vmd-midp-components-databinding-AddressDataSetCD.instance"/>
+            <file name="org-netbeans-modules-vmd-midp-components-databinding-NameDataSetCD.instance"/>
+            <file name="org-netbeans-modules-vmd-midp-components-databinding-PIMDataSetCD.instance"/>
+            <file name="org-netbeans-modules-vmd-midp-components-databinding-ToDoDataSetCD.instance"/>
+            
+             
+             -->
+            
         </folder>
 
         <folder name="producers">
@@ -222,6 +238,17 @@ made subject to such option by the copyright holder.
             <file name="org-netbeans-modules-vmd-midp-producers-MidpComponentProducer$Image.instance"/>
             <file name="org-netbeans-modules-vmd-midp-producers-MidpComponentProducer$Ticker.instance"/>
             <file name="org-netbeans-modules-vmd-midp-producers-MidpComponentProducer$TextField.instance"/>
+            
+            <file name="org-netbeans-modules-vmd-midp-producers-DataSetAbstractProducer$DataSetProducer.instance"/>
+            <file name="org-netbeans-modules-vmd-midp-producers-DataSetAbstractProducer$ContactsDataSetProducer.instance"/>
+            <file name="org-netbeans-modules-vmd-midp-producers-DataSetAbstractProducer$IndexableDataSetProducer.instance"/>
+            
+            <!--
+            <file name="org-netbeans-modules-vmd-midp-producers-DataSetAbstractProducer$PIMDataSetProducer.instance"/>
+            <file name="org-netbeans-modules-vmd-midp-producers-DataSetAbstractProducer$ToDoDataSetProducer.instance"/>
+            <file name="org-netbeans-modules-vmd-midp-producers-DataSetAbstractProducer$AddressDataSetProducer.instance"/>
+            <file name="org-netbeans-modules-vmd-midp-producers-DataSetAbstractProducer$NameDataSetProducer.instance"/>
+            -->
         </folder>
         
         <folder name="inspectorfolders">

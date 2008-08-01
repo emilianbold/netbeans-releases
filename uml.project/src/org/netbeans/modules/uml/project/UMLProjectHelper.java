@@ -342,7 +342,10 @@ public class UMLProjectHelper
     
     public void saveProject()
     {
-        mApplication.saveProject(mProject);
+        if (mApplication != null) 
+        {
+            mApplication.saveProject(mProject);
+        }
     }
     
     public void scanSourceGroups()

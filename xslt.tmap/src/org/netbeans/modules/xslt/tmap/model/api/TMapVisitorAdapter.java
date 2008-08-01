@@ -29,6 +29,10 @@ public class TMapVisitorAdapter implements TMapVisitor {
         visit((TMapComponent)transformMap);
     }
 
+    public void visit(Import imprt) {
+        visit((TMapComponent)imprt);
+    }
+
     public void visit(Service service) {
         visit((TMapComponent)service);
     }

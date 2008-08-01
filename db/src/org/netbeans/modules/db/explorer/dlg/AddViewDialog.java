@@ -44,6 +44,7 @@ package org.netbeans.modules.db.explorer.dlg;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
+import java.util.concurrent.Callable;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import org.openide.DialogDescriptor;
@@ -136,10 +137,14 @@ public class AddViewDialog {
                     if (event.getSource() == DialogDescriptor.OK_OPTION) {
                         
                         try {
-                            boolean wasException = AddViewDDL.addView(spec, 
-                                    (String)info.get(DatabaseNodeInfo.SCHEMA), 
-                                    getViewName(), getViewCode());
-                            
+                            boolean wasException = DbUtilities.doWithProgress(null, new Callable<Boolean>() {
+                                public Boolean call() throws Exception {
+                                    return AddViewDDL.addView(spec, 
+                                            (String)info.get(DatabaseNodeInfo.SCHEMA), 
+                                            getViewName(), getViewCode());
+                                }
+                            });
+
                             result = !wasException;
                             
                             if (!wasException) {

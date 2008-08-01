@@ -28,23 +28,13 @@
 package org.netbeans.modules.bpel.model.ext.logging.api;
 
 import org.netbeans.modules.bpel.model.api.BpelContainer;
+import org.netbeans.modules.bpel.model.api.ExtensibleElements;
 import org.netbeans.modules.bpel.model.api.ExtensionEntity;
-import org.netbeans.modules.bpel.model.api.From;
+import org.netbeans.modules.bpel.model.api.FromHolder;
 
 /**
  */
-public interface Alert extends ExtensionEntity, BpelContainer {
-    String LOCATION = "location"; //NOI18N
-    String LEVEL = "level"; //NOI18N
-    
-    From getFrom();
-    void setFrom(From from); 
-    
-    AlertLevel getLevel();
-    void setLevel(AlertLevel level);
-    void removeLevel();
-    
-    Location getLocation();
-    void setLocation(Location location);
-    void removeLocation();
+public interface Alert extends ExtensionEntity, FromHolder, 
+        LevelLocationHandler<AlertLevel>, BpelContainer, ExtensibleElements 
+{
 }

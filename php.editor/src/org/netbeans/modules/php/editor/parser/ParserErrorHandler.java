@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.php.editor.parser;
 
+import java_cup.runtime.Symbol;
+
 /**
  *
  * @author Petr Pisl
@@ -50,6 +52,6 @@ public interface ParserErrorHandler {
         SYNTAX_ERROR
     }
     
-    public void handleError(ParserErrorHandler.Type type, String message, int startOffset, int endOffset, Object info);
+    public void handleError(ParserErrorHandler.Type type, short[] expectedTokens, Symbol current, Symbol previous);
     
 }

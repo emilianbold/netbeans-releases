@@ -42,16 +42,12 @@
 package org.netbeans.modules.web.wizards;
 
 import java.io.IOException;
-
-import org.openide.filesystems.FileObject;
-
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
-
-//import org.netbeans.api.java.classpath.ClassPath;
-//import org.netbeans.api.project.Project;
-//import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.openide.filesystems.FileObject;
 
 /**
 * Generic methods for evaluating the input into the wizards.
@@ -61,39 +57,32 @@ import org.netbeans.modules.web.api.webmodule.WebModule;
 
 abstract class DeployData { 
 
+    private static final Logger LOG = Logger.getLogger(DeployData.class.getName());
+    
     WebApp webApp = null; 
     String className = null; 
     boolean makeEntry = true; 
     FileObject ddObject = null; 
 
-    final static boolean debug = false; 
-
     // This is the web app file object
     void setWebApp(FileObject fo) { 
-	if(debug) log("::setWebApp()"); 
-	if(fo == null) { 
-	    ddObject = null; 
+	LOG.finer("setWebApp()");
+        
+	ddObject = fo;
+	if (fo == null) {
 	    webApp = null; 
 	    return;
 	} 
 
-	ddObject = fo; 
-
 	try { 
 	    webApp = DDProvider.getDefault().getDDRoot(fo);
-	    if(debug) log(webApp.toString()); 
+	    LOG.finer("webApp = "+webApp);
 	}
 	catch(IOException ioex) {
-	    if(debug) { 
-		log("Couldn't get the web app!");  
-		ioex.printStackTrace(); // XXX this is not an exception handling
-	    }
+	    LOG.log(Level.FINE, "Couldn't get the web app!", ioex);
 	} 
 	catch(Exception ex) {
-	    if(debug) { 
-		log("Couldn't get the web app!");  
-		ex.printStackTrace();  // XXX this is not an exception handling
-	    }
+	    LOG.log(Level.FINE, "Couldn't get the web app!", ex);
 	} 
     } 
 
@@ -115,10 +104,10 @@ abstract class DeployData {
     } 
 
     void writeChanges() throws IOException { 
-
-	if(debug) log("::writeChanges()"); //NOI18N
-	if(webApp == null) return; 
-	if(debug) log("now writing..."); //NOI18N
+	LOG.finer("writeChanges()"); //NOI18N
+	if(webApp == null)
+            return; 
+	LOG.finer("now writing..."); //NOI18N
         webApp.write(ddObject);
     }
 
@@ -126,7 +115,6 @@ abstract class DeployData {
     // This must invoke write changes at the end 
     abstract void createDDEntries(); 
     abstract String getErrorMessage(); 
-    abstract void log(String s);
     abstract void setAddToDD(boolean addToDD);
     abstract boolean isAddToDD();
     

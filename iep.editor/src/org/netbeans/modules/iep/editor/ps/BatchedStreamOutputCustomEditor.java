@@ -119,9 +119,9 @@ public class BatchedStreamOutputCustomEditor extends DefaultCustomEditor {
             mOutputSchemaNamePanel = PropertyPanel.createSingleLineTextPanel(outputSchemaNameStr, outputSchemaNameProp, false);
             if (mIsSchemaOwner) {
                 if (mOutputSchemaNamePanel.getStringValue() == null || mOutputSchemaNamePanel.getStringValue().trim().equals("")) {
-                	IEPModel model = mComponent.getModel();
-                	String schemaName = NameGenerator.generateSchemaName(model.getPlanComponent().getSchemaComponentContainer());
-                	mOutputSchemaNamePanel.setStringValue(schemaName);
+                    IEPModel model = mComponent.getModel();
+                    String schemaName = NameGenerator.generateSchemaName(model.getPlanComponent().getSchemaComponentContainer());
+                    mOutputSchemaNamePanel.setStringValue(schemaName);
                 }
             }else {
                 ((JTextField)mOutputSchemaNamePanel.input[0]).setEditable(false);

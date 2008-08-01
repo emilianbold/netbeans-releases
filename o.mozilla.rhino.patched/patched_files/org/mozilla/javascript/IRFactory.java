@@ -132,38 +132,91 @@ final class IRFactory
         //
 
         Node.Jump switchNode = new Node.Jump(Token.SWITCH, expr, lineno);
-        Node block = new Node(Token.BLOCK, switchNode);
-        return block;
+        // <netbeans>
+        // We don't want to rewrite the AST in the way indicate above;
+        // that makes doing AST based formatting for example very tricky
+        // since the Switch node doesn't correspond to the editor region
+        // for the switch.
+        //Node block = new Node(Token.BLOCK, switchNode);
+        //return block;
+        return switchNode;
+        // </netbeans>
     }
 
     /**
      * If caseExpression argument is null it indicate default label.
      */
-    void addSwitchCase(Node switchBlock, Node caseExpression, Node statements)
+    void addSwitchCase(Node switchBlock, Node caseExpression, Node statements
+            // <netbeans>
+            , int caseStart
+            // </netbeans>
+            )
     {
-        if (switchBlock.getType() != Token.BLOCK) throw Kit.codeBug();
-        Node.Jump switchNode = (Node.Jump)switchBlock.getFirstChild();
+        // <netbeans>
+        // I've modified the switch AST - see createSwitch(). Therefore, this
+        // assertion is no longer valid
+        //if (switchBlock.getType() != Token.BLOCK) throw Kit.codeBug();
+        //Node.Jump switchNode = (Node.Jump)switchBlock.getFirstChild();
+        Node.Jump switchNode = (Node.Jump)switchBlock;
+        int start = caseStart;
+        int end;
+        if (statements.hasChildren()) {
+            end = statements.getSourceEnd();
+        } else if (caseExpression != null) {
+            // should add in colon too
+            end = caseExpression.getSourceEnd();
+        } else {
+            // Must be a default:
+            end = caseStart+7; // "default".length()
+        }
+        // </netbeans>
         if (switchNode.getType() != Token.SWITCH) throw Kit.codeBug();
 
         Node gotoTarget = Node.newTarget();
+        // <netbeans>
+        int pos = parser.getEndOffset();
+        gotoTarget.setSourceBounds(pos, pos);
+        // </netbeans>
+        
         if (caseExpression != null) {
             Node.Jump caseNode = new Node.Jump(Token.CASE, caseExpression);
             caseNode.target = gotoTarget;
             switchNode.addChildToBack(caseNode);
+            // <netbeans>
+            caseNode.setSourceBounds(start, end);
+            caseNode.addChildToBack(statements);
+            // </netbeans>
         } else {
             switchNode.setDefault(gotoTarget);
+            // <netbeans>
+            // Put the default statement in its own node
+            Node defaultNode = new Node(Token.DEFAULT, statements);
+            defaultNode.setSourceBounds(caseStart, end);
+            switchNode.addChildToBack(defaultNode);
+            // </netbeans>
         }
-        switchBlock.addChildToBack(gotoTarget);
-        switchBlock.addChildToBack(statements);
+        // <netbeans>
+        //switchBlock.addChildToBack(gotoTarget);
+        //switchBlock.addChildToBack(statements);
+        // </netbeans>
     }
 
     void closeSwitch(Node switchBlock)
     {
-        if (switchBlock.getType() != Token.BLOCK) throw Kit.codeBug();
-        Node.Jump switchNode = (Node.Jump)switchBlock.getFirstChild();
+        // <netbeans>
+        // I've modified the switch AST - see createSwitch(). 
+        //if (switchBlock.getType() != Token.BLOCK) throw Kit.codeBug();
+        //Node.Jump switchNode = (Node.Jump)switchBlock.getFirstChild();
+        Node.Jump switchNode = (Node.Jump)switchBlock;
+        // </netbeans>
         if (switchNode.getType() != Token.SWITCH) throw Kit.codeBug();
 
         Node switchBreakTarget = Node.newTarget();
+        // <netbeans>
+        int pos = parser.getEndOffset();
+        switchBreakTarget.setSourceBounds(pos, pos);
+        // </netbeans>
+
         // switchNode.target is only used by NodeTransformer
         // to detect switch end
         switchNode.target = switchBreakTarget;
@@ -293,6 +346,10 @@ final class IRFactory
         // right target.
 
         Node breakTarget = Node.newTarget();
+        // <netbeans>
+        int pos = parser.getStartOffset();
+        breakTarget.setSourceBounds(pos, pos);
+        // </netbeans>
         Node block = new Node(Token.BLOCK, label, statement, breakTarget);
         label.target = breakTarget;
 
@@ -309,6 +366,11 @@ final class IRFactory
         int t = breakStatement.getType();
         if (t == Token.LOOP || t == Token.LABEL) {
             jumpStatement = (Node.Jump)breakStatement;
+        // <netbeans>
+        // I've modified the AST for switch - see createSwitch()
+        } else if (t == Token.SWITCH) {
+            jumpStatement = (Node.Jump)breakStatement;
+        // </netbeans>
         } else if (t == Token.BLOCK
                    && breakStatement.getFirstChild().getType() == Token.SWITCH)
         {
@@ -393,7 +455,13 @@ final class IRFactory
         // Add return to end if needed.
         Node lastStmt = statements.getLastChild();
         if (lastStmt == null || lastStmt.getType() != Token.RETURN) {
-            statements.addChildToBack(new Node(Token.RETURN));
+            // <netbeans>
+            //statements.addChildToBack(new Node(Token.RETURN));
+            Node implicitReturn = new Node(Token.RETURN);
+            int pos = parser.getEndOffset()-1; // -1: the pos is after }
+            implicitReturn.setSourceBounds(pos, pos);
+            statements.addChildToBack(implicitReturn);
+            // </netbeans>
         }
 
         // <netbeans>
@@ -482,7 +550,13 @@ final class IRFactory
         loop.addChildrenToBack(body);
         if (loopType == LOOP_WHILE || loopType == LOOP_FOR) {
             // propagate lineno to condition
-            loop.addChildrenToBack(new Node(Token.EMPTY, loop.getLineno()));
+            // <netbeans>
+            //loop.addChildrenToBack(new Node(Token.EMPTY, loop.getLineno()));
+            Node emptyNode = new Node(Token.EMPTY, loop.getLineno());
+            int pos = loop.getSourceStart();
+            emptyNode.setSourceBounds(pos, pos);
+            loop.addChildrenToBack(emptyNode);
+            // </netbeans>
         }
         loop.addChildToBack(condTarget);
         loop.addChildToBack(IFEQ);
@@ -566,12 +640,17 @@ final class IRFactory
         Node cond = new Node(Token.ENUM_NEXT);
         cond.putProp(Node.LOCAL_BLOCK_PROP, localBlock);
         Node id = new Node(Token.ENUM_ID);
+        // <netbeans>
+        int lvalueStart = lvalue.getSourceStart();
+        int lvalueEnd = lvalue.getSourceEnd();
+        id.setSourceBounds(lvalueStart,lvalueEnd);
+        // </netbeans>
         id.putProp(Node.LOCAL_BLOCK_PROP, localBlock);
 
         Node newBody = new Node(Token.BLOCK);
         Node assign = simpleAssignment(lvalue, id);
         // <netbeans>
-        assign.setSourceBounds(lvalue.getSourceStart(), lvalue.getSourceEnd());
+        assign.setSourceBounds(lvalueStart, lvalueEnd);
         // </netbeans>
         newBody.addChildToBack(new Node(Token.EXPR_VOID, assign));
         newBody.addChildToBack(body);
@@ -607,12 +686,14 @@ final class IRFactory
 
      * ... and a goto to GOTO around these handlers.
      */
+    // <netbeans>
+    /* Remove this whole method and replace it with a simpler one
+     * following this method, which performs no AST transformations etc.
+     //
     Node createTryCatchFinally(Node tryBlock, Node catchBlocks,
                                Node finallyBlock, int lineno)
     {
-        // <netbeans>
         int startOffset = tryBlock.getSourceStart();
-        // </netbeans>
         boolean hasFinally = (finallyBlock != null)
                              && (finallyBlock.getType() != Token.BLOCK
                                  || finallyBlock.hasChildren());
@@ -783,7 +864,44 @@ final class IRFactory
         // </netbeans>
         return handlerBlock;
     }
+    // <netbeans>
+    */
 
+    /**
+     * Similar to createTryCatchFinally but tries to make the AST
+     * simpler to more reflect the source structure and less optimized
+     * for execution (since our forked Rhino never actually executes
+     * the code anyway)
+     * 
+     * Also, this code doesn't do any short circuits removals the way the
+     * Rhino version does.
+     */
+    Node createTryCatchFinally(Node tryBlock, Node catchBlocks,
+                               Node finallyBlock, int lineno)
+    {
+        // <netbeans>
+        int startOffset = tryBlock.getSourceStart();
+        // </netbeans>
+        boolean hasFinally = (finallyBlock != null);
+//                             && (finallyBlock.getType() != Token.BLOCK
+//                                 || finallyBlock.hasChildren());
+
+        boolean hasCatch = catchBlocks.hasChildren();
+
+        Node.Jump pn = new Node.Jump(Token.TRY, tryBlock, lineno);
+
+        pn.addChildToBack(tryBlock);
+        if (hasCatch) {
+            pn.addChildrenToBack(catchBlocks.getFirstChild());
+        }
+        if (hasFinally) {
+            pn.addChildToBack(finallyBlock);
+        }
+            
+        return pn;
+    }
+    // </netbeans>
+    
     /**
      * Throw, Return, Label, Break and Continue are defined in ASTFactory.
      */
@@ -896,11 +1014,24 @@ final class IRFactory
 
         if (ifFalse != null) {
             Node endTarget = Node.newTarget();
+
+            // <netbeans>
+            int endTargetPos = parser.getEndOffset();
+            endTarget.setSourceBounds(endTargetPos, endTargetPos);
+            int notPos = ifFalse.getSourceStart();
+            ifNotTarget.setSourceBounds(notPos, notPos);
+            // </netbeans>
+            
             result.addChildToBack(makeJump(Token.GOTO, endTarget));
             result.addChildToBack(ifNotTarget);
             result.addChildrenToBack(ifFalse);
             result.addChildToBack(endTarget);
         } else {
+            // <netbeans>
+            int endPos = parser.getEndOffset();
+            ifNotTarget.setSourceBounds(endPos, endPos);
+            // </netbeans>
+
             result.addChildToBack(ifNotTarget);
         }
 

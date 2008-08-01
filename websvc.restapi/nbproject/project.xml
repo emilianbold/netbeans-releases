@@ -53,7 +53,16 @@
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.13</specification-version>
+                        <specification-version>1.18</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.api.java.classpath</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.0</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -170,7 +179,7 @@
             </module-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.websvc.rest</friend>
-                <friend>org.netbeans.modules.websvc.saas.codegen</friend>
+                <friend>org.netbeans.modules.websvc.saas.codegen.j2ee</friend>
                 <package>org.netbeans.modules.websvc.rest.model.api</package>
                 <package>org.netbeans.modules.websvc.rest.model.spi</package>
                 <package>org.netbeans.modules.websvc.rest.spi</package>

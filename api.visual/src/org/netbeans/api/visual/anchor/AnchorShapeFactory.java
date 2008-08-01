@@ -40,6 +40,10 @@
  */
 package org.netbeans.api.visual.anchor;
 
+import org.netbeans.api.visual.widget.ConnectionWidget;
+import org.netbeans.api.visual.widget.Widget;
+import org.netbeans.modules.visual.anchor.AttachableAnchorShape;
+import org.netbeans.modules.visual.anchor.DefaultAnchorShapeResolver;
 import org.netbeans.modules.visual.anchor.ImageAnchorShape;
 import org.netbeans.modules.visual.anchor.TriangleAnchorShape;
 import org.netbeans.modules.visual.anchor.ArrowAnchorShape;
@@ -54,6 +58,15 @@ import java.awt.*;
  */
 public class AnchorShapeFactory {
 
+    public enum ConnectionEnd 
+    {
+        /** The source end of a connection */
+        SOURCE, 
+        
+        /** The target end of a connection */
+        TARGET 
+    };
+    
     private AnchorShapeFactory () {
     }
 
@@ -109,5 +122,54 @@ public class AnchorShapeFactory {
     public static AnchorShape createArrowAnchorShape (int degrees, int size) {
         return new ArrowAnchorShape (degrees, size);
     }
-
+    
+    /**
+     * Creates a proxy AnchorShape that is used to adjust the location of an AnchorShape.
+     * The associated AnchorShape will fit on the outside of the attached widget.
+     * The connection end and the attached widget is used to determine the
+     * location of the location of the AnchorShape.
+     * 
+     * @param shape The shape that will be adjusted.
+     * @param owner The owner of the AnchorShape.
+     * @param referencingEnd The end of the connection to place the shape.
+     * @param attachedWidget The widget on the shapes end.
+     */
+    public static AnchorShape createAdjustableAnchorShape(AnchorShape shape,
+                                                          ConnectionWidget owner,
+                                                          ConnectionEnd referencingEnd,
+                                                          Widget attachedWidget)
+    {
+        AnchorShapeLocationResolver resolver = createWidgetResolver(owner, referencingEnd, attachedWidget);
+        return createAdjustableAnchorShape(shape, resolver);
+    }
+    
+    /**
+     * Creates a proxy AnchorShape that is used to adjust the location of an AnchorShape.  
+     * the location of the associated AnchorShape will be determined by a
+     * AnchorShapeLocationResolver.
+     * 
+     * @param The shape that will be adjusted.
+     * @param resolver The AnchorShapeLocationResolver used to determine where to place the shape.
+     */
+    public static AnchorShape createAdjustableAnchorShape(AnchorShape shape, AnchorShapeLocationResolver resolver)
+    {
+        return new AttachableAnchorShape(shape, resolver);
+    }
+    
+    /**
+     * Creates a AnchorShapeLocationResolver that uses a widget to resolve the 
+     * AnchorsShapes location.  The connection end and the attached widget
+     * is used to determine the location of the location of the AnchorShape.
+     * 
+     * @param owner The owner of the AnchorShape.
+     * @param referencingEnd The end of the connection to place the shape.
+     * @param attachedWidget The widget on the shapes end.
+     */
+    public static AnchorShapeLocationResolver createWidgetResolver(ConnectionWidget owner,
+                                                                   ConnectionEnd referencingEnd,
+                                                                   Widget attachedWidget)
+    {
+        return new DefaultAnchorShapeResolver(owner, referencingEnd, attachedWidget);
+    }
+    
 }

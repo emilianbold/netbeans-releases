@@ -52,7 +52,7 @@ package org.netbeans.test.cvsmodule;
 
 import java.io.File;
 import java.io.InputStream;
-import junit.textui.TestRunner;
+import junit.framework.Test;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.OutputOperator;
@@ -64,14 +64,10 @@ import org.netbeans.jellytools.modules.javacvs.ModuleToCheckoutStepOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.JemmyProperties;
-import org.netbeans.jemmy.QueueTool;
-import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JButtonOperator;
-import org.netbeans.jemmy.operators.JProgressBarOperator;
-import org.netbeans.jemmy.operators.Operator;
 import org.netbeans.jemmy.operators.Operator;
 import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
-import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.ide.ProjectSupport;
 
 /**
@@ -92,42 +88,33 @@ public class ResolveConflictsAndRevertTest extends JellyTestCase {
     public ResolveConflictsAndRevertTest(String name) {
         super(name);
     }
-    public static void main(String[] args) {
-        // TODO code application logic here
-        TestRunner.run(suite());
-    }
-    
+        
+    @Override
     protected void setUp() throws Exception {
         os_name = System.getProperty("os.name");
         //System.out.println(os_name);
         System.out.println("### " + getName() + " ###");
+        try {
+            TestKit.extractProtocol(getDataDir());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
     
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new ResolveConflictsAndRevertTest("testCheckOutProject"));
-        suite.addTest(new ResolveConflictsAndRevertTest("testResolveConflicts"));
-        suite.addTest(new ResolveConflictsAndRevertTest("testRevertModifications"));
-        //        suite.addTest(new ResolveConflictsAndRevertTest("removeAllData"));
-        return suite;
-    }
+    public static Test suite() {
+        return NbModuleSuite.create(
+                NbModuleSuite.createConfiguration(ResolveConflictsAndRevertTest.class).addTest(
+                     "testCheckOutProject", "testResolveConflicts", "testRevertModifications"
+                )
+                .enableModules(".*")
+                .clusters(".*")
+        );
+     }
     
     public void testCheckOutProject() throws Exception {
-        long timeout = JemmyProperties.getCurrentTimeout("ComponentOperator.WaitComponentTimeout");
-        try {
-            JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 30000);
-        } finally {
-            JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", timeout);
-        }
-        
-        timeout = JemmyProperties.getCurrentTimeout("DialogWaiter.WaitDialogTimeout");
-        try {
-            JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 30000);
-        } finally {
-            JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", timeout);
-        }
         TestKit.closeProject(projectName);
         new ProjectsTabOperator().tree().clearSelection();
+        OutputOperator.invoke();
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
         Operator.setDefaultStringComparator(comOperator);
@@ -145,7 +132,7 @@ public class ResolveConflictsAndRevertTest extends JellyTestCase {
         crso.setCVSRoot(CVSroot);
         System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", CVSroot);
         crso.next();
-        
+
         //2nd step of CheckOutWizard
         File tmp = new File("/tmp"); // NOI18N
         File work = new File(tmp, "" + File.separator + System.currentTimeMillis());
@@ -165,8 +152,7 @@ public class ResolveConflictsAndRevertTest extends JellyTestCase {
         CVSroot = cvss.getCvsRoot();
         System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", CVSroot);
         cwo.finish();
-        OutputOperator oo = OutputOperator.invoke();
-        OutputTabOperator oto = oo.getOutputTab(sessionCVSroot);
+        OutputTabOperator oto = new OutputTabOperator(sessionCVSroot);
         oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
         oto.waitText("Checking out finished");
         cvss.stop();
@@ -174,26 +160,23 @@ public class ResolveConflictsAndRevertTest extends JellyTestCase {
         NbDialogOperator nbdialog = new NbDialogOperator("Checkout Completed");
         JButtonOperator open = new JButtonOperator(nbdialog, "Open Project");
         open.push();
-        
+
         ProjectSupport.waitScanFinished();
-        TestKit.waitForQueueEmpty();
-        ProjectSupport.waitScanFinished();
-        
         System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", "");
     }
-    
-    public void testResolveConflicts() throws Exception {
+
+        public void testResolveConflicts() throws Exception {
         //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 18000);
         PseudoCvsServer cvss;
         InputStream in;
         OutputTabOperator oto;
         org.openide.nodes.Node nodeIDE;
         String color;
-        
+
         oto = new OutputTabOperator(sessionCVSroot);
         oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
         oto.clear();
-        
+
         Node nodeClass = new Node(new SourcePackagesNode(projectName), pathToMain);
         in = TestKit.getStream(getDataDir().getCanonicalFile().toString() + File.separator + PROTOCOL_FOLDER, "diff/create_conflict.in");
         cvss = new PseudoCvsServer(in);
@@ -206,7 +189,7 @@ public class ResolveConflictsAndRevertTest extends JellyTestCase {
         oto.waitText("Updating \"Main.java\" finished");
         Thread.sleep(1000);
         cvss.stop();
-        
+
         nodeClass = new Node(new SourcePackagesNode(projectName), pathToMain);
         nodeIDE = (org.openide.nodes.Node) nodeClass.getOpenideNode();
         color = TestKit.getColor(nodeIDE.getHtmlDisplayName());
@@ -216,6 +199,7 @@ public class ResolveConflictsAndRevertTest extends JellyTestCase {
         //        pri revert modifications pri otevrenem conflict resolveru lita vyjimka!
         System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", "");
     }
+    
     
     public void testRevertModifications() throws Exception {
         //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 18000);

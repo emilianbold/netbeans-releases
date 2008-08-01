@@ -84,6 +84,7 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.FindJSPServlet;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformFactory;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.MessageDestinationDeployment;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.ServerInstanceDescriptor;
 import org.netbeans.modules.j2ee.deployment.profiler.api.ProfilerServerSettings;
 import org.netbeans.modules.j2ee.deployment.profiler.api.ProfilerSupport;
 import org.netbeans.modules.j2ee.deployment.profiler.spi.Profiler;
@@ -132,6 +133,7 @@ public class ServerInstance implements Node.Cookie, Comparable {
     private DeploymentManager manager;
     private DeploymentManager disconnectedManager;
     private IncrementalDeployment incrementalDeployment;
+    private ServerInstanceDescriptor instanceDescriptor;
     private TargetModuleIDResolver tmidResolver;
     private J2eePlatform j2eePlatform;
     private J2eePlatformImpl j2eePlatformImpl;
@@ -566,7 +568,16 @@ public class ServerInstance implements Node.Cookie, Comparable {
             return incrementalDeployment;
         }
     }
-    
+   
+    public ServerInstanceDescriptor getServerInstanceDescriptor() {
+        DeploymentManager dm = getDeploymentManager();
+        synchronized (this) {
+            if (instanceDescriptor == null) {
+                instanceDescriptor = server.getOptionalFactory().getServerInstanceDescriptor(dm);
+            }
+            return instanceDescriptor;
+         }
+    }
     public AntDeploymentProvider getAntDeploymentProvider() {
         try {
             return server.getOptionalFactory().getAntDeploymentProvider(getDisconnectedDeploymentManager());
@@ -751,7 +762,7 @@ public class ServerInstance implements Node.Cookie, Comparable {
         if (ss != null) {
             isRunning = safeTrueTest(new SafeTrueTest() {
                                          public void run() {
-                                             result = ss.isRunning();
+                                             setResult(ss.isRunning());
                                          }
                                      }, 
                                      RUNNING_CHECK_TIMEOUT);
@@ -767,7 +778,7 @@ public class ServerInstance implements Node.Cookie, Comparable {
         if (ss != null) {
             return safeTrueTest(new SafeTrueTest() {
                                     public void run() {
-                                        result = ss.isDebuggable(target);
+                                        setResult(ss.isDebuggable(target));
                                     }
                                 }, 
                                 DEBUGGING_CHECK_TIMEOUT);
@@ -1505,11 +1516,7 @@ public class ServerInstance implements Node.Cookie, Comparable {
             }
         }
     }
-    
-    public boolean isDefault() {
-        return url.equals(ServerRegistry.getInstance().getDefaultInstance().getUrl());
-    }
-    
+
     public String toString() {
         return getDisplayName();
     }
@@ -1574,13 +1581,17 @@ public class ServerInstance implements Node.Cookie, Comparable {
     
     /** Safe true/false test useful. */
     private abstract static class SafeTrueTest implements Runnable {
-        protected boolean result = false;
+        private volatile boolean result = false;
         
         public abstract void run();
         
         public final boolean result() {
             return result;
         }
+        
+        public final void setResult(boolean result) {
+            this.result = result;
+        }        
     };
     
     /** Return the result of the test or false if the given time-out ran out. */
@@ -1588,7 +1599,7 @@ public class ServerInstance implements Node.Cookie, Comparable {
         try {
            new RequestProcessor().post(test).waitFinished(timeout);
         } catch (InterruptedException ie) {
-            Exceptions.printStackTrace(ie);
+            LOGGER.log(Level.INFO, null, ie);
         } finally {
             return test.result();
         }

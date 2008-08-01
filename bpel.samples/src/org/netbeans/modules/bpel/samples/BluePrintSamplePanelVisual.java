@@ -44,9 +44,9 @@ public class BluePrintSamplePanelVisual extends SampleWizardPanelVisual{
     private static final long serialVersionUID = 1L;
     private String bluePrintSampleName;
     
-    public BluePrintSamplePanelVisual(SampleWizardPanel panel, String bluePrintSampleName) {        
+    public BluePrintSamplePanelVisual(SampleWizardPanel panel, String name) {        
         super(panel);
-        this.bluePrintSampleName = bluePrintSampleName;
+        this.bluePrintSampleName = name;
     }
 
     protected String getDefaultProjectName() {

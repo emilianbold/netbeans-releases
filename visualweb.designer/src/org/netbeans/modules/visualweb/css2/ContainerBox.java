@@ -59,6 +59,7 @@ import java.util.List;
 
 import javax.swing.JViewport;
 
+import org.netbeans.modules.visualweb.api.designer.Designer.Box;
 import org.openide.ErrorManager;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -96,6 +97,7 @@ public class ContainerBox extends CssBox {
         super(webform, element, boxType, inline, replaced);
     }
 
+    @Override
     protected void initialize() {
         super.initialize();
         initializeGrid();
@@ -143,6 +145,7 @@ public class ContainerBox extends CssBox {
         return false;
     }
 
+    @Override
     protected void initializeBackground() {
         super.initializeBackground();
 
@@ -191,6 +194,7 @@ public class ContainerBox extends CssBox {
     }
 
     /** Indicate whether this is a grid-positioned box */
+    @Override
     public boolean isGrid() {
         if (tag == HtmlTag.FORM) {
             return grid || getParent().isGrid();
@@ -204,6 +208,7 @@ public class ContainerBox extends CssBox {
      * means that the coordinates in the boxes are all relative to this
      * one.
      */
+    @Override
     public int getBoxCount() {
         return (boxes != null) ? boxes.size() : 0;
     }
@@ -213,6 +218,7 @@ public class ContainerBox extends CssBox {
      * significance to the index other than identifying a box; in particular
      * boxes with adjacent indices may not be adjacent visually.
      */
+    @Override
     public CssBox getBox(int index) {
         return boxes.get(index);
     }
@@ -1191,6 +1197,7 @@ public class ContainerBox extends CssBox {
      * @param cw Width of containing block
      * @param ch Height of containing block
      */
+    @Override
     public void relayout(FormatContext context) {
         for (int i = 0, n = getBoxCount(); i < n; i++) {
             CssBox box = getBox(i);
@@ -1313,6 +1320,7 @@ public class ContainerBox extends CssBox {
      * of minimum widths when we're computing minimum widths
      * for table cells, etc.
      */
+    @Override
     protected void initializeHorizontalWidths(FormatContext context) {
         super.initializeHorizontalWidths(context);
 
@@ -1687,9 +1695,54 @@ public class ContainerBox extends CssBox {
             }
         }
          */
+        // XXX #120747 Hack fix.
+        if (isIssue120747Box(box)) {
+            int leftEdge = context.getLeftEdge(box, parentBox, box.getY(), box.getHeight());
+            if (leftEdge != UNINITIALIZED && leftEdge != AUTO) {
+                box.setX(leftEdge);
+            }
+        }
     }
 
-    /** Position a box in block formatting context */
+    // XXX #120747 Hack to determine whether it is the kind of box described in the issue.
+    private static boolean isIssue120747Box(CssBox box) {
+        if (box == null) {
+            return false;
+        }
+        if (!isContainerBox(box)) {
+            return false;
+        }
+        CssBox parentBox = box.getParent();
+        if (!isContainerBox(parentBox)) {
+            return false;
+        }
+        if (box.isInlineBox()) {
+            return false;
+        }
+        int n = box.getBoxCount();
+        if (n != 1) {
+            return false;
+        }
+        CssBox child = box.getBox(0);
+        if (child == null) {
+            return false;
+        }
+        Element childElement = child.getElement();
+        if (childElement == null || childElement != box.getElement()) {
+            return false;
+        }
+        if (childElement.getParentNode() != parentBox.getElement()) {
+            return false;
+        }
+        return child instanceof LineBoxGroup;
+    }
+    
+    private static boolean isContainerBox(CssBox box) {
+        return box != null && box.getClass() == ContainerBox.class;
+    }
+
+    /** Position a box in block formatting context */        
+
     private void positionRelativeBox(CssBox box, FormatContext context) {
         positionBlockBox(box, context);
         box.setLocation(box.getX() + box.left, box.getY() + box.top);
@@ -1953,6 +2006,7 @@ public class ContainerBox extends CssBox {
         context.lineBox = null;
     }
 
+    @Override
     public int getPrefMinWidth() {
         if (inline) {
 //            Value val = CssLookup.getValue(getElement(), XhtmlCss.WHITE_SPACE_INDEX);
@@ -2001,6 +2055,7 @@ public class ContainerBox extends CssBox {
         return largest;
     }
 
+    @Override
     public int getPrefWidth() {
         int largest = 0;
         int n = getBoxCount();
@@ -2070,6 +2125,7 @@ public class ContainerBox extends CssBox {
         return largest;
     }
 
+    @Override
     protected boolean hasNormalBlockLevelChildren() {
         // XXX This gets tricky. Children boxes may be anonymous
         // block boxes - but I haven't been creating those!
@@ -2244,6 +2300,7 @@ public class ContainerBox extends CssBox {
     }
 
     /** The iframe box should be clipped */
+    @Override
     public void paint(Graphics g, int px, int py) {
         if (clipOverflow) {
             g.getClipBounds(sharedClipRect);
@@ -2262,6 +2319,7 @@ public class ContainerBox extends CssBox {
 
     /** Prints a listing of this container box.
      * @see java.awt.Container#list(java.io.PrintStream, int) */
+    @Override
     public void list(PrintStream out, int indent) {
 	super.list(out, indent);
         
@@ -2276,6 +2334,7 @@ public class ContainerBox extends CssBox {
 
     /** Prints a listing of this container box.
      * @see java.awt.Container#list(java.io.PrintWriter, int) */
+    @Override
     public void list(PrintWriter out, int indent) {
 	super.list(out, indent);
         

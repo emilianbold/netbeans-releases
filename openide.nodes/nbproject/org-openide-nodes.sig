@@ -1,5 +1,5 @@
 #API master signature file
-#Version 7.2.1
+#Version 7.3.0
 CLSS public static abstract org.netbeans.modules.openide.util.ActionsBridge$ActionRunnable
 cons public ActionRunnable(java.awt.event.ActionEvent,org.openide.util.actions.SystemAction,boolean)
 fld  public static final java.lang.String javax.swing.Action.ACCELERATOR_KEY
@@ -883,7 +883,6 @@ CLSS public static final org.openide.nodes.Sheet$Set
 cons public Set()
 meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
 meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public [Lorg.openide.nodes.Node$Property; org.openide.nodes.Sheet$Set.getProperties()
 meth public boolean java.beans.FeatureDescriptor.isExpert()
 meth public boolean java.beans.FeatureDescriptor.isHidden()
 meth public boolean java.beans.FeatureDescriptor.isPreferred()
@@ -903,6 +902,7 @@ meth public native final void java.lang.Object.notify()
 meth public native final void java.lang.Object.notifyAll()
 meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
 meth public org.openide.nodes.Node$Property org.openide.nodes.Sheet$Set.get(java.lang.String)
+meth public synchronized [Lorg.openide.nodes.Node$Property; org.openide.nodes.Sheet$Set.getProperties()
 meth public synchronized org.openide.nodes.Node$Property org.openide.nodes.Sheet$Set.put(org.openide.nodes.Node$Property)
 meth public synchronized org.openide.nodes.Node$Property org.openide.nodes.Sheet$Set.remove(java.lang.String)
 meth public synchronized org.openide.nodes.Sheet$Set org.openide.nodes.Sheet$Set.cloneSet()

@@ -1,9 +1,0 @@
-String htmlName =
-(type == 'P' ?
-getProcIndexFileName( ABSOLUTE ) :
-    (type == 't' ?
-    getTriggerIndexFileName ( ABSOLUTE ) :
-         getViewAsProcIndexFileName( ABSOLUTE ))
-         );
-PrintStream out = open( htmlName );
-          

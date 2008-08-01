@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<transformmap
+    xmlns="http://www.sun.com/jbi/xsltse/transformmap"
+    targetNamespace="_NS_"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns:tns="_NS_">
+
+<!--
+    <service name="service1" portType="ns0:portType1">
+            <operation opName="operation0" inputVariable="inVar0" outputVariable="outVar0">
+               <transform result="" source="" name="transform1" file="test.xsl">
+                   <param name="param1" type="literal"></param>
+                   <param name="param2" type="part"></param>
+               </transform>
+            </operation>
+            <operation opName="operation1" inputVariable="inVar1" outputVariable="outVar1">
+                    <invoke name="invoke1" portType="ns1:portType2" opName="operation2" inputVariable="inVar2" outputVariable="outVar2"/>
+            </operation>
+    </service>
+-->
+
+</transformmap>

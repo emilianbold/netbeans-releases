@@ -1,0 +1,5 @@
+Code completion result for source line:
+long |
+(QueryType=COMPLETION, NameKind=PREFIX)
+------------------------------------
+VARIABLE   l                                          null

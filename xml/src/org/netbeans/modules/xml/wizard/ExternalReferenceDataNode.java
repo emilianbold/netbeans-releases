@@ -44,6 +44,7 @@ package org.netbeans.modules.xml.wizard;
 import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
+import org.netbeans.modules.xml.lib.Util;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;

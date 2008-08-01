@@ -18,8 +18,10 @@ public abstract class Parser extends MatchExceptionState {
 	public static final int MEMO_RULE_UNKNOWN = -1;
 	public static final int INITIAL_FOLLOW_STACK_SIZE = 100;
 
-    protected ParserSharedInputState inputState;
-
+        protected int guessing = 0;
+        protected String filename;
+        protected TokenBuffer input;
+        
     /** Nesting level of registered handlers */
     // protected int exceptionLevel = 0;
 
@@ -56,14 +58,6 @@ public abstract class Parser extends MatchExceptionState {
 	/** Set to true upon any error; reset upon first valid token match */
         // functionality moved to matchError from the MatchExceptionState
 	//protected boolean failed = false;
-
-	public Parser() {
-        this(new ParserSharedInputState());
-    }
-
-    public Parser(ParserSharedInputState state) {
-        inputState = state;
-    }
 
 	/** If the user specifies a tokens{} section with heterogeneous
 	 *  AST node types, then ANTLR generates code to fill
@@ -143,16 +137,16 @@ public abstract class Parser extends MatchExceptionState {
     }
 
     public String getFilename() {
-        return inputState.filename;
+        return filename;
     }
 
-    public ParserSharedInputState getInputState() {
+    /*public ParserSharedInputState getInputState() {
         return inputState;
-    }
+    }*/
 
-    public void setInputState(ParserSharedInputState state) {
+    /*public void setInputState(ParserSharedInputState state) {
         inputState = state;
-    }
+    }*/
 
     public String getTokenName(int num) {
         return tokenNames[num];
@@ -177,7 +171,7 @@ public abstract class Parser extends MatchExceptionState {
 
     // Forwarded to TokenBuffer
     public int mark() {
-        return inputState.input.mark();
+        return input.mark();
     }
 
     /**Make sure current lookahead symbol matches token type <tt>t</tt>.
@@ -306,7 +300,7 @@ public abstract class Parser extends MatchExceptionState {
 	}
 
     public void rewind(int pos) {
-        inputState.input.rewind(pos);
+        input.rewind(pos);
     }
 
     /** Specify an object with support code (shared by
@@ -335,7 +329,7 @@ public abstract class Parser extends MatchExceptionState {
     }
 
     public void setFilename(String f) {
-        inputState.filename = f;
+        filename = f;
     }
 
     public void setIgnoreInvalidDebugCalls(boolean value) {
@@ -344,7 +338,7 @@ public abstract class Parser extends MatchExceptionState {
 
     /** Set or change the input token buffer */
     public void setTokenBuffer(TokenBuffer t) {
-        inputState.input = t;
+        input = t;
     }
 
     public void traceIndent() {
@@ -356,13 +350,13 @@ public abstract class Parser extends MatchExceptionState {
         traceDepth += 1;
         traceIndent();
         System.out.println("> " + rname + "; LA(1)==" + LT(1).getText() +
-                           ((inputState.guessing > 0)?" [guessing="+inputState.guessing+"]":""));
+                           ((guessing > 0)?" [guessing="+guessing+"]":""));
     }
 
     public void traceOut(String rname) {
         traceIndent();
         System.out.println("< " + rname + "; LA(1)==" + LT(1).getText() +
-                           ((inputState.guessing > 0)?" [guessing="+inputState.guessing+"]":""));
+                           ((guessing > 0)?" [guessing="+guessing+"]":""));
         traceDepth -= 1;
     }
 
@@ -399,7 +393,7 @@ public abstract class Parser extends MatchExceptionState {
 	 */
 	public boolean alreadyParsedRule(int ruleIndex) {
 		//System.out.println("alreadyParsedRule("+ruleIndex+","+inputState.input.index()+")");
-		int stopIndex = getRuleMemoization(ruleIndex, inputState.input.index());
+		int stopIndex = getRuleMemoization(ruleIndex, input.index());
 		if ( stopIndex==MEMO_RULE_UNKNOWN ) {
                         //System.out.println("rule unknown");
 			return false;
@@ -414,7 +408,7 @@ public abstract class Parser extends MatchExceptionState {
 				inputState.input.get(stopIndex+1)+"@"+(stopIndex+1)+" failed="+matchError);
 			*/
                         matchError=false;
-			inputState.input.seek(stopIndex+1); // jump to one past stop token
+			input.seek(stopIndex+1); // jump to one past stop token
 		}
 		return true;
 	}
@@ -423,7 +417,7 @@ public abstract class Parser extends MatchExceptionState {
 	 *  successfully.  Use a standard java hashtable for now.
 	 */
 	public void memoize(int ruleIndex, int ruleStartIndex) {
-		int stopTokenIndex = matchError ? MEMO_RULE_FAILED : inputState.input.index()-1;
+		int stopTokenIndex = matchError ? MEMO_RULE_FAILED : input.index()-1;
 		//System.out.println("memoize("+ruleIndex+", "+ruleStartIndex+"); failed="+matchError+" stop="+stopTokenIndex);
 		if ( ruleMemo[ruleIndex]!=null ) {
 			ruleMemo[ruleIndex].put(

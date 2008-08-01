@@ -109,7 +109,7 @@ public class Axis2Children extends Children.Keys<Service> {
         FileObject srcRoot = null;
         for (SourceGroup group:sourceGroups) {
             FileObject root = group.getRootFolder();
-            if (root.getFileObject(key.getServiceClass().replace('.', '/')+".java") != null) {
+            if (root.getFileObject(key.getServiceClass().replace('.', '/')+".java") != null) { // NOI18N
                 srcRoot = root;
                 break;
             }

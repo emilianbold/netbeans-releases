@@ -42,6 +42,8 @@
 package org.openide.actions;
 
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.SaveCookie;
 import org.openide.nodes.Node;
@@ -85,8 +87,9 @@ public class SaveAction extends CookieAction {
             Exceptions.attachLocalizedMessage(e,
                                               NbBundle.getMessage(SaveAction.class,
                                                                   "EXC_notsaved",
-                                                                  getSaveMessage(activatedNodes[0])));
-            Exceptions.printStackTrace(e);
+                                                                  getSaveMessage(activatedNodes[0]),
+                                                                  e.getLocalizedMessage ()));
+            Logger.getLogger (getClass ().getName ()).log (Level.SEVERE, null, e);
         }
     }
 

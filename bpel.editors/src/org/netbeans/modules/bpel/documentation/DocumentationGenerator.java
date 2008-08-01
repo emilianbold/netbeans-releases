@@ -11,9 +11,9 @@
  * http://www.netbeans.org/cddl-gplv2.html
  * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
  * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
+ * License. When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
  * particular file as subject to the "Classpath" exception as provided
  * by Sun in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
@@ -54,10 +54,11 @@ import java.util.Map;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
-
 import javax.xml.namespace.QName;
+
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
 
 import org.netbeans.modules.xml.xam.Named;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
@@ -86,10 +87,8 @@ import org.netbeans.modules.reportgenerator.api.ReportElementFactory;
 import org.netbeans.modules.reportgenerator.api.ReportException;
 import org.netbeans.modules.reportgenerator.api.ReportSection;
 
-import org.netbeans.modules.bpel.core.BPELDataObject;
-import org.netbeans.modules.bpel.core.helper.api.CoreUtil;
-import org.netbeans.modules.bpel.editors.api.utils.RefactorUtil;
-import static org.netbeans.modules.soa.ui.util.UI.*;
+import org.netbeans.modules.bpel.editors.api.EditorUtil;
+import static org.netbeans.modules.xml.ui.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -97,7 +96,7 @@ import static org.netbeans.modules.soa.ui.util.UI.*;
  */
 public class DocumentationGenerator implements ReportCookie {
 
-  public DocumentationGenerator(BPELDataObject dataObject, JComponent canvas) {
+  public DocumentationGenerator(DataObject dataObject, JComponent canvas) {
     myDataObject = dataObject;
     myCanvas = canvas;
   }
@@ -110,7 +109,7 @@ public class DocumentationGenerator implements ReportCookie {
         return null;
       }
       return createReport(
-        CoreUtil.getBpelModel(myDataObject).getProcess(), myFactory.createReport());
+        EditorUtil.getBpelModel(myDataObject).getProcess(), myFactory.createReport());
     }
     catch (ReportException e) {
       ErrorManager.getDefault().notify(e);
@@ -298,7 +297,7 @@ public class DocumentationGenerator implements ReportCookie {
 
   private void fillElement(BpelEntity entity, ReportSection section) {
     ReportElement element = myFactory.createReportElement();
-    Icon icon = RefactorUtil.getIcon(entity);
+    Icon icon = EditorUtil.getIcon(entity);
 
     if (icon instanceof ImageIcon) {
       element.setImage(((ImageIcon) icon).getImage());
@@ -348,7 +347,7 @@ public class DocumentationGenerator implements ReportCookie {
   }
 
   private String getInfo(BpelEntity entity) {
-    String info = RefactorUtil.getType(entity);
+    String info = getType(entity);
     String name = getName(entity);
 
     if (name != null) {
@@ -364,6 +363,16 @@ public class DocumentationGenerator implements ReportCookie {
     return info;
   }
 
+  private String getType(BpelEntity entity) {
+    String type = entity.getElementType().getName();
+    int k = type.lastIndexOf("."); // NOI18N
+
+    if (k == -1) {
+      return type;
+    }
+    return type.substring(k + 1);
+  }
+
   private String getName(BpelEntity entity) {
     if ( !(entity instanceof Named)) {
       return null;
@@ -372,16 +381,14 @@ public class DocumentationGenerator implements ReportCookie {
   }
 
   private String i18n(String key) {
-    return org.netbeans.modules.soa.ui.util.UI.i18n(
-      DocumentationGenerator.class, key);
+    return org.netbeans.modules.xml.ui.UI.i18n(DocumentationGenerator.class, key);
   }
 
   private String i18n(String key, String param) {
-    return org.netbeans.modules.soa.ui.util.UI.i18n(
-      DocumentationGenerator.class, key, param);
+    return org.netbeans.modules.xml.ui.UI.i18n(DocumentationGenerator.class, key, param);
   }
 
   private JComponent myCanvas;
-  private BPELDataObject myDataObject;
+  private DataObject myDataObject;
   private ReportElementFactory myFactory;
 }

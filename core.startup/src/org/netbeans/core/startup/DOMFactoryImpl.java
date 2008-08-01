@@ -41,12 +41,13 @@
 
 package org.netbeans.core.startup;
 
-import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import org.openide.util.Exceptions;
 
 /**
  * A special DocumentBuilderFactory that delegates to other factories till
@@ -55,9 +56,21 @@ import javax.xml.parsers.ParserConfigurationException;
  * @author Petr Nejedly
  */
 public class DOMFactoryImpl extends DocumentBuilderFactory {
-    private static Class first;
 
-    private Map<String, Object> attributes = new HashMap<String, Object>();
+    private static Class<? extends DocumentBuilderFactory> getFirst() {
+        try {
+            String name = System.getProperty("nb.backup." + Factory_PROP); // NOI18N
+            return name == null ? null : Class.forName(
+                name, true, ClassLoader.getSystemClassLoader()
+            ).asSubclass(DocumentBuilderFactory.class);
+        } catch (ClassNotFoundException ex) {
+            Exceptions.printStackTrace(ex);
+            return null;
+        }
+    }
+
+    private Map<String,Object> attributes = new LinkedHashMap<String,Object>();
+    private Map<String,Boolean> features = new LinkedHashMap<String,Boolean>();
     
     /** The default property name according to the JAXP spec */
     private static final String Factory_PROP =
@@ -69,40 +82,43 @@ public class DOMFactoryImpl extends DocumentBuilderFactory {
     }
 
     static {
-        ClassLoader orig = Thread.currentThread().getContextClassLoader();
-        // Not app class loader. only ext and bootstrap
-        try {
-           Thread.currentThread().setContextClassLoader(ClassLoader.getSystemClassLoader().getParent());
-           first = DocumentBuilderFactory.newInstance().getClass();
-        } finally {
-           Thread.currentThread().setContextClassLoader(orig);            
+        if (getFirst() == null) {
+            ClassLoader orig = Thread.currentThread().getContextClassLoader();
+            // Not app class loader. only ext and bootstrap
+            try {
+               Thread.currentThread().setContextClassLoader(ClassLoader.getSystemClassLoader());
+               System.setProperty("nb.backup." + Factory_PROP, DocumentBuilderFactory.newInstance().getClass().getName()); // NOI18N
+            } finally {
+               Thread.currentThread().setContextClassLoader(orig);            
+            }
         }
         
         DOMFactoryImpl.install();
         SAXFactoryImpl.install();
     }
     
-    public java.lang.Object getAttribute(java.lang.String name) throws java.lang.IllegalArgumentException {
+    public Object getAttribute(String name) throws IllegalArgumentException {
         return attributes.get(name);
     }
     
     public boolean getFeature (String name) {
-        return Boolean.TRUE.equals (getAttribute (name));
+        return Boolean.TRUE.equals(features.get(name));
     }
     
     public void setFeature(String name, boolean value) throws ParserConfigurationException {
+        Boolean old = features.put(name, value);
         try {
-            setAttribute (name, Boolean.valueOf (value));
-        } catch (IllegalArgumentException ex) {
-            ParserConfigurationException p = new ParserConfigurationException ();
-            p.initCause (ex);
-            throw p;
+            tryCreate();
+        } catch (IllegalArgumentException e) {
+            features.put(name, old);
+            throw e;
+        } catch (ParserConfigurationException e) {
+            features.put(name, old);
+            throw e;
         }
     }
-    
-    
 
-    public DocumentBuilder newDocumentBuilder() throws javax.xml.parsers.ParserConfigurationException {
+    public DocumentBuilder newDocumentBuilder() throws ParserConfigurationException {
         try {
             return tryCreate();
         } catch (IllegalArgumentException e) {
@@ -110,21 +126,30 @@ public class DOMFactoryImpl extends DocumentBuilderFactory {
         }
     }
 
-
-    public void setAttribute(java.lang.String name, java.lang.Object value) throws java.lang.IllegalArgumentException {
-        attributes.put(name, value);
+    public void setAttribute(String name, Object value) throws IllegalArgumentException {
+        Object old = attributes.put(name, value);
         try {
             tryCreate();
+        } catch (IllegalArgumentException x) {
+            attributes.put(name, old);
+            throw x;
         } catch (ParserConfigurationException e) {
+            attributes.put(name, old);
             throw (IllegalArgumentException) new IllegalArgumentException(e.toString()).initCause(e);
         }
     }
     
     private DocumentBuilder tryCreate() throws ParserConfigurationException, IllegalArgumentException {
-        for (Iterator it = new LazyIterator(first, DocumentBuilderFactory.class, DOMFactoryImpl.class); it.hasNext(); ) {
+        for (
+            Iterator<Class<? extends DocumentBuilderFactory>> it 
+                = new LazyIterator<DocumentBuilderFactory>(getFirst(), DocumentBuilderFactory.class, DOMFactoryImpl.class); 
+            it.hasNext(); 
+        ) {
             try {
-                DocumentBuilder builder = tryCreate((Class)it.next());
+                DocumentBuilder builder = tryCreate(it.next());
                 return builder;
+            } catch (ClassCastException e) {
+                if (!it.hasNext()) throw e;
             } catch (ParserConfigurationException e) {
                 if (!it.hasNext()) throw e;
             } catch (IllegalArgumentException e) {
@@ -134,10 +159,10 @@ public class DOMFactoryImpl extends DocumentBuilderFactory {
         throw new IllegalStateException("Can't get here!"); // NOI18N
     }
 
-    private DocumentBuilder tryCreate(Class delClass) throws ParserConfigurationException, IllegalArgumentException {
+    private DocumentBuilder tryCreate(Class<? extends DocumentBuilderFactory> delClass) throws ParserConfigurationException, IllegalArgumentException {
         Exception ex = null;
         try {
-            DocumentBuilderFactory delegate = (DocumentBuilderFactory)delClass.newInstance();
+            DocumentBuilderFactory delegate = delClass.newInstance();
             delegate.setNamespaceAware(isNamespaceAware());
             delegate.setValidating(isValidating());
             delegate.setIgnoringElementContentWhitespace(isIgnoringElementContentWhitespace());
@@ -145,9 +170,15 @@ public class DOMFactoryImpl extends DocumentBuilderFactory {
             delegate.setIgnoringComments(isIgnoringComments());
             delegate.setCoalescing(isCoalescing());
 
-            for (Iterator it = attributes.entrySet().iterator(); it.hasNext(); ) {
-                Map.Entry entry = (Map.Entry)it.next();
-                delegate.setAttribute((String)entry.getKey(), entry.getValue());
+            for (Map.Entry<String,Object> entry : attributes.entrySet()) {
+                if (entry.getValue() != null) {
+                    delegate.setAttribute(entry.getKey(), entry.getValue());
+                }
+            }
+            for (Map.Entry<String,Boolean> entry : features.entrySet()) {
+                if (entry.getValue() != null) {
+                    delegate.setFeature(entry.getKey(), entry.getValue());
+                }
             }
             return delegate.newDocumentBuilder();
         } catch (InstantiationException e) {

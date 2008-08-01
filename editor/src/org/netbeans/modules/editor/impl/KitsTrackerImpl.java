@@ -120,10 +120,10 @@ public final class KitsTrackerImpl extends KitsTracker {
                 contextMimeType = context.peek();
             }
             
-            if (contextMimeType == null || contextMimeType.length() ==0) {
+            if (contextMimeType == null || contextMimeType.length() == 0) {
                 List mimeTypes = getMimeTypesForKitClass(kitClass);
                 if (mimeTypes.size() == 0) {
-                    if (LOG.isLoggable(Level.WARNING)) {
+                    if (LOG.isLoggable(Level.WARNING) && !DYNAMIC_LANGUAGES.contains(kitClass.getName())) {
                         logOnce(Level.WARNING, "No mime type uses editor kit implementation class: " + kitClass); //NOI18N
                     }
                     return null;
@@ -189,6 +189,7 @@ public final class KitsTrackerImpl extends KitsTracker {
     
     // The map of mime type -> kit class
     private final Map<String, FileObject> mimeType2kitClass = new HashMap<String, FileObject>();
+    private final Map<Class, List<String>> kitClass2mimeTypes = new HashMap<Class, List<String>>();
     private final Set<String> knownMimeTypes = new HashSet<String>();
     private List<FileObject> eventSources = null;
     private boolean needsReloading = true;
@@ -201,8 +202,16 @@ public final class KitsTrackerImpl extends KitsTracker {
         "org.netbeans.editor.BaseKit", //NOI18N
         "org.netbeans.editor.ext.ExtKit", //NOI18N
         "org.netbeans.modules.editor.NbEditorKit", //NOI18N
+        // common superclass of some XML related kits
+        "org.netbeans.modules.xml.text.syntax.UniKit", //NOI18N
     }));
-    
+
+    private static final Set<String> DYNAMIC_LANGUAGES = new HashSet<String>(Arrays.asList(new String [] {
+        // Schliemann and GSF kits are provided on the fly by the frameworks' MimeDataProvider
+        "org.netbeans.modules.languages.dataobject.LanguagesEditorKit", //NOI18N
+        "org.netbeans.modules.gsf.GsfEditorKitFactory$GsfEditorKit", //NOI18N
+    }));
+
     private final ThreadLocal<Stack<String>> contexts = new ThreadLocal<Stack<String>>();
     
     private final FileChangeListener fcl = new FileChangeAdapter() {
@@ -376,8 +385,8 @@ public final class KitsTrackerImpl extends KitsTracker {
         }
             
         synchronized (mimeType2kitClass) {
-            ArrayList<String> list = new ArrayList<String>();
-            HashSet<String> set = new HashSet<String>();
+            List<String> list = null;
+            Set<String> set = null;
 
             if (reload) {
                 // Stop listening
@@ -409,6 +418,7 @@ public final class KitsTrackerImpl extends KitsTracker {
                     
                     mimeType2kitClassLoaded = true;
                     mimeType2kitClass.clear();
+                    kitClass2mimeTypes.clear();
 
                     // Get the root of the MimeLookup registry
                     FileObject root = Repository.getDefault().getDefaultFileSystem().findResource("Editors"); //NOI18N
@@ -432,20 +442,40 @@ public final class KitsTrackerImpl extends KitsTracker {
                     // new Throwable("~~~ KitsTrackerImpl._reload took " + (tm2 - tm) + "msec").printStackTrace();
                 }
 
-                boolean kitClassFinal = (kitClass.getModifiers() & Modifier.FINAL) != 0;
-                for(String mimeType : mimeType2kitClass.keySet()) {
-                    FileObject f = mimeType2kitClass.get(mimeType);
-                    if (isInstanceOf(f, kitClass, !kitClassFinal)) {
-                        list.add(mimeType);
+                list = kitClass2mimeTypes.get(kitClass);
+                if (list == null) {
+                    list = new ArrayList<String>();
+                    kitClass2mimeTypes.put(kitClass, list);
+
+                    // If kitClass is not registered for any mime type, we have
+                    // to check its superclass, but only up to the well known kit class parents.
+                    // If a kit class is registered for some mime type we must not
+                    // check its superclass.
+                    for(Class clazz = kitClass; 
+                        clazz != null && !WELL_KNOWN_PARENTS.contains(clazz.getName()); 
+                        clazz = clazz.getSuperclass()
+                    ) {
+                        boolean kitClassFinal = (clazz.getModifiers() & Modifier.FINAL) != 0;
+                        for(String mimeType : mimeType2kitClass.keySet()) {
+                            FileObject f = mimeType2kitClass.get(mimeType);
+                            if (isInstanceOf(f, clazz, !kitClassFinal)) {
+                                list.add(mimeType);
+                            }
+                        }
+                        
+                        if (!list.isEmpty()) {
+                            break;
+                        }
                     }
                 }
-
+                
                 TIMER.log(Level.FINE, "[M] " + kitClass.getSimpleName() + " used", new Object [] { this, list.size() }); //NOI18N
             } else {
-                set.addAll(knownMimeTypes);
+                set = new HashSet<String>(knownMimeTypes);
                 TIMER.log(Level.FINE, "[M] Mime types", new Object [] { this, set.size() }); //NOI18N
             }
-            
+
+            assert kitClass != null ? list != null : set != null;
             return kitClass != null ? list : set;
         }
     }

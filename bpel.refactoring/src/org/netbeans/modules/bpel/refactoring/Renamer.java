@@ -11,9 +11,9 @@
  * http://www.netbeans.org/cddl-gplv2.html
  * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
  * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
+ * License. When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
  * particular file as subject to the "Classpath" exception as provided
  * by Sun in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
@@ -102,7 +102,7 @@ import org.netbeans.modules.bpel.model.api.Variable;
 import org.netbeans.modules.bpel.model.api.events.VetoException;
 import org.netbeans.modules.bpel.model.api.references.ReferenceCollection;
 import org.netbeans.modules.bpel.model.api.references.WSDLReference;
-import static org.netbeans.modules.soa.ui.util.UI.*;
+import static org.netbeans.modules.xml.ui.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -115,8 +115,7 @@ final class Renamer extends Plugin {
   }
   
   public Problem fastCheckParameters() {
-    Referenceable reference =
-      myRequest.getRefactoringSource().lookup(Referenceable.class);
+    Referenceable reference = myRequest.getRefactoringSource().lookup(Referenceable.class);
     ErrorItem error = null;
 
     if (reference instanceof Model) {
@@ -132,8 +131,7 @@ final class Renamer extends Plugin {
   }
     
   public Problem checkParameters() {
-    Referenceable reference =
-      myRequest.getRefactoringSource().lookup(Referenceable.class);
+    Referenceable reference = myRequest.getRefactoringSource().lookup(Referenceable.class);
   
     if (reference == null) {
       return null;
@@ -160,8 +158,7 @@ final class Renamer extends Plugin {
   }
     
   public Problem prepare(RefactoringElementsBag refactoringElements) {
-    Referenceable reference =
-      myRequest.getRefactoringSource().lookup(Referenceable.class);
+    Referenceable reference = myRequest.getRefactoringSource().lookup(Referenceable.class);
 
     if (reference == null) {
       return null;
@@ -187,8 +184,7 @@ final class Renamer extends Plugin {
         return processErrors(errors);
       }
     }
-    XMLRefactoringTransaction transaction =
-      myRequest.getContext().lookup(XMLRefactoringTransaction.class);
+    XMLRefactoringTransaction transaction = myRequest.getContext().lookup(XMLRefactoringTransaction.class);
     transaction.register(this, elements);
     refactoringElements.registerTransaction(transaction);
 
@@ -199,13 +195,10 @@ final class Renamer extends Plugin {
     return null;
   }
       
-  public void doRefactoring(
-    List<RefactoringElementImplementation> elements) throws IOException
-  {
+  public void doRefactoring(List<RefactoringElementImplementation> elements) throws IOException {
     Map<Model, Set<RefactoringElementImplementation>> map = getModelMap(elements);
     Set<Model> models = map.keySet();
-    Referenceable reference =
-      myRequest.getRefactoringSource().lookup(Referenceable.class);
+    Referenceable reference = myRequest.getRefactoringSource().lookup(Referenceable.class);
     String oldName = myRequest.getContext().lookup(String.class);
 
     for (Model model : models) {
@@ -225,11 +218,8 @@ final class Renamer extends Plugin {
     return null;
   }
 
-  private Map<Model, Set<RefactoringElementImplementation>> getModelMap(
-    List<RefactoringElementImplementation> elements)
-  {
-    Map<Model, Set<RefactoringElementImplementation>> results =
-      new HashMap<Model, Set<RefactoringElementImplementation>>();
+  private Map<Model, Set<RefactoringElementImplementation>> getModelMap(List<RefactoringElementImplementation> elements) {
+    Map<Model, Set<RefactoringElementImplementation>> results = new HashMap<Model, Set<RefactoringElementImplementation>>();
   
     for (RefactoringElementImplementation element : elements) {
       Model model = (element.getLookup().lookup(Component.class)).getModel();
@@ -247,9 +237,7 @@ final class Renamer extends Plugin {
     return results;
   }
 
-  private List<Component> getComponents(
-    Set<RefactoringElementImplementation> elements)
-  {
+  private List<Component> getComponents(Set<RefactoringElementImplementation> elements) {
     List<Component> component = new ArrayList<Component>(elements.size());
   
     for (RefactoringElementImplementation element : elements) {
@@ -258,12 +246,7 @@ final class Renamer extends Plugin {
     return component;
   }
        
-  private void rename(
-    List<Component> components,
-    Model model,
-    Named target,
-    String oldName) throws IOException
-  {
+  private void rename(List<Component> components, Model model, Named target, String oldName) throws IOException {
     if (target == null || components == null || model == null) {
       return;
     }
@@ -316,18 +299,10 @@ final class Renamer extends Plugin {
 //out("RENAME: " + Util.getName(target));
 //out("    in: " + Util.getName(component));
 //out();
-    if (component instanceof PartReference &&
-      ((PartReference) component).getPart() != null &&
-      component instanceof ReferenceCollection &&
-      target instanceof Part)
-    {
+    if (component instanceof PartReference && ((PartReference) component).getPart() != null && component instanceof ReferenceCollection && target instanceof Part) {
       rename((PartReference) component, (Part) target);
     }
-    else if (component instanceof PropertyReference &&
-      ((PropertyReference) component).getProperty() != null &&
-      component instanceof ReferenceCollection &&
-      target instanceof CorrelationProperty)
-    {
+    else if (component instanceof PropertyReference && ((PropertyReference) component).getProperty() != null && component instanceof ReferenceCollection && target instanceof CorrelationProperty) {
       rename((PropertyReference) component, (CorrelationProperty) target);
     }
     else if (component instanceof Variable) {
@@ -339,22 +314,13 @@ final class Renamer extends Plugin {
   }
 
   private void renameCamponent(Component component, Named target) throws IOException{
-    if (component instanceof OperationReference &&
-      component instanceof ReferenceCollection &&
-      target instanceof Operation)
-    {
+    if (component instanceof OperationReference && component instanceof ReferenceCollection && target instanceof Operation) {
       rename((OperationReference) component, (Operation) target);
     }
-    else if (component instanceof PortTypeReference &&
-      component instanceof ReferenceCollection &&
-      target instanceof PortType)
-    {
+    else if (component instanceof PortTypeReference && component instanceof ReferenceCollection && target instanceof PortType) {
       rename((PortTypeReference) component, (PortType) target);
     }
-    else if (component instanceof MessageExchangeReference &&
-      component instanceof ReferenceCollection &&
-      target instanceof MessageExchange)
-    {
+    else if (component instanceof MessageExchangeReference && component instanceof ReferenceCollection && target instanceof MessageExchange) {
       rename((MessageExchangeReference) component, (MessageExchange) target);
     }
     else {
@@ -363,9 +329,7 @@ final class Renamer extends Plugin {
   }
 
   private void renameCampanent(Component component, Named target) throws IOException{
-    if (component instanceof Role &&
-      target instanceof PortType)
-    {
+    if (component instanceof Role && target instanceof PortType) {
       rename((Role) component, (PortType) target);
     }
     else if (component instanceof Catch) {
@@ -398,9 +362,7 @@ final class Renamer extends Plugin {
     if (component instanceof CorrelationSet) {
       rename((CorrelationSet) component, target);
     }
-    else if (component instanceof ContentElement &&
-      component instanceof BpelEntity)
-    {
+    else if (component instanceof ContentElement && component instanceof BpelEntity) {
       rename((ContentElement) component);
     }
     else if (component instanceof Query) {
@@ -456,15 +418,11 @@ final class Renamer extends Plugin {
     }
   }
 
-  private void rename(
-    CorrelationProperty property,
-    Named target) throws IOException
-  {
+  private void rename(CorrelationProperty property, Named target) throws IOException {
     NamedComponentReference<GlobalElement> element = property.getElement();
 
     if (element != null && target instanceof GlobalElement) {
-      property.setElement(((GlobalElement) target).createReferenceTo(
-        (GlobalElement) target, GlobalElement.class));
+      property.setElement(((GlobalElement) target).createReferenceTo((GlobalElement) target, GlobalElement.class));
     }
     NamedComponentReference<GlobalType> type = property.getType();
 
@@ -478,8 +436,7 @@ final class Renamer extends Plugin {
     NamedComponentReference<GlobalElement> element = alias.getElement();
 
     if (element != null && target instanceof GlobalElement) {
-      alias.setElement(((GlobalElement) target).createReferenceTo(
-        (GlobalElement) target, GlobalElement.class));
+      alias.setElement(((GlobalElement) target).createReferenceTo((GlobalElement) target, GlobalElement.class));
     }
     NamedComponentReference<GlobalType> type = alias.getType();
 
@@ -488,8 +445,7 @@ final class Renamer extends Plugin {
         (GlobalType) target, GlobalType.class));
     }
     if (target instanceof Message) {
-      alias.setMessageType(((Message) target).createReferenceTo(
-        (Message) target, Message.class));
+      alias.setMessageType(((Message) target).createReferenceTo((Message) target, Message.class));
     }
     else if (target instanceof Part) {
       alias.setPart(((Part) target).getName());
@@ -512,8 +468,7 @@ final class Renamer extends Plugin {
 
   private void rename(OnEvent event, Named target) throws IOException {
     if (target instanceof Message) {
-      event.setMessageType( 
-        event.createWSDLReference((Message) target, Message.class));
+      event.setMessageType(event.createWSDLReference((Message) target, Message.class));
     }
   }
 
@@ -523,8 +478,7 @@ final class Renamer extends Plugin {
         (PartnerLinkType) target, PartnerLinkType.class));
     }
     else if (target instanceof Role) {
-      WSDLReference<Role> reference =
-        partnerLink.createWSDLReference((Role) target, Role.class);
+      WSDLReference<Role> reference = partnerLink.createWSDLReference((Role) target, Role.class);
 
     if (isRenamedRole(partnerLink, PartnerLink.MY_ROLE)) {
         partnerLink.setMyRole(reference);
@@ -535,18 +489,12 @@ final class Renamer extends Plugin {
     }
   }
 
-  private void rename(
-    CorrelationSet correlationSet,
-    Named target) throws IOException
-  {
+  private void rename(CorrelationSet correlationSet, Named target) throws IOException {
     if (target instanceof CorrelationProperty) {
 //out();
 //out("RENAME");
-      List<WSDLReference<CorrelationProperty>> references =
-        correlationSet.getProperties();
-
-      List<WSDLReference<CorrelationProperty>> list =
-        new ArrayList<WSDLReference<CorrelationProperty>>();
+      List<WSDLReference<CorrelationProperty>> references = correlationSet.getProperties();
+      List<WSDLReference<CorrelationProperty>> list = new ArrayList<WSDLReference<CorrelationProperty>>();
 
       if (references == null) {
         return;
@@ -616,10 +564,7 @@ final class Renamer extends Plugin {
     }
   }
 
-  private void renameFaultNameReference(
-    FaultNameReference reference,
-    Named target) throws IOException
-  {
+  private void renameFaultNameReference(FaultNameReference reference, Named target) throws IOException {
     try {
       reference.setFaultName(getQName(reference.getFaultName(), target));
     }

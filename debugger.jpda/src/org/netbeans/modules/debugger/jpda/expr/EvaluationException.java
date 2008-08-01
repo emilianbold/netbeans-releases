@@ -91,6 +91,8 @@ public class EvaluationException extends RuntimeException {
             msgParams = new String [] { params[0] == null ? null : params[0].toString() };
         else if (reason.equals("arraySizeBadType"))
             msgParams = new String [] { params[0] == null ? null : params[0].toString() };
+        else if (reason.equals("notArrayType"))
+            msgParams = new String [] { params[0] == null ? null : params[0].toString() };
         else if (reason.equals("arrayCreateError"))
             msgParams = new String [] { params[0] == null ? null : params[0].toString() };
         else if (reason.equals("instantiateInterface"))
@@ -162,6 +164,8 @@ public class EvaluationException extends RuntimeException {
         else if (reason.equals("notEnclosingType"))
             msgParams = new String [] { ((Identifier)params[0]).typeContext.name(),  ((Identifier)params[0]).superQualifier };
         else if (reason.equals("accessInstanceVariableFromStaticContext"))
+            msgParams = new String [] { ((Identifier)params[0]).identifier };
+        else if (reason.equals("invokeInstanceMethodAsStatic"))
             msgParams = new String [] { ((Identifier)params[0]).identifier };
         else if (reason.equals("methodCallOnNull"))
             msgParams = new String[] { params[0].toString() };

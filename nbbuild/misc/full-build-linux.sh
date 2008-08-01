@@ -52,10 +52,10 @@
 # sources=/space/src/nb_all
 # a full NB source checkout
 #
-# nbjdk=/opt/java/j2se/1.5.0_14
-# JDK 1.5.0_14 installation directory. (Full JDK, not just JRE.)
+# nbjdk=/opt/java/j2se/1.5.0_15
+# JDK 1.5.0_15 installation directory. (Full JDK, not just JRE.)
 #
-# nbtestjdk=/opt/java/j2se/1.5.0_14
+# nbtestjdk=/opt/java/j2se/1.5.0_15
 # JDK installation directory for use when running (but not building!) test suites.
 # By default, same as nbjdk. However you may wish to run tests with a
 # different VM.
@@ -145,9 +145,9 @@ fi
 
 if [ "$override" != yes ]
 then
-    if $nbjdk/bin/java -version 2>&1 | fgrep -q -v 1.5.0_14
+    if $nbjdk/bin/java -version 2>&1 | fgrep -q -v 1.5.0_15
     then
-        echo "You need to set the variable 'nbjdk' to a JDK 1.5.0_14 installation" 1>&2
+        echo "You need to set the variable 'nbjdk' to a JDK 1.5.0_15 installation" 1>&2
         exit 2
     fi
     if $ant -version 2>&1 | fgrep -q -v 1.7.0
@@ -274,7 +274,7 @@ antcmd="nice $ant -emacs"
 if [ $doclean = yes ]
 then
     echo "----------CLEANING SOURCES----------" 1>&2
-    $antcmd -f $sources/nbbuild/build.xml hg-clean
+    $antcmd -f $sources/nbbuild/build.xml clean
 fi
 
 if [ $dobuild = yes ]

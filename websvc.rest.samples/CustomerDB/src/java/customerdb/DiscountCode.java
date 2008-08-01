@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,13 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * Contributor(s):
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -55,15 +55,16 @@ import javax.persistence.Table;
 
 /**
  *
- * @author Peter Liu
+ * @author __USER__
  */
 @Entity
-@Table(name = "DISCOUNT_CODE")
-@NamedQueries({@NamedQuery(name = "DiscountCode.findByDiscountCode", query = "SELECT d FROM DiscountCode d WHERE d.discountCode = :discountCode"), @NamedQuery(name = "DiscountCode.findByRate", query = "SELECT d FROM DiscountCode d WHERE d.rate = :rate")})
+@Table(name = "DISCOUNT_CODE", catalog = "", schema = "APP")
+@NamedQueries({@NamedQuery(name = "DiscountCode.findAll", query = "SELECT d FROM DiscountCode d"), @NamedQuery(name = "DiscountCode.findByDiscountCode", query = "SELECT d FROM DiscountCode d WHERE d.discountCode = :discountCode"), @NamedQuery(name = "DiscountCode.findByRate", query = "SELECT d FROM DiscountCode d WHERE d.rate = :rate")})
 public class DiscountCode implements Serializable {
+    private static final long serialVersionUID = 1L;
     @Id
-    @Column(name = "DISCOUNT_CODE", nullable = false)
-    private String discountCode;
+    @Column(name = "DISCOUNT_CODE")
+    private Character discountCode;
     @Column(name = "RATE")
     private BigDecimal rate;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "discountCode")
@@ -72,15 +73,15 @@ public class DiscountCode implements Serializable {
     public DiscountCode() {
     }
 
-    public DiscountCode(String discountCode) {
+    public DiscountCode(Character discountCode) {
         this.discountCode = discountCode;
     }
 
-    public String getDiscountCode() {
+    public Character getDiscountCode() {
         return discountCode;
     }
 
-    public void setDiscountCode(String discountCode) {
+    public void setDiscountCode(Character discountCode) {
         this.discountCode = discountCode;
     }
 

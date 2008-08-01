@@ -48,6 +48,7 @@ import javax.swing.JMenuItem;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.project.ui.ProjectTab;
 import org.netbeans.spi.project.ui.support.ProjectActionPerformer;
+import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
@@ -177,7 +178,7 @@ public class SelectNodeAction extends LookupSensitiveAction implements Presenter
     
     private JMenuItem buildPresenter (String title) {
         JMenuItem menuPresenter = new JMenuItem (this);
-        menuPresenter.setText (title);
+        Mnemonics.setLocalizedText(menuPresenter, title);
         menuPresenter.setIcon(null);
         
         return menuPresenter;

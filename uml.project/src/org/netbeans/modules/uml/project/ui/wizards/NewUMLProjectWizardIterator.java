@@ -65,7 +65,6 @@ import org.netbeans.modules.uml.project.UMLProject;
 import org.netbeans.modules.uml.project.UMLProjectGenerator;
 import org.netbeans.modules.uml.project.ui.UMLProjectSettings;
 import org.netbeans.modules.uml.project.ui.common.JavaSourceRootsUI;
-import org.netbeans.modules.uml.project.ui.wizards.PanelConfigureProject;
 
 
 /**
@@ -86,7 +85,7 @@ public class NewUMLProjectWizardIterator
     public static final String PROP_PROJECT_NAME = "name"; //NOI18N
     public static final String PROP_PROJECT_DIR = "projdir"; //NOI18N
     public static final String PROP_WIZARD_TITLE = "NewProjectWizard_Title"; //NOI18N
-    public static final String PROP_WIZARD_ERROR_MESSAGE = "WizardPanel_errorMessage"; //NOI18N
+    public static final String PROP_WIZARD_ERROR_MESSAGE = WizardDescriptor.PROP_ERROR_MESSAGE; //NOI18N
     public static final String PROP_SET_AS_MAIN = "setAsMain"; //NOI18N
     public static final String PROP_JAVA_SOURCE_PROJECT = "javaSrcProject"; //NOI18N
     public static final String PROP_JAVA_SOURCE_ROOTS_MODEL= "javaSourceRootsModel"; //NOI18N
@@ -319,10 +318,10 @@ public class NewUMLProjectWizardIterator
                 JComponent jc = (JComponent)c;
                 // Step #.
                 jc.putClientProperty(
-                    "WizardPanel_contentSelectedIndex", new Integer(i)); // NOI18N
+                    WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer(i)); // NOI18N
                 
                 // Step name (actually the whole list for reference).
-                jc.putClientProperty("WizardPanel_contentData", steps); // NOI18N
+                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps); // NOI18N
             }
         }
     }

@@ -42,6 +42,7 @@
 package org.netbeans.core.windows.view.ui;
 
 import java.awt.Component;
+import org.netbeans.core.windows.Switches;
 import org.netbeans.core.windows.view.ViewElement;
 
 /**
@@ -57,6 +58,8 @@ class MultiSplitCell {
     private int requiredSize = -1;
     private boolean dirty = false;
     private boolean isHorizontalSplit;
+    
+    private static final int MINIMUM_POSSIBLE_SIZE = 10;
     
     MultiSplitCell( ViewElement view, double initialSplitWeight, boolean isHorizontalSplit ) {
         this.view = view;
@@ -104,9 +107,16 @@ class MultiSplitCell {
      * result is a sum of minimum sizes of all children cells.
      */
     int getMinimumSize() {
-        if( isHorizontalSplit )
-            return getComponent().getMinimumSize().width;
-        return getComponent().getMinimumSize().height;
+        int result = MINIMUM_POSSIBLE_SIZE;
+        if( Switches.isSplitterRespectMinimumSizeEnabled() ) {
+            if( isHorizontalSplit )
+                result = getComponent().getMinimumSize().width;
+            else
+                result = getComponent().getMinimumSize().height;
+        }
+        if( result < MINIMUM_POSSIBLE_SIZE )
+            result = MINIMUM_POSSIBLE_SIZE;
+        return result;
     }
     
     int getRequiredSize() {

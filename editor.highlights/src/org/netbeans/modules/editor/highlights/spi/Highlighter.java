@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -49,8 +49,9 @@ import org.openide.util.RequestProcessor;
 /**
  *
  * @author Jan Lahoda
+ * @deprecated Use highlighting API in Editor Library 2
  */
-public final class Highlighter {
+@Deprecated public final class Highlighter {
 
     private static final Highlighter INSTANCE = new Highlighter();
 
@@ -64,7 +65,10 @@ public final class Highlighter {
     private Highlighter() {
     }
 
-    public void setHighlights(final FileObject fo, final String type, Collection/*<Highlight>*/ highlights) {
+    /**
+     * @deprecated Use highlighting API in Editor Library 2
+     */
+    @Deprecated public void setHighlights(final FileObject fo, final String type, Collection/*<Highlight>*/ highlights) {
         final Collection highlightsCopy = new ArrayList(highlights);
         WORKER.post(new Runnable() {
             public void run() {

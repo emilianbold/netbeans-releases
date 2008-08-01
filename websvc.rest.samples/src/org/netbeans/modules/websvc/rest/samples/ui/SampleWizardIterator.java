@@ -48,7 +48,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
-import java.text.MessageFormat;
 import java.util.Enumeration;
 import java.util.LinkedHashSet;
 import java.util.NoSuchElementException;
@@ -57,13 +56,9 @@ import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.websvc.rest.samples.ui.SampleWizardPanel;
-import org.netbeans.modules.websvc.rest.samples.util.Log;
-import org.netbeans.modules.websvc.rest.samples.util.RestSampleProjectProperties;
 import org.netbeans.modules.websvc.rest.samples.util.RestSampleUtils;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.netbeans.spi.project.ui.templates.support.Templates;
-import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -83,8 +78,7 @@ public class SampleWizardIterator  implements WizardDescriptor.InstantiatingIter
     private transient int index;
     private transient WizardDescriptor.Panel[] panels;
     public transient WizardDescriptor wiz;
-    private boolean addJerseyLibrary = true;
-    private String projectConfigNamespace = RestSampleProjectProperties.WEB_PROJECT_CONFIGURATION_NAMESPACE;
+    private String projectConfigNamespace = "http://www.netbeans.org/ns/web-project/3"; //NOI18N
  
     public SampleWizardIterator() {}
         
@@ -100,7 +94,7 @@ public class SampleWizardIterator  implements WizardDescriptor.InstantiatingIter
     
     protected String[] createSteps() {
         return new String[] {
-            NbBundle.getMessage(SampleWizardIterator.class, "MSG_SampleProject"),
+            NbBundle.getMessage(SampleWizardIterator.class, "MSG_NameAndLocation"),
         };
     }
     
@@ -112,11 +106,7 @@ public class SampleWizardIterator  implements WizardDescriptor.InstantiatingIter
         this.projectConfigNamespace = namespace;
     }
     
-    public void setAddJerseyLibrary(boolean flag) {
-        addJerseyLibrary = flag;
-    }
-    
-    public Set/*<FileObject>*/ instantiate() throws IOException {
+    public Set<FileObject> instantiate() throws IOException {
         Set resultSet = new LinkedHashSet();
         File dirF = FileUtil.normalizeFile((File) wiz.getProperty(PROJDIR));
         dirF.mkdirs();
@@ -132,6 +122,7 @@ public class SampleWizardIterator  implements WizardDescriptor.InstantiatingIter
         dirF = FileUtil.toFile(dir);
     
         RestSampleUtils.unZipFile(template.getInputStream(), dir);
+        ProjectManager.getDefault().clearNonProjectCache();
         
         if (projectConfigNamespace != null)
             RestSampleUtils.setProjectName(dir, projectConfigNamespace, name);
@@ -139,9 +130,6 @@ public class SampleWizardIterator  implements WizardDescriptor.InstantiatingIter
         Project p = ProjectManager.getDefault().findProject(dir);
         myProject = p;
     
-        if (addJerseyLibrary)
-            RestSampleUtils.addJerseyLibrary(myProject);
-        
         // Always open top dir as a project:
         resultSet.add(dir);
         // Look for nested projects to open as well:
@@ -178,9 +166,9 @@ public class SampleWizardIterator  implements WizardDescriptor.InstantiatingIter
             if (c instanceof JComponent) { // assume Swing components
                 JComponent jc = (JComponent)c;
                 // Step #.
-                jc.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(i)); // NOI18N
+                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer(i)); // NOI18N
                 // Step name (actually the whole list for reference).
-                jc.putClientProperty("WizardPanel_contentData", steps); // NOI18N
+                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps); // NOI18N
             }
         }
     }
@@ -193,8 +181,7 @@ public class SampleWizardIterator  implements WizardDescriptor.InstantiatingIter
     }
     
     public String name() {
-        return MessageFormat.format("{0} of {1}", //NOI18N
-            new Object[] {new Integer (index + 1), new Integer (panels.length)});
+        return current().getComponent().getName();
     }
     
     public boolean hasNext() {

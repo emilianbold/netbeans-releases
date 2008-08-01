@@ -76,7 +76,7 @@ import org.netbeans.editor.BaseKit.DeleteCharAction;
 import org.netbeans.editor.ext.ExtKit.ExtDefaultKeyTypedAction;
 import org.netbeans.editor.ext.html.*;
 import org.netbeans.editor.ext.html.parser.SyntaxParser;
-import org.netbeans.modules.gsf.api.BracketCompletion;
+import org.netbeans.modules.gsf.api.KeystrokeHandler;
 import org.netbeans.modules.editor.NbEditorKit;
 import org.netbeans.modules.editor.gsfret.InstantRenameAction;
 import org.netbeans.modules.editor.indent.api.Reformat;
@@ -101,7 +101,6 @@ public class HTMLKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
     static final long serialVersionUID = -1381945567613910297L;
     public static final String HTML_MIME_TYPE = "text/html"; // NOI18N
     public static final String shiftInsertBreakAction = "shift-insert-break"; // NOI18N
-    private static boolean setupReadersInitialized = false;
 
     public HTMLKit() {
         this(HTML_MIME_TYPE);
@@ -109,10 +108,7 @@ public class HTMLKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
 
     public HTMLKit(String mimeType) {
         super();
-        if (!setupReadersInitialized) {
-            NbReaderProvider.setupReaders();
-            setupReadersInitialized = true;
-        }
+        NbReaderProvider.setupReaders();
     }
 
     @Override
@@ -167,7 +163,7 @@ public class HTMLKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
         return TextAction.augmentList(super.createActions(), HTMLActions);
     }
 
-    static BracketCompletion getBracketCompletion(Document doc, int offset) {
+    static KeystrokeHandler getBracketCompletion(Document doc, int offset) {
         BaseDocument baseDoc = (BaseDocument) doc;
         List<Language> list = LanguageRegistry.getInstance().getEmbeddedLanguages(baseDoc, offset);
         for (Language l : list) {
@@ -194,7 +190,7 @@ public class HTMLKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
         @Override
         protected Object beforeBreak(JTextComponent target, BaseDocument doc, Caret caret) {
             if (completionSettingEnabled()) {
-                BracketCompletion bracketCompletion = getBracketCompletion(doc, caret.getDot());
+                KeystrokeHandler bracketCompletion = getBracketCompletion(doc, caret.getDot());
 
                 if (bracketCompletion != null) {
                     try {
@@ -236,10 +232,24 @@ public class HTMLKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
     public static class HTMLDefaultKeyTypedAction extends ExtDefaultKeyTypedAction {
 
         private JTextComponent currentTarget;
+        private String insertedText;
 
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
             currentTarget = target;
+            
+            //hack - I need to call the handleTagClosingSymbol() if a character was really typed into the editor
+            //but outside of the insertStringMethod() which is called under document atomicLock().
+            insertedText = null;
+            int dotPos = target.getCaret().getDot();
             super.actionPerformed(evt, target);
+            
+            if(insertedText != null) {
+                try {
+                    handleTagClosingSymbol((BaseDocument)target.getDocument(), dotPos, insertedText.charAt(0));
+                } catch (BadLocationException ble) {
+                    //ignore
+                }
+            }
             currentTarget = null;
         }
 
@@ -249,7 +259,7 @@ public class HTMLKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
                 boolean overwrite) throws BadLocationException {
 
             if (completionSettingEnabled()) {
-                BracketCompletion bracketCompletion = getBracketCompletion(doc, dotPos);
+                KeystrokeHandler bracketCompletion = getBracketCompletion(doc, dotPos);
 
                 if (bracketCompletion != null) {
                     // TODO - check if we're in a comment etc. and if so, do nothing
@@ -268,8 +278,8 @@ public class HTMLKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
             }
 
             super.insertString(doc, dotPos, caret, str, overwrite);
+            insertedText = str;
             HTMLAutoCompletion.charInserted(doc, dotPos, caret, str.charAt(0));
-            handleTagClosingSymbol(doc, dotPos, str.charAt(0));
         }
 
         @Override
@@ -282,7 +292,7 @@ public class HTMLKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
                 BaseDocument doc = (BaseDocument) document;
 
                 if (completionSettingEnabled()) {
-                    BracketCompletion bracketCompletion = getBracketCompletion(doc, dotPos);
+                    KeystrokeHandler bracketCompletion = getBracketCompletion(doc, dotPos);
 
                     if (bracketCompletion != null) {
                         try {
@@ -366,7 +376,7 @@ public class HTMLKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
 
         protected void charBackspaced(BaseDocument doc, int dotPos, Caret caret, char ch) throws BadLocationException {
               if (completionSettingEnabled()) {
-                BracketCompletion bracketCompletion = getBracketCompletion(doc, dotPos);
+                KeystrokeHandler bracketCompletion = getBracketCompletion(doc, dotPos);
 
                 if (bracketCompletion != null) {
                     boolean success = bracketCompletion.charBackspaced(doc, dotPos, currentTarget, ch);

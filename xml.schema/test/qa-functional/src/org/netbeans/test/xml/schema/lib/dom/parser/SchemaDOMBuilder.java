@@ -329,6 +329,11 @@ public class SchemaDOMBuilder {
         }
     }
     
+    public void print( )
+    {
+      printNodes( m_doc, 0 );
+    }
+
     private void printNodes(Node node, int level) {
         
         System.out.println();

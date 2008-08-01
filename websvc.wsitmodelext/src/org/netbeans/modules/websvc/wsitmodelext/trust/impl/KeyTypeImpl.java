@@ -42,9 +42,7 @@
 package org.netbeans.modules.websvc.wsitmodelext.trust.impl;
 
 import org.netbeans.modules.websvc.wsitmodelext.trust.KeyType;
-import org.netbeans.modules.websvc.wsitmodelext.trust.TrustQName;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import org.netbeans.modules.xml.wsdl.model.visitor.WSDLVisitor;
 import org.w3c.dom.Element;
 
 /**
@@ -60,15 +58,6 @@ public class KeyTypeImpl extends TrustComponentImpl implements KeyType {
         super(model, e);
     }
     
-    public KeyTypeImpl(WSDLModel model){
-        this(model, createPrefixedElement(TrustQName.KEYTYPE.getQName(), model));
-    }
-
-    @Override
-    public void accept(WSDLVisitor visitor) {
-        visitor.visit(this);
-    }
-
     public String getContent() {
         return getText();
     }

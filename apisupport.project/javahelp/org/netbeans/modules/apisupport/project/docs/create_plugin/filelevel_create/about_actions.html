@@ -1,6 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
- *     	  Copyright © 2006 Sun Microsystems, Inc. All rights reserved. 
+ *     	  Copyright © 2008 Sun Microsystems, Inc. All rights reserved. 
  *	  Use is subject to license terms.
 > -->
 <html>
@@ -46,6 +46,11 @@
         regardless of context, be it from a menu item in the main menu bar,
         a toolbar button in the main toolbar, or a keyboard shortcut. For example, in the IDE, the action that
         defines Tools &gt; Options subclasses <tt>CallableSystemAction</tt>.
+        
+    <ul class="note"><li>From NetBeans IDE 6.5 onwards, the New Action wizard
+    generates an <tt>ActionListener</tt> class that delegates to a <tt>CallableSystemAction</tt>
+    via a registration entry in the <tt>layer.xml</tt> file.</ul> 
+
  
         <li><object CLASSID="java:org.netbeans.modules.javahelp.BrowserDisplayer">
         <param name="content" value="http://bits.netbeans.org/dev/javadoc/org-openide-nodes/org/openide/util/actions/CookieAction.html">

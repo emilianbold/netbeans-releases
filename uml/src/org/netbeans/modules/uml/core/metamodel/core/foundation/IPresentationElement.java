@@ -46,6 +46,13 @@ import org.netbeans.modules.uml.core.support.umlutils.ETList;
 
 public interface IPresentationElement extends IElement {
 
+        /**
+         * Retrieves the metatype of the the firstSubject. 
+         * 
+         * @return The model elements metatype
+         */
+        public String getFirstSubjectsType();
+    
 	/*
 	 * Retrieves the collection of Elements this element is associated with.
 	 */

@@ -41,10 +41,10 @@
 
 package org.netbeans.modules.db.explorer.nodes;
 
-import org.openide.util.NbBundle;
+import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
 
 public class PrimaryKeyNode extends ColumnNode {
-    public String getShortDescription() {
-        return NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ND_PrimaryKey"); //NOI18N
+    public PrimaryKeyNode(DatabaseNodeInfo info) {
+        super(info);
     }
 }

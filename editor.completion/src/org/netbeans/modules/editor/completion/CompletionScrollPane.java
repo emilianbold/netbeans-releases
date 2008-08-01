@@ -44,7 +44,6 @@ package org.netbeans.modules.editor.completion;
 
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
@@ -106,13 +105,13 @@ public class CompletionScrollPane extends JScrollPane {
         setVerticalScrollBarPolicy(VERTICAL_SCROLLBAR_AS_NEEDED);
         
         // Use maximumSize property to store the limit of the preferred size
-        setMaximumSize(CompletionSettings.INSTANCE.completionPopupMaximumSize());
+        setMaximumSize(CompletionSettings.getInstance().completionPaneMaximumSize());
         // At least 2 items; do -1 for title height
         int maxVisibleRowCount = Math.max(2,
             getMaximumSize().height / CompletionLayout.COMPLETION_ITEM_HEIGHT - 1);
 
         // Add the completion view
-        view = new CompletionJList(maxVisibleRowCount, mouseListener, editorComponent.getFont());
+        view = new CompletionJList(maxVisibleRowCount, mouseListener, editorComponent);
         if (listSelectionListener != null) {
             view.addListSelectionListener(listSelectionListener);
         }
@@ -124,9 +123,9 @@ public class CompletionScrollPane extends JScrollPane {
         dataObj = data;
         view.setData(data);
         view.setSelectedIndex(selectedIndex);
-        Point p = view.indexToLocation(selectedIndex);
-        if (p != null)
-            view.scrollRectToVisible(new Rectangle(p));
+        Rectangle r = view.getCellBounds(selectedIndex, selectedIndex);
+        if (r != null)
+            view.scrollRectToVisible(r);
         setTitle(title);
         // Force the viewport preferred size to be taken into account
         // Otherwise the scroll pane attempts to retain its size
@@ -146,7 +145,7 @@ public class CompletionScrollPane extends JScrollPane {
         return view.getSelectedIndex();
     }
     
-    public Dimension getPreferredSize() {
+    public @Override Dimension getPreferredSize() {
         Dimension prefSize = super.getPreferredSize();
         Dimension labelSize = topLabel != null ? topLabel.getPreferredSize() : new Dimension(0, 0);
         Dimension maxSize = getMaximumSize();
@@ -184,10 +183,10 @@ public class CompletionScrollPane extends JScrollPane {
         // #25715 - Attempt to search keymap for the keybinding that logically corresponds to the action
         KeyStroke[] ret = new KeyStroke[] { defaultKey };
         if (component != null) {
-            TextUI ui = component.getUI();
+            TextUI componentUI = component.getUI();
             Keymap km = component.getKeymap();
-            if (ui != null && km != null) {
-                EditorKit kit = ui.getEditorKit(component);
+            if (componentUI != null && km != null) {
+                EditorKit kit = componentUI.getEditorKit(component);
                 if (kit instanceof BaseKit) {
                     Action a = ((BaseKit)kit).getActionByName(editorActionName);
                     if (a != null) {
