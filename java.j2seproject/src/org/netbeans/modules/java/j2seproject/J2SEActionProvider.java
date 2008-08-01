@@ -385,28 +385,18 @@ class J2SEActionProvider implements ActionProvider {
                         }
                         return;
                     }
-                    return;
-                }
-                if (    (SingleMethod.COMMAND_RUN_SINGLE_METHOD.equals(command) || SingleMethod.COMMAND_DEBUG_SINGLE_METHOD.equals(command))
-                     && isCompileOnSaveEnabled(J2SEProjectProperties.DISABLE_COMPILE_ON_SAVE)) {
-                    SingleMethod methodSpec = findTestMethods(context)[0];
-                    try {
-                        String prop = evaluator.getProperty(J2SEProjectProperties.RUN_JVM_ARGS);
-                        if (prop != null) {
-                            p.setProperty(J2SEProjectProperties.RUN_JVM_ARGS, prop);
+                    if (SingleMethod.COMMAND_RUN_SINGLE_METHOD.equals(command) || SingleMethod.COMMAND_DEBUG_SINGLE_METHOD.equals(command)) {
+                        SingleMethod methodSpec = findTestMethods(context)[0];
+                        try {
+                            execProperties.setProperty("methodname", methodSpec.getMethodName());//NOI18N
+                            ProjectRunner.execute(command.equals(SingleMethod.COMMAND_RUN_SINGLE_METHOD) ? ProjectRunner.QUICK_TEST : ProjectRunner.QUICK_TEST_DEBUG,
+                                                  execProperties,
+                                                  methodSpec.getFile());
+                        } catch (IOException ex) {
+                            Exceptions.printStackTrace(ex);
                         }
-                        prop = evaluator.getProperty(J2SEProjectProperties.RUN_WORK_DIR);
-                        if (prop != null) {
-                            p.setProperty(J2SEProjectProperties.RUN_WORK_DIR, prop);
-                        }
-                        p.setProperty("methodname", methodSpec.getMethodName());//NOI18N
-                        ProjectRunner.execute(command.equals(SingleMethod.COMMAND_RUN_SINGLE_METHOD) ? ProjectRunner.QUICK_TEST : ProjectRunner.QUICK_TEST_DEBUG,
-                                              p,
-                                              methodSpec.getFile());
-                    } catch (IOException ex) {
-                        Exceptions.printStackTrace(ex);
+                        return;
                     }
-                    return;
                 }
                 if (targetNames.length == 0) {
                     targetNames = null;
