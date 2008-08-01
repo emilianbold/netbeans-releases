@@ -344,6 +344,18 @@ abstract class PHPCompletionItem implements CompletionProposal {
         }
     }
 
+    //TODO: dummy must show also parameters similar like FunctionItem
+    static class SpecialFunctionItem extends KeywordItem {
+        public SpecialFunctionItem(String fncName, CompletionRequest request) {
+            super(fncName, request);
+        }
+
+        @Override
+        public ImageIcon getIcon() {
+            return null;
+        }
+    }
+
     static class FunctionItem extends PHPCompletionItem {
         private int optionalArgCount = 0;
 

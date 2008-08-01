@@ -1,0 +1,5 @@
+Code completion result for source line:
+function __dest|ruct() {
+(QueryType=COMPLETION, NameKind=PREFIX)
+------------------------------------
+KEYWORD    __destruct()                               null
