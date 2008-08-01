@@ -51,9 +51,9 @@ import org.netbeans.modules.db.sql.lexer.SQLTokenId;
  *
  * @author Andrei Badea
  */
-public class StatementAnalyzerTest extends TestCase {
+public class SQLStatementAnalyzerTest extends TestCase {
 
-    public StatementAnalyzerTest(String testName) {
+    public SQLStatementAnalyzerTest(String testName) {
         super(testName);
     }
 
