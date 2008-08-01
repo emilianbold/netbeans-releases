@@ -57,6 +57,7 @@ public class ConnectionListTest extends TestBase {
         // temporary: should actually call addDriver(), but that doesn't return a DataObject
         // ConnectionManager.getDefault().addConnection(dbconn);
         DataObject dbconnDO = DatabaseConnectionConvertor.create(dbconn);
+        ConnectionList.getDefault().refreshCache();
 
         /* Commenting out until 75204 is fixed
         Reference dbconnDORef = new WeakReference(dbconnDO);
