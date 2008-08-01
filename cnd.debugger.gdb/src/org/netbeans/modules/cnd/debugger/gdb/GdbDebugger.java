@@ -248,7 +248,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             profile = (GdbProfile) pae.getConfiguration().getAuxObject(GdbProfile.GDB_PROFILE_ID);
             conType = pae.getProfile().getConsoleType().getValue();
             platform = ((MakeConfiguration) pae.getConfiguration()).getPlatform().getValue();
-            if (platform == PlatformTypes.PLATFORM_WINDOWS && conType != RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW &&
+            if (platform != PlatformTypes.PLATFORM_WINDOWS && conType != RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW &&
                     pae.getID() != DEBUG_ATTACH) {
                 termpath = pae.getProfile().getTerminalPath();
             }
