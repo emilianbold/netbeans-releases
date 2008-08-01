@@ -69,6 +69,7 @@ import org.netbeans.modules.uml.drawingarea.util.Util;
 import org.netbeans.modules.uml.drawingarea.view.CustomizableWidget;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 import org.netbeans.modules.uml.drawingarea.view.DesignerTools;
+import org.netbeans.modules.uml.drawingarea.view.UMLNodeWidget;
 import org.netbeans.modules.uml.drawingarea.view.UMLWidget;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.AbstractLookup;
@@ -299,15 +300,20 @@ public abstract class FeatureWidget extends CustomizableWidget
     {
 
         IElement element = getElement();
-        if (element != null)
-        {
+        if (element != null)   
+        { 
             ObjectScene scene = (ObjectScene) getScene();
-            Widget parentWidget = Util.getParentNodeWidget(this);
-
+            //Widget parentWidget = Util.getParentNodeWidget(this);
+            
+            Widget parentWidget = (UMLNodeWidget) Util.getParentWidgetByClass(this, UMLNodeWidget.class);
             if (parentWidget != null)
             {
-                ObjectState newState = parentWidget.getState().deriveSelected(value);
-                parentWidget.setState(newState);
+                ObjectState curState = parentWidget.getState();
+                if ( curState.isSelected() != value)
+                {
+                    ObjectState newState = curState.deriveSelected(value);
+                    parentWidget.setState(newState);
+                }
             }
         }
     }
