@@ -705,10 +705,10 @@ public class ConfigurationMakefileWriter {
                 if (toDir != null && toDir.length() >= 0) {
                     bw.write("makeDirectory " + "$TMPDIR/" + toDir + "\n"); // NOI18N
                 }
-                bw.write("copyFileToTmpDir " + elem.getFrom() + " $TMPDIR/" + elem.getTo() + " " + elem.getPermission() + "\n"); // NOI18N
+                bw.write("copyFileToTmpDir " + elem.getFrom() + " $TMPDIR/" + elem.getTo() + " 0" + elem.getPermission() + "\n"); // NOI18N
             }
             else if (elem.getType() == FileElement.FileType.DIRECTORY) {
-                bw.write("makeDirectory " + " $TMPDIR/" + elem.getTo() + " " + elem.getPermission() + "\n"); // NOI18N
+                bw.write("makeDirectory " + " $TMPDIR/" + elem.getTo() + " 0" + elem.getPermission() + "\n"); // NOI18N
             }
             else if (elem.getType() == FileElement.FileType.SOFTLINK) {
                 String toDir = IpeUtils.getDirName(elem.getTo());
@@ -824,7 +824,7 @@ public class ConfigurationMakefileWriter {
             bw.write("d");// NOI18N
             bw.write(" none"); // Classes // NOI18N
             bw.write(" " + dir); // NOI18N
-            bw.write(" " + MakeOptions.getInstance().getDefExePerm()); // NOI18N
+            bw.write(" 0" + MakeOptions.getInstance().getDefExePerm()); // NOI18N
             bw.write(" " + MakeOptions.getInstance().getDefOwner()); // NOI18N
             bw.write(" " + MakeOptions.getInstance().getDefGroup()); // NOI18N
             bw.write("\""); // NOI18N
@@ -854,7 +854,7 @@ public class ConfigurationMakefileWriter {
                 bw.write("=" + elem.getFrom());// NOI18N
             }
             if (elem.getType() != FileElement.FileType.SOFTLINK) {
-                bw.write(" " + elem.getPermission());// NOI18N
+                bw.write(" 0" + elem.getPermission());// NOI18N
                 bw.write(" " + elem.getOwner());// NOI18N
                 bw.write(" " + elem.getGroup());// NOI18N
             }
