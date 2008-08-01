@@ -40,7 +40,6 @@ package org.netbeans.modules.php.editor.index;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.ref.WeakReference;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -217,7 +216,7 @@ public class PHPIndex {
         List<IndexedClass>classLine = new LinkedList<IndexedClass>();
         Collection<String> processedClasses = new TreeSet<String>();
         
-        while (className != null){
+        while (className != null && className.length() > 0){
             if (processedClasses.contains(className)){
                 break; //TODO: circular reference, warn the user
             }

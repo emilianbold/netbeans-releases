@@ -67,7 +67,7 @@ import org.netbeans.modules.cnd.apt.utils.APTUtils;
  */
 public class APTDriverImpl {
     /** map of active creators */
-    private static Map<String, APTSyncCreator> file2creator = new ConcurrentHashMap<String, APTSyncCreator>();
+    private static final Map<String, APTSyncCreator> file2creator = new ConcurrentHashMap<String, APTSyncCreator>();
     /** static shared sync map */
     private static Map<String, Reference<APTFile>> file2ref2apt = new ConcurrentHashMap<String, Reference<APTFile>>();
     private static Map<String, APTFile> file2apt = new ConcurrentHashMap<String, APTFile>();

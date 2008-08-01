@@ -473,7 +473,7 @@ public class CompilerSetManager {
                 initCompiler(Tool.FortranCompiler, path, cs, compiler.getNames());
             }
             initCompiler(Tool.MakeTool, path, cs, d.getMake().getNames());
-            initCompiler(Tool.DebuggerTool, path, cs, d.getDebuggerNames());
+            initCompiler(Tool.DebuggerTool, path, cs, d.getDebugger().getNames());
         }
     }
 

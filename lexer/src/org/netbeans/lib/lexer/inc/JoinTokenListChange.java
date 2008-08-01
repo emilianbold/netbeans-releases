@@ -226,15 +226,10 @@ final class JoinTokenListChange<T extends TokenId> extends TokenListChange<T> {
                 }
             }
         }
-        // Fill in the below-mod-ETLs area
-        int index = tokenListListUpdate.modTokenListIndex;
-        while (--index >= relexTokenListIndex) {
-            TokenListChange<T> change = relexChanges.get(index - relexTokenListIndex);
-            change.setMatchIndex(change.tokenList().tokenCountCurrent());
-        }
         // Check for empty ETLs that were at end of added ETLs - they would not be covered
         // by tokens since they were empty and there is no relex change for them and so
         // they do not contain join info.
+        int index;
         while ((index = relexTokenListIndex + relexChanges.size()) <
                 tokenListListUpdate.modTokenListIndex + tokenListListUpdate.addedTokenListCount()
         ) {
@@ -242,6 +237,18 @@ final class JoinTokenListChange<T extends TokenId> extends TokenListChange<T> {
             relexChanges.add(new RelexTokenListChange<T>(tokenListListUpdate.afterUpdateTokenList(jtl, index)));
         }
 
+        // Set match-index in the below-mod-ETLs area to all-tokens-removed
+        // Note that if there would be several empty ETLs at the end of lexing
+        // (e.g. one below modTokenListIndex and one added right above modTokenListIndex)
+        // the code would fail with IOOBE since there would be no corresponding relex-changes for the empty ETLs.
+        // Therefore the preceding code that fills extra relex-changes for empty ETLs
+        // is necessary to be done first.
+        // Test: JoinSectionsMod1Test.testCreateEmptyEmbedding()
+        index = tokenListListUpdate.modTokenListIndex;
+        while (--index >= relexTokenListIndex) {
+            TokenListChange<T> change = relexChanges.get(index - relexTokenListIndex);
+            change.setMatchIndex(change.tokenList().tokenCountCurrent());
+        }
         // Physically replace the token lists
         if (tokenListListUpdate.isTokenListsMod()) {
             replaceTokenLists();

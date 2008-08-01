@@ -1,7 +1,7 @@
 Name: Code Generation Library
 Version: 2.2
 License: Apache-2.0
-OSR: TBD
+OSR: 9527
 Description: Library for extending JAVA classes and implementing interfaces at runtime.
 Origin: http://cglib.sourceforge.net/
 

@@ -2,6 +2,7 @@
 ============
 Go to File...                    F
 Go to Type...                    T
+Go to Symbol...                  y
 Go to Function or Variable...    V
 Go to Spring Bean...             B
 ==============================
@@ -30,4 +31,3 @@ Select in Projects               j
 Select in Files                  c
 Select in Classes                c
 Select in Favorites              a
-Select in Model                  m

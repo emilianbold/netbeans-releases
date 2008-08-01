@@ -1,10 +1,12 @@
-    Toolbars                 > [x] Build                  B
+    Toolbars                 > [x] File                   F
+                               [ ] Clipboard              p
+                               [x] Undo/Redo              U
+                               [x] Run                    R
                                [ ] Debug                  D
-                               [x] Edit                   E
-                               [x] File                   F
                                [ ] Memory                 M
+                               [x] Quick Search           Q
                                ========================
                                    Small Toolbar Icons    S
                                ========================
-                                   Reset Toolbars         R
+                                   Reset Toolbars         T
                                    Customize...           C
