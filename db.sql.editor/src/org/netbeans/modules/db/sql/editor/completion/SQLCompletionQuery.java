@@ -136,8 +136,8 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
         this.quoteString = quoteString;
         anchorOffset = -1;
         substitutionOffset = 0;
-        items = new SQLCompletionItems(quoter, env.getStatementOffset());
         if (env != null && env.isSelect()) {
+            items = new SQLCompletionItems(quoter, env.getStatementOffset());
             completeSelect();
         }
         return items;
