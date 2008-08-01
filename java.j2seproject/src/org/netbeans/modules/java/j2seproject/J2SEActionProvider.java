@@ -54,6 +54,7 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -90,6 +91,7 @@ import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties
 import org.netbeans.modules.java.j2seproject.ui.customizer.MainClassChooser;
 import org.netbeans.modules.java.j2seproject.ui.customizer.MainClassWarning;
 import org.netbeans.spi.project.ActionProvider;
+import org.netbeans.spi.project.SingleMethod;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
@@ -135,6 +137,8 @@ class J2SEActionProvider implements ActionProvider {
         COMMAND_TEST,
         COMMAND_TEST_SINGLE,
         COMMAND_DEBUG_TEST_SINGLE,
+        SingleMethod.COMMAND_RUN_SINGLE_METHOD,
+        SingleMethod.COMMAND_DEBUG_SINGLE_METHOD,
         JavaProjectConstants.COMMAND_DEBUG_FIX,
         COMMAND_DEBUG_STEP_INTO,
         COMMAND_DELETE,
@@ -156,6 +160,8 @@ class J2SEActionProvider implements ActionProvider {
         COMMAND_TEST,
         COMMAND_TEST_SINGLE,
         COMMAND_DEBUG_TEST_SINGLE,
+        SingleMethod.COMMAND_RUN_SINGLE_METHOD,
+        SingleMethod.COMMAND_DEBUG_SINGLE_METHOD,
         JavaProjectConstants.COMMAND_DEBUG_FIX,
         COMMAND_DEBUG_STEP_INTO,
     };
@@ -379,6 +385,28 @@ class J2SEActionProvider implements ActionProvider {
                         }
                         return;
                     }
+                    return;
+                }
+                if (    (SingleMethod.COMMAND_RUN_SINGLE_METHOD.equals(command) || SingleMethod.COMMAND_DEBUG_SINGLE_METHOD.equals(command))
+                     && isCompileOnSaveEnabled(J2SEProjectProperties.DISABLE_COMPILE_ON_SAVE)) {
+                    SingleMethod methodSpec = findTestMethods(context)[0];
+                    try {
+                        String prop = evaluator.getProperty(J2SEProjectProperties.RUN_JVM_ARGS);
+                        if (prop != null) {
+                            p.setProperty(J2SEProjectProperties.RUN_JVM_ARGS, prop);
+                        }
+                        prop = evaluator.getProperty(J2SEProjectProperties.RUN_WORK_DIR);
+                        if (prop != null) {
+                            p.setProperty(J2SEProjectProperties.RUN_WORK_DIR, prop);
+                        }
+                        p.setProperty("methodname", methodSpec.getMethodName());//NOI18N
+                        ProjectRunner.execute(command.equals(SingleMethod.COMMAND_RUN_SINGLE_METHOD) ? ProjectRunner.QUICK_TEST : ProjectRunner.QUICK_TEST_DEBUG,
+                                              p,
+                                              methodSpec.getFile());
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                    return;
                 }
                 if (targetNames.length == 0) {
                     targetNames = null;
@@ -457,6 +485,20 @@ class J2SEActionProvider implements ActionProvider {
         else if ( command.equals( COMMAND_DEBUG_TEST_SINGLE ) ) {
             FileObject[] files = findTestSourcesForSources(context);
             targetNames = setupDebugTestSingle(p, files);
+        }
+        else if ( command.equals( SingleMethod.COMMAND_RUN_SINGLE_METHOD ) ) {
+            SingleMethod[] methodSpecs = findTestMethods(context);
+            if ((methodSpecs == null) || (methodSpecs.length != 1)) {
+                return new String[0];
+            }
+            targetNames = setupRunSingleTestMethod(p, methodSpecs[0]);
+        }
+        else if ( command.equals( SingleMethod.COMMAND_DEBUG_SINGLE_METHOD ) ) {
+            SingleMethod[] methodSpecs = findTestMethods(context);
+            if ((methodSpecs == null) || (methodSpecs.length != 1)) {
+                return new String[0];
+            }
+            targetNames = setupDebugSingleTestMethod(p, methodSpecs[0]);
         }
         else if ( command.equals( JavaProjectConstants.COMMAND_DEBUG_FIX ) ) {
             FileObject[] files = findSources( context );
@@ -747,6 +789,39 @@ class J2SEActionProvider implements ActionProvider {
         return new String[] {"debug-test"}; // NOI18N
     }
 
+    private String[] setupRunSingleTestMethod(Properties p, SingleMethod methodSpec) {
+        return setupTestSingle(p, new FileObject[] {methodSpec.getFile()});
+
+        //FileObject[] testSrcPath = project.getTestSourceRoots().getRoots();
+        //FileObject testFile = methodSpec.getFile();
+        //FileObject root = getRoot(testSrcPath, testFile);
+        //String relPath = FileUtil.getRelativePath(root, testFile);
+        //String className = getClassName(relPath);
+        //p.setProperty("javac.includes", relPath); // NOI18N
+        //p.setProperty("test.class", className); // NOI18N
+        //p.setProperty("test.method", methodSpec.getMethodName()); // NOI18N
+        //return new String[] {"test-single-method"}; // NOI18N
+    }
+
+    private String[] setupDebugSingleTestMethod(Properties p, SingleMethod methodSpec) {
+        return setupDebugTestSingle(p, new FileObject[] {methodSpec.getFile()});
+
+        //FileObject[] testSrcPath = project.getTestSourceRoots().getRoots();
+        //FileObject testFile = methodSpec.getFile();
+        //FileObject root = getRoot(testSrcPath, testFile);
+        //String relPath = FileUtil.getRelativePath(root, testFile);
+        //String className = getClassName(relPath);
+        //p.setProperty("javac.includes", relPath); // NOI18N
+        //p.setProperty("test.class", className); // NOI18N
+        //p.setProperty("test.method", methodSpec.getMethodName()); // NOI18N
+        //return new String[] {"debug-test-method"}; // NOI18N
+    }
+
+    private static String getClassName(String relPath) {
+        // Convert foo/FooTest.java -> foo.FooTest
+        return relPath.substring(0, relPath.length() - 5).replace('/', '.');
+    }
+
     private boolean isCompileOnSaveEnabled(String propertyName) {
         String compileOnSaveProperty = project.evaluator().getProperty(propertyName);
 
@@ -781,6 +856,14 @@ class J2SEActionProvider implements ActionProvider {
             }
             fos = findTestSources(context, false);
             return fos != null && fos.length == 1;
+        } else if (command.equals(SingleMethod.COMMAND_RUN_SINGLE_METHOD)
+                || command.equals(SingleMethod.COMMAND_DEBUG_SINGLE_METHOD)) {
+            if (isCompileOnSaveEnabled(J2SEProjectProperties.DISABLE_COMPILE_ON_SAVE)) {
+                SingleMethod[] methodSpecs = findTestMethods(context);
+                return (methodSpecs != null) && (methodSpecs.length == 1);
+            } else {
+                return false;
+            }
         } else {
             // other actions are global
             return true;
@@ -927,6 +1010,44 @@ class J2SEActionProvider implements ActionProvider {
             }
         }
         return null;
+    }
+
+    /**
+     * Finds single method specification objects corresponding to JUnit test
+     * methods in unit test roots.
+     */
+    private SingleMethod[] findTestMethods(Lookup context) {
+        Collection<? extends SingleMethod> methodSpecs
+                                           = context.lookupAll(SingleMethod.class);
+        if (methodSpecs.isEmpty()) {
+            return null;
+        }
+
+        FileObject[] testSrcPath = project.getTestSourceRoots().getRoots();
+        if ((testSrcPath == null) || (testSrcPath.length == 0)) {
+            return null;
+        }
+
+        Collection<SingleMethod> specs = new LinkedHashSet<SingleMethod>(); //#50644: remove dupes
+        for (FileObject testRoot : testSrcPath) {
+            for (SingleMethod spec : methodSpecs) {
+                FileObject f = spec.getFile();
+                if (FileUtil.toFile(f) == null) {
+                    continue;
+                }
+                if ((f != testRoot) && !FileUtil.isParentOf(testRoot, f)) {
+                    continue;
+                }
+                if (!f.getNameExt().endsWith(".java")) {                //NOI18N
+                    continue;
+                }
+                specs.add(spec);
+            }
+        }
+        if (specs.isEmpty()) {
+            return null;
+        }
+        return specs.toArray(new SingleMethod[specs.size()]);
     }
 
     private FileObject getRoot (FileObject[] roots, FileObject file) {
