@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.web.client.javascript.debugger.http.ui.models;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
@@ -228,11 +229,21 @@ public class HttpActivitiesModel implements TreeModel, TableModel, NodeModel, No
 //        APPLICATION_X_SHOCKWAVE_FLASH
 //    }
 
-    private static final List HTML_CONTENT_TYPES = Arrays.asList("text/plain", "application/octet-stream", "text/html", "text/xml" );
-    private static final List JS_CONTENT_TYPES = Arrays.asList("application/x-javascript", "text/javascript", "application/javascript");
-    private static final List CSS_CONTENT_TYPES = Arrays.asList("text/css");
-    private static final List IMAGES_CONTENT_TYPES = Arrays.asList("image/jpeg", "image/gif", "image/png", "image/bmp");
-    private static final List FLASH_CONTENT_TYPES = Arrays.asList("application/x-shockwave-flash");
+    private static final List<String> HTML_CONTENT_TYPES = Arrays.asList("text/plain", "application/octet-stream", "text/html", "text/xml" );
+    private static final List<String> JS_CONTENT_TYPES = Arrays.asList("application/x-javascript", "text/javascript", "application/javascript");
+    private static final List<String> CSS_CONTENT_TYPES = Arrays.asList("text/css");
+    private static final List<String> IMAGES_CONTENT_TYPES = Arrays.asList("image/jpeg", "image/gif", "image/png", "image/bmp");
+    private static final List<String> FLASH_CONTENT_TYPES = Arrays.asList("application/x-shockwave-flash");
+    
+    private static List<String> editorMimeType  = new ArrayList<String>();
+    static {
+        editorMimeType.addAll(HTML_CONTENT_TYPES);
+        editorMimeType.addAll(JS_CONTENT_TYPES);
+        editorMimeType.addAll(CSS_CONTENT_TYPES);
+    }
+    public static final List getEditorMimeTypes () {
+        return editorMimeType;
+    }
 
     private static final String HTML_CATEGORY = "html";
     private static final String JS_CATEGORY = "js";
