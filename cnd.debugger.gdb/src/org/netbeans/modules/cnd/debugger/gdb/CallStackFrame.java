@@ -130,7 +130,7 @@ public class CallStackFrame {
      * @return name of file this stack frame is stopped in
      */
     public String getFullname() {
-        return fullname;
+        return debugger.getPathMap().getLocalPath(fullname);
     }
     
     /**

@@ -116,6 +116,32 @@ public class JoinSectionsMod1Test extends NbTestCase {
         ts.createEmbedding(TestJoinSectionsTextTokenId.parenLanguage, 1, 1, true);
     }
 
+    public void testCreateEmptyEmbedding() throws Exception {
+        //             000000000011111111112222222222
+        //             012345678901234567890123456789
+        String text = "(a)x()y()";
+        ModificationTextDocument doc = new ModificationTextDocument();
+        doc.insertString(0, text, null);
+        doc.putProperty(Language.class, TestJoinSectionsTopTokenId.language());
+        LexerTestUtilities.incCheck(doc, true); // Ensure the whole embedded hierarchy gets created
+
+        TokenHierarchy<?> hi = TokenHierarchy.get(doc);
+        TokenSequence<?> ts = hi.tokenSequence();
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts,TestJoinSectionsTopTokenId.PARENS, "(a)", -1);
+        ts.createEmbedding(TestJoinSectionsTextTokenId.parenLanguage, 1, 1, true);
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts,TestJoinSectionsTopTokenId.TEXT, "x", -1);
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts,TestJoinSectionsTopTokenId.PARENS, "()", -1);
+        ts.createEmbedding(TestJoinSectionsTextTokenId.parenLanguage, 1, 1, true);
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts,TestJoinSectionsTopTokenId.TEXT, "y", -1);
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts,TestJoinSectionsTopTokenId.PARENS, "()", -1);
+        ts.createEmbedding(TestJoinSectionsTextTokenId.parenLanguage, 1, 1, true);
+    }
+
     public void testShortDocMod() throws Exception {
         //             000000000011111111112222222222
         //             012345678901234567890123456789

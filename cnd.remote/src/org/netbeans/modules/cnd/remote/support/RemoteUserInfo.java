@@ -41,10 +41,12 @@ package org.netbeans.modules.cnd.remote.support;
 
 import com.jcraft.jsch.UIKeyboardInteractive;
 import com.jcraft.jsch.UserInfo;
+import java.awt.Component;
 import java.awt.Container;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.JLabel;
@@ -52,7 +54,10 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.windows.WindowManager;
 
 /**
  *
@@ -86,10 +91,9 @@ public class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
         if (ui == null) {
             ui = new RemoteUserInfo();
             map.put(key, ui);
-        } else if (ui.isCancelled()) {
-            ui.cancelled = false;
         }
         if (retry) {
+            ui.cancelled = false;
             ui.reset();
         }
         return ui;
@@ -110,7 +114,7 @@ public class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
         int foo;
         
         synchronized (DLGLOCK) {
-            foo = JOptionPane.showOptionDialog(null, str,
+            foo = JOptionPane.showOptionDialog(getParentComponent(), str,
                 NbBundle.getMessage(RemoteUserInfo.class, "TITLE_YN_Warning"), JOptionPane.DEFAULT_OPTION, 
              JOptionPane.WARNING_MESSAGE, null, options, options[0]);
         }
@@ -130,10 +134,13 @@ public class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
             if (passwd != null && passwd.length() > 0) {
                 return true;
             } else {
-                Object[] ob = { passwordField };
+                JPanel pwdPanel = new JPanel();
+                pwdPanel.add(passwordField);
+                pwdPanel.setFocusCycleRoot(true);
+                Object[] ob = { pwdPanel };
                 int result;
                 synchronized (DLGLOCK) {
-                    result = JOptionPane.showConfirmDialog(null, ob, message, JOptionPane.OK_CANCEL_OPTION);
+                    result = JOptionPane.showConfirmDialog(getParentComponent(), ob, message, JOptionPane.OK_CANCEL_OPTION);
                 }
 
                 if (result == JOptionPane.OK_OPTION) {
@@ -155,7 +162,7 @@ public class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
 
     public void showMessage(String message){
         synchronized (DLGLOCK) {
-            JOptionPane.showMessageDialog(null, message);
+            JOptionPane.showMessageDialog(getParentComponent(), message);
         }
     }
 
@@ -192,7 +199,7 @@ public class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
         }
 
         synchronized (DLGLOCK) {
-            if (!isCancelled() && JOptionPane.showConfirmDialog(null, panel,
+            if (!isCancelled() && JOptionPane.showConfirmDialog(getParentComponent(), panel,
                         NbBundle.getMessage(RemoteUserInfo.class, "TITLE_KeyboardInteractive", destination, name),
                         JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.OK_OPTION) {
                 String[] response = new String[prompt.length];
@@ -205,5 +212,25 @@ public class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
                 return null;  // cancel
             }
         }
+    }
+    
+    private Component getParentComponent() {
+        final Component out[] = new Component[] { null };
+        if (SwingUtilities.isEventDispatchThread()) {
+            out[0] = WindowManager.getDefault().getMainWindow();  
+        } else {
+            try {
+                SwingUtilities.invokeAndWait(new Runnable() {
+                    public void run() {
+                        out[0] = WindowManager.getDefault().getMainWindow();
+                    }
+                });
+            } catch (InterruptedException ex) {
+//                Exceptions.printStackTrace(ex);
+            } catch (InvocationTargetException ex) {
+//                Exceptions.printStackTrace(ex);
+            }
+        }
+        return out[0];
     }
 }
