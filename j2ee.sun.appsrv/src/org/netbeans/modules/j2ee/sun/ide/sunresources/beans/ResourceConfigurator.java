@@ -955,7 +955,7 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
                                 if(portNo != null  && portNo.length() > 0) {
                                     url = url + ":" + portNo; //NOI18N
                                 }    
-                                url = url + "/" + dbName ; //NOI8N
+                                url = url + "/" + dbName ; //NOI18N
                             }
                         }else if(url.equals("")) { //NOI18N
                             String urlPrefix = DatabaseUtils.getUrlPrefix(dsClass, resType);
@@ -975,7 +975,7 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
                             }else if(Arrays.asList(WizardConstants.Reqd_DBName).contains(vName)) {
                                 url = url + ";databaseName=" + dbName; //NOI18N
                             }else if(Arrays.asList(WizardConstants.VendorsDBNameProp).contains(vName)) {
-                                url = url + "/" + dbName ; //NOI8N
+                                url = url + "/" + dbName ; //NOI18N
                             }    
                         }    
                     }

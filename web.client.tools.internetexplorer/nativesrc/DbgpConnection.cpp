@@ -146,7 +146,7 @@ void DbgpConnection::sendWindowsMessage(IHTMLDocument2 *pHTMLDocument) {
     HRESULT hr = pHTMLDocument->get_URL(&bstrURL);
     windowTag.addAttribute(FILE_URI, encodeToBase64((TCHAR *)(bstrURL)));
 
-    set<tstring> frameURLs = getFrameURLs(pHTMLDocument);
+    set<tstring> frameURLs = getFrameURLs(pHTMLDocument, FALSE);
     set<tstring>::iterator iter = frameURLs.begin();
     while(iter != frameURLs.end()) {
         DbgpWindowTag &frameTag = windowTag.addWindowTag();
@@ -172,7 +172,7 @@ tstring DbgpConnection::encodeToBase64(tstring value) {
 }
 
 
-set<tstring> DbgpConnection::getFrameURLs(IHTMLDocument2 *pHTMLDocument) {
+set<tstring> DbgpConnection::getFrameURLs(IHTMLDocument2 *pHTMLDocument, BOOL scriptOnly) {
     CComPtr<IDispatch> spDisp = pHTMLDocument;
     set<tstring> frameURLs;
     if(spDisp != NULL) {
@@ -188,11 +188,28 @@ set<tstring> DbgpConnection::getFrameURLs(IHTMLDocument2 *pHTMLDocument) {
                 CComQIPtr<IWebBrowser2> spWebBrowser = spUnk;
                 if (spWebBrowser != NULL) {
                     CComBSTR bstrURL;
-                    spWebBrowser->get_LocationURL(&bstrURL);
-                    tstring location = (TCHAR *)(bstrURL);
-                    size_t pos = location.find(_T("http://"));
-                    if(pos != string::npos && bstrURL != NULL) {
-                        frameURLs.insert(location);
+                    if(scriptOnly) {
+                        CComPtr<IDispatch> spDispHtmlDoc;
+                        spWebBrowser->get_Document(&spDispHtmlDoc);
+                        CComQIPtr<IHTMLDocument2> spHtmlDocument = spDispHtmlDoc;
+                        if(spHtmlDocument != NULL) {
+                            CComPtr<IHTMLElementCollection> spHTMLElementCollection;
+                            hr = spHtmlDocument->get_scripts(&spHTMLElementCollection);
+                            long items;
+                            spHTMLElementCollection->get_length(&items);
+                            if(items > 0) {
+                                spHtmlDocument->get_URL(&bstrURL);
+                            }
+                        }
+                    } else {
+                        spWebBrowser->get_LocationURL(&bstrURL);
+                    }
+                    if(bstrURL != NULL) {
+                        tstring location = (TCHAR *)(bstrURL);
+                        size_t pos = location.find(_T("http://"));
+                        if(pos != string::npos && bstrURL != NULL) {
+                            frameURLs.insert(location);
+                        }
                     }
                 }
                 spUnk.Release();
@@ -238,13 +255,14 @@ void DbgpConnection::sendSourcesMessage(IHTMLDocument2 *pHTMLDocument) {
         }
     }
 
-    set<tstring> frameURLs = getFrameURLs(pHTMLDocument);
+    set<tstring> frameURLs = getFrameURLs(pHTMLDocument, TRUE);
     set<tstring>::iterator iter = frameURLs.begin();
     while(iter != frameURLs.end()) {
         DbgpSourceTag &sourceTag = message.addSource();
         sourceTag.addAttribute(FILE_URI, encodeToBase64(*iter));
         ++iter;
     }
+
     sendResponse(message.toString());
 
     /*
@@ -365,7 +383,7 @@ void DbgpConnection::processCommand(string cmdString, DbgpConnection *pDbgpConne
     DbgpResponse *pDbgpResponse = pDbgpCommand->process(pDbgpConnection, argsMap);
     if(pDbgpCommand->needsResponse() && pDbgpResponse != NULL) {
         sendResponse(pDbgpResponse->toString());
-        free(pDbgpResponse);
+        delete pDbgpResponse;
     }
 }
 

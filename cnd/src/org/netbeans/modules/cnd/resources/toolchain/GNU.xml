@@ -151,9 +151,11 @@ made subject to such option by the copyright holder.
     </linker>
     <make>
         <tool name="make,gmake"/>
+        <version flags="--version" />
         <dependency_support code="include $(wildcard $(addsuffix .d, ${OBJECTFILES}))\n" />
     </make>
     <debugger>
         <tool name="gdb"/>
+        <version flags="--version" />
     </debugger>
 </toolchaindefinition>

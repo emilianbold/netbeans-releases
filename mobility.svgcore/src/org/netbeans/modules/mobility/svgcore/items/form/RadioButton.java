@@ -47,8 +47,13 @@ import org.netbeans.modules.mobility.svgcore.model.SVGFileModel;
 import org.netbeans.modules.mobility.svgcore.util.SVGComponentsSupport;
 
 /**
- *
- * @author avk
+ * SVGComponentDrop implementation for Button.
+ * loads snippet text from button_snippet.xml_template
+ * <p>
+ * patterns used in snippet:  %%COORDINATE_X%%, %%COORDINATE_Y%%, 
+ * %%COMPONENT_ID_1%%, %%COMPONENT_ID_2%%
+ * 
+ * @author akorostelev
  */
 public class RadioButton extends SVGFormElement{
 

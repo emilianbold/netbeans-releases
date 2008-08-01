@@ -59,7 +59,7 @@ public class SunFortranCompiler extends BasicCompiler {
     }
 
     @Override
-    protected CompilerDescriptor getCompilerDescription() {
+    public CompilerDescriptor getDescriptor() {
         return getFlavor().getToolchainDescriptor().getFortran();
     }
 }

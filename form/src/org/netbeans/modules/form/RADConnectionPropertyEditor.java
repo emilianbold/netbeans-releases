@@ -158,7 +158,7 @@ public class RADConnectionPropertyEditor
     }
 
     public boolean supportsCustomEditor() {
-        return true;
+        return !formModel.isReadOnly();
     }
 
     public java.awt.Component getCustomEditor() {

@@ -80,7 +80,7 @@ made subject to such option by the copyright holder.
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.persistence.wizard.jpacontroller.Bundle"/>
                 <attr name="templateCategory" stringvalue="persistence"/>
                 <attr name="template" boolvalue="true"/>
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/jsf/resources/JpaController.html"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/persistence/ui/resources/JpaController.html"/>
                 <attr name="templateWizardIterator" newvalue="org.netbeans.modules.j2ee.persistence.wizard.jpacontroller.JpaControllerIterator"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
             </file>

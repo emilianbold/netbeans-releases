@@ -200,15 +200,15 @@ public class MakeActionProvider implements ActionProvider {
         String projectName = info.getDisplayName();
         MakeConfigurationDescriptor pd = getProjectDescriptor();
         MakeConfiguration conf = (MakeConfiguration)pd.getConfs().getActive();
-        String hkey = conf.getDevelopmentHost().getName();
-        
-        if (!hkey.equals(CompilerSetManager.LOCALHOST)) {
-            ServerList registry = (ServerList) Lookup.getDefault().lookup(ServerList.class);
-            assert registry != null;
-            ServerRecord record = registry.get(hkey);
-            assert record != null;
-            record.validate();
-        }
+//        String hkey = conf.getDevelopmentHost().getName();
+//
+//        if (!hkey.equals(CompilerSetManager.LOCALHOST)) {
+//            ServerList registry = (ServerList) Lookup.getDefault().lookup(ServerList.class);
+//            assert registry != null;
+//            ServerRecord record = registry.get(hkey);
+//            assert record != null;
+//            record.validate();
+//        }
         
         if (COMMAND_DELETE.equals(command)) {
             DefaultProjectOperations.performDefaultDeleteOperation(project);

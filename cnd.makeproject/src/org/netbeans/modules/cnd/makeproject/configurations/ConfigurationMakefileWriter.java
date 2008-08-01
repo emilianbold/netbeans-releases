@@ -70,6 +70,7 @@ import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.compilers.ToolchainManager.ToolchainDescriptor;
+import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 import org.netbeans.modules.cnd.makeproject.api.configurations.FortranCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.PackagingConfiguration;
@@ -276,12 +277,10 @@ public class ConfigurationMakefileWriter {
         String output = getOutput(conf);
         bw.write("# Build Targets\n"); // NOI18N
         if (conf.isCompileConfiguration()) {
-            bw.write(".build-conf: " + "${BUILD_SUBPROJECTS} " + output + "\n"); // NOI18N
-            bw.write("\n"); // NOI18N
-            if (hasSubprojects(conf)) {
-                bw.write(output + ": " + "${BUILD_SUBPROJECTS}" + "\n"); // NOI18N
-                bw.write("\n"); // NOI18N
-            }
+            bw.write(".build-conf: ${BUILD_SUBPROJECTS}\n"); // NOI18N
+            bw.write("\t${MAKE} " + MakeOptions.getInstance().getMakeOptions() // NOI18N
+                    + " -f nbproject/Makefile-" + conf.getName() + ".mk " // NOI18N
+                    + output + "\n\n"); // NOI18N
             if (conf.isLinkerConfiguration())
                 writeLinkTarget(conf, bw, output);
             if (conf.isArchiverConfiguration())
@@ -290,7 +289,7 @@ public class ConfigurationMakefileWriter {
                 writeCompileTargets(conf, bw);
         }
         else if (conf.isMakefileConfiguration()) {
-            bw.write(".build-conf: " + "${BUILD_SUBPROJECTS} " + "\n"); // NOI18N
+            bw.write(".build-conf: ${BUILD_SUBPROJECTS}\n"); // NOI18N
             writeMakefileTargets(conf, bw);
         }
         writeSubProjectBuildTargets(conf, bw);
@@ -317,7 +316,14 @@ public class ConfigurationMakefileWriter {
 	for (int i = 0; i < additionalDependencies.length; i++) {
 	    bw.write(output + ": " + additionalDependencies[i] + "\n\n"); // NOI18N
 	}
-        bw.write(output + ": " + "${OBJECTFILES}" + "\n"); // NOI18N
+        LibraryItem[] libs = linkerConfiguration.getLibrariesConfiguration().getLibraryItemsAsArray();
+        for (LibraryItem lib : libs) {
+            String libPath = lib.getPath();
+            if (libPath != null && libPath.length() > 0) {
+                bw.write(output + ": " + libPath + "\n\n"); // NOI18N
+            }
+        }
+        bw.write(output + ": ${OBJECTFILES}\n"); // NOI18N
         String folders = IpeUtils.getDirName(output);
         if (folders != null)
             bw.write("\t${MKDIR} -p " + folders + "\n"); // NOI18N
@@ -641,9 +647,15 @@ public class ConfigurationMakefileWriter {
         bw.write("}\n"); // NOI18N
         bw.write("function makeDirectory\n"); // NOI18N
         bw.write("# $1 directory path\n"); // NOI18N
+        bw.write("# $2 permission (optional)\n"); // NOI18N
         bw.write("{\n"); // NOI18N
         bw.write("    mkdir -p $1\n"); // NOI18N
         bw.write("    checkReturnCode\n"); // NOI18N
+        bw.write("    if [ \"$2\" != \"\" ]\n"); // NOI18N
+        bw.write("    then\n"); // NOI18N
+        bw.write("      chmod $2 $1\n"); // NOI18N
+        bw.write("      checkReturnCode\n"); // NOI18N
+        bw.write("    fi\n"); // NOI18N
         bw.write("}\n"); // NOI18N
         bw.write("function copyFileToTmpDir\n"); // NOI18N
         bw.write("# $1 from-file path\n"); // NOI18N
@@ -665,8 +677,9 @@ public class ConfigurationMakefileWriter {
         bw.write("mkdir -p $TMPDIR\n"); // NOI18N
         bw.write("\n"); // NOI18N
         
-        bw.write("# Files\n"); // NOI18N
+        bw.write("# Copy files and create sirectories and links\n"); // NOI18N
         for (FileElement elem : fileList) {
+            bw.write("cd $TOP\n"); // NOI18N
             if (elem.getType() == FileElement.FileType.FILE) {
                 String toDir = IpeUtils.getDirName(elem.getTo());
                 if (toDir != null && toDir.length() >= 0) {
@@ -674,16 +687,34 @@ public class ConfigurationMakefileWriter {
                 }
                 bw.write("copyFileToTmpDir " + elem.getFrom() + " $TMPDIR/" + elem.getTo() + " " + elem.getPermission() + "\n"); // NOI18N
             }
+            else if (elem.getType() == FileElement.FileType.DIRECTORY) {
+                bw.write("makeDirectory " + " $TMPDIR/" + elem.getTo() + " " + elem.getPermission() + "\n"); // NOI18N
+            }
+            else if (elem.getType() == FileElement.FileType.SOFTLINK) {
+                String toDir = IpeUtils.getDirName(elem.getTo());
+                String toName = IpeUtils.getBaseName(elem.getTo());
+                if (toDir != null && toDir.length() >= 0) {
+                    bw.write("makeDirectory " + "$TMPDIR/" + toDir + "\n"); // NOI18N
+                }
+                bw.write("cd " + "$TMPDIR/" + toDir + "\n"); // NOI18N
+                bw.write("ln -s " + elem.getFrom() + " " + toName + "\n"); // NOI18N
+            }
+            else {
+                assert false;
+            }
+            bw.write("\n"); // NOI18N
         }
         bw.write("\n"); // NOI18N
         
         if (packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_ZIP) {
             bw.write("# Generate zip file\n"); // NOI18N
+            bw.write("cd $TOP\n"); // NOI18N
             bw.write("cd $TMPDIR\n"); // NOI18N
             bw.write(packagingConfiguration.getToolValue() + " -r "+ packagingConfiguration.getOptionsValue() + " " + outputRelToTmp + " *\n");
         }
         else if (packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_TAR) {
             bw.write("# Generate tar file\n"); // NOI18N
+            bw.write("cd $TOP\n"); // NOI18N
             bw.write("cd $TMPDIR\n"); // NOI18N
             String options = packagingConfiguration.getOptionsValue() + "cf"; // NOI18N
             if (options.charAt(0) != '-') { // NOI18N

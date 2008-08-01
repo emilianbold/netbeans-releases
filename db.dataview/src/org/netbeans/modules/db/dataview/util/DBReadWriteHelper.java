@@ -166,9 +166,11 @@ public class DBReadWriteHelper {
             // JDBC/ODBC bridge JDK1.4 brings back -9 for nvarchar columns in
             // MS SQL Server tables.
             // -8 is ROWID in Oracle.
+            // JDBC introduced NCHAR(-15), and NVARCHAR (-9)
             case Types.CHAR:
             case Types.VARCHAR:
             case Types.LONGVARCHAR:
+            case -15:
             case -9:
             case -8: {
                 String sdata = rs.getString(index);
@@ -304,6 +306,9 @@ public class DBReadWriteHelper {
 
                 case Types.CHAR:
                 case Types.VARCHAR:
+                case -15:
+                case -9:
+                case -8:
                     ps.setString(index, valueObj.toString());
                     break;
 

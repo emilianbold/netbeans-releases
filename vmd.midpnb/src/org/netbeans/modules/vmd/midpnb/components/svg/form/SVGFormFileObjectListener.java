@@ -112,8 +112,13 @@ public class SVGFormFileObjectListener implements FileChangeListener {
 
     public static synchronized void regenerateSVGComponentsStructure(FileObject fo, final DesignComponent svgForm) {
         InputStream is = null;
+        if (!fo.isValid()){
+            throw new RuntimeException("FO is not valid!!!");
+        }
         try {
-            is = fo.getInputStream();
+            if (fo.isValid()){
+                is = fo.getInputStream();
+            }
         } catch (FileNotFoundException ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -158,11 +163,15 @@ public class SVGFormFileObjectListener implements FileChangeListener {
             svgForm.getDocument().getTransactionManager().writeAccess(new Runnable() {
 
                 public void run() {
+                    DescriptorRegistry registry = svgForm.getDocument().getDescriptorRegistry();
                     Collection<DesignComponent> components = new HashSet<DesignComponent>(svgForm.getComponents());
-                    for (DesignComponent svgComponent : components) {
-                        String id = (String) svgComponent.readProperty(SVGComponentCD.PROP_ID).getPrimitiveValue();
-                        if (toDelete.contains(id)) {
-                            svgForm.getDocument().deleteComponent(svgComponent);
+                    
+                    for (DesignComponent component : components) {
+                        if (registry.isInHierarchy(SVGComponentCD.TYPEID, component.getType())) {
+                            String id = (String) component.readProperty(SVGComponentCD.PROP_ID).getPrimitiveValue();
+                            if (toDelete.contains(id)) {
+                                svgForm.getDocument().deleteComponent(component);
+                            }
                         }
                     }
                     addComponents(toAdd, svgForm);
