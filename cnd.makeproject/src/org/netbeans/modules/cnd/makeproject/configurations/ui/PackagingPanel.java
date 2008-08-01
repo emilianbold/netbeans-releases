@@ -78,7 +78,7 @@ public class PackagingPanel extends javax.swing.JPanel implements HelpCtx.Provid
             packagingFilesPanel = new PackagingFiles4Panel(packagingConfiguration.getFiles().getValue(), conf.getBaseDir());
         }
         else {
-            packagingFilesPanel = new PackagingFiles3Panel(packagingConfiguration.getFiles().getValue(), conf.getBaseDir());
+            packagingFilesPanel = new PackagingFiles4Panel(packagingConfiguration.getFiles().getValue(), conf.getBaseDir());
         }
         packagingFilesOuterPanel = new PackagingFilesOuterPanel(packagingFilesPanel, packagingConfiguration);
         

@@ -37,16 +37,13 @@ public class PackagingFilesOuterPanel extends javax.swing.JPanel {
         ownerTextField.setText(MakeOptions.getInstance().getDefGroup()); // NOI18N
         
         // Hide some fields:
-        if (conf.getType().getValue() == PackagingConfiguration.TYPE_TAR) {
+        if (conf.getType().getValue() == PackagingConfiguration.TYPE_TAR || conf.getType().getValue() == PackagingConfiguration.TYPE_ZIP) {
             groupLabel.setEnabled(false);
             groupTextField.setEnabled(false);
             ownerLabel.setEnabled(false);
             ownerTextField.setEnabled(false);
 //            groupTextField.setText(""); // NOI18N
 //            ownerTextField.setText(""); // NOI18N
-        }
-        else if (conf.getType().getValue() == PackagingConfiguration.TYPE_ZIP) {
-            defaultsPanel.setVisible(false);
         }
         
         innerPanel.setOuterPanel(this);
