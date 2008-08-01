@@ -160,7 +160,9 @@ final class HttpMonitorTopComponent extends TopComponent {
                                     contentType = "text/javascript";
                                 } else if (HttpActivitiesModel.CSS_CONTENT_TYPES.contains(mime)){
                                     contentType = "text/x-css";
-                                } else if ( mime.contains("xml")){
+                                } else if ( mime.contains("json") ) {
+                                    contentType = "text/x-json";
+                                }else if ( mime.contains("xml")){
                                     contentType = "text/xml";
                                 }
                             }
