@@ -48,5 +48,7 @@ public class NonASCIIQuoterTest extends NbTestCase {
 
         assertEquals("\"12_foo\"", quoter.quoteIfNeeded("12_foo"));
         assertEquals("\"foo bar\"", quoter.quoteIfNeeded("foo bar"));
+
+        assertEquals("\"foo bar\"", quoter.quoteIfNeeded("\"foo bar\""));
     }
 }
