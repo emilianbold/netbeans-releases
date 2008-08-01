@@ -44,6 +44,7 @@ package org.netbeans.modules.gsfret.navigation;
 import javax.swing.JComponent;
 import org.netbeans.modules.gsf.Language;
 import org.netbeans.modules.gsf.LanguageRegistry;
+import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.spi.navigator.NavigatorPanel;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
@@ -62,14 +63,14 @@ public class ClassMemberPanel implements NavigatorPanel {
 
     private ClassMemberPanelUI component;
 
-    private static ClassMemberPanel INSTANCE;
+    private static ClassMemberPanel INSTANCE;   //Always accessed in event dispatch thread
     
     public ClassMemberPanel() {
-        this.INSTANCE = this;
     }
 
     public void panelActivated(Lookup context) {
         assert context != null;
+        INSTANCE = this;
         // System.out.println("Panel Activated");
         FileObject fileObject = context.lookup(FileObject.class);
         Language language = null;
@@ -83,6 +84,7 @@ public class ClassMemberPanel implements NavigatorPanel {
     public void panelDeactivated() {
         getClassMemberPanelUI().showWaitNode(); // To clear the ui
         ClassMemberNavigatorSourceFactory.getInstance().setLookup(Lookup.EMPTY, null);
+        INSTANCE = null;
     }
 
     public Lookup getLookup() {
@@ -101,8 +103,8 @@ public class ClassMemberPanel implements NavigatorPanel {
         return getClassMemberPanelUI();
     }
 
-    public void selectElement(int offset) {
-        getClassMemberPanelUI().selectElementNode(offset);
+    public void selectElement(CompilationInfo info, int offset) {
+        getClassMemberPanelUI().selectElementNode(info, offset);
     }
     
     private synchronized ClassMemberPanelUI getClassMemberPanelUI(Language language) {

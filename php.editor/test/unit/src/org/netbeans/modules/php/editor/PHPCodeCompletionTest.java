@@ -46,7 +46,7 @@ package org.netbeans.modules.php.editor;
  * @author tomslot
  */
 public class PHPCodeCompletionTest extends PHPTestBase {
-    
+
     public PHPCodeCompletionTest(String testName) {
         super(testName);
     }
@@ -58,30 +58,30 @@ public class PHPCodeCompletionTest extends PHPTestBase {
     public void testPhpContext2() throws Exception {
         checkCompletion("testfiles/completion/lib/tst.php", "$GL^", false);
     }
-    
+
     public void testHTML() throws Exception {
         checkCompletion("testfiles/completion/lib/nowdoc02.php", "<title>^</title>", false);
     }
-    
+
     public void test136744_1() throws Exception {
         checkCompletion("testfiles/completion/lib/issue136744.php", "print $test1^", false);
     }
-    
+
     public void test136744_2() throws Exception {
         checkCompletion("testfiles/completion/lib/issue136744.php", "print $test2^", false);
     }
-    
+
     public void test136744_3() throws Exception {
         checkCompletion("testfiles/completion/lib/issue136744.php", "print $test3^", false);
     }
-    
+
     public void test136744_4() throws Exception {
         checkCompletion("testfiles/completion/lib/issue136744.php", "print $test4^", false);
     }
     // #142024 Code completion + references
     public void test142024() throws Exception {
         checkCompletion("testfiles/completion/lib/issue142024.php", "$t->^", false);
-    }    
+    }
     // #142051 CC doesn't work when an object is a refence
     public void test142051() throws Exception {
         checkCompletion("testfiles/completion/lib/issue142051.php", "echo \"Name1: \".$user1->^", false);
@@ -123,7 +123,10 @@ public class PHPCodeCompletionTest extends PHPTestBase {
         checkCompletion("testfiles/completion/lib/issue135618.php", "A135618::^", false);
     }
     public void test142091() throws Exception {
-        checkCompletion("testfiles/completion/lib/issue142091.php", "function f142091 (^", false);
+        checkCompletion("testfiles/completion/lib/issue142091.php", "function fi142091(iface14209^", false);
+    }
+    public void test142091_1() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue142091.php", "function fc142091(cls14209^", false);
     }
     // #136188 [cc] issues related to class name case-sensitivity
     public void test136188() throws Exception {
@@ -144,7 +147,7 @@ public class PHPCodeCompletionTest extends PHPTestBase {
     public void test136188_5() throws Exception {
         checkCompletion("testfiles/completion/lib/issue136188.php", "$v3 = new CLS136188^", false);
     }
-    // tests for class declaration until '{' like "class name extends MyClass  " 
+    // tests for class declaration until '{' like "class name extends MyClass  "
     public void testClsDeclaration() throws Exception {
         checkCompletion("testfiles/completion/lib/clsDeclaration.php", "class^", false);
     }
@@ -171,5 +174,32 @@ public class PHPCodeCompletionTest extends PHPTestBase {
     }
     public void testClsDeclaration_8() throws Exception {
         checkCompletion("testfiles/completion/lib/clsDeclaration.php", "class ClsDeclarationTest extends Cls2DeclarationTest ^", false);
+    }
+    public void testInsideClass() throws Exception {
+        checkCompletion("testfiles/completion/lib/insideClass.php", "cons^", false);
+    }
+    public void testInsideClass_1() throws Exception {
+        checkCompletion("testfiles/completion/lib/insideClass.php", "priv^", false);
+    }
+    public void testInsideClass_2() throws Exception {
+        checkCompletion("testfiles/completion/lib/insideClass.php", "function ^", false);
+    }
+    public void testInsideClass_3() throws Exception {
+        checkCompletion("testfiles/completion/lib/insideClass.php", "$this->setFl^", false);
+    }
+    public void testInsideClass_4() throws Exception {
+        checkCompletion("testfiles/completion/lib/insideClass.php", "function __cons^", false);
+    }
+    public void testInsideClass_5() throws Exception {
+        checkCompletion("testfiles/completion/lib/insideClass.php", "function __dest^", false);
+    }
+    public void testInsideClass_6() throws Exception {
+        checkCompletion("testfiles/completion/lib/insideClass.php", "$v = new InsideCl^", false);
+    }
+    public void testInsideClass_7() throws Exception {
+        checkCompletion("testfiles/completion/lib/insideClass.php", "public stat^", false);
+    }
+    public void testInsideClass_8() throws Exception {
+        checkCompletion("testfiles/completion/lib/insideClass.php", "InsideClass::^", false);
     }
 }

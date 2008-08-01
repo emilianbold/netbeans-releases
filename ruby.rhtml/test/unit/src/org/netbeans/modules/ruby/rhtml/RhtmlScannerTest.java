@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,49 +31,32 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.uml.diagrams.edges;
 
-import java.awt.BasicStroke;
-import java.awt.Color;
-import org.netbeans.api.visual.anchor.PointShape;
-import org.netbeans.api.visual.widget.Scene;
-import org.netbeans.api.visual.anchor.AnchorShape;
-import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
+package org.netbeans.modules.ruby.rhtml;
 
 /**
  *
- * 
+ * @author Tor Norbye
  */
-public class PartFacadeEdgeConnector extends AbstractUMLConnectionWidget
-{
-    public PartFacadeEdgeConnector(Scene scene)
-    {
-        super(scene);
-        
-        setForeground(Color.BLACK);
-        setStroke(new BasicStroke(1, BasicStroke.CAP_BUTT,BasicStroke.JOIN_MITER, 
-                                  10.0f, new float[]{ 10.0f }, 0.0f));
-
-        setSourceAnchorShape(AnchorShape.NONE);
-        setTargetAnchorShape(AnchorShape.NONE);
-
-        setControlPointShape(PointShape.NONE);
-        setEndPointShape(PointShape.NONE);
-
-    }
-    
-    protected void initLabelManager() {}
-
-    @Override
-    public void initialize(IPresentationElement element)
-    {
-    }
-    
-    public String getWidgetID() {
-        return UMLWidgetIDString.PARTFACADEEDGECONNECTIONWIDGET.toString();
+public class RhtmlScannerTest extends RhtmlTestBase {
+    public RhtmlScannerTest(String testName) {
+        super(testName);
     }
 
+    public void testAnalysis1() throws Exception {
+        checkStructure("testfiles/dashes.rhtml");
+    }
+
+    public void testAnalysis2() throws Exception {
+        checkStructure("testfiles/format2.rhtml");
+    }
+
+    public void testAnalysis3() throws Exception {
+        checkStructure("testfiles/quotes.rhtml");
+    }
 }
-    
-
