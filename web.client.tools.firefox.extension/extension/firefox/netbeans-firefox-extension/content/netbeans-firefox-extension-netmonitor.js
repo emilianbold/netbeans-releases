@@ -72,7 +72,6 @@
         "xml": "text/xml",
         "css": "text/css",
         "js": "application/x-javascript",
-        "js": "application/javascript",
         "jss": "application/json",
         "jpg": "image/jpeg",
         "jpeg": "image/jpeg",
