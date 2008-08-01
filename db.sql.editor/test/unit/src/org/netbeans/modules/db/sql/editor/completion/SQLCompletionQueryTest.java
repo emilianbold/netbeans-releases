@@ -54,6 +54,7 @@ import java.util.List;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.db.explorer.test.api.SQLIdentifiersTestUtilities;
 import org.netbeans.modules.db.metadata.model.api.Metadata;
 import org.openide.filesystems.FileUtil;
 
@@ -176,7 +177,7 @@ public class SQLCompletionQueryTest extends NbTestCase {
         }
         SQLCompletionQuery query = new SQLCompletionQuery(null);
         SQLCompletionEnv env = SQLCompletionEnv.create(sql, caretOffset);
-        for (SQLCompletionItem item : query.doQuery(env, metadata, "\"")) {
+        for (SQLCompletionItem item : query.doQuery(env, metadata, SQLIdentifiersTestUtilities.createNonASCIIQuoter("\""), "\"")) {
             output.append(item.toString());
             output.append('\n');
         }

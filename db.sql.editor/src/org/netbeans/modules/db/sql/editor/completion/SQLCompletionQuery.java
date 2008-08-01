@@ -52,6 +52,8 @@ import java.util.Set;
 import java.util.TreeSet;
 import javax.swing.text.Document;
 import org.netbeans.api.db.explorer.DatabaseConnection;
+import org.netbeans.api.db.sql.support.SQLIdentifiers;
+import org.netbeans.api.db.sql.support.SQLIdentifiers.Quoter;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.db.metadata.model.api.Action;
 import org.netbeans.modules.db.metadata.model.api.Catalog;
@@ -104,13 +106,15 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
                         return;
                     }
                     String identifierQuoteString = null;
+                    Quoter quoter = null;
                     try {
                         DatabaseMetaData dmd = conn.getMetaData();
                         identifierQuoteString = dmd.getIdentifierQuoteString();
+                        quoter = SQLIdentifiers.createQuoter(dmd);
                     } catch (SQLException e) {
                         throw new RuntimeException(e);
                     }
-                    doQuery(newEnv, metadata, identifierQuoteString);
+                    doQuery(newEnv, metadata, quoter, identifierQuoteString);
                 }
             });
         } catch (MetadataModelException e) {
@@ -126,13 +130,13 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
     }
 
     // Called by unit tests.
-    SQLCompletionItems doQuery(SQLCompletionEnv env, Metadata metadata, String quoteString) {
+    SQLCompletionItems doQuery(SQLCompletionEnv env, Metadata metadata, Quoter quoter, String quoteString) {
         this.env = env;
         this.metadata = metadata;
         this.quoteString = quoteString;
         anchorOffset = -1;
         substitutionOffset = 0;
-        items = new SQLCompletionItems(env.getStatementOffset());
+        items = new SQLCompletionItems(quoter, env.getStatementOffset());
         if (env != null && env.isSelect()) {
             completeSelect();
         }
