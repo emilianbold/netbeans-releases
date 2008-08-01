@@ -80,7 +80,7 @@ public class PackagingInfoPanel extends ListEditorPanel {
         addButton.addActionListener(new AddButtonAction());
         
         this.addEntryButton = extraButtons[1];
-        addEntryButton.setText("Add Entry");
+        addEntryButton.setText("Add Parameter");
         addEntryButton.addActionListener(new AddEntryButtonAction());
 
         getEditButton().setVisible(false);
@@ -104,7 +104,7 @@ public class PackagingInfoPanel extends ListEditorPanel {
     class AddEntryButtonAction implements java.awt.event.ActionListener {
         public void actionPerformed(java.awt.event.ActionEvent evt) {
 	    PackagingNewEntryPanel packagingNewEntryPanel = new PackagingNewEntryPanel();
-	    DialogDescriptor dialogDescriptor = new DialogDescriptor(packagingNewEntryPanel, "Add New Entry");
+	    DialogDescriptor dialogDescriptor = new DialogDescriptor(packagingNewEntryPanel, "Add New Parameter");
 	    DialogDisplayer.getDefault().notify(dialogDescriptor);
 	    if (dialogDescriptor.getValue() != DialogDescriptor.OK_OPTION)
 		return;
