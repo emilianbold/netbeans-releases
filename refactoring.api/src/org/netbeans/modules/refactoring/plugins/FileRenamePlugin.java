@@ -41,9 +41,7 @@
 package org.netbeans.modules.refactoring.plugins;
 
 import java.io.IOException;
-import org.netbeans.modules.refactoring.spi.Transaction;
 import org.netbeans.modules.refactoring.api.Problem;
-import org.netbeans.modules.refactoring.api.RefactoringSession;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
@@ -52,6 +50,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.PositionBounds;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -108,9 +107,9 @@ public class FileRenamePlugin implements RefactoringPlugin {
                 oldName = fo.getName();
                 DataObject.find(fo).rename(refactoring.getNewName());
             } catch (DataObjectNotFoundException ex) {
-                ex.printStackTrace();
+                throw new IllegalStateException(ex);
             } catch (IOException ex) {
-                ex.printStackTrace();
+                throw new IllegalStateException(ex);
             }
         }
         
@@ -118,9 +117,9 @@ public class FileRenamePlugin implements RefactoringPlugin {
             try {
                 DataObject.find(fo).rename(oldName);
             } catch (DataObjectNotFoundException ex) {
-                ex.printStackTrace();
+                Exceptions.printStackTrace(ex);
             } catch (IOException ex) {
-                ex.printStackTrace();
+                Exceptions.printStackTrace(ex);
             }
         }
 
