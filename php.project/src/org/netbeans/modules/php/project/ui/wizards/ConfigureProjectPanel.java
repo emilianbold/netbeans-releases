@@ -513,10 +513,7 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
         }
         originalSources = sources;
         String newProjectName = new File(sources).getName();
-        // because JTextField.setText() calls document.remove() and then document.insert() (= 2 events!), just remove and readd the listener
-        //configureProjectPanelVisual.removeConfigureProjectListener(this);
         configureProjectPanelVisual.setProjectName(newProjectName);
-        //configureProjectPanelVisual.addConfigureProjectListener(this);
     }
 
     public void stateChanged(ChangeEvent e) {
