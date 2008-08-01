@@ -1,0 +1,5 @@
+Code completion result for source line:
+cons|t INS_CONST=1;
+(QueryType=COMPLETION, NameKind=PREFIX)
+------------------------------------
+KEYWORD    const                                      null

@@ -36,7 +36,6 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.web.client.tools.common.dbgp;
 
 import java.util.Collections;
@@ -54,8 +53,7 @@ public class HttpMessage extends Message {
 
 //    static final String         ENCODING    = "encoding";   // NOI18N
 //    static final String         SIZE        = "size";       // NOI18N
-
-    HttpMessage( Node node ) {
+    HttpMessage(Node node) {
         super(node);
     }
 
@@ -69,29 +67,32 @@ public class HttpMessage extends Message {
     }
 
     public String getResponseText() {
-        String value = getChild(getNode(), "responseText").getFirstChild().getNodeValue();
-        if( value != null && !value.equals("null")) {
-            byte[] bytes = Message.getDecodedBytes(Encoding.BASE64, value);
-    //        Message.checkValue(bytes, getSize());
-            return new String(bytes);
+        Node responseTextNode = getChild(getNode(), "responseText");
+        if (responseTextNode != null && responseTextNode.getFirstChild() != null) {
+            String value = responseTextNode.getFirstChild().getNodeValue();
+            if (value != null && !value.equals("null")) {
+                byte[] bytes = Message.getDecodedBytes(Encoding.BASE64, value);
+                //        Message.checkValue(bytes, getSize());
+                return new String(bytes);
+            }
         }
         return null;
     }
 
-    public String getType(){
-        return getChild(getNode(),"type").getFirstChild().getNodeValue();
+    public String getType() {
+        return getChild(getNode(), "type").getFirstChild().getNodeValue();
     }
 
-    public String getUrl(){
-        return getChild(getNode(),"url").getFirstChild().getNodeValue();
+    public String getUrl() {
+        return getChild(getNode(), "url").getFirstChild().getNodeValue();
     }
 
     public String getMethodType() {
         return getChild(getNode(), "method").getFirstChild().getNodeValue();
     }
 
-     public String getPostText() {
-        if (getChild(getNode(), "postText") != null ){
+    public String getPostText() {
+        if (getChild(getNode(), "postText") != null) {
             return getChild(getNode(), "postText").getFirstChild().getNodeValue();
         }
         return null;
@@ -99,7 +100,7 @@ public class HttpMessage extends Message {
 
     public boolean isLoadTriggerByUser() {
         String val = getChildValue("load_init");
-        if ( val != null && !val.equals("0")){
+        if (val != null && !val.equals("0")) {
             return true;
         }
         return false;
@@ -107,53 +108,52 @@ public class HttpMessage extends Message {
 
     public String getUrlParams() {
         Node node = getChild(getNode(), "urlParams");
-        if( node != null )
+        if (node != null) {
             return node.getChildNodes().item(0).getNodeValue();
+        }
         return null;
 
 //        Map<String,String> map = Collections.emptyMap();
 //        return map;
     }
 
-    public String getChildValue( String attributeName ){
-        Node node = getChild( getNode(), attributeName);
-        if ( node != null ) {
+    public String getChildValue(String attributeName) {
+        Node node = getChild(getNode(), attributeName);
+        if (node != null) {
             Node childNode = node.getFirstChild();
-            if (childNode != null ){
+            if (childNode != null) {
                 return childNode.getNodeValue();
             }
         }
-        return null;   
+        return null;
     }
-        // Format of the message is:
+    // Format of the message is:
     // <sources>
     //   <source fileuri="http://..." />
     //   <source fileuri="http://..." />
     //   :
     // </sources>
-    public Map<String,String> getHeader() {
+
+    public Map<String, String> getHeader() {
         Node header = getChild(getNode(), "header");
-        if( header == null ) {
-            return Collections.<String,String>emptyMap();
+        if (header == null) {
+            return Collections.<String, String>emptyMap();
         }
 
         NodeList nodeList = header.getChildNodes();
-        Map<String, String> map = new HashMap<String,String>();
+        Map<String, String> map = new HashMap<String, String>();
 
 //        while(nextNode != null ){
 //            map.put(nextNode.getNodeName(),nextNode.getFirstChild().getNodeValue());
 //            nextNode = nextNode.getNextSibling();
 //        }
-        for( int i = 0; i < nodeList.getLength(); i++){
+        for (int i = 0; i < nodeList.getLength(); i++) {
             Node node = nodeList.item(i);
             Node firstChildNode = node.getFirstChild();
-            if( firstChildNode != null ){
+            if (firstChildNode != null) {
                 map.put(node.getNodeName(), firstChildNode.getNodeValue());
             }
         }
         return map;
     }
-    
-
-
 }

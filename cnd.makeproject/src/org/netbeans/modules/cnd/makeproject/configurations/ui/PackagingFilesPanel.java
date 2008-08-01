@@ -94,11 +94,11 @@ public class PackagingFilesPanel extends ListEditorPanel {
         this.addFileOrDirectoryButton = extraButtons[1];
         this.addFilesButton = extraButtons[2];
 
-        addButton.setText("Add [Empty]");
+        addButton.setText("Add [Empty]"); // FIXUP
         addButton.addActionListener(new AddButtonAction());
-        addFileOrDirectoryButton.setText("Add File or Diretory");
+        addFileOrDirectoryButton.setText("Add File or Diretory"); // FIXUP
         addFileOrDirectoryButton.addActionListener(new AddFileOrDirectoryButtonAction());
-        addFilesButton.setText("Add Files from Directory");
+        addFilesButton.setText("Add Files from Directory"); // FIXUP
         addFilesButton.addActionListener(new AddFilesButtonAction());
 
         getEditButton().setVisible(false);
@@ -111,7 +111,11 @@ public class PackagingFilesPanel extends ListEditorPanel {
 
     class AddButtonAction implements java.awt.event.ActionListener {
         public void actionPerformed(java.awt.event.ActionEvent evt) {
-            addObjectAction(new FileElement(FileType.UNKNOWN, "", "")); // FIXUP
+            String topFolder = packagingFilesOuterPanel.getTopDirectoryTextField().getText();
+            if (topFolder.length() > 0 && !topFolder.endsWith("/")) { // NOI18N
+                topFolder += "/"; // NOI18N
+            }
+            addObjectAction(new FileElement(FileType.UNKNOWN, "", topFolder)); // FIXUP
         }
     }
 
@@ -124,7 +128,7 @@ public class PackagingFilesPanel extends ListEditorPanel {
             if (seed == null) {
                 seed = baseDir;
             }
-            FileChooser fileChooser = new FileChooser("File", "Select", FileChooser.FILES_AND_DIRECTORIES, null, seed, false);
+            FileChooser fileChooser = new FileChooser("File", "Select", FileChooser.FILES_AND_DIRECTORIES, null, seed, false); // FIXUP
             PathPanel pathPanel = new PathPanel();
             fileChooser.setAccessory(pathPanel);
             fileChooser.setMultiSelectionEnabled(true);
@@ -144,11 +148,15 @@ public class PackagingFilesPanel extends ListEditorPanel {
                 }
                 itemPath = FilePathAdaptor.mapToRemote(itemPath);
                 itemPath = FilePathAdaptor.normalize(itemPath);
+                String topFolder = packagingFilesOuterPanel.getTopDirectoryTextField().getText();
+                if (topFolder.length() > 0 && !topFolder.endsWith("/")) { // NOI18N
+                    topFolder += "/"; // NOI18N
+                }
                 if (files[i].isDirectory()) {
                     addObjectAction(new FileElement(
                             FileType.DIRECTORY,
                             "", // NOI18N
-                            files[i].getName(),
+                            topFolder + files[i].getName(),
                             packagingFilesOuterPanel.getDirPermTextField().getText(),
                             packagingFilesOuterPanel.getOwnerTextField().getText(),
                             packagingFilesOuterPanel.getGroupTextField().getText()
@@ -166,7 +174,7 @@ public class PackagingFilesPanel extends ListEditorPanel {
                     addObjectAction(new FileElement(
                             FileType.FILE,
                             itemPath,
-                            files[i].getName(),
+                            topFolder + files[i].getName(),
                             perm,
                             packagingFilesOuterPanel.getOwnerTextField().getText(),
                             packagingFilesOuterPanel.getGroupTextField().getText()
@@ -179,7 +187,7 @@ public class PackagingFilesPanel extends ListEditorPanel {
     private boolean isExecutable(File file) {
         FileObject fo = null;
         
-        if (file.getName().endsWith(".exe")) {
+        if (file.getName().endsWith(".exe")) { //NOI18N
             return true;
         }
         
@@ -213,7 +221,7 @@ public class PackagingFilesPanel extends ListEditorPanel {
             if (seed == null) {
                 seed = baseDir;
             }
-            FileChooser fileChooser = new FileChooser("File", "Select", FileChooser.DIRECTORIES_ONLY, null, seed, false);
+            FileChooser fileChooser = new FileChooser("File", "Select", FileChooser.DIRECTORIES_ONLY, null, seed, false); // FIXUP
             PathPanel pathPanel = new PathPanel();
             fileChooser.setAccessory(pathPanel);
             fileChooser.setMultiSelectionEnabled(false);
@@ -245,8 +253,12 @@ public class PackagingFilesPanel extends ListEditorPanel {
                     String toFile = IpeUtils.toRelativePath(origDir.getParentFile().getAbsolutePath(), files[i].getPath());
                     toFile = FilePathAdaptor.mapToRemote(toFile);
                     toFile = FilePathAdaptor.normalize(toFile);
+                    String topFolder = packagingFilesOuterPanel.getTopDirectoryTextField().getText();
+                    if (topFolder.length() > 0 && !topFolder.endsWith("/")) { // NOI18N
+                        topFolder += "/"; // NOI18N
+                    }
                     String perm;
-                    if (files[i].getName().endsWith(".exe") || files[i].isDirectory() || isExecutable(files[i])) {
+                    if (files[i].getName().endsWith(".exe") || files[i].isDirectory() || isExecutable(files[i])) { //NOI18N
                         perm = packagingFilesOuterPanel.getDirPermTextField().getText();
                     }
                     else {
@@ -255,7 +267,7 @@ public class PackagingFilesPanel extends ListEditorPanel {
                     addObjectAction(new FileElement(
                             FileType.FILE,
                             path,
-                            toFile,
+                            topFolder + toFile,
                             perm,
                             packagingFilesOuterPanel.getOwnerTextField().getText(),
                             packagingFilesOuterPanel.getGroupTextField().getText()
@@ -273,12 +285,12 @@ public class PackagingFilesPanel extends ListEditorPanel {
 
     @Override
     public String getCopyButtonText() {
-        return "Duplicate";
+        return "Duplicate"; // FIXUP
     }
 
     @Override
     public String getListLabelText() {
-        return "Files:";
+        return "Files:"; // FIXUP
     }
 
     // Overrides ListEditorPanel
@@ -362,15 +374,21 @@ public class PackagingFilesPanel extends ListEditorPanel {
         }
 
         @Override
-        public boolean getShowHorizontalLines() {
-            return false;
+        public Color getGridColor() {
+            return new Color(225, 225, 225);
         }
 
-        @Override
-        public boolean getShowVerticalLines() {
-            return false;
-        }
+//        @Override
+//        public boolean getShowHorizontalLines() {
+//            return false;
+//        }
+//
+//        @Override
+//        public boolean getShowVerticalLines() {
+//            return false;
+//        }
 
+        
         @Override
         public TableCellRenderer getCellRenderer(int row, int column) {
             return myTableCellRenderer;
@@ -382,9 +400,9 @@ public class PackagingFilesPanel extends ListEditorPanel {
                 FileElement elem = (FileElement) listData.elementAt(row);
                 
                 JComboBox comboBox = new JComboBox();
-                comboBox.addItem("File"); // NOI18N
-                comboBox.addItem("Dir"); // NOI18N
-                comboBox.addItem("Link"); // NOI18N
+                comboBox.addItem("File"); // FIXUP
+                comboBox.addItem("Dir"); // FIXUP
+                comboBox.addItem("Link"); // FIXUP
                 if (elem.getType() == FileElement.FileType.DIRECTORY) {
                     comboBox.setSelectedIndex(1);
                 }
@@ -410,17 +428,29 @@ public class PackagingFilesPanel extends ListEditorPanel {
             FileElement elem = (FileElement) listData.elementAt(row);
             if (col == 0) {
                 if (elem.getType() == FileType.DIRECTORY) {
-                    label.setText("Dir"); // NOI18N
+                    label.setText("Dir"); // FIXUP
                 } else if (elem.getType() == FileType.FILE) {
-                    label.setText("File"); // NOI18N
+                    label.setText("File"); // FIXUP
                 } else if (elem.getType() == FileType.SOFTLINK) {
-                    label.setText("Link"); // NOI18N
+                    label.setText("Link"); // FIXUP
                 } else if (elem.getType() == FileType.UNKNOWN) {
                     label.setText(""); // NOI18N
                 } else {
                     assert false;
                     label.setText(""); // NOI18N
                 }
+            } else if (col == 1) {
+                if (elem.getType() == FileElement.FileType.SOFTLINK) {
+                    label.setToolTipText("Link: " + elem.getTo() + "->" + elem.getFrom()); // FIXUP
+                }
+                else if (elem.getType() == FileElement.FileType.DIRECTORY) {
+                    label.setToolTipText("Directory: " + elem.getTo()); // FIXUP
+                }
+                else if (elem.getType() == FileElement.FileType.FILE) {
+                    label.setToolTipText("File: " + (new File(IpeUtils.toAbsolutePath(baseDir, elem.getFrom())).getAbsolutePath())); // FIXUP
+                }
+                return label;
+                
             } else if (col == 2) {
                 if (elem.getType() == FileElement.FileType.DIRECTORY) {
                     return label; // Already set to blank
@@ -432,7 +462,6 @@ public class PackagingFilesPanel extends ListEditorPanel {
                     label = new JLabel();
                 }
                 File file = new File(IpeUtils.toAbsolutePath(baseDir, elem.getFrom()));
-                label.setToolTipText(file.getAbsolutePath());
                 if (!isSelected && !file.exists()) {
                     label.setForeground(Color.RED);
                 }
@@ -454,7 +483,7 @@ public class PackagingFilesPanel extends ListEditorPanel {
 
     class MyTableModel extends DefaultTableModel {
 
-        private String[] columnNames = {"Type", "File or Directry Path in Package", "Original File or Link", "Permission", "Owner", "Group"}; // FIXUP
+        private String[] columnNames = {"Type", "File or Directory Path in Package", "Original File or Link", "Permission", "Owner", "Group"}; // FIXUP
 
         @Override
         public String getColumnName(int col) {
@@ -516,19 +545,19 @@ public class PackagingFilesPanel extends ListEditorPanel {
             FileElement elem = (FileElement) listData.elementAt(row);
             String value = (String)val;
             if (col == 0) {
-                if (value.equals("File")) {
+                if (value.equals("File")) { // FIXUP
                     elem.setType(FileElement.FileType.FILE);
                     elem.setPermission(packagingFilesOuterPanel.getFilePermTextField().getText());
                     elem.setOwner(packagingFilesOuterPanel.getOwnerTextField().getText());
                     elem.setGroup(packagingFilesOuterPanel.getGroupTextField().getText());
                 }
-                else if (value.equals("Dir")) {
+                else if (value.equals("Dir")) { // FIXUP
                     elem.setType(FileElement.FileType.DIRECTORY);
                     elem.setPermission(packagingFilesOuterPanel.getDirPermTextField().getText());
                     elem.setOwner(packagingFilesOuterPanel.getOwnerTextField().getText());
                     elem.setGroup(packagingFilesOuterPanel.getGroupTextField().getText());
                 }
-                else if (value.equals("Link")) {
+                else if (value.equals("Link")) { // FIXUP
                     elem.setType(FileElement.FileType.SOFTLINK);
                     elem.setPermission(""); // NOI18N
                     elem.setOwner(""); // NOI18N

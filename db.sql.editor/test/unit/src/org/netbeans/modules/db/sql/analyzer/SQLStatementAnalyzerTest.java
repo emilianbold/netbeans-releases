@@ -51,9 +51,9 @@ import org.netbeans.modules.db.sql.lexer.SQLTokenId;
  *
  * @author Andrei Badea
  */
-public class StatementAnalyzerTest extends TestCase {
+public class SQLStatementAnalyzerTest extends TestCase {
 
-    public StatementAnalyzerTest(String testName) {
+    public SQLStatementAnalyzerTest(String testName) {
         super(testName);
     }
 
@@ -79,6 +79,18 @@ public class StatementAnalyzerTest extends TestCase {
         FromClause fromClause = statement.getFromClause();
         assertEquals(Collections.singletonMap("f", new QualIdent("foo")), fromClause.getAliasedTableNames());
         assertEquals(Collections.singleton(new QualIdent("bar")), fromClause.getUnaliasedTableNames());
+    }
+
+    public void testAnalyzeFromCommaDelimitedTableNames() throws Exception {
+        SQLStatement statement = doAnalyze("select * from foo, bar b");
+        assertEquals(Collections.singleton(new QualIdent("foo")), statement.getFromClause().getUnaliasedTableNames());
+        assertEquals(Collections.singletonMap("b", new QualIdent("bar")), statement.getFromClause().getAliasedTableNames());
+    }
+
+    public void testAnalyzeFromJoinTableNames() throws Exception {
+        SQLStatement statement = doAnalyze("select * from foo f inner join bar on f.");
+        assertEquals(Collections.singleton(new QualIdent("bar")), statement.getFromClause().getUnaliasedTableNames());
+        assertEquals(Collections.singletonMap("f", new QualIdent("foo")), statement.getFromClause().getAliasedTableNames());
     }
 
     public void testFromClause() throws Exception {

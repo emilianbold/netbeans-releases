@@ -35,19 +35,19 @@ ALLCONFS=<CNS>
 
 
 # build
-.build-impl: .validate-impl 
+.build-impl: .validate-impl .depcheck-impl
 	@#echo "=> Running $@... Configuration=$(CONF)"
 	${MAKE} -f nbproject/Makefile-${CONF}.mk SUBPROJECTS=${SUBPROJECTS} .build-conf
 
 
 # clean
-.clean-impl: .validate-impl
+.clean-impl: .validate-impl .depcheck-impl
 	@#echo "=> Running $@... Configuration=$(CONF)"
 	${MAKE} -f nbproject/Makefile-${CONF}.mk SUBPROJECTS=${SUBPROJECTS} .clean-conf
 
 
 # clobber 
-.clobber-impl:
+.clobber-impl: .depcheck-impl
 	@#echo "=> Running $@..."
 	for CONF in ${ALLCONFS}; \
 	do \
@@ -55,13 +55,18 @@ ALLCONFS=<CNS>
 	done
 
 # all 
-.all-impl:
+.all-impl: .depcheck-impl
 	@#echo "=> Running $@..."
 	for CONF in ${ALLCONFS}; \
 	do \
 	    ${MAKE} -f nbproject/Makefile-$${CONF}.mk SUBPROJECTS=${SUBPROJECTS} .build-conf; \
 	done
 
+# dependency checking support
+.depcheck-impl:
+	-@echo "# This code depends on make tool being used" >.dep.inc
+	-@if ${MAKE} -v 2>&1 | grep "Sun.*Make" >/dev/null; then echo ".KEEP_STATE:" >>.dep.inc; echo ".KEEP_STATE_FILE:.make.state.\$${CONF}" >>.dep.inc; fi
+	-@if ${MAKE} -v 2>&1 | grep "GNU.*Make" >/dev/null; then echo "-include \$$(wildcard \$$(addsuffix .d, \$${OBJECTFILES}))" >>.dep.inc; fi
 
 # configuration validation
 .validate-impl:

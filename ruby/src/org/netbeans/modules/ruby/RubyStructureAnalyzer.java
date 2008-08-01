@@ -129,7 +129,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
     }
 
     public List<?extends StructureItem> scan(CompilationInfo info) {
-        if (RubyUtils.isRhtmlFile(info.getFileObject())) {
+        if (RubyUtils.isRhtmlOrYamlFile(info.getFileObject())) {
             return scanRhtml(info);
         }
 
@@ -1116,7 +1116,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
         }
     }
     
-    public List<? extends StructureItem> scanRhtml(CompilationInfo info) {
+    private List<? extends StructureItem> scanRhtml(CompilationInfo info) {
         List<RhtmlStructureItem> items = new ArrayList<RhtmlStructureItem>();
         AbstractDocument doc = (AbstractDocument) info.getDocument();
         if (doc == null) {
@@ -1202,8 +1202,8 @@ public class RubyStructureAnalyzer implements StructureScanner {
 
                             // See if this is a "foo.bar" expression and if so, include ".bar"
                             if (t.moveNext()) {
-                                id = t.token().id();
-                                if (id == RubyTokenId.DOT) {
+                                TokenId newId = t.token().id();
+                                if (newId == RubyTokenId.DOT || id == RubyTokenId.LPAREN) { // Also handle (expr)
                                     if (t.moveNext()) {
                                         end = t.offset() + t.token().length();
                                     }

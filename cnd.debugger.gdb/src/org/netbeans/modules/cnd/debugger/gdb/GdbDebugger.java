@@ -248,7 +248,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             profile = (GdbProfile) pae.getConfiguration().getAuxObject(GdbProfile.GDB_PROFILE_ID);
             conType = pae.getProfile().getConsoleType().getValue();
             platform = ((MakeConfiguration) pae.getConfiguration()).getPlatform().getValue();
-            if (platform == PlatformTypes.PLATFORM_WINDOWS && conType != RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW &&
+            if (platform != PlatformTypes.PLATFORM_WINDOWS && conType != RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW &&
                     pae.getID() != DEBUG_ATTACH) {
                 termpath = pae.getProfile().getTerminalPath();
             }
@@ -278,6 +278,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             gdb.gdb_show("language"); // NOI18N
             gdb.gdb_set("print repeat",  // NOI18N
                     Integer.toString(CppSettings.getDefault().getArrayRepeatThreshold()));
+            gdb.enable_timings(false);
             if (pae.getID() == DEBUG_ATTACH) {
                 programPID = (Long) lookupProvider.lookupFirst(null, Long.class);
                 CommandBuffer cb = new CommandBuffer(gdb);
