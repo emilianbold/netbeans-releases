@@ -69,6 +69,7 @@ import org.netbeans.modules.gsf.api.ParameterInfo;
 import org.netbeans.modules.php.editor.index.IndexedClass;
 import org.netbeans.modules.php.editor.index.IndexedConstant;
 import org.netbeans.modules.php.editor.index.IndexedFunction;
+import org.netbeans.modules.php.editor.index.IndexedInterface;
 import org.netbeans.modules.php.editor.index.PHPIndex;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.nav.NavUtils;
@@ -109,25 +110,29 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             Arrays.asList(new String[] {"extends","implements"});//NOI18N
     private static final List<PHPTokenId[]> NONE_TOKENCHAINS = Arrays.asList(
         new PHPTokenId[]{PHPTokenId.PHP_CLASS},
-        new PHPTokenId[]{PHPTokenId.PHP_CLASS, PHPTokenId.WHITESPACE},
-        new PHPTokenId[]{PHPTokenId.PHP_EXTENDS, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING, PHPTokenId.WHITESPACE},
-        //TODO: no completion until #142019 is fixed
-        new PHPTokenId[]{PHPTokenId.PHP_IMPLEMENTS},
-        new PHPTokenId[]{PHPTokenId.PHP_IMPLEMENTS, PHPTokenId.WHITESPACE},
-        //TODO: this should stay even after fixing #142019
-        new PHPTokenId[]{PHPTokenId.PHP_IMPLEMENTS, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING},
-        new PHPTokenId[]{PHPTokenId.PHP_IMPLEMENTS, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING, PHPTokenId.WHITESPACE}
+        new PHPTokenId[]{PHPTokenId.PHP_CLASS, PHPTokenId.WHITESPACE}
         );
     private static final List<PHPTokenId[]> CLASS_NAME_TOKENCHAINS = Arrays.asList(
         new PHPTokenId[]{PHPTokenId.PHP_NEW},
         new PHPTokenId[]{PHPTokenId.PHP_NEW, PHPTokenId.WHITESPACE},
         new PHPTokenId[]{PHPTokenId.PHP_NEW, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING},
-        new PHPTokenId[]{PHPTokenId.PHP_EXTENDS},
-        new PHPTokenId[]{PHPTokenId.PHP_EXTENDS, PHPTokenId.WHITESPACE},
-        new PHPTokenId[]{PHPTokenId.PHP_EXTENDS, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING},
-        new PHPTokenId[]{PHPTokenId.PHP_FUNCTION, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING, PHPTokenId.PHP_TOKEN},
-        new PHPTokenId[]{PHPTokenId.PHP_FUNCTION, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING, PHPTokenId.WHITESPACE, PHPTokenId.PHP_TOKEN}
+        new PHPTokenId[]{PHPTokenId.PHP_CLASS, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING, PHPTokenId.WHITESPACE, PHPTokenId.PHP_EXTENDS},
+        new PHPTokenId[]{PHPTokenId.PHP_CLASS, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING, PHPTokenId.WHITESPACE, PHPTokenId.PHP_EXTENDS, PHPTokenId.WHITESPACE},
+        new PHPTokenId[]{PHPTokenId.PHP_CLASS, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING, PHPTokenId.WHITESPACE, PHPTokenId.PHP_EXTENDS, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING}
         );
+    
+    private static final List<PHPTokenId[]> INTERFACE_TOKENCHAINS = Arrays.asList(
+        new PHPTokenId[]{PHPTokenId.PHP_IMPLEMENTS},
+        new PHPTokenId[]{PHPTokenId.PHP_IMPLEMENTS, PHPTokenId.WHITESPACE},
+        new PHPTokenId[]{PHPTokenId.PHP_INTERFACE, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING, PHPTokenId.WHITESPACE, PHPTokenId.PHP_EXTENDS},
+        new PHPTokenId[]{PHPTokenId.PHP_INTERFACE, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING, PHPTokenId.WHITESPACE, PHPTokenId.PHP_EXTENDS, PHPTokenId.WHITESPACE},
+        new PHPTokenId[]{PHPTokenId.PHP_INTERFACE, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING, PHPTokenId.WHITESPACE, PHPTokenId.PHP_EXTENDS, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING}
+    );
+    
+    private static final List<PHPTokenId[]> TYPE_TOKENCHAINS = Arrays.asList(
+        new PHPTokenId[]{PHPTokenId.PHP_FUNCTION, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING, PHPTokenId.PHP_TOKEN},
+        new PHPTokenId[]{PHPTokenId.PHP_FUNCTION, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING, PHPTokenId.WHITESPACE, PHPTokenId.PHP_TOKEN}    
+    );
 
     private static final List<PHPTokenId[]> CLASS_MEMBER_TOKENCHAINS = Arrays.asList(
         new PHPTokenId[]{PHPTokenId.PHP_OBJECT_OPERATOR},
@@ -156,13 +161,15 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
     private static final List<PHPTokenId[]> INHERITANCE_TOKENCHAINS = Arrays.asList(
             new PHPTokenId[]{PHPTokenId.PHP_CLASS,PHPTokenId.WHITESPACE,PHPTokenId.PHP_STRING, PHPTokenId.WHITESPACE},
-            new PHPTokenId[]{PHPTokenId.PHP_CLASS,PHPTokenId.WHITESPACE,PHPTokenId.PHP_STRING, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING}
+            new PHPTokenId[]{PHPTokenId.PHP_CLASS,PHPTokenId.WHITESPACE,PHPTokenId.PHP_STRING, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING},
+            new PHPTokenId[]{PHPTokenId.PHP_INTERFACE, PHPTokenId.WHITESPACE,PHPTokenId.PHP_STRING, PHPTokenId.WHITESPACE},
+            new PHPTokenId[]{PHPTokenId.PHP_INTERFACE, PHPTokenId.WHITESPACE,PHPTokenId.PHP_STRING, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING}
             );
     private static final List<PHPTokenId[]> INHERITANCE_TOKENCHAINS_CONDITIONAL = Collections.singletonList(
             new PHPTokenId[]{PHPTokenId.PHP_CLASS,PHPTokenId.WHITESPACE,PHPTokenId.PHP_STRING}
             );
 
-    static enum CompletionContext {EXPRESSION, HTML, CLASS_NAME, STRING,
+    static enum CompletionContext {EXPRESSION, HTML, CLASS_NAME, INTERFACE_NAME, TYPE_NAME, STRING,
         CLASS_MEMBER, STATIC_CLASS_MEMBER, PHPDOC, INHERITANCE, NONE};
 
     private final static String[] PHP_KEYWORDS = {"__FILE__", "exception",
@@ -226,6 +233,10 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         } else if (acceptTokenChains(tokenSequence, INHERITANCE_TOKENCHAINS_CONDITIONAL)
                 && tokenIdOffset != caretOffset){
             return CompletionContext.INHERITANCE;
+        } else if (acceptTokenChains(tokenSequence, INTERFACE_TOKENCHAINS)){
+            return CompletionContext.INTERFACE_NAME;
+        } else if (acceptTokenChains(tokenSequence, TYPE_TOKENCHAINS)){
+            return CompletionContext.TYPE_NAME;
         }
 
         return CompletionContext.EXPRESSION;
@@ -331,6 +342,13 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             case CLASS_NAME:
                 autoCompleteClassNames(proposals, request);
                 break;
+            case INTERFACE_NAME:
+                autoCompleteInterfaceNames(proposals, request);
+                break;
+            case TYPE_NAME:
+                autoCompleteClassNames(proposals, request);
+                autoCompleteInterfaceNames(proposals, request);
+                break;
             case STRING:
                 // LOCAL VARIABLES
                 proposals.addAll(getVariableProposals(request.result.getProgram().getStatements(), request));
@@ -364,6 +382,12 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
     private void autoCompleteClassNames(List<CompletionProposal> proposals, PHPCompletionItem.CompletionRequest request) {
         for (IndexedClass clazz : request.index.getClasses(request.result, request.prefix, nameKind)) {
             proposals.add(new PHPCompletionItem.ClassItem(clazz, request));
+        }
+    }
+    
+    private void autoCompleteInterfaceNames(List<CompletionProposal> proposals, PHPCompletionItem.CompletionRequest request) {
+        for (IndexedInterface iface : request.index.getInterfaces(request.result, request.prefix, nameKind)) {
+            proposals.add(new PHPCompletionItem.InterfaceItem(iface, request));
         }
     }
 
