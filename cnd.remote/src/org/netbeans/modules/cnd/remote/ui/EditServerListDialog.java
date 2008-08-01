@@ -413,8 +413,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 6);
         add(btRemoveServer, gridBagConstraints);
 
-        btSetAsDefault.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/remote/ui/Bundle").getString("MNEM_SetAsDefault").charAt(0));
-        btSetAsDefault.setText(org.openide.util.NbBundle.getMessage(EditServerListDialog.class, "LBL_SetAsDefault")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(btSetAsDefault, org.openide.util.NbBundle.getMessage(EditServerListDialog.class, "LBL_SetAsDefault")); // NOI18N
         btSetAsDefault.setActionCommand("SetAsDefault"); // NOI18N
         btSetAsDefault.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
