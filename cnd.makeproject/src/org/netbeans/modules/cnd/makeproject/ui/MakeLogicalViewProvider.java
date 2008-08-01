@@ -1168,7 +1168,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         }
     }
 
-    private static final int WAIT_DELAY = 5000;
+    private static final int WAIT_DELAY = 50;
     private abstract class BaseMakeViewChildren extends Children.Keys implements ChangeListener {
         private final Folder folder;
 
