@@ -64,6 +64,9 @@ public class TableListNodeInfo extends DatabaseNodeInfo implements TableOwnerOpe
 
     @Override
     protected void initChildren(Vector children) throws DatabaseException {
+        if (! isConnected()) {
+            return;
+        }
         try {
             String[] types = new String[] {"TABLE"}; // NOI18N
             List recycleBinTables;
