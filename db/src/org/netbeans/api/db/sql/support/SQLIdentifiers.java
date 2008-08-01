@@ -62,9 +62,21 @@ public final class SQLIdentifiers {
      */
     public static abstract class Quoter {
 
-        Quoter() {}
+        final String quoteString;
+
+        Quoter(String quoteString) {
+            this.quoteString = quoteString;
+        }
 
         public abstract String quoteIfNeeded(String identifier);
+
+        boolean alreadyQuoted(String identifier) {
+            return (identifier.startsWith(quoteString) && identifier.endsWith(quoteString));
+        }
+
+        String doQuote(String identifier) {
+            return quoteString + identifier + quoteString;
+        }
     }
 
     private static class DatabaseMetaDataQuoter extends Quoter {
@@ -79,12 +91,11 @@ public final class SQLIdentifiers {
         private static final int MC_RULE = 2; // mixed case remains mixed case
 
         private final String            extraNameChars;
-        private final String            quoteString;
         private final int               caseRule;
 
         private DatabaseMetaDataQuoter(DatabaseMetaData dbmd) {
+            super(getQuoteString(dbmd));
             extraNameChars  = getExtraNameChars(dbmd);
-            quoteString     = getQuoteString(dbmd);
             caseRule        = getCaseRule(dbmd);
         }
         
@@ -116,7 +127,7 @@ public final class SQLIdentifiers {
             Parameters.notNull("identifier", identifier);
             
             if ( needToQuote(identifier) ) {
-                return quoteString + identifier + quoteString;
+                return doQuote(identifier);
             }
 
             return identifier;
@@ -129,8 +140,7 @@ public final class SQLIdentifiers {
             assert identifier != null;
             
             // No need to quote if it's already quoted
-            if ( identifier.startsWith(quoteString) &&
-                 identifier.endsWith(quoteString)) {
+            if ( alreadyQuoted(identifier) ) {
                 return false;
             }
             
@@ -153,7 +163,7 @@ public final class SQLIdentifiers {
 
             return false;
         }
-        
+
         private boolean charNeedsQuoting(char ch, boolean isFirstChar) {
             if ( isUpperCase(ch) || isLowerCase(ch) ) {
                 return false;

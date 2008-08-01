@@ -50,15 +50,13 @@ public class NonASCIIQuoter extends Quoter {
 
     private static final Pattern ASCII_IDENTIFIER = Pattern.compile("[a-zA-z][a-zA-Z0-9_]+");
 
-    private final String quoteString;
-
     public NonASCIIQuoter(String quoteString) {
-        this.quoteString = quoteString;
+        super(quoteString);
     }
 
     @Override
     public String quoteIfNeeded(String identifier) {
-        if (!ASCII_IDENTIFIER.matcher(identifier).matches()) {
+        if (!alreadyQuoted(identifier) && !ASCII_IDENTIFIER.matcher(identifier).matches()) {
             return quoteString + identifier + quoteString;
         } else {
             return identifier;
