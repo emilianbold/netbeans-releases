@@ -141,7 +141,7 @@ public final class HQLEditorTopComponent extends TopComponent {
                     return;
                 }
                 if(hibernateConfigurationComboBox.getSelectedItem() == null ) {
-                    logger.info("ibernate configuration combo box is empty.");
+                    logger.info("hibernate configuration combo box is empty.");
                     return;
                 }
                 FileObject selectedConfigObject = hibernateConfigMap.get(
