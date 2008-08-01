@@ -126,10 +126,6 @@ public class SQLCompletionEnv {
         return context;
     }
 
-    public int getContextOffset() {
-        return contextOffset;
-    }
-
     private static String getDocumentText(final Document doc) {
         final String[] result = { null };
         doc.render(new Runnable() {
@@ -179,15 +175,15 @@ public class SQLCompletionEnv {
                 CharSequence keyword = seq.token().text();
                 if (StringUtils.textEqualsIgnoreCase("FROM", keyword)) { // NOI18N
                     context = Context.FROM;
-                    contextOffset = seq.offset();
+                    return;
+                } else if (StringUtils.textEqualsIgnoreCase("ON", keyword)) { // NOI18N
+                    context = Context.JOIN_CONDITION;
                     return;
                 } else if (StringUtils.textEqualsIgnoreCase("SELECT", keyword)) { // NOI18N
                     context = Context.SELECT;
-                    contextOffset = seq.offset();
                     return;
                 } else if (StringUtils.textEqualsIgnoreCase("WHERE", keyword)) { // NOI18N
                     context = Context.WHERE;
-                    contextOffset = seq.offset();
                     return;
                 }
             }
@@ -198,6 +194,7 @@ public class SQLCompletionEnv {
 
         SELECT,
         FROM,
+        JOIN_CONDITION,
         WHERE,
         HAVING,
         ORDER_BY
