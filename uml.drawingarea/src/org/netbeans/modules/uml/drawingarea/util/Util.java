@@ -327,4 +327,29 @@ public class Util
         return list;
     }
     
+    public static Widget getParentWidgetByClass(Widget startWith,
+                                                  Class<? extends Widget> cls)
+    {
+        Widget ret = null;
+        if (startWith != null)
+        {
+            if (cls.isInstance(startWith))
+            {
+                ret = startWith;
+            } else
+            {
+                for (Widget tmp = startWith.getParentWidget();
+                        tmp != null;
+                        tmp = tmp.getParentWidget())
+                {
+                    if (cls.isInstance(tmp))
+                    {
+                        ret = tmp;
+                        break;
+                    }
+                }
+            }
+        }
+        return ret;
+    }    
 }
