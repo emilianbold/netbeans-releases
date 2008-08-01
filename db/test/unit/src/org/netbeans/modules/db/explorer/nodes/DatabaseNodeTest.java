@@ -87,6 +87,7 @@ public class DatabaseNodeTest extends TestCase {
 
         // The Driver List Node and the connection node should be the two
         // children
+        System.out.println("Children length is " + children.length);
         assertTrue(children.length == 2);
         assertTrue(children[0] instanceof DriverListNode);
         assertTrue(children[1] instanceof ConnectionNode); 
