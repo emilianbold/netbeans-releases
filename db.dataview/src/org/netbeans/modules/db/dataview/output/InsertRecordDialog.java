@@ -46,6 +46,10 @@ import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.Collections;
+import java.util.Map;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JComponent;
@@ -55,6 +59,8 @@ import javax.swing.KeyStroke;
 import org.netbeans.modules.db.dataview.meta.DBException;
 import org.openide.text.CloneableEditorSupport;
 import org.netbeans.modules.db.dataview.meta.DBColumn;
+import org.netbeans.modules.db.dataview.meta.DBConnectionFactory;
+import org.netbeans.modules.db.dataview.meta.DBMetaDataFactory;
 import org.netbeans.modules.db.dataview.util.DBReadWriteHelper;
 import org.netbeans.modules.db.dataview.util.DataViewUtils;
 import org.openide.util.NbBundle;
@@ -322,6 +328,15 @@ private void previewBtnActionPerformed(java.awt.event.ActionEvent evt) {
     JTextField[] colValueTextField;
 
     private void addInputFields() {
+        Connection conn = DBConnectionFactory.getInstance().getConnection(dataView.getDatabaseConnection());
+        Map<Integer, String> typeInfo = Collections.emptyMap();
+        try {
+            DBMetaDataFactory dbMeta = new DBMetaDataFactory(conn);
+            typeInfo = dbMeta.buildDBSpecificDatatypeMap();
+        } catch (SQLException ex) {
+            // ignore
+        }
+        
         int rows = dataView.getDataViewDBTable().getColumnCount();
         JLabel[] colNameLabel = new JLabel[rows];
         JLabel[] colDataType = new JLabel[rows];
@@ -376,7 +391,10 @@ private void previewBtnActionPerformed(java.awt.event.ActionEvent evt) {
             colDataType[i].setFont(colDataType[i].getFont()); // NOI18N
             colDataType[i].getAccessibleContext().setAccessibleName(colDataType[i].getName());
             colDataType[i].getAccessibleContext().setAccessibleDescription(colDataType[i].getName());
-            colDataType[i].setText(DataViewUtils.getStdSqlType(col.getJdbcType()).toUpperCase());
+            Integer typeInt = new Integer(col.getJdbcType());
+            String typeName = typeInfo.containsKey(typeInt) ? typeInfo.get(typeInt) : DataViewUtils.getStdSqlType(col.getJdbcType());
+
+            colDataType[i].setText(typeName);
             colDataType[i].setDisplayedMnemonicIndex(-1);
            
             colNameLabel[i].setLabelFor(colValueTextField[i]);
