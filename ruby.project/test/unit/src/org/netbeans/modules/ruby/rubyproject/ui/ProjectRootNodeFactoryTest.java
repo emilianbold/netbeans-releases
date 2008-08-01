@@ -41,6 +41,9 @@
 
 package org.netbeans.modules.ruby.rubyproject.ui;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Stack;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.ruby.rubyproject.RubyProjectTestBase;
 import org.netbeans.spi.project.ui.support.NodeList;
@@ -56,6 +59,21 @@ public class ProjectRootNodeFactoryTest extends RubyProjectTestBase {
         ProjectRootNodeFactory instance = new ProjectRootNodeFactory();
         NodeList result = instance.createNodes(p);
         assertSame("should have nodes for {lib, test, spec, Rakefile, README, LICENSE}, but has: " + result.keys(), 6, result.keys().size());
+    }
+
+    public void testOrdering() throws Exception {
+        Project p = createTestProject("rubyprj");
+        ProjectRootNodeFactory instance = new ProjectRootNodeFactory();
+        NodeList result = instance.createNodes(p);
+        Stack<String> expected = new Stack<String>();
+        expected.addAll((Arrays.asList(
+                "Source Files", "Test Files", "RSpec Files",
+                "Rakefile", "LICENSE", "README")));
+        Collections.reverse(expected);
+        for (Object key : result.keys()) {
+            assertEquals("expected order", expected.pop(), result.node(key).getDisplayName());
+        }
+        assertTrue("all items used", expected.isEmpty());
     }
 
 }
