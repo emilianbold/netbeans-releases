@@ -109,6 +109,9 @@ public class PHPCodeCompletionTest extends PHPTestBase {
     public void test142234() throws Exception {
         checkCompletion("testfiles/completion/lib/issue142234.php", "$t->^", false);
     }
+    public void test142234_1() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue142234.php", "parent::^", false);
+    }
     // #135618 [CC] Missing static members from parent classes after "self::"
     public void test135618() throws Exception {
         checkCompletion("testfiles/completion/lib/issue135618.php", "self::^", false);
@@ -140,5 +143,33 @@ public class PHPCodeCompletionTest extends PHPTestBase {
     }
     public void test136188_5() throws Exception {
         checkCompletion("testfiles/completion/lib/issue136188.php", "$v3 = new CLS136188^", false);
+    }
+    // tests for class declaration until '{' like "class name extends MyClass  " 
+    public void testClsDeclaration() throws Exception {
+        checkCompletion("testfiles/completion/lib/clsDeclaration.php", "class^", false);
+    }
+    public void testClsDeclaration_1() throws Exception {
+        checkCompletion("testfiles/completion/lib/clsDeclaration.php", "class ^", false);
+    }
+    public void testClsDeclaration_2() throws Exception {
+        checkCompletion("testfiles/completion/lib/clsDeclaration.php", "class ClsDeclarationTes^", false);
+    }
+    public void testClsDeclaration_3() throws Exception {
+        checkCompletion("testfiles/completion/lib/clsDeclaration.php", "class ClsDeclarationTest ^", false);
+    }
+    public void testClsDeclaration_4() throws Exception {
+        checkCompletion("testfiles/completion/lib/clsDeclaration.php", "class ClsDeclarationTest e^", false);
+    }
+    public void testClsDeclaration_5() throws Exception {
+        checkCompletion("testfiles/completion/lib/clsDeclaration.php", "class ClsDeclarationTest extends^", false);
+    }
+    public void testClsDeclaration_6() throws Exception {
+        checkCompletion("testfiles/completion/lib/clsDeclaration.php", "class ClsDeclarationTest extends Cls2DeclarationTes^", false);
+    }
+    public void testClsDeclaration_7() throws Exception {
+        checkCompletion("testfiles/completion/lib/clsDeclaration.php", "class ClsDeclarationTest extends Cls2DeclarationTest^", false);
+    }
+    public void testClsDeclaration_8() throws Exception {
+        checkCompletion("testfiles/completion/lib/clsDeclaration.php", "class ClsDeclarationTest extends Cls2DeclarationTest ^", false);
     }
 }

@@ -79,6 +79,8 @@ import org.openide.filesystems.FileUtil;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
+import org.netbeans.modules.glassfish.eecommon.api.UrlData;
+
 /**
  *
  * @author Peter Williams
