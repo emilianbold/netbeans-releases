@@ -408,7 +408,8 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
         }
         
         public void dragGestureRecognized(DragGestureEvent e) {
-            if( !ToolbarPool.getDefault().isInEditMode() )  
+            if( !ToolbarPool.getDefault().isInEditMode()
+                    || "QuickSearch".equals(getName()) )  //HACK (137286)- there's not better way...
                 return;
             try {
                  Component c = e.getComponent();
