@@ -614,8 +614,8 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
         return defaultIcon;
     }
 
-    static void runQueue() {
-        //QUEUE.run();
+    static void runSafe(Runnable run) {
+        QUEUE.runSafe(run);
     }
 
     /** Strong reference.
