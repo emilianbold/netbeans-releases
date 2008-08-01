@@ -385,6 +385,8 @@ public class GeneralXMLTest extends JellyTestCase {
       ProjectRootNode prn = pto.getProjectRootNode( sProject );
       prn.select( );
 
+      Sleep( 1000 );
+
       NewFileWizardOperator opNewFileWizard = NewFileWizardOperator.invoke( );
       opNewFileWizard.selectCategory( "XML" );
       opNewFileWizard.selectFileType( "XML Schema" );

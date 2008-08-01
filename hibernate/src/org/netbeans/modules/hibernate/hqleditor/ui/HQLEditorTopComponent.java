@@ -140,14 +140,17 @@ public final class HQLEditorTopComponent extends TopComponent {
                 if (hqlEditor.getText().trim().equals("")) {
                     return;
                 }
+                if(hibernateConfigurationComboBox.getSelectedItem() == null ) {
+                    logger.info("hibernate configuration combo box is empty.");
+                    return;
+                }
                 FileObject selectedConfigObject = hibernateConfigMap.get(
                         hibernateConfigurationComboBox.getSelectedItem().toString());
 
                 if (Thread.interrupted() || isSqlTranslationProcessDone) {
                     return;    // Cancel the task
                 }
-                if (hibernateConfigurationComboBox.getSelectedItem() != null ||
-                        selectedConfigObject != null) {
+                if (selectedConfigObject != null) {
                     Project enclosingProject = FileOwnerQuery.getOwner(selectedConfigObject);
                     env = enclosingProject.getLookup().lookup(HibernateEnvironment.class);
                     if (env == null) {
