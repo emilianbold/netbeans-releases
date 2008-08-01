@@ -48,6 +48,7 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import javax.swing.tree.TreeSelectionModel;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -184,7 +185,8 @@ public class SelectionModeTest extends NbTestCase {
     }
 
     /** Test set all nodes selections if the mode CONTIGUOUS_TREE_SELECTION is set.
-     * @throws Exception  */    
+     * @throws Exception  */
+    @RandomlyFails // NB-Core-Build #1074 & 1077
     public void testContigousSelection () throws Exception {
         // try setSelectionMode; if not present then fail
         setSelectionMode (tree, TreeSelectionModel.CONTIGUOUS_TREE_SELECTION);
