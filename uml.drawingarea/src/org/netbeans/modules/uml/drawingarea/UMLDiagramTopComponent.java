@@ -691,6 +691,11 @@ public class UMLDiagramTopComponent extends TopComponent implements MouseListene
         
         INamespace space = diagram.getNamespace();
         setToolTipText(space.getFullyQualifiedName(true) + "::" + diagram.getNameWithAlias()); // NOI18N
+        
+        if(diagramView != null)
+        {
+            diagramView.putClientProperty("print.name", diagram.getNameWithAlias()); // NOI18N
+        }
     }
 
     /**
