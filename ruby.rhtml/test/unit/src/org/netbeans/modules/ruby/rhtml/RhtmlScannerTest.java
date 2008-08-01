@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,43 +31,32 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.ruby.rubyproject.ui;
+package org.netbeans.modules.ruby.rhtml;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Stack;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.ruby.rubyproject.RubyProjectTestBase;
-import org.netbeans.spi.project.ui.support.NodeList;
-
-public class ProjectRootNodeFactoryTest extends RubyProjectTestBase {
-    
-    public ProjectRootNodeFactoryTest(String testName) {
+/**
+ *
+ * @author Tor Norbye
+ */
+public class RhtmlScannerTest extends RhtmlTestBase {
+    public RhtmlScannerTest(String testName) {
         super(testName);
-    }            
-
-    public void testCreateNodes() throws Exception {
-        Project p = createTestProject("rubyprj");
-        ProjectRootNodeFactory instance = new ProjectRootNodeFactory();
-        NodeList result = instance.createNodes(p);
-        assertSame("should have nodes for {lib, test, spec, Rakefile, README, LICENSE}, but has: " + result.keys(), 6, result.keys().size());
     }
 
-    public void testOrdering() throws Exception {
-        Project p = createTestProject("rubyprj");
-        ProjectRootNodeFactory instance = new ProjectRootNodeFactory();
-        NodeList result = instance.createNodes(p);
-        Stack<String> expected = new Stack<String>();
-        expected.addAll((Arrays.asList(
-                "Source Files", "Test Files", "RSpec Files",
-                "Rakefile", "LICENSE", "README")));
-        Collections.reverse(expected);
-        for (Object key : result.keys()) {
-            assertEquals("expected order", expected.pop(), result.node(key).getDisplayName());
-        }
-        assertTrue("all items used", expected.isEmpty());
+    public void testAnalysis1() throws Exception {
+        checkStructure("testfiles/dashes.rhtml");
     }
 
+    public void testAnalysis2() throws Exception {
+        checkStructure("testfiles/format2.rhtml");
+    }
+
+    public void testAnalysis3() throws Exception {
+        checkStructure("testfiles/quotes.rhtml");
+    }
 }
