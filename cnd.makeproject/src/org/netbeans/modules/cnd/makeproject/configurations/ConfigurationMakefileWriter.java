@@ -72,7 +72,6 @@ import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.Tool;
-import org.netbeans.modules.cnd.api.compilers.ToolchainManager.ToolchainDescriptor;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 import org.netbeans.modules.cnd.makeproject.api.configurations.FortranCompilerConfiguration;
@@ -534,11 +533,10 @@ public class ConfigurationMakefileWriter {
     }
     
     private void writeDependencyChecking(MakeConfiguration conf, BufferedWriter bw) throws IOException {
-        ToolchainDescriptor td = conf.getCompilerSet().getCompilerSet().getCompilerFlavor().getToolchainDescriptor();
-        if (conf.getDependencyChecking().getValue() && td.getMake().getDependencySupportCode() != null) {
+        if (conf.getDependencyChecking().getValue() && !conf.isMakefileConfiguration()) {
             bw.write("\n"); // NOI18N
             bw.write("# Enable dependency checking\n"); // NOI18N
-            bw.write(td.getMake().getDependencySupportCode());
+            bw.write("include .dep.inc\n");
         }
     }
     
