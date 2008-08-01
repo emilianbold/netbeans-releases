@@ -1264,8 +1264,12 @@ public abstract class TreeView extends JScrollPane {
                         return;
                     }
 
+                    // we are delayed, another treeExpanded() could arrive meanwhile
+                    boolean expanded = true;
+
                     try {
-                        if (tree.isExpanded(path)) {
+                        expanded = tree.isExpanded(path);
+                        if (expanded) {
                             // the tree shows the path - do not collapse
                             // the tree
                             return;
@@ -1294,8 +1298,10 @@ public abstract class TreeView extends JScrollPane {
 
                         treeModel.nodeStructureChanged(myNode);
                     } finally {
-                        VisualizerNode vn = (VisualizerNode) path.getLastPathComponent();
-                        visHolder.remove(vn.getChildren(false)); 
+                        if (!expanded) {
+                            VisualizerNode vn = (VisualizerNode) path.getLastPathComponent();
+                            visHolder.remove(vn.getChildren(false)); 
+                        }
                         this.path = null;
                     }
                 }
@@ -1502,8 +1508,14 @@ public abstract class TreeView extends JScrollPane {
             
             if (nodes.length > 0) {
                 Action a = nodes[0].getPreferredAction();
+                if (a == null) {
+                    return;
+                }
                 for (int i=1; i<nodes.length; i++) {
-                    if (! nodes[i].getPreferredAction().equals(a)) return;
+                    Action ai = nodes[i].getPreferredAction();
+                    if (ai == null || !ai.equals(a)) {
+                        return;
+                    }
                 }
                 
                 // switch to replacement action if there is some

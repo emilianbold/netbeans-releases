@@ -46,13 +46,13 @@ import java.net.URL;
 import java.util.HashSet;
 import java.util.Iterator;
 import org.netbeans.api.debugger.Breakpoint;
+import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.debugger.gdb.event.GdbBreakpointEvent;
 import org.netbeans.modules.cnd.debugger.gdb.event.GdbBreakpointListener;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
-import org.openide.util.Utilities;
 
 /**
  * Abstract definition of Cnd breakpoint.
@@ -173,7 +173,7 @@ public abstract class GdbBreakpoint extends Breakpoint {
                 FileObject fo = URLMapper.findFileObject(new URL(url));
                 if (fo != null) {
                     path = FileUtil.toFile(fo).getAbsolutePath();
-                    if (Utilities.isWindows()) {
+                    if (getDebugger().getPlatform() == PlatformTypes.PLATFORM_WINDOWS) {
                         path = path.replace("\\", "/"); // NOI18N
                     }
                 }

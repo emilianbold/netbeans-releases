@@ -92,18 +92,21 @@ public class MetaData extends Hashtable {
 
         public boolean visit( Element element ) {
             String name = element.getLocalName();
+            if ( !( element instanceof SVGElement )){
+                return true;
+            }
+            
             SVGElement svgElement = (SVGElement) element;
             
-            if ( !METADATA.equals( name )){
-                if ( element instanceof SVGElement ){
-                    myNestedElement = ( SVGElement) element ;
-                }
-                return false;
+            if ( !METADATA.equals( name )){                
+                myNestedElement = svgElement ;
+                return true;
             }
             
             String display = svgElement.getTrait( DISPLAY );
             if ( !NONE.equals( display )){
-                return false;
+                myNestedElement = svgElement;
+                return true;
             }
             
             String content = svgElement.getTrait(TRAIT_TEXT);

@@ -52,6 +52,8 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.beans.PropertyEditor;
+import java.beans.PropertyEditorManager;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -322,10 +324,12 @@ public class FontChooser extends JPanel implements ItemListener{
                 getAccessibleContext().setAccessibleDescription(DrawingPropertyResource.getString("ADDS_DIALOGTITLE"));
 		this.setPreferredSize(new Dimension(500,350));
 	}
+        
 	public FontChooser()
 	{
 		init();
 	}
+        
 	public FontChooser(Font defaultFont)
 	{
 		m_DefaultFont = defaultFont;
@@ -385,7 +389,7 @@ public class FontChooser extends JPanel implements ItemListener{
                 return selectFont(null);
 	}
 	
-	public static Font selectFont(Font defaultFont)
+	public static Font selectFont2(Font defaultFont)
 	{
 		Font font = null;
                 
@@ -411,6 +415,34 @@ public class FontChooser extends JPanel implements ItemListener{
 		return font;
 	}
 	
+        // using NB Font Chooser Dialog instead. See IZ# 119526 and 142338
+        public static Font selectFont(Font defaultFont)
+        {
+            Font font = null;
+            PropertyEditor pe = PropertyEditorManager.findEditor(Font.class);
+            if (pe != null)
+            {
+                if (defaultFont != null)
+                {
+                    pe.setValue(defaultFont);
+                }
+                DialogDescriptor dd = new DialogDescriptor(
+                        pe.getCustomEditor(),
+                        DrawingPropertyResource.getString("IDS_DIALOGTITLE") // NOI18N
+                        );
+
+                DialogDisplayer.getDefault().createDialog(dd).setVisible(true);
+                if (dd.getValue() == DialogDescriptor.OK_OPTION)
+                {
+                    font = (Font) pe.getValue();
+                }
+            } else // pe == null for some reason, fall back to UML Font Chooser
+            {
+                font = FontChooser.selectFont2(defaultFont);
+            }
+            return font;
+        }
+        
 	private static void setDefaultFontValues(Font defaultFont)
 	{
 		m_fontName = defaultFont.getName();
