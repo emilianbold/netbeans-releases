@@ -37,7 +37,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.glassfish.javaee.db;
+package org.netbeans.modules.glassfish.eecommon.api;
 
 import org.junit.Test;
 import static org.junit.Assert.*;
