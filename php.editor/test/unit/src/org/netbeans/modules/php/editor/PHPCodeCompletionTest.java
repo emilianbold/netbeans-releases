@@ -172,4 +172,31 @@ public class PHPCodeCompletionTest extends PHPTestBase {
     public void testClsDeclaration_8() throws Exception {
         checkCompletion("testfiles/completion/lib/clsDeclaration.php", "class ClsDeclarationTest extends Cls2DeclarationTest ^", false);
     }
+    public void testInsideClass() throws Exception {
+        checkCompletion("testfiles/completion/lib/insideClass.php", "cons^", false);
+    }
+    public void testInsideClass_1() throws Exception {
+        checkCompletion("testfiles/completion/lib/insideClass.php", "priv^", false);
+    }
+    public void testInsideClass_2() throws Exception {
+        checkCompletion("testfiles/completion/lib/insideClass.php", "function ^", false);
+    }
+    public void testInsideClass_3() throws Exception {
+        checkCompletion("testfiles/completion/lib/insideClass.php", "$this->setFl^", false);
+    }
+    public void testInsideClass_4() throws Exception {
+        checkCompletion("testfiles/completion/lib/insideClass.php", "function __cons^", false);
+    }
+    public void testInsideClass_5() throws Exception {
+        checkCompletion("testfiles/completion/lib/insideClass.php", "function __dest^", false);
+    }
+    public void testInsideClass_6() throws Exception {
+        checkCompletion("testfiles/completion/lib/insideClass.php", "$v = new InsideCl^", false);
+    }
+    public void testInsideClass_7() throws Exception {
+        checkCompletion("testfiles/completion/lib/insideClass.php", "public stat^", false);
+    }
+    public void testInsideClass_8() throws Exception {
+        checkCompletion("testfiles/completion/lib/insideClass.php", "InsideClass::^", false);
+    }
 }
