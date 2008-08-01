@@ -114,7 +114,16 @@ public class ConnectionList {
             connectionCache.put(dbconn.getName(), dbconn);
         }
     }
-    
+
+        
+    /**
+     * Refresh the cache.  Used for testing
+     */
+    public void refreshCache() {
+        connectionCache.clear();
+        initializeCache();
+    }
+
     public DatabaseConnection[] getConnections() {
        return connectionCache.values().toArray(new DatabaseConnection[connectionCache.size()]);
     }
