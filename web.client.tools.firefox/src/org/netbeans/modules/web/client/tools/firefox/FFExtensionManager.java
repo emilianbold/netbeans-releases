@@ -153,8 +153,11 @@ public class FFExtensionManager {
 
         if (nbExtInstall || firebugInstall) {
             // Ask the user if they want to install the extensions
+            String dialogMsg = Utilities.isMac() ? NbBundle.getMessage(FFExtensionManager.class, "INSTALL_EXTENSIONS_MSG_MACOS") :
+                NbBundle.getMessage(FFExtensionManager.class, "INSTALL_EXTENSIONS_MSG");
+            
             NotifyDescriptor installDesc = new NotifyDescriptor.Confirmation(
-                    NbBundle.getMessage(FFExtensionManager.class, "INSTALL_EXTENSIONS_MSG"),
+                    dialogMsg,
                     NbBundle.getMessage(FFExtensionManager.class, "INSTALL_EXTENSIONS_TITLE"),
                     NotifyDescriptor.OK_CANCEL_OPTION,
                     NotifyDescriptor.QUESTION_MESSAGE);
