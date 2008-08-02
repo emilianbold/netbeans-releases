@@ -165,16 +165,14 @@ public class RemoteServerRecord implements ServerRecord {
         }
     }
     
-    public Object getState() {
+    public boolean resetOfflineState() {
         synchronized (stateLock) {
-            return state;
+            if (this.state != STATE_INITIALIZING && state != STATE_ONLINE) {
+                state = STATE_UNINITIALIZED;
+                return true;
+            }
         }
-    }
-    
-    public void setState(Object state) {
-        synchronized (stateLock) {
-            this.state = state;
-        }
+        return false;
     }
     
     public String getStateAsText() {
@@ -186,9 +184,7 @@ public class RemoteServerRecord implements ServerRecord {
     }
     
     public boolean isEditable() {
-        synchronized (stateLock) {
-            return editable;
-        }
+        return editable;
     }
 
     public boolean isRemote() {

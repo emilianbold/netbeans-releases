@@ -129,7 +129,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
     private void revalidateRecord(final String entry, String password) {
         final RemoteServerRecord record = (RemoteServerRecord) RemoteServerList.getInstance().get(entry);
         if (!record.isOnline()) {
-            record.setState(RemoteServerRecord.STATE_UNINITIALIZED); // this is a do-over
+            record.resetOfflineState(); // this is a do-over
             setButtons(false);
             RemoteUserInfo userInfo = RemoteUserInfo.getUserInfo(entry, true);
             userInfo.setPassword(password);
