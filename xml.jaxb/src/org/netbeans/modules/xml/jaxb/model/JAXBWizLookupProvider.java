@@ -44,6 +44,7 @@ public class JAXBWizLookupProvider implements LookupProvider {
         JAXBWizModel model = new JAXBWizModelImpl(project);
         JAXBGenSourceClassPathProvider cpProvider = 
                 new JAXBGenSourceClassPathProvider(project);
-        return Lookups.fixed(new Object[] {model, cpProvider});
+        JAXBWizSourceForBinaryQueryImpl sfbq = new JAXBWizSourceForBinaryQueryImpl();
+        return Lookups.fixed(new Object[] {model, cpProvider, sfbq});
     }
 }
