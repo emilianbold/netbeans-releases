@@ -70,7 +70,7 @@ made subject to such option by the copyright holder.
         </nbjpdastart>
         <property name="run.jvmargs" value="" />
         <property name="work.dir" value="${basedir}"/>
-        <java classname="org.apache.tools.ant.taskdefs.optional.junit.JUnitTestRunner" fork="true" dir="${work.dir}">
+        <java classname="org.apache.tools.ant.taskdefs.optional.junit.JUnitTestRunner" fork="true" dir="${work.dir}" jvm="${platform.java}">
             <classpath>
                 <path path="${ant.home}/lib/ant.jar:${ant.home}/lib/ant-junit.jar"/>
                 <path path="${classpath-translated}"/>
@@ -83,6 +83,10 @@ made subject to such option by the copyright holder.
             <arg value="showoutput=true"/>
             <arg value="formatter=org.apache.tools.ant.taskdefs.optional.junit.BriefJUnitResultFormatter"/>
             <arg value="formatter=org.apache.tools.ant.taskdefs.optional.junit.XMLJUnitResultFormatter,TEST-${classname}.xml"/>
+            <syspropertyset>
+                <propertyref prefix="test-sys-prop."/>
+                <mapper from="test-sys-prop.*" to="*" type="glob"/>
+            </syspropertyset>
         </java>
     </target>
 
