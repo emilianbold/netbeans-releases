@@ -649,9 +649,11 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
             errorTextArea.setRows(0);
             if (!valid) {
                 ArrayList<String> errors = new ArrayList<String>();
-                if (!devhostValid) {
-                    errors.add(NbBundle.getMessage(ToolsPanel.class, "TP_ErrorMessage_BadDevHost", hkey));
-                }
+                // TODO: for a while disabling message about status of host,
+                // it should be visible from compiler sets panel
+//                if (!devhostValid) {
+//                    errors.add(NbBundle.getMessage(ToolsPanel.class, "TP_ErrorMessage_BadDevHost", hkey));
+//                }
                 if (cbMakeRequired.isSelected() && !makeValid) {
                     if (!isPathFieldValid(tfMakePath)) {
                         errors.add(NbBundle.getBundle(ToolsPanel.class).getString("TP_ErrorMessage_MissedMake"));
