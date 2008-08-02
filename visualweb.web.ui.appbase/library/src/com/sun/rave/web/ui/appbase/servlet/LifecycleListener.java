@@ -48,20 +48,24 @@ import com.sun.rave.web.ui.appbase.AbstractPageBean;
 import com.sun.rave.web.ui.appbase.AbstractRequestBean;
 import com.sun.rave.web.ui.appbase.AbstractSessionBean;
 import com.sun.rave.web.ui.appbase.faces.ViewHandlerImpl;
+import java.beans.Beans;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 import javax.faces.context.FacesContext;
 
+import javax.servlet.ServletContext;
 import javax.servlet.ServletContextAttributeEvent;
 import javax.servlet.ServletContextAttributeListener;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
+import javax.servlet.ServletRequest;
 import javax.servlet.ServletRequestAttributeEvent;
 import javax.servlet.ServletRequestAttributeListener;
 import javax.servlet.ServletRequestEvent;
 import javax.servlet.ServletRequestListener;
+import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpSessionActivationListener;
 import javax.servlet.http.HttpSessionAttributeListener;
 import javax.servlet.http.HttpSessionBindingEvent;
@@ -130,8 +134,9 @@ public class LifecycleListener
 
         // Remove any AbstractApplicationBean attributes, which will
         // trigger an attributeRemoved event
-        List list = new ArrayList();
-        Enumeration names = event.getServletContext().getAttributeNames();
+        ServletContext x = event.getServletContext();
+        List list = new ArrayList();        
+        Enumeration names = x.getAttributeNames();
         while (names.hasMoreElements()) {
             String name = (String) names.nextElement();
             list.add(name);
@@ -139,7 +144,15 @@ public class LifecycleListener
         Iterator keys = list.iterator();
         while (keys.hasNext()) {
             String key = (String) keys.next();
-            event.getServletContext().removeAttribute(key);
+            if (Beans.isDesignTime()) { //[141508] play it safe. keep existing behavior at designtime.
+                x.removeAttribute(key);
+            }
+            else {  //[141508] fixed behavior. only remove if instanceof.
+                Object value = x.getAttribute(key);
+                if (value instanceof AbstractApplicationBean) {
+                    x.removeAttribute(key);
+                }
+            }
         }
 
     }
@@ -241,9 +254,10 @@ public class LifecycleListener
 
         // Remove any AbstractSessionBean attributes, which will
         // trigger an attributeRemoved event
-        List list = new ArrayList();
         try {
-            Enumeration names = event.getSession().getAttributeNames();
+            HttpSession x = event.getSession();
+            List list = new ArrayList();
+            Enumeration names = x.getAttributeNames();
             while (names.hasMoreElements()) {
                 String name = (String) names.nextElement();
                 list.add(name);
@@ -251,7 +265,16 @@ public class LifecycleListener
             Iterator keys = list.iterator();
             while (keys.hasNext()) {
                 String key = (String) keys.next();
-                event.getSession().removeAttribute(key);
+                if (Beans.isDesignTime()) { //[141508] play it safe. keep existing behavior at designtime.
+                    x.removeAttribute(key);
+                }
+                else { //[141508] fixed behavior. only remove if instanceof.
+                    Object value = x.getAttribute(key);
+                    if (value instanceof AbstractSessionBean) {
+                        x.removeAttribute(key);
+                    }
+                }
+
             }
         } catch (IllegalStateException e) {
             // [6365605] The session was already invalidated, most likely
@@ -403,7 +426,8 @@ public class LifecycleListener
 
     /**
      * <p>Respond to a request destroyed event.  Causes any request
-     * scope attribute that implements {@link AbstractRequestBean}
+     * scope attribute that implements {@link AbstractRequestBean},
+     * {@link AbstractPageBean},
      * or {@link AbstractFragmentBean} to be removed, triggering an
      * <code>attributeRemoved()</code> event.</p>
      *
@@ -411,10 +435,11 @@ public class LifecycleListener
      */
     public void requestDestroyed(ServletRequestEvent event) {
 
-        // Remove any AbstractRequestBean or AbstractFragmentBean
+        // Remove any AbstractRequestBean, AbstractPageBean, or AbstractFragmentBean
         // attributes, which will trigger an attributeRemoved event
+        ServletRequest x = event.getServletRequest();
         List list = new ArrayList();
-        Enumeration names = event.getServletRequest().getAttributeNames();
+        Enumeration names = x.getAttributeNames();
         while (names.hasMoreElements()) {
             String name = (String) names.nextElement();
             list.add(name);
@@ -422,7 +447,15 @@ public class LifecycleListener
         Iterator keys = list.iterator();
         while (keys.hasNext()) {
             String key = (String) keys.next();
-            event.getServletRequest().removeAttribute(key);
+            if (Beans.isDesignTime()) { //[141508] play it safe. keep existing behavior at designtime.
+                x.removeAttribute(key);
+            }
+            else { //[141508] fixed behavior. only remove if instanceof.
+                Object value = x.getAttribute(key);
+                if ( (value instanceof AbstractRequestBean) || (value instanceof AbstractPageBean) || (value instanceof AbstractFragmentBean) ) {
+                    x.removeAttribute(key);
+                }
+            }
         }
 
     }
