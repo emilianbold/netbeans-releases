@@ -56,6 +56,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -346,6 +347,7 @@ class J2SEActionProvider implements ActionProvider {
                             FileObject file = findSources(context)[0];
                             String url = p.getProperty("applet.url");
                             execProperties.setProperty("applet.url", url);
+                            prepareSystemProperties(execProperties, false);
                             ProjectRunner.execute(targetNames[0], execProperties, file);
                         } catch (IOException ex) {
                             Exceptions.printStackTrace(ex);
@@ -353,6 +355,7 @@ class J2SEActionProvider implements ActionProvider {
                         return ;
                     }
                     if (COMMAND_RUN.equals(command) || COMMAND_DEBUG.equals(command)) {
+                        prepareSystemProperties(execProperties, false);
                         bypassAntBuildScript(command, context, execProperties);
 
                         return ;
@@ -361,18 +364,21 @@ class J2SEActionProvider implements ActionProvider {
                         FileObject[] files;
                         if ((files = findTestSources(context, false)) != null) {
                             try {
+                                prepareSystemProperties(execProperties, true);
                                 ProjectRunner.execute(command.equals(COMMAND_RUN_SINGLE) ? ProjectRunner.QUICK_TEST : ProjectRunner.QUICK_TEST_DEBUG, execProperties, files[0]);
                             } catch (IOException ex) {
                                 Exceptions.printStackTrace(ex);
                             }
                             return;
                         }
-                        bypassAntBuildScript(command, context, p);
+                        prepareSystemProperties(execProperties, false);
+                        bypassAntBuildScript(command, context, execProperties);
                         return;
                     }
                     if (COMMAND_TEST_SINGLE.equals(command) || COMMAND_DEBUG_TEST_SINGLE.equals(command)) {
                         FileObject[] files = findSources(context);
                         try {
+                            prepareSystemProperties(execProperties, true);
                             ProjectRunner.execute(COMMAND_TEST_SINGLE.equals(command) ? ProjectRunner.QUICK_TEST : ProjectRunner.QUICK_TEST_DEBUG, execProperties, files[0]);
                         } catch (IOException ex) {
                             Exceptions.printStackTrace(ex);
@@ -1007,6 +1013,21 @@ class J2SEActionProvider implements ActionProvider {
         String val = evaluator.getProperty(propertyName);
         if (val != null) {
             properties.setProperty(propertyName, val);
+        }
+    }
+
+    private void prepareSystemProperties(Properties properties, boolean test) {
+        String prefix = test ? J2SEProjectProperties.SYSTEM_PROPERTIES_TEST_PREFIX : J2SEProjectProperties.SYSTEM_PROPERTIES_RUN_PREFIX;
+        Map<String, String> evaluated = evaluator.getProperties();
+
+        if (evaluated == null) {
+            return ;
+        }
+        
+        for (Entry<String, String> e : evaluated.entrySet()) {
+            if (e.getKey().startsWith(prefix) && e.getValue() != null) {
+                properties.setProperty(e.getKey(), e.getValue());
+            }
         }
     }
 

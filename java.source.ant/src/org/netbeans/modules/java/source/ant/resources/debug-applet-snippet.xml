@@ -76,6 +76,10 @@ made subject to such option by the copyright holder.
             <jvmarg value="-Xrunjdwp:transport=${debug-transport},address=${jpda.address}"/>
             <jvmarg line="${run.jvmargs}" />
             <arg value="${applet.url}"/>
+            <syspropertyset>
+                <propertyref prefix="run-sys-prop."/>
+                <mapper from="run-sys-prop.*" to="*" type="glob"/>
+            </syspropertyset>
         </java>
     </target>
 </project>

@@ -52,6 +52,10 @@ made subject to such option by the copyright holder.
             <jvmarg line="${run.jvmargs}"/>
             <formatter type="brief" usefile="false"/>
             <formatter type="xml"/>
+            <syspropertyset>
+                <propertyref prefix="test-sys-prop."/>
+                <mapper from="test-sys-prop.*" to="*" type="glob"/>
+            </syspropertyset>
         </junit>
     </target>
 </project>

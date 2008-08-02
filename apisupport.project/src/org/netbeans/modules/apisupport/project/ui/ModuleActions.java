@@ -48,6 +48,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -408,6 +409,23 @@ public final class ModuleActions implements ActionProvider {
         String dataDir = project.evaluator().getProperty("test.unit.data.dir");
         return dataDir != null && project.getHelper().resolveFileObject(dataDir) != null;
     }
+    
+    private static final String SYSTEM_PROPERTY_PREFIX = "test-unit-sys-prop.";
+    private static final String SYSTEM_PROPERTY_TARGET_PREFIX = "test-sys-prop.";
+    
+    private void prepareSystemProperties(Properties properties) {
+        Map<String, String> evaluated = project.evaluator().getProperties();
+
+        if (evaluated == null) {
+            return ;
+        }
+        
+        for (Entry<String, String> e : evaluated.entrySet()) {
+            if (e.getKey().startsWith(SYSTEM_PROPERTY_PREFIX) && e.getValue() != null) {
+                properties.setProperty(SYSTEM_PROPERTY_TARGET_PREFIX + e.getKey().substring(SYSTEM_PROPERTY_PREFIX.length()), e.getValue());
+            }
+        }
+    }
 
     private static boolean verifySufficientlyNewHarness(NbModuleProject project) {
         NbPlatform plaf = project.getPlatform(false);
@@ -452,7 +470,10 @@ public final class ModuleActions implements ActionProvider {
                 return false;
             }
             try {
-                ProjectRunner.execute(commandToExecute, new Properties(), toRun);
+                Properties properties = new Properties();
+
+                prepareSystemProperties(properties);
+                ProjectRunner.execute(commandToExecute, properties, toRun);
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
