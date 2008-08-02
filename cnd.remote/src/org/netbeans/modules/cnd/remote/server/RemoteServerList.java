@@ -90,10 +90,10 @@ public class RemoteServerList extends ArrayList<RemoteServerRecord> implements S
         unlisted = new ArrayList<RemoteServerRecord>();
         
         // Creates the "localhost" record and any remote records cached in remote.preferences
-        addServer(CompilerSetManager.LOCALHOST); 
+        addServer(CompilerSetManager.LOCALHOST, false);
         if (slist != null) {
             for (String hkey : slist.split(",")) { // NOI18N
-                addServer(hkey);
+                addServer(hkey, false);
             }
         }
         refresh();
@@ -158,7 +158,7 @@ public class RemoteServerList extends ArrayList<RemoteServerRecord> implements S
         return sa;
     }
     
-    public void addServer(final String name) {
+    public void addServer(final String name, boolean asDefault) {
         RemoteServerRecord record = null;
         
         // First off, check if we already have this record
@@ -182,6 +182,9 @@ public class RemoteServerList extends ArrayList<RemoteServerRecord> implements S
             unlisted.remove(record);
         }
         add(record);
+        if (asDefault) {
+            defaultIndex = size() - 1;
+        }
         refresh();
         
         // TODO: this should follow toolchain loading

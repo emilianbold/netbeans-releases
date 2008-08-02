@@ -1,0 +1,6 @@
+Code completion result for source line:
+public function |setFld($fld) {
+(QueryType=COMPLETION, NameKind=PREFIX)
+------------------------------------
+KEYWORD    __construct()                              null
+KEYWORD    __destruct()                               null

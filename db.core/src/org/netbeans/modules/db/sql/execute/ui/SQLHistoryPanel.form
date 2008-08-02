@@ -174,6 +174,14 @@
               <Color blue="ff" green="d5" id="EditorPane.selectionBackground" palette="3" red="b4" type="palette"/>
             </Property>
           </Properties>
+          <AccessibilityProperties>
+            <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/db/sql/execute/ui/Bundle.properties" key="ACSN_History" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+            <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/db/sql/execute/ui/Bundle.properties" key="ACSD_History" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+          </AccessibilityProperties>
           <AuxValues>
             <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new JTable() {&#xa;        public Component prepareRenderer(TableCellRenderer renderer,&#xa;                                         int rowIndex, int vColIndex) {&#xa;            Component c = super.prepareRenderer(renderer, rowIndex, vColIndex);&#xa;            if (c instanceof JComponent) {&#xa;                JComponent jc = (JComponent)c;&#xa;                jc.setToolTipText(view.getSQLHistoryTooltipValue(rowIndex, vColIndex));&#xa;            }&#xa;            return c;&#xa;        }&#xa;};"/>
           </AuxValues>

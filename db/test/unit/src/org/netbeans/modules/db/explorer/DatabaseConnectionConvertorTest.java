@@ -80,7 +80,7 @@ public class DatabaseConnectionConvertorTest extends TestBase {
     
     protected void setUp() throws Exception {
         super.setUp();
-        Util.deleteConnectionFiles();
+        Util.clearConnections();
     }
     
     public void testReadXml() throws Exception {

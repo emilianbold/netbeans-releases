@@ -70,7 +70,7 @@ public class RemoteInteractiveCommandSupport extends RemoteConnectionSupport {
         this.in = in;
         this.out = out;
 
-        if (!isCancelled()) {
+        if (!isFailedOrCancelled()) {
             log.fine("RemoteInteractiveCommandSupport<Init>: Running [" + cmd + "] on " + hkey);
             try {
                 channel = createChannel();

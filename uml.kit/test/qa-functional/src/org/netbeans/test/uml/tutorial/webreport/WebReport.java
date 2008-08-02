@@ -104,7 +104,7 @@ public class WebReport extends UMLTestCase {
     private static String defaultNewElementName=LibProperties.getProperties().COMMON_NEW_ELEMENT_NAME;
     private ProjectsTabOperator pto=null;
     private Node lastDiagramNode=null;
-    private static String workdir=System.getProperty("xtest.workdir");
+    private static String workdir=System.getProperty("nbjunit.workdir");
     private static String lastTestCase=null;
     private static boolean setup_completed=false;
     private    Dimension scrSize=java.awt.Toolkit.getDefaultToolkit().getScreenSize();
