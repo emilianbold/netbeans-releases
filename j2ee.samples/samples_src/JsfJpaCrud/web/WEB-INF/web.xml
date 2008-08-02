@@ -16,7 +16,7 @@
         <servlet-name>Faces Servlet</servlet-name>
         <servlet-class>javax.faces.webapp.FacesServlet</servlet-class>
         <load-on-startup>1</load-on-startup>
-        </servlet>
+    </servlet>
     <servlet-mapping>
         <servlet-name>Faces Servlet</servlet-name>
         <url-pattern>/faces/*</url-pattern>
@@ -27,8 +27,6 @@
         </session-timeout>
     </session-config>
     <welcome-file-list>
-	<welcome-file>
-            index.jsp
-        </welcome-file>
-    </welcome-file-list>
-</web-app>
+        <welcome-file>faces/welcomeJSF.jsp</welcome-file>
+        </welcome-file-list>
+    </web-app>
