@@ -64,6 +64,7 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -270,6 +271,24 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         update(false, cs);
     }
 
+    private void onNewDevHostSelected() {
+        if (!hkey.equals((String) cbDevHost.getSelectedItem())) {
+            log.fine("TP.itemStateChanged: About to update");
+            changed = true;
+            if (serverUpdateCache == null) {
+                serverUpdateCache = new ServerUpdateCache();
+                String[] nulist = new String[cbDevHost.getItemCount()];
+                for (int i = 0; i < nulist.length; i++) {
+                    nulist[i] = (String) cbDevHost.getItemAt(i);
+                }
+                serverUpdateCache.setHostKeyList(nulist);
+            }
+            serverUpdateCache.setDefaultIndex(cbDevHost.getSelectedIndex());
+            hkey = (String) cbDevHost.getSelectedItem();
+            update(true);
+        }
+    }
+
     private void removeCompilerSet() {
         CompilerSet cs = (CompilerSet)lstDirlist.getSelectedValue();
         if (cs != null) {
@@ -369,6 +388,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         if (txt.length() == 0) {
             return false;
         }
+
         if (hkey.equals(CompilerSetManager.LOCALHOST)) {
             File file = new File(txt);
             boolean ok = false;
@@ -386,7 +406,17 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
             }
             return ok;
         } else {
-            return serverList.isValidExecutable(hkey, txt);
+            // TODO this method must be called out of EDT, because it's time consuming
+            // we need to remember once calculated "valid" state and reuse it
+            // instead of check on each unrelated action
+            // with remote support it became even more visible in UI freezing
+            if (SwingUtilities.isEventDispatchThread()) {
+                log.fine("ToolsPanel.isPathFieldValid from EDT"); // NOI18N
+                // always return true in remote mode, instead of call to very expensive operation
+                return true;
+            } else {
+                return serverList.isValidExecutable(hkey, txt);
+            }
         }
     }
 
@@ -637,9 +667,11 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
             errorTextArea.setRows(0);
             if (!valid) {
                 ArrayList<String> errors = new ArrayList<String>();
-                if (!devhostValid) {
-                    errors.add(NbBundle.getMessage(ToolsPanel.class, "TP_ErrorMessage_BadDevHost", hkey));
-                }
+                // TODO: for a while disabling message about status of host,
+                // it should be visible from compiler sets panel
+//                if (!devhostValid) {
+//                    errors.add(NbBundle.getMessage(ToolsPanel.class, "TP_ErrorMessage_BadDevHost", hkey));
+//                }
                 if (cbMakeRequired.isSelected() && !makeValid) {
                     if (!isPathFieldValid(tfMakePath)) {
                         errors.add(NbBundle.getBundle(ToolsPanel.class).getString("TP_ErrorMessage_MissedMake"));
@@ -672,30 +704,30 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
                 repaint();
             }
             if (!isRemoteHostSelected() && new File(tfBaseDirectory.getText()).exists()) {
-                btCBrowse.setEnabled(true);
-                btCppBrowse.setEnabled(true);
-                btFortranBrowse.setEnabled(true);
-                btMakeBrowse.setEnabled(true);
-                btDebuggerBrowse.setEnabled(true);
-                btVersions.setEnabled(true);
-                tfMakePath.setEnabled(true);
-                tfGdbPath.setEnabled(true);
+                updateToolsControls(true, true);
             }
             else {
-                btCBrowse.setEnabled(false);
-                btCppBrowse.setEnabled(false);
-                btFortranBrowse.setEnabled(false);
-                btMakeBrowse.setEnabled(false);
-                btDebuggerBrowse.setEnabled(false);
-                btVersions.setEnabled(isRemoteHostSelected());
-                tfMakePath.setEnabled(false);
-                tfGdbPath.setEnabled(false);
+                updateToolsControls(false, isRemoteHostSelected());
             }
 
             return valid;
         }
     }
 
+    private void updateToolsControls(boolean enable, boolean versionEnabled) {
+        btCBrowse.setEnabled(enable);
+        btCppBrowse.setEnabled(enable);
+        btFortranBrowse.setEnabled(enable);
+        btMakeBrowse.setEnabled(enable);
+        btDebuggerBrowse.setEnabled(enable);
+        btVersions.setEnabled(versionEnabled);
+        tfMakePath.setEnabled(enable);
+        tfGdbPath.setEnabled(enable);
+        tfBaseDirectory.setEnabled(enable);
+        tfCPath.setEnabled(enable);
+        tfCppPath.setEnabled(enable);
+        tfFortranPath.setEnabled(enable);        
+    }
     /**
      * Lets caller know if any data has been changed.
      *
@@ -825,20 +857,8 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         Object o = ev.getSource();
 
         if (!updating) {
-            if (o == cbDevHost && ev.getStateChange() == ItemEvent.SELECTED && !hkey.equals((String) cbDevHost.getSelectedItem())) {
-                log.fine("TP.itemStateChanged: About to update");
-                changed = true;
-                if (serverUpdateCache == null) {
-                    serverUpdateCache = new ServerUpdateCache();
-                    String[] nulist = new String[cbDevHost.getItemCount()];
-                    for (int i = 0; i < nulist.length; i++) {
-                        nulist[i] = (String) cbDevHost.getItemAt(i);
-                    }
-                    serverUpdateCache.setHostKeyList(nulist);
-                }
-                serverUpdateCache.setDefaultIndex(cbDevHost.getSelectedIndex());
-                hkey = (String) cbDevHost.getSelectedItem();
-                update(true);
+            if (o == cbDevHost && ev.getStateChange() == ItemEvent.SELECTED) {
+                onNewDevHostSelected();
             } else if (o instanceof JCheckBox && !changingCompilerSet) {
                 dataValid();
             }
@@ -897,10 +917,12 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
      */
     private void editDevHosts() {
         // Show the Dev Host Manager dialog
-        serverUpdateCache = serverList.show(serverUpdateCache);
+        ServerUpdateCache newServerUpdateCache = serverList.show(serverUpdateCache);
 
         // Now update the dropdown (we assume the ServerList has changed)
-        if (serverUpdateCache != null) {
+        if (newServerUpdateCache != null) {
+            changed = !equalsLists(serverUpdateCache, newServerUpdateCache);
+            serverUpdateCache = newServerUpdateCache;
             cbDevHost.removeItemListener(this);
             log.fine("TP.editDevHosts: Removing all items from cbDevHost");
             cbDevHost.removeAllItems();
@@ -918,11 +940,36 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
             } else {
                 log.fine("TP.editDevHosts: No selection found");
             }
+            onNewDevHostSelected();
             cbDevHost.addItemListener(this);
-            changed = true;
         }
     }
 
+    private boolean equalsLists(ServerUpdateCache cache1, ServerUpdateCache cache2) {
+        if (cache1 == cache2) {
+            return true;
+        }
+        if (cache1 == null || cache2 == null) {
+            return false;
+        }
+        if (cache1.getDefaultIndex() != cache2.getDefaultIndex()) {
+            return false;
+        }
+        String[] lst1 = cache1.getHostKeyList();
+        String[] lst2 = cache2.getHostKeyList();
+        if (lst1.length != lst2.length) {
+            return false;
+        }
+        for (int i = 0; i < lst1.length; i++) {
+            String str1 = lst1[i];
+            String str2 = lst1[i];
+            if (!str1.equals(str2)) {
+                return false;
+            }
+        }
+        return true;
+    }
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -1103,7 +1150,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 7;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 22, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(6, 10, 0, 0);
         add(lbCCommand, gridBagConstraints);
         lbCCommand.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_CCommand")); // NOI18N
         lbCCommand.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CCommand")); // NOI18N
@@ -1140,7 +1187,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 8;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 22, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(6, 10, 0, 0);
         add(lbCppCommand, gridBagConstraints);
         lbCppCommand.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_CppCommand")); // NOI18N
         lbCppCommand.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CppCommand")); // NOI18N
@@ -1177,7 +1224,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 9;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 22, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(6, 10, 0, 0);
         add(lbFortranCommand, gridBagConstraints);
         lbFortranCommand.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_FortranCommand")); // NOI18N
         lbFortranCommand.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_FortranCommand")); // NOI18N
@@ -1233,14 +1280,12 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         cbMakeRequired.setSelected(true);
         cbMakeRequired.setText(bundle.getString("LBL_RequiredMake")); // NOI18N
         cbMakeRequired.setEnabled(false);
-        cbMakeRequired.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         requiredToolsPanel.add(cbMakeRequired, gridBagConstraints);
 
         cbGdbRequired.setText(bundle.getString("LBL_RequiredGdb")); // NOI18N
         cbGdbRequired.setEnabled(false);
-        cbGdbRequired.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 0);
@@ -1248,7 +1293,6 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
 
         cbCRequired.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("MNEM_CCompiler_CB").charAt(0));
         cbCRequired.setText(bundle.getString("LBL_RequiredCompiler_C")); // NOI18N
-        cbCRequired.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -1258,7 +1302,6 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
 
         cbCppRequired.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("MNEM_CppCompiler_CB").charAt(0));
         cbCppRequired.setText(bundle.getString("LBL_RequiredCompiler_Cpp")); // NOI18N
-        cbCppRequired.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -1268,7 +1311,6 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
 
         cbFortranRequired.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("MNEM_FortranCompiler_CB").charAt(0));
         cbFortranRequired.setText(bundle.getString("LBL_RequiredCompiler_Fortran")); // NOI18N
-        cbFortranRequired.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 1;

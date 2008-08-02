@@ -86,13 +86,12 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
     /** Creates new form EditServerListDialog */
     public EditServerListDialog(ServerUpdateCache cache) {
         initComponents();
-        initListeners();
         initServerList(cache);
         desc = null;
-        buttonsEnabled = true;
         lbReason.setText(" "); // this keeps the dialog from resizing
         tfReason.setVisible(false);
         pbarStatusPanel.setVisible(false);
+        initListeners();
     }
     
     private void initListeners() {
@@ -103,6 +102,8 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         btPathMapper.addActionListener(this);
         pcs = new PropertyChangeSupport(this);
         pcs.addPropertyChangeListener(this);
+        setButtons(true);
+        valueChanged(null);
     }
     
     private void initServerList(ServerUpdateCache cache) {

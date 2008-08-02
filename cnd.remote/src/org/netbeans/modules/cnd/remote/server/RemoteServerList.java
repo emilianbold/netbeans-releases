@@ -43,7 +43,9 @@ import java.awt.Dialog;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
+import java.util.logging.Logger;
 import java.util.prefs.Preferences;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.remote.ServerList;
@@ -69,6 +71,7 @@ public class RemoteServerList extends ArrayList<RemoteServerRecord> implements S
     private static final String DEFAULT_INDEX = CND_REMOTE + ".default"; // NOI18N
     
     private static RemoteServerList instance = null;
+    private static Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
     
     private int defaultIndex;
     private PropertyChangeSupport pcs;
@@ -283,6 +286,9 @@ public class RemoteServerList extends ArrayList<RemoteServerRecord> implements S
     public boolean isValidExecutable(String hkey, String path) {
         if (path == null || path.length() == 0) {
             return false;
+        }
+        if (SwingUtilities.isEventDispatchThread()) {
+            log.warning("RemoteServerList.isValidExecutable from EDT"); // NOI18N
         }
         String cmd = "PATH=/bin:/usr/bin:$PATH test -x " + path; // NOI18N
         int exit_status = RemoteCommandSupport.run(hkey, cmd);
