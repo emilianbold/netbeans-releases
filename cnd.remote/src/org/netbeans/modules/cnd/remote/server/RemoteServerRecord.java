@@ -124,6 +124,13 @@ public class RemoteServerRecord implements ServerRecord {
         ph.start();
         init(null);
         ph.finish();
+        String msg;
+        if (isOnline()) {
+            msg = NbBundle.getMessage(RemoteServerRecord.class, "Validation_OK", name);// NOI18N
+        } else {
+            msg = NbBundle.getMessage(RemoteServerRecord.class, "Validation_ERR", name, getStateAsText(), getReason());// NOI18N
+        }
+        StatusDisplayer.getDefault().setStatusText(msg);        
     }
     
     /**
