@@ -393,11 +393,12 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
             // instead of check on each unrelated action
             // with remote support it became even more visible in UI freezing
             if (SwingUtilities.isEventDispatchThread()) {
-                log.info("ToolsPanel.isPathFieldValid from EDT"); // NOI18N
+                log.fine("ToolsPanel.isPathFieldValid from EDT"); // NOI18N
+                // always return true in remote mode, instead of call to very expensive operation
+                return true;
+            } else {
+                return serverList.isValidExecutable(hkey, txt);
             }
-            // always return true in remote mode, instead of call to very expensive operation
-            return true;
-//            return serverList.isValidExecutable(hkey, txt);
         }
     }
 
@@ -683,30 +684,30 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
                 repaint();
             }
             if (!isRemoteHostSelected() && new File(tfBaseDirectory.getText()).exists()) {
-                btCBrowse.setEnabled(true);
-                btCppBrowse.setEnabled(true);
-                btFortranBrowse.setEnabled(true);
-                btMakeBrowse.setEnabled(true);
-                btDebuggerBrowse.setEnabled(true);
-                btVersions.setEnabled(true);
-                tfMakePath.setEnabled(true);
-                tfGdbPath.setEnabled(true);
+                updateToolsControls(true, true);
             }
             else {
-                btCBrowse.setEnabled(false);
-                btCppBrowse.setEnabled(false);
-                btFortranBrowse.setEnabled(false);
-                btMakeBrowse.setEnabled(false);
-                btDebuggerBrowse.setEnabled(false);
-                btVersions.setEnabled(isRemoteHostSelected());
-                tfMakePath.setEnabled(false);
-                tfGdbPath.setEnabled(false);
+                updateToolsControls(false, isRemoteHostSelected());
             }
 
             return valid;
         }
     }
 
+    private void updateToolsControls(boolean enable, boolean versionEnabled) {
+        btCBrowse.setEnabled(enable);
+        btCppBrowse.setEnabled(enable);
+        btFortranBrowse.setEnabled(enable);
+        btMakeBrowse.setEnabled(enable);
+        btDebuggerBrowse.setEnabled(enable);
+        btVersions.setEnabled(versionEnabled);
+        tfMakePath.setEnabled(enable);
+        tfGdbPath.setEnabled(enable);
+        tfBaseDirectory.setEnabled(enable);
+        tfCPath.setEnabled(enable);
+        tfCppPath.setEnabled(enable);
+        tfFortranPath.setEnabled(enable);        
+    }
     /**
      * Lets caller know if any data has been changed.
      *
