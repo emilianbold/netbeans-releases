@@ -71,12 +71,12 @@ public class RemoteServerList extends ArrayList<RemoteServerRecord> implements S
     private static final String DEFAULT_INDEX = CND_REMOTE + ".default"; // NOI18N
     
     private static RemoteServerList instance = null;
-    private static Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
+    private static final Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
     
     private int defaultIndex;
-    private PropertyChangeSupport pcs;
-    private ChangeSupport cs;
-    private ArrayList<RemoteServerRecord> unlisted;
+    private final PropertyChangeSupport pcs;
+    private final ChangeSupport cs;
+    private final ArrayList<RemoteServerRecord> unlisted;
     
     public synchronized static RemoteServerList getInstance() {
         if (instance == null) {
