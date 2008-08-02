@@ -775,6 +775,10 @@ public class Mapper extends JPanel {
             return initialTreePath;
         }
         
+        if (!model.searchGraphsInside(initialTreePath)) {
+            return null;
+        }
+        
         for (int i = 0; i < node.getChildCount(); i++) {
             MapperNode childNode = node.getChild(i);
             if (childNode.isLeaf()) {
@@ -782,8 +786,9 @@ public class Mapper extends JPanel {
                     return childNode.getTreePath();
                 }
             } else {
-                if (getRightTreePathForLink(link, childNode.getTreePath()) != null) {
-                    return getRightTreePathForLink(link, childNode.getTreePath());
+                TreePath result = getRightTreePathForLink(link, childNode.getTreePath());
+                if (result != null) {
+                    return result;
                 }
             }
         }

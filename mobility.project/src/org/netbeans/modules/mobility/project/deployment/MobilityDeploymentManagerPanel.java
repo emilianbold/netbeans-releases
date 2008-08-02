@@ -44,6 +44,8 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Point;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
@@ -73,6 +75,7 @@ import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.awt.Mnemonics;
 
 /**
  *
@@ -100,11 +103,30 @@ public class MobilityDeploymentManagerPanel extends JPanel implements ExplorerMa
                 SwingUtilities.invokeLater(r2 = new Thread() {
                     @Override
                     public void run() {
-                        JButton closeButton = new JButton(NbBundle.getMessage(MobilityDeploymentManagerPanel.class, "LBL_closeButton")); //NOI18N
-                        closeButton.getAccessibleContext().setAccessibleDescription("ACCESSIBLE_NAME_closeButton"); //NOI18N
-                        closeButton.getAccessibleContext().setAccessibleDescription("ACCESSIBLE_DESCRIPTION_closeButton"); //NOI18N
+                        JButton closeButton = new JButton(); 
+                        Mnemonics.setLocalizedText(closeButton , 
+                                NbBundle.getMessage(MobilityDeploymentManagerPanel.class, 
+                                "LBL_closeButton"));//NOI18N
+                        closeButton.getAccessibleContext().setAccessibleName(
+                                NbBundle.getMessage(
+                                MobilityDeploymentManagerPanel.class,
+                                "ACCESSIBLE_NAME_closeButton")); //NOI18N
+                        closeButton.getAccessibleContext().setAccessibleDescription(
+                                NbBundle.getMessage(
+                                MobilityDeploymentManagerPanel.class,
+                                "ACCESSIBLE_DESCRIPTION_closeButton")); //NOI18N
                         MobilityDeploymentManagerPanel mdmp = new MobilityDeploymentManagerPanel(deploymentTypeDisplayName, instance);
-                        DialogDisplayer.getDefault().notify(new DialogDescriptor(mdmp, NbBundle.getMessage(MobilityDeploymentManagerAction.class, "Title_DeploymentManager"), true, new Object[]{closeButton}, DialogDescriptor.CLOSED_OPTION, DialogDescriptor.DEFAULT_ALIGN, new HelpCtx(MobilityDeploymentManagerPanel.class), null));  //NOI18N
+                        DialogDescriptor desc = new DialogDescriptor(mdmp,
+                                NbBundle.getMessage(
+                                    MobilityDeploymentManagerAction.class,
+                                    "Title_DeploymentManager"),
+                                    true, new Object[]{closeButton},
+                                    DialogDescriptor.CLOSED_OPTION,
+                                    DialogDescriptor.DEFAULT_ALIGN,
+                                    new HelpCtx(MobilityDeploymentManagerPanel.class),
+                                    null);
+                        desc.setClosingOptions(new Object[]{closeButton});
+                        DialogDisplayer.getDefault().notify( desc );  //NOI18N
                         instanceName[0] = mdmp.getSelectedInstanceName();
                     }
                 });

@@ -90,7 +90,7 @@ public class SQDCombinedFragmentPropertiesTest extends UMLTestCase {
     private String PATH_TO_DIAGRAM = "Model|sqd|"+DIAGRAM+"|"+DIAGRAM;
     private String ELEMENT_NAME = "FRAGMENT";        
     private String PROPS_NAME = "Properties";
-    private final String PROJECT_PATH = System.getProperty("xtest.workdir");
+    private final String PROJECT_PATH = System.getProperty("nbjunit.workdir");
     //public final String OPEN_DIAGRAM = "Open";
     //public final String DELETE_DIAGRAM = "Delete";
     

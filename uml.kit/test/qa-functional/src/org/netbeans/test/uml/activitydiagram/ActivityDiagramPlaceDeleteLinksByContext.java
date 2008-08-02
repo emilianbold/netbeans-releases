@@ -97,7 +97,7 @@ public class ActivityDiagramPlaceDeleteLinksByContext extends UMLTestCase {
     private ProjectsTabOperator pto=null;
     private Node lastDiagramNode=null;
     private JTreeOperator prTree=null;
-    private static String workdir=System.getProperty("xtest.workdir");
+    private static String workdir=System.getProperty("nbjunit.workdir");
     private String lastTestCase=null;
     //
     private static ElementTypes fromType= ElementTypes.INVOCATION;

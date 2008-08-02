@@ -178,17 +178,17 @@ public class DeviceAnywhereGlobalCustomizerPanel extends javax.swing.JPanel {
         jButton1.setMargin(new java.awt.Insets(0, 0, 0, 0));
         jButton1.setCursor( Cursor.getPredefinedCursor(Cursor.HAND_CURSOR) );
         jButton1.setForeground( new Color(0x0E1B55) );
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
-            }
-        });
         jButton1.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseEntered(java.awt.event.MouseEvent evt) {
                 jButton1MouseEntered(evt);
             }
             public void mouseExited(java.awt.event.MouseEvent evt) {
                 jButton1MouseExited(evt);
+            }
+        });
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
             }
         });
 
@@ -201,17 +201,17 @@ public class DeviceAnywhereGlobalCustomizerPanel extends javax.swing.JPanel {
         jButton2.setMargin(new java.awt.Insets(0, 0, 0, 0));
         jButton2.setCursor( Cursor.getPredefinedCursor(Cursor.HAND_CURSOR) );
         jButton2.setForeground( new Color(0x0E1B55) );
-        jButton2.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton2ActionPerformed(evt);
-            }
-        });
         jButton2.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseEntered(java.awt.event.MouseEvent evt) {
                 jButton2MouseEntered(evt);
             }
             public void mouseExited(java.awt.event.MouseEvent evt) {
                 jButton2MouseExited(evt);
+            }
+        });
+        jButton2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton2ActionPerformed(evt);
             }
         });
 
@@ -235,9 +235,9 @@ public class DeviceAnywhereGlobalCustomizerPanel extends javax.swing.JPanel {
                                 .add(jLabel4, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 93, Short.MAX_VALUE)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)))
                         .add(1, 1, 1)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                            .add(jTextFieldUser)
-                            .add(jPasswordField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 423, Short.MAX_VALUE))))
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(jTextFieldUser, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 423, Short.MAX_VALUE)
+                            .add(jPasswordField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 423, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))
                 .add(0, 0, 0))
         );
         layout.setVerticalGroup(
@@ -245,7 +245,7 @@ public class DeviceAnywhereGlobalCustomizerPanel extends javax.swing.JPanel {
             .add(layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel3)
-                    .add(jTextFieldUser, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(jTextFieldUser, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 20, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel4)
@@ -263,6 +263,10 @@ public class DeviceAnywhereGlobalCustomizerPanel extends javax.swing.JPanel {
         jLabel3.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DeviceAnywhereGlobalCustomizerPanel.class, "ACSD_UserName")); // NOI18N
         jLabel4.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(DeviceAnywhereGlobalCustomizerPanel.class, "ACSN_Password")); // NOI18N
         jLabel4.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DeviceAnywhereGlobalCustomizerPanel.class, "ACSD_Password")); // NOI18N
+        jTextFieldUser.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(DeviceAnywhereGlobalCustomizerPanel.class, "ACSN_UserName")); // NOI18N
+        jTextFieldUser.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DeviceAnywhereGlobalCustomizerPanel.class, "ACSD_UserName")); // NOI18N
+        jPasswordField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(DeviceAnywhereGlobalCustomizerPanel.class, "ACSD_Password")); // NOI18N
+        jPasswordField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DeviceAnywhereGlobalCustomizerPanel.class, "ACSD_Password")); // NOI18N
         jTextArea1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(DeviceAnywhereGlobalCustomizerPanel.class, "ACSN_PassWarning")); // NOI18N
         jTextArea1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DeviceAnywhereGlobalCustomizerPanel.class, "ACSD_PassWarning")); // NOI18N
         jButton1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(DeviceAnywhereGlobalCustomizerPanel.class, "ACSN_Link")); // NOI18N

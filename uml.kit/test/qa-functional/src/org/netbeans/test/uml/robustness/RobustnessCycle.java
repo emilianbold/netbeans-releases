@@ -64,7 +64,7 @@ public class RobustnessCycle extends UMLTestCase {
     private static String cldName2 = "DClass2";
     private static String cldName3 = "DClass3";
     
-    private static final String workDir = System.getProperty("xtest.workdir");
+    private static final String workDir = System.getProperty("nbjunit.workdir");
     private static String OUT_LOG_FILE = "";
     private static String ERR_LOG_FILE = "";
     private static PrintStream myOut = null;

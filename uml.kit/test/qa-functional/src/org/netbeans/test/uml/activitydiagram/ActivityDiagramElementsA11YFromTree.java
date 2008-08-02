@@ -95,7 +95,7 @@ public class ActivityDiagramElementsA11YFromTree extends UMLTestCase {
     private ProjectsTabOperator pto=null;
     private TopComponentOperator projectTab=null;
     private Node lastDiagramNode=null;
-    private static String workdir=System.getProperty("xtest.workdir");
+    private static String workdir=System.getProperty("nbjunit.workdir");
     private String lastTestCase=null;
     //--
     private static String activityDiagramName1 = "acD1";
