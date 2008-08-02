@@ -911,10 +911,11 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
      */
     private void editDevHosts() {
         // Show the Dev Host Manager dialog
-        serverUpdateCache = serverList.show(serverUpdateCache);
+        ServerUpdateCache newServerUpdateCache = serverList.show(serverUpdateCache);
 
         // Now update the dropdown (we assume the ServerList has changed)
-        if (serverUpdateCache != null) {
+        if (newServerUpdateCache != null) {
+            serverUpdateCache = newServerUpdateCache;
             cbDevHost.removeItemListener(this);
             log.fine("TP.editDevHosts: Removing all items from cbDevHost");
             cbDevHost.removeAllItems();
