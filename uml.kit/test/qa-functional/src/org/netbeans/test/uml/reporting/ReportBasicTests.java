@@ -101,7 +101,7 @@ public class ReportBasicTests extends UMLTestCase  {
     private final static String FINISH_BTN = "Finish";
     private final static String YES_BTN = "Yes";
     private final static String DONE_BTN = "Done";
-    private final static String REPORT_PATH = System.getProperty("xtest.workdir");
+    private final static String REPORT_PATH = System.getProperty("nbjunit.workdir");
     private    Dimension scrSize=java.awt.Toolkit.getDefaultToolkit().getScreenSize();
     
     private static String lastTestCase=null;

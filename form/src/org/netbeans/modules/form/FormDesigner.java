@@ -198,6 +198,8 @@ public class FormDesigner extends TopComponent implements MultiViewElement
 
             formToolBar = new FormToolBar(this);
         }
+        
+        setMinimumSize(new Dimension(10, 10));
     }
     
     void initialize() {

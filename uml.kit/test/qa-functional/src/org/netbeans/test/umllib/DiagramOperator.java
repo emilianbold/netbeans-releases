@@ -56,26 +56,26 @@ import java.util.Collection;
 import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
-import org.netbeans.core.windows.view.ui.tabcontrol.TabbedAdapter;
+//import org.netbeans.core.windows.view.ui.tabcontrol.TabbedAdapter;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.EventTool;
-import org.netbeans.jemmy.JemmyProperties;
+//import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.Timeout;
 import org.netbeans.jemmy.Timeouts;
 import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
 import org.netbeans.jemmy.drivers.MouseDriver;
-import org.netbeans.jemmy.drivers.input.MouseRobotDriver;
+//import org.netbeans.jemmy.drivers.input.MouseRobotDriver;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.netbeans.jemmy.operators.Operator;
 import org.netbeans.jemmy.JemmyProperties;
 
-import org.netbeans.api.visual.widget.Widget;
-import org.netbeans.api.visual.widget.Widget;
+//import org.netbeans.api.visual.widget.Widget;
+//import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.drawingarea.UMLDiagramTopComponent;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
@@ -95,7 +95,8 @@ import org.netbeans.jemmy.drivers.input.MouseRobotDriver;
 //6.0import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaControl;
 import org.netbeans.jemmy.operators.JComponentOperator;
 import org.netbeans.modules.uml.drawingarea.view.UMLNodeWidget;
-import org.openide.windows.TopComponent;
+import org.netbeans.swing.tabcontrol.TabbedContainer;
+//import org.openide.windows.TopComponent;
 
 
 /**
@@ -672,25 +673,57 @@ public class DiagramOperator extends TopComponentOperator {
     
     /** Returns TabbedAdapter component from parents hierarchy.
      */
-    TabbedAdapter findTabbedAdapter() {
-        Component parent = getSource().getParent();
-        while(parent != null) {
-            if(parent instanceof TabbedAdapter) {
-                return (TabbedAdapter)parent;
-            } else {
-                parent = parent.getParent();
-            }
-        }
-        return null;
-    }    
+//    TabbedAdapter findTabbedAdapter() {
+//        Component parent = getSource().getParent();
+//        while(parent != null) {
+//            if(parent instanceof TabbedAdapter) {
+//                return (TabbedAdapter)parent;
+//            } else {
+//                parent = parent.getParent();
+//            }
+//        }
+//        return null;
+//    }
+
+   
+
+    @Override
+    public TabbedContainer findTabbedAdapter() {
+        //Component parent = getSource().getParent();
+        return this.findTabbedAdapter();
+//        while(parent != null) {
+//            if(parent instanceof TopComponentOperator) {
+//                return (TopComponentOperator)parent;
+//            } else {
+//                parent = parent.getParent();
+//            }
+//        }
+//        return null;
+    }
+
 
     /** call menu on its tab.
      */
+//    public JPopupMenuOperator callMenuOnTab() {
+//        if(isOpened()) {
+//            this.makeComponentVisible();
+//            TabbedAdapter ta = findTabbedAdapter();
+//            int index = ta.indexOf((TopComponent)getSource());
+//
+//            Rectangle r = new Rectangle();
+//            ta.getTabRect(index, r);
+//            Point p = new Point (r.x + (r.width / 2), r.y + (r.height / 2));
+//            Component tabsComp = ta.getComponentAt(p);
+//            return new JPopupMenuOperator(JPopupMenuOperator.callPopup(tabsComp, p.x, p.y));
+//        } else {
+//            throw new UMLCommonException("Attempt to call tab menu on closed diagram.");
+//        }
+//    }
     public JPopupMenuOperator callMenuOnTab() {
         if(isOpened()) {
             this.makeComponentVisible();
-            TabbedAdapter ta = findTabbedAdapter();
-            int index = ta.indexOf((TopComponent)getSource());
+            TabbedContainer ta = findTabbedAdapter();
+            int index = ta.indexOf(getSource());
 
             Rectangle r = new Rectangle();
             ta.getTabRect(index, r);

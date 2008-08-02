@@ -97,7 +97,7 @@ public class SQDElementsTests extends UMLTestCase {
     private final static String DELETE_DLG = "Delete";
     public final static String YES_BTN = "Yes";
     public final String NO_BTN = "No";
-    private final String PROJECT_PATH = System.getProperty("xtest.workdir");   
+    private final String PROJECT_PATH = System.getProperty("nbjunit.workdir");   
     /********************************************************/
     
     

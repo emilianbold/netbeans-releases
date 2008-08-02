@@ -371,7 +371,9 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     curly_open++;
                 } else if (id.equals(PHPTokenId.PHP_CURLY_CLOSE)) {
                     curly_close++;
-                } else if (id.equals(PHPTokenId.PHP_FUNCTION) && curly_close == 0 && curly_open > 0) {
+                } else if ((id.equals(PHPTokenId.PHP_FUNCTION) ||
+                        id.equals(PHPTokenId.PHP_WHILE) || id.equals(PHPTokenId.PHP_IF)) 
+                        && (curly_open > curly_close)) {
                     return false;
                 } else if (id.equals(PHPTokenId.PHP_CLASS)) {
                     boolean isClassScope = curly_open > 0 && (curly_open + curly_close) % 2 == 1;

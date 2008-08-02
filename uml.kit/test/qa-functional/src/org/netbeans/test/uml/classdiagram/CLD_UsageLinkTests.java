@@ -77,7 +77,7 @@ public class CLD_UsageLinkTests extends ClassDiagramTestCase {
     private static String prName = "UMLProjectForUsageLink";
     private static String dpdName = "ClassDiagramForUsageLink";
     
-    private static final String workDir = System.getProperty("xtest.workdir");
+    private static final String workDir = System.getProperty("nbjunit.workdir");
    //  private static final String workDir = "I:/UML_TEMP" ;
     private static String OUT_LOG_FILE = "";
     private static String ERR_LOG_FILE = "";
