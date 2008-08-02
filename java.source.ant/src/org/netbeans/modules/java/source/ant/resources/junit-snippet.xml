@@ -45,7 +45,7 @@ made subject to such option by the copyright holder.
         <translate-classpath classpath="${classpath}" targetProperty="classpath-translated" />
         <property name="run.jvmargs" value="" />
         <property name="work.dir" value="${basedir}"/>
-        <junit showoutput="true" fork="true" dir="${work.dir}">
+        <junit showoutput="true" fork="true" dir="${work.dir}" jvm="${platform.java}">
             <test name="${classname}" />
             <classpath path="${classpath-translated}" />
             <jvmarg value="-ea"/>

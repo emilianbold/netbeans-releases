@@ -72,7 +72,7 @@ made subject to such option by the copyright holder.
                 <path path="${classpath-translated}"/>
             </classpath>
         </nbjpdastart>
-        <java classpath="${classpath-translated}" classname="${classname}" dir="${work.dir}">
+        <java classpath="${classpath-translated}" classname="${classname}" dir="${work.dir}" jvm="${platform.java}" fork="true">
             <jvmarg line="${debug-args-line}"/>
             <jvmarg value="-Xrunjdwp:transport=${debug-transport},address=${jpda.address}"/>
             <jvmarg line="${run.jvmargs}" />
