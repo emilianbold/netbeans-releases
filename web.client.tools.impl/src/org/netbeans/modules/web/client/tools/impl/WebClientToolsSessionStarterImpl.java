@@ -83,11 +83,27 @@ public class WebClientToolsSessionStarterImpl implements WebClientToolsSessionSt
                 displayNoBrowserDialog(globalPrefs);
                 displayInBrowser(uri);
                 return;
-            } else if (displayConfigPanel) {
+            }
+            
+            boolean serverDebug = WebClientToolsProjectUtils.getServerDebugProperty(project);
+            displayConfigPanel &= serverDebug;
+            
+            if (displayConfigPanel) {
                 boolean cancel = !displayDebugConfigDialog(ffSupported, ieSupported, globalPrefs);
                 if (cancel) {
                     displayInBrowser(uri);
-                    return;                    
+                    return;
+                }
+                
+                // If the user turns off client-side debugging and selects
+                // 'Do not show this message again', turn off client-side debugging
+                // in the project too
+                boolean launchClientDebugger = globalPrefs.getBoolean(DebugConstants.CLIENT_DEBUG, true);
+                boolean showDialog = globalPrefs.getBoolean(DebugConstants.DISPLAY_CONFIG, true);
+                if (!launchClientDebugger && !showDialog) {
+                    WebClientToolsProjectUtils.Browser savedBrowser = WebClientToolsProjectUtils.isFirefox(project) ?
+                        WebClientToolsProjectUtils.Browser.FIREFOX : WebClientToolsProjectUtils.Browser.INTERNET_EXPLORER;
+                    WebClientToolsProjectUtils.setProjectProperties(project, true, false, savedBrowser);
                 }
             }
             

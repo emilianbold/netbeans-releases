@@ -92,6 +92,9 @@ public final class CustomizerDebug extends JPanel implements ActionListener {
             boolean useGlobal = !prefs.getBoolean(DebugConstants.DISPLAY_CONFIG, true);
             if (useGlobal && testSet != null) {
                 clientDebug = prefs.getBoolean(DebugConstants.CLIENT_DEBUG, true);
+                if (!clientDebug) {
+                    serverDebug = true;
+                }
 
                 String defBrowser = (ffBrowserSupported || !ieBrowserSupported) ? 
                     WebClientToolsProjectUtils.Browser.FIREFOX.name() : WebClientToolsProjectUtils.Browser.INTERNET_EXPLORER.name();
@@ -257,9 +260,12 @@ private void debugClientActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
     // End of variables declaration//GEN-END:variables
 
     public void actionPerformed(ActionEvent e) {
-        WebClientToolsProjectUtils.setProjectProperties(project, debugServerJCheckBox.isSelected(), debugClientJCheckBox.isSelected(),
-                (internetExplorerRadioButton.isSelected() ?
-                    WebClientToolsProjectUtils.Browser.INTERNET_EXPLORER : WebClientToolsProjectUtils.Browser.FIREFOX));
+        // only save the properties if something is enabled
+        if (ieBrowserSupported || ffBrowserSupported) {
+            WebClientToolsProjectUtils.setProjectProperties(project, debugServerJCheckBox.isSelected(), debugClientJCheckBox.isSelected(),
+                    (internetExplorerRadioButton.isSelected() ?
+                        WebClientToolsProjectUtils.Browser.INTERNET_EXPLORER : WebClientToolsProjectUtils.Browser.FIREFOX));
+        }
     }
 
 }
