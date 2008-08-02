@@ -85,6 +85,15 @@ public class WebClientToolsSessionStarterImpl implements WebClientToolsSessionSt
                 return;
             }
             
+            // Normal dialog is not applicable to Grails; for now, just launch the debugger
+            Project p = project.getLookup().lookup(Project.class);
+            project = (p != null) ? p : project;
+            if (project.getClass().getName().equals("org.netbeans.modules.groovy.grailsproject.GrailsProject")) { // NOI18N
+                browser = getSupportedBrowser(browser, ffSupported, ieSupported);
+                NbJSDebugger.startDebugging(uri, browser, lookup);
+                return;
+            }
+            
             boolean serverDebug = WebClientToolsProjectUtils.getServerDebugProperty(project);
             displayConfigPanel &= serverDebug;
             
