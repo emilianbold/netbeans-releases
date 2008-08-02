@@ -51,6 +51,8 @@ import java.awt.event.ItemListener;
 import java.io.File;
 import java.lang.StringBuilder;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -117,6 +119,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
     private String hkey;
     private static ToolsPanel instance = null;
     private CompilerSetManager csm;
+    private HashMap<String, CompilerSetManager> copiedManagers = new HashMap<String, CompilerSetManager>();
     private CompilerSet currentCompilerSet;
     private ServerList serverList;
     private ServerRecord serverRecord;
@@ -216,10 +219,8 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
             cbCppRequired.setEnabled(false);
             cbFortranRequired.setEnabled(false);
         }
-        csm = (CompilerSetManager)CompilerSetManager.getDefault(hkey).deepCopy(); // FIXUP: need a real deep copy...
-        if (csm.getCompilerSets().size() == 1 && csm.getCompilerSets().get(0).getName().equals(CompilerSet.None)) {
-            csm.remove(csm.getCompilerSets().get(0));
-        }
+        csm = getCompilerSetManagerCopy(hkey);
+
         gdbEnabled = !IpeUtils.isDbxguiEnabled();
         boolean fortran = CppSettings.getDefault().isFortranEnabled();
         lbFortranCommand.setVisible(fortran);
@@ -271,6 +272,20 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         update(false, cs);
     }
 
+    private void onCompilerSetChanged() {
+        boolean cbRemoveEnabled;
+        if (model.showRequiredTools()) {
+            cbRemoveEnabled = lstDirlist.getSelectedIndex() >= 0;
+        } else {
+            cbRemoveEnabled = csm.getCompilerSets().size() > 1 && lstDirlist.getSelectedIndex() >= 0;
+        }
+        changeCompilerSet((CompilerSet) lstDirlist.getSelectedValue());
+        btAdd.setEnabled(!isRemoteHostSelected());
+        btRemove.setEnabled(cbRemoveEnabled && !isRemoteHostSelected());
+        btDuplicate.setEnabled(lstDirlist.getSelectedIndex() >= 0 && !isRemoteHostSelected());
+        btDefault.setEnabled(lstDirlist.getSelectedIndex() >= 0 && !((CompilerSet) lstDirlist.getSelectedValue()).isDefault());
+    }
+
     private void onNewDevHostSelected() {
         if (!hkey.equals((String) cbDevHost.getSelectedItem())) {
             log.fine("TP.itemStateChanged: About to update");
@@ -315,6 +330,16 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
             }
             changed = true;
         }
+    }
+
+    private void saveCompileSetManagers(List<String> liveServers) {
+        Collection<CompilerSetManager> allCSMs = new ArrayList();
+        for (String copiedServer : copiedManagers.keySet()) {
+            if (liveServers == null || liveServers.contains(copiedServer)) {
+                allCSMs.add(copiedManagers.get(copiedServer));
+            }
+        }
+        CompilerSetManager.setDefaults(allCSMs);
     }
 
     private void setSelectedAsDefault() {
@@ -483,6 +508,9 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         if (lstDirlist.getSelectedIndex() < 0) {
             lstDirlist.setSelectedIndex(0);
         }
+        lstDirlist.invalidate();
+        lstDirlist.repaint();
+        onCompilerSetChanged();
         updating = false;
         dataValid();
         initialized = true;
@@ -560,11 +588,14 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
     /** Apply changes */
     public void applyChanges() {
         if (changed || isChangedInOtherPanels()) {
+            List<String> liveServers = null;
             if (serverList != null) {
                 if (serverUpdateCache != null) {
+                    liveServers = new ArrayList<String>();
                     serverList.clear();
                     for (String key : serverUpdateCache.getHostKeyList()) {
                         serverList.addServer(key, false);
+                        liveServers.add(key);
                     }
                     serverList.setDefaultIndex(serverUpdateCache.getDefaultIndex());
                     serverUpdateCache = null;
@@ -584,7 +615,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
                 model.setCompilerSetName(csm.getDefaultCompilerSet().getName());
                 model.setSelectedCompilerSetName(cs.getName());
             }
-            CompilerSetManager.setDefault(csm);
+            saveCompileSetManagers(liveServers);
             currentCompilerSet = cs;
         }
 
@@ -615,11 +646,16 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         return instance;
     }
 
-    public CompilerSetManager getCompilerSetManager() {
-        if (csm == null) {
-            csm = CompilerSetManager.getDefault((String) cbDevHost.getSelectedItem());
+    public synchronized CompilerSetManager getCompilerSetManagerCopy(String hKey) {
+        CompilerSetManager out = copiedManagers.get(hkey);
+        if (out == null) {
+            out = CompilerSetManager.getDefault(hKey).deepCopy();
+            if (out.getCompilerSets().size() == 1 && out.getCompilerSets().get(0).getName().equals(CompilerSet.None)) {
+                out.remove(out.getCompilerSets().get(0));
+            }
+            copiedManagers.put(hkey, out);
         }
-        return csm;
+        return out;
     }
 
     public CompilerSet getCurrentCompilerSet() {
@@ -896,17 +932,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
 
         if (!ev.getValueIsAdjusting()) { // we don't want the event until its finished
             if (ev.getSource() == lstDirlist) {
-                boolean cbRemoveEnabled;
-                if (model.showRequiredTools()) {
-                    cbRemoveEnabled = lstDirlist.getSelectedIndex() >= 0;
-                } else {
-                    cbRemoveEnabled = csm.getCompilerSets().size() > 1 && lstDirlist.getSelectedIndex() >= 0;
-                }
-                changeCompilerSet((CompilerSet)lstDirlist.getSelectedValue());
-                btAdd.setEnabled(!isRemoteHostSelected());
-                btRemove.setEnabled(cbRemoveEnabled && !isRemoteHostSelected());
-                btDuplicate.setEnabled(lstDirlist.getSelectedIndex() >= 0 && !isRemoteHostSelected());
-                btDefault.setEnabled(lstDirlist.getSelectedIndex() >= 0 && !((CompilerSet)lstDirlist.getSelectedValue()).isDefault());
+                onCompilerSetChanged();
             }
         }
     }
@@ -1714,10 +1740,8 @@ private void btRestoreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
     if (ret != NotifyDescriptor.OK_OPTION) {
         return;
     }
-    CompilerSetManager newCsm = CompilerSetManager.create();
-    if (newCsm.getCompilerSets().size() == 1 && newCsm.getCompilerSets().get(0).getName().equals(CompilerSet.None)) {
-        newCsm.remove(newCsm.getCompilerSets().get(0));
-    }
+    CompilerSetManager newCsm = CompilerSetManager.create(hkey);
+    copiedManagers.put(hkey, newCsm);
     List<CompilerSet> list = csm.getCompilerSets();
     for (CompilerSet cs : list) {
         if (!cs.isAutoGenerated()) {

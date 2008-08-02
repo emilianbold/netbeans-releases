@@ -150,8 +150,8 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
                             pbarStatusPanel.setVisible(false);
-                            valueChanged(null);
                             setButtons(true);
+                            valueChanged(null);
                         }                        
                     });
                 }
@@ -235,6 +235,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         btAddServer.setEnabled(enable);
         btRemoveServer.setEnabled(enable);
         btPathMapper.setEnabled(enable);
+        btSetAsDefault.setEnabled(enable);
     }
 
     /** Helps the AddServerDialog know when to enable/disable the OK button */
