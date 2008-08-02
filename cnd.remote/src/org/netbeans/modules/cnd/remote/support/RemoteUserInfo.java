@@ -46,7 +46,6 @@ import java.awt.Container;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.JLabel;
@@ -73,7 +72,11 @@ public class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
     private Container panel;
     private boolean cancelled = false;
     private final static Object DLGLOCK = new Object();
+    private Component parent;
     
+    private RemoteUserInfo() {
+        setParentComponent(this);
+    }
     /**
      * Get the UserInfo for the remote host.
      * 
@@ -117,7 +120,7 @@ public class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
         int foo;
         
         synchronized (DLGLOCK) {
-            foo = JOptionPane.showOptionDialog(getParentComponent(), str,
+            foo = JOptionPane.showOptionDialog(parent, str,
                 NbBundle.getMessage(RemoteUserInfo.class, "TITLE_YN_Warning"), JOptionPane.DEFAULT_OPTION, 
              JOptionPane.WARNING_MESSAGE, null, options, options[0]);
         }
@@ -137,14 +140,14 @@ public class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
             if (passwd != null && passwd.length() > 0) {
                 return true;
             } else {
-                Object[] ob = { passwordField };
-                int result;
+                boolean result;
+                PasswordDlg pwdDlg = new PasswordDlg();
                 synchronized (DLGLOCK) {
-                    result = JOptionPane.showConfirmDialog(getParentComponent(), ob, message, JOptionPane.OK_CANCEL_OPTION);
+                    result = pwdDlg.askPassword(message);
                 }
 
-                if (result == JOptionPane.OK_OPTION) {
-                    passwd = passwordField.getText();
+                if (result) {
+                    passwd = pwdDlg.getPassword();
                     return true;
                 } else {
                     cancelled = true;
@@ -162,7 +165,7 @@ public class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
 
     public void showMessage(String message){
         synchronized (DLGLOCK) {
-            JOptionPane.showMessageDialog(getParentComponent(), message);
+            JOptionPane.showMessageDialog(parent, message);
         }
     }
 
@@ -199,7 +202,7 @@ public class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
         }
 
         synchronized (DLGLOCK) {
-            if (!isCancelled() && JOptionPane.showConfirmDialog(getParentComponent(), panel,
+            if (!isCancelled() && JOptionPane.showConfirmDialog(parent, panel,
                         NbBundle.getMessage(RemoteUserInfo.class, "TITLE_KeyboardInteractive", destination, name),
                         JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.OK_OPTION) {
                 String[] response = new String[prompt.length];
@@ -214,23 +217,15 @@ public class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
         }
     }
     
-    private Component getParentComponent() {
-        final Component out[] = new Component[] { null };
+    private static void setParentComponent(final RemoteUserInfo info) {
         if (SwingUtilities.isEventDispatchThread()) {
-            out[0] = WindowManager.getDefault().getMainWindow();  
+            info.parent = WindowManager.getDefault().getMainWindow();
         } else {
-            try {
-                SwingUtilities.invokeAndWait(new Runnable() {
+                SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
-                        out[0] = WindowManager.getDefault().getMainWindow();
+                        info.parent = WindowManager.getDefault().getMainWindow();
                     }
                 });
-            } catch (InterruptedException ex) {
-//                Exceptions.printStackTrace(ex);
-            } catch (InvocationTargetException ex) {
-//                Exceptions.printStackTrace(ex);
-            }
         }
-        return out[0];
     }
 }
