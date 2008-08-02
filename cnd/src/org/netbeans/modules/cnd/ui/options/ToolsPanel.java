@@ -921,6 +921,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
 
         // Now update the dropdown (we assume the ServerList has changed)
         if (newServerUpdateCache != null) {
+            changed = !equalsLists(serverUpdateCache, newServerUpdateCache);
             serverUpdateCache = newServerUpdateCache;
             cbDevHost.removeItemListener(this);
             log.fine("TP.editDevHosts: Removing all items from cbDevHost");
@@ -941,10 +942,34 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
             }
             onNewDevHostSelected();
             cbDevHost.addItemListener(this);
-            changed = true;
         }
     }
 
+    private boolean equalsLists(ServerUpdateCache cache1, ServerUpdateCache cache2) {
+        if (cache1 == cache2) {
+            return true;
+        }
+        if (cache1 == null || cache2 == null) {
+            return false;
+        }
+        if (cache1.getDefaultIndex() != cache2.getDefaultIndex()) {
+            return false;
+        }
+        String[] lst1 = cache1.getHostKeyList();
+        String[] lst2 = cache2.getHostKeyList();
+        if (lst1.length != lst2.length) {
+            return false;
+        }
+        for (int i = 0; i < lst1.length; i++) {
+            String str1 = lst1[i];
+            String str2 = lst1[i];
+            if (!str1.equals(str2)) {
+                return false;
+            }
+        }
+        return true;
+    }
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
