@@ -271,6 +271,24 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         update(false, cs);
     }
 
+    private void onNewDevHostSelected() {
+        if (!hkey.equals((String) cbDevHost.getSelectedItem())) {
+            log.fine("TP.itemStateChanged: About to update");
+            changed = true;
+            if (serverUpdateCache == null) {
+                serverUpdateCache = new ServerUpdateCache();
+                String[] nulist = new String[cbDevHost.getItemCount()];
+                for (int i = 0; i < nulist.length; i++) {
+                    nulist[i] = (String) cbDevHost.getItemAt(i);
+                }
+                serverUpdateCache.setHostKeyList(nulist);
+            }
+            serverUpdateCache.setDefaultIndex(cbDevHost.getSelectedIndex());
+            hkey = (String) cbDevHost.getSelectedItem();
+            update(true);
+        }
+    }
+
     private void removeCompilerSet() {
         CompilerSet cs = (CompilerSet)lstDirlist.getSelectedValue();
         if (cs != null) {
@@ -839,20 +857,8 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         Object o = ev.getSource();
 
         if (!updating) {
-            if (o == cbDevHost && ev.getStateChange() == ItemEvent.SELECTED && !hkey.equals((String) cbDevHost.getSelectedItem())) {
-                log.fine("TP.itemStateChanged: About to update");
-                changed = true;
-                if (serverUpdateCache == null) {
-                    serverUpdateCache = new ServerUpdateCache();
-                    String[] nulist = new String[cbDevHost.getItemCount()];
-                    for (int i = 0; i < nulist.length; i++) {
-                        nulist[i] = (String) cbDevHost.getItemAt(i);
-                    }
-                    serverUpdateCache.setHostKeyList(nulist);
-                }
-                serverUpdateCache.setDefaultIndex(cbDevHost.getSelectedIndex());
-                hkey = (String) cbDevHost.getSelectedItem();
-                update(true);
+            if (o == cbDevHost && ev.getStateChange() == ItemEvent.SELECTED) {
+                onNewDevHostSelected();
             } else if (o instanceof JCheckBox && !changingCompilerSet) {
                 dataValid();
             }
@@ -933,6 +939,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
             } else {
                 log.fine("TP.editDevHosts: No selection found");
             }
+            onNewDevHostSelected();
             cbDevHost.addItemListener(this);
             changed = true;
         }
