@@ -2208,7 +2208,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                         LOGGER.log(Level.FINE, "misplacedSource2FQNs={0}", misplacedSource2FQNs);
                     }
                     
-                    resources.clear();
+                    resources = new HashMap<String, List<File>>();
                     
                     gatherResourceForParseFilesFromRoot(compiledFiles, rootFile, classCache, resources);
                     
