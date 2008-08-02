@@ -46,6 +46,7 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
+import org.openide.awt.StatusDisplayer;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -64,15 +65,15 @@ public class RemoteServerRecord implements ServerRecord {
     
     public static final String PROP_STATE_CHANGED = "stateChanged"; // NOI18N
     
-    private String user;
-    private String server;
+    private final String user;
+    private final String server;
     private final String name;
-    private boolean editable;
+    private final boolean editable;
     private Object state;
     private final Object stateLock;
     private String reason;
     
-    private static Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
+    private static final Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
     
     /**
      * Create a new ServerRecord. This is always called from RemoteServerList.get, but can be
@@ -83,6 +84,14 @@ public class RemoteServerRecord implements ServerRecord {
      */
     protected RemoteServerRecord(final String name) {
         this.name = name;
+        int pos = name.indexOf('@');
+        if (pos != -1) {
+            user = name.substring(0, pos);
+            server = name.substring(pos + 1);
+        } else {
+            user="";
+            server = name;
+        }
         stateLock = new String("RemoteServerRecord state lock for " + name); // NOI18N
         reason = null;
         
@@ -100,18 +109,18 @@ public class RemoteServerRecord implements ServerRecord {
             if (SwingUtilities.isEventDispatchThread()) {
                 RequestProcessor.getDefault().post(new Runnable() {
                     public void run() {
-                        validate2();
+                        validateOutOfEDT();
                     }
                 });
             } else  {
-                validate2();
+                validateOutOfEDT();
             }
         }
     }
     
-    private void validate2() {
+    private void validateOutOfEDT() {
         log.fine("RSR.validate2: Validating " + name);
-        ProgressHandle ph = ProgressHandleFactory.createHandle(NbBundle.getMessage(RemoteServerRecord.class, "PBAR_ConnectingTo", name));
+        ProgressHandle ph = ProgressHandleFactory.createHandle(NbBundle.getMessage(RemoteServerRecord.class, "PBAR_ConnectingTo", name)); // NOI18N
         ph.start();
         init(null);
         ph.finish();
