@@ -198,11 +198,12 @@ public class CompilerSetManager {
     /** Replace the default CompilerSetManager. Let registered listeners know its been updated */
     public static synchronized void setDefaults(Collection<CompilerSetManager> csms) {
         synchronized (MASTER_LOCK) {
-            for (CompilerSetManager oldCsm : managers.values()) {
-                // erase old info
-                getPreferences().remove(CSM + oldCsm.hkey + NO_SETS);
-            }
-            managers.clear();
+            // TODO: not remove, only replace now...
+//            for (CompilerSetManager oldCsm : managers.values()) {
+//                // erase old info
+//                getPreferences().remove(CSM + oldCsm.hkey + NO_SETS);
+//            }
+//            managers.clear();
             for (CompilerSetManager csm : csms) {
                 if (csm.getCompilerSets().size() == 0) { // No compilers found
                     csm.add(CompilerSet.createEmptyCompilerSet(csm.getPlatform()));
