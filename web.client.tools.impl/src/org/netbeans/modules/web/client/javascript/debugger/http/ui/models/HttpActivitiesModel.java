@@ -195,40 +195,6 @@ public class HttpActivitiesModel implements TreeModel, TableModel, NodeModel, No
     }
 
 
-
-
-
-//        "text/plain": "txt",
-//        "application/octet-stream": "bin",
-//        "text/html": "html",
-//        "text/xml": "html",
-//        "text/css": "css",
-//        "application/x-javascript": "js",
-//        "text/javascript": "js",
-//        "application/javascript" : "js",
-//        "image/jpeg": "image",
-//        "image/gif": "image",
-//        "image/png": "image",
-//        "image/bmp": "image",
-//        "application/x-shockwave-flash": "flash"
-//    enum CONTENT_TYPE {
-//        TEXT_PLAIN {
-//            @Override
-//            public String toString() {return "text/plain";}},
-//        APPLICATION_OCTET_STREAM,
-//        TEXT_HTML,
-//        TEXT_XML,
-//        TEXT_CSS,
-//        APPLICATION_X_JAVASCRIPT,
-//        TEXT_JAVASCRIPT,
-//        APPLICATION_JAVASCRIPT,
-//        IMAGE_JPEG,
-//        IMAGE_GIF,
-//        IMAGE_PNG,
-//        IMAGE_BMP,
-//        APPLICATION_X_SHOCKWAVE_FLASH
-//    }
-
     public static final List<String> HTML_CONTENT_TYPES = Arrays.asList("text/plain", "application/octet-stream", "text/html", "text/xml" );
     public static final List<String> JS_CONTENT_TYPES = Arrays.asList("application/x-javascript", "text/javascript", "application/javascript");
     public static final List<String> CSS_CONTENT_TYPES = Arrays.asList("text/css");
@@ -270,20 +236,21 @@ public class HttpActivitiesModel implements TreeModel, TableModel, NodeModel, No
         }
         return false;
     }
-        private boolean filterOutContentType(String contentType){
-        if ( !httpMonitorPreferences.isShowHTML() && HTML_CONTENT_TYPES.contains(contentType) ){
-                return true;
-        } else if ( !httpMonitorPreferences.isShowJS() && JS_CONTENT_TYPES.contains(contentType) ){
-                return true;
-        } else if ( !httpMonitorPreferences.isShowCSS() && CSS_CONTENT_TYPES.contains(contentType)){
-                return true;
-        } else if ( !httpMonitorPreferences.isShowImages() && IMAGES_CONTENT_TYPES.contains(contentType)){
-                return true;
-        } else if ( !httpMonitorPreferences.isShowFlash() && FLASH_CONTENT_TYPES.contains(contentType)){
-                return true;
-        }
-        return false;
-    }
+    
+//    private boolean filterOutContentType(String contentType){
+//        if ( !httpMonitorPreferences.isShowHTML() && HTML_CONTENT_TYPES.contains(contentType) ){
+//                return true;
+//        } else if ( !httpMonitorPreferences.isShowJS() && JS_CONTENT_TYPES.contains(contentType) ){
+//                return true;
+//        } else if ( !httpMonitorPreferences.isShowCSS() && CSS_CONTENT_TYPES.contains(contentType)){
+//                return true;
+//        } else if ( !httpMonitorPreferences.isShowImages() && IMAGES_CONTENT_TYPES.contains(contentType)){
+//                return true;
+//        } else if ( !httpMonitorPreferences.isShowFlash() && FLASH_CONTENT_TYPES.contains(contentType)){
+//                return true;
+//        }
+//        return false;
+//    }
 
 
     public Object[] getChildren(Object parent, int from, int to) {

@@ -56,7 +56,6 @@
     const SEEK_SET = NetBeans.Constants.SeakableStreamIF.NS_SEEK_SET;
 
 
-
     const observerService = NetBeans.Utils.CCSV(
         NetBeans.Constants.ObserverServiceCID,
         NetBeans.Constants.ObserverServiceIF);
@@ -72,7 +71,7 @@
         "xml": "text/xml",
         "css": "text/css",
         "js": "application/x-javascript",
-        "jss": "application/json",
+        "json": "application/json",
         "jpg": "image/jpeg",
         "jpeg": "image/jpeg",
         "gif": "image/gif",
@@ -91,7 +90,7 @@
         "application/x-javascript": "js",
         "text/javascript": "js",
         "application/javascript" : "js",
-        "application/json" : "jss",
+        "application/json" : "json",
         "image/jpeg": "image",
         "image/gif": "image",
         "image/png": "image",
