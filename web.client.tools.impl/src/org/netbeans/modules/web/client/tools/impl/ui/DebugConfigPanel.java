@@ -160,13 +160,13 @@ public class DebugConfigPanel extends JPanel {
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(debugCheckBox)
+                    .add(debugPropertyMsg, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 404, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(doNotShowAgain)
                     .add(layout.createSequentialGroup()
                         .add(24, 24, 24)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(internetExplorerRadioButton)
-                            .add(firefoxRadioButton)))
-                    .add(debugPropertyMsg, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 404, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(doNotShowAgain))
+                            .add(firefoxRadioButton))))
                 .addContainerGap(58, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
@@ -177,13 +177,18 @@ public class DebugConfigPanel extends JPanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(firefoxRadioButton)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(internetExplorerRadioButton)
+                .add(internetExplorerRadioButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 29, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .add(12, 12, 12)
                 .add(debugPropertyMsg, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 81, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 15, Short.MAX_VALUE)
                 .add(doNotShowAgain)
                 .addContainerGap())
         );
+
+        debugCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DebugConfigPanel.class, "DebugConfigPanel.debugCheckBox.AccessibleContext.accessibleDescription")); // NOI18N
+        firefoxRadioButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DebugConfigPanel.class, "DebugConfigPanel.firefoxRadioButton.AccessibleContext.accessibleDescription")); // NOI18N
+        internetExplorerRadioButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DebugConfigPanel.class, "DebugConfigPanel.internetExplorerRadioButton.AccessibleContext.accessibleDescription")); // NOI18N
+        doNotShowAgain.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DebugConfigPanel.class, "DebugConfigPanel.doNotShowAgain.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
 
