@@ -376,7 +376,7 @@ class J2SEActionProvider implements ActionProvider {
                         return;
                     }
                     if (COMMAND_TEST_SINGLE.equals(command) || COMMAND_DEBUG_TEST_SINGLE.equals(command)) {
-                        FileObject[] files = findSources(context);
+                        FileObject[] files = findTestSourcesForSources(context);
                         try {
                             prepareSystemProperties(execProperties, true);
                             ProjectRunner.execute(COMMAND_TEST_SINGLE.equals(command) ? ProjectRunner.QUICK_TEST : ProjectRunner.QUICK_TEST_DEBUG, execProperties, files[0]);
