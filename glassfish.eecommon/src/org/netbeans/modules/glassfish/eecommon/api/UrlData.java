@@ -56,14 +56,17 @@ import java.util.regex.Pattern;
  */
 public class UrlData {
 
-    private static String DBURL_PATTERN = 
-            "((?:[^:\\n]+:){2,3})" + // prefix (mandatory)
-            "(?://|@|([^\\p{javaWhitespace}]+)@)" + // alternate db name (optional)
-            "([^:;/\\\\\\p{javaWhitespace}]+)" + // hostname (mandatory)
-            "(?:\\\\([^\\p{javaWhitespace}:/;]+)|)" + // instance name (optional)
-            "(?::([0-9]+)|)" + // port (optional)
-            "(?:(?:/|:)([^:/;?&]+)|)((?:(?:;|\\?|&|:)" + // database (optional)
-            "(?:[^;&]+)|)+)"; // delimeted propertis (optional)
+   // Replaced Unicode safe character classes with ASCII equivalents to
+   // avoid JDK bug 5088563, for which a fix is not available on Mac as of
+   // this writing - !PW 7/31/08
+   private static String DBURL_PATTERN =
+           "((?:[^:\\n]+:){2,3})" + // prefix (mandatory)
+           "(?://|@|([^ \\t]+)@)" + // alternate db name (optional)
+           "([^:;/\\\\ \\t]+)" + // hostname (mandatory)
+           "(?:\\\\([^ \\t:/;]+)|)" + // instance name (optional)
+           "(?::([0-9]+)|)" + // port (optional)
+           "(?:(?:/|:)([^:/;?&]+)|)((?:(?:;|\\?|&|:)" + // database (optional)
+           "(?:[^;&]+)|)+)"; // delimited properties (optional) 
 
 
     // Indices for regular expression match capture blocks

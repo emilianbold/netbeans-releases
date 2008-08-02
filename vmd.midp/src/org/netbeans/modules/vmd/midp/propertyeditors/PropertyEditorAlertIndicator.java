@@ -93,6 +93,14 @@ public final class PropertyEditorAlertIndicator extends PropertyEditorUserCode i
     private void initComponents() {
         radioButton = new JRadioButton();
         Mnemonics.setLocalizedText(radioButton, NbBundle.getMessage(PropertyEditorAlertIndicator.class, "LBL_VALUE_ALERT_INDICATOR_STR")); // NOI18N
+        
+        radioButton.getAccessibleContext().setAccessibleName(
+                NbBundle.getMessage(PropertyEditorAlertIndicator.class,
+                "ACSN_VALUE_ALERT_INDICATOR_STR")); // NOI18N
+        radioButton.getAccessibleContext().setAccessibleDescription(
+                NbBundle.getMessage(PropertyEditorAlertIndicator.class,
+                "ACSD_VALUE_ALERT_INDICATOR_STR")); // NOI18N
+        
         customEditor = new CustomEditor();
     }
 
@@ -280,6 +288,11 @@ public final class PropertyEditorAlertIndicator extends PropertyEditorUserCode i
             if (rbLabel != null) {
                 Mnemonics.setLocalizedText(checkBox, rbLabel);
             }
+            
+            checkBox.getAccessibleContext().setAccessibleName( checkBox.getText());
+            checkBox.getAccessibleContext().setAccessibleDescription(
+                    checkBox.getText());
+            
             checkBox.addActionListener(this);
             add(checkBox, BorderLayout.CENTER);
         }

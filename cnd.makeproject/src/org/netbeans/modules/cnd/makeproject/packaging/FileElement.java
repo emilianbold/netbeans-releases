@@ -70,6 +70,36 @@ public class FileElement {
     public FileType getType() {
         return type;
     }
+    
+    public String getTypeAsString() {
+        if (type == FileType.DIRECTORY) {
+            return "Dir"; // NOI18N
+        }
+        else if (type == FileType.FILE) {
+            return "File"; // NOI18N
+        }
+        else if (type == FileType.SOFTLINK) {
+            return "Link"; // NOI18N
+        }
+        else {
+            return ""; // NOI18N
+        }
+    }
+    
+    public static FileType toFileType(String type) {
+        if (type.equals("Dir")) { // NOI18N
+            return FileType.DIRECTORY;
+        }
+        else if (type.equals("File")) { // NOI18N
+            return FileType.FILE;
+        }
+        else if (type.equals("Link")) { // NOI18N
+            return FileType.SOFTLINK;
+        }
+        else {
+            return FileType.UNKNOWN;
+        }
+    }
 
     public void setType(FileType type) {
         this.type = type;

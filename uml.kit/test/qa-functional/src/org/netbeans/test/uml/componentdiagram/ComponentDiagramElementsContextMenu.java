@@ -101,7 +101,7 @@ public class ComponentDiagramElementsContextMenu extends UMLTestCase {
     private ProjectsTabOperator pto=null;
     private Node lastDiagramNode=null;
     private String lastTestCase=null;
-    private static String workdir=System.getProperty("xtest.workdir");
+    private static String workdir=System.getProperty("nbjunit.workdir");
     //
     private static String activityDiagramName0 = "cpD";
     private static String workPkg0 = "pkg";

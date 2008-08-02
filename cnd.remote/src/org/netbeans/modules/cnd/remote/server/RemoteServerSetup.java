@@ -64,10 +64,10 @@ public class RemoteServerSetup {
     private static final String GET_LIB_INFO = "PATH=/bin:/usr/bin:$PATH  ls -1 2>&1 "; // NOI18N
     private static final String REMOTE_LIB_DIR = ".netbeans/6.5/cnd2/lib/"; // NOI18N
     
-    private Map<String, Double> scriptSetupMap;
-    private Map<String, String> binarySetupMap;
-    private Map<String, List<String>> updateMap;
-    private String hkey;
+    private final Map<String, Double> scriptSetupMap;
+    private final Map<String, String> binarySetupMap;
+    private final Map<String, List<String>> updateMap;
+    private final String hkey;
     private boolean cancelled;
     private boolean failed;
     private String reason;
@@ -77,7 +77,7 @@ public class RemoteServerSetup {
         
         // Script setup map
         scriptSetupMap = new HashMap<String, Double>();
-        scriptSetupMap.put("getCompilerSets.bash", Double.valueOf(0.3)); // NOI18N
+        scriptSetupMap.put("getCompilerSets.bash", Double.valueOf(0.4)); // NOI18N
         
         // Binary setup map
         binarySetupMap = new HashMap<String, String>();
@@ -93,7 +93,9 @@ public class RemoteServerSetup {
         
         updateMap.clear(); // remote entries if run for other remote systems
         updateList = getScriptUpdates(updateList);
-        updateList = getBinaryUpdates(updateList);
+        if (!isFailedOrCanceled()) {
+            updateList = getBinaryUpdates(updateList);
+        }
         
         if (!updateList.isEmpty()) {
             updateMap.put(hkey, updateList);
@@ -264,6 +266,10 @@ public class RemoteServerSetup {
     
     protected boolean isFailed() {
         return failed;
+    }
+
+    private boolean isFailedOrCanceled() {
+        return failed || cancelled;
     }
     
     private String getBinarySetupFiles() {

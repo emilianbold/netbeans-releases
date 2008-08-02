@@ -51,6 +51,8 @@ import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -160,7 +162,7 @@ import org.openide.windows.WindowManager;
 /**
  * Top component which displays something.
  */
-public class UMLDiagramTopComponent extends TopComponent 
+public class UMLDiagramTopComponent extends TopComponent implements MouseListener
 {
 
     private static UMLDiagramTopComponent instance;
@@ -686,6 +688,14 @@ public class UMLDiagramTopComponent extends TopComponent
 
         setDisplayName(diagram.getNameWithAlias());
         setName(diagram.getName());
+        
+        INamespace space = diagram.getNamespace();
+        setToolTipText(space.getFullyQualifiedName(true) + "::" + diagram.getNameWithAlias()); // NOI18N
+        
+        if(diagramView != null)
+        {
+            diagramView.putClientProperty("print.name", diagram.getNameWithAlias()); // NOI18N
+        }
     }
 
     /**
@@ -902,6 +912,9 @@ public class UMLDiagramTopComponent extends TopComponent
             decoratorLayer.setOpaque(false);
             decoratorLayer.setLayout(null);
             view.add(decoratorLayer, new Integer(0));
+            
+            // workaround for 134994
+            diagramView.addMouseListener(this);
 
             jScrollPane1.setViewportView(view);
             SceneChangeListener scListener = new SceneChangeListener(getDiagramDO(), scene);
@@ -1787,12 +1800,32 @@ public class UMLDiagramTopComponent extends TopComponent
                     String newName = diagram.getName();
                     if (newName != null && newName.trim().length() > 0 )
                     {
-                        setName(newName);
-                        setDiagramDisplayName(newName);
+                        setName();
                         setDiagramDirty(true);
                     }
                 }
             }
         }
+    }
+
+    public void mouseClicked(MouseEvent e)
+    {      
+    }
+
+    public void mousePressed(MouseEvent e)
+    {       
+    }
+
+    public void mouseReleased(MouseEvent e)
+    {        
+    }
+
+    public void mouseEntered(MouseEvent e)
+    {        
+    }
+
+    public void mouseExited(MouseEvent e)
+    {
+        scene.removeBackgroundWidget();
     }
 }

@@ -49,7 +49,12 @@ import java.util.List;
 import java.util.Set;
 import javax.swing.Action;
 import javax.swing.Icon;
+import javax.swing.text.Document;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.gsf.GsfHtmlFormatter;
+import org.netbeans.modules.gsf.Language;
+import org.netbeans.modules.gsf.LanguageRegistry;
+import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.ElementHandle;
 import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.modules.gsf.api.Modifier;
@@ -92,7 +97,7 @@ public class ElementNode extends AbstractNode {
            
     /** Creates a new instance of TreeNode */
     public ElementNode( StructureItem description, ClassMemberPanelUI ui, FileObject fileObject) {
-        super(description.isLeaf() ? Children.LEAF: new ElementChilren((List<StructureItem>)description.getNestedItems(), ui.getFilters(), ui, fileObject));
+        super(description.isLeaf() ? Children.LEAF: new ElementChildren((List<StructureItem>)description.getNestedItems(), ui.getFilters(), ui, fileObject));
         this.description = description;
         setDisplayName( description.getName() ); 
         this.ui = ui;
@@ -171,8 +176,8 @@ public class ElementNode extends AbstractNode {
     
     public void refreshRecursively() {
         Children ch = getChildren();
-        if ( ch instanceof ElementChilren ) {
-           ((ElementChilren)ch).resetKeys((List<StructureItem>)description.getNestedItems(), ui.getFilters());
+        if ( ch instanceof ElementChildren ) {
+           ((ElementChildren)ch).resetKeys((List<StructureItem>)description.getNestedItems(), ui.getFilters());
            for( Node sub : ch.getNodes() ) {
                ui.expandNode(sub);
                ((ElementNode)sub).refreshRecursively();
@@ -180,6 +185,44 @@ public class ElementNode extends AbstractNode {
         }        
     }
 
+    public ElementNode getMimeRootNodeForOffset(CompilationInfo info, int offset) {
+        if (getDescription().getPosition() > offset) {
+            return null;
+        }
+        
+        // Look up the current mime type
+        Document document = info.getDocument();
+        if (document == null) {
+            return null;
+        }
+        BaseDocument doc = (BaseDocument)document;
+        List<Language> languages = LanguageRegistry.getInstance().getEmbeddedLanguages(doc, offset);
+
+        // Look specifically within the
+        if (languages.size() > 1) {
+            for (Language language : languages) {
+                // Inefficient linear search because the children may not be
+                // ordered according to the source
+                Children ch = getChildren();
+                if ( ch instanceof ElementChildren ) {
+                    Node[] children = ch.getNodes();
+                    for (int i = 0; i < children.length; i++) {
+                        ElementNode c = (ElementNode) children[i];
+                        if (c.getDescription() instanceof ElementScanningTask.MimetypeRootNode) {
+                            ElementScanningTask.MimetypeRootNode mr = (ElementScanningTask.MimetypeRootNode)c.getDescription();
+                            if (mr.language == language) {
+                                return c.getNodeForOffset(offset);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // No match in embedded languages - do normal offset search
+        return getNodeForOffset(offset);
+    }
+    
     public ElementNode getNodeForOffset(int offset) {
         if (getDescription().getPosition() > offset) {
             return null;
@@ -188,7 +231,7 @@ public class ElementNode extends AbstractNode {
         // Inefficient linear search because the children may not be
         // ordered according to the source
         Children ch = getChildren();
-        if ( ch instanceof ElementChilren ) {
+        if ( ch instanceof ElementChildren ) {
             Node[] children = ch.getNodes();
             for (int i = 0; i < children.length; i++) {
                 ElementNode c = (ElementNode) children[i];
@@ -207,7 +250,7 @@ public class ElementNode extends AbstractNode {
 
     public void updateRecursively( StructureItem newDescription ) {
         Children ch = getChildren();
-        if ( ch instanceof ElementChilren ) {           
+        if ( ch instanceof ElementChildren ) {           
            HashSet<StructureItem> oldSubs = new HashSet<StructureItem>( description.getNestedItems() );
 
            
@@ -221,7 +264,7 @@ public class ElementNode extends AbstractNode {
            }
            
            // Now refresh keys
-           ((ElementChilren)ch).resetKeys((List<StructureItem>)newDescription.getNestedItems(), ui.getFilters());
+           ((ElementChildren)ch).resetKeys((List<StructureItem>)newDescription.getNestedItems(), ui.getFilters());
 
            
            // Reread nodes
@@ -262,12 +305,11 @@ public class ElementNode extends AbstractNode {
         return fileObject;
     }
     
-    // XXX There's a typo in this name
-    private static final class ElementChilren extends Children.Keys<StructureItem> {
+    private static final class ElementChildren extends Children.Keys<StructureItem> {
         private ClassMemberPanelUI ui;
         private FileObject fileObject;
         
-        public ElementChilren(List<StructureItem> descriptions, ClassMemberFilters filters, ClassMemberPanelUI ui, FileObject fileObject) {
+        public ElementChildren(List<StructureItem> descriptions, ClassMemberFilters filters, ClassMemberPanelUI ui, FileObject fileObject) {
             resetKeys( descriptions, filters );            
             this.ui = ui;
             this.fileObject = fileObject;

@@ -91,7 +91,7 @@ public class ActivityDiagramLinks extends UMLTestCase {
     private static String defaultOperationVisibility=org.netbeans.test.uml.activitydiagram.utils.Utils.defaultOperationVisibility;
     private ProjectsTabOperator pto=null;
     private Node lastDiagramNode=null;
-    private static String workdir=System.getProperty("xtest.workdir");
+    private static String workdir=System.getProperty("nbjunit.workdir");
     private String lastTestCase=null;
    //--
     private static String activityDiagramName1 = "acD1";
