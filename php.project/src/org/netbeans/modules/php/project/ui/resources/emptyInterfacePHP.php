@@ -1,5 +1,5 @@
 <?php
-    interface ${name} {
-        //put your code here
-    }
+interface ${name} {
+    //put your code here
+}
 ?>
