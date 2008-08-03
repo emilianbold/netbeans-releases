@@ -51,6 +51,7 @@ import java.io.File;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
@@ -386,6 +387,8 @@ private void verifySQLLimit() {
     private class SQLHistoryView {
         private SQLHistoryModel model;
         List<SQLHistory> sqlHistoryList;
+        public static final String MATCH_EMPTY = ""; // NOI18N
+        public static final String NO_MATCH = ""; // NOI18N
 
         public SQLHistoryView(SQLHistoryModel model) {
             this.model = model;
@@ -403,18 +406,20 @@ private void verifySQLLimit() {
          * @return    - formatted SQL statement for the specified row, col
          */
         public String getSQLHistoryTooltipValue(int row, int col) {
-            List<SQLHistory> sqlHistoryListForTooltip = view.getSQLHistoryList();
-            
-            if (col == 0) {
-                String sqlRow = sqlHistoryListForTooltip.get(row).getSql().trim();                
-                while (sqlRow.indexOf("\n") != -1) {        // NOI18N
-                    sqlRow = replace(sqlRow, "\n", "<br>"); // NOI18N
-                }      
-                return "<html>" + sqlRow + "</html>";       // NOI18N
-            } else {                
-                return DateFormat.getInstance().format(sqlHistoryListForTooltip.get(row).getDate());
+            List<SQLHistory> sqlHistoryListForTooltip =  view.filterSQLHistoryList();
+            if (row < sqlHistoryListForTooltip.size()) {
+                if (col == 0) {
+                    String sqlRow = sqlHistoryListForTooltip.get(row).getSql().trim();
+                    while (sqlRow.indexOf("\n") != -1) {        // NOI18N
+                        sqlRow = replace(sqlRow, "\n", "<br>"); // NOI18N
+                    }
+                    return "<html>" + sqlRow + "</html>";       // NOI18N
+                } else {
+                    return DateFormat.getInstance().format(sqlHistoryListForTooltip.get(row).getDate());
+                }
+            } else {
+                return NO_MATCH;
             }
-            
         }
         
         /**
@@ -493,8 +498,23 @@ private void verifySQLLimit() {
             }
         }
 
-        public void setFilter() {
-            // unused
+        private List<SQLHistory> filterSQLHistoryList() {
+            List<SQLHistory> filteredSqlHistoryList = new ArrayList<SQLHistory>();
+            String match = searchTextField.getText();
+            String url = (String)connectionComboBox.getSelectedItem();
+            // modify list of SQL to reflect a selection from the Connection dropdown or if a match text entered
+            for (SQLHistory sqlHistory : sqlHistoryList) {
+                if (sqlHistory.getUrl().equals(url) || url.equals(NbBundle.getMessage(SQLHistoryPanel.class, "LBL_ConnectionCombo"))) {
+                    if (!match.equals(MATCH_EMPTY)) {
+                        if (sqlHistory.getSql().toLowerCase().indexOf(match.toLowerCase()) != -1) {
+                            filteredSqlHistoryList.add(sqlHistory);
+                        }
+                    } else {
+                        filteredSqlHistoryList.add(sqlHistory);
+                    }
+                }
+            }
+            return filteredSqlHistoryList;
         }
     }
 
