@@ -477,7 +477,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
         if (LOGGER.isLoggable(Level.FINE)){
             long time = System.currentTimeMillis() - startTime;
-            LOGGER.fine(String.format("complete() took %d ms", time));
+            LOGGER.fine(String.format("complete() took %d ms, result contains %d items", time, proposals.size()));
         }
 
         return new PHPCompletionResult(completionContext, proposals);

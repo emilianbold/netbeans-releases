@@ -78,7 +78,7 @@ public class ParameterUsageWidget extends ActivityNodeWidget
             
             //create main view 
             MainViewWidget mainView = new MainViewWidget(scene,
-                                                                 getWidgetID(),
+                                                                 getResourcePath(),
                                                                  bundle.getString("LBL_body"));
            mainView.setMinimumSize(new Dimension(
                                       MIN_NODE_WIDTH, MIN_NODE_HEIGHT));

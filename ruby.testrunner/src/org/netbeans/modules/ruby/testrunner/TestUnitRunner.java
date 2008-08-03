@@ -167,7 +167,7 @@ public final class TestUnitRunner implements TestRunner, RakeTaskCustomizer {
         if (!(task.getTask().equals("test") || task.getTask().startsWith("test:"))) { //NOI18N
             return;
         }
-        task.addRakeParameters("-r" + getScript(RUNNER_SCRIPT_NAME).getAbsolutePath()); //NOI18N
+        task.addRakeParameters("-r " + getScript(RUNNER_SCRIPT_NAME).getAbsolutePath()); //NOI18N
         FileLocator locator = project.getLookup().lookup(FileLocator.class);
         TestRecognizer recognizer = new TestRecognizer(Manager.getInstance(),
                 locator,
