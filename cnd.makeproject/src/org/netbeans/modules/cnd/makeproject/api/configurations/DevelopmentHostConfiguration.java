@@ -56,7 +56,7 @@ public class DevelopmentHostConfiguration {
     
     public static final String PROP_DEV_HOST = "devHost"; // NOI18N
     
-    private int def;
+    private final int def;
     private int value;
     private String[] names;
     private boolean modified;
@@ -67,8 +67,7 @@ public class DevelopmentHostConfiguration {
     
     public DevelopmentHostConfiguration() {
         names = getServerNames();
-        value = 0;
-        def = 0; // localost is always defined and should be considered the default
+        def = value = getDefaultHostIndex();
         pcs = new PropertyChangeSupport(this);
     }
     
@@ -186,5 +185,12 @@ public class DevelopmentHostConfiguration {
     
     public boolean isLocalhost() {
         return CompilerSetManager.LOCALHOST.equals(getName());
+    }
+
+    private int getDefaultHostIndex() {
+        if (getServerList() != null) {
+            return getServerList().getDefaultIndex();
+        }
+        return 0; // localost is always defined and should be considered the default
     }
 }
