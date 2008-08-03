@@ -18,25 +18,25 @@
 the database through the methods in the entity class. 
 The JPA controller class contains the logic for creating, editing and destorying an entry in the data source, 
 getting all of the entries in the data source, and getting a specific entry in the data source.</p>
-<p>The JPA Controllers for Entity Classes wizard generates JPA controllers based on the entity classes in your application.
-The wizard generates one JPA controller class for each entity class and places the controller in the specified location.
-Each generated JPA controller contains <tt>create</tt>, <tt>edit</tt> and <tt>destroy</tt> methods
+<p>The JPA Controller Classes from Entity Classes wizard generates JPA controllers based on entity classes in your application.
+The wizard generates one JPA controller class for each entity class that you select and places the controller class in the specified location.
+Each generated JPA controller class contains <tt>create</tt>, <tt>edit</tt> and <tt>destroy</tt> methods
 and methods for retrieving the entities and uses an entity manager for managing entity persistence.
-The wizard also generates exception classes used by the controllers.</p>
+The wizard also generates exception classes used by the controller classes.</p>
 
 
-<p><b>To generate JPA controllers from an entity class:</b></p>
+<p><b>To generate JPA controller classes from an entity class:</b></p>
 <ol>
     <li>Choose File > New (Ctrl-N) from the main menu.</li>
-    <li>From the Persistence category, select JPA Controllers from Entity Class and click Next. The wizard displays all of the entity classes in the project.</li>
-    <li>Add all of the entity classes for which you want to generate controllers to the Selected Entity Classes list and click Next.</li>
-    <li>Specify a package for the JPA controller. 
+    <li>From the Persistence category, select JPA Controller Classes from Entity Classes and click Next. The wizard displays all of the entity classes in the project.</li>
+    <li>Add all of the entity classes for which you want to generate controller classes to the Selected Entity Classes list and click Next.</li>
+    <li>Specify a package for the JPA controller classes. 
         The default location is the folder containing the selected entity classes. </li>
     <li>Click Finish.</li>
 </ol>
-<p>After the wizard generates the JPA controllers, the controller methods can be invoked from JSP pages or JSP converters
+<p>After the wizard generates the JPA controller classes, the controller methods can be invoked from JSP pages or JSP converters
 or other classes in your application.
-If the database schema changes you can use the IDE wizards to again generate new entity classes and controllers and 
+If the database schema changes you can use the IDE wizards to again generate new entity classes and controller classes and 
 then where necessary update the code that invokes the controller methods.</p>
 
 <dl> 
