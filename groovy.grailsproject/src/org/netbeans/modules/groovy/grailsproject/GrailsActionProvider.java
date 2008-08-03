@@ -292,6 +292,9 @@ public class GrailsActionProvider implements ActionProvider {
                 HtmlBrowser.Factory browser = WebClientToolsProjectUtils.getFirefoxBrowser();
 
                 String browserString = config.getDebugBrowser();
+                if (browserString == null) {
+                    browserString = WebClientToolsProjectUtils.Browser.FIREFOX.name();
+                }
                 if (WebClientToolsProjectUtils.Browser.valueOf(browserString) == WebClientToolsProjectUtils.Browser.INTERNET_EXPLORER) {
                      browser = WebClientToolsProjectUtils.getInternetExplorerBrowser();
                 }

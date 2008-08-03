@@ -500,6 +500,9 @@ public class DatabaseConnection implements DBConnection {
             // Let the CNI know we're connected and set things up
             // appropriately
             ConnectionNodeInfo cni = findConnectionNodeInfo(getName());
+
+            assert(cni != null);
+            
             cni.connect(this);
         } catch (Exception exc) {
             try {

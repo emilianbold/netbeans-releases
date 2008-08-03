@@ -327,4 +327,23 @@ public class Util
         return list;
     }
     
+    public static Widget getParentWidgetByClass(Widget startWith,
+                                                  Class<? extends Widget> cls)
+    {
+        Widget ret = null;
+        if (startWith != null && cls != null)
+        {
+            for (Widget tmp = startWith;
+                    tmp != null && !(tmp instanceof Scene);
+                    tmp = tmp.getParentWidget())
+            {
+                if (cls.isInstance(tmp))
+                {
+                    ret = tmp;
+                    break;
+                } 
+            }
+        }
+        return ret;
+    }    
 }

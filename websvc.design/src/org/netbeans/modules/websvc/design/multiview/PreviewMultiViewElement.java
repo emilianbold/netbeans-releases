@@ -43,6 +43,7 @@ import java.io.IOException;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.JToolBar;
 import javax.swing.text.Document;
 import org.netbeans.modules.websvc.design.javamodel.MethodModel;
@@ -81,6 +82,7 @@ public class PreviewMultiViewElement extends CloneableEditor
         super(null);
     }
     //private transient DesignView designView;
+
     public PreviewMultiViewElement(DataEditorSupport des) {
         super(des);
         this.des = des;
@@ -89,8 +91,8 @@ public class PreviewMultiViewElement extends CloneableEditor
     }
 
     private void initialize() {
-        removeAll();
-        setLayout(new BorderLayout());
+//        removeAll();
+//        setLayout(new BorderLayout());
 //        // Add listener to status of java source, to detect changes and need to regenerate wsdl
 //        final MultiViewSupport mvSupport = dataObject.getCookie(MultiViewSupport.class);
 //        this.serviceModel = ServiceModel.getServiceModel(mvSupport.getImplementationBean());
@@ -119,84 +121,112 @@ public class PreviewMultiViewElement extends CloneableEditor
 //            });
 //        }
 
-        if (dataObject == null) {
-            JLabel emptyLabel = new JLabel("The WSDL Preview can not be rendered. Please switch to source or design view and correct the source file.");
-            add(emptyLabel, BorderLayout.CENTER);
-        } else {
+        if (des != null) {
+
             myLookup = Lookups.fixed(dataObject, des);
         }
     }
 
     public JComponent getVisualRepresentation() {
-        return this;
+        if (des == null) {
+            JPanel err = new JPanel();
+            JLabel emptyLabel = new JLabel("The WSDL Preview can not be rendered,because Java source or WSDL file isn't valid. Please switch to source or design view and correct the source file.");
+            err.add(emptyLabel, BorderLayout.CENTER);
+            return err;
+        } else {
+            return this;
+        }
     }
 
     public JComponent getToolbarRepresentation() {
-        Document doc = getEditorPane().getDocument();
-        if (doc instanceof NbDocument.CustomToolbar) {
-            if (toolbar == null) {
-                toolbar = ((NbDocument.CustomToolbar) doc).createToolbar(getEditorPane());
+        if (des != null) {
+            Document doc = getEditorPane().getDocument();
+            if (doc instanceof NbDocument.CustomToolbar) {
+                if (toolbar == null) {
+                    toolbar = ((NbDocument.CustomToolbar) doc).createToolbar(getEditorPane());
+                }
+                return toolbar;
             }
-            return toolbar;
         }
         return null;
     }
 
     public void setMultiViewCallback(MultiViewElementCallback callback) {
-        multiViewCallback = callback;
+        if (des != null) {
+            multiViewCallback = callback;
+        }
     }
 
     public CloseOperationState canCloseElement() {
+
         return CloseOperationState.STATE_OK;
+
     }
 
     @Override
     public void componentActivated() {
-        super.componentActivated();
-        setEditableDisabled();
+        if (des != null) {
+            super.componentActivated();
+            setEditableDisabled();
+        }
     }
 
     @Override
     public void componentDeactivated() {
-        super.componentDeactivated();
+        if (des != null) {
+            super.componentDeactivated();
+        }
     }
 
     @Override
     public void componentOpened() {
-        super.componentOpened();
-        setEditableDisabled();
+        if (des != null) {
+            super.componentOpened();
+            setEditableDisabled();
+        }
     }
 
     @Override
     public void componentClosed() {
-        super.componentClosed();
+        if (des != null) {
+            super.componentClosed();
+        }
     }
 
     @Override
     public void componentShowing() {
-        super.componentShowing();
-        setActivatedNodes(new Node[]{dataObject.getNodeDelegate()});
-        setEditableDisabled();
+        if (des != null) {
+            super.componentShowing();
+            setActivatedNodes(new Node[]{dataObject.getNodeDelegate()});
+            setEditableDisabled();
+        }
     }
 
     @Override
     public void componentHidden() {
-        super.componentHidden();
-        setActivatedNodes(new Node[]{});
+        if (des != null) {
+            super.componentHidden();
+            setActivatedNodes(new Node[]{});
+        }
     }
 
     @Override
     public UndoRedo getUndoRedo() {
-        return super.getUndoRedo();
+        if (des != null) {
+            return super.getUndoRedo();
+        }
+        return null;
     }
     private Lookup lookup;
 
     @Override
     public Lookup getLookup() {
+
         if (lookup == null) {
             lookup = new ProxyLookup(super.getLookup(), myLookup);
         }
         return lookup;
+
     }
 
     /**

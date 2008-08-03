@@ -19,21 +19,33 @@ and manage the data in a data source.
 The IDE provides support for this common programming task by letting you quickly generate code for CRUD 
 functionality based on entity classes in your project.</p>
 
-<p>An application that implements CRUD functionality typically contains the following artefacts.</p> 
+<p>A JSF application that implements CRUD functionality typically contains the following artefacts.</p> 
 
 <ul>
-    <li><b>Controller classes.</b> A controller class is a wrapper for an entity class that provides clients with access to the database through the methods in the entity class. For example, the controller class has methods for creating and deleting an entry in the data source, getting all of the entries in the data source, or getting a specific entry in the data source. </li>
-    <li><b>Converter classes.</b> A converter class takes input from the form and converts it into the type that matches the data in the data source.</li>
-    <li><b>JSP pages.</b> The JSP pages are the web user interface for accessing and modifying the data in the data source. </li>
+    <li><b>JPA Controller classes.</b>
+    A typical JSF application may have JPA and JSF controller classes.
+    A JPA controller class is a wrapper for an entity class that provides clients with access to the database 
+    through the methods in the entity class.
+    A JPA controller class contains the logic for creating, editing and destorying an entry in the data source, 
+    getting all of the entries in the data source, and getting a specific entry in the data source.
+    Generally you would not need to modify the JPA controller classes unless the database schema changed, in which case
+    you could regenerate the classes for the new schema.</li>
+    <li><b>JSF Controller classes.</b>
+    A JSF controller class generally contains code that invokes methods in the JPA controller classes and 
+    demonstrates which exceptions to catch.
+    To modify your application you would generally modify the JSF controller classes.</li>
+    <li><b>JSF Converter classes.</b> A JSF converter class takes input from the form and converts it into the type that matches the data 
+    in the data source.</li>
+    <li><b>JSP pages.</b> The JSP pages are the web user interface for accessing and modifying the data in the data source.</li>
 </ul>
 
 <p>The following wizards generate code for implementing CRUD functionality in the application.</p>
     <ul>
         <li><b>JPA Controller Classes from Entity Classes.</b> This wizard generates the CRUD controller classes based on the entity classes in the project. 
         The wizard creates one controller for each entity class and places the controller in the same package as the entity class.</li>
-        <li><b>JSF Pages from Entity Classes.</b> This wizard generates the CRUD controller classes, converters and JSP pages based on the entity classes in the project.
+        <li><b>JSF Pages from Entity Classes.</b> This wizard generates the JSF controller classes, converters and JSP pages based on the entity classes in the project.
         For each entity class, the wizard creates four JSP pages that let you view, edit, create, and destroy entries in the data source.
-        The JSP pages use the JSF framework. </li>
+        The JSP pages use the JSF framework and access the JSF converter and controller classes. </li>
     </ul>
     
 <dl> 

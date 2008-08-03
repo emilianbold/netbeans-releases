@@ -87,7 +87,7 @@ made subject to such option by the copyright holder.
                         <code-name-base>org.netbeans.modules.projectui</code-name-base>
                         <compile-dependency/>
                         <test/>
-                    </test-dependency>                    
+                    </test-dependency>
                 </test-type>
                 <test-type>
                     <name>qa-functional</name>
@@ -97,6 +97,10 @@ made subject to such option by the copyright holder.
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.jellytools</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.jellytools.platform</code-name-base>
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
@@ -115,8 +119,8 @@ made subject to such option by the copyright holder.
                         <code-name-base>org.netbeans.modules.projectui</code-name-base>
                         <compile-dependency/>
                         <test/>
-                    </test-dependency>                    
-                </test-type>                
+                    </test-dependency>
+                </test-type>
             </test-dependencies>
             <public-packages/>
         </data>

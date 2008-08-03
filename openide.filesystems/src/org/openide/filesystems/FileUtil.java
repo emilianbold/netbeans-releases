@@ -1441,6 +1441,13 @@ public final class FileUtil extends Object {
                 LOG.warning("getCanonicalFile() on file " + file + " failed: " + e);
                 LOG.log(Level.FINE, file.toString(), e);
             }
+            // #135547 - on Windows Vista map C:\Documents and Settings to C:\Users
+            if((Utilities.getOperatingSystem() & (Utilities.OS_FREEBSD << 1)) != 0) { //TODO replace with Utilities.OS_WINVISTA
+                String absolutePath = retVal.getAbsolutePath();
+                if(absolutePath.startsWith("C:\\Documents and Settings")) {  //NOI18N
+                    retVal = new File(absolutePath.replaceFirst("Documents and Settings", "Users"));  //NOI18N
+                }
+            }
         }
 
         return (retVal != null) ? retVal : file.getAbsoluteFile();

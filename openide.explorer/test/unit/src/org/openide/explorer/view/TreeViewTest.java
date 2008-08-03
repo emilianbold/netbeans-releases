@@ -48,6 +48,7 @@ import java.beans.PropertyVetoException;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Arrays;
 import java.util.logging.Level;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -575,6 +576,8 @@ public final class TreeViewTest extends NbTestCase {
         keys.keys("A", "B", "C", "D");
         block.unblock();
         waitAWT();
+        assertEquals("Selection should be updated", Arrays.asList(keys.getNodes()), 
+                Arrays.asList(testWindow.getExplorerManager().getSelectedNodes()));
         if (setSel.e != null) {
             fail();
         }

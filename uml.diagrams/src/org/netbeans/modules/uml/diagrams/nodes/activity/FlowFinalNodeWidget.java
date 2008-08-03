@@ -67,11 +67,11 @@ public class FlowFinalNodeWidget extends ControlNodeWidget
         {
             // create a circle of default radius (15)
             FlowFinalWidget flowFinalCircle = new FlowFinalWidget(scene, 
-                     DEFAULT_OUTER_RADIUS, getWidgetID(), 
+                     DEFAULT_OUTER_RADIUS, getResourcePath(), 
                     bundle.getString("LBL_body")); 
             flowFinalCircle.setUseGradient(useGradient);
-            flowFinalCircle.setCustomizableResourceTypes(
-                    new ResourceType [] {ResourceType.BACKGROUND} );
+//            flowFinalCircle.setCustomizableResourceTypes(
+//                    new ResourceType [] {ResourceType.BACKGROUND} );
             flowFinalCircle.setOpaque(true);
             setCurrentView(flowFinalCircle);
         }

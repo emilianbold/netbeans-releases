@@ -42,6 +42,7 @@ package org.netbeans.modules.uml.drawingarea.engines;
 import java.awt.BasicStroke;
 import java.awt.Cursor;
 import java.awt.Point;
+import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -58,6 +59,9 @@ import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.action.PopupMenuProvider;
 import org.netbeans.api.visual.action.SelectProvider;
 import org.netbeans.api.visual.action.WidgetAction;
+import org.netbeans.api.visual.animator.AnimatorEvent;
+import org.netbeans.api.visual.animator.AnimatorListener;
+import org.netbeans.api.visual.animator.AnimatorListener;
 import org.netbeans.api.visual.graph.layout.GraphLayout;
 import org.netbeans.api.visual.graph.layout.GraphLayoutFactory;
 import org.netbeans.api.visual.router.Router;
@@ -597,6 +601,56 @@ abstract public class DiagramEngine {
         DesignerScene diagramScene = getScene();
         GraphLayout gLayout = GraphLayoutFactory.createHierarchicalGraphLayout(diagramScene, true);
 //        GraphLayout gLayout = GraphLayoutFactory.createOrthogonalGraphLayout(scene, true);
+        diagramScene.getSceneAnimator().getPreferredLocationAnimator().addAnimatorListener(new MyAnimatorListener());
         gLayout.layoutGraph(diagramScene);
+
+    }
+
+    private class MyAnimatorListener implements AnimatorListener
+    {
+
+        public void animatorStarted(AnimatorEvent event)
+        {            
+        }
+
+        public void animatorReset(AnimatorEvent event)
+        {            
+        }
+
+        public void animatorFinished(AnimatorEvent event)
+        {
+            saveDiagram();
+            scene.getSceneAnimator().getPreferredLocationAnimator().removeAnimatorListener(this);
+        }
+
+        public void animatorPreTick(AnimatorEvent event)
+        {            
+        }
+
+        public void animatorPostTick(AnimatorEvent event)
+        {           
+        }
+
+    }
+
+    private void saveDiagram()
+    {
+        DesignerScene scene = getScene();
+        if (scene != null)
+        {
+            IDiagram diagram = scene.getDiagram();
+            if (diagram != null)
+            {
+                try
+                {
+                    diagram.setDirty(true);
+                    diagram.save();
+                }
+                catch (IOException ex)
+                {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
     }
 }
