@@ -42,13 +42,15 @@
 package org.netbeans.core.ui.options.general;
 
 import java.awt.Component;
+import java.awt.Cursor;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.net.MalformedURLException;
+import java.net.URL;
 import javax.swing.AbstractButton;
 import javax.swing.ButtonGroup;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.event.HyperlinkEvent;
 import org.netbeans.beaninfo.editors.HtmlBrowser;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -110,9 +112,13 @@ public class GeneralOptionsPanel extends JPanel implements ActionListener {
         jUsageCheck.getAccessibleContext ().setAccessibleDescription (loc ("AD_Usage_Check"));
         jUsageCheck.getAccessibleContext ().setAccessibleName (loc ("AN_Usage_Check"));
 
-        jUsageInfo.setText(loc("CTL_Usage_Info"));
-        jUsageInfo.getAccessibleContext ().setAccessibleDescription (loc ("AD_Usage_Info"));
-        jUsageInfo.getAccessibleContext ().setAccessibleName (loc ("AN_Usage_Info"));
+        lblUsageInfo.setText(loc("CTL_Usage_Info"));
+        lblUsageInfo.getAccessibleContext ().setAccessibleDescription (loc ("AD_Usage_Info"));
+        lblUsageInfo.getAccessibleContext ().setAccessibleName (loc ("AN_Usage_Info"));
+        
+        lblLearnMore.setText(loc("CTL_Learn_More"));
+        lblLearnMore.getAccessibleContext ().setAccessibleDescription (loc ("AD_Learn_More"));
+        lblLearnMore.getAccessibleContext ().setAccessibleName (loc ("AN_Learn_More"));
         
         rbUseSystemProxy.setToolTipText (getUseSystemProxyToolTip ());
         
@@ -148,8 +154,8 @@ public class GeneralOptionsPanel extends JPanel implements ActionListener {
         jSeparator3 = new javax.swing.JSeparator();
         lUsage = new javax.swing.JLabel();
         jUsageCheck = new javax.swing.JCheckBox();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        jUsageInfo = new javax.swing.JEditorPane();
+        lblUsageInfo = new javax.swing.JLabel();
+        lblLearnMore = new javax.swing.JLabel();
 
         lWebBrowser.setLabelFor(cbWebBrowser);
         org.openide.awt.Mnemonics.setLocalizedText(lWebBrowser, org.openide.util.NbBundle.getMessage(GeneralOptionsPanel.class, "GeneralOptionsPanel.lWebBrowser.text")); // NOI18N
@@ -208,19 +214,18 @@ public class GeneralOptionsPanel extends JPanel implements ActionListener {
 
         org.openide.awt.Mnemonics.setLocalizedText(jUsageCheck, "Help us improve the NetBeans IDE by providing anonymous usage data"); // NOI18N
 
-        jScrollPane1.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
-        jScrollPane1.setViewportBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
+        org.openide.awt.Mnemonics.setLocalizedText(lblUsageInfo, "<html>The usage statistics help us better understand user\nrequirements and prioritize improvements in future releases. We will never\nreverse-engineer the collected data to find specific details about your projects.</html>"); // NOI18N
+        lblUsageInfo.setFocusable(false);
 
-        jUsageInfo.setContentType("text/html"); // NOI18N
-        jUsageInfo.setEditable(false);
-        jUsageInfo.setText("<html>\n<head>\n</head>\n<body>\n<p style=\"margin-top: 0\"> The usage statistics help us better understand user \nrequirements and prioritize improvements in future releases. We will never\nreverse-engineer the collected data to find specific details about your projects. \n<a href=\"http://www.netbeans.org/about/usage-tracking.html\">Learn more</a>.\n</p>\n</body>\n</html>"); // NOI18N
-        jUsageInfo.setFocusable(false);
-        jUsageInfo.addHyperlinkListener(new javax.swing.event.HyperlinkListener() {
-            public void hyperlinkUpdate(javax.swing.event.HyperlinkEvent evt) {
-                hyperlinkHandler(evt);
+        org.openide.awt.Mnemonics.setLocalizedText(lblLearnMore, "<html><font color=\"#0000FF\" <u>Learn more</u></font></html>"); // NOI18N
+        lblLearnMore.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                lblLearnMoreMouseEntered(evt);
+            }
+            public void mousePressed(java.awt.event.MouseEvent evt) {
+                lblLearnMoreMousePressed(evt);
             }
         });
-        jScrollPane1.setViewportView(jUsageInfo);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -232,10 +237,10 @@ public class GeneralOptionsPanel extends JPanel implements ActionListener {
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                         .add(lWebBrowser)
                         .add(18, 18, 18)
-                        .add(cbWebBrowser, 0, 986, Short.MAX_VALUE)
+                        .add(cbWebBrowser, 0, 1131, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(editBrowserButton))
-                    .add(jSeparator2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 1141, Short.MAX_VALUE)
+                    .add(jSeparator2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 1291, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
                         .add(lWebProxy)
                         .add(18, 18, 18)
@@ -250,21 +255,22 @@ public class GeneralOptionsPanel extends JPanel implements ActionListener {
                                     .add(layout.createSequentialGroup()
                                         .add(lProxyHost)
                                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                                        .add(tfProxyHost, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 873, Short.MAX_VALUE)
+                                        .add(tfProxyHost, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 957, Short.MAX_VALUE)
                                         .add(12, 12, 12)
                                         .add(lProxyPort)
                                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                                         .add(tfProxyPort, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))))
-                    .add(jSeparator3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 1141, Short.MAX_VALUE)
+                    .add(jSeparator3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 1291, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
                         .add(lUsage)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 1057, Short.MAX_VALUE)
+                            .add(lblUsageInfo, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 1171, Short.MAX_VALUE)
                             .add(layout.createSequentialGroup()
                                 .add(jUsageCheck)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 690, Short.MAX_VALUE)))))
-                .addContainerGap())
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 690, Short.MAX_VALUE))
+                            .add(lblLearnMore))))
+                .add(0, 0, 0))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -299,8 +305,10 @@ public class GeneralOptionsPanel extends JPanel implements ActionListener {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(lUsage)
                     .add(jUsageCheck))
-                .add(18, 18, 18)
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 63, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(lblUsageInfo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 52, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(lblLearnMore)
                 .addContainerGap(24, Short.MAX_VALUE))
         );
 
@@ -369,29 +377,37 @@ private void bMoreProxyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         tfProxyHost.selectAll ();
     }//GEN-LAST:event_tfProxyHostFocusGained
 
-    private void hyperlinkHandler(javax.swing.event.HyperlinkEvent evt) {//GEN-FIRST:event_hyperlinkHandler
-        if (jUsageInfo.equals(evt.getSource())) {
-            if (evt.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
-                org.openide.awt.HtmlBrowser.URLDisplayer.getDefault().showURL(evt.getURL());
-            }
+    private void lblLearnMoreMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lblLearnMoreMouseEntered
+        evt.getComponent().setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+    }//GEN-LAST:event_lblLearnMoreMouseEntered
+
+    private void lblLearnMoreMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lblLearnMoreMousePressed
+        URL u = null;
+        try {
+            u = new URL(loc("METRICS_INFO_URL"));
+        } catch (MalformedURLException exc) {
         }
-}//GEN-LAST:event_hyperlinkHandler
+        if (u != null) {
+            org.openide.awt.HtmlBrowser.URLDisplayer.getDefault().showURL(u);
+        }
+
+    }//GEN-LAST:event_lblLearnMoreMousePressed
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton bMoreProxy;
     private javax.swing.JComboBox cbWebBrowser;
     private javax.swing.JButton editBrowserButton;
-    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JSeparator jSeparator3;
     private javax.swing.JCheckBox jUsageCheck;
-    private javax.swing.JEditorPane jUsageInfo;
     private javax.swing.JLabel lProxyHost;
     private javax.swing.JLabel lProxyPort;
     private javax.swing.JLabel lUsage;
     private javax.swing.JLabel lWebBrowser;
     private javax.swing.JLabel lWebProxy;
+    private javax.swing.JLabel lblLearnMore;
+    private javax.swing.JLabel lblUsageInfo;
     private javax.swing.JRadioButton rbHTTPProxy;
     private javax.swing.JRadioButton rbNoProxy;
     private javax.swing.JRadioButton rbUseSystemProxy;

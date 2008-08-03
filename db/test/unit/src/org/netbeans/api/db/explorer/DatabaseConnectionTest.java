@@ -41,6 +41,7 @@
 
 package org.netbeans.api.db.explorer;
 
+import org.netbeans.modules.db.explorer.ConnectionList;
 import org.netbeans.modules.db.test.Util;
 import org.netbeans.modules.db.util.DBTestBase;
 
@@ -52,7 +53,7 @@ public class DatabaseConnectionTest extends DBTestBase {
     
     protected void setUp() throws Exception {
         super.setUp();
-        Util.deleteConnectionFiles();
+        Util.clearConnections();
     }
     
     public DatabaseConnectionTest(String testName) {
@@ -60,7 +61,7 @@ public class DatabaseConnectionTest extends DBTestBase {
     }
     
     public void testConnectionsRemovedWhenFilesDeleted() throws Exception{
-        Util.deleteConnectionFiles();
+        Util.clearConnections();
         Util.deleteDriverFiles();
 
         JDBCDriver driver = Util.createDummyDriver();
@@ -71,13 +72,13 @@ public class DatabaseConnectionTest extends DBTestBase {
         
         assertTrue(ConnectionManager.getDefault().getConnections().length > 0);
         
-        Util.deleteConnectionFiles();
+        Util.clearConnections();
         
         assertTrue(ConnectionManager.getDefault().getConnections().length == 0);
     }
 
     public void testSameDatabaseConnectionReturned() throws Exception {
-        Util.deleteConnectionFiles();
+        Util.clearConnections();
         Util.deleteDriverFiles();
         assertEquals(0, ConnectionManager.getDefault().getConnections().length);
         
@@ -99,7 +100,7 @@ public class DatabaseConnectionTest extends DBTestBase {
     }
 
     public void testDeleteConnection() throws Exception {
-        Util.deleteConnectionFiles();
+        Util.clearConnections();
         Util.deleteDriverFiles();
         
         assertEquals(0, ConnectionManager.getDefault().getConnections().length);

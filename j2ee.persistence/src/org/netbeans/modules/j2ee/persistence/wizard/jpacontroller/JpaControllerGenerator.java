@@ -68,6 +68,7 @@ import org.netbeans.modules.j2ee.persistence.dd.PersistenceMetadata;
 import org.netbeans.modules.j2ee.persistence.dd.PersistenceUtils;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.Persistence;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
+import org.netbeans.modules.j2ee.persistence.wizard.Util;
 import org.netbeans.modules.j2ee.persistence.wizard.jpacontroller.JpaControllerUtil.EmbeddedPkSupport;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
@@ -83,7 +84,7 @@ import org.netbeans.modules.j2ee.persistence.wizard.jpacontroller.JpaControllerU
 public class JpaControllerGenerator {
     
     public static void generateJpaController(Project project, final String entityClass, final String controllerClass, String exceptionPackage, FileObject pkg, FileObject controllerFileObject, final EmbeddedPkSupport embeddedPkSupport) throws IOException {
-        final boolean isInjection = true;//Util.isSupportedJavaEEVersion(project);
+        final boolean isInjection = Util.isContainerManaged(project); //true;//Util.isSupportedJavaEEVersion(project);
         final String simpleEntityName = JpaControllerUtil.simpleClassName(entityClass);
         String persistenceUnit = getPersistenceUnitAsString(project);
         final String fieldName = JpaControllerUtil.fieldFromClassName(simpleEntityName);
@@ -225,6 +226,8 @@ public class JpaControllerGenerator {
                     int privateModifier = java.lang.reflect.Modifier.PRIVATE;
                     int publicModifier = java.lang.reflect.Modifier.PUBLIC;
                     
+                    CompilationUnitTree modifiedImportCut = null;
+                    
                     AnnotationInfo[] annotations = null;
                     if (isInjection) {
                         annotations = new AnnotationInfo[1];
@@ -268,7 +271,9 @@ public class JpaControllerGenerator {
 //                        else {
 //                            workingCopy.rewrite(constructor, modifiedConstructor);
 //                        }
-                        MethodInfo mi = new MethodInfo("<init>", publicModifier, "void", null, null, null, "{ emf = Persistence.createEntityManagerFactory(\"" + persistenceUnit + "\"); }", null, null);
+
+                        modifiedImportCut = JpaControllerUtil.TreeMakerUtils.createImport(workingCopy, modifiedImportCut, "javax.persistence.Persistence");
+                        MethodInfo mi = new MethodInfo("<init>", publicModifier, "void", null, null, null, "emf = Persistence.createEntityManagerFactory(\"" + persistenceUnit + "\");", null, null);
                         modifiedClassTree = JpaControllerUtil.TreeMakerUtils.modifyDefaultConstructor(classTree, modifiedClassTree, workingCopy, mi);
                     }
                     modifiedClassTree = JpaControllerUtil.TreeMakerUtils.addVariable(modifiedClassTree, workingCopy, "emf", "javax.persistence.EntityManagerFactory", privateModifier, null, annotations);
@@ -295,7 +300,7 @@ public class JpaControllerGenerator {
                                 "javax.persistence.EntityNotFoundException"                              
                     };
                     
-                    CompilationUnitTree modifiedImportCut = null;
+//                    CompilationUnitTree modifiedImportCut = null;
                     for (String importFq : importFqs) {
                         modifiedImportCut = JpaControllerUtil.TreeMakerUtils.createImport(workingCopy, modifiedImportCut, importFq);
                     }
@@ -562,9 +567,14 @@ public class JpaControllerGenerator {
                     }
                     // </editor-fold>
                     
-                    String BEGIN = isInjection ? "utx.begin();" : "em.getTransaction().begin();";
+                    String BEGIN = isInjection ? "utx.begin();\nem = getEntityManager();" : "em = getEntityManager();\nem.getTransaction().begin();";
                     String COMMIT = isInjection ? "utx.commit();" : "em.getTransaction().commit();";
-                    String ROLLBACK = isInjection ? "utx.rollback();" : "em.getTransaction().rollback();";
+                    String ROLLBACK = isInjection ? "try {\n" + 
+                            "utx.rollback();" + 
+                            "\n} catch (Exception re) {\n" +
+                            "throw new RollbackFailureException(\"An error occurred attempting to roll back the transaction.\", re);\n" +
+                            "}\n"
+                            : "";
                     
                     if (illegalOrphansInCreate.length() > 0 || illegalOrphansInEdit.length() > 0 || illegalOrphansInDestroy.length() > 0) {
                         modifiedImportCut = JpaControllerUtil.TreeMakerUtils.createImport(workingCopy, modifiedImportCut, "java.util.ArrayList");
@@ -597,21 +607,35 @@ public class JpaControllerGenerator {
                             illegalOrphansInCreate.toString() +
                             "EntityManager em = null;\n" + 
                             "try {\n " + BEGIN + "\n " + 
-                            "em = getEntityManager();\n" +
+//                            "em = getEntityManager();\n" +
                             initRelatedInCreate.toString() + "em.persist(" + fieldName + ");\n" + updateRelatedInCreate.toString() + COMMIT + "\n" +   //NOI18N
-                            "} catch (Exception ex) {\n try {\n" +
-                            ROLLBACK + 
-                            "\n} catch (Exception re) {\n" +
-                            "throw new RollbackFailureException(\"An error occurred attempting to roll back the transaction.\", re);\n" +
-                            "}\n" +
-                            (isGenerated ? "" : 
-                            "if (find" + simpleEntityName + "(" + fieldName + "." + idGetterName[0] + "()) != null) {\n" +
+                            (isInjection || !isGenerated ? "} catch (Exception ex) {\n" : "") + 
+//                            "try {\n" +
+                            ROLLBACK +
+//                            "\n} catch (Exception re) {\n" +
+//                            "throw new RollbackFailureException(\"An error occurred attempting to roll back the transaction.\", re);\n" +
+//                            "}\n" +
+                            (!isGenerated ? "if (find" + simpleEntityName + "(" + fieldName + "." + idGetterName[0] + "()) != null) {\n" +
                             "throw new PreexistingEntityException(\"" + simpleEntityName + " \" + " + fieldName + " + \" already exists.\", ex);\n" +
-                            "}\n") +
-                            "throw ex;\n" +
+                            "}\n" : "") +
+                            (isInjection || !isGenerated ? "throw ex;\n" : "") +
                             "} finally {\n if (em != null) {\nem.close();\n}\n}";
                     
-                    String[] createExceptionTypes = (illegalOrphansInCreate.length() > 0 ? new String[]{exceptionPackage + ".IllegalOrphanException", exceptionPackage + ".PreexistingEntityException", exceptionPackage + ".RollbackFailureException", "java.lang.Exception"} : new String[]{exceptionPackage + ".PreexistingEntityException", exceptionPackage + ".RollbackFailureException", "java.lang.Exception"});
+                    List<String> methodExceptionTypeList = new ArrayList<String>();
+                    if (illegalOrphansInCreate.length() > 0) {
+                        methodExceptionTypeList.add(exceptionPackage + ".IllegalOrphanException");
+                    }
+                    if (!isGenerated) {
+                        methodExceptionTypeList.add(exceptionPackage + ".PreexistingEntityException");
+                    }
+                    if (isInjection) {
+                        methodExceptionTypeList.add(exceptionPackage + ".RollbackFailureException");
+                    }
+                    if (isInjection || !isGenerated) {
+                        methodExceptionTypeList.add("java.lang.Exception");
+                    }
+//                    String[] createExceptionTypes = (illegalOrphansInCreate.length() > 0 ? new String[]{exceptionPackage + ".IllegalOrphanException", exceptionPackage + ".PreexistingEntityException", exceptionPackage + ".RollbackFailureException", "java.lang.Exception"} : new String[]{exceptionPackage + ".PreexistingEntityException", exceptionPackage + ".RollbackFailureException", "java.lang.Exception"});
+                    String[] createExceptionTypes = methodExceptionTypeList.toArray(new String[methodExceptionTypeList.size()]);
                     methodInfo = new MethodInfo("create", publicModifier, "void", createExceptionTypes, new String[]{entityClass}, new String[]{fieldName}, bodyText, null, null);
                     modifiedClassTree = JpaControllerUtil.TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo);
                     
@@ -625,15 +649,16 @@ public class JpaControllerGenerator {
                     bodyText = codeToPopulatePkFields.toString() +
                         "EntityManager em = null;\n" + 
                         "try {\n " + BEGIN + "\n" + 
-                        "em = getEntityManager();\n" +
+//                        "em = getEntityManager();\n" +
                         updateRelatedInEditPre.toString() + illegalOrphansInEdit.toString() + attachRelatedInEdit.toString() +
                         fieldName + " = em.merge(" + fieldName + ");\n " + 
                         updateRelatedInEditPost.toString() + COMMIT + "\n" +   //NOI18N
-                        "} catch (Exception ex) {\n try {\n" +
+                        "} catch (Exception ex) {\n" +
+//                        "try {\n" +
                         ROLLBACK + 
-                        "\n} catch (Exception re) {\n" +
-                        "throw new RollbackFailureException(\"An error occurred attempting to roll back the transaction.\", re);\n" +
-                        "}\n" +
+//                        "\n} catch (Exception re) {\n" +
+//                        "throw new RollbackFailureException(\"An error occurred attempting to roll back the transaction.\", re);\n" +
+//                        "}\n" +
                         "String msg = ex.getLocalizedMessage();\n" + 
                         "if (msg == null || msg.length() == 0) {\n" +
                         simpleIdPropertyType + " id = " + fieldName + "." + idGetterName[0] + "();\n" +
@@ -643,7 +668,17 @@ public class JpaControllerGenerator {
                         "}\n" +
                         "throw ex;\n} " +   //NOI18N
                         "finally {\n if (em != null) {\nem.close();\n}\n }";
-                    String[] editExceptionTypes = (illegalOrphansInEdit.length() > 0 ? new String[]{exceptionPackage + ".IllegalOrphanException", exceptionPackage + ".NonexistentEntityException", exceptionPackage + ".RollbackFailureException", "java.lang.Exception"} : new String[]{exceptionPackage + ".NonexistentEntityException", exceptionPackage + ".RollbackFailureException", "java.lang.Exception"});
+                    methodExceptionTypeList.clear();
+                    if (illegalOrphansInEdit.length() > 0) {
+                        methodExceptionTypeList.add(exceptionPackage + ".IllegalOrphanException");
+                    }
+                    methodExceptionTypeList.add(exceptionPackage + ".NonexistentEntityException");
+                    if (isInjection) {
+                        methodExceptionTypeList.add(exceptionPackage + ".RollbackFailureException");
+                    }
+                    methodExceptionTypeList.add("java.lang.Exception");
+//                    String[] editExceptionTypes = (illegalOrphansInEdit.length() > 0 ? new String[]{exceptionPackage + ".IllegalOrphanException", exceptionPackage + ".NonexistentEntityException", exceptionPackage + ".RollbackFailureException", "java.lang.Exception"} : new String[]{exceptionPackage + ".NonexistentEntityException", exceptionPackage + ".RollbackFailureException", "java.lang.Exception"});
+                    String[] editExceptionTypes = methodExceptionTypeList.toArray(new String[methodExceptionTypeList.size()]);
                     methodInfo = new MethodInfo("edit", publicModifier, "void", editExceptionTypes, new String[]{entityClass}, new String[]{fieldName}, bodyText, null, null);
                     modifiedClassTree = JpaControllerUtil.TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo);
                     
@@ -660,7 +695,7 @@ public class JpaControllerGenerator {
                     }
                     bodyText = "EntityManager em = null;\n" + 
                         "try {\n " + BEGIN + "\n" + 
-                        "em = getEntityManager();\n" +
+//                        "em = getEntityManager();\n" +
                         simpleEntityName + " " + fieldName + ";\n" +
                         "try {\n " + 
                         fieldName + " = " + refOrMergeStringInDestroy + 
@@ -671,15 +706,25 @@ public class JpaControllerGenerator {
                         illegalOrphansInDestroy.toString() +
                         updateRelatedInDestroy.toString() + 
                         "em.remove(" + fieldName + ");\n " + COMMIT + "\n" +   //NOI18N
-                        "} catch (Exception ex) {\n" +
-                        "try {\n" +
+                        (isInjection ? "} catch (Exception ex) {\n" : "") +
+//                        "try {\n" +
                         ROLLBACK + 
-                        "\n} catch (Exception re) {\n" +
-                        "throw new RollbackFailureException(\"An error occurred attempting to roll back the transaction.\", re);\n" +
-                        "}\n" +
-                        "throw ex;\n" +
+//                        "\n} catch (Exception re) {\n" +
+//                        "throw new RollbackFailureException(\"An error occurred attempting to roll back the transaction.\", re);\n" +
+//                        "}\n" +
+                        (isInjection ? "throw ex;\n" : "") +
                         "} finally {\n if (em != null) {\nem.close();\n}\n }";  //NOI18N
-                    String[] destroyExceptionTypes = (illegalOrphansInDestroy.length() > 0 ? new String[]{exceptionPackage + ".IllegalOrphanException", exceptionPackage + ".NonexistentEntityException", exceptionPackage + ".RollbackFailureException", "java.lang.Exception"} : new String[]{exceptionPackage + ".NonexistentEntityException", exceptionPackage + ".RollbackFailureException", "java.lang.Exception"});
+                    methodExceptionTypeList.clear();
+                    if (illegalOrphansInDestroy.length() > 0) {
+                        methodExceptionTypeList.add(exceptionPackage + ".IllegalOrphanException");
+                    }
+                    methodExceptionTypeList.add(exceptionPackage + ".NonexistentEntityException");
+                    if (isInjection) {
+                        methodExceptionTypeList.add(exceptionPackage + ".RollbackFailureException");
+                        methodExceptionTypeList.add("java.lang.Exception");
+                    }
+//                    String[] destroyExceptionTypes = (illegalOrphansInDestroy.length() > 0 ? new String[]{exceptionPackage + ".IllegalOrphanException", exceptionPackage + ".NonexistentEntityException", exceptionPackage + ".RollbackFailureException", "java.lang.Exception"} : new String[]{exceptionPackage + ".NonexistentEntityException", exceptionPackage + ".RollbackFailureException", "java.lang.Exception"});
+                    String[] destroyExceptionTypes = methodExceptionTypeList.toArray(new String[methodExceptionTypeList.size()]);
                     methodInfo = new MethodInfo("destroy", publicModifier, "void", destroyExceptionTypes, idPropertyType, new String[]{"id"}, bodyText, null, null);
                     modifiedClassTree = JpaControllerUtil.TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo);  
                     

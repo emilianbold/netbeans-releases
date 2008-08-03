@@ -69,7 +69,7 @@ public class JaxWsSourceForBinaryQueryImpl implements SourceForBinaryQueryImplem
                 Project prj = FileOwnerQuery.getOwner(archiveFile.toURI());
                 if (prj != null) {
                     JAXWSClientSupport jaxWSCS = JAXWSClientSupport.getJaxWsClientSupport(prj.getProjectDirectory());
-                    if (jaxWSCS != null && !jaxWSCS.getServiceClients().isEmpty()) {
+                    if (jaxWSCS != null) {
                         result = new Result(prj);
                         cache.put(binaryRoot, result);
                     }

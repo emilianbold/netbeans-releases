@@ -73,7 +73,7 @@ public class RemoteCommandSupport extends RemoteConnectionSupport {
         this.cmd = cmd;
         this.env = env;
 
-        if (!isCancelled()) {
+        if (!isFailedOrCancelled()) {
             log.fine("RemoteCommandSupport<Init>: Running [" + cmd + "] on " + key);
             try {
                 channel = createChannel();

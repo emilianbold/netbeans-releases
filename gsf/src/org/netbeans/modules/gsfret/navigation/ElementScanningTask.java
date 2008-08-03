@@ -42,6 +42,7 @@
 package org.netbeans.modules.gsfret.navigation;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
@@ -163,6 +164,13 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
                 roots.add(new MimetypeRootNode(language, children));
             }
         }
+        if (roots.size() > 1) {
+            Collections.sort(roots, new Comparator<MimetypeRootNode>() {
+                public int compare(MimetypeRootNode o1, MimetypeRootNode o2) {
+                    return o1.getSortText().compareTo(o2.getSortText());
+                }
+            });
+        }
         
         if(mimetypesWithElements > 1) {
             //at least two languages provided some elements - use the root mimetype nodes
@@ -182,18 +190,23 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
         }
     }
     
-    private static final class MimetypeRootNode implements StructureItem {
+    static final class MimetypeRootNode implements StructureItem {
 
         //hack - see the getSortText() comment
         private static final String CSS_MIMETYPE = "text/x-css"; //NOI18N
         private static final String CSS_SORT_TEXT = "2";//NOI18N
         private static final String JAVASCRIPT_MIMETYPE = "text/javascript";//NOI18N
+        private static final String RUBY_MIMETYPE = "text/x-ruby";//NOI18N
+        private static final String YAML_MIMETYPE = "text/x-yaml";//NOI18N
         private static final String JAVASCRIPT_SORT_TEXT = "1";//NOI18N
         private static final String HTML_MIMETYPE = "text/html";//NOI18N
         private static final String HTML_SORT_TEXT = "3";//NOI18N
-        private static final String OTHER_SORT_TEXT = "4";//NOI18N
+        // Ensure YAML is sorted before Ruby to make navigator look primarily in the YAML offsets first
+        private static final String YAML_SORT_TEXT = "4";//NOI18N
+        private static final String RUBY_SORT_TEXT = "5";//NOI18N
+        private static final String OTHER_SORT_TEXT = "9";//NOI18N
         
-        private Language language;
+        Language language;
         private List<? extends StructureItem> items;
         long from, to;
         
@@ -235,6 +248,10 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
                 return JAVASCRIPT_SORT_TEXT;
             } else if (language.getMimeType().equals(HTML_MIMETYPE)) {
                 return HTML_SORT_TEXT;
+            } else if (language.getMimeType().equals(YAML_MIMETYPE)) {
+                return YAML_SORT_TEXT;
+            } else if (language.getMimeType().equals(RUBY_MIMETYPE)) {
+                return RUBY_SORT_TEXT;
             } else {
                 return OTHER_SORT_TEXT + getName();
             }

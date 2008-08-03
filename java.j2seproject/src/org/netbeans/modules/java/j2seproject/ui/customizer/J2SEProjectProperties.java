@@ -149,6 +149,9 @@ public class J2SEProjectProperties {
     /** @since org.netbeans.modules.java.j2seproject/1 1.19 */
     public static final String COMPILE_ON_SAVE_UNSUPPORTED_PREFIX = "compile.on.save.unsupported"; // NOI18N
     
+    public static final String SYSTEM_PROPERTIES_RUN_PREFIX = "run-sys-prop."; // NOI18N
+    public static final String SYSTEM_PROPERTIES_TEST_PREFIX = "test-sys-prop."; // NOI18N
+    
     public static final String JAVADOC_PRIVATE="javadoc.private"; // NOI18N
     public static final String JAVADOC_NO_TREE="javadoc.notree"; // NOI18N
     public static final String JAVADOC_USE="javadoc.use"; // NOI18N

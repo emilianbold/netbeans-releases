@@ -521,10 +521,8 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
     /*private*/ ModeImpl getDefaultEditorMode() {
         ModeImpl mode = findModeImpl("editor"); // NOI18N
         if(mode == null) {
-            /* Common in unit tests, be quiet.
-            Logger.getLogger(WindowManagerImpl.class.getName()).log(Level.INFO, null,
+            Logger.getLogger(WindowManagerImpl.class.getName()).log(Level.FINE, null,
                               new java.lang.IllegalStateException("Creating default editor mode. It shouldn\'t happen this way")); // NOI18N
-             */
             // PENDING should be defined in winsys layer?
             ModeImpl newMode = createModeImpl("editor", Constants.MODE_KIND_EDITOR, true); // NOI18N
             addMode(newMode, new SplitConstraint[0]);

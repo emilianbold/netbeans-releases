@@ -40,6 +40,8 @@
 package org.netbeans.modules.quicksearch;
 
 import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.FontMetrics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -119,7 +121,7 @@ public class QuickSearchComboBar extends javax.swing.JPanel implements ActionLis
         jPanel1 = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
-        command = new javax.swing.JTextArea();
+        command = new DynamicWidthTA();
         jSeparator1 = new javax.swing.JSeparator();
 
         setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
@@ -161,7 +163,6 @@ public class QuickSearchComboBar extends javax.swing.JPanel implements ActionLis
         jScrollPane1.setMinimumSize(new java.awt.Dimension(2, 18));
         jScrollPane1.setName("jScrollPane1"); // NOI18N
 
-        command.setColumns(15);
         command.setRows(1);
         command.setToolTipText(org.openide.util.NbBundle.getMessage(QuickSearchComboBar.class, "QuickSearchComboBar.command.toolTipText", new Object[] {"(" + SearchResultRender.getKeyStrokeAsText(keyStroke) + ")"})); // NOI18N
         command.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
@@ -208,11 +209,11 @@ public class QuickSearchComboBar extends javax.swing.JPanel implements ActionLis
     }// </editor-fold>//GEN-END:initComponents
 
 private void formFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_formFocusLost
-    displayer.setVisible(false);
-}//GEN-LAST:event_formFocusLost
+    displayer.setVisible(false);//GEN-HEADEREND:event_formFocusLost
+}                              
 
-private void commandKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_commandKeyPressed
-    if (evt.getKeyCode()==KeyEvent.VK_DOWN) {
+private void commandKeyPressed(java.awt.event.KeyEvent evt) {//GEN-LAST:event_formFocusLost
+    if (evt.getKeyCode()==KeyEvent.VK_DOWN) {//GEN-FIRST:event_commandKeyPressed
         displayer.selectNext();
         evt.consume();
     } else if (evt.getKeyCode() == KeyEvent.VK_UP) {
@@ -229,8 +230,8 @@ private void commandKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_c
 
 private void jLabel2MousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel2MousePressed
     maybeShowPopup(evt);
-}//GEN-LAST:event_jLabel2MousePressed
-
+}//GEN-HEADEREND:event_jLabel2MousePressed
+//GEN-LAST:event_jLabel2MousePressed
     /** Actually invokes action selected in the results list */
     public void invokeSelectedItem () {
         JList list = displayer.getList();
@@ -272,13 +273,13 @@ private void jLabel2MousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:eve
 
 
 private void commandFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_commandFocusLost
-    displayer.setVisible(false);
+    displayer.setVisible(false);//GEN-HEADEREND:event_commandFocusLost
     setShowHint(true);
 }//GEN-LAST:event_commandFocusLost
 
 private void commandFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_commandFocusGained
     setShowHint(false);
-    if (CommandEvaluator.isCatTemporary()) {
+    if (CommandEvaluator.isCatTemporary()) {//GEN-HEADEREND:event_commandFocusGained
         CommandEvaluator.setCatTemporary(false);
         CommandEvaluator.setEvalCat(null);
     }
@@ -350,17 +351,30 @@ private void commandFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:even
         if (showHint) {
             command.setForeground(command.getDisabledTextColor());
             Category evalCat = CommandEvaluator.getEvalCat();
-            String sc = " (" + SearchResultRender.getKeyStrokeAsText(keyStroke) + ")";
             if (evalCat != null && !CommandEvaluator.isCatTemporary()) {
-                command.setText(NbBundle.getMessage(QuickSearchComboBar.class,
-                        "MSG_DiscoverabilityHint2", evalCat.getDisplayName()) + sc); //NOI18N
+                command.setText(getHintText(evalCat));
             } else {
-                command.setText(NbBundle.getMessage(QuickSearchComboBar.class, "MSG_DiscoverabilityHint") + sc); //NOI18N
+                command.setText(getHintText(null));
             }
         } else {
             command.setForeground(origForeground);
             command.setText("");
         }
+    }
+
+    private String getHintText (Category cat) {
+        StringBuilder sb = new StringBuilder();
+        if (cat != null) {
+            sb.append(NbBundle.getMessage(QuickSearchComboBar.class,
+                    "MSG_DiscoverabilityHint2", cat.getDisplayName())); //NOI18N
+        } else {
+            sb.append(NbBundle.getMessage(QuickSearchComboBar.class, "MSG_DiscoverabilityHint")); //NOI18N
+        }
+        sb.append(" (");
+        sb.append(SearchResultRender.getKeyStrokeAsText(keyStroke));
+        sb.append(")");
+
+        return sb.toString();
     }
 
 
@@ -410,6 +424,34 @@ private void commandFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:even
     static Color getCategoryTextColor () {
         Color shadow = UIManager.getColor("textInactiveText");
         return shadow != null ? shadow : Color.DARK_GRAY;
+    }
+
+    private int computePrefWidth () {
+        FontMetrics fm = command.getFontMetrics(command.getFont());
+        ProviderModel pModel = ProviderRegistry.getInstance().getProviders();
+        int maxWidth = 0;
+        for (Category cat : pModel.getCategories()) {
+            // skip recent category
+            if (CommandEvaluator.RECENT.equals(cat.getName())) {
+                continue;
+            }
+            maxWidth = Math.max(maxWidth, fm.stringWidth(getHintText(cat)));
+        }
+        // don't allow width grow too much
+        return Math.min(350, maxWidth);
+    }
+
+    private final class DynamicWidthTA extends JTextArea {
+        private Dimension prefWidth;
+
+        @Override
+        public Dimension getPreferredSize() {
+            if (prefWidth == null) {
+                Dimension orig = super.getPreferredSize();
+                prefWidth = new Dimension(computePrefWidth(), orig.height);
+            }
+            return prefWidth;
+        }
     }
 
 }

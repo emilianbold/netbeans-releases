@@ -67,7 +67,6 @@ import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
-import org.netbeans.api.java.queries.UnitTestForSourceQuery;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
@@ -1062,12 +1061,6 @@ public class J2EEUtils {
         Parameters.notNull("project", project); //NOI18N
         SourceGroup[] sourceGroups = ProjectUtils.getSources(project).getSourceGroups(
                 JavaProjectConstants.SOURCES_TYPE_JAVA);
-        List<SourceGroup> result = new ArrayList<SourceGroup>();
-        for(SourceGroup sourceGroup : sourceGroups){
-            if (UnitTestForSourceQuery.findUnitTests(sourceGroup.getRootFolder()).length > 0){
-                result.add(sourceGroup);
-            }
-        }
-        return result.toArray(new SourceGroup[result.size()]);
+        return sourceGroups;
     }
 }

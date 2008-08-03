@@ -317,7 +317,7 @@ public final class AntBuildExtender {
         if (extensions  != null) {
             FileObject nbproj = implementation.getOwningProject().getProjectDirectory().getFileObject(AntProjectHelper.PROJECT_XML_PATH).getParent();
             for (Extension ext : extensions.values()) {
-                Element child = doc.createElement(AntBuildExtenderAccessor.ELEMENT_EXTENSION);
+                Element child = doc.createElementNS(AntBuildExtenderAccessor.AUX_NAMESPACE, AntBuildExtenderAccessor.ELEMENT_EXTENSION);
                 child.setAttribute(AntBuildExtenderAccessor.ATTR_ID, ext.id);
                 String relPath = FileUtil.getRelativePath(nbproj, ext.file);
                 assert relPath != null;
@@ -325,7 +325,7 @@ public final class AntBuildExtender {
                 root.appendChild(child);
                 for (String target : ext.dependencies.keySet()) {
                     for (String depTarget : ext.dependencies.get(target)) {
-                        Element dep = doc.createElement(AntBuildExtenderAccessor.ELEMENT_DEPENDENCY);
+                        Element dep = doc.createElementNS(AntBuildExtenderAccessor.AUX_NAMESPACE, AntBuildExtenderAccessor.ELEMENT_DEPENDENCY);
                         dep.setAttribute(AntBuildExtenderAccessor.ATTR_TARGET, target);
                         dep.setAttribute(AntBuildExtenderAccessor.ATTR_DEPENDSON, depTarget);
                         child.appendChild(dep);

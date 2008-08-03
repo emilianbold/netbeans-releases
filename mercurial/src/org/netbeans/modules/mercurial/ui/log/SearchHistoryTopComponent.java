@@ -110,13 +110,9 @@ public class SearchHistoryTopComponent extends TopComponent implements DiffSetup
         scp.setUsername(username);
         if (from != null){ 
             scp.setFrom(SearchExecutor.simpleDateFormat.format(from));
-        }else{
-            scp.setFrom(HgUtils.getLastWeeksDateStr());
         }
         if (to != null){
             scp.setTo(SearchExecutor.simpleDateFormat.format(to));
-        }else{
-            scp.setTo(HgUtils.getTodaysDateStr());
         }
         shp = new SearchHistoryPanel(roots, scp);
         add(shp);

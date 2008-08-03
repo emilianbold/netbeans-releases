@@ -105,6 +105,7 @@ class SingletonLookup extends Lookup {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public <T> Item<T> lookupItem(Template<T> template) {
         if (template == null) {
             throw new IllegalArgumentException("null");                 //NOI18N

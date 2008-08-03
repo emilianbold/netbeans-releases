@@ -114,6 +114,7 @@ class DataViewTableUI extends JTable {
 
         setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         multiplier = getFontMetrics(getFont()).stringWidth(data) / data.length() + 2;
+        setRowHeight(getFontMetrics(getFont()).getHeight() + 1);
 
         createPopupMenu(handler, dataView);
     }
