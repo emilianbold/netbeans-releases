@@ -624,7 +624,7 @@ public abstract class CommonConfigurationXMLCodec
         for (FileElement elem : filesList) {
             xes.element(PACK_FILE_LIST_ELEMENT,
                     new AttrValuePair[] {
-                        new AttrValuePair(TYPE_ATTR, "" + elem.getTypeAsString()), // NOI18N
+                        new AttrValuePair(TYPE_ATTR, "" + elem.getType().toString()), // NOI18N
                         new AttrValuePair(TO_ATTR, "" + elem.getTo()), // NOI18N
                         new AttrValuePair(FROM_ATTR, "" + elem.getFrom()), // NOI18N
                         new AttrValuePair(PERM_ATTR, "" + elem.getPermission()), // NOI18N
