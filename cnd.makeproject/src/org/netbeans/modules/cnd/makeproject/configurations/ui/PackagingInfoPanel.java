@@ -73,6 +73,7 @@ public class PackagingInfoPanel extends ListEditorPanel {
 
     public PackagingInfoPanel(List<InfoElement> infoList, String baseDir) {
         super(infoList.toArray(), new JButton[]{new JButton(), new JButton()});
+        getAddButton().setVisible(false);
         this.baseDir = baseDir;
         
         this.addButton = extraButtons[0];

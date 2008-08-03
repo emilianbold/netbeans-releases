@@ -89,6 +89,7 @@ public class PackagingFilesPanel extends ListEditorPanel {
 
     public PackagingFilesPanel(List<FileElement> fileList, String baseDir) {
         super(fileList.toArray(), new JButton[]{new JButton(), new JButton(), new JButton()});
+        getAddButton().setVisible(false);
         this.baseDir = baseDir;
         this.addButton = extraButtons[0];
         this.addFileOrDirectoryButton = extraButtons[1];

@@ -141,7 +141,7 @@ public class ListEditorPanel extends javax.swing.JPanel {
 
 	// Add extra buttons
 	if (extraButtons != null) {
-	    int index = 0; // strt index
+	    int index = 1; // strt index
 	    for (int i = 0; i < extraButtons.length; i++)
 		addExtraButton(extraButtons[i], index++);
 	}
