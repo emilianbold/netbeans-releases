@@ -617,6 +617,7 @@ private void verifySQLLimit() {
         }
 
         public void actionPerformed(ActionEvent evt) {
+            searchTextField.setText(""); // NOI18N
             refreshTable(evt);
         }
         
