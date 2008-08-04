@@ -48,9 +48,10 @@ made subject to such option by the copyright holder.
 <changes>
     <change id="Children.Keys.lazy">
         <api name="nodes"/>
-        <summary>Adding public int Children.getNodesCount(boolean optimalResult), protected Children.Keys(boolean lazy)</summary>
-        <version major="7" minor="6"/>
-        <date day="12" month="7" year="2008"/>
+        <summary>Adding public int Children.getNodesCount(boolean optimalResult), protected Children.Keys(boolean lazy),
+        Children.snapshot(), NodeMemberEvent.getSnapshot(), NodeReorderEvent.getSnapshot()</summary>
+        <version major="7" minor="7"/>
+        <date day="4" month="8" year="2008"/>
         <author login="t_h"/>
         <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible"/>
         <description>
@@ -61,10 +62,16 @@ made subject to such option by the copyright holder.
             for children "initialization". While keeping same behavior as 
             <code>Children.getNodes(boolean optimalResult)</code> for "default"
             (non-lazy) implementation it allows full initialization without need to
-            create all nodes.
+            create all nodes. <code>Children.snapshot()</code> creates an immutable snapshot representing 
+            the current view of the nodes in this children object. Such snapshots are available in
+            <a href="@TOP@/org/openide/nodes/NodeMemberEvent.html">NodeMemberEvent</a> and 
+            <a href="@TOP@/org/openide/nodes/NodeReorderEvent.html">NodeReorderEvent</a>
+            via <code>getSnapshot()</code> and provide information about state of nodes
+            in time when events were emited.
         </description>
         <class package="org.openide.nodes" name="Children"/>
-        <class package="org.openide.nodes" name="NodeEvent"/>
+        <class package="org.openide.nodes" name="NodeMemberEvent"/>
+        <class package="org.openide.nodes" name="NodeReorderEvent"/>
         <issue number="121913"/>
     </change>
     <change id="Children.getNodeAt">

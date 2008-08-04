@@ -59,16 +59,14 @@ public class NodeMemberEvent extends NodeEvent {
     /** list of changed nodes */
     private Node[] delta;
 
-    /** list of nodes to find indices in, null if one should use current
-    * node's list
-    */
-    private Node[] from;
-
     /** list of nodes indexes, can be null if it should be computed lazily */
     private int[] indices;
 
+    /** current snapshot */
+    private final List<Node> currSnapshot;
+    
     /** previous snapshot or null */
-    private final List<Node> previous;
+    private final List<Node> prevSnapshot;
  
     org.openide.nodes.Children.Entry sourceEntry;
 
@@ -82,8 +80,17 @@ public class NodeMemberEvent extends NodeEvent {
         super(n);
         this.add = add;
         this.delta = delta;
-        this.from = from;
-        this.previous = null;
+        this.prevSnapshot = from != null ? Arrays.asList(from) : null;
+        this.currSnapshot = n.getChildren().entrySupport().createSnapshot(false);
+    }
+
+    /** Provides static and immmutable info about the number, and instances of
+     * nodes available during the time the event was emited.
+     * @return immutable and unmodifiable list of nodes
+     * @since 7.7
+     */
+    public final List<Node> getSnapshot() {
+        return currSnapshot;
     }
 
     /** Get the type of action.
@@ -100,12 +107,17 @@ public class NodeMemberEvent extends NodeEvent {
      * @param previous snaphost of the state before this event happened or null
      */
     NodeMemberEvent(Node n, boolean add, int[] indices, List<Node> current, List<Node> previous) {
-        super(n, current);
+        super(n);
         this.add = add;
         this.indices = indices;
         Arrays.sort(this.indices);
-        this.previous = previous;
-    }    
+        this.currSnapshot = current;
+        this.prevSnapshot = previous;
+    }
+    
+    List<Node> getPrevSnapshot() {
+        return prevSnapshot == null ? currSnapshot : prevSnapshot;
+    }
     
     /** Get a list of children that changed.
     * @return array of nodes that changed
@@ -113,7 +125,7 @@ public class NodeMemberEvent extends NodeEvent {
     public final Node[] getDelta() {
         if (delta == null) {
             assert indices != null : "Well, indices cannot be null now"; // NOI18N
-            List<Node> l = previous == null ? getSnapshot() : previous;
+            List<Node> l = getPrevSnapshot();
 
             Node[] arr = new Node[indices.length];
             for (int i = 0; i < arr.length; i++) {
@@ -132,11 +144,7 @@ public class NodeMemberEvent extends NodeEvent {
             return indices;
         }
 
-        // compute indices
-        if (from == null) {
-            // use current node subnodes
-            from = getNode().getChildren().getNodes();
-        }
+        List<Node> nodes = getPrevSnapshot();
 
         List<Node> list = Arrays.asList(delta);
         Set<Node> set = new HashSet<Node>(list);
@@ -146,8 +154,8 @@ public class NodeMemberEvent extends NodeEvent {
         int j = 0;
         int i = 0;
 
-        while ((i < from.length) && (j < indices.length)) {
-            if (set.contains(from[i])) {
+        while ((i < nodes.size()) && (j < indices.length)) {
+            if (set.contains(nodes.get(i))) {
                 indices[j++] = i;
             }
 
@@ -162,7 +170,7 @@ public class NodeMemberEvent extends NodeEvent {
             m.append("\nj: ").append(j); // NOI18N
             m.append("\nThis: ").append(this); // NOI18N
             m.append("\nCurrent state:\n"); // NOI18N
-            m.append(Arrays.asList(from));
+            m.append(nodes);
             m.append("\nDelta:\n"); // NOI18N
             m.append(list);
             throw new IllegalStateException(m.toString());

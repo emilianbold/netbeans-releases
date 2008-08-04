@@ -149,7 +149,7 @@ public class FilterChildrenEventsTest extends NbTestCase {
          *
          */
         public void childrenAdded(NodeMemberEvent ev) {
-            ChildFactoryTest.assertNodeAndEvent(ev);
+            ChildFactoryTest.assertNodeAndEvent(ev, ev.getSnapshot());
             events.add( ev );
         }
         
@@ -158,7 +158,7 @@ public class FilterChildrenEventsTest extends NbTestCase {
          *
          */
         public void childrenRemoved(NodeMemberEvent ev) {
-            ChildFactoryTest.assertNodeAndEvent(ev);
+            ChildFactoryTest.assertNodeAndEvent(ev, ev.getSnapshot());
             events.add( ev );
         }
         
@@ -167,7 +167,7 @@ public class FilterChildrenEventsTest extends NbTestCase {
          *
          */
         public void childrenReordered(NodeReorderEvent ev) {
-            ChildFactoryTest.assertNodeAndEvent(ev);
+            ChildFactoryTest.assertNodeAndEvent(ev, ev.getSnapshot());
             events.add( ev );
         }
         
@@ -176,7 +176,7 @@ public class FilterChildrenEventsTest extends NbTestCase {
          *
          */
         public void nodeDestroyed(NodeEvent ev) {
-            ChildFactoryTest.assertNodeAndEvent(ev);
+            ChildFactoryTest.assertNodeAndEvent(ev, Collections.<Node>emptyList());
             events.add( ev );
         }
         

@@ -477,22 +477,22 @@ public class SetChildrenTest extends NbTestCase {
         }        
                 
         public void nodeDestroyed(NodeEvent evt) {
-            ChildFactoryTest.assertNodeAndEvent(evt);
+            ChildFactoryTest.assertNodeAndEvent(evt, Collections.<Node>emptyList());
             events.add( evt );
         }        
                 
         public void childrenReordered(NodeReorderEvent evt) {
-            ChildFactoryTest.assertNodeAndEvent(evt);
+            ChildFactoryTest.assertNodeAndEvent(evt, evt.getSnapshot());
             events.add( evt );
         }
                 
         public void childrenRemoved(NodeMemberEvent evt) {
-            ChildFactoryTest.assertNodeAndEvent(evt);
+            ChildFactoryTest.assertNodeAndEvent(evt, evt.getSnapshot());
             events.add( evt );
         }
                 
         public void childrenAdded(NodeMemberEvent evt) {
-            ChildFactoryTest.assertNodeAndEvent(evt);
+            ChildFactoryTest.assertNodeAndEvent(evt, evt.getSnapshot());
             events.add( evt );            
         }
         
