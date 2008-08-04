@@ -469,9 +469,10 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
         super.componentClosed();
     }
     
-//    public org.openide.util.HelpCtx getHelpCtx() {
-//        return new org.openide.util.HelpCtx("NetbeansDebuggerSourcesNode"); // NOI18N
-//    }
+    @Override
+    public org.openide.util.HelpCtx getHelpCtx() {
+        return new org.openide.util.HelpCtx("DebuggingView"); // NOI18N
+    }
     
     @Override
     public int getPersistenceType() {

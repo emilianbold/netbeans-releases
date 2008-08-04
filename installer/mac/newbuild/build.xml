@@ -276,11 +276,13 @@ Microsystems, Inc. All Rights Reserved.
         <ant target="build-mysql-dmg">
             <property name="mysql.location" value="${mysql_10.4.location}"/>
             <property name="mysql.pkg.name" value="${mysql_10.4.pkg.name}"/>
+            <property name="mysql.install.dir" value="${mysql_10.4.install.dir}"/>
             <property name="dmg.name" value="${mysql_10.4.dmg.name}"/>                        
         </ant>
         <ant target="build-mysql-dmg">
             <property name="mysql.location" value="${mysql_10.5.location}"/>
-            <property name="mysql.pkg.name" value="${mysql_10.5.pkg.name}"/>                
+            <property name="mysql.pkg.name" value="${mysql_10.5.pkg.name}"/>
+            <property name="mysql.install.dir" value="${mysql_10.5.install.dir}"/>
             <property name="dmg.name" value="${mysql_10.5.dmg.name}"/>
             <property name="mysql_prefPane.path" value="${basedir}/build/${mysql_prefPane.name}"/>           
         </ant> 
@@ -345,6 +347,10 @@ Microsystems, Inc. All Rights Reserved.
         <loadfile  property="mysql.postflight.addon" srcFile="${basedir}/mysql/pkg/scripts/postflight-addon">
           <filterchain><expandproperties/></filterchain>
         </loadfile>
+
+        <copy file="netBeans/baseide/pkg/scripts/add_mysql.sh"
+              todir="${basedir}/build/mysql.pkg/Contents/Resources"/>
+
      
         <echo message="${mysql.postflight.addon}"
               file="${basedir}/build/mysql.pkg/Contents/Resources/postflight"

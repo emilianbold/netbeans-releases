@@ -1,4 +1,6 @@
 script_dir=`dirname "$0"`
+DIR=`pwd -P`
+echo "DIR (arg2) : $2"
 cp -p -f  "$script_dir"/license_mysql.txt "$2/mysql/${mysql_license.name}"
 cp -p -f  "$script_dir"/readme_mysql.txt  "$2/mysql/${mysql_readme.name}"
 if [ -d "${glassfish.install.dir}" ] ; then
@@ -7,7 +9,6 @@ fi
 
 cd "$2/mysql" 
 cp -p -f "$script_dir"/mysql-admin.server "$2/mysql/support-files/mysql-admin.server" 
-DIR=`pwd -P` 
 
 escape() {
 	echo "$1" | sed -e "s/\//\\\\\//g"
@@ -19,3 +20,8 @@ initial_str=`escape /usr/local/mysql`
 replace_str=`escape "$2"`
 sed "s/$initial_str/$replace_str/g" support-files/mysql-admin.server > "$2/mysql/support-files/mysql-admin.server.tmp"
 mv "$2/mysql/support-files/mysql-admin.server.tmp"  "$2/mysql/support-files/mysql-admin.server" 
+
+
+. "$script_dir"/env.sh
+
+"$script_dir"/add_mysql.sh "$NETBEANS_INSTALL_DIR" "$DIR"
