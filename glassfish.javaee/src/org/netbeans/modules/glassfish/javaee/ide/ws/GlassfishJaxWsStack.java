@@ -121,9 +121,9 @@ public class GlassfishJaxWsStack implements WSStackSPI {
 
     public Set<WSStackFeature> getServiceFeatures() {
         Set<WSStackFeature> wsFeatures = new HashSet<WSStackFeature>();
-        wsFeatures.add(WSStackFeature.JSR_109);
-        wsFeatures.add(WSStackFeature.SERVICE_REF_INJECTION);
-        wsFeatures.add(WSStackFeature.TESTER_PAGE);
+//        wsFeatures.add(WSStackFeature.JSR_109);
+//        wsFeatures.add(WSStackFeature.SERVICE_REF_INJECTION);
+//        wsFeatures.add(WSStackFeature.TESTER_PAGE);
         wsFeatures.add(WSStackFeature.WSIT);
         return wsFeatures;
     }
