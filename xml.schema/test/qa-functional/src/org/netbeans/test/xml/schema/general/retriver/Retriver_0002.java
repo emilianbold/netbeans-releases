@@ -177,14 +177,20 @@ public class Retriver_0002 extends Retriver {
 
       String[] asIdeal =
       {
-        "List of files retrieved :",
-        "From: " + sPathSrc + File.separator + SCHEMA_NAME,
-        "Copied To: " + sPathDst + File.separator + SCHEMA_NAME
+        //"List of files retrieved :",
+        " : Retrieving Location: file:/" + sPathSrc.replaceAll( "\\\\", "/" ) + "/" + SCHEMA_NAME,
+        "Retrieved :    file:/" + sPathSrc.replaceAll( "\\\\", "/" ) + "/" + SCHEMA_NAME,
+        "Saved at: " + sPathDst + File.separator + SCHEMA_NAME
       };
 
       for( String sIdeal : asIdeal )
+      {
         if( -1 == sText.indexOf( sIdeal ) )
+        {
+          System.out.println( sText );
           fail( "Unable to check retriver output: \"" + sIdeal + "\"" );
+        }
+      }
 
       out.close( );
 
