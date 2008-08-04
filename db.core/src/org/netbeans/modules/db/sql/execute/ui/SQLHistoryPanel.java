@@ -716,15 +716,17 @@ private void verifySQLLimit() {
                 int maxLength;                                
                 Iterator dateIterator = dateList.iterator();
                 for (String sql : sqlList) {
-                    if (sql.trim().indexOf(matchText) != -1) {
+                    if (sql.trim().toLowerCase().indexOf(matchText.toLowerCase()) != -1) {
                         length = sql.trim().length();
                         maxLength = length > TABLE_DATA_WIDTH_SQL ? TABLE_DATA_WIDTH_SQL : length;
                         data[row][0] = sql.trim().substring(0, maxLength);
                         data[row][1] = dateIterator.next();
                         row++;
-                    } else {
-                        cleanTable();
                     }
+                }
+                // no matches so clean the table
+                if (row == 0) {
+                    cleanTable();
                 }
                 // Refresh the table                     
                 sqlHistoryTable.repaint();
