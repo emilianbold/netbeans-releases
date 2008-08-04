@@ -683,7 +683,7 @@ private void verifySQLLimit() {
             // Read the contents
             try {
                 String matchText = read(evt.getDocument());
-                data = new Object[sqlList.size()][2];
+                Object[][] localData = new Object[sqlList.size()][2];
                 int row = 0;
                 int length;
                 int maxLength;
@@ -692,10 +692,21 @@ private void verifySQLLimit() {
                     if (sql.trim().toLowerCase().indexOf(matchText.toLowerCase()) != -1) {
                         length = sql.trim().length();
                         maxLength = length > TABLE_DATA_WIDTH_SQL ? TABLE_DATA_WIDTH_SQL : length;
-                        data[row][0] = sql.trim().substring(0, maxLength);
-                        data[row][1] = dateIterator.next();
+                        localData[row][0] = sql.trim().substring(0, maxLength);
+                        localData[row][1] = dateIterator.next();
                         row++;
                     } 
+                }
+
+                // Adjust size of data for the table
+                if (row > 0) {
+                    data = new Object[row][2];
+                    for (int i = 0; i < row; i++) {
+                        data[i][0] = localData[i][0];
+                        data[i][1] = localData[i][1];
+                    }
+                } else {
+                    data = new Object[0][0];
                 }
                 // Refresh the table
                 sqlHistoryTable.repaint();
@@ -710,7 +721,7 @@ private void verifySQLLimit() {
              // Read the contents
             try {
                 String matchText = read(evt.getDocument());
-                data = new Object[sqlList.size()][2];
+                Object[][] localData = new Object[sqlList.size()][2];
                 int row = 0;
                 int length;
                 int maxLength;                                
@@ -719,14 +730,24 @@ private void verifySQLLimit() {
                     if (sql.trim().toLowerCase().indexOf(matchText.toLowerCase()) != -1) {
                         length = sql.trim().length();
                         maxLength = length > TABLE_DATA_WIDTH_SQL ? TABLE_DATA_WIDTH_SQL : length;
-                        data[row][0] = sql.trim().substring(0, maxLength);
-                        data[row][1] = dateIterator.next();
+                        localData[row][0] = sql.trim().substring(0, maxLength);
+                        localData[row][1] = dateIterator.next();
                         row++;
                     }
                 }
                 // no matches so clean the table
                 if (row == 0) {
                     cleanTable();
+                }
+                // Adjust size of data for the table
+                if (row > 0) {
+                    data = new Object[row][2];
+                    for (int i = 0; i < row; i++) {
+                        data[i][0] = localData[i][0];
+                        data[i][1] = localData[i][1];
+                    }
+                } else {
+                    data = new Object[0][0];
                 }
                 // Refresh the table                     
                 sqlHistoryTable.repaint();
