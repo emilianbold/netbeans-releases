@@ -251,7 +251,7 @@ Microsystems, Inc. All Rights Reserved.
                       reverse="true" includes="Localizable.strings"/>                        
     </target>     
   
-    <target name="build-all-mysql-dmg" depends="clean,init,build-pkg,build-glassfish-pkg,build-tomcat-pkg,build-openesb-pkg">   
+    <target name="build-all-mysql-dmg" depends="clean,init,build-pkg,build-glassfish-pkg">   
         <mkdir dir="dist"/>         
         <get src="${mysql_connector.location}" 
              dest="${basedir}/build/${mysql_connector.name}.jar"
@@ -276,13 +276,11 @@ Microsystems, Inc. All Rights Reserved.
         <ant target="build-mysql-dmg">
             <property name="mysql.location" value="${mysql_10.4.location}"/>
             <property name="mysql.pkg.name" value="${mysql_10.4.pkg.name}"/>
-            <property name="mysql.install.dir" value="${mysql_10.4.install.dir}"/>
             <property name="dmg.name" value="${mysql_10.4.dmg.name}"/>                        
         </ant>
         <ant target="build-mysql-dmg">
             <property name="mysql.location" value="${mysql_10.5.location}"/>
             <property name="mysql.pkg.name" value="${mysql_10.5.pkg.name}"/>
-            <property name="mysql.install.dir" value="${mysql_10.5.install.dir}"/>
             <property name="dmg.name" value="${mysql_10.5.dmg.name}"/>
             <property name="mysql_prefPane.path" value="${basedir}/build/${mysql_prefPane.name}"/>           
         </ant> 
@@ -348,9 +346,13 @@ Microsystems, Inc. All Rights Reserved.
           <filterchain><expandproperties/></filterchain>
         </loadfile>
 
-        <copy file="netBeans/baseide/pkg/scripts/add_mysql.sh"
+        <copy file="${basedir}/netBeans/baseide/pkg/scripts/add_mysql.sh"
               todir="${basedir}/build/mysql.pkg/Contents/Resources"/>
+        <chmod file="${basedir}/build/mysql.pkg/Contents/Resources/add_mysql.sh" perm="ugo+x"/>          
 
+        <copy file="${basedir}/netBeans/baseide/pkg/scripts/env.sh" 
+              todir="${basedir}/build/mysql.pkg/Contents/Resources"/> 
+        <chmod file="${basedir}/build/mysql.pkg/Contents/Resources/env.sh"  perm="ugo+x"/>
      
         <echo message="${mysql.postflight.addon}"
               file="${basedir}/build/mysql.pkg/Contents/Resources/postflight"
@@ -358,7 +360,7 @@ Microsystems, Inc. All Rights Reserved.
 
         <copy file="${basedir}/mysql/pkg/scripts/mysql-admin.server"
               todir="${basedir}/build/mysql.pkg/Contents/Resources"/>
-        <chmod file="${basedir}/build/mysqlstartup.pkg/Contents/Resources/mysql-admin.server" perm="ugo+x"/>          
+        <chmod file="${basedir}/build/mysql.pkg/Contents/Resources/mysql-admin.server" perm="ugo+x"/>          
                      
         <copy file="${basedir}/mysqlstartup/pkg/scripts/postflight"
               todir="${basedir}/build/mysqlstartup.pkg/Contents/Resources/"/>
