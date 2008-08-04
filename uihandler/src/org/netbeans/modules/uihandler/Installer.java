@@ -895,24 +895,35 @@ public class Installer extends ModuleInstall implements Runnable {
         return res instanceof String ? (String)res : null;
     }
 
-    static URL uploadLogs(URL postURL, String id, Map<String,String> attrs, List<LogRecord> recs) throws IOException {
-        ProgressHandle h = ProgressHandleFactory.createHandle(NbBundle.getMessage(Installer.class, "MSG_UploadProgressHandle"));
+    static URL uploadLogs(URL postURL, String id, Map<String,String> attrs, List<LogRecord> recs, DataType dataType) throws IOException {
+        ProgressHandle h = null;
+        //Do not show progress UI for metrics upload
+        if (dataType != DataType.DATA_METRICS) {
+            h = ProgressHandleFactory.createHandle(NbBundle.getMessage(Installer.class, "MSG_UploadProgressHandle"));
+        }
         try {
-            return uLogs(h, postURL, id, attrs, recs);
+            return uLogs(h, postURL, id, attrs, recs, dataType);
         } finally {
-            h.finish();
+            if (h != null) {
+                h.finish();
+            }
         }
     }
 
-    private static URL uLogs(ProgressHandle h, URL postURL, String id, Map<String,String> attrs, List<LogRecord> recs) throws IOException {
-        h.start(100 + recs.size());
-        h.progress(NbBundle.getMessage(Installer.class, "MSG_UploadConnecting")); // NOI18N
-
+    private static URL uLogs
+    (ProgressHandle h, URL postURL, String id, Map<String,String> attrs, List<LogRecord> recs, DataType dataType) throws IOException {
+        if (dataType != DataType.DATA_METRICS) {
+            h.start(100 + recs.size());
+            h.progress(NbBundle.getMessage(Installer.class, "MSG_UploadConnecting")); // NOI18N
+        }
+        
         LOG.log(Level.FINE, "uploadLogs, postURL = {0}", postURL); // NOI18N
         URLConnection conn = postURL.openConnection();
 
-        h.progress(50);
-
+        if (dataType != DataType.DATA_METRICS) {
+            h.progress(50);
+        }
+        
         conn.setReadTimeout(20000);
         conn.setDoOutput(true);
         conn.setDoInput(true);
@@ -920,8 +931,10 @@ public class Installer extends ModuleInstall implements Runnable {
         conn.setRequestProperty("Pragma", "no-cache");
         conn.setRequestProperty("Cache-control", "no-cache");
         conn.setRequestProperty("User-Agent", "NetBeans");
-
-        h.progress(NbBundle.getMessage(Installer.class, "MSG_UploadSending"), 60);
+        
+        if (dataType != DataType.DATA_METRICS) {
+            h.progress(NbBundle.getMessage(Installer.class, "MSG_UploadSending"), 60);
+        }
         LOG.log(Level.FINE, "uploadLogs, header sent"); // NOI18N
 
         PrintStream os = new PrintStream(conn.getOutputStream());
@@ -939,8 +952,10 @@ public class Installer extends ModuleInstall implements Runnable {
             os.println(en.getValue().getBytes());
         }
         LOG.log(Level.FINE, "uploadLogs, attributes sent"); // NOI18N
-
-        h.progress(70);
+        
+        if (dataType != DataType.DATA_METRICS) {
+            h.progress(70);
+        }
 
         os.println("----------konec<>bloku");
 
@@ -959,7 +974,9 @@ public class Installer extends ModuleInstall implements Runnable {
         int cnt = 80;
         LOG.log(Level.FINE, "uploadLogs, sending records"); // NOI18N
         for (LogRecord r : recs) {
-            h.progress(cnt++);
+            if (dataType != DataType.DATA_METRICS) {
+                h.progress(cnt++);
+            }
             if (r != null) {
                 LogRecords.write(data, r);
             }
@@ -970,9 +987,11 @@ public class Installer extends ModuleInstall implements Runnable {
         gzip.finish();
         os.println("----------konec<>bloku--");
         os.close();
-
-        h.progress(NbBundle.getMessage(Installer.class, "MSG_UploadReading"), cnt + 10);
-
+        
+        if (dataType != DataType.DATA_METRICS) {
+            h.progress(NbBundle.getMessage(Installer.class, "MSG_UploadReading"), cnt + 10);
+        }
+        
         LOG.log(Level.FINE, "uploadLogs, reading reply"); // NOI18N
         InputStream is = conn.getInputStream();
         StringBuffer redir = new StringBuffer();
@@ -984,8 +1003,10 @@ public class Installer extends ModuleInstall implements Runnable {
             redir.append((char)ch);
         }
         is.close();
-
-        h.progress(cnt + 20);
+        
+        if (dataType != DataType.DATA_METRICS) {
+            h.progress(cnt + 20);
+        }
 
         LOG.log(Level.FINE, "uploadLogs, Reply from uploadLogs: {0}", redir);
 
@@ -1308,7 +1329,7 @@ public class Installer extends ModuleInstall implements Runnable {
                     final List<LogRecord> recsFinal = recs;
                     RP.post(new Runnable() {
                         public void run() {
-                            uploadAndPost(recsFinal, universalResourceLocator[0]);
+                            uploadAndPost(recsFinal, universalResourceLocator[0], dataType);
                         }
                     });
                     okToExit = false;
@@ -1406,7 +1427,7 @@ public class Installer extends ModuleInstall implements Runnable {
             return checkingResult;
         }
 
-        private void uploadAndPost(List<LogRecord> recs, URL u) {
+        private void uploadAndPost(List<LogRecord> recs, URL u, DataType dataType) {
             URL nextURL = null;
 
             if(preferencesWritable) {
@@ -1414,7 +1435,7 @@ public class Installer extends ModuleInstall implements Runnable {
             }
 
             try {
-                nextURL = uploadLogs(u, findIdentity(), Collections.<String,String>emptyMap(), recs);
+                nextURL = uploadLogs(u, findIdentity(), Collections.<String,String>emptyMap(), recs, dataType);
             } catch (IOException ex) {
                 LOG.log(Level.INFO, null, ex);
                 String txt;
