@@ -59,6 +59,7 @@ final class MemoryViewTopComponent extends TopComponent {
 
     private static MemoryViewTopComponent instance;
     /** path to the icon used by the component and its open action */
+    // When changed, update also mf-layer.xml, where are the properties duplicated because of Actions.alwaysEnabled()
     static final String ICON_PATH = "org/netbeans/modules/cnd/debugger/gdb/resources/memory.png"; // NOI18N
 
     private static final String PREFERRED_ID = "MemoryViewTopComponent";
