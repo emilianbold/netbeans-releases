@@ -328,6 +328,7 @@ public class Installer extends ModuleInstall implements Runnable {
                 prefs.putInt("countMetrics", logsSizeMetrics);
             }
             if (logsSizeMetrics >= MetricsHandler.MAX_LOGS) {
+                MetricsHandler.waitFlushed();
                 closeLogStreamMetrics();
                 File f = logFileMetrics(0);
                 f.renameTo(new File(f.getParentFile(), f.getName() + ".1"));
@@ -474,22 +475,12 @@ public class Installer extends ModuleInstall implements Runnable {
     }
 
     public static List<LogRecord> getLogsMetrics() {
-        MetricsHandler.waitFlushed();
-
-        File f = logFileMetrics(0);
-        if (f == null || !f.exists()) {
-            return new ArrayList<LogRecord>();
-        }
-        closeLogStreamMetrics();
-
+        
         class H extends Handler {
             List<LogRecord> logs = new LinkedList<LogRecord>();
 
             public void publish(LogRecord r) {
                 logs.add(r);
-                if (logs.size() > MetricsHandler.MAX_LOGS) {
-                    logs.remove(0);
-                }
             }
 
             public void flush() {
