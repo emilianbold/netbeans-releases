@@ -77,6 +77,7 @@ public class PhpOptionsPanel extends JPanel {
 
     public PhpOptionsPanel() {
         initComponents();
+        errorLabel.setText(" "); // NOI18N
 
         initPhpGlobalIncludePath();
 

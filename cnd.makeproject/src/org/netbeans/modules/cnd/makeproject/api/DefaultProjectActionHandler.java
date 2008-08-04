@@ -149,7 +149,7 @@ public class DefaultProjectActionHandler implements ActionListener {
         private final Object lock = new Object();
         
         private String getTabName(ProjectActionEvent[] paes) {
-            String projectName = ProjectUtils.getInformation(paes[0].getProject()).getName();
+            String projectName = ProjectUtils.getInformation(paes[0].getProject()).getDisplayName();
             String name = projectName + " ("; // NOI18N
             for (int i = 0; i < paes.length; i++) {
                 if (i >= 2) {

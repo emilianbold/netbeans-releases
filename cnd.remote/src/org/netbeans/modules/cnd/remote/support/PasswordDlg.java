@@ -62,7 +62,8 @@ public class PasswordDlg extends javax.swing.JPanel {
     }
 
     public boolean askPassword(String message) {
-        this.lblMessage.setText(message);        
+        String displayMsg = NbBundle.getMessage(PasswordDlg.class, "MSG_Message", message);
+        this.lblMessage.setText(displayMsg);
         DialogDescriptor dd = new DialogDescriptor((Object) this, NbBundle.getMessage(PasswordDlg.class, "TITLE_Password"), true,
                     new Object[] { DialogDescriptor.OK_OPTION, DialogDescriptor.CANCEL_OPTION},
                     DialogDescriptor.OK_OPTION, DialogDescriptor.DEFAULT_ALIGN, null, null);
@@ -84,12 +85,8 @@ public class PasswordDlg extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jLabel1 = new javax.swing.JLabel();
         tfPassword = new javax.swing.JPasswordField();
         lblMessage = new javax.swing.JLabel();
-
-        jLabel1.setLabelFor(tfPassword);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(PasswordDlg.class, "PasswordDlg.jLabel1.text")); // NOI18N
 
         tfPassword.setText(org.openide.util.NbBundle.getMessage(PasswordDlg.class, "PasswordDlg.tfPassword.text")); // NOI18N
         tfPassword.addFocusListener(new java.awt.event.FocusAdapter() {
@@ -107,11 +104,8 @@ public class PasswordDlg extends javax.swing.JPanel {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(lblMessage, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 304, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .add(jLabel1)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(tfPassword, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 228, Short.MAX_VALUE)))
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, tfPassword, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 194, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, lblMessage, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 194, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -120,9 +114,7 @@ public class PasswordDlg extends javax.swing.JPanel {
                 .addContainerGap()
                 .add(lblMessage, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 22, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel1)
-                    .add(tfPassword, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(tfPassword, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -133,7 +125,6 @@ public class PasswordDlg extends javax.swing.JPanel {
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel lblMessage;
     private javax.swing.JPasswordField tfPassword;
     // End of variables declaration//GEN-END:variables
