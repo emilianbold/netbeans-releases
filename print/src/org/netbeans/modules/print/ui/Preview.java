@@ -912,7 +912,7 @@ public final class Preview extends Dialog implements Percent.Listener {
   private static final double GOTO_RATIO = 1.20;
   private static final double SCALE_RATIO = 1.05;
   
-  private static final double PREVIEW_HEIGHT_RATIO = 0.77;
+  private static final double PREVIEW_HEIGHT_RATIO = 0.66;
   private static final double PREVIEW_WIDTH_RATIO = 0.44;
 
   private static final int [] PERCENTS = new int [] { 25, 50, 75, 100, 200, 400 };
