@@ -130,7 +130,8 @@ public class DeleteTest extends JellyTestCase {
             node.performPopupAction("Subversion|Show Changes");
             oto.waitText("Refreshing... finished.");
             node.performPopupActionNoBlock("Delete");
-            NbDialogOperator dialog = new NbDialogOperator("Safe Delete");
+            NbDialogOperator dialog = new NbDialogOperator("Delete");
+//            NbDialogOperator dialog = new NbDialogOperator("Safe Delete");
             JButtonOperator btn = new JButtonOperator(dialog, "OK");
             btn.push();
             
