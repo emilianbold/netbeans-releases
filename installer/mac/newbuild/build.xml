@@ -251,7 +251,7 @@ Microsystems, Inc. All Rights Reserved.
                       reverse="true" includes="Localizable.strings"/>                        
     </target>     
   
-    <target name="build-all-mysql-dmg" depends="clean,init,build-pkg,build-glassfish-pkg,build-tomcat-pkg,build-openesb-pkg">   
+    <target name="build-all-mysql-dmg" depends="clean,init,build-pkg,build-glassfish-pkg">   
         <mkdir dir="dist"/>         
         <get src="${mysql_connector.location}" 
              dest="${basedir}/build/${mysql_connector.name}.jar"
