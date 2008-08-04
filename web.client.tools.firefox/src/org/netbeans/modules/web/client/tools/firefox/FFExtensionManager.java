@@ -52,6 +52,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.StringTokenizer;
 import java.util.Timer;
@@ -148,6 +149,28 @@ public class FFExtensionManager {
                 null, nbExtensionFile, defaultProfile, true);
         boolean firebugInstall = extensionRequiresInstall(browser, FIREBUG_EXTENSION_ID, 
                 FIREBUG_MIN_VERSION, firebugExtensionFile, defaultProfile, false);
+        
+        if (!nbExtInstall || !firebugInstall) {
+            List<String> extensionIds = new LinkedList<String>();
+            
+            if (!nbExtInstall) {
+                extensionIds.add(FIREFOX_EXTENSION_ID);
+            }
+            if (!firebugInstall) {
+                extensionIds.add(FIREBUG_EXTENSION_ID);
+            }
+            
+            boolean extensionsInitialized = checkExtensionInstall(extensionIds, defaultProfile);
+            if (!extensionsInitialized) {
+                NotifyDescriptor nd = new NotifyDescriptor.Message(
+                        NbBundle.getMessage(FFExtensionManager.class, "FIREFOX_NOT_RESTARTED_MSG"),
+                        NotifyDescriptor.ERROR_MESSAGE);
+                
+                nd.setTitle(NbBundle.getMessage(FFExtensionManager.class, "FIREFOX_NOT_RESTARTED_TITLE"));
+                DialogDisplayer.getDefault().notify(nd);
+                return false;
+            }
+        }
         
         boolean installSuccess = true;
 
@@ -567,6 +590,42 @@ public class FFExtensionManager {
         
         return null;
     }
+    
+    private static boolean checkExtensionInstall(List<String> extensionIDs, File profileDir) {
+        File extensionCache = new File(profileDir, EXTENSION_CACHE);
+        if (extensionCache.exists() && extensionCache.isFile()) {
+            BufferedReader br = null;
+            try {
+                br = new BufferedReader(new FileReader(extensionCache));
+                
+                while (br.ready() && extensionIDs.size() > 0) {
+                    String nextLine = br.readLine();
+                    if (nextLine != null) {
+                        String[] words = nextLine.split("\\s");
+                        for (String element : words) {
+                            if (extensionIDs.contains(element)) {
+                                extensionIDs.remove(element);
+                            }
+                        }
+                    }
+                }
+                
+                return extensionIDs.isEmpty();
+            }catch (IOException ex) {
+                Log.getLogger().log(Level.WARNING, "Error reading " + extensionCache.getAbsolutePath(), ex);
+            }finally {
+                if (br != null) {
+                    try {
+                        br.close();
+                    }catch (IOException ex) {
+                        Log.getLogger().log(Level.WARNING, "Unexpected exception", ex);
+                    }
+                }
+            }
+        }
+        
+        return true;
+    }    
     
     /**
      * Checks extension.cache to determine if the extension has been scheduled for removal
