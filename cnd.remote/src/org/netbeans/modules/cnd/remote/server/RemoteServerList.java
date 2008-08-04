@@ -53,6 +53,7 @@ import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.api.remote.ServerUpdateCache;
+import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.remote.support.RemoteCommandSupport;
 import org.netbeans.modules.cnd.remote.ui.EditServerListDialog;
 import org.openide.DialogDescriptor;
@@ -290,6 +291,11 @@ public class RemoteServerList implements ServerList {
         }
         String cmd = "PATH=/bin:/usr/bin:$PATH test -x " + path; // NOI18N
         int exit_status = RemoteCommandSupport.run(hkey, cmd);
+        if (exit_status != 0 && !IpeUtils.isPathAbsolute(path)) {
+            // Validate 'path' against user's PATH.
+            cmd = "PATH=/bin:/usr/bin:$PATH test -x " + "`which " + path + "`"; // NOI18N
+            exit_status = RemoteCommandSupport.run(hkey, cmd);
+        }
         return exit_status == 0;
     }
     
