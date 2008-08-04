@@ -137,7 +137,7 @@ public class PackagingFilesPanel extends ListEditorPanel {
             if (seed == null) {
                 seed = baseDir;
             }
-            FileChooser fileChooser = new FileChooser("File", "Select", FileChooser.FILES_AND_DIRECTORIES, null, seed, false); // FIXUP
+            FileChooser fileChooser = new FileChooser(getString("FileChooserFileTitle"), getString("FileChooserButtonText"), FileChooser.FILES_AND_DIRECTORIES, null, seed, false);
             PathPanel pathPanel = new PathPanel();
             fileChooser.setAccessory(pathPanel);
             fileChooser.setMultiSelectionEnabled(true);
@@ -230,7 +230,7 @@ public class PackagingFilesPanel extends ListEditorPanel {
             if (seed == null) {
                 seed = baseDir;
             }
-            FileChooser fileChooser = new FileChooser("Files", "Select", FileChooser.DIRECTORIES_ONLY, null, seed, false); // FIXUP
+            FileChooser fileChooser = new FileChooser(getString("FileChooserFilesTitle"), getString("FileChooserButtonText"), FileChooser.DIRECTORIES_ONLY, null, seed, false);
             PathPanel pathPanel = new PathPanel();
             fileChooser.setAccessory(pathPanel);
             fileChooser.setMultiSelectionEnabled(false);
@@ -497,7 +497,14 @@ public class PackagingFilesPanel extends ListEditorPanel {
 
     class MyTableModel extends DefaultTableModel {
 
-        private String[] columnNames = {"Type", "File or Directory Path in Package", "Original File or Link", "Permission", "Owner", "Group"}; // FIXUP
+        private String[] columnNames = {
+            getString("PackagingFilesOuterPanel.column.0.text"),
+            getString("PackagingFilesOuterPanel.column.1.text"),
+            getString("PackagingFilesOuterPanel.column.2.text"),
+            getString("PackagingFilesOuterPanel.column.3.text"),
+            getString("PackagingFilesOuterPanel.column.4.text"),
+            getString("PackagingFilesOuterPanel.column.5.text")
+        };
 
         @Override
         public String getColumnName(int col) {
