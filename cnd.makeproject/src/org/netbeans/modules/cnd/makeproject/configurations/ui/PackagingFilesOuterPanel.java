@@ -81,7 +81,7 @@ public class PackagingFilesOuterPanel extends javax.swing.JPanel {
         tmpPanel.setLayout(tmpPanelLayout);
         tmpPanelLayout.setHorizontalGroup(
             tmpPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 538, Short.MAX_VALUE)
+            .add(0, 547, Short.MAX_VALUE)
         );
         tmpPanelLayout.setVerticalGroup(
             tmpPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -97,6 +97,8 @@ public class PackagingFilesOuterPanel extends javax.swing.JPanel {
 
         defaultsPanel.setLayout(new java.awt.GridBagLayout());
 
+        topDirectoryLabel.setDisplayedMnemonic('o');
+        topDirectoryLabel.setLabelFor(topDirectoryTextField);
         topDirectoryLabel.setText(org.openide.util.NbBundle.getMessage(PackagingFilesOuterPanel.class, "PackagingFilesOuterPanel.topDirectoryLabel.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -114,6 +116,8 @@ public class PackagingFilesOuterPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
         defaultsPanel.add(topDirectoryTextField, gridBagConstraints);
 
+        exePermLabel.setDisplayedMnemonic('x');
+        exePermLabel.setLabelFor(exePermTextField);
         exePermLabel.setText(org.openide.util.NbBundle.getMessage(PackagingFilesOuterPanel.class, "PackagingFilesOuterPanel.exePermLabel.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
@@ -136,6 +140,8 @@ public class PackagingFilesOuterPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
         defaultsPanel.add(exePermTextField, gridBagConstraints);
 
+        filePermLabel.setDisplayedMnemonic('i');
+        filePermLabel.setLabelFor(filePermTextField);
         filePermLabel.setText(org.openide.util.NbBundle.getMessage(PackagingFilesOuterPanel.class, "PackagingFilesOuterPanel.filePermLabel.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 4;
@@ -158,6 +164,8 @@ public class PackagingFilesOuterPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
         defaultsPanel.add(filePermTextField, gridBagConstraints);
 
+        ownerLabel.setDisplayedMnemonic('w');
+        ownerLabel.setLabelFor(ownerTextField);
         ownerLabel.setText(org.openide.util.NbBundle.getMessage(PackagingFilesOuterPanel.class, "PackagingFilesOuterPanel.ownerLabel.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 6;
@@ -180,6 +188,8 @@ public class PackagingFilesOuterPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
         defaultsPanel.add(ownerTextField, gridBagConstraints);
 
+        groupLabel.setDisplayedMnemonic('p');
+        groupLabel.setLabelFor(groupTextField);
         groupLabel.setText(org.openide.util.NbBundle.getMessage(PackagingFilesOuterPanel.class, "PackagingFilesOuterPanel.groupLabel.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 8;
