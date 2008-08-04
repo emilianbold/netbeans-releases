@@ -119,7 +119,8 @@ public class StateWidget extends UMLNodeWidget
     private void initStateWidget()
     {
         stateWidget = new BackgroundWidget(
-                scene, getWidgetID() + "." + UMLNodeWidget.DEFAULT, "Default", 15, 15);
+                scene, getWidgetID() + "." + UMLNodeWidget.DEFAULT, 
+                NbBundle.getMessage(UMLNodeWidget.class, "LBL_Default"), 15, 15);
         detailWidget = new Widget(getScene());
         detailWidget.setForeground(null);
         detailWidget.setBackground(null);
