@@ -192,7 +192,7 @@ public class JRubyServerModule implements RubyInstance, CustomizerCookie {
                 
         public RunAppTask(final GlassfishModule module, final String appname, final File appdir, boolean startRequired) {
             commonModule = module;
-            applicationName = appname;
+            applicationName = appname.replaceAll("[ \t]", "_");
             applicationDir = appdir;
             contextRoot = calculateContextRoot(module, appname);
             doStart = startRequired;
@@ -226,7 +226,7 @@ public class JRubyServerModule implements RubyInstance, CustomizerCookie {
 
         private boolean isDeployed() {
             step = "checkdeployed";
-            String propertyBase = "applications.application." + applicationName.replace(' ', '_');
+            String propertyBase = "applications.application." + applicationName;
             ServerCommand.GetPropertyCommand getCmd = new ServerCommand.GetPropertyCommand(propertyBase);
             Future<GlassfishModule.OperationState> cmdOp = commonModule.execute(getCmd);
             try {
@@ -244,7 +244,7 @@ public class JRubyServerModule implements RubyInstance, CustomizerCookie {
                 
                 String location = properties.get(propertyBase + ".location");
                 if(location == null || !location.startsWith("file:") || 
-                        !applicationDir.equals(new File(location.substring(5)))) {
+                        !match(applicationDir, location.substring(5))) {
                     return false;
                 }
                 
@@ -266,6 +266,17 @@ public class JRubyServerModule implements RubyInstance, CustomizerCookie {
                 return false;
             }
             return true;
+        }
+
+        private boolean match(File dir, String path) {
+            String dirpath = dir.getAbsolutePath().replaceAll("[ \t]", "%20");
+            if(!dirpath.endsWith("/")) {
+                dirpath = dirpath + "/";
+            }
+            if(!path.endsWith("/")) {
+                path = path + "/";
+            }
+            return dirpath.equals(path);
         }
         
     }
@@ -305,7 +316,7 @@ public class JRubyServerModule implements RubyInstance, CustomizerCookie {
                     Logger.getLogger("glassfish-jruby").log(Level.FINEST, 
                             "undeploy V3/JRuby: " + newState + " - " + message);
                 }
-            }, applicationName));
+            }, applicationName.replaceAll("[ \t]", "_")));
         } else {
             throw new IllegalStateException("No V3 Common Server support found for V3/Ruby server instance");
         }
@@ -494,7 +505,7 @@ public class JRubyServerModule implements RubyInstance, CustomizerCookie {
     private static String calculateContextRoot(GlassfishModule commonModule, String applicationName) {
         boolean useRootContext = Boolean.valueOf(
                 commonModule.getInstanceProperties().get(USE_ROOT_CONTEXT_ATTR));
-        return useRootContext ? "/" : "/" + applicationName;
+        return useRootContext ? "/" : "/" + applicationName.replaceAll("[ \t]", "_");
     }
 
     /**
