@@ -53,7 +53,6 @@ import javax.swing.tree.TreePath;
 import junit.framework.Test;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jellytools.EditorWindowOperator;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.NewFileNameLocationStepOperator;
@@ -108,13 +107,11 @@ public class WebProjectValidation extends J2eeTestCase {
         }
     };
     // location of sample project (parent of PROJECT_FOLDER)
-    protected static final String PROJECT_LOCATION =
-            getProjectFolder().getAbsolutePath();
+    protected static String PROJECT_LOCATION;
     // name of sample project
     protected static String PROJECT_NAME = "SampleProject"; // NOI18N
     // foloder of sample project
-    protected static String PROJECT_FOLDER =
-            PROJECT_LOCATION+File.separator+PROJECT_NAME;
+    protected static String PROJECT_FOLDER;
     protected TestURLDisplayer urlDisplayer;
     private static final String BUILD_SUCCESSFUL = "BUILD SUCCESSFUL";
     private ServerInstance server;
@@ -123,11 +120,13 @@ public class WebProjectValidation extends J2eeTestCase {
     /** Need to be defined because of JUnit */
     public WebProjectValidation(String name) {
         super(name);
+        PROJECT_LOCATION = getProjectFolder().getAbsolutePath();
+        PROJECT_FOLDER = PROJECT_LOCATION+File.separator+PROJECT_NAME;        
     }
 
     /** Need to be defined because of JUnit */
     public WebProjectValidation() {
-        super(null);
+        super("WebProjectValidation");
     }
     
     public static Test suite() {
@@ -145,8 +144,8 @@ public class WebProjectValidation extends J2eeTestCase {
         return NbModuleSuite.create(conf);
     }
 
-    protected static File getProjectFolder() {
-        File dataDir = new WebProjectValidation().getDataDir();
+    protected  File getProjectFolder() {
+        File dataDir = new WebProjectValidation().getWorkDir();
         return Manager.normalizeFile(dataDir);
     }
 

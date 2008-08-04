@@ -18,7 +18,7 @@ public class ${name} extends TestCase {
     
     public ${name}(String testName) {
         super(testName);
-    }            
+    }
 
 <#if methodSetUp!false>
     <#if useAnnotations!false>

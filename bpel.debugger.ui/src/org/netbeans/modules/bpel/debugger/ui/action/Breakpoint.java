@@ -24,6 +24,7 @@ import java.beans.PropertyChangeListener;
 import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import javax.swing.SwingUtilities;
 import javax.swing.text.StyledDocument;
 import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.api.debugger.DebuggerManager;
@@ -88,6 +89,17 @@ public class Breakpoint extends ActionsProviderSupport
 
     public void propertyChange(
             final PropertyChangeEvent event) {
+        
+        // IZ 135771. Ensure we're in EDT.
+        if (!SwingUtilities.isEventDispatchThread()) {
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    Breakpoint.this.propertyChange(event);
+                }
+            });
+            
+            return;
+        }
         
         final TopComponent activeTc = 
                 WindowManager.getDefault().getRegistry().getActivated();

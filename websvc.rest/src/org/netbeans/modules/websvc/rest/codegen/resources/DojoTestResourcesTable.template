@@ -28,6 +28,8 @@
                     var restStore = eval('new rdj.data.'+store+'Store({serviceUrl:"'+storeUrl+'"})');
                     var tableElement = djd43.byId("content");
                     var query = null;
+                    //Uncomment below if using proxy for javascript cross-domain.
+                    //rdj.setProxy("___BASE_URL___/../restproxy");
                     rdj.displayResourcesTable(restStore, query, tableElement);
 		}		
 		djd43.addOnLoad(loadResourcesTable);
