@@ -1069,8 +1069,7 @@ public final class GemPanel extends JPanel {
     }//GEN-LAST:event_installLocalButtonActionPerformed
 
     private void allVersionsCheckboxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_allVersionsCheckboxActionPerformed
-        RubyPreferences.setFetchAllVersions(!getGemManager().hasObsoleteRubyGemsVersion() &&
-                allVersionsCheckbox.isSelected());
+        RubyPreferences.setFetchAllVersions(allVersionsCheckbox.isSelected());
     }//GEN-LAST:event_allVersionsCheckboxActionPerformed
 
     private void descriptionCheckboxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_descriptionCheckboxActionPerformed
