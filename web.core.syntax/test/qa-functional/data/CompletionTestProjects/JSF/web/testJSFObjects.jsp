@@ -15,7 +15,7 @@ cookie
 
 
 <%--CC
-<h:outputText value="#{MyB|}" title="Hi" />
+<h:outputText value="#{|}" title="Hi" />
 MyBean MyBean
 <h:outputText value="#{MyBean}" title="Hi" />
 --%>
