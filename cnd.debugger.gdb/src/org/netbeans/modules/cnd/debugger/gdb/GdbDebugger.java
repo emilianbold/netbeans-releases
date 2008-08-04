@@ -1085,6 +1085,12 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             if (!isTmp && getState().equals(STATE_SILENT_STOP) && pendingBreakpointMap.isEmpty()) {
                 setRunning();
             }
+        } else if (msg.contains("(no debugging symbols found)") && state.equals(STATE_STARTING)) { // NOI18N
+            DialogDisplayer.getDefault().notify(
+                           new NotifyDescriptor.Message(NbBundle.getMessage(GdbDebugger.class,
+                           "ERR_NoDebuggingSymbolsFound"))); // NOI18N
+            setExited();
+            finish(false);
         } else if (msg.startsWith("gdb: unknown target exception")) { // NOI18N
             DialogDisplayer.getDefault().notify(
                            new NotifyDescriptor.Message(NbBundle.getMessage(GdbDebugger.class,
