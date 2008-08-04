@@ -82,6 +82,9 @@ public class PackagingNewEntryPanel extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.insets = new java.awt.Insets(16, 4, 0, 0);
         add(entryComboBox, gridBagConstraints);
+        entryComboBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PackagingNewEntryPanel.class, "PackagingNewEntryPanel.entryComboBox.AccessibleContext.accessibleName")); // NOI18N
+        entryComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PackagingNewEntryPanel.class, "PackagingNewEntryPanel.entryComboBox.AccessibleContext.accessibleDescription")); // NOI18N
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 0;
@@ -90,6 +93,7 @@ public class PackagingNewEntryPanel extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(16, 4, 0, 16);
         add(entryValueTextField, gridBagConstraints);
+        entryValueTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PackagingNewEntryPanel.class, "PackagingNewEntryPanel.entryValueTextField.AccessibleContext.accessibleDescription")); // NOI18N
 
         scrollPane.setBorder(null);
 
@@ -99,6 +103,8 @@ public class PackagingNewEntryPanel extends javax.swing.JPanel {
         docArea.setRows(5);
         docArea.setWrapStyleWord(true);
         scrollPane.setViewportView(docArea);
+        docArea.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PackagingNewEntryPanel.class, "PackagingNewEntryPanel.docArea.AccessibleContext.accessibleName")); // NOI18N
+        docArea.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PackagingNewEntryPanel.class, "PackagingNewEntryPanel.docArea.AccessibleContext.accessibleDescription")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;

@@ -151,6 +151,8 @@ public class PackagingPanel extends javax.swing.JPanel implements HelpCtx.Provid
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         innerPanel.add(tabbedPane, gridBagConstraints);
+        tabbedPane.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PackagingPanel.class, "PackagingPanel.tabbedPane.AccessibleContext.accessibleName")); // NOI18N
+        tabbedPane.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PackagingPanel.class, "PackagingPanel.tabbedPane.AccessibleContext.accessibleDescription")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
