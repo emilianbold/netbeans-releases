@@ -396,6 +396,8 @@ public class PackagingFilesPanel extends ListEditorPanel {
 //		setRowHeight(19);
             getAccessibleContext().setAccessibleDescription(""); // NOI18N
             getAccessibleContext().setAccessibleName(""); // NOI18N
+            
+            putClientProperty("terminateEditOnFocusLost", Boolean.TRUE); // NOI18N
         }
 
         @Override
