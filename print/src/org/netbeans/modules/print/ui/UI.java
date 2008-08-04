@@ -494,11 +494,11 @@ public final class UI {
     }
   }
 
-  public static void stackTrace() {
-    stackTrace(null);
+  public static void dump() {
+    dump(null);
   }
 
-  public static void stackTrace(Object object) {
+  public static void dump(Object object) {
     out();
     out();
 
@@ -655,12 +655,10 @@ public final class UI {
 
       if (inSwingThread) {
         SwingUtilities.invokeLater(new Runnable() { public void run() {
-          myDialog.pack();
           myDialog.setVisible(true);
         }});
       }
       else {
-        myDialog.pack();
         myDialog.setVisible(true);
       }
     }

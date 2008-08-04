@@ -47,10 +47,10 @@ import java.awt.event.MouseEvent;
 import java.util.Vector;
 import javax.accessibility.AccessibleContext;
 import javax.swing.JButton;
+import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.ListSelectionModel;
-import javax.swing.UIManager;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.openide.util.NbBundle;
@@ -141,7 +141,7 @@ public class ListEditorPanel extends javax.swing.JPanel {
 
 	// Add extra buttons
 	if (extraButtons != null) {
-	    int index = 0; // strt index
+	    int index = 1; // strt index
 	    for (int i = 0; i < extraButtons.length; i++)
 		addExtraButton(extraButtons[i], index++);
 	}
@@ -165,6 +165,10 @@ public class ListEditorPanel extends javax.swing.JPanel {
 
     public boolean getAllowedToRemoveAll() {
 	return allowedToRemoveAll;
+    }
+    
+    public JLabel getListLabel() {
+        return listLabel;
     }
 
     public String getListLabelText() {

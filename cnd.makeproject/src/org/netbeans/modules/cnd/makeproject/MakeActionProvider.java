@@ -52,6 +52,7 @@ import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.Set;
 import javax.swing.JButton;
+import javax.swing.JOptionPane;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.cnd.actions.BuildToolsAction;
@@ -106,6 +107,7 @@ import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
+import org.openide.windows.WindowManager;
 
 /** Action provider of the Make project. This is the place where to do
  * strange things to Make actions. E.g. compile-single.
@@ -200,15 +202,6 @@ public class MakeActionProvider implements ActionProvider {
         String projectName = info.getDisplayName();
         MakeConfigurationDescriptor pd = getProjectDescriptor();
         MakeConfiguration conf = (MakeConfiguration)pd.getConfs().getActive();
-//        String hkey = conf.getDevelopmentHost().getName();
-//
-//        if (!hkey.equals(CompilerSetManager.LOCALHOST)) {
-//            ServerList registry = (ServerList) Lookup.getDefault().lookup(ServerList.class);
-//            assert registry != null;
-//            ServerRecord record = registry.get(hkey);
-//            assert record != null;
-//            record.validate();
-//        }
         
         if (COMMAND_DELETE.equals(command)) {
             DefaultProjectOperations.performDefaultDeleteOperation(project);
@@ -228,6 +221,18 @@ public class MakeActionProvider implements ActionProvider {
         if (COMMAND_RENAME.equals(command)) {
             DefaultProjectOperations.performDefaultRenameOperation(project, null);
             return ;
+        }
+        
+        if (!conf.getDevelopmentHost().isLocalhost()) {
+            String hkey = conf.getDevelopmentHost().getName();
+            ServerList registry = (ServerList) Lookup.getDefault().lookup(ServerList.class);
+            assert registry != null;
+            ServerRecord record = registry.get(hkey);
+            assert record != null;
+            if (!record.isOnline()) {
+                initServerRecord(record);
+                return;
+            }
         }
         
         // Add actions to do
@@ -250,6 +255,15 @@ public class MakeActionProvider implements ActionProvider {
         // Execute actions
         if (actionEvents.size() > 0)
             ProjectActionSupport.fireActionPerformed((ProjectActionEvent[])actionEvents.toArray(new ProjectActionEvent[actionEvents.size()]));
+    }
+
+    private void initServerRecord(ServerRecord record) {
+        String message = MessageFormat.format(getString("ERR_NeedToInitializeRemoteHost"), record.getName());
+        int res = JOptionPane.showConfirmDialog(WindowManager.getDefault().getMainWindow(), message, getString("DLG_TITLE_Connect"), JOptionPane.YES_NO_OPTION);
+        if (res == JOptionPane.YES_OPTION) {
+            // start validation phase
+            record.validate();
+        }
     }
     
     class BatchConfigurationSelector implements ActionListener {
@@ -957,16 +971,26 @@ public class MakeActionProvider implements ActionProvider {
         String errormsg = null;
         
         if (conf.getPackagingConfiguration().getFiles().getValue().size() == 0) {
-            errormsg = "Package is empty.\nOpen Build|Packaging property in the project's properties and define this package."; // FIXUP
+            errormsg = getString("ERR_EMPTY_PACKAGE");
         }
         
         if (errormsg == null) {
             String tool = conf.getPackagingConfiguration().getToolValue();
-            if (!IpeUtils.isPathAbsolute(tool) && Path.findCommand(tool) == null) {
-                errormsg = "Cannot find \'" + tool + "\' in your PATH. This feature may not be available on this platform."; // FIXUP
-            }
-            else if (IpeUtils.isPathAbsolute(tool) && !(new File(tool).exists())) {
-                errormsg = "Cannot find \'" + tool + "\'. This feature may not be available on this platform."; // FIXUP
+            if (conf.getDevelopmentHost().isLocalhost()) {
+                if (!IpeUtils.isPathAbsolute(tool) && Path.findCommand(tool) == null) {
+                    errormsg = NbBundle.getMessage(MakeActionProvider.class, "ERR_MISSING_TOOL1", tool); // NOI18N
+                }
+                else if (IpeUtils.isPathAbsolute(tool) && !(new File(tool).exists())) {
+                    errormsg = NbBundle.getMessage(MakeActionProvider.class, "ERR_MISSING_TOOL2", tool); // NOI18N
+                }
+            } else {
+                String hkey = conf.getDevelopmentHost().getName();
+                ServerList serverList = (ServerList) Lookup.getDefault().lookup(ServerList.class);
+                if(serverList != null) {
+                    if (!serverList.isValidExecutable(hkey, tool)) {
+                        errormsg = NbBundle.getMessage(MakeActionProvider.class, "ERR_MISSING_TOOL3", tool, hkey); // NOI18N
+                    }
+                }
             }
         }
         

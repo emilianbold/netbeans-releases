@@ -536,7 +536,7 @@ public class ConfigurationMakefileWriter {
         if (conf.getDependencyChecking().getValue() && !conf.isMakefileConfiguration()) {
             bw.write("\n"); // NOI18N
             bw.write("# Enable dependency checking\n"); // NOI18N
-            bw.write("include .dep.inc\n");
+            bw.write("include .dep.inc\n"); // NOI18N
         }
     }
     
@@ -717,6 +717,9 @@ public class ConfigurationMakefileWriter {
                 bw.write("cd " + "$TMPDIR/" + toDir + "\n"); // NOI18N
                 bw.write("ln -s " + elem.getFrom() + " " + toName + "\n"); // NOI18N
             }
+            else if (elem.getType() == FileElement.FileType.UNKNOWN) {
+                // skip ???
+            }
             else {
                 assert false;
             }
@@ -849,7 +852,11 @@ public class ConfigurationMakefileWriter {
             bw.write(" none"); // Classes // NOI18N
             bw.write(" " + elem.getTo());// NOI18N
             if (elem.getFrom().length() > 0) {
-                bw.write("=" + elem.getFrom());// NOI18N
+                String from = elem.getFrom();
+                if (IpeUtils.isPathAbsolute(from)) {
+                    from = IpeUtils.toRelativePath(conf.getBaseDir(), from);
+                }
+                bw.write("=" + from);// NOI18N
             }
             if (elem.getType() != FileElement.FileType.SOFTLINK) {
                 bw.write(" 0" + elem.getPermission());// NOI18N

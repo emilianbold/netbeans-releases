@@ -66,6 +66,7 @@ final class PhpTemplates implements RecommendedTemplates, PrivilegedTemplates {
         "Templates/Other/html.html", // NOI18N
         "Templates/Other/xhtml.xhtml", // NOI18N
         "Templates/Other/CascadeStyleSheet.css", // NOI18N
+        "Templates/Other/Folder" // NOI18N
     };
 
     public String[] getRecommendedTypes() {

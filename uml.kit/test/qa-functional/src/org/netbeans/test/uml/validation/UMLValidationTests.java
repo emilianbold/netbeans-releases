@@ -47,17 +47,19 @@
 
 package org.netbeans.test.uml.validation;
 
-import java.util.LinkedList;
+//import java.util.LinkedList;
+import java.io.IOException;
+import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jemmy.operators.JMenuBarOperator;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JDialogOperator;
 import org.netbeans.jellytools.MainWindowOperator;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.test.umllib.DiagramElementOperator;
+import org.netbeans.junit.NbModuleSuite;
+//import org.netbeans.test.umllib.DiagramElementOperator;
 import org.netbeans.test.umllib.DiagramOperator;
 import org.netbeans.test.umllib.DiagramTypes;
-import org.netbeans.test.umllib.ElementTypes;
+//import org.netbeans.test.umllib.ElementTypes;
 import org.netbeans.test.umllib.project.JavaProject;
 import org.netbeans.test.umllib.project.ProjectType;
 import org.netbeans.test.umllib.project.UMLProject;
@@ -65,8 +67,9 @@ import org.netbeans.test.umllib.NewDiagramWizardOperator;
 import org.netbeans.test.umllib.testcases.UMLTestCase;
 import org.netbeans.test.umllib.project.Project;
 import org.netbeans.test.umllib.util.Utils;
-import org.netbeans.test.umllib.values.Arg;
+//import org.netbeans.test.umllib.values.Arg;
 import org.netbeans.jellytools.nodes.Node;
+import org.openide.util.Exceptions;
  
 /**
  *
@@ -85,21 +88,28 @@ public class UMLValidationTests extends UMLTestCase {
     public static final String DIAGRAM_CLASS_NAME2 = "PlatformIndependentClassDiagram";
     public static final String DIAGRAM_CLASS_NAME3 = "REClassDiagram";
 
+    static String[] tests = new String[]{
+            "testCreateJavaPlatformProject",
+            "testCreatePlatformIndependentProject",
+            "testCreateREJavaPlatformProject",
+            "testUMLMainMenu"
+    };
 
     /** Creates a new instance of DevelopingApplications */
     public UMLValidationTests(String name) {
         super(name);
     }
 
-
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new UMLValidationTests("testCreateJavaPlatformProject"));
-        suite.addTest(new UMLValidationTests("testCreatePlatformIndependentProject"));
-        suite.addTest(new UMLValidationTests("testCreateREJavaPlatformProject"));
-        suite.addTest(new UMLValidationTests("testUMLMainMenu"));
-        return suite;
+    public static junit.framework.Test suite() {
+        return NbModuleSuite.create(
+                NbModuleSuite.createConfiguration(UMLValidationTests.class)
+                .addTest(tests)
+                .clusters(".*")
+                .enableModules(".*")
+                .gui(true)
+                );
     }
+
 
 
     protected void setUp() {
@@ -175,7 +185,15 @@ public class UMLValidationTests extends UMLTestCase {
      * Create Reversed Engineering project
      */
     public void testCreateREJavaPlatformProject() {
-        Project.openProject(XTEST_PROJECT_DIR + "/Projects-Tutorials/REJavaApplication/BankApp");
+        String data_dir = getDataDir().getAbsolutePath();
+     //   data_dir = System.getProperty("nbjunit.workdir");
+        System.err.println("==============================================");
+        System.err.println(data_dir);
+        System.err.println(System.getProperty("nbjunit.workdir"));
+        System.out.println("==============================================");
+        Project.openProject(data_dir + "/Projects-Tutorials/REJavaApplication/BankApp");
+
+ //       Project.openProject(XTEST_PROJECT_DIR + "/Projects-Tutorials/REJavaApplication/BankApp");
 
         JavaProject javaProject = new JavaProject(PROJECT_NAME_JAVA, ProjectType.JAVA_APPLICATION);
 

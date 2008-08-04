@@ -45,6 +45,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -62,6 +63,7 @@ import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.Parameters;
 
 /**
  * Data about Eclipse project to import.
@@ -84,6 +86,7 @@ public final class ProjectImportModel {
     
     public ProjectImportModel(EclipseProject project, File projectLocation, JavaPlatform platform, 
             List<Project> alreadyImportedProjects, List<WizardDescriptor.Panel<WizardDescriptor>> extraWizardPanels) {
+        Parameters.notNull("project", project); // NOI18N
         this.project = project;
         assert projectLocation == null || projectLocation.equals(FileUtil.normalizeFile(projectLocation));
         this.projectLocation = projectLocation;
@@ -355,6 +358,21 @@ public final class ProjectImportModel {
         EclipseUtils.tryLoad(p, getEclipseWorkspaceFolder(), ".metadata/.plugins/org.eclipse.core.runtime/" + settings); // NOI18N
         EclipseUtils.tryLoad(p, getEclipseProjectFolder(),settings); // NOI18N
         return p;
+    }
+
+    /**
+     * Finds any launch configurations associated with this project in the workspace.
+     * @return a possibly empty collection of launch configurations
+     */
+    public Collection<LaunchConfiguration> getLaunchConfigurations() {
+        List<LaunchConfiguration> configs = new ArrayList<LaunchConfiguration>();
+        Workspace workspace = project.getWorkspace();
+        for (LaunchConfiguration config : workspace.getLaunchConfigurations()) {
+            if (getProjectName().equals(config.getProjectName())) {
+                configs.add(config);
+            }
+        }
+        return configs;
     }
 
     /**

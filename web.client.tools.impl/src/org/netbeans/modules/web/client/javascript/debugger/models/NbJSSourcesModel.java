@@ -385,7 +385,10 @@ public class NbJSSourcesModel implements TreeModel, NodeModel, TableModel,
             return "";
         } else if (node instanceof JSSource) {
             JSSource source = (JSSource) node;
-            final FileObject fileObjectForSource = debugger.getFileObjectForSource(source);           
+            final FileObject fileObjectForSource = debugger.getFileObjectForSource(source);
+            if ( fileObjectForSource == null ){
+                Log.getLogger().warning("The File Object for the following source is null:" + source.getLocation().getURI());
+            }
             return (fileObjectForSource instanceof URLFileObject ? 
                 fileObjectForSource.getPath() : FileUtil.getFileDisplayName(fileObjectForSource));
         }

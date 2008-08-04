@@ -331,23 +331,17 @@ public class Util
                                                   Class<? extends Widget> cls)
     {
         Widget ret = null;
-        if (startWith != null)
+        if (startWith != null && cls != null)
         {
-            if (cls.isInstance(startWith))
+            for (Widget tmp = startWith;
+                    tmp != null && !(tmp instanceof Scene);
+                    tmp = tmp.getParentWidget())
             {
-                ret = startWith;
-            } else
-            {
-                for (Widget tmp = startWith.getParentWidget();
-                        tmp != null;
-                        tmp = tmp.getParentWidget())
+                if (cls.isInstance(tmp))
                 {
-                    if (cls.isInstance(tmp))
-                    {
-                        ret = tmp;
-                        break;
-                    }
-                }
+                    ret = tmp;
+                    break;
+                } 
             }
         }
         return ret;

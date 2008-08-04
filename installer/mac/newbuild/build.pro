@@ -67,6 +67,7 @@
     <property name="mysql_connector.name" value="mysql-connector-java-5.1.6-bin"/>
     <property name="mysql_10.5.location" value="${binary_cache_host}/mysql/${mysql_10.5.pkg.name}.dmg"/>
     <property name="mysql_10.4.location" value="${binary_cache_host}/mysql/${mysql_10.4.pkg.name}.dmg"/>
+    <property name="mysql.install.dir" value="/usr/local/mysql"/>
     <property name="mysql_prefPane.location" value="${binary_cache_host}/mysql/MySQL.prefPane-leopardfix.zip"/>
     <property name="mysql_connector.location" value="${binary_cache_host}/mysql/${mysql_connector.name}.jar"/>   
     <property name="mysql_license.name" value="NB_GF_MySQL.txt"/>   

@@ -62,6 +62,7 @@ import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.junit.output.antutils.AntProject;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -576,53 +577,39 @@ final class JUnitOutputReader {
      */
     private static File determineResultsDir(final AntEvent event) {
         File resultsDir = null;
-        String dirName = null;
         
         final String taskName = event.getTaskName();
         if (taskName != null) {
             if (taskName.equals("junit")) {                             //NOI18N
-                dirName = determineJunitTaskResultsDir(event);
+                resultsDir = determineJunitTaskResultsDir(event);
             } else if (taskName.equals("java")) {                       //NOI18N
-                dirName = determineJavaTaskResultsDir(event);
+                resultsDir = determineJavaTaskResultsDir(event);
             }
         }
         
-        if (dirName != null) {
-            resultsDir = new File(dirName);
-            if (!resultsDir.isAbsolute()) {
-                resultsDir = new File(event.getProperty("basedir"),     //NOI18N
-                                      dirName);
-            }
-            if (!resultsDir.exists() || !resultsDir.isDirectory()) {
-                resultsDir = null;
-            }
+        if ((resultsDir != null) && resultsDir.exists() && resultsDir.isDirectory()) {
+            return resultsDir;
         } else {
-            resultsDir = null;
+            return null;
         }
-        
-        return resultsDir;
     }
     
     /**
      */
-    private static String determineJunitTaskResultsDir(final AntEvent event) {
+    private static File determineJunitTaskResultsDir(final AntEvent event) {
         final TaskStructure taskStruct = event.getTaskStructure();
         if (taskStruct == null) {
             return null;
         }
         
-        String dirName = null;
+        String todirAttr = null;
         boolean hasXmlFileOutput = false;
         
         for (TaskStructure taskChild : taskStruct.getChildren()) {
             String taskChildName = taskChild.getName();
             if (taskChildName.equals("batchtest")                       //NOI18N
                     || taskChildName.equals("test")) {                  //NOI18N
-                String dirAttr = taskChild.getAttribute("todir");       //NOI18N
-                dirName = (dirAttr != null)
-                          ? event.evaluate(dirAttr)
-                          : ".";                                        //NOI18N
-                            /* default is the current directory (Ant manual) */
+                todirAttr = taskChild.getAttribute("todir");            //NOI18N
                 
             } else if (taskChildName.equals("formatter")) {             //NOI18N
                 if (hasXmlFileOutput) {
@@ -634,23 +621,30 @@ final class JUnitOutputReader {
                     String useFileAttr
                             = taskChild.getAttribute("usefile");        //NOI18N
                     if ((useFileAttr == null)
-                        || "true".equals(event.evaluate(useFileAttr))) {//NOI18N
+                        || AntProject.toBoolean(event.evaluate(useFileAttr))) {
                         hasXmlFileOutput = true;
                     }
                 }
             }
         }
-        
-        return hasXmlFileOutput ? dirName : null;
+
+        if (!hasXmlFileOutput) {
+            return null;
+        }
+
+        File resultsDir = getFile(todirAttr, event);
+        return findAbsolutePath(resultsDir, taskStruct, event);
     }
-    
+
     /**
      */
-    private static String determineJavaTaskResultsDir(final AntEvent event) {
+    private static File determineJavaTaskResultsDir(final AntEvent event) {
         final TaskStructure taskStruct = event.getTaskStructure();
         if (taskStruct == null) {
             return null;
         }
+
+        String todirPath = null;
         
         for (TaskStructure taskChild : taskStruct.getChildren()) {
             String taskChildName = taskChild.getName();
@@ -668,11 +662,13 @@ final class JUnitOutputReader {
                                 && formatter.substring(0, commaIndex).equals(XML_FORMATTER_CLASS_NAME)) {
                             String fullReportFileName = formatter.substring(commaIndex + 1);
                             int lastSlashIndex = fullReportFileName.lastIndexOf(File.separatorChar);
-                            String dirName = (lastSlashIndex != -1)
-                                              ? fullReportFileName.substring(0, lastSlashIndex)
-                                              : ".";                    //NOI18N
-                            if (dirName.length() != 0) {
-                                return dirName;
+                            if (lastSlashIndex != -1) {
+                                todirPath = fullReportFileName.substring(0, lastSlashIndex);
+                                if (todirPath.length() == 0) {
+                                    todirPath = null;
+                                }
+                            } else {
+                                todirPath = ".";                        //NOI18N
                             }
                         }
                     }
@@ -680,9 +676,55 @@ final class JUnitOutputReader {
             }
         }
             
-        return null;
+        if (todirPath == null) {
+            return null;
+        }
+
+        File resultsDir = (todirPath != ".") ? new File(todirPath)      //NOI18N
+                                             : null;
+        return findAbsolutePath(resultsDir, taskStruct, event);
+    }
+
+    private static File findAbsolutePath(File path, TaskStructure taskStruct, AntEvent event) {
+        if (isAbsolute(path)) {
+            return path;
+        }
+
+        String forkAttr = taskStruct.getAttribute("fork");              //NOI18N
+        if ((forkAttr != null) && AntProject.toBoolean(event.evaluate(forkAttr))) {
+            String dirAttr = taskStruct.getAttribute("dir");            //NOI18N
+            path = combine(getFile(dirAttr, event), path);
+            if (isAbsolute(path)) {
+                return path;
+            }
+        }
+
+        return combine(getBaseDir(event), path);
     }
     
+    private static File combine(File parentPath, File path) {
+        if (path == null) {
+            return parentPath;
+        }
+        if (parentPath == null) {
+            return path;
+        }
+        return new File(parentPath, path.getPath());
+    }
+
+    private static boolean isAbsolute(File path) {
+        return (path != null) && path.isAbsolute();
+    }
+
+    private static File getFile(String attrValue, AntEvent event) {
+        return (attrValue != null) ? new File(event.evaluate(attrValue))
+                                   : null;
+    }
+
+    private static File getBaseDir(AntEvent event) {
+        return new File(event.getProperty("basedir"));                  //NOI18N
+    }
+
     /**
      */
     private Report createReport(final String suiteName) {
