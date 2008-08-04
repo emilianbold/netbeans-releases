@@ -41,7 +41,9 @@
 
 package org.netbeans.modules.db.sql.editor;
 
+import javax.swing.Action;
 import javax.swing.text.Document;
+import javax.swing.text.TextAction;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Syntax;
 import org.netbeans.editor.SyntaxSupport;
@@ -74,6 +76,15 @@ public class SQLEditorKit extends NbEditorKit {
     /** Create syntax support */
     public SyntaxSupport createSyntaxSupport(BaseDocument doc) {
         return new SQLSyntaxSupport(doc);
+    }
+
+    @Override
+    protected Action[] createActions() {
+        Action[] superActions = super.createActions();
+        Action[] sqlActions = new Action[] {
+            new ToggleCommentAction("--") // NOI18N
+        };
+        return TextAction.augmentList(superActions, sqlActions);
     }
     
     /**
