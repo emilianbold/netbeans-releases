@@ -45,6 +45,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -61,6 +62,7 @@ import org.netbeans.modules.ruby.railsprojects.server.spi.RubyInstance;
 import org.netbeans.modules.glassfish.spi.CustomizerCookie;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.glassfish.spi.OperationStateListener;
+import org.netbeans.modules.glassfish.spi.ServerCommand;
 import org.netbeans.modules.glassfish.spi.ServerUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
@@ -160,13 +162,13 @@ public class JRubyServerModule implements RubyInstance, CustomizerCookie {
             }
 
             GlassfishModule.ServerState state = commonModule.getServerState();
-            if(state == GlassfishModule.ServerState.STOPPED) {
+            if(state == GlassfishModule.ServerState.STOPPED || 
+                    state == GlassfishModule.ServerState.RUNNING) {
                 FutureTask<OperationState> task = new FutureTask<OperationState>(
-                        new RunAppTask(commonModule, applicationName, applicationDir));
+                        new RunAppTask(commonModule, applicationName, applicationDir, 
+                                state == GlassfishModule.ServerState.STOPPED));
                 RequestProcessor.getDefault().post(task);
                 return task;
-            } else if(state == GlassfishModule.ServerState.RUNNING) {
-                return deploy(applicationName, applicationDir);
             } else {
                 // !PW XXX server state indeterminate - starting or stopping, 
                 // fail action until wait capability installed.
@@ -181,31 +183,38 @@ public class JRubyServerModule implements RubyInstance, CustomizerCookie {
             Callable<OperationState>,
             OperationStateListener 
     {
-        
         private final GlassfishModule commonModule;
         private final String applicationName;
         private final File applicationDir;
+        private final boolean doStart;
+        private String contextRoot;
         private String step;
                 
-        public RunAppTask(final GlassfishModule module, final String appname, final File appdir) {
+        public RunAppTask(final GlassfishModule module, final String appname, final File appdir, boolean startRequired) {
             commonModule = module;
             applicationName = appname;
             applicationDir = appdir;
+            contextRoot = calculateContextRoot(module, appname);
+            doStart = startRequired;
             step = "start";
         }
         
         public OperationState call() throws Exception {
-            final Future<GlassfishModule.OperationState> startFuture = 
-                    commonModule.startServer(this);
-            GlassfishModule.OperationState result = startFuture.get();
+            GlassfishModule.OperationState result = GlassfishModule.OperationState.COMPLETED;
+            if(doStart) {
+                final Future<GlassfishModule.OperationState> startFuture = 
+                        commonModule.startServer(this);
+                result = startFuture.get();
+            }
             if(result == GlassfishModule.OperationState.COMPLETED) {
-                step = "deploy";
-                boolean useRootContext = Boolean.valueOf(
-                        commonModule.getInstanceProperties().get(USE_ROOT_CONTEXT_ATTR));
-                final Future<GlassfishModule.OperationState> deployFuture = 
-                        commonModule.deploy(this, applicationDir, applicationName, 
-                        useRootContext ? "/" : "/" + applicationName);
-                result = deployFuture.get();
+                if(isDeployed()) {
+                    result = GlassfishModule.OperationState.COMPLETED;
+                } else {
+                    step = "deploy";
+                    final Future<GlassfishModule.OperationState> deployFuture = 
+                            commonModule.deploy(this, applicationDir, applicationName, contextRoot);
+                    result = deployFuture.get();
+                }
             }
             return translateOperationState(result);
         }
@@ -213,6 +222,56 @@ public class JRubyServerModule implements RubyInstance, CustomizerCookie {
         public void operationStateChanged(final GlassfishModule.OperationState newState, final String message) {
             Logger.getLogger("glassfish-jruby").log(Level.FINEST, 
                     "runApplication/" + step + " V3/JRuby: " + newState + " - " + message);
+        }
+
+        private boolean isDeployed() {
+            long ts = 0, es = 0;
+            step = "checkdeployed";
+            String propertyBase = "applications.application." + applicationName.replace(' ', '_');
+            ServerCommand.GetPropertyCommand getCmd = new ServerCommand.GetPropertyCommand(propertyBase);
+            Future<GlassfishModule.OperationState> cmdOp = commonModule.execute(getCmd);
+            try {
+                ts = System.nanoTime();
+                GlassfishModule.OperationState result = cmdOp.get(15000, TimeUnit.MILLISECONDS);
+                es = System.nanoTime();
+                if(result != GlassfishModule.OperationState.COMPLETED) {
+                    return false;
+                }
+                
+                Map<String, String> properties = getCmd.getData();
+                
+                String name = properties.get(propertyBase + ".name");
+                if(name == null || !name.equals(applicationName)) {
+                    return false;
+                }
+                
+                String location = properties.get(propertyBase + ".location");
+                if(location == null || !location.startsWith("file:") || 
+                        !applicationDir.equals(new File(location.substring(5)))) {
+                    return false;
+                }
+                
+                String contextRootProperty = propertyBase + ".context-root";
+                String deployedContextRoot = properties.get(contextRootProperty);
+                if(deployedContextRoot == null) {
+                    return false;
+                } else if(!deployedContextRoot.equals(contextRoot)) {
+                    ServerCommand.SetPropertyCommand setCmd = new ServerCommand.SetPropertyCommand(
+                            contextRootProperty, contextRoot);
+                    result = commonModule.execute(setCmd).get(15000, TimeUnit.MILLISECONDS);
+                    if(result != GlassfishModule.OperationState.COMPLETED) {
+                        return false;
+                    }
+                }
+            } catch(Exception ex) {
+                // Assume application is not deployed correctly.  Not expected.
+                es = System.nanoTime();
+                Logger.getLogger("glassfish.javaee").log(Level.FINE, ex.getLocalizedMessage(), ex);
+                return false;
+            } finally {
+                Logger.getLogger("glassfish.javaee").log(Level.FINE, "get command: " + (es - ts) / 1000000);
+            }
+            return true;
         }
         
     }
@@ -234,14 +293,10 @@ public class JRubyServerModule implements RubyInstance, CustomizerCookie {
     public Future<OperationState> deploy(final String applicationName, final File applicationDir) {
         GlassfishModule commonModule = lookup.lookup(GlassfishModule.class);
         if(commonModule != null) {
-            boolean useRootContext = Boolean.valueOf(
-                    commonModule.getInstanceProperties().get(USE_ROOT_CONTEXT_ATTR));
-            return wrapTask(commonModule.deploy(new OperationStateListener() {
-                public void operationStateChanged(final GlassfishModule.OperationState newState, final String message) {
-                    Logger.getLogger("glassfish-jruby").log(Level.FINEST, 
-                            "deploy V3/JRuby: " + newState + " - " + message);
-                }
-            }, applicationDir, applicationName, useRootContext ? "/" : "/" + applicationName));
+            FutureTask<OperationState> task = new FutureTask<OperationState>(
+                    new RunAppTask(commonModule, applicationName, applicationDir, false));
+            RequestProcessor.getDefault().post(task);
+            return task;
         } else {
             throw new IllegalStateException("No V3 Common Server support found for V3/Ruby server instance");
         }
@@ -289,8 +344,12 @@ public class JRubyServerModule implements RubyInstance, CustomizerCookie {
     }
 
     public String getContextRoot(String applicationName) {
-//        return applicationName;
-        return "";
+        String result = applicationName;
+        GlassfishModule commonModule = lookup.lookup(GlassfishModule.class);
+        if(commonModule != null) {
+            result = calculateContextRoot(commonModule, applicationName);
+        }
+        return result;
     }
 
     public int getRailsPort() {
@@ -436,6 +495,12 @@ public class JRubyServerModule implements RubyInstance, CustomizerCookie {
         }
         
         return serverJars;
+    }
+
+    private static String calculateContextRoot(GlassfishModule commonModule, String applicationName) {
+        boolean useRootContext = Boolean.valueOf(
+                commonModule.getInstanceProperties().get(USE_ROOT_CONTEXT_ATTR));
+        return useRootContext ? "/" : "/" + applicationName;
     }
 
     /**
