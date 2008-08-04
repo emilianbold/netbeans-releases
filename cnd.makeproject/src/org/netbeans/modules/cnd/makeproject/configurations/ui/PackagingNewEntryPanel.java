@@ -67,6 +67,7 @@ public class PackagingNewEntryPanel extends javax.swing.JPanel {
         setPreferredSize(new java.awt.Dimension(600, 400));
         setLayout(new java.awt.GridBagLayout());
 
+        entryLabel.setDisplayedMnemonic('n');
         entryLabel.setLabelFor(entryComboBox);
         entryLabel.setText(org.openide.util.NbBundle.getMessage(PackagingNewEntryPanel.class, "PackagingNewEntryPanel.entryLabel.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -110,6 +111,7 @@ public class PackagingNewEntryPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(8, 16, 16, 16);
         add(scrollPane, gridBagConstraints);
 
+        valueLabel.setDisplayedMnemonic('v');
         valueLabel.setLabelFor(entryValueTextField);
         valueLabel.setText(org.openide.util.NbBundle.getMessage(PackagingNewEntryPanel.class, "PackagingNewEntryPanel.valueLabel.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
