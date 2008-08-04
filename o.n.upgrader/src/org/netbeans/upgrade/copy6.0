@@ -72,7 +72,7 @@ include Shortcuts/.*
 include Templates/Classes/.*
 include Templates/J2MEProjectConfigurations/.*\.cfg
 include WebServices/service-groups.xml
-include WebServices/<service-name>/<service-name>-saas.xml
+include WebServices/.*/.*-saas.xml
 exclude Windows2Local/Components/DesignInspector.settings
 exclude Windows2Local/Groups/mvd/DesignInspector.wstcgrp
 exclude Windows2Local/Modes/navigator/DesignInspector.wstcref
