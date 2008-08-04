@@ -1,0 +1,9 @@
+
+*** LOCAL GEMS ***
+
+actionmailer (2.1.0)
+actionpack (2.1.0)
+ruby-debug-base (0.10.1)
+ruby-debug-ide (0.2.1)
+sources (0.0.1)
+
