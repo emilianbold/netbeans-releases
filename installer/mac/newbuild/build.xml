@@ -341,15 +341,18 @@ Microsystems, Inc. All Rights Reserved.
 
         <copy file="${basedir}/dmg/Resources/readme_mysql.txt" 
               todir="${basedir}/build/mysql.pkg/Contents/Resources" failonerror="false"/>             
-             
-        <echo message="script_dir=`dirname &quot;$$0&quot;` ${line.separator}
-cp -p -f  &quot;$$script_dir&quot;/license_mysql.txt &quot;$$2/mysql/${mysql_license.name}&quot; ${line.separator}
-cp -p -f  &quot;$$script_dir&quot;/readme_mysql.txt &quot;$$2/mysql/${mysql_readme.name}&quot; ${line.separator}
-if [ -d &quot;${glassfish.install.dir}&quot; ] ; then ${line.separator}
-    cp -RPf &quot;$$script_dir&quot;/${mysql_connector.name}.jar &quot;${glassfish.install.dir}/lib/&quot;${line.separator}
-fi"
+        
+        <loadfile  property="mysql.postflight.addon" srcFile="${basedir}/mysql/pkg/scripts/postflight-addon">
+          <filterchain><expandproperties/></filterchain>
+        </loadfile>
+     
+        <echo message="${mysql.postflight.addon}"
               file="${basedir}/build/mysql.pkg/Contents/Resources/postflight"
               append="true"/>  
+
+        <copy file="${basedir}/mysql/pkg/scripts/mysql-admin.server"
+              todir="${basedir}/build/mysql.pkg/Contents/Resources"/>
+        <chmod file="${basedir}/build/mysqlstartup.pkg/Contents/Resources/mysql-admin.server" perm="ugo+x"/>          
                      
         <copy file="${basedir}/mysqlstartup/pkg/scripts/postflight"
               todir="${basedir}/build/mysqlstartup.pkg/Contents/Resources/"/>
