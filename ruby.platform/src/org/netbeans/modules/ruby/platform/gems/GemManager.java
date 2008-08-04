@@ -615,7 +615,7 @@ public final class GemManager {
             }
 
             if (ok) {
-                parseGemList(gemRunner.getOutput(), installed, remote);
+                GemListParser.parse(gemRunner.getOutput(), installed, remote);
 
                 // Sort the lists
                 if (installed != null) {
@@ -630,91 +630,6 @@ public final class GemManager {
         } finally {
             runnerLock.unlock();
         }
-    }
-
-    private static void parseGemList(List<String> lines, List<Gem> localList, List<Gem> remoteList) {
-        LOGGER.finer("Going to parse Gem list");
-        if (LOGGER.isLoggable(Level.FINEST)) {
-            LOGGER.finest("Using the following output:");
-            LOGGER.finest("=== Output Start ===");
-            for (String line : lines) {
-                LOGGER.finest(line);
-            }
-            LOGGER.finest("=== Output End ===");
-        }
-        Gem gem = null;
-        boolean listStarted = false;
-        boolean inLocal = false;
-        boolean inRemote = false;
-
-        for (String line : lines) {
-            if (line.length() == 0) {
-                gem = null;
-                continue;
-            }
-
-            if (line.startsWith("*** REMOTE GEMS")) { // NOI18N
-                inRemote = true;
-                inLocal = false;
-                listStarted = true;
-                gem = null;
-                continue;
-            } else if (line.startsWith("*** LOCAL GEMS")) { // NOI18N
-                inRemote = false;
-                inLocal = true;
-                listStarted = true;
-                gem = null;
-                continue;
-            }
-
-            if (!listStarted) {
-                // Skip status messages etc.
-                continue;
-            }
-
-            if (Character.isWhitespace(line.charAt(0))) {
-                if (gem != null) {
-                    String description = line.trim();
-
-                    if (gem.getDescription() == null) {
-                        gem.setDescription(description);
-                    } else {
-                        gem.setDescription(gem.getDescription() + " " + description); // NOI18N
-                    }
-                }
-            } else {
-                if (line.charAt(0) == '.') {
-                    continue;
-                }
-
-                // Should be a gem - but could be an error message!
-                int versionIndex = line.indexOf('(');
-
-                if (versionIndex != -1) {
-                    String name = line.substring(0, versionIndex).trim();
-                    int endIndex = line.indexOf(')');
-                    String versions;
-
-                    if (endIndex != -1) {
-                        versions = line.substring(versionIndex + 1, endIndex);
-                    } else {
-                        versions = line.substring(versionIndex);
-                    }
-
-                    gem = new Gem(name, inLocal ? versions : null, inLocal ? null : versions);
-                    if (inLocal) {
-                        localList.add(gem);
-                    } else {
-                        assert inRemote;
-                        remoteList.add(gem);
-                    }
-                } else {
-                    gem = null;
-                }
-            }
-        }
-        LOGGER.finer("Parsed " + localList.size() + " local gems");
-        LOGGER.finer("Parsed " + remoteList.size() + " remote gems");
     }
 
     /**

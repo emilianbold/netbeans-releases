@@ -971,16 +971,17 @@ public class MakeActionProvider implements ActionProvider {
         String errormsg = null;
         
         if (conf.getPackagingConfiguration().getFiles().getValue().size() == 0) {
-            errormsg = "Package is empty.\nOpen Build|Packaging property in the project's properties and define this package."; // FIXUP
+            errormsg = getString("ERR_EMPTY_PACKAGE");
         }
         
         if (errormsg == null) {
             String tool = conf.getPackagingConfiguration().getToolValue();
             if (!IpeUtils.isPathAbsolute(tool) && Path.findCommand(tool) == null) {
-                errormsg = "Cannot find \'" + tool + "\' in your PATH. This feature may not be available on this platform."; // FIXUP
+                
+                errormsg = NbBundle.getMessage(MakeActionProvider.class, "ERR_MISSING_TOOL1", tool); // NOI18N
             }
             else if (IpeUtils.isPathAbsolute(tool) && !(new File(tool).exists())) {
-                errormsg = "Cannot find \'" + tool + "\'. This feature may not be available on this platform."; // FIXUP
+                errormsg = NbBundle.getMessage(MakeActionProvider.class, "ERR_MISSING_TOOL2", tool); // NOI18N
             }
         }
         

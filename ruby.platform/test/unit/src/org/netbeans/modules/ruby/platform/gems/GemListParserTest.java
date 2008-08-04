@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,43 +31,58 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.debugger.jpda.ui.debugging;
+package org.netbeans.modules.ruby.platform.gems;
 
-import java.awt.Graphics;
-import javax.swing.JPanel;
-import javax.swing.event.TreeExpansionEvent;
-import javax.swing.event.TreeExpansionListener;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import org.netbeans.api.ruby.platform.RubyTestBase;
 
-/**
- *
- * @author Dan
- */
-public class ZebraPanel extends JPanel implements TreeExpansionListener {
-    
-    private DebugTreeView treeView;
-    
-    ZebraPanel(DebugTreeView treeView) {
-        this.treeView = treeView;
-    }
-    
-    @Override
-    protected void paintComponent(Graphics g) {
-        super.paintComponent(g);
-        treeView.paintStripes(g, this);
+public class GemListParserTest extends RubyTestBase {
+
+    public GemListParserTest(String testName) {
+        super(testName);
     }
 
-    public void treeExpanded(TreeExpansionEvent event) {
-        repaint();
+    public void testParseWithDescritions() throws IOException {
+        String output = slurp(getGoldenFile());
+        List<Gem> local = new ArrayList<Gem>();
+        List<Gem> remote = new ArrayList<Gem>();
+        List<String> outputL = Arrays.asList(output.split("\\n"));
+        GemListParser.parse(outputL, local, remote);
+        assertSame("no remote gem", 0, remote.size());
+        assertSame("local parsed", 5, local.size());
     }
 
-    public void treeCollapsed(TreeExpansionEvent event) {
-        repaint();
+    public void testParseNoDescritions() throws IOException {
+        String output = slurp(getGoldenFile());
+        List<Gem> local = new ArrayList<Gem>();
+        List<Gem> remote = new ArrayList<Gem>();
+        List<String> outputL = Arrays.asList(output.split("\\n"));
+        GemListParser.parse(outputL, local, remote);
+        assertSame("no remote gem", 0, remote.size());
+        assertSame("local parsed", 5, local.size());
     }
-    
+
+    public void testParseNoDescritionsAllVersions() throws IOException {
+        String output = slurp(getGoldenFile());
+        List<Gem> local = new ArrayList<Gem>();
+        List<Gem> remote = new ArrayList<Gem>();
+        List<String> outputL = Arrays.asList(output.split("\\n"));
+        GemListParser.parse(outputL, local, remote);
+        assertSame("no remote gem", 0, remote.size());
+        assertSame("local parsed", 5, local.size());
+        for (Gem gem : local) {
+            if (!gem.getName().equals("sources")) {
+                assertTrue(gem.getName() + " gem has more version", gem.getInstalledVersionsAsString().contains(","));
+            }
+        }
+    }
 }

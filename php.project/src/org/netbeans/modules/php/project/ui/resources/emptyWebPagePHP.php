@@ -1,3 +1,7 @@
+<#assign licenseFirst = "<!--">
+<#assign licensePrefix = "">
+<#assign licenseLast = "-->">
+<#include "../Licenses/license-${project.license}.txt">
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
     <head>
@@ -6,7 +10,7 @@
     </head>
     <body>
         <?php
-            // put your code here
+        // put your code here
         ?>
     </body>
 </html>

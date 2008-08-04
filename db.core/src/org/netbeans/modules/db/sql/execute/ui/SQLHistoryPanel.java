@@ -51,6 +51,7 @@ import java.io.File;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
@@ -208,6 +209,7 @@ public class SQLHistoryPanel extends javax.swing.JPanel {
         searchTextField.setMinimumSize(new java.awt.Dimension(20, 22));
 
         insertSQLButton.setText(org.openide.util.NbBundle.getMessage(SQLHistoryPanel.class, "LBL_Insert")); // NOI18N
+        insertSQLButton.setFocusTraversalPolicyProvider(true);
         insertSQLButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 insertSQLButtonActionPerformed(evt);
@@ -216,6 +218,7 @@ public class SQLHistoryPanel extends javax.swing.JPanel {
 
         sqlHistoryTable.setModel(new HistoryTableModel());
         sqlHistoryTable.setGridColor(java.awt.Color.lightGray);
+        sqlHistoryTable.setNextFocusableComponent(sqlLimitTextField);
         sqlHistoryTable.setSelectionBackground(javax.swing.UIManager.getDefaults().getColor("EditorPane.selectionBackground"));
         jScrollPane1.setViewportView(sqlHistoryTable);
         sqlHistoryTable.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SQLHistoryPanel.class, "ACSN_History")); // NOI18N
@@ -224,9 +227,11 @@ public class SQLHistoryPanel extends javax.swing.JPanel {
         sqlLimitLabel.setText(org.openide.util.NbBundle.getMessage(SQLHistoryPanel.class, "LBL_SqlLimit")); // NOI18N
 
         sqlLimitTextField.setText(org.openide.util.NbBundle.getMessage(SQLHistoryPanel.class, "LBL_InitialLimit")); // NOI18N
+        sqlLimitTextField.setFocusTraversalPolicyProvider(true);
         sqlLimitTextField.setMinimumSize(new java.awt.Dimension(18, 22));
 
         sqlLimitButton.setText(org.openide.util.NbBundle.getMessage(SQLHistoryPanel.class, "LBL_ApplyButton")); // NOI18N
+        sqlLimitButton.setNextFocusableComponent(insertSQLButton);
         sqlLimitButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 sqlLimitButtonActionPerformed(evt);
@@ -386,6 +391,8 @@ private void verifySQLLimit() {
     private class SQLHistoryView {
         private SQLHistoryModel model;
         List<SQLHistory> sqlHistoryList;
+        public static final String MATCH_EMPTY = ""; // NOI18N
+        public static final String NO_MATCH = ""; // NOI18N
 
         public SQLHistoryView(SQLHistoryModel model) {
             this.model = model;
@@ -403,18 +410,20 @@ private void verifySQLLimit() {
          * @return    - formatted SQL statement for the specified row, col
          */
         public String getSQLHistoryTooltipValue(int row, int col) {
-            List<SQLHistory> sqlHistoryListForTooltip = view.getSQLHistoryList();
-            
-            if (col == 0) {
-                String sqlRow = sqlHistoryListForTooltip.get(row).getSql().trim();                
-                while (sqlRow.indexOf("\n") != -1) {        // NOI18N
-                    sqlRow = replace(sqlRow, "\n", "<br>"); // NOI18N
-                }      
-                return "<html>" + sqlRow + "</html>";       // NOI18N
-            } else {                
-                return DateFormat.getInstance().format(sqlHistoryListForTooltip.get(row).getDate());
+            List<SQLHistory> sqlHistoryListForTooltip =  view.filterSQLHistoryList();
+            if (row < sqlHistoryListForTooltip.size()) {
+                if (col == 0) {
+                    String sqlRow = sqlHistoryListForTooltip.get(row).getSql().trim();
+                    while (sqlRow.indexOf("\n") != -1) {        // NOI18N
+                        sqlRow = replace(sqlRow, "\n", "<br>"); // NOI18N
+                    }
+                    return "<html>" + sqlRow + "</html>";       // NOI18N
+                } else {
+                    return DateFormat.getInstance().format(sqlHistoryListForTooltip.get(row).getDate());
+                }
+            } else {
+                return NO_MATCH;
             }
-            
         }
         
         /**
@@ -493,8 +502,23 @@ private void verifySQLLimit() {
             }
         }
 
-        public void setFilter() {
-            // unused
+        private List<SQLHistory> filterSQLHistoryList() {
+            List<SQLHistory> filteredSqlHistoryList = new ArrayList<SQLHistory>();
+            String match = searchTextField.getText();
+            String url = (String)connectionComboBox.getSelectedItem();
+            // modify list of SQL to reflect a selection from the Connection dropdown or if a match text entered
+            for (SQLHistory sqlHistory : sqlHistoryList) {
+                if (sqlHistory.getUrl().equals(url) || url.equals(NbBundle.getMessage(SQLHistoryPanel.class, "LBL_ConnectionCombo"))) {
+                    if (!match.equals(MATCH_EMPTY)) {
+                        if (sqlHistory.getSql().toLowerCase().indexOf(match.toLowerCase()) != -1) {
+                            filteredSqlHistoryList.add(sqlHistory);
+                        }
+                    } else {
+                        filteredSqlHistoryList.add(sqlHistory);
+                    }
+                }
+            }
+            return filteredSqlHistoryList;
         }
     }
 
@@ -659,7 +683,7 @@ private void verifySQLLimit() {
             // Read the contents
             try {
                 String matchText = read(evt.getDocument());
-                data = new Object[sqlList.size()][2];
+                Object[][] localData = new Object[sqlList.size()][2];
                 int row = 0;
                 int length;
                 int maxLength;
@@ -668,10 +692,21 @@ private void verifySQLLimit() {
                     if (sql.trim().toLowerCase().indexOf(matchText.toLowerCase()) != -1) {
                         length = sql.trim().length();
                         maxLength = length > TABLE_DATA_WIDTH_SQL ? TABLE_DATA_WIDTH_SQL : length;
-                        data[row][0] = sql.trim().substring(0, maxLength);
-                        data[row][1] = dateIterator.next();
+                        localData[row][0] = sql.trim().substring(0, maxLength);
+                        localData[row][1] = dateIterator.next();
                         row++;
                     } 
+                }
+
+                // Adjust size of data for the table
+                if (row > 0) {
+                    data = new Object[row][2];
+                    for (int i = 0; i < row; i++) {
+                        data[i][0] = localData[i][0];
+                        data[i][1] = localData[i][1];
+                    }
+                } else {
+                    data = new Object[0][0];
                 }
                 // Refresh the table
                 sqlHistoryTable.repaint();
@@ -686,21 +721,33 @@ private void verifySQLLimit() {
              // Read the contents
             try {
                 String matchText = read(evt.getDocument());
-                data = new Object[sqlList.size()][2];
+                Object[][] localData = new Object[sqlList.size()][2];
                 int row = 0;
                 int length;
                 int maxLength;                                
                 Iterator dateIterator = dateList.iterator();
                 for (String sql : sqlList) {
-                    if (sql.trim().indexOf(matchText) != -1) {
+                    if (sql.trim().toLowerCase().indexOf(matchText.toLowerCase()) != -1) {
                         length = sql.trim().length();
                         maxLength = length > TABLE_DATA_WIDTH_SQL ? TABLE_DATA_WIDTH_SQL : length;
-                        data[row][0] = sql.trim().substring(0, maxLength);
-                        data[row][1] = dateIterator.next();
+                        localData[row][0] = sql.trim().substring(0, maxLength);
+                        localData[row][1] = dateIterator.next();
                         row++;
-                    } else {
-                        cleanTable();
                     }
+                }
+                // no matches so clean the table
+                if (row == 0) {
+                    cleanTable();
+                }
+                // Adjust size of data for the table
+                if (row > 0) {
+                    data = new Object[row][2];
+                    for (int i = 0; i < row; i++) {
+                        data[i][0] = localData[i][0];
+                        data[i][1] = localData[i][1];
+                    }
+                } else {
+                    data = new Object[0][0];
                 }
                 // Refresh the table                     
                 sqlHistoryTable.repaint();
