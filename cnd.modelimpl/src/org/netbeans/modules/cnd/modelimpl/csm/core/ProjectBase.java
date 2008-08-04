@@ -1035,7 +1035,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             }
 
             if (reparseNeeded && !isDisposing() && !base.isDisposing()) {
-                scheduleIncludedFileParsing(csmFile, state, pcState);
+                scheduleIncludedFileParsing(csmFile, state);
             }
             return csmFile;
         } finally {
@@ -1101,7 +1101,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     public abstract void onFileRemoved(List<NativeFileItem> items);
     public abstract void onFilePropertyChanged(NativeFileItem nativeFile);
     public abstract void onFilePropertyChanged(List<NativeFileItem> items);
-    protected abstract void scheduleIncludedFileParsing(FileImpl csmFile, APTPreprocHandler.State state, FilePreprocessorConditionState pcStates);
+    protected abstract void scheduleIncludedFileParsing(FileImpl csmFile, APTPreprocHandler.State state);
     public abstract NativeFileItem getNativeFileItem(CsmUID<CsmFile> file);
     protected abstract void putNativeFileItem(CsmUID<CsmFile> file, NativeFileItem nativeFileItem);
     protected abstract void removeNativeFileItem(CsmUID<CsmFile> file);

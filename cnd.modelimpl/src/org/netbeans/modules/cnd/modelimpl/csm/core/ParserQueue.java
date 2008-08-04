@@ -64,14 +64,14 @@ public final class ParserQueue {
          * in the order of their insertion to the queue.
          */
         IMMEDIATE,
-        
+
         /**
          * <code>HEAD</code> entries are parsed after <code>IMMEDIATE</code>,
          * and before <code>TAIL</code> entries. The are parsed in the
          * <em>reversed</em> order of their insertion to the queue.
          */
         HEAD,
-        
+
         /**
          * <code>TAIL</code> entries are parsed last, after
          * <code>IMMEDIATE</code> and <code>HEAD</code> entries.
@@ -84,7 +84,6 @@ public final class ParserQueue {
 
         private FileImpl file;
         private APTPreprocHandler.State ppState;
-        private FilePreprocessorConditionState pcState;
         private Position position;
         private int serial;
 
@@ -98,11 +97,11 @@ public final class ParserQueue {
             this.position = position;
             this.serial = serial;
         }
-        
+
         public FileImpl getFile() {
             return file;
         }
-        
+
         public APTPreprocHandler.State getPreprocState() {
             return ppState;
         }
@@ -118,12 +117,12 @@ public final class ParserQueue {
         public void setSerial(int serial) {
             this.serial = serial;
         }
-        
+
         @Override
         public String toString() {
             return toString(true);
         }
-        
+
         public String toString(boolean detailed) {
             StringBuilder retValue = new StringBuilder();
             retValue.append("ParserQueue.Entry " + file + " of project " + file.getProject()); // NOI18N
@@ -134,8 +133,8 @@ public final class ParserQueue {
             }
             return retValue.toString();
         }
-        
-        public void setStates(APTPreprocHandler.State ppState, FilePreprocessorConditionState pcState) {
+
+        public void setState(APTPreprocHandler.State ppState) {
             // TODO: IZ#87204: AssertionError on _Bvector_base opening
             // review why it could be null
             // FIXUP: remove assert checks and update if statements to prevent NPE
@@ -148,7 +147,6 @@ public final class ParserQueue {
             }
             // we don't need check here - all logic is in ProjectBase.onFileIncluded
             this.ppState = ppState;
-            this.pcState = pcState;
         }
 
         public int compareTo(Entry that) {
@@ -162,7 +160,7 @@ public final class ParserQueue {
         }
 
     }
-    
+
     /*package*/static String tracePreprocState(APTPreprocHandler.State ppState) {
         if (ppState == null) {
             return "null"; // NOI18N
@@ -186,22 +184,22 @@ public final class ParserQueue {
     }
 
     private static final class ProjectData {
-        
+
         public Set/*<FileImpl>*/ filesInQueue = new HashSet/*<FileImpl>*/();
-        
+
         // there are no more simultaneously parsing files than threads, so LinkedList suites even better
         public Collection/*<FileImpl>*/ filesBeingParsed = new LinkedList/*<FileImpl>*/();
-        
+
         public boolean notifyListeners;
-        
+
         ProjectData(boolean notifyListeners) {
             this.notifyListeners = notifyListeners;
         }
-        
+
         public boolean isEmpty() {
             return filesInQueue.isEmpty() && filesBeingParsed.isEmpty();
         }
-        
+
         public int size() {
             return filesInQueue.size();
         }
@@ -222,27 +220,27 @@ public final class ParserQueue {
     private Map<ProjectBase, ProjectData> projectData = new HashMap<ProjectBase, ProjectData>();
     private final Map<CsmProject, Object> projectLocks = new HashMap<CsmProject, Object>();
     private int serial = 0;
-    
+
     private final Object lock = new Object();
-    
+
     private final boolean addAlways;
-    
+
     //private WeakList<CsmProgressListener> progressListeners = new WeakList<CsmProgressListener>();
-    
+
     private Diagnostic.StopWatch stopWatch = TraceFlags.TIMING ? new Diagnostic.StopWatch(false) : null;
-    
+
     private ParserQueue(boolean addAlways) {
         this.addAlways = addAlways;
     }
-    
+
     public static ParserQueue instance() {
         return instance;
     }
-    
+
     public static ParserQueue testInstance() {
         return new ParserQueue(true);
     }
-    
+
     /**
      * Puts the given file at the end of the queue
      * (In the case it isn't already enqueued;
@@ -251,7 +249,7 @@ public final class ParserQueue {
 //    public void addLast(FileImpl file) {
 //        addLast(file, file.getPreprocState());
 //    }
-    
+
     //    public void addLast(FileImpl file, APTPreprocHandler.State ppState, boolean onInclude) {
     //        if( TraceFlags.TRACE_PARSER_QUEUE ) System.err.println("ParserQueue: addLast " + file.getName());
     //        synchronized ( lock ) {
@@ -266,7 +264,7 @@ public final class ParserQueue {
     //            }
     //        }
     //    }
-    
+
     private String traceState4File(FileImpl file, Set/*<FileImpl>*/ files) {
         StringBuilder builder = new StringBuilder(" "); // NOI18N
         builder.append(file);
@@ -279,7 +277,7 @@ public final class ParserQueue {
         builder.append(projectData);
         return builder.toString();
     }
-    
+
     /**
      * If file isn't yet enqueued, places it at the beginning of the queue,
      * otherwise moves it there
@@ -289,10 +287,6 @@ public final class ParserQueue {
 //    }
 
     public void add(FileImpl file, APTPreprocHandler.State ppState, Position position) {
-        add(file, ppState, position, null);
-    }
-
-    public void add(FileImpl file, APTPreprocHandler.State ppState, Position position, FilePreprocessorConditionState pcStates) {
         if( TraceFlags.TRACE_PARSER_QUEUE ) System.err.println("ParserQueue: add " + file.getAbsolutePath() + " as " + position);
         synchronized ( lock ) {
             if( state == State.OFF  ) return;
@@ -311,7 +305,7 @@ public final class ParserQueue {
                 if( entry == null ) {
                     assert false : "ProjectData contains file " + file + ", but there is no matching entry in the queue"; // NOI18N
                 } else {
-                    entry.setStates(ppState, pcStates);
+                    entry.setState(ppState);
                     if (position.compareTo(entry.getPosition()) < 0) {
                         queue.remove(entry);
                         entry.setPosition(position);
@@ -335,7 +329,7 @@ public final class ParserQueue {
         }
 	ProgressSupport.instance().fireFileInvalidated(file);
     }
-    
+
     public void waitReady() throws InterruptedException {
 	if( TraceFlags.TRACE_PARSER_QUEUE ) System.err.println("ParserQueue: waitReady() ...");
         synchronized ( lock ) {
@@ -345,14 +339,14 @@ public final class ParserQueue {
         }
 	if( TraceFlags.TRACE_PARSER_QUEUE ) System.err.println("ParserQueue: waiting finished");
     }
-    
+
     public void suspend() {
         if( TraceFlags.TRACE_PARSER_QUEUE ) System.err.println("ParserQueue: suspending");
         synchronized (suspendLock) {
             state = State.SUSPENDED;
         }
     }
-    
+
     public void resume() {
         if( TraceFlags.TRACE_PARSER_QUEUE ) System.err.println("ParserQueue: resuming");
         synchronized (suspendLock) {
@@ -360,24 +354,24 @@ public final class ParserQueue {
             suspendLock.notifyAll();
         }
     }
-    
+
     public Entry poll() throws InterruptedException {
-        
+
         synchronized (suspendLock) {
             while( state == State.SUSPENDED ) {
                 if( TraceFlags.TRACE_PARSER_QUEUE ) System.err.println("ParserQueue: waiting for resume");
                 suspendLock.wait();
             }
         }
-        
+
         Entry e = null;
-        
+
         ProjectBase project;
         boolean lastFileInProject;
         boolean notifyListeners;
-        
+
 	FileImpl file = null;
-	
+
         synchronized( lock ) {
             e = queue.poll();
             if( e == null ) {
@@ -409,13 +403,13 @@ public final class ParserQueue {
         if( TraceFlags.TRACE_PARSER_QUEUE ) System.err.println("ParserQueue: polling " + e.getFile().getAbsolutePath());
         return e;
     }
-    
+
     public void remove(FileImpl file) {
-        
+
         ProjectBase project;
         boolean lastFileInProject = false;
         boolean notifyListeners = false;
-        
+
         synchronized ( lock ) {
             project = file.getProjectImpl();
             ProjectData data = getProjectData(project, true);
@@ -433,7 +427,7 @@ public final class ParserQueue {
                 notifyListeners = lastFileInProject && data.notifyListeners;
             }
         }
-        
+
         if( lastFileInProject ) {
             project.onParseFinish();
             if( notifyListeners ) {
@@ -441,10 +435,10 @@ public final class ParserQueue {
             }
         }
     }
-    
+
     public void shutdown() {
         if( TraceFlags.TRACE_PARSER_QUEUE ) System.err.println("ParserQueue: clearing");
-	Collection<ProjectBase> copiedProjects = null; 
+	Collection<ProjectBase> copiedProjects = null;
         synchronized ( lock ) {
             state = State.OFF;
             queue.clear();
@@ -455,11 +449,11 @@ public final class ParserQueue {
 	    ProgressSupport.instance().fireProjectParsingFinished( prj );
 	}
     }
-    
+
     public void startup() {
         state = State.ON;
     }
-    
+
     public void removeAll(ProjectBase project) {
         ProjectData data;
         boolean lastFileInProject;
@@ -482,7 +476,7 @@ public final class ParserQueue {
             }
         }
     }
-    
+
     /**
      * Determines whether any files of the given project are now being parsed
      * @return true if any files of the project are being parsed, otherwise false
@@ -496,7 +490,7 @@ public final class ParserQueue {
         }
         return false;
     }
-    
+
     public boolean hasFiles(ProjectBase project, FileImpl skipFile) {
         return hasFiles(project, skipFile, true);
     }
@@ -521,11 +515,11 @@ public final class ParserQueue {
             }
         }
     }
-    
+
     private Set/*<FileImpl>*/ getProjectFiles(ProjectBase project) {
         return getProjectData(project, true).filesInQueue;
     }
-    
+
     private ProjectData getProjectData(ProjectBase project, boolean create) {
         // must be in synchronized( lock ) block
         synchronized (lock) {
@@ -538,10 +532,10 @@ public final class ParserQueue {
             return data;
         }
     }
-    
+
     private void removeProjectData(ProjectBase project) {
         // must be in synchronized( lock ) block
-        synchronized (lock) {        
+        synchronized (lock) {
             projectData.remove(project);
         }
     }
@@ -552,7 +546,7 @@ public final class ParserQueue {
         // Also check that file project was not closed
         return !file.isParsed() && !file.getProjectImpl().isDisposing() || addAlways;
     }
-    
+
     public void onStartAddingProjectFiles(ProjectBase project) {
         getProjectData(project, true).notifyListeners = true;
         ProgressSupport.instance().fireProjectParsingStarted(project);
@@ -565,7 +559,7 @@ public final class ParserQueue {
             ProgressSupport.instance().fireProjectParsingFinished(project);
         }
     }
-    
+
     /*package*/ void onFileParsingFinished(FileImpl file) {
         boolean lastFileInProject;
         boolean idle = false;
@@ -601,7 +595,7 @@ public final class ParserQueue {
             notifyWaitEmpty(project);
         }
     }
-    
+
     private void notifyWaitEmpty(ProjectBase project){
         Object prjWaitEmptyLock;
         synchronized (projectLocks) {
@@ -636,7 +630,7 @@ public final class ParserQueue {
         }
         if (TraceFlags.TRACE_CLOSE_PROJECT) System.err.println("Finished waiting on Empty Project " + project.getName());
     }
-    
+
     public long getStopWatchTime() {
         return TraceFlags.TIMING ? stopWatch.getTime() : -1;
     }
@@ -649,7 +643,7 @@ public final class ParserQueue {
         return builder.toString();
     }
 
-    
+
     private Entry findEntry(FileImpl file) {
 //        return fileEntry.get(file);
         for (Entry e : queue) {
