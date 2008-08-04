@@ -57,6 +57,7 @@
                    '../Readme.html',
                    '../rjs/TestStubs.html',
                    '../rjs/Readme.html',
+                   '../rjs/RestProxyServlet.txt',
                    '../rjs/css/images',
                    '../rjs/css'
                ]
