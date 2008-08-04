@@ -225,15 +225,12 @@ public class JRubyServerModule implements RubyInstance, CustomizerCookie {
         }
 
         private boolean isDeployed() {
-            long ts = 0, es = 0;
             step = "checkdeployed";
             String propertyBase = "applications.application." + applicationName.replace(' ', '_');
             ServerCommand.GetPropertyCommand getCmd = new ServerCommand.GetPropertyCommand(propertyBase);
             Future<GlassfishModule.OperationState> cmdOp = commonModule.execute(getCmd);
             try {
-                ts = System.nanoTime();
                 GlassfishModule.OperationState result = cmdOp.get(15000, TimeUnit.MILLISECONDS);
-                es = System.nanoTime();
                 if(result != GlassfishModule.OperationState.COMPLETED) {
                     return false;
                 }
@@ -265,11 +262,8 @@ public class JRubyServerModule implements RubyInstance, CustomizerCookie {
                 }
             } catch(Exception ex) {
                 // Assume application is not deployed correctly.  Not expected.
-                es = System.nanoTime();
                 Logger.getLogger("glassfish.javaee").log(Level.FINE, ex.getLocalizedMessage(), ex);
                 return false;
-            } finally {
-                Logger.getLogger("glassfish.javaee").log(Level.FINE, "get command: " + (es - ts) / 1000000);
             }
             return true;
         }
