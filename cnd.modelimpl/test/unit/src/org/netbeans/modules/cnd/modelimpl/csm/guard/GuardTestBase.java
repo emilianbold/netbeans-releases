@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,52 +31,45 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.cnd.modelimpl.csm.guard;
 
-import java.io.File;
-import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
+import org.netbeans.modules.cnd.modelimpl.trace.TraceModelTestBase;
 
 /**
- * base class for guard block tests
- *
- * @author Alexander Simon
+ * A common base class for guard based tests
+ * @author Vladimir Kvashin
  */
-public class GuardNotDefTestCase extends GuardTestBase {
-    
-    public GuardNotDefTestCase(String testName) {
+public class GuardTestBase  extends TraceModelTestBase {
+
+    public GuardTestBase(String testName) {
         super(testName);
     }
-    
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+
+    protected void parse(String... fileNames) throws Exception {
+        performModelTest(tansformParameters(fileNames), System.out, System.err);
     }
-    
-    @Override
-    protected void tearDown() throws Exception {
-        super.tearDown();
-    }
-    
-    public void testGuard() throws Exception {
-        parse("cstdlib.h", "argc.cc", "-m");
-        boolean checked = false;
-        for(FileImpl file : getProject().getAllFileImpls()){
-            if ("cstdlib.h".equals(file.getName().toString())){ // NOI18N
-                assertTrue("Guard guard block defined", file.getMacros().size()==2); // NOI18N
-                //String guard = file.testGetGuardState().testGetGuardName();
-                //assertTrue("Guard guard block name not _STDLIB_H", "_STDLIB_H".equals(guard)); // NOI18N
-                checked = true;
-            } else if ("iostream.h".equals(file.getName())){ // NOI18N
-                //String guard = file.testGetGuardState().testGetGuardName();
-                //assertTrue("Guard guard block found", guard == null); // NOI18N
-            } else if ("argc.cc".equals(file.getName())){ // NOI18N
-                //String guard = file.testGetGuardState().testGetGuardName();
-                //assertTrue("Guard guard block name not MAIN", "MAIN".equals(guard)); // NOI18N
+
+    protected String[] tansformParameters(String[] files) {
+        String[] result = new String[files.length];
+        for (int i = 0; i < files.length; i++) {
+            if (files[i].startsWith("-")) {
+                result[i] = files[i];
+            } else {
+                result[i] = getDataFile(files[i]).getAbsolutePath();
             }
         }
-        assertTrue("Not found FileImpl for cstdlib.h", checked); // NOI18N
+        return result;
     }
-    
+
+//    protected String getClassName(Class cls){
+//        String s = cls.getName();
+//        return s.substring(s.lastIndexOf('.')+1);
+//    }
+
 }
