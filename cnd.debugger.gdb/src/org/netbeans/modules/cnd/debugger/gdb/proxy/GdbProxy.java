@@ -499,23 +499,33 @@ public class GdbProxy implements GdbMiDefinitions {
     /**
      * Send "-break-enable number" to the debugger
      * This command enables the breakpoint
-     * whose number is specified by the argument.
+     * whose number is specified by the argument
+     * or all if no args specified
      *
-     * @param number - breakpoint number
+     * @param ids - breakpoints number array
      */
-    public int break_enable(int number) {
-        return engine.sendCommand("-break-enable " + Integer.toString(number)); // NOI18N
+    public int break_enable(Integer... ids) {
+        StringBuilder cmd = new StringBuilder("-break-enable"); // NOI18N
+        for (int id : ids) {
+            cmd.append(" " + id); // NOI18N
+        }
+        return engine.sendCommand(cmd.toString());
     }
 
     /**
      * Send "-break-disable number" to the debugger
      * This command disables the breakpoint
-     * whose number is specified by the argument.
+     * whose number is specified by the argument
+     * or all if no args specified
      *
-     * @param number - breakpoint number
+     * @param ids - breakpoints number array
      */
-    public int break_disable(int number) {
-        return engine.sendCommand("-break-disable " + Integer.toString(number)); // NOI18N
+    public int break_disable(Integer... ids) {
+        StringBuilder cmd = new StringBuilder("-break-disable"); // NOI18N
+        for (int id : ids) {
+            cmd.append(" " + id); // NOI18N
+        }
+        return engine.sendCommand(cmd.toString());
     }
     
     public int break_condition(int number, String condition) {
@@ -618,6 +628,10 @@ public class GdbProxy implements GdbMiDefinitions {
      */
     public int whatis(CommandBuffer cb, String symbol) {
         return engine.sendCommand(cb, "whatis " + symbol); // NOI18N
+    }
+
+    public int enable_timings(boolean enable) {
+        return engine.sendCommand("-enable-timings " + (enable ? "yes" : "no")); // NOI18N
     }
 
     /**

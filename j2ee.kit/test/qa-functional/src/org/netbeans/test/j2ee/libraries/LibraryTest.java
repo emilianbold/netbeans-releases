@@ -50,8 +50,6 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.jar.JarFile;
-import junit.framework.Test;
-import junit.textui.TestRunner;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.EditorWindowOperator;
 import org.netbeans.jellytools.Bundle;
@@ -66,7 +64,6 @@ import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JRadioButtonOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
-import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.test.j2ee.lib.ContentComparator;
 import org.netbeans.test.j2ee.lib.FilteringLineDiff;
 import org.netbeans.test.j2ee.lib.Utils;
@@ -79,6 +76,7 @@ import org.netbeans.test.j2ee.wizard.WizardUtils;
 public class LibraryTest extends J2eeTestCase {
     
     private static boolean CREATE_GOLDEN_FILES = Boolean.getBoolean("org.netbeans.test.j2ee.libraries.golden");
+    private static final String CATEGORY_JAVA_EE = "Java EE";
     //private static boolean CREATE_GOLDEN_FILES = true;
     
     protected String appName = "LibsInclusionTestApp";
@@ -106,7 +104,7 @@ public class LibraryTest extends J2eeTestCase {
                 new String[] {getDataDir().getAbsolutePath() + File.separator + "libs" + File.separator + "math.zip"},
                 null);
         //create empty j2ee project
-        WizardUtils.createNewProject("Enterprise", "Enterprise Application");
+        WizardUtils.createNewProject(CATEGORY_JAVA_EE,"Enterprise Application");
         NewProjectNameLocationStepOperator npnlso =
                 WizardUtils.setProjectNameLocation(appName, getWorkDirPath());
         WizardUtils.setJ2eeSpecVersion(npnlso, WizardUtils.MODULE_EAR, "1.4");

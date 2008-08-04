@@ -66,7 +66,9 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.dd.api.web.ServletMapping;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.netbeans.api.project.ProjectUtils;
@@ -74,8 +76,8 @@ import org.netbeans.modules.websvc.rest.RestUtils;
 import org.openide.filesystems.FileUtil;
 import org.netbeans.modules.websvc.rest.codegen.model.ClientStubModel;
 import org.netbeans.modules.websvc.rest.codegen.model.ClientStubModel.*;
+import org.netbeans.modules.websvc.rest.projects.WebProjectRestSupport;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
-import org.netbeans.modules.websvc.rest.support.Inflector;
 import org.openide.filesystems.FileSystem;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
@@ -132,6 +134,10 @@ public class ClientStubsGenerator extends AbstractGenerator {
     public static final String JS_GENERICSTUB_TEMPLATE = "Templates/WebServices/JsGenericStub.js"; //NOI18N
     public static final String JS_README_TEMPLATE = "Templates/WebServices/JsReadme.html"; //NOI18N
     
+    public static final String PROXY = "RestProxyServlet"; //NOI18N
+    public static final String PROXY_URL = "/restproxy";
+    public static final String PROXY_TEMPLATE = "Templates/WebServices/RestProxyServlet.txt"; //NOI18N
+    
     public static final String TTL_DojoResources_Stubs = "TTL_DojoResources_Stubs";
     public static final String MSG_Readme = "MSG_Readme";
     public static final String MSG_TestPage = "MSG_TestPage";
@@ -179,6 +185,9 @@ public class ClientStubsGenerator extends AbstractGenerator {
     public static final String DEFAULT_PROTOCOL = "http";
     public static final String DEFAULT_HOST = "localhost";
     public static final String DEFAULT_PORT = "8080";
+    public static final String DEFAULT_BASE_URL = DEFAULT_PROTOCOL+"://"+DEFAULT_HOST+":"+DEFAULT_PORT;
+    public static final String BASE_URL_TOKEN = "___BASE_URL___";
+    public static final String FILE_ENCODING_TOKEN = "__FILE_ENCODING__";
     
     private FileObject rootFolder;
     private Project p;
@@ -190,7 +199,6 @@ public class ClientStubsGenerator extends AbstractGenerator {
     private FileObject dojoDir;
     private FileObject restDir;
     private FileObject rdjDir;
-    private FileObject dataDir;
     private FileObject rjsDir;
     private FileObject templatesDir;
     private String includeJs = "";
@@ -205,16 +213,8 @@ public class ClientStubsGenerator extends AbstractGenerator {
     private FileObject wadlFile;
     private String folderName;
     private String baseUrl;
-    
-    public ClientStubsGenerator(FileObject root, Project p, boolean createJmaki, boolean overwrite) throws IOException {
-        assert root != null;
-        assert p != null;
-        this.rootFolder = root;
-        this.p = p;
-        this.createJmaki = createJmaki;
-        this.overwrite = overwrite;
-        this.projectName = ProjectUtils.getInformation(getProject()).getName();
-    }
+    private String proxyUrl;
+    private String baseEncoding = "UTF-8";
     
     public ClientStubsGenerator(FileObject root, String folderName, Project p, 
             boolean createJmaki, boolean overwrite) throws IOException {
@@ -268,6 +268,34 @@ public class ClientStubsGenerator extends AbstractGenerator {
         return model;
     }
     
+    public String getDefaultBaseUrl() {
+        return DEFAULT_BASE_URL+"/";
+    }
+    
+    public String getBaseUrl() {
+        return baseUrl;
+    }
+    
+    public void setBaseUrl(String baseUrl) {
+        this.baseUrl = baseUrl;
+    }
+    
+    public String getProxyUrl() {
+        return proxyUrl;
+    }
+    
+    public void setProxyUrl(String proxyUrl) {
+        this.proxyUrl = proxyUrl;
+    }
+    
+    public String getBaseEncoding() {
+        return baseEncoding;
+    }
+    
+    public void setBaseEncoding(String baseEncoding) {
+        this.baseEncoding = baseEncoding;
+    }
+    
     private String getApplicationNameFromUrl(String url) {
         String appName = url.replaceAll(DEFAULT_PROTOCOL+"://", "");
         if(appName.endsWith("/"))
@@ -286,26 +314,82 @@ public class ClientStubsGenerator extends AbstractGenerator {
         return ClientStubModel.normailizeName(appName);
     }
     
+    private String findBaseUrl(Project p) {
+        String url = null;
+        FileObject privProp = p.getProjectDirectory().getFileObject("nbproject/private/private.properties");
+        if(privProp != null) {
+            String asProp = getProperty(privProp, "deploy.ant.properties.file");
+            FileObject asPropFile = FileUtil.toFileObject(new File(asProp));
+            url = getProperty(asPropFile, "sjsas.url");
+            if(url == null)
+                url = getProperty(asPropFile, "tomcat.url");
+            if(url != null)
+                url = url.replace("\\", "");
+        }
+        return url;
+    }
+    
+    private String findBaseEncoding(Project p) {
+        FileObject projProp = p.getProjectDirectory().getFileObject("nbproject/project.properties");
+        return getProperty(projProp, "source.encoding");
+    }
+    
+    
+    private String getProperty(FileObject fo, String name) {
+        if(fo == null)
+            return null;
+        FileLock lock = null;
+        try {
+            lock = fo.lock();
+            BufferedReader reader = new BufferedReader(new FileReader(FileUtil.toFile(fo)));
+            String line;
+            StringBuffer sb = new StringBuffer();
+            while ((line = reader.readLine()) != null) {
+                if(line.trim().startsWith(name+"="))
+                    return line.trim().split("=")[1];
+            }
+        } catch(IOException iox) {  
+        } finally {
+            if(lock != null)
+                lock.releaseLock();
+        }
+        return null;
+    }
+    
     public Set<FileObject> generate(ProgressHandle pHandle) throws IOException {
         if(pHandle != null)
             initProgressReporting(pHandle, false);
-        
         this.model = new ClientStubModel();
-        baseUrl = DEFAULT_PROTOCOL+"://"+DEFAULT_HOST+":"+DEFAULT_PORT+"/";
         if(p != null) {
             this.model.buildModel(p);
-            baseUrl += getProjectName() + "/resources";
+            String url = findBaseUrl(p);
+            if(url == null)
+                url = getDefaultBaseUrl();
+            Project targetPrj = FileOwnerQuery.getOwner(getRootFolder());
+            String proxyUrl2 = findBaseUrl(targetPrj);
+            if(proxyUrl2 == null)
+                proxyUrl2 = url;
+            ServletMapping servletMap = WebProjectRestSupport.getRestServletMapping(p);
+            String path = "/resources";
+            if(servletMap != null)
+                path = servletMap.getUrlPattern();
+            if(path.endsWith("/*"))
+                path = path.substring(0, path.length()-2);
+            setBaseUrl((url.endsWith("/")?url:url+"/") + getProjectName() + (path.startsWith("/")?path:"/"+path));
+            setProxyUrl((proxyUrl2.endsWith("/")?proxyUrl2:proxyUrl2+"/") + ProjectUtils.getInformation(targetPrj).getName() + PROXY_URL);
+            setBaseEncoding(findBaseEncoding(p));
         } else if(wadlFile != null) {
             String url = this.model.buildModel(wadlFile);
-            if(url != null) {
-                baseUrl = url;
-                this.projectName = getApplicationNameFromUrl(baseUrl);
-            }
+            if(url == null)
+                url = getDefaultBaseUrl();
+            setBaseUrl(url);
+            setProxyUrl(url+".."+PROXY_URL);
+            this.projectName = getApplicationNameFromUrl(url);
         }
         List<Resource> resourceList = model.getResources();
         
         includeJs = "    "+RDJ+".includeJS('../"+RJS+"/"+getProjectName().toLowerCase()+"/"+getProjectName() + "." + JS+"');\n";
-        libsJs = "                   '../"+RJS+"/"+getProjectName().toLowerCase()+"/"+getProjectName() + "." + JS+"',\n";;
+        libsJs = "                   '../"+RJS+"/"+getProjectName().toLowerCase()+"/"+getProjectName() + "." + JS+"',\n";
         resourcesDojo = "";
         requireDojo = "";
         //Prepare include list
@@ -335,7 +419,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
         
         FileObject prjStubDir = createFolder(rjsDir, getProjectName().toLowerCase());
         createDataObjectFromTemplate(JS_PROJECTSTUB_TEMPLATE, prjStubDir, getProjectName(), JS, canOverwrite());
-        updateProjectStub(prjStubDir.getFileObject(getProjectName(), JS), getProjectName(), "", baseUrl);
+        updateProjectStub(prjStubDir.getFileObject(getProjectName(), JS), getProjectName(), "");
         for (Resource r : resourceList) {
             if(pHandle != null)
                 reportProgress(NbBundle.getMessage(ClientStubsGenerator.class,
@@ -515,6 +599,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
         tr.addToken(MSG_Readme, NbBundle.getMessage(ClientStubsGenerator.class, MSG_Readme));
         tr.addToken(MSG_TestPage, NbBundle.getMessage(ClientStubsGenerator.class, MSG_TestPage));
         tr.addToken(MSG_JS_Readme_Content, NbBundle.getMessage(ClientStubsGenerator.class, MSG_JS_Readme_Content));
+        tr.addToken(FILE_ENCODING_TOKEN, getBaseEncoding());
         
         FileObject fo = createDataObjectFromTemplate(JS_TESTSTUBS_TEMPLATE, rjsDir, JS_TESTSTUBS, HTML, false);
         tr.replaceTokens(fo);
@@ -523,6 +608,8 @@ public class ClientStubsGenerator extends AbstractGenerator {
         
         fo = createDataObjectFromTemplate(JS_README_TEMPLATE, rjsDir, JS_README, HTML, false);
         tr.replaceTokens(fo);
+        
+        fo = createDataObjectFromTemplate(PROXY_TEMPLATE, rjsDir, PROXY, TXT, false);
         
         File cssDir = new File(FileUtil.toFile(rjsDir), "css");
         cssDir.mkdirs();
@@ -535,8 +622,10 @@ public class ClientStubsGenerator extends AbstractGenerator {
         tr.addToken(MSG_Readme, NbBundle.getMessage(ClientStubsGenerator.class, MSG_Readme));
         tr.addToken(MSG_TestPage, NbBundle.getMessage(ClientStubsGenerator.class, MSG_TestPage));
         tr.addToken(MSG_SelectResource, NbBundle.getMessage(ClientStubsGenerator.class, MSG_SelectResource));
+        tr.addToken(BASE_URL_TOKEN, getBaseUrl());
+        tr.addToken(FILE_ENCODING_TOKEN, getBaseEncoding());
         
-        dataDir = createFolder(rdjDir, DATA);//NoI18n
+        createFolder(rdjDir, DATA);//NoI18n
         FileObject widgetDir = createFolder(rdjDir, WIDGET);//NoI18n
         Resource c = null;
         for (Resource r : resourceList) {
@@ -567,6 +656,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
         tr.addToken(MSG_Readme, NbBundle.getMessage(ClientStubsGenerator.class, MSG_Readme));
         tr.addToken(MSG_TestPage, NbBundle.getMessage(ClientStubsGenerator.class, MSG_TestPage));
         tr.addToken(MSG_JMaki_Readme_Content, NbBundle.getMessage(ClientStubsGenerator.class, MSG_JMaki_Readme_Content));
+        tr.addToken(FILE_ENCODING_TOKEN, getBaseEncoding());
         
         FileObject fo = createDataObjectFromTemplate(JMAKI_README_TEMPLATE, restDir, JMAKI_README, HTML, canOverwrite());
         tr.replaceTokens(fo);
@@ -617,7 +707,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
         String str = "";
         for (Resource r : resourceList) {
             if(r.isContainer()) {
-                str += "            <option value='http://localhost:8080/"+getProjectName()+"/resources/"+r.getRepresentation().getRoot().getName()+"/;" + r.getName() + "'>" + r.getName() + "</option>\n";
+                str += "            <option value='"+getBaseUrl()+"/"+r.getRepresentation().getRoot().getName()+"/;" + r.getName() + "'>" + r.getName() + "</option>\n";
             }
         }
         return str;
@@ -636,16 +726,19 @@ public class ClientStubsGenerator extends AbstractGenerator {
     protected String createJmakiResourceTagList(List<Resource> resourceList) {
         String str = "";
         int count = 0;
+        String proxyComment = "<!-- If using cross-domain proxy uncomment tag below and comment above line -->\n";
         for (Resource r : resourceList) {
             if(r.isContainer()) {
                 String name = r.getName();
                 String pathName = r.getRepresentation().getRoot().getName();
                 if(count++ == 0) {
                     str += "         <% if(p.equals(\"" + name + "\")) {%>\n"+
-                        "            <a:widget name=\"dojo.rest." + pathName + "table\" service=\"http://localhost:8080/" + getProjectName() + "/resources/" + pathName + "/\" />\n";
+                        "            <a:widget name=\"dojo.rest." + pathName + "table\" service=\""+getBaseUrl()+"/" + pathName + "/\" />\n"+
+                        "            "+proxyComment+"<!-- &lt;a:widget name=\"dojo.rest." + pathName + "table\" service=\""+getBaseUrl()+"/" + pathName + "/\" args=\"proxy="+getProxyUrl()+"\"/>-->\n";
                 } else {
                     str += "         <% } else if(p.equals(\"" + name + "\")) {%>\n"+
-                        "            <a:widget name=\"dojo.rest." + pathName + "table\" service=\"http://localhost:8080/" + getProjectName() + "/resources/" + pathName + "/\" />\n";
+                        "            <a:widget name=\"dojo.rest." + pathName + "table\" service=\""+getBaseUrl()+"/" + pathName + "/\" />\n"+
+                        "            "+proxyComment+"<!-- &lt;a:widget name=\"dojo.rest." + pathName + "table\" service=\""+getBaseUrl()+"/" + pathName + "/\" args=\"proxy="+getProxyUrl()+"\"/>-->\n";
                 }
             }
         }
@@ -799,15 +892,15 @@ public class ClientStubsGenerator extends AbstractGenerator {
         return result;
     }
 
-    private void updateProjectStub(FileObject projectStub, String prjName, String pkg, String baseUrl) throws IOException {
+    private void updateProjectStub(FileObject projectStub, String prjName, String pkg) throws IOException {
         FileLock lock = projectStub.lock();
         try {
             BufferedReader reader = new BufferedReader(new FileReader(FileUtil.toFile(projectStub)));
             String line;
             StringBuffer sb = new StringBuffer();
             while ((line = reader.readLine()) != null) {
-                if (line.contains("__BASE_URL__")) {
-                    sb.append(line.replaceAll("__BASE_URL__", baseUrl));
+                if (line.contains(BASE_URL_TOKEN)) {
+                    sb.append(line.replaceAll(BASE_URL_TOKEN, getBaseUrl()));
                 } else if (line.contains("__PROJECT_NAME__")) {
                     sb.append(line.replaceAll("__PROJECT_NAME__", prjName));
                 } else if (line.contains("__PROJECT_INIT_BODY__")) {
@@ -850,7 +943,9 @@ public class ClientStubsGenerator extends AbstractGenerator {
         sb2.append("\t\tvar str = '';\n");
         sb2.append("\t\t//Example test code for " + prjName + "\n");
         sb2.append("\t\tstr = '<h2>Resources for " + prjName + ":</h2><br><table border=\"1\">';\n");
-        sb2.append("\t\tvar app = new " + pkg+prjName + "('"+baseUrl+"');\n");
+        sb2.append("\t\tvar app = new " + pkg+prjName + "('"+getBaseUrl()+"');\n");
+        sb2.append("\t\t//Uncomment below if using proxy for javascript cross-domain.\n");
+        sb2.append("\t\t//app.setProxy(\""+getProxyUrl()+"\");\n");
         sb2.append("\t\tvar resources = app.getResources();\n");
         sb2.append("\t\tfor(i=0;i<resources.length;i++) {\n");
         sb2.append("\t\t  var resource = resources[i];\n");
@@ -865,7 +960,8 @@ public class ClientStubsGenerator extends AbstractGenerator {
         sb2.append("\t\t        str += '&nbsp;&nbsp;<font size=\"-3\">'+item.toString()+'</font><br/>';\n");
         sb2.append("\t\t    }\n");
         sb2.append("\t\t  } else {\n");
-        sb2.append("\t\t    str += 'No items, please check the url: <a href=\"'+uri+'\" target=\"_blank\">'+uri+'</a>';\n");
+        sb2.append("\t\t    str += 'No items, please check the url: <a href=\"'+uri+'\" target=\"_blank\">'+uri+'</a>.<br/>" +
+                "Set proxy if RESTful web service is not running on the same domain as this application.';\n");
         sb2.append("\t\t  }\n");
         sb2.append("\t\t  str += '</td></tr>';\n");
         sb2.append("\t\t}\n");
@@ -1384,6 +1480,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
                 containerStubTokens.put("<!-- __JMAKI_RESOURCE_SELECT_LIST__ -->", jmakiResSelList + "\n<!-- __JMAKI_RESOURCE_SELECT_LIST__ -->");
                 containerStubTokens.put("<!-- __JMAKI_RESOURCE_TAG_LIST__ -->", jmakiResTagList + "\n<!-- __JMAKI_RESOURCE_TAG_LIST__ -->");
                 containerStubTokens.put("TTL_JMakiWidget_Stubs", NbBundle.getMessage(ClientStubsGenerator.class, "TTL_JMakiWidget_Stubs"));
+                containerStubTokens.put(BASE_URL_TOKEN, getBaseUrl());
                 setTokens(containerStubTokens);
             }
         }

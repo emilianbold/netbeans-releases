@@ -59,7 +59,7 @@ public class PackagingInfoOuterPanel extends javax.swing.JPanel {
         );
         packagingHeaderOuterPanelLayout.setVerticalGroup(
             packagingHeaderOuterPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 202, Short.MAX_VALUE)
+            .add(0, 203, Short.MAX_VALUE)
         );
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -77,6 +77,8 @@ public class PackagingInfoOuterPanel extends javax.swing.JPanel {
         docTextArea.setRows(5);
         docTextArea.setWrapStyleWord(true);
         scrollPane.setViewportView(docTextArea);
+        docTextArea.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PackagingInfoOuterPanel.class, "PackagingInfoOuterPanel.docTextArea.AccessibleContext.accessibleName")); // NOI18N
+        docTextArea.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PackagingInfoOuterPanel.class, "PackagingInfoOuterPanel.docTextArea.AccessibleContext.accessibleDescription")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;

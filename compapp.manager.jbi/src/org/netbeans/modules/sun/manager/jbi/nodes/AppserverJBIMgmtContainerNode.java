@@ -47,12 +47,12 @@ import com.sun.esb.management.common.ManagementRemoteException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.management.Notification;
 import javax.management.openmbean.CompositeDataSupport;
 import javax.swing.Action;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.sun.manager.jbi.actions.RefreshAction;
 import org.netbeans.modules.sun.manager.jbi.management.AppserverJBIMgmtController;
 import org.netbeans.modules.sun.manager.jbi.util.Utils;
@@ -69,7 +69,6 @@ import org.openide.util.actions.SystemAction;
 public abstract class AppserverJBIMgmtContainerNode extends AppserverJBIMgmtNode
         implements Refreshable {
 
-    private final static Node WAIT_NODE = WaitNode.createWaitNode();
     private static Logger logger = Logger.getLogger("org.netbeans.modules.sun.manager.jbi.nodes.AppserverJBIMgmtContainerNode"); // NOI18N   
 
     /**
@@ -90,17 +89,19 @@ public abstract class AppserverJBIMgmtContainerNode extends AppserverJBIMgmtNode
 
         try {
             NotificationService notificationService = controller.getNotificationService();
-            notificationService.addNotificationEventListener(new EventNotificationListener() {
+            if (notificationService != null) {
+                notificationService.addNotificationEventListener(new EventNotificationListener() {
 
-                public void processNotification(EventNotification eventNotification) {
-                    Notification notification = eventNotification.getNotification();
-                    CompositeDataSupport userData = (CompositeDataSupport) notification.getUserData();
-                    String notificationSourceType = (String) userData.get("SourceType"); // NOI18N
-                    if (needRefresh(notificationSourceType)) {
-                        refresh();
+                    public void processNotification(EventNotification eventNotification) {
+                        Notification notification = eventNotification.getNotification();
+                        CompositeDataSupport userData = (CompositeDataSupport) notification.getUserData();
+                        String notificationSourceType = (String) userData.get("SourceType"); // NOI18N
+                        if (needRefresh(notificationSourceType)) {
+                            refresh();
+                        }
                     }
-                }
-            });
+                });
+            }
         } catch (ManagementRemoteException ex) {
             //Exceptions.printStackTrace(ex);
             logger.warning("Cannot get notification service: " + ex.getMessage()); // NOI18N
@@ -177,14 +178,18 @@ public abstract class AppserverJBIMgmtContainerNode extends AppserverJBIMgmtNode
         @Override
         protected void addNotify() {
             List<Node> keys = new ArrayList<Node>();
-            keys.add(WAIT_NODE);
+            keys.add(WaitNode.createWaitNode());
             setKeys(keys);
 
             RequestProcessor.getDefault().post(new Runnable() {
-                Vector<Object> keys = new Vector<Object>();
                 public void run() {
                     try {
-                        setKeys(cfactory.getChildrenObject(getNode(), type));
+                        final Node[] keys = cfactory.getChildrenObject(getNode(), type);
+                        SwingUtilities.invokeLater(new Runnable() {
+                            public void run() {
+                                setKeys(keys);
+                            }                            
+                        });
                     } catch (ManagementRemoteException e) {
                         getLogger().log(Level.FINE, e.getMessage(), e);
                     }

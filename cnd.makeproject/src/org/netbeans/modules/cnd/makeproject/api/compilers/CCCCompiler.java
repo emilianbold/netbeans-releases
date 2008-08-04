@@ -66,7 +66,7 @@ public abstract class CCCCompiler extends BasicCompiler {
     }
     
     public String getMTLevelOptions(int value) {
-        CompilerDescriptor compiler = getCompilerDescription();
+        CompilerDescriptor compiler = getDescriptor();
         if (compiler != null && compiler.getMultithreadingFlags() != null && compiler.getMultithreadingFlags().length > value){
             return compiler.getMultithreadingFlags()[value];
         }
@@ -74,7 +74,7 @@ public abstract class CCCCompiler extends BasicCompiler {
     }
     
     public String getLibraryLevelOptions(int value) {
-        CompilerDescriptor compiler = getCompilerDescription();
+        CompilerDescriptor compiler = getDescriptor();
         if (compiler != null && compiler.getLibraryFlags() != null && compiler.getLibraryFlags().length > value){
             return compiler.getLibraryFlags()[value];
         }
@@ -82,7 +82,7 @@ public abstract class CCCCompiler extends BasicCompiler {
     }
     
     public String getStandardsEvolutionOptions(int value) {
-        CompilerDescriptor compiler = getCompilerDescription();
+        CompilerDescriptor compiler = getDescriptor();
         if (compiler != null && compiler.getStandardFlags() != null && compiler.getStandardFlags().length > value){
             return compiler.getStandardFlags()[value];
         }
@@ -90,7 +90,7 @@ public abstract class CCCCompiler extends BasicCompiler {
     }
     
     public String getLanguageExtOptions(int value) {
-        CompilerDescriptor compiler = getCompilerDescription();
+        CompilerDescriptor compiler = getDescriptor();
         if (compiler != null && compiler.getLanguageExtensionFlags() != null && compiler.getLanguageExtensionFlags().length > value){
             return compiler.getLanguageExtensionFlags()[value];
         }
@@ -151,7 +151,7 @@ public abstract class CCCCompiler extends BasicCompiler {
     
     //TODO: move to a more convenient place and remove fixed tempfile name
     private String remote_command(String command, boolean use_stdout) {
-        String diversion = use_stdout ? "" : "2>&1 > /dev/null";
+        String diversion = use_stdout ? "" : "2>&1 > /dev/null"; // NOI18N
         return "touch /tmp/xyz.c; " + command + " /tmp/xyz.c " + diversion + "; rm -f /tmp/xyz.c"; // NOI18N
     }
     

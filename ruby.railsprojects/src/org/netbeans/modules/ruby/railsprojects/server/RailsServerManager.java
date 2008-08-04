@@ -685,8 +685,8 @@ public final class RailsServerManager {
         @Override
         public ActionText processLine(String outputLine) {
             
-            if (LOGGER.isLoggable(Level.FINEST)){
-                LOGGER.log(Level.FINEST, "Processing output line: " + outputLine);
+            if (LOGGER.isLoggable(Level.FINER)){
+                LOGGER.log(Level.FINER, "Processing output line: " + outputLine);
             }
 
             String line = outputLine;
@@ -725,8 +725,8 @@ public final class RailsServerManager {
         @Override
         public ActionText processLine(String outputLine) {
             
-            if (LOGGER.isLoggable(Level.FINEST)){
-                LOGGER.log(Level.FINEST, "Processing output line: " + outputLine);
+            if (LOGGER.isLoggable(Level.FINER)){
+                LOGGER.log(Level.FINER, "Processing output line: " + outputLine);
             }
 
             String line = outputLine;

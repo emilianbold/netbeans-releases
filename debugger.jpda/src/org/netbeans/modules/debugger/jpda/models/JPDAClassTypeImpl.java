@@ -69,7 +69,7 @@ import org.netbeans.modules.debugger.jpda.Java6Methods;
  */
 public class JPDAClassTypeImpl implements JPDAClassType {
     
-    private static final Logger loggerValue = Logger.getLogger("org.netbeans.modules.debugger.jpda.getValue"); // NOI8N
+    private static final Logger loggerValue = Logger.getLogger("org.netbeans.modules.debugger.jpda.getValue"); // NOI18N
     
     private JPDADebuggerImpl debugger;
     private ReferenceType classType;

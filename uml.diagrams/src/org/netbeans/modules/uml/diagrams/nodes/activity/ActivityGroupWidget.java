@@ -109,7 +109,7 @@ public class ActivityGroupWidget extends UMLNodeWidget//ContainerNode
         
         //create main view 
         RoundedRectWidget mainView = new RoundedRectWidget(scene, 
-                getWidgetID(), bundle.getString("LBL_body"),
+                getResourcePath(), bundle.getString("LBL_body"),
                 RoundedRectWidget.DEFAULT_DASH);
          
         mainView.setLayout(LayoutFactory.createOverlayLayout());

@@ -54,6 +54,7 @@ import javax.swing.event.ListSelectionListener;
 import org.netbeans.modules.vmd.componentssupport.ui.UIUtils;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
@@ -90,6 +91,10 @@ public class JavaMELibsVisualPanel extends JPanel {
         updateRemoveButton();
     }
 
+    protected HelpCtx getHelp() {
+        return new HelpCtx(JavaMELibsVisualPanel.class);
+    }
+    
     private void updateRemoveButton(){
         if (myLibDescList.isSelectionEmpty()) {
             myRemoveButton.setEnabled(false);

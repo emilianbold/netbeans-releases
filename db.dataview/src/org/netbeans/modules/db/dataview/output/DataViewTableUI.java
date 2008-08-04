@@ -104,7 +104,7 @@ class DataViewTableUI extends JTable {
 
         setDefaultRenderer(Object.class, new ResultSetCellRenderer());
         setDefaultRenderer(Number.class, new ResultSetCellRenderer());
-        setDefaultRenderer(Date.class, new ResultSetCellRenderer());
+        setDefaultRenderer(java.util.Date.class, new ResultSetCellRenderer());
 
         setDefaultEditor(Object.class, new ResultSetTableCellEditor(new JTextField()));
         setDefaultEditor(Number.class, new NumberEditor(new JTextField()));
@@ -114,6 +114,7 @@ class DataViewTableUI extends JTable {
 
         setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         multiplier = getFontMetrics(getFont()).stringWidth(data) / data.length() + 2;
+        setRowHeight(getFontMetrics(getFont()).getHeight() + 1);
 
         createPopupMenu(handler, dataView);
     }

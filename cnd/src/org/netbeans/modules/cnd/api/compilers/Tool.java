@@ -45,6 +45,7 @@ import java.io.File;
 import java.util.ResourceBundle;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.compilers.ToolchainManager.CompilerDescriptor;
+import org.netbeans.modules.cnd.api.compilers.ToolchainManager.ToolDescriptor;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.Path;
 import org.openide.util.NbBundle;
@@ -99,7 +100,11 @@ public class Tool {
         compilerSet = null;
         includeFilePrefix = null;
     }
-    
+
+    public ToolDescriptor getDescriptor() {
+        return null;
+    }
+
     public Tool createCopy() {
         Tool copy = new Tool(hkey, flavor, kind, "", displayName, path);
         copy.setName(getName());

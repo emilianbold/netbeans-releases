@@ -150,6 +150,11 @@ made subject to such option by the copyright holder.
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.welcome.resources.Bundle"/>
                 <attr name="position" intvalue="900"/>
             </file>
+            
+            <file name="php.url" url="nbresloc:/org/netbeans/modules/welcome/resources/learn_php.url">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.welcome.resources.Bundle"/>
+                <attr name="position" intvalue="1000"/>
+            </file>
 
         </folder>
         

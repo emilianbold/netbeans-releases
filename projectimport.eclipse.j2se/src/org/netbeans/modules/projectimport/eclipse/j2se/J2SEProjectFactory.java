@@ -41,7 +41,9 @@ package org.netbeans.modules.projectimport.eclipse.j2se;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -52,6 +54,7 @@ import org.netbeans.modules.java.j2seproject.J2SEProject;
 import org.netbeans.modules.java.j2seproject.J2SEProjectGenerator;
 import org.netbeans.modules.java.j2seproject.J2SEProjectType;
 import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
+import org.netbeans.modules.projectimport.eclipse.core.spi.LaunchConfiguration;
 import org.netbeans.modules.projectimport.eclipse.core.spi.ProjectFactorySupport;
 import org.netbeans.modules.projectimport.eclipse.core.spi.ProjectImportModel;
 import org.netbeans.modules.projectimport.eclipse.core.spi.ProjectTypeFactory.ProjectDescriptor;
@@ -121,6 +124,8 @@ public class J2SEProjectFactory implements ProjectTypeUpdater {
         if (model.getJavaPlatform() != null) {
             setExplicitJavaPlatform(helper, model);
         }
+        
+        addLaunchConfigurations(nbProject, model.getLaunchConfigurations());
 
         // save project
         ProjectManager.getDefault().saveProject(nbProject);
@@ -197,6 +202,50 @@ public class J2SEProjectFactory implements ProjectTypeUpdater {
     public File getProjectFileLocation(ProjectDescriptor descriptor, String token) {
         // N/A
         return null;
+    }
+
+    private void addLaunchConfigurations(J2SEProject nbProject, Collection<LaunchConfiguration> launchConfigurations) {
+        Iterator<LaunchConfiguration> it = launchConfigurations.iterator();
+        while (it.hasNext()) {
+            LaunchConfiguration config = it.next();
+            if (!config.getType().equals(LaunchConfiguration.TYPE_LOCAL_JAVA_APPLICATION)) {
+                it.remove();
+            }
+            if (config.getMainType() == null) {
+                it.remove();
+            }
+        }
+        AntProjectHelper aph = nbProject.getAntProjectHelper();
+        if (launchConfigurations.size() == 1) {
+            // For just a single config, treat it as the default config.
+            LaunchConfiguration config = launchConfigurations.iterator().next();
+            EditableProperties props = aph.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+            storeConfig(config, props);
+            aph.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
+        } else if (!launchConfigurations.isEmpty()) {
+            // >1 config. No idea which is "default" so just create them all and let user pick if they want.
+            for (LaunchConfiguration config : launchConfigurations) {
+                String path = "nbproject/configs/" + config.getName() + ".properties"; // NOI18N
+                EditableProperties props = aph.getProperties(path);
+                storeConfig(config, props);
+                aph.putProperties(path, props);
+            }
+            // Set one of them to current so that it is clear they got imported.
+            String path = "nbproject/private/config.properties"; // NOI18N
+            EditableProperties props = aph.getProperties(path);
+            props.setProperty("config", launchConfigurations.iterator().next().getName()); // NOI18N
+            aph.putProperties(path, props);
+        }
+    }
+    private void storeConfig(LaunchConfiguration config, EditableProperties props) {
+        props.setProperty(J2SEProjectProperties.MAIN_CLASS, config.getMainType());
+        // XXX normally APPLICATION_ARGS and RUN_VM_ARGS are put in private properties; does it matter here?
+        if (config.getProgramArguments() != null) {
+            props.setProperty(J2SEProjectProperties.APPLICATION_ARGS, config.getProgramArguments());
+        }
+        if (config.getVmArguments() != null) {
+            props.setProperty(J2SEProjectProperties.RUN_JVM_ARGS, config.getVmArguments());
+        }
     }
 
 }

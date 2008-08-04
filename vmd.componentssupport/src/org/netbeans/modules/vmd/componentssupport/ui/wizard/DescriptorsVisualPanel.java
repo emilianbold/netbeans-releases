@@ -51,6 +51,7 @@ import javax.swing.event.ListSelectionListener;
 import org.netbeans.modules.vmd.componentssupport.ui.UIUtils;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
@@ -87,6 +88,10 @@ public class DescriptorsVisualPanel extends javax.swing.JPanel {
         updateRemoveButton();
     }
 
+    protected HelpCtx getHelp() {
+        return new HelpCtx(DescriptorsVisualPanel.class);
+    }
+    
     private void updateRemoveButton() {
         if (myCompDescrList.isSelectionEmpty()) {
             myRemoveButton.setEnabled(false);

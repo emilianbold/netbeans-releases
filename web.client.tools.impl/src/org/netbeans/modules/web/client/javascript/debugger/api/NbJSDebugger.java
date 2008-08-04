@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.web.client.javascript.debugger.api;
 
+import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -225,14 +226,13 @@ public final class NbJSDebugger {
 
         public void preferenceChange(PreferenceChangeEvent evt) {
             String pref = evt.getKey();
-            if( NbJSPreferences.PROP_HTTP_MONITOR_ENABLED.equals(pref) || NbJSPreferences.PROP_HTTP_MONITOR_OPENED.equals(pref)){
+            if( NbJSPreferences.PROPERTIES.PROP_HTTP_MONITOR_ENABLED.equals(pref) ||
+                    NbJSPreferences.PROPERTIES.PROP_HTTP_MONITOR_OPENED.equals(pref)){
                 setBooleanFeatures(Feature.Name.HTTP_MONITOR, Boolean.parseBoolean(evt.getNewValue()));
             }
         }
 
     }
-
-//    private class PreferencesStateListeners implements
 
     private JSDebuggerEventListener debuggerListener;
     private JSDebuggerConsoleEventListener debuggerConsoleEventListener;
@@ -468,7 +468,7 @@ public final class NbJSDebugger {
         }
     }
 
-    private void setBreakpoint(NbJSBreakpoint bp) {
+    private void setBreakpoint(final NbJSBreakpoint bp) {
         JSBreakpointImpl bpImpl = breakpointsMap.get(bp);
         if (bpImpl != null) {
             return;
@@ -499,13 +499,17 @@ public final class NbJSDebugger {
                 condition = "";
             }
             bpImpl.setCondition(condition);
-
-            String bpId = debugger.setBreakpoint(bpImpl);
-            if (bpId != null) {
-                bpImpl.setId(bpId);
-                breakpointsMap.put(bp, bpImpl);
-                bp.addPropertyChangeListener(WeakListeners.propertyChange(breakpointPropertyChangeListener, bp));
-            }
+            final JSBreakpointImpl tmpBreakpointImp = bpImpl;
+            EventQueue.invokeLater(new Runnable () {
+                public void run() {
+                    String bpId = debugger.setBreakpoint(tmpBreakpointImp);
+                    if (bpId != null) {
+                        tmpBreakpointImp.setId(bpId);
+                        breakpointsMap.put(bp, tmpBreakpointImp);
+                        bp.addPropertyChangeListener(WeakListeners.propertyChange(breakpointPropertyChangeListener, bp));
+                    }
+                }
+            });
         }
     }
 

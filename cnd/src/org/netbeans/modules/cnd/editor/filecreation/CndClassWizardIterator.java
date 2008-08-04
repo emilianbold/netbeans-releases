@@ -90,6 +90,6 @@ public class CndClassWizardIterator extends CCFSrcFileIterator {
 
     @Override
     public String name() {
-        return "CndClassWizardIterator"; //NOI8N
+        return "CndClassWizardIterator"; //NOI18N
     }
 }

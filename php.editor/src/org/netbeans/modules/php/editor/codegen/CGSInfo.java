@@ -133,9 +133,12 @@ public class CGSInfo {
      */
     private ClassDeclaration findEnclosingClass(CompilationInfo info, int offset) {
         List<ASTNode> nodes = NavUtils.underCaret(info, offset);
-        for (ASTNode node : nodes) {
-            if (node instanceof ClassDeclaration) {
-                return (ClassDeclaration) node;
+        int count = nodes.size();
+        if (count > 1) {  // the cursor has to be in class block see issue #142417
+            ASTNode block = nodes.get(count - 1);
+            ASTNode declaration = nodes.get(count - 2);
+            if (block instanceof Block &&  declaration instanceof ClassDeclaration) {
+                return (ClassDeclaration) declaration;
             }
         }
         return null;
@@ -179,7 +182,7 @@ public class CGSInfo {
                     propertyName = name.substring(CGSGenerator.START_OF_SETTER.length());
                     existingSetters.add(propertyName.toLowerCase());
                 }
-                else if (className!= null && (className.equals(name) || "__construct".equals(name))) { //NOI8N
+                else if (className!= null && (className.equals(name) || "__construct".equals(name))) { //NOI18N
                     hasConstructor = true;
                 }
             }

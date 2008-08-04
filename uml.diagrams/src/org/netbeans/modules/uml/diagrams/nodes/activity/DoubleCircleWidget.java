@@ -83,7 +83,7 @@ public class DoubleCircleWidget extends CustomizableWidget
         Graphics2D graphics = getGraphics();
         Color currentColor = graphics.getColor();
 
-        graphics.setColor(getForeground());
+        graphics.setColor(Color.BLACK);//getForeground());
         // outer circle
         graphics.drawOval(getBounds().x, getBounds().y, getBounds().width, getBounds().height);
         // inner circle

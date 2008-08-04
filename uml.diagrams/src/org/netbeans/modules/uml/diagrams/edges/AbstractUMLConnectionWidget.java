@@ -67,6 +67,12 @@ public abstract class AbstractUMLConnectionWidget extends UMLEdgeWidget
     {
         super(scene);
         
+        initLabelManager();
+        
+    }
+
+    protected void initLabelManager() 
+    {
         LabelManager labelManager = createLabelManager();
         if(labelManager != null)
         {

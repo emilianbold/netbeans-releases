@@ -73,7 +73,7 @@ public class RemoteCommandSupport extends RemoteConnectionSupport {
         this.cmd = cmd;
         this.env = env;
 
-        if (!isCancelled()) {
+        if (!isFailedOrCancelled()) {
             log.fine("RemoteCommandSupport<Init>: Running [" + cmd + "] on " + key);
             try {
                 channel = createChannel();
@@ -133,7 +133,7 @@ public class RemoteCommandSupport extends RemoteConnectionSupport {
                 //echannel.setEnv(var, val); // not in 0.1.24
 
                 //as a workaround
-                cmdline.append( "export " + ev + "=\"" + env.get(ev) + "\";" ); // NOI18N
+                cmdline.append( ev + "=\"" + env.get(ev) + "\";" ); // NOI18N
             }
 
         }

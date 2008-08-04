@@ -58,7 +58,10 @@ import org.netbeans.junit.NbTestSuite;
  * @version 1.0
  */
 public class AddLocaleActionTest extends JellyTestCase {
-    
+
+    public static final String[] tests = new String[] {
+        "testPerformPopup"
+    };
     /** constructor required by JUnit
      * @param testName method name to be used as testcase
      */
@@ -74,7 +77,7 @@ public class AddLocaleActionTest extends JellyTestCase {
         suite.addTest(new AddLocaleActionTest("testPerformPopup"));
         return suite;
          */
-        return createModuleTest(AddLocaleActionTest.class, "testPerformPopup");
+        return createModuleTest(AddLocaleActionTest.class, tests);
     }
 
     @Override

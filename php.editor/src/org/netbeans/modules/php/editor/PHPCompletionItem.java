@@ -53,6 +53,7 @@ import org.netbeans.modules.php.editor.index.IndexedClass;
 import org.netbeans.modules.php.editor.index.IndexedConstant;
 import org.netbeans.modules.php.editor.index.IndexedElement;
 import org.netbeans.modules.php.editor.index.IndexedFunction;
+import org.netbeans.modules.php.editor.index.IndexedInterface;
 import org.netbeans.modules.php.editor.index.PHPIndex;
 import org.netbeans.modules.php.editor.index.PredefinedSymbolElement;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
@@ -298,6 +299,16 @@ abstract class PHPCompletionItem implements CompletionProposal {
             return ElementKind.CLASS;
         }
     }
+    
+    static class InterfaceItem extends PHPCompletionItem {
+        InterfaceItem(IndexedInterface iface, CompletionRequest request) {
+            super(iface, request);
+        }
+
+        public ElementKind getKind() {
+            return ElementKind.CLASS;
+        }
+    }
 
     static class VariableItem extends PHPCompletionItem {
         private boolean insertDollarPrefix = true;
@@ -341,6 +352,18 @@ abstract class PHPCompletionItem implements CompletionProposal {
 
         void doNotInsertDollarPrefix(){
             insertDollarPrefix = false;
+        }
+    }
+
+    //TODO: dummy must show also parameters similar like FunctionItem
+    static class SpecialFunctionItem extends KeywordItem {
+        public SpecialFunctionItem(String fncName, CompletionRequest request) {
+            super(fncName, request);
+        }
+
+        @Override
+        public ImageIcon getIcon() {
+            return null;
         }
     }
 

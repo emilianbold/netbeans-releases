@@ -444,14 +444,14 @@ public final class GemManager {
             for (File gemDir : getRepositories()) {
                 File specDir = new File(gemDir, SPECIFICATIONS);
                 if (specDir.exists()) {
-                    LOGGER.finest("Initializing \"" + gemDir + "\" repository");
+                    LOGGER.finer("Initializing \"" + gemDir + "\" repository");
                     // Add each of */lib/
                     File[] specFiles = specDir.listFiles();
                     if (specFiles != null) {
                         localGems.putAll(GemFilesParser.getGemInfos(specFiles));
                     }
                 } else {
-                    LOGGER.finest("Cannot find Gems repository. \"" + gemDir + "\" does not exist or is not a directory."); // NOI18N
+                    LOGGER.finer("Cannot find Gems repository. \"" + gemDir + "\" does not exist or is not a directory."); // NOI18N
                 }
                 logGems(Level.FINEST);
             }
@@ -481,7 +481,7 @@ public final class GemManager {
                 runnerLock.unlock();
             }
         } else {
-            LOGGER.finest("resetRemote() ignored");
+            LOGGER.finer("resetRemote() ignored");
         }
     }
 
@@ -499,7 +499,7 @@ public final class GemManager {
                 runnerLock.unlock();
             }
         } else {
-            LOGGER.finest("resetLocal() ignored");
+            LOGGER.finer("resetLocal() ignored");
         }
     }
 
@@ -633,6 +633,15 @@ public final class GemManager {
     }
 
     private static void parseGemList(List<String> lines, List<Gem> localList, List<Gem> remoteList) {
+        LOGGER.finer("Going to parse Gem list");
+        if (LOGGER.isLoggable(Level.FINEST)) {
+            LOGGER.finest("Using the following output:");
+            LOGGER.finest("=== Output Start ===");
+            for (String line : lines) {
+                LOGGER.finest(line);
+            }
+            LOGGER.finest("=== Output End ===");
+        }
         Gem gem = null;
         boolean listStarted = false;
         boolean inLocal = false;
@@ -641,7 +650,6 @@ public final class GemManager {
         for (String line : lines) {
             if (line.length() == 0) {
                 gem = null;
-
                 continue;
             }
 
@@ -705,6 +713,8 @@ public final class GemManager {
                 }
             }
         }
+        LOGGER.finer("Parsed " + localList.size() + " local gems");
+        LOGGER.finer("Parsed " + remoteList.size() + " remote gems");
     }
 
     /**
@@ -1139,9 +1149,9 @@ public final class GemManager {
         for (int i = 0; valid && i < TOP_LEVEL_REPO_DIRS.length; i++) {
             String dir = TOP_LEVEL_REPO_DIRS[i];
             File dirF = new File(gemHomeF, dir);
-            LOGGER.finest("Checking: " + dirF);
+            LOGGER.finer("Checking: " + dirF);
             valid &= dirF.isDirectory();
-            LOGGER.finest("valid: " + valid);
+            LOGGER.finer("valid: " + valid);
         }
         return valid;
     }

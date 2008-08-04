@@ -61,7 +61,7 @@ public interface ServerList {
     
     public void clear();
     
-    public void addServer(String key);
+    public void addServer(String key, boolean asDefault);
     
     public void removeServer(int idx);
     
