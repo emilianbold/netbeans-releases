@@ -34,7 +34,7 @@ echo Configuring GlassFish V3 in `pwd`
 
 #ant_bin=./lib/ant/bin/ant
 #
-#java_exe=/System/Library/Frameworks/JavaVM.framework/Versions/1.5/Home/bin/java
+#java_exe=`"$script_dir"/get_current_jdk.sh`/bin/java
 #
 #getPort() {
 #   basePort=$1

@@ -89,16 +89,25 @@ public class PackagingFilesPanel extends ListEditorPanel {
 
     public PackagingFilesPanel(List<FileElement> fileList, String baseDir) {
         super(fileList.toArray(), new JButton[]{new JButton(), new JButton(), new JButton()});
+        getAddButton().setVisible(false);
         this.baseDir = baseDir;
         this.addButton = extraButtons[0];
         this.addFileOrDirectoryButton = extraButtons[1];
         this.addFilesButton = extraButtons[2];
 
-        addButton.setText("Add [Empty]"); // FIXUP
+        addButton.setText(getString("PackagingFilesPanel.addButton.text"));
+	addButton.setMnemonic(getString("PackagingFilesPanel.addButton.mn").charAt(0));
+        addButton.getAccessibleContext().setAccessibleDescription(getString("PackagingFilesPanel.addButton.ad"));
         addButton.addActionListener(new AddButtonAction());
-        addFileOrDirectoryButton.setText("Add File or Diretory"); // FIXUP
+        
+        addFileOrDirectoryButton.setText(getString("PackagingFilesPanel.addFileOrDirButton.text"));
+	addFileOrDirectoryButton.setMnemonic(getString("PackagingFilesPanel.addFileOrDirButton.mn").charAt(0));
+        addFileOrDirectoryButton.getAccessibleContext().setAccessibleDescription(getString("PackagingFilesPanel.addFileOrDirButton.ad"));
         addFileOrDirectoryButton.addActionListener(new AddFileOrDirectoryButtonAction());
-        addFilesButton.setText("Add Files from Directory"); // FIXUP
+        
+        addFilesButton.setText(getString("PackagingFilesPanel.addFilesButton.text"));
+	addFilesButton.setMnemonic(getString("PackagingFilesPanel.addFilesButton.mn").charAt(0));
+        addFilesButton.getAccessibleContext().setAccessibleDescription(getString("PackagingFilesPanel.addFilesButton.ad"));
         addFilesButton.addActionListener(new AddFilesButtonAction());
 
         getEditButton().setVisible(false);
@@ -128,7 +137,7 @@ public class PackagingFilesPanel extends ListEditorPanel {
             if (seed == null) {
                 seed = baseDir;
             }
-            FileChooser fileChooser = new FileChooser("File", "Select", FileChooser.FILES_AND_DIRECTORIES, null, seed, false); // FIXUP
+            FileChooser fileChooser = new FileChooser(getString("FileChooserFileTitle"), getString("FileChooserButtonText"), FileChooser.FILES_AND_DIRECTORIES, null, seed, false);
             PathPanel pathPanel = new PathPanel();
             fileChooser.setAccessory(pathPanel);
             fileChooser.setMultiSelectionEnabled(true);
@@ -221,7 +230,7 @@ public class PackagingFilesPanel extends ListEditorPanel {
             if (seed == null) {
                 seed = baseDir;
             }
-            FileChooser fileChooser = new FileChooser("File", "Select", FileChooser.DIRECTORIES_ONLY, null, seed, false); // FIXUP
+            FileChooser fileChooser = new FileChooser(getString("FileChooserFilesTitle"), getString("FileChooserButtonText"), FileChooser.DIRECTORIES_ONLY, null, seed, false);
             PathPanel pathPanel = new PathPanel();
             fileChooser.setAccessory(pathPanel);
             fileChooser.setMultiSelectionEnabled(false);
@@ -285,12 +294,27 @@ public class PackagingFilesPanel extends ListEditorPanel {
 
     @Override
     public String getCopyButtonText() {
-        return "Duplicate"; // FIXUP
+        return getString("PackagingFilesPanel.duplicateButton.text");
+    }
+    
+    @Override
+    public char getCopyButtonMnemonics() {
+        return getString("PackagingFilesPanel.duplicateButton.mn").charAt(0);
+    }
+    
+    @Override
+    public String getCopyButtonAD() {
+        return getString("PackagingFilesPanel.duplicateButton.ad");
     }
 
     @Override
     public String getListLabelText() {
-        return "Files:"; // FIXUP
+        return getString("PackagingFilesPanel.listlabel.text");
+    }
+    
+    @Override
+    public char getListLabelMnemonic() {
+        return getString("PackagingFilesPanel.listlabel.mn").charAt(0);
     }
 
     // Overrides ListEditorPanel
@@ -359,6 +383,7 @@ public class PackagingFilesPanel extends ListEditorPanel {
         if (targetList == null) {
             targetList = new MyTable();
             setData(null);
+            getListLabel().setLabelFor(targetList);
         }
         return targetList;
     }
@@ -472,7 +497,14 @@ public class PackagingFilesPanel extends ListEditorPanel {
 
     class MyTableModel extends DefaultTableModel {
 
-        private String[] columnNames = {"Type", "File or Directory Path in Package", "Original File or Link", "Permission", "Owner", "Group"}; // FIXUP
+        private String[] columnNames = {
+            getString("PackagingFilesOuterPanel.column.0.text"),
+            getString("PackagingFilesOuterPanel.column.1.text"),
+            getString("PackagingFilesOuterPanel.column.2.text"),
+            getString("PackagingFilesOuterPanel.column.3.text"),
+            getString("PackagingFilesOuterPanel.column.4.text"),
+            getString("PackagingFilesOuterPanel.column.5.text")
+        };
 
         @Override
         public String getColumnName(int col) {

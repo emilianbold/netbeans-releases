@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.ruby.platform.gems;
 
+import java.util.SortedSet;
 import org.netbeans.junit.NbTestCase;
 
 public final class GemTest extends NbTestCase {
@@ -45,7 +46,7 @@ public final class GemTest extends NbTestCase {
     public GemTest(String testName) {
         super(testName);
     }
-    
+
     public void testGetLatestVersion() {
         assertLatestInstalled("0.1.11, 0.1.10", "0.1.11");
         assertLatestInstalled("0.1.10, 0.1.11", "0.1.11");
@@ -56,12 +57,26 @@ public final class GemTest extends NbTestCase {
         assertLatestAvailable("0.1.10", "0.1.10");
         assertLatestAvailable(null, null);
     }
-    
+
     public void testHasUpdateAvailable() {
         Gem gem = new Gem("ruby-debug-ide", "0.1.11, 0.1.10", "0.1.11");
         assertFalse(gem.hasUpdateAvailable());
         gem = new Gem("ruby-debug-ide", "0.10.1, 0.10.0", "0.9");
         assertFalse(gem.hasUpdateAvailable());
+    }
+
+    public void testGetAvailableVersions() {
+        Gem gem = new Gem("actionmailer", "", "2.1.0, 2.0.2, 2.0.1, 2.0.0, 1.3.6, 1.3.5");
+        SortedSet<String> versions = gem.getAvailableVersions();
+        assertEquals("6 versions", 6, versions.size());
+
+        gem = new Gem("actionmailer", "", "2.1.0");
+        versions = gem.getAvailableVersions();
+        assertEquals("1 version", 1, versions.size());
+
+        gem = new Gem("actionmailer", null, null);
+        versions = gem.getAvailableVersions();
+        assertEquals("no version", 0, versions.size());
     }
 
     private void assertLatestInstalled(String versions, String latestExpected) {

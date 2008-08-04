@@ -75,6 +75,7 @@ Microsystems, Inc. All Rights Reserved.
         </copy>
         
         <copy file="${basedir}/../../commonfiles/unpack200.sh" tofile="${basedir}/pkg/scripts/unpack200.sh"/>
+        <copy file="${basedir}/../../commonfiles/get_current_jdk.sh" tofile="${basedir}/pkg/scripts/get_current_jdk.sh"/>
         
         
         <copy file="${basedir}/../../commonfiles/Description.plist" filtering="true" overwrite="true" tofile="pkg/scripts/Description.plist">

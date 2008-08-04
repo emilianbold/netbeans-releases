@@ -302,6 +302,11 @@ public class GdbProxyEngine {
             gdbProxy.getLogger().logMessage(time + msg);
         }
         msg = stripToken(msg);
+
+        // bugfix for IZ:142454
+        // ('-enable-timings no' does not turn it off sometimes)
+        msg = stripTiming(msg);
+
         if (msg.length() == 0) {
             log.warning("Empty message received from gdb");
             return;
@@ -408,6 +413,18 @@ public class GdbProxyEngine {
         } else {
             return msg;
         }
+    }
+
+    /**
+     * Cut timing information if any
+     * @param msg
+     */
+    private String stripTiming(String msg) {
+        int pos = msg.indexOf(",time="); // NOI18N
+        if (pos != -1 ) {
+            msg = msg.substring(0, pos);
+        }
+        return msg;
     }
     
     private GdbLogger getLogger() {

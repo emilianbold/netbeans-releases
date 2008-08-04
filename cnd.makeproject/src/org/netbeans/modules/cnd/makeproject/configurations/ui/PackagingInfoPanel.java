@@ -73,14 +73,19 @@ public class PackagingInfoPanel extends ListEditorPanel {
 
     public PackagingInfoPanel(List<InfoElement> infoList, String baseDir) {
         super(infoList.toArray(), new JButton[]{new JButton(), new JButton()});
+        getAddButton().setVisible(false);
         this.baseDir = baseDir;
         
         this.addButton = extraButtons[0];
-        addButton.setText("Add [Empty]"); // FIXUP
+        addButton.setText(getString("PackagingFilesPanel.addButton.text"));
+	addButton.setMnemonic(getString("PackagingFilesPanel.addButton.mn").charAt(0));
+        addButton.getAccessibleContext().setAccessibleDescription(getString("PackagingFilesPanel.addButton.ad"));
         addButton.addActionListener(new AddButtonAction());
         
         this.addEntryButton = extraButtons[1];
-        addEntryButton.setText("Add Parameter"); // FIXUP
+        addEntryButton.setText(getString("PackagingFilesPanel.addParameterButton.text"));
+	addEntryButton.setMnemonic(getString("PackagingFilesPanel.addParameterButton.mn").charAt(0));
+        addEntryButton.getAccessibleContext().setAccessibleDescription(getString("PackagingFilesPanel.addParameterButton.ad"));
         addEntryButton.addActionListener(new AddEntryButtonAction());
 
         getEditButton().setVisible(false);
@@ -97,18 +102,18 @@ public class PackagingInfoPanel extends ListEditorPanel {
 
     class AddButtonAction implements java.awt.event.ActionListener {
         public void actionPerformed(java.awt.event.ActionEvent evt) {
-            addObjectAction(new InfoElement("", "")); // FIXUP
+            addObjectAction(new InfoElement("", "")); // NOI18N
         }
     }
     
     class AddEntryButtonAction implements java.awt.event.ActionListener {
         public void actionPerformed(java.awt.event.ActionEvent evt) {
 	    PackagingNewEntryPanel packagingNewEntryPanel = new PackagingNewEntryPanel();
-	    DialogDescriptor dialogDescriptor = new DialogDescriptor(packagingNewEntryPanel, "Add New Parameter"); // FIXUP
+	    DialogDescriptor dialogDescriptor = new DialogDescriptor(packagingNewEntryPanel, getString("AddNewParameterDialogTitle"));
 	    DialogDisplayer.getDefault().notify(dialogDescriptor);
 	    if (dialogDescriptor.getValue() != DialogDescriptor.OK_OPTION)
 		return;
-            addObjectAction(packagingNewEntryPanel.getInfoElement()); // FIXUP
+            addObjectAction(packagingNewEntryPanel.getInfoElement());
         }
     }
 
@@ -121,12 +126,27 @@ public class PackagingInfoPanel extends ListEditorPanel {
 
     @Override
     public String getCopyButtonText() {
-        return "Duplicate"; // FIXUP
+        return getString("PackagingFilesPanel.duplicateButton.text");
+    }
+    
+    @Override
+    public char getCopyButtonMnemonics() {
+        return getString("PackagingFilesPanel.duplicateButton.mn").charAt(0);
+    }
+    
+    @Override
+    public String getCopyButtonAD() {
+        return getString("PackagingFilesPanel.duplicateButton.ad");
     }
 
     @Override
     public String getListLabelText() {
-        return "Parameters:"; // FIXUP
+        return getString("PackagingInfoPanel.listlabel.text");
+    }
+    
+    @Override
+    public char getListLabelMnemonic() {
+        return getString("PackagingInfoPanel.listlabel.mn").toCharArray()[0];
     }
 
     // Overrides ListEditorPanel
@@ -196,6 +216,7 @@ public class PackagingInfoPanel extends ListEditorPanel {
     private JTable getTargetList() {
         if (targetList == null) {
             targetList = new MyTable();
+            getListLabel().setLabelFor(targetList);
             setData(null);
         }
         return targetList;
@@ -400,7 +421,7 @@ public class PackagingInfoPanel extends ListEditorPanel {
 
     class MyTableModel extends DefaultTableModel {
 
-        private String[] columnNames = {"Name", "Value"}; // FIXUP
+        private String[] columnNames = {getString("PackagingInfoPanel.column.0.text"), getString("PackagingInfoPanel.column.1.text")};
 
         @Override
         public String getColumnName(int col) {

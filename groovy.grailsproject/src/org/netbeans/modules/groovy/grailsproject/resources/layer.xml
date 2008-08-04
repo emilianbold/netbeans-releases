@@ -33,7 +33,10 @@
     </folder>
     <folder name="Templates">
         <folder name="Project">
-            <folder name="Web">
+            <folder name="Groovy">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.groovy.grailsproject.ui.wizards.Bundle"/>
+                <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/groovy/grailsproject/resources/desktop.html"/>
+                <attr name="position" intvalue="825"/>
                 <file name="emptyGrails.xml">
                     <attr name="position" intvalue="400"/>
                     <attr name="template" boolvalue="true"/>
