@@ -396,6 +396,8 @@ public class PackagingFilesPanel extends ListEditorPanel {
 //		setRowHeight(19);
             getAccessibleContext().setAccessibleDescription(""); // NOI18N
             getAccessibleContext().setAccessibleName(""); // NOI18N
+            
+            putClientProperty("terminateEditOnFocusLost", Boolean.TRUE); // NOI18N
         }
 
         @Override
@@ -455,13 +457,16 @@ public class PackagingFilesPanel extends ListEditorPanel {
                     label.setText(elem.getType().toString());
             } else if (col == 1) {
                 if (elem.getType() == FileElement.FileType.SOFTLINK) {
-                    label.setToolTipText(elem.getType() + ": " + elem.getTo() + "->" + elem.getFrom()); // NOI18N
+                    String msg = getString("Softlink_tt", elem.getTo() + "->" + elem.getFrom()); // NOI18N
+                    label.setToolTipText(msg);
                 }
                 else if (elem.getType() == FileElement.FileType.DIRECTORY) {
-                    label.setToolTipText(elem.getType() + ": " + elem.getTo()); // NOI18N
+                    String msg = getString("Directory_tt", elem.getTo()); // NOI18N
+                    label.setToolTipText(msg);
                 }
                 else if (elem.getType() == FileElement.FileType.FILE) {
-                    label.setToolTipText(elem.getType() + ": " + (new File(IpeUtils.toAbsolutePath(baseDir, elem.getFrom())).getAbsolutePath())); // NOI18N
+                    String msg = getString("File_tt", (new File(IpeUtils.toAbsolutePath(baseDir, elem.getFrom())).getAbsolutePath())); // NOI18N
+                    label.setToolTipText(msg);
                 }
                 return label;
                 
@@ -635,4 +640,9 @@ public class PackagingFilesPanel extends ListEditorPanel {
         }
         return bundle.getString(s);
     }
+    
+    private static String getString(String s, String a1) {
+        return NbBundle.getMessage(PackagingFilesPanel.class, s, a1);
+    }
+
 }

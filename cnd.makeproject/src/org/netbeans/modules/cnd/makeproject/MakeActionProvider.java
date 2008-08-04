@@ -976,12 +976,21 @@ public class MakeActionProvider implements ActionProvider {
         
         if (errormsg == null) {
             String tool = conf.getPackagingConfiguration().getToolValue();
-            if (!IpeUtils.isPathAbsolute(tool) && Path.findCommand(tool) == null) {
-                
-                errormsg = NbBundle.getMessage(MakeActionProvider.class, "ERR_MISSING_TOOL1", tool); // NOI18N
-            }
-            else if (IpeUtils.isPathAbsolute(tool) && !(new File(tool).exists())) {
-                errormsg = NbBundle.getMessage(MakeActionProvider.class, "ERR_MISSING_TOOL2", tool); // NOI18N
+            if (conf.getDevelopmentHost().isLocalhost()) {
+                if (!IpeUtils.isPathAbsolute(tool) && Path.findCommand(tool) == null) {
+                    errormsg = NbBundle.getMessage(MakeActionProvider.class, "ERR_MISSING_TOOL1", tool); // NOI18N
+                }
+                else if (IpeUtils.isPathAbsolute(tool) && !(new File(tool).exists())) {
+                    errormsg = NbBundle.getMessage(MakeActionProvider.class, "ERR_MISSING_TOOL2", tool); // NOI18N
+                }
+            } else {
+                String hkey = conf.getDevelopmentHost().getName();
+                ServerList serverList = (ServerList) Lookup.getDefault().lookup(ServerList.class);
+                if(serverList != null) {
+                    if (!serverList.isValidExecutable(hkey, tool)) {
+                        errormsg = NbBundle.getMessage(MakeActionProvider.class, "ERR_MISSING_TOOL3", tool, hkey); // NOI18N
+                    }
+                }
             }
         }
         

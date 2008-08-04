@@ -176,7 +176,7 @@ public class SQLEditorSupport extends DataEditorSupport
     }
     
     protected String messageName() {
-        if (!getDataObject().isValid()) return ""; // NOI18N
+        if (!isValid()) return ""; // NOI18N
         
         if (isConsole()) {
             // just the name, no modified or r/o flags
@@ -187,7 +187,7 @@ public class SQLEditorSupport extends DataEditorSupport
     }
     
     protected String messageHtmlName() {
-        if (!getDataObject().isValid()) return ""; // NOI18N
+        if (!isValid()) return ""; // NOI18N
         
         if (isConsole()) {
             // just the name, no modified or r/o flags
@@ -209,7 +209,7 @@ public class SQLEditorSupport extends DataEditorSupport
         closeExecutionResult();
         closeLogger();
         
-        if (isConsole() && getDataObject().isValid()) {
+        if (isConsole() && isValid()) {
             try {
                 getDataObject().delete();
             } catch (IOException e) {
@@ -228,6 +228,10 @@ public class SQLEditorSupport extends DataEditorSupport
     
     boolean isConsole() {
         return ((SQLDataObject)getDataObject()).isConsole();
+    }
+    
+    boolean isValid() {
+        return getDataObject().isValid();
     }
     
     protected CloneableEditor createCloneableEditor() {

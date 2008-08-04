@@ -45,6 +45,7 @@ import com.sun.source.util.Trees;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Level;
 import javax.swing.text.Document;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.DeclarationFinder;
@@ -58,8 +59,12 @@ import javax.lang.model.util.ElementFilter;
 import javax.swing.text.BadLocationException;
 import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.ClassNode;
+import org.codehaus.groovy.ast.FieldNode;
 import org.codehaus.groovy.ast.ModuleNode;
+import org.codehaus.groovy.ast.expr.ClassExpression;
 import org.codehaus.groovy.ast.expr.ConstantExpression;
+import org.codehaus.groovy.ast.expr.ConstructorCallExpression;
+import org.codehaus.groovy.ast.expr.DeclarationExpression;
 import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.ast.expr.MethodCallExpression;
 import org.codehaus.groovy.ast.expr.PropertyExpression;
@@ -100,7 +105,7 @@ public class GroovyDeclarationFinder implements DeclarationFinder{
     OffsetRange lastRange = OffsetRange.NONE;
 
     public GroovyDeclarationFinder() {
-        // LOG.setLevel(Level.FINEST);
+        LOG.setLevel(Level.OFF);
     }
 
     public OffsetRange getReferenceSpan(Document document, int lexOffset) {
@@ -299,6 +304,33 @@ public class GroovyDeclarationFinder implements DeclarationFinder{
                         // TODO try to find it in Groovy
                     }
                 }
+            } else if (closest instanceof DeclarationExpression ||
+                closest instanceof ConstructorCallExpression ||
+                closest instanceof ClassExpression || 
+                closest instanceof FieldNode) {
+
+                if (doc != null && range != null) {
+                    String text = doc.getText(range.getStart(), range.getLength());
+
+                    Set<IndexedClass> classes =
+                        index.getClasses(text, NameKind.EXACT_NAME, true, false, false);
+
+                    if (classes.size() == 0) {
+                        return DeclarationLocation.NONE;
+                    }
+
+                    for (IndexedClass indexedClass : classes) {
+                        ASTNode node = AstUtilities.getForeignNode(indexedClass);
+                        if (node != null) {
+                            OffsetRange defRange = AstUtilities.getRange(node, doc);
+                            if (defRange != null) {
+                                LOG.log(Level.FINEST, "Found declaration of class : {0}", text);
+                                return new DeclarationLocation(indexedClass.getFileObject(), defRange.getStart());
+                            }
+                        }
+                    }
+                }
+
             }
         } catch (BadLocationException ble) {
             Exceptions.printStackTrace(ble);
