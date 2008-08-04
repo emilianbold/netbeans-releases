@@ -856,7 +856,9 @@ public final class Preview extends Dialog implements Percent.Listener {
       int screenHeight = Toolkit.getDefaultToolkit().getScreenSize().height;
       int height = (int) Math.round(screenHeight * PREVIEW_HEIGHT_RATIO);
       int width = (int) Math.round(height * PREVIEW_WIDTH_RATIO);
-
+//out();
+//out("SET SIZE FOR SCROLL PANE");
+//out();
       Dimension dimension = new Dimension(width, height);
       setMinimumSize(dimension);
       setPreferredSize(dimension);

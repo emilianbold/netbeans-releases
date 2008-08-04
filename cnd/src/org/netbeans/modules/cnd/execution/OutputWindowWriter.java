@@ -189,7 +189,8 @@ public class OutputWindowWriter extends Writer {
         }
         
         FileObject myObj = relativeDir;
-        StringTokenizer st = new StringTokenizer(relativePath, File.separator); // NOI18N
+        String delims = Utilities.isWindows()? File.separator + '/' : File.separator; // NOI18N
+        StringTokenizer st = new StringTokenizer(relativePath, delims);
         
         while ((myObj != null) && st.hasMoreTokens()) {
             String nameExt = st.nextToken();

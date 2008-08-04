@@ -131,6 +131,8 @@ public class Utilities {
 
     private static String guessLiteralName(String str) {
         StringBuffer sb = new StringBuffer();
+        if(str.length() == 0)
+            return DEFAULT_NAME;
         char first = str.charAt(0);
         if(Character.isJavaIdentifierStart(str.charAt(0)))
             sb.append(first);
