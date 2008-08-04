@@ -131,6 +131,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         if (!record.isOnline()) {
             record.resetOfflineState(); // this is a do-over
             setButtons(false);
+            hideReason();            
             RemoteUserInfo userInfo = RemoteUserInfo.getUserInfo(entry, true);
             userInfo.setPassword(password);
             phandle = ProgressHandleFactory.createHandle("");
