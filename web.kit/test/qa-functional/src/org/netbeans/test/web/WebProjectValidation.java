@@ -97,6 +97,7 @@ import org.netbeans.junit.ide.ProjectSupport;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.util.Exceptions;
 
 /**
  */
@@ -145,7 +146,12 @@ public class WebProjectValidation extends J2eeTestCase {
     }
 
     protected  File getProjectFolder() {
-        File dataDir = new WebProjectValidation().getWorkDir();
+        File dataDir = null;
+        try {
+            dataDir = new WebProjectValidation().getWorkDir();
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
         return Manager.normalizeFile(dataDir);
     }
 
