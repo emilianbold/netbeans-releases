@@ -68,7 +68,7 @@ public class GNUCCompiler extends GNUCCCCompiler {
     }
     
     @Override
-    protected CompilerDescriptor getCompilerDescription() {
+    public CompilerDescriptor getDescriptor() {
         return getFlavor().getToolchainDescriptor().getC();
     }
 }

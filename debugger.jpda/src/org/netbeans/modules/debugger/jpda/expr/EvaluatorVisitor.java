@@ -1449,6 +1449,9 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             Assert2.error(arg0, "arrayIsNull", arg0.getExpression());
         }
         Mirror index = arg0.getIndex().accept(this, evaluationContext);
+        if (!(array instanceof ArrayReference)) {
+            Assert2.error(arg0, "notArrayType", arg0.getExpression());
+        }
         if (!(index instanceof PrimitiveValue)) {
             Assert2.error(arg0, "arraySizeBadType", index);
         }
@@ -1901,6 +1904,10 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                         return clazz.classObject();
                     }
                     Field f = clazz.fieldByName(fieldName);
+                    if (!f.isStatic()) {
+                        Assert2.error(arg0, "accessInstanceVariableFromStaticContext", fieldName);
+                        return null;
+                    }
                     if (f != null) {
                         return clazz.getValue(f);
                     } else {

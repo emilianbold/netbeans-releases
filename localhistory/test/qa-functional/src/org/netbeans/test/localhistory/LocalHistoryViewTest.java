@@ -193,7 +193,8 @@ public class LocalHistoryViewTest extends JellyTestCase {
     public void testLocalHistoryRevertDeleted() {
         node = new Node(new SourcePackagesNode(PROJECT_NAME), "NewPackage");
         node.performPopupActionNoBlock("Delete");
-        NbDialogOperator dialog = new NbDialogOperator("Safe Delete");
+//        NbDialogOperator dialog = new NbDialogOperator("Safe Delete");
+        NbDialogOperator dialog = new NbDialogOperator("Delete");
         dialog.ok();
         node = new SourcePackagesNode(PROJECT_NAME);
         node.performPopupAction("Local History|Revert Deleted");

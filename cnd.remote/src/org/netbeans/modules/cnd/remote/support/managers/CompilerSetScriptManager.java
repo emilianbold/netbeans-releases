@@ -69,7 +69,7 @@ public class CompilerSetScriptManager implements ScriptManager {
     }
 
     public void runScript() {
-        if (!support.isFailed() && !support.isCancelled()) {
+        if (!support.isFailedOrCancelled()) {
             ChannelExec channel = (ChannelExec) support.getChannel();
             channel.setInputStream(null);
             channel.setErrStream(System.err);

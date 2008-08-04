@@ -127,7 +127,7 @@ public abstract class GNUCCCCompiler extends CCCCompiler {
     }
 
     protected String getDefaultPath() {
-        CompilerDescriptor compiler = getCompilerDescription();
+        CompilerDescriptor compiler = getDescriptor();
         if (compiler != null && compiler.getNames().length > 0){
             return compiler.getNames()[0];
         }
@@ -135,17 +135,17 @@ public abstract class GNUCCCCompiler extends CCCCompiler {
     }
 
     protected String getCompilerStderrCommand() {
-        CompilerDescriptor compiler = getCompilerDescription();
+        CompilerDescriptor compiler = getDescriptor();
         if (compiler != null){
-            return " "+compiler.getIncludeFlags();
+            return " " + compiler.getIncludeFlags(); // NOI18N
         }
         return ""; // NOI18N
     }
 
     protected String getCompilerStdoutCommand() {
-        CompilerDescriptor compiler = getCompilerDescription();
+        CompilerDescriptor compiler = getDescriptor();
         if (compiler != null){
-            return " "+compiler.getMacroFlags();
+            return " " + compiler.getMacroFlags();  // NOI18N
         }
         return ""; // NOI18N
     }
@@ -206,7 +206,7 @@ public abstract class GNUCCCCompiler extends CCCCompiler {
     }
 
     protected String cutIncludePrefix(String line) {
-        CompilerDescriptor compiler = getCompilerDescription();
+        CompilerDescriptor compiler = getDescriptor();
         if (compiler != null && compiler.getRemoveIncludeOutputPrefix() != null) {
             String remove = compiler.getRemoveIncludeOutputPrefix();
             if (line.toLowerCase().startsWith(getIncludeFilePathPrefix().toLowerCase())) {
@@ -222,7 +222,7 @@ public abstract class GNUCCCCompiler extends CCCCompiler {
     public String getIncludeFilePathPrefix() {
         if (includeFilePrefix == null) {
             includeFilePrefix = ""; // NOI18N
-            CompilerDescriptor compiler = getCompilerDescription();
+            CompilerDescriptor compiler = getDescriptor();
             if (compiler != null) {
                 String path = getPath().replaceAll("\\\\", "/"); // NOI18N
                 if (compiler.getRemoveIncludePathPrefix() != null) {

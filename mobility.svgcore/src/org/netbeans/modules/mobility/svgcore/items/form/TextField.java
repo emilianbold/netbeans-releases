@@ -42,8 +42,12 @@ package org.netbeans.modules.mobility.svgcore.items.form;
 import org.netbeans.modules.mobility.svgcore.util.SVGComponentsSupport;
 
 /**
- *
- * @author avk
+ * SVGComponentDrop implementation for Button.
+ * loads snippet text from button_snippet.xml_template
+ * <p>
+ * patterns used in snippet:  %%COORDINATE_X%%, %%COORDINATE_Y%%, %%COMPONENT_ID%%
+ * 
+ * @author akorostelev
  */
 public class TextField extends SVGFormElement{
 

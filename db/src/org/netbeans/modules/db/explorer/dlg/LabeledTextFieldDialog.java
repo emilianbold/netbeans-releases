@@ -41,187 +41,203 @@
 
 package org.netbeans.modules.db.explorer.dlg;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.util.*;
-import javax.swing.*;
-import org.openide.util.NbBundle;
-import javax.swing.border.EmptyBorder;
+import java.awt.Dialog;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.MissingResourceException;
+import java.util.ResourceBundle;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.netbeans.modules.db.explorer.*;
 import org.openide.awt.Mnemonics;
+import org.openide.util.NbBundle;
 
 /**
-* @author Slavek Psenicka
-*/
-public class LabeledTextFieldDialog {
-    boolean result = false;
-    Dialog dialog = null;
-    Object combosel = null;
-    JTextField field;
-    JTextArea notesarea;
-    JButton edButton;
-    JLabel label;
-    final String original_notes;
-    private ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle"); //NOI18N
-
-    public LabeledTextFieldDialog(String notes) {
+ *
+ * @author  Rob Englander
+ */
+public class LabeledTextFieldDialog extends javax.swing.JPanel {
+    
+    /** Creates new form LabeledTextFieldDialog */
+    public LabeledTextFieldDialog(String notes) 
+    {
         String title = bundle.getString("RecreateTableRenameTable");
         String lab = bundle.getString("RecreateTableNewName");
         original_notes = notes;
-        try {
-            JPanel pane = new JPanel();
-            pane.setBorder(new EmptyBorder(new Insets(5,5,5,5)));
-            GridBagLayout layout = new GridBagLayout();
-            GridBagConstraints con = new GridBagConstraints ();
-            pane.setLayout (layout);
 
-            // Title
+        initComponents();
+        
+        try
+        {
+            Mnemonics.setLocalizedText(titleLabel, lab);
+            titleLabel.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_RecreateTableNewNameA11yDesc"));  // NOI18N
 
-            label = new JLabel();
-            Mnemonics.setLocalizedText(label, lab);
-            label.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_RecreateTableNewNameA11yDesc"));  // NOI18N
-            con.anchor = GridBagConstraints.WEST;
-            con.insets = new java.awt.Insets (2, 2, 2, 2);
-            con.gridx = 0;
-            con.gridy = 0;
-            layout.setConstraints(label, con);
-            pane.add(label);
+            Mnemonics.setLocalizedText(descLabel, bundle.getString("RecreateTableRenameNotes"));
+            descLabel.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_RecreateTableRenameNotesA11yDesc"));  // NOI18N
+            Mnemonics.setLocalizedText(editButton, bundle.getString("EditCommand")); // NOI18N
+            editButton.setToolTipText(bundle.getString("ACS_EditCommandA11yDesc"));  // NOI18N
 
-            // Textfield
+            updateState();
 
-            con.fill = GridBagConstraints.HORIZONTAL;
-            con.weightx = 1.0;
-            con.gridx = 1;
-            con.gridy = 0;
-            con.insets = new java.awt.Insets (2, 2, 2, 2);
-            field = new JTextField(35);
-            field.getAccessibleContext().setAccessibleName(bundle.getString("ACS_RecreateTableNewNameTextFieldA11yName"));  // NOI18N
-            field.setToolTipText(bundle.getString("ACS_RecreateTableNewNameTextFieldA11yDesc"));  // NOI18N
-            label.setLabelFor(field);
-            layout.setConstraints(field, con);
-            pane.add(field);
-
-            // Descr.
-
-            JLabel desc = new JLabel();
-            Mnemonics.setLocalizedText(desc, bundle.getString("RecreateTableRenameNotes"));
-            desc.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_RecreateTableRenameNotesA11yDesc"));  // NOI18N
-            con.anchor = GridBagConstraints.WEST;
-            con.gridx = 0;
-            con.gridy = 2;
-            con.weighty = 2.0;
-            layout.setConstraints(desc, con);
-            pane.add(desc);
-
-            // Notes
-
-            notesarea = new JTextArea(notes, 10, 50);
-            notesarea.setEditable(false);
-            notesarea.setLineWrap(true);
-            notesarea.setWrapStyleWord(true);
-            notesarea.setFont(label.getFont());
-            notesarea.setBackground(label.getBackground()); // grey
-            notesarea.setEnabled(false);
-            notesarea.setDisabledTextColor(javax.swing.UIManager.getColor("Label.foreground"));
-            notesarea.getAccessibleContext().setAccessibleName(bundle.getString("ACS_RecreateTableTableScriptTextAreaA11yName"));  // NOI18N
-            notesarea.setToolTipText(bundle.getString("ACS_RecreateTableTableScriptTextAreaA11yDesc"));  // NOI18N
-            desc.setLabelFor(notesarea);
-            con.weightx = 1.0;
-            con.weighty = 1.0;
-            con.gridwidth = 2;
-            con.fill = GridBagConstraints.BOTH;
-            con.insets = new java.awt.Insets (10, 0, 0, 0);
-            con.gridx = 0;
-            con.gridy = 3;
-            notesarea.setBorder(new EmptyBorder(new Insets(5,5,5,5)));
-            JScrollPane spane = new JScrollPane(notesarea);
-            layout.setConstraints(spane, con);
-            pane.add(spane);
-            
-            // edit button
-            edButton = new JButton();
-            Mnemonics.setLocalizedText(edButton, bundle.getString("EditCommand")); // NOI18N
-            edButton.setToolTipText(bundle.getString("ACS_EditCommandA11yDesc"));  // NOI18N
-            con.fill = GridBagConstraints.WEST;
-            con.weighty = 0.0;
-            con.weightx = 0.0;
-            con.gridx = 0;
-            con.gridy = 5;
-            layout.setConstraints(edButton, con);
-            pane.add(edButton);
-
-            edButton.addActionListener(new ActionListener() {
-                private boolean noedit = true;
-                public void actionPerformed(ActionEvent event) {
-                    if(noedit) { // NOI18N
-                        // set to edit 
-                        noedit = false;
-                        Mnemonics.setLocalizedText(edButton, bundle.getString("ReloadCommand"));
-                        edButton.setToolTipText(bundle.getString("ACS_ReloadCommandA11yDesc"));  // NOI18N
-                        notesarea.setEditable( true );
-                        notesarea.setEnabled(true);
-                        notesarea.setBackground(field.getBackground()); // white
-                        notesarea.requestFocus();
-                        field.setEditable( false );
-                        field.setBackground(label.getBackground()); // grey
-                    } else {
-                        // reload script from file
-                        noedit = true;
-                        Mnemonics.setLocalizedText(edButton, bundle.getString("EditCommand"));
-                        edButton.setToolTipText(bundle.getString("ACS_EditCommandA11yDesc"));  // NOI18N
-                        notesarea.setText(original_notes);
-                        notesarea.setEditable( false );
-                        notesarea.setEnabled(false);
-                        notesarea.setDisabledTextColor(javax.swing.UIManager.getColor("Label.foreground"));
-                        field.setEditable( true );
-                        field.setBackground(notesarea.getBackground()); // grey
-                        notesarea.setBackground(label.getBackground()); // white
-                        field.requestFocus();
-                    }
-                }
-            });
-
-            ActionListener listener = new ActionListener() {
-                public void actionPerformed(ActionEvent event) {
-                    if (event.getSource() == DialogDescriptor.OK_OPTION)
-                        result = true;
-                    else
-                        result = false;;
+            ActionListener listener = new ActionListener() 
+            {
+                public void actionPerformed(ActionEvent event) 
+                {
+                    result = event.getSource() == DialogDescriptor.OK_OPTION;
                 }
             };
 
-            pane.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_RecreateTableDialogA11yDesc"));
+            getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_RecreateTableDialogA11yDesc"));
 
-            DialogDescriptor descriptor = new DialogDescriptor(pane, title, true, listener);
+            DialogDescriptor descriptor = new DialogDescriptor(this, title, true, listener);
             dialog = DialogDisplayer.getDefault().createDialog(descriptor);
             dialog.setResizable(true);
-        } catch (MissingResourceException ex) {
-            ex.printStackTrace();
         }
-    }
+        catch (MissingResourceException e)
+        {
+            e.printStackTrace();
+        }
 
-    public boolean run() {
+    }
+    
+    public boolean run() 
+    {
         if (dialog != null)
+        {
             dialog.setVisible(true);
+        }
         
         return result;
     }
 
-    public String getStringValue() {
-        return field.getText();
+    public String getStringValue() 
+    {
+        return textField.getText();
     }
 
-    public String getEditedCommand() {
-        return notesarea.getText();
+    public String getEditedCommand() 
+    {
+        return notesArea.getText();
     }
 
-    public boolean isEditable() {
-        return notesarea.isEditable();
+    public boolean isEditable() 
+    {
+        return notesArea.isEditable();
     }
 
-    public void setStringValue(String val) {
-        field.setText(val);
+    public void setStringValue(String val) 
+    {
+        textField.setText(val);
     }
+
+    private void updateState()
+    {
+        isEditMode = !isEditMode;
+        
+        if (isEditMode) { // NOI18N
+            Mnemonics.setLocalizedText(editButton, bundle.getString("ReloadCommand"));
+            editButton.setToolTipText(bundle.getString("ACS_ReloadCommandA11yDesc"));  // NOI18N
+            notesArea.setEditable( true );
+            notesArea.setEnabled(true);
+            notesArea.setBackground(textField.getBackground()); // white
+            notesArea.requestFocus();
+            textField.setEditable( false );
+            textField.setBackground(titleLabel.getBackground()); // grey
+        } else {
+            // reload script from file
+            Mnemonics.setLocalizedText(editButton, bundle.getString("EditCommand"));
+            editButton.setToolTipText(bundle.getString("ACS_EditCommandA11yDesc"));  // NOI18N
+            notesArea.setText(original_notes);
+            notesArea.setEditable( false );
+            notesArea.setEnabled(false);
+            notesArea.setDisabledTextColor(javax.swing.UIManager.getColor("Label.foreground"));
+            textField.setEditable( true );
+            textField.setBackground(notesArea.getBackground()); // grey
+            notesArea.setBackground(titleLabel.getBackground()); // white
+            textField.requestFocus();
+        }
+    }
+    
+    /** This method is called from within the constructor to
+     * initialize the form.
+     * WARNING: Do NOT modify this code. The content of this method is
+     * always regenerated by the Form Editor.
+     */
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">
+    private void initComponents() {
+
+        titleLabel = new javax.swing.JLabel();
+        textField = new javax.swing.JTextField();
+        descLabel = new javax.swing.JLabel();
+        notesAreaScrollPane = new javax.swing.JScrollPane();
+        notesArea = new javax.swing.JTextArea();
+        editButton = new javax.swing.JButton();
+
+        notesArea.setColumns(20);
+        notesArea.setEditable(false);
+        notesArea.setLineWrap(true);
+        notesArea.setRows(5);
+        notesArea.setWrapStyleWord(true);
+        notesArea.setEnabled(false);
+        notesAreaScrollPane.setViewportView(notesArea);
+
+        editButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                editButtonActionPerformed(evt);
+            }
+        });
+
+        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        this.setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                .addContainerGap()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(notesAreaScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 543, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                        .add(titleLabel)
+                        .add(18, 18, 18)
+                        .add(textField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 437, Short.MAX_VALUE))
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, descLabel)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, editButton))
+                .addContainerGap())
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(layout.createSequentialGroup()
+                .addContainerGap()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(titleLabel)
+                    .add(textField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(descLabel)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(notesAreaScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 218, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(editButton)
+                .addContainerGap())
+        );
+    }// </editor-fold>
+
+    private void editButtonActionPerformed(java.awt.event.ActionEvent evt) {                                           
+        updateState();
+}                                          
+    
+    // init edit mode to true so that the first call to
+    // updateState will toggle into read mode
+    boolean isEditMode = true;
+    boolean result = false;
+    Dialog dialog = null;
+    private String original_notes;
+    private ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle"); //NOI18N
+    
+    // Variables declaration - do not modify
+    private javax.swing.JLabel descLabel;
+    private javax.swing.JButton editButton;
+    private javax.swing.JTextArea notesArea;
+    private javax.swing.JScrollPane notesAreaScrollPane;
+    private javax.swing.JTextField textField;
+    private javax.swing.JLabel titleLabel;
+    // End of variables declaration
+    
 }

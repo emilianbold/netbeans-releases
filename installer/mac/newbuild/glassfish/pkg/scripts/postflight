@@ -34,7 +34,9 @@ echo Configuring GlassFish in `pwd`
 
 ant_bin=./lib/ant/bin/ant
 
-java_exe=/System/Library/Frameworks/JavaVM.framework/Versions/1.5/Home/bin/java
+#set JAVA_HOME to be used by ant
+JAVA_HOME=`"$script_dir"/get_current_jdk.sh`
+java_exe="$JAVA_HOME/bin/java"
 
 getPort() {
    basePort=$1

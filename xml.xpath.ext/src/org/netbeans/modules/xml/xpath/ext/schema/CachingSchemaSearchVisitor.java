@@ -490,7 +490,7 @@ public class CachingSchemaSearchVisitor extends AbstractSchemaSearchVisitor {
             String ref = document.getPeer().getAttribute("ref");
             ref = removePrefix(ref);
             if (mySoughtName.equals(ref)) {
-                myFound.add(sc);
+                addSchemaComponent(sc);
                 return;
             }
         }
@@ -498,12 +498,12 @@ public class CachingSchemaSearchVisitor extends AbstractSchemaSearchVisitor {
             String name = ((Named) sc).getName();
             if (mySoughtName.equals(name)) {
                 if (mySoughtNamespace == null || mySoughtNamespace.length() == 0) {
-                    myFound.add(sc);
+                    addSchemaComponent(sc);
                 } else { 
                     Set<String> namespacesSet = XPathSchemaContext.Utilities.
                     getEffectiveNamespaces(sc, mParentContext);
                     if (namespacesSet.contains(mySoughtNamespace)) {
-                        myFound.add(sc);
+                        addSchemaComponent(sc);
                     }
                 }
             }
@@ -514,6 +514,51 @@ public class CachingSchemaSearchVisitor extends AbstractSchemaSearchVisitor {
         if (sc instanceof AnyAttribute) {
             mHasAnyAttribute = true;
         }
+    }
+
+    private void addSchemaComponent(SchemaComponent element) {
+        if (!(element instanceof Named)) {
+            myFound.add(element);
+            return;
+        }
+
+        boolean flag = true;
+
+        for (SchemaComponent el : myFound) {
+            if (el instanceof Named) {
+                String name1 = ((Named) el).getName();
+                String name2 = ((Named) element).getName();
+                String nameSp1 = null;
+                String nameSp2 = null;
+                Set<String> set =XPathSchemaContext.Utilities.
+                        getEffectiveNamespaces(el, mParentContext);
+                if (set != null && set.size() > 0) {
+                    nameSp1 = set.iterator().next();
+                }
+                set =XPathSchemaContext.Utilities.
+                        getEffectiveNamespaces(element, mParentContext);
+                if (set != null && set.size() > 0) {
+                    nameSp2 = set.iterator().next();
+                }
+
+
+                if (name1 != null && name1.equals(name2) && equals(nameSp1, nameSp2)) {
+     //               myFound.remove(el);
+                    flag = false;
+                    break;
+                }
+            }
+
+        }
+
+        if (flag) {
+            myFound.add(element);
+        }
+    }
+
+    private boolean equals(Object object1, Object object2) {
+        if (object1 == object2) {return  true; }
+        return (object1 == null || object2 == null) ? false : object1.equals(object2);
     }
 
 //    private boolean ENABLE;

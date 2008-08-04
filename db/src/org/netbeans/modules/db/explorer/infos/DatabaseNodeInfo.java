@@ -46,10 +46,13 @@ import java.beans.PropertyChangeSupport;
 import java.io.InputStream;
 import java.io.IOException;
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.*;
 
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
@@ -130,6 +133,7 @@ public class DatabaseNodeInfo extends ConcurrentHashMap<String, Object>
     }
 
     private final UUID uuid =   UUID.randomUUID();
+    private static final Logger LOGGER = Logger.getLogger(DatabaseNodeInfo.class.getName());
     
     public static Map readInfo() {
         Map data;
@@ -494,13 +498,17 @@ public class DatabaseNodeInfo extends ConcurrentHashMap<String, Object>
         notifyChange();
     }
 
-    public synchronized void setConnected(boolean connected) {
+    private synchronized void setConnected(boolean connected) {
         this.connected = connected;
-        notifyChange();
     }
     
     public synchronized boolean isConnected() {
-        return connected;
+        if (this instanceof ConnectionNodeInfo) {
+            return this.connected;
+        } else {
+            ConnectionNodeInfo cinfo = (ConnectionNodeInfo)getParent(CONNECTION);
+            return cinfo.isConnected();
+        }
     }
 
     public DatabaseConnection getDatabaseConnection()
@@ -940,33 +948,33 @@ public class DatabaseNodeInfo extends ConcurrentHashMap<String, Object>
                 (! (this instanceof ViewNodeInfo)) && 
                 (! (this instanceof ProcedureNodeInfo)) ); //NOI18N
 
-            if (! sort)
-                return 1;
+            if (sort)
+            {
+                // Ordering is based on the node class for this info class
+                // See if the node class is in the ordering map, and if it
+                // is, use that for comparison.
+                int o1val, o2val, diff;
+                Integer o1i = (Integer)map.get(get(CLASS));
+                if (o1i != null)
+                    o1val = o1i.intValue();
+                else
+                    o1val = Integer.MAX_VALUE;
 
-            // Ordering is based on the node class for this info class
-            // See if the node class is in the ordering map, and if it
-            // is, use that for comparison.
-            int o1val, o2val, diff;
-            Integer o1i = (Integer)map.get(get(CLASS));
-            if (o1i != null)
-                o1val = o1i.intValue();
-            else
-                o1val = Integer.MAX_VALUE;
+                Integer o2i = null;
+                o2i = (Integer)map.get(info2.get(CLASS));
 
-            Integer o2i = null;
-            o2i = (Integer)map.get(info2.get(CLASS));
+                if (o2i != null)
+                    o2val = o2i.intValue();
+                else
+                    o2val = Integer.MAX_VALUE;
 
-            if (o2i != null)
-                o2val = o2i.intValue();
-            else
-                o2val = Integer.MAX_VALUE;
+                diff = o1val-o2val;
 
-            diff = o1val-o2val;
-
-            // If they're the same class, then sort using display name
-            // below...
-            if (diff != 0) {
-                return diff;
+                // If they're the same class, then sort using display name
+                // below...
+                if (diff != 0) {
+                    return diff;
+                }
             }
         }
         

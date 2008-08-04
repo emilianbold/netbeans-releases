@@ -218,6 +218,12 @@
     <tocitem text="Installing Ant Documentation" target="ant_docs" />
     </tocitem>
     
+    <tocitem text="Working with Groovy">
+        <tocitem text="About Working with Groovy" target="groovy_intro"/>
+	<tocitem text="Enabling a Java Application to Support Groovy" target="groovy_enable"/>
+	<tocitem text="Editing Groovy Source Files" target="groovy_edit"/>
+    </tocitem>
+    
     <tocitem text="Working With Javadoc Documentation">
     <tocitem text="Adding Javadoc to a Project" target="javadoc.add" />
     <tocitem text="Adding the JDK Javadoc to the IDE" target="javadoc.jdk"/>

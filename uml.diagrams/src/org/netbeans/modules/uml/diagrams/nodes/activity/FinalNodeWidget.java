@@ -61,7 +61,7 @@ public class FinalNodeWidget extends ControlNodeWidget
         if (presentation != null)
         {
             DoubleCircleWidget widget = new DoubleCircleWidget(scene, DEFAULT_INNER_RADIUS,
-                    DEFAULT_OUTER_RADIUS, getWidgetID(), bundle.getString("LBL_innerCircle"));
+                    DEFAULT_OUTER_RADIUS, getResourcePath(), bundle.getString("LBL_body"));
             setCurrentView(widget);
         }
     }

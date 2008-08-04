@@ -69,6 +69,7 @@ public final class ProjectRunner {
      * <ul>
      * <li><strong>run.jvmargs</strong> arguments that will be passed to the Java Virtual Machine</li>
      * <li><strong>application.args</strong> arguments that will be passed to the executed files</li>
+     * <li><strong>run-sys-prop.&lt;property-name&gt;</strong> define system property <code>property-name</code></li>
      * </ul>
      *
      * @since 1.19
@@ -83,6 +84,7 @@ public final class ProjectRunner {
      * <ul>
      * <li><strong>run.jvmargs</strong> arguments that will be passed to the Java Virtual Machine</li>
      * <li><strong>application.args</strong> arguments that will be passed to the executed files</li>
+     * <li><strong>run-sys-prop.&lt;property-name&gt;</strong> define system property <code>property-name</code></li>
      * </ul>
      *
      * @since 1.19
@@ -96,6 +98,7 @@ public final class ProjectRunner {
      * Supported properties:
      * <ul>
      * <li><strong>run.jvmargs</strong> arguments that will be passed to the Java Virtual Machine</li>
+     * <li><strong>test-sys-prop.&lt;property-name&gt;</strong> define system property <code>property-name</code></li>
      * </ul>
      *
      * @since 1.19
@@ -109,6 +112,7 @@ public final class ProjectRunner {
      * Supported properties:
      * <ul>
      * <li><strong>run.jvmargs</strong> arguments that will be passed to the Java Virtual Machine</li>
+     * <li><strong>test-sys-prop.&lt;property-name&gt;</strong> define system property <code>property-name</code></li>
      * </ul>
      *
      * @since 1.19

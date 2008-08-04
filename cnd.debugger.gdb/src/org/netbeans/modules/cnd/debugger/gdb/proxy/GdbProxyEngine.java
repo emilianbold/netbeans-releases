@@ -78,17 +78,17 @@ public class GdbProxyEngine {
     private static final int MIN_TOKEN = 100;
     
     private PrintStream toGdb;
-    private GdbDebugger debugger;
-    private GdbProxy gdbProxy;
-    private LinkedList<CommandInfo> tokenList;
+    private final GdbDebugger debugger;
+    private final GdbProxy gdbProxy;
+    private final LinkedList<CommandInfo> tokenList = new LinkedList<CommandInfo>();
     private int nextToken = MIN_TOKEN;
     private int currentToken = MIN_TOKEN;
     private boolean active;
     private InteractiveCommandProvider provider = null;
     private RequestProcessor.Task gdbReader = null;
-    private boolean timerOn = Boolean.getBoolean("gdb.proxy.timer"); // NOI18N
+    private final boolean timerOn = Boolean.getBoolean("gdb.proxy.timer"); // NOI18N
     
-    private Logger log = Logger.getLogger("gdb.gdbproxy.logger"); // NOI18N
+    private final Logger log = Logger.getLogger("gdb.gdbproxy.logger"); // NOI18N
     
     /**
      * Create a gdb process
@@ -112,7 +112,6 @@ public class GdbProxyEngine {
         }
         this.debugger = debugger;
         this.gdbProxy = gdbProxy;
-        tokenList = new LinkedList<CommandInfo>();
         active = true;
         
         getLogger().logMessage("Debugger Command: " + debuggerCommand); // NOI18N
@@ -131,7 +130,6 @@ public class GdbProxyEngine {
     private void localDebugger(List<String> debuggerCommand, String[] debuggerEnvironment, String workingDirectory, String cspath) throws IOException {
         ProcessBuilder pb = new ProcessBuilder(debuggerCommand);
         Map<String, String> env = pb.environment();
-        Process proc = null;
         
         String pathname = Path.getPathName();
         for (String var : debuggerEnvironment) {
@@ -153,21 +151,17 @@ public class GdbProxyEngine {
         pb.directory(new File(workingDirectory));
         pb.redirectErrorStream(true);
         
-        proc = pb.start(); // Let IOException be handled in GdbdebuggerImpl.startDebugging()...
+        final Process proc = pb.start(); // Let IOException be handled in GdbdebuggerImpl.startDebugging()...
         toGdb = gdbReader(proc.getInputStream(), proc.getOutputStream());
-        final Process waitProc = proc;
-        final GdbDebugger gdi = debugger;
         new RequestProcessor("GdbReaperThread").post(new Runnable() { // NOI18N
             public void run() {
-                int rc;
                 try {
-                    rc = waitProc.waitFor();
+                    int rc = proc.waitFor();
                     if (rc == 0) {
-                        gdi.finish(false);
+                        debugger.finish(false);
                     } else {
-                        gdi.unexpectedGdbExit(rc);
+                        debugger.unexpectedGdbExit(rc);
                     }
-                    return;
                 } catch (InterruptedException ex) {
                     ex.printStackTrace();
                 }
@@ -308,6 +302,11 @@ public class GdbProxyEngine {
             gdbProxy.getLogger().logMessage(time + msg);
         }
         msg = stripToken(msg);
+
+        // bugfix for IZ:142454
+        // ('-enable-timings no' does not turn it off sometimes)
+        msg = stripTiming(msg);
+
         if (msg.length() == 0) {
             log.warning("Empty message received from gdb");
             return;
@@ -414,6 +413,18 @@ public class GdbProxyEngine {
         } else {
             return msg;
         }
+    }
+
+    /**
+     * Cut timing information if any
+     * @param msg
+     */
+    private String stripTiming(String msg) {
+        int pos = msg.indexOf(",time="); // NOI18N
+        if (pos != -1 ) {
+            msg = msg.substring(0, pos);
+        }
+        return msg;
     }
     
     private GdbLogger getLogger() {

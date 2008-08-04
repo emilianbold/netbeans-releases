@@ -28,6 +28,7 @@
 package org.netbeans.modules.java.hints;
 
 import com.sun.source.tree.BinaryTree;
+import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
@@ -83,7 +84,22 @@ public class WrongStringComparison extends AbstractHint {
         Trees trees = info.getTrees(); 
         TypeMirror leftType = left == null ? null : trees.getTypeMirror(left);
         TypeMirror rightType = right == null ? null : trees.getTypeMirror(right);
-                
+
+        Kind kind = treePath.getLeaf().getKind(); //do not show for strings inside equals()
+        boolean conditionalAnd = false;
+        while (kind != Kind.CLASS && kind != Kind.COMPILATION_UNIT) {
+            if(kind == Kind.CONDITIONAL_AND)
+                conditionalAnd = true;
+            if (kind == kind.METHOD) {
+                if (conditionalAnd && ((MethodTree) treePath.getLeaf()).getName().toString().equals("equals")) {
+                    return null;
+                }
+                break;
+            }
+            treePath = treePath.getParentPath();
+            kind = treePath.getLeaf().getKind();
+        }
+        
         if ( leftType != null && rightType != null && 
              STRING_TYPE.equals(leftType.toString()) && 
              STRING_TYPE.equals(rightType.toString())) {

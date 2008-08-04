@@ -101,8 +101,8 @@ public class OpenTempl_defaultPackTest extends ExtJellyTestCase {
     public static Test suite() {
         return NbModuleSuite.create(
                 NbModuleSuite.createConfiguration(OpenTempl_defaultPackTest.class).addTest(
-                "testApplet", "testDialog", "testFrame", "testInter", "testAppl", "testMidi",
-                "testPanel", "testBean").gui(true).enableModules(".*").clusters(".*"));
+                "testApplet", "testDialog", "testFrame", "testInter", "testAppl", "testMidi", "testPanel", "testBean").gui(true).enableModules(".*").clusters(".*"));
+        //"testDialog", "testFrame", "testInter", "testAppl", "testMidi", "testPanel", "testBean"
     }
 
     /** Called before every test case. */
@@ -302,6 +302,7 @@ public class OpenTempl_defaultPackTest extends ExtJellyTestCase {
         }
 
         assertFile(new File(getWorkDir() + File.separator + this.getName() + ".ref"), getGoldenFile(formfile + "FormFile.pass"), new File(getWorkDir(), formfile + ".diff"));
+        System.out.println(formfile + " is not the same as golden file");
 
 
 
@@ -331,6 +332,10 @@ public class OpenTempl_defaultPackTest extends ExtJellyTestCase {
     public String createRefFile(String test) {
         int start = test.indexOf("/*");
         int end = test.indexOf("*/");
+        test = test.substring(0, start) + test.substring(end + 2);
+        
+        start = test.indexOf("/*");
+        end = test.indexOf("*/");
         test = test.substring(0, start) + test.substring(end + 2);
 
         start = test.indexOf("/**");
