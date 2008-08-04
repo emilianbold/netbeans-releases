@@ -50,6 +50,7 @@ public class PermanentUITest {
     public static Test suite() {
     return NbModuleSuite.create(
       NbModuleSuite.emptyConfiguration()
+        .clusters(".*").enableModules(".*")
         .addTest(MainMenuTest.class, 
                   "testFileMenu", //stable
                   "testEditMenu", //stable
