@@ -852,7 +852,11 @@ public class ConfigurationMakefileWriter {
             bw.write(" none"); // Classes // NOI18N
             bw.write(" " + elem.getTo());// NOI18N
             if (elem.getFrom().length() > 0) {
-                bw.write("=" + elem.getFrom());// NOI18N
+                String from = elem.getFrom();
+                if (IpeUtils.isPathAbsolute(from)) {
+                    from = IpeUtils.toRelativePath(conf.getBaseDir(), from);
+                }
+                bw.write("=" + from);// NOI18N
             }
             if (elem.getType() != FileElement.FileType.SOFTLINK) {
                 bw.write(" 0" + elem.getPermission());// NOI18N
