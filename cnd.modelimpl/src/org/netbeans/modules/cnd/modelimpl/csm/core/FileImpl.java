@@ -79,11 +79,9 @@ import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.support.APTToken;
-import org.netbeans.modules.cnd.apt.support.StartEntry;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTParseFileWalker;
-import org.netbeans.modules.cnd.modelimpl.parser.apt.GuardBlockWalker;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.platform.ModelSupport;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
@@ -152,9 +150,6 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     private Collection<FunctionImplEx> fakeRegistrationsOLD = new ArrayList<FunctionImplEx>();
     private Collection<CsmUID<FunctionImplEx>> fakeRegistrationUIDs = new CopyOnWriteArrayList<CsmUID<FunctionImplEx>>();
     
-    // TODO: move this field and correspondent logic to FileContainer.MyFile
-    private final GuardBlockState guardState;
-    
     private long lastParsed = Long.MIN_VALUE;
     
     /** Cache the hash code */
@@ -183,7 +178,6 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         this.projectUID = UIDCsmConverter.projectToUID(project);
         this.projectRef = null;
         this.fileType = fileType;
-        this.guardState = new GuardBlockState();
         if (nativeFileItem != null){
             project.putNativeFileItem(getUID(), nativeFileItem);
         }
@@ -740,8 +734,6 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             if (TraceFlags.TRACE_CACHE) {
                 System.err.println("CACHE: parsing using full APT for " + getAbsolutePath());
             }      
-            // set guard info
-            updateGuardAfterParse(preprocHandler, aptFull);
             // make real parse
             ProjectBase startProject = ProjectBase.getStartProject(preprocHandler.getState());
             if (startProject == null) {
@@ -749,6 +741,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
                     "\n while parsing file " + getAbsolutePath() + "\n of project " + getProject()); // NOI18N
                 return null;
             }
+            // We don't need to remember conditional state here - we do this in ProjectBase.onInclude
             APTParseFileWalker walker = new APTParseFileWalker(startProject, aptFull, this, preprocHandler);
             walker.addMacroAndIncludes(true);
             if (TraceFlags.DEBUG) {
@@ -808,40 +801,6 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         return ast;
     }
     
-    /*package*/void initGuardIfNeeded(APTPreprocHandler preprocHandler, APTFile apt) {
-        if (!getGuardState().isInited()) {
-            setGuardState(preprocHandler, apt);
-        }
-    }
-
-    private void updateGuardAfterParse(APTPreprocHandler preprocHandler, APTFile apt) {
-        if (!getGuardState().isInited()) {
-            setGuardState(preprocHandler, apt);
-        } else {
-            getGuardState().setGuardBlockState(preprocHandler, getGuardState().getGuard());
-        }
-    }
-    
-    private void setGuardState(APTPreprocHandler preprocHandler, APTFile aptLight) {
-        synchronized (getGuardState()) {
-            GuardBlockWalker guard = new GuardBlockWalker(aptLight, preprocHandler);
-            TokenStream ts = guard.getTokenStream();
-            try {
-                Token token = ts.nextToken();
-                while (!APTUtils.isEOF(token)) {
-                    if (!APTUtils.isCommentToken(token)) {
-                        guard.clearGuard();
-                        break;
-                    }
-                    token = ts.nextToken();
-                }
-            } catch (TokenStreamException ex) {
-                guard.clearGuard();
-            }
-            getGuardState().setGuardBlockState(preprocHandler, guard.getGuard());
-        }
-    }
-    
     public List<CsmReference> getLastMacroUsages(){
         List<CsmReference> res = lastMacroUsages;
         if (res != null) {
@@ -883,14 +842,6 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
                 return (ofs1 - ofs2);
             }
         }   
-        
-        public @Override boolean equals(Object obj) {
-            return super.equals(obj);
-        }
-
-        public @Override int hashCode() {
-            return 11; // any dummy value
-        }          
     };
         
     static final private Comparator<CsmUID> UID_START_OFFSET_COMPARATOR = new Comparator<CsmUID>() {
@@ -903,14 +854,6 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             assert i1 != null;
             return i1.compareTo(o2);
         }   
-        
-        public @Override boolean equals(Object obj) {
-            return super.equals(obj);
-        }
-
-        public @Override int hashCode() {
-            return 11; // any dummy value
-        }          
     };
     
     public String getText(int start, int end) {
@@ -1325,7 +1268,6 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         // not null UID
         assert this.projectUID != null;
         UIDObjectFactory.getDefaultFactory().writeUID(this.projectUID, output);
-        guardState.write(output);
 	output.writeLong(lastParsed);
 	output.writeUTF(state.toString());
         UIDObjectFactory.getDefaultFactory().writeUIDCollection(staticFunctionDeclarationUIDs, output, false);
@@ -1351,7 +1293,6 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         
         assert fileBuffer != null;
         assert fileBuffer.isFileBased();
-        guardState = new GuardBlockState(input);
 	lastParsed = input.readLong();
         state = State.valueOf(input.readUTF());
         UIDObjectFactory.getDefaultFactory().readUIDCollection(staticFunctionDeclarationUIDs, input);
@@ -1378,50 +1319,6 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
 	    return this.getProjectImpl().getUniqueName().equals(other.getProjectImpl().getUniqueName());
 	}
 	return false;
-    }
-    
-    private GuardBlockState getGuardState() {
-        return guardState;
-    }
-
-    // for tests only
-    public GuardBlockState testGetGuardState() {
-        return guardState;
-    }
-    
-    public boolean isNeedReparse(APTPreprocHandler.State oldState, APTPreprocHandler newState){
-        boolean update = false;
-        if (oldState == null || !oldState.isValid()) {
-            update = true;
-        } else if (!oldState.isCompileContext() && newState.isCompileContext()) {
-            update = true;
-        } else {
-            update = getGuardState().isNeedReparse(newState);
-        }
-        return update;
-    }
-
-    public boolean isNeedReparse(APTPreprocHandler.State oldState, APTPreprocHandler.State preprocState){
-        if (oldState == null || !oldState.isValid()) {
-            return true;
-        } else if (oldState.isCompileContext()) {
-            // do nothing
-            if (preprocState != null && isNeedReparseGuardBlock(preprocState)) {
-                // override state with new one
-                return true;
-            }
-        } else if (preprocState != null && preprocState.isCompileContext()) {
-            // override state with new one
-            return true;
-        }
-        return false;
-    }
-
-    private boolean isNeedReparseGuardBlock(APTPreprocHandler.State preprocState){
-        StartEntry startEntry = new StartEntry(getAbsolutePath(), RepositoryUtils.UIDtoKey(getProject().getUID()));
-        APTPreprocHandler preprocHandler = APTHandlersSupport.createEmptyPreprocHandler(startEntry);
-        preprocHandler.setState(preprocState);
-        return getGuardState().isNeedReparse(preprocHandler);
     }
     
     public int getOffset(int line, int column) {

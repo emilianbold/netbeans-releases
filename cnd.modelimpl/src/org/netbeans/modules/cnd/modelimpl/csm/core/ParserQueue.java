@@ -84,6 +84,7 @@ public final class ParserQueue {
 
         private FileImpl file;
         private APTPreprocHandler.State ppState;
+        private FilePreprocessorConditionState pcState;
         private Position position;
         private int serial;
 
@@ -134,7 +135,7 @@ public final class ParserQueue {
             return retValue.toString();
         }
         
-        public void setPreprocStateIfNeed(APTPreprocHandler.State ppState) {
+        public void setStates(APTPreprocHandler.State ppState, FilePreprocessorConditionState pcState) {
             // TODO: IZ#87204: AssertionError on _Bvector_base opening
             // review why it could be null
             // FIXUP: remove assert checks and update if statements to prevent NPE
@@ -145,9 +146,9 @@ public final class ParserQueue {
                 System.err.println("setPreprocStateIfNeed for " + file.getAbsolutePath() +
                         " as " + tracePreprocState(ppState) + " with current " + tracePreprocState(this.ppState)); // NOI18N
             }
-            if (file.isNeedReparse(this.ppState, ppState)){
-                this.ppState = ppState;                    
-            }
+            // we don't need check here - all logic is in ProjectBase.onFileIncluded
+            this.ppState = ppState;
+            this.pcState = pcState;
         }
 
         public int compareTo(Entry that) {
@@ -215,14 +216,14 @@ public final class ParserQueue {
     private PriorityQueue<Entry> queue = new PriorityQueue<Entry>();
 
     private State state;
-    private Object suspendLock = new String("suspendLock"); // NOI18N
+    private final Object suspendLock = new String("suspendLock"); // NOI18N
 
     // do not need UIDs for ProjectBase in parsing data collection
     private Map<ProjectBase, ProjectData> projectData = new HashMap<ProjectBase, ProjectData>();
-    private Map<CsmProject, Object> projectLocks = new HashMap<CsmProject, Object>();
+    private final Map<CsmProject, Object> projectLocks = new HashMap<CsmProject, Object>();
     private int serial = 0;
     
-    private Object lock = new Object();
+    private final Object lock = new Object();
     
     private final boolean addAlways;
     
@@ -286,8 +287,12 @@ public final class ParserQueue {
 //    public void addFirst(FileImpl file) {
 //        addFirst(file, file.getPreprocState(), false);
 //    }
-    
+
     public void add(FileImpl file, APTPreprocHandler.State ppState, Position position) {
+        add(file, ppState, position, null);
+    }
+
+    public void add(FileImpl file, APTPreprocHandler.State ppState, Position position, FilePreprocessorConditionState pcStates) {
         if( TraceFlags.TRACE_PARSER_QUEUE ) System.err.println("ParserQueue: add " + file.getAbsolutePath() + " as " + position);
         synchronized ( lock ) {
             if( state == State.OFF  ) return;
@@ -306,7 +311,7 @@ public final class ParserQueue {
                 if( entry == null ) {
                     assert false : "ProjectData contains file " + file + ", but there is no matching entry in the queue"; // NOI18N
                 } else {
-                    entry.setPreprocStateIfNeed(ppState);
+                    entry.setStates(ppState, pcStates);
                     if (position.compareTo(entry.getPosition()) < 0) {
                         queue.remove(entry);
                         entry.setPosition(position);

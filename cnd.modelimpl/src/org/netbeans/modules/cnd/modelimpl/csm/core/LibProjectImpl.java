@@ -122,9 +122,9 @@ public final class LibProjectImpl extends ProjectBase {
     public void onFilePropertyChanged(List<NativeFileItem> nativeFiles) {}
     
     
-    protected void scheduleIncludedFileParsing(FileImpl csmFile, APTPreprocHandler.State state) {
+    protected void scheduleIncludedFileParsing(FileImpl csmFile, APTPreprocHandler.State state, FilePreprocessorConditionState pcStates) {
         // add library file to the tail
-        ParserQueue.instance().add(csmFile, state, ParserQueue.Position.TAIL);
+        ParserQueue.instance().add(csmFile, state, ParserQueue.Position.TAIL, pcStates);
     }
 
     public boolean isArtificial() {
