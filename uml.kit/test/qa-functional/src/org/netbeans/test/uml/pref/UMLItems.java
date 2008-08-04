@@ -74,7 +74,7 @@ public class UMLItems extends UMLTestCase {
     private static boolean initialized=false;
     private static String[][] items={{"UML","Automatically Hide Modeling Window","Delete File when Deleting Artifacts","Show Aliases","Prompt to Save Diagram","Prompt to Save Project","Don't Show Filter Warning Dialog"}};
     private static String[][] defaultValues={{null,"Yes","Ask Me","No","Yes","Yes","Ask Me"}};
-    private static String workdir=System.getProperty("xtest.workdir");
+    private static String workdir=System.getProperty("nbjunit.workdir");
     private static String prName="UMLItems";
      private static String project=prName+"_uml";
      //

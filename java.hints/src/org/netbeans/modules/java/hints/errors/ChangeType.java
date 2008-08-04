@@ -122,7 +122,7 @@ public final class ChangeType implements ErrorRule<Void> {
             }
             
             if (expected != null && resolved != null) {
-                if (resolved.getKind() == TypeKind.VOID || resolved.getKind() == TypeKind.EXECUTABLE) {
+                if (resolved.getKind() == TypeKind.VOID || resolved.getKind() == TypeKind.EXECUTABLE || resolved.getKind() == TypeKind.NULL) {
                 } else if (resolved.getKind() != TypeKind.ERROR &&
                 		expected.getKind() != TypeKind.ERROR) {
                     tm[0] = expected;

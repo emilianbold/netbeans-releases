@@ -65,15 +65,15 @@ public class BreakpointsEngineListener extends LazyActionsManagerListener
 		implements PropertyChangeListener, DebuggerManagerListener {
     
     private GdbDebugger         debugger;
-    private Session             session;
-    private BreakpointsReader   breakpointsReader;
+    //private Session             session;
+    //private BreakpointsReader   breakpointsReader;
     private HashMap<Breakpoint, BreakpointImpl> breakpointToImpl = new HashMap<Breakpoint, BreakpointImpl>();
 
     public BreakpointsEngineListener(ContextProvider lookupProvider) {
         debugger = (GdbDebugger) lookupProvider.lookupFirst(null, GdbDebugger.class);
-        session = (Session) lookupProvider.lookupFirst(null, Session.class);
+        //session = (Session) lookupProvider.lookupFirst(null, Session.class);
         debugger.addPropertyChangeListener(this);
-        breakpointsReader = PersistenceManager.findBreakpointsReader();
+        //breakpointsReader = PersistenceManager.findBreakpointsReader();
     }
     
     protected void destroy() {
@@ -111,18 +111,13 @@ public class BreakpointsEngineListener extends LazyActionsManagerListener
     }
     
     private int createBreakpointImpls() {
-        Breakpoint[] bs = DebuggerManager.getDebuggerManager().getBreakpoints();
-        int i, k = bs.length;
         int count = 0;
-	
-	if (k > 0) {
-	    for (i = 0; i < k; i++) {
-		if (bs[i] instanceof GdbBreakpoint) {
-		    createBreakpointImpl(bs[i]);
-                    count++;
-		}
-	    }
-	}
+        for (Breakpoint bp : DebuggerManager.getDebuggerManager().getBreakpoints()) {
+            if (bp instanceof GdbBreakpoint) {
+                createBreakpointImpl(bp);
+                count++;
+            }
+        }
         return count;
     }
 
@@ -131,23 +126,18 @@ public class BreakpointsEngineListener extends LazyActionsManagerListener
 	    return;
 	}
         if (b instanceof LineBreakpoint) {
-            breakpointToImpl.put(b, new LineBreakpointImpl((LineBreakpoint) b,
-			breakpointsReader, debugger, session));
+            breakpointToImpl.put(b, new LineBreakpointImpl((LineBreakpoint) b, debugger));
         } else if (b instanceof FunctionBreakpoint) {
-            breakpointToImpl.put(b, new FunctionBreakpointImpl(
-			(FunctionBreakpoint) b, breakpointsReader, debugger, session));
+            breakpointToImpl.put(b, new FunctionBreakpointImpl((FunctionBreakpoint) b, debugger));
         } else if (b instanceof AddressBreakpoint) {
-            breakpointToImpl.put(b, new AddressBreakpointImpl(
-			(AddressBreakpoint) b, breakpointsReader, debugger, session));
+            breakpointToImpl.put(b, new AddressBreakpointImpl((AddressBreakpoint) b, debugger));
         }
     }
     
     private void removeBreakpointImpls() {
-        Breakpoint[] bs = DebuggerManager.getDebuggerManager().getBreakpoints();
-        int i, k = bs.length;
-        for (i = 0; i < k; i++) {
-	    if (bs[i] instanceof GdbBreakpoint) {
-		removeBreakpointImpl(bs [i]);
+        for (Breakpoint bp : DebuggerManager.getDebuggerManager().getBreakpoints()) {
+	    if (bp instanceof GdbBreakpoint) {
+		removeBreakpointImpl(bp);
 	    }
 	}
     }

@@ -1,9 +1,5 @@
 /*
- *  Singleton3Cl
- *
- * Created on March 11, 2008, 10:42 PM
- *
- * To change this template, choose Tools | Template Manager
+ * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
 
@@ -27,7 +23,7 @@ import javax.ws.rs.ConsumeMime;
 public class Singleton3Cl {
     @Context
     private UriInfo context;
-    
+
     /** Creates a new instance of Singleton3Cl */
     public Singleton3Cl() {
     }

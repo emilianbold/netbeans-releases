@@ -90,6 +90,7 @@ made subject to such option by the copyright holder.
             <default flags="" default="true"/>
             <all flags=""/>
         </language_extension>
+        <!--<dependency_generation flags="-xMMD -xMF $@.d" />-->
     </c>
     <cpp>
         <compiler name="CC"/>
@@ -144,6 +145,7 @@ made subject to such option by the copyright holder.
             <binary_standard flags="" default="true"/>
             <conforming_standard flags="-library=stlport4,no%Cstd"/>
         </library>
+        <!--<dependency_generation flags="-xMMD -xMF $@.d" />-->
     </cpp>
     <fortran>
         <compiler name="ffortran,f95,f90,f77"/>
@@ -192,8 +194,11 @@ made subject to such option by the copyright holder.
     </linker>
     <make>
         <tool name="dmake"/>
+        <version flags="-v" />
+        <dependency_support code=".KEEP_STATE:\n.KEEP_STATE_FILE:.make.state.${CONF}\n" />
     </make>
     <debugger>
-        <tool name="dbx,gdb"/>
+        <tool name="gdb"/>
+        <version flags="--version" />
     </debugger>
 </toolchaindefinition>

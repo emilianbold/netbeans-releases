@@ -77,6 +77,12 @@ public class PropertyEditorSVGImage extends PropertyEditorUserCode implements Pr
     private void initComponents() {
         radioButton = new JRadioButton();
         Mnemonics.setLocalizedText(radioButton, NbBundle.getMessage(PropertyEditorSVGImage.class, "LBL_SVGIMAGE_STR")); // NOI18N;
+        
+        radioButton.getAccessibleContext().setAccessibleName( 
+                NbBundle.getMessage(PropertyEditorSVGImage.class, "ACSN_SVGIMAGE_STR")); // NOI18N;
+        radioButton.getAccessibleContext().setAccessibleDescription(
+                NbBundle.getMessage(PropertyEditorSVGImage.class, "ACSD_SVGIMAGE_STR")); // NOI18N;
+        
         customEditor = new SVGImageEditorElement();
         customEditor.addPropertyEditorResourceElementListener(this);
         customEditor.setPropertyEditorMessageAwareness(this);

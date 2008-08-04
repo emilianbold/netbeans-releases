@@ -1,0 +1,5 @@
+Code completion result for source line:
+priv|ate $fld = 0;
+(QueryType=COMPLETION, NameKind=PREFIX)
+------------------------------------
+KEYWORD    private                                    null

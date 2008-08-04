@@ -60,7 +60,9 @@ import org.openide.awt.HtmlBrowser;
 import org.openide.awt.HtmlBrowser.Factory;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 
 /**
@@ -71,7 +73,10 @@ public class URLAttachPanel extends javax.swing.JPanel implements Controller {
 
     private static Preferences preferences = NbPreferences.forModule(URLAttachPanel.class);
     private static final String DEBUG_URL = "debugURL";
-    private static final String BROWSER = "browser";    
+    private static final String BROWSER = "browser";
+    
+    private final boolean ieBrowserSupported;
+    private final boolean ffBrowserSupported;
 
     /** Creates new form URLAttachPanel */
     public URLAttachPanel() {
@@ -95,13 +100,25 @@ public class URLAttachPanel extends javax.swing.JPanel implements Controller {
             }
         });        
 
-        if (Utilities.isWindows()) {
+        ieBrowserSupported = WebClientToolsProjectUtils.isInternetExplorerSupported();
+        ffBrowserSupported = WebClientToolsProjectUtils.isFirefoxSupported();
+
+        if (ieBrowserSupported && ffBrowserSupported) {
             String browser = preferences.get(BROWSER, WebClientToolsProjectUtils.Browser.FIREFOX.name());
             firefoxRadioButton.setSelected(WebClientToolsProjectUtils.Browser.valueOf(browser) == WebClientToolsProjectUtils.Browser.FIREFOX);
             internetExplorerRadioButton.setSelected(WebClientToolsProjectUtils.Browser.valueOf(browser) == WebClientToolsProjectUtils.Browser.INTERNET_EXPLORER);
-        } else {
-            firefoxRadioButton.setSelected(true);
+        } else if (!ieBrowserSupported && !ffBrowserSupported) {
+            debugURLTextField.setEnabled(false);
+            debugURLTextField.setEditable(false);
+            firefoxRadioButton.setEnabled(false);
             internetExplorerRadioButton.setEnabled(false);
+            messageTextField.setText(NbBundle.getMessage(URLAttachPanel.class, "URLAttachPanel_noSupportedBrowserMsg"));            
+        } else {            
+            firefoxRadioButton.setEnabled(ffBrowserSupported);
+            firefoxRadioButton.setSelected(ffBrowserSupported);
+            
+            internetExplorerRadioButton.setEnabled(ieBrowserSupported);
+            internetExplorerRadioButton.setSelected(ieBrowserSupported);
         }
     }
 
@@ -143,7 +160,7 @@ public class URLAttachPanel extends javax.swing.JPanel implements Controller {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(messageTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 376, Short.MAX_VALUE)
+                    .add(messageTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 384, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
                         .add(debugURLLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -168,11 +185,15 @@ public class URLAttachPanel extends javax.swing.JPanel implements Controller {
                 .add(messageTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
+
+        debugURLTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(URLAttachPanel.class, "URLAttachPanel.debugURLTextField.AccessibleContext.accessibleName")); // NOI18N
+        debugURLTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(URLAttachPanel.class, "URLAttachPanel.debugURLTextField.AccessibleContext.accessibleDescription")); // NOI18N
+        firefoxRadioButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(URLAttachPanel.class, "URLAttachPanel.firefoxRadioButton.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     @Override
     public boolean isValid() {
-        return true;
+        return ieBrowserSupported || ffBrowserSupported;
     }
 
     public boolean ok() {
@@ -183,35 +204,36 @@ public class URLAttachPanel extends javax.swing.JPanel implements Controller {
             preferences.put(BROWSER, WebClientToolsProjectUtils.Browser.FIREFOX.name());            
         }
         if (WebClientToolsSessionStarterService.isAvailable()) {
-            try {
-                URI uri = new URI(debugURLTextField.getText().trim());
-                try {
-                    Factory htmlBrowserFactory = null;
-                    if (internetExplorerRadioButton.isSelected()) {
-                        htmlBrowserFactory = WebClientToolsProjectUtils.getInternetExplorerBrowser();
-                    } else {
-                        htmlBrowserFactory = WebClientToolsProjectUtils.getFirefoxBrowser();
-                    }
-                    if (htmlBrowserFactory == null) {
-                        // TODO Display message
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    try {
+                        URI uri = new URI(debugURLTextField.getText().trim());
                         try {
-                            // Simply launch the URL in the browser
-                            HtmlBrowser.URLDisplayer.getDefault().showURL(uri.toURL());
-                        } catch (MalformedURLException ex) {
-                            messageTextField.setText(ex.getMessage());
-                            return false;
+                            Factory htmlBrowserFactory = null;
+                            if (internetExplorerRadioButton.isSelected()) {
+                                htmlBrowserFactory = WebClientToolsProjectUtils.getInternetExplorerBrowser();
+                            } else {
+                                htmlBrowserFactory = WebClientToolsProjectUtils.getFirefoxBrowser();
+                            }
+                            if (htmlBrowserFactory == null) {
+                                // TODO Display message
+                                try {
+                                    // Simply launch the URL in the browser
+                                    HtmlBrowser.URLDisplayer.getDefault().showURL(uri.toURL());
+                                } catch (MalformedURLException ex) {
+                                    messageTextField.setText(ex.getMessage());
+                                }
+                            } else {
+                                WebClientToolsSessionStarterService.startSession(uri, htmlBrowserFactory, Lookup.EMPTY);
+                            }
+                        } catch (WebClientToolsSessionException ex) {
+                            StatusDisplayer.getDefault().setStatusText(ex.getMessage());
                         }
-                    } else {
-                        WebClientToolsSessionStarterService.startSession(uri, htmlBrowserFactory, Lookup.EMPTY);
+                    } catch (URISyntaxException ex) {
+                        messageTextField.setText(ex.getMessage());
                     }
-                } catch (WebClientToolsSessionException ex) {
-                    StatusDisplayer.getDefault().setStatusText(ex.getMessage());
-                    return true;
                 }
-            } catch (URISyntaxException ex) {
-                messageTextField.setText(ex.getMessage());
-                return false;
-            }
+            });
         }
         return true;
     }

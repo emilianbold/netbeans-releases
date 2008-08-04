@@ -74,7 +74,7 @@ public class PhpStructureScanner implements StructureScanner {
 
     private static final String FOLD_CODE_BLOCKS = "codeblocks"; //NOI18N
 
-    private static final String FOLD_CLASS = "classblocks"; //NOI18N
+    private static final String FOLD_CLASS = "codeblocks"; //NOI18N
 
     private static final String FOLD_PHPDOC = "comments"; //NOI18N
 
@@ -100,7 +100,6 @@ public class PhpStructureScanner implements StructureScanner {
         final Map<String, List<OffsetRange>> folds = new HashMap<String, List<OffsetRange>>();
         if (program != null) {
             program.accept(new FoldVisitor(folds));
-//<editor-fold>
             List<Comment> comments = program.getComments();
             if (comments != null) {
                 List<Comment> customeFoldStarts = new ArrayList<Comment>();
@@ -115,7 +114,6 @@ public class PhpStructureScanner implements StructureScanner {
                     }
                 }
             }
-//</editor-fold>
             return folds;
         }
         return Collections.emptyMap();
@@ -185,7 +183,7 @@ public class PhpStructureScanner implements StructureScanner {
                 String functionName = function.getFunctionName().getName();
                 PHPStructureItem item;
                 // className doesn't have to be defined if it's interace
-                if (className!= null && (className.equals(functionName) || "__construct".equals(functionName))) { //NOI8N
+                if (className!= null && (className.equals(functionName) || "__construct".equals(functionName))) { //NOI18N
                     item = new PHPConstructorStructureItem(new GSFPHPElementHandle.MethodDeclarationHandle(info, method));
                 }
                 else {
@@ -529,6 +527,14 @@ public class PhpStructureScanner implements StructureScanner {
             foldType = FOLD_CLASS;
             if (cldec.getBody() != null) {
                 cldec.getBody().accept(this);
+            }
+        }
+
+        @Override
+        public void visit(InterfaceDeclaration node) {
+            foldType = FOLD_CLASS;
+            if (node.getBody() != null) {
+                node.getBody().accept(this);
             }
         }
 

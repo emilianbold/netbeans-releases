@@ -46,10 +46,13 @@ import java.beans.PropertyChangeSupport;
 import java.io.InputStream;
 import java.io.IOException;
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.*;
 
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
@@ -110,7 +113,7 @@ public class DatabaseNodeInfo extends ConcurrentHashMap<String, Object>
     public static final String PERM = "perm"; //NOI18N
     public static final String ADAPTOR = "adaptor"; //NOI18N
     public static final String ADAPTOR_CLASSNAME = "adaptorClass"; //NOI18N
-    public static final String REGISTERED_NODE = "registered"; // NOI8N
+    public static final String REGISTERED_NODE = "registered"; // NOI18N
 
     // Multi-operation changes are synchronized on this
     private static Map gtab = null;
@@ -130,6 +133,7 @@ public class DatabaseNodeInfo extends ConcurrentHashMap<String, Object>
     }
 
     private final UUID uuid =   UUID.randomUUID();
+    private static final Logger LOGGER = Logger.getLogger(DatabaseNodeInfo.class.getName());
     
     public static Map readInfo() {
         Map data;
@@ -137,7 +141,7 @@ public class DatabaseNodeInfo extends ConcurrentHashMap<String, Object>
             ClassLoader cl = DatabaseNodeInfo.class.getClassLoader();
             InputStream stream = cl.getResourceAsStream(gtabfile);
             if (stream == null) {
-                String message = MessageFormat.format(bundle().getString("EXC_UnableToOpenStream"), new String[] {gtabfile}); // NOI18N
+                String message = MessageFormat.format(bundle().getString("EXC_UnableToOpenStream"),gtabfile); // NOI18N
                 throw new Exception(message);
             }
             PListReader reader = new PListReader(stream);
@@ -169,14 +173,14 @@ public class DatabaseNodeInfo extends ConcurrentHashMap<String, Object>
         } else {
             String message = MessageFormat.format(bundle().
                     getString("EXC_UnableToFindClassInfo"), 
-                    new String[] {nodecode}); // NOI18N
+                    nodecode); // NOI18N
             throw new DatabaseException(message);
         }
 
         if (e_ni != null) {
             e_ni.setParentInfo(parent, nodecode);
         } else {
-            String message = MessageFormat.format(bundle().getString("EXC_UnableToCreateNodeInfo"), new String[] {nodecode}); // NOI18N
+            String message = MessageFormat.format(bundle().getString("EXC_UnableToCreateNodeInfo"), nodecode); // NOI18N
             throw new DatabaseException(message);
         }
         return e_ni;
@@ -321,6 +325,7 @@ public class DatabaseNodeInfo extends ConcurrentHashMap<String, Object>
         return connectionpcsKeys;
     }
     
+    @Override
     public Object put(String key, Object obj)
     {
         Object old = get(key);
@@ -493,13 +498,17 @@ public class DatabaseNodeInfo extends ConcurrentHashMap<String, Object>
         notifyChange();
     }
 
-    public synchronized void setConnected(boolean connected) {
+    private synchronized void setConnected(boolean connected) {
         this.connected = connected;
-        notifyChange();
     }
     
     public synchronized boolean isConnected() {
-        return connected;
+        if (this instanceof ConnectionNodeInfo) {
+            return this.connected;
+        } else {
+            ConnectionNodeInfo cinfo = (ConnectionNodeInfo)getParent(CONNECTION);
+            return cinfo.isConnected();
+        }
     }
 
     public DatabaseConnection getDatabaseConnection()
@@ -801,7 +810,7 @@ public class DatabaseNodeInfo extends ConcurrentHashMap<String, Object>
                         } catch (MissingResourceException e) {
                             locname = xname;
                             
-                            String message = MessageFormat.format(bundle().getString("ERR_UnableToLocateLocalizedMenuItem"), new String[] {xname}); // NOI18N
+                            String message = MessageFormat.format(bundle().getString("ERR_UnableToLocateLocalizedMenuItem"), xname); // NOI18N
                             System.out.println(message);
                         }
 
@@ -939,33 +948,33 @@ public class DatabaseNodeInfo extends ConcurrentHashMap<String, Object>
                 (! (this instanceof ViewNodeInfo)) && 
                 (! (this instanceof ProcedureNodeInfo)) ); //NOI18N
 
-            if (! sort)
-                return 1;
+            if (sort)
+            {
+                // Ordering is based on the node class for this info class
+                // See if the node class is in the ordering map, and if it
+                // is, use that for comparison.
+                int o1val, o2val, diff;
+                Integer o1i = (Integer)map.get(get(CLASS));
+                if (o1i != null)
+                    o1val = o1i.intValue();
+                else
+                    o1val = Integer.MAX_VALUE;
 
-            // Ordering is based on the node class for this info class
-            // See if the node class is in the ordering map, and if it
-            // is, use that for comparison.
-            int o1val, o2val, diff;
-            Integer o1i = (Integer)map.get(get(CLASS));
-            if (o1i != null)
-                o1val = o1i.intValue();
-            else
-                o1val = Integer.MAX_VALUE;
+                Integer o2i = null;
+                o2i = (Integer)map.get(info2.get(CLASS));
 
-            Integer o2i = null;
-            o2i = (Integer)map.get(info2.get(CLASS));
+                if (o2i != null)
+                    o2val = o2i.intValue();
+                else
+                    o2val = Integer.MAX_VALUE;
 
-            if (o2i != null)
-                o2val = o2i.intValue();
-            else
-                o2val = Integer.MAX_VALUE;
+                diff = o1val-o2val;
 
-            diff = o1val-o2val;
-
-            // If they're the same class, then sort using display name
-            // below...
-            if (diff != 0) {
-                return diff;
+                // If they're the same class, then sort using display name
+                // below...
+                if (diff != 0) {
+                    return diff;
+                }
             }
         }
         

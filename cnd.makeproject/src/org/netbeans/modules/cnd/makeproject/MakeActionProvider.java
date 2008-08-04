@@ -52,6 +52,7 @@ import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.Set;
 import javax.swing.JButton;
+import javax.swing.JOptionPane;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.cnd.actions.BuildToolsAction;
@@ -106,6 +107,7 @@ import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
+import org.openide.windows.WindowManager;
 
 /** Action provider of the Make project. This is the place where to do
  * strange things to Make actions. E.g. compile-single.
@@ -200,15 +202,6 @@ public class MakeActionProvider implements ActionProvider {
         String projectName = info.getDisplayName();
         MakeConfigurationDescriptor pd = getProjectDescriptor();
         MakeConfiguration conf = (MakeConfiguration)pd.getConfs().getActive();
-        String hkey = conf.getDevelopmentHost().getName();
-        
-        if (!hkey.equals(CompilerSetManager.LOCALHOST)) {
-            ServerList registry = (ServerList) Lookup.getDefault().lookup(ServerList.class);
-            assert registry != null;
-            ServerRecord record = registry.get(hkey);
-            assert record != null;
-            record.validate();
-        }
         
         if (COMMAND_DELETE.equals(command)) {
             DefaultProjectOperations.performDefaultDeleteOperation(project);
@@ -228,6 +221,18 @@ public class MakeActionProvider implements ActionProvider {
         if (COMMAND_RENAME.equals(command)) {
             DefaultProjectOperations.performDefaultRenameOperation(project, null);
             return ;
+        }
+        
+        if (!conf.getDevelopmentHost().isLocalhost()) {
+            String hkey = conf.getDevelopmentHost().getName();
+            ServerList registry = (ServerList) Lookup.getDefault().lookup(ServerList.class);
+            assert registry != null;
+            ServerRecord record = registry.get(hkey);
+            assert record != null;
+            if (!record.isOnline()) {
+                initServerRecord(record);
+                return;
+            }
         }
         
         // Add actions to do
@@ -250,6 +255,15 @@ public class MakeActionProvider implements ActionProvider {
         // Execute actions
         if (actionEvents.size() > 0)
             ProjectActionSupport.fireActionPerformed((ProjectActionEvent[])actionEvents.toArray(new ProjectActionEvent[actionEvents.size()]));
+    }
+
+    private void initServerRecord(ServerRecord record) {
+        String message = MessageFormat.format(getString("ERR_NeedToInitializeRemoteHost"), record.getName());
+        int res = JOptionPane.showConfirmDialog(WindowManager.getDefault().getMainWindow(), message, getString("DLG_TITLE_Connect"), JOptionPane.YES_NO_OPTION);
+        if (res == JOptionPane.YES_OPTION) {
+            // start validation phase
+            record.validate();
+        }
     }
     
     class BatchConfigurationSelector implements ActionListener {
@@ -372,7 +386,7 @@ public class MakeActionProvider implements ActionProvider {
                             path = IpeUtils.toRelativePath(conf.getProfile().getRunDirectory(), path);
                             path = FilePathAdaptor.naturalize(path);
                             CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
-                            if (compilerSet != null && "MinGW".equals(compilerSet.getCompilerFlavor().toString())) {
+                            if (compilerSet != null && "MinGW".equals(compilerSet.getCompilerFlavor().toString())) { // NOI18N
                                 // IZ 120352
                                 path = FilePathAdaptor.normalize(path);
                         }
@@ -820,7 +834,6 @@ public class MakeActionProvider implements ActionProvider {
         String hkey = conf.getDevelopmentHost().getName();
         ArrayList<String> errs = new ArrayList<String>();
         CompilerSet cs;
-        BuildToolsAction bt = null;
         String csname;
         File file;
         ServerList serverList = (ServerList) Lookup.getDefault().lookup(ServerList.class);
@@ -840,15 +853,16 @@ public class MakeActionProvider implements ActionProvider {
             record.validate();
             if (!record.isOnline()) {
                 lastValidation = false;
-                return false;
-            } else {
-                // TODO: Do we want to do a real validation now? Is cnd.remote able to provide it?
-                lastValidation = true;
-                return true;
+                runBTA = true;
+//            } else {
+//                // TODO: Do we want to do a real validation now? Is cnd.remote able to provide it?
+//                lastValidation = true;
+//                return true;
             }
+            // TODO: all validation below works, but it may be more efficient to make a verifying script
         }
 
-        if (csconf.getFlavor() != null && csconf.getFlavor().equals("Unknown")) {
+        if (csconf.getFlavor() != null && csconf.getFlavor().equals("Unknown")) { // NOI18N
             // Confiiguration was created with unknown tool set. Use the now default one.
             csname = csconf.getOption();
             cs = CompilerSetManager.getDefault(hkey).getCompilerSet(csname);
@@ -875,25 +889,26 @@ public class MakeActionProvider implements ActionProvider {
             csconf.setValid();
         }
         
-        
+        Tool cTool = cs.getTool(Tool.CCompiler);
+        Tool cppTool = cs.getTool(Tool.CCCompiler);
+        Tool fTool = cs.getTool(Tool.FortranCompiler);
+        Tool makeTool = cs.getTool(Tool.MakeTool);
+
         // Check for a valid make program
         if (conf.getDevelopmentHost().isLocalhost()) {
-            file = new File(cs.getTool(Tool.MakeTool).getPath());
-            if ((!file.exists() && Path.findCommand(cs.getTool(Tool.MakeTool).getPath()) == null) || !ToolsPanel.supportedMake(file.getPath())) {
+            file = new File(makeTool.getPath());
+            if ((!file.exists() && Path.findCommand(makeTool.getPath()) == null) || !ToolsPanel.supportedMake(file.getPath())) {
                 runBTA = true;
             }
         } else {
             if(serverList != null) {
-                if (!serverList.isValidExecutable(hkey, cs.getTool(Tool.MakeTool).getPath())) {
+                if (!serverList.isValidExecutable(hkey, makeTool.getPath())) {
                     runBTA=true;
                 }
             }
         }
         
         // Check compilers
-        Tool cTool = cs.getTool(Tool.CCompiler);
-        Tool cppTool = cs.getTool(Tool.CCCompiler);
-        Tool fTool = cs.getTool(Tool.FortranCompiler);
 
         PlatformInfo pi = conf.getPlatformInfo();
         
@@ -910,58 +925,63 @@ public class MakeActionProvider implements ActionProvider {
             runBTA = true;
         }
         
-        if (runBTA || Boolean.getBoolean("netbeans.cnd.always_show_bta")) { // NOI18N
-            bt = SystemAction.get(BuildToolsAction.class);
-            bt.setTitle(NbBundle.getMessage(BuildToolsAction.class, "LBL_ResolveMissingTools_Title")); // NOI18N
-        }
-        
-        if (bt != null) {
-            ToolsPanelModel model = new LocalToolsPanelModel();
-            model.setCompilerSetName(null); // means don't change
-            model.setSelectedCompilerSetName(csname);
-            model.setMakeRequired(true);
-            model.setGdbRequired(false);
-            model.setCRequired(cRequired);
-            model.setCppRequired(cppRequired);
-            model.setFortranRequired(fRequired);
-            model.setShowRequiredBuildTools(true);
-            model.setShowRequiredDebugTools(false);
-            model.SetEnableRequiredCompilerCB(conf.isMakefileConfiguration());
-            if (bt.initBuildTools(model, errs)) {
-                String name = model.getSelectedCompilerSetName();
-                CppSettings.getDefault().setCompilerSetName(name);
-                conf.getCRequired().setValue(model.isCRequired());
-                conf.getCppRequired().setValue(model.isCppRequired());
-                conf.getFortranRequired().setValue(model.isFortranRequired());
-                conf.getCompilerSet().setValue(name);
-                pd.setModified();
-                pd.save();
-                lastValidation = true;
-                return true;
+        if ( runBTA || Boolean.getBoolean("netbeans.cnd.always_show_bta")) { // NOI18N
+            if (conf.getDevelopmentHost().isLocalhost()) {
+                BuildToolsAction bt = SystemAction.get(BuildToolsAction.class);
+                bt.setTitle(NbBundle.getMessage(BuildToolsAction.class, "LBL_ResolveMissingTools_Title")); // NOI18N
+                ToolsPanelModel model = new LocalToolsPanelModel();
+                model.setCompilerSetName(null); // means don't change
+                model.setSelectedCompilerSetName(csname);
+                model.setMakeRequired(true);
+                model.setGdbRequired(false);
+                model.setCRequired(cRequired);
+                model.setCppRequired(cppRequired);
+                model.setFortranRequired(fRequired);
+                model.setShowRequiredBuildTools(true);
+                model.setShowRequiredDebugTools(false);
+                model.SetEnableRequiredCompilerCB(conf.isMakefileConfiguration());
+                if (bt.initBuildTools(model, errs)) {
+                    String name = model.getSelectedCompilerSetName();
+                    CppSettings.getDefault().setCompilerSetName(name);
+                    conf.getCRequired().setValue(model.isCRequired());
+                    conf.getCppRequired().setValue(model.isCppRequired());
+                    conf.getFortranRequired().setValue(model.isFortranRequired());
+                    conf.getCompilerSet().setValue(name);
+                    pd.setModified();
+                    pd.save();
+                    lastValidation = true;
+                } else {
+                    lastValidation = false;
+                }
             } else {
+                // User can't change anything in BTA for remote host yet,
+                // so showing above dialog will only confuse him
+                NotifyDescriptor nd = new NotifyDescriptor.Message(
+                        NbBundle.getMessage(MakeActionProvider.class, "ERR_INVALID_COMPILER_SET", cs.getName(), conf.getDevelopmentHost().getName()));
+                DialogDisplayer.getDefault().notify(nd);
                 lastValidation = false;
-                return false;
             }
         } else {
             lastValidation = true;
-            return true;
         }
+        return lastValidation;
     }
     
     private boolean validatePackaging(MakeConfiguration conf) {
         String errormsg = null;
         
         if (conf.getPackagingConfiguration().getFiles().getValue().size() == 0) {
-            errormsg = "Package is empty.\nOpen Build|Packaging property in the project's properties and define this package."; // FIXUP
+            errormsg = getString("ERR_EMPTY_PACKAGE");
         }
         
         if (errormsg == null) {
             String tool = conf.getPackagingConfiguration().getToolValue();
             if (!IpeUtils.isPathAbsolute(tool) && Path.findCommand(tool) == null) {
-                errormsg = "Cannot find \'" + tool + "\' in your PATH. This feature may not be available on this platform."; // FIXUP
+                
+                errormsg = NbBundle.getMessage(MakeActionProvider.class, "ERR_MISSING_TOOL1", tool); // NOI18N
             }
             else if (IpeUtils.isPathAbsolute(tool) && !(new File(tool).exists())) {
-                errormsg = "Cannot find \'" + tool + "\'. This feature may not be available on this platform."; // FIXUP
+                errormsg = NbBundle.getMessage(MakeActionProvider.class, "ERR_MISSING_TOOL2", tool); // NOI18N
             }
         }
         

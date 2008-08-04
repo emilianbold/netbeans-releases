@@ -146,6 +146,11 @@ public class J2SEProjectProperties {
     public static final String DO_JAR = "do.jar"; // NOI18N
     /** @since org.netbeans.modules.java.j2seproject/1 1.17 */
     public static final String DISABLE_COMPILE_ON_SAVE = "disable.compile.on.save"; // NOI18N
+    /** @since org.netbeans.modules.java.j2seproject/1 1.19 */
+    public static final String COMPILE_ON_SAVE_UNSUPPORTED_PREFIX = "compile.on.save.unsupported"; // NOI18N
+    
+    public static final String SYSTEM_PROPERTIES_RUN_PREFIX = "run-sys-prop."; // NOI18N
+    public static final String SYSTEM_PROPERTIES_TEST_PREFIX = "test-sys-prop."; // NOI18N
     
     public static final String JAVADOC_PRIVATE="javadoc.private"; // NOI18N
     public static final String JAVADOC_NO_TREE="javadoc.notree"; // NOI18N

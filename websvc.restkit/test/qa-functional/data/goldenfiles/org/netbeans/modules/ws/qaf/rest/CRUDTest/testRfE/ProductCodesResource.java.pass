@@ -1,9 +1,5 @@
 /*
- *  ProductCodesResource
- *
- * Created on July 8, 2008, 10:54 PM
- *
- * To change this template, choose Tools | Template Manager
+ * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
 
@@ -21,11 +17,12 @@ import javax.ws.rs.DefaultValue;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
+import com.sun.jersey.api.core.ResourceContext;
+import javax.persistence.EntityManager;
 import o.n.m.ws.qaf.rest.crud.Product;
 import o.n.m.ws.qaf.rest.crud.ProductCode;
 import o.n.m.ws.qaf.rest.crud.converter.ProductCodesConverter;
 import o.n.m.ws.qaf.rest.crud.converter.ProductCodeConverter;
-
 
 /**
  *
@@ -35,19 +32,12 @@ import o.n.m.ws.qaf.rest.crud.converter.ProductCodeConverter;
 @Path("/productCodes/")
 public class ProductCodesResource {
     @Context
-    private UriInfo context;
-    
+    protected UriInfo uriInfo;
+    @Context
+    protected ResourceContext resourceContext;
+  
     /** Creates a new instance of ProductCodesResource */
     public ProductCodesResource() {
-    }
-
-    /**
-     * Constructor used for instantiating an instance of dynamic resource.
-     *
-     * @param context HttpContext inherited from the parent resource
-     */
-    public ProductCodesResource(UriInfo context) {
-        this.context = context;
     }
 
     /**
@@ -67,7 +57,7 @@ public class ProductCodesResource {
     @DefaultValue("SELECT e FROM ProductCode e")
     String query) {
         try {
-            return new ProductCodesConverter(getEntities(start, max, query), context.getAbsolutePath(), expandLevel);
+            return new ProductCodesConverter(getEntities(start, max, query), uriInfo.getAbsolutePath(), expandLevel);
         } finally {
             PersistenceService.getInstance().close();
         }
@@ -85,10 +75,11 @@ public class ProductCodesResource {
         PersistenceService persistenceSvc = PersistenceService.getInstance();
         try {
             persistenceSvc.beginTx();
-            ProductCode entity = data.getEntity();
-            createEntity(entity);
+            EntityManager em = persistenceSvc.getEntityManager();
+            ProductCode entity = data.resolveEntity(em);
+            createEntity(data.resolveEntity(em));
             persistenceSvc.commitTx();
-            return Response.created(context.getAbsolutePath().resolve(entity.getProdCode() + "/")).build();
+            return Response.created(uriInfo.getAbsolutePath().resolve(entity.getProdCode() + "/")).build();
         } finally {
             persistenceSvc.close();
         }
@@ -102,7 +93,9 @@ public class ProductCodesResource {
     @Path("{prodCode}/")
     public ProductCodeResource getProductCodeResource(@PathParam("prodCode")
     String id) {
-        return new ProductCodeResource(id, context);
+        ProductCodeResource resource = resourceContext.getResource(ProductCodeResource.class);
+        resource.setId(id);
+        return resource;
     }
 
     /**
@@ -111,7 +104,8 @@ public class ProductCodesResource {
      * @return a collection of ProductCode instances
      */
     protected Collection<ProductCode> getEntities(int start, int max, String query) {
-        return PersistenceService.getInstance().createQuery(query).setFirstResult(start).setMaxResults(max).getResultList();
+        EntityManager em = PersistenceService.getInstance().getEntityManager();
+        return em.createQuery(query).setFirstResult(start).setMaxResults(max).getResultList();
     }
 
     /**
@@ -120,7 +114,8 @@ public class ProductCodesResource {
      * @param entity the entity to persist
      */
     protected void createEntity(ProductCode entity) {
-        PersistenceService.getInstance().persistEntity(entity);
+        EntityManager em = PersistenceService.getInstance().getEntityManager();
+        em.persist(entity);
         for (Product value : entity.getProductCollection()) {
             ProductCode oldEntity = value.getProductCode();
             value.setProductCode(entity);

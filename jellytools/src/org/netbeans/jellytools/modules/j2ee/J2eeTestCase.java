@@ -122,10 +122,17 @@ public class J2eeTestCase extends JellyTestCase {
         }
         LOG.info("Validating path: " + path);
         File f = new File(path);
-        if (!f.exists()) {
+        if (f.isDirectory()) {
+            LOG.info(path + " - is valid directory");
+            return true;
+        } else {
+            if(!f.exists()) {
+                LOG.info(path + " - does not exists!");
+            } else {
+                LOG.info(path + " - exists, but it is not a directory!");
+            }
             return false;
         }
-        return f.isDirectory();
     }
     
     /**

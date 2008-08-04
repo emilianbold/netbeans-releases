@@ -42,6 +42,7 @@
 package org.netbeans.modules.java.j2seproject.ui.customizer;
 
 import javax.swing.JPanel;
+import org.netbeans.modules.java.j2seproject.J2SEProjectUtil;
 import org.openide.util.HelpCtx;
 
 public class CustomizerCompile extends JPanel implements HelpCtx.Provider {
@@ -51,6 +52,7 @@ public class CustomizerCompile extends JPanel implements HelpCtx.Provider {
 
         uiProperties.COMPILE_ON_SAVE_MODEL.setMnemonic(compileOnSave.getMnemonic());
         compileOnSave.setModel(uiProperties.COMPILE_ON_SAVE_MODEL);
+        compileOnSave.setEnabled(J2SEProjectUtil.isCompileOnSaveSupported(uiProperties.getProject()));
         
         uiProperties.JAVAC_DEPRECATION_MODEL.setMnemonic( deprecationCheckBox.getMnemonic() );
         deprecationCheckBox.setModel( uiProperties.JAVAC_DEPRECATION_MODEL );

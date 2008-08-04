@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -48,6 +48,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -339,7 +340,7 @@ public final class ModuleActions implements ActionProvider {
         } else if (command.equals(COMMAND_RUN_SINGLE)) {
             TestSources testSources = findTestSources(context, false);
             String enableQuickTest = project.evaluator().getProperty("quick.test.single"); // NOI18N
-            if (    (enableQuickTest == null || Boolean.parseBoolean(enableQuickTest))
+            if (    Boolean.parseBoolean(enableQuickTest)
                  && "unit".equals(testSources.testType) // NOI18N
                  && !hasTestUnitDataDir()) { // NOI18N
                 if (bypassAntBuildScript(command, testSources.sources)) {
@@ -408,6 +409,23 @@ public final class ModuleActions implements ActionProvider {
         String dataDir = project.evaluator().getProperty("test.unit.data.dir");
         return dataDir != null && project.getHelper().resolveFileObject(dataDir) != null;
     }
+    
+    private static final String SYSTEM_PROPERTY_PREFIX = "test-unit-sys-prop.";
+    private static final String SYSTEM_PROPERTY_TARGET_PREFIX = "test-sys-prop.";
+    
+    private void prepareSystemProperties(Properties properties) {
+        Map<String, String> evaluated = project.evaluator().getProperties();
+
+        if (evaluated == null) {
+            return ;
+        }
+        
+        for (Entry<String, String> e : evaluated.entrySet()) {
+            if (e.getKey().startsWith(SYSTEM_PROPERTY_PREFIX) && e.getValue() != null) {
+                properties.setProperty(SYSTEM_PROPERTY_TARGET_PREFIX + e.getKey().substring(SYSTEM_PROPERTY_PREFIX.length()), e.getValue());
+            }
+        }
+    }
 
     private static boolean verifySufficientlyNewHarness(NbModuleProject project) {
         NbPlatform plaf = project.getPlatform(false);
@@ -452,7 +470,10 @@ public final class ModuleActions implements ActionProvider {
                 return false;
             }
             try {
-                ProjectRunner.execute(commandToExecute, new Properties(), toRun);
+                Properties properties = new Properties();
+
+                prepareSystemProperties(properties);
+                ProjectRunner.execute(commandToExecute, properties, toRun);
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }

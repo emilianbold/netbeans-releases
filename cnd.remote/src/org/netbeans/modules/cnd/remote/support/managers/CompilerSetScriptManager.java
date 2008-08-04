@@ -69,7 +69,7 @@ public class CompilerSetScriptManager implements ScriptManager {
     }
 
     public void runScript() {
-        if (!support.isFailed() && !support.isCancelled()) {
+        if (!support.isFailedOrCancelled()) {
             ChannelExec channel = (ChannelExec) support.getChannel();
             channel.setInputStream(null);
             channel.setErrStream(System.err);
@@ -98,6 +98,8 @@ public class CompilerSetScriptManager implements ScriptManager {
             } catch (JSchException ex) {
                 log.warning("CSSM.runScript: JSchException"); // NOI18N
                 support.setFailed(ex.getMessage());
+            } finally {
+                support.disconnect();
             }
         }
     }

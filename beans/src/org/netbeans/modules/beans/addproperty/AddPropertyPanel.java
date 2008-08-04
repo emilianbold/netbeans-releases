@@ -477,7 +477,7 @@ public class AddPropertyPanel extends javax.swing.JPanel {
                                     .add(layout.createSequentialGroup()
                                         .add(boundCheckBox)
                                         .add(35, 35, 35)
-                                        .add(propNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 546, Short.MAX_VALUE)
+                                        .add(propNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 554, Short.MAX_VALUE)
                                         .add(27, 27, 27))
                                     .add(layout.createSequentialGroup()
                                         .add(21, 21, 21)
@@ -512,7 +512,7 @@ public class AddPropertyPanel extends javax.swing.JPanel {
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(errorLabel)
-                            .add(previewScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 673, Short.MAX_VALUE))))
+                            .add(previewScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 674, Short.MAX_VALUE))))
                 .addContainerGap())
         );
 

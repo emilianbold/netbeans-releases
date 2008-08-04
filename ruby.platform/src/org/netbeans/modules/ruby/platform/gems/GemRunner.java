@@ -172,12 +172,9 @@ final class GemRunner {
             argList.add("--ignore-dependencies"); // NOI18N
         }
 
-        argList.add("--version"); // NOI18N
-
         if ((version != null) && (version.length() > 0)) {
+            argList.add("--version"); // NOI18N
             argList.add(version);
-        } else {
-            argList.add("> 0"); // NOI18N
         }
 
         String[] args = argList.toArray(new String[argList.size()]);
@@ -456,7 +453,7 @@ final class GemRunner {
             LOGGER.log(Level.SEVERE, e.getLocalizedMessage(), e);
         }
 
-        LOGGER.finest("Process finished with exit code: " + exitCode);
+        LOGGER.finer("Process finished with exit code: " + exitCode);
         boolean succeeded = exitCode == 0;
 
         return succeeded;

@@ -325,6 +325,9 @@ made subject to such option by the copyright holder.
                  moduleauthor="${nbm.module.author}">
             <license file="${license.file.override}"/>
             <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
+            <updaterjar>
+                <fileset dir="${netbeans.dest.dir}" includes="platform*/modules/ext/updater.jar"/>
+            </updaterjar>
         </makenbm>
     </target>
 

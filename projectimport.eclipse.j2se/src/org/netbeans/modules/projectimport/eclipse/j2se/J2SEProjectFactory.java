@@ -41,7 +41,9 @@ package org.netbeans.modules.projectimport.eclipse.j2se;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -52,6 +54,7 @@ import org.netbeans.modules.java.j2seproject.J2SEProject;
 import org.netbeans.modules.java.j2seproject.J2SEProjectGenerator;
 import org.netbeans.modules.java.j2seproject.J2SEProjectType;
 import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
+import org.netbeans.modules.projectimport.eclipse.core.spi.LaunchConfiguration;
 import org.netbeans.modules.projectimport.eclipse.core.spi.ProjectFactorySupport;
 import org.netbeans.modules.projectimport.eclipse.core.spi.ProjectImportModel;
 import org.netbeans.modules.projectimport.eclipse.core.spi.ProjectTypeFactory.ProjectDescriptor;
@@ -83,10 +86,18 @@ public class J2SEProjectFactory implements ProjectTypeUpdater {
         // calculate nb project location
         File nbProjectDir = model.getNetBeansProjectLocation(); // NOI18N
         
+        if (ProjectFactorySupport.areSourceRootsOwned(model, importProblems)) {
+            return null;
+        }
+        
         // create basic NB project
+        String buildScript = null;
+        if (nbProjectDir.exists() && new File(nbProjectDir, "build.xml").exists()) { //NOI18N
+            buildScript = "nb-build.xml"; //NOI18N
+        }
         final AntProjectHelper helper = J2SEProjectGenerator.createProject(
                 nbProjectDir, model.getProjectName(), model.getEclipseSourceRootsAsFileArray(), 
-                model.getEclipseTestSourceRootsAsFileArray(), null, null, null);
+                model.getEclipseTestSourceRootsAsFileArray(), null, null, buildScript);
         
         // get NB project
         J2SEProject nbProject = (J2SEProject) ProjectManager.getDefault().
@@ -113,6 +124,8 @@ public class J2SEProjectFactory implements ProjectTypeUpdater {
         if (model.getJavaPlatform() != null) {
             setExplicitJavaPlatform(helper, model);
         }
+        
+        addLaunchConfigurations(nbProject, model.getLaunchConfigurations());
 
         // save project
         ProjectManager.getDefault().saveProject(nbProject);
@@ -179,12 +192,7 @@ public class J2SEProjectFactory implements ProjectTypeUpdater {
         ep.setProperty(J2SEProjectProperties.JAVAC_TARGET, model.getTargetLevel());
         ep.setProperty(J2SEProjectProperties.JAVAC_DEPRECATION, Boolean.toString(model.isDeprecation()));
         ep.setProperty(J2SEProjectProperties.JAVAC_COMPILER_ARG, model.getCompilerArgs());
-        String enc = model.getEncoding();
-        if (enc != null) {
-            ep.setProperty(J2SEProjectProperties.SOURCE_ENCODING, enc);
-        } else {
-            ep.remove(J2SEProjectProperties.SOURCE_ENCODING);
-        }
+        ep.setProperty(J2SEProjectProperties.SOURCE_ENCODING, model.getEncoding());
         helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
         ep = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
         ep.setProperty(J2SEProjectProperties.JAVAC_DEBUG, Boolean.toString(model.isDebug()));
@@ -194,6 +202,50 @@ public class J2SEProjectFactory implements ProjectTypeUpdater {
     public File getProjectFileLocation(ProjectDescriptor descriptor, String token) {
         // N/A
         return null;
+    }
+
+    private void addLaunchConfigurations(J2SEProject nbProject, Collection<LaunchConfiguration> launchConfigurations) {
+        Iterator<LaunchConfiguration> it = launchConfigurations.iterator();
+        while (it.hasNext()) {
+            LaunchConfiguration config = it.next();
+            if (!config.getType().equals(LaunchConfiguration.TYPE_LOCAL_JAVA_APPLICATION)) {
+                it.remove();
+            }
+            if (config.getMainType() == null) {
+                it.remove();
+            }
+        }
+        AntProjectHelper aph = nbProject.getAntProjectHelper();
+        if (launchConfigurations.size() == 1) {
+            // For just a single config, treat it as the default config.
+            LaunchConfiguration config = launchConfigurations.iterator().next();
+            EditableProperties props = aph.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+            storeConfig(config, props);
+            aph.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
+        } else if (!launchConfigurations.isEmpty()) {
+            // >1 config. No idea which is "default" so just create them all and let user pick if they want.
+            for (LaunchConfiguration config : launchConfigurations) {
+                String path = "nbproject/configs/" + config.getName() + ".properties"; // NOI18N
+                EditableProperties props = aph.getProperties(path);
+                storeConfig(config, props);
+                aph.putProperties(path, props);
+            }
+            // Set one of them to current so that it is clear they got imported.
+            String path = "nbproject/private/config.properties"; // NOI18N
+            EditableProperties props = aph.getProperties(path);
+            props.setProperty("config", launchConfigurations.iterator().next().getName()); // NOI18N
+            aph.putProperties(path, props);
+        }
+    }
+    private void storeConfig(LaunchConfiguration config, EditableProperties props) {
+        props.setProperty(J2SEProjectProperties.MAIN_CLASS, config.getMainType());
+        // XXX normally APPLICATION_ARGS and RUN_VM_ARGS are put in private properties; does it matter here?
+        if (config.getProgramArguments() != null) {
+            props.setProperty(J2SEProjectProperties.APPLICATION_ARGS, config.getProgramArguments());
+        }
+        if (config.getVmArguments() != null) {
+            props.setProperty(J2SEProjectProperties.RUN_JVM_ARGS, config.getVmArguments());
+        }
     }
 
 }

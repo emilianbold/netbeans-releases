@@ -1695,6 +1695,8 @@ public abstract class TreeView extends JScrollPane {
         public void setUI(TreeUI ui) {
             super.setUI(ui);
             for (Object key : getActionMap().allKeys()) {
+                if( "cancel".equals(key) ) //NOI18N
+                    continue;
                 Action a = getActionMap().get(key);
                 if (a.getClass().getName().contains("TreeUI")) {
                     getActionMap().put(key, new GuardedActions(99, a));
@@ -2143,7 +2145,7 @@ public abstract class TreeView extends JScrollPane {
             public void actionPerformed(final ActionEvent e) {
                 Children.MUTEX.readAccess(new Runnable() {
                     public void run() {
-                        ((Action)p1).actionPerformed(e);
+                            ((Action)p1).actionPerformed(e);
                     }
                 });
             }

@@ -40,7 +40,7 @@
 
 (function() {
     const ignoreThese = /about:|javascript:|resource:|chrome:|jar:/;
-    const DEBUG = false;
+    const DEBUG = true;
 
     //Should we move this to constants.js?
     const STATE_IS_WINDOW = NetBeans.Constants.WebProgressListenerIF.STATE_IS_WINDOW;
@@ -54,7 +54,6 @@
     const STORE_ANYWHERE = NetBeans.Constants.CacheIF.STORE_ANYWHERE;
     const ACCESS_READ = NetBeans.Constants.CacheIF.ACCESS_READ;
     const SEEK_SET = NetBeans.Constants.SeakableStreamIF.NS_SEEK_SET;
-
 
 
     const observerService = NetBeans.Utils.CCSV(
@@ -72,7 +71,7 @@
         "xml": "text/xml",
         "css": "text/css",
         "js": "application/x-javascript",
-        "jss": "application/x-javascript",
+        "json": "application/json",
         "jpg": "image/jpeg",
         "jpeg": "image/jpeg",
         "gif": "image/gif",
@@ -91,6 +90,7 @@
         "application/x-javascript": "js",
         "text/javascript": "js",
         "application/javascript" : "js",
+        "application/json" : "json",
         "image/jpeg": "image",
         "image/gif": "image",
         "image/png": "image",

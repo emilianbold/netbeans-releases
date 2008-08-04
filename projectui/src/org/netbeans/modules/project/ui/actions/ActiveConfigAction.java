@@ -163,27 +163,26 @@ public class ActiveConfigAction extends CallableSystemAction implements ContextA
         }
     }
 
-    private synchronized void activeConfigurationChanged(ProjectConfiguration config) {
+    private synchronized void activeConfigurationChanged(final ProjectConfiguration config) {
         LOGGER.log(Level.FINER, "activeConfigurationChanged: {0}", config);
         listeningToCombo = false;
         try {
-            configListCombo.setSelectedIndex(-1);
-            if (config != null) {
-                ComboBoxModel m = configListCombo.getModel();
-                for (int i = 0; i < m.getSize(); i++) {
-                    if (config.equals(m.getElementAt(i))) {
-                        final int selIndex = i;
-                        SwingUtilities.invokeLater(new Runnable() {
-                            public void run() {
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    configListCombo.setSelectedIndex(-1);
+                    if (config != null) {
+                        ComboBoxModel m = configListCombo.getModel();
+                        for (int i = 0; i < m.getSize(); i++) {
+                            if (config.equals(m.getElementAt(i))) {
                                 listeningToCombo = false;
-                                configListCombo.setSelectedIndex(selIndex);
+                                configListCombo.setSelectedIndex(i);
                                 listeningToCombo = true;
+                                break;
                             }
-                        });
-                        break;
+                        }
                     }
                 }
-            }
+            });
         } finally {
             listeningToCombo = true;
         }

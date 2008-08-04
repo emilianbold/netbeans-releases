@@ -45,82 +45,61 @@
 # the list is iterated from first to last and the last match
 # decides the result
 
-include JSPPalette/.*
-include HTMLPalette/.*
-include Services/org-netbeans-modules-debugger-Settings\.properties 
-include Services/Hidden/org-netbeans-modules-subversion-settings-.*
-
-include Services/org-netbeans-core-IDESettings\.settings
-
-include Services/Hidden/org-netbeans-modules-vcscore-settings-GeneralVcsSettings\.settings
-include Services/Hidden/VersionControl/org-netbeans-modules-vcscore-grouping-VcsGroupSettings\.settings
-include vcs/.*
-include VCSMount/.*
-
-include Services/DiffProviders/.*
-include Services/Diffs/.*
-include Services/DiffVisualizers/.*
-include Services/MergeVisualizers/.*
-include Services/Hidden/org-netbeans-modules-diff-DiffSettings\.settings
-
-include Services/Browsers/.*
-include Services/org-netbeans-modules-httpserver-HttpServerSettings\.settings
-
-include org-netbeans-api-project-libraries/Libraries/.*\.xml
-include Services/Platforms/org-netbeans-api-java-Platform/.*\.xml
-include Services/org-netbeans-modules-project-ui-OpenProjectList\.settings
-include Services/org-netbeans-modules-xml-core-settings-CoreSettings.settings
-
-include HTTPMonitor/.*
-
-include J2EE/.*
+include CreatorDesignerPalette/.*
+include CreatorDesignerPalette5/.*
 include Databases/.*
-include Services/org-netbeans-modules-db-explorer-DatabaseOption\.settings
-include Services/org-netbeans-modules-derby-DerbyOptions\.settings
-
-include Services/org-netbeans-modules-java-settings-JavaSettings\.settings
-#include Services/org-openide-src-nodes-SourceOptions\.settings
-#include Services/org-netbeans-modules-java-SourceOptions\.settings
-
-include Editors/AnnotationTypes/.*
 include Editors/.*
+exclude Editors/.*/macros.xml
 exclude Editors/.*/Popup.*
 exclude Editors/.*/.*\.instance
 exclude Editors/.*/Settings\.settings
+include Editors/AnnotationTypes/org-netbeans-modules-java-.*\.xml
+include Editors/AnnotationTypes/TaskAnnotation.*\.xml
+include Favorites/.*
+include FormDesignerPalette/.*
+include HTMLPalette/.*
+include HTTPMonitor/.*
+include J2EE/.*
+include JSPPalette/.*
+include Keymaps/.*
+exclude MVD/.*
+include org-netbeans-api-project-libraries/Libraries/.*\.xml
+include Services/Browsers/.*
+include Services/Collaboration/.*
+include Services/DiffProviders/.*
+include Services/Diffs/.*
+include Services/DiffVisualizers/.*
+include Services/formsettings\.settings
+include Services/Hidden/org-netbeans-modules-diff-DiffSettings\.settings
+include Services/Hidden/org-netbeans-modules-subversion-settings-.*
+include Services/Hidden/org-netbeans-modules-tasklist-suggestions-settings-ManagerSettings\.instance
+include Services/Hidden/org-netbeans-modules-vcscore-settings-GeneralVcsSettings\.settings
+include Services/Hidden/org-netbeans-modules-versioning-system-cvss-settings.*
+include Services/Hidden/VersionControl/org-netbeans-modules-vcscore-grouping-VcsGroupSettings\.settings
 include Services/IndentEngine/.*
-#does not import C/C++ indent settings
 exclude Services/IndentEngine/org-netbeans-modules-cnd-editor-cplusplus-CCIndentEngine\.settings
 exclude Services/IndentEngine/org-netbeans-modules-cnd-editor-cplusplus-CIndentEngine\.settings
-
-include Services/org-netbeans-modules-javadoc-settings-DocumentationSettings\.settings
-
-include Services/formsettings\.settings
-include FormDesignerPalette/.*
-
+include Services/MergeVisualizers/.*
 include Services/org-apache-tools-ant-module-AntSettings\.settings
-
+include Services/org-netbeans-core-IDESettings\.settings
+include Services/org-netbeans-modules-db-explorer-DatabaseOption\.settings
+include Services/org-netbeans-modules-debugger-Settings\.properties
+include Services/org-netbeans-modules-derby-DerbyOptions\.settings
+include Services/org-netbeans-modules-httpserver-HttpServerSettings\.settings
+include Services/org-netbeans-modules-java-settings-JavaSettings\.settings
+include Services/org-netbeans-modules-javadoc-settings-DocumentationSettings\.settings
+include Services/org-netbeans-modules-profiler-ProfilerIDESettings\.settings
+include Services/org-netbeans-modules-project-ui-OpenProjectList\.settings
 include Services/org-netbeans-modules-tasklist-docscan-Settings\.settings
+include Services/Platforms/org-netbeans-api-java-Platform/.*\.xml
+include Shortcuts/.*
 include TaskList/.*
-include Services/Hidden/org-netbeans-modules-tasklist-suggestions-settings-ManagerSettings\.instance
-
+include Templates/Classes/.*
+include Templates/J2MEProjectConfigurations/.*\.cfg
 include Toolbars/.*
 exclude Toolbars/Progress/.*
-
-include Templates/J2MEProjectConfigurations/.*\.cfg
-include Templates/Classes/.*
-exclude MVD/.*
+include vcs/.*
+include VCSMount/.*
 exclude Windows2Local/Components/DesignInspector.settings
 exclude Windows2Local/Groups/mvd/DesignInspector.wstcgrp
 exclude Windows2Local/Modes/navigator/DesignInspector.wstcref
-
-include Services/Hidden/org-netbeans-modules-versioning-system-cvss-settings.*
-include Services/Hidden/org-netbeans-modules-subversion-settings.*
-
-include Services/org-netbeans-modules-profiler-ProfilerIDESettings\.settings
-
-include Services/Collaboration/.*
-
-include Keymaps/.*
-include Shortcuts/.*
-
-exclude Services/org-netbeans-modules-beans-beans.settings

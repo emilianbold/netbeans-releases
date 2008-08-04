@@ -136,7 +136,7 @@ public class WebProjectUtilities {
     public static final String MINIMUM_ANT_VERSION = "1.6.5";
     
     private static final Logger LOGGER = Logger.getLogger(WebProjectUtilities.class.getName());
-    
+    private static String RESOURCE_FOLDER = "org/netbeans/modules/web/project/ui/resources/"; //NOI18N
     private WebProjectUtilities() {}
     
     /**
@@ -220,7 +220,16 @@ public class WebProjectUtilities {
         
         //create default manifest
         if(confFolderFO != null) {
-            FileUtil.copyFile(Repository.getDefault().getDefaultFileSystem().findResource("org-netbeans-modules-web-project/MANIFEST.MF"), confFolderFO, "MANIFEST"); //NOI18N
+            String manifestText = readResource(Thread.currentThread().getContextClassLoader().getResourceAsStream(RESOURCE_FOLDER + "MANIFEST.MF")); //NOI18N
+            FileObject manifest = FileUtil.createData(confFolderFO, "MANIFEST"); //NOI18N
+            FileLock lock = manifest.lock();
+            BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(manifest.getOutputStream(lock)));
+            try {
+                bw.write(manifestText);
+            } finally {
+                bw.close();
+                lock.releaseLock();
+            }
         }
         
         //test folder
@@ -232,11 +241,11 @@ public class WebProjectUtilities {
         // PENDING : should be easier to define in layer and copy related FileObject (doesn't require systemClassLoader)
         String webXMLContent = null;
         if (J2eeModule.JAVA_EE_5.equals(j2eeLevel))
-            webXMLContent = readResource(Repository.getDefault().getDefaultFileSystem().findResource("org-netbeans-modules-web-project/web-2.5.xml").getInputStream()); //NOI18N
+            webXMLContent = readResource(Thread.currentThread().getContextClassLoader().getResourceAsStream(RESOURCE_FOLDER + "web-2.5.xml")); //NOI18N
         else if (WebModule.J2EE_14_LEVEL.equals(j2eeLevel))
-            webXMLContent = readResource(Repository.getDefault().getDefaultFileSystem().findResource("org-netbeans-modules-web-project/web-2.4.xml").getInputStream()); //NOI18N
+            webXMLContent = readResource(Thread.currentThread().getContextClassLoader().getResourceAsStream(RESOURCE_FOLDER + "web-2.4.xml")); //NOI18N
         else if (WebModule.J2EE_13_LEVEL.equals(j2eeLevel))
-            webXMLContent = readResource(Repository.getDefault().getDefaultFileSystem().findResource("org-netbeans-modules-web-project/web-2.3.xml").getInputStream()); //NOI18N
+            webXMLContent = readResource(Thread.currentThread().getContextClassLoader().getResourceAsStream(RESOURCE_FOLDER + "web-2.3.xml")); //NOI18N
         assert webXMLContent != null : "Cannot find web.xml template for J2EE specification level:" + j2eeLevel;
         final String webXmlText = webXMLContent;
         FileObject webXML = FileUtil.createData(webInfFO, "web.xml");//NOI18N
@@ -768,8 +777,8 @@ public class WebProjectUtilities {
         // #113297, #118187
         ep.setProperty(WebProjectProperties.DEBUG_CLASSPATH, Utils.getDefaultDebugClassPath());
         
-        ep.setProperty("runmain.jvmargs", ""); // NOI18N
-        ep.setComment("runmain.jvmargs", new String[] { // NOI18N
+        ep.setProperty(WebProjectProperties.RUNMAIN_JVM_ARGS, ""); // NOI18N
+        ep.setComment(WebProjectProperties.RUNMAIN_JVM_ARGS, new String[] { // NOI18N
             "# " + NbBundle.getMessage(WebProjectUtilities.class, "COMMENT_runmain.jvmargs"), // NOI18N
             "# " + NbBundle.getMessage(WebProjectUtilities.class, "COMMENT_runmain.jvmargs_2"), // NOI18N
         }, false);

@@ -67,12 +67,12 @@ public class InitialNodeWidget extends ControlNodeWidget
             // create a circle node
             OvalWidget circleWidget = new OvalWidget(getScene(),
                                                      getRadius(),
-                                                     getWidgetID(),
+                                                     getResourcePath(),
                                                      bundle.getString("LBL_body"));
 
             circleWidget.setUseGradient(useGradient);
-            circleWidget.setCustomizableResourceTypes(
-                    new ResourceType[]{ResourceType.BACKGROUND});
+//            circleWidget.setCustomizableResourceTypes(
+//                    new ResourceType[]{ResourceType.BACKGROUND});
             circleWidget.setOpaque(true);
             setCurrentView(circleWidget);
 

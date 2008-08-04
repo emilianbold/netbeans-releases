@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.api.compilers;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -186,22 +187,30 @@ public class CompilerSetManager {
     }
 
     /** Create a CompilerSetManager which may be registered at a later time via CompilerSetManager.setDefault() */
-    public static CompilerSetManager create() {
-        CompilerSetManager csm;
-        synchronized (MASTER_LOCK) {
-            csm = new CompilerSetManager(LOCALHOST);
+    public static CompilerSetManager create(String hkey) {
+        CompilerSetManager newCsm = new CompilerSetManager(hkey);
+        if (newCsm.getCompilerSets().size() == 1 && newCsm.getCompilerSets().get(0).getName().equals(CompilerSet.None)) {
+            newCsm.remove(newCsm.getCompilerSets().get(0));
         }
-        return csm;
+        return newCsm;
     }
 
     /** Replace the default CompilerSetManager. Let registered listeners know its been updated */
-    public static synchronized void setDefault(CompilerSetManager csm) {
-        if (csm.getCompilerSets().size() == 0) { // No compilers found
-            csm.add(CompilerSet.createEmptyCompilerSet(csm.getPlatform()));
-        }
+    public static synchronized void setDefaults(Collection<CompilerSetManager> csms) {
         synchronized (MASTER_LOCK) {
-            csm.saveToDisk();
-            managers.put(csm.hkey, csm);
+            // TODO: not remove, only replace now...
+//            for (CompilerSetManager oldCsm : managers.values()) {
+//                // erase old info
+//                getPreferences().remove(CSM + oldCsm.hkey + NO_SETS);
+//            }
+//            managers.clear();
+            for (CompilerSetManager csm : csms) {
+                if (csm.getCompilerSets().size() == 0) { // No compilers found
+                    csm.add(CompilerSet.createEmptyCompilerSet(csm.getPlatform()));
+                }                
+                csm.saveToDisk();
+                managers.put(csm.hkey, csm);
+            }
         }
     }
 
@@ -421,7 +430,15 @@ public class CompilerSetManager {
                         }
                         add(cs);
                     }
-                    provider.loadCompilerSetData(sets);
+                    List<CompilerSet> setsCopy;
+                    if (sets instanceof ArrayList) {
+                        setsCopy = (List<CompilerSet>)((ArrayList<CompilerSet>)sets).clone();
+                    } else {
+                        // this will never be called in current impl but interface allows any List so:
+                        setsCopy = new ArrayList<CompilerSet>();
+                        setsCopy.addAll(sets);
+                    }
+                    provider.loadCompilerSetData(setsCopy);
                     // TODO: this should be upgraded to error reporting
                     // about absence of tool chain on remote host
                     // also compilersetmanager without compiler sets
@@ -464,8 +481,8 @@ public class CompilerSetManager {
             if (compiler != null) {
                 initCompiler(Tool.FortranCompiler, path, cs, compiler.getNames());
             }
-            initCompiler(Tool.MakeTool, path, cs, d.getMakeNames());
-            initCompiler(Tool.DebuggerTool, path, cs, d.getDebuggerNames());
+            initCompiler(Tool.MakeTool, path, cs, d.getMake().getNames());
+            initCompiler(Tool.DebuggerTool, path, cs, d.getDebugger().getNames());
         }
     }
 
@@ -881,49 +898,4 @@ public class CompilerSetManager {
         return NbBundle.getMessage(CompilerSetManager.class, s);
     }
 
-    private boolean isWindows() {
-        return getPlatform() == PlatformTypes.PLATFORM_WINDOWS;
-    }
-
-
-    public static boolean useFakeRemoteCompilerSet = Boolean.getBoolean("cnd.remote.fakeCompilerSet");
-    public static CompilerSet fakeRemoteCS = new FakeRemoteCompilerSet(PlatformTypes.getDefaultPlatform());
-
-    private static class FakeRemoteCompilerSet extends CompilerSet {
-
-        public FakeRemoteCompilerSet(int platform){
-            super(platform);
-            fakeMake = new Tool("fake", CompilerFlavor.getUnknown(platform), Tool.MakeTool, "", "fakeMake", "/usr/sfw/bin/gmake");
-            fakeC = new Tool("fake", CompilerFlavor.getUnknown(platform), Tool.CCompiler, "", "fakeGcc", "/usr/sfw/bin/gcc");
-            fakeCC = new Tool("fake", CompilerFlavor.getUnknown(platform), Tool.CCCompiler, "", "fakeG++", "/usr/sfw/bin/g++");
-            fakeFortran = new Tool("fake", CompilerFlavor.getUnknown(platform), Tool.FortranCompiler, "", "veryFakeFortran", "/usr/sfw/bin/g++");
-        }
-
-        @Override
-        public String getName() {
-            return "fakeRemote";
-        }
-
-        @Override
-        public Tool getTool(int kind) {
-            switch (kind) {
-                case Tool.MakeTool: return fakeMake;
-                case Tool.CCompiler: return fakeC;
-                case Tool.CCCompiler: return fakeCC;
-                case Tool.FortranCompiler: return fakeFortran;
-            }
-            return null;
-        }
-
-        @Override
-        public Tool getTool(String name) {
-            throw new UnsupportedOperationException();
-        }
-
-        private Tool fakeMake;
-        private Tool fakeC;
-        private Tool fakeCC;
-        private Tool fakeFortran;
-
-    }
 }

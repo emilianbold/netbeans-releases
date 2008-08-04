@@ -70,7 +70,21 @@ import org.netbeans.junit.NbTestSuite;
  * @author Jiri.Skrivanek@sun.com
  */
 public class ActionTest extends JellyTestCase {
-    
+
+    public static String[] tests = new String[] {
+        "testPerformMenu",
+        "testPerformMenuOnNode",
+        "testPerformPopup",
+        "testPerformPopupOnNodes",
+        "testPerformPopupOnComponent",
+        "testPerformAPI",
+        "testPerformAPIOnNodes",
+        "testPerformShortcut",
+        "testTestNodesMenu",
+        "testTestNodesPopup",
+        "testTestNodesAPI",
+        "testTestNodesShortcut"
+    };
     /** constructor required by JUnit
      * @param testName method name to be used as testcase
      */
@@ -97,19 +111,7 @@ public class ActionTest extends JellyTestCase {
         suite.addTest(new ActionTest("testTestNodesShortcut"));
         return suite;
          */
-        return createModuleTest(ActionTest.class,
-        "testPerformMenu",
-        "testPerformMenuOnNode",
-        "testPerformPopup",
-        "testPerformPopupOnNodes",
-        "testPerformPopupOnComponent",
-        "testPerformAPI",
-        "testPerformAPIOnNodes",
-        "testPerformShortcut",
-        "testTestNodesMenu",
-        "testTestNodesPopup",
-        "testTestNodesAPI",
-        "testTestNodesShortcut");
+        return createModuleTest(ActionTest.class, tests);
     }
     
     /** method called before each testcase

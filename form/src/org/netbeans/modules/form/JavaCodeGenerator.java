@@ -4183,7 +4183,7 @@ class JavaCodeGenerator extends CodeGenerator {
 
         @Override
         public boolean supportsCustomEditor() {
-            return true;
+            return !formModel.isReadOnly();
         }
     }
 

@@ -49,8 +49,9 @@ import java.util.List;
 import javax.swing.JButton;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.dataview.meta.DBException;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.awt.StatusDisplayer;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -252,8 +253,12 @@ public class DataView {
                 }
             }
             errMessages.add(ex);
-            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(DataView.class, "MSG_error") + ex.getMessage());
-            Exceptions.printStackTrace(ex);
+
+            String title = NbBundle.getMessage(DataView.class, "MSG_error");
+            StatusDisplayer.getDefault().setStatusText(title + ex.getMessage());
+
+            NotifyDescriptor nd = new NotifyDescriptor.Exception(ex); 
+            DialogDisplayer.getDefault().notify(nd);
         }
     }
 

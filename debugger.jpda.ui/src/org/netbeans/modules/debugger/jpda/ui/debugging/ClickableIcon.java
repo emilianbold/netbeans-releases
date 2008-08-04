@@ -105,6 +105,20 @@ class ClickableIcon extends JLabel implements MouseListener {
         addMouseListener(this);
     }
     
+    void changeThread(JPDAThread newThread, Container container, int sx, int sy, int width, int height) {
+        boolean suspended = newThread.isSuspended();
+        if (jpdaThread == newThread && suspended == isThreadSupended) {
+            return;
+        }
+        isThreadSupended = newThread.isSuspended();
+        this.jpdaThread = newThread;
+        Point point = container.getMousePosition(true);
+        state = point != null && sx <= point.x && point.x < sx + width && sy <= point.y && point.y < sy + height
+                ? STATE_FOCUSED : STATE_NORMAL;
+        setFocusedThread();
+        changeIcon();
+    }
+    
     private void setFocusedThread() {
         if (state != STATE_NORMAL) {
             if (tree.threadFocuseGained(jpdaThread)) {
@@ -141,16 +155,17 @@ class ClickableIcon extends JLabel implements MouseListener {
     }
     
     private void invokeAction() {
+        final boolean suspended = isThreadSupended;
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
-                if (isThreadSupended) {
+                if (suspended) {
                     jpdaThread.resume();
                 } else {
                     jpdaThread.suspend();
                 }
-                isThreadSupended = !isThreadSupended;
             }
         });
+        isThreadSupended = !isThreadSupended;
     }
     
     // **************************************************************************
@@ -168,8 +183,8 @@ class ClickableIcon extends JLabel implements MouseListener {
     public void mouseReleased(MouseEvent e) {
         if (state == STATE_PRESSED) {
             state = STATE_FOCUSED;
-            changeIcon();
             invokeAction();
+            changeIcon();
         }
     }
 

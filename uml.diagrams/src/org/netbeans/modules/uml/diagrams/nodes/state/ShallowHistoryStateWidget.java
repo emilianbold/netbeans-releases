@@ -64,14 +64,9 @@ public class ShallowHistoryStateWidget extends InitialStateWidget
     {
         CircleWidget circleWidget = new CircleWidget(getScene(),
                 getRadius(),
-                getWidgetID(),
+                getResourcePath(),
                 bundle.getString("LBL_body"));
-
-        circleWidget.setCustomizableResourceTypes(
-                new ResourceType[]
-                {
-                    ResourceType.BACKGROUND
-                });
+   
         circleWidget.setOpaque(true);
 
         LabelWidget labelWidget = new UMLLabelWidget(getScene(), getSymbol());

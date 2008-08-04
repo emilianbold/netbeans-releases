@@ -64,6 +64,7 @@ final class HttpMonitorTopComponent extends TopComponent {
     /* Table Models for Request and Response Details */
     private final MapTableModel reqHeaderTableModel = new MapTableModel(EMPTY_MAP);
     private final MapTableModel resHeaderTableModel = new MapTableModel(EMPTY_MAP);
+    private final Logger LOG = Logger.getLogger(HttpMonitorTopComponent.class.getName());
 
     /* Component for main table */
     private JComponent tableView;
@@ -130,7 +131,9 @@ final class HttpMonitorTopComponent extends TopComponent {
                         reqHeaderTableModel.setMap(EMPTY_MAP);
                         reqParamTextArea.setText("");
                         resHeaderTableModel.setMap(EMPTY_MAP);
-                        resBodyTextArea.setText("");
+//                        resBodyTextArea.setText("");
+                        resBodyEditorPane.setText("");
+                        resBodyEditorPane.setContentType("text/html");
                         return;
                     }
 
@@ -146,14 +149,32 @@ final class HttpMonitorTopComponent extends TopComponent {
                         } else {
                             reqParamTextArea.setText("URL PARAMS: " + request.getUrlParams());
                         }
-
+                        
                         Map<String, String> header = activity.getResponseHeader();
                         if (header != null) {
                             resHeaderTableModel.setMap(header);
-                            resBodyTextArea.setText(activity.getResponseText());
+                            String mime = activity.getMimeType();
+                            String contentType = "text/html";
+                            if( mime != null ) {
+                                if( HttpActivitiesModel.JS_CONTENT_TYPES.contains(mime) ){
+                                    contentType = "text/javascript";
+                                } else if (HttpActivitiesModel.CSS_CONTENT_TYPES.contains(mime)){
+                                    contentType = "text/x-css";
+                                } else if ( mime.contains("json") ) {
+                                    contentType = "text/x-json";
+                                }else if ( mime.contains("xml")){
+                                    contentType = "text/xml";
+                                }
+                            }
+                            resBodyEditorPane.setContentType(contentType);
+                            resBodyEditorPane.setText(activity.getResponseText());
+
+//                            resBodyTextArea.setText(activity.getResponseText());
                         } else {
                             resHeaderTableModel.setMap(EMPTY_MAP);
-                            resBodyTextArea.setText("");
+                            resBodyEditorPane.setText("");
+                            resBodyEditorPane.setContentType("text/html");
+//                            resBodyTextArea.setText("");
                         }
                     }
                 }
@@ -181,6 +202,40 @@ final class HttpMonitorTopComponent extends TopComponent {
         super.removeNotify();
         setDetailsDividerLoc();
         setHttpMonitorDividerLoc();
+    }
+
+
+    @Override
+    protected void componentClosed() {
+        super.componentClosed();
+        HttpMonitorUtility.setHttpMonitorOpened(false);
+    }
+
+
+    @Override
+    protected void componentDeactivated() {
+        super.componentDeactivated();
+    }
+
+    @Override
+    protected void componentActivated() {
+        super.componentActivated();
+    }
+
+    @Override
+    protected void componentHidden() {
+        super.componentHidden();
+    }
+
+    @Override
+    protected void componentShowing() {
+        super.componentShowing();
+    }
+
+    @Override
+    protected void componentOpened() {
+        super.componentOpened();
+        HttpMonitorUtility.setHttpMonitorOpened(true);
     }
 
     private double getHttpMonitorDividerLoc() {
@@ -256,7 +311,7 @@ final class HttpMonitorTopComponent extends TopComponent {
         resHeaderJTable = new javax.swing.JTable();
         resBodyPanel = new javax.swing.JPanel();
         jScrollPane2 = new javax.swing.JScrollPane();
-        resBodyTextArea = new javax.swing.JTextArea();
+        resBodyEditorPane = new javax.swing.JEditorPane();
 
         setLayout(new java.awt.BorderLayout());
 
@@ -466,10 +521,7 @@ final class HttpMonitorTopComponent extends TopComponent {
 
         resBodyPanel.setLayout(new java.awt.BorderLayout());
 
-        resBodyTextArea.setColumns(20);
-        resBodyTextArea.setEditable(false);
-        resBodyTextArea.setRows(5);
-        jScrollPane2.setViewportView(resBodyTextArea);
+        jScrollPane2.setViewportView(resBodyEditorPane);
 
         resBodyPanel.add(jScrollPane2, java.awt.BorderLayout.CENTER);
 
@@ -552,8 +604,8 @@ final class HttpMonitorTopComponent extends TopComponent {
     private javax.swing.JPanel reqParamPanel;
     private javax.swing.JTextArea reqParamTextArea;
     private javax.swing.JTabbedPane reqTabbedPane;
+    private javax.swing.JEditorPane resBodyEditorPane;
     private javax.swing.JPanel resBodyPanel;
-    private javax.swing.JTextArea resBodyTextArea;
     private javax.swing.JTable resHeaderJTable;
     private javax.swing.JScrollPane resHeaderPanel;
     private javax.swing.JLabel resLabel;

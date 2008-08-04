@@ -64,8 +64,8 @@ public final class Util {
     
     private Util() { /* do not allow instances */ }
     
-    public static void finest(String message) {
-        LOGGER.finest(message);
+    public static void finer(String message) {
+        LOGGER.finer(message);
     }
     
     public static void info(String message) {

@@ -46,7 +46,9 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
+import org.openide.awt.StatusDisplayer;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  * The definition of a remote server and login. 
@@ -63,14 +65,15 @@ public class RemoteServerRecord implements ServerRecord {
     
     public static final String PROP_STATE_CHANGED = "stateChanged"; // NOI18N
     
-    private String user;
-    private String server;
-    private String name;
-    private boolean editable;
+    private final String user;
+    private final String server;
+    private final String name;
+    private final boolean editable;
     private Object state;
+    private final Object stateLock;
     private String reason;
     
-    private static Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
+    private static final Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
     
     /**
      * Create a new ServerRecord. This is always called from RemoteServerList.get, but can be
@@ -81,6 +84,15 @@ public class RemoteServerRecord implements ServerRecord {
      */
     protected RemoteServerRecord(final String name) {
         this.name = name;
+        int pos = name.indexOf('@');
+        if (pos != -1) {
+            user = name.substring(0, pos);
+            server = name.substring(pos + 1);
+        } else {
+            user="";
+            server = name;
+        }
+        stateLock = new String("RemoteServerRecord state lock for " + name); // NOI18N
         reason = null;
         
         if (name.equals(CompilerSetManager.LOCALHOST)) {
@@ -95,38 +107,49 @@ public class RemoteServerRecord implements ServerRecord {
     public void validate() {
         if (!isOnline()) {
             if (SwingUtilities.isEventDispatchThread()) {
-                SwingUtilities.invokeLater(new Runnable() {
+                RequestProcessor.getDefault().post(new Runnable() {
                     public void run() {
-                        validate2();
+                        validateOutOfEDT();
                     }
                 });
             } else  {
-                validate2();
+                validateOutOfEDT();
             }
         }
     }
     
-    private void validate2() {
+    private void validateOutOfEDT() {
         log.fine("RSR.validate2: Validating " + name);
-        ProgressHandle ph = ProgressHandleFactory.createHandle(NbBundle.getMessage(RemoteServerRecord.class, "PBAR_ConnectingTo", name));
+        ProgressHandle ph = ProgressHandleFactory.createHandle(NbBundle.getMessage(RemoteServerRecord.class, "PBAR_ConnectingTo", name)); // NOI18N
         ph.start();
-        init();
+        init(null);
         ph.finish();
+        String msg;
+        if (isOnline()) {
+            msg = NbBundle.getMessage(RemoteServerRecord.class, "Validation_OK", name);// NOI18N
+        } else {
+            msg = NbBundle.getMessage(RemoteServerRecord.class, "Validation_ERR", name, getStateAsText(), getReason());// NOI18N
+        }
+        StatusDisplayer.getDefault().setStatusText(msg);        
     }
     
     /**
      * Start the initialization process. This should <b>never</b> be done from the AWT Evet
      * thread. Parts of the initialization use this thread and will block.
      */
-    public void init(PropertyChangeSupport pcs) {
+    public synchronized void init(PropertyChangeSupport pcs) {
+        assert !SwingUtilities.isEventDispatchThread() : "RemoteServer initialization must be done out of EDT"; // NOI18N
         Object ostate = state;
+        if (state != STATE_UNINITIALIZED) {
+            return;
+        }
         state = STATE_INITIALIZING;
         RemoteServerSetup rss = new RemoteServerSetup(name);
         if (rss.needsSetupOrUpdate()) {
             rss.setup();
         }
 
-        synchronized (state) {
+        synchronized (stateLock) {
             if (rss.isCancelled()) {
                 state = STATE_CANCELLED;
             } else if (rss.isFailed()) {
@@ -141,20 +164,15 @@ public class RemoteServerRecord implements ServerRecord {
             pcs.firePropertyChange(RemoteServerRecord.PROP_STATE_CHANGED, ostate, state);
         }
     }
-    public void init() {
-        init(null);
-    }
     
-    public Object getState() {
-        synchronized (state) {
-            return state;
+    public boolean resetOfflineState() {
+        synchronized (stateLock) {
+            if (this.state != STATE_INITIALIZING && state != STATE_ONLINE) {
+                state = STATE_UNINITIALIZED;
+                return true;
+            }
         }
-    }
-    
-    public void setState(Object state) {
-        synchronized (this.state) {
-            this.state = state;
-        }
+        return false;
     }
     
     public String getStateAsText() {
@@ -166,9 +184,7 @@ public class RemoteServerRecord implements ServerRecord {
     }
     
     public boolean isEditable() {
-        synchronized (this.state) {
-            return editable;
-        }
+        return editable;
     }
 
     public boolean isRemote() {

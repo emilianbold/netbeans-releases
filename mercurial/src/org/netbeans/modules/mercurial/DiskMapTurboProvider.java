@@ -73,7 +73,7 @@ class DiskMapTurboProvider implements TurboProvider {
     }
 
     synchronized Map<File, FileInformation>  getAllModifiedValues() {
-        if (modifiedFilesChanged() || cachedValues == null) {
+        if (cachedStoreSerial != storeSerial || cachedValues == null) {
             cachedValues = new HashMap<File, FileInformation>();
             File [] files = cacheStore.listFiles();
             for (int i = 0; i < files.length; i++) {
@@ -123,10 +123,6 @@ class DiskMapTurboProvider implements TurboProvider {
             cachedValues = Collections.unmodifiableMap(cachedValues);
         }
         return cachedValues;
-    }
-
-    boolean modifiedFilesChanged() {
-        return cachedStoreSerial != storeSerial;
     }
     
     public boolean recognizesAttribute(String name) {

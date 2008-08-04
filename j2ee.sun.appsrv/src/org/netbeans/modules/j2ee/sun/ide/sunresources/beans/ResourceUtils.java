@@ -1189,7 +1189,7 @@ public class ResourceUtils implements WizardConstants{
                     if (portNo != null && portNo.length() > 0) {
                         url = url + ":" + portNo; //NOI18N
                     }
-                    url = url + "/" + dbName; //NOI8N
+                    url = url + "/" + dbName; //NOI18N
                     if(derbyConnAttr != null && (! derbyConnAttr.equals(""))) { //NOI18N
                         url = url + derbyConnAttr;
                     }
@@ -1214,7 +1214,7 @@ public class ResourceUtils implements WizardConstants{
                 } else if (Arrays.asList(Reqd_DBName).contains(vName)) {
                     url = url + ";databaseName=" + dbName; //NOI18N
                 } else if (Arrays.asList(VendorsDBNameProp).contains(vName)) {
-                    url = url + "/" + dbName; //NOI8N
+                    url = url + "/" + dbName; //NOI18N
                 }
                 if (vName.equals("informix")) { //NOI18N
                     url = url + ":INFORMIXSERVER=" + serverName;
@@ -1399,7 +1399,7 @@ public class ResourceUtils implements WizardConstants{
                         if (portNo != null && portNo.length() > 0) {
                             url = url + ":" + portNo; //NOI18N
                         }
-                        url = url + "/" + dbName; //NOI8N
+                        url = url + "/" + dbName; //NOI18N
                         if (derbyConnAttr != null && (!derbyConnAttr.equals(""))) { //NOI18N
                             url = url + derbyConnAttr;
                         }
@@ -1427,7 +1427,7 @@ public class ResourceUtils implements WizardConstants{
                         } else if (Arrays.asList(Reqd_DBName).contains(vName)) {
                             url = url + ";databaseName=" + dbVal; //NOI18N
                         } else if (Arrays.asList(VendorsDBNameProp).contains(vName)) {
-                            url = url + "/" + dbVal; //NOI8N
+                            url = url + "/" + dbVal; //NOI18N
                         }
                     }
                 }

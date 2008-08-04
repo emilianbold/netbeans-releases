@@ -56,20 +56,32 @@ import org.openide.util.Utilities;
  */
 public class DebugCustomizerPanel extends javax.swing.JPanel {
     private GrailsProjectConfig prjConfig;
+    private final boolean ieBrowserSupported;
+    private final boolean ffBrowserSupported;
 
     /** Creates new form DebugCustomizerPanel */
     public DebugCustomizerPanel(Project project) {
         prjConfig = GrailsProjectConfig.forProject(project);
         initComponents();
+        
+        ieBrowserSupported = WebClientToolsProjectUtils.isInternetExplorerSupported();
+        ffBrowserSupported = WebClientToolsProjectUtils.isFirefoxSupported();
+        
         String browserString = prjConfig.getDebugBrowser();
+        WebClientToolsProjectUtils.Browser selectedBrowser = null;
         if (browserString == null) {
-            browserString = WebClientToolsProjectUtils.Browser.FIREFOX.name();
+            browserString = (ffBrowserSupported || !ieBrowserSupported) ? WebClientToolsProjectUtils.Browser.FIREFOX.name() :
+                WebClientToolsProjectUtils.Browser.INTERNET_EXPLORER.name();
         }
-        firefoxRadioButton.setSelected(!Utilities.isWindows() ||
-                WebClientToolsProjectUtils.Browser.valueOf(browserString) == WebClientToolsProjectUtils.Browser.FIREFOX);
-        internetExplorerRadioButton.setSelected(Utilities.isWindows() &&
-                WebClientToolsProjectUtils.Browser.valueOf(browserString) == WebClientToolsProjectUtils.Browser.INTERNET_EXPLORER);
-        internetExplorerRadioButton.setEnabled(Utilities.isWindows());        
+        selectedBrowser = WebClientToolsProjectUtils.Browser.valueOf(browserString);
+        
+        firefoxRadioButton.setSelected(selectedBrowser == WebClientToolsProjectUtils.Browser.FIREFOX);
+        internetExplorerRadioButton.setSelected(selectedBrowser == WebClientToolsProjectUtils.Browser.INTERNET_EXPLORER);
+        
+        firefoxRadioButton.setEnabled(ffBrowserSupported);
+        internetExplorerRadioButton.setEnabled(ieBrowserSupported);
+        
+        noSupportedBrowserLabel.setVisible(!ieBrowserSupported && !ffBrowserSupported);
     }
 
     /** This method is called from within the constructor to
@@ -85,6 +97,7 @@ public class DebugCustomizerPanel extends javax.swing.JPanel {
         debugClientLabel = new javax.swing.JLabel();
         firefoxRadioButton = new javax.swing.JRadioButton();
         internetExplorerRadioButton = new javax.swing.JRadioButton();
+        noSupportedBrowserLabel = new javax.swing.JLabel();
 
         org.openide.awt.Mnemonics.setLocalizedText(debugClientLabel, org.openide.util.NbBundle.getMessage(DebugCustomizerPanel.class, "DebugCustomizerPanel.debugClientLabel.text")); // NOI18N
 
@@ -106,6 +119,8 @@ public class DebugCustomizerPanel extends javax.swing.JPanel {
             }
         });
 
+        org.openide.awt.Mnemonics.setLocalizedText(noSupportedBrowserLabel, org.openide.util.NbBundle.getMessage(DebugCustomizerPanel.class, "DebugCustomizerPanel.noSupportedBrowserLabel.text")); // NOI18N
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -118,8 +133,9 @@ public class DebugCustomizerPanel extends javax.swing.JPanel {
                         .add(12, 12, 12)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(internetExplorerRadioButton)
-                            .add(firefoxRadioButton))))
-                .addContainerGap(153, Short.MAX_VALUE))
+                            .add(firefoxRadioButton)))
+                    .add(noSupportedBrowserLabel))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -130,7 +146,9 @@ public class DebugCustomizerPanel extends javax.swing.JPanel {
                 .add(firefoxRadioButton)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(internetExplorerRadioButton)
-                .addContainerGap(219, Short.MAX_VALUE))
+                .add(18, 18, 18)
+                .add(noSupportedBrowserLabel)
+                .addContainerGap(181, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -148,6 +166,7 @@ public class DebugCustomizerPanel extends javax.swing.JPanel {
     private javax.swing.JLabel debugClientLabel;
     private javax.swing.JRadioButton firefoxRadioButton;
     private javax.swing.JRadioButton internetExplorerRadioButton;
+    private javax.swing.JLabel noSupportedBrowserLabel;
     // End of variables declaration//GEN-END:variables
 
     private void setBrowser() {

@@ -44,11 +44,14 @@ package org.netbeans.modules.cnd.makeproject.configurations.ui;
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorSupport;
 import java.util.List;
+import java.util.ResourceBundle;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.PackagingConfiguration;
+import org.netbeans.modules.cnd.makeproject.packaging.FileElement;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.nodes.PropertySupport;
+import org.openide.util.NbBundle;
 
 public class PackagingNodeProp extends PropertySupport {
     private PackagingConfiguration packagingConfiguration;
@@ -116,17 +119,12 @@ public class PackagingNodeProp extends PropertySupport {
         
         @Override
         public String getAsText() {
-            return "Files...";
-            //return packagingConfiguration.getDisplayName();
-//	    boolean addSep = false;
-//	    StringBuilder ret = new StringBuilder();
-//	    for (int i = 0; i < value.size(); i++) {
-//		if (addSep)
-//		    ret.append(", "); // NOI18N
-//		ret.append(value.get(i).toString());
-//		addSep = true;
-//	    }
-//	    return ret.toString();
+            int noFiles = packagingConfiguration.getFiles().getValue().size();
+            String val = "" + noFiles + " " + getString("FilesText");
+            if (noFiles > 0) {
+                val += ": " + ((FileElement)packagingConfiguration.getFiles().getValue().get(0)).getFrom() + "..."; // NOI18N
+            }
+            return val;
         }
         
         @Override
@@ -142,5 +140,13 @@ public class PackagingNodeProp extends PropertySupport {
         public void attachEnv(PropertyEnv env) {
             this.env = env;
         }
+    }
+    /** Look up i18n strings here */
+    private static ResourceBundle bundle;
+    private static String getString(String s) {
+	if (bundle == null) {
+	    bundle = NbBundle.getBundle(PackagingNodeProp.class);
+	}
+	return bundle.getString(s);
     }
 }

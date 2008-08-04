@@ -49,9 +49,10 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.File;
-import java.io.IOException;
 import java.lang.StringBuilder;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -65,6 +66,7 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -73,7 +75,8 @@ import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.text.Document;
-import org.netbeans.modules.cnd.MIMENames;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
@@ -88,8 +91,6 @@ import org.netbeans.modules.cnd.settings.CppSettings;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -97,16 +98,16 @@ import org.openide.util.RequestProcessor;
 /** Display the "Tools Default" panel */
 public class ToolsPanel extends JPanel implements ActionListener, DocumentListener,
         ListSelectionListener, ItemListener {
-    
+
     // The following are constants so I can do == rather than "equals"
     private final String MAKE_NAME = "make"; // NOI18N
     private final String GDB_NAME = "gdb"; // NOI18N
     private final String C_NAME = "C"; // NOI18N
     private final String CPP_NAME = "C++"; // NOI18N
     private final String FORTRAN_NAME = "Fortran"; // NOI18N
-    
+
     public static final String PROP_VALID = "valid"; // NOI18N
-    
+
     private boolean initialized = false;
     private boolean changed;
     private boolean changingCompilerSet;
@@ -118,12 +119,13 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
     private String hkey;
     private static ToolsPanel instance = null;
     private CompilerSetManager csm;
+    private HashMap<String, CompilerSetManager> copiedManagers = new HashMap<String, CompilerSetManager>();
     private CompilerSet currentCompilerSet;
     private ServerList serverList;
     private ServerRecord serverRecord;
     private ServerUpdateCache serverUpdateCache;
     private static final Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
-    
+
     /** Creates new form ToolsPanel */
     public ToolsPanel() {
         initComponents();
@@ -145,22 +147,22 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
             serverRecord = null;
             hkey = CompilerSetManager.LOCALHOST;
         }
-        
+
         errorTextArea.setText("");
         lstDirlist.setCellRenderer(new MyCellRenderer());
-        
+
         if( "Windows".equals(UIManager.getLookAndFeel().getID()) ) { //NOI18N
             setOpaque( false );
         } else {
             errorTextArea.setBackground(getBackground());
         }
     }
-    
+
     public ToolsPanel(ToolsPanelModel model) {
         this();
         this.model = model;
     }
-    
+
     private void initialize() {
         changingCompilerSet = true;
         if (model == null) {
@@ -193,9 +195,10 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
             cbDevHost.setSelectedIndex(0);
             log.fine("TP.initialize: Done");
         }
+        cbDevHost.setRenderer(new MyDevHostListCellRenderer());
         cbDevHost.addItemListener(this);
         hkey = (String) cbDevHost.getSelectedItem();
-        
+
         btBaseDirectory.setEnabled(false);
         btCBrowse.setEnabled(false);
         btCppBrowse.setEnabled(false);
@@ -206,7 +209,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         tfMakePath.setEnabled(false);
         tfGdbPath.setEnabled(false);
         btVersions.setEnabled(false);
-        
+
         if (model.enableRequiredCompilerCB()) {
             cbCRequired.setEnabled(true);
             cbCppRequired.setEnabled(true);
@@ -216,25 +219,23 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
             cbCppRequired.setEnabled(false);
             cbFortranRequired.setEnabled(false);
         }
-        csm = (CompilerSetManager)CompilerSetManager.getDefault(hkey).deepCopy(); // FIXUP: need a real deep copy...
-        if (csm.getCompilerSets().size() == 1 && csm.getCompilerSets().get(0).getName().equals(CompilerSet.None)) {
-            csm.remove(csm.getCompilerSets().get(0));
-        }
+        csm = getCompilerSetManagerCopy(hkey);
+
         gdbEnabled = !IpeUtils.isDbxguiEnabled();
         boolean fortran = CppSettings.getDefault().isFortranEnabled();
         lbFortranCommand.setVisible(fortran);
         tfFortranPath.setVisible(fortran);
         btFortranBrowse.setVisible(fortran);
         cbFortranRequired.setVisible(fortran);
-        
+
         // Initialize Required tools. Can't do it in constructor because there is no model then.
         cbMakeRequired.setSelected(model.isMakeRequired());
         cbGdbRequired.setSelected(model.isGdbRequired());
         cbCRequired.setSelected(model.isCRequired());
         cbCppRequired.setSelected(model.isCppRequired());
         cbFortranRequired.setSelected(model.isFortranRequired());
-    } 
-    
+    }
+
     private void addCompilerSet() {
         AddCompilerSetPanel panel = new AddCompilerSetPanel(csm);
         DialogDescriptor dialogDescriptor = new DialogDescriptor(panel, getString("NEW_TOOL_SET_TITLE"));
@@ -245,14 +246,14 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         String baseDirectory = panel.getBaseDirectory();
         CompilerSet.CompilerFlavor flavor = panel.getFamily();
         String compilerSetName = panel.getCompilerSetName().trim();
-        
+
         CompilerSet cs = CompilerSet.getCustomCompilerSet(new File(baseDirectory).getAbsolutePath(), flavor, compilerSetName);
         CompilerSetManager.getDefault().initCompilerSet(cs);
         csm.add(cs);
         changed = true;
         update(false, cs);
     }
-    
+
     private void duplicateCompilerSet() {
         CompilerSet selectedCompilerSet = (CompilerSet)lstDirlist.getSelectedValue();
         DuplicateCompilerSetPanel panel = new DuplicateCompilerSetPanel(csm, selectedCompilerSet);
@@ -270,7 +271,39 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         changed = true;
         update(false, cs);
     }
-    
+
+    private void onCompilerSetChanged() {
+        boolean cbRemoveEnabled;
+        if (model.showRequiredTools()) {
+            cbRemoveEnabled = lstDirlist.getSelectedIndex() >= 0;
+        } else {
+            cbRemoveEnabled = csm.getCompilerSets().size() > 1 && lstDirlist.getSelectedIndex() >= 0;
+        }
+        changeCompilerSet((CompilerSet) lstDirlist.getSelectedValue());
+        btAdd.setEnabled(!isRemoteHostSelected());
+        btRemove.setEnabled(cbRemoveEnabled && !isRemoteHostSelected());
+        btDuplicate.setEnabled(lstDirlist.getSelectedIndex() >= 0 && !isRemoteHostSelected());
+        btDefault.setEnabled(lstDirlist.getSelectedIndex() >= 0 && !((CompilerSet) lstDirlist.getSelectedValue()).isDefault());
+    }
+
+    private void onNewDevHostSelected() {
+        if (!hkey.equals((String) cbDevHost.getSelectedItem())) {
+            log.fine("TP.itemStateChanged: About to update");
+            changed = true;
+            if (serverUpdateCache == null) {
+                serverUpdateCache = new ServerUpdateCache();
+                String[] nulist = new String[cbDevHost.getItemCount()];
+                for (int i = 0; i < nulist.length; i++) {
+                    nulist[i] = (String) cbDevHost.getItemAt(i);
+                }
+                serverUpdateCache.setHostKeyList(nulist);
+            }
+            serverUpdateCache.setDefaultIndex(cbDevHost.getSelectedIndex());
+            hkey = (String) cbDevHost.getSelectedItem();
+            update(true);
+        }
+    }
+
     private void removeCompilerSet() {
         CompilerSet cs = (CompilerSet)lstDirlist.getSelectedValue();
         if (cs != null) {
@@ -298,65 +331,75 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
             changed = true;
         }
     }
-    
+
+    private void saveCompileSetManagers(List<String> liveServers) {
+        Collection<CompilerSetManager> allCSMs = new ArrayList();
+        for (String copiedServer : copiedManagers.keySet()) {
+            if (liveServers == null || liveServers.contains(copiedServer)) {
+                allCSMs.add(copiedManagers.get(copiedServer));
+            }
+        }
+        CompilerSetManager.setDefaults(allCSMs);
+    }
+
     private void setSelectedAsDefault() {
         CompilerSet cs = (CompilerSet)lstDirlist.getSelectedValue();
         csm.setDefault(cs);
         changed = true;
         update(false);
-        
+
     }
-    
+
     private void setMakePathField(String path) {
         tfMakePath.setText(path); // Validation happens automatically
     }
-    
+
     private void validateMakePathField() {
         setPathFieldValid(tfMakePath, isPathFieldValid(tfMakePath) && supportedMake(tfMakePath));
         dataValid();
     }
-    
+
     private void setGdbPathField(String path) {
         tfGdbPath.setText(path); // Validation happens automatically
     }
-    
+
     private void validateGdbPathField() {
         setPathFieldValid(tfGdbPath, isPathFieldValid(tfGdbPath));
         dataValid();
     }
-    
+
     private void setCPathField(String path) {
         tfCPath.setText(path); // Validation happens automatically
     }
-    
+
     private void validateCPathField() {
         setPathFieldValid(tfCPath, isPathFieldValid(tfCPath));
         dataValid();
     }
-    
+
     private void setCppPathField(String path) {
         tfCppPath.setText(path); // Validation happens automatically
     }
-    
+
     private void validateCppPathField() {
         setPathFieldValid(tfCppPath, isPathFieldValid(tfCppPath));
         dataValid();
     }
-    
+
     private void setFortranPathField(String path) {
         tfFortranPath.setText(path); // Validation happens automatically
     }
-    
+
     private void validateFortranPathField() {
         setPathFieldValid(tfFortranPath, isPathFieldValid(tfFortranPath));
         dataValid();
     }
-    
+
     public static boolean supportedMake(String name) {
         name = IpeUtils.getBaseName(name);
         return !name.toLowerCase().equals("mingw32-make.exe"); // NOI18N
     }
-    
+
     private boolean supportedMake(JTextField field) {
         String txt = field.getText();
         if (txt.length() == 0) {
@@ -364,12 +407,13 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         }
         return supportedMake(txt);
     }
-    
+
     private boolean isPathFieldValid(JTextField field) {
         String txt = field.getText();
         if (txt.length() == 0) {
             return false;
         }
+
         if (hkey.equals(CompilerSetManager.LOCALHOST)) {
             File file = new File(txt);
             boolean ok = false;
@@ -387,10 +431,20 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
             }
             return ok;
         } else {
-            return serverList.isValidExecutable(hkey, txt);
+            // TODO this method must be called out of EDT, because it's time consuming
+            // we need to remember once calculated "valid" state and reuse it
+            // instead of check on each unrelated action
+            // with remote support it became even more visible in UI freezing
+            if (SwingUtilities.isEventDispatchThread()) {
+                log.fine("ToolsPanel.isPathFieldValid from EDT"); // NOI18N
+                // always return true in remote mode, instead of call to very expensive operation
+                return true;
+            } else {
+                return serverList.isValidExecutable(hkey, txt);
+            }
         }
     }
-    
+
     private void setPathFieldValid(JTextField field, boolean valid) {
         if (valid) {
             field.setForeground(tfColor);
@@ -398,44 +452,34 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
             field.setForeground(Color.RED);
         }
     }
-    
+
     /** Update the display */
     public void update() {
         update(true, null);
     }
-    
+
     private void update(boolean doInitialize) {
         update(doInitialize, null);
     }
-     
+
     /** Update the display */
-    public void update(final boolean doInitialize, final CompilerSet selectedCS) {
-        RequestProcessor.getDefault().post(new Runnable() {
-            public void run() {
-                realUpdate(doInitialize, selectedCS);
-            }
-        });
-    }
-    
-     
-    /** Update the display */
-    private void realUpdate(boolean doInitialize, CompilerSet selectedCS) {
-        
+    public void update(boolean doInitialize, CompilerSet selectedCS) {
+
         updating = true;
         if (!initialized || doInitialize) {
             initialize();
         }
-        
+
         lbGdbCommand.setVisible(gdbEnabled);
         tfGdbPath.setVisible(gdbEnabled);
         btDebuggerBrowse.setVisible(gdbEnabled);
-        
+
         cbMakeRequired.setVisible(model.showRequiredBuildTools());
         cbGdbRequired.setVisible(model.showRequiredDebugTools() && gdbEnabled);
         cbCppRequired.setVisible(model.showRequiredBuildTools());
         cbCRequired.setVisible(model.showRequiredBuildTools());
         cbFortranRequired.setVisible(model.showRequiredBuildTools() && CppSettings.getDefault().isFortranEnabled());
-        
+
         if (doInitialize) {
             // Set Default
             if (!csm.getCompilerSets().isEmpty()) {
@@ -448,13 +492,13 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
                 String selectedName = model.getSelectedCompilerSetName(); // The selected set
                 if (selectedName != null) {
                     selectedCS = csm.getCompilerSet(selectedName);
-                    
+
                 }
                 if (selectedCS == null)
                     selectedCS = csm.getDefaultCompilerSet();
             }
         }
-        
+
         if (selectedCS == null)
             selectedCS = (CompilerSet)lstDirlist.getSelectedValue();
         lstDirlist.setListData(csm.getCompilerSets().toArray());
@@ -464,15 +508,22 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         if (lstDirlist.getSelectedIndex() < 0) {
             lstDirlist.setSelectedIndex(0);
         }
+        lstDirlist.invalidate();
+        lstDirlist.repaint();
+        onCompilerSetChanged();
         updating = false;
         dataValid();
         initialized = true;
     }
-    
+
+    private boolean isRemoteHostSelected() {
+        return serverList.get((String)cbDevHost.getSelectedItem()).isRemote();
+    }
+
     private void changeCompilerSet(CompilerSet cs) {
         if (cs != null) {
             tfBaseDirectory.setText(cs.getDirectory());
-            btBaseDirectory.setEnabled(true);
+            btBaseDirectory.setEnabled(!isRemoteHostSelected());
             cbFamily.removeAllItems();
             List<CompilerFlavor> list = CompilerFlavor.getFlavors(csm.getPlatform());
             for (CompilerFlavor cf : list)
@@ -497,10 +548,10 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
             tool = currentCompilerSet.findTool(Tool.DebuggerTool);
             tool.setPath(tfGdbPath.getText());
         }
-        
-        
+
+
         changingCompilerSet = true;
-        
+
         Tool cSelection = cs.getTool(Tool.CCompiler);
         Tool cppSelection = cs.getTool(Tool.CCCompiler);
         Tool fortranSelection = cs.getTool(Tool.FortranCompiler);
@@ -528,20 +579,23 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         fireCompilerSetChange();
         dataValid();
     }
-    
+
     public void applyChanges(boolean force) {
         changed = force;
         applyChanges();
     }
-    
+
     /** Apply changes */
     public void applyChanges() {
         if (changed || isChangedInOtherPanels()) {
+            List<String> liveServers = null;
             if (serverList != null) {
                 if (serverUpdateCache != null) {
+                    liveServers = new ArrayList<String>();
                     serverList.clear();
                     for (String key : serverUpdateCache.getHostKeyList()) {
-                        serverList.addServer(key);
+                        serverList.addServer(key, false);
+                        liveServers.add(key);
                     }
                     serverList.setDefaultIndex(serverUpdateCache.getDefaultIndex());
                     serverUpdateCache = null;
@@ -549,7 +603,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
                     serverList.setDefaultIndex(cbDevHost.getSelectedIndex());
                 }
             }
-            
+
             CompilerSet cs = (CompilerSet)lstDirlist.getSelectedValue();
             changed = false;
             if (cs != null) {
@@ -561,10 +615,10 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
                 model.setCompilerSetName(csm.getDefaultCompilerSet().getName());
                 model.setSelectedCompilerSetName(cs.getName());
             }
-            CompilerSetManager.setDefault(csm);
+            saveCompileSetManagers(liveServers);
             currentCompilerSet = cs;
         }
-        
+
         if (model != null) { // model is null for Tools->Options if we don't look at C/C++ panel
             // the following don't set changed if changed
             if (model.isGdbRequired() != cbGdbRequired.isSelected()) {
@@ -582,30 +636,35 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         }
         instance = null; // remove the global instance
     }
-    
+
     /** What to do if user cancels the dialog (nothing) */
     public void cancel() {
         changed = false;
     }
-    
+
     public static ToolsPanel getToolsPanel() {
         return instance;
     }
-    
-    public CompilerSetManager getCompilerSetManager() {
-        if (csm == null) {
-            csm = CompilerSetManager.getDefault((String) cbDevHost.getSelectedItem());
+
+    public synchronized CompilerSetManager getCompilerSetManagerCopy(String hKey) {
+        CompilerSetManager out = copiedManagers.get(hkey);
+        if (out == null) {
+            out = CompilerSetManager.getDefault(hKey).deepCopy();
+            if (out.getCompilerSets().size() == 1 && out.getCompilerSets().get(0).getName().equals(CompilerSet.None)) {
+                out.remove(out.getCompilerSets().get(0));
+            }
+            copiedManagers.put(hkey, out);
         }
-        return csm;
+        return out;
     }
-    
+
     public CompilerSet getCurrentCompilerSet() {
         return currentCompilerSet;
     }
-    
+
     /**
      * Lets NB know if the data in the panel is valid and OK should be enabled
-     * 
+     *
      * @return Returns true if all data is valid
      */
     public boolean dataValid() {
@@ -623,13 +682,13 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
             boolean cValid = cbCRequired.isSelected() ? isPathFieldValid(tfCPath) : true;
             boolean cppValid = cbCppRequired.isSelected() ? isPathFieldValid(tfCppPath) : true;
             boolean fortranValid = cbFortranRequired.isSelected() ? isPathFieldValid(tfFortranPath) : true;
-            
+
             ServerRecord record = null;
             if (serverList != null) {
                 record = serverList.get(hkey);
             }
             boolean devhostValid = serverList == null || (record != null & record.isOnline());
-            
+
             if (!initialized) {
                 valid = !(csmValid && makeValid && gdbValid && cValid && cppValid && fortranValid && devhostValid);
             }
@@ -638,15 +697,17 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
                 valid = !valid;
                 firePropertyChange(PROP_VALID, !valid, valid);
             }
-            
+
             // post errors in error text area
             errorTextArea.setText("");
             errorTextArea.setRows(0);
             if (!valid) {
                 ArrayList<String> errors = new ArrayList<String>();
-                if (!devhostValid) {
-                    errors.add(NbBundle.getMessage(ToolsPanel.class, "TP_ErrorMessage_BadDevHost", hkey));
-                }
+                // TODO: for a while disabling message about status of host,
+                // it should be visible from compiler sets panel
+//                if (!devhostValid) {
+//                    errors.add(NbBundle.getMessage(ToolsPanel.class, "TP_ErrorMessage_BadDevHost", hkey));
+//                }
                 if (cbMakeRequired.isSelected() && !makeValid) {
                     if (!isPathFieldValid(tfMakePath)) {
                         errors.add(NbBundle.getBundle(ToolsPanel.class).getString("TP_ErrorMessage_MissedMake"));
@@ -674,139 +735,122 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
                 }
                 errorTextArea.setRows(errors.size());
                 errorTextArea.setText(errorString.toString());
-                
+
                 validate();
                 repaint();
             }
-            if (new File(tfBaseDirectory.getText()).exists()) {
-                btCBrowse.setEnabled(true);
-                btCppBrowse.setEnabled(true);
-                btFortranBrowse.setEnabled(true);
-                btMakeBrowse.setEnabled(true);
-                btDebuggerBrowse.setEnabled(true);
-                btVersions.setEnabled(true);
-                tfMakePath.setEnabled(true);
-                tfGdbPath.setEnabled(true);
+            if (!isRemoteHostSelected() && new File(tfBaseDirectory.getText()).exists()) {
+                updateToolsControls(true, true);
             }
             else {
-                btCBrowse.setEnabled(false);
-                btCppBrowse.setEnabled(false);
-                btFortranBrowse.setEnabled(false);
-                btMakeBrowse.setEnabled(false);
-                btDebuggerBrowse.setEnabled(false);
-                btVersions.setEnabled(false);
-                tfMakePath.setEnabled(false);
-                tfGdbPath.setEnabled(false);
+                updateToolsControls(false, isRemoteHostSelected());
             }
-            
+
             return valid;
         }
     }
-    
+
+    private void updateToolsControls(boolean enable, boolean versionEnabled) {
+        btCBrowse.setEnabled(enable);
+        btCppBrowse.setEnabled(enable);
+        btFortranBrowse.setEnabled(enable);
+        btMakeBrowse.setEnabled(enable);
+        btDebuggerBrowse.setEnabled(enable);
+        btVersions.setEnabled(versionEnabled);
+        tfMakePath.setEnabled(enable);
+        tfGdbPath.setEnabled(enable);
+        tfBaseDirectory.setEnabled(enable);
+        tfCPath.setEnabled(enable);
+        tfCppPath.setEnabled(enable);
+        tfFortranPath.setEnabled(enable);        
+    }
     /**
      * Lets caller know if any data has been changed.
-     * 
+     *
      * @return True if anything has been changed
      */
     public boolean isChanged() {
         return changed;
     }
-    
+
     String getToolVersion(Tool tool, JTextField tf) {
         StringBuilder version = new StringBuilder();
-        
         version.append(tool.getDisplayName() + ": "); // NOI18N
         if (isPathFieldValid(tf)) {
             String path = tf.getText();
             if (!IpeUtils.isPathAbsolute(path)) {
                 path = Path.findCommand(path);
             }
-            String v = postVersionInfo(tool.getFlavor(), path);
+            String v = postVersionInfo(tool, path);
             if (v != null) {
                 version.append(v);
-            }
-            else {
-                version.append(getString("TOOL_VERSION_NOT_FOUND"));
+            } else {
+                version.append(getString("TOOL_VERSION_NOT_FOUND")); // NOI18N
             }
         }
         else {
-            version.append(getString("TOOL_NOT_FOUND"));
+            version.append(getString("TOOL_NOT_FOUND")); // NOI18N
         }
         return version.toString();
     }
-    
+
     /**
      * Display version information for a program pointed to by "path".
      *
-     * @param flavor The type of CompilerSet (unknown if we don't care)
-     * @param name The name of the tool (no directory information)
-     * @param path The absolute path of the tool
+     * @param tool  tool description
+     * @param path  absolute path of the tool
      */
-    private String postVersionInfo(CompilerFlavor flavor, String path) {
-        String version = null;
-        if (path == null)
+    private String postVersionInfo(Tool tool, String path) {
+        if (path == null) {
             return null;
-        File file = new File(path);
-        if (file.exists()) {
-            try {
-                FileObject fo = FileUtil.toFileObject(file.getCanonicalFile());
-                if (fo != null) {
-                    String mime = fo.getMIMEType();
-                    if (mime.startsWith(MIMENames.EXE_MIME_TYPE) || mime.equals(MIMENames.SHELL_MIME_TYPE)) { // NOI18N
-                        VersionCommand versionCommand = new VersionCommand(flavor, path);
-                        version = versionCommand.getVersion();
-                    }
-                }
-            } catch (IOException ex) {
-            }
         }
-        return version;
+        return new VersionCommand(tool, path).getVersion();
     }
-    
+
     static Set<ChangeListener> listenerChanged = new HashSet();
-    
+
     public static void addCompilerSetChangeListener(ChangeListener l) {
         listenerChanged.add(l);
     }
-    
+
     public static void removeCompilerSetChangeListener(ChangeListener l) {
         listenerChanged.remove(l);
     }
-    
+
     public void fireCompilerSetChange() {
         ChangeEvent ev = new ChangeEvent(currentCompilerSet);
         for (ChangeListener l : listenerChanged) {
             l.stateChanged(ev);
         }
     }
-    
+
     static Set<ChangeListener> listenerModified = new HashSet();
-    
+
     public static void addCompilerSetModifiedListener(ChangeListener l) {
         listenerModified.add(l);
     }
-    
+
     public static void removeCompilerSetModifiedListener(ChangeListener l) {
         listenerModified.remove(l);
     }
-    
+
     public void fireCompilerSetModified() {
         ChangeEvent ev = new ChangeEvent(currentCompilerSet);
         for (ChangeListener l : listenerModified) {
             l.stateChanged(ev);
         }
     }
-    
+
     static Set<IsChangedListener> listenerIsChanged = new HashSet();
-    
+
     public static void addIsChangedListener(IsChangedListener l) {
         listenerIsChanged.add(l);
     }
-    
+
     public static void removeIsChangedListener(IsChangedListener l) {
         listenerIsChanged.remove(l);
     }
-    
+
     private boolean isChangedInOtherPanels() {
         boolean isChanged = false;
         for (IsChangedListener l : listenerIsChanged) {
@@ -817,11 +861,11 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         }
         return isChanged;
     }
-    
+
     // implement ActionListener
     public void actionPerformed(ActionEvent e) {
         Object o = e.getSource();
-        
+
         if (o instanceof JButton) {
             if (o == btAdd) {
                 addCompilerSet();
@@ -843,35 +887,23 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
             }
         }
     }
-    
+
     // implemet ItemListener
     public void itemStateChanged(ItemEvent ev) {
         Object o = ev.getSource();
-        
+
         if (!updating) {
-            if (o == cbDevHost && ev.getStateChange() == ItemEvent.SELECTED && !hkey.equals((String) cbDevHost.getSelectedItem())) {
-                log.fine("TP.itemStateChanged: About to update");
-                changed = true;
-                if (serverUpdateCache == null) {
-                    serverUpdateCache = new ServerUpdateCache();
-                    String[] nulist = new String[cbDevHost.getItemCount()];
-                    for (int i = 0; i < nulist.length; i++) {
-                        nulist[i] = (String) cbDevHost.getItemAt(i);
-                    }
-                    serverUpdateCache.setHostKeyList(nulist);
-                }
-                serverUpdateCache.setDefaultIndex(cbDevHost.getSelectedIndex());
-                hkey = (String) cbDevHost.getSelectedItem();
-                update(true);
+            if (o == cbDevHost && ev.getStateChange() == ItemEvent.SELECTED) {
+                onNewDevHostSelected();
             } else if (o instanceof JCheckBox && !changingCompilerSet) {
                 dataValid();
             }
         }
     }
-    
+
     // implement DocumentListener
     public void changedUpdate(DocumentEvent ev) {}
-    
+
     public void insertUpdate(DocumentEvent ev) {
         if (!updating) {
             changed = true;
@@ -890,40 +922,33 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
             validateFortranPathField();
         }
     }
-    
+
     public void removeUpdate(DocumentEvent ev) {
         insertUpdate(ev);
     }
-    
+
     // Implement List SelectionListener
     public void valueChanged(ListSelectionEvent ev) {
-        
+
         if (!ev.getValueIsAdjusting()) { // we don't want the event until its finished
             if (ev.getSource() == lstDirlist) {
-                boolean cbRemoveEnabled;
-                if (model.showRequiredTools()) {
-                    cbRemoveEnabled = lstDirlist.getSelectedIndex() >= 0;
-                } else {
-                    cbRemoveEnabled = csm.getCompilerSets().size() > 1 && lstDirlist.getSelectedIndex() >= 0;
-                }
-                changeCompilerSet((CompilerSet)lstDirlist.getSelectedValue());
-                btRemove.setEnabled(cbRemoveEnabled);
-                btDuplicate.setEnabled(lstDirlist.getSelectedIndex() >= 0);
-                btDefault.setEnabled(lstDirlist.getSelectedIndex() >= 0 && !((CompilerSet)lstDirlist.getSelectedValue()).isDefault());
+                onCompilerSetChanged();
             }
         }
     }
-    
+
     /**
      * Show the Development Host Manager. Note that we assume serverList is non-null as the Edit
      * button should <b>never</b> be enabled if its null.
      */
     private void editDevHosts() {
         // Show the Dev Host Manager dialog
-        serverUpdateCache = serverList.show(serverUpdateCache);
-        
+        ServerUpdateCache newServerUpdateCache = serverList.show(serverUpdateCache);
+
         // Now update the dropdown (we assume the ServerList has changed)
-        if (serverUpdateCache != null) {
+        if (newServerUpdateCache != null) {
+            changed = !equalsLists(serverUpdateCache, newServerUpdateCache);
+            serverUpdateCache = newServerUpdateCache;
             cbDevHost.removeItemListener(this);
             log.fine("TP.editDevHosts: Removing all items from cbDevHost");
             cbDevHost.removeAllItems();
@@ -941,9 +966,34 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
             } else {
                 log.fine("TP.editDevHosts: No selection found");
             }
+            onNewDevHostSelected();
             cbDevHost.addItemListener(this);
-            changed = true;
         }
+    }
+
+    private boolean equalsLists(ServerUpdateCache cache1, ServerUpdateCache cache2) {
+        if (cache1 == cache2) {
+            return true;
+        }
+        if (cache1 == null || cache2 == null) {
+            return false;
+        }
+        if (cache1.getDefaultIndex() != cache2.getDefaultIndex()) {
+            return false;
+        }
+        String[] lst1 = cache1.getHostKeyList();
+        String[] lst2 = cache2.getHostKeyList();
+        if (lst1.length != lst2.length) {
+            return false;
+        }
+        for (int i = 0; i < lst1.length; i++) {
+            String str1 = lst1[i];
+            String str2 = lst1[i];
+            if (!str1.equals(str2)) {
+                return false;
+            }
+        }
+        return true;
     }
     
     /** This method is called from within the constructor to
@@ -1126,7 +1176,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 7;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 22, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(6, 10, 0, 0);
         add(lbCCommand, gridBagConstraints);
         lbCCommand.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_CCommand")); // NOI18N
         lbCCommand.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CCommand")); // NOI18N
@@ -1163,7 +1213,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 8;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 22, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(6, 10, 0, 0);
         add(lbCppCommand, gridBagConstraints);
         lbCppCommand.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_CppCommand")); // NOI18N
         lbCppCommand.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CppCommand")); // NOI18N
@@ -1200,7 +1250,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 9;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 22, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(6, 10, 0, 0);
         add(lbFortranCommand, gridBagConstraints);
         lbFortranCommand.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_FortranCommand")); // NOI18N
         lbFortranCommand.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_FortranCommand")); // NOI18N
@@ -1256,14 +1306,12 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         cbMakeRequired.setSelected(true);
         cbMakeRequired.setText(bundle.getString("LBL_RequiredMake")); // NOI18N
         cbMakeRequired.setEnabled(false);
-        cbMakeRequired.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         requiredToolsPanel.add(cbMakeRequired, gridBagConstraints);
 
         cbGdbRequired.setText(bundle.getString("LBL_RequiredGdb")); // NOI18N
         cbGdbRequired.setEnabled(false);
-        cbGdbRequired.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 0);
@@ -1271,7 +1319,6 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
 
         cbCRequired.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("MNEM_CCompiler_CB").charAt(0));
         cbCRequired.setText(bundle.getString("LBL_RequiredCompiler_C")); // NOI18N
-        cbCRequired.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -1281,7 +1328,6 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
 
         cbCppRequired.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("MNEM_CppCompiler_CB").charAt(0));
         cbCppRequired.setText(bundle.getString("LBL_RequiredCompiler_Cpp")); // NOI18N
-        cbCppRequired.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -1291,7 +1337,6 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
 
         cbFortranRequired.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("MNEM_FortranCompiler_CB").charAt(0));
         cbFortranRequired.setText(bundle.getString("LBL_RequiredCompiler_Fortran")); // NOI18N
-        cbFortranRequired.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 1;
@@ -1547,21 +1592,32 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
     }// </editor-fold>//GEN-END:initComponents
 
 private void btVersionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btVersionsActionPerformed
-    StringBuilder versions = new StringBuilder();
-    
-    versions.append("\n"); // NOI18N
-    versions.append(getToolVersion(currentCompilerSet.findTool(Tool.CCompiler), tfCPath) + "\n"); // NOI18N
-    versions.append(getToolVersion(currentCompilerSet.findTool(Tool.CCCompiler), tfCppPath) + "\n"); // NOI18N
-    versions.append(getToolVersion(currentCompilerSet.findTool(Tool.FortranCompiler), tfFortranPath) + "\n"); // NOI18N
-    versions.append(getToolVersion(currentCompilerSet.findTool(Tool.MakeTool), tfMakePath) + "\n"); // NOI18N
-    if (gdbEnabled) {
-        versions.append(getToolVersion(currentCompilerSet.findTool(Tool.DebuggerTool), tfGdbPath) + "\n"); // NOI18N
-    }
-    
-    NotifyDescriptor nd = new NotifyDescriptor.Message(versions.toString());
+    RequestProcessor.getDefault().post(new Runnable() {
+        public void run() {
+            ProgressHandle handle = ProgressHandleFactory.createHandle(getString("LBL_VersionInfo_Progress")); // NOI18N
+            handle.start(gdbEnabled? 5 : 4);
 
-    nd.setTitle(NbBundle.getMessage(VersionCommand.class, "LBL_VersionInfo_Title"));
-    DialogDisplayer.getDefault().notify(nd);
+            StringBuilder versions = new StringBuilder();
+
+            versions.append("\n"); // NOI18N
+            versions.append(getToolVersion(currentCompilerSet.findTool(Tool.CCompiler), tfCPath) + "\n"); // NOI18N
+            handle.progress(1);
+            versions.append(getToolVersion(currentCompilerSet.findTool(Tool.CCCompiler), tfCppPath) + "\n"); // NOI18N
+            handle.progress(2);
+            versions.append(getToolVersion(currentCompilerSet.findTool(Tool.FortranCompiler), tfFortranPath) + "\n"); // NOI18N
+            handle.progress(3);
+            versions.append(getToolVersion(currentCompilerSet.findTool(Tool.MakeTool), tfMakePath) + "\n"); // NOI18N
+            if (gdbEnabled) {
+                handle.progress(4);
+                versions.append(getToolVersion(currentCompilerSet.findTool(Tool.DebuggerTool), tfGdbPath) + "\n"); // NOI18N
+            }
+            handle.finish();
+
+            NotifyDescriptor nd = new NotifyDescriptor.Message(versions.toString());
+            nd.setTitle(getString("LBL_VersionInfo_Title")); // NOI18N
+            DialogDisplayer.getDefault().notify(nd);
+        }
+    });
 }//GEN-LAST:event_btVersionsActionPerformed
 
 private void btBaseDirectoryActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btBaseDirectoryActionPerformed
@@ -1582,13 +1638,13 @@ private void btBaseDirectoryActionPerformed(java.awt.event.ActionEvent evt) {//G
     }
     String dirPath = fileChooser.getSelectedFile().getPath();
     tfBaseDirectory.setText(dirPath);
-    
+
     CompilerSet cs = (CompilerSet)lstDirlist.getSelectedValue();
     CompilerFlavor cf = (CompilerFlavor)cbFamily.getSelectedItem();
     csm.reInitCompilerSet(cs, dirPath);
     changed = true;
     update(false);
-    
+
 }//GEN-LAST:event_btBaseDirectoryActionPerformed
 
 private boolean selectCompiler(JTextField tf, Tool tool) {
@@ -1620,18 +1676,39 @@ private boolean selectTool(JTextField tf) {
     tf.setText(fileChooser.getSelectedFile().getPath());
     return true;
 }
-    
+
     class MyCellRenderer extends DefaultListCellRenderer {
         @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             Component comp = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
             CompilerSet cs = (CompilerSet)value;
             if (cs.isDefault()) {
+                comp.setFont(comp.getFont().deriveFont(Font.BOLD));
+            }
+            return comp;
+        }
+    }
+
+    class MyDevHostListCellRenderer extends DefaultListCellRenderer {
+        @Override
+        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            Component comp = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+            if (index == getDefaultDevHostIndex()) {
                 JLabel label = (JLabel) comp;
                 label.setFont(label.getFont().deriveFont(Font.BOLD));
             }
             return comp;
         }
+    }
+
+    private int getDefaultDevHostIndex() {
+        int index = 0;
+        if (serverUpdateCache != null) {
+            index = serverUpdateCache.getDefaultIndex();
+        } else if (serverList != null) {
+            index = serverList.getDefaultIndex();
+        }
+        return index;
     }
 
 private void btCBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btCBrowseActionPerformed
@@ -1663,10 +1740,8 @@ private void btRestoreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
     if (ret != NotifyDescriptor.OK_OPTION) {
         return;
     }
-    CompilerSetManager newCsm = CompilerSetManager.create();
-    if (newCsm.getCompilerSets().size() == 1 && newCsm.getCompilerSets().get(0).getName().equals(CompilerSet.None)) {
-        newCsm.remove(newCsm.getCompilerSets().get(0));
-    }
+    CompilerSetManager newCsm = CompilerSetManager.create(hkey);
+    copiedManagers.put(hkey, newCsm);
     List<CompilerSet> list = csm.getCompilerSets();
     for (CompilerSet cs : list) {
         if (!cs.isAutoGenerated()) {
@@ -1703,12 +1778,12 @@ private void btRestoreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
         update(false);
     }
 }//GEN-LAST:event_btRestoreActionPerformed
-    
-    
+
+
     private static String getString(String key) {
         return NbBundle.getMessage(ToolsPanel.class, key);
     }
-    
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel ToolSetPanel;
     private javax.swing.JButton btAdd;
@@ -1755,5 +1830,5 @@ private void btRestoreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
     private javax.swing.JTextField tfGdbPath;
     private javax.swing.JTextField tfMakePath;
     // End of variables declaration//GEN-END:variables
-    
+
 }

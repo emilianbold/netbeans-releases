@@ -39,10 +39,12 @@
 
 package org.netbeans.modules.cnd.remote.mapper;
 
+import java.io.Reader;
+import java.io.StringReader;
 import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
-import org.netbeans.modules.cnd.api.utils.RemoteUtils;
+import org.netbeans.modules.cnd.remote.support.RunFacade;
 
 /**
  *
@@ -50,16 +52,15 @@ import org.netbeans.modules.cnd.api.utils.RemoteUtils;
  */
 public class HostMappingProviderSamba implements HostMappingProvider {
 
-    // TODO:
-
-    public Map<String, String> findMappings(String hkey) {
+    public Map<String, String> findMappings(String hkey, String otherHkey) {
         Map<String, String> mappings = new HashMap<String, String>();
 //        if (RemoteUtils.getHostName(hkey) == "eaglet-sr") {
 //            mappings.put("pub", "/export/pub");
 //        }
-
-//        String output = RunFacade.getInstance(hkey).run("cat /etc/sfw/smb.conf");
-//        mappings.putAll(new SambaConfParser(output).getMappings());
+        RunFacade runner = RunFacade.getInstance(hkey);
+        if (runner.run("cat /etc/sfw/smb.conf")) { //NOI18N
+            mappings.putAll(parseOutput(new StringReader(runner.getOutput())));
+        }
         return mappings;
     }
 
@@ -67,4 +68,21 @@ public class HostMappingProviderSamba implements HostMappingProvider {
         return otherPlatform.isWindows() && hostPlatform.isUnix();
     }
 
+    private static final String GLOBAL = "global"; //NOI18N
+    private static final String PATH = "path"; //NOI18N
+
+    static Map<String, String> parseOutput(Reader outputReader) {
+        Map<String, String> mappings = new HashMap<String, String>();
+        SimpleConfigParser parser = new SimpleConfigParser();
+        parser.parse(outputReader);
+        for (String name : parser.getSections()) {
+            if (!GLOBAL.equals(name)) {
+                String path = parser.getAttributes(name).get(PATH); //TODO: investigate case-sensitivity
+                if (path != null) {
+                    mappings.put(name, path);
+                }
+            }
+        }
+        return mappings;
+    }
 }

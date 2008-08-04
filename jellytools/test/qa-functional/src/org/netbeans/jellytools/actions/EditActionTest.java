@@ -73,7 +73,7 @@ public class EditActionTest extends JellyTestCase {
         suite.addTest(new EditActionTest("testPerformAPI"));
         return suite;
          */
-        return createModuleTest(EditActionTest.class, "testPerformPopup", "testPerformAPI");
+        return createModuleTest(EditActionTest.class);
     }
     
     /** Use for internal test execution inside IDE

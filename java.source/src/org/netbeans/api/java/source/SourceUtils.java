@@ -165,40 +165,23 @@ public class SourceUtils {
      * @throws IllegalArgumentException if the provided element is a package element
      */
     public static TypeElement getEnclosingTypeElement( Element element ) throws IllegalArgumentException {
-	Element param = element;
         
 	if( element.getKind() == ElementKind.PACKAGE ) {
 	    throw new IllegalArgumentException();
 	}
-	
-        if (element.getEnclosingElement().getKind() == ElementKind.PACKAGE) {
+
+        element = element.getEnclosingElement();
+
+        if (element.getKind() == ElementKind.PACKAGE) {
             //element is a top level class, returning null according to the contract:
             return null;
         }
         
-	while(element != null && !(element.getEnclosingElement().getKind().isClass() || 
-	       element.getEnclosingElement().getKind().isInterface()) ) {
+	while(element != null && !(element.getKind().isClass() || element.getKind().isInterface())) {
 	    element = element.getEnclosingElement();
 	}
         
-        if (element == null) {
-            //#130505:
-            StringBuilder sb = new StringBuilder();
-            
-            while (param != null) {
-                sb.append(param.getKind());
-                sb.append(':');
-                sb.append(param.toString());
-                sb.append('/');
-                param = param.getEnclosingElement();
-            }
-            
-            NullPointerException npe = new NullPointerException();
-            
-            throw Exceptions.attachMessage(npe, sb.toString());
-        }
-	
-	return (TypeElement)element.getEnclosingElement(); // Wrong
+	return (TypeElement)element;
     }
     
     public static TypeElement getOutermostEnclosingTypeElement( Element element ) {

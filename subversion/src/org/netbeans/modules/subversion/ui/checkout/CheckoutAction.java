@@ -94,6 +94,8 @@ public final class CheckoutAction extends CallableSystemAction {
                 } catch (SVNClientException ex) {
                     annotate(ex);
                     return;
+                } finally {
+                    Subversion.getInstance().versionedFilesChanged();
                 }
                 if(isCanceled()) {
                     return;

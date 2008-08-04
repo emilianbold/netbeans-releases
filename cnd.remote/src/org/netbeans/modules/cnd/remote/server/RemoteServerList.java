@@ -43,7 +43,9 @@ import java.awt.Dialog;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
+import java.util.logging.Logger;
 import java.util.prefs.Preferences;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.remote.ServerList;
@@ -69,11 +71,12 @@ public class RemoteServerList extends ArrayList<RemoteServerRecord> implements S
     private static final String DEFAULT_INDEX = CND_REMOTE + ".default"; // NOI18N
     
     private static RemoteServerList instance = null;
+    private static final Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
     
     private int defaultIndex;
-    private PropertyChangeSupport pcs;
-    private ChangeSupport cs;
-    private ArrayList<RemoteServerRecord> unlisted;
+    private final PropertyChangeSupport pcs;
+    private final ChangeSupport cs;
+    private final ArrayList<RemoteServerRecord> unlisted;
     
     public synchronized static RemoteServerList getInstance() {
         if (instance == null) {
@@ -90,10 +93,10 @@ public class RemoteServerList extends ArrayList<RemoteServerRecord> implements S
         unlisted = new ArrayList<RemoteServerRecord>();
         
         // Creates the "localhost" record and any remote records cached in remote.preferences
-        addServer(CompilerSetManager.LOCALHOST); 
+        addServer(CompilerSetManager.LOCALHOST, false);
         if (slist != null) {
             for (String hkey : slist.split(",")) { // NOI18N
-                addServer(hkey);
+                addServer(hkey, false);
             }
         }
         refresh();
@@ -158,7 +161,7 @@ public class RemoteServerList extends ArrayList<RemoteServerRecord> implements S
         return sa;
     }
     
-    public void addServer(final String name) {
+    public void addServer(final String name, boolean asDefault) {
         RemoteServerRecord record = null;
         
         // First off, check if we already have this record
@@ -182,6 +185,9 @@ public class RemoteServerList extends ArrayList<RemoteServerRecord> implements S
             unlisted.remove(record);
         }
         add(record);
+        if (asDefault) {
+            defaultIndex = size() - 1;
+        }
         refresh();
         
         // TODO: this should follow toolchain loading
@@ -278,6 +284,12 @@ public class RemoteServerList extends ArrayList<RemoteServerRecord> implements S
     }
     
     public boolean isValidExecutable(String hkey, String path) {
+        if (path == null || path.length() == 0) {
+            return false;
+        }
+        if (SwingUtilities.isEventDispatchThread()) {
+            log.warning("RemoteServerList.isValidExecutable from EDT"); // NOI18N
+        }
         String cmd = "PATH=/bin:/usr/bin:$PATH test -x " + path; // NOI18N
         int exit_status = RemoteCommandSupport.run(hkey, cmd);
         return exit_status == 0;

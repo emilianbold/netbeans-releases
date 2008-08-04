@@ -1,64 +1,29 @@
-I. Steps to run jMaki REST Components
-=====================================
-1. Install jMaki Ajax plugin (in IDE follow Tools->Plugins->Available Plugins, 
-then select 'jMaki Ajax support' and click 'Install' button).
+<?xml version="1.0" encoding="__FILE_ENCODING__"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
-or
-
-Download and install jMaki 1.0 NetBeans plugin from jMaki website 
-(https://ajax.dev.java.net/jmaki-plugin.html)
-
-2. Open NetBeans 6.1 IDE, then install the plugin by selecting "Downloaded" tab 
-after invoking Tools->Plugins.
-
-3. Create a web project, add "jMaki Ajax Framework" to this project on the wizard.
-
-4. Right click on the web project, then select "New->RESTful Web Service Client 
-Stubs". In the wizard, select the web project that contains the RESTful web 
-services for which you want to generate the client stubs. Click "Finish".
-
-5. Run "/Web Pages/resources/dojo/rest/TestResourcesTable.jsp" to test a jMaki 
-REST component. This displays a table of resources.
-
-Note: 
-
-- If you see any error on the jsp page, enable debugging by changing line 
-that looks like 'jmaki.debug = false' to 'jmaki.debug = true' in file 
-\Web Pages\glue.js, then redeploy the application and test the jsp page.
-
-- After successful execution of Step 4 above, a <ProjectName>.zip is created in
-the project root directory (Select "Files" tab to see this file in the IDE). 
-This file is a zipped (jMaki component(s)) version of the files generated during 
-creation of the client stubs. You can this file to other developers who want to 
-invoke your RESTful Web Services. You can also register the RESTful Web Service 
-jMaki components in the jMaki palette by invoking "Tools->Palette->Add jMaki 
-Library" action in the NetBeans IDE. After successful registration of these 
-components, users can see them on the palette for jsp, php, rhtml, ejs files. 
-Drag-n-drop them onto jsp, php, rhtml, ejs files to invoke the RESTful web 
-services from these pages.- Please note that <ProjectName>.zip also contains 
-dojo 0.4.3 libraries copied from your IDE's jMaki library location. There is a 
-/resources/dojo/resources/libs/dojo/LICENSE file inside this zip file. Please 
-read this file before you redistribute this zip file.
-
-- If you do not wish to include dojo libraries, then re-package the zip file by 
-removing all the zip entries that start with /resources/dojo/resources, then 
-include a Readme. This Readme should notify end users to copy the dojo library 
-/resources/dojo/resources into thier web project "Web Pages" directory after 
-they drag-n-drop the web service component from jMaki Component Palette in the 
-IDE. This dojo library is found in their 
-<NB IDE User Directory>/jmakicomplib/jmaki-dojo/resources/dojo/resources directory.
-
-II.  Steps to run Dojo REST Components
-=====================================
-1. After running Step I, you could also test dojo REST component directly 
-by invoking "/Web Pages/resources/dojo/rest/rdj/TestResourcesTable.html"
-
-III. Steps to run REST Javascripts stubs
-============================================
-1. After running Step I, you could also test REST Javascripts directly 
-by invoking "/Web Pages/resources/dojo/rest/rjs/TestStubs.html".
-
-Note:
-
-- If you have unchecked jMaki during stub generation, you could see only
-/web/rest directory. Test file is in /Web Pages/rest/TestStubs.html.
+<html>
+    <head>
+        <title>TTL_JMakiWidget_Stubs - MSG_Readme</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=__FILE_ENCODING__" />
+        <link rel="stylesheet" href="./rjs/css/clientstubs.css" type="text/css"/>
+        <link rel="stylesheet" href="./rjs/css/css_master-all.css" type="text/css"/>
+    </head>
+    <body>
+        <div class="outerBorder">
+            <div class="header">
+                <div id="subheader" class="subheader"></div> <!-- sub-header -->
+                <div class="banner"><img src="./rjs/css/images/pname-clientstubs.png"/></div>
+            </div> <!-- header -->
+            <div id="main" class="main">
+                <table width="100%">
+                    <tr>
+                        <td id="content" class="content" valign="top" colspan="12">
+                            MSG_JMaki_Readme_Content
+                        </td>
+                    </tr>
+                </table>
+            </div> <!-- main -->
+        </div> <!-- outerborder -->
+    </body>
+</html>

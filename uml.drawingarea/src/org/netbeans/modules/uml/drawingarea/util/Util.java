@@ -43,13 +43,17 @@ package org.netbeans.modules.uml.drawingarea.util;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import javax.swing.ActionMap;
 import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.visual.graph.GraphScene;
 import org.netbeans.api.visual.model.ObjectScene;
+import org.netbeans.api.visual.widget.ConnectionWidget;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.FactoryRetriever;
@@ -271,4 +275,75 @@ public class Util
             }
         }
     }
+    
+    
+    public static Collection<ConnectionWidget> getAllContainedEdges(Widget widget)
+    {
+        HashSet<ConnectionWidget> set = new HashSet<ConnectionWidget>();
+        Scene scene = widget.getScene();
+        if (scene instanceof GraphScene)
+        {
+            GraphScene gs = (GraphScene) scene;
+
+            List<Object> nodeChildren = getAllNodeChildren(widget);
+            for (Object obj : nodeChildren)
+            {
+                Collection<Object> edges = gs.findNodeEdges(obj, true, true);
+                for (Object e : edges)
+                {
+                    Object source = gs.getEdgeSource(e);
+                    Object target = gs.getEdgeTarget(e);
+                    if (nodeChildren.contains(source) && nodeChildren.contains(target))
+                    {
+                        set.add((ConnectionWidget) gs.findWidget(e));
+                    }
+                }
+            }
+        }
+        return set;
+    }
+    
+    
+    public static List<Object> getAllNodeChildren(Widget widget)
+    {
+        if (!(widget.getScene() instanceof GraphScene))
+            return new ArrayList<Object>();
+        
+        return getAllNodeChildrenRecursive(new ArrayList<Object>(), widget);
+    }
+    
+    private static List<Object> getAllNodeChildrenRecursive(List<Object> list, Widget widget)
+    {
+        for (Widget child : widget.getChildren())
+        {           
+            Object pe = ((GraphScene) widget.getScene()).findObject(child);
+            if (((GraphScene) widget.getScene()).isNode(pe))
+            {
+                list.add(pe);
+            }
+            
+            list = getAllNodeChildrenRecursive(list, child);
+        }
+        return list;
+    }
+    
+    public static Widget getParentWidgetByClass(Widget startWith,
+                                                  Class<? extends Widget> cls)
+    {
+        Widget ret = null;
+        if (startWith != null && cls != null)
+        {
+            for (Widget tmp = startWith;
+                    tmp != null && !(tmp instanceof Scene);
+                    tmp = tmp.getParentWidget())
+            {
+                if (cls.isInstance(tmp))
+                {
+                    ret = tmp;
+                    break;
+                } 
+            }
+        }
+        return ret;
+    }    
 }
