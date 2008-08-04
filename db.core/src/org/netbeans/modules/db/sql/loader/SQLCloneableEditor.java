@@ -322,18 +322,16 @@ public class SQLCloneableEditor extends CloneableEditor {
             return;
         }
 
-        splitter.setTopComponent(null);
-        splitter.setBottomComponent(null);
-        
-        splitter.setTopComponent(editor);
-        splitter.setBottomComponent(resultComponent);
-        
-        splitter.setDividerLocation(250);
-        splitter.setDividerSize(7);
+        if (splitter.getBottomComponent() == null) {
+            splitter.setBottomComponent(resultComponent);
+            splitter.setDividerLocation(250);
+            splitter.setDividerSize(7);
 
-        container.invalidate();
-        container.validate();
-        container.repaint();
+            container.invalidate();
+            container.validate();
+            container.repaint();
+        }
+
 
         enableTabActions();
     }
