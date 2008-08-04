@@ -352,7 +352,7 @@ Microsystems, Inc. All Rights Reserved.
 
         <copy file="${basedir}/netBeans/baseide/pkg/scripts/env.sh" 
               todir="${basedir}/build/mysql.pkg/Contents/Resources"/> 
-        <chmod file="${basedir}/netBeans/baseide/pkg/scripts/env.sh"  perm="ugo+x"/>
+        <chmod file="${basedir}/build/mysql.pkg/Contents/Resources/env.sh"  perm="ugo+x"/>
      
         <echo message="${mysql.postflight.addon}"
               file="${basedir}/build/mysql.pkg/Contents/Resources/postflight"
@@ -360,7 +360,7 @@ Microsystems, Inc. All Rights Reserved.
 
         <copy file="${basedir}/mysql/pkg/scripts/mysql-admin.server"
               todir="${basedir}/build/mysql.pkg/Contents/Resources"/>
-        <chmod file="${basedir}/build/mysqlstartup.pkg/Contents/Resources/mysql-admin.server" perm="ugo+x"/>          
+        <chmod file="${basedir}/build/mysql.pkg/Contents/Resources/mysql-admin.server" perm="ugo+x"/>          
                      
         <copy file="${basedir}/mysqlstartup/pkg/scripts/postflight"
               todir="${basedir}/build/mysqlstartup.pkg/Contents/Resources/"/>
