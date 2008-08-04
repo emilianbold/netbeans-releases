@@ -61,19 +61,21 @@ public class SQLEditorKit extends NbEditorKit {
     public static final String MIME_TYPE = "text/x-sql"; // NOI18N
 
     /**
-     * Creates a new instance of SQLEditorKit 
+     * Creates a new instance of SQLEditorKit
      */
-    public SQLEditorKit() { 
+    public SQLEditorKit() {
     }
-    
+
     /**
      * Create a syntax object suitable for highlighting SQL syntax
      */
+    @Override
     public Syntax createSyntax(Document doc) {
         return new SQLSyntax();
     }
-    
+
     /** Create syntax support */
+    @Override
     public SyntaxSupport createSyntaxSupport(BaseDocument doc) {
         return new SQLSyntaxSupport(doc);
     }
@@ -86,10 +88,11 @@ public class SQLEditorKit extends NbEditorKit {
         };
         return TextAction.augmentList(superActions, sqlActions);
     }
-    
+
     /**
      * Retrieves the content type for this editor kit
      */
+    @Override
     public String getContentType() {
         return MIME_TYPE;
     }
