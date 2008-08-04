@@ -58,7 +58,7 @@ public class InstallationSettingsPanel extends javax.swing.JPanel {
         DefaultComboBoxModel model = new DefaultComboBoxModel();
         model.addElement(LATEST);
 
-        String v = gem.getAvailableVersions();
+        String v = gem.getAvailableVersionsAsString();
         if (v != null) {
             String[] ve = v.split(", ");
             for (String version : ve) {

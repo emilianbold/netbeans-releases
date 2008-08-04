@@ -67,15 +67,21 @@ public final class Gem implements Comparable<Gem> {
         return name;
     }
 
-    public String getInstalledVersions() {
+    /**
+     * Returns comma-separated list of installed versions.
+     */
+    public String getInstalledVersionsAsString() {
         return installedVersions;
     }
 
     String getLatestInstalled() {
         return getLatestVersion(installedVersions);
     }
-        
-    public String getAvailableVersions() {
+
+    /**
+     * Returns comma-separated list of remotely available versions.
+     */
+    public String getAvailableVersionsAsString() {
         return availableVersions;
     }
     
