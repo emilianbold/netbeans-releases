@@ -301,6 +301,8 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
             serverUpdateCache.setDefaultIndex(cbDevHost.getSelectedIndex());
             hkey = (String) cbDevHost.getSelectedItem();
             update(true);
+        } else {
+            update(false);            
         }
     }
 
@@ -313,11 +315,11 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
                 if (csm.getCompilerSets().size() > 0)
                     csm.getCompilerSet(0).setAsDefault(true);
             }
-            if (index >= 0 && index < csm.getCompilerSets().size())
+            if (index >= 0 && index < csm.getCompilerSets().size()) {
                 update(false, csm.getCompilerSets().get(index));
-            else if (index > 0)
+            } else if (index > 0) {
                 update(false, csm.getCompilerSets().get(index-1));
-            else {
+            } else {
                 tfBaseDirectory.setText(""); // NOI18N
                 btBaseDirectory.setEnabled(false);
                 cbFamily.removeAllItems();
@@ -703,11 +705,9 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
             errorTextArea.setRows(0);
             if (!valid) {
                 ArrayList<String> errors = new ArrayList<String>();
-                // TODO: for a while disabling message about status of host,
-                // it should be visible from compiler sets panel
-//                if (!devhostValid) {
-//                    errors.add(NbBundle.getMessage(ToolsPanel.class, "TP_ErrorMessage_BadDevHost", hkey));
-//                }
+                if (!devhostValid) {
+                    errors.add(NbBundle.getMessage(ToolsPanel.class, "TP_ErrorMessage_BadDevHost", hkey));
+                }
                 if (cbMakeRequired.isSelected() && !makeValid) {
                     if (!isPathFieldValid(tfMakePath)) {
                         errors.add(NbBundle.getBundle(ToolsPanel.class).getString("TP_ErrorMessage_MissedMake"));
@@ -966,8 +966,8 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
             } else {
                 log.fine("TP.editDevHosts: No selection found");
             }
-            onNewDevHostSelected();
             cbDevHost.addItemListener(this);
+            onNewDevHostSelected();
         }
     }
 
