@@ -43,6 +43,8 @@ import java.awt.Dialog;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.SwingUtilities;
@@ -64,7 +66,7 @@ import org.openide.util.NbPreferences;
  * 
  * @author gordonp
  */
-public class RemoteServerList extends ArrayList<RemoteServerRecord> implements ServerList {
+public class RemoteServerList implements ServerList {
     
     private static final String CND_REMOTE = "cnd.remote"; // NOI18N
     private static final String REMOTE_SERVERS = CND_REMOTE + ".servers"; // NOI18N
@@ -77,8 +79,9 @@ public class RemoteServerList extends ArrayList<RemoteServerRecord> implements S
     private final PropertyChangeSupport pcs;
     private final ChangeSupport cs;
     private final ArrayList<RemoteServerRecord> unlisted;
+    private final ArrayList<RemoteServerRecord> items = new ArrayList<RemoteServerRecord>();
     
-    public synchronized static RemoteServerList getInstance() {
+    public synchronized static ServerList getInstance() {
         if (instance == null) {
             instance = new RemoteServerList();
         }
@@ -108,10 +111,10 @@ public class RemoteServerList extends ArrayList<RemoteServerRecord> implements S
      * @param hkey The host key (either "localhost" or "user@host")
      * @return A RemoteServerRecord for hkey
      */
-    public ServerRecord get(String hkey) {
+    public synchronized ServerRecord get(String hkey) {
         
         // Search the active server list
-	for (RemoteServerRecord record : this) {
+	for (RemoteServerRecord record : items) {
             if (hkey.equals(record.getName())) {
                 return record;
             }
@@ -131,42 +134,38 @@ public class RemoteServerList extends ArrayList<RemoteServerRecord> implements S
         return record;
     }
 
-    public ServerRecord getDefaultRecord() {
-        return get(defaultIndex);
+    public synchronized ServerRecord getDefaultRecord() {
+        return items.get(defaultIndex);
     }
 
-    public int getDefaultIndex() {
+    public synchronized int getDefaultIndex() {
         return defaultIndex;
     }
 
-    public void setDefaultIndex(int defaultIndex) {
+    public synchronized void setDefaultIndex(int defaultIndex) {
         this.defaultIndex = defaultIndex;
         getPreferences().putInt(DEFAULT_INDEX, defaultIndex);
     }
     
-    public String[] getServerNames() {
-        Object[] oa;
+    public synchronized String[] getServerNames() {
         String[] sa;
-        try {
-            oa = toArray();
-            sa = new String[oa.length];
-            for (int i = 0; i < oa.length; i++) {
-                if (oa[i] instanceof RemoteServerRecord) {
-                    sa[i] = ((RemoteServerRecord) oa[i]).getName();
-                }
-            }
-        } catch (Exception ex) {
-            return new String[] { CompilerSetManager.LOCALHOST };
+        sa = new String[items.size()];
+        for (int i = 0; i < items.size(); i++) {
+            sa[i] = items.get(i).getName();
         }
         return sa;
     }
     
-    public void addServer(final String name, boolean asDefault) {
+    public synchronized void addServer(final String name, boolean asDefault) {
         RemoteServerRecord record = null;
         
         // First off, check if we already have this record
-        for (RemoteServerRecord r : this) {
+        for (RemoteServerRecord r : items) {
             if (r.getName().equals(name)) {
+                if (asDefault) {
+                    defaultIndex = items.indexOf(r);
+                    getPreferences().putInt(DEFAULT_INDEX, defaultIndex);
+                }
                 return;
             }
         }
@@ -184,12 +183,11 @@ public class RemoteServerList extends ArrayList<RemoteServerRecord> implements S
         } else {
             unlisted.remove(record);
         }
-        add(record);
+        items.add(record);
         if (asDefault) {
-            defaultIndex = size() - 1;
+            defaultIndex = items.size() - 1;
         }
         refresh();
-        
         // TODO: this should follow toolchain loading
         // SystemIncludesUtils.load(record);
         
@@ -214,31 +212,31 @@ public class RemoteServerList extends ArrayList<RemoteServerRecord> implements S
         getPreferences().putInt(DEFAULT_INDEX, defaultIndex);
     }
 
-    public void removeServer(int idx) {
-        if (idx >= 0 && idx < size()) {
-            RemoteServerRecord record = remove(idx);
+    public synchronized void removeServer(int idx) {
+        if (idx >= 0 && idx < items.size()) {
+            RemoteServerRecord record = items.remove(idx);
             removeFromPreferences(record.getName());
             refresh();
         }
     }
 
-    public void removeServer(RemoteServerRecord record) {
-        if (super.remove(record)) {
+    public synchronized void removeServer(ServerRecord record) {
+        if (items.remove(record)) {
             removeFromPreferences(record.getName());
             refresh();
         }
     }
     
-    @Override
-    public void clear() {
+    public synchronized void clear() {
         getPreferences().remove(REMOTE_SERVERS);
-        super.clear();
+        unlisted.addAll(items);
+        items.clear();
     }
     
     private void removeFromPreferences(String hkey) {
         StringBuilder sb = new StringBuilder();
         
-        for (RemoteServerRecord record : this) {
+        for (RemoteServerRecord record : items) {
             sb.append(record.getName());
             sb.append(',');
         }
@@ -270,8 +268,8 @@ public class RemoteServerList extends ArrayList<RemoteServerRecord> implements S
         cs.fireChange();
     }
     
-    public boolean contains(String hkey) {
-        for (RemoteServerRecord record : this) {
+    public synchronized boolean contains(String hkey) {
+        for (RemoteServerRecord record : items) {
             if (hkey.equals(record.getName())) {
                 return true;
             }
@@ -279,8 +277,8 @@ public class RemoteServerList extends ArrayList<RemoteServerRecord> implements S
         return false;
     }
 
-    public RemoteServerRecord getLocalhostRecord() {
-        return get(0);
+    public synchronized RemoteServerRecord getLocalhostRecord() {
+        return items.get(0);
     }
     
     public boolean isValidExecutable(String hkey, String path) {
@@ -293,6 +291,10 @@ public class RemoteServerList extends ArrayList<RemoteServerRecord> implements S
         String cmd = "PATH=/bin:/usr/bin:$PATH test -x " + path; // NOI18N
         int exit_status = RemoteCommandSupport.run(hkey, cmd);
         return exit_status == 0;
+    }
+    
+    public synchronized Collection<? extends ServerRecord> getRecords() {
+        return Collections.unmodifiableCollection(items);
     }
     
     // TODO: Are these still needed?
