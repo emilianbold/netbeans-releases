@@ -148,6 +148,7 @@
 
     // FirebugDebugger
     const firebugDebugger = {
+        
         QueryInterface : function(iid)
         {
             if (iid.equals(NetBeans.Constants.FirebugDebuggerIF)||
@@ -165,6 +166,11 @@
             return false;
         },
 
+        supportsGlobal: function(global) 
+        {
+            return false;
+        },
+        
         onBreak: function(frame, type)
         {
             return RETURN_CONTINUE;
@@ -226,25 +232,22 @@
         onScriptDestroyed: function(script){}
 
     };
+    firebugDebugger.wrappedJSObject = firebugDebugger;
 
     this.initDebugger = function(_port, _sessionId) {
         port = _port;
         sessionId = _sessionId;
 
-        jsDebuggerService = NetBeans.Utils.CCSV(
-            NetBeans.Constants.jsdIDebuggerServiceCID,
-            NetBeans.Constants.jsdIDebuggerServiceIF);
+        jsDebuggerService = FBL.jsd;
 
-        firebugDebuggerService = NetBeans.Utils.CCSV(
-            NetBeans.Constants.FirebugCID,
-            NetBeans.Constants.FirebugIF);
+        firebugDebuggerService = FBL.fbs;
 
         const socketListener = {
             onDBGPCommand: function(command) {
                 try {
                     processCommand(command);
                 } catch (e) {
-                    window.NetBeans.Logger.log(""+e);
+                    window.NetBeans.Logger.logException(e);
                 }
             },
             onDBGPClose: function() {
@@ -255,7 +258,7 @@
         // create DBGP socket
         socket = NetBeans.SocketUtils.createSocket("127.0.0.1", port, socketListener);
 
-        firebugDebuggerService.registerDebugger(firebugDebugger);
+        fbsRegisterDebugger(firebugDebugger);
 
         initialize(this);
         sendInitMessage();
@@ -367,11 +370,23 @@
 
         DebuggerListener = FBL.extend(Firebug.DebuggerListener,
         {
-            onStop: function(context, type, rv)
+            onJSDActivate: function(jsd)
             {
+            },
+            
+            // function signature changed between firebug 1.1 and 1.2
+            onStop: function(context, frame /*type*/, type /*rv*/, rv)
+            {
+                if (NetBeans.Utils.isFF2()) {
+                    rv = type;
+                    type = frame;
+                    frame = context.debugFrame;
+                }
+                
                 if ( context == currentFirebugContext ) {
+                    // XXX hideDebuggerUI is not used in firebug 1.2; needs to be replaced?
                     context.hideDebuggerUI = true;
-                    return netBeansDebugger.onStop(context.debugFrame, type, rv);
+                    return netBeansDebugger.onStop(frame, type, rv);
                 }
             },
 
@@ -382,6 +397,7 @@
                         currentFirebugContext = null;
                     }
                     netBeansDebugger.onResume();
+                    // XXX hideDebuggerUI is not used in firebug 1.2; needs to be replaced?
                     context.hideDebuggerUI = false;
                 }
             },
@@ -405,6 +421,22 @@
                 if ( context == currentFirebugContext && currentFirebugContext ) {
                     netBeansDebugger.onTopLevel();
                 }
+            },
+            
+            // XXX replacement for onTopLevel in firebug 1.2
+            onTopLevelScriptCreated: function(context, frame, url) {
+                if ( context == currentFirebugContext && currentFirebugContext ) {
+                    netBeansDebugger.onTopLevel();
+                }                
+            },
+            
+            onEventScriptCreated: function(context, frame, url)
+            {
+            },
+            
+            onFunctionConstructor: function(context, frame, ctor_script, url)
+            {
+                // XXX Not active as of firebug 1.2b06
             }
         }
         );
@@ -500,7 +532,7 @@
             socket = null;
         }
         if ( firebugDebuggerService ) {
-            firebugDebuggerService.unregisterDebugger(firebugDebugger);
+            fbsUnregisterDebugger(firebugDebugger);
         }
         firebugDebuggerService = null;
         jsDebuggerService = null;
@@ -795,9 +827,9 @@
 
         if (hasBreakpoint(href, line)) {
             if (enable) {
-                firebugDebuggerService.enableBreakpoint(href, line);
+                fbsEnableBreakpoint(href, line);
             } else {
-                firebugDebuggerService.disableBreakpoint(href, line);
+                fbsDisableBreakpoint(href, line);
             }
             return true;
         }
@@ -815,7 +847,7 @@
         var line = matches[2];
 
         if (hasBreakpoint(href, line)) {
-            firebugDebuggerService.setBreakpointCondition(href, line, condition);
+            fbsSetBreakpointCondition(href, line, condition);
             return true;
         }
         return false;
@@ -838,7 +870,7 @@
     function clearBreakpoint(href,line)
     {
         if ( removeBreakpoint(href,line) ) {
-            firebugDebuggerService.clearBreakpoint(href,line);
+            fbsClearBreakpoint(href,line);
             return true;
         }
         return false;
@@ -851,12 +883,12 @@
             if ( breakpoints[href].length > 0 )
                 hrefs.push(href);
         }
-        firebugDebuggerService.clearAllBreakpoints(hrefs.length,hrefs);
+        fbsClearAllBreakpoints(hrefs.length,hrefs);
     }
 
     function setBreakpoint(href,line,props)
     {
-        if ( firebugDebuggerService.setBreakpoint(href,line,props) ) {
+        if ( fbsSetBreakpoint(href,line,props) ) {
             addBreakpoint(href,line);
             return true;
         }
@@ -948,7 +980,17 @@
 
     // 7. run until
     function runUntil(url, lineno) {
-        Firebug.Debugger.runUntil(currentFirebugContext, url, lineno);
+        var src = url;
+        if (NetBeans.Utils.isFF2()) {
+            if (currentFirebugContext) {
+                src = currentFirebugContext.sourceFileMap[href];
+            }
+            if (!src) {
+                src = new FBL.NoScriptSourceFile(currentFirebugContext, href);
+            }
+        }
+        
+        Firebug.Debugger.runUntil(currentFirebugContext, src, lineno);
     }
 
     function suspend(reason)
@@ -956,7 +998,6 @@
         if ( reason )
             debugState.suspendReason = reason;
         stepping = true;
-
         Firebug.Debugger.suspend(currentFirebugContext);
     }
 
@@ -1464,8 +1505,8 @@
                 debugState.currentException = rv.value;
                 break;
             default:
-                message = "Unknown type: " + type;
-                NetBeans.Logger.log(message);
+                message = "onStop() - Unknown type: " + type;
+                NetBeans.Logger.logException(message);
         }
         debugState.hookReturnValue = rv;
         debugging = true;
@@ -1945,7 +1986,7 @@
                 }
                 names += property;
             } catch (e) {
-                NetBeans.Logger.log(e,'err');
+                NetBeans.Logger.logException(e);
             }
         }
         return names;
@@ -2007,11 +2048,11 @@
                         value: value
                     };
                 } catch( e ) {
-                    NetBeans.Logger.log(e,'err');
+                    NetBeans.Logger.logException(e);
                 }
             }
         } catch( e ) {
-            NetBeans.Logger.log(e,'err');
+            NetBeans.Logger.logException(e);
         }
 
         // get the local properties, may or may not be enumerable
@@ -2170,6 +2211,99 @@
     function decodeData(data)
     {
         return data.replace(/#2/g, "*").replace(/#1/g, "|").replace(/#0/g, "#");
+    }
+
+    // Firebug service access (currently only supports Firebug 1.2 interface)
+    
+    function fbsRegisterDebugger(debuggr) {
+        firebugDebuggerService.registerDebugger(debuggr);
+    }
+    
+    function fbsUnregisterDebugger(debuggr) {
+        firebugDebuggerService.unregisterDebugger(debuggr);
+    }
+    
+    function fbsEnableBreakpoint(href, line) {
+        line = parseInt(line);
+        firebugDebuggerService.enableBreakpoint(href, line);
+    }
+    
+    function fbsDisableBreakpoint(href, line) {
+        line = parseInt(line);
+        firebugDebuggerService.disableBreakpoint(href, line);
+    }
+    
+    function fbsClearBreakpoint(href, line) {
+        line = parseInt(line);
+        firebugDebuggerService.clearBreakpoint(href, line);
+    }
+    
+    function fbsClearAllBreakpoints(hrefs) {
+        if (NetBeans.Utils.isFF2()) {
+            firebugDebuggerService.clearAllBreakpoints(hrefs.length, hrefs);
+            return;
+        }
+        
+        var sourceFiles = [];
+        var sourceFile;
+        
+        for (var i = 0; i < hrefs.length; i++) {
+            sourceFile = currentFirebugContext.sourceFileMap[hrefs[i]];
+            if (sourceFile) {
+                sourceFiles.push(sourceFile);
+            } else {
+                NetBeans.Logger.logMessage("clearAllBreakpoints() - Could not find source: " + hrefs[i]);
+                sourceFile = new FBL.NoScriptSourceFile(currentFirebugContext, hrefs[i]);
+                sourceFiles.push(sourceFile);
+            }
+        }
+        
+        firebugDebuggerService.clearAllBreakpoints(sourceFiles);
+    }
+    
+    function fbsSetBreakpointCondition(href, line, condition) {
+        line = parseInt(line);
+        
+        if (NetBeans.Utils.isFF2()) {
+            firebugDebuggerService.setBreakpointCondition(href, line, condition);
+            return;
+        }
+        
+        var sourceFile;
+        if (currentFirebugContext) {
+            sourceFile = currentFirebugContext.sourceFileMap[href];
+        }
+        if (!sourceFile) {
+            sourceFile = new FBL.NoScriptSourceFile(currentFirebugContext, href);
+        }
+        
+        if (sourceFile) {
+            firebugDebuggerService.setBreakpointCondition(sourceFile, line, condition, Firebug.Debugger);
+        } else {
+            NetBeans.Logger.logMessage("setBreakpointCondition() - No source file found for: " + href);
+        }
+    }
+    
+    function fbsSetBreakpoint(href, line, props) {
+        line = parseInt(line);
+        if (NetBeans.Utils.isFF2()) {
+            return firebugDebuggerService.setBreakpoint(href, line, props);
+        }
+        
+        var sourceFile;
+        if (currentFirebugContext) {
+            sourceFile = currentFirebugContext.sourceFileMap[href];
+        }
+        if (!sourceFile) {
+            sourceFile = new FBL.NoScriptSourceFile(currentFirebugContext, href);
+        }
+        
+        if (sourceFile) {
+            return firebugDebuggerService.setBreakpoint(sourceFile, line, props, Firebug.Debugger);
+        } else {
+            NetBeans.Logger.logMessage("setBreakpoint() - No source file found for: " + href);
+            return false;
+        }
     }
 
 }).apply(NetBeans.Debugger);
