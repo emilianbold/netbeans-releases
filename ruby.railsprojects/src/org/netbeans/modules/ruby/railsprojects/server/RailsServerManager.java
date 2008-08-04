@@ -193,54 +193,14 @@ public final class RailsServerManager {
                     if (!isPluginServer(instance)) {
                         assert debugSemaphore == null : "startSemaphor supposed to be null";
                         debugSemaphore = new Semaphore(0);
-                    } else {
-//                        instance.stopServer();
                     }
                     switchToDebugMode = false;
                 } else if (isPortInUse(port)) {
                     if (!debug && isPluginServer(instance)) {
                         if(port == instance.getRailsPort()) {
                             status = ServerStatus.STARTING;
-                            final Future<RubyInstance.OperationState> result =
-                                    instance.deploy(projectName, dir);
-
-                            final RubyInstance serverInstance = instance;
-                            RequestProcessor.getDefault().post(new Runnable() {
-                                public void run() {
-                                    try {
-                                        RubyInstance.OperationState state = result.get(120, TimeUnit.SECONDS);
-                                        if(state == RubyInstance.OperationState.COMPLETED) {
-                                            synchronized(RailsServerManager.this) {
-                                                port = serverInstance.getRailsPort();
-                                                status = ServerStatus.RUNNING;
-                                                if (LOGGER.isLoggable(Level.FINEST)) {
-                                                    LOGGER.finest("RSM.ensureRunning(): (V3) status = " +
-                                                            status + ", port = " + port);
-                                                }
-                                            }
-                                        } else {
-                                            synchronized(RailsServerManager.this) {
-                                                status = ServerStatus.NOT_STARTED;
-                                            }
-                                            instance.stopServer();
-                                        }
-                                    } catch (Exception ex) {
-                                        LOGGER.log(Level.INFO, ex.getMessage(), ex);
-
-                                        // Ensure status value is reset on exceptions too...
-                                        synchronized(RailsServerManager.this) {
-                                            status = ServerStatus.NOT_STARTED;
-                                        }
-                                        instance.stopServer();
-                                    }
-                                }
-                            });
+                            glassfishEnsureRunning(null);
                             return false;
-                        } else {
-//                            if(execution != null) {
-//                                assert debugSemaphore == null : "startSemaphor supposed to be null";
-//                                debugSemaphore = new Semaphore(0);
-//                            }
                         }
                     } else {
                         // Simply assume it is still the same server running
@@ -288,35 +248,7 @@ public final class RailsServerManager {
 
         if (isPluginServer(instance)) {
             if(!debug) {
-                final Future<RubyInstance.OperationState> result = 
-                        instance.runApplication(platform, projectName, dir);
-
-                final RubyInstance serverInstance = instance;
-                RequestProcessor.getDefault().post(new Runnable() {
-                    public void run() {
-                        try {
-                            RubyInstance.OperationState state = result.get(120, TimeUnit.SECONDS);
-                            if(state == RubyInstance.OperationState.COMPLETED) {
-                                synchronized(RailsServerManager.this) {
-                                    port = serverInstance.getRailsPort();
-                                    status = ServerStatus.RUNNING;
-                                }
-                            } else {
-                                synchronized(RailsServerManager.this) {
-                                    status = ServerStatus.NOT_STARTED;
-                                }
-                            }
-                        } catch (Exception ex) {
-                            LOGGER.log(Level.INFO, ex.getMessage(), ex);
-
-                            // Ensure status value is reset on exceptions too...
-                            synchronized(RailsServerManager.this) {
-                                status = ServerStatus.NOT_STARTED;
-                            }
-                        }
-                    }
-                });
-
+                glassfishEnsureRunning(platform);
                 return false;
             } else {
                 ensurePortAvailable();
@@ -663,6 +595,37 @@ public final class RailsServerManager {
         } catch (WebClientToolsSessionException ex) {
             ErrorManager.getDefault().notify(ex);
         }
+    }
+
+    private void glassfishEnsureRunning(final RubyPlatform platform) {
+        final Future<RubyInstance.OperationState> result = platform != null ? 
+            instance.runApplication(platform, projectName, dir) : instance.deploy(projectName, dir);
+
+        final RubyInstance serverInstance = instance;
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                try {
+                    RubyInstance.OperationState state = result.get(120, TimeUnit.SECONDS);
+                    if(state == RubyInstance.OperationState.COMPLETED) {
+                        synchronized(RailsServerManager.this) {
+                            port = serverInstance.getRailsPort();
+                            status = ServerStatus.RUNNING;
+                        }
+                    } else {
+                        synchronized(RailsServerManager.this) {
+                            status = ServerStatus.NOT_STARTED;
+                        }
+                    }
+                } catch (Exception ex) {
+                    LOGGER.log(Level.INFO, ex.getMessage(), ex);
+
+                    // Ensure status value is reset on exceptions too...
+                    synchronized(RailsServerManager.this) {
+                        status = ServerStatus.NOT_STARTED;
+                    }
+                }
+            }
+        });
     }
     
     /**
