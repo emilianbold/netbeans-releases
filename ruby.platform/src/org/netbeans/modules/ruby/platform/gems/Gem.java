@@ -67,15 +67,25 @@ public final class Gem implements Comparable<Gem> {
         return name;
     }
 
-    public String getInstalledVersions() {
+    /**
+     * Returns comma-separated list of installed versions.
+     */
+    public String getInstalledVersionsAsString() {
         return installedVersions;
     }
 
     String getLatestInstalled() {
         return getLatestVersion(installedVersions);
     }
-        
-    public String getAvailableVersions() {
+
+    SortedSet<String> getAvailableVersions() {
+        return getVersions(availableVersions);
+    }
+
+    /**
+     * Returns comma-separated list of remotely available versions.
+     */
+    public String getAvailableVersionsAsString() {
         return availableVersions;
     }
     
@@ -139,18 +149,18 @@ public final class Gem implements Comparable<Gem> {
     }
 
     private static String getLatestVersion(final String commaVersions) {
-        SortedSet<? extends String> versions = getVersions(commaVersions);
-        if (versions == null || versions.isEmpty()) {
+        SortedSet<String> versions = getVersions(commaVersions);
+        if (versions.isEmpty()) {
             return null;
         }
         return versions.last();
     }
 
-    private static SortedSet<? extends String> getVersions(final String commaVersions) {
+    private static SortedSet<String> getVersions(final String commaVersions) {
         if (commaVersions == null) {
-            return null;
+            return new TreeSet<String>();
         }
-        StringTokenizer st = new StringTokenizer(commaVersions, " ,");
+        StringTokenizer st = new StringTokenizer(commaVersions, " ,"); // NOI18N
         SortedSet<String> versions = new TreeSet<String>(Util.VERSION_COMPARATOR);
         while (st.hasMoreTokens()) {
             versions.add(st.nextToken());

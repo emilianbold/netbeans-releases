@@ -49,7 +49,7 @@ public class PackagingPanel extends javax.swing.JPanel implements HelpCtx.Provid
         
         // Init default values
         if (!packagingConfiguration.getHeader().getModified()) {
-            String defArch = "Architecture..."; // FIXUP
+            String defArch = getString("DefaultArchictureValue");
             if (conf.getPlatform().getValue() == Platform.PLATFORM_SOLARIS_INTEL) {
                 defArch = "i386"; // NOI18N
             }
@@ -82,8 +82,8 @@ public class PackagingPanel extends javax.swing.JPanel implements HelpCtx.Provid
         }
         packagingFilesOuterPanel = new PackagingFilesOuterPanel(packagingFilesPanel, packagingConfiguration);
         
-        tabbedPane.addTab("Info", packagingInfoOuterPanel); // FIXUP
-        tabbedPane.addTab("Files", packagingFilesOuterPanel); // FIXUP
+        tabbedPane.addTab(getString("InfoPanelText"), packagingInfoOuterPanel);
+        tabbedPane.addTab(getString("FilePanelText"), packagingFilesOuterPanel);
             
         if (packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_ZIP || packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_TAR) {
             // Add tabs
@@ -151,6 +151,8 @@ public class PackagingPanel extends javax.swing.JPanel implements HelpCtx.Provid
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         innerPanel.add(tabbedPane, gridBagConstraints);
+        tabbedPane.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PackagingPanel.class, "PackagingPanel.tabbedPane.AccessibleContext.accessibleName")); // NOI18N
+        tabbedPane.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PackagingPanel.class, "PackagingPanel.tabbedPane.AccessibleContext.accessibleDescription")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
