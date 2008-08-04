@@ -346,9 +346,11 @@ Microsystems, Inc. All Rights Reserved.
           <filterchain><expandproperties/></filterchain>
         </loadfile>
 
-        <copy file="netBeans/baseide/pkg/scripts/add_mysql.sh"
+        <copy file="${basedir}/netBeans/baseide/pkg/scripts/add_mysql.sh"
               todir="${basedir}/build/mysql.pkg/Contents/Resources"/>
 
+        <copy file="${basedir}/netBeans/baseide/pkg/scripts/env.sh" 
+              todir="${basedir}/build/mysql.pkg/Contents/Resources"/> 
      
         <echo message="${mysql.postflight.addon}"
               file="${basedir}/build/mysql.pkg/Contents/Resources/postflight"
