@@ -96,6 +96,7 @@ public class ProjectManagerTest extends NbTestCase implements FileChangeListener
         return Level.FINE;
     }
     
+    @Override
     protected void setUp() throws Exception {
         super.setUp();
         scratch = TestUtil.makeScratchDir(this);
@@ -113,6 +114,7 @@ public class ProjectManagerTest extends NbTestCase implements FileChangeListener
         TestUtil.BROKEN_PROJECT_LOAD_LOCK = null;
     }
     
+    @Override
     protected void tearDown() throws Exception {
         scratch.getFileSystem().removeFileChangeListener(this);
         scratch = null;
@@ -364,6 +366,7 @@ public class ProjectManagerTest extends NbTestCase implements FileChangeListener
         // Enter from one thread and start to load a broken project, but then pause.
         synchronized (GOING) {
             new Thread("initial load") {
+                @Override
                 public void run() {
                     try {
                         synchronized (GOING) {
@@ -386,6 +389,7 @@ public class ProjectManagerTest extends NbTestCase implements FileChangeListener
         synchronized (GOING) {
             final boolean[] FINISHED_2 = new boolean[1];
             new Thread("parallel load") {
+                @Override
                 public void run() {
                     synchronized (GOING) {
                         GOING.notify();
