@@ -42,6 +42,8 @@
 package org.netbeans.modules.vmd.midp.propertyeditors.date;
 
 import java.awt.BorderLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.text.DateFormat;
@@ -122,6 +124,15 @@ public final class PropertyEditorDate extends PropertyEditorUserCode implements 
         radioButton.getAccessibleContext().setAccessibleDescription( 
                 NbBundle.getMessage(PropertyEditorDate.class, "ACSD_Date"));  // NOI18N
         customEditor = new CustomEditor();
+
+        radioButton.addActionListener( new ActionListener() {
+
+            public void actionPerformed(ActionEvent e) {
+                if ( radioButton.isSelected() ){
+                    customEditor.textField.requestFocus();
+                }
+            }
+        });
     }
 
     public JComponent getCustomEditorComponent() {
@@ -196,17 +207,17 @@ public final class PropertyEditorDate extends PropertyEditorUserCode implements 
 
     @Override
     public void customEditorOKButtonPressed() {
-        super.customEditorOKButtonPressed();
         if (radioButton.isSelected()) {
             saveValue(customEditor.getText());
         }
-        
         final DesignComponent _component = component.get();
         if (databindingElement != null && databindingElement.getRadioButton().isSelected()) {
             ((DatabindingElementUI) databindingElement.getCustomEditorComponent()).saveToModel(_component);
+            return;
         } else if (databindingElement != null) {
             ((DatabindingElementUI) databindingElement.getCustomEditorComponent()).resetValuesInModel(_component);
         }
+        super.customEditorOKButtonPressed();
     }
 
     private String getValueAsText(PropertyValue value) {
@@ -248,7 +259,6 @@ public final class PropertyEditorDate extends PropertyEditorUserCode implements 
         private JTextField textField;
 
         public CustomEditor() {
-            radioButton.addFocusListener(this);
             initComponents();
         }
 
@@ -327,13 +337,11 @@ public final class PropertyEditorDate extends PropertyEditorUserCode implements 
         }
 
         public void focusGained(FocusEvent e) {
-            if (e.getSource() == radioButton) {
-                checkDateStatus();
-            }
-            if (e.getSource() == textField) {
+            boolean isSelected = radioButton.isSelected();
+            if (!isSelected) {
                 radioButton.setSelected(true);
-                checkDateStatus();
             }
+            checkDateStatus();
         }
 
         public void focusLost(FocusEvent e) {

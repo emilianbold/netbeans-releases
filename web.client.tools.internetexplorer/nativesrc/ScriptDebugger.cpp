@@ -156,9 +156,16 @@ STDMETHODIMP ScriptDebugger::onHandleBreakPoint(IRemoteDebugApplicationThread __
         EXCEPINFO excepInfo;
         pScriptErrorDebug->GetExceptionInfo(&excepInfo);
         changeState(STATE_EXCEPTION, OK);
-        tstring errorMsg = (TCHAR *)excepInfo.bstrSource;
-        errorMsg.append(_T(": "));
-        errorMsg.append((TCHAR *)excepInfo.bstrDescription);
+        tstring errorMsg;
+        if(excepInfo.bstrSource != NULL) {
+            errorMsg = (TCHAR *)excepInfo.bstrSource;
+        }
+        if(excepInfo.bstrDescription != NULL) {
+            if(excepInfo.bstrSource != NULL) {
+                errorMsg.append(_T(": "));
+            }
+            errorMsg.append((TCHAR *)excepInfo.bstrDescription);
+        }
         m_pDbgpConnection->sendErrorMessage(errorMsg);
         return S_OK;
     }
@@ -222,7 +229,7 @@ void ScriptDebugger::getTopStackFrame(StackFrame *pStackFrame) {
     }
 }
 
-void ScriptDebugger::getStackFrame(DebugStackFrameDescriptor *pFrameDescriptor, 
+BOOL ScriptDebugger::getStackFrame(DebugStackFrameDescriptor *pFrameDescriptor, 
                                            StackFrame *pStackFrame) {
     CComPtr<IDebugCodeContext> spDebugCodeCtxt; 
     HRESULT hr = pFrameDescriptor->pdsf->GetCodeContext(&spDebugCodeCtxt);
@@ -256,8 +263,10 @@ void ScriptDebugger::getStackFrame(DebugStackFrameDescriptor *pFrameDescriptor,
             if(description != NULL) {
                 pStackFrame->location = (TCHAR *)(description);
             }
+            return TRUE;
         }
     }
+    return FALSE;
 }
 
 list<StackFrame *> ScriptDebugger::getStackFrames() {
@@ -274,8 +283,9 @@ list<StackFrame *> ScriptDebugger::getStackFrames() {
             hr = spDebugStackFrames->Next(1, &frameDescriptor, &frameCount);
             if(hr == S_OK) {
                 StackFrame *pInfo = new StackFrame();
-                getStackFrame(&frameDescriptor, pInfo);
-                frames.push_back(pInfo);
+                if(getStackFrame(&frameDescriptor, pInfo)) {
+                    frames.push_back(pInfo);
+                }
             }
         }
     }
@@ -414,7 +424,7 @@ Property *ScriptDebugger::getProperty(tstring name, int stackDepth){
 	}
     Property *pProp = getProperty(spDebugProperty, name, stackDepth, TRUE);
     if(name == DOT && pProp != NULL) {
-        tstring childProps[] = {ARGUMENTS, ARGUMENTS_LENGTH, ARGUMENTS_CALLEE};
+        tstring childProps[] = {ARGUMENTS, ARGUMENTS_LENGTH, ARGUMENTS_CALLEE_LENGTH};
         for(int i=0; i<3; i++) {
             Property *pChildProp = eval(childProps[i], stackDepth);
             if(pChildProp != NULL) {
@@ -468,7 +478,7 @@ Property *ScriptDebugger::getProperty(IDebugProperty *pDebugProperty, tstring na
     HRESULT hr = pDebugProperty->GetPropertyInfo(DBGPROP_INFO_ALL, 10, &propertyInfo);
 
     //Special handling of arguments will be done for local scope
-    if(name == (DOT+ARGUMENTS) && (TCHAR *)propertyInfo.m_bstrName == ARGUMENTS) {
+    if(name == ARGUMENTS && (TCHAR *)propertyInfo.m_bstrName == ARGUMENTS) {
         return NULL;
     }
 

@@ -45,6 +45,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import javax.swing.text.Element;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.lexer.LanguagePath;
@@ -62,6 +63,13 @@ import org.netbeans.modules.editor.structure.formatting.TagBasedLexerFormatter;
 import org.netbeans.modules.xml.text.folding.TokenElement;
 import org.netbeans.modules.xml.text.folding.TokenElement.TokenType;
 import org.netbeans.modules.xml.text.syntax.XMLKit;
+import org.netbeans.modules.xml.xam.ModelSource;
+import org.netbeans.modules.xml.xdm.XDMModel;
+import org.netbeans.modules.xml.xdm.diff.DefaultElementIdentity;
+import org.netbeans.modules.xml.xdm.diff.DiffFinder;
+import org.netbeans.modules.xml.xdm.diff.Difference;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 
 /**
  * New XML formatter based on Lexer APIs.
@@ -224,37 +232,9 @@ public class XMLLexerFormatter extends TagBasedLexerFormatter {
     @Override
     public void reformat(Context context, int startOffset, int endOffset)
             throws BadLocationException {
-        int offset = -1;
-        int line = -1;
-        int col = -1;
         BaseDocument doc = (BaseDocument) context.document();        
-        JTextComponent editor = Utilities.getFocusedComponent();
-        if(editor != null) {
-            try {
-                offset = editor.getCaretPosition();
-                line = Utilities.getLineOffset(doc, offset);
-                col = Utilities.getVisualColumn(doc, offset);
-             } catch (Exception ex) {
-                //invalid line/col found
-            }
-        }
-        BaseDocument formattedDoc = doReformat(doc, startOffset, endOffset);
-        doc.atomicLock();
-        try {
-            doc.replace(0, doc.getLength(),
-            formattedDoc.getText(0, formattedDoc.getLength()), null);
-            if(line != -1 && col != -1) {
-                //find new offset based on last valid line+col information
-                offset = Utilities.getRowStartFromLineOffset(doc, line) + col;
-                if(editor != null && offset >= 0 )
-                    editor.setCaretPosition(offset);
-            }
-        } catch(Exception ex) {
-            //cant find new position 
-            editor.setCaretPosition(0);
-        } finally {
-            doc.atomicUnlock();
-        }
+        doc = doReformat(doc, startOffset, endOffset);
+        
     }
     
     public BaseDocument doReformat(BaseDocument doc, int startOffset, int endOffset) {
@@ -300,7 +280,8 @@ public class XMLLexerFormatter extends TagBasedLexerFormatter {
                 }
             }
             //Now do the actual replacement in the document with the pretty text
-            doc.replace(0, doc.getLength(), bufDoc.getText(0, bufDoc.getLength()), null);
+            //doc.replace(0, doc.getLength(), bufDoc.getText(0, bufDoc.getLength()), null);
+            compareAndMerge(doc, bufDoc);
         } catch (BadLocationException ble) {
             //ignore exception
         } catch (IOException iox) {
@@ -308,7 +289,7 @@ public class XMLLexerFormatter extends TagBasedLexerFormatter {
         } finally {
             doc.atomicUnlock();
         }
-        return bufDoc;
+        return doc;
     }
 
     private void changePrettyText(BaseDocument doc, TokenElement tag, int so) throws BadLocationException {
@@ -466,5 +447,24 @@ public class XMLLexerFormatter extends TagBasedLexerFormatter {
             //Exceptions.printStackTrace(ex);
             return false;
         }
+    }
+    
+    protected void compareAndMerge(Document d1, Document d2) throws IOException {
+        Lookup lookup = Lookups.singleton(d1);
+        ModelSource ms = new ModelSource(lookup, true);
+        XDMModel m1 = new XDMModel(ms);
+        m1.sync();
+        
+        lookup = Lookups.singleton(d2);
+        ms = new ModelSource(lookup, true);
+        XDMModel m2 = new XDMModel(ms);
+        m2.sync();        
+        
+        DefaultElementIdentity eID = new DefaultElementIdentity();
+        DiffFinder diffEngine = new DiffFinder(eID);
+        List<Difference> diffList = diffEngine.findDiff(m1.getDocument(), m2.getDocument());
+        
+        m1.mergeDiff(diffList);
+        m1.flush();
     }
 }

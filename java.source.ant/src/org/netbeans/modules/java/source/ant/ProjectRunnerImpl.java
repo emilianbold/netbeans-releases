@@ -55,6 +55,8 @@ import org.apache.tools.ant.module.api.AntProjectCookie;
 import org.apache.tools.ant.module.api.AntTargetExecutor;
 import org.apache.tools.ant.module.api.support.AntScriptUtils;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -89,8 +91,19 @@ public class ProjectRunnerImpl implements ProjectRunnerImplementation{
     public void execute(String command, Properties props, FileObject toRun) throws IOException {
         Project project = FileOwnerQuery.getOwner(toRun);
         ClassPath exec = ClassPath.getClassPath(toRun, ClassPath.EXECUTE);
+        ClassPath boot = ClassPath.getClassPath(toRun, ClassPath.BOOT);
         ClassPath source = ClassPath.getClassPath(toRun, ClassPath.SOURCE);
+        JavaPlatform foundPlatform = JavaPlatformManager.getDefault().getDefaultPlatform();
 
+        for (JavaPlatform p : JavaPlatformManager.getDefault().getInstalledPlatforms()) {
+            if (boot.entries().equals(p.getBootstrapLibraries().entries())) {
+                LOG.log(Level.FINE, "found platform={0}", p.getDisplayName());
+                foundPlatform = p;
+                break;
+            }
+        }
+
+        LOG.log(Level.FINE, "using platform={0}", foundPlatform.getDisplayName());
         LOG.log(Level.FINE, "execute classpath={0}", exec);
 
         String cp = exec.toString(ClassPath.PathConversionMode.FAIL);
@@ -99,6 +112,15 @@ public class ProjectRunnerImpl implements ProjectRunnerImplementation{
 
         antProps.setProperty("classpath", cp);
         antProps.setProperty("classname", source.getResourceName(toRun, '.', false));
+        if (antProps.get("work.dir") == null && project != null) {                //NOI18N
+            FileObject projDirectory = project.getProjectDirectory();
+            assert projDirectory != null;
+            File file = FileUtil.toFile(projDirectory);
+            if (file != null) {
+                antProps.setProperty("work.dir", file.getAbsolutePath());       //NOI18N
+            }
+        }
+        antProps.setProperty("platform.java", FileUtil.toFile(foundPlatform.findTool("java")).getAbsolutePath());
         
         FileObject script = buildScript(command);
         String projectName = project != null ? ProjectUtils.getInformation(project).getDisplayName() : "";

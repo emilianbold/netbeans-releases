@@ -56,6 +56,7 @@ import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
+import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
@@ -83,7 +84,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
     
     // only one of scopeRef/scopeAccessor must be used 
     private /*final*/ CsmScope scopeRef;// can be set in onDispose or contstructor only
-    private final CsmUID<CsmScope> scopeUID;
+    private CsmUID<CsmScope> scopeUID;
     
     private final CharSequence[] rawName;
 
@@ -130,20 +131,13 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         
         // change scope to file for static methods, but only to prevent 
         // registration in global  namespace
-        if( isStatic() && CsmKindUtilities.isNamespace(scope) &&
-                ((CsmNamespace)scope).isGlobal()) {
-            scope = file;
+        if(scope instanceof CsmNamespace) {
+            if( !NamespaceImpl.isNamespaceScope(this) ) {
+                    scope = file;
+            }
         }
-        
-        // set scope, do it in constructor to have final fields
-        this.scopeUID = UIDCsmConverter.scopeToUID(scope);
-        boolean assertionCondition = (this.scopeUID != null || scope == null);
-        if (!assertionCondition) {
-            throw new AstRendererException((FileImpl)getContainingFile(), getStartOffset(),
-                    "Cannot find function scope."); // NOI18N
-            //assert (this.scopeUID != null || scope == null);
-        }
-        this.scopeRef = null;
+
+        _setScope(scope);
         
         RepositoryUtils.hang(this); // "hang" now and then "put" in "register()"
 	
@@ -175,6 +169,40 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         if (register) {
             registerInProject();
         }
+    }
+
+    public void setScope(CsmScope scope) {
+        unregisterInProject();
+        try {
+            this._setScope(scope);
+        } catch(AstRendererException e) {
+            DiagnosticExceptoins.register(e);
+        }
+        registerInProject();
+    }
+
+    private void _setScope(CsmScope scope) throws AstRendererException {
+        this.scopeUID = UIDCsmConverter.scopeToUID(scope);
+        boolean assertionCondition = (this.scopeUID != null || scope == null);
+        if (!assertionCondition) {
+            throw new AstRendererException((FileImpl)getContainingFile(), getStartOffset(),
+                    "Cannot find function scope."); // NOI18N
+            //assert (this.scopeUID != null || scope == null);
+        }
+        this.scopeRef = null;
+
+    }
+
+    /**
+     * Return true, if this is a definition of function
+     * that is declared in some other place
+     * (in other words, that is prefixed with class or namespace.
+     * Otherwise - for simple functions with body as the one below:
+     * void foo() {}
+     * returns false
+     */
+    public boolean isPureDefinition() {
+        return getKind() == CsmDeclaration.Kind.FUNCTION_DEFINITION;
     }
 
     private boolean hasFlags(byte mask) {
@@ -415,7 +443,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
     
     public CharSequence getQualifiedName() {
         CsmScope scope = getScope();
-        if( (scope instanceof CsmNamespace) || (scope instanceof CsmClass) ) {
+        if( (scope instanceof CsmNamespace) || (scope instanceof CsmClass) || (scope instanceof CsmNamespaceDefinition) ) {
             CharSequence scopeQName = ((CsmQualifiedNamedElement) scope).getQualifiedName();
             if( scopeQName != null && scopeQName.length() > 0 ) {
                 return CharSequenceKey.create(scopeQName.toString() + getScopeSuffix() + "::" + getQualifiedNamePostfix()); // NOI18N

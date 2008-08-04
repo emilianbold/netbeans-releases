@@ -60,6 +60,7 @@ import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.ui.wizards.ImportWizard;
 import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.util.SvnUtils;
+import org.netbeans.modules.versioning.util.Utils;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 
@@ -113,7 +114,9 @@ public final class ImportAction extends NodeAction {
         if(!Subversion.getInstance().checkClientAvailable()) {            
             return;
         }
-    
+
+        Utils.logVCSActionEvent("SVN");
+
         if (nodes.length == 1) {
             final File importDirectory = lookupImportDirectory(nodes[0]);
             if (importDirectory != null) {

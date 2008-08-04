@@ -93,9 +93,10 @@ public final class DatabaseResourceWizardIterator implements WizardDescriptor.In
         helper = new RelatedCMPHelper(project, configFilesFolder, generator);
         wizard.putProperty(PROP_HELPER, helper);
         wizard.putProperty(PROP_CMP, new Boolean(false));
-        String wizardBundleKey = "Templates/Persistence/RelatedCMP"; // NOI18N
-
-        wizard.putProperty("NewFileWizard_Title", NbBundle.getMessage(RelatedCMPWizard.class, wizardBundleKey)); // NOI18N
+        
+        // Moved to getPanels()
+        //String wizardBundleKey = "Templates/Persistence/RelatedCMP"; // NOI18N
+        //wizard.putProperty("NewFileWizard_Title", NbBundle.getMessage(RelatedCMPWizard.class, wizardBundleKey)); // NOI18N
 
         generator.init(wizard);
         SourceGroup[] sourceGroups = SourceGroupSupport.getJavaSourceGroups(project);
@@ -275,9 +276,12 @@ public final class DatabaseResourceWizardIterator implements WizardDescriptor.In
      */
     private WizardDescriptor.Panel[] getPanels() {
         if (panels == null) {
+            
+            String wizardBundleKey = "Templates/Persistence/RelatedCMP"; // NOI18N
+            String wizardTitle = NbBundle.getMessage(RelatedCMPWizard.class, wizardBundleKey); // NOI18N
             panels = new WizardDescriptor.Panel[]{
                         //new DatabaseResourceWizardPanel1()
-                        new DatabaseTablesPanel.WizardPanel(),
+                        new DatabaseTablesPanel.WizardPanel(wizardTitle),
                         new EntityClassesPanel.WizardPanel(),
                         new EntityResourcesSetupPanel(NbBundle.getMessage(EntityResourcesIterator.class,
                         "LBL_RestResourcesAndClasses"), wizard)

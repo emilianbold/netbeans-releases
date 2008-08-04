@@ -136,7 +136,8 @@ public class SoapServiceClientEditorDrop implements ActiveEditorDrop {
                             allParams.addAll(bean.getInputParameters());
                         }
                         if (!allParams.isEmpty()) {
-                            CodeSetupPanel panel = new CodeSetupPanel(allParams);
+                            boolean showParamTypes = Util.isJava(targetDoc) || Util.isJsp(targetDoc);
+                            CodeSetupPanel panel = new CodeSetupPanel(allParams, showParamTypes);
 
                             DialogDescriptor desc = new DialogDescriptor(panel,
                                     NbBundle.getMessage(SoapServiceClientEditorDrop.class,

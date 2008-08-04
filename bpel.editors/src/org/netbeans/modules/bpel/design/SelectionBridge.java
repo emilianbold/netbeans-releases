@@ -63,48 +63,47 @@ public class SelectionBridge implements
         designView = null;
     }
     
-    public void selectionChanged(BpelEntity oldSelection, final BpelEntity newSelection) {
+ 
+     public void selectionChanged(BpelEntity oldSelection, final BpelEntity newSelection) {
         try {
-            
+
             Node node = null;
-            
-            if (newSelection != null ) {
+
+            if (newSelection != null) {
                 node = designView.getNodeForPattern(designView.getModel().getPattern(newSelection));
             } else {
                 // Workaround for bug xxx:
                 // Set process as active node when nothing is been
                 // selected on diagram
                 // Otherwise the printing is broken
-                DataObject dobj = (DataObject) designView.getLookup()
-                        .lookup(DataObject.class);
-                
-                if (dobj != null) {
-                    node = dobj.getNodeDelegate();
-                } 
-                
+                // See IZ138932
+                node = designView.getNodeForPattern(designView.getModel().getRootPattern());
+
                 if (node == null) {
-                    node = designView.getNodeForPattern(designView.getModel()
-                            .getRootPattern());
+                    DataObject dobj = (DataObject) designView.getLookup().lookup(DataObject.class);
+
+                    if (dobj != null) {
+                        node = dobj.getNodeDelegate();
+                    }
                 }
-                // Hack. Reset the active node before deleting element
-                // related to active node.
-                // see bug 6377934
+            // Hack. Reset the active node before deleting element
+            // related to active node.
+            // see bug 6377934
             }
-            
+
             insideChangeNode = true;
-            
-            if (node != null){
+
+            if (node != null) {
                 setActivatedNodes(new Node[]{node});
             } else {
                 setActivatedNodes(new Node[]{});
             }
-            
+
             insideChangeNode = false;
-        } catch( Exception ex){
+        } catch (Exception ex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         }
     }
-    
     public void propertyChange(PropertyChangeEvent evt) {
         
         if (designView != null ) {

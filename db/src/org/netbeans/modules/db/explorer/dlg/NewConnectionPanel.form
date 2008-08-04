@@ -20,7 +20,6 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="additionalPropsLabel" alignment="0" min="-2" max="-2" attributes="1"/>
                           <Group type="102" alignment="0" attributes="0">
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Component id="passwordLabel" alignment="0" min="-2" max="-2" attributes="0"/>
@@ -35,36 +34,41 @@
                                   <Component id="dsnLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                                   <Component id="serverNameLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                                   <Component id="instanceLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="urlLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace min="-2" pref="27" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="dsnField" alignment="1" pref="426" max="32767" attributes="1"/>
-                                  <Component id="templateComboBox" alignment="1" pref="426" max="32767" attributes="1"/>
-                                  <Component id="hostField" alignment="1" pref="426" max="32767" attributes="1"/>
-                                  <Component id="portField" alignment="1" pref="426" max="32767" attributes="1"/>
-                                  <Component id="databaseField" alignment="1" pref="426" max="32767" attributes="1"/>
-                                  <Component id="sidField" alignment="1" pref="426" max="32767" attributes="1"/>
-                                  <Component id="serviceField" alignment="1" pref="426" max="32767" attributes="1"/>
-                                  <Component id="tnsField" alignment="1" pref="426" max="32767" attributes="1"/>
-                                  <Component id="instanceField" alignment="1" pref="426" max="32767" attributes="0"/>
-                                  <Component id="passwordField" alignment="1" pref="426" max="32767" attributes="1"/>
-                                  <Component id="additionalPropsField" alignment="1" pref="426" max="32767" attributes="1"/>
-                                  <Component id="userField" alignment="1" pref="426" max="32767" attributes="1"/>
-                                  <Component id="serverNameField" alignment="1" pref="426" max="32767" attributes="1"/>
+                                  <Component id="dsnField" alignment="1" pref="429" max="32767" attributes="1"/>
+                                  <Component id="templateComboBox" alignment="1" pref="429" max="32767" attributes="1"/>
+                                  <Component id="hostField" alignment="1" pref="429" max="32767" attributes="1"/>
+                                  <Component id="portField" alignment="1" pref="429" max="32767" attributes="1"/>
+                                  <Component id="databaseField" alignment="1" pref="429" max="32767" attributes="1"/>
+                                  <Component id="sidField" alignment="1" pref="429" max="32767" attributes="1"/>
+                                  <Component id="serviceField" alignment="1" pref="429" max="32767" attributes="1"/>
+                                  <Component id="tnsField" alignment="1" pref="429" max="32767" attributes="1"/>
+                                  <Component id="instanceField" alignment="1" pref="429" max="32767" attributes="0"/>
+                                  <Component id="passwordField" alignment="1" pref="429" max="32767" attributes="1"/>
+                                  <Component id="userField" alignment="1" pref="429" max="32767" attributes="1"/>
+                                  <Component id="serverNameField" alignment="1" pref="429" max="32767" attributes="1"/>
+                                  <Component id="urlField" alignment="1" pref="429" max="32767" attributes="1"/>
                                   <Component id="passwordCheckBox" alignment="0" min="-2" pref="308" max="-2" attributes="1"/>
-                                  <Component id="urlField" alignment="1" pref="426" max="32767" attributes="1"/>
                               </Group>
+                          </Group>
+                          <Group type="102" alignment="0" attributes="0">
+                              <Component id="additionalPropsLabel" min="-2" max="-2" attributes="1"/>
+                              <EmptySpace type="separate" max="-2" attributes="0"/>
+                              <Component id="additionalPropsField" pref="429" max="32767" attributes="1"/>
                           </Group>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
-                  <Group type="103" alignment="0" groupAlignment="1" max="-2" attributes="0">
-                      <Component id="showUrlCheckBox" alignment="0" max="32767" attributes="1"/>
-                      <Component id="urlLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Group type="102" alignment="0" attributes="0">
+                      <Component id="errorLabel" pref="552" max="32767" attributes="0"/>
+                      <EmptySpace min="-2" pref="23" max="-2" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
-                      <Component id="errorLabel" pref="549" max="32767" attributes="0"/>
-                      <EmptySpace min="-2" pref="23" max="-2" attributes="0"/>
+                      <Component id="showUrlCheckBox" max="32767" attributes="1"/>
+                      <EmptySpace min="-2" pref="454" max="-2" attributes="0"/>
                   </Group>
               </Group>
           </Group>
@@ -133,9 +137,9 @@
                   <Component id="passwordLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="passwordField" linkSize="1" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" pref="11" max="-2" attributes="0"/>
               <Component id="passwordCheckBox" min="-2" max="-2" attributes="0"/>
-              <EmptySpace min="-2" pref="12" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="additionalPropsLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="additionalPropsField" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -143,13 +147,13 @@
               <EmptySpace type="separate" max="-2" attributes="0"/>
               <Component id="showUrlCheckBox" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="urlLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="urlField" alignment="3" min="-2" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Component id="urlField" min="-2" max="-2" attributes="0"/>
+                  <Component id="urlLabel" alignment="0" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace type="separate" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
               <Component id="errorLabel" min="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="25" max="32767" attributes="0"/>
+              <EmptySpace pref="35" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>

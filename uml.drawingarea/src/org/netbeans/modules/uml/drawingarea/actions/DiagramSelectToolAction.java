@@ -46,8 +46,11 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.JToggleButton;
+import javax.swing.KeyStroke;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram;
+import org.netbeans.modules.uml.drawingarea.UMLDiagramTopComponent;
+import org.netbeans.modules.uml.drawingarea.keymap.DiagramInputkeyMapper;
 import org.netbeans.modules.uml.drawingarea.view.DesignerTools;
 import org.netbeans.modules.uml.resources.images.ImageUtil;
 import org.openide.util.NbBundle;
@@ -67,16 +70,25 @@ public class DiagramSelectToolAction extends AbstractAction
     {
         this(scene, DesignerTools.SELECT, ImageUtil.instance().getIcon("selection-arrow.png"), 
                 NbBundle.getMessage(DiagramSelectToolAction.class, "LBL_SelectToolAction"),
-                Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+                Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR),null, null);
     }
 
-    public DiagramSelectToolAction(Scene scene, String tool, Icon icon, String tooltip, Cursor cursor)
+    public DiagramSelectToolAction(Scene scene, 
+                                   String tool, 
+                                   Icon icon, 
+                                   String tooltip, 
+                                   Cursor cursor, 
+                                   KeyStroke accelerator,
+                                   KeyStroke macAccelerator)
     {
         this.scene = scene;
         putValue(Action.SMALL_ICON, icon); 
         putValue(Action.SHORT_DESCRIPTION, tooltip);
         this.cursor = cursor; 
         this.tool = tool;
+        
+        putValue(Action.ACCELERATOR_KEY, accelerator);
+        putValue(DiagramInputkeyMapper.MAC_ACCELERATOR, macAccelerator);
     }
 
     public void actionPerformed(ActionEvent evt)
@@ -115,6 +127,20 @@ public class DiagramSelectToolAction extends AbstractAction
                 
                 scene.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
             }
+        }
+        else if(evt.getSource() instanceof UMLDiagramTopComponent)
+        {
+            // If the diagram is in read-only mode then we do not want to 
+            // set the scene in select, but READ_ONLY mode instead.
+            IDiagram diagram = scene.getLookup().lookup(IDiagram.class);
+            if((tool.equals(DesignerTools.SELECT) == true) && 
+                ((diagram != null) && diagram.getReadOnly() == true))
+            {
+                tool = DesignerTools.READ_ONLY;
+            }
+
+            scene.setActiveTool(tool);
+            scene.setCursor(cursor);
         }
     }
 }

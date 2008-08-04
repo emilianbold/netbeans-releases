@@ -73,6 +73,7 @@ public class BrowseVersionTreeAction extends AbstractAction {
     }
     
     public void actionPerformed(ActionEvent e) {
+        Utils.logVCSActionEvent("CC");
         Set<File> files = ctx.getRootFiles();
         VersionTreeGraphicalCommand cmd = new VersionTreeGraphicalCommand(files.toArray(new File[files.size()]));
         try {

@@ -46,11 +46,13 @@ import java.beans.PropertyChangeListener;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.UnknownHostException;
 import java.security.AccessControlException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
@@ -667,6 +669,12 @@ public class InstallSupportImpl {
             String label = toUpdateImpl.getDisplayName ();
             getDownloadedFiles ().add (FileUtil.normalizeFile (dest));
             c = copy (source, dest, progress, toUpdateImpl.getDownloadSize (), aggregateDownload, totalSize, label);
+        } catch (UnknownHostException x) {
+            err.log (Level.INFO, x.getMessage (), x);
+            throw new OperationException (OperationException.ERROR_TYPE.PROXY, source.toString ());
+        } catch (FileNotFoundException x) {
+            err.log (Level.INFO, x.getMessage (), x);
+            throw new OperationException (OperationException.ERROR_TYPE.INSTALL, x.getLocalizedMessage ());
         } catch (IOException x) {
             err.log (Level.INFO, x.getMessage (), x);
             throw new OperationException (OperationException.ERROR_TYPE.PROXY, source.toString ());

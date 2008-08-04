@@ -135,6 +135,7 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
             cli.exec(cmd);
             checkErrors(cmd);            
             if(!cmd.isSupported()) {
+                Subversion.LOG.log(Level.WARNING, "Unsupported svn version. You need >= 1.3");
                 throw new SVNClientException(ERR_CLI_NOT_AVALABLE + "\n" + cmd.getOutput());               
             }                       
         } catch (IOException ex) {

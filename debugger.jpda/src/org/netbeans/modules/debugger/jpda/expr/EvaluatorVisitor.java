@@ -172,7 +172,7 @@ import org.openide.util.NbBundle;
 public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext> {
 
     private static final Logger loggerMethod = Logger.getLogger("org.netbeans.modules.debugger.jpda.invokeMethod"); // NOI18N
-    private static final Logger loggerValue = Logger.getLogger("org.netbeans.modules.debugger.jpda.getValue"); // NOI8N
+    private static final Logger loggerValue = Logger.getLogger("org.netbeans.modules.debugger.jpda.getValue"); // NOI18N
     
     private Type newArrayType;
     private Expression2 expression;
@@ -1304,7 +1304,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                     try {
                         return thisObject.getValue(field);
                     } catch (IllegalArgumentException iaex) {
-                        Logger.getLogger(getClass().getName()).severe("field = "+field+", thisObject = "+thisObject); // NOI8N
+                        Logger.getLogger(getClass().getName()).severe("field = "+field+", thisObject = "+thisObject); // NOI18N
                         throw iaex;
                     }
                 } else {
@@ -1449,6 +1449,9 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             Assert2.error(arg0, "arrayIsNull", arg0.getExpression());
         }
         Mirror index = arg0.getIndex().accept(this, evaluationContext);
+        if (!(array instanceof ArrayReference)) {
+            Assert2.error(arg0, "notArrayType", arg0.getExpression());
+        }
         if (!(index instanceof PrimitiveValue)) {
             Assert2.error(arg0, "arraySizeBadType", index);
         }
@@ -1598,7 +1601,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         return array;
     }
     
-    private static final String BRACKETS = "[][][][][][][][][][][][][][][][][][][][]"; // NOI8N
+    private static final String BRACKETS = "[][][][][][][][][][][][][][][][][][][][]"; // NOI18N
     
     private ArrayType getArrayType(NewArrayTree arg0, Type type, int depth) {
         String arrayClassName;
@@ -1607,7 +1610,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         } else {
             arrayClassName = type.name() + BRACKETS;
             for (int i = BRACKETS.length()/2; i < depth; i++) {
-                arrayClassName += "[]"; // NOI8N
+                arrayClassName += "[]"; // NOI18N
             }
         }
         List<ReferenceType> classes = type.virtualMachine().classesByName(arrayClassName);
@@ -1901,6 +1904,10 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                         return clazz.classObject();
                     }
                     Field f = clazz.fieldByName(fieldName);
+                    if (!f.isStatic()) {
+                        Assert2.error(arg0, "accessInstanceVariableFromStaticContext", fieldName);
+                        return null;
+                    }
                     if (f != null) {
                         return clazz.getValue(f);
                     } else {

@@ -74,6 +74,8 @@ import java.util.*;
 import java.text.MessageFormat;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import org.netbeans.modules.versioning.system.cvss.ui.actions.AbstractSystemAction;
+import org.netbeans.modules.versioning.util.Utils;
 
 /**
  * Imports folder into CVS repository. It's enabled on Nodes that represent:
@@ -120,7 +122,7 @@ public final class AddToRepositoryAction extends NodeAction implements ChangeLis
         return null;
     }
 
-    protected boolean enable(Node[] nodes) {
+    protected boolean enable(Node[] nodes) {        
         if (nodes.length == 1) {
             FileStatusCache cache = CvsVersioningSystem.getInstance().getStatusCache();
             File dir = lookupImportDirectory(nodes[0]);
@@ -143,6 +145,7 @@ public final class AddToRepositoryAction extends NodeAction implements ChangeLis
     }
 
     protected void performAction(Node[] nodes) {
+        Utils.logVCSActionEvent("CVS");        
         if (nodes.length == 1) {
             final File importDirectory = lookupImportDirectory(nodes[0]);
             if (importDirectory != null) {

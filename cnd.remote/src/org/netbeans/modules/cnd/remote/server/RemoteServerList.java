@@ -45,6 +45,7 @@ import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.remote.ServerList;
@@ -65,28 +66,26 @@ import org.openide.util.NbPreferences;
  */
 public class RemoteServerList extends ArrayList<RemoteServerRecord> implements ServerList {
     
-    public static final String PROP_SET_AS_ACTIVE = "setAsActive"; // NOI18N
-    public static final String PROP_DELETE_SERVER = "deleteServer"; // NOI18N
-    
     private static final String CND_REMOTE = "cnd.remote"; // NOI18N
     private static final String REMOTE_SERVERS = CND_REMOTE + ".servers"; // NOI18N
     private static final String DEFAULT_INDEX = CND_REMOTE + ".default"; // NOI18N
     
-    private final static Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
-    private final static RemoteServerList instance = new RemoteServerList();
+    private static RemoteServerList instance = null;
+    private static final Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
     
     private int defaultIndex;
-    private PropertyChangeSupport pcs;
-    private ChangeSupport cs;
-    private ArrayList<RemoteServerRecord> unlisted;
+    private final PropertyChangeSupport pcs;
+    private final ChangeSupport cs;
+    private final ArrayList<RemoteServerRecord> unlisted;
     
-    public static RemoteServerList getInstance() {
-        log.fine("RSL.getInsance:");
+    public synchronized static RemoteServerList getInstance() {
+        if (instance == null) {
+            instance = new RemoteServerList();
+        }
         return instance;
     }
     
     private RemoteServerList() {
-        log.fine("RSL<Init>:");
         String slist = getPreferences().get(REMOTE_SERVERS, null);
         defaultIndex = getPreferences().getInt(DEFAULT_INDEX, 0);
         pcs = new PropertyChangeSupport(this);
@@ -94,15 +93,15 @@ public class RemoteServerList extends ArrayList<RemoteServerRecord> implements S
         unlisted = new ArrayList<RemoteServerRecord>();
         
         // Creates the "localhost" record and any remote records cached in remote.preferences
-        add(CompilerSetManager.LOCALHOST); 
+        addServer(CompilerSetManager.LOCALHOST, false);
         if (slist != null) {
             for (String hkey : slist.split(",")) { // NOI18N
-                add(hkey);
+                addServer(hkey, false);
             }
         }
         refresh();
     }
-    
+
     /**
      * Get a ServerRecord pertaining to hkey. If needed, create the record.
      * 
@@ -162,7 +161,7 @@ public class RemoteServerList extends ArrayList<RemoteServerRecord> implements S
         return sa;
     }
     
-    public void add(final String name) {
+    public void addServer(final String name, boolean asDefault) {
         RemoteServerRecord record = null;
         
         // First off, check if we already have this record
@@ -186,6 +185,9 @@ public class RemoteServerList extends ArrayList<RemoteServerRecord> implements S
             unlisted.remove(record);
         }
         add(record);
+        if (asDefault) {
+            defaultIndex = size() - 1;
+        }
         refresh();
         
         // TODO: this should follow toolchain loading
@@ -194,31 +196,53 @@ public class RemoteServerList extends ArrayList<RemoteServerRecord> implements S
         // Register the new server
         // TODO: Save the state as well as name. On restart, only try connecting to
         // ONLINE hosts.
-        if (!name.equals(CompilerSetManager.LOCALHOST)) {
-            String slist = getPreferences().get(REMOTE_SERVERS, null);
-            if (slist == null) {
-                getPreferences().put(REMOTE_SERVERS, name);
-            } else {
-                boolean do_add = true;
-                for (String server : slist.split(",")) { // NOI18N
-                    if (server.equals(name)) {
-                        do_add = false;
-                        break;
-                    }
+        String slist = getPreferences().get(REMOTE_SERVERS, null);
+        if (slist == null) {
+            getPreferences().put(REMOTE_SERVERS, name);
+        } else {
+            boolean do_add = true;
+            for (String server : slist.split(",")) { // NOI18N
+                if (server.equals(name)) {
+                    do_add = false;
+                    break;
                 }
-                if (do_add) {
-                    getPreferences().put(REMOTE_SERVERS, slist + ',' + name);
-                }
+            }
+            if (do_add) {
+                getPreferences().put(REMOTE_SERVERS, slist + ',' + name);
             }
         }
         getPreferences().putInt(DEFAULT_INDEX, defaultIndex);
     }
 
-    public void deleteServer(RemoteServerRecord record) {
-        if (remove(record)) {
-            pcs.firePropertyChange(PROP_DELETE_SERVER, null, record);
+    public void removeServer(int idx) {
+        if (idx >= 0 && idx < size()) {
+            RemoteServerRecord record = remove(idx);
+            removeFromPreferences(record.getName());
             refresh();
         }
+    }
+
+    public void removeServer(RemoteServerRecord record) {
+        if (super.remove(record)) {
+            removeFromPreferences(record.getName());
+            refresh();
+        }
+    }
+    
+    @Override
+    public void clear() {
+        getPreferences().remove(REMOTE_SERVERS);
+        super.clear();
+    }
+    
+    private void removeFromPreferences(String hkey) {
+        StringBuilder sb = new StringBuilder();
+        
+        for (RemoteServerRecord record : this) {
+            sb.append(record.getName());
+            sb.append(',');
+        }
+        getPreferences().put(REMOTE_SERVERS, sb.substring(0, sb.length() - 1));
     }
     
     public ServerUpdateCache show(ServerUpdateCache serverUpdateCache) {
@@ -260,11 +284,18 @@ public class RemoteServerList extends ArrayList<RemoteServerRecord> implements S
     }
     
     public boolean isValidExecutable(String hkey, String path) {
+        if (path == null || path.length() == 0) {
+            return false;
+        }
+        if (SwingUtilities.isEventDispatchThread()) {
+            log.warning("RemoteServerList.isValidExecutable from EDT"); // NOI18N
+        }
         String cmd = "PATH=/bin:/usr/bin:$PATH test -x " + path; // NOI18N
         int exit_status = RemoteCommandSupport.run(hkey, cmd);
         return exit_status == 0;
     }
     
+    // TODO: Are these still needed?
     public void addChangeListener(ChangeListener listener) {
         cs.addChangeListener(listener);
     }

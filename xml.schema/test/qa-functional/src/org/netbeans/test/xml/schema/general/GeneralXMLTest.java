@@ -385,6 +385,8 @@ public class GeneralXMLTest extends JellyTestCase {
       ProjectRootNode prn = pto.getProjectRootNode( sProject );
       prn.select( );
 
+      Sleep( 1000 );
+
       NewFileWizardOperator opNewFileWizard = NewFileWizardOperator.invoke( );
       opNewFileWizard.selectCategory( "XML" );
       opNewFileWizard.selectFileType( "XML Schema" );
@@ -686,13 +688,17 @@ public class GeneralXMLTest extends JellyTestCase {
       jm = new JMenuBarOperator(MainWindowOperator.getDefault());
       try
       {
+        // Try first time. Will fail for buggy platforms and pass for
+        // normal ones.
         jm.pushMenu( sSubmenu + "|" + sMenuItem );
       }
       catch( JemmyException ex )
       {
+        // If failed first time we are on buggy platform.
+        // Let's do it again.
+        jm.closeSubmenus( );
+        jm.pushMenu( sSubmenu + "|" + sMenuItem );
       }
-      jm.closeSubmenus( );
-      jm.pushMenu( sSubmenu + "|" + sMenuItem );
    }
 
    protected void CallUnchangedSubmenuNoBlock( String sSubmenu, String sMenuItem )
@@ -702,12 +708,16 @@ public class GeneralXMLTest extends JellyTestCase {
       jm = new JMenuBarOperator(MainWindowOperator.getDefault());
       try
       {
+        // Try first time. Will fail for buggy platforms and pass for
+        // normal ones.
         jm.pushMenu( sSubmenu + "|" + sMenuItem );
       }
       catch( JemmyException ex )
       {
+        // If failed first time we are on buggy platform.
+        // Let's do it again.
+        jm.closeSubmenus( );
+        jm.pushMenuNoBlock( sSubmenu + "|" + sMenuItem );
       }
-      jm.closeSubmenus( );
-      jm.pushMenuNoBlock( sSubmenu + "|" + sMenuItem );
    }
 }

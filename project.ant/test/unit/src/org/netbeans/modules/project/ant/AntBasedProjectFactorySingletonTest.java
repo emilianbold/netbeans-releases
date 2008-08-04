@@ -53,6 +53,7 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.AntProjectHelperTest;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.test.TestFileUtils;
+import org.openide.util.Exceptions;
 import org.openide.util.test.MockLookup;
 
 /**
@@ -130,6 +131,12 @@ public class AntBasedProjectFactorySingletonTest extends NbTestCase {
             fail("should not have successfully loaded an invalid project.xml");
         } catch (IOException x) {
             assertTrue(x.toString(), x.getMessage().contains("bogus"));
+            // #142079: use simplified error message.
+            String loc = Exceptions.findLocalizedMessage(x);
+            assertNotNull(loc);
+            assertTrue(loc, loc.contains("bogus"));
+            assertTrue(loc, loc.contains("project.xml"));
+            // Probably should not assert exact string, as this is dependent on parser.
         }
     }
     

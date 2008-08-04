@@ -2499,6 +2499,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             final CompilationController controller = env.getController();
             final Trees trees = controller.getTrees();
             final Elements elements = controller.getElements();
+            final ElementUtilities eu = controller.getElementUtilities();
             final Types types = controller.getTypes();
             final TreeUtilities tu = controller.getTreeUtilities();
             TypeElement typeElem = type.getKind() == TypeKind.DECLARED ? (TypeElement)((DeclaredType)type).asElement() : null;
@@ -2520,8 +2521,8 @@ public class JavaCompletionProvider implements CompletionProvider {
                                 while(cls != null) {
                                     if (cls == elem)
                                         return isOfKindAndType(asMemberOf(e, t, types), e, kinds, baseType, scope, trees, types);
-                                    Element outer = cls.getEnclosingElement();
-                                    cls = !cls.getModifiers().contains(STATIC) && outer.getKind().isClass() ? (TypeElement)outer : null;
+                                    TypeElement outer = eu.enclosingTypeElement(cls);
+                                    cls = !cls.getModifiers().contains(STATIC) ? outer : null;
                                 }
                                 return false;
                             }

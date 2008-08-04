@@ -5,7 +5,6 @@
 > -->
 <html>
 <head>
-<meta name="lastupdated" content="9Jul07">
 <!-- p2 -->
 <title>Generating JSF Pages from an Entity Class</title>
 <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
@@ -16,8 +15,9 @@
 
 
 <p>An entity class is a class that uses the Java Persistence API to access a data source. 
-In a web application project, you can generate a series of JSP pages that use the JSF framework and the 
-entity classes to access to the entries in the database and provide CRUD functionality (Create, Read, Update, Delete). 
+In a web application project, you can use the JSF Pages from Entity Classes wizard to 
+generate a series of JSP pages that use the JSF framework and the 
+entity classes to access entries in the database and provide CRUD functionality (Create, Read, Update, Delete). 
 The JSP pages use JSF components.</p>
 
 <p><b>To generate JSF pages from an entity class:</b></p>
@@ -35,20 +35,10 @@ The JSP pages use JSF components.</p>
 <p>When you click Finish the IDE generates the following artifacts for each entity class.</p>
 <ul>
     <li><b>JPA controller classes.</b> 
-    For each entity class the IDE creates one JPA controller class and places the controller in the specified location.
-    A JPA controller class is a wrapper for an entity class that provides clients with access to 
-    the database through the methods in the entity class. 
-    The JPA controller class contains the logic for creating, editing and destorying an entry in the data source, 
-    getting all of the entries in the data source, and getting a specific entry in the data source. 
-    </li>
-    <li><b>JSF classes.</b> For each entity class the IDE creates one JSF controller class and one JSF converter class and places the classes in the specified location. 
-    The JSF controller class generally contains code that invokes methods in the JPA controller classes and 
-    demonstrates which exceptions to catch.
-    The JSF converter class takes input from the form and converts it into the type that matches the data in the data source.</li>
+    For each entity class the IDE creates one JPA controller class in the specified location.</li>
+    <li><b>JSF classes.</b> For each entity class the IDE creates one JSF controller class and one JSF converter class and places the classes in the specified location. </li>
     <li><b>JSP pages.</b> 
-    For each entity class, the IDE creates four JSP pages that let you view, edit, create, and destroy entries in the data source.
-    The JSP pages are the web user interface for accessing the data in the data source. 
-    </li>
+    For each entity class, the IDE creates four JSP pages that are used to view, edit, create, and destroy entries in the data source.</li>
 </ul>
 
 <p>The IDE also creates the following:</p>
@@ -57,7 +47,7 @@ The JSP pages use JSF components.</p>
     (<tt>IllegalOrphanException.java</tt>, <tt>NonexistentEntityException.java</tt>, <tt>PreexistingEntityException.java</tt>, 
     <tt>RollbackFailureException.java</tt>)</li>
     <li>Three JSF utility classes 
-    (<tt>JsfUtil.java</tt>, <tt>PagingInfo.java</tt>, and <tt>JsfCrudELResolver.java</tt>).</li>
+    (<tt>JsfUtil.java</tt>, <tt>PagingInfo.java</tt>, and <tt>JsfCrudELResolver.java</tt>)</li>
     <li>Default stylesheet and JavaScript files</li>
 </ul>
 
@@ -65,7 +55,7 @@ The JSP pages use JSF components.</p>
   <dt><a name="seealso">See Also</a></dt>
   <dd><a href="about_framework.html">About Web Application Frameworks</a></dd>
   <dd><a href="framework_jsf_add.html">Adding JSF Support to an Existing Application</a></dd>
-  <dd><a href="framework_jpa_fromentity.html">Generating JPA Controller Classes from an Entity Class</a></dd>
+  <dd><a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/persistence/general/persist_jpa_fromentity.html">Generating JPA Controller Classes from an Entity Class</a></dd>
   <dd><a href="framework_jsf_aboutcrud.html">About CRUD Applications</a></dd>
   <dd><a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/persistence/general/persistence_entityclasses.html">Creating an Entity Class</a></dd>
   <dd><a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/persistence/general/persistence_fromdb.html">Generating Persistent Entity Classes from a Database</a></dd>

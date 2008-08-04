@@ -38,13 +38,10 @@
  */
 package org.netbeans.modules.web.client.tools.javascript.debugger.impl;
 
-import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.util.Collections;
 import java.util.Map;
 import org.netbeans.modules.web.client.tools.common.dbgp.HttpMessage;
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSHttpMessage;
-import sun.misc.BASE64Decoder;
 
 /**
  *
@@ -59,6 +56,7 @@ public class JSHttpResponse implements JSHttpMessage {
     private final String url;
     private final String mimeType;
     private final String responseText;
+    private final String category;
 
     public JSHttpResponse(HttpMessage message) {
         assert message != null;
@@ -67,16 +65,21 @@ public class JSHttpResponse implements JSHttpMessage {
         timeStamp    = message.getTimeStamp();
         headerData   = Collections.<String,String>unmodifiableMap(message.getHeader());
         status       = message.getChildValue("status");
-        mimeType     = message.getChildValue("mimeType");
+        String tmpMimeType     = message.getChildValue("mimeType");
         url          = message.getUrl();
         responseText = message.getResponseText();
-
-
+        category     = message.getChildValue("category");
         assert id        != null;
         assert timeStamp != null;
-        if( mimeType == null || mimeType.equals("null")){
-            throw new AssertionError("MIME type is null for: url:" + url);
+        if( tmpMimeType == null || tmpMimeType.equals("null")){
+            Log.getLogger().warning("JSHttpResponse - MIME type is null for url:" + url);
+            tmpMimeType = "text/html"; //Temporarily to make sure things don't break
         }
+        mimeType = tmpMimeType;
+    }
+
+    public String getCategory() {
+        return category;
     }
 
     public String getResponseText() {

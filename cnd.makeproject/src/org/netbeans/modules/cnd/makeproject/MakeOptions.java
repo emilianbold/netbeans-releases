@@ -79,6 +79,12 @@ public class MakeOptions extends SharedClassObject implements PropertyChangeList
     // Reuse
     static final String REUSE = "reuse";  // NOI18N
     
+    // packaging Defaults
+    static final String DEF_EXE_PERM = "defexeperm"; // NOI18N
+    static final String DEF_FILE_PERM = "deffileperm"; // NOI18N
+    static final String DEF_OWNER = "defowner"; // NOI18N
+    static final String DEF_GROUP = "defgroup"; // NOI18N
+    
     static public MakeOptions getInstance() {
         if (instance == null) {
             instance = SharedClassObject.findObject(MakeOptions.class, true);
@@ -138,7 +144,7 @@ public class MakeOptions extends SharedClassObject implements PropertyChangeList
     
     // Dependency Checking
     public boolean getDepencyChecking() {
-        return getPreferences().getBoolean(DEPENDENCY_CHECKING, false);
+        return getPreferences().getBoolean(DEPENDENCY_CHECKING, true);
     }
     public void setDepencyChecking(boolean dependencyChecking) {
         boolean oldValue = getDepencyChecking();
@@ -167,6 +173,51 @@ public class MakeOptions extends SharedClassObject implements PropertyChangeList
         getPreferences().putBoolean(REUSE, reuse);
         if (oldValue != reuse)
             firePropertyChange(REUSE, new Boolean(oldValue), new Boolean(reuse));
+    }
+    
+    
+    // Def Exe Perm
+    public String getDefExePerm() {
+        return getPreferences().get(DEF_EXE_PERM, "755"); // NOI18N
+    }
+    public void setDefExePerm(String value) {
+        String oldValue = getDefExePerm();
+        getPreferences().put(DEF_EXE_PERM, value);
+        if (!oldValue.equals(value))
+            firePropertyChange(DEF_EXE_PERM, oldValue, value);
+    }
+    
+    // Def File Perm
+    public String getDefFilePerm() {
+        return getPreferences().get(DEF_FILE_PERM, "644"); // NOI18N
+    }
+    public void setDefFilePerm(String value) {
+        String oldValue = getDefFilePerm();
+        getPreferences().put(DEF_FILE_PERM, value);
+        if (!oldValue.equals(value))
+            firePropertyChange(DEF_FILE_PERM, oldValue, value);
+    }
+    
+    // Def Owner Perm
+    public String getDefOwner() {
+        return getPreferences().get(DEF_OWNER, "root"); // NOI18N
+    }
+    public void setDefOwner(String value) {
+        String oldValue = getDefOwner();
+        getPreferences().put(DEF_OWNER, value);
+        if (!oldValue.equals(value))
+            firePropertyChange(DEF_OWNER, oldValue, value);
+    }
+    
+    // Def Group Perm
+    public String getDefGroup() {
+        return getPreferences().get(DEF_GROUP, "sys"); // NOI18N
+    }
+    public void setDefGroup(String value) {
+        String oldValue = getDefGroup();
+        getPreferences().put(DEF_GROUP, value);
+        if (!oldValue.equals(value))
+            firePropertyChange(DEF_GROUP, oldValue, value);
     }
     
     public void propertyChange(PropertyChangeEvent pce) {

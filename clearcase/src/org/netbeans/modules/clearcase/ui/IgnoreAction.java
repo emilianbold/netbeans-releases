@@ -52,7 +52,7 @@ import org.netbeans.modules.clearcase.FileInformation;
 import org.netbeans.modules.clearcase.FileStatusCache;
 import org.netbeans.modules.clearcase.util.ClearcaseUtils;
 import org.netbeans.modules.clearcase.util.ProgressSupport;
-import org.openide.util.Exceptions;
+import org.netbeans.modules.versioning.util.Utils;
 import org.openide.util.NbBundle;
 
 /**
@@ -73,6 +73,7 @@ public class IgnoreAction extends AbstractAction {
     }
     
     public void actionPerformed(ActionEvent e) {
+        Utils.logVCSActionEvent("CC");
         final Set<File> roots = context.getRootFiles();
         if(roots.size() == 0 ) {
             return;

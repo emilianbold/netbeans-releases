@@ -116,7 +116,7 @@ public class AstRenderer {
                     try {
                         FunctionImpl fi = new FunctionImpl(token, file, currentNamespace);
                         container.addDeclaration(fi);
-                        if (!fi.isStatic()) {
+                        if (NamespaceImpl.isNamespaceScope(fi)) {
                             currentNamespace.addDeclaration(fi);
                         }
                     } catch (AstRendererException e) {
@@ -150,7 +150,7 @@ public class AstRenderer {
                             FunctionDDImpl fddi = new FunctionDDImpl(token, file, currentNamespace);
                             //fddi.setScope(currentNamespace);
                             container.addDeclaration(fddi);
-                            if (!fddi.isStatic()) {
+                            if (NamespaceImpl.isNamespaceScope(fddi)) {
                                 currentNamespace.addDeclaration(fddi);
                             }
                         }
@@ -173,7 +173,7 @@ public class AstRenderer {
                             else {
                                 FunctionImpl funct = new FunctionImpl(token, file, currentNamespace);
                                 container.addDeclaration(funct);
-                                if (!funct.isStatic()) {
+                                if (NamespaceImpl.isNamespaceScope(funct)) {
                                     currentNamespace.addDeclaration(funct);
                                 }
                             }
@@ -189,7 +189,7 @@ public class AstRenderer {
                         } else {
                             FunctionDDImpl fddit = new FunctionDDImpl(token, file, currentNamespace);
                             container.addDeclaration(fddit);
-                            if (!fddit.isStatic()) {
+                            if (NamespaceImpl.isNamespaceScope(fddit)) {
                                 currentNamespace.addDeclaration(fddit);
                             }
                         }

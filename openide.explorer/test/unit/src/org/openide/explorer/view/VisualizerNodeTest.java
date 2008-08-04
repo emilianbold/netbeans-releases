@@ -53,6 +53,9 @@ import org.openide.nodes.Node;
 /** VisualizerNode tests, mostly based on reported bugs.
  */
 public class VisualizerNodeTest extends NbTestCase {
+    {
+        System.setProperty("org.openide.explorer.VisualizerChildren.prefetchCount", "0");
+    }
 
     public VisualizerNodeTest(String name) {
         super(name);
@@ -155,8 +158,8 @@ public class VisualizerNodeTest extends NbTestCase {
         assertEquals("Counter should still be 3", 3, lch.cnt);
         assertEquals("Size is 5", 5, ta.getChildCount());
 
-        assertTrue("Child is empty", isDummyNode(((VisualizerNode)(ta.getChildAt(4))).node));
-        assertEquals("We have just four children", 5, ta.getChildCount());
+        assertTrue("Child is empty", isDummyNode(ta.getChildAt(4)));
+        assertEquals("We have still 5 children, no opportunity to update", 5, ta.getChildCount());
         assertEquals("Three nodes created, still", 3, lch.cnt);
         
         assertEquals("x Child check", "x", ta.getChildAt(3).toString());
@@ -164,10 +167,11 @@ public class VisualizerNodeTest extends NbTestCase {
         lch.keys("a", "b", "c", "x", "-x", "-y", "y");
 
         assertEquals("No time to update, should be 5", 5, ta.getChildCount());
-        assertTrue("Nothing removed, -x still present", isDummyNode(((VisualizerNode)(ta.getChildAt(4))).node));
+        assertTrue("Nothing removed, -x still present", isDummyNode(ta.getChildAt(4)));
     }
     
-    final boolean isDummyNode(Node node) {
+    final boolean isDummyNode(TreeNode visNode) {
+        Node node = ((VisualizerNode)(visNode)).node;
         return node.getClass().getName().endsWith("EntrySupport$Lazy$DummyNode");
     }
     

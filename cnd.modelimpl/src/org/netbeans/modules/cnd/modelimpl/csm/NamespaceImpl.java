@@ -339,7 +339,9 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
      * or false if it is file-local scope (i.e. no external linkage)
      */
     public static boolean isNamespaceScope(VariableImpl var, boolean isFileLevel) {
-	if( var.isStatic() ) {
+        if( ((FileImpl) var.getContainingFile()).isHeaderFile() && ! CsmKindUtilities.isVariableDefinition(var)) {
+            return true;
+        } else if( var.isStatic() ) {
 	    return false;
 	}
 	else if( var.isConst() && isFileLevel ) {
@@ -359,7 +361,9 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
      * or false if it is file-local scope (i.e. no external linkage)
      */
     public static boolean isNamespaceScope(FunctionImpl func) {
-        if (func.isStatic()) {
+        if( ((FileImpl) func.getContainingFile()).isHeaderFile() && ! func.isPureDefinition() ) {
+            return true;
+        } else if (func.isStatic()) {
             return false;
         }
         return true;

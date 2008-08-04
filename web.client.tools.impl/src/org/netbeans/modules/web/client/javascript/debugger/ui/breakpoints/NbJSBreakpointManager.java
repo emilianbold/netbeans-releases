@@ -63,7 +63,7 @@ public final class NbJSBreakpointManager {
     private static final Map<NbJSBreakpoint, NbJSBreakpointLineUpdater> BLUS = new HashMap<NbJSBreakpoint, NbJSBreakpointLineUpdater>();
 
     private NbJSBreakpointManager() {};
-    
+
 
     /**
      * Creates a breakpoint but does not add it to the Debugger.
@@ -74,9 +74,9 @@ public final class NbJSBreakpointManager {
 
     protected final static NbJSBreakpoint createBreakpoint(final Line line) {
     	DataObject dataObject = (DataObject)line.getLookup ().lookup (DataObject.class);
-    	FileObject fileObject = dataObject.getPrimaryFile();
-    	NbJSBreakpoint breakpoint = null;
-    	if (fileObject instanceof URLFileObject) {
+        FileObject fileObject = dataObject.getPrimaryFile();
+        NbJSBreakpoint breakpoint = null;
+        if (fileObject instanceof URLFileObject) {
             try {
                 URL url = fileObject.getURL();
                 breakpoint = new NbJSURIBreakpoint(url.toString(), line.getLineNumber() + 1);
@@ -91,7 +91,7 @@ public final class NbJSBreakpointManager {
         attachLineUpdater(breakpoint);
         return breakpoint;
     }
-    
+
     protected final static NbJSURIBreakpoint createURIBreakpoint(String strURL, int lineNum) {
         NbJSURIBreakpoint breakpoint = new NbJSURIBreakpoint(strURL, lineNum + 1);
         attachLineUpdater(breakpoint);
@@ -119,7 +119,7 @@ public final class NbJSBreakpointManager {
      * @return breakpoint that is created and added.
      */
     public static NbJSBreakpoint addBreakpoint(final Line line)  {
-        
+
     	NbJSBreakpoint breakpoint = createBreakpoint(line);
         DebuggerManager.getDebuggerManager().addBreakpoint(breakpoint);
         return breakpoint;
@@ -207,6 +207,6 @@ public final class NbJSBreakpointManager {
         }
         return null;
     }
-    
+
 
 }

@@ -311,6 +311,9 @@ public final class Validator extends BpelValidator {
           addError("FIX_SA00014_Different", process, named1.getName()); // NOI18N
         }
         else {
+//out();
+//out("1: " + getPresentation(named1));
+//out("2: " + getPresentation(named2));
           addError("FIX_SA00014_Different_File", process, named1.getName(), file1, file2); // NOI18N
         }
       }
@@ -318,9 +321,15 @@ public final class Validator extends BpelValidator {
   }
 
   private String getPresentation(Component component) {
-    StringBuffer buffer = new StringBuffer(getName(component));
+    StringBuffer buffer;
+
+    if (getName(component) == null) {
+      buffer = new StringBuffer();
+    }
+    else {
+      buffer = new StringBuffer(getName(component));
+    }
     buffer.append("("); // NOI18N
-    
     List children = component.getChildren();
 
     for (Object child : children) {
@@ -983,7 +992,6 @@ public final class Validator extends BpelValidator {
                 addError("FIX_SA00062", component); // NOI18N
               }
       }
-      
       /*
        * A "start activity" is a <receive> or <pick> activity that is 
        * annotated with a createInstance="yes" attribute. 
@@ -1594,23 +1602,79 @@ public final class Validator extends BpelValidator {
   }
 
   private void checkOrderOfActivities(CreateInstanceActivity activity) {
-      if (TBoolean.YES.equals(activity.getCreateInstance())) {
-          /* 
-           * I will put into this set visited container (sequence and flow)
-           * for avoiding visiting them one more time while following up of tree.
-           * 
-           * This will fix bug #85727
-           */
-          Set<CompositeActivity> set = new HashSet<CompositeActivity>();
-          ExtendableActivity beforeOrSimultaneously = 
-              findPreviouslyPerformedActivities((Activity) activity, set);
-          if (beforeOrSimultaneously != null) {
-              Collection<Component> collection = new ArrayList<Component>(2);
-              collection.add((Activity)activity);
-              collection.add(beforeOrSimultaneously);
-              addErrorCollection("FIX_SA00056", collection); // NOI18N
-          }
+      if ( !TBoolean.YES.equals(activity.getCreateInstance())) {
+        return;
       }
+      /* 
+       * I will put into this set visited container (sequence and flow)
+       * for avoiding visiting them one more time while following up of tree.
+       * 
+       * This will fix bug # 85727
+       */
+      Set<CompositeActivity> set = new HashSet<CompositeActivity>();
+      ExtendableActivity beforeOrSimultaneously = findPreviouslyPerformedActivities((Activity) activity, set);
+
+      if (beforeOrSimultaneously == null) {
+        return;
+      }
+//out();
+//out("1: " + getName((Component) activity));
+//out("2: " + getName(beforeOrSimultaneously));
+//out();
+      // # 137890
+      if (inFlow(beforeOrSimultaneously) && hasCIAfirst(beforeOrSimultaneously)) {
+//out("REMOVED: " + getName(beforeOrSimultaneously));
+        return;
+      }
+      addError("FIX_SA00056", beforeOrSimultaneously); // NOI18N
+  }
+
+  private boolean inFlow(BpelEntity entity) {
+    if (entity == null) {
+      return false;
+    }
+    return isFlow(entity.getParent());
+  }
+
+  private boolean isFlow(BpelEntity entity) {
+    if (entity == null) {
+      return false;
+    }
+    if (entity instanceof Flow) {
+      return true;
+    }
+    return isFlow(entity.getParent());
+  }
+
+  private boolean hasCIAfirst(BpelEntity entity) {
+    if (entity == null) {
+      return false;
+    }
+    Component component = entity.getParent();
+
+    if ( !(component instanceof BpelContainer)) {
+      return false;
+    }
+    BpelContainer parent = (BpelContainer) component;
+    int k = parent.indexOf(BpelEntity.class, entity);
+//out("k: " + k);
+    if (k == -1) {
+      return false;
+    }
+    List<BpelEntity> children = parent.getChildren();
+    int i=0;
+
+    for (BpelEntity child : children) {
+      if (i >= k) {
+        break;
+      }
+      if (child instanceof CreateInstanceActivity && TBoolean.YES.equals(((CreateInstanceActivity) child).getCreateInstance())) {
+//out("found: " + getName(child));
+        return true;
+      }
+      i++;
+    }
+    return false;
   }
 
   private void visitBaseScope(BaseScope baseScope) {
@@ -1734,12 +1798,12 @@ public final class Validator extends BpelValidator {
           Component source = null;
 
           if (isUsed) {
-              source = collection.iterator().next();
+            source = collection.iterator().next();
           }
           collection = targets.get(link);
 
           if ( !isUsed || !checkLink(link, collection, "FIX_SA00066")) { // NOI18N
-              addError("FIX_SA00066", link); // NOI18N
+            addError("FIX_SA00066", link); // NOI18N
           }
           else {
               Component target = collection.iterator().next();
@@ -2158,10 +2222,12 @@ public final class Validator extends BpelValidator {
       }
       Part part = message.getParts().iterator().next();
       NamedComponentReference<GlobalElement> elementRef = part.getElement();
+
       if (elementRef == null) {
           return false;
       }
       GlobalElement element = elementRef.get();
+      
       if (element == null) {
           return false;
       }
@@ -2257,37 +2323,38 @@ public final class Validator extends BpelValidator {
       if (element == null) {
           return false;
       }
-      NamedComponentReference<Message>  messageOperation = getMessageRef(
-              operation);
+      NamedComponentReference<Message>  messageOperation = getMessageRef(operation);
+      
       if (messageOperation == null) {
           return false;
       }
       Message message = messageOperation.get();
+      
       if (message == null) {
           return false;
       }
       Collection<Part> parts = message.getParts();
+      
       if (parts.size() != 1) {
           return false;
       }
       Part part = parts.iterator().next();
-      NamedComponentReference<GlobalElement> elementOperationRef =
-              part.getElement();
+      NamedComponentReference<GlobalElement> elementOperationRef = part.getElement();
+
       if (elementOperationRef == null) {
           return false;
       }
       return elementOperationRef.references(element);
   }
   
-  private boolean checkMessageTypeInOnEvent(WSDLReference<Message> messageRef,
-          Operation operation) {
+  private boolean checkMessageTypeInOnEvent(WSDLReference<Message> messageRef, Operation operation) {
       Message message = messageRef.get();
+
       if (message == null) {
           return false;
       }
-      
-      NamedComponentReference<Message>  messageOperation = getMessageRef(
-              operation);
+      NamedComponentReference<Message>  messageOperation = getMessageRef(operation);
+
       if (messageOperation == null) {
           return false;
       }
@@ -2296,6 +2363,7 @@ public final class Validator extends BpelValidator {
   
   private NamedComponentReference<Message> getMessageRef(Operation operation) {
       Input input = operation.getInput();
+
       if (input == null) {
           return null;
       }
@@ -2391,9 +2459,9 @@ public final class Validator extends BpelValidator {
       }
   }
   
-  private void collectLinkInSources(Activity activity, Set<Link> set,
-          Map<Link,Collection<Component>> sourcesMap) {
+  private void collectLinkInSources(Activity activity, Set<Link> set, Map<Link,Collection<Component>> sourcesMap) {
       SourceContainer sourceContainer = activity.getSourceContainer();
+
       if (sourceContainer!= null) {
           Source[] sources = sourceContainer.getSources();
           for (Source source : sources) {
@@ -2403,9 +2471,7 @@ public final class Validator extends BpelValidator {
       }
   }
   
-  private void collectLinks(Activity activity, Set<Link> set,
-          Map<Link, Collection<Component>> targetsMap,
-          BpelReference<Link> reference) {
+  private void collectLinks(Activity activity, Set<Link> set, Map<Link, Collection<Component>> targetsMap, BpelReference<Link> reference) {
       if (reference == null) {
           return;
       }
@@ -2420,10 +2486,8 @@ public final class Validator extends BpelValidator {
       }
   }
   
-  private void checkLinkBoundaries(Link link, BpelEntity source,
-          BpelEntity target) {
+  private void checkLinkBoundaries(Link link, BpelEntity source, BpelEntity target) {
       checkFTBoundaries(link, source, target);
-      
       checkRepeatableConstract(link, source, target);
   }
   
@@ -2525,20 +2589,18 @@ public final class Validator extends BpelValidator {
           return activity;
       }
       BpelContainer container = activity.getParent();
+
       if ( !(container instanceof ExtendableActivity)) {
           return null;
       }
       if (container instanceof ActivityHolder) {
-          return findPreviouslyPerformedActivities(
-                  (ExtendableActivity)container, set);
+          return findPreviouslyPerformedActivities((ExtendableActivity)container, set);
       }
       if (container instanceof CompositeActivity) {
-          ExtendableActivity found = findExecutableActivity(
-                  (CompositeActivity)container, activity, set);
+          ExtendableActivity found = findExecutableActivity((CompositeActivity) container, activity, set);
           
           if (found == null) {
-              found = findPreviouslyPerformedActivities(
-                      (ExtendableActivity)container, set);
+              found = findPreviouslyPerformedActivities((ExtendableActivity)container, set);
           }
           return found;
       }
@@ -2555,8 +2617,7 @@ public final class Validator extends BpelValidator {
           return findExecutableActivityInSequence(sequence, i, set);
       }
       else if (container instanceof Flow) {
-          return findExecutableActivityInFlow((Flow) container,
-                  activity, set);
+          return findExecutableActivityInFlow((Flow) container, activity, set);
       }
       else {
           assert false;
@@ -2567,7 +2628,8 @@ public final class Validator extends BpelValidator {
   private ExtendableActivity findExecutableActivityInFlow(Flow flow, ExtendableActivity activity, Set<CompositeActivity> compositeActivities) {
       Set<ExtendableActivity> set = getLogicallyPreceding(activity);
       ExtendableActivity found = findDescendantActivity(set);
-      if (found!= null) {
+
+      if (found != null) {
           return found;
       }
       return getUntargetedUnacceptableActivity(flow, compositeActivities);
@@ -2608,6 +2670,7 @@ public final class Validator extends BpelValidator {
   private ExtendableActivity findDescendantActivity(Set<ExtendableActivity> set) {
       for (ExtendableActivity preceding : set) {
           ExtendableActivity found = findDescendantActivity(preceding);
+
           if (found != null) {
               return found;
           }
@@ -2637,21 +2700,26 @@ public final class Validator extends BpelValidator {
           return;
       }
       TargetContainer container = activity.getTargetContainer();
+
       if (container == null) {
           return;
       }
       Target[] targets = container.getTargets();
+      
       for (Target target : targets) {
           BpelReference<Link> linkRef = target.getLink();
+
           if (linkRef == null) {
               continue;
           }
           Link link = linkRef.get();
+          
           if (link == null) {
               continue;
           }
           BpelContainer flow = link.getParent().getParent();
           Activity source = findSource(flow, link);
+          
           if (source!= null) {
               set.add(source);
               collectPreceding(source, set);
@@ -2663,11 +2731,13 @@ public final class Validator extends BpelValidator {
       List<Activity> children = container.getChildren(Activity.class);
       for (Activity child : children) {
           SourceContainer sourceContainer = child.getSourceContainer();
+
           if (sourceContainer != null && checkSource(link, sourceContainer)) {
                   return child;
           }
           if (child instanceof BpelContainer) {
               Activity found = findSource((BpelContainer) child, link);
+          
               if (found != null) {
                   return found;
               }

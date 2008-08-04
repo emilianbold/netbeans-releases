@@ -431,8 +431,8 @@ public class ProjectHelper {
     private static Map<String, String> getOrigNewLocationMap(Schema oSchema,
             String newName, String schemasRootFolder){
         Map<String, String> ret = new HashMap<String, String>();
-        String replace = schemasRootFolder + "/" + oSchema.getName(); //NOI8N
-        String replaceWith = schemasRootFolder + "/" + newName; //NOI8N
+        String replace = schemasRootFolder + "/" + oSchema.getName(); //NOI18N
+        String replaceWith = schemasRootFolder + "/" + newName; //NOI18N
         
         SchemaSources ss = oSchema.getSchemaSources();
         SchemaSource[] ssArray = ss.getSchemaSource();

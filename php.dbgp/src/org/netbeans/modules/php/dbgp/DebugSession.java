@@ -83,11 +83,13 @@ public class DebugSession implements Runnable {
         synchronized (myCommands) {
             moreCommands = myCommands.size() > 0;
         }
-        while (!isStopped.get() || moreCommands) {
+        while (continueDebugging()) {
             try {
                 sendCommands();
-                receiveData();
-                sleepTillNewCommand();
+                if (continueDebugging()) {
+                    receiveData();
+                    sleepTillNewCommand();
+                }
             } catch (IOException e) {
                 log(e);
             }
@@ -98,6 +100,10 @@ public class DebugSession implements Runnable {
         } catch (IOException e) {
             log(e);
         }
+    }
+
+    private boolean continueDebugging() {
+        return !isStopped.get() && mySocket != null && !mySocket.isClosed();
     }
 
     public void sendCommandLater(DbgpCommand command) {
@@ -167,7 +173,7 @@ public class DebugSession implements Runnable {
                 DebuggerManager.getDebuggerManager().getDebuggerEngines();
         for (DebuggerEngine engine : engines) {
             SessionId id = (SessionId) engine.lookupFirst(null, SessionId.class);
-            if (id.getId().equals(sessionId)) {
+            if (id != null && id.getId().equals(sessionId)) {
                 mySessionId.set(id);
                 id.setFileUri(message.getFileUri());
                 myEngine.set(engine);
@@ -176,7 +182,7 @@ public class DebugSession implements Runnable {
         Session[] sessions = DebuggerManager.getDebuggerManager().getSessions();
         for (Session session : sessions) {
             SessionId id = (SessionId) session.lookupFirst(null, SessionId.class);
-            if (id.getId().equals(sessionId)) {
+            if (id != null && id.getId().equals(sessionId)) {
                 StartActionProviderImpl.getInstance().attachDebugSession(session,
                         this);
             }
@@ -231,9 +237,11 @@ public class DebugSession implements Runnable {
             myCommands.clear();
         }
         for (DbgpCommand command : list) {
-            command.send(getSocket().getOutputStream());
-            if (command.wantAcknowledgment()) {
-                receiveData(command);
+            if (continueDebugging()) {
+                command.send(getSocket().getOutputStream());
+                if (continueDebugging() && command.wantAcknowledgment()) {
+                    receiveData(command);
+                }
             }
         }
     }

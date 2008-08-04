@@ -75,9 +75,11 @@ import org.openide.DialogDisplayer;
 import org.openide.awt.MouseUtils;
 import org.openide.awt.TabbedPaneFactory;
 import org.openide.text.CloneableEditor;
+import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.ProxyLookup;
@@ -320,18 +322,16 @@ public class SQLCloneableEditor extends CloneableEditor {
             return;
         }
 
-        splitter.setTopComponent(null);
-        splitter.setBottomComponent(null);
-        
-        splitter.setTopComponent(editor);
-        splitter.setBottomComponent(resultComponent);
-        
-        splitter.setDividerLocation(250);
-        splitter.setDividerSize(7);
+        if (splitter.getBottomComponent() == null) {
+            splitter.setBottomComponent(resultComponent);
+            splitter.setDividerLocation(250);
+            splitter.setDividerSize(7);
 
-        container.invalidate();
-        container.validate();
-        container.repaint();
+            container.invalidate();
+            container.validate();
+            container.repaint();
+        }
+
 
         enableTabActions();
     }
@@ -371,7 +371,10 @@ public class SQLCloneableEditor extends CloneableEditor {
     }
 
     protected void componentDeactivated() {
-        if (sqlEditorSupport().isConsole()) {
+        SQLEditorSupport sqlEditorSupport = sqlEditorSupport();
+        // #132333: need to test if the support is still valid (it may be not, because
+        // the DataObject was deleted as the editor was closing.)
+        if (sqlEditorSupport.isConsole() && sqlEditorSupport.isValid()) {
             try {
                 cloneableEditorSupport().saveDocument();
             } catch (IOException e) {
@@ -578,19 +581,19 @@ public class SQLCloneableEditor extends CloneableEditor {
         }
 
         public void showHistory() {
-  
+            getComponent().setCursor(Utilities.createProgressCursor(getComponent()));
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    SQLHistoryPanel panel = new SQLHistoryPanel(getEditorPane());
-                    Object[] options = new Object[]{
-                        DialogDescriptor.CLOSED_OPTION
-                    };
-                    final DialogDescriptor desc = new DialogDescriptor(panel, NbBundle.getMessage(SQLCloneableEditor.class, "LBL_SQL_HISTORY_TITLE"), true, options,
-                            DialogDescriptor.CLOSED_OPTION, DialogDescriptor.DEFAULT_ALIGN, null, null);
                     Dialog dlg = null;
                     try {
+                        SQLHistoryPanel panel = new SQLHistoryPanel(getEditorPane());
+                        Object[] options = new Object[]{
+                            DialogDescriptor.CLOSED_OPTION
+                        };
+                        final DialogDescriptor desc = new DialogDescriptor(panel, NbBundle.getMessage(SQLCloneableEditor.class, "LBL_SQL_HISTORY_TITLE"), true, options,
+                                DialogDescriptor.CLOSED_OPTION, DialogDescriptor.DEFAULT_ALIGN, new HelpCtx("sql_history"), null);  // NOI18N
                         dlg = DialogDisplayer.getDefault().createDialog(desc);
-                        dlg.getAccessibleContext().setAccessibleDescription("descr");
+                        dlg.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SQLCloneableEditor.class, "ACSD_DLG"));
                         panel.setSize(panel.getPreferredSize());
                         dlg.pack();
                         dlg.setVisible(true);
@@ -598,6 +601,7 @@ public class SQLCloneableEditor extends CloneableEditor {
                         if (dlg != null) {
                             dlg.dispose();
                         }
+                        getComponent().setCursor(null);
                     }
                 }
             });

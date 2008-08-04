@@ -167,12 +167,12 @@ public final class UI {
     GridBagConstraints c = new GridBagConstraints();
     c.anchor = GridBagConstraints.WEST;
 
-    c.insets = new Insets(SMALL_INSET, 0, SMALL_INSET, 0);
+    c.insets = new Insets(LARGE_SIZE, 0, LARGE_SIZE, 0);
     panel.add(createLabel(message), c);
 
     c.weightx = 1.0;
     c.fill = GridBagConstraints.HORIZONTAL;
-    c.insets = new Insets(SMALL_INSET, SMALL_INSET, SMALL_INSET, 0);
+    c.insets = new Insets(LARGE_SIZE, LARGE_SIZE, LARGE_SIZE, 0);
     panel.add(new JSeparator(), c);
 
     return panel;
@@ -407,7 +407,7 @@ public final class UI {
 
     c.weightx = 1.0;
     c.weighty = 1.0;
-    c.insets = new Insets(0, SMALL_INSET, 0, SMALL_INSET);
+    c.insets = new Insets(0, LARGE_SIZE, 0, LARGE_SIZE);
     c.anchor = GridBagConstraints.NORTHWEST;
     c.fill = GridBagConstraints.HORIZONTAL;
     p.add(panel, c);
@@ -494,11 +494,11 @@ public final class UI {
     }
   }
 
-  public static void stackTrace() {
-    stackTrace(null);
+  public static void dump() {
+    dump(null);
   }
 
-  public static void stackTrace(Object object) {
+  public static void dump(Object object) {
     out();
     out();
 
@@ -613,26 +613,33 @@ public final class UI {
   // --------------------------------------------------------
   public abstract static class Dialog extends WindowAdapter {
 
-    protected void opened() {}
-    protected void closed() {}
+    protected void opened()  {}
+    protected void closed()  {}
     protected void resized() {}
     protected void updated() {}
    
     protected abstract DialogDescriptor createDescriptor();
 
     public void show() {
-      show(true);
+      show(true, true);
+    }
+
+    public void show(boolean withCorner) {
+      show(true, withCorner);
     }
 
     public void showAndWait() {
-      show(false);
+      show(false, true);
     }
 
-    private void show(boolean inSwingThread) {
+    private void show(boolean inSwingThread, boolean withCorner) {
       if (myDialog == null) {
         myDialog = DialogDisplayer.getDefault().createDialog(createDescriptor());
         myDialog.addWindowListener(this);
-//      setCorner();
+
+        if (withCorner) {
+          setCorner();
+        }
         myDialog.addComponentListener(
           new ComponentAdapter() {
             public void componentResized(ComponentEvent event) {
@@ -648,12 +655,10 @@ public final class UI {
 
       if (inSwingThread) {
         SwingUtilities.invokeLater(new Runnable() { public void run() {
-          myDialog.pack();
           myDialog.setVisible(true);
         }});
       }
       else {
-        myDialog.pack();
         myDialog.setVisible(true);
       }
     }
@@ -693,7 +698,7 @@ public final class UI {
   private static final class CornerBorder extends EmptyBorder {
 
     public CornerBorder() {
-      super(0, TINY_INSET * 2, TINY_INSET * 2, TINY_INSET * 2);
+      super(0, SMALL_SIZE, SMALL_SIZE, SMALL_SIZE);
     }
 
     @Override
@@ -830,9 +835,11 @@ public final class UI {
 
   private static Stack<Long> ourTimes = new Stack<Long>();
 
-  public static final int TINY_INSET = 2; // the 3-rd Fibonacci number
-  public static final int SMALL_INSET = 8; // the 6-th Fibonacci number
-  public static final int MEDIUM_INSET = 13; // the 7-th Fibonacci number
+  public static final int TINY_SIZE   = 2; // the 3-th Fibonacci number
+  public static final int SMALL_SIZE  = 3; // the 4-th Fibonacci number
+  public static final int MEDIUM_SIZE = 5; // the 5-th Fibonacci number
+  public static final int LARGE_SIZE =  8; // the 6-th Fibonacci number
+  public static final int HUGE_SIZE  = 13; // the 7-th Fibonacci number
 
   private static final double MILLIS = 1000.0;
 

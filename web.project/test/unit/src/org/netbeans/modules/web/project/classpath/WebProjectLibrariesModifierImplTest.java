@@ -132,11 +132,11 @@ public class WebProjectLibrariesModifierImplTest extends NbTestCase {
         
         items = webProject.getClassPathModifier().getClassPathSupport().itemsList(prop, "web-module-libraries");
         assertEquals(4, items.size());
-        assertEquals("WEB-INF/lib", items.get(1).getAdditionalProperty(ClassPathSupportCallbackImpl.PATH_IN_DEPLOYMENT));
+        assertEquals(null, items.get(1).getAdditionalProperty(ClassPathSupportCallbackImpl.PATH_IN_DEPLOYMENT));
         assertEquals("${libs.test.classpath}", items.get(1).getReference());
-        assertEquals("WEB-INF/lib", items.get(2).getAdditionalProperty(ClassPathSupportCallbackImpl.PATH_IN_DEPLOYMENT));
+        assertEquals(null, items.get(2).getAdditionalProperty(ClassPathSupportCallbackImpl.PATH_IN_DEPLOYMENT));
         assertEquals("${reference.WebApplication1.dist-ear}", items.get(2).getReference());
-        assertEquals("WEB-INF/lib", items.get(3).getAdditionalProperty(ClassPathSupportCallbackImpl.PATH_IN_DEPLOYMENT));
+        assertEquals(null, items.get(3).getAdditionalProperty(ClassPathSupportCallbackImpl.PATH_IN_DEPLOYMENT));
         assertEquals("${file.reference.c.jar}", items.get(3).getReference());
         
         webProject.getLibrariesModifier().removeCompileLibraries(new Library[]{l});

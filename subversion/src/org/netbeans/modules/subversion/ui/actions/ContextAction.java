@@ -66,6 +66,7 @@ import java.util.Date;
 import java.awt.event.ActionEvent;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
+import org.netbeans.modules.versioning.util.Utils;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 
@@ -103,7 +104,8 @@ public abstract class ContextAction extends NodeAction {
         // list somehow modified file in the context and save
         // just them.
         // The same (global save) logic is in CVS, no complaint
-        LifecycleManager.getDefault().saveAll();        
+        LifecycleManager.getDefault().saveAll();
+        Utils.logVCSActionEvent("SVN");
         performContextAction(nodes);           
     }
 

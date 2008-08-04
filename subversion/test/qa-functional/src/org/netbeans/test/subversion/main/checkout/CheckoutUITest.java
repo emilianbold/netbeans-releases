@@ -138,33 +138,33 @@ public class CheckoutUITest extends JellyTestCase{
         Operator.setDefaultStringComparator(oldOperator);
         RepositoryStepOperator rso = new RepositoryStepOperator();
         rso.setRepositoryURL(RepositoryStepOperator.ITEM_FILE);
-        Thread.sleep(1000);
+        Thread.sleep(2000);
         //
         rso.setRepositoryURL(RepositoryStepOperator.ITEM_SVN);
         rso.txtUser().setText(RepositoryStepOperator.ITEM_SVN);
         rso.txtPassword().setText(RepositoryStepOperator.ITEM_SVN);
-        Thread.sleep(1000);
+        Thread.sleep(2000);
         //
         rso.setRepositoryURL(RepositoryStepOperator.ITEM_SVNSSH);
         rso.txtUser().setText(RepositoryStepOperator.ITEM_SVNSSH);
         //rso.txtPassword().setText(RepositoryStepOperator.ITEM_SVNSSH);
-        Thread.sleep(1000);
+        Thread.sleep(2000);
         //
         rso.setRepositoryURL(RepositoryStepOperator.ITEM_HTTP);
         rso.txtUser().setText(RepositoryStepOperator.ITEM_HTTP);
         rso.txtPassword().setText(RepositoryStepOperator.ITEM_HTTP);
-        Thread.sleep(1000);
+        Thread.sleep(2000);
         //
         rso.setRepositoryURL(RepositoryStepOperator.ITEM_HTTPS);
         rso.txtUser().setText(RepositoryStepOperator.ITEM_HTTPS);
         rso.txtPassword().setText(RepositoryStepOperator.ITEM_HTTPS);
-        Thread.sleep(1000);
+        Thread.sleep(2000);
         co.btCancel().pushNoBlock();
     }
     
     public void testIncorrentUrl() throws Exception {
         //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
-        //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 3000);
+        //JemmyPropertsies.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 3000);
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
         Operator.setDefaultStringComparator(comOperator);
@@ -173,25 +173,25 @@ public class CheckoutUITest extends JellyTestCase{
         RepositoryStepOperator rso = new RepositoryStepOperator();
         //wrong file
         rso.setRepositoryURL("dfile:///");
-        assertEquals("This should be wrong url string!!!", "Invalid svn url :dfile:///", rso.lblWarning().getText());
+        assertEquals("This should be wrong url string!!!", "Invalid svn url: dfile:///", rso.lblWarning().getText());
         //wrong svn
         rso.setRepositoryURL("dsvn://");
-        assertEquals("This should be wrong url string!!!", "Invalid svn url :dsvn://", rso.lblWarning().getText());
+        assertEquals("This should be wrong url string!!!", "Invalid svn url: dsvn://", rso.lblWarning().getText());
         //space in file
         rso.setRepositoryURL("file :///");
-        assertEquals("This should be wrong url string!!!", "Invalid svn url :file :///", rso.lblWarning().getText());
+        assertEquals("This should be wrong url string!!!", "Invalid svn url: file :///", rso.lblWarning().getText());
         //space in svn
         rso.setRepositoryURL("svn ://");
-        assertEquals("This should be wrong url string!!!", "Invalid svn url :svn ://", rso.lblWarning().getText());
+        assertEquals("This should be wrong url string!!!", "Invalid svn url: svn ://", rso.lblWarning().getText());
         //space in http
         rso.setRepositoryURL("http ://");
-        assertEquals("This should be wrong url string!!!", "Invalid svn url :http ://", rso.lblWarning().getText());
+        assertEquals("This should be wrong url string!!!", "Invalid svn url: http ://", rso.lblWarning().getText());
         //space in https
         rso.setRepositoryURL("https ://");
-        assertEquals("This should be wrong url string!!!", "Invalid svn url :https ://", rso.lblWarning().getText());
+        assertEquals("This should be wrong url string!!!", "Invalid svn url: https ://", rso.lblWarning().getText());
         //space in svn+ssh
         rso.setRepositoryURL("svn+ssh ://");
-        assertEquals("This should be wrong url string!!!", "Invalid svn url :svn+ssh ://", rso.lblWarning().getText());
+        assertEquals("This should be wrong url string!!!", "Invalid svn url: svn+ssh ://", rso.lblWarning().getText());
         
         co.btCancel().pushNoBlock();
     }

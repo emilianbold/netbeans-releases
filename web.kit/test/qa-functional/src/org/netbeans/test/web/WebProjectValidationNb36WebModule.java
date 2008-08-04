@@ -91,7 +91,7 @@ public class WebProjectValidationNb36WebModule extends WebProjectValidation {
               "testNewWebProject", "testNewJSP", "testNewJSP2", "testNewServlet", "testNewServlet2",
               "testCompileAllJSP", "testCompileJSP",
               "testCleanAndBuildProject", "testRunProject", "testRunJSP", 
-              "testRunServlet", "testCreateTLD", "testCreateTagHandler", "testRunTag",
+              "testCleanAndBuildProject","testRunServlet", "testCreateTLD", "testCreateTagHandler", "testRunTag",
               "testNewHTML", "testRunHTML", "testNewSegment", "testNewDocument",
               "testStopServer", "testStartServer", "testFinish");
         conf = conf.enableModules(".*").clusters(".*");
@@ -110,7 +110,7 @@ public class WebProjectValidationNb36WebModule extends WebProjectValidation {
         installJemmyQueue();
         new NewProjectAction().perform();
         NewProjectWizardOperator projectWizard = new NewProjectWizardOperator();
-        projectWizard.selectCategory("Web");
+        projectWizard.selectCategory("Java Web"); // XXX use Bundle.getString instead
         projectWizard.selectProject("Web Application with Existing Sources");
         projectWizard.next();
         NewWebProjectNameLocationStepOperator
@@ -133,18 +133,10 @@ public class WebProjectValidationNb36WebModule extends WebProjectValidation {
         sleep(5000);
         // wait for project creation
         ProjectSupport.waitScanFinished();
-        //new EditorWindowOperator().getEditor("index.jsp");
-        // HACK
-        Node prjNode = ProjectsTabOperator.invoke().getProjectRootNode(PROJECT_NAME);
-        new Node(prjNode,"Configuration Files|web.xml");
-        new Node(prjNode,"Web Pages|META-INF|context.xml");
-        new Node(new SourcePackagesNode(PROJECT_NAME),
-                "<default package>|dummy");
-        ref(Util.dumpProjectView(PROJECT_NAME));
-        compareReferenceFiles();
-        //compareDD();
+        verifyWebPagesNode("META-INF|context.xml");
+        verifyProjectNode("Configuration Files|web.xml");
     }
-    
+
     /** Test new JSP wizard.
      * - open New File wizard from main menu (File|New File)
      * - select sample project as target

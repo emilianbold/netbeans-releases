@@ -168,6 +168,7 @@ public class HQLEditorController {
         try {
             org.dom4j.io.SAXReader saxReader = new org.dom4j.io.SAXReader();
             org.dom4j.Document document = saxReader.read(configFileObject.getInputStream());
+<<<<<<< /workspace/NEW/NB-HG3/main/hibernate/src/org/netbeans/modules/hibernate/hqleditor/HQLEditorController.java.orig.
             org.dom4j.Element sessionFactoryElement = document.getRootElement().element("session-factory"); //NOI18N
             Iterator mappingIterator = sessionFactoryElement.elementIterator("mapping"); //NOI18N
             while (mappingIterator.hasNext()) {
@@ -175,6 +176,18 @@ public class HQLEditorController {
                 logger.info("Removing mapping element ..  " + node);
                 node.getParent().remove(node);
             }
+            org.dom4j.Element sessionFactoryElement = document.getRootElement().element("session-factory");  //NOI18N
+            Iterator propIterator = sessionFactoryElement.elementIterator("property");  //NOI18N
+            while (propIterator.hasNext()) {
+                org.dom4j.Element node = (org.dom4j.Element) propIterator.next();
+                String name = node.attributeValue("name");  //NOI18N
+                String value = node.getTextTrim();
+                configProperties.setProperty(name, value);
+                if(value != null && value.endsWith("password")) {  //NOI18N
+                    value = "*****";  //NOI18N
+                }
+                logger.info("name = " + name + " value= " + value);
+           }
 
             //   add mappings
             for (FileObject mappingFO : mappingFOList) {
@@ -448,6 +461,11 @@ public class HQLEditorController {
                 }
                 options.add(jdkVersion);
 
+                
+                
+                // for some reason the following is not working.. Bug in JavaC API?
+//                options.add("-classpath");
+//                options = addClasspath(project, sourceFO, options);
                 //TODO diagnostic listener - plugin log
                 Boolean b = javaCompiler.getTask(null, fileManager, null, options, null, compilationUnits).call();
                 logger.info("b = " + b);

@@ -186,7 +186,7 @@ public class AddServerLocationPanel implements WizardDescriptor.FinishablePanel,
                 } else if(!isRegisterableV3Domain(domainDir)) {
                     wizard.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(
                             AddServerLocationPanel.class, "ERR_DefaultDomainInvalid", locationStr));
-                    wizardIterator.setInstallRoot(locationStr);
+                    wizardIterator.setInstallRoot(glassfishDir.getParentFile().getAbsolutePath());
                     wizardIterator.setGlassfishRoot(glassfishDir.getAbsolutePath());
                     // Allow Next button...
                     return true;
@@ -210,7 +210,7 @@ public class AddServerLocationPanel implements WizardDescriptor.FinishablePanel,
 
                 // finish initializing the registration data
                 wizard.putProperty(PROP_ERROR_MESSAGE, null);
-                wizardIterator.setInstallRoot(locationStr);
+                wizardIterator.setInstallRoot(glassfishDir.getParentFile().getAbsolutePath());
                 wizardIterator.setGlassfishRoot(glassfishDir.getAbsolutePath());
                 wizardIterator.setDomainLocation(domainDir.getAbsolutePath());
 

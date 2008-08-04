@@ -79,22 +79,24 @@ public class ExtensionResourcesPanel extends javax.swing.JPanel {
 
         extResourcesTable.setModel(model);
         jScrollPane1.setViewportView(extResourcesTable);
+        extResourcesTable.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ExtensionResourcesPanel.class, "ExtensionResourcesPanel.extResourcesTable.AccessibleContext.accessibleDescription")); // NOI18N
 
-        addButton.setText(org.openide.util.NbBundle.getMessage(ExtensionResourcesPanel.class, "ExtensionResourcesPanel.addButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(addButton, org.openide.util.NbBundle.getMessage(ExtensionResourcesPanel.class, "ExtensionResourcesPanel.addButton.text")); // NOI18N
         addButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 addButtonActionPerformed(evt);
             }
         });
 
-        removeButton.setText(org.openide.util.NbBundle.getMessage(ExtensionResourcesPanel.class, "ExtensionResourcesPanel.removeButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(removeButton, org.openide.util.NbBundle.getMessage(ExtensionResourcesPanel.class, "ExtensionResourcesPanel.removeButton.text")); // NOI18N
         removeButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 removeButtonActionPerformed(evt);
             }
         });
 
-        extResourcesLabel.setText(org.openide.util.NbBundle.getMessage(ExtensionResourcesPanel.class, "ExtensionResourcesPanel.extResourcesLabel.text")); // NOI18N
+        extResourcesLabel.setLabelFor(extResourcesTable);
+        org.openide.awt.Mnemonics.setLocalizedText(extResourcesLabel, org.openide.util.NbBundle.getMessage(ExtensionResourcesPanel.class, "ExtensionResourcesPanel.extResourcesLabel.text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -128,6 +130,13 @@ public class ExtensionResourcesPanel extends javax.swing.JPanel {
                     .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 213, Short.MAX_VALUE))
                 .addContainerGap())
         );
+
+        addButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ExtensionResourcesPanel.class, "ExtensionResourcesPanel.addButton.AccessibleContext.accessibleDescription")); // NOI18N
+        removeButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ExtensionResourcesPanel.class, "ExtensionResourcesPanel.removeButton.AccessibleContext.accessibleDescription")); // NOI18N
+        extResourcesLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ExtensionResourcesPanel.class, "ExtensionResourcesPanel.extResourcesLabel.AccessibleContext.accessibleDescription")); // NOI18N
+
+        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ExtensionResourcesPanel.class, "ExtensionResourcesPanel.AccessibleContext.accessibleName")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ExtensionResourcesPanel.class, "ExtensionResourcesPanel.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
 private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed

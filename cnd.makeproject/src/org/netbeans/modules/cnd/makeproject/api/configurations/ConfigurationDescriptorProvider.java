@@ -190,7 +190,7 @@ public class ConfigurationDescriptorProvider {
                     for (int i = 0; i < families.length; i++) {
                         buffer.append(families[i]);
                         if (i < families.length - 1) {
-                            buffer.append(",");
+                            buffer.append(","); // NOI18N
                         }
                     }
                     family = buffer.toString();
@@ -231,7 +231,7 @@ public class ConfigurationDescriptorProvider {
                         }
                     }
                 }
-                String ccUsage = ccLang ? "USE_C++" : "NO_C++"; // NOI18N
+                String ccUsage = ccLang ? "USE_CPP" : "NO_CPP"; // NOI18N
                 String cUsage = cLang ? "USE_C" : "NO_C"; // NOI18N
                 String fUsage = fLang ? "USE_FORTRAN" : "NO_FORTRAN"; // NOI18N
                 rec.setParameters(new Object[] { type, flavor, family, host, platform, toSizeString(allItems), toSizeString(size), ccUsage, cUsage, fUsage});
@@ -243,25 +243,25 @@ public class ConfigurationDescriptorProvider {
     private static String toSizeString(int size) {
         String strSize;
         if (size < 25) {
-            strSize = "0"; // NOI18N
+            strSize = "25"; // NOI18N
         } else if (size < 100) {
-            strSize = "1"; // NOI18N
-        } else if (size < 500) {
-            strSize = "5"; // NOI18N
-        } else if (size < 1000) {
-            strSize = "10"; // NOI18N
-        } else if (size < 2000) {
-            strSize = "20"; // NOI18N
-        } else if (size < 5000) {
-            strSize = "50"; // NOI18N
-        } else if (size < 10000) {
             strSize = "100"; // NOI18N
-        } else if (size < 20000) {
-            strSize = "200"; // NOI18N
-        } else if (size < 50000) {
+        } else if (size < 500) {
             strSize = "500"; // NOI18N
+        } else if (size < 1000) {
+            strSize = "1000"; // NOI18N
+        } else if (size < 2000) {
+            strSize = "2000"; // NOI18N
+        } else if (size < 5000) {
+            strSize = "5000"; // NOI18N
+        } else if (size < 10000) {
+            strSize = "10000"; // NOI18N
+        } else if (size < 20000) {
+            strSize = "20000"; // NOI18N
+        } else if (size < 50000) {
+            strSize = "50000"; // NOI18N
         } else {
-            strSize = "999"; // NOI18N
+            strSize = "99999"; // NOI18N
         }
         return strSize;
     }

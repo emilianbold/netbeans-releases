@@ -160,7 +160,7 @@ public class ImportUITest extends JellyTestCase {
             //NO Warning message if both are setup correctly.
             ftiso.setRepositoryFolder(PROJECT_NAME);
             ftiso.setImportMessage("initial import");
-            assertEquals("No Warning message", " ", ftiso.lblImportMessageRequired().getText());
+            assertEquals("No Warning message", "", ftiso.lblImportMessageRequired().getText());
             assertTrue("Next button should be enabled", ftiso.btNext().isEnabled());
             //Finish button should be enabled.
             //System.out.println("Issue should be fixed: http://www.netbeans.org/issues/show_bug.cgi?id=76165!!!");

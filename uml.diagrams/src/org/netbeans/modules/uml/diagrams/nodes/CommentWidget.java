@@ -87,14 +87,14 @@ public class CommentWidget extends UMLNodeWidget implements PropertyChangeListen
     public void initializeNode(IPresentationElement element)
     {
         bodyLabel = new MultilineEditableCompartmentWidget(getScene(),
-                this.getWidgetID(), 
+                getResourcePath(), 
                 NbBundle.getMessage(CommentWidget.class,"LBL_text")); 
         
         Border border = BorderFactory.createCompositeBorder(new NoteBorder(getForeground()));
         bodyLabel.setBorder(border);
         
 //        bodyLabel.setOpaque(true);
-        ResourceValue.initResources(getWidgetID() + "." + DEFAULT, bodyLabel);
+        ResourceValue.initResources(getResourcePath(), bodyLabel);
 //        bodyLabel.setBackground(Color.WHITE);
 
         setCurrentView(bodyLabel);

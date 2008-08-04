@@ -137,7 +137,8 @@ public class DesignPatternWidget extends UMLNodeWidget
 
         bodyWidget.addChild(nameWidget);
         
-        Widget retVal = bodyWidget;
+        Widget retVal = new Widget(getScene());
+        retVal.addChild(bodyWidget);
         
         if (element instanceof IClassifier) 
         {
@@ -159,30 +160,15 @@ public class DesignPatternWidget extends UMLNodeWidget
                 parameterContainerWidget.setLayout(LayoutFactory.createVerticalFlowLayout());
 
 
-                retVal = new Widget(getScene());
                 retVal.setLayout(new TemplateWidgetLayout());
                 retVal.setBackground((Paint)null);
 
-                addChild(retVal);
-                retVal.addChild(bodyWidget);
                 retVal.addChild(parameterContainerWidget);
                 parameterContainerWidget.addChild(parameterWidget);
 
-                if (getGraphics() != null)
-                { 
-                    if (parameterWidget.getBounds() == null) 
-                    {
-                        parameterWidget.resolveBounds(null, null);
-                    }
-                    if (parameterContainerWidget.getBounds() == null) 
-                    {
-                        parameterContainerWidget.resolveBounds(null, null);
-                    }
-                }
             }
         }
         setMinSize();
-
         return retVal;
     }
 

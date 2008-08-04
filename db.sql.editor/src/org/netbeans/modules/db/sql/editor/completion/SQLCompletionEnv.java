@@ -43,6 +43,8 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.modules.db.api.sql.execute.SQLScript;
+import org.netbeans.modules.db.api.sql.execute.SQLScriptStatement;
 import org.netbeans.modules.db.sql.editor.StringUtils;
 import org.netbeans.modules.db.sql.lexer.SQLTokenId;
 
@@ -52,8 +54,9 @@ import org.netbeans.modules.db.sql.lexer.SQLTokenId;
  */
 public class SQLCompletionEnv {
 
-    private final int caretOffset;
     private final String statement;
+    private int statementOffset;
+    private final int caretOffset;
 
     private TokenSequence<SQLTokenId> seq;
     private boolean selectStatement;
@@ -61,19 +64,24 @@ public class SQLCompletionEnv {
     private int contextOffset;
 
     public static SQLCompletionEnv create(Document doc, int caretOffset) {
-        String statement = getDocumentText(doc);
-        if (statement == null) {
-            return null;
+        String documentText = getDocumentText(doc);
+        if (documentText != null) {
+            return create(documentText, caretOffset);
         }
-        return create(statement, caretOffset);
+        return null;
     }
 
-    static SQLCompletionEnv create(String statement, int caretOffset) {
-        return new SQLCompletionEnv(statement, caretOffset);
+    static SQLCompletionEnv create(String script, int caretOffset) {
+        SQLScriptStatement statement = SQLScript.create(script).getStatementAtOffset(caretOffset);
+        if (statement != null) {
+            return new SQLCompletionEnv(statement.getText(), statement.getStartOffset(), caretOffset - statement.getStartOffset());
+        }
+        return null;
     }
 
-    private SQLCompletionEnv(String statement, int caretOffset) {
+    private SQLCompletionEnv(String statement, int statementOffset, int caretOffset) {
         this.statement = statement;
+        this.statementOffset = statementOffset;
         this.caretOffset = caretOffset;
         if (statement != null) {
             TokenHierarchy<String> hi = TokenHierarchy.create(statement, SQLTokenId.language());
@@ -85,10 +93,23 @@ public class SQLCompletionEnv {
         }
     }
 
+    /**
+     * The text of the SQL statement.
+     */
     public String getStatement() {
         return statement;
     }
 
+    /**
+     * The offset of the SQL statement in the document or SQL script.
+     */
+    public int getStatementOffset() {
+        return statementOffset;
+    }
+
+    /**
+     * The caret offset, relative to {@link #getStatementOffset}.
+     */
     public int getCaretOffset() {
         return caretOffset;
     }
@@ -103,10 +124,6 @@ public class SQLCompletionEnv {
 
     public Context getContext() {
         return context;
-    }
-
-    public int getContextOffset() {
-        return contextOffset;
     }
 
     private static String getDocumentText(final Document doc) {
@@ -158,15 +175,15 @@ public class SQLCompletionEnv {
                 CharSequence keyword = seq.token().text();
                 if (StringUtils.textEqualsIgnoreCase("FROM", keyword)) { // NOI18N
                     context = Context.FROM;
-                    contextOffset = seq.offset();
+                    return;
+                } else if (StringUtils.textEqualsIgnoreCase("ON", keyword)) { // NOI18N
+                    context = Context.JOIN_CONDITION;
                     return;
                 } else if (StringUtils.textEqualsIgnoreCase("SELECT", keyword)) { // NOI18N
                     context = Context.SELECT;
-                    contextOffset = seq.offset();
                     return;
                 } else if (StringUtils.textEqualsIgnoreCase("WHERE", keyword)) { // NOI18N
                     context = Context.WHERE;
-                    contextOffset = seq.offset();
                     return;
                 }
             }
@@ -177,6 +194,7 @@ public class SQLCompletionEnv {
 
         SELECT,
         FROM,
+        JOIN_CONDITION,
         WHERE,
         HAVING,
         ORDER_BY

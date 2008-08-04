@@ -371,7 +371,11 @@ public class SQLHistoryPersistenceManager {
                 int elemsToRemove = SQLHistoryPersistenceManager.getInstance().getNumElemsToRemove();
                 // Statements to save was set to 0                   
                 if (elemsToRemove == 0) {
-                    history.removeChild(nodes.item(0));
+                    for (int i = 0; i < nodes.getLength(); i++) {
+                        if (nodes.item(0) != null) {
+                            history.removeChild(nodes.item(0));
+                        }
+                    }
                 }
                 // Remove elements from the DOM
                 for (int i = 0; i < elemsToRemove; i++) {
@@ -519,25 +523,17 @@ public class SQLHistoryPersistenceManager {
         }
         
         private void addHistory(String url, String sql, Date date) {
-//            boolean canAdd = true;
-//            for (SQLHistory sqlHistory : xmlSqlHistoryList) {
-//                if ((sqlHistory.getUrl().equals(url) && sqlHistory.getSql().trim().equals(sql.trim()))) {
-//                    canAdd = false;
-//                }
-//            }
-//            if (canAdd) {
-                String sqlSetting = NbPreferences.forModule(SQLHistoryPersistenceManager.class).get("SQL_STATEMENTS_SAVED_FOR_HISTORY", "");
-                if (!sqlSetting.equals("")) { // NOI18N
-                    limit = Integer.parseInt(NbPreferences.forModule(SQLHistoryPersistenceManager.class).get("SQL_STATEMENTS_SAVED_FOR_HISTORY", ""));  // NOI18N
-                }
-                if (xmlSqlHistoryList.size() <= limit) {
-                    xmlSqlHistoryList.add(new SQLHistory(url, sql, date));
-                    setXmlSqlHistoryList(xmlSqlHistoryList);
-                } else {
-                    // remove a statement from the end of the list
-                    xmlSqlHistoryList.remove(xmlSqlHistoryList.size()-1);
-                }
-//            }
+            String sqlSetting = NbPreferences.forModule(SQLHistoryPersistenceManager.class).get("SQL_STATEMENTS_SAVED_FOR_HISTORY", "");
+            if (!sqlSetting.equals("")) { // NOI18N
+                limit = Integer.parseInt(NbPreferences.forModule(SQLHistoryPersistenceManager.class).get("SQL_STATEMENTS_SAVED_FOR_HISTORY", ""));  // NOI18N
+            }
+            if ((xmlSqlHistoryList.size() <= limit) || limit == 0) {
+                xmlSqlHistoryList.add(new SQLHistory(url, sql, date));
+                setXmlSqlHistoryList(xmlSqlHistoryList);
+            } else {
+                // remove a statement from the end of the list
+                xmlSqlHistoryList.remove(xmlSqlHistoryList.size() - 1);
+            }
         }
  
         public void characters(char buf[], int offset, int length) {

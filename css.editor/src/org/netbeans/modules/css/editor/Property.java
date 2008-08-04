@@ -71,7 +71,7 @@ public class Property {
 
     public synchronized PropertyModel.GroupElement values() {
         if(values == null) {
-            values = PropertyModel.instance().parse(valuesText);
+            values = PropertyModel.instance().parse(valuesText, name);
         } 
         return values;
     }

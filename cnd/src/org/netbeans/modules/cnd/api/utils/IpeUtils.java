@@ -738,7 +738,7 @@ public class IpeUtils {
         if (s.indexOf('"') < 0)
             return s;
         else {
-            //return s.replace(" ", "\\ "); // NOI8N JDK1.5
+            //return s.replace(" ", "\\ "); // NOI18N JDK1.5
             return s.replaceAll("\"", "\\\\\""); // NOI18N
         }
     }

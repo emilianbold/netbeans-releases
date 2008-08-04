@@ -51,7 +51,6 @@ import java.awt.Rectangle;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Hashtable;
@@ -92,6 +91,7 @@ import org.netbeans.modules.uml.drawingarea.widgets.NameFontHandler;
 import org.netbeans.modules.uml.util.DummyCorePreference;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
@@ -160,7 +160,8 @@ public abstract class UMLNodeWidget extends Widget
         
         if (useDefaultNodeResource)
         {
-            childLayer = new CustomizableNodeViewContainer(scene, getResourcePath(), "Default");
+            childLayer = new CustomizableNodeViewContainer(scene, getResourcePath(), 
+                                                           NbBundle.getMessage(UMLNodeWidget.class, "LBL_Default"));
 //            childLayer.setOpaque(true);
             childLayer.setForeground((Color) null);
             childLayer.setLayout(LayoutFactory.createOverlayLayout());
@@ -849,26 +850,11 @@ public abstract class UMLNodeWidget extends Widget
     public void remove()
     {
         // remove all node object that are associated with child widget 
-        for (Object o : getAllChildren(new ArrayList<Object>(), this))
+        for (Object o : Util.getAllNodeChildren(this))
         {
             if (scene.isNode(o))
                 scene.removeNodeWithEdges(o);
         }
-            
-    }
-    
-    private List<Object> getAllChildren(List<Object> list, Widget widget)         
-    {
-        for (Widget child : widget.getChildren())
-        {
-          Object pe = scene.findObject(widget);
-          if (scene.isNode(pe))
-          {
-              list.add(pe);
-          }
-          list = getAllChildren(list, child);
-        }
-        return list;
     }
     
    

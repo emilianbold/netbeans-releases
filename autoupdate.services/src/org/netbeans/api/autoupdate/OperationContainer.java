@@ -378,6 +378,11 @@ public final class OperationContainer<Support> {
          * @see ModuleInfo#getCodeNameBase()
          */
         public Set<String> getBrokenDependencies(){return impl.getBrokenDependencies();}
+        
+        @Override
+        public String toString () {
+            return "OperationInfo: " + impl.getUpdateElement ().toString (); // NOI18N
+        }
     }
 
     //end of API - next just impl details

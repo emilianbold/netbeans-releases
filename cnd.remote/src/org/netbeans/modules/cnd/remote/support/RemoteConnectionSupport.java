@@ -40,9 +40,12 @@
 package org.netbeans.modules.cnd.remote.support;
 
 import com.jcraft.jsch.Channel;
+import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.logging.Logger;
 import javax.swing.JButton;
 import org.openide.DialogDisplayer;
@@ -116,10 +119,6 @@ public abstract class RemoteConnectionSupport {
         } while (retry);
     }
     
-    public RemoteConnectionSupport(String key) {
-        this(key, 22);
-    }
-    
     public Channel getChannel() {
         return channel;
     }
@@ -128,7 +127,13 @@ public abstract class RemoteConnectionSupport {
         this.channel = channel;
     }
     
-    protected abstract Channel createChannel() throws JSchException;
+    protected Channel createChannel(InputStream in, OutputStream out) throws JSchException {
+        return (ChannelExec) session.openChannel("exec"); // NOI18N
+    }
+    
+    protected Channel createChannel() throws JSchException {
+        return createChannel(null, null);
+    }
     
     public int getExitStatus() {
         return !cancelled && channel != null ? channel.getExitStatus() : -1; // JSch initializes exit status to -1
@@ -150,14 +155,22 @@ public abstract class RemoteConnectionSupport {
     public boolean isFailed() {
         return failed;
     }
+
+    public boolean isFailedOrCancelled() {
+        return failed || cancelled;
+    }
     
     protected void setExitStatus(int exit_status) {
         this.exit_status = exit_status;
     }
     
-    protected void disconnect() {
-        channel.disconnect();
-        session.disconnect();
+    public void disconnect() {
+        if (channel != null && channel.isConnected()) {
+            channel.disconnect();
+        }
+        if (session != null) {
+            session.disconnect();
+        }
     }
     
     public String getUser() {

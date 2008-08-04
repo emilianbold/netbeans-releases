@@ -133,7 +133,7 @@ public class svgImagesTests extends JellyTestCase {
     
     /*public void PrepareProjectWithSVG() {
         NewProjectWizardOperator npwop = NewProjectWizardOperator.invoke();
-        npwop.selectCategory("Samples|Mobility|MIDP"); 
+        npwop.selectCategory("Samples|Java ME (MIDP)"); // XXX use Bundle.getString instead
         npwop.selectProject("SVG Demo"); 
         npwop.next();
         NewProjectNameLocationStepOperator step = new NewProjectNameLocationStepOperator();

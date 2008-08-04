@@ -186,7 +186,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
         return processedToken;
     }
 
-    public CompletionQuery.Result query(JTextComponent component, BaseDocument doc, int offset,
+    public CompletionQuery.Result query(JTextComponent component, final BaseDocument doc, final int offset,
                                         SyntaxSupport support, boolean openingSource, boolean sort) {
         // remember baseDocument here. it is accessible by getBaseDocument() {
 
@@ -203,16 +203,14 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
 
         try {
             // find last separator position
-            int lastSepOffset = sup.getLastCommandSeparator(offset);
-            CsmCompletionTokenProcessor tp = new CsmCompletionTokenProcessor(offset);
+            final int lastSepOffset = sup.getLastCommandSeparator(offset);
+            final CsmCompletionTokenProcessor tp = new CsmCompletionTokenProcessor(offset);
             tp.setJava15(true);
-
-            try {
-                doc.atomicLock();
-                CndTokenUtilities.processTokens(tp, doc, lastSepOffset, offset);
-            } finally {
-                doc.atomicUnlock();
-            }
+            doc.runAtomic(new Runnable() {
+                public void run() {
+                    CndTokenUtilities.processTokens(tp, doc, lastSepOffset, offset);
+                }
+            });
 //            boolean cont = true;
 //            while (cont) {
 //                sup.tokenizeText(tp, ((lastSepOffset < offset) ? lastSepOffset + 1 : offset), offset, true);

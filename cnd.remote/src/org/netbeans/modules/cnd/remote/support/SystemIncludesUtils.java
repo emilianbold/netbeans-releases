@@ -57,6 +57,7 @@ import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.utils.RemoteUtils;
 import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -76,16 +77,24 @@ public class SystemIncludesUtils {
         for (CompilerSet cs : csList) {
             for (Tool tool : cs.getTools()) {
                 if (tool instanceof BasicCompiler) {
-                    BasicCompiler bc = (BasicCompiler)tool;
+                    BasicCompiler bc = (BasicCompiler) tool;
                     storagePrefix = bc.getStoragePrefix();
                     for (Object obj : bc.getSystemIncludeDirectories()) {
                         String localPath = (String) obj;
-                        paths.add( localPath.substring(storagePrefix.length()) );
+                        if (localPath.length() < storagePrefix.length()) {
+                            System.err.println("CompilerSet " + bc.getDisplayName() + " has returned invalid include path: " + localPath);
+                        } else {
+                            paths.add(localPath.substring(storagePrefix.length()));
+                        }
                     }
                 }
             }
         }
-        load(hkey, storagePrefix, paths);
+        if (storagePrefix != null) {
+            load(hkey, storagePrefix, paths);
+        }
+    // TODO: we can painlessly ignore CompilerSets without tools and load() calls with empty list
+    // but existence of them should ring some bells
     }
 
     public static RequestProcessor.Task load(final String hkey, final String storagePrefix, final Collection<String> paths) {
@@ -98,9 +107,8 @@ public class SystemIncludesUtils {
         return RequestProcessor.getDefault().post(new Runnable() {
 
             public void run() {
-                try{
+                try {
                     boolean success = doLoad(hkey, storagePrefix, paths);
-                    System.err.println("Loading done = " + success);
                 } finally {
                     synchronized (inProgress) {
                         inProgress.remove(storagePrefix);
@@ -109,6 +117,7 @@ public class SystemIncludesUtils {
             }
         });
     }
+
     // TODO: to think about next way:
     // just put links in the path mapped from server and set up
     // toolchain accordingly. Although those files will confuse user...
@@ -121,7 +130,7 @@ public class SystemIncludesUtils {
         File includesStorageFolder = new File(storagePrefix);
         File tempIncludesStorageFolder = new File(includesStorageFolder.getParent(), includesStorageFolder.getName() + ".download"); //NOI18N
 
-        if (includesStorageFolder.exists() ) { //TODO: very weak validation
+        if (includesStorageFolder.exists()) { //TODO: very weak validation
             return true;
         }
 
@@ -133,7 +142,7 @@ public class SystemIncludesUtils {
             return false;
         }
         boolean success = false;
-        ProgressHandle handle = ProgressHandleFactory.createHandle("Preparing Code Model for " + RemoteUtils.getHostName(hkey)); //NOI18N
+        ProgressHandle handle = ProgressHandleFactory.createHandle(getMessage("SIU_ProgressTitle") + " " + RemoteUtils.getHostName(hkey)); //NOI18N
         handle.start();
         try {
             RemoteCopySupport rcs = new RemoteCopySupport(hkey);
@@ -149,7 +158,6 @@ public class SystemIncludesUtils {
         }
         return true;
     }
-
     private static final String tempDir = System.getProperty("java.io.tmpdir");
 
     private static boolean load(String storageFolder, RemoteCopySupport copySupport, Collection<String> paths, ProgressHandle handle) {
@@ -157,18 +165,18 @@ public class SystemIncludesUtils {
         int workunit = 0;
         for (String path : paths) {
             //TODO: check file existence (or make shell script to rule them all ?)
-            System.err.println("loading " + path);
             String zipRemote = "cnd" + path.replaceAll("(/|\\\\)", "-") + ".zip"; //NOI18N
             String zipRemotePath = "/tmp/" + zipRemote; // NOI18N
             String zipLocalPath = tempDir + File.separator + zipRemote;
 
-            handle.progress("archiving " + path, workunit++); // NOI18N
+            handle.progress(getMessage("SIU_Archiving") + " " + path, workunit++); // NOI18N
             copySupport.run("zip -r -q " + zipRemotePath + " " + path); //NOI18N
-            handle.progress("downloading " + path, workunit++); // NOI18N
+            handle.progress(getMessage("SIU_Downloading") + " " + path, workunit++); // NOI18N
             copySupport.copyFrom(zipRemotePath, zipLocalPath);
-            handle.progress("preparing local copy of " + path, workunit++); // NOI18N
+            handle.progress(getMessage("SIU_Preparing") + " " + path, workunit++); // NOI18N
             unzip(storageFolder, zipLocalPath);
         }
+        copySupport.disconnect();
         return true;
     }
 
@@ -221,4 +229,7 @@ public class SystemIncludesUtils {
         out.close();
     }
 
+    private static String getMessage(String key) {
+        return NbBundle.getMessage(SystemIncludesUtils.class, key);
+    }
 }

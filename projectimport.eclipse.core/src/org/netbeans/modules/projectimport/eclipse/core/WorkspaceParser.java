@@ -44,17 +44,21 @@ package org.netbeans.modules.projectimport.eclipse.core;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
+import org.netbeans.modules.projectimport.eclipse.core.spi.LaunchConfiguration;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
@@ -97,6 +101,7 @@ final class WorkspaceParser {
             parseResourcesPreferences();
             parseWorkspaceProjects();
             parseJSFLibraryRegistryV2();
+            parseLaunchConfigurations();
         } catch (IOException e) {
             throw new ProjectImporterException(
                     "Cannot load workspace properties", e); // NOI18N
@@ -104,6 +109,10 @@ final class WorkspaceParser {
     }
 
     private void parseLaunchingPreferences() throws IOException, ProjectImporterException {
+        if (!workspace.getLaunchingPrefsFile().exists()) {
+            workspace.setJREContainers(new HashMap<String, String>());
+            return;
+        }
         for (Map.Entry<String,String> entry : EclipseUtils.loadProperties(workspace.getLaunchingPrefsFile()).entrySet()) {
             if (entry.getKey().equals(VM_XML)) {
                 Map<String,String> vmMap = PreferredVMParser.parse(entry.getValue());
@@ -178,7 +187,7 @@ final class WorkspaceParser {
             }
         };
         
-        Set<String> projectsDirs = new HashSet<String>();
+        Set<File> projectsDirs = new HashSet<File>();
         // let's find internal projects
         File[] innerDirs = workspace.getDirectory().listFiles(dirFilter);
         for (int i = 0; i < innerDirs.length; i++) {
@@ -188,7 +197,7 @@ final class WorkspaceParser {
                 // information of all projects in the workspace
                 logger.finest("Found a regular Eclipse Project in: " // NOI18N
                         + prjDir.getAbsolutePath());
-                if (!projectsDirs.contains(prjDir.getName())) {
+                if (!projectsDirs.contains(prjDir)) {
                     addLightProject(projectsDirs, prjDir, true);
                 } else {
                     logger.finest("Trying to add the same project twice: " // NOI18N
@@ -206,7 +215,7 @@ final class WorkspaceParser {
                 if (EclipseUtils.isRegularProject(location)) {
                     logger.finest("Found a regular Eclipse Project in: " // NOI18N
                             + location.getAbsolutePath());
-                    if (!projectsDirs.contains(location.getName())) {
+                    if (!projectsDirs.contains(location)) {
                         addLightProject(projectsDirs, location, false);
                     } else {
                         logger.finest("Trying to add the same project twice: " // NOI18N
@@ -232,13 +241,13 @@ final class WorkspaceParser {
         }
     }
     
-    private void addLightProject(Set<String> projectsDirs, File prjDir, boolean internal) {
+    private void addLightProject(Set<File> projectsDirs, File prjDir, boolean internal) {
         EclipseProject project = EclipseProject.createProject(prjDir);
         if (project != null) {
             project.setName(prjDir.getName());
             project.setInternal(internal);
             workspace.addProject(project);
-            projectsDirs.add(prjDir.getName());
+            projectsDirs.add(prjDir);
         }
     }
     
@@ -295,4 +304,37 @@ final class WorkspaceParser {
         return new File(pathS);
     }
     
+    private void parseLaunchConfigurations() throws IOException, ProjectImporterException {
+        List<LaunchConfiguration> configs = new ArrayList<LaunchConfiguration>();
+        File[] launches = new File(workspace.getDirectory(), ".metadata/.plugins/org.eclipse.debug.core/.launches").listFiles(new FilenameFilter() { // NOI18N
+            public boolean accept(File dir, String name) {
+                return name.endsWith(".launch"); // NOI18N
+            }
+        });
+        if (launches != null) {
+            for (File launch : launches) {
+                Document doc;
+                try {
+                    doc = XMLUtil.parse(new InputSource(launch.toURI().toString()), false, false, null, null);
+                } catch (SAXException x) {
+                    throw new ProjectImporterException("Could not parse " + launch, x);
+                }
+                Element launchConfiguration = doc.getDocumentElement();
+                String type = launchConfiguration.getAttribute("type"); // NOI18N
+                Map<String,String> attrs = new HashMap<String,String>();
+                NodeList nl = launchConfiguration.getElementsByTagName("stringAttribute"); // NOI18N
+                for (int i = 0; i < nl.getLength(); i++) {
+                    Element stringAttribute = (Element) nl.item(i);
+                    attrs.put(stringAttribute.getAttribute("key"), stringAttribute.getAttribute("value")); // NOI18N
+                }
+                configs.add(new LaunchConfiguration(launch.getName().replaceFirst("\\.launch$", ""), type, // NOI18N
+                        attrs.get("org.eclipse.jdt.launching.PROJECT_ATTR"), // NOI18N
+                        attrs.get("org.eclipse.jdt.launching.MAIN_TYPE"), // NOI18N
+                        attrs.get("org.eclipse.jdt.launching.PROGRAM_ARGUMENTS"), // NOI18N
+                        attrs.get("org.eclipse.jdt.launching.VM_ARGUMENTS"))); // NOI18N
+            }
+        }
+        workspace.setLaunchConfigurations(configs);
+    }
+
 }

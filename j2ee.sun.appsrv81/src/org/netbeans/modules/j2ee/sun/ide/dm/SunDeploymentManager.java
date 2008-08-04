@@ -523,7 +523,8 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
     public ProgressObject distribute(Target[] target, File archive, File plan)
     throws IllegalStateException {
         ThrowExceptionIfSuspended();
-        
+
+        archive = FileUtil.normalizeFile(archive);
         File[] resourceDirs = Utils.getResourceDirs(archive);
         if(resourceDirs != null){
             Utils.registerResources(resourceDirs, (ServerInterface)getManagement());
@@ -791,6 +792,7 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
             throws UnsupportedOperationException, IllegalStateException {
         ThrowExceptionIfSuspended();
         
+        archive = FileUtil.normalizeFile(archive);
         File[] resourceDirs = Utils.getResourceDirs(archive);
         if(resourceDirs != null){
             Utils.registerResources(resourceDirs, (ServerInterface)getManagement());
@@ -1420,8 +1422,9 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
         antProps.setProperty("sjsas.password", getPassword());         // NOI18N
         antProps.setProperty("sjsas.host",getHost());
         antProps.setProperty("sjsas.port",getPort()+"");
+        // FIXME Get file object for parent folder and use FileObject.createData() here
         boolean ret = file.createNewFile();
-        FileObject fo = FileUtil.toFileObject(file);
+        FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(file));
         FileLock lock = null;
         try {
             lock = fo.lock();

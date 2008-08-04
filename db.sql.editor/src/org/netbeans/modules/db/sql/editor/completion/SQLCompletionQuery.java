@@ -52,6 +52,8 @@ import java.util.Set;
 import java.util.TreeSet;
 import javax.swing.text.Document;
 import org.netbeans.api.db.explorer.DatabaseConnection;
+import org.netbeans.api.db.sql.support.SQLIdentifiers;
+import org.netbeans.api.db.sql.support.SQLIdentifiers.Quoter;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.db.metadata.model.api.Action;
 import org.netbeans.modules.db.metadata.model.api.Catalog;
@@ -85,8 +87,8 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
     private String quoteString;
     private SQLCompletionEnv env;
     private FromClause fromClause;
-    private int anchorOffset = -1;
-    private int substitutionOffset = 0;
+    private int anchorOffset = -1; // Relative to statement offset.
+    private int substitutionOffset = 0; // Relative to statement offset.
     private SQLCompletionItems items;
 
     public SQLCompletionQuery(DatabaseConnection dbconn) {
@@ -104,13 +106,15 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
                         return;
                     }
                     String identifierQuoteString = null;
+                    Quoter quoter = null;
                     try {
                         DatabaseMetaData dmd = conn.getMetaData();
                         identifierQuoteString = dmd.getIdentifierQuoteString();
+                        quoter = SQLIdentifiers.createQuoter(dmd);
                     } catch (SQLException e) {
                         throw new RuntimeException(e);
                     }
-                    doQuery(newEnv, metadata, identifierQuoteString);
+                    doQuery(newEnv, metadata, quoter, identifierQuoteString);
                 }
             });
         } catch (MetadataModelException e) {
@@ -120,20 +124,20 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
             items.fill(resultSet);
         }
         if (anchorOffset != -1) {
-            resultSet.setAnchorOffset(anchorOffset);
+            resultSet.setAnchorOffset(env.getStatementOffset() + anchorOffset);
         }
         resultSet.finish();
     }
 
     // Called by unit tests.
-    SQLCompletionItems doQuery(SQLCompletionEnv env, Metadata metadata, String quoteString) {
+    SQLCompletionItems doQuery(SQLCompletionEnv env, Metadata metadata, Quoter quoter, String quoteString) {
         this.env = env;
         this.metadata = metadata;
         this.quoteString = quoteString;
         anchorOffset = -1;
         substitutionOffset = 0;
-        items = new SQLCompletionItems();
         if (env != null && env.isSelect()) {
+            items = new SQLCompletionItems(quoter, env.getStatementOffset());
             completeSelect();
         }
         return items;
@@ -146,27 +150,31 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
         }
         SQLStatement statement = SQLStatementAnalyzer.analyze(env.getTokenSequence());
         fromClause = statement.getTablesInEffect(env.getCaretOffset());
-        switch (context) {
-            case SELECT:
-                insideSelect();
-                break;
-            case FROM:
-                insideFrom();
-                break;
-            case WHERE:
-                if (fromClause != null) {
-                    insideWhere();
-                }
-        }
-    }
 
-    private void insideSelect() {
         Identifier ident = findIdentifier();
         if (ident == null) {
             return;
         }
         anchorOffset = ident.anchorOffset;
         substitutionOffset = ident.substitutionOffset;
+        switch (context) {
+            case SELECT:
+                insideSelect(ident);
+                break;
+            case FROM:
+                insideFrom(ident);
+                break;
+            case JOIN_CONDITION:
+                insideJoinCondition(ident);
+                break;
+            case WHERE:
+                if (fromClause != null) {
+                    insideWhere(ident);
+                }
+        }
+    }
+
+    private void insideSelect(Identifier ident) {
         if (ident.fullyTypedIdent.isEmpty()) {
             completeSelectSimpleIdent(ident.lastPrefix, ident.prefixQuoteString);
         } else if (ident.fullyTypedIdent.isSimple()) {
@@ -176,13 +184,7 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
         }
     }
 
-    private void insideFrom() {
-        Identifier ident = findIdentifier();
-        if (ident == null) {
-            return;
-        }
-        anchorOffset = ident.anchorOffset;
-        substitutionOffset = ident.substitutionOffset;
+    private void insideFrom(Identifier ident) {
         if (ident.fullyTypedIdent.isEmpty()) {
             completeFromSimpleIdent(ident.lastPrefix, ident.prefixQuoteString);
         } else if (ident.fullyTypedIdent.isSimple()) {
@@ -190,19 +192,23 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
         }
     }
 
-    private void insideWhere() {
-        Identifier ident = findIdentifier();
-        if (ident == null) {
-            return;
-        }
-        anchorOffset = ident.anchorOffset;
-        substitutionOffset = ident.substitutionOffset;
+    private void insideJoinCondition(Identifier ident) {
         if (ident.fullyTypedIdent.isEmpty()) {
-            completeWhereSimpleIdent(ident.lastPrefix, ident.prefixQuoteString);
+            completeSimpleIdentBasedOnFromClause(ident.lastPrefix, ident.prefixQuoteString);
         } else if (ident.fullyTypedIdent.isSimple()) {
-            completeWhereSingleQualIdent(ident.fullyTypedIdent, ident.lastPrefix, ident.prefixQuoteString);
+            completeSingleQualIdentBasedOnFromClause(ident.fullyTypedIdent, ident.lastPrefix, ident.prefixQuoteString);
         } else if (ident.fullyTypedIdent.isSingleQualified()) {
-            completeWhereDoubleQualIdent(ident.fullyTypedIdent, ident.lastPrefix, ident.prefixQuoteString);
+            completeDoubleQualIdentBasedOnFromClause(ident.fullyTypedIdent, ident.lastPrefix, ident.prefixQuoteString);
+        }
+    }
+
+    private void insideWhere(Identifier ident) {
+        if (ident.fullyTypedIdent.isEmpty()) {
+            completeSimpleIdentBasedOnFromClause(ident.lastPrefix, ident.prefixQuoteString);
+        } else if (ident.fullyTypedIdent.isSimple()) {
+            completeSingleQualIdentBasedOnFromClause(ident.fullyTypedIdent, ident.lastPrefix, ident.prefixQuoteString);
+        } else if (ident.fullyTypedIdent.isSingleQualified()) {
+            completeDoubleQualIdentBasedOnFromClause(ident.fullyTypedIdent, ident.lastPrefix, ident.prefixQuoteString);
         }
     }
 
@@ -272,18 +278,6 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
         if (schema != null) {
             items.addTables(schema, null, lastPrefix, prefixQuoteString, substitutionOffset);
         }
-    }
-
-    private void completeWhereSimpleIdent(String typedPrefix, String prefixQuoteString) {
-        completeSimpleIdentBasedOnFromClause(typedPrefix, prefixQuoteString);
-    }
-
-    private void completeWhereSingleQualIdent(QualIdent fullyTypedIdent, String lastPrefix, String prefixQuoteString) {
-        completeSingleQualIdentBasedOnFromClause(fullyTypedIdent, lastPrefix, prefixQuoteString);
-    }
-
-    private void completeWhereDoubleQualIdent(QualIdent fullyTypedIdent, String lastPrefix, String prefixQuoteString) {
-        completeDoubleQualIdentBasedOnFromClause(fullyTypedIdent, lastPrefix, prefixQuoteString);
     }
 
     private void completeSimpleIdentBasedOnFromClause(String typedPrefix, String prefixQuoteString) {

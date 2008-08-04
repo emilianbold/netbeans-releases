@@ -82,22 +82,21 @@ public class Export extends Dialog {
     JPanel panel = new JPanel(new GridBagLayout());
     GridBagConstraints c = new GridBagConstraints();
     c.anchor = GridBagConstraints.NORTHWEST;
-    c.insets =
-      new Insets(MEDIUM_INSET + TINY_INSET, TINY_INSET, TINY_INSET, TINY_INSET);
+    c.insets = new Insets(LARGE_SIZE, TINY_SIZE, TINY_SIZE, SMALL_SIZE);
 
     // file name
     panel.add(createLabel(i18n("LBL_File_Name")), c); // NOI18N
 
     c.gridy++;
     c.weightx = 1.0;
-    c.insets = new Insets(MEDIUM_INSET, TINY_INSET, TINY_INSET, 0);
+    c.insets = new Insets(LARGE_SIZE, TINY_SIZE, TINY_SIZE, LARGE_SIZE);
     c.fill = GridBagConstraints.HORIZONTAL;
     myFileName = new JTextField(TEXT_WIDTH);
     myFileName.setText(getResultFolder());
     panel.add(myFileName, c);
 
     c.weightx = 0.0;
-    c.insets = new Insets(MEDIUM_INSET, 0, TINY_INSET, TINY_INSET);
+    c.insets = new Insets(LARGE_SIZE, 0, TINY_SIZE, MEDIUM_SIZE);
     c.fill = GridBagConstraints.NONE;
     JButton button = createButton(
       new ButtonAction(i18n("LBL_Browse"), i18n("TLT_Browse")) { // NOI18N
@@ -114,10 +113,10 @@ public class Export extends Dialog {
 
     // description
     c.gridy++;
-    c.insets = new Insets(TINY_INSET, TINY_INSET, TINY_INSET, MEDIUM_INSET);
+    c.insets = new Insets(MEDIUM_SIZE, TINY_SIZE, SMALL_SIZE, MEDIUM_SIZE);
     panel.add(createLabel(i18n("LBL_Description")), c); // NOI18N
 
-    c.insets = new Insets(TINY_INSET, TINY_INSET, TINY_INSET, TINY_INSET);
+    c.insets = new Insets(MEDIUM_SIZE, TINY_SIZE, TINY_SIZE, MEDIUM_SIZE);
     c.weightx = 1.0;
     c.weighty = 1.0;
     c.gridwidth = 2;
@@ -134,7 +133,7 @@ public class Export extends Dialog {
     
     // open in browser
     c.gridwidth = 2;
-    c.insets = new Insets(TINY_INSET, 0, TINY_INSET, TINY_INSET);
+    c.insets = new Insets(TINY_SIZE, 0, 0, 0);
     c.fill = GridBagConstraints.NONE;
     myRunBrowser = createCheckBox(
       new ButtonAction(i18n("LBL_Open_in_Browser")) { // NOI18N

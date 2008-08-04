@@ -98,7 +98,7 @@ public class DesignCenter extends UMLTestCase {
     private static String prName= "DesignCentertestHelper";
     private static String project = prName+"|Model";
     private static boolean codeSync=false;
-    private static String workdir=System.getProperty("xtest.workdir");
+    private static String workdir=System.getProperty("nbjunit.workdir");
     private static String defaultNewElementName=org.netbeans.test.uml.designpatterns.utils.Utils.defaultNewElementName;
     private static String defaultReturnType=org.netbeans.test.uml.designpatterns.utils.Utils.defaultReturnType;
     private static String defaultAttributeType=org.netbeans.test.uml.designpatterns.utils.Utils.defaultAttributeType;

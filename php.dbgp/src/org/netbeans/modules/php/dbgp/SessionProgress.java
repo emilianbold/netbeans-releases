@@ -69,7 +69,7 @@ public final class SessionProgress implements Cancellable {
        Session retval = null;
         for (Session session : sessions) {
             SessionId id = (SessionId)session.lookupFirst( null , SessionId.class );
-            if ( id.getId().equals( sessionId.getId() ) ) {
+            if (id != null &&  id.getId().equals( sessionId.getId() ) ) {
                retval = session;
                break;
            }

@@ -217,12 +217,7 @@ public class SetMainProject extends ProjectAction implements Presenter.Menu, Pro
             if ( e.getSource() instanceof JMenuItem ) {
                 JMenuItem jmi = (JMenuItem)e.getSource();
                 Project project = (Project)jmi.getClientProperty( PROJECT_KEY );
-                if ( project != null ) {
-                    OpenProjectList.getDefault().setMainProject( project );
-                } else {
-                    OpenProjectList.getDefault().setMainProject(null);
-                }
-                
+                OpenProjectList.getDefault().setMainProject(project);
             }
             
         }

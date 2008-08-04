@@ -43,6 +43,8 @@ package org.netbeans.modules.debugger.jpda.ui.breakpoints;
 
 import java.awt.Dimension;
 
+import java.util.ArrayList;
+import java.util.StringTokenizer;
 import javax.swing.JEditorPane;
 import org.netbeans.api.debugger.Breakpoint.HIT_COUNT_FILTERING_STYLE;
 import org.netbeans.modules.debugger.jpda.ui.WatchPanel;
@@ -186,22 +188,18 @@ public class ConditionsPanel extends javax.swing.JPanel {
         if (filterStr == null || filterStr.length() == 0) {
             return new String[] {};
         }
-        int numCommas = 0;
-        for (int i = 0; i < filterStr.length(); i++) {
-            if (filterStr.charAt(i) == ',') numCommas++;
+        StringTokenizer tokenizer = new StringTokenizer(filterStr, ", \t"); // NOI18N
+        ArrayList<String> strsList = new ArrayList<String>();
+        while (tokenizer.hasMoreTokens()) {
+            String str = tokenizer.nextToken();
+            if (str.length() > 0) {
+                strsList.add(str);
+            }
         }
-        String[] filter = new String[numCommas + 1];
-        int i = 0;
-        int s = 0;
-        while (s < filterStr.length()) {
-            int e = filterStr.indexOf(",", s);
-            if (e < 0) e = filterStr.length();
-            filter[i++] = filterStr.substring(s, e).trim();
-            s = e + 1;
-        }
-        return filter;
+        String[] result = new String[strsList.size()];
+        strsList.toArray(result);
+        return result;
     }
-    
 
     
     // Data Retrieval:

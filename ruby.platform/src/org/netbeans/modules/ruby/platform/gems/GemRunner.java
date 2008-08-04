@@ -78,6 +78,7 @@ final class GemRunner {
 
     private final RubyPlatform platform;
     private List<String> output;
+    private File pwd;
 
     GemRunner(final RubyPlatform platform) {
         this.platform = platform;
@@ -171,12 +172,9 @@ final class GemRunner {
             argList.add("--ignore-dependencies"); // NOI18N
         }
 
-        argList.add("--version"); // NOI18N
-
         if ((version != null) && (version.length() > 0)) {
+            argList.add("--version"); // NOI18N
             argList.add(version);
-        } else {
-            argList.add("> 0"); // NOI18N
         }
 
         String[] args = argList.toArray(new String[argList.size()]);
@@ -201,7 +199,8 @@ final class GemRunner {
     private boolean installLocal(final File gem, boolean rdoc,
             boolean ri, Runnable asyncCompletionTask, Component parent) {
         // XXX make 'includeDeps' customizable
-        return install(Collections.singletonList(gem.getAbsolutePath()), rdoc, ri, false, null, asyncCompletionTask, parent);
+        this.pwd = gem.getParentFile();
+        return install(Collections.singletonList(gem.getName()), rdoc, ri, false, null, asyncCompletionTask, parent);
     }
 
     private boolean update(final List<String> gemNames, boolean rdoc, boolean ri,
@@ -350,7 +349,7 @@ final class GemRunner {
 
         ProcessBuilder pb = new ProcessBuilder(args);
         GemManager.adjustEnvironment(platform, pb.environment());
-        pb.directory(cmd.getParentFile());
+        pb.directory(pwd == null ? cmd.getParentFile() : pwd);
         pb.redirectErrorStream(true);
 
         // TODO: Following unfortunately does not work -- gems blows up. Looks
@@ -454,7 +453,7 @@ final class GemRunner {
             LOGGER.log(Level.SEVERE, e.getLocalizedMessage(), e);
         }
 
-        LOGGER.finest("Process finished with exit code: " + exitCode);
+        LOGGER.finer("Process finished with exit code: " + exitCode);
         boolean succeeded = exitCode == 0;
 
         return succeeded;

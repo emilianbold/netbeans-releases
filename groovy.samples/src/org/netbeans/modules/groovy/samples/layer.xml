@@ -5,12 +5,19 @@
         <folder name="Project">
             <folder name="Samples">
                 <folder name="Groovy">
-                    <attr name="position" intvalue="150"/>
-                    <file name="ShakesWSClientProject.zip" url="ShakesWSClientProject.zip">
+                    <attr name="position" intvalue="620"/>
+                    <file name="GroovyJavaDemoProject.zip" url="GroovyJavaDemoProject.zip">
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.groovy.samples.Bundle"/>
-                        <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.groovy.samples.shakes.ShakesWSClientWizardIterator.createIterator"/>
+                        <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.groovy.samples.gjdemo.GroovyJavaDemoWizardIterator.createIterator"/>
                         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/groovy/grailsproject/resources/GrailsIcon16x16.png"/>
-                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/groovy/samples/shakes/ShakesWSClientDescription.html"/>
+                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/groovy/samples/gjdemo/GroovyJavaDemoDescription.html"/>
+                        <attr name="template" boolvalue="true"/>
+                    </file>
+                    <file name="NBProjectGeneratorsProject.zip" url="NBProjectGeneratorsProject.zip">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.groovy.samples.Bundle"/>
+                        <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.groovy.samples.nbprojectgen.NBProjectGeneratorsWizardIterator.createIterator"/>
+                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/groovy/grailsproject/resources/GrailsIcon16x16.png"/>
+                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/groovy/samples/nbprojectgen/NBProjectGeneratorsDescription.html"/>
                         <attr name="template" boolvalue="true"/>
                     </file>
                 </folder>

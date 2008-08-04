@@ -120,6 +120,13 @@ public class PersistenceLibraryPanel extends javax.swing.JPanel {
         });
     }
     
+    @Override
+     public void addNotify() {
+        super.addNotify();
+        this.libraryNameTextField.requestFocus();
+        this.libraryNameTextField.selectAll();
+    }
+    
     public void apply() {
         libImpl.setName(libraryNameTextField.getText().trim());
         PersistenceLibrarySupport.getDefault().addLibrary(libImpl);

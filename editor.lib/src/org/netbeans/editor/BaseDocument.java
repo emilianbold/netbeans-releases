@@ -44,10 +44,12 @@ package org.netbeans.editor;
 import java.awt.Font;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
+import java.lang.StackTraceElement;
 import java.util.Hashtable;
 import java.util.ArrayList;
 import java.util.Dictionary;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.Map;
 import java.io.Reader;
 import java.io.Writer;
@@ -56,6 +58,8 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.util.EventListener;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.PreferenceChangeEvent;
@@ -95,6 +99,8 @@ import org.netbeans.modules.editor.lib.FormatterOverride;
 import org.netbeans.modules.editor.lib.TrailingWhitespaceRemove;
 import org.netbeans.modules.editor.lib.SettingsConversions;
 import org.openide.util.Lookup;
+import org.openide.util.RequestProcessor;
+import org.openide.util.RequestProcessor.Task;
 import org.openide.util.WeakListeners;
 
 /**
@@ -696,7 +702,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
             activePostModification = (postModificationDocumentListener != null
                     || postModificationDocumentListenerList.getListenerCount() > 0);
             if (activePostModification) {
-                atomicLock();
+                atomicLockImpl ();
             }
         }
         try {
@@ -796,7 +802,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
                         }
                     }
                 } finally {
-                    atomicUnlock();
+                    atomicUnlockImpl();
                 }
             }
         }
@@ -852,7 +858,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
                 activePostModification = (postModificationDocumentListener != null
                         || postModificationDocumentListenerList.getListenerCount() > 0);
                 if (activePostModification) {
-                    atomicLock();
+                    atomicLockImpl ();
                 }
             }
             try {
@@ -933,7 +939,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
                             listener.removeUpdate(postModificationEvent);
                         }
                     }
-                    atomicUnlock();
+                    atomicUnlockImpl ();
                 }
             }
 
@@ -1405,7 +1411,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
     */
     public void runAtomicAsUser(Runnable r) {
         boolean completed = false;
-        atomicLock();
+        atomicLockImpl ();
         try {
             r.run();
             completed = true;
@@ -1415,7 +1421,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
                     breakAtomicLock();
                 }
             } finally {
-                atomicUnlock();
+                atomicUnlockImpl ();
             }
         }
     }
@@ -1652,7 +1658,45 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
         }
     }
 
-    public final void atomicLock() {
+    private static Set<String>
+                            reportedClasses = new HashSet<String> ();
+    private static Set<String>     
+                            openedLocks = new HashSet<String> ();
+    private static RequestProcessor
+                            requestProcessor = new RequestProcessor ("BaseDocument");
+    private static Task     task;
+
+    /** 
+     * 
+     * @deprecated Please use {@link BaseDocument#runAtomic(java.lang.Runnable)} instead.
+     */
+    public final synchronized void atomicLock () {
+        Exception exception = new Exception ();
+        StackTraceElement[] stack = exception.getStackTrace ();
+        if (stack.length > 1) {
+            String className = stack [1].getClassName ();
+            if (!reportedClasses.contains (className)) {
+                LOG.warning (className + " uses deprecated, slow and dangerous method BaseDocument.atomicLock ()."); //NOI18N
+                reportedClasses.add (className);
+            }
+            openedLocks.add (className);
+        }
+        if (task == null) {
+            task = requestProcessor.create (new Runnable () {
+                public void run () {
+                    synchronized (BaseDocument.this) {
+                        System.out.println("Invalid locks:");
+                        for (String className : openedLocks)
+                            System.out.println("  " + className);
+                    }
+                }
+            });
+            task.schedule (2000);
+        }
+        atomicLockImpl ();
+    }
+    
+    final void atomicLockImpl () {
         synchronized (this) {
             NotifyModifyStatus notifyModifyStatus = (NotifyModifyStatus)STATUS.get();
             if (notifyModifyStatus == null) {
@@ -1674,7 +1718,25 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
         }
     }
 
-    public final void atomicUnlock() {
+    /** 
+     * 
+     * @deprecated Please use {@link BaseDocument#runAtomic(java.lang.Runnable)} instead.
+     */
+    public final synchronized void atomicUnlock () {
+        Exception exception = new Exception ();
+        StackTraceElement[] stack = exception.getStackTrace ();
+        if (stack.length > 1) {
+            String className = stack [1].getClassName ();
+            openedLocks.remove (className);
+        }
+        atomicUnlockImpl ();
+        if (atomicDepth == 0 && task != null) {
+            task.cancel ();
+            task = null;
+        }
+    }
+    
+    final void atomicUnlockImpl () {
         boolean modsDone = false;
         boolean lastAtomic = false;
         synchronized (this) {
@@ -2077,11 +2139,11 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
         private boolean nonSignificant;
 
         public @Override void undo() throws CannotUndoException {
-            atomicLock();
+            atomicLockImpl ();
             try {
                 super.undo();
             } finally {
-                atomicUnlock();
+                atomicUnlockImpl ();
             }
 
             if (previousEdit != null) {
@@ -2095,11 +2157,11 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
                 previousEdit.redo();
             }
 
-            atomicLock();
+            atomicLockImpl ();
             try {
                 super.redo();
             } finally {
-                atomicUnlock();
+                atomicUnlockImpl ();
             }
         }
 

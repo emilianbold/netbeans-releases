@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,9 +31,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.ruby.testrunner;
@@ -48,6 +48,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.platform.execution.ExecutionDescriptor;
 import org.netbeans.modules.ruby.platform.execution.FileLocator;
+import org.netbeans.modules.ruby.rubyproject.RubyBaseProject;
 import org.netbeans.modules.ruby.rubyproject.RubyProjectUtil;
 import org.netbeans.modules.ruby.rubyproject.rake.RakeTask;
 import org.netbeans.modules.ruby.rubyproject.spi.RakeTaskCustomizer;
@@ -55,6 +56,7 @@ import org.netbeans.modules.ruby.rubyproject.spi.TestRunner;
 import org.netbeans.modules.ruby.testrunner.ui.Manager;
 import org.netbeans.modules.ruby.testrunner.ui.RspecHandlerFactory;
 import org.netbeans.modules.ruby.testrunner.ui.TestRecognizer;
+import org.netbeans.modules.ruby.testrunner.ui.TestSession;
 import org.netbeans.modules.ruby.testrunner.ui.TestSession.SessionType;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -62,7 +64,7 @@ import org.openide.modules.InstalledFileLocator;
 
 /**
  * Test runner for RSpec tests.
- * 
+ *
  * <i>TODO: get rid of duplication with RSpecSupport, such as finding the rspec binary</i>.
  *
  * @author Erno Mononen
@@ -88,15 +90,15 @@ public class RspecRunner implements TestRunner, RakeTaskCustomizer {
         specFile.add(FileUtil.toFile(testFile).getAbsolutePath());
         List<String> additionalArgs = new ArrayList<String>();
         additionalArgs.add(FileUtil.toFile(testFile).getAbsolutePath());
-        run(FileOwnerQuery.getOwner(testFile), 
+        run(FileOwnerQuery.getOwner(testFile),
                 additionalArgs,
-                testFile.getName(), 
+                testFile.getName(),
                 debug);
     }
 
     public void runSingleTest(FileObject testFile, String testMethod, boolean debug) {
-        // the testMethod param here actually presents the line number 
-        // of the rspec specification in the test file. 
+        // the testMethod param here actually presents the line number
+        // of the rspec specification in the test file.
         List<String> additionalArgs = new ArrayList<String>();
         additionalArgs.add("--line");
         additionalArgs.add(testMethod);
@@ -105,18 +107,17 @@ public class RspecRunner implements TestRunner, RakeTaskCustomizer {
     }
 
     public void runAllTests(Project project, boolean debug) {
-        // collect all tests from the spec/ dir - would be better to use the rake
-        // spec task but couldn't make it work with all the params - need to revisit
-        // that.
-        FileObject specDir = project.getProjectDirectory().getFileObject("spec/");
-        Enumeration<? extends FileObject> children = specDir.getChildren(true);
+        // collect specs from the test dirs (will be changed to use rake spec in the future)
+        RubyBaseProject baseProject = project.getLookup().lookup(RubyBaseProject.class);
+        FileObject[] testDirs = baseProject.getTestSourceRootFiles();
         List<String> specs = new ArrayList<String>();
-        while (children.hasMoreElements()) {
-            FileObject each = children.nextElement();
-            if (!each.isFolder() 
-                    && "rb".equals(each.getExt()) 
-                    && each.getName().endsWith("spec")) { //NOI18N
-                specs.add(FileUtil.toFile(each).getAbsolutePath());
+        for (FileObject dir : testDirs) {
+            Enumeration<? extends FileObject> children = dir.getChildren(true);
+            while (children.hasMoreElements()) {
+                FileObject each = children.nextElement();
+                if (!each.isFolder() && "rb".equals(each.getExt()) && each.getName().endsWith("spec")) { //NOI18N
+                    specs.add(FileUtil.toFile(each).getAbsolutePath());
+                }
             }
         }
         run(project, specs, ProjectUtils.getInformation(project).getDisplayName(), debug);
@@ -125,6 +126,13 @@ public class RspecRunner implements TestRunner, RakeTaskCustomizer {
     private void run(Project project, List<String> additionalArgs, String name, boolean debug) {
         FileLocator locator = project.getLookup().lookup(FileLocator.class);
         RubyPlatform platform = RubyPlatform.platformFor(project);
+
+        if (additionalArgs.isEmpty()) {
+            // just display 'no tests run' immediately if there are no files to run
+            TestSession empty = new TestSession(locator, debug ? SessionType.DEBUG : SessionType.TEST);
+            Manager.getInstance().emptyTestRun(empty);
+            return;
+        }
 
         List<String> arguments = new ArrayList<String>();
         arguments.add("--require"); //NOI18N
@@ -138,9 +146,9 @@ public class RspecRunner implements TestRunner, RakeTaskCustomizer {
 
         ExecutionDescriptor desc = null;
         String charsetName = null;
-        desc = new ExecutionDescriptor(platform, 
-                name, 
-                FileUtil.toFile(project.getProjectDirectory()), 
+        desc = new ExecutionDescriptor(platform,
+                name,
+                FileUtil.toFile(project.getProjectDirectory()),
                 getSpec(project).getAbsolutePath());
         desc.additionalArgs(arguments.toArray(new String[arguments.size()]));
         desc.initialArgs(RubyProjectUtil.getLoadPath(project)); //NOI18N
@@ -149,7 +157,7 @@ public class RspecRunner implements TestRunner, RakeTaskCustomizer {
         desc.allowInput();
         desc.fileLocator(locator);
         desc.addStandardRecognizers();
-        
+
         TestRecognizer recognizer = new TestRecognizer(Manager.getInstance(),
                 locator,
                 RspecHandlerFactory.getHandlers(),

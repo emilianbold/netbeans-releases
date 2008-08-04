@@ -42,6 +42,7 @@ package org.netbeans.modules.projectimport.eclipse.core.spi;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -52,6 +53,7 @@ import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ant.AntArtifact;
@@ -71,6 +73,8 @@ import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  * Misc helper methods for implementors of ProjectTypeFactory.
@@ -81,7 +85,7 @@ public class ProjectFactorySupport {
     /** Logger for this class. */
     private static final Logger LOG =
             Logger.getLogger(ProjectFactorySupport.class.getName());
-    
+
     /**
      * Default translation of eclipse classpath to netbeans classpath. Should
      * be useful for most of the project types.
@@ -157,7 +161,13 @@ public class ProjectFactorySupport {
         String[] labels = new String[rootURLs.length];
         for (int i = 0; i < rootURLs.length; i++) {
             for (DotClassPathEntry e : sources) {
-                String path = rootURLs[i].getFile();
+                String path;
+                try {
+                    path = new File(rootURLs[i].toURI()).getPath();
+                } catch (URISyntaxException ex) {
+                    LOG.info("cannot convert '"+rootURLs[i].toExternalForm()+"' to file: "+ex.toString()); //NOI18N
+                    continue;
+                }
                 if (path.endsWith("/") || path.endsWith("\\")) { //NOI18N
                     path = path.substring(0, path.length()-1);
                 }
@@ -647,6 +657,19 @@ public class ProjectFactorySupport {
         if (changed) {
             helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
         }
+    }
+    
+    public static boolean areSourceRootsOwned(ProjectImportModel model, List<String> importProblems) {
+        for (File sourceRootFile : model.getEclipseSourceRootsAsFileArray()) {
+            FileObject fo = FileUtil.toFileObject(sourceRootFile);
+            Project p = FileOwnerQuery.getOwner(fo);
+            if (p != null) {
+                importProblems.add(NbBundle.getMessage(EclipseProject.class, "MSG_SourceRootOwned", // NOI18N
+                        model.getProjectName(), sourceRootFile.getPath(), p.getProjectDirectory().getPath()));
+                return true;
+            }
+        }
+        return false;
     }
     
 }

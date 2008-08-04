@@ -59,17 +59,14 @@ import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CoderResult;
 import java.nio.charset.CodingErrorAction;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import org.netbeans.modules.search.LineReader.LineSeparator;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import static java.util.logging.Level.FINER;
 import static java.util.logging.Level.FINEST;
@@ -145,9 +142,9 @@ final class MatchingObject implements PropertyChangeListener {
     private StringBuilder text;
     
     /**
-     * {@code true} if the file's line terminator is other than {@code "\\n"}
+     * list of line separators used in the file
      */
-    boolean wasCrLf = false;
+    LineSeparator[] lineSeparators;
     
     /**
      * Creates a new {@code MatchingObject} with a reference to the found
@@ -458,24 +455,12 @@ final class MatchingObject implements PropertyChangeListener {
         StringBuilder ret = null;
         
         ByteBuffer buf = getByteBuffer();
-        CharsetDecoder decoder = getDecoder();
         if (buf != null) {
-            CharBuffer cbuf = decodeByteBuffer(buf, decoder);
-            String terminator
-                    = System.getProperty("line.separator");         //NOI18N
-
-            if (!terminator.equals("\n")) {                         //NOI18N
-                Matcher matcher = Pattern.compile(terminator).matcher(cbuf);
-                if (matcher.find()) {
-                    wasCrLf = true;
-                    matcher.reset();
-                    ret = new StringBuilder(
-                                        matcher.replaceAll("\n"));  //NOI18N
-                }
-            }
-            if (ret == null) {
-                ret = new StringBuilder(cbuf);
-            }
+            CharBuffer cbuf = decodeByteBuffer(buf, charset);
+            LineReader reader = new LineReader(cbuf);
+            ret = reader.readText();
+            lineSeparators = reader.getLineSeparators();
+            reader.clear();
         }
         return ret;
     }
@@ -503,25 +488,6 @@ final class MatchingObject implements PropertyChangeListener {
         }
         buffer.rewind();
         return buffer;
-    }
-
-    private CharsetDecoder getDecoder() {
-        Collection<? extends FileObjectDecoderProvider> decoderProviders
-               = Lookup.getDefault().lookupAll(FileObjectDecoderProvider.class);
-        CharsetDecoder decoder = null;
-        if (!decoderProviders.isEmpty()) {
-            final FileObject fileObj = getFileObject();
-            for (FileObjectDecoderProvider decoderProvider : decoderProviders) {
-                if ((decoder = decoderProvider.getDecoderFor(charset, fileObj)) != null) {
-                    break;
-                }
-            }
-        }
-        if (decoder == null) {
-            decoder = charset.newDecoder();
-        }
-        return decoder.onMalformedInput(CodingErrorAction.REPLACE)
-                      .onUnmappableCharacter(CodingErrorAction.REPLACE);
     }
     
     /**
@@ -764,20 +730,13 @@ final class MatchingObject implements PropertyChangeListener {
         }
         
         if (REALLY_WRITE) {
-            if (wasCrLf) {
-                String terminator
-                        = System.getProperty("line.separator");         //NOI18N
-                //XXX use constant - i.e. on mac, only \r, etc.
-                text = new StringBuilder(
-                        text.toString().replace("\n", terminator));     //NOI18N
-            }
             final FileObject fileObject = getFileObject();
             Writer writer = null;
             try {
                 writer = new OutputStreamWriter(
                         fileObject.getOutputStream(fileLock),
                         charset);
-                writer.write(text.toString());
+                writer.write(makeStringToWrite());
             } finally {
                 if (writer != null) {
                     writer.close();
@@ -787,6 +746,36 @@ final class MatchingObject implements PropertyChangeListener {
             System.err.println("Would write to " + getFile().getPath());//NOI18N
             System.err.println(text);
         }
+    }
+
+    /**
+     */
+    private String makeStringToWrite() {
+        return makeStringToWrite(text, lineSeparators);
+    }
+    
+    /**
+     */
+    static String makeStringToWrite(StringBuilder text,
+                                    LineSeparator[] lineSeparators) {
+        if ((lineSeparators == null) || (lineSeparators.length == 0)) {
+            return text.toString();
+        }
+
+        StringBuilder outBuf = new StringBuilder(text.length()
+                                                 + lineSeparators.length);
+        int from = 0;
+        int index;
+        int separatorIndex = 0;
+        while ((index = text.indexOf("\n", from)) != -1) {              //NOI18N
+            outBuf.append(text.substring(from, index));
+            outBuf.append(lineSeparators[separatorIndex++].getString());
+            from = index + 1;
+        }
+        if (from != text.length()) {
+            outBuf.append(text.substring(from));
+        }
+        return outBuf.toString();
     }
 
     /**
@@ -804,8 +793,12 @@ final class MatchingObject implements PropertyChangeListener {
      * @see  <a href="http://www.netbeans.org/issues/show_bug.cgi?id=103067">NetBeans bug #103067</a>
      */
     private CharBuffer decodeByteBuffer(final ByteBuffer in,
-                                        final CharsetDecoder decoder)
+                                        final Charset charset)
             throws CharacterCodingException {
+        
+        final CharsetDecoder decoder = charset.newDecoder()
+                                       .onMalformedInput(CodingErrorAction.REPLACE)
+                                       .onUnmappableCharacter(CodingErrorAction.REPLACE);
         
 	int remaining = in.remaining();
         if (remaining == 0) {

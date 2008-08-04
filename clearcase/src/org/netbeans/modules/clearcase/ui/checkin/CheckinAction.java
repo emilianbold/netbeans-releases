@@ -109,6 +109,7 @@ public class CheckinAction extends AbstractAction {
     }
     
     public void actionPerformed(ActionEvent ev) {
+        Utils.logVCSActionEvent("CC");
         String contextTitle = Utils.getContextDisplayName(context);
         final JButton checkinButton = new JButton(); 
         checkinButton.setToolTipText(NbBundle.getMessage(CheckinAction.class, "TT_CheckinAction"));

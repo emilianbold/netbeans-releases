@@ -160,12 +160,16 @@ public class RailsInstallationPanel extends JPanel {
 
     void store(WizardDescriptor settings) {
         String version = (String) railsVersionComboBox.getSelectedItem();
-        String latest = platform().getGemManager().getLatestVersion("rails");
-        // specify the version only if not using the latest version
-        if (version != null && !version.equals(latest)) {
-            settings.putProperty(NewRailsProjectWizardIterator.RAILS_VERSION, railsVersionComboBox.getSelectedItem());
+        GemManager gemManager = gemManager();
+        if (gemManager != null) {
+            String latest = gemManager.getLatestVersion("rails"); //NOI18N
+            // specify the version only if not using the latest version
+            if (version != null && !version.equals(latest)) {
+                settings.putProperty(NewRailsProjectWizardIterator.RAILS_VERSION, railsVersionComboBox.getSelectedItem());
+            }
         }
     }
+
     boolean valid (WizardDescriptor settings) {
         if (!platform().isValidRuby(false)) {
             wizardDescriptor.putProperty( WizardDescriptor.PROP_ERROR_MESSAGE, 

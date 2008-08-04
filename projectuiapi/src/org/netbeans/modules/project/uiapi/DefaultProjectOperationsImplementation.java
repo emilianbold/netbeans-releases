@@ -131,7 +131,7 @@ public final class DefaultProjectOperationsImplementation {
             for (FileObject f : toDelete) {
                 handle.progress(NbBundle.getMessage(DefaultProjectOperationsImplementation.class, "LBL_Progress_Deleting_File", FileUtil.getFileDisplayName(f)));
                 
-                if (f != null)
+                if (f != null && f.isValid())
                     f.delete();
                 
                 handle.progress(++done);
@@ -139,7 +139,7 @@ public final class DefaultProjectOperationsImplementation {
             
             FileObject projectFolder = project.getProjectDirectory();
             
-            if (projectFolder.getChildren().length == 0) {
+            if (projectFolder.isValid() && projectFolder.getChildren().length == 0) {
                 //empty, delete:
                 projectFolder.delete();
             }
@@ -180,6 +180,10 @@ public final class DefaultProjectOperationsImplementation {
         for (Iterator<FileObject> i = allFiles.iterator(); i.hasNext(); ) {
             FileObject f = i.next();
             if (!FileUtil.isParentOf(projectFolder, f)) {
+                if (projectFolder.equals(f)) {
+                    // sources == project directory
+                    continue;
+                }
                 i.remove();
             }
         }

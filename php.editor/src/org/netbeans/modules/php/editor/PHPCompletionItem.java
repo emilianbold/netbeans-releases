@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,9 +31,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.editor;
@@ -53,6 +53,7 @@ import org.netbeans.modules.php.editor.index.IndexedClass;
 import org.netbeans.modules.php.editor.index.IndexedConstant;
 import org.netbeans.modules.php.editor.index.IndexedElement;
 import org.netbeans.modules.php.editor.index.IndexedFunction;
+import org.netbeans.modules.php.editor.index.IndexedInterface;
 import org.netbeans.modules.php.editor.index.PHPIndex;
 import org.netbeans.modules.php.editor.index.PredefinedSymbolElement;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
@@ -112,7 +113,9 @@ abstract class PHPCompletionItem implements CompletionProposal {
     }
 
     public Set<Modifier> getModifiers() {
-        return Collections.emptySet();
+        Set<Modifier> emptyModifiers = Collections.emptySet();
+        ElementHandle handle = getElement();
+        return (handle != null) ? handle.getModifiers() : emptyModifiers;
     }
 
     public boolean isSmart() {
@@ -148,7 +151,7 @@ abstract class PHPCompletionItem implements CompletionProposal {
             if (ie.getFile().isPlatform()){
                 return NbBundle.getMessage(PHPCompletionItem.class, "PHPPlatform");
             }
-            
+
             String filename = ie.getFilenameUrl();
             if (filename != null) {
                 int index = filename.lastIndexOf('/');
@@ -163,12 +166,12 @@ abstract class PHPCompletionItem implements CompletionProposal {
 
         return null;
     }
-    
+
     static class KeywordItem extends PHPCompletionItem {
         private String description = null;
         private String keyword = null;
-        
-        
+
+
         KeywordItem(String keyword, CompletionRequest request) {
             super(null, request);
             this.keyword = keyword;
@@ -178,44 +181,44 @@ abstract class PHPCompletionItem implements CompletionProposal {
         public String getName() {
             return keyword;
         }
-        
+
         @Override public String getLhsHtml(HtmlFormatter formatter) {
             formatter.name(getKind(), true);
             formatter.appendText(getName());
             formatter.name(getKind(), false);
-            
+
             return formatter.getText();
         }
 
         public ElementKind getKind() {
             return ElementKind.KEYWORD;
         }
-        
+
         @Override
         public String getRhsHtml(HtmlFormatter formatter) {
             if (description != null) {
                 formatter.appendHtml(description);
                 return formatter.getText();
-                
+
             } else {
                 return null;
             }
         }
-        
+
         @Override
         public ImageIcon getIcon() {
             return keywordIcon;
         }
     }
-    
+
     static class SuperGlobalItem extends PHPCompletionItem{
         private String name;
-        
+
         public SuperGlobalItem(CompletionRequest request, String name) {
             super(new PredefinedSymbolElement(name), request);
             this.name = name;
         }
-        
+
         @Override public String getLhsHtml(HtmlFormatter formatter) {
             formatter.name(getKind(), true);
             formatter.emphasis(true);
@@ -230,7 +233,7 @@ abstract class PHPCompletionItem implements CompletionProposal {
         public String getName() {
             return "$" + name; //NOI18N
         }
-        
+
         @Override
         public String getCustomInsertTemplate() {
             //todo insert array brackets for array vars
@@ -240,23 +243,23 @@ abstract class PHPCompletionItem implements CompletionProposal {
         public ElementKind getKind() {
             return ElementKind.VARIABLE;
         }
-        
+
         @Override
         public String getRhsHtml(HtmlFormatter formatter) {
             formatter.appendText(NbBundle.getMessage(PHPCompletionItem.class, "PHPPlatform"));
             return formatter.getText();
         }
-        
+
         public String getDocumentation(){
             return null;
         }
-        
+
         @Override
         public ImageIcon getIcon() {
             return keywordIcon;
         }
     }
-    
+
     static class ConstantItem extends PHPCompletionItem {
         private IndexedConstant constant = null;
 
@@ -264,11 +267,11 @@ abstract class PHPCompletionItem implements CompletionProposal {
             super(constant, request);
             this.constant = constant;
         }
-        
+
         @Override public String getLhsHtml(HtmlFormatter formatter) {
             IndexedConstant constant = ((IndexedConstant)getElement());
             formatter.name(getKind(), true);
-            
+
             if (constant.isResolved()){
                 formatter.emphasis(true);
                 formatter.appendText(getName());
@@ -276,17 +279,17 @@ abstract class PHPCompletionItem implements CompletionProposal {
             } else {
                 formatter.appendText(getName());
             }
-            
+
             formatter.name(getKind(), false);
-            
+
             return formatter.getText();
         }
-        
+
         public ElementKind getKind() {
             return ElementKind.GLOBAL;
         }
     }
-    
+
     static class ClassItem extends PHPCompletionItem {
         ClassItem(IndexedClass clazz, CompletionRequest request) {
             super(clazz, request);
@@ -297,20 +300,30 @@ abstract class PHPCompletionItem implements CompletionProposal {
         }
     }
     
+    static class InterfaceItem extends PHPCompletionItem {
+        InterfaceItem(IndexedInterface iface, CompletionRequest request) {
+            super(iface, request);
+        }
+
+        public ElementKind getKind() {
+            return ElementKind.CLASS;
+        }
+    }
+
     static class VariableItem extends PHPCompletionItem {
         private boolean insertDollarPrefix = true;
 
         VariableItem(IndexedConstant constant, CompletionRequest request) {
             super(constant, request);
         }
-        
+
         @Override public String getLhsHtml(HtmlFormatter formatter) {
             String typeName = ((IndexedConstant)getElement()).getTypeName();
-            
+
             if (typeName == null) {
                 typeName = "?"; //NOI18N
             }
-            
+
             formatter.type(true);
             formatter.appendText(typeName);
             formatter.type(false);
@@ -318,7 +331,7 @@ abstract class PHPCompletionItem implements CompletionProposal {
             formatter.name(getKind(), true);
             formatter.appendText(getName());
             formatter.name(getKind(), false);
-            
+
             return formatter.getText();
         }
 
@@ -329,27 +342,39 @@ abstract class PHPCompletionItem implements CompletionProposal {
         @Override
         public String getName() {
             String name = super.getName();
-            
+
             if (!insertDollarPrefix && name.startsWith("$")){ //NOI18N
                 return name.substring(1);
             }
-            
+
             return name;
         }
-        
+
         void doNotInsertDollarPrefix(){
             insertDollarPrefix = false;
         }
     }
-    
+
+    //TODO: dummy must show also parameters similar like FunctionItem
+    static class SpecialFunctionItem extends KeywordItem {
+        public SpecialFunctionItem(String fncName, CompletionRequest request) {
+            super(fncName, request);
+        }
+
+        @Override
+        public ImageIcon getIcon() {
+            return null;
+        }
+    }
+
     static class FunctionItem extends PHPCompletionItem {
         private int optionalArgCount = 0;
-       
+
         FunctionItem(IndexedFunction function, CompletionRequest request, int optionalArgCount) {
             super(function, request);
             this.optionalArgCount = optionalArgCount;
         }
-        
+
         public IndexedFunction getFunction(){
             return (IndexedFunction)getElement();
         }
@@ -357,15 +382,15 @@ abstract class PHPCompletionItem implements CompletionProposal {
         public ElementKind getKind() {
             return ElementKind.METHOD;
         }
-        
+
         @Override
         public String getCustomInsertTemplate() {
             StringBuilder template = new StringBuilder();
             template.append(getName());
             template.append("("); //NOI18N
-            
+
             List<String> params = getInsertParams();
-            
+
             for (int i = 0; i < params.size(); i++) {
                 String param = params.get(i);
                 template.append("${php-cc-"); //NOI18N
@@ -373,22 +398,22 @@ abstract class PHPCompletionItem implements CompletionProposal {
                 template.append(" default=\""); // NOI18N
                 template.append(param);
                 template.append("\"}"); //NOI18N
-                
+
                 if (i < params.size() - 1){
                     template.append(", "); //NOI18N
                 }
             }
-            
+
             template.append(')');
-            
+
             return template.toString();
         }
-        
+
         @Override public String getLhsHtml(HtmlFormatter formatter) {
             ElementKind kind = getKind();
-            
+
             formatter.name(kind, true);
-            
+
             if (getFunction().isResolved()){
                 formatter.emphasis(true);
                 formatter.appendText(getName());
@@ -396,39 +421,39 @@ abstract class PHPCompletionItem implements CompletionProposal {
             } else {
                 formatter.appendText(getName());
             }
-            
+
             formatter.name(kind, false);
-       
+
             formatter.appendHtml("("); // NOI18N
             formatter.parameters(true);
             appendParamsStr(formatter);
             formatter.parameters(false);
             formatter.appendHtml(")"); // NOI18N
-            
+
             return formatter.getText();
         }
-        
+
         @Override
         public List<String> getInsertParams() {
             List<String> insertParams = new LinkedList<String>();
             String parameters[] = getFunction().getParameters().toArray(new String[0]);
             boolean paramsToSkip[] = new boolean[parameters.length];
             int optionalArgList[] = getFunction().getOptionalArgs();
-            
+
             for (int i = 0, j = optionalArgCount; i < optionalArgList.length; i++, j --) {
                 if (j <= 0){
                     paramsToSkip[optionalArgList[i]] = true;
                 }
             }
-            
+
             for (int i = 0; i < parameters.length; i++) {
                 String param = parameters[i];
-                
+
                 if (!paramsToSkip[i]){
                     insertParams.add(param);
                 }
             }
-            
+
             return insertParams;
         }
 
@@ -437,33 +462,33 @@ abstract class PHPCompletionItem implements CompletionProposal {
             int order = optionalArgCount;
             return getName() + order;
         }
-        
+
         private void appendParamsStr(HtmlFormatter formatter){
             String parameters[] = getFunction().getParameters().toArray(new String[0]);
             int optionalArgList[] = getFunction().getOptionalArgs();
             boolean paramsToSkip[] = new boolean[parameters.length];
             boolean optionalArgs[] = new boolean[parameters.length];
-            
+
             for (int i = 0, j = optionalArgCount; i < optionalArgList.length; i++, j --) {
                 optionalArgs[optionalArgList[i]] = true;
-                
+
                 if (j <= 0){
                     paramsToSkip[optionalArgList[i]] = true;
                 }
             }
-            
+
             boolean firstParam = true;
-            
+
             for (int i = 0; i < parameters.length; i++) {
                 if (!paramsToSkip[i]) {
                     String param = parameters[i];
-                    
+
                     if (firstParam) {
                         firstParam = false;
                     } else {
                         formatter.appendText(", "); // NOI18N
                     }
-                    
+
                     if (optionalArgs[i]) {
                         formatter.appendText(param);
                     } else {

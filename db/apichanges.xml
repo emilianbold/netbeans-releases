@@ -118,6 +118,7 @@ is the proper place.
                 has the driver classpath URLs in its search list and then load the driver.
                 This makes things much easier.
             </description>
+            <class package="org.netbeans.api.db.explorer" name="JDBCDriver"/>
             <issue number="134309"/>
         </change>
         <change>
@@ -129,9 +130,9 @@ is the proper place.
             <compatibility addition="yes"/>
             <description>
                 Add the ability to show the Add Driver dialog synchronously.  This
-                must be run on the AWT event thread, but it gives you the ability to
-                immediately get the resulting JDBCDriver that was added.
+                must be run on the AWT event thread, but it returns the <code>JDBCDriver</code> that was added.
             </description>
+            <class package="org.netbeans.api.db.explorer" name="JDBCDriverManager"/>
             <issue number="129633"/>
         </change>
         <change>
@@ -145,6 +146,7 @@ is the proper place.
                 Add the ability to connect a database connection directly from the API
                 without having any kind of UI pop up, be it a dialog or a progress window.
             </description>
+            <class package="org.netbeans.api.db.explorer" name="ConnectionManager"/>
             <issue number="128546"/>
         </change>
         <change>
@@ -156,8 +158,9 @@ is the proper place.
             <compatibility addition="yes"/>
             <description>
                 Add the ability to remove a database connection from the Database
-                Explorer connection list
+                Explorer connection list.
             </description>
+            <class package="org.netbeans.api.db.explorer" name="ConnectionManager"/>
             <issue number="128502"/>
         </change>
 
@@ -225,7 +228,7 @@ is the proper place.
             <author login="abadea"/>
             <compatibility binary="compatible" source="compatible" semantic="compatible" deprecation="no" addition="yes" deletion="no" modification="no"/>
             <description>
-                This change adds a <code>showAddConnectionDialog</code> which opens the 
+                This change adds a <code>showAddConnectionDialog</code> which opens the
                 New Connection Dialog while pre-filling a specified database user and password.
                 It also adds <code>showAddConnectionDialogFromEventThread</code> methods
                 which are counterparts to the <code>showAddConnectionDialog</code> methods,

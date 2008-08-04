@@ -103,7 +103,11 @@ public class FunctionDDImpl<T> extends FunctionImpl<T> implements CsmFunctionDef
         }
         return this;
     }
-    
+
+    public boolean isPureDefinition() {
+        return false;
+    }
+
     private CsmFunction findDeclaration(CsmProject prj, String uname){
         CsmDeclaration decl = prj.findDeclaration(uname);
         if( decl != null && decl.getKind() == CsmDeclaration.Kind.FUNCTION ) {

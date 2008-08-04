@@ -105,6 +105,19 @@ is the proper place.
 
     <changes>
 
+        <change id="BaseDocument.atomicLock-deprecation">
+            <summary>BaseDocument.atomicLock() method deprecated.</summary>
+            <version major="1" minor="28"/>
+            <date day="21" month="6" year="2008"/>
+            <author login="jjancura"/>
+            <compatibility binary="compatible" source="compatible" semantic="compatible" addition="no" deprecation="yes"/>
+            <description>
+                <p>BaseDocument.atomicLock() and atomicUnlock () methods deprecated. User should use BaseDocument.runAtomic () instead.
+                </p>
+            </description>
+            <issue number="135004"/>
+        </change>
+
         <change id="deprecating-settings-and-completion">
             <summary>Deprecating old settings and completion API</summary>
             <version major="1" minor="27"/>

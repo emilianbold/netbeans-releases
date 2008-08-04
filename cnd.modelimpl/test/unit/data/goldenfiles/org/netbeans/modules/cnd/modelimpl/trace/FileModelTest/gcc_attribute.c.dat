@@ -11,12 +11,12 @@ Includes:
     <no includes>
 Macros:
     <no macros>
-VARIABLE f [1:1/0-1:47/46]  TYPE: void TEXT=void(****)(void)  [1:1/0-1:37/36]  INIT: null  SCOPE: $Global$ 
-VARIABLE g [2:1/47-2:38/84]  TYPE: **char TEXT=char**  [2:1/47-2:36/82]  INIT: null  SCOPE: $Global$ 
-TYPEDEF myfunctype  [3:1/85-3:58/142] TYPE: *int TEXT=int*  [3:9/93-3:40/124] SCOPE: $Global$ 
+VARIABLE f [1:1/0-1:48/47]  TYPE: *void TEXT=void*(****)()  [1:1/0-1:38/37]  INIT: null  SCOPE: $Global$ 
+VARIABLE g [2:1/48-2:38/85]  TYPE: **char TEXT=char**  [2:1/48-2:36/83]  INIT: null  SCOPE: $Global$ 
+TYPEDEF myfunctype  [3:1/86-3:59/144] TYPE: *int TEXT=int*(*)()  [3:9/94-3:41/126] SCOPE: $Global$ 
 
 ========== Dumping model of PROJECT DummyProject
-VARIABLE f [1:1/0-1:47/46]  TYPE: void TEXT=void(****)(void)  [1:1/0-1:37/36]  INIT: null  SCOPE: $Global$ 
-VARIABLE g [2:1/47-2:38/84]  TYPE: **char TEXT=char**  [2:1/47-2:36/82]  INIT: null  SCOPE: $Global$ 
-TYPEDEF myfunctype  [3:1/85-3:58/142] TYPE: *int TEXT=int*  [3:9/93-3:40/124] SCOPE: $Global$ 
+VARIABLE f [1:1/0-1:48/47]  TYPE: *void TEXT=void*(****)()  [1:1/0-1:38/37]  INIT: null  SCOPE: $Global$ 
+VARIABLE g [2:1/48-2:38/85]  TYPE: **char TEXT=char**  [2:1/48-2:36/83]  INIT: null  SCOPE: $Global$ 
+TYPEDEF myfunctype  [3:1/86-3:59/144] TYPE: *int TEXT=int*(*)()  [3:9/94-3:41/126] SCOPE: $Global$ 
 

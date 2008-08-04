@@ -88,6 +88,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
 import org.openide.util.Cancellable;
+import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -259,11 +260,12 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
     private boolean tryPerformDownload () {
         validator = null;
         final InstallSupport support = model.getInstallSupport ();
+        JLabel detailLabel = null;
         try {
             ProgressHandle handle = ProgressHandleFactory.createHandle (getBundle ("InstallStep_Download_DownloadingPlugins"));
             JComponent progressComponent = ProgressHandleFactory.createProgressComponent (handle);
             JLabel mainLabel = ProgressHandleFactory.createMainLabelComponent (handle);
-            JLabel detailLabel = ProgressHandleFactory.createDetailLabelComponent (handle);
+            detailLabel = ProgressHandleFactory.createDetailLabelComponent (handle);
             if (runInBackground ()) {
                 systemHandle = ProgressHandleFactory.createHandle (getBundle ("InstallStep_Download_DownloadingPlugins"),
                         new Cancellable () {
@@ -313,24 +315,32 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
                 spareHandleStarted = false;
             }
         } catch (OperationException ex) {
-            assert OperationException.ERROR_TYPE.PROXY.equals (ex.getErrorType ());
             log.log (Level.INFO, ex.getMessage (), ex);
-            if (runInBackground ()) {
-                handleCancel ();
-                notifyNetworkProblem (ex);
-            } else {
-                JButton tryAgain = new JButton ();
-                Mnemonics.setLocalizedText (tryAgain, getBundle ("InstallStep_NetworkProblem_Continue")); // NOI18N
-                NetworkProblemPanel problem = new NetworkProblemPanel (
-                        getBundle ("InstallStep_NetworkProblem_Text", ex.getLocalizedMessage ()), // NOI18N
-                        new JButton [] { tryAgain, model.getCancelButton (wd) });
-                Object ret = problem.showNetworkProblemDialog ();
-                if (tryAgain.equals(ret)) {
-                    // try again
-                    return false;
-                } else if (DialogDescriptor.CLOSED_OPTION.equals (ret)) {
+            if (OperationException.ERROR_TYPE.PROXY == ex.getErrorType ()) {
+                if (runInBackground ()) {
                     handleCancel ();
+                    notifyNetworkProblem (ex);
+                } else {
+                    JButton tryAgain = new JButton ();
+                    Mnemonics.setLocalizedText (tryAgain, getBundle ("InstallStep_NetworkProblem_Continue")); // NOI18N
+                    NetworkProblemPanel problem = new NetworkProblemPanel (
+                            getBundle ("InstallStep_NetworkProblem_Text", ex.getLocalizedMessage ()), // NOI18N
+                            new JButton [] { tryAgain, model.getCancelButton (wd) });
+                    Object ret = problem.showNetworkProblemDialog ();
+                    if (tryAgain.equals(ret)) {
+                        // try again
+                        return false;
+                    } else if (DialogDescriptor.CLOSED_OPTION.equals (ret)) {
+                        handleCancel ();
+                    }
                 }
+            } else {
+                // general problem, show more
+                String pluginName = detailLabel == null || detailLabel.getText ().length () == 0 ? getBundle ("InstallStep_DownloadProblem_SomePlugins") : detailLabel.getText ();
+                String message = getBundle ("InstallStep_DownloadProblem", pluginName, ex.getLocalizedMessage ());
+                Exceptions.attachLocalizedMessage (ex, message);                
+                log.log (Level.SEVERE, null, ex);
+                handleCancel ();
             }
         }
         return true;

@@ -444,14 +444,14 @@ public final class GemManager {
             for (File gemDir : getRepositories()) {
                 File specDir = new File(gemDir, SPECIFICATIONS);
                 if (specDir.exists()) {
-                    LOGGER.finest("Initializing \"" + gemDir + "\" repository");
+                    LOGGER.finer("Initializing \"" + gemDir + "\" repository");
                     // Add each of */lib/
                     File[] specFiles = specDir.listFiles();
                     if (specFiles != null) {
                         localGems.putAll(GemFilesParser.getGemInfos(specFiles));
                     }
                 } else {
-                    LOGGER.finest("Cannot find Gems repository. \"" + gemDir + "\" does not exist or is not a directory."); // NOI18N
+                    LOGGER.finer("Cannot find Gems repository. \"" + gemDir + "\" does not exist or is not a directory."); // NOI18N
                 }
                 logGems(Level.FINEST);
             }
@@ -481,7 +481,7 @@ public final class GemManager {
                 runnerLock.unlock();
             }
         } else {
-            LOGGER.finest("resetRemote() ignored");
+            LOGGER.finer("resetRemote() ignored");
         }
     }
 
@@ -499,7 +499,7 @@ public final class GemManager {
                 runnerLock.unlock();
             }
         } else {
-            LOGGER.finest("resetLocal() ignored");
+            LOGGER.finer("resetLocal() ignored");
         }
     }
 
@@ -615,7 +615,7 @@ public final class GemManager {
             }
 
             if (ok) {
-                parseGemList(gemRunner.getOutput(), installed, remote);
+                GemListParser.parse(gemRunner.getOutput(), installed, remote);
 
                 // Sort the lists
                 if (installed != null) {
@@ -625,96 +625,10 @@ public final class GemManager {
                     Collections.sort(remote);
                 }
             } else {
-                // Produce the error list
-                boolean inErrors = false;
-                for (String line : gemRunner.getOutput()) {
-                    if (inErrors) {
-                        errors.add(line);
-                    } else if (line.startsWith("***") || line.startsWith(" ") || line.trim().length() == 0) { // NOI18N
-                        continue;
-                    } else if (!line.matches("[a-zA-Z\\-]+ \\(([0-9., ])+\\)\\s?")) { // NOI18N
-                        errors.add(line);
-                        inErrors = true;
-                    }
-                }
+                errors.addAll(gemRunner.getOutput());
             }
         } finally {
             runnerLock.unlock();
-        }
-    }
-
-    private static void parseGemList(List<String> lines, List<Gem> localList, List<Gem> remoteList) {
-        Gem gem = null;
-        boolean listStarted = false;
-        boolean inLocal = false;
-        boolean inRemote = false;
-
-        for (String line : lines) {
-            if (line.length() == 0) {
-                gem = null;
-
-                continue;
-            }
-
-            if (line.startsWith("*** REMOTE GEMS")) { // NOI18N
-                inRemote = true;
-                inLocal = false;
-                listStarted = true;
-                gem = null;
-                continue;
-            } else if (line.startsWith("*** LOCAL GEMS")) { // NOI18N
-                inRemote = false;
-                inLocal = true;
-                listStarted = true;
-                gem = null;
-                continue;
-            }
-
-            if (!listStarted) {
-                // Skip status messages etc.
-                continue;
-            }
-
-            if (Character.isWhitespace(line.charAt(0))) {
-                if (gem != null) {
-                    String description = line.trim();
-
-                    if (gem.getDescription() == null) {
-                        gem.setDescription(description);
-                    } else {
-                        gem.setDescription(gem.getDescription() + " " + description); // NOI18N
-                    }
-                }
-            } else {
-                if (line.charAt(0) == '.') {
-                    continue;
-                }
-
-                // Should be a gem - but could be an error message!
-                int versionIndex = line.indexOf('(');
-
-                if (versionIndex != -1) {
-                    String name = line.substring(0, versionIndex).trim();
-                    int endIndex = line.indexOf(')');
-                    String versions;
-
-                    if (endIndex != -1) {
-                        versions = line.substring(versionIndex + 1, endIndex);
-                    } else {
-                        versions = line.substring(versionIndex);
-                    }
-
-                    gem = new Gem(name, inLocal ? versions : null, inLocal ? null : versions);
-                    if (inLocal) {
-                        localList.add(gem);
-                    } else {
-                        assert inRemote;
-                        remoteList.add(gem);
-                    }
-                } else {
-                    gem = null;
-                }
-            }
         }
     }
 
@@ -1150,9 +1064,9 @@ public final class GemManager {
         for (int i = 0; valid && i < TOP_LEVEL_REPO_DIRS.length; i++) {
             String dir = TOP_LEVEL_REPO_DIRS[i];
             File dirF = new File(gemHomeF, dir);
-            LOGGER.finest("Checking: " + dirF);
+            LOGGER.finer("Checking: " + dirF);
             valid &= dirF.isDirectory();
-            LOGGER.finest("valid: " + valid);
+            LOGGER.finer("valid: " + valid);
         }
         return valid;
     }
@@ -1205,7 +1119,7 @@ public final class GemManager {
 
     @Override
     public String toString() {
-        return "RubyPlatform[platform:" + platform + "]"; // NOI18N
+        return "GemManager[platform:" + platform + "]"; // NOI18N
     }
 
 }

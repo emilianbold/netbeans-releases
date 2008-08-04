@@ -579,7 +579,7 @@ public class AddDomainWizardIterator implements
             p.destroy();
             File domainDir = new File(dirname);
             if (domainDir.exists()) {
-                FileObject fo = FileUtil.toFileObject(domainDir);
+                FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(domainDir));
                 try {
                     fo.delete();
                 } catch (IOException ex) {

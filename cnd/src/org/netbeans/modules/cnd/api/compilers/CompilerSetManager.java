@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.api.compilers;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -121,7 +122,6 @@ public class CompilerSetManager {
     private final String hkey;
     private Object state;
     private int platform = -1;
-    private int current;
     private static final Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
 
     /**
@@ -152,13 +152,8 @@ public class CompilerSetManager {
             if (csm == null) {
                 csm = new CompilerSetManager(key);
                 if (csm.isValid()) {
-                    csm.current = 0;
-                    String csName = getPreferences().get(CSM + key + CURRENT_SET_NAME, null);
-                    if (csName == null) {
-                        csName = csm.getCompilerSet(0).getName();
-                    }
                     csm.saveToDisk();
-                } else if (!csm.isPending()) {
+                } else if (!csm.isPending() && !csm.isUninitialized()) {
                     no_compilers = true;
                 }
             }
@@ -192,22 +187,30 @@ public class CompilerSetManager {
     }
 
     /** Create a CompilerSetManager which may be registered at a later time via CompilerSetManager.setDefault() */
-    public static CompilerSetManager create() {
-        CompilerSetManager csm;
-        synchronized (MASTER_LOCK) {
-            csm = new CompilerSetManager(LOCALHOST);
+    public static CompilerSetManager create(String hkey) {
+        CompilerSetManager newCsm = new CompilerSetManager(hkey);
+        if (newCsm.getCompilerSets().size() == 1 && newCsm.getCompilerSets().get(0).getName().equals(CompilerSet.None)) {
+            newCsm.remove(newCsm.getCompilerSets().get(0));
         }
-        return csm;
+        return newCsm;
     }
 
     /** Replace the default CompilerSetManager. Let registered listeners know its been updated */
-    public static synchronized void setDefault(CompilerSetManager csm) {
-        if (csm.getCompilerSets().size() == 0) { // No compilers found
-            csm.add(CompilerSet.createEmptyCompilerSet(csm.getPlatform()));
-        }
+    public static synchronized void setDefaults(Collection<CompilerSetManager> csms) {
         synchronized (MASTER_LOCK) {
-            csm.saveToDisk();
-            managers.put(csm.hkey, csm);
+            // TODO: not remove, only replace now...
+//            for (CompilerSetManager oldCsm : managers.values()) {
+//                // erase old info
+//                getPreferences().remove(CSM + oldCsm.hkey + NO_SETS);
+//            }
+//            managers.clear();
+            for (CompilerSetManager csm : csms) {
+                if (csm.getCompilerSets().size() == 0) { // No compilers found
+                    csm.add(CompilerSet.createEmptyCompilerSet(csm.getPlatform()));
+                }                
+                csm.saveToDisk();
+                managers.put(csm.hkey, csm);
+            }
         }
     }
 
@@ -217,10 +220,9 @@ public class CompilerSetManager {
         init();
     }
 
-    private CompilerSetManager(String hkey, List<CompilerSet> sets, int current, int platform) {
+    private CompilerSetManager(String hkey, List<CompilerSet> sets, int platform) {
         this.hkey = hkey;
         this.sets = sets;
-        this.current = current;
         this.state = STATE_COMPLETE;
         this.platform = platform;
     }
@@ -242,6 +244,10 @@ public class CompilerSetManager {
 
     public boolean isPending() {
         return state == STATE_PENDING;
+    }
+
+    public boolean isUninitialized() {
+        return state == STATE_UNINITIALIZED;
     }
 
     public int getPlatform() {
@@ -286,7 +292,7 @@ public class CompilerSetManager {
         for (CompilerSet set : getCompilerSets()) {
             setsCopy.add(set.createCopy());
         }
-        CompilerSetManager copy = new CompilerSetManager(this.hkey, setsCopy, this.current, this.platform);
+        CompilerSetManager copy = new CompilerSetManager(this.hkey, setsCopy, this.platform);
         return copy;
     }
 
@@ -362,87 +368,90 @@ public class CompilerSetManager {
     private void initRemoteCompilerSets(final String key) {
         final CompilerSetProvider provider = Lookup.getDefault().lookup(CompilerSetProvider.class);
         ServerList registry = (ServerList) Lookup.getDefault().lookup(ServerList.class);
-        if (provider != null && registry != null) {
-            ServerRecord record = registry.get(key);
-            
-            if (record != null) {
-                if (!record.isOnline()) {
-                    record.validate(); // should this call move to Runnable.run below? 
-                }
-                if (record.isOnline()) {
-                    RequestProcessor.getDefault().post(new Runnable() {
-                        public void run() {
-                            provider.init(key);
-                            platform = provider.getPlatform();
-                            log.fine("CSM.initRemoteCompileSets: platform = " + platform);
-                            getPreferences().putInt(CSM + hkey + SET_PLATFORM, platform);
-                            while (provider.hasMoreCompilerSets()) {
-                                String data = provider.getNextCompilerSetData();
-                                log.fine("CSM.initRemoteCompileSets: line = [" + data + "]");
-                                int i1 = data.indexOf(';');
-                                int i2 = data.indexOf(';', i1 + 1);
-                                String flavor = data.substring(0, i1);
-                                String path = data.substring(i1 + 1, i2);
-                                String tools = data.substring(i2 + 1);
-                                CompilerSet cs = new CompilerSet(CompilerFlavor.toFlavor(flavor, platform), path, flavor);
-                                StringTokenizer st = new StringTokenizer(tools, ";"); // NOI18N
-                                while (st.hasMoreTokens()) {
-                                    String name = st.nextToken();
-                                    int kind = -1;
-                                    String p = path + '/' + name;
-                                    if (flavor.startsWith("Sun")) { // NOI18N
-                                        if (name.equals("cc")) { // NOI18N
-                                            kind = Tool.CCompiler;
-                                        } else if (name.equals("CC")) { // NOI18N
-                                            kind = Tool.CCCompiler;
-                                        } else if (name.equals("dmake")) { // NOI18N
-                                            kind = Tool.MakeTool;
-                                        } else if (name.startsWith("gdb=")) { // NOI18N
-                                            kind = Tool.DebuggerTool;
-                                            i1 = name.indexOf('=');
-                                            p = name.substring(i1 + 1);
-                                        }
-                                    } else {
-                                        if (name.equals("gcc")) { // NOI18N
-                                            kind = Tool.CCompiler;
-                                        } else if (name.equals("g++")) { // NOI18N
-                                            kind = Tool.CCCompiler;
-                                        } else if (name.equals("make") ||  // NOI18N
-                                                ((platform == PlatformTypes.PLATFORM_SOLARIS_INTEL || platform == PlatformTypes.PLATFORM_SOLARIS_SPARC) &&
-                                                        name.equals("gmake"))) { // NOI18N
-                                            kind = Tool.MakeTool;
-                                        } else if (name.equals("gdb")) { // NOI18N
-                                            kind = Tool.DebuggerTool;
-                                        } else if (name.startsWith("gdb=")) { // NOI18N
-                                            kind = Tool.DebuggerTool;
-                                            i1 = name.indexOf('=');
-                                            p = name.substring(i1 + 1);
-                                        }
-                                    }
-                                    if (kind != -1) {
-                                        cs.addTool(key, name, p, kind);
-                                    }
+        assert registry != null;
+        assert provider != null;
+        ServerRecord record = registry.get(key);
+        assert record != null;
+
+        record.validate();
+        if (record.isOnline()) {
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    provider.init(key);
+                    platform = provider.getPlatform();
+                    log.fine("CSM.initRemoteCompileSets: platform = " + platform);
+                    getPreferences().putInt(CSM + hkey + SET_PLATFORM, platform);
+                    while (provider.hasMoreCompilerSets()) {
+                        String data = provider.getNextCompilerSetData();
+                        log.fine("CSM.initRemoteCompileSets: line = [" + data + "]");
+                        int i1 = data.indexOf(';');
+                        int i2 = data.indexOf(';', i1 + 1);
+                        String flavor = data.substring(0, i1);
+                        String path = data.substring(i1 + 1, i2);
+                        String tools = data.substring(i2 + 1);
+                        CompilerSet cs = new CompilerSet(CompilerFlavor.toFlavor(flavor, platform), path, flavor);
+                        StringTokenizer st = new StringTokenizer(tools, ";"); // NOI18N
+                        while (st.hasMoreTokens()) {
+                            String name = st.nextToken();
+                            int kind = -1;
+                            String p = path + '/' + name;
+                            if (flavor.startsWith("Sun")) { // NOI18N
+                                if (name.equals("cc")) { // NOI18N
+                                    kind = Tool.CCompiler;
+                                } else if (name.equals("CC")) { // NOI18N
+                                    kind = Tool.CCCompiler;
+                                } else if (name.equals("dmake")) { // NOI18N
+                                    kind = Tool.MakeTool;
+                                } else if (name.startsWith("gdb=")) { // NOI18N
+                                    kind = Tool.DebuggerTool;
+                                    i1 = name.indexOf('=');
+                                    p = name.substring(i1 + 1);
                                 }
-                                add(cs);
+                            } else {
+                                if (name.equals("gcc")) { // NOI18N
+                                    kind = Tool.CCompiler;
+                                } else if (name.equals("g++")) { // NOI18N
+                                    kind = Tool.CCCompiler;
+                                } else if (name.equals("make") ||  // NOI18N
+                                        ((platform == PlatformTypes.PLATFORM_SOLARIS_INTEL || platform == PlatformTypes.PLATFORM_SOLARIS_SPARC) &&
+                                                name.equals("gmake"))) { // NOI18N
+                                    kind = Tool.MakeTool;
+                                } else if (name.equals("gdb")) { // NOI18N
+                                    kind = Tool.DebuggerTool;
+                                } else if (name.startsWith("gdb=")) { // NOI18N
+                                    kind = Tool.DebuggerTool;
+                                    i1 = name.indexOf('=');
+                                    p = name.substring(i1 + 1);
+                                }
                             }
-                            provider.loadCompilerSetData(sets);
-                            // TODO: this should be upgraded to error reporting
-                            // about absence of tool chain on remote host
-                            // also compilersetmanager without compiler sets
-                            // should be handled gracefully
-                            log.fine("CSM.initRemoteCompilerSets: Found " + sets.size() + " compiler sets");
-                            state = STATE_COMPLETE;
+                            if (kind != -1) {
+                                cs.addTool(key, name, p, kind);
+                            }
                         }
-                    });
-                } else {
-                    // create empty CSM
-                    log.fine("CSM.initRemoteCompilerSets: Adding empty CS to OFFLINE host " + key);
-                    add(CompilerSet.createEmptyCompilerSet(PlatformTypes.PLATFORM_NONE));
-                    state = STATE_UNINITIALIZED;
+                        add(cs);
+                    }
+                    List<CompilerSet> setsCopy;
+                    if (sets instanceof ArrayList) {
+                        setsCopy = (List<CompilerSet>)((ArrayList<CompilerSet>)sets).clone();
+                    } else {
+                        // this will never be called in current impl but interface allows any List so:
+                        setsCopy = new ArrayList<CompilerSet>();
+                        setsCopy.addAll(sets);
+                    }
+                    provider.loadCompilerSetData(setsCopy);
+                    // TODO: this should be upgraded to error reporting
+                    // about absence of tool chain on remote host
+                    // also compilersetmanager without compiler sets
+                    // should be handled gracefully
+                    log.fine("CSM.initRemoteCompilerSets: Found " + sets.size() + " compiler sets");
+                    state = STATE_COMPLETE;
                 }
-            }
+            });
         } else {
-            throw new IllegalStateException();
+            // create empty CSM
+            log.fine("CSM.initRemoteCompilerSets: Adding empty CS to OFFLINE host " + key);
+            add(CompilerSet.createEmptyCompilerSet(PlatformTypes.PLATFORM_NONE));
+            state = STATE_UNINITIALIZED;
         }
     }
 
@@ -472,8 +481,8 @@ public class CompilerSetManager {
             if (compiler != null) {
                 initCompiler(Tool.FortranCompiler, path, cs, compiler.getNames());
             }
-            initCompiler(Tool.MakeTool, path, cs, d.getMakeNames());
-            initCompiler(Tool.DebuggerTool, path, cs, d.getDebuggerNames());
+            initCompiler(Tool.MakeTool, path, cs, d.getMake().getNames());
+            initCompiler(Tool.DebuggerTool, path, cs, d.getDebugger().getNames());
         }
     }
 
@@ -598,11 +607,6 @@ public class CompilerSetManager {
     public void remove(CompilerSet cs) {
         int idx = sets.indexOf(cs);
         if (idx >= 0) {
-            if (current == idx) {
-                current = 0; // switch to 0th
-            } else if (current > idx) {
-                current--; // adjust accordingly
-            }
             sets.remove(idx);
         }
     }
@@ -654,26 +658,6 @@ public class CompilerSetManager {
             return sets.get(idx);
         else
             return null;
-    }
-
-    public CompilerSet getCurrentCompilerSet() {
-        return sets.get(current);
-    }
-
-    public void setCurrentCompilerSet(int current) {
-        this.current = current;
-    }
-
-    public void setCurrentCompilerSet(String name) {
-        int i = 0;
-        for (CompilerSet cs : sets) {
-            if (cs.getName().equals(name)) {
-                current = i;
-                getPreferences().putInt(CSM + hkey + CURRENT_SET_NAME, current);
-                return;
-            }
-            i++;
-        }
     }
 
     public List<CompilerSet> getCompilerSets() {
@@ -772,7 +756,6 @@ public class CompilerSetManager {
         if (!sets.isEmpty() && getPlatform() != PlatformTypes.PLATFORM_GENERIC) {
             getPreferences().putDouble(CSM + VERSION, csm_version);
             getPreferences().putInt(CSM + hkey + NO_SETS, sets.size());
-            getPreferences().putInt(CSM + hkey + CURRENT_SET_NAME, current);
             getPreferences().putInt(CSM + hkey + SET_PLATFORM, getPlatform());
             int setCount = 0;
             for (CompilerSet cs : getCompilerSets()) {
@@ -807,7 +790,6 @@ public class CompilerSetManager {
         if (noSets < 0) {
             return null;
         }
-        int current = getPreferences().getInt(CSM + hkey + CURRENT_SET_NAME, 0);
         int pform = getPreferences().getInt(CSM + hkey + SET_PLATFORM, -1);
         if (pform < 0) {
             if (hkey.equals(LOCALHOST)) {
@@ -852,7 +834,7 @@ public class CompilerSetManager {
             css.add(cs);
         }
 
-        CompilerSetManager csm = new CompilerSetManager(hkey, css, current, pform);
+        CompilerSetManager csm = new CompilerSetManager(hkey, css, pform);
         return csm;
     }
 
@@ -907,7 +889,7 @@ public class CompilerSetManager {
             completeCompilerSet(CompilerSetManager.LOCALHOST, cs, css);
             css.add(cs);
         }
-        CompilerSetManager csm = new CompilerSetManager(LOCALHOST, css, 0, computeLocalPlatform());
+        CompilerSetManager csm = new CompilerSetManager(LOCALHOST, css, computeLocalPlatform());
         return csm;
     }
 
@@ -916,49 +898,4 @@ public class CompilerSetManager {
         return NbBundle.getMessage(CompilerSetManager.class, s);
     }
 
-    private boolean isWindows() {
-        return getPlatform() == PlatformTypes.PLATFORM_WINDOWS;
-    }
-
-
-    public static boolean useFakeRemoteCompilerSet = Boolean.getBoolean("cnd.remote.fakeCompilerSet");
-    public static CompilerSet fakeRemoteCS = new FakeRemoteCompilerSet(PlatformTypes.getDefaultPlatform());
-
-    private static class FakeRemoteCompilerSet extends CompilerSet {
-
-        public FakeRemoteCompilerSet(int platform){
-            super(platform);
-            fakeMake = new Tool("fake", CompilerFlavor.getUnknown(platform), Tool.MakeTool, "", "fakeMake", "/usr/sfw/bin/gmake");
-            fakeC = new Tool("fake", CompilerFlavor.getUnknown(platform), Tool.CCompiler, "", "fakeGcc", "/usr/sfw/bin/gcc");
-            fakeCC = new Tool("fake", CompilerFlavor.getUnknown(platform), Tool.CCCompiler, "", "fakeG++", "/usr/sfw/bin/g++");
-            fakeFortran = new Tool("fake", CompilerFlavor.getUnknown(platform), Tool.FortranCompiler, "", "veryFakeFortran", "/usr/sfw/bin/g++");
-        }
-
-        @Override
-        public String getName() {
-            return "fakeRemote";
-        }
-
-        @Override
-        public Tool getTool(int kind) {
-            switch (kind) {
-                case Tool.MakeTool: return fakeMake;
-                case Tool.CCompiler: return fakeC;
-                case Tool.CCCompiler: return fakeCC;
-                case Tool.FortranCompiler: return fakeFortran;
-            }
-            return null;
-        }
-
-        @Override
-        public Tool getTool(String name) {
-            throw new UnsupportedOperationException();
-        }
-
-        private Tool fakeMake;
-        private Tool fakeC;
-        private Tool fakeCC;
-        private Tool fakeFortran;
-
-    }
 }

@@ -73,6 +73,7 @@ public class BrowseHistoryAction extends AbstractAction {
     }
     
     public void actionPerformed(ActionEvent e) {
+        Utils.logVCSActionEvent("CC");
         Set<File> files = ctx.getRootFiles();
         HistoryGraphicalCommand cmd = new HistoryGraphicalCommand(files.toArray(new File[files.size()]));
         try {

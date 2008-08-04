@@ -187,14 +187,14 @@ final class PanelOperation<T> extends Panel<T> {
     c.gridy++;
     c.gridwidth = 1;
     c.weightx = 0.0;
-    c.insets = new Insets(TINY_INSET, 0, TINY_INSET, 0);
+    c.insets = new Insets(TINY_SIZE, 0, TINY_SIZE, 0);
     label = createLabel(i18n(myIsInput ? "LBL_Operation" : "LBL_Operation2")); // NOI18N
     a11y(label, "ACSN_LBL_Operation", "ACSD_LBL_Operation"); // NOI18N
     panel.add(label, c);
 
     c.weightx = 1.0;
     c.gridwidth = GridBagConstraints.REMAINDER;
-    c.insets = new Insets(TINY_INSET, SMALL_INSET, TINY_INSET, 0);
+    c.insets = new Insets(TINY_SIZE, LARGE_SIZE, TINY_SIZE, 0);
     myOperation = new JComboBox();
     myOperation.setRenderer(new Renderer());
     myOperation.addActionListener(
@@ -234,14 +234,14 @@ final class PanelOperation<T> extends Panel<T> {
       GridBagConstraints c1 = new GridBagConstraints();
       c1.gridy = c.gridy;
       c1.anchor = GridBagConstraints.WEST;
-      c1.insets = new Insets(TINY_INSET, 0, TINY_INSET, 0);
+      c1.insets = new Insets(TINY_SIZE, 0, TINY_SIZE, 0);
       label = createLabel(i18n(myIsInput ? "LBL_XSL_File" : "LBL_XSL_File2")); // NOI18N
       a11y(label, "ACSN_LBL_XSL_File", "ACSD_LBL_XSL_File"); // NOI18N
       panel.add(label, c1);
 
       c1 = new GridBagConstraints();
       c1.gridy = c.gridy;
-      c1.insets = new Insets(TINY_INSET, SMALL_INSET, TINY_INSET, 0);
+      c1.insets = new Insets(TINY_SIZE, LARGE_SIZE, TINY_SIZE, 0);
       c1.fill = GridBagConstraints.HORIZONTAL;
       c1.weightx = 1.0;
       myFile = new JTextField(myFileName);
@@ -251,7 +251,7 @@ final class PanelOperation<T> extends Panel<T> {
       myBrowseButton = createBrowseButton(myFile);
       c1 = new GridBagConstraints();
       c1.gridy = c.gridy;
-      c1.insets = new Insets(TINY_INSET, SMALL_INSET, TINY_INSET, 0);
+      c1.insets = new Insets(TINY_SIZE, LARGE_SIZE, TINY_SIZE, 0);
       panel.add(myBrowseButton, c1);
     }                        
     // Partner/Role/Port
@@ -259,12 +259,12 @@ final class PanelOperation<T> extends Panel<T> {
     c.gridwidth = 1;
     c.weightx = 0.0;
     c.fill = GridBagConstraints.NONE;
-    c.insets = new Insets(TINY_INSET, 0, TINY_INSET, 0);
+    c.insets = new Insets(TINY_SIZE, 0, TINY_SIZE, 0);
     label = createLabel(i18n(myIsInput ? "LBL_Partner_Role_Port" : "LBL_Partner_Role_Port2")); // NOI18N
     a11y(label, "ACSN_LBL_Partner_Role_Port", "ACSD_LBL_Partner_Role_Port"); // NOI18N
     panel.add(label, c);
 
-    c.insets = new Insets(TINY_INSET, SMALL_INSET, TINY_INSET, 0);
+    c.insets = new Insets(TINY_SIZE, LARGE_SIZE, TINY_SIZE, 0);
     c.fill = GridBagConstraints.HORIZONTAL;
     c.weightx = 1.0;
     c.gridwidth = GridBagConstraints.REMAINDER;
@@ -288,12 +288,12 @@ final class PanelOperation<T> extends Panel<T> {
     c.gridy++;
     c.gridwidth = 1;
     c.weightx = 0.0;
-    c.insets = new Insets(TINY_INSET, 0, TINY_INSET, 0);
+    c.insets = new Insets(TINY_SIZE, 0, TINY_SIZE, 0);
     label = createLabel(i18n("LBL_Input_Type")); // NOI18N
     a11y(label, "ACSN_LBL_Input_Type", "ACSD_LBL_Input_Type"); // NOI18N
     panel.add(label, c);
 
-    c.insets = new Insets(TINY_INSET, SMALL_INSET, TINY_INSET, 0);
+    c.insets = new Insets(TINY_SIZE, LARGE_SIZE, TINY_SIZE, 0);
     c.fill = GridBagConstraints.HORIZONTAL;
     c.weightx = 1.0;
     c.gridwidth = GridBagConstraints.REMAINDER;
@@ -307,13 +307,13 @@ final class PanelOperation<T> extends Panel<T> {
     c.gridwidth = 1;
     c.weightx = 0.0;
     c.weighty = 1.0;
-    c.insets = new Insets(TINY_INSET, 0, TINY_INSET, 0);
+    c.insets = new Insets(TINY_SIZE, 0, TINY_SIZE, 0);
     label = createLabel(i18n("LBL_Output_Type")); // NOI18N
     a11y(label, "ACSN_LBL_Output_Type", "ACSD_LBL_Output_Type"); // NOI18N
     panel.add(label, c);
 
     c.gridwidth = GridBagConstraints.REMAINDER;
-    c.insets = new Insets(TINY_INSET, SMALL_INSET, TINY_INSET, 0);
+    c.insets = new Insets(TINY_SIZE, LARGE_SIZE, TINY_SIZE, 0);
     c.fill = GridBagConstraints.HORIZONTAL;
     myOutput = new JTextField();
     myOutput.setEditable(false);

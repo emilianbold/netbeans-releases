@@ -595,7 +595,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
                 ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_REBUILD, bundle.getString( "LBL_RebuildAction_Name" ), null ), // NOI18N
                 ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_CLEAN, bundle.getString( "LBL_CleanAction_Name" ), null ), // NOI18N
                 ProjectSensitiveActions.projectCommandAction(MakeActionProvider.COMMAND_BATCH_BUILD, bundle.getString("LBL_BatchBuildAction_Name"), null ), // NOI18N
-                ProjectSensitiveActions.projectCommandAction(MakeActionProvider.COMMAND_BUILD_PACKAGES, bundle.getString("LBL_BuildPackagesAction_Name"), null ), // NOI18N
+                ProjectSensitiveActions.projectCommandAction(MakeActionProvider.COMMAND_BUILD_PACKAGE, bundle.getString("LBL_BuildPackagesAction_Name"), null  ), // NOI18N
                 new SetConfigurationAction(project),
                 null,
                 ProjectSensitiveActions.projectCommandAction( ActionProvider.COMMAND_RUN, bundle.getString( "LBL_RunAction_Name" ), null ), // NOI18N
@@ -1191,8 +1191,12 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
                     folder.addChangeListener( this );
                     RequestProcessor.getDefault().post(new Runnable() {
                         public void run() {
+                            // between posting this task and running it can be become deleted (see iz #142240)
+                            // TODO: fix workflow instead?
+                            if (project.getProjectDirectory()!=null && project.getProjectDirectory().isValid()) {
                             //System.err.println("ExternalFilesChildren: setting real nodes");
-                            setKeys( getKeys() );
+                                setKeys( getKeys() );
+                            }
                         }
                     }, WAIT_DELAY);
                 }  else {

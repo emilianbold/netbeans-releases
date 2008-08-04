@@ -416,15 +416,22 @@ class FilesystemHandler extends VCSInterceptor {
      * Seeks versioned root and then adds all folders
      * under Subversion (so it contains metadata),
      */
-    private void addDirectories(final File dir) throws SVNClientException  {
+    private boolean addDirectories(final File dir) throws SVNClientException  {
         File parent = dir.getParentFile();
-        if (parent != null) {            
-            if (SvnUtils.isManaged(parent) && !hasMetadata(parent)) {
-                addDirectories(parent);  // RECURSION
+        SvnClient client = Subversion.getInstance().getClient(false);
+        if (parent != null) {
+            ISVNStatus s = getStatus(client, parent);
+            if(s.getTextStatus().equals(SVNStatusKind.IGNORED)) {
+                return false;
             }
-            SvnClient client = Subversion.getInstance().getClient(false);
+            if (SvnUtils.isManaged(parent) && !hasMetadata(parent)) {
+                if(!addDirectories(parent)) {  // RECURSION
+                    return false;
+                }
+            }
             client.addDirectory(dir, false);
             cache.refreshAsync(dir);
+            return true;
         } else {
             throw new SVNClientException("Reached FS root, but it's still not Subversion versioned!"); // NOI18N
         }

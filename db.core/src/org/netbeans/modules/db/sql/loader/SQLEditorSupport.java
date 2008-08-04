@@ -47,7 +47,6 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
@@ -177,7 +176,7 @@ public class SQLEditorSupport extends DataEditorSupport
     }
     
     protected String messageName() {
-        if (!getDataObject().isValid()) return ""; // NOI18N
+        if (!isValid()) return ""; // NOI18N
         
         if (isConsole()) {
             // just the name, no modified or r/o flags
@@ -188,7 +187,7 @@ public class SQLEditorSupport extends DataEditorSupport
     }
     
     protected String messageHtmlName() {
-        if (!getDataObject().isValid()) return ""; // NOI18N
+        if (!isValid()) return ""; // NOI18N
         
         if (isConsole()) {
             // just the name, no modified or r/o flags
@@ -210,7 +209,7 @@ public class SQLEditorSupport extends DataEditorSupport
         closeExecutionResult();
         closeLogger();
         
-        if (isConsole() && getDataObject().isValid()) {
+        if (isConsole() && isValid()) {
             try {
                 getDataObject().delete();
             } catch (IOException e) {
@@ -229,6 +228,10 @@ public class SQLEditorSupport extends DataEditorSupport
     
     boolean isConsole() {
         return ((SQLDataObject)getDataObject()).isConsole();
+    }
+    
+    boolean isValid() {
+        return getDataObject().isValid();
     }
     
     protected CloneableEditor createCloneableEditor() {
@@ -317,10 +320,9 @@ public class SQLEditorSupport extends DataEditorSupport
         sqlPropChangeSupport.firePropertyChange(SQLExecution.PROP_EXECUTING, null, null);
     }
     
-    private List<SQLException> setResultsToEditors(final SQLExecutionResults results) {
-       List<SQLException> exceptions = Mutex.EVENT.writeAccess(new Mutex.Action<List<SQLException>>() {
-            public List<SQLException> run() {
-                List<SQLException> exceptions = new ArrayList<SQLException>();
+    private void setResultsToEditors(final SQLExecutionResults results) {
+       Mutex.EVENT.writeAccess(new Runnable() {
+            public void run() {
                 List<Component> components = null;
                 
                 if (results != null) {
@@ -339,12 +341,8 @@ public class SQLEditorSupport extends DataEditorSupport
 
                     editor.setResults(components);
                 }
-                
-                return exceptions;
             }
         });
-        
-        return exceptions;
     }
     
     private void setExecutionResults(SQLExecutionResults executionResults) {
@@ -495,13 +493,8 @@ public class SQLEditorSupport extends DataEditorSupport
                 setStatusText(NbBundle.getMessage(SQLEditorSupport.class, "LBL_ExecutionCancelled"));
                 return;
             }
-            
+
             parent.setExecutionResults(executionResults);
-            
-            if (executionResults.hasExceptions()) {
-                // there was at least one exception
-                setStatusText(NbBundle.getMessage(SQLEditorSupport.class, "LBL_ExecutionFinishedWithErrors"));
-            }
             
             if (executionResults.size() <= 0) {
                 // no results, but successfull
@@ -509,13 +502,11 @@ public class SQLEditorSupport extends DataEditorSupport
                 return;
             }
 
-            List<SQLException> exceptions = parent.setResultsToEditors(executionResults);
-            for (SQLException exception : exceptions) {
-                logger.logResultSetException(exception);
-            }
-            
-            if (exceptions.size() > 0) {
-                setStatusText(NbBundle.getMessage(SQLEditorSupport.class, "LBL_ResultSetError"));
+            parent.setResultsToEditors(executionResults);
+
+            if (executionResults.hasExceptions()) {
+                // there was at least one exception
+                setStatusText(NbBundle.getMessage(SQLEditorSupport.class, "LBL_ExecutionFinishedWithErrors"));
             } else {
                 setStatusText(NbBundle.getMessage(SQLEditorSupport.class, "LBL_ExecutedSuccessfully"));
             }

@@ -43,13 +43,15 @@ package org.netbeans.modules.cnd.completion.cplusplus.hyperlink;
 
 import java.awt.Toolkit;
 import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.text.DefaultCaret;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.cnd.api.lexer.CndTokenUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
-import org.netbeans.editor.AtomicLockDocument;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkProvider;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
@@ -153,16 +155,18 @@ public abstract class CsmAbstractHyperlinkProvider implements HyperlinkProvider 
         return this.jumpToken;
     }
 
-    static Token<CppTokenId> getToken(Document doc, int offset) {
-        try {
-            if (doc instanceof AtomicLockDocument) {
-                ((AtomicLockDocument)doc).atomicLock();
+    static Token<CppTokenId> getToken(final Document doc, final int offset) {
+        final Token<CppTokenId> out[] = new Token[] {null};
+        Runnable run = new Runnable() {
+            public void run() {
+                out[0] = CndTokenUtilities.getOffsetTokenCheckPrev(doc, offset);
             }
-            return CndTokenUtilities.getOffsetTokenCheckPrev(doc, offset);
-        } finally {
-            if (doc instanceof AtomicLockDocument) {
-                ((AtomicLockDocument)doc).atomicUnlock();
-            }
+        };
+        if (doc instanceof BaseDocument) {
+            ((BaseDocument)doc).runAtomic(run);
+        } else {
+            run.run();
         }
+        return out[0];
     }
 }

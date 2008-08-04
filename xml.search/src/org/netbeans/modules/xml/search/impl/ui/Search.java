@@ -101,7 +101,7 @@ public final class Search extends Dialog {
     c.gridx = 0;
 
     // text
-    c.insets = new Insets(SMALL_INSET, 0, 0, 0);
+    c.insets = new Insets(LARGE_SIZE, 0, 0, 0);
     panel.add(createTextPanel(), c);
 
     // option
@@ -119,11 +119,11 @@ public final class Search extends Dialog {
 
     // text
     c.gridy++;
-    c.insets = new Insets(TINY_INSET, 0, TINY_INSET, 0);
+    c.insets = new Insets(TINY_SIZE, 0, TINY_SIZE, 0);
     JLabel label = createLabel(i18n("LBL_Name")); // NOI18N
     panel.add(label, c);
 
-    c.insets = new Insets(TINY_INSET, SMALL_INSET, TINY_INSET, 0);
+    c.insets = new Insets(TINY_SIZE, LARGE_SIZE, TINY_SIZE, 0);
     c.fill = GridBagConstraints.HORIZONTAL;
     c.weightx = 1.0;
     myName = new Field(ASTERISK);
@@ -135,12 +135,12 @@ public final class Search extends Dialog {
     c.gridy++;
     c.fill = GridBagConstraints.NONE;
     c.weightx = 0.0;
-    c.insets = new Insets(TINY_INSET, 0, TINY_INSET, 0);
+    c.insets = new Insets(TINY_SIZE, 0, TINY_SIZE, 0);
     label = createLabel(i18n("LBL_Target")); // NOI18N
     panel.add(label, c);
 
     c.fill = GridBagConstraints.HORIZONTAL;
-    c.insets = new Insets(TINY_INSET, SMALL_INSET, TINY_INSET, 0);
+    c.insets = new Insets(TINY_SIZE, LARGE_SIZE, TINY_SIZE, 0);
     c.weightx = 1.0;
     myTarget = createComboBox(myTargets);
     a11y(myTarget, i18n("ACS_Target")); // NOI18N
@@ -154,7 +154,7 @@ public final class Search extends Dialog {
     JPanel panel = new JPanel(new GridBagLayout());
     GridBagConstraints c = new GridBagConstraints();
     c.anchor = GridBagConstraints.NORTHWEST;
-    c.insets = new Insets(0, SMALL_INSET, 0, 0);
+    c.insets = new Insets(0, LARGE_SIZE, 0, 0);
     c.weightx = 1.0;
 
     c.gridy++;

@@ -45,6 +45,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
+import org.netbeans.api.db.sql.support.SQLIdentifiers.Quoter;
 import org.netbeans.modules.db.metadata.model.api.Catalog;
 import org.netbeans.modules.db.metadata.model.api.Column;
 import org.netbeans.modules.db.metadata.model.api.MetadataObject;
@@ -60,13 +61,21 @@ import org.netbeans.spi.editor.completion.CompletionResultSet;
 public class SQLCompletionItems implements Iterable<SQLCompletionItem> {
 
     private final List<SQLCompletionItem> items = new ArrayList<SQLCompletionItem>();
+    private final Quoter quoter;
+    private final int itemOffset;
+
+    public SQLCompletionItems(Quoter quoter, int itemOffset) {
+        this.quoter = quoter;
+        this.itemOffset = itemOffset;
+    }
 
     public Set<String> addSchemas(Catalog catalog, Set<String> restrict, String prefix, final String quoteString, final int substitutionOffset) {
         Set<String> result = new TreeSet<String>();
         filterMetadata(catalog.getSchemas(), restrict, prefix, new Handler<Schema>() {
             public void handle(Schema schema) {
                 if (!schema.isSynthetic()) {
-                    items.add(SQLCompletionItem.schema(schema.getName(), quoteString, substitutionOffset));
+                    String schemaName = schema.getName();
+                    items.add(SQLCompletionItem.schema(schemaName, quote(schemaName, quoteString), itemOffset + substitutionOffset));
                 }
             }
         });
@@ -76,7 +85,8 @@ public class SQLCompletionItems implements Iterable<SQLCompletionItem> {
     public void addTables(Schema schema, Set<String> restrict, String prefix, final String quoteString, final int substitutionOffset) {
         filterMetadata(schema.getTables(), restrict, prefix, new Handler<Table>() {
             public void handle(Table table) {
-                items.add(SQLCompletionItem.table(table.getName(), quoteString, substitutionOffset));
+                String tableName = table.getName();
+                items.add(SQLCompletionItem.table(tableName, quote(tableName, quoteString), itemOffset + substitutionOffset));
             }
         });
     }
@@ -84,7 +94,7 @@ public class SQLCompletionItems implements Iterable<SQLCompletionItem> {
     public void addAliases(List<String> aliases, String prefix, final String quoteString, final int substitutionOffset) {
         filterStrings(aliases, null, prefix, new Handler<String>() {
             public void handle(String alias) {
-                items.add(SQLCompletionItem.alias(alias, quoteString, substitutionOffset));
+                items.add(SQLCompletionItem.alias(alias, alias, itemOffset + substitutionOffset));
             }
         });
     }
@@ -93,10 +103,11 @@ public class SQLCompletionItems implements Iterable<SQLCompletionItem> {
         final QualIdent qualTableName = schema.isDefault() ? null : new QualIdent(schema.getName(), table.getName());
         filterMetadata(table.getColumns(), null, prefix, new Handler<Column>() {
             public void handle(Column column) {
+                String columnName = column.getName();
                 if (qualTableName != null) {
-                    items.add(SQLCompletionItem.column(qualTableName, column.getName(), quoteString, substitutionOffset));
+                    items.add(SQLCompletionItem.column(qualTableName, columnName, quote(columnName, quoteString), itemOffset + substitutionOffset));
                 } else {
-                    items.add(SQLCompletionItem.column(table.getName(), column.getName(), quoteString, substitutionOffset));
+                    items.add(SQLCompletionItem.column(table.getName(), columnName, quote(columnName, quoteString), itemOffset + substitutionOffset));
                 }
             }
         });
@@ -132,6 +143,14 @@ public class SQLCompletionItems implements Iterable<SQLCompletionItem> {
 
     public Iterator<SQLCompletionItem> iterator() {
         return items.iterator();
+    }
+
+    private String quote(String identifier, String quoteString) {
+        if (quoteString != null) {
+            return new StringBuilder(identifier.length() + 2).append(quoteString).append(identifier).append(quoteString).toString();
+        } else {
+            return quoter.quoteIfNeeded(identifier);
+        }
     }
 
     private static boolean startsWithIgnoreCase(String text, String prefix) {

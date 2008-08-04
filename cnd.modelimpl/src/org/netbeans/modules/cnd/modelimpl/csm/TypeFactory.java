@@ -137,7 +137,7 @@ public class TypeFactory {
                 if (token != null) {
                     switch( token.getType() ) {
                         case CPPTokenTypes.STAR:
-                            pointerDepth++;
+                            ++pointerDepth;
                             break;
                         case CPPTokenTypes.AMPERSAND:
                             refence = true;
@@ -147,14 +147,28 @@ public class TypeFactory {
             //}
             ptrOperator = ptrOperator.getNextSibling();
         }
-        
+
+        int returnTypePointerDepth = pointerDepth;
+        AST lookahead = ptrOperator;
+        while (lookahead != null) {
+            if (lookahead.getType() == CPPTokenTypes.RPAREN) {
+                // ptrOperator relates to function pointer, not to return type
+                returnTypePointerDepth = 0;
+                break;
+            } else if (lookahead.getType() == CPPTokenTypes.LPAREN) {
+                // OK, no need to look further
+                break;
+            }
+            lookahead = lookahead.getNextSibling();
+        }
+
         TypeImpl type;
 
         if (parent != null) {
             type = new NestedType(parent, file, parent.getPointerDepth(), parent.isReference(), parent.getArrayDepth(), parent.isConst(), parent.getStartOffset(), parent.getEndOffset());
         } else if (TypeFunPtrImpl.isFunctionPointerParamList(ast)) {
-            type = new TypeFunPtrImpl(file, pointerDepth, refence, arrayDepth, TypeImpl.initIsConst(ast), OffsetableBase.getStartOffset(ast), TypeImpl.getEndOffset(ast));
-            ((TypeFunPtrImpl)type).init(TypeFunPtrImpl.getFunctionPointerParamList(ast, true));
+            type = new TypeFunPtrImpl(file, returnTypePointerDepth, refence, arrayDepth, TypeImpl.initIsConst(ast), OffsetableBase.getStartOffset(ast), TypeImpl.getEndOffset(ast));
+            ((TypeFunPtrImpl)type).init(ast);
         } else {
             type = new TypeImpl(file, pointerDepth, refence, arrayDepth, TypeImpl.initIsConst(ast), OffsetableBase.getStartOffset(ast), TypeImpl.getEndOffset(ast));
         }

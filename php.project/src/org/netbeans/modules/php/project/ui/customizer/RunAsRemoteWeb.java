@@ -275,15 +275,19 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
 
     private void selectRemoteConnection() {
         String remoteConnection = getValue(PhpProjectProperties.REMOTE_CONNECTION);
-        if (remoteConnection == null) {
+        // #141849 - can be null if one adds remote config for the first time for a project but already has some remote connection
+        DefaultComboBoxModel model = (DefaultComboBoxModel) remoteConnectionComboBox.getModel();
+        if (remoteConnection == null
+                && model.getIndexOf(NO_REMOTE_CONFIGURATION) != -1) {
             remoteConnectionComboBox.setSelectedItem(NO_REMOTE_CONFIGURATION);
             return;
         }
         int size = remoteConnectionComboBox.getModel().getSize();
         for (int i = 0; i < size; ++i) {
             RemoteConfiguration rc = (RemoteConfiguration) remoteConnectionComboBox.getItemAt(i);
-            if (remoteConnection.equals(rc.getName())
-                    || "".equals(remoteConnection)) { // NOI18N
+            if (remoteConnection == null
+                    || "".equals(remoteConnection) // NOI18N
+                    || remoteConnection.equals(rc.getName())) {
                 // select existing or
                 // if no configuration formerly existed and now some were created => so select the first one
                 remoteConnectionComboBox.setSelectedItem(rc);

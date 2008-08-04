@@ -46,12 +46,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.logging.Logger;
 import javax.swing.JButton;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.dataview.meta.DBException;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.awt.StatusDisplayer;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -66,7 +66,6 @@ import org.openide.util.NbBundle;
  */
 public class DataView {
 
-    private static Logger mLogger = Logger.getLogger(DataView.class.getName());
     private DatabaseConnection dbConn;
     private List<Throwable> errMessages = new ArrayList<Throwable>();
     private String sqlString; // Once Set, Data View assumes it will never change
@@ -254,8 +253,12 @@ public class DataView {
                 }
             }
             errMessages.add(ex);
-            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(DataView.class, "MSG_error") + ex.getMessage());
-            Exceptions.printStackTrace(ex);
+
+            String title = NbBundle.getMessage(DataView.class, "MSG_error");
+            StatusDisplayer.getDefault().setStatusText(title + ex.getMessage());
+
+            NotifyDescriptor nd = new NotifyDescriptor.Exception(ex); 
+            DialogDisplayer.getDefault().notify(nd);
         }
     }
 

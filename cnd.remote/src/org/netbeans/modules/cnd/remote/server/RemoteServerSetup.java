@@ -61,18 +61,30 @@ public class RemoteServerSetup {
     private static final String LOCAL_SCRIPT_DIR = "src/scripts/"; // NOI18N
     private static final String GET_SCRIPT_INFO = "PATH=/bin:/usr/bin:$PATH  grep VERSION= " + REMOTE_SCRIPT_DIR + "* /dev/null 2> /dev/null"; // NOI18N
     private static final String DOS2UNIX_CMD = "PATH=/bin:/usr/bin:$PATH  dos2unix " + REMOTE_SCRIPT_DIR; // NOI18N
+    private static final String GET_LIB_INFO = "PATH=/bin:/usr/bin:$PATH  ls -1 2>&1 "; // NOI18N
+    private static final String REMOTE_LIB_DIR = ".netbeans/6.5/cnd2/lib/"; // NOI18N
     
-    private Map<String, Double> setupMap;
-    private Map<String, List<String>> updateMap;
-    private String hkey;
+    private final Map<String, Double> scriptSetupMap;
+    private final Map<String, String> binarySetupMap;
+    private final Map<String, List<String>> updateMap;
+    private final String hkey;
     private boolean cancelled;
     private boolean failed;
     private String reason;
     
     protected RemoteServerSetup(String hkey) {
         this.hkey = hkey;
-        setupMap = new HashMap<String, Double>();
-        setupMap.put("getCompilerSets.bash", Double.valueOf(0.3)); // NOI18N
+        
+        // Script setup map
+        scriptSetupMap = new HashMap<String, Double>();
+        scriptSetupMap.put("getCompilerSets.bash", Double.valueOf(0.5)); // NOI18N
+        
+        // Binary setup map
+        binarySetupMap = new HashMap<String, String>();
+        binarySetupMap.put(".netbeans/6.5/cnd2/lib/GdbHelper-Linux-x86.so", "bin/GdbHelper-Linux-x86.so"); // NOI18N
+        binarySetupMap.put(".netbeans/6.5/cnd2/lib/GdbHelper-SunOS-x86.so", "bin/GdbHelper-SunOS-x86.so"); // NOI18N
+        binarySetupMap.put(".netbeans/6.5/cnd2/lib/GdbHelper-SunOS-sparc.so", "bin/GdbHelper-SunOS-sparc.so"); // NOI18N
+        
         updateMap = new HashMap<String, List<String>>();
     }
 
@@ -80,45 +92,9 @@ public class RemoteServerSetup {
         List<String> updateList = new ArrayList<String>();
         
         updateMap.clear(); // remote entries if run for other remote systems
-        RemoteCommandSupport support = new RemoteCommandSupport(hkey, GET_SCRIPT_INFO);
-        if (!support.isFailed()) {
-            log.fine("RSS.needsSetupOrUpdate: GET_SCRIPT_INFO returned " + support.getExitStatus());
-            if (support.getExitStatus() == 0) {
-                String val = support.toString();
-                for (String line : val.split("\n")) { // NOI18N
-                    try {
-                        int pos = line.indexOf(':');
-                        if (pos > 0 && line.length() > 0) {
-                            String script = line.substring(REMOTE_SCRIPT_DIR.length(), pos);
-                            Double installedVersion = Double.valueOf(line.substring(pos + 9));
-                            Double expectedVersion = setupMap.get(script);
-                            if (expectedVersion != null && expectedVersion > installedVersion) {
-                                log.fine("RSS.needsSetupOrUpdate: Need to update " + script);
-                                updateList.add(script);
-                            }
-                        } else {
-                            log.warning("RSS.needsSetupOrUpdatep: Grep returned [" + line + "]");
-                        }
-                    } catch (NumberFormatException nfe) {
-                        log.warning("RSS.needsSetupOrUpdate: Bad response from remote grep comand (NFE parsing version)");
-                    } catch (Exception ex) {
-                        log.warning("RSS.needsSetupOrUpdate: Bad response from remote grep comand: " + ex.getClass().getName());
-                    }
-                }
-            } else {
-                if (!support.isCancelled()) {
-                    log.fine("RSS.needsSetupOrUpdate: Need to create ~/" + REMOTE_SCRIPT_DIR);
-                    updateList.add(REMOTE_SCRIPT_DIR);
-                } else if (support.isCancelled()) {
-                        cancelled = true;
-                } else {
-                    log.warning("RSS.needsSetupOrUpdates: Unexpected  exit code [" + support.getExitStatus() + "]");
-                }
-            }
-        } else {
-            // failed
-            failed = true;
-            reason = support.getFailureReason();
+        updateList = getScriptUpdates(updateList);
+        if (!isFailedOrCanceled()) {
+            updateList = getBinaryUpdates(updateList);
         }
         
         if (!updateList.isEmpty()) {
@@ -131,15 +107,16 @@ public class RemoteServerSetup {
     
     protected  void setup() {
         List<String> list = updateMap.remove(hkey);
+        boolean bupdate = false;
         
-        for (String script : list) {
-            if (script.equals(REMOTE_SCRIPT_DIR)) {
+        for (String path : list) {
+            if (path.equals(REMOTE_SCRIPT_DIR)) {
                 log.fine("RSS.setup: Creating ~/" + REMOTE_SCRIPT_DIR);
                 int exit_status = RemoteCommandSupport.run(hkey,
                         "PATH=/bin:/usr/bin:$PATH mkdir -p " + REMOTE_SCRIPT_DIR); // NOI18N
                 if (exit_status == 0) {
-                    for (String key : setupMap.keySet()) {
-                        log.fine("RSS.setup: Copying" + script + " to " + hkey);
+                    for (String key : scriptSetupMap.keySet()) {
+                        log.fine("RSS.setup: Copying" + path + " to " + hkey);
                         File file = InstalledFileLocator.getDefault().locate(LOCAL_SCRIPT_DIR + key, null, false);
                         RemoteCopySupport.copyTo(hkey, file.getAbsolutePath(), REMOTE_SCRIPT_DIR);
                         RemoteCommandSupport.run(hkey, DOS2UNIX_CMD + key + ' ' + REMOTE_SCRIPT_DIR + key);
@@ -147,14 +124,119 @@ public class RemoteServerSetup {
                 } else {
                     reason = NbBundle.getMessage(RemoteServerSetup.class, "ERR_DirectorySetupFailure", hkey, exit_status);
                 }
+            } else if (path.equals(REMOTE_LIB_DIR)) {
+                log.fine("RSS.setup: Creating ~/" + REMOTE_LIB_DIR);
+                int exit_status = RemoteCommandSupport.run(hkey,
+                        "PATH=/bin:/usr/bin:$PATH mkdir -p " + REMOTE_LIB_DIR); // NOI18N
+                if (exit_status == 0) {
+                    bupdate = true;
+                    for (String key : binarySetupMap.keySet()) {
+                        String loc = binarySetupMap.get(key);
+                        log.fine("RSS.setup: Copying" + loc + " to " + hkey);
+                        File file = InstalledFileLocator.getDefault().locate(loc, null, false);
+                        if (file != null && file.exists()) {
+                            RemoteCopySupport.copyTo(hkey, file.getAbsolutePath(), REMOTE_LIB_DIR);
+                        } else {
+                            reason = NbBundle.getMessage(RemoteServerSetup.class, "ERR_UpdateSetupFailure", hkey, key);
+                        }
+                    }
+                } else {
+                    reason = NbBundle.getMessage(RemoteServerSetup.class, "ERR_DirectorySetupFailure", hkey, exit_status);
+                }
             } else {
-                log.fine("RSS.setup: Updating \"" + script + "\" on " + hkey);
-                File file = InstalledFileLocator.getDefault().locate(LOCAL_SCRIPT_DIR + script, null, false);
-                RemoteCopySupport.copyTo(hkey, file.getAbsolutePath(), REMOTE_SCRIPT_DIR);
-                RemoteCommandSupport.run(hkey, DOS2UNIX_CMD + script + ' ' + REMOTE_SCRIPT_DIR + script);
-                reason = NbBundle.getMessage(RemoteServerSetup.class, "ERR_UpdateSetupFailure", hkey, script);
+                log.fine("RSS.setup: Updating \"" + path + "\" on " + hkey);
+                if (binarySetupMap.containsKey(path)) {
+                    bupdate = true;
+                    String loc = binarySetupMap.get(path);
+                    File file = InstalledFileLocator.getDefault().locate(loc, null, false);
+                    boolean brc = RemoteCopySupport.copyTo(hkey, file.getAbsolutePath(), REMOTE_LIB_DIR);
+                    if (brc) {
+                        reason = NbBundle.getMessage(RemoteServerSetup.class, "ERR_UpdateSetupFailure", hkey, path);
+                    }
+                } else {
+                    File file = InstalledFileLocator.getDefault().locate(LOCAL_SCRIPT_DIR + path, null, false);
+                    boolean brc = RemoteCopySupport.copyTo(hkey, file.getAbsolutePath(), REMOTE_SCRIPT_DIR);
+                    int rc = RemoteCommandSupport.run(hkey, DOS2UNIX_CMD + path + ' ' + REMOTE_SCRIPT_DIR + path);
+                    if (brc || rc != 0) {
+                        reason = NbBundle.getMessage(RemoteServerSetup.class, "ERR_UpdateSetupFailure", hkey, path);
+                    }
+                }
             }
         }
+        if (bupdate) {
+            RemoteCommandSupport.run(hkey, "PATH=/bin:/usr/bin:$PATH chmod 755 " + REMOTE_LIB_DIR + "/*.so");
+        }
+    }
+    
+    private List<String> getScriptUpdates(List<String> list) {
+        RemoteCommandSupport support = new RemoteCommandSupport(hkey, GET_SCRIPT_INFO);
+        if (!support.isFailed()) {
+            log.fine("RSS.needsSetupOrUpdate: GET_SCRIPT_INFO returned " + support.getExitStatus());
+            if (support.getExitStatus() == 0) {
+                String val = support.toString();
+                for (String line : val.split("\n")) { // NOI18N
+                    try {
+                        int pos = line.indexOf(':');
+                        if (pos > 0 && line.length() > 0) {
+                            String script = line.substring(REMOTE_SCRIPT_DIR.length(), pos);
+                            Double installedVersion = Double.valueOf(line.substring(pos + 9));
+                            Double expectedVersion = scriptSetupMap.get(script);
+                            if (expectedVersion != null && expectedVersion > installedVersion) {
+                                log.fine("RSS.getScriptUpdates: Need to update " + script);
+                                list.add(script);
+                            }
+                        } else {
+                            log.warning("RSS.getScriptUpdates: Grep returned [" + line + "]");
+                        }
+                    } catch (NumberFormatException nfe) {
+                        log.warning("RSS.getScriptUpdates: Bad response from remote grep comand (NFE parsing version)");
+                    } catch (Exception ex) {
+                        log.warning("RSS.getScriptUpdates: Bad response from remote grep comand: " + ex.getClass().getName());
+                    }
+                }
+            } else {
+                if (!support.isCancelled()) {
+                    log.fine("RSS.getScriptUpdates: Need to create ~/" + REMOTE_SCRIPT_DIR);
+                    list.add(REMOTE_SCRIPT_DIR);
+                } else if (support.isCancelled()) {
+                        cancelled = true;
+                } else {
+                    log.warning("RSS.getScriptUpdates: Unexpected  exit code [" + support.getExitStatus() + "]");
+                }
+            }
+        } else {
+            // failed
+            failed = true;
+            reason = support.getFailureReason();
+        }
+        return list;
+    }
+    
+    private List<String> getBinaryUpdates(List<String> list) {
+        RemoteCommandSupport support = new RemoteCommandSupport(hkey, GET_LIB_INFO + getBinarySetupFiles());
+        if (!support.isFailed()) {
+            log.fine("RSS.getBinaryUpdates: GET_LIB_INFO returned " + support.getExitStatus());
+            if (support.isCancelled()) {
+                cancelled = true;
+            } else {
+                String val = support.toString();
+                int count = 0;
+                for (String line : val.split("\n")) { // NOI18N
+                    int pos = line.indexOf(':');
+                    if (pos > 0) {
+                        if (count++ == 0) {
+                            list.add(REMOTE_LIB_DIR);
+                        }
+                        list.add(line.substring(0, pos));
+                    }
+                }
+            }
+        } else {
+            // failed
+            failed = true;
+            reason = support.getFailureReason();
+        }
+        return list;
     }
     
     /**
@@ -184,5 +266,19 @@ public class RemoteServerSetup {
     
     protected boolean isFailed() {
         return failed;
+    }
+
+    private boolean isFailedOrCanceled() {
+        return failed || cancelled;
+    }
+    
+    private String getBinarySetupFiles() {
+        StringBuilder sb = new StringBuilder();
+        
+        for (String path : binarySetupMap.keySet()) {
+            sb.append(path);
+            sb.append(' ');
+        }
+        return sb.toString();
     }
 }

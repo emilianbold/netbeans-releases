@@ -40,20 +40,74 @@
 package org.netbeans.modules.cnd.makeproject.packaging;
 
 public class FileElement {
-    public enum FileType {FILE, DIRECTORY, SOFTLINK, UNKNOWN};
+    public enum FileType {
+        FILE {
+            @Override
+            public String toString() {
+                return "File"; // NOI18N
+            }
+        },
+        DIRECTORY {
+            @Override
+            public String toString() {
+                return "Dir"; // NOI18N
+            }
+        },
+        SOFTLINK {
+            @Override
+            public String toString() {
+                return "Link"; // NOI18N
+            }
+        },
+        UNKNOWN {
+            @Override
+            public String toString() {
+                return ""; // NOI18N
+            }
+        }};
     
     private FileType type;
     private String from;
     private String to;
+    private String permission;
+    private String owner;
+    private String group;
     
     public FileElement(FileType type, String from, String to) {
         this.type = type;
         this.from = from;
         this.to = to;
+        this.permission = ""; // NOI18N
+        this.owner = ""; // NOI18N
+        this.group = ""; // NOI18N
+    }
+    
+    public FileElement(FileType type, String from, String to, String permission, String owner, String group) {
+        this.type = type;
+        this.from = from;
+        this.to = to;
+        this.permission = permission;
+        this.owner = owner;
+        this.group = group;
     }
 
     public FileType getType() {
         return type;
+    }
+    
+    public static FileType toFileType(String type) {
+        if (FileType.DIRECTORY.toString().equals(type)) {
+            return FileType.DIRECTORY;
+        }
+        else if (FileType.FILE.toString().equals(type)) {
+            return FileType.FILE;
+        }
+        else if (FileType.SOFTLINK.toString().equals(type)) {
+            return FileType.SOFTLINK;
+        }
+        else {
+            return FileType.UNKNOWN;
+        }
     }
 
     public void setType(FileType type) {
@@ -74,5 +128,29 @@ public class FileElement {
 
     public void setTo(String to) {
         this.to = to;
+    }
+
+    public String getPermission() {
+        return permission;
+    }
+
+    public void setPermission(String permission) {
+        this.permission = permission;
+    }
+
+    public String getOwner() {
+        return owner;
+    }
+
+    public void setOwner(String owner) {
+        this.owner = owner;
+    }
+
+    public String getGroup() {
+        return group;
+    }
+
+    public void setGroup(String group) {
+        this.group = group;
     }
 }

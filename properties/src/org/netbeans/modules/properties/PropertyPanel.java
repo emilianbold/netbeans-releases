@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -48,6 +48,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
+import javax.accessibility.AccessibleContext;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -117,9 +118,16 @@ final class PropertyPanel extends JPanel {
 
     private void initAccessibility() {
         this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(getClass(), "ACS_PropertyPanel"));                
-        keyText.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(getClass(), "ACS_PropertyPanel"));                
-        valueText.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(getClass(), "ACS_PropertyPanel"));                
-        commentText.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(getClass(), "ACS_PropertyPanel"));                
+        AccessibleContext context;
+        context = keyText.getAccessibleContext();
+        context.setAccessibleName(NbBundle.getMessage(getClass(), "ACSN_CTL_KeyText"));
+        context.setAccessibleDescription(NbBundle.getMessage(getClass(), "ACSD_CTL_KeyText"));
+        context = valueText.getAccessibleContext();
+        context.setAccessibleName(NbBundle.getMessage(getClass(), "ACSN_CTL_ValueText"));
+        context.setAccessibleDescription(NbBundle.getMessage(getClass(), "ACSD_CTL_ValueText"));
+        context = commentText.getAccessibleContext();
+        context.setAccessibleName(NbBundle.getMessage(getClass(), "ACSN_CTL_CommentText"));
+        context.setAccessibleDescription(NbBundle.getMessage(getClass(), "ACSD_CTL_CommentText"));
     }
     
     // <editor-fold defaultstate="collapsed" desc="UI initialization code">
@@ -129,6 +137,10 @@ final class PropertyPanel extends JPanel {
         JLabel valueLabel = new JLabel();
         JLabel commentLabel = new JLabel();
 
+        keyText = new JTextField(25);
+        valueText = new JTextField(25);
+        commentText = new JTextField(25);
+
         keyLabel.setLabelFor(keyText);
         valueLabel.setLabelFor(valueText);
         commentLabel.setLabelFor(commentText);
@@ -136,10 +148,6 @@ final class PropertyPanel extends JPanel {
         Mnemonics.setLocalizedText(keyLabel, NbBundle.getMessage(getClass(), "LBL_KeyLabel")); // NOI18N
         Mnemonics.setLocalizedText(valueLabel, NbBundle.getMessage(getClass(), "LBL_ValueLabel")); // NOI18N
         Mnemonics.setLocalizedText(commentLabel, NbBundle.getMessage(getClass(), "LBL_CommentLabel")); // NOI18N
-
-        keyText = new JTextField(25);
-        valueText = new JTextField(25);
-        commentText = new JTextField(25);
 
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);

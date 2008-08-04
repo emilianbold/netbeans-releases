@@ -138,6 +138,12 @@ public class SvnClientFactory {
         return factory.connectionType() == ConnectionType.javahl;
     }
 
+    public static boolean isSvnKit() {
+        init();
+        assert factory != null;
+        return factory.connectionType() == ConnectionType.svnkit;
+    }
+
     /**
      * Returns a SvnClient, which isn't configured in any way.
      * Knows no username, password, has no SvnProgressSupport<br/>
@@ -448,10 +454,9 @@ public class SvnClientFactory {
 
     private boolean checkCLIExecutable() {
         exception = null;
-        CommandlineClient cc = new CommandlineClient();
         SVNClientException ex = null;
         try {
-            cc.checkSupportedVersion();
+            checkVersion();
         } catch (SVNClientException e) {
             ex = e;
         }
@@ -460,22 +465,44 @@ public class SvnClientFactory {
             LOG.fine("svn client returns correct version");
             return true;
         }
+        String execPath = SvnModuleConfig.getDefault().getExecutableBinaryPath();
+        if(execPath != null && !execPath.trim().equals("")) {
+            exception = ex;
+            LOG.log(Level.WARNING, "executable binary path set to {0} yet client not available.", new Object[] { execPath });
+            return false; 
+        }
         if(Utilities.isUnix()) {
             LOG.fine("svn client isn't set on path yet. Will check known locations...");
             String[] locations = new String[] {"/usr/local/bin/", "/usr/bin/"};
             String name = "svn";
             for (String loc : locations) {
                 File file = new File(loc, name);
-                LOG.log(Level.FINE, " checking existence of {0}", new Object[] { file.getAbsolutePath() });
+                LOG.log(Level.FINE, "checking existence of {0}", new Object[] { file.getAbsolutePath() });
                 if (file.exists()) {                
                     SvnModuleConfig.getDefault().setExecutableBinaryPath(loc);
-                    LOG.log(Level.FINE, "  found svn executable library. Setting executable binary path to {0}", new Object[] { loc });
+                    try {
+                        checkVersion();
+                    } catch (SVNClientException e) {
+                        ex = e;
+                        continue;
+                    }
+                    LOG.log(Level.INFO, "found svn executable binary. Setting executable binary path to {0}", new Object[] { loc });
                     return true;
                 }
             }
         }
-        LOG.fine("svn client isn't set on path yet. Will check known locations...");
+        exception = ex;
         return false;
+    }
+
+    private void checkVersion() throws SVNClientException {
+        CommandlineClient cc = new CommandlineClient();
+        try {
+            cc.checkSupportedVersion();
+        } catch (SVNClientException e) {
+            LOG.log(Level.FINE, "checking version", e);
+            throw e;
+        }
     }
 
     private abstract class ClientAdapterFactory {

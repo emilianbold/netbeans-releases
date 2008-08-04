@@ -150,6 +150,7 @@ public class HighlightProvider  {
                 }
             }
         };
+        removeAnnotations(doc);
         CsmErrorProvider.getDefault().getErrors(new RequestImpl(file), response);
         CppUpToDateStatusProvider.get((BaseDocument) doc).setUpToDate(UpToDateStatus.UP_TO_DATE_OK);
         

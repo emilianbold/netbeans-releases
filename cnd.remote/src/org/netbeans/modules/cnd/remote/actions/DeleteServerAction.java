@@ -60,7 +60,7 @@ public class DeleteServerAction extends AbstractAction {
     }
 
     public void actionPerformed(ActionEvent e) {
-        RemoteServerList.getInstance().deleteServer(record);
+        RemoteServerList.getInstance().removeServer(record);
     }
 
     @Override

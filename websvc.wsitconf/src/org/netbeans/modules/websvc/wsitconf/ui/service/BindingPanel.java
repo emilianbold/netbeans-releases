@@ -402,7 +402,9 @@ public class BindingPanel extends SectionInnerPanel {
     private void setSecurityProfile(String profile) {
         this.profileCombo.setSelectedItem(profile);
         SecurityProfile sp = SecurityProfileRegistry.getDefault().getProfile(profile);
-        this.profileInfoField.setText(sp.getDescription());
+        if (!ComboConstants.PROF_NOTRECOGNIZED.equals(profile)) {
+            this.profileInfoField.setText(sp.getDescription());
+        }
     }
 
     @Override

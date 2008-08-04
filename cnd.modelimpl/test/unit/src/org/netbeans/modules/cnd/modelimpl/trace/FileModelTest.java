@@ -393,6 +393,10 @@ public class FileModelTest extends TraceModelTestBase {
         // IZ 140704 A constant in namespace is highlighted as an unresolved id
         performTest("resolver_ns_using_declaration.cc"); // NOI18N
     }
+
+    public void testResolverUsingDeclarationInClass() throws Exception {
+        performTest("resolver_using_declaration_in_class.cc"); // NOI18N
+    }
     
     /////////////////////////////////////////////////////////////////////
     // FAILS
@@ -416,6 +420,12 @@ public class FileModelTest extends TraceModelTestBase {
 	
 	public void testTemplateInnerClassDtorDefinition() throws Exception {
 	    performTest("template_inner_class_dtor_definition.cc"); // NOI18N
+	}
+
+	public void testTwoBranches() throws Exception {
+            // iz #142110 For a header file, that is included with different
+            // preprocessor states, code model should include the most complete data
+	    performTest("branches_1.cc"); // NOI18N
 	}
                
         @Override

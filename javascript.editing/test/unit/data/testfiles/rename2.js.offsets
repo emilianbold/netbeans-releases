@@ -8,6 +8,6 @@
     
     <BLOCK>if (  <IFNE><NAME>foo</NAME></IFNE> ) <BLOCK>{
         // do something
-    }<TARGET></TARGET></BLOCK></BLOCK>
-<RETURN></RETURN></BLOCK>}</FUNCTION></SCRIPT>
+    }</BLOCK></BLOCK><TARGET/>
+</BLOCK><RETURN/>}</FUNCTION></SCRIPT>
 

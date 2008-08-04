@@ -42,8 +42,6 @@ package org.netbeans.modules.websvc.design.multiview;
 
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
@@ -55,14 +53,14 @@ import javax.lang.model.element.TypeElement;
 import javax.swing.Action;
 
 import org.apache.tools.ant.module.api.support.ActionUtils;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.openide.filesystems.FileAttributeEvent;
-import org.openide.filesystems.FileEvent;
-import org.openide.filesystems.FileRenameEvent;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.DataEditorSupport;
 import org.openide.loaders.DataObject;
@@ -90,8 +88,6 @@ import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
 import org.openide.ErrorManager;
 import org.openide.execution.ExecutorTask;
-import org.openide.filesystems.FileChangeAdapter;
-import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileUtil;
 
 /**
@@ -107,88 +103,7 @@ public class MultiViewSupport implements OpenCookie, EditCookie {
     public static String SOURCE_UNSAFE_CLOSE = "SOURCE_UNSAFE_CLOSE";
     private static String DESIGN_UNSAFE_CLOSE = "DESIGN_UNSAFE_CLOSE";
 
-    /**
-     *  Method, preparing DataObject for processing by WSDL Preview element
-     * @param service - web service object, initialized by class constructor
-     */
-    private void initWsdlDO(Service service) {
-
-        DataObject dataObj = null;  // DataObject created from FileObject of WSDL file - null if WSDL don't exist
-        FileObject wsdlFile = null;        // FileObject of WSDL file
-        String localWSDLFilePath = service.getLocalWsdlFile();      // Local path to wsdl file,only part of path for URL wsdl
-        String serviceName = service.getName();                     // Web service name
-        String tempdir = System.getProperty("java.io.tmpdir");      // Tempdir
-        FileObject primaryFile = dataObject.getPrimaryFile();
-        // Detection if this is WSDL or Java case - later sets this propery null
-        if (!(localWSDLFilePath == null)) {
-            // Process of obtaining proper path to wsdl through JAXWSSupport and its methods,
-            // which leads to desired FileObject
-            JAXWSSupport jAXWSSupport = JAXWSSupport.getJAXWSSupport(primaryFile);
-            FileObject foj = jAXWSSupport.getLocalWsdlFolderForService(service.getName(), false);
-            wsdlFile = foj.getFileObject(localWSDLFilePath);
-            // If obtaining of WSDL file fails, empty page with error label is displayed
-            if (wsdlFile != null) {
-                try {
-                    dataObj = DataObject.find(wsdlFile);
-                } catch (DataObjectNotFoundException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            }
-        //wsdlDo = dataObj;
-        } else if (serviceName != null) { // Java case - we test servicename is set
-            //regenerateWSDL();
-            java.util.Properties prop = new java.util.Properties();         // wsgen properties
-            prop.setProperty("build.generated.dir", tempdir);               // we set only dir for generating WSDL
-            Project project = FileOwnerQuery.getOwner(primaryFile);         // Active project
-            // Test if source java file of web service contains any operation
-            JavaSource targetSource = JavaSource.forFileObject(getEditorSupport().getDataObject().getPrimaryFile());
-            FindMethodTask fmt = new FindMethodTask();
-            try {
-                targetSource.runUserActionTask(fmt, true);
-                if (fmt.found) {
-                    FileObject jaxwsImplFo = project.getProjectDirectory().getFileObject("build.xml");
-                    // For generation of WSDL code, we use wsgen target from jaxws-build.xml
-                    try {
-                        ExecutorTask wsimportTask =
-                                ActionUtils.runTarget(jaxwsImplFo,
-                                new String[]{"wsgen-" + serviceName}, prop); //NOI18N
-
-                        wsimportTask.waitFinished();
-                    } catch (IllegalArgumentException ex) {
-                        ErrorManager.getDefault().notify(ex);
-                    }
-//            File temp = new File(tempdir);
-//            FileUtil.refreshFor(temp);
-                    String constPart = "wsgen/service/resources/"; //NOI18N Constant part of path,where WSDL generates
-                    String webSuffix = "";
-                    //String winPart = "wsgen\\service\\resources\\";
-                    //Check of module type to detect,if Service part of wsdl name needed
-                    J2eeModuleProvider t = project.getLookup().lookup(J2eeModuleProvider.class);
-                    if (t != null) {
-                        if (J2eeModule.WAR.equals(t.getJ2eeModule().getModuleType())) {
-                            //WSDL name part,added by Web module
-                            webSuffix = "Service";
-                        }
-                    }
-                    // We complete real path to WSDL file
-                    String tempTestDestpath = tempdir + constPart + serviceName + webSuffix + ".wsdl";
-                    // File object for generated WSDL file
-                    File wsdl = new File(tempTestDestpath);
-                    wsdlFile = FileUtil.toFileObject(FileUtil.normalizeFile(wsdl));
-                }
-                if (wsdlFile != null) {
-                    try {
-                        dataObj = DataObject.find(wsdlFile);
-                    } catch (DataObjectNotFoundException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-                }
-            } catch (IOException ioe) {
-                Exceptions.printStackTrace(ioe);
-            }
-        }
-        wsdlDo = dataObj;
-    }
+    
 
     /**
      * MultiView enum
@@ -287,13 +202,23 @@ public class MultiViewSupport implements OpenCookie, EditCookie {
      * @return CloneableTopComponent new multiview.
      */
     public CloneableTopComponent createMultiView() {
-        MultiViewDescription views[] = new MultiViewDescription[3];
+        MultiViewDescription views[];
+        if(getService().getLocalWsdlFile()!=null){
+        views = new MultiViewDescription[3];
 
         // Put the source element first so that client code can find its
         // CloneableEditorSupport.Pane implementation.
         views[0] = new SourceMultiViewDesc(getDataObject());
         views[1] = new DesignMultiViewDesc(getDataObject());
         views[2] = new PreviewMultiViewDesc(wsdlDo);
+        } else {
+        views = new MultiViewDescription[2];
+
+        // Put the source element first so that client code can find its
+        // CloneableEditorSupport.Pane implementation.
+        views[0] = new SourceMultiViewDesc(getDataObject());
+        views[1] = new DesignMultiViewDesc(getDataObject());    
+        }
 
 
         // Make the column view the default element.
@@ -384,6 +309,89 @@ public class MultiViewSupport implements OpenCookie, EditCookie {
         return Collections.list(((CloneableTopComponent) tc).getReference().getComponents()).size();
     }
 
+    
+    /**
+     *  Method, preparing DataObject for processing by WSDL Preview element
+     * @param service - web service object, initialized by class constructor
+     */
+    private void initWsdlDO(Service service) {
+
+        DataObject dataObj = null;  // DataObject created from FileObject of WSDL file - null if WSDL don't exist
+        FileObject wsdlFile = null;        // FileObject of WSDL file
+        String localWSDLFilePath = getService().getLocalWsdlFile();      // Local path to wsdl file,only part of path for URL wsdl
+        String serviceName = getService().getName();                     // Web service name
+        String tempdir = System.getProperty("java.io.tmpdir");      // Tempdir
+        FileObject primaryFile = getImplementationBean();
+        // Detection if this is WSDL or Java case - later sets this propery null
+        if (!(localWSDLFilePath == null)) {
+            // Process of obtaining proper path to wsdl through JAXWSSupport and its methods,
+            // which leads to desired FileObject
+            JAXWSSupport jAXWSSupport = JAXWSSupport.getJAXWSSupport(primaryFile);
+            FileObject foj = jAXWSSupport.getLocalWsdlFolderForService(getService().getName(), false);
+            wsdlFile = foj.getFileObject(localWSDLFilePath);
+            // If obtaining of WSDL file fails, empty page with error label is displayed
+            if (wsdlFile != null) {
+                try {
+                    dataObj = DataObject.find(wsdlFile);
+                } catch (DataObjectNotFoundException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        
+        } else  { // Java case - we test servicename is set
+//            //regenerateWSDL();
+//            java.util.Properties prop = new java.util.Properties();         // wsgen properties
+//            prop.setProperty("build.generated.dir", tempdir);               // we set only dir for generating WSDL
+//            Project project = FileOwnerQuery.getOwner(primaryFile);         // Active project
+//            // Test if source java file of web service contains any operation
+//            JavaSource targetSource = JavaSource.forFileObject(getFileObject(service, project));
+//            FindMethodTask fmt = new FindMethodTask();
+//            try {
+//                targetSource.runUserActionTask(fmt, true);
+//                if (fmt.found) {
+//                    FileObject jaxwsImplFo = project.getProjectDirectory().getFileObject("build.xml");
+//                    // For generation of WSDL code, we use wsgen target from jaxws-build.xml
+//                    try {
+//                        ExecutorTask wsimportTask =
+//                                ActionUtils.runTarget(jaxwsImplFo,
+//                                new String[]{"wsgen-" + serviceName}, prop); //NOI18N
+//
+//                        wsimportTask.waitFinished();
+//                    } catch (IllegalArgumentException ex) {
+//                        ErrorManager.getDefault().notify(ex);
+//                    }
+//            File temp = new File(tempdir);
+//            FileUtil.refreshFor(temp);
+//                    String constPart = "wsgen/service/resources/"; //NOI18N Constant part of path,where WSDL generates
+//                    String webSuffix = "";
+//                    //Check of module type to detect,if Service part of wsdl name needed
+//                    J2eeModuleProvider t = project.getLookup().lookup(J2eeModuleProvider.class);
+//                    if (t != null) {
+//                        if (J2eeModule.WAR.equals(t.getJ2eeModule().getModuleType())) {
+//                            //WSDL name part,added by Web module
+//                            webSuffix = "Service";
+//                        }
+//                    }
+//                    // We complete real path to WSDL file
+//                    String tempTestDestpath = tempdir + constPart + serviceName + webSuffix + ".wsdl";
+//                    // File object for generated WSDL file
+//                    File wsdl = new File(tempTestDestpath);
+//                    wsdlFile = FileUtil.toFileObject(FileUtil.normalizeFile(wsdl));
+//                }
+//                if (wsdlFile != null) {
+//                    try {
+//                        dataObj = DataObject.find(wsdlFile);
+//                    } catch (DataObjectNotFoundException ex) {
+//                        Exceptions.printStackTrace(ex);
+//                    }
+//                }
+//            } catch (IOException ioe) {
+//                Exceptions.printStackTrace(ioe);
+//            }
+        }
+        wsdlDo = dataObj;
+    }
+    
     /**
      * Method calls for regeneration of WSDL file from Java source
      * @return true if WSDL successfuly regenerated
@@ -538,4 +546,16 @@ public class MultiViewSupport implements OpenCookie, EditCookie {
             return true;
         }
     }
+    
+    private FileObject getFileObject(Service service, Project prj) {
+       SourceGroup[] srcGroups = ProjectUtils.getSources(prj).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+       String implClassResource = service.getImplementationClass().replace('.', '/') + ".java"; //NOI18N
+       for (SourceGroup srcGroup : srcGroups) {
+           FileObject implClassFo = srcGroup.getRootFolder().getFileObject(implClassResource);
+           if (implClassFo != null) {
+               return implClassFo;
+           }
+       }
+       return null;
+    } 
 }

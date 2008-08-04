@@ -41,6 +41,11 @@ Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
 <project name="{0} (debug-test)" default="debug-test" basedir=".">
+    <target name="-check-run-test-single-method-supported" if="methodname">
+        <available property="run.test.single.method.supported"
+                   classname="org.apache.tools.ant.taskdefs.optional.junit.XMLResultParser"/>
+        <fail unless="run.test.single.method.supported">Execution of a single test method is not supported by this version of Ant.</fail>
+    </target>
     <target name="-init-debug-args">
         <property name="version-output" value="java version &quot;${ant.java.version}"/>
         <condition property="have-jdk-older-than-1.4">
@@ -61,28 +66,49 @@ made subject to such option by the copyright holder.
             <isset property="debug.transport"/>
         </condition>
     </target>
-    <target name="debug-test" depends="-init-debug-args">
-        <translate-classpath classpath="${classpath}" targetProperty="classpath-translated" />
-        <nbjpdastart addressproperty="jpda.address" name="${classname}" stopclassname="" transport="${debug-transport}" listeningcp="${classpath}">
-            <classpath>
-                <path path="${classpath-translated}"/>
-            </classpath>
-        </nbjpdastart>
-        <property name="run.jvmargs" value="" />
-        <java classname="org.apache.tools.ant.taskdefs.optional.junit.JUnitTestRunner" fork="true">
-            <classpath>
-                <path path="${ant.home}/lib/ant.jar:${ant.home}/lib/ant-junit.jar"/>
-                <path path="${classpath-translated}"/>
-            </classpath>
-            <jvmarg line="${debug-args-line}"/>
-            <jvmarg value="-Xrunjdwp:transport=${debug-transport},address=${jpda.address}"/>
-            <jvmarg value="-ea"/>
-            <jvmarg line="${run.jvmargs}"/>
-            <arg value="${classname}"/>
-            <arg value="showoutput=true"/>
-            <arg value="formatter=org.apache.tools.ant.taskdefs.optional.junit.BriefJUnitResultFormatter"/>
-            <arg value="formatter=org.apache.tools.ant.taskdefs.optional.junit.XMLJUnitResultFormatter,TEST-${classname}.xml"/>
-        </java>
+    <target name="-prepare-execution" depends="-init-debug-args">
+        <macrodef name="junit-debug-template">
+            <element name="extra-args" implicit="yes" optional="yes"/>
+            <sequential>
+                <translate-classpath classpath="${classpath}" targetProperty="classpath-translated" />
+                <nbjpdastart addressproperty="jpda.address" name="${classname}" stopclassname="" transport="${debug-transport}" listeningcp="${classpath}">
+                    <classpath>
+                        <path path="${classpath-translated}"/>
+                    </classpath>
+                </nbjpdastart>
+                <property name="run.jvmargs" value="" />
+                <property name="work.dir" value="${basedir}"/>
+                <echo message="methods: ${methodname}"/>
+                <java classname="org.apache.tools.ant.taskdefs.optional.junit.JUnitTestRunner" fork="true" dir="${work.dir}" jvm="${platform.java}">
+                    <classpath>
+                        <path path="${ant.home}/lib/ant.jar:${ant.home}/lib/ant-junit.jar"/>
+                        <path path="${classpath-translated}"/>
+                    </classpath>
+                    <jvmarg line="${debug-args-line}"/>
+                    <jvmarg value="-Xrunjdwp:transport=${debug-transport},address=${jpda.address}"/>
+                    <jvmarg value="-ea"/>
+                    <jvmarg line="${run.jvmargs}"/>
+                    <arg value="${classname}"/>
+                    <arg value="showoutput=true"/>
+                    <arg value="formatter=org.apache.tools.ant.taskdefs.optional.junit.BriefJUnitResultFormatter"/>
+                    <arg value="formatter=org.apache.tools.ant.taskdefs.optional.junit.XMLJUnitResultFormatter,TEST-${classname}.xml"/>
+                    <extra-args/>
+                    <syspropertyset>
+                        <propertyref prefix="test-sys-prop."/>
+                        <mapper from="test-sys-prop.*" to="*" type="glob"/>
+                    </syspropertyset>
+                </java>
+            </sequential>
+        </macrodef>
     </target>
+    <target name="-debug-test-class" depends="-prepare-execution" unless="methodname">
+        <junit-debug-template/>
+    </target>
+    <target name="-debug-test-method" depends="-check-run-test-single-method-supported,-prepare-execution" if="methodname">
+        <junit-debug-template>
+            <arg value="methods=${methodname}"/>
+        </junit-debug-template>
+    </target>
+    <target name="debug-test" depends="-debug-test-class,-debug-test-method"/>
 
 </project>

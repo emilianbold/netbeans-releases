@@ -128,9 +128,11 @@ public class NewRubyFileWizardIteratorTest extends RubyProjectTestBase {
         assertNotNull(copiedTemplate);
         FileObject licenses = dataFolder.getParent().getFileObject("Licenses/license-default.txt");
         if (licenses == null) {
-            FileObject projectXml = FileUtil.createData(dataFolder.getParent(), "Licenses/license-default.txt");
+            FileObject licensesFO = FileUtil.createData(dataFolder.getParent(), "Licenses/license-default.txt");
             String license =
+"<#if licenseFirst??>\n" +
 "${licenseFirst}\n" +
+"</#if>\n" +
 "${licensePrefix}${name}.rb\n" +
 "${licensePrefix}\n" +
  // Modified to remove ${date} and ${time} to make the test stable
@@ -138,8 +140,10 @@ public class NewRubyFileWizardIteratorTest extends RubyProjectTestBase {
 "${licensePrefix}\n" +
 "${licensePrefix}To change this template, choose Tools | Templates\n" +
 "${licensePrefix}and open the template in the editor.\n" +
-"${licenseLast}\n";
-            OutputStream os = projectXml.getOutputStream();
+"<#if licenseLast??>\n" +
+"${licenseLast}\n" +
+"</#if>";
+            OutputStream os = licensesFO.getOutputStream();
             Writer writer = new BufferedWriter(new OutputStreamWriter(os));
             writer.write(license);
             writer.close();

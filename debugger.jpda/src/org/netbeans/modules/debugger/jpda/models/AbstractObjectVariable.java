@@ -89,7 +89,7 @@ class AbstractObjectVariable extends AbstractVariable implements ObjectVariable 
     // Customized for add/removePropertyChangeListener
     // Cloneable for fixed watches
     
-    private static final Logger logger = Logger.getLogger("org.netbeans.modules.debugger.jpda.getValue"); // NOI8N
+    private static final Logger logger = Logger.getLogger("org.netbeans.modules.debugger.jpda.getValue"); // NOI18N
 
     private String          genericType;
     private Field[]         fields;
@@ -312,7 +312,7 @@ class AbstractObjectVariable extends AbstractVariable implements ObjectVariable 
                 addQuotation = true;
             } else {
                 Method toStringMethod = ((ClassType) v.type ()).
-                    concreteMethodByName ("toString", "()Ljava/lang/String;");  // NOI8N
+                    concreteMethodByName ("toString", "()Ljava/lang/String;");  // NOI18N
                 sr = (StringReference) debugger.invokeMethod (
                     (ObjectReference) v,
                     toStringMethod,
@@ -324,7 +324,7 @@ class AbstractObjectVariable extends AbstractVariable implements ObjectVariable 
             } else {
                 if (maxLength > 0 && maxLength < Integer.MAX_VALUE) {
                     Method stringLengthMethod = ((ClassType) sr.type ()).
-                        concreteMethodByName ("length", "()I");  // NOI8N
+                        concreteMethodByName ("length", "()I");  // NOI18N
                     IntegerValue lengthValue = (IntegerValue) debugger.invokeMethod (
                         sr,
                         stringLengthMethod,
@@ -332,7 +332,7 @@ class AbstractObjectVariable extends AbstractVariable implements ObjectVariable 
                     );
                     if (lengthValue.value() > maxLength) {
                         Method subStringMethod = ((ClassType) sr.type ()).
-                            concreteMethodByName ("substring", "(II)Ljava/lang/String;");  // NOI8N
+                            concreteMethodByName ("substring", "(II)Ljava/lang/String;");  // NOI18N
                         if (subStringMethod != null) {
                             sr = (StringReference) debugger.invokeMethod (
                                 sr,
@@ -348,10 +348,10 @@ class AbstractObjectVariable extends AbstractVariable implements ObjectVariable 
             }
             String str = sr.value();
             if (addDots) {
-                str = str + "..."; // NOI8N
+                str = str + "..."; // NOI18N
             }
             if (addQuotation) {
-                str = "\"" + str + "\""; // NOI8N
+                str = "\"" + str + "\""; // NOI18N
             }
             return str;
         } catch (VMDisconnectedException ex) {
@@ -663,32 +663,40 @@ class AbstractObjectVariable extends AbstractVariable implements ObjectVariable 
         ReferenceType rt,
         String parentID)
     {
-        List<Field> fields = new ArrayList<Field>();
-        List<Field> staticFields = new ArrayList<Field>();
+        List<Field> classFields = new ArrayList<Field>();
+        List<Field> classStaticFields = new ArrayList<Field>();
         List<Field> allInheretedFields = new ArrayList<Field>();
         
-        List<com.sun.jdi.Field> l = rt.allFields ();
-        Set<com.sun.jdi.Field> s = new HashSet<com.sun.jdi.Field>(rt.fields ());
+        List<com.sun.jdi.Field> l;
+        Set<com.sun.jdi.Field> s;
+        try {
+            l = rt.allFields ();
+            s = new HashSet<com.sun.jdi.Field>(rt.fields ());
 
-        int i, k = l.size();
-        for (i = 0; i < k; i++) {
-            com.sun.jdi.Field f = l.get (i);
-            Field field = this.getField (f, or, this.getID());
-            if (f.isStatic ())
-                staticFields.add(field);
-            else {
-                if (s.contains (f))
-                    fields.add(field);
-                else
-                    allInheretedFields.add(field);
+            int i, k = l.size();
+            for (i = 0; i < k; i++) {
+                com.sun.jdi.Field f = l.get (i);
+                Field field = this.getField (f, or, this.getID());
+                if (f.isStatic ())
+                    classStaticFields.add(field);
+                else {
+                    if (s.contains (f))
+                        classFields.add(field);
+                    else
+                        allInheretedFields.add(field);
+                }
             }
+        } catch (VMDisconnectedException e) {
+            classFields.clear();
+            classStaticFields.clear();
+            allInheretedFields.clear();
         }
-        this.fields = fields.toArray (new Field [fields.size ()]);
+        this.fields = classFields.toArray (new Field [classFields.size ()]);
         this.inheritedFields = allInheretedFields.toArray (
             new Field [allInheretedFields.size ()]
         );
-        this.staticFields = staticFields.toArray
-                (new Field [staticFields.size ()]);
+        this.staticFields = classStaticFields.toArray
+                (new Field [classStaticFields.size ()]);
     }
     
     org.netbeans.api.debugger.jpda.Field getField (

@@ -74,9 +74,14 @@ public final class LineConvertors {
      * Convertor is trying to mach each line against the given
      * <code>linePattern</code>. If the line matches the regexp group number
      * <code>fileGroup</code> is supposed to be filename. This filename is then
-     * checked whether it matches <code>filePattern</code> (if any). In next
-     * step converter tries to determine the line in file. The line is parsed
-     * as <code>lineGroup</code> regexp group.
+     * checked whether it matches <code>filePattern</code> (if any).
+     * <p>
+     * In next step converter tries to determine the line in file. The line
+     * is parsed as <code>lineGroup</code> regexp group. Line number begins
+     * with <code>1</code> (first line of the file). If resulting value
+     * representing line number can't be parsed or is less then or equal
+     * to zero the {@link OutputListener} associated with converted line
+     * will use value <code>1</code> as a line number.
      * <p>
      * When the line does not match the <code>linePattern</code> or
      * received filename does not match <code>filePattern</code> the work is

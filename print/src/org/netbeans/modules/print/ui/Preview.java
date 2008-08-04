@@ -121,7 +121,7 @@ public final class Preview extends Dialog implements Percent.Listener {
     myPrintProviders = providers;
 
     if (withPreview) {
-      show();
+      show(false);
     }
     else {
       print(true);
@@ -136,7 +136,7 @@ public final class Preview extends Dialog implements Percent.Listener {
 
     // navigate
     c.anchor = GridBagConstraints.WEST;
-    c.insets = new Insets(0, 0, 0, TINY_INSET);
+    c.insets = new Insets(0, 0, 0, TINY_SIZE);
     p.add(createNavigatePanel(), c);
 
     // scale
@@ -147,7 +147,7 @@ public final class Preview extends Dialog implements Percent.Listener {
 
     // toggle
     c.anchor = GridBagConstraints.EAST;
-    c.insets = new Insets(TINY_INSET, MEDIUM_INSET, TINY_INSET, 0);
+    c.insets = new Insets(TINY_SIZE, HUGE_SIZE, TINY_SIZE, 0);
     myToggle = createToggleButton(
       new ButtonAction(icon(Config.class, "toggle"), i18n("TLT_Toggle")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
@@ -163,7 +163,7 @@ public final class Preview extends Dialog implements Percent.Listener {
     c.gridy = 0;
     c.fill = GridBagConstraints.HORIZONTAL;
     c.anchor = GridBagConstraints.WEST;
-    c.insets = new Insets(MEDIUM_INSET, 0, MEDIUM_INSET, 0);
+    c.insets = new Insets(HUGE_SIZE, 0, HUGE_SIZE, 0);
     panel.add(p, c);
 
     // scroll
@@ -198,7 +198,7 @@ public final class Preview extends Dialog implements Percent.Listener {
 
     // first
     panel = new JPanel(new GridBagLayout());
-    c.insets = new Insets(TINY_INSET, TINY_INSET, TINY_INSET, TINY_INSET);
+    c.insets = new Insets(TINY_SIZE, TINY_SIZE, TINY_SIZE, TINY_SIZE);
     myFirst = createButton(
       new ButtonAction(icon(Config.class, "first"), i18n("TLT_First")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
@@ -224,7 +224,7 @@ public final class Preview extends Dialog implements Percent.Listener {
 
     // text field
     myGoto = new JTextField();
-    int width = (int) Math.round(myPrevious.getPreferredSize().width * GOTO_FACTOR);
+    int width = (int) Math.round(myPrevious.getPreferredSize().width * GOTO_RATIO);
     int height = myPrevious.getPreferredSize().height;
     myGoto.setPreferredSize(new Dimension(width, height));
     myGoto.setMinimumSize(new Dimension(width, height));
@@ -315,7 +315,7 @@ public final class Preview extends Dialog implements Percent.Listener {
     GridBagConstraints c = new GridBagConstraints();
 
     // fit to window
-    c.insets = new Insets(TINY_INSET, MEDIUM_INSET, TINY_INSET, TINY_INSET);
+    c.insets = new Insets(TINY_SIZE, HUGE_SIZE, TINY_SIZE, TINY_SIZE);
     myFit = createButton(
       new ButtonAction(icon(Config.class, "fit"), i18n("TLT_Fit")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
@@ -327,7 +327,7 @@ public final class Preview extends Dialog implements Percent.Listener {
     panel.add(myFit, c);
 
     // scale
-    c.insets = new Insets(TINY_INSET, TINY_INSET, TINY_INSET, TINY_INSET);
+    c.insets = new Insets(TINY_SIZE, TINY_SIZE, TINY_SIZE, TINY_SIZE);
     myScale = new Percent(
       this,
       1.0,
@@ -346,7 +346,7 @@ public final class Preview extends Dialog implements Percent.Listener {
       myScale.setValue(getAllWidthScale());
     }});
 
-    int width = myScale.getPreferredSize().width;
+    int width = (int) Math.round(myScale.getPreferredSize().width * SCALE_RATIO);
     int height = myPrevious.getPreferredSize().height;
     myScale.setPreferredSize(new Dimension(width, height));
     myScale.setMinimumSize(new Dimension(width, height));
@@ -854,9 +854,11 @@ public final class Preview extends Dialog implements Percent.Listener {
       getVerticalScrollBar().setUnitIncrement(SCROLL_INCREMENT);
 
       int screenHeight = Toolkit.getDefaultToolkit().getScreenSize().height;
-      int height = (int) Math.round(screenHeight * PREVIEW_HEIGHT_FACTOR);
-      int width = (int) Math.round(height * PREVIEW_WIDTH_FACTOR);
-
+      int height = (int) Math.round(screenHeight * PREVIEW_HEIGHT_RATIO);
+      int width = (int) Math.round(height * PREVIEW_WIDTH_RATIO);
+//out();
+//out("SET SIZE FOR SCROLL PANE");
+//out();
       Dimension dimension = new Dimension(width, height);
       setMinimumSize(dimension);
       setPreferredSize(dimension);
@@ -909,10 +911,11 @@ public final class Preview extends Dialog implements Percent.Listener {
 
   private static final int GAP_SIZE = 20;
   private static final int SCROLL_INCREMENT = 40;
-  private static final double GOTO_FACTOR = 1.20;
+  private static final double GOTO_RATIO = 1.20;
+  private static final double SCALE_RATIO = 1.05;
   
-  private static final double PREVIEW_HEIGHT_FACTOR = 0.77;
-  private static final double PREVIEW_WIDTH_FACTOR = 0.44;
+  private static final double PREVIEW_HEIGHT_RATIO = 0.66;
+  private static final double PREVIEW_WIDTH_RATIO = 0.44;
 
   private static final int [] PERCENTS = new int [] { 25, 50, 75, 100, 200, 400 };
 

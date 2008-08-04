@@ -300,7 +300,7 @@ implements Executor {
                     return true;
                 }
             } catch (IncompatibleThreadStateException e) {
-                ErrorManager.getDefault().notify(e);
+                logger.fine("Incompatible Thread State: " + e.getLocalizedMessage());
             }
             
             // Stop execution here?
@@ -326,7 +326,7 @@ implements Executor {
             if (smartSteppingStepOut) {
                 getStepIntoActionProvider ().doAction(ActionsManager.ACTION_STEP_OUT);
             } else {
-                getStepIntoActionProvider ().doAction(ActionsManager.ACTION_STEP_INTO);
+                getStepIntoActionProvider ().doAction(StepIntoActionProvider.ACTION_SMART_STEP_INTO);
             }
             //S ystem.out.println("/nStepAction.exec end - resume");
             return true; // resume

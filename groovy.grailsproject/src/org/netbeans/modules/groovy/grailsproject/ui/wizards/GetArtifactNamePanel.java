@@ -92,7 +92,20 @@ public class GetArtifactNamePanel extends WizardSettingsPanel implements Documen
                 setName(NbBundle.getMessage(GetArtifactNamePanel.class,"WIZARD_TITLE_TAGLIB")); // NOI18N
                 subDirName = "taglib";
                 dirPrefix = "grails-app" + File.separatorChar;
+                suffix = "TagLib";
                 break;    
+            case INTEGRATION_TESTS:
+                setName(NbBundle.getMessage(GetArtifactNamePanel.class,"WIZARD_TITLE_TAGLIB")); // NOI18N
+                subDirName = "integration";
+                dirPrefix = "test" + File.separatorChar;
+                suffix = "Tests";
+                break;
+            case UNIT_TESTS:
+                setName(NbBundle.getMessage(GetArtifactNamePanel.class,"WIZARD_TITLE_TAGLIB")); // NOI18N
+                subDirName = "unit";
+                dirPrefix = "test" + File.separatorChar;
+                suffix = "UnitTests";
+                break;
             case SCRIPTS:
                 setName(NbBundle.getMessage(GetArtifactNamePanel.class,"WIZARD_TITLE_SCRIPTS")); // NOI18N
                 subDirName = "scripts";
@@ -131,19 +144,22 @@ public class GetArtifactNamePanel extends WizardSettingsPanel implements Documen
         createdFileLabel = new javax.swing.JLabel();
         createdFileTextField = new javax.swing.JTextField();
 
+        classNameLabel.setDisplayedMnemonic('N');
         classNameLabel.setLabelFor(classNameTextField);
-        classNameLabel.setText(org.openide.util.NbBundle.getMessage(GetArtifactNamePanel.class, "GetDomainClassNamePanel.projectNameLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(classNameLabel, org.openide.util.NbBundle.getMessage(GetArtifactNamePanel.class, "GetDomainClassNamePanel.projectNameLabel.text")); // NOI18N
 
+        projectLabel.setDisplayedMnemonic('P');
         projectLabel.setLabelFor(projectTextField);
-        projectLabel.setText(org.openide.util.NbBundle.getMessage(GetArtifactNamePanel.class, "GetDomainClassNamePanel.projectFolderLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(projectLabel, org.openide.util.NbBundle.getMessage(GetArtifactNamePanel.class, "GetDomainClassNamePanel.projectFolderLabel.text")); // NOI18N
 
         classNameTextField.setText(org.openide.util.NbBundle.getMessage(GetArtifactNamePanel.class, "GetDomainClassNamePanel.projectNameTextField.text")); // NOI18N
 
         projectTextField.setEditable(false);
         projectTextField.setText(org.openide.util.NbBundle.getMessage(GetArtifactNamePanel.class, "GetArtifactNamePanel.projectTextField.text")); // NOI18N
 
+        createdFileLabel.setDisplayedMnemonic('F');
         createdFileLabel.setLabelFor(createdFileTextField);
-        createdFileLabel.setText(org.openide.util.NbBundle.getMessage(GetArtifactNamePanel.class, "GetArtifactNamePanel.createdFileLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(createdFileLabel, org.openide.util.NbBundle.getMessage(GetArtifactNamePanel.class, "GetArtifactNamePanel.createdFileLabel.text")); // NOI18N
 
         createdFileTextField.setEditable(false);
         createdFileTextField.setText(org.openide.util.NbBundle.getMessage(GetArtifactNamePanel.class, "GetArtifactNamePanel.createdFileTextField.text")); // NOI18N
@@ -180,9 +196,13 @@ public class GetArtifactNamePanel extends WizardSettingsPanel implements Documen
                 .addContainerGap(27, Short.MAX_VALUE))
         );
 
+        classNameLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GetArtifactNamePanel.class, "GetArtifactNamePanel.classNameLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        projectLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GetArtifactNamePanel.class, "GetArtifactNamePanel.projectLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        classNameTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(GetArtifactNamePanel.class, "GetArtifactNamePanel.classNameTextField.AccessibleContext.accessibleName")); // NOI18N
         classNameTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GetArtifactNamePanel.class, "GetArtifactNamePanel.classNameTextField.AccessibleContext.accessibleDescription")); // NOI18N
         projectTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(GetArtifactNamePanel.class, "GetArtifactNamePanel.projectTextField.AccessibleContext.accessibleName")); // NOI18N
         projectTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GetArtifactNamePanel.class, "GetArtifactNamePanel.projectTextField.AccessibleContext.accessibleDescription")); // NOI18N
+        createdFileLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GetArtifactNamePanel.class, "GetArtifactNamePanel.createdFileLabel.AccessibleContext.accessibleDescription")); // NOI18N
         createdFileTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(GetArtifactNamePanel.class, "GetArtifactNamePanel.createdFileTextField.AccessibleContext.accessibleName")); // NOI18N
         createdFileTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GetArtifactNamePanel.class, "GetArtifactNamePanel.createdFileTextField.AccessibleContext.accessibleDescription")); // NOI18N
 
@@ -231,7 +251,7 @@ public class GetArtifactNamePanel extends WizardSettingsPanel implements Documen
   
     }
 
-    public String getDomainClassName(){
+    public String getArtifactName(){
         return classNameTextField.getText();
         }
 

@@ -112,6 +112,7 @@ public class HijackAction extends AbstractAction {
     }
     
     public void actionPerformed(ActionEvent ev) {
+        Utils.logVCSActionEvent("CC");
         Set<File> roots = context.getFiles();
         switch (status) {
         case STATUS_HIJACK:

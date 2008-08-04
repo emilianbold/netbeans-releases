@@ -105,6 +105,12 @@ class SQLExecutionHelper {
             ResultSet resultSet = null;
             try {
                 resultSet = stmt.getResultSet();
+                if (resultSet == null) {
+                    if (!conn.getAutoCommit()) {
+                        conn.commit();
+                    }
+                    return;
+                }
                 Collection<DBTable> tables = dbMeta.generateDBTables(resultSet, sql, isSelect);
                 DataViewDBTable dvTable = new DataViewDBTable(tables);
                 dv.setDataViewDBTable(dvTable);

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -52,6 +52,7 @@ import java.security.CodeSource;
 import java.security.PermissionCollection;
 import java.security.Permissions;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashSet;
@@ -125,9 +126,18 @@ final class MainImpl extends Object {
         ArrayList<File> list = new ArrayList<File>();
 
         HashSet<File> processedDirs = new HashSet<File> ();
+        HashSet<String> processedPaths = new HashSet<String> ();
+        List<String> argsL = Arrays.asList (args);
+        int idx = argsL.indexOf ("--userdir"); // NOI18N
+        if (idx != -1 && argsL.size () > idx + 1) {
+            String user = argsL.get (idx + 1);
+            if (user != null) {
+                build_cp (new File (user), list, processedDirs, processedPaths);
+            }
+        }
         String home = System.getProperty ("netbeans.home"); // NOI18N
         if (home != null) {
-            build_cp (new File (home), list, processedDirs);
+            build_cp (new File (home), list, processedDirs, processedPaths);
         }
         // #34069: need to do the same for nbdirs.
         String nbdirs = System.getProperty("netbeans.dirs"); // NOI18N
@@ -135,7 +145,7 @@ final class MainImpl extends Object {
             StringTokenizer tok = new StringTokenizer(nbdirs, File.pathSeparator);
             while (tok.hasMoreTokens()) {
                 // passing false as last argument as we need to initialize openfile-cli.jar
-                build_cp(new File(tok.nextToken()), list, processedDirs);
+                build_cp(new File(tok.nextToken()), list, processedDirs, processedPaths);
             }
         }
 
@@ -283,12 +293,12 @@ final class MainImpl extends Object {
                 if (user != null) {
                     JarClassLoader.initializeCache();
                     
-                    build_cp (new File (user), toAdd, new HashSet<File> ());
+                    build_cp (new File (user), toAdd, new HashSet<File> (), new HashSet<String> ());
         
                 }
 
                 if (!toAdd.isEmpty ()) {
-                    addSources (toAdd);
+                    // source were already added in MainImpl.execute() method while processing userdir
                     metaInf = Lookups.metaInfServices(this);
                     if (handlers != null) {
                         handlers.clear();
@@ -326,7 +336,8 @@ final class MainImpl extends Object {
         }
     } // end of BootClassLoader
 
-    private static void append_jars_to_cp (File dir, Collection<File> toAdd) throws IOException {
+    private static void append_jars_to_cp (File base, String pathToDir, Collection<File> toAdd, Set<String> processedPaths) throws IOException {
+        File dir = new File (base, pathToDir);
         if (!dir.isDirectory()) return;
 
         File[] arr = dir.listFiles();
@@ -340,21 +351,23 @@ final class MainImpl extends Object {
             }
             */
             if (n.endsWith("jar") || n.endsWith ("zip")) { // NOI18N
-                toAdd.add(arr[i]);
+                if (processedPaths.add (pathToDir + '/' + n)) { // NOI18N
+                    toAdd.add(arr[i]);
+                }
             }
         }
     }
 
 
-    private static void build_cp(File base, Collection<File> toAdd, Set<File> processedDirs)
+    private static void build_cp(File base, Collection<File> toAdd, Set<File> processedDirs, Set<String> processedPaths)
     throws java.io.IOException {
         if (!processedDirs.add (base)) {
             // already processed
             return;
         }
 
-        append_jars_to_cp(new File(base, "core/patches"), toAdd); // NOI18N
-        append_jars_to_cp(new File(base, "core"), toAdd); // NOI18N
+        append_jars_to_cp(base, "core/patches", toAdd, processedPaths); // NOI18N
+        append_jars_to_cp(base, "core", toAdd, processedPaths); // NOI18N
         // XXX a minor optimization: exclude any unused locale JARs
         // For example, lib/locale/ might contain:
         // core_ja.jar
@@ -367,6 +380,6 @@ final class MainImpl extends Object {
         // [etc.]
         // Only some of these will apply to the current session, based on the
         // current values of Locale.default and NbBundle.branding.
-        append_jars_to_cp(new File(base, "core/locale"), toAdd); // NOI18N
+        append_jars_to_cp(base, "core/locale", toAdd, processedPaths); // NOI18N
     }
 }

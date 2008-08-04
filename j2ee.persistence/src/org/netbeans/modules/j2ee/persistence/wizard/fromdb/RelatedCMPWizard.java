@@ -171,14 +171,18 @@ public class RelatedCMPWizard implements TemplateWizard.Iterator {
     }
     
     private WizardDescriptor.Panel[] createPanels() {
+        
+        String wizardBundleKey = isCMP() ? "Templates/J2EE/RelatedCMP" : "Templates/Persistence/RelatedCMP"; // NOI18N
+        String wizardTitle = NbBundle.getMessage(RelatedCMPWizard.class, wizardBundleKey);
+        
         if (isCMP()) {
             return new WizardDescriptor.Panel[] {
-                    new DatabaseTablesPanel.WizardPanel(),
+                    new DatabaseTablesPanel.WizardPanel(wizardTitle),
                     new EntityClassesPanel.WizardPanel(),
             };
         } else {
             return new WizardDescriptor.Panel[] {
-                    new DatabaseTablesPanel.WizardPanel(),
+                    new DatabaseTablesPanel.WizardPanel(wizardTitle),
                     new EntityClassesPanel.WizardPanel(),
                     new MappingOptionsPanel.WizardPanel(),
             };
@@ -219,9 +223,6 @@ public class RelatedCMPWizard implements TemplateWizard.Iterator {
         
         wiz.putProperty(PROP_HELPER, helper);
         wiz.putProperty(PROP_CMP, new Boolean(isCMP()));
-        
-        String wizardBundleKey = isCMP() ? "Templates/J2EE/RelatedCMP" : "Templates/Persistence/RelatedCMP"; // NOI18N
-        wiz.putProperty("NewFileWizard_Title", NbBundle.getMessage(RelatedCMPWizard.class, wizardBundleKey)); // NOI18N
         
         generator.init(wiz);
     }

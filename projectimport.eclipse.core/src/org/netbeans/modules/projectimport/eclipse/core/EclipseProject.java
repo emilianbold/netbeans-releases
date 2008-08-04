@@ -385,17 +385,19 @@ public final class EclipseProject implements Comparable {
     }
     
     private void updateJavaDocLocationAttribute() {
-        if (workspace == null) {
-            return;
-        }
         for (DotClassPathEntry entry : cp.getClassPathEntries()) {
             String javadoc = entry.getProperty(DotClassPathEntry.ATTRIBUTE_JAVADOC);
             if (javadoc == null) {
                 continue;
             }
+            String jarPath = null;
             // strip off jar protocol; because of 'platform' protocol which is 
             // undefined in NB the FileUtil.getArchiveFile will not be used here
             if (javadoc.startsWith("jar:")) { // NOI18N
+                jarPath = javadoc.substring(javadoc.indexOf("!/")); //NOI18N
+                if (!jarPath.endsWith("/")) { //NOI18N
+                    jarPath += "/"; //NOI18N
+                }
                 javadoc = javadoc.substring(4, javadoc.indexOf("!/")); //NOI18N
             }
             if (javadoc.startsWith("platform:/resource")) { // NOI18N
@@ -430,7 +432,11 @@ public final class EclipseProject implements Comparable {
             }
             try {
                 File f = new File(u.toURI());
-                entry.updateJavadoc(f.getPath());
+                String path = f.getPath();
+                if (jarPath != null) {
+                    path += jarPath;
+                }
+                entry.updateJavadoc(path);
             } catch (URISyntaxException ex) {
                 importProblems.add(org.openide.util.NbBundle.getMessage(EclipseProject.class, "MSG_JavadocCannotBeResolved", u.toExternalForm()));
             }

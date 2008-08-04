@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -62,6 +62,8 @@ import java.io.Serializable;
 import java.io.Writer;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetDecoder;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Enumeration;
@@ -78,7 +80,6 @@ import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoableEdit;
 import org.netbeans.modules.properties.PropertiesEncoding.PropCharset;
-import org.netbeans.modules.properties.PropertiesEncoding.PropCharsetDecoder;
 import org.netbeans.modules.properties.PropertiesEncoding.PropCharsetEncoder;
 import org.openide.ErrorManager;
 import org.openide.awt.UndoRedo;
@@ -277,11 +278,9 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
     @Override
     protected void loadFromStreamToKit(StyledDocument document, InputStream inputStream, EditorKit editorKit)
     throws IOException, BadLocationException {
-        final PropCharsetDecoder decoder
-                = new PropCharsetDecoder(new PropCharset(),
-                                         myEntry.getFile().getSize());
+        final Charset charset = new PropCharset(myEntry.getFile());
         final Reader reader
-                = new BufferedReader(new InputStreamReader(inputStream, decoder));
+                = new BufferedReader(new InputStreamReader(inputStream, charset));
         
         try {
             editorKit.read(reader, document, 0);
@@ -304,7 +303,7 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
     protected void saveFromKitToStream(StyledDocument document, EditorKit editorKit, OutputStream outputStream)
     throws IOException, BadLocationException {
         final PropCharsetEncoder encoder
-                = new PropCharsetEncoder(new PropCharset());
+                = new PropCharsetEncoder();
         final Writer writer
                 = new BufferedWriter(new OutputStreamWriter(outputStream, encoder));
         

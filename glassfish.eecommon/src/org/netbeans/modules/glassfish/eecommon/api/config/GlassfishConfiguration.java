@@ -412,6 +412,7 @@ public abstract class GlassfishConfiguration implements
     protected J2eeModuleProvider getProvider(File file) {
         J2eeModuleProvider provider = null;
         if (file != null) {
+            file = FileUtil.normalizeFile(file);
             FileObject fo = FileUtil.toFileObject(file);
             if (fo != null) {
                 Project project = FileOwnerQuery.getOwner(fo);

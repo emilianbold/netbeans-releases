@@ -400,7 +400,7 @@ public class ProjectFactorySupportTest extends NbTestCase {
         e = eclipse.getClassPathEntries().get(2);
         assertEquals("/a-folder/lib/bsh.jar", e.getAbsolutePath());
         assertEquals("/a-folder/lib/bsh-sources.zip", e.getProperty("sourcepath"));
-        assertEquals("/a-folder/lib/bsh-javadoc.jar", e.getProperty("javadoc_location"));
+        assertEquals("/a-folder/lib/bsh-javadoc.jar!/doc/api/", e.getProperty("javadoc_location"));
     }
     
 }

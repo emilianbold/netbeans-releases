@@ -116,6 +116,7 @@ public class STSIssuedEndorsingProfile extends ProfileBase
     }
 
     public void setServiceDefaults(WSDLComponent component, Project p) {
+        ProprietarySecurityPolicyModelHelper.clearValidators(component);
         ProprietarySecurityPolicyModelHelper.setStoreLocation(component, null, false, false);
         ProprietarySecurityPolicyModelHelper.setStoreLocation(component, null, true, false);
 //        if (Util.isTomcat(p)) {
@@ -134,23 +135,20 @@ public class STSIssuedEndorsingProfile extends ProfileBase
     }
     
     public boolean isServiceDefaultSetupUsed(WSDLComponent component, Project p) {
+        if (ProprietarySecurityPolicyModelHelper.isAnyValidatorSet(component)) return false;
         String keyAlias = ProprietarySecurityPolicyModelHelper.getStoreAlias(component, false);
         String keyLoc = ProprietarySecurityPolicyModelHelper.getStoreLocation(component, false);
         String keyPasswd = ProprietarySecurityPolicyModelHelper.getStorePassword(component, false);
-        if (ProfilesModelHelper.XWS_SECURITY_SERVER.equals(keyAlias)) {
-            String defPassword = Util.getDefaultPassword(p);
-            String defLocation = Util.getStoreLocation(p, false, false);
-            if ((defPassword != null) && (defLocation != null)) {
-                if ((defPassword.equals(keyPasswd)) && 
-                    (defLocation.equals(keyLoc))) {
-                        return true;
-                }
-            }
+        if ((Util.isEqual(Util.getDefaultPassword(p), keyPasswd)) &&
+            (Util.isEqual(Util.getStoreLocation(p, false, false), keyLoc)) &&
+            (Util.isEqual(ProfilesModelHelper.XWS_SECURITY_SERVER, keyAlias))) { 
+            return true;
         }
         return false;
     }
 
     public boolean isClientDefaultSetupUsed(WSDLComponent component, Binding serviceBinding, Project p) {
+        if (ProprietarySecurityPolicyModelHelper.isAnyValidatorSet(component)) return false;
         return false;
     }
     

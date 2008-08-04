@@ -59,6 +59,7 @@ import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
 import org.apache.commons.net.ftp.FTPReply;
+import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.php.project.connections.ui.PasswordPanel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -202,7 +203,7 @@ public class RemoteClient implements Cancellable {
             try {
                 ftpClient.logout();
             } catch (IOException ex) {
-                LOGGER.log(Level.FINE, "XXX", ex);
+                LOGGER.log(Level.FINE, "Error while disconnecting", ex);
                 throw new RemoteException(NbBundle.getMessage(RemoteClient.class, "MSG_FtpCannotLogout", configuration.getHost()), ex, ftpClient.getReplyString());
             } finally {
                 try {
@@ -235,7 +236,10 @@ public class RemoteClient implements Cancellable {
         Queue<TransferFile> queue = new LinkedList<TransferFile>();
         for (FileObject fo : filesToUpload) {
             if (isVisible(FileUtil.toFile(fo))) {
+                LOGGER.fine("File " + fo + " added to upload queue");
                 queue.offer(TransferFile.fromFileObject(fo, baseLocalAbsolutePath));
+            } else {
+                LOGGER.fine("File " + fo + " NOT added to upload queue [invisible]");
             }
         }
 
@@ -250,6 +254,7 @@ public class RemoteClient implements Cancellable {
 
             if (!files.add(file)) {
                 // file already in set
+                LOGGER.fine("File " + file + " already in queue");
                 continue;
             }
 
@@ -259,7 +264,10 @@ public class RemoteClient implements Cancellable {
                 if (children != null) {
                     for (File child : children) {
                         if (isVisible(child)) {
+                            LOGGER.fine("File " + file + " added to upload queue");
                             queue.offer(TransferFile.fromFile(child, baseLocalAbsolutePath));
+                        } else {
+                            LOGGER.fine("File " + file + " NOT added to upload queue [invisible]");
                         }
                     }
                 }
@@ -360,7 +368,10 @@ public class RemoteClient implements Cancellable {
         Queue<TransferFile> queue = new LinkedList<TransferFile>();
         for (FileObject fo : filesToDownload) {
             if (isVisible(FileUtil.toFile(fo))) {
+                LOGGER.fine("File " + fo + " added to download queue");
                 queue.offer(TransferFile.fromFileObject(fo, baseLocalAbsolutePath));
+            } else {
+                LOGGER.fine("File " + fo + " NOT added to download queue [invisible]");
             }
         }
 
@@ -375,6 +386,7 @@ public class RemoteClient implements Cancellable {
 
             if (!files.add(file)) {
                 // file already in set
+                LOGGER.fine("File " + file + " already in queue");
                 continue;
             }
 
@@ -393,7 +405,10 @@ public class RemoteClient implements Cancellable {
                     String relPath = relativePath.toString();
                     for (FTPFile child : ftpClient.listFiles()) {
                         if (isVisible(child)) {
+                            LOGGER.fine("File " + file + " added to download queue");
                             queue.offer(TransferFile.fromFtpFile(child, baseRemoteDirectory,  relPath));
+                        } else {
+                            LOGGER.fine("File " + file + " NOT added to download queue [invisible]");
                         }
                     }
                 } catch (IOException exc) {
@@ -657,12 +672,19 @@ public class RemoteClient implements Cancellable {
 
     private static boolean isVisible(File file) {
         assert file != null;
-        return !file.getName().equals(NB_METADATA_DIR);
+        if (file.getName().equals(NB_METADATA_DIR)) {
+            return false;
+        }
+        return VisibilityQuery.getDefault().isVisible(file);
     }
 
     // some FTP servers return ".." in directory listing (e.g. Cerberus FTP server) - so ignore them
     private boolean isVisible(FTPFile ftpFile) {
-        assert ftpFile != null;
+        // #142682
+        if (ftpFile == null) {
+            // hmm, really weird...
+            return false;
+        }
         if (ftpFile.isDirectory()) {
             String name = ftpFile.getName();
             for (String ignored : IGNORED_REMOTE_DIRS) {

@@ -161,7 +161,7 @@ public class AddDomainLocationVisualPanel extends javax.swing.JPanel {
             .add(layout.createSequentialGroup()
                 .add(domainFieldLabel)
                 .add(18, 18, 18)
-                .add(domainField, 0, 329, Short.MAX_VALUE))
+                .add(domainField, 0, 150, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -169,7 +169,7 @@ public class AddDomainLocationVisualPanel extends javax.swing.JPanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(domainFieldLabel)
                     .add(domainField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(273, Short.MAX_VALUE))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 

@@ -43,6 +43,7 @@ package org.netbeans.modules.web.jspparser_ext;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -70,7 +71,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Pattern;
 import javax.servlet.ServletContext;
 import javax.servlet.jsp.tagext.TagLibraryInfo;
 import org.netbeans.modules.web.api.webmodule.WebModule;
@@ -874,6 +874,16 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
 
         @Override
         public InputStream getResourceAsStream(String name) {
+            // #139257 - see http://hg.netbeans.org/main/rev/8e2336205ff3
+            if (name.equals("META-INF/services/javax.xml.stream.XMLInputFactory")) { // NOI18N
+                // StAX is different; defined and implemented in BEA-specific code with different
+                // search logic and an unusable fallback implementation.
+                //return super.getResourceAsStream(name); // noop here, in jsp parser
+            } else if (name.startsWith("META-INF/services/javax.xml.")) { // NOI18N
+                // For JAXP services defined and implemented in the JRE,
+                // this is the only workaround for JDK 5 & 6 to load the JRE's copy.
+                return new ByteArrayInputStream(new byte[0]);
+            }
             URL url = getResource(name);
             try {
                 if (url != null) {
