@@ -2217,18 +2217,6 @@ made subject to such option by the copyright holder.
             </folder>
         </folder>
 
-         
-         <folder name="UseCaseDiagram">
-             <folder name="Default">
-                 <folder name="Default"/>
-             </folder>
-             <folder name="Nodes">
-                 <folder name="Package">
-                     <file name="org-netbeans-modules-uml-diagrams-nodes-factories-PackageNodeFactory.instance"/>
-                 </folder>
-             </folder>
-         </folder>
-
         <folder name="UMLOptions">
             <folder name="Panels">
                 <file name="ElementOptionsPanel.instance">

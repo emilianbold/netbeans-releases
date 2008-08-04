@@ -6,7 +6,6 @@ PHP
 Ruby
 Groovy
 C/C++
-UML
 SOA
 NetBeans Modules
 Samples
@@ -17,9 +16,9 @@ Samples
     Java EE
     Java ME (MIDP)
     Java ME (Ricoh SDK/J)
+    Java ME (BD-J)
     PHP
     Ruby
     C/C++
-    UML
     SOA
     NetBeans Modules

@@ -51,7 +51,7 @@ import org.openide.filesystems.FileObject;
 public class CaretListeningFactory extends CaretAwareSourceTaskFactory {
     
     public CaretListeningFactory() {
-        super(Phase.RESOLVED, Priority.LOW);
+        super(Phase.RESOLVED, Priority.MIN);
     }
 
     public CancellableTask<CompilationInfo> createTask(FileObject fileObject) {

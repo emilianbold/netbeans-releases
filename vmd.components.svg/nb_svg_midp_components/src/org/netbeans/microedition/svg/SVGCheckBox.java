@@ -32,10 +32,11 @@ import org.w3c.dom.svg.SVGLocatableElement;
  *          &lt;set attributeName="visibility" attributeType="XML" begin="checkbox_online.focusout" fill="freeze" to="hidden"/>
  *      &lt;/rect>
  *      &lt;rect x="7.4" y="5" width="20" height="20" fill="white" stroke="black" stroke-width="2"/>
- *      &lt;path id="checkbox_online_mark" transform="translate(12.5,15.5)"  d="M 0,0 5,5 5,-12" fill="none" stroke="black" stroke-width="2">
+ *      &lt;g>
+ *          &lt;path id="checkbox_online_mark" transform="translate(12.5,15.5)"  d="M 0,0 5,5 5,-12" fill="none" stroke="black" stroke-width="2"/>
  *          &lt;!-- Metadata information. Please don't edit. -->
- *          &lt;text display="none">type=mark&lt;/text>
- *      &lt;/path>
+ *          &lt;text display="none">type=mark&lt;/text>    
+ *      &lt;/g>
  *      &lt;g>
  *          &lt;text id="checkbox_online_title" x="33.8" y="21.6" stroke="gray" font-size="15">
  *          Online&lt;/text>
@@ -52,9 +53,10 @@ public class SVGCheckBox extends SVGAbstractButton {
     
     private static final String MARK        = "mark";              // NOI18N
     private static final String TEXT        = "text";              // NOI18N
+    private static final String TITLE       = "title";             // NOI18N
     
     private static final String MARK_SUFFIX = DASH+ MARK;
-    private static final String TEXT_SUFFIX = DASH+ TEXT;
+    private static final String TITLE_SUFFIX= DASH+ TITLE;
     
     public SVGCheckBox( SVGForm form, String elemId) {
         super(form, elemId);
@@ -95,11 +97,11 @@ public class SVGCheckBox extends SVGAbstractButton {
             myMarkElement = (SVGLocatableElement) getElementById(
                     getElement(), getElement().getId() + MARK_SUFFIX );
             myTextElement = (SVGLocatableElement) getElementById( getElement(),
-                    getElement().getId() + TEXT_SUFFIX );
+                    getElement().getId() + TITLE_SUFFIX );
         }
         
         if ( myMarkElement == null ){
-            myMarkElement = (SVGLocatableElement) getElementByMeta(
+            myMarkElement = (SVGLocatableElement) getNestedElementByMeta(
                     getElement(), TYPE , MARK );
         }
         

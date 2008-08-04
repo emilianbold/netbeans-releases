@@ -185,7 +185,7 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
         debugDesc.setEnvironment(env);
         RubyDebuggerProxy proxy;
         int timeout = Integer.getInteger("org.netbeans.modules.ruby.debugger.timeout", 15); // NOI18N
-        Util.finest("Using timeout: " + timeout + 's'); // NOI18N
+        Util.finer("Using timeout: " + timeout + 's'); // NOI18N
         String interpreter = platform.getInterpreter();
         if (!platform.hasFastDebuggerInstalled() || FORCE_CLASSIC) {
             Util.LOGGER.fine("Running classic(slow) debugger...");

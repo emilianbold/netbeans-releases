@@ -93,7 +93,7 @@ public final class SelectAction extends WidgetAction.LockedAdapter {
                 }
             }
         } else if (trapRightClick && event.getButton() == MouseEvent.BUTTON3) {
-            provider.select(widget, localLocation, invertSelection);
+            provider.select(widget, localLocation, false);
             return State.CHAIN_ONLY;
         }
         

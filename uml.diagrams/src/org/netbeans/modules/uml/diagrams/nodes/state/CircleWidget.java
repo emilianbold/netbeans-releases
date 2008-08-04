@@ -83,7 +83,7 @@ public class CircleWidget extends CustomizableWidget
     {
         Graphics2D graphics = getGraphics();
         Color currentColor = graphics.getColor();
-        graphics.setColor(getForeground());
+        graphics.setColor(Color.BLACK);
         graphics.drawOval(getBounds().x, getBounds().y, getBounds().width, getBounds().height);
         graphics.setColor(currentColor);
     }

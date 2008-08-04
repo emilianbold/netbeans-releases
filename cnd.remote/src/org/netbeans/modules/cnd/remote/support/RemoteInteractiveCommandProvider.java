@@ -57,12 +57,12 @@ public class RemoteInteractiveCommandProvider implements InteractiveCommandProvi
 
     public boolean run(String hkey, String cmd, Map<String, String> env) {
         support = new RemoteInteractiveCommandSupport(hkey, cmd, env);
-        return !support.isCancelled() && !support.isFailed();
+        return !support.isFailedOrCancelled();
     }
 
     public boolean connect(String hkey, String cmd, Map<String, String> env) {
         support = new RemoteInteractiveCommandSupport(hkey, cmd, env);
-        return !support.isCancelled() && !support.isFailed();
+        return !support.isFailedOrCancelled();
     }
 
     public InputStream getInputStream() throws IOException {

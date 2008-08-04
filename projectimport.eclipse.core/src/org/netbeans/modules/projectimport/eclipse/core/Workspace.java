@@ -45,6 +45,7 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -54,6 +55,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.logging.Logger;
+import org.netbeans.modules.projectimport.eclipse.core.spi.LaunchConfiguration;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -160,6 +162,7 @@ public final class Workspace {
     private Set<EclipseProject> projects = new HashSet<EclipseProject>();
     private Map<String,String> jreContainers;
     private Map<String, List<String>> userLibraries;
+    private Collection<LaunchConfiguration> launchConfigurations;
     
     private boolean myEclipseLibrariesLoaded;
     
@@ -240,12 +243,25 @@ public final class Workspace {
     void loadMyEclipseLibraries(List<String> importProblems) {
         if (!myEclipseLibrariesLoaded) {
             myEclipseLibrariesLoaded = true;
-            Variable v = getVariable("ECLIPSE_HOME"); //NOI18N
-            if (v == null) {
-                importProblems.add(NbBundle.getMessage(Workspace.class, "MSG_CannotReadMyEclipseLibs"));
-                return;
+            String path = null;
+            for (Variable v : getVariables()) {
+                if (v.getName().startsWith("MYECLIPSE_") && v.getName().endsWith("_HOME")) { //NOI18N
+                    int start = v.getLocation().replace('\\', '/').indexOf("/plugins/"); // NOI18N
+                    if (start != -1) {
+                        path = v.getLocation().substring(0, start+8);
+                        break;
+                    }
+                }
             }
-            File f = new File(new File(v.getLocation()), "plugins"); //NOI18N
+            if (path == null) {
+                Variable v = getVariable("ECLIPSE_HOME"); //NOI18N
+                if (v == null) {
+                    importProblems.add(NbBundle.getMessage(Workspace.class, "MSG_CannotReadMyEclipseLibs"));
+                    return;
+                }
+                path = new File(new File(v.getLocation()), "plugins").getPath();
+            }
+            File f = new File(path); //NOI18N
             if (!f.exists()) {
                 importProblems.add(NbBundle.getMessage(Workspace.class, "MSG_CannotReadMyEclipseLibs"));
                 return;
@@ -429,4 +445,16 @@ public final class Workspace {
         }
         return null;
     }
+
+    /**
+     * Gets all launch configurations defined in the workspace.
+     * @return a possibly empty collection of launch configurations that were parsed
+     */
+    public Collection<LaunchConfiguration> getLaunchConfigurations() {
+        return launchConfigurations;
+    }
+    void setLaunchConfigurations(Collection<LaunchConfiguration> launchConfigurations) {
+        this.launchConfigurations = launchConfigurations;
+    }
+
 }

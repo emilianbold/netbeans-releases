@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.api.compilers;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -186,22 +187,30 @@ public class CompilerSetManager {
     }
 
     /** Create a CompilerSetManager which may be registered at a later time via CompilerSetManager.setDefault() */
-    public static CompilerSetManager create() {
-        CompilerSetManager csm;
-        synchronized (MASTER_LOCK) {
-            csm = new CompilerSetManager(LOCALHOST);
+    public static CompilerSetManager create(String hkey) {
+        CompilerSetManager newCsm = new CompilerSetManager(hkey);
+        if (newCsm.getCompilerSets().size() == 1 && newCsm.getCompilerSets().get(0).getName().equals(CompilerSet.None)) {
+            newCsm.remove(newCsm.getCompilerSets().get(0));
         }
-        return csm;
+        return newCsm;
     }
 
     /** Replace the default CompilerSetManager. Let registered listeners know its been updated */
-    public static synchronized void setDefault(CompilerSetManager csm) {
-        if (csm.getCompilerSets().size() == 0) { // No compilers found
-            csm.add(CompilerSet.createEmptyCompilerSet(csm.getPlatform()));
-        }
+    public static synchronized void setDefaults(Collection<CompilerSetManager> csms) {
         synchronized (MASTER_LOCK) {
-            csm.saveToDisk();
-            managers.put(csm.hkey, csm);
+            // TODO: not remove, only replace now...
+//            for (CompilerSetManager oldCsm : managers.values()) {
+//                // erase old info
+//                getPreferences().remove(CSM + oldCsm.hkey + NO_SETS);
+//            }
+//            managers.clear();
+            for (CompilerSetManager csm : csms) {
+                if (csm.getCompilerSets().size() == 0) { // No compilers found
+                    csm.add(CompilerSet.createEmptyCompilerSet(csm.getPlatform()));
+                }                
+                csm.saveToDisk();
+                managers.put(csm.hkey, csm);
+            }
         }
     }
 
@@ -473,7 +482,7 @@ public class CompilerSetManager {
                 initCompiler(Tool.FortranCompiler, path, cs, compiler.getNames());
             }
             initCompiler(Tool.MakeTool, path, cs, d.getMake().getNames());
-            initCompiler(Tool.DebuggerTool, path, cs, d.getDebuggerNames());
+            initCompiler(Tool.DebuggerTool, path, cs, d.getDebugger().getNames());
         }
     }
 

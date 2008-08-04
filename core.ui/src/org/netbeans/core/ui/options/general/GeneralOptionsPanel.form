@@ -16,16 +16,16 @@
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" attributes="0">
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="1" attributes="0">
                       <Component id="lWebBrowser" min="-2" max="-2" attributes="0"/>
                       <EmptySpace type="separate" max="-2" attributes="0"/>
-                      <Component id="cbWebBrowser" pref="986" max="32767" attributes="0"/>
+                      <Component id="cbWebBrowser" pref="1131" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="editBrowserButton" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <Component id="jSeparator2" alignment="0" pref="1141" max="32767" attributes="2"/>
+                  <Component id="jSeparator2" alignment="0" pref="1291" max="32767" attributes="2"/>
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="lWebProxy" min="-2" max="-2" attributes="0"/>
                       <EmptySpace min="-2" pref="18" max="-2" attributes="0"/>
@@ -40,7 +40,7 @@
                                   <Group type="102" alignment="0" attributes="0">
                                       <Component id="lProxyHost" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                                      <Component id="tfProxyHost" pref="873" max="32767" attributes="2"/>
+                                      <Component id="tfProxyHost" pref="957" max="32767" attributes="2"/>
                                       <EmptySpace min="-2" pref="12" max="-2" attributes="0"/>
                                       <Component id="lProxyPort" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
@@ -50,20 +50,21 @@
                           </Group>
                       </Group>
                   </Group>
-                  <Component id="jSeparator3" alignment="0" pref="1141" max="32767" attributes="2"/>
+                  <Component id="jSeparator3" alignment="0" pref="1291" max="32767" attributes="2"/>
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="lUsage" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
+                      <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="jScrollPane1" alignment="0" pref="1057" max="32767" attributes="0"/>
+                          <Component id="lblUsageInfo" alignment="0" pref="1171" max="32767" attributes="0"/>
                           <Group type="102" alignment="0" attributes="0">
                               <Component id="jUsageCheck" min="-2" max="-2" attributes="0"/>
                               <EmptySpace pref="690" max="32767" attributes="0"/>
                           </Group>
+                          <Component id="lblLearnMore" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
                   </Group>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -105,8 +106,10 @@
                   <Component id="lUsage" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="jUsageCheck" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace type="separate" max="-2" attributes="0"/>
-              <Component id="jScrollPane1" min="-2" pref="63" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="lblUsageInfo" min="-2" pref="52" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="lblLearnMore" min="-2" max="-2" attributes="0"/>
               <EmptySpace pref="24" max="32767" attributes="0"/>
           </Group>
       </Group>
@@ -258,37 +261,20 @@
         <Property name="text" type="java.lang.String" value="Help us improve the NetBeans IDE by providing anonymous usage data" noResource="true"/>
       </Properties>
     </Component>
-    <Container class="javax.swing.JScrollPane" name="jScrollPane1">
+    <Component class="javax.swing.JLabel" name="lblUsageInfo">
       <Properties>
-        <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
-          <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
-            <EmptyBorder/>
-          </Border>
-        </Property>
-        <Property name="viewportBorder" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
-          <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
-            <EmptyBorder/>
-          </Border>
-        </Property>
+        <Property name="text" type="java.lang.String" value="&lt;html&gt;The usage statistics help us better understand user&#xa;requirements and prioritize improvements in future releases. We will never&#xa;reverse-engineer the collected data to find specific details about your projects.&lt;/html&gt;" noResource="true"/>
+        <Property name="focusable" type="boolean" value="false"/>
       </Properties>
-      <AuxValues>
-        <AuxValue name="autoScrollPane" type="java.lang.Boolean" value="true"/>
-      </AuxValues>
-
-      <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
-      <SubComponents>
-        <Component class="javax.swing.JEditorPane" name="jUsageInfo">
-          <Properties>
-            <Property name="contentType" type="java.lang.String" value="text/html" noResource="true"/>
-            <Property name="editable" type="boolean" value="false"/>
-            <Property name="text" type="java.lang.String" value="&lt;html&gt;&#xa;&lt;head&gt;&#xa;&lt;/head&gt;&#xa;&lt;body&gt;&#xa;&lt;p style=&quot;margin-top: 0&quot;&gt; The usage statistics help us better understand user &#xa;requirements and prioritize improvements in future releases. We will never&#xa;reverse-engineer the collected data to find specific details about your projects. &#xa;&lt;a href=&quot;http://www.netbeans.org/about/usage-tracking.html&quot;&gt;Learn more&lt;/a&gt;.&#xa;&lt;/p&gt;&#xa;&lt;/body&gt;&#xa;&lt;/html&gt;" noResource="true"/>
-            <Property name="focusable" type="boolean" value="false"/>
-          </Properties>
-          <Events>
-            <EventHandler event="hyperlinkUpdate" listener="javax.swing.event.HyperlinkListener" parameters="javax.swing.event.HyperlinkEvent" handler="hyperlinkHandler"/>
-          </Events>
-        </Component>
-      </SubComponents>
-    </Container>
+    </Component>
+    <Component class="javax.swing.JLabel" name="lblLearnMore">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="&lt;html&gt;&lt;font color=&quot;#0000FF&quot; &lt;u&gt;Learn more&lt;/u&gt;&lt;/font&gt;&lt;/html&gt;" noResource="true"/>
+      </Properties>
+      <Events>
+        <EventHandler event="mouseEntered" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="lblLearnMoreMouseEntered"/>
+        <EventHandler event="mousePressed" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="lblLearnMoreMousePressed"/>
+      </Events>
+    </Component>
   </SubComponents>
 </Form>

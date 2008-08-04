@@ -66,6 +66,7 @@ import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.Persistenc
 import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlException;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
 import org.netbeans.modules.j2ee.persistence.wizard.PersistenceClientEntitySelection;
+import org.netbeans.modules.j2ee.persistence.wizard.Util;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -187,7 +188,8 @@ public class JpaControllerIterator implements TemplateWizard.Iterator {
 
         String exceptionPackage = jpaControllerPackage == null || jpaControllerPackage.length() == 0 ? EXCEPTION_FOLDER_NAME : jpaControllerPackage + "." + EXCEPTION_FOLDER_NAME;
 
-        for (int i = 0; i < EXCEPTION_CLASS_NAMES.length; i++){
+        int exceptionClassCount = Util.isContainerManaged(project) ? EXCEPTION_CLASS_NAMES.length : EXCEPTION_CLASS_NAMES.length - 1;
+        for (int i = 0; i < exceptionClassCount; i++){
             if (exceptionFolder.getFileObject(EXCEPTION_CLASS_NAMES[i], "java") == null) {
                 progressMsg = NbBundle.getMessage(JpaControllerIterator.class, "MSG_Progress_Jpa_Now_Generating", EXCEPTION_CLASS_NAMES[i] + ".java");//NOI18N
                 progressContributor.progress(progressMsg, progressIndex++);

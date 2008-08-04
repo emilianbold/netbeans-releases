@@ -120,12 +120,11 @@ public final class RetrieveXMLResourceWizardIterator implements TemplateWizard.I
     public Set instantiate(TemplateWizard wizard) throws IOException {
         
         RetrieveXMLResourceVisualPanel1.SourceType srcType = (RetrieveXMLResourceVisualPanel1.SourceType) wizard.getProperty(IConstants.SOURCE_LOCATION_TYPE_KEY);
-        if(srcType == RetrieveXMLResourceVisualPanel1.SourceType.LOCAL_FILE){
-            return instantiateLocalFile();
-        }
-        if(srcType == RetrieveXMLResourceVisualPanel1.SourceType.URL_ADDR){
+        //always use RetrieverEngine
+        if(srcType == RetrieveXMLResourceVisualPanel1.SourceType.LOCAL_FILE ||srcType == RetrieveXMLResourceVisualPanel1.SourceType.URL_ADDR ){
             return instantiateURL();
         }
+      
         return Collections.singleton(wizard.getTargetFolder());
     }
     
@@ -137,7 +136,7 @@ public final class RetrieveXMLResourceWizardIterator implements TemplateWizard.I
         //for which new file type, was the wizard invoked??
         if (((TemplateWizard) wizard).getTemplate().getName().equals(schemaFileType) )
             new ImportDirectory(getFileURI, storedFile, overwriteFiles, DocumentTypesEnum.schema);
-        else 
+        else
             new ImportDirectory(getFileURI, storedFile, overwriteFiles, DocumentTypesEnum.wsdl);
         if (storedFile == null) {
             // Doesn't matter what it is, just so it's not null.

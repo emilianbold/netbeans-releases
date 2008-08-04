@@ -194,9 +194,11 @@ made subject to such option by the copyright holder.
     </linker>
     <make>
         <tool name="dmake"/>
+        <version flags="-v" />
         <dependency_support code=".KEEP_STATE:\n.KEEP_STATE_FILE:.make.state.${CONF}\n" />
     </make>
     <debugger>
-        <tool name="dbx,gdb"/>
+        <tool name="gdb"/>
+        <version flags="--version" />
     </debugger>
 </toolchaindefinition>

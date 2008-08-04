@@ -39,12 +39,16 @@
 
 package org.netbeans.modules.cnd.remote.ui;
 
+import java.awt.Dialog;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.cnd.remote.server.RemoteServerList;
 import org.netbeans.modules.cnd.remote.server.RemoteServerRecord;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
 
 /**
@@ -56,19 +60,34 @@ public class AddServerDialog extends JPanel implements DocumentListener {
     public static final String PROP_VALID = "valid"; // NOI18N
     
     private boolean valid;
-
+    private final JButton btnOK;
     /** Creates new form AddServerDialog */
     public AddServerDialog() {
         initComponents();
+        btnOK = new JButton(NbBundle.getMessage(AddServerDialog.class, "BTN_OK"));
+        btnOK.setEnabled(false);
         valid = false;
     }
     
+    public boolean createNewRecord() {
+        DialogDescriptor dd = new DialogDescriptor((Object) this, NbBundle.getMessage(EditServerListDialog.class, "TITLE_AddNewServer"), true, 
+                    new Object[] { btnOK, DialogDescriptor.CANCEL_OPTION},
+                    btnOK, DialogDescriptor.DEFAULT_ALIGN, null, null);
+        Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
+        dialog.setVisible(true);
+        return dd.getValue() == btnOK;
+    }
+
     public String getServerName() {
         return tfServer.getText();
     }
     
     public String getLoginName() {
         return tfLogin.getText();
+    }
+    
+    public String getPassword() {
+        return String.valueOf(tfPassword.getPassword());
     }
     
     public boolean isDefault() {
@@ -83,7 +102,10 @@ public class AddServerDialog extends JPanel implements DocumentListener {
         boolean ovalid = valid;
         valid = tfServer.getText().length() > 0 && tfLogin.getText().length() > 0;
         if (valid != ovalid) {
-            firePropertyChange(PROP_VALID, ovalid, valid);
+            firePropertyChange(PROP_VALID, ovalid, valid);            
+            if (btnOK != null) {
+                btnOK.setEnabled(valid);
+            }
         }
     }
 
@@ -127,15 +149,15 @@ public class AddServerDialog extends JPanel implements DocumentListener {
         lbPasswordSource = new javax.swing.JLabel();
         cbPasswordSource = new javax.swing.JComboBox();
         cbxSetAsDefault = new javax.swing.JCheckBox();
+        jLabel1 = new javax.swing.JLabel();
+        tfPassword = new javax.swing.JPasswordField();
 
-        lbServer.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/remote/ui/Bundle").getString("MNEM_ServerTF").charAt(0));
         lbServer.setLabelFor(tfServer);
-        lbServer.setText(org.openide.util.NbBundle.getMessage(AddServerDialog.class, "LBL_ServerTF")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(lbServer, org.openide.util.NbBundle.getMessage(AddServerDialog.class, "LBL_ServerTF")); // NOI18N
         lbServer.setToolTipText(org.openide.util.NbBundle.getMessage(AddServerDialog.class, "DESC_ServerTF")); // NOI18N
 
-        lbLogin.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/remote/ui/Bundle").getString("MNEM_LoginTF").charAt(0));
         lbLogin.setLabelFor(tfLogin);
-        lbLogin.setText(org.openide.util.NbBundle.getMessage(AddServerDialog.class, "LBL_LoginTF")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(lbLogin, org.openide.util.NbBundle.getMessage(AddServerDialog.class, "LBL_LoginTF")); // NOI18N
         lbLogin.setToolTipText(org.openide.util.NbBundle.getMessage(AddServerDialog.class, "DESC_LoginTF")); // NOI18N
 
         tfLogin.setText(System.getProperty("user.name"));
@@ -145,18 +167,26 @@ public class AddServerDialog extends JPanel implements DocumentListener {
             }
         });
 
-        lbPasswordSource.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/remote/ui/Bundle").getString("MNEM_PasswordSource").charAt(0));
         lbPasswordSource.setLabelFor(cbPasswordSource);
-        lbPasswordSource.setText(org.openide.util.NbBundle.getMessage(AddServerDialog.class, "LBL_PasswordSource")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(lbPasswordSource, org.openide.util.NbBundle.getMessage(AddServerDialog.class, "LBL_PasswordSource")); // NOI18N
 
         cbPasswordSource.setModel(new PasswordSourceModel());
 
-        cbxSetAsDefault.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/remote/ui/Bundle").getString("MNEM_SetAsDefault").charAt(0));
-        cbxSetAsDefault.setText(org.openide.util.NbBundle.getMessage(AddServerDialog.class, "LBL_SetAsDefault")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(cbxSetAsDefault, org.openide.util.NbBundle.getMessage(AddServerDialog.class, "LBL_SetAsDefault")); // NOI18N
         cbxSetAsDefault.setMargin(new java.awt.Insets(2, 0, 2, 2));
         cbxSetAsDefault.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cbxSetAsDefaultActionPerformed(evt);
+            }
+        });
+
+        jLabel1.setLabelFor(tfPassword);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(AddServerDialog.class, "AddServerDialog.jLabel1.text")); // NOI18N
+
+        tfPassword.setText(org.openide.util.NbBundle.getMessage(AddServerDialog.class, "AddServerDialog.tfPassword.text")); // NOI18N
+        tfPassword.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                onPwdFocus(evt);
             }
         });
 
@@ -167,17 +197,19 @@ public class AddServerDialog extends JPanel implements DocumentListener {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(cbxSetAsDefault)
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(lbServer)
-                            .add(lbLogin)
-                            .add(lbPasswordSource))
+                            .add(lbPasswordSource)
+                            .add(jLabel1)
+                            .add(lbLogin))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(tfLogin, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 246, Short.MAX_VALUE)
-                            .add(tfServer, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 246, Short.MAX_VALUE)
-                            .add(cbPasswordSource, 0, 246, Short.MAX_VALUE)))
-                    .add(cbxSetAsDefault))
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                            .add(org.jdesktop.layout.GroupLayout.CENTER, tfPassword, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 246, Short.MAX_VALUE)
+                            .add(org.jdesktop.layout.GroupLayout.CENTER, cbPasswordSource, 0, 246, Short.MAX_VALUE)
+                            .add(org.jdesktop.layout.GroupLayout.CENTER, tfServer, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 246, Short.MAX_VALUE)
+                            .add(tfLogin, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 246, Short.MAX_VALUE))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -187,10 +219,14 @@ public class AddServerDialog extends JPanel implements DocumentListener {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(lbServer)
                     .add(tfServer, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(7, 7, 7)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(lbLogin)
-                    .add(tfLogin, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(tfLogin, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(lbLogin))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jLabel1)
+                    .add(tfPassword, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(lbPasswordSource)
@@ -199,6 +235,8 @@ public class AddServerDialog extends JPanel implements DocumentListener {
                 .add(cbxSetAsDefault)
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
+
+        layout.linkSize(new java.awt.Component[] {cbPasswordSource, tfLogin, tfPassword, tfServer}, org.jdesktop.layout.GroupLayout.VERTICAL);
 
         lbPasswordSource.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AddServerDialog.class, "DESC_PasswordSource")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
@@ -211,14 +249,20 @@ private void onLoginFocus(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_onLo
     tfLogin.selectAll();
 }//GEN-LAST:event_onLoginFocus
 
+private void onPwdFocus(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_onPwdFocus
+    tfPassword.selectAll();
+}//GEN-LAST:event_onPwdFocus
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox cbPasswordSource;
     private javax.swing.JCheckBox cbxSetAsDefault;
+    private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel lbLogin;
     private javax.swing.JLabel lbPasswordSource;
     private javax.swing.JLabel lbServer;
     private javax.swing.JTextField tfLogin;
+    private javax.swing.JPasswordField tfPassword;
     private javax.swing.JTextField tfServer;
     // End of variables declaration//GEN-END:variables
 

@@ -91,6 +91,7 @@ import org.netbeans.modules.uml.drawingarea.widgets.NameFontHandler;
 import org.netbeans.modules.uml.util.DummyCorePreference;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
@@ -159,7 +160,8 @@ public abstract class UMLNodeWidget extends Widget
         
         if (useDefaultNodeResource)
         {
-            childLayer = new CustomizableNodeViewContainer(scene, getResourcePath(), "Default");
+            childLayer = new CustomizableNodeViewContainer(scene, getResourcePath(), 
+                                                           NbBundle.getMessage(UMLNodeWidget.class, "LBL_Default"));
 //            childLayer.setOpaque(true);
             childLayer.setForeground((Color) null);
             childLayer.setLayout(LayoutFactory.createOverlayLayout());
