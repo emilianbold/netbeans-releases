@@ -443,125 +443,130 @@ public class DomainEditor {
     public HashMap getSunDatasourcesFromXml(){
         HashMap dSources = new HashMap();
         Document domainDoc = getDomainDocument();
-        HashMap dsMap = getDataSourcesAttrMap(domainDoc);
-        HashMap cpMap = getConnPoolsNodeMap(domainDoc);
-        dsMap.keySet().removeAll(Arrays.asList(sysDatasources));    
-        String[] ds = (String[])dsMap.keySet().toArray(new String[dsMap.size()]);
-        
-        for(int i=0; i<ds.length; i++){
-            String jndiName = ds[i];
-            HashMap pValues = new HashMap();
-            NamedNodeMap dsAttrMap = (NamedNodeMap)dsMap.get(jndiName);
-            String poolName = dsAttrMap.getNamedItem("pool-name").getNodeValue();
-            
-            //Get the Connection Pool used by this jdbc-resource
-            Node cpNode = (Node)cpMap.get(poolName);
-            NamedNodeMap cpAttrMap = cpNode.getAttributes();
-            String dsClassName = cpAttrMap.getNamedItem("datasource-classname").getNodeValue();
-            String resType = cpAttrMap.getNamedItem("res-type").getNodeValue();
-            
-            //Get property values
-            Element cpElement = (Element) cpNode;
-            NodeList propsNodeList = cpElement.getElementsByTagName("property");
-                        
-            //Cycle through each property element
-            HashMap map = new HashMap();
-            for(int j=0; j<propsNodeList.getLength(); j++){
-                Node propNode = propsNodeList.item(j);
-                NamedNodeMap propsMap = propNode.getAttributes();
-                
-                for(int m=0; m<propsMap.getLength(); m++){
-                    String mkey = propsMap.getNamedItem(CONST_NAME).getNodeValue();
-                    String mkeyValue = propsMap.getNamedItem("value").getNodeValue();
-                    if(mkey.equalsIgnoreCase(CONST_USER)){
-                        pValues.put(CONST_USER, mkeyValue);
-                    }else if (mkey.equalsIgnoreCase(CONST_PASSWORD)){
-                        pValues.put(CONST_PASSWORD, mkeyValue);
-                    }else if (mkey.equalsIgnoreCase(CONST_URL)){
-                        pValues.put(CONST_URL, mkeyValue);
-                    }else if (mkey.equalsIgnoreCase(CONST_SERVER_NAME)){
-                        pValues.put(CONST_SERVER_NAME, mkeyValue);
-                    }else {
-                        map.put(mkey, mkeyValue);
-                    }
-                }
-            } // connection-pool properties
+        if (domainDoc != null) {
+            HashMap dsMap = getDataSourcesAttrMap(domainDoc);
+            HashMap cpMap = getConnPoolsNodeMap(domainDoc);
+            dsMap.keySet().removeAll(Arrays.asList(sysDatasources));
+            String[] ds = (String[]) dsMap.keySet().toArray(new String[dsMap.size()]);
 
-            pValues.put(CONST_LOWER_DATABASE_NAME, (String)map.get(CONST_LOWER_DATABASE_NAME));
-            pValues.put(CONST_PORT_NUMBER, (String)map.get(CONST_PORT_NUMBER));
-            pValues.put(CONST_LOWER_PORT_NUMBER, (String)map.get(CONST_LOWER_PORT_NUMBER));
-            pValues.put(CONST_DATABASE_NAME, (String)map.get(CONST_DATABASE_NAME));
-            pValues.put(CONST_SID, (String)map.get(CONST_SID));
-            pValues.put(CONST_DRIVER_CLASS, (String)map.get(CONST_DRIVER_CLASS));
-            pValues.put(CONST_DERBY_CONN_ATTRS, (String)map.get(CONST_DERBY_CONN_ATTRS));
-            pValues.put("dsClassName", dsClassName);
-            pValues.put("resType", resType);
-            
-            dSources.put(jndiName, pValues);
-        } // for each jdbc-resource
+            for (int i = 0; i < ds.length; i++) {
+                String jndiName = ds[i];
+                HashMap pValues = new HashMap();
+                NamedNodeMap dsAttrMap = (NamedNodeMap) dsMap.get(jndiName);
+                String poolName = dsAttrMap.getNamedItem("pool-name").getNodeValue();
+
+                //Get the Connection Pool used by this jdbc-resource
+                Node cpNode = (Node) cpMap.get(poolName);
+                NamedNodeMap cpAttrMap = cpNode.getAttributes();
+                String dsClassName = cpAttrMap.getNamedItem("datasource-classname").getNodeValue();
+                String resType = cpAttrMap.getNamedItem("res-type").getNodeValue();
+
+                //Get property values
+                Element cpElement = (Element) cpNode;
+                NodeList propsNodeList = cpElement.getElementsByTagName("property");
+
+                //Cycle through each property element
+                HashMap map = new HashMap();
+                for (int j = 0; j < propsNodeList.getLength(); j++) {
+                    Node propNode = propsNodeList.item(j);
+                    NamedNodeMap propsMap = propNode.getAttributes();
+
+                    for (int m = 0; m < propsMap.getLength(); m++) {
+                        String mkey = propsMap.getNamedItem(CONST_NAME).getNodeValue();
+                        String mkeyValue = propsMap.getNamedItem("value").getNodeValue();
+                        if (mkey.equalsIgnoreCase(CONST_USER)) {
+                            pValues.put(CONST_USER, mkeyValue);
+                        } else if (mkey.equalsIgnoreCase(CONST_PASSWORD)) {
+                            pValues.put(CONST_PASSWORD, mkeyValue);
+                        } else if (mkey.equalsIgnoreCase(CONST_URL)) {
+                            pValues.put(CONST_URL, mkeyValue);
+                        } else if (mkey.equalsIgnoreCase(CONST_SERVER_NAME)) {
+                            pValues.put(CONST_SERVER_NAME, mkeyValue);
+                        } else {
+                            map.put(mkey, mkeyValue);
+                        }
+                    }
+                } // connection-pool properties
+
+                pValues.put(CONST_LOWER_DATABASE_NAME, (String) map.get(CONST_LOWER_DATABASE_NAME));
+                pValues.put(CONST_PORT_NUMBER, (String) map.get(CONST_PORT_NUMBER));
+                pValues.put(CONST_LOWER_PORT_NUMBER, (String) map.get(CONST_LOWER_PORT_NUMBER));
+                pValues.put(CONST_DATABASE_NAME, (String) map.get(CONST_DATABASE_NAME));
+                pValues.put(CONST_SID, (String) map.get(CONST_SID));
+                pValues.put(CONST_DRIVER_CLASS, (String) map.get(CONST_DRIVER_CLASS));
+                pValues.put(CONST_DERBY_CONN_ATTRS, (String) map.get(CONST_DERBY_CONN_ATTRS));
+                pValues.put("dsClassName", dsClassName);
+                pValues.put("resType", resType);
+
+                dSources.put(jndiName, pValues);
+            } // for each jdbc-resource
+        }
         return dSources;
     }
     
     public HashMap getConnPoolsFromXml(){
         HashMap pools = new HashMap();
         Document domainDoc = getDomainDocument();
-        HashMap cpMap = getConnPoolsNodeMap(domainDoc);
-        
-        String[] cp = (String[])cpMap.keySet().toArray(new String[cpMap.size()]);
-        for(int i=0; i<cp.length; i++){
-            String name = cp[i];
-            HashMap pValues = new HashMap();             
-            Node cpNode = (Node)cpMap.get(name);
-            NamedNodeMap cpAttrMap = cpNode.getAttributes();
-            String dsClassName = cpAttrMap.getNamedItem("datasource-classname").getNodeValue();
-            String resType = cpAttrMap.getNamedItem("res-type").getNodeValue();
-            
-            //Get property values
-            Element cpElement = (Element) cpNode;
-            NodeList propsNodeList = cpElement.getElementsByTagName("property");
-                        
-            //Cycle through each property element
-            HashMap map = new HashMap();
-            for(int j=0; j<propsNodeList.getLength(); j++){
-                Node propNode = propsNodeList.item(j);
-                NamedNodeMap propsMap = propNode.getAttributes();
-                
-                for(int m=0; m<propsMap.getLength(); m++){
-                    String mkey = propsMap.getNamedItem(CONST_NAME).getNodeValue();
-                    String mkeyValue = propsMap.getNamedItem("value").getNodeValue();
-                    if(mkey.equalsIgnoreCase(CONST_USER)){
-                        pValues.put(CONST_USER, mkeyValue);
-                    }else if (mkey.equalsIgnoreCase(CONST_PASSWORD)){
-                        pValues.put(CONST_PASSWORD, mkeyValue);
-                    }else if (mkey.equalsIgnoreCase(CONST_URL)){
-                        pValues.put(CONST_URL, mkeyValue);
-                    }else if (mkey.equalsIgnoreCase(CONST_SERVER_NAME)){
-                        pValues.put(CONST_SERVER_NAME, mkeyValue);
-                    }else {
-                        map.put(mkey, mkeyValue);
+        if (domainDoc != null) {
+            HashMap cpMap = getConnPoolsNodeMap(domainDoc);
+
+            String[] cp = (String[]) cpMap.keySet().toArray(new String[cpMap.size()]);
+            for (int i = 0; i < cp.length; i++) {
+                String name = cp[i];
+                HashMap pValues = new HashMap();
+                Node cpNode = (Node) cpMap.get(name);
+                NamedNodeMap cpAttrMap = cpNode.getAttributes();
+                String dsClassName = cpAttrMap.getNamedItem("datasource-classname").getNodeValue();
+                String resType = cpAttrMap.getNamedItem("res-type").getNodeValue();
+
+                //Get property values
+                Element cpElement = (Element) cpNode;
+                NodeList propsNodeList = cpElement.getElementsByTagName("property");
+
+                //Cycle through each property element
+                HashMap map = new HashMap();
+                for (int j = 0; j < propsNodeList.getLength(); j++) {
+                    Node propNode = propsNodeList.item(j);
+                    NamedNodeMap propsMap = propNode.getAttributes();
+
+                    for (int m = 0; m < propsMap.getLength(); m++) {
+                        String mkey = propsMap.getNamedItem(CONST_NAME).getNodeValue();
+                        String mkeyValue = propsMap.getNamedItem("value").getNodeValue();
+                        if (mkey.equalsIgnoreCase(CONST_USER)) {
+                            pValues.put(CONST_USER, mkeyValue);
+                        } else if (mkey.equalsIgnoreCase(CONST_PASSWORD)) {
+                            pValues.put(CONST_PASSWORD, mkeyValue);
+                        } else if (mkey.equalsIgnoreCase(CONST_URL)) {
+                            pValues.put(CONST_URL, mkeyValue);
+                        } else if (mkey.equalsIgnoreCase(CONST_SERVER_NAME)) {
+                            pValues.put(CONST_SERVER_NAME, mkeyValue);
+                        } else {
+                            map.put(mkey, mkeyValue);
+                        }
                     }
-                }
-            } // connection-pool properties
-            
-            pValues.put(CONST_LOWER_DATABASE_NAME, (String)map.get(CONST_LOWER_DATABASE_NAME));
-            pValues.put(CONST_PORT_NUMBER, (String)map.get(CONST_PORT_NUMBER));
-            pValues.put(CONST_LOWER_PORT_NUMBER, (String)map.get(CONST_LOWER_PORT_NUMBER));
-            pValues.put(CONST_DATABASE_NAME, (String)map.get(CONST_DATABASE_NAME));
-            pValues.put(CONST_SID, (String)map.get(CONST_SID));
-            pValues.put(CONST_DRIVER_CLASS, (String)map.get(CONST_DRIVER_CLASS));
-            pValues.put(CONST_DERBY_CONN_ATTRS, (String)map.get(CONST_DERBY_CONN_ATTRS));
-            pValues.put("dsClassName", dsClassName);
-            pValues.put("resType", resType);
-            
-            pools.put(name, pValues);
+                } // connection-pool properties
+
+                pValues.put(CONST_LOWER_DATABASE_NAME, (String) map.get(CONST_LOWER_DATABASE_NAME));
+                pValues.put(CONST_PORT_NUMBER, (String) map.get(CONST_PORT_NUMBER));
+                pValues.put(CONST_LOWER_PORT_NUMBER, (String) map.get(CONST_LOWER_PORT_NUMBER));
+                pValues.put(CONST_DATABASE_NAME, (String) map.get(CONST_DATABASE_NAME));
+                pValues.put(CONST_SID, (String) map.get(CONST_SID));
+                pValues.put(CONST_DRIVER_CLASS, (String) map.get(CONST_DRIVER_CLASS));
+                pValues.put(CONST_DERBY_CONN_ATTRS, (String) map.get(CONST_DERBY_CONN_ATTRS));
+                pValues.put("dsClassName", dsClassName);
+                pValues.put("resType", resType);
+
+                pools.put(name, pValues);
+            }
         }
-      
         return pools;
     }
     
     public void createSampleDatasource(){
         Document domainDoc = getDomainDocument();
-        updateWithSampleDataSource(domainDoc);
+        if (domainDoc != null) {
+            updateWithSampleDataSource(domainDoc);
+        }
     }
     
     private HashMap getDataSourcesAttrMap(Document domainDoc){
@@ -669,14 +674,16 @@ public class DomainEditor {
     public HashMap getAdminObjectResourcesFromXml(){
         HashMap aoResources = new HashMap();
         Document domainDoc = getDomainDocument();
-        NodeList adminObjectNodeList = domainDoc.getElementsByTagName("admin-object-resource");
-        for(int i=0; i<adminObjectNodeList.getLength(); i++){
-            Node aoNode = adminObjectNodeList.item(i);
-            NamedNodeMap aoAttrMap = aoNode.getAttributes();
-            String jndiName = aoAttrMap.getNamedItem("jndi-name").getNodeValue();
-            String type = aoAttrMap.getNamedItem("res-type").getNodeValue();
-            aoResources.put(jndiName, type);
-        }    
+        if (domainDoc != null) {
+            NodeList adminObjectNodeList = domainDoc.getElementsByTagName("admin-object-resource");
+            for (int i = 0; i < adminObjectNodeList.getLength(); i++) {
+                Node aoNode = adminObjectNodeList.item(i);
+                NamedNodeMap aoAttrMap = aoNode.getAttributes();
+                String jndiName = aoAttrMap.getNamedItem("jndi-name").getNodeValue();
+                String type = aoAttrMap.getNamedItem("res-type").getNodeValue();
+                aoResources.put(jndiName, type);
+            }
+        }
         return aoResources;
     }
     
