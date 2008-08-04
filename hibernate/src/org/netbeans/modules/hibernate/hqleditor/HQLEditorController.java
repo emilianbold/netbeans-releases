@@ -39,13 +39,14 @@
 package org.netbeans.modules.hibernate.hqleditor;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.StringTokenizer;
 import java.util.logging.Logger;
 import javax.tools.JavaCompiler;
@@ -53,12 +54,21 @@ import javax.tools.JavaFileObject;
 import javax.tools.StandardJavaFileManager;
 import javax.tools.StandardLocation;
 import javax.tools.ToolProvider;
+import org.dom4j.DocumentException;
 import org.hibernate.cfg.AnnotationConfiguration;
+import org.hibernate.cfg.JDBCMetaDataConfiguration;
+import org.hibernate.cfg.reveng.DefaultReverseEngineeringStrategy;
+import org.hibernate.cfg.reveng.OverrideRepository;
+import org.hibernate.cfg.reveng.ReverseEngineeringSettings;
+import org.hibernate.cfg.reveng.TableFilter;
+import org.hibernate.tool.hbm2x.HibernateMappingExporter;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.hibernate.util.CustomClassLoader;
 import org.netbeans.modules.hibernate.hqleditor.ui.HQLEditorTopComponent;
+import org.netbeans.modules.hibernate.loaders.mapping.HibernateMappingDataLoader;
 import org.netbeans.modules.hibernate.service.api.HibernateEnvironment;
 import org.netbeans.modules.hibernate.util.HibernateUtil;
 import org.openide.filesystems.FileObject;
@@ -76,6 +86,7 @@ public class HQLEditorController {
 
     private Logger logger = Logger.getLogger(HQLEditorController.class.getName());
     HQLEditorTopComponent editorTopComponent = null;
+    FileObject outputDir = null;
 
     public void executeHQLQuery(final String hql,
             final FileObject configFileObject,
@@ -93,7 +104,7 @@ public class HQLEditorController {
             for (FileObject mappingFO : env.getAllHibernateMappingFileObjects()) {
                 localResourcesURLList.add(mappingFO.getURL());
             }
-            final ClassLoader customClassLoader = new CustomClassLoader(localResourcesURLList.toArray(new URL[]{}),
+            final CustomClassLoader customClassLoader = new CustomClassLoader(localResourcesURLList.toArray(new URL[]{}),
                     this.getClass().getClassLoader());
 
             Thread t = new Thread() {
@@ -105,7 +116,7 @@ public class HQLEditorController {
                     try {
                         // Parse POJOs from HQL
                         // Check and if required compile POJO files mentioned in HQL
-                        final AnnotationConfiguration customConfiguration = processAndConstructCustomConfiguration(hql, configFileObject, project);
+                        AnnotationConfiguration customConfiguration = processAndConstructCustomConfiguration(hql, configFileObject, customClassLoader, project);
 
                         ph.progress(50);
                         ph.setDisplayName(NbBundle.getMessage(HQLEditorTopComponent.class, "queryExecutionPassControlToHibernate"));
@@ -135,48 +146,183 @@ public class HQLEditorController {
         editorTopComponent.fillHibernateConfigurations(activatedNodes);
     }
 
-    public AnnotationConfiguration getHibernateConfigurationForThisContext(FileObject configFileObject, 
-            List<FileObject> mappingFOList, 
-            List<Class> annotatedClassList) {
-        AnnotationConfiguration customConfiguration = new AnnotationConfiguration();
+    public AnnotationConfiguration getHibernateConfigurationForThisContext(FileObject configFileObject,
+            Project project,
+            List<FileObject> mappingFOList,
+            List<Class> annotatedClassList,
+            CustomClassLoader customClassLoader) {
 
-        // add mappings
-        for (FileObject mappingFO : mappingFOList) {
-            logger.info("Adding mapping to custom configuration " + mappingFO.getName());
-            customConfiguration.addFile(FileUtil.toFile(mappingFO));
+        AnnotationConfiguration customConfiguration = null;
+        try {
+            Class configClass = customClassLoader.loadClass("org.hibernate.cfg.AnnotationConfiguration");
+            customConfiguration = (AnnotationConfiguration) configClass.newInstance();
+
+        } catch (ClassNotFoundException classNotFoundException) {
+            Exceptions.printStackTrace(classNotFoundException);
+        } catch (InstantiationException instantiationException) {
+            Exceptions.printStackTrace(instantiationException);
+        } catch (IllegalAccessException illegalAccessException) {
+            Exceptions.printStackTrace(illegalAccessException);
         }
-        // add annotated pojos.
-        for (Class annotatedPOJO : annotatedClassList) {
-            logger.info("Adding annotated class to custom configuration " + annotatedPOJO);
-            customConfiguration.addAnnotatedClass(annotatedPOJO);
-        }
-        
-        Properties configProperties = new Properties();
+
         try {
             org.dom4j.io.SAXReader saxReader = new org.dom4j.io.SAXReader();
             org.dom4j.Document document = saxReader.read(configFileObject.getInputStream());
-            org.dom4j.Element sessionFactoryElement = document.getRootElement().element("session-factory");
-            Iterator propIterator = sessionFactoryElement.elementIterator("property");
-            while (propIterator.hasNext()) {
-                org.dom4j.Element node = (org.dom4j.Element) propIterator.next();
-                String name = node.attributeValue("name");
-                String value = node.getTextTrim();
-                logger.info("name = " + name + " value= " + value);
-                configProperties.setProperty(name, value);
+            org.dom4j.Element sessionFactoryElement = document.getRootElement().element("session-factory"); //NOI18N
+            Iterator mappingIterator = sessionFactoryElement.elementIterator("mapping"); //NOI18N
+            while (mappingIterator.hasNext()) {
+                org.dom4j.Element node = (org.dom4j.Element) mappingIterator.next();
+                logger.info("Removing mapping element ..  " + node);
+                node.getParent().remove(node);
             }
 
-            configProperties.setProperty("hibernate.mapping.precedence", "class");
-            customConfiguration.mergeProperties(configProperties);
+            //   add mappings
+            for (FileObject mappingFO : mappingFOList) {
+                logger.info("Adding mapping to custom configuration " + mappingFO.getName());
+                org.dom4j.Element mappingElement = sessionFactoryElement.addElement("mapping"); //NOI18N
+                File mappingFile = FileUtil.toFile(mappingFO);
+                mappingElement.addAttribute("file", mappingFile.getAbsolutePath()); //NOI18N
+            }
+            // add annotated pojos.
+            for (Class annotatedPOJO : annotatedClassList) {
+                logger.info("Adding annotated class to custom configuration " + annotatedPOJO.getName());
+
+                File mappingFile = getMappingFileForPOJO(annotatedPOJO, document);
+                logger.info("Got mapping file " + mappingFile);
+                if (mappingFile != null) {
+                    org.dom4j.Element mappingElement = sessionFactoryElement.addElement("mapping"); //NOI18N
+                    mappingElement.addAttribute("file", mappingFile.getAbsolutePath()); //NOI18N
+                }
+
+            }
+//        // configure 
+            logger.info("configuring custom configuration..");
+            customConfiguration.configure(getW3CDocument(document));
         } catch (Exception e) {
             Exceptions.printStackTrace(e);
         }
         return customConfiguration;
     }
 
-    public AnnotationConfiguration processAndConstructCustomConfiguration(String hql, FileObject configFileObject, Project project) {
+    private void prepareOutputDir() throws IOException {
+        try {
+            if (outputDir != null && outputDir.isValid()) {
+                outputDir.delete();
+            }
+                //outputDir = 
+                FileObject parentFO = FileUtil.toFileObject(new File(System.getProperty("java.io.tmpdir"))); //NOI18N
+                outputDir = FileUtil.createFolder(parentFO, "nb-hb"); //NOI18N
+                logger.info("outputdir = " + outputDir);
+            
+        } catch (Exception e) {
+            throw new IOException("Error in creating outputDir " + e.getMessage());
+        }
+    }
+
+    private org.w3c.dom.Document getW3CDocument(org.dom4j.Document document) {
+        try {
+            return new org.dom4j.io.DOMWriter().write(document);
+        } catch (DocumentException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return null;
+    }
+
+    private File getMappingFileFromOutputDir(String classname) {
+        File mappingFile = null;
+        try {
+            Enumeration<? extends FileObject> fileObjects = outputDir.getChildren(true);
+            while (fileObjects.hasMoreElements()) {
+                FileObject file = fileObjects.nextElement();
+                if (!file.isFolder() && HibernateMappingDataLoader.REQUIRED_MIME.equals(file.getMIMEType())) {
+                    if (file.getName().equalsIgnoreCase(classname + ".hbm")) { //NOI18N
+                        logger.info("found mapping filename match " + file + " for " + classname + " classname.");
+                        return FileUtil.toFile(file);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            Exceptions.printStackTrace(e);
+        }
+        return mappingFile;
+    }
+
+    private File getMappingFileForPOJO(Class annotatedPOJO, org.dom4j.Document document) {
+        try {
+            if (!annotatedPOJO.isAnnotationPresent(javax.persistence.Entity.class)) {
+                logger.info("Not an entity class " + annotatedPOJO);
+                return null;
+            }
+            // Prepare output dir
+            prepareOutputDir();
+
+            JDBCMetaDataConfiguration cfg = new JDBCMetaDataConfiguration();
+            cfg.configure(getW3CDocument(document));
+            OverrideRepository or = new OverrideRepository();
+
+            TableFilter tableFilter = new TableFilter();
+            tableFilter.setMatchCatalog(getTableCatalogFromAnnotatedPOJO(annotatedPOJO));
+            tableFilter.setMatchSchema(getTableSchemaFromAnnotatedPOJO(annotatedPOJO));
+            tableFilter.setMatchName(getTableNameFromAnnotatedPOJO(annotatedPOJO));
+            tableFilter.setExclude(new Boolean(false));
+
+            tableFilter.setPackage(
+                    annotatedPOJO.getPackage() == null ? "" : annotatedPOJO.getPackage().getName());
+            logger.info("Setup table filter :  " + tableFilter);
+            or.addTableFilter(tableFilter);
+            DefaultReverseEngineeringStrategy strategy = new DefaultReverseEngineeringStrategy();
+            ReverseEngineeringSettings settings = new ReverseEngineeringSettings(strategy);
+            settings.setDefaultPackageName(
+                    annotatedPOJO.getPackage() == null ? "" : annotatedPOJO.getPackage().getName());
+            strategy.setSettings(settings);
+            cfg.setReverseEngineeringStrategy(or.getReverseEngineeringStrategy(strategy));
+            cfg.readFromJDBC();
+
+            HibernateMappingExporter exporter = new HibernateMappingExporter(cfg, FileUtil.toFile(outputDir));
+            exporter.start();
+        } catch (Exception e) {
+            Exceptions.printStackTrace(e);
+        }
+        return getMappingFileFromOutputDir(getTableNameFromAnnotatedPOJO(annotatedPOJO));
+    }
+
+    private String getTableNameFromAnnotatedPOJO(Class annotatedPOJO) {
+        String tableName = "";
+        if (annotatedPOJO.isAnnotationPresent(javax.persistence.Table.class)) {
+            javax.persistence.Table table = (javax.persistence.Table) annotatedPOJO.getAnnotation(javax.persistence.Table.class);
+            tableName = (table.name() == null) ? annotatedPOJO.getSimpleName().toUpperCase() : table.name();
+        } else {
+            tableName = annotatedPOJO.getSimpleName().toUpperCase();
+        }
+        logger.info("extracted table name " + tableName);
+        return tableName;
+    }
+
+    private String getTableSchemaFromAnnotatedPOJO(Class annotatedPOJO) {
+        String tableSchemaName = ".*";
+        if (annotatedPOJO.isAnnotationPresent(javax.persistence.Table.class)) {
+            javax.persistence.Table table = (javax.persistence.Table) annotatedPOJO.getAnnotation(javax.persistence.Table.class);
+            tableSchemaName = (table.schema() == null) ? ".*" : table.schema();
+        }
+        logger.info("extracted table schema " + tableSchemaName);
+        return tableSchemaName;
+    }
+
+    private String getTableCatalogFromAnnotatedPOJO(Class annotatedPOJO) {
+        String tableCatalogName = ".*";
+        if (annotatedPOJO.isAnnotationPresent(javax.persistence.Table.class)) {
+            javax.persistence.Table table = (javax.persistence.Table) annotatedPOJO.getAnnotation(javax.persistence.Table.class);
+            tableCatalogName = (table.catalog() == null) ? ".*" : table.catalog();
+        }
+        logger.info("extracted table catelog name " + tableCatalogName);
+        return tableCatalogName;
+    }
+
+    public AnnotationConfiguration processAndConstructCustomConfiguration(String hql, FileObject configFileObject,
+            CustomClassLoader customClassLoader, Project project) {
         HibernateEnvironment env = project.getLookup().lookup(HibernateEnvironment.class);
 
-        StringTokenizer hqlTokenizer = new StringTokenizer(hql, " \n\r\f\t(),");
+        StringTokenizer hqlTokenizer = new StringTokenizer(hql, " \n\r\f\t(),"); //NOI18N
         List<String> tokenList = new ArrayList<String>();
         while (hqlTokenizer.hasMoreTokens()) {
             tokenList.add(hqlTokenizer.nextToken());
@@ -196,7 +342,7 @@ public class HQLEditorController {
             for (String className : pojoNameList) {
                 for (String hqlClassName : tokenList) {
                     if (foundClassNameMatch(hqlClassName, className)) {
-                        Class clazz = processMatchingClass(className, project);
+                        Class clazz = processMatchingClass(className, customClassLoader, project);
                         logger.info("matching classname = " + className);
                         logger.info("Got clazz " + clazz);
                         if (clazz != null) {
@@ -214,7 +360,7 @@ public class HQLEditorController {
             for (String annotatedClassName : annotatedPOJOClassNameList) {
                 for (String hqlClassName : tokenList) {
                     if (foundClassNameMatch(hqlClassName, annotatedClassName)) {
-                        Class clazz = processMatchingClass(annotatedClassName, project);
+                        Class clazz = processMatchingClass(annotatedClassName, customClassLoader, project);
                         logger.info("matching classname = " + annotatedClassName);
                         logger.info("Got clazz " + clazz);
                         if (clazz != null) {
@@ -226,10 +372,11 @@ public class HQLEditorController {
         }
 
         return getHibernateConfigurationForThisContext(
-                configFileObject, 
-                matchedMappingFOList, 
-                matchedAnnotatedPOJOClassNameList
-                );
+                configFileObject,
+                project,
+                matchedMappingFOList,
+                matchedAnnotatedPOJOClassNameList,
+                customClassLoader);
     }
 
     private boolean foundClassNameMatch(String hqlClassName, String className) {
@@ -253,18 +400,17 @@ public class HQLEditorController {
         return foundMatch;
     }
 
-    private Class processMatchingClass(String className, Project project) {
+    private Class processMatchingClass(String className, CustomClassLoader customClassLoader, Project project) {
         FileObject clazzFO = HibernateUtil.findJavaFileObjectInProject(className, project);
         FileObject buildFolderFO = HibernateUtil.getBuildFO(project);
-        return checkAndCompile(className, clazzFO, buildFolderFO, project);
+        return checkAndCompile(className, clazzFO, buildFolderFO, customClassLoader, project);
     }
 
-    private Class checkAndCompile(String className, FileObject sourceFO, FileObject buildFolderFO, Project project) {
+    private Class checkAndCompile(String className, FileObject sourceFO, FileObject buildFolderFO, CustomClassLoader customClassLoader, Project project) {
         Class clazz = null;
 
-        ClassLoader cl = Thread.currentThread().getContextClassLoader();
         try {
-            clazz = cl.loadClass(className);
+            clazz = customClassLoader.loadClass(className);
             if (clazz != null) {
                 logger.info("Found pre-existing class. Returning.." + clazz.getName());
                 return clazz;
@@ -284,20 +430,30 @@ public class HQLEditorController {
                         fileManager.getJavaFileObjectsFromFiles(Arrays.asList(new File[]{sourceFile}));
                 List<File> outputPath = new ArrayList<File>();
                 outputPath.add(FileUtil.toFile(buildFolderFO));
+                List<File> sourcePath = new ArrayList<File>();
+                for(SourceGroup sourceGroup : HibernateUtil.getSourceGroups(project)) {
+                    sourcePath.add(
+                            FileUtil.toFile(sourceGroup.getRootFolder())
+                            );
+                }
                 fileManager.setLocation(StandardLocation.CLASS_OUTPUT, outputPath);
                 fileManager.setLocation(StandardLocation.CLASS_PATH, getProjectClasspath(project, sourceFO));
+                fileManager.setLocation(StandardLocation.SOURCE_PATH, sourcePath);
                 List<String> options = new ArrayList<String>();
                 options.add("-target"); //NOI18N
-                options.add("1.5"); //NOI18N
-                
-//                options.add("-classpath");
-//                options = addClasspath(project, sourceFO, options);
+                String jdkVersion = System.getProperty("java.specification.version"); //NOI18N
+                if(jdkVersion == null || jdkVersion.equals("")) { //NOI18N
+                    // Set to 1.5
+                    jdkVersion = "1.5"; //NOI18N
+                }
+                options.add(jdkVersion);
+
                 //TODO diagnostic listener - plugin log
                 Boolean b = javaCompiler.getTask(null, fileManager, null, options, null, compilationUnits).call();
                 logger.info("b = " + b);
                 try {
                     className = className.replace(File.separator, ".");
-                    clazz = cl.loadClass(className);
+                    clazz = customClassLoader.loadClass(className);
                     if (clazz != null) {
                         logger.info("Found class after processing. Returning.." + clazz.getName());
                         return clazz;
@@ -306,6 +462,7 @@ public class HQLEditorController {
                     logger.info("CNF after processing.. " + className);
                     Exceptions.printStackTrace(ee);
                 }
+                // Ant approach -- commented out for future use.
             //  FileObject buildXMLFileObject = project.getProjectDirectory().getFileObject("build", "xml");
             //   java.util.Properties p = new java.util.Properties();
             // p.setProperty("javac.includes", ActionUtils.antIncludesList(
@@ -324,22 +481,19 @@ public class HQLEditorController {
         }
         return clazz;
     }
-    
+
     private List<File> getProjectClasspath(Project project, FileObject sourceFO) {
         List<File> cpEntries = new ArrayList<File>();
-        HibernateEnvironment env = (HibernateEnvironment)project.getLookup().lookup(HibernateEnvironment.class);
-        //StringBuilder cpBuilder = new StringBuilder();
-        for(URL url : env.getProjectClassPath(sourceFO)) {
+        HibernateEnvironment env = (HibernateEnvironment) project.getLookup().lookup(HibernateEnvironment.class);
+
+        for (URL url : env.getProjectClassPath(sourceFO)) {
             String cpEntry = url.getPath();
             cpEntry = cpEntry.replace("file:", "");
             cpEntry = cpEntry.replace("!/", "");
-//            cpEntry += File.pathSeparator;
-//            cpBuilder.append(cpEntry);
             File f = new File(cpEntry);
             cpEntries.add(f);
         }
-        logger.info("Adding classpath " + cpEntries); //cpBuilder.toString());
-        //options.add(cpBuilder.toString());
-        return cpEntries; //options;
+        logger.info("Adding classpath " + cpEntries); 
+        return cpEntries; 
     }
 }

@@ -166,7 +166,7 @@ public final class HQLEditorTopComponent extends TopComponent {
                         Thread.currentThread().setContextClassLoader(ccl);
                         AnnotationConfiguration hibernateConfiguration =
                                 controller.processAndConstructCustomConfiguration(
-                                hqlEditor.getText(), selectedConfigObject, enclosingProject);
+                                hqlEditor.getText(), selectedConfigObject, ccl, enclosingProject);
                         if (Thread.interrupted() || isSqlTranslationProcessDone) {
                             return;    // Cancel the task
                         }
