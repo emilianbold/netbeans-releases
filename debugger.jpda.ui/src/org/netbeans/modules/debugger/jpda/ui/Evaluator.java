@@ -512,8 +512,10 @@ public class Evaluator extends javax.swing.JPanel {
                 }
             } else {
                 if (evalDialog.isVisible()) {
-                    autoClosed = true;
+                    autoClosed = currentSession != null;
                     close();
+                } else {
+                    autoClosed = false;
                 }
             }
         }
