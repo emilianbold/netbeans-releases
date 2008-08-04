@@ -675,8 +675,12 @@ private void verifySQLLimit() {
                 data[row++][1] = date;
             }
             // Refresh table
-            if (data.length >= 0) {
+            if (data.length > 0) {
                 sqlHistoryTable.repaint();
+                insertSQLButton.setEnabled(true);
+            } else {
+                sqlHistoryTable.repaint();
+                insertSQLButton.setEnabled(false);
             }
         }
 
@@ -706,8 +710,10 @@ private void verifySQLLimit() {
                         data[i][0] = localData[i][0];
                         data[i][1] = localData[i][1];
                     }
+                    insertSQLButton.setEnabled(true);
                 } else {
                     data = new Object[0][0];
+                    insertSQLButton.setEnabled(false);
                 }
                 // Refresh the table
                 sqlHistoryTable.repaint();
@@ -746,9 +752,11 @@ private void verifySQLLimit() {
                     for (int i = 0; i < row; i++) {
                         data[i][0] = localData[i][0];
                         data[i][1] = localData[i][1];
-                    }
+                    }                    
+                    insertSQLButton.setEnabled(true);
                 } else {
-                    data = new Object[0][0];
+                    data = new Object[0][0];                                        
+                    insertSQLButton.setEnabled(false);
                 }
                 // Refresh the table                     
                 sqlHistoryTable.repaint();
