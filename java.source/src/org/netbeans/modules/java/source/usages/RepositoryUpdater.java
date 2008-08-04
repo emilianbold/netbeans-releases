@@ -163,7 +163,6 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
     private static final Set<String> ignoredDirectories = parseSet("org.netbeans.javacore.ignoreDirectories", "SCCS CVS .svn"); // NOI18N
     private static final boolean noscan = Boolean.getBoolean("netbeans.javacore.noscan");   //NOI18N
     private static final boolean PERF_TEST = Boolean.getBoolean("perf.refactoring.test");
-    private static final String PACKAGE_INFO = "package-info.java";  //NOI18N
     static final String GOING_TO_RECOMPILE = "Going to recompile: {0}"; //NOI18N
     static final String CONTAINS_TASKLIST_DATA = "containsTasklistData"; //NOI18N
     static final String CONTAINS_TASKLIST_DEPENDENCY_DATA = "containsTasklistDependencyData"; //NOI18N
@@ -171,6 +170,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
     static final String SOURCE_LEVEL_ROOT = "sourceLevel"; //NOI18N
     static final String EXTRA_COMPILER_OPTIONS = "extraCompilerOptions"; //NOI18N
     static final String CLASSPATH_ATTRIBUTE = "classPath"; //NOI18N
+    static final String DIGEST = "digest"; //NOI18N
     
     //non-final, non-private for tests...
     static int DELAY = Utilities.isWindows() ? 2000 : 1000;
@@ -1788,7 +1788,22 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 Iterable<? extends File> children, Iterable<? extends File> virtualChildren,
                 boolean clean, ProgressHandle handle, JavaFileFilterImplementation filter,
                 Map<String,List<File>> resources, Set<File> compiledFiles, Set<File> toRecompile,
-                Map<URI, List<String>> misplacedSource2FQNs, boolean allowCancel, boolean generateVirtual) throws IOException {
+                Map<URI, List<String>> misplacedSource2FQNs, boolean allowCancel, boolean generateVirtual)
+                throws IOException 
+        {
+            parseFiles(root, classCache, isInitialCompilation, children,
+                    virtualChildren, clean, handle, filter, resources, compiledFiles,
+                    toRecompile, misplacedSource2FQNs, allowCancel, generateVirtual,
+                    true, null);
+        }
+
+        private void parseFiles(URL root, final File classCache, boolean isInitialCompilation,
+                Iterable<? extends File> children, Iterable<? extends File> virtualChildren,
+                boolean clean, ProgressHandle handle, JavaFileFilterImplementation filter,
+                Map<String,List<File>> resources, Set<File> compiledFiles, Set<File> toRecompile,
+                Map<URI, List<String>> misplacedSource2FQNs, boolean allowCancel, boolean generateVirtual,
+                boolean digestChanged, File folderFile) throws IOException {
+        
             assert !allowCancel || compiledFiles != null;
             LOGGER.fine("parseFiles: " + root);            
             final FileObject rootFo = URLMapper.findFileObject(root);
@@ -1876,6 +1891,14 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
             if (uqImpl == null) {
                 //IDE is exiting, indeces are already closed.
                 return;
+            }
+            if (clean == false && digestChanged == false) {
+                // no need to recompile whole root and no change detected
+                // in source root.
+                return;
+            }
+            if (resources == null && folderFile != null) {
+                resources = getAllClassFiles(classCache, FileObjects.getRelativePath(rootFile, folderFile), true);
             }
             SourceAnalyser sa = uqImpl.getSourceAnalyser();
             assert sa != null;
@@ -2174,15 +2197,10 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 Map<String, List<File>> resources = Collections.<String, List<File>>emptyMap();
                 final FileList children = new FileList(folderFile);
                 Set<File> compiledFiles = new HashSet<File>();
-                children.getJavaFiles();
-                if (children.digestChanged()) {
-                    resources = getAllClassFiles(classCache, FileObjects.getRelativePath(rootFile, folderFile), true);
-                    parseFiles(root, classCache, isInitialCompilation,
-                            children.getJavaFiles(), children.getVirtualJavaFiles(),
-                            clean, handle, filter, resources, compiledFiles, null, misplacedSource2FQNs, false, true);
-                } else {
-                    ClassIndexManager.getDefault().createUsagesQuery(root, true);
-                }
+                parseFiles(root, classCache, isInitialCompilation,
+                        children.getJavaFiles(), children.getVirtualJavaFiles(),
+                        clean, handle, filter, null, compiledFiles, null, misplacedSource2FQNs,
+                        false, true, children.digestChanged(), folderFile);
                 
                 if (!misplacedSource2FQNs.isEmpty()) {
                     if (LOGGER.isLoggable(Level.FINE)) {
@@ -2190,7 +2208,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                         LOGGER.log(Level.FINE, "misplacedSource2FQNs={0}", misplacedSource2FQNs);
                     }
                     
-                    resources.clear();
+                    resources = new HashMap<String, List<File>>();
                     
                     gatherResourceForParseFilesFromRoot(compiledFiles, rootFile, classCache, resources);
                     
@@ -2310,31 +2328,36 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                                 sa.delete(s);
                             }
 
-                            List<Diagnostic> diag = new ArrayList<Diagnostic>();
-                            for (Diagnostic d : listener.errors) {
-                                if (active == d.getSource()) {
-                                    diag.add(d);
-                                }
-                            }
-                            for (Diagnostic d : listener.warnings) {
-                                if (active == d.getSource()) {
-                                    diag.add(d);
-                                }
-                            }
-                            if (!virtual && TasklistSettings.isTasklistEnabled()) { //Don't report errors in virtual files
-                                Set<URL> toRefresh = TaskCache.getDefault().dumpErrors(root, file, fileFile, diag);
-
-                                if (TasklistSettings.isBadgesEnabled()) {
-                                    //XXX: maybe move to the common path (to be used also in the else branch:
-                                    ErrorAnnotator an = ErrorAnnotator.getAnnotator();
-
-                                    if (an != null) {
-                                        an.updateInError(toRefresh);
+                            if (!virtual) { //Don't report errors in virtual files
+                                assert active.size() == 1;
+                                
+                                JavaFileObject jfo = active.iterator().next().jfo;
+                                List<Diagnostic> diag = new ArrayList<Diagnostic>();
+                                for (Diagnostic d : listener.errors) {
+                                    if (jfo == d.getSource()) {
+                                        diag.add(d);
                                     }
                                 }
+                                for (Diagnostic d : listener.warnings) {
+                                    if (jfo == d.getSource()) {
+                                        diag.add(d);
+                                    }
+                                }
+                                if (TasklistSettings.isTasklistEnabled()) {
+                                    Set<URL> toRefresh = TaskCache.getDefault().dumpErrors(root, file, fileFile, diag);
 
-                                JavaTaskProvider.refresh(fo);
-                            }                            
+                                    if (TasklistSettings.isBadgesEnabled()) {
+                                        //XXX: maybe move to the common path (to be used also in the else branch:
+                                        ErrorAnnotator an = ErrorAnnotator.getAnnotator();
+
+                                        if (an != null) {
+                                            an.updateInError(toRefresh);
+                                        }
+                                    }
+
+                                    JavaTaskProvider.refresh(fo);
+                                }
+                            }
                             for (JavaFileObject generated : jt.generate()) {
                                 if (generated instanceof OutputFileObject) {
                                     addedFiles.add(((OutputFileObject) generated).getFile());
@@ -2753,25 +2776,23 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
 
         private void computeDigest(File root, final List<File> javaFiles) {
             StringBuilder sb = new StringBuilder(200);
-            sb.append(SourceLevelQuery.getSourceLevel(FileUtil.toFileObject(root)));
             for (File f : javaFiles) {
                 sb.append(f.getPath()).append(f.lastModified());
             }
             try {
-                MessageDigest md5 = MessageDigest.getInstance("MD5");
+                MessageDigest md5 = MessageDigest.getInstance("MD5"); // NOI18N
                 byte[] b = sb.toString().getBytes();
                 byte[] digest = md5.digest(b);
                 URL rootUrl = root.toURI().toURL();
-                Properties prop = loadProperties(rootUrl);
-                String data = prop.getProperty("digest");
-                if (data != null) {
+                String data = getAttribute(rootUrl, DIGEST, null);
+                if (data != null && getAttribute(rootUrl, DIRTY_ROOT, null) == null) {
                     String newDigest = printDigest(digest);
                     if (data.equals(newDigest) == true) {
                         digestChanged = false;
+                        return;
                     }
                 }
-                prop.put("digest", printDigest(digest));
-                storeProperties(rootUrl, prop);
+                ensureAttributeValue(rootUrl, DIGEST, printDigest(digest), true);
             } catch (IOException e) {
             } catch (NoSuchAlgorithmException ex) {
                 Exceptions.printStackTrace(ex);
@@ -2800,9 +2821,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                         collectFiles(child, javaFiles, virtualJavaFiles);
                     }
                     else if (name.endsWith('.'+JavaDataLoader.JAVA_EXTENSION)) { //NOI18N
-                        if (!PACKAGE_INFO.equals(name) && child.length()>0) {
-                            javaFiles.add(child);
-                        }
+                        javaFiles.add(child);
                     }
                     else if (VirtualSourceProviderQuery.hasVirtualSource(child)) {
                         virtualJavaFiles.add(child);

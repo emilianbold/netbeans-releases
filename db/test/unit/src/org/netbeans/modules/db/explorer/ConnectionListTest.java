@@ -49,7 +49,7 @@ public class ConnectionListTest extends TestBase {
      * added using the {@link ConnectionManager#addConnection} method.
      */
     public void testSameInstanceAfterAdd() throws Exception {
-        Util.deleteConnectionFiles();
+        Util.clearConnections();
         assertEquals(0, ConnectionList.getDefault().getConnections().length);
 
         DatabaseConnection dbconn = new DatabaseConnection("org.bar.BarDriver",
@@ -57,6 +57,7 @@ public class ConnectionListTest extends TestBase {
         // temporary: should actually call addDriver(), but that doesn't return a DataObject
         // ConnectionManager.getDefault().addConnection(dbconn);
         DataObject dbconnDO = DatabaseConnectionConvertor.create(dbconn);
+        ConnectionList.getDefault().refreshCache();
 
         /* Commenting out until 75204 is fixed
         Reference dbconnDORef = new WeakReference(dbconnDO);

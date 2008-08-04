@@ -47,6 +47,7 @@ import java.util.Collections;
 import javax.swing.JComponent;
 import java.awt.Component;
 import java.util.List;
+import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Sources;
 
@@ -80,9 +81,8 @@ public class HibernateMappingWizard implements WizardDescriptor.InstantiatingIte
     private HibernateMappingWizardDescriptor descriptor;
     private transient WizardDescriptor.Panel[] panels;
     private final String resourceAttr = "resource"; // NOI18N
-
     private static String DEFAULT_MAPPING_FILENAME = "hibernate.hbm"; // NOI18N
-
+    private Logger logger = Logger.getLogger(HibernateMappingWizard.class.getName());
 
     public static HibernateMappingWizard create() {
         return new HibernateMappingWizard();
@@ -94,14 +94,24 @@ public class HibernateMappingWizard implements WizardDescriptor.InstantiatingIte
      */
     private WizardDescriptor.Panel[] getPanels() {
         if (panels == null) {
-            Project p = Templates.getProject(wizard);
-            SourceGroup[] groups = ProjectUtils.getSources(p).getSourceGroups(Sources.TYPE_GENERIC);
-            WizardDescriptor.Panel targetChooser = Templates.createSimpleTargetChooser(p, groups);
+            HibernateEnvironment hibernateEnv = (HibernateEnvironment) project.getLookup().lookup(HibernateEnvironment.class);
+            // Check for unsupported projects. #142296
+            if (hibernateEnv == null) {
+                logger.info("Unsupported project " + project + ". Existing config wizard.");
+                panels = new WizardDescriptor.Panel[]{
+                            WizardErrorPanel.getWizardErrorWizardPanel()
+                        };
 
-            panels = new WizardDescriptor.Panel[]{
-                        targetChooser,
-                        descriptor
-                    };
+            } else {
+                Project p = Templates.getProject(wizard);
+                SourceGroup[] groups = ProjectUtils.getSources(p).getSourceGroups(Sources.TYPE_GENERIC);
+                WizardDescriptor.Panel targetChooser = Templates.createSimpleTargetChooser(p, groups);
+
+                panels = new WizardDescriptor.Panel[]{
+                            targetChooser,
+                            descriptor
+                        };
+            }
             String[] steps = createSteps();
             for (int i = 0; i < panels.length; i++) {
                 Component c = panels[i].getComponent();
@@ -151,13 +161,18 @@ public class HibernateMappingWizard implements WizardDescriptor.InstantiatingIte
         // and not like : hibernate.hbm<i>.xml
         if (wizard instanceof TemplateWizard) {
             HibernateEnvironment hibernateEnv = (HibernateEnvironment) project.getLookup().lookup(HibernateEnvironment.class);
+            // Check for unsupported projects. #142296
+            if (hibernateEnv == null) {
+                // Returning without initialization. User will be informed about this using error panel.
+                return;
+            }
             List<FileObject> mappingFiles = hibernateEnv.getAllHibernateMappingFileObjects();
             String targetName = DEFAULT_MAPPING_FILENAME;
             if (!mappingFiles.isEmpty() && foundMappingFileInProject(mappingFiles, DEFAULT_MAPPING_FILENAME)) {
                 int mappingFilesCount = mappingFiles.size();
-                targetName = "hibernate" + (mappingFilesCount++) + ".hbm";
+                targetName = "hibernate" + (mappingFilesCount++) + ".hbm";  //NOI18N
                 while (foundMappingFileInProject(mappingFiles, targetName)) {
-                    targetName = "hibernate" + (mappingFilesCount++) + ".hbm";
+                    targetName = "hibernate" + (mappingFilesCount++) + ".hbm";  //NOI18N
                 }
             }
             ((TemplateWizard) wizard).setTargetName(targetName);
@@ -204,15 +219,15 @@ public class HibernateMappingWizard implements WizardDescriptor.InstantiatingIte
         try {
             HibernateMappingDataObject hmo = (HibernateMappingDataObject) newOne;
             if (descriptor.getClassName() != null && !"".equals(descriptor.getClassName())) {
-                myClass.setAttributeValue("name", descriptor.getClassName());
+                myClass.setAttributeValue("name", descriptor.getClassName());  //NOI18N
                 if (descriptor.getDatabaseTable() != null && !"".equals(descriptor.getDatabaseTable())) {
-                    myClass.setAttributeValue("table", descriptor.getDatabaseTable());
-                    myClass.setAttributeValue("dynamic-insert", null);
-                    myClass.setAttributeValue("dynamic-update", null);
-                    myClass.setAttributeValue("mutable", null);
-                    myClass.setAttributeValue("optimistic-lock", null);
-                    myClass.setAttributeValue("polymorphism", null);
-                    myClass.setAttributeValue("select-before-update", null);
+                    myClass.setAttributeValue("table", descriptor.getDatabaseTable());  //NOI18N
+                    myClass.setAttributeValue("dynamic-insert", null);  //NOI18N
+                    myClass.setAttributeValue("dynamic-update", null);  //NOI18N
+                    myClass.setAttributeValue("mutable", null);  //NOI18N
+                    myClass.setAttributeValue("optimistic-lock", null);  //NOI18N
+                    myClass.setAttributeValue("polymorphism", null);  //NOI18N
+                    myClass.setAttributeValue("select-before-update", null);  //NOI18N
                 }
                 hmo.addMyClass(myClass);
             }
@@ -255,7 +270,6 @@ public class HibernateMappingWizard implements WizardDescriptor.InstantiatingIte
         return getPanels()[index];
     }
     // If nothing unusual changes in the middle of the wizard, simply:
-
     public final void addChangeListener(ChangeListener l) {
     }
 

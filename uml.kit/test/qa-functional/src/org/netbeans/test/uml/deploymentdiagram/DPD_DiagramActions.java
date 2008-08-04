@@ -82,7 +82,7 @@ public class DPD_DiagramActions extends UMLTestCase {
     private DiagramOperator diagram = null;
     
     
-    private static final String workDir = System.getProperty("xtest.workdir");
+    private static final String workDir = System.getProperty("nbjunit.workdir");
     private static String OUT_LOG_FILE = "";
     private static String ERR_LOG_FILE = "";
     private static PrintStream myOut = null;
@@ -95,7 +95,7 @@ public class DPD_DiagramActions extends UMLTestCase {
     //private static String projectName = prName+"|Model";
     private static String projectName = "UMLProjectDPD15";
     private String lastTestCase=null;
-    private static String workdir=System.getProperty("xtest.workdir");
+    private static String workdir=System.getProperty("nbjunit.workdir");
     private static long elCount=0;
     
     

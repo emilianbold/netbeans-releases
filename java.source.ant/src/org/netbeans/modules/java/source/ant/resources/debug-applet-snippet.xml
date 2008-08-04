@@ -71,11 +71,15 @@ made subject to such option by the copyright holder.
                 <path path="${classpath-translated}"/>
             </classpath>
         </nbjpdastart>
-        <java classpath="${classpath-translated}" classname="sun.applet.AppletViewer" dir="${work.dir}">
+        <java classpath="${classpath-translated}" classname="sun.applet.AppletViewer" dir="${work.dir}" jvm="${platform.java}" fork="true">
             <jvmarg line="${debug-args-line}"/>
             <jvmarg value="-Xrunjdwp:transport=${debug-transport},address=${jpda.address}"/>
             <jvmarg line="${run.jvmargs}" />
             <arg value="${applet.url}"/>
+            <syspropertyset>
+                <propertyref prefix="run-sys-prop."/>
+                <mapper from="run-sys-prop.*" to="*" type="glob"/>
+            </syspropertyset>
         </java>
     </target>
 </project>

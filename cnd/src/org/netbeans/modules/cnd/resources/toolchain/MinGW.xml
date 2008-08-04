@@ -55,7 +55,8 @@ made subject to such option by the copyright holder.
         <system_include_paths flags="-x c++ -E -v" parser="GNU" remove_in_path="/bin" remove_in_output="/mingw"/>
     </cpp>
     <fortran>
-        <compiler name=""/>
+        <recognizer pattern=".*[\\/]mingw[\\/]bin[\\/]?$"/>
+        <compiler name="gfortran,g95,g90,g77"/>
     </fortran>
     <linker>
         <library_prefix stringvalue=""/>

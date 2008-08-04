@@ -86,6 +86,8 @@ public class AppserverJBIMgmtController {
     private RuntimeManagementServiceWrapper runtimeManagementServiceWrapper;
     private NotificationService notificationService;
     
+    private boolean notificationServiceChecked;
+    
     private String hostName;
     private String port;
     private String userName;
@@ -150,7 +152,8 @@ public class AppserverJBIMgmtController {
     public NotificationService getNotificationService()
             throws ManagementRemoteException {
 
-        if (notificationService == null) {
+        if (!notificationServiceChecked && notificationService == null) {
+            notificationServiceChecked = true;
             String rmiPortString = managementClient.getAdministrationService().getJmxRmiPort();        
             notificationService = 
                     //managementClient.getNotificationService(); // DOES NOT WORK

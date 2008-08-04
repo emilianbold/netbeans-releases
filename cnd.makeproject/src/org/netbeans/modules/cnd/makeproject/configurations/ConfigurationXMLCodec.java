@@ -71,9 +71,12 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.api.xml.VersionException;
 import org.netbeans.modules.cnd.makeproject.api.configurations.FolderConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.FortranCompilerConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.PackagingConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.RequiredProjectsConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
+import org.netbeans.modules.cnd.makeproject.packaging.FileElement;
+import org.netbeans.modules.cnd.makeproject.packaging.InfoElement;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.xml.sax.Attributes;
@@ -100,6 +103,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
     private FortranCompilerConfiguration currentFortranCompilerConfiguration = null;
     private CustomToolConfiguration currentCustomToolConfiguration = null;
     private LinkerConfiguration currentLinkerConfiguration = null;
+    private PackagingConfiguration currentPackagingConfiguration = null;
     private ArchiverConfiguration currentArchiverConfiguration = null;
     private LibrariesConfiguration currentLibrariesConfiguration = null;
     private RequiredProjectsConfiguration currentRequiredProjectsConfiguration = null;
@@ -245,6 +249,8 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
                 ; // FIXUP: ERROR
         } else if (element.equals(LINKERTOOL_ELEMENT)) {
             currentLinkerConfiguration = ((MakeConfiguration)currentConf).getLinkerConfiguration();
+        } else if (element.equals(PACK_ELEMENT)) {
+            currentPackagingConfiguration = ((MakeConfiguration)currentConf).getPackagingConfiguration();
         } else if (element.equals(ARCHIVERTOOL_ELEMENT)) {
             currentArchiverConfiguration = ((MakeConfiguration)currentConf).getArchiverConfiguration();
         } else if (element.equals(INCLUDE_DIRECTORIES_ELEMENT)) {
@@ -290,6 +296,24 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
                 currentLibrariesConfiguration.add(projectItem);
             else if (currentRequiredProjectsConfiguration != null)
                 currentRequiredProjectsConfiguration.add(projectItem);
+        
+        } else if (element.equals(PACK_FILE_LIST_ELEMENT)) {
+            String type = atts.getValue(TYPE_ATTR); // NOI18N
+            String to = atts.getValue(TO_ATTR); // NOI18N
+            String from = atts.getValue(FROM_ATTR); // NOI18N
+            String perm = atts.getValue(PERM_ATTR); // NOI18N
+            String owner = atts.getValue(OWNER_ATTR); // NOI18N
+            String group = atts.getValue(GROUP_ATTR); // NOI18N
+            FileElement fileElement = new FileElement(FileElement.toFileType(type), from, to, perm, owner, group);
+            if (currentPackagingConfiguration != null)
+                currentPackagingConfiguration.getFiles().add(fileElement);
+        } else if (element.equals(PACK_INFO_LIST_ELEMENT)) {
+            String name = atts.getValue(NAME_ATTR); // NOI18N
+            String value = atts.getValue(VALUE_ATTR); // NOI18N
+            String mandatory = atts.getValue(MANDATORY_ATTR); // NOI18N
+            InfoElement infoElement = new InfoElement(name, value, mandatory.equals(TRUE_VALUE));
+            if (currentPackagingConfiguration != null)
+                currentPackagingConfiguration.getHeader().add(infoElement);
         }
     }
     
@@ -438,6 +462,8 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             if (descriptorVersion <= 27 && !currentLinkerConfiguration.getOutput().getModified())
                 currentLinkerConfiguration.getOutput().setValue(currentLinkerConfiguration.getOutputDefault27());
             currentLinkerConfiguration = null;
+        } else if (element.equals(PACK_ELEMENT)) {
+            currentPackagingConfiguration = null;
         } else if (element.equals(ARCHIVERTOOL_ELEMENT)) {
             if (descriptorVersion <= 27 && !currentArchiverConfiguration.getOutput().getModified())
                 currentArchiverConfiguration.getOutput().setValue(currentArchiverConfiguration.getOutputDefault27());
@@ -480,6 +506,22 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
                 currentLinkerConfiguration.getTool().setValue(getString(currentText));
             if (currentArchiverConfiguration != null)
                 currentArchiverConfiguration.getTool().setValue(getString(currentText));
+            if (currentPackagingConfiguration != null)
+                currentPackagingConfiguration.getTool().setValue(getString(currentText));
+        } else if (element.equals(VERBOSE_ELEMENT)) {
+            if (currentPackagingConfiguration != null) {
+                boolean val = currentText.equals(TRUE_VALUE);
+                currentPackagingConfiguration.getVerbose().setValue(val);
+            }
+        } else if (element.equals(ADDITIONAL_OPTIONS_ELEMENT)) {
+            if (currentPackagingConfiguration != null) {
+                currentPackagingConfiguration.getOptions().setValue(getString(currentText));
+            }
+        } else if (element.equals(PACK_TYPE_ELEMENT)) {
+            if (currentPackagingConfiguration != null) {
+                int type = new Integer(currentText).intValue();
+                currentPackagingConfiguration.getType().setValue(type);
+            }
         } else if (element.equals(PREPROCESSOR_ELEMENT)) {
             // Old style preprocessor list
             if (currentCCCCompilerConfiguration != null) {
@@ -544,6 +586,8 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
                 currentLinkerConfiguration.getOutput().setValue(getString(currentText));
             if (currentArchiverConfiguration != null)
                 currentArchiverConfiguration.getOutput().setValue(getString(currentText));
+            if (currentPackagingConfiguration != null)
+                currentPackagingConfiguration.getOutput().setValue(getString(currentText));
         } else if (element.equals(LINKER_KPIC_ELEMENT)) {
             boolean ds = currentText.equals(TRUE_VALUE);
             if (currentLinkerConfiguration != null)

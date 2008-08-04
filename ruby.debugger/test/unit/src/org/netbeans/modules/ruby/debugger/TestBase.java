@@ -281,7 +281,7 @@ public abstract class TestBase extends RubyTestBase {
         final CountDownLatch events = new CountDownLatch(n);
         RubyDebugEventListener listener = new RubyDebugEventListener() {
             public void onDebugEvent(RubyDebugEvent e) {
-                Util.finest("Received event: " + e);
+                Util.finer("Received event: " + e);
                 events.countDown();
             }
         };

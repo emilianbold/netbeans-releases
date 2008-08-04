@@ -45,6 +45,7 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -54,6 +55,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.logging.Logger;
+import org.netbeans.modules.projectimport.eclipse.core.spi.LaunchConfiguration;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -160,6 +162,7 @@ public final class Workspace {
     private Set<EclipseProject> projects = new HashSet<EclipseProject>();
     private Map<String,String> jreContainers;
     private Map<String, List<String>> userLibraries;
+    private Collection<LaunchConfiguration> launchConfigurations;
     
     private boolean myEclipseLibrariesLoaded;
     
@@ -429,4 +432,16 @@ public final class Workspace {
         }
         return null;
     }
+
+    /**
+     * Gets all launch configurations defined in the workspace.
+     * @return a possibly empty collection of launch configurations that were parsed
+     */
+    public Collection<LaunchConfiguration> getLaunchConfigurations() {
+        return launchConfigurations;
+    }
+    void setLaunchConfigurations(Collection<LaunchConfiguration> launchConfigurations) {
+        this.launchConfigurations = launchConfigurations;
+    }
+
 }

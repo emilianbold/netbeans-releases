@@ -654,7 +654,10 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
             if (JPDADebugger.PROP_STATE.equals(evt.getPropertyName())) {
                 if (debugger.getState() == JPDADebugger.STATE_DISCONNECTED) {
                     if (prefListener != null) {
-                        preferences.removePreferenceChangeListener(prefListener);
+                        try {
+                            preferences.removePreferenceChangeListener(prefListener);
+                        } catch (IllegalArgumentException e) {
+                        }
                     }
                     debugger.removePropertyChangeListener(JPDADebugger.PROP_STATE, this);
                 }

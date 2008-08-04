@@ -1191,8 +1191,12 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
                     folder.addChangeListener( this );
                     RequestProcessor.getDefault().post(new Runnable() {
                         public void run() {
+                            // between posting this task and running it can be become deleted (see iz #142240)
+                            // TODO: fix workflow instead?
+                            if (project.getProjectDirectory()!=null && project.getProjectDirectory().isValid()) {
                             //System.err.println("ExternalFilesChildren: setting real nodes");
-                            setKeys( getKeys() );
+                                setKeys( getKeys() );
+                            }
                         }
                     }, WAIT_DELAY);
                 }  else {

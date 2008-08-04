@@ -191,7 +191,7 @@ public class PackagingConfiguration {
         
         set.put(intNodeprop = new IntNodeProp(getType(), true, "PackageType", "Package Type", "The type of this package.")); // NOI18N
 	set.put(outputNodeProp = new OutputNodeProp(getOutput(), getOutputDefault(), "Output", getString("OutputTxt"), getString("OutputHint"))); // NOI18N
-        String[] texts = new String[] {"Files", "Files", "Files and other information in this package."};
+        String[] texts = new String[] {"Files", "Files", "Files and other information in this package."}; // FIXUP
         set.put(new BooleanNodeProp(getVerbose(), true, "Verbose", "Verbose", "Turns verbose build output on or off.")); // NOI18N
         set.put(new PackagingNodeProp(this, makeConfiguration, texts)); // NOI18N
         set.put(toolNodeProp = new StringNodeProp(getTool(), getToolDefault(), "Tool", getString("ToolTxt1"), getString("ToolHint1"))); // NOI18N

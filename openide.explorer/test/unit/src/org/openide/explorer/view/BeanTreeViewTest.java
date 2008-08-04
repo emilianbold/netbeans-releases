@@ -155,6 +155,13 @@ public class BeanTreeViewTest extends NbTestCase {
     }
     
     public void testVisibleVisNodesAreNotGCed() throws InterruptedException, Throwable {
+        doTestVisibleVisNodesAreNotGCed(false);
+    }
+    public void testVisibleVisNodesAreNotGCedAfterCollapseExpand() throws InterruptedException, Throwable {
+        doTestVisibleVisNodesAreNotGCed(true);
+    }
+
+    public void doTestVisibleVisNodesAreNotGCed(final boolean collapseAndExpand) throws InterruptedException, Throwable {
         class AWTTst implements Runnable {
 
             AbstractNode root = new AbstractNode(new Children.Array());
@@ -203,6 +210,11 @@ public class BeanTreeViewTest extends NbTestCase {
 
                 paths = tree.getSelectionPaths();
                 assertNull("Nothing should be selected", paths);
+                
+                if (collapseAndExpand) {
+                    btv.collapseNode(root);
+                    btv.expandNode(root);
+                }
             }
 
             public void checkNotGc() {

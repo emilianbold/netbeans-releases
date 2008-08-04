@@ -39,8 +39,11 @@
 
 package org.netbeans.modules.glassfish.javaee;
 
+import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -49,7 +52,9 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.server.ServerInstance;
 import org.netbeans.modules.glassfish.javaee.db.Hk2DatasourceManager;
 import org.netbeans.modules.glassfish.javaee.ide.FastDeploy;
+import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.glassfish.spi.ServerUtilities;
+import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.AntDeploymentProvider;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.DatasourceManager;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.FindJSPServlet;
@@ -219,6 +224,32 @@ public class Hk2OptionalFactory extends OptionalDeploymentManagerFactory {
     @Override
     public void finishServerInitialization() throws ServerInitializationException {
         try {
+            // remove any invalid server definitions...
+            String[] urls = InstanceProperties.getInstanceList();
+            if (null != urls) {
+                Hk2DeploymentFactory hk2df = new Hk2DeploymentFactory();
+                List<String> needToRemove = new ArrayList<String>();
+                for (String url : urls) {
+                    if (hk2df.handlesURI(url)) {
+                        InstanceProperties ip = InstanceProperties.getInstanceProperties(url);
+                        String installDirName = ip.getProperty(GlassfishModule.GLASSFISH_FOLDER_ATTR);
+                        String domainDirName = ip.getProperty(GlassfishModule.DOMAINS_FOLDER_ATTR)+
+                                File.separator+ip.getProperty(GlassfishModule.DOMAIN_NAME_ATTR);
+                        File instDir = new File(installDirName);
+                        File domainDir = new File(domainDirName);
+                        // TODO -- more complete test here...
+                        if (!instDir.exists() || !instDir.isDirectory() || 
+                                !domainDir.exists() || !domainDir.isDirectory() ||
+                                !domainDir.canWrite()) {
+                            needToRemove.add(url);
+                        }
+                    }
+                }
+                for (String url : needToRemove) {
+                    InstanceProperties.removeInstance(url);
+                }
+            }
+            //
             final boolean needToRegisterDefaultServer =
                     !NbPreferences.forModule(this.getClass()).getBoolean(ServerUtilities.PROP_FIRST_RUN, false);
             if (needToRegisterDefaultServer) {

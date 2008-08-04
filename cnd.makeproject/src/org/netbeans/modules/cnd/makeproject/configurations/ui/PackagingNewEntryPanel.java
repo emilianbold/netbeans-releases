@@ -67,6 +67,7 @@ public class PackagingNewEntryPanel extends javax.swing.JPanel {
         setPreferredSize(new java.awt.Dimension(600, 400));
         setLayout(new java.awt.GridBagLayout());
 
+        entryLabel.setDisplayedMnemonic('n');
         entryLabel.setLabelFor(entryComboBox);
         entryLabel.setText(org.openide.util.NbBundle.getMessage(PackagingNewEntryPanel.class, "PackagingNewEntryPanel.entryLabel.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -110,6 +111,7 @@ public class PackagingNewEntryPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(8, 16, 16, 16);
         add(scrollPane, gridBagConstraints);
 
+        valueLabel.setDisplayedMnemonic('v');
         valueLabel.setLabelFor(entryValueTextField);
         valueLabel.setText(org.openide.util.NbBundle.getMessage(PackagingNewEntryPanel.class, "PackagingNewEntryPanel.valueLabel.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -123,79 +125,79 @@ private void entryComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN
     String elemName = (String)entryComboBox.getSelectedItem();
         docArea.setText(""); // NOI18N
     
-        if (elemName.equals("BASEDIR")) {
+        if (elemName.equals("BASEDIR")) { //NOI18N
             docArea.setText(getString("PACKAGING_BASEDIR_DOC"));
         }
-        else if (elemName.equals("CLASSES")) {
+        else if (elemName.equals("CLASSES")) { //NOI18N
             docArea.setText(getString("PACKAGING_CLASSES_DOC"));
         }
-        else if (elemName.equals("DESC")) {
+        else if (elemName.equals("DESC")) { //NOI18N
             docArea.setText(getString("PACKAGING_DESC_DOC"));
         }
-        else if (elemName.equals("EMAIL")) {
+        else if (elemName.equals("EMAIL")) { //NOI18N
             docArea.setText(getString("PACKAGING_EMAIL_DOC"));
         }
-        else if (elemName.equals("HOTLINE")) {
+        else if (elemName.equals("HOTLINE")) { //NOI18N
             docArea.setText(getString("PACKAGING_HOTLINE_DOC"));
         }
-        else if (elemName.equals("INTONLY")) {
+        else if (elemName.equals("INTONLY")) { //NOI18N
             docArea.setText(getString("PACKAGING_INTONLY_DOC"));
         }
-        else if (elemName.equals("ISTATES")) {
+        else if (elemName.equals("ISTATES")) { //NOI18N
             docArea.setText(getString("PACKAGING_ISTATES_DOC"));
         }
-        else if (elemName.equals("MAXINST")) {
+        else if (elemName.equals("MAXINST")) { //NOI18N
             docArea.setText(getString("PACKAGING_MAXINST_DOC"));
         }
-        else if (elemName.equals("ORDER")) {
+        else if (elemName.equals("ORDER")) { //NOI18N
             docArea.setText(getString("PACKAGING_ORDER_DOC"));
         }
-        else if (elemName.equals("PSTAMP")) {
+        else if (elemName.equals("PSTAMP")) { //NOI18N
             docArea.setText(getString("PACKAGING_PSTAMP_DOC"));
         }
-        else if (elemName.equals("RSTATES")) {
+        else if (elemName.equals("RSTATES")) { //NOI18N
             docArea.setText(getString("PACKAGING_RSTATES_DOC"));
         }
-        else if (elemName.equals("SUNW_ISA")) {
+        else if (elemName.equals("SUNW_ISA")) { //NOI18N
             docArea.setText(getString("PACKAGING_SUNW_ISA_DOC"));
         }
-        else if (elemName.equals("SUNW_LOC")) {
+        else if (elemName.equals("SUNW_LOC")) { //NOI18N
             docArea.setText(getString("PACKAGING_SUNW_LOC_DOC"));
         }
-        else if (elemName.equals("SUNW_PKG_DIR")) {
+        else if (elemName.equals("SUNW_PKG_DIR")) { //NOI18N
             docArea.setText(getString("PACKAGING_SUNW_PKG_DIR_DOC"));
         }
-        else if (elemName.equals("SUNW_PKG_ALLZONES")) {
+        else if (elemName.equals("SUNW_PKG_ALLZONES")) { //NOI18N
             docArea.setText(getString("PACKAGING_SUNW_PKG_ALLZONES_DOC"));
         }
-        else if (elemName.equals("SUNW_PKG_HOLLOW")) {
+        else if (elemName.equals("SUNW_PKG_HOLLOW")) { //NOI18N
             docArea.setText(getString("PACKAGING_SUNW_PKG_HOLLOW_DOC"));
         }
-        else if (elemName.equals("SUNW_PKG_THISZONE")) {
+        else if (elemName.equals("SUNW_PKG_THISZONE")) { //NOI18N
             docArea.setText(getString("PACKAGING_SUNW_PKG_THISZONE_DOC"));
         }
-        else if (elemName.equals("SUNW_PKGLIST")) {
+        else if (elemName.equals("SUNW_PKGLIST")) { //NOI18N
             docArea.setText(getString("PACKAGING_SUNW_PKGLIST_DOC"));
         }
-        else if (elemName.equals("SUNW_PKGTYPE")) {
+        else if (elemName.equals("SUNW_PKGTYPE")) { //NOI18N
             docArea.setText(getString("PACKAGING_SUNW_PKGTYPE_DOC"));
         }
-        else if (elemName.equals("SUNW_PKGVERS")) {
+        else if (elemName.equals("SUNW_PKGVERS")) { //NOI18N
             docArea.setText(getString("PACKAGING_SUNW_PKGVERS_DOC"));
         }
-        else if (elemName.equals("SUNW_PRODNAME")) {
+        else if (elemName.equals("SUNW_PRODNAME")) { //NOI18N
             docArea.setText(getString("PACKAGING_SUNW_PRODNAME_DOC"));
         }
-        else if (elemName.equals("SUNW_PRODVERS")) {
+        else if (elemName.equals("SUNW_PRODVERS")) { //NOI18N
             docArea.setText(getString("PACKAGING_SUNW_PRODVERS_DOC"));
         }
-        else if (elemName.equals("ULIMIT")) {
+        else if (elemName.equals("ULIMIT")) { //NOI18N
             docArea.setText(getString("PACKAGING_ULIMIT_DOC"));
         }
-        else if (elemName.equals("VENDOR")) {
+        else if (elemName.equals("VENDOR")) { //NOI18N
             docArea.setText(getString("PACKAGING_VENDOR_DOC"));
         }
-        else if (elemName.equals("VSTOCK")) {
+        else if (elemName.equals("VSTOCK")) { //NOI18N
             docArea.setText(getString("PACKAGING_VSTOCK_DOC"));
         }
 }//GEN-LAST:event_entryComboBoxActionPerformed
