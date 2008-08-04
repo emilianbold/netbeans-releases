@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.ruby.platform.gems;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -47,7 +48,15 @@ final class GemListParser {
 
     private static final Logger LOGGER = Logger.getLogger(GemListParser.class.getName());
 
-    static void parse(List<? extends String> output, List<? super Gem> local, List<? super Gem> remote) {
+    static List<Gem> parseLocal(final List<? extends String> output) {
+        return parse(output, true);
+    }
+
+    static List<Gem> parseRemote(final List<? extends String> output) {
+        return parse(output, false);
+    }
+
+    private static List<Gem> parse(final List<? extends String> output, final boolean local) {
         LOGGER.finer("Going to parse Gem list");
         if (LOGGER.isLoggable(Level.FINEST)) {
             LOGGER.finest("Using the following output:");
@@ -58,35 +67,11 @@ final class GemListParser {
             LOGGER.finest("=== Output End ===");
         }
         Gem gem = null;
-        boolean listStarted = false;
-        boolean inLocal = false;
-        boolean inRemote = false;
-
+        List<Gem> gems = new ArrayList<Gem>();
         for (String line : output) {
             if (line.length() == 0) {
-                gem = null;
                 continue;
             }
-
-            if (line.startsWith("*** REMOTE GEMS")) { // NOI18N
-                inRemote = true;
-                inLocal = false;
-                listStarted = true;
-                gem = null;
-                continue;
-            } else if (line.startsWith("*** LOCAL GEMS")) { // NOI18N
-                inRemote = false;
-                inLocal = true;
-                listStarted = true;
-                gem = null;
-                continue;
-            }
-
-            if (!listStarted) {
-                // Skip status messages etc.
-                continue;
-            }
-
             if (Character.isWhitespace(line.charAt(0))) {
                 if (gem != null) {
                     String description = line.trim();
@@ -116,20 +101,14 @@ final class GemListParser {
                         versions = line.substring(versionIndex);
                     }
 
-                    gem = new Gem(name, inLocal ? versions : null, inLocal ? null : versions);
-                    if (inLocal) {
-                        local.add(gem);
-                    } else {
-                        assert inRemote;
-                        remote.add(gem);
-                    }
+                    gem = new Gem(name, local ? versions : null, local ? null : versions);
+                    gems.add(gem);
                 } else {
                     gem = null;
                 }
             }
         }
-        LOGGER.finer("Parsed " + local.size() + " local gems");
-        LOGGER.finer("Parsed " + remote.size() + " remote gems");
+        LOGGER.finer("Parsed " + gems.size() + " gems");
+        return gems;
     }
-
 }
