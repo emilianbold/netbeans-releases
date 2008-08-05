@@ -71,6 +71,8 @@ import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.packaging.FileElement;
 import org.netbeans.modules.cnd.makeproject.packaging.FileElement.FileType;
 import org.netbeans.modules.cnd.makeproject.ui.utils.PathPanel;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -85,15 +87,17 @@ public class PackagingFilesPanel extends ListEditorPanel {
     private JButton addButton;
     private JButton addFileOrDirectoryButton;
     private JButton addFilesButton;
+    private JButton addLinkButton;
     private PackagingFilesOuterPanel packagingFilesOuterPanel;
 
     public PackagingFilesPanel(List<FileElement> fileList, String baseDir) {
-        super(fileList.toArray(), new JButton[]{new JButton(), new JButton(), new JButton()});
+        super(fileList.toArray(), new JButton[]{new JButton(), new JButton(), new JButton(), new JButton()});
         getAddButton().setVisible(false);
         this.baseDir = baseDir;
         this.addButton = extraButtons[0];
         this.addFileOrDirectoryButton = extraButtons[1];
         this.addFilesButton = extraButtons[2];
+        this.addLinkButton = extraButtons[3];
 
         addButton.setText(getString("PackagingFilesPanel.addButton.text"));
 	addButton.setMnemonic(getString("PackagingFilesPanel.addButton.mn").charAt(0));
@@ -109,6 +113,11 @@ public class PackagingFilesPanel extends ListEditorPanel {
 	addFilesButton.setMnemonic(getString("PackagingFilesPanel.addFilesButton.mn").charAt(0));
         addFilesButton.getAccessibleContext().setAccessibleDescription(getString("PackagingFilesPanel.addFilesButton.ad"));
         addFilesButton.addActionListener(new AddFilesButtonAction());
+        
+        addLinkButton.setText(getString("PackagingFilesPanel.addLinkButton.text"));
+	addLinkButton.setMnemonic(getString("PackagingFilesPanel.addLinkButton.mn").charAt(0));
+        addLinkButton.getAccessibleContext().setAccessibleDescription(getString("PackagingFilesPanel.addLinkButton.ad"));
+        addLinkButton.addActionListener(new AddLinkButtonAction());
 
         getEditButton().setVisible(false);
         getDefaultButton().setVisible(false);
@@ -125,6 +134,26 @@ public class PackagingFilesPanel extends ListEditorPanel {
                 topFolder += "/"; // NOI18N
             }
             addObjectAction(new FileElement(FileType.UNKNOWN, "", topFolder)); // NOI18N
+        }
+    }
+    
+    
+    class AddLinkButtonAction implements java.awt.event.ActionListener {
+        public void actionPerformed(java.awt.event.ActionEvent evt) {
+	    PackagingNewLinkPanel packagingNewEntryPanel = new PackagingNewLinkPanel(packagingFilesOuterPanel.getTopDirectoryTextField().getText());
+	    DialogDescriptor dialogDescriptor = new DialogDescriptor(packagingNewEntryPanel, getString("AddNewLinkDialogTitle"));
+	    packagingNewEntryPanel.setDialogDesriptor(dialogDescriptor);
+            DialogDisplayer.getDefault().notify(dialogDescriptor);
+	    if (dialogDescriptor.getValue() != DialogDescriptor.OK_OPTION)
+		return;
+            addObjectAction(new FileElement(
+                    FileType.SOFTLINK,
+                    packagingNewEntryPanel.getLink(),
+                    packagingNewEntryPanel.getName(),
+                    "", // packagingFilesOuterPanel.getFilePermTextField().getText(),
+                    packagingFilesOuterPanel.getOwnerTextField().getText(),
+                    packagingFilesOuterPanel.getGroupTextField().getText()
+            ));
         }
     }
 
