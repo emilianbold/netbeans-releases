@@ -107,6 +107,14 @@ public class XMLCodeCompletion_0009 extends XMLCodeCompletion {
 
       JDialogOperator jnew = new JDialogOperator( "New Persistence Unit" );
       JComboBoxOperator jDC = new JComboBoxOperator( jnew, 1 );
+
+      int ic = jDC.getItemCount( );
+      for( int i = 0; i < ic; i++ )
+      {
+        Object o = jDC.getItemAt( i );
+        System.out.println( "++++" + o );
+      }
+
       jDC.selectItem( 0 );
 
       opNewFileWizard.finish( );
