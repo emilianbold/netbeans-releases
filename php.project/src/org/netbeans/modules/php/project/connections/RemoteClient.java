@@ -478,11 +478,25 @@ public class RemoteClient implements Cancellable {
             // in fact, useless but probably expected
             // XXX handle if exists but it is a file
             if (!localFile.exists()) {
-                localFile.mkdirs();
+                if (!localFile.mkdirs()) {
+                    transferFailed(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_CannotCreateDir", localFile));
+                    return;
+                }
             }
             transferSucceeded(transferInfo, file);
         } else if (file.isFile()) {
             // file => simply download it
+
+            // #142682 - because from the ui we get only files (folders are removed) => ensure parent folder exists
+            File parent = localFile.getParentFile();
+            assert parent != null : "File " + localFile + " has no parent file?!";
+            if (!parent.exists()) {
+                if (!parent.mkdirs()) {
+                    transferIgnored(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_CannotCreateDir", parent));
+                    return;
+                }
+            }
+            assert parent.isDirectory() : "Parent file of " + localFile + " must be a directory";
 
             if (LOGGER.isLoggable(Level.FINE)) {
                 LOGGER.fine("Downloading " + file.getRelativePath() + " => " + localFile.getAbsolutePath());
