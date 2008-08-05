@@ -54,6 +54,7 @@ import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.execution.ShellExecSupport;
 import org.netbeans.modules.cnd.loaders.ShellDataObject;
 import org.openide.LifecycleManager;
+import org.openide.cookies.SaveCookie;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -65,7 +66,6 @@ import org.openide.util.Cancellable;
  * Base class for Make Actions ...
  */
 public class ShellRunAction extends AbstractExecutorRunAction {
-
 
     public String getName() {
         return getString("BTN_Run");
@@ -79,14 +79,25 @@ public class ShellRunAction extends AbstractExecutorRunAction {
     protected void performAction(Node[] activatedNodes) {
         // Save everything first
         LifecycleManager.getDefault().saveAll();
-        
+
         for (int i = 0; i < activatedNodes.length; i++) {
             performAction(activatedNodes[i]);
         }
     }
 
-    public void performAction(Node node) {
+    public static void performAction(Node node) {
 	ShellExecSupport bes = node.getCookie(ShellExecSupport.class);
+        if (bes == null) {
+            return;
+        }
+        //Save file
+        SaveCookie save = node.getLookup().lookup(SaveCookie.class);
+        if (save != null) {
+            try {
+                save.save();
+            } catch (IOException ex) {
+            }
+        }
         DataObject dataObject = node.getCookie(DataObject.class);
         FileObject fileObject = dataObject.getPrimaryFile();
         
@@ -155,15 +166,15 @@ public class ShellRunAction extends AbstractExecutorRunAction {
         new ShellExecuter(nativeExecutor).execute();
     }
     
-    class ShellExecuter implements ExecutionListener {
-        private NativeExecutor nativeExecutor = null;
+    private static class ShellExecuter implements ExecutionListener {
+        private final NativeExecutor nativeExecutor;
+        private final ProgressHandle progressHandle;
         private ExecutorTask executorTask = null;
-        private ProgressHandle progressHandle = null;
 
         public ShellExecuter(NativeExecutor nativeExecutor) {
             this.nativeExecutor = nativeExecutor;
             nativeExecutor.addExecutionListener(this);
-            progressHandle = createPogressHandle(new StopAction(this), nativeExecutor);
+            this.progressHandle = createPogressHandle(new StopAction(this), nativeExecutor);
         }
         
         public void execute() {
@@ -187,7 +198,7 @@ public class ShellRunAction extends AbstractExecutorRunAction {
     }
     
     private static final class StopAction extends AbstractAction {
-        ShellExecuter shellExecutor;
+        private final ShellExecuter shellExecutor;
 
         public StopAction(ShellExecuter shellExecutor) {
             this.shellExecutor = shellExecutor;
@@ -205,8 +216,9 @@ public class ShellRunAction extends AbstractExecutorRunAction {
 //        }
 
         public void actionPerformed(ActionEvent e) {
-            if (!isEnabled())
+            if (!isEnabled()) {
                 return;
+            }
             setEnabled(false);
             if (shellExecutor.getExecutorTask() != null) {
                 shellExecutor.getExecutorTask().stop();
@@ -214,7 +226,7 @@ public class ShellRunAction extends AbstractExecutorRunAction {
         }
     }
     
-    private ProgressHandle createPogressHandle(final AbstractAction sa, final NativeExecutor nativeExecutor) {
+    private static ProgressHandle createPogressHandle(final AbstractAction sa, final NativeExecutor nativeExecutor) {
         ProgressHandle handle = ProgressHandleFactory.createHandle(nativeExecutor.getTabeName(), new Cancellable() {
             public boolean cancel() {
                 sa.actionPerformed(null);
