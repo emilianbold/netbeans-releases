@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.test.xml.schema.codecompletion;
+package org.netbeans.test.xml.schema.general.codecompletion;
 
 import junit.framework.TestSuite;
 
@@ -54,20 +54,19 @@ import org.netbeans.junit.NbModuleSuite;
  * @author michaelnazarov@netbeans.org
  */
 
-public class XMLCodeCompletion_0003 extends XMLCodeCompletion {
+public class XMLCodeCompletion_0002 extends XMLCodeCompletion {
     
-    static final String TEST_JAVA_APP_NAME = "java4xmlcodecompletion_0003";
+    static final String TEST_JAVA_APP_NAME = "java4xmlcodecompletion_0002";
 
-    public XMLCodeCompletion_0003(String arg0) {
+    public XMLCodeCompletion_0002(String arg0) {
         super(arg0);
     }
     
     public static Test suite( )
     {
       return NbModuleSuite.create(
-          NbModuleSuite.createConfiguration( XMLCodeCompletion_0003.class ).addTest(
+          NbModuleSuite.createConfiguration( XMLCodeCompletion_0002.class ).addTest(
             "CreateJavaApplication",
-            "CreateJavaPackage",
             "AddSampleSchema",
             "CreateConstrained",
             "StartTag"
@@ -87,20 +86,11 @@ public class XMLCodeCompletion_0003 extends XMLCodeCompletion {
         endTest( );
     }
 
-    public void CreateJavaPackage( )
-    {
-      startTest( );
-
-      CreateJavaPackageInternal( TEST_JAVA_APP_NAME );
-
-      endTest( );
-    }
-
     public void AddSampleSchema( )
     {
       startTest( );
 
-      AddSampleSchemaInternal( TEST_JAVA_APP_NAME, "newpackage" );
+      AddSampleSchemaInternal( TEST_JAVA_APP_NAME, null );
 
       endTest( );
     }
@@ -111,17 +101,15 @@ public class XMLCodeCompletion_0003 extends XMLCodeCompletion {
 
       CImportClickData[] aimpData =
       {
-        new CImportClickData( true, 0, 0, 2, 3, "Unknown import table state after first click, number of rows: ", null ),
-        new CImportClickData( true, 1, 0, 2, 5, "Unknown import table state after second click, number of rows: ", null ),
-        new CImportClickData( true, 2, 0, 2, 7, "Unknown import table state after third click, number of rows: ", null ),
-        new CImportClickData( true, 4, 0, 2, 8, "Unknown import table state after forth click, number of rows: ", null ),
-        new CImportClickData( true, 5, 1, 1, 8, "Unknown to click on checkbox. #", null )
+        new CImportClickData( true, 1, 0, 2, 3, "Unknown import table state after first click, number of rows: ", null ),
+        new CImportClickData( true, 2, 0, 2, 4, "Unknown import table state after second click, number of rows: ", null ),
+        new CImportClickData( true, 3, 1, 1, 4, "Unknown to click on checkbox. #", null )
       };
 
       CreateConstrainedInternal(
           TEST_JAVA_APP_NAME,
           aimpData,
-          TEST_JAVA_APP_NAME,
+          null,
           "purchaseOrder",
           0
         );

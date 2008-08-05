@@ -39,7 +39,9 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.test.xml.schema.codecompletion;
+package org.netbeans.test.xml.schema.general.codecompletion;
+
+import org.netbeans.test.xml.schema.general.GeneralXMLTest;
 
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.JellyTestCase;
@@ -59,14 +61,14 @@ import org.netbeans.jellytools.modules.editor.CompletionJListOperator;
 import java.util.List;
 import javax.swing.SwingUtilities;
 import junit.framework.AssertionFailedError;
-import org.netbeans.api.java.source.ui.ScanDialog;
+//import org.netbeans.api.java.source.ui.ScanDialog;
 
 /**
  *
  * @author michaelnazarov@netbeans.org
  */
 
-public class XMLCodeCompletion extends JellyTestCase {
+public class XMLCodeCompletion extends GeneralXMLTest {
     
     static final String JAVA_CATEGORY_NAME = "Java";
     static final String JAVA_PROJECT_NAME = "Java Application";
@@ -184,7 +186,7 @@ public class XMLCodeCompletion extends JellyTestCase {
         opNewProjectNameLocationStep.txtProjectName( ).setText( sName );
         opNewProjectWizard.finish( );
 
-        waitScanFinished( );
+        //waitScanFinished( );
     }
 
     public void CreateJavaPackageInternal( String sProject )
@@ -483,6 +485,7 @@ public class XMLCodeCompletion extends JellyTestCase {
 
       opxml.close( true );
     }
+    /*
     private static void waitScanFinished() {
         try {
             class Wait implements Runnable {
@@ -511,4 +514,5 @@ public class XMLCodeCompletion extends JellyTestCase {
             throw (AssertionFailedError)new AssertionFailedError().initCause(ex);
         }
     }
+    */
 }

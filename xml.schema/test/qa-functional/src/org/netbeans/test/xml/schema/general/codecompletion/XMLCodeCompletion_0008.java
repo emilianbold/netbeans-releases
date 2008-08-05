@@ -39,9 +39,16 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.test.xml.schema.codecompletion;
+package org.netbeans.test.xml.schema.general.codecompletion;
 
 import junit.framework.TestSuite;
+import org.netbeans.jellytools.EditorOperator;
+import org.netbeans.jellytools.NewFileWizardOperator;
+import org.netbeans.jellytools.ProjectsTabOperator;
+import org.netbeans.jellytools.nodes.ProjectRootNode;
+
+import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jemmy.operators.*;
 
 import org.netbeans.junit.NbTestCase;
 import java.util.Properties;
@@ -54,21 +61,20 @@ import org.netbeans.junit.NbModuleSuite;
  * @author michaelnazarov@netbeans.org
  */
 
-public class XMLCodeCompletion_0002 extends XMLCodeCompletion {
+public class XMLCodeCompletion_0008 extends XMLCodeCompletion {
     
-    static final String TEST_JAVA_APP_NAME = "java4xmlcodecompletion_0002";
+    static final String TEST_JAVA_APP_NAME = "java4xmlcodecompletion_0008";
 
-    public XMLCodeCompletion_0002(String arg0) {
+    public XMLCodeCompletion_0008(String arg0) {
         super(arg0);
     }
     
     public static Test suite( )
     {
       return NbModuleSuite.create(
-          NbModuleSuite.createConfiguration( XMLCodeCompletion_0002.class ).addTest(
+          NbModuleSuite.createConfiguration( XMLCodeCompletion_0008.class ).addTest(
             "CreateJavaApplication",
-            "AddSampleSchema",
-            "CreateConstrained",
+            "CreateConstrainedDTD",
             "StartTag"
            )
            .enableModules( ".*" )
@@ -86,33 +92,51 @@ public class XMLCodeCompletion_0002 extends XMLCodeCompletion {
         endTest( );
     }
 
-    public void AddSampleSchema( )
+    public void CreateConstrainedDTD( )
     {
       startTest( );
 
-      AddSampleSchemaInternal( TEST_JAVA_APP_NAME, null );
+      String sPackage = TEST_JAVA_APP_NAME;
+      String sApplication = TEST_JAVA_APP_NAME;
 
-      endTest( );
-    }
+      ProjectsTabOperator pto = new ProjectsTabOperator( );
+      ProjectRootNode prn = pto.getProjectRootNode( sApplication + "|Source Packages|" + sPackage );
+      prn.select( );
 
-    public void CreateConstrained( )
-    {
-      startTest( );
+      NewFileWizardOperator opNewFileWizard = NewFileWizardOperator.invoke( );
 
-      CImportClickData[] aimpData =
+      // PAGE ===========================================================
+      opNewFileWizard.selectCategory( "XML" );
+      opNewFileWizard.selectFileType( "XML Document" );
+      opNewFileWizard.next( );
+
+      // PAGE ===========================================================
+      opNewFileWizard.next( );
+
+      // PAGE ===========================================================
+      JDialogOperator jnew = new JDialogOperator( "New File" );
+      JRadioButtonOperator jbut = new JRadioButtonOperator( jnew, "DTD-Constrained Document" );
+      jbut.setSelected( true );
+      jbut.clickMouse( );
+      opNewFileWizard.next( );
+
+      // PAGE ===========================================================
+      jnew = new JDialogOperator( "New File" );
+      JComboBoxOperator jRoot = new JComboBoxOperator( jnew, 2 );
+      jRoot.enterText( "arg" );
+      //JButtonOperator jFinish = new JButtonOperator( jnew, "Finish" );
+      //jFinish.pushNoBlock( );
+      //opNewFileWizard.finish( );
+
+      // Check created schema in project tree
+      prn = pto.getProjectRootNode( sApplication );
+      if( null == ( new Node( prn, "Source Packages|" + sPackage + "|newXMLDocument.xml" ) ) )
       {
-        new CImportClickData( true, 1, 0, 2, 3, "Unknown import table state after first click, number of rows: ", null ),
-        new CImportClickData( true, 2, 0, 2, 4, "Unknown import table state after second click, number of rows: ", null ),
-        new CImportClickData( true, 3, 1, 1, 4, "Unknown to click on checkbox. #", null )
-      };
+        fail( "Unable to check created document." );
+      }
 
-      CreateConstrainedInternal(
-          TEST_JAVA_APP_NAME,
-          aimpData,
-          null,
-          "purchaseOrder",
-          0
-        );
+      // Check there is newly created schema opened in editor
+      EditorOperator xmlCode = new EditorOperator( "newXMLDocument.xml" );
 
       endTest( );
     }
@@ -121,7 +145,14 @@ public class XMLCodeCompletion_0002 extends XMLCodeCompletion {
     {
       startTest( );
 
-      StartTagInternal( "newXMLDocument.xml", "</ns1:purchaseOrder>", true, null );
+      String[] asCases =
+      {
+        "arg", "arg0", "arg1", "arg2", "arg3", "constant", "constant-name",
+        "constant-value", "field", "form", "form-validation", "formset",
+        "global", "javascript", "msg", "validator", "var", "var-jstype",
+        "var-name", "var-value"
+      };
+      StartTagInternal( "newXMLDocument.xml", "</arg>", false, asCases );
 
       endTest( );
     }

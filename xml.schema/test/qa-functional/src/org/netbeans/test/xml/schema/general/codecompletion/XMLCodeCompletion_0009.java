@@ -39,9 +39,16 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.test.xml.schema.codecompletion;
+package org.netbeans.test.xml.schema.general.codecompletion;
 
 import junit.framework.TestSuite;
+import org.netbeans.jellytools.NewFileWizardOperator;
+import org.netbeans.jellytools.ProjectsTabOperator;
+import org.netbeans.jellytools.nodes.ProjectRootNode;
+
+import org.netbeans.jellytools.MainWindowOperator;
+import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jemmy.operators.*;
 
 import org.netbeans.junit.NbTestCase;
 import java.util.Properties;
@@ -54,21 +61,20 @@ import org.netbeans.junit.NbModuleSuite;
  * @author michaelnazarov@netbeans.org
  */
 
-public class XMLCodeCompletion_0001 extends XMLCodeCompletion {
+public class XMLCodeCompletion_0009 extends XMLCodeCompletion {
     
-    static final String TEST_JAVA_APP_NAME = "java4xmlcodecompletion_0001";
+    static final String TEST_JAVA_APP_NAME = "java4xmlcodecompletion_0009";
 
-    public XMLCodeCompletion_0001(String arg0) {
+    public XMLCodeCompletion_0009(String arg0) {
         super(arg0);
     }
     
     public static Test suite( )
     {
       return NbModuleSuite.create(
-          NbModuleSuite.createConfiguration( XMLCodeCompletion_0001.class ).addTest(
+          NbModuleSuite.createConfiguration( XMLCodeCompletion_0009.class ).addTest(
             "CreateJavaApplication",
-            "AddSampleSchema",
-            "CreateConstrained",
+            "CreatePersistent",
             "StartTag"
            )
            .enableModules( ".*" )
@@ -86,35 +92,41 @@ public class XMLCodeCompletion_0001 extends XMLCodeCompletion {
         endTest( );
     }
 
-    public void AddSampleSchema( )
+    public void CreatePersistent( )
     {
       startTest( );
 
-      AddSampleSchemaInternal( TEST_JAVA_APP_NAME, null );
+      ProjectsTabOperator pto = new ProjectsTabOperator( );
+      ProjectRootNode prn = pto.getProjectRootNode( TEST_JAVA_APP_NAME );
+      prn.select( );
 
-      endTest( );
-    }
+      NewFileWizardOperator opNewFileWizard = NewFileWizardOperator.invoke( );
+      opNewFileWizard.selectCategory( "Persistence" );
+      opNewFileWizard.selectFileType( "Persistence Unit" );
+      opNewFileWizard.next( );
 
-    public void CreateConstrained( )
-    {
-      startTest( );
+      JDialogOperator jnew = new JDialogOperator( "New Persistence Unit" );
+      JComboBoxOperator jDC = new JComboBoxOperator( jnew, 1 );
 
-      CImportClickData[] aimpData =
+      int ic = jDC.getItemCount( );
+      for( int i = 0; i < ic; i++ )
       {
-        new CImportClickData( true, 0, 0, 2, 3, "Unknown import table state after first click, number of rows: ", null ),
-        new CImportClickData( true, 1, 0, 2, 5, "Unknown import table state after second click, number of rows: ", null ),
-        new CImportClickData( true, 2, 0, 2, 7, "Unknown import table state after third click, number of rows: ", null ),
-        new CImportClickData( true, 3, 0, 2, 8, "Unknown import table state after forth click, number of rows: ", null ),
-        new CImportClickData( true, 4, 1, 1, 8, "Unknown to click on checkbox. #", null )
-      };
-  
-      CreateConstrainedInternal(
-          TEST_JAVA_APP_NAME,
-          aimpData,
-          null,
-          "purchaseOrder",
-          0
-        );
+        Object o = jDC.getItemAt( i );
+        System.out.println( "++++" + o );
+      }
+
+      jDC.selectItem( 0 );
+
+      opNewFileWizard.finish( );
+
+      // Check created schema in project tree
+      if( null == ( new Node( prn, "Source Packages|META-INF|persistence.xml" ) ) )
+      {
+        fail( "Unable to check created unit." );
+      }
+
+      new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("View|Editors|Design");
+      new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("View|Editors|XML");
 
       endTest( );
     }
@@ -123,7 +135,16 @@ public class XMLCodeCompletion_0001 extends XMLCodeCompletion {
     {
       startTest( );
 
-      StartTagInternal( "newXMLDocument.xml", "</ns1:purchaseOrder>", true, null );
+      String[] asCases =
+      {
+        "persistence-unit"
+      };
+      StartTagInternal(
+          "persistence.xml",
+          "</persistence>",
+          true,
+          asCases
+        );
 
       endTest( );
     }

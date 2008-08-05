@@ -39,10 +39,9 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.test.xml.schema.codecompletion;
+package org.netbeans.test.xml.schema.general.codecompletion;
 
 import junit.framework.TestSuite;
-
 
 import org.netbeans.junit.NbTestCase;
 import java.util.Properties;
@@ -55,32 +54,29 @@ import org.netbeans.junit.NbModuleSuite;
  * @author michaelnazarov@netbeans.org
  */
 
-public class XMLCodeCompletion_0006 extends XMLCodeCompletion {
+public class XMLCodeCompletion_0001 extends XMLCodeCompletion {
     
-    static final String TEST_JAVA_APP_NAME = "java4xmlcodecompletion_0006";
+    static final String TEST_JAVA_APP_NAME = "java4xmlcodecompletion_0001";
 
-    public XMLCodeCompletion_0006(String arg0) {
+    public XMLCodeCompletion_0001(String arg0) {
         super(arg0);
     }
     
     public static Test suite( )
     {
       return NbModuleSuite.create(
-          NbModuleSuite.createConfiguration( XMLCodeCompletion_0006.class ).addTest(
+          NbModuleSuite.createConfiguration( XMLCodeCompletion_0001.class ).addTest(
             "CreateJavaApplication",
-            "CreateSchema",
-            "AddElements1",
-            "CreateSchema",
-            "AddElements2",
+            "AddSampleSchema",
             "CreateConstrained",
-            "StartAndContinueTag"
+            "StartTag"
            )
            .enableModules( ".*" )
            .clusters( ".*" )
            //.gui( true )
         );
     }
-    
+
     public void CreateJavaApplication( )
     {
         startTest( );
@@ -90,29 +86,11 @@ public class XMLCodeCompletion_0006 extends XMLCodeCompletion {
         endTest( );
     }
 
-    public void CreateSchema( )
+    public void AddSampleSchema( )
     {
       startTest( );
 
-      CreateSchemaInternal( TEST_JAVA_APP_NAME );
-
-      endTest( );
-    }
-
-    public void AddElements1( )
-    {
-      startTest( );
-
-      AddElementInternal( "newXmlSchema.xsd" );
-
-      endTest( );
-    }
-
-    public void AddElements2( )
-    {
-      startTest( );
-
-      AddElementInternal( "newXmlSchema1.xsd" );
+      AddSampleSchemaInternal( TEST_JAVA_APP_NAME, null );
 
       endTest( );
     }
@@ -126,47 +104,26 @@ public class XMLCodeCompletion_0006 extends XMLCodeCompletion {
         new CImportClickData( true, 0, 0, 2, 3, "Unknown import table state after first click, number of rows: ", null ),
         new CImportClickData( true, 1, 0, 2, 5, "Unknown import table state after second click, number of rows: ", null ),
         new CImportClickData( true, 2, 0, 2, 7, "Unknown import table state after third click, number of rows: ", null ),
-        new CImportClickData( true, 3, 0, 2, 9, "Unknown import table state after forth click, number of rows: ", null ),
-        new CImportClickData( true, 4, 1, 1, 9, "Unknown to click on checkbox. #", null ),
-        new CImportClickData( true, 5, 1, 1, 9, "Unknown to click on checkbox. #", null )
+        new CImportClickData( true, 3, 0, 2, 8, "Unknown import table state after forth click, number of rows: ", null ),
+        new CImportClickData( true, 4, 1, 1, 8, "Unknown to click on checkbox. #", null )
       };
-
+  
       CreateConstrainedInternal(
           TEST_JAVA_APP_NAME,
           aimpData,
           null,
-          null,
-          1
+          "purchaseOrder",
+          0
         );
 
       endTest( );
     }
 
-    public void StartAndContinueTag( )
+    public void StartTag( )
     {
       startTest( );
 
-      String[] asCases =
-      {
-        "ns1:newElement", // "ns1:newElement [1..1]",
-        "ns2:newElement", // "ns2:newElement [1..1]"
-      };
-
-      String[] asCasesClose =
-      {
-        "</ns1:newElement>"
-      };
-
-      StartAndContinueTagInternal(
-          "newXMLDocument.xml",
-          "</ns1:newElement>",
-          true,
-          asCases,
-          "ns1:newElement",
-          asCasesClose
-        );
-
-      // Continue tag and finish
+      StartTagInternal( "newXMLDocument.xml", "</ns1:purchaseOrder>", true, null );
 
       endTest( );
     }
