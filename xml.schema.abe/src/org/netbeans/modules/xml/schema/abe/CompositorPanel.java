@@ -194,7 +194,7 @@ public class CompositorPanel extends ElementsContainerPanel{
         compositorTypePanel.setLayout(compositorTypePanelLayout);
         compositorTypeLabel = new InplaceEditableLabel(getCompositorTypeString());
         Font font = compositorTypeLabel.getFont();
-        font = font.deriveFont((font.getStyle() | java.awt.Font.PLAIN), font.getSize()+2);
+        font = font.deriveFont((font.getStyle() | java.awt.Font.PLAIN), font.getSize());
         compositorTypeLabel.setFont(font);
         compositorTypeLabel.setForeground(InstanceDesignConstants.COMPOSITOR_TYPE_LABEL_COLOR);
         
