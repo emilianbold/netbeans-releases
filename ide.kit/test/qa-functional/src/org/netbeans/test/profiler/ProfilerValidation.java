@@ -53,7 +53,6 @@ import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.ActionNoBlock;
-import org.netbeans.jellytools.actions.OptionsViewAction;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.TimeoutExpiredException;
@@ -75,34 +74,13 @@ import org.netbeans.test.ide.WatchProjects;
 public class ProfilerValidation extends JellyTestCase {
     
     private static final String SAMPLE_PROJECT_NAME = "AnagramGame";
+
+    protected static final String  PROFILER_ACTIONS_BUNDLE = "org.netbeans.modules.profiler.actions.Bundle";
+    protected static final String  PROFILER_UI_PANELS_BUNDLE = "org.netbeans.modules.profiler.ui.panels.Bundle";
     
-    protected static final String  MENU_ITEM_PROFILE_MAIN_PROJECT   = "Profile Project...";
-    protected static final String  MENU_ITEM_ATTACH_PROFILE         = "Attach Profiler...";
-    protected static final String  MENU_ITEM_TAKE_SNAPSHOT          = "Take Snapshot of Collected Results";
-    protected static final String  MENU_ITEM_STOP_PROFILING_SESSION = "Stop Profiling Session";
-    
-    
-    protected static final String  LABEL_JAVA_PLATFORM = "Profiler Java Platform";
-    protected static final String  LABEL_COMMUNICATION_PORT = "Communication Port";
-    
-    
-    protected static final String  LABEL_OPEN_THREADS_VIEW = "Open Threads View";
-    protected static final String  LABEL_CPU = "CPU";
-    protected static final String  LABEL_MEMORY = "Memory";
-    
-    
-    
-    protected static final String  LABEL_OPEN_NEW_SNAPSHOT = "Open New Snapshot";
-    
-    protected static final String  LABEL_SAVE_HEAP_DUMP = "Save heap dump to";
-    protected static final String  LABEL_ENABLE_HEAP_ANALYSIS = "Enable Rule-Based Heap Analysis";
-    
-    
-    protected static final String  BUTTON_RUN = "Run";
-    protected static final String  BUTTON_RESET = "Reset";
-    
-    
-    protected static final String  TEXT_OUTPUT = "Established local connection with the tool";
+    protected static final String  BUTTON_RUN = "Run"; // not used in tests yet
+    protected static final String  TEXT_OUTPUT = "Established local connection with the tool"; // not used in tests yet
+
     
     static String[] tests = new String[]{
             "testProfilerMenus",
@@ -153,40 +131,52 @@ public class ProfilerValidation extends JellyTestCase {
 
     /** Test Profiler Menus. */
     public void testProfilerMenus(){
-
-        new ActionNoBlock("Profile|" + MENU_ITEM_PROFILE_MAIN_PROJECT, null).isEnabled();
-        new ActionNoBlock("Profile|" + MENU_ITEM_ATTACH_PROFILE, null).isEnabled();
-        new ActionNoBlock("Profile|" + MENU_ITEM_TAKE_SNAPSHOT, null).isEnabled();
-        new ActionNoBlock("Profile|" + MENU_ITEM_STOP_PROFILING_SESSION, null).isEnabled();
+        //Profile|Profile Project
+        new ActionNoBlock("Profile|" + Bundle.getStringTrimmed(PROFILER_ACTIONS_BUNDLE,
+                                        "LBL_ProfileMainProjectAction"), null).isEnabled();
+        //Profile|Attach Profiler...
+        new ActionNoBlock("Profile|" + Bundle.getStringTrimmed(PROFILER_ACTIONS_BUNDLE,
+                                        "LBL_AttachMainProjectAction"), null).isEnabled();
+        //Profile|Take Snapshot of Collected Results
+        new ActionNoBlock("Profile|" + Bundle.getStringTrimmed(PROFILER_ACTIONS_BUNDLE,
+                                        "LBL_TakeSnapshotAction"), null).isEnabled();
+        //Profile|Stop Profiling Session
+        new ActionNoBlock("Profile|" + Bundle.getStringTrimmed(PROFILER_ACTIONS_BUNDLE,
+                                        "LBL_StopAction"), null).isEnabled();
         
     }
     
     /** Test Profiler Properties. */
     public void testProfilerProperties(){
-        new OptionsViewAction().performMenu();
+        new ActionNoBlock("Tools|Options", null).perform();
         
         OptionsOperator options = new OptionsOperator();
         options.selectCategory("Miscellaneous");        
         
         JTabbedPaneOperator tabbedPane = new JTabbedPaneOperator(options);
         tabbedPane.selectPage("Profiler");
-                
-        JLabelOperator javaPlatform = new JLabelOperator(options, LABEL_JAVA_PLATFORM);
-        
-        JLabelOperator communicationPort = new JLabelOperator(options, LABEL_COMMUNICATION_PORT);
-        
-        JLabelOperator openThreads = new JLabelOperator(options, LABEL_OPEN_THREADS_VIEW);
-        JCheckBoxOperator cpu    = new JCheckBoxOperator(options, LABEL_CPU);
-        JCheckBoxOperator memory = new JCheckBoxOperator(options, LABEL_MEMORY);
-        
-        
-        JComboBoxOperator openNewSnapshot= new JComboBoxOperator(options, LABEL_OPEN_NEW_SNAPSHOT);
-        
-        
-        
-        JCheckBoxOperator enableHeapAnalisys = new JCheckBoxOperator(options, LABEL_ENABLE_HEAP_ANALYSIS);
-        
-        JButtonOperator reset = new JButtonOperator(options, BUTTON_RESET);
+
+        JLabelOperator javaPlatform = new JLabelOperator(options, Bundle.getStringTrimmed(PROFILER_UI_PANELS_BUNDLE,
+                                                                "ProfilerOptionsPanel_JavaPlatformLabelText")); //"Profiler Java Platform"
+
+        JLabelOperator communicationPort = new JLabelOperator(options, Bundle.getStringTrimmed(PROFILER_UI_PANELS_BUNDLE,
+                                                                "ProfilerOptionsPanel_CommPortLabelText") );//"Communication Port"
+
+        JLabelOperator openThreads = new JLabelOperator(options, Bundle.getStringTrimmed(PROFILER_UI_PANELS_BUNDLE,
+                                                                "ProfilerOptionsPanel_ThreadsViewLabelText") );//"Open Threads View"
+        JCheckBoxOperator cpu    = new JCheckBoxOperator(options, Bundle.getStringTrimmed(PROFILER_UI_PANELS_BUNDLE,
+                                                                "ProfilerOptionsPanel_CpuChckBoxText") );//"CPU"
+        JCheckBoxOperator memory = new JCheckBoxOperator(options, Bundle.getStringTrimmed(PROFILER_UI_PANELS_BUNDLE,
+                                                                "ProfilerOptionsPanel_MemoryChckBoxText") );//"Memory"
+
+        JComboBoxOperator openNewSnapshot= new JComboBoxOperator(options, Bundle.getStringTrimmed(PROFILER_UI_PANELS_BUNDLE,
+                                                                "ProfilerOptionsPanel_OpenSnapshotRadioText") );//"Open New Snapshot"
+
+        JCheckBoxOperator enableHeapAnalisys = new JCheckBoxOperator(options, Bundle.getStringTrimmed(PROFILER_UI_PANELS_BUNDLE,
+                                                                "ProfilerOptionsPanel_EnableAnalysisCheckbox") ); //"Enable Rule-Based Heap Analysis"
+
+        JButtonOperator reset = new JButtonOperator(options, Bundle.getStringTrimmed(PROFILER_UI_PANELS_BUNDLE,
+                                                                "ProfilerOptionsPanel_ResetButtonName") ); //"Reset"
         
         new JButtonOperator(options, "OK").push();
         
