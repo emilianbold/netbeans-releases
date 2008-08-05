@@ -290,7 +290,7 @@ public class SQLEditorSupport extends DataEditorSupport
     
     /**
      * Executes either all or a part of the given sql string (which can contain
-     * zero or more SQL statements). If startOffset < endOffset, the part of
+     * zero or more SQL statements). If startOffset &lt; endOffset, the part of
      * sql specified is executed. If startOffset == endOffset, the statement
      * containing the character at startOffset, if any, is executed.
      *
