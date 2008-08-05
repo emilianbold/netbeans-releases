@@ -454,7 +454,9 @@ final class MagicSurroundWithTryCatchFix implements Fix {
         List<CatchTree> catches = new ArrayList<CatchTree>();
 
         for (TypeMirrorHandle th : thandles) {
-            catches.add(createCatch(info, make, currentPath, name, th.resolve(info)));
+            TypeMirror tm = th.resolve(info);
+            if(tm != null)
+                catches.add(createCatch(info, make, currentPath, name, tm));
         }
 
         return catches;
