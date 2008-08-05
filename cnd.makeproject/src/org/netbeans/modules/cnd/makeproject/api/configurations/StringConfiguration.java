@@ -104,6 +104,10 @@ public class StringConfiguration {
 	value = getDefault();
 	setModified(false);
     }
+    
+    public void setDefaultValue(String def) {
+        this.def = def;
+    }
 
     // Clone and Assign
     public void assign(StringConfiguration conf) {
