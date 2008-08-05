@@ -93,6 +93,9 @@
               </StringArray>
             </Property>
           </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="languageChanged"/>
+          </Events>
         </Component>
         <Component class="javax.swing.JLabel" name="categoryLabel">
           <Properties>
@@ -115,6 +118,9 @@
               </StringArray>
             </Property>
           </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="categoryChanged"/>
+          </Events>
         </Component>
         <Container class="javax.swing.JPanel" name="categoryPanel">
           <Properties>
@@ -155,7 +161,7 @@
             </Constraint>
           </Constraints>
         </Component>
-        <Container class="javax.swing.JScrollPane" name="jScrollPane1">
+        <Container class="javax.swing.JScrollPane" name="previewScrollPane">
           <Properties>
             <Property name="doubleBuffered" type="boolean" value="true"/>
           </Properties>
@@ -166,13 +172,6 @@
           </Constraints>
 
           <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
-          <SubComponents>
-            <Component class="javax.swing.JEditorPane" name="previewPane">
-              <Properties>
-                <Property name="editable" type="boolean" value="false"/>
-              </Properties>
-            </Component>
-          </SubComponents>
         </Container>
       </SubComponents>
     </Container>

@@ -170,32 +170,32 @@ made subject to such option by the copyright holder.
               <folder name="text">
                   <folder name="x-java">
                       <file name="TabsAndIndents.instance">
-                          <attr name="instanceOf" stringvalue="org.netbeans.spi.options.OptionsPanelController"/>
+                          <attr name="instanceOf" stringvalue="org.netbeans.modules.options.editor.spi.PreferencesCustomizer$Factory"/>
                           <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.ui.FmtTabsIndents.getController"/>
                           <attr name="position" intvalue="100"/>
                       </file>
                       <file name="Alignment.instance">
-                          <attr name="instanceOf" stringvalue="org.netbeans.spi.options.OptionsPanelController"/>
+                          <attr name="instanceOf" stringvalue="org.netbeans.modules.options.editor.spi.PreferencesCustomizer$Factory"/>
                           <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.ui.FmtAlignment.getController"/>
                           <attr name="position" intvalue="200"/>
                       </file>
                       <file name="Braces.instance">
-                          <attr name="instanceOf" stringvalue="org.netbeans.spi.options.OptionsPanelController"/>
+                          <attr name="instanceOf" stringvalue="org.netbeans.modules.options.editor.spi.PreferencesCustomizer$Factory"/>
                           <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.ui.FmtBraces.getController"/>
                           <attr name="position" intvalue="300"/>
                       </file>
                       <file name="Wrapping.instance">
-                          <attr name="instanceOf" stringvalue="org.netbeans.spi.options.OptionsPanelController"/>
+                          <attr name="instanceOf" stringvalue="org.netbeans.modules.options.editor.spi.PreferencesCustomizer$Factory"/>
                           <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.ui.FmtWrapping.getController"/>
                           <attr name="position" intvalue="400"/>
                       </file>
                       <file name="BlankLines.instance">
-                          <attr name="instanceOf" stringvalue="org.netbeans.spi.options.OptionsPanelController"/>
+                          <attr name="instanceOf" stringvalue="org.netbeans.modules.options.editor.spi.PreferencesCustomizer$Factory"/>
                           <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.ui.FmtBlankLines.getController"/>
                           <attr name="position" intvalue="500"/>
                       </file>
                       <file name="Spaces.instance">
-                          <attr name="instanceOf" stringvalue="org.netbeans.spi.options.OptionsPanelController"/>
+                          <attr name="instanceOf" stringvalue="org.netbeans.modules.options.editor.spi.PreferencesCustomizer$Factory"/>
                           <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.ui.FmtSpaces.getController"/>
                           <attr name="position" intvalue="600"/>
                       </file>

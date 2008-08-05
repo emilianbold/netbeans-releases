@@ -62,22 +62,42 @@ final class IndentationModel {
 
     private static final Logger LOG = Logger.getLogger(IndentationModel.class.getName());
     
+    private boolean         originalOverrideGlobalOptions;
     private boolean         originalExpandedTabs;
     private int             originalSpacesPerTab = 0;
     private int             originalTabSize = 0;
     private int             originalRightMargin = 0;
     
     private boolean         changed = false;
+    
     private final Preferences preferences;
+    private final String mimeType;
 
-    IndentationModel (Preferences prefs) {
+    IndentationModel (Preferences prefs, String mimeType) {
         this.preferences = prefs;
+        this.mimeType = mimeType; // can be null, which indicates that the model is used for 'all languages'
 
         // save original values
+        originalOverrideGlobalOptions = isOverrideGlobalOptions();
         originalExpandedTabs = isExpandTabs();
         originalSpacesPerTab = getSpacesPerTab();
         originalTabSize = getTabSize();
         originalRightMargin = getRightMargin();
+    }
+    
+    boolean isOverrideGlobalOptions() {
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.fine("Reading " + SimpleValueNames.OVERRIDE_GLOBAL_FORMATTING_OPTIONS + "=" + preferences.get(SimpleValueNames.OVERRIDE_GLOBAL_FORMATTING_OPTIONS, null));
+        }
+        return preferences.getBoolean(SimpleValueNames.OVERRIDE_GLOBAL_FORMATTING_OPTIONS, false);
+    }
+    
+    void setOverrideGlobalOptions(boolean override) {
+        preferences.putBoolean(SimpleValueNames.OVERRIDE_GLOBAL_FORMATTING_OPTIONS, override);
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.fine("Writing " + SimpleValueNames.OVERRIDE_GLOBAL_FORMATTING_OPTIONS + "=" + override);
+        }
+        updateChanged ();
     }
     
     boolean isExpandTabs() {
@@ -150,16 +170,39 @@ final class IndentationModel {
 
     void applyChanges() {
         if (!changed) return; // no changes
-        applyParameterToAll(SimpleValueNames.EXPAND_TABS, isExpandTabs(), "setExpandTabs", Boolean.TYPE); //NOI18N
-        applyParameterToAll(SimpleValueNames.SPACES_PER_TAB, getSpacesPerTab(), "setSpacesPerTab", Integer.TYPE); //NOI18N
-        applyParameterToAll(SimpleValueNames.INDENT_SHIFT_WIDTH, getSpacesPerTab(), null, Integer.TYPE); //NOI18N
-        applyParameterToAll(SimpleValueNames.TAB_SIZE, getTabSize(), "setTabSize", Integer.TYPE); //NOI18N
-        applyParameterToAll(SimpleValueNames.TEXT_LIMIT_WIDTH, getRightMargin(), "setTextLimitWidth", Integer.TYPE); //NOI18N
+        
+        if (mimeType == null) {
+            // we are manipulating all languages
+            applyParameterToAll(SimpleValueNames.EXPAND_TABS, isExpandTabs(), "setExpandTabs", Boolean.TYPE); //NOI18N
+            applyParameterToAll(SimpleValueNames.SPACES_PER_TAB, getSpacesPerTab(), "setSpacesPerTab", Integer.TYPE); //NOI18N
+            applyParameterToAll(SimpleValueNames.INDENT_SHIFT_WIDTH, getSpacesPerTab(), null, Integer.TYPE); //NOI18N
+            applyParameterToAll(SimpleValueNames.TAB_SIZE, getTabSize(), "setTabSize", Integer.TYPE); //NOI18N
+            applyParameterToAll(SimpleValueNames.TEXT_LIMIT_WIDTH, getRightMargin(), "setTextLimitWidth", Integer.TYPE); //NOI18N
+        } else {
+            // we are manipulating only mimeType
+            applyParameter(mimeType, SimpleValueNames.OVERRIDE_GLOBAL_FORMATTING_OPTIONS, isOverrideGlobalOptions(), null, Boolean.TYPE, null); //NOI18N
+            if (isOverrideGlobalOptions()) {
+                applyParameter(mimeType, SimpleValueNames.EXPAND_TABS, isExpandTabs(), "setExpandTabs", Boolean.TYPE, null); //NOI18N
+                applyParameter(mimeType, SimpleValueNames.SPACES_PER_TAB, getSpacesPerTab(), "setSpacesPerTab", Integer.TYPE, null); //NOI18N
+                applyParameter(mimeType, SimpleValueNames.INDENT_SHIFT_WIDTH, getSpacesPerTab(), null, Integer.TYPE, null); //NOI18N
+                applyParameter(mimeType, SimpleValueNames.TAB_SIZE, getTabSize(), "setTabSize", Integer.TYPE, null); //NOI18N
+                applyParameter(mimeType, SimpleValueNames.TEXT_LIMIT_WIDTH, getRightMargin(), "setTextLimitWidth", Integer.TYPE, null); //NOI18N
+            } else {
+                preferences.remove(SimpleValueNames.EXPAND_TABS);
+                preferences.remove(SimpleValueNames.SPACES_PER_TAB);
+                preferences.remove(SimpleValueNames.INDENT_SHIFT_WIDTH);
+                preferences.remove(SimpleValueNames.TAB_SIZE);
+                preferences.remove(SimpleValueNames.TEXT_LIMIT_WIDTH);
+            }
+        }
         
     }
     
     void revertChanges () {
         if (!changed) return; // no changes
+        if (isOverrideGlobalOptions() != originalOverrideGlobalOptions) {
+            setOverrideGlobalOptions(originalOverrideGlobalOptions);
+        }
         if (isExpandTabs() != originalExpandedTabs) {
             setExpandTabs(originalExpandedTabs);
         }
@@ -177,7 +220,8 @@ final class IndentationModel {
     // private helper methods ..................................................
 
     private void updateChanged () {
-        changed = 
+        changed =
+                isOverrideGlobalOptions() != originalOverrideGlobalOptions ||
                 isExpandTabs() != originalExpandedTabs ||
                 getSpacesPerTab() != originalSpacesPerTab ||
                 getTabSize() != originalTabSize ||
@@ -192,34 +236,12 @@ final class IndentationModel {
     ) {
         HashSet<IndentEngine> mimeTypeBoundEngines = new HashSet<IndentEngine>();
         Set<String> mimeTypes = new HashSet<String>(EditorSettings.getDefault().getMimeTypes());
-        mimeTypes.add("");
+        mimeTypes.add(""); //NOI18N
         
-        for(String mimeType : mimeTypes) {
-            Preferences prefs = MimeLookup.getLookup(mimeType).lookup(Preferences.class);
-            
-            if (prefs == null) {
-                if (LOG.isLoggable(Level.FINE)) {
-                    LOG.fine("!!! no Preferences for '" + mimeType + "'");
-                }
-                continue;
-            }
-            
-            if (settingValue instanceof Boolean) {
-                prefs.putBoolean(settingName, (Boolean) settingValue);
-            } else if (settingValue instanceof Integer) {
-                prefs.putInt(settingName, (Integer) settingValue);
-            } else {
-                assert false : "Unexpected setting value: settingName='" + settingName + "', settingValue=" + settingValue; //NOI18N
-            }
-            
-            if (mimeType.length() > 0 && baseOptionsSetter != null) {
-                IndentEngine indentEngine = hacksForBaseOptionsAndIndentEngine(mimeType, baseOptionsSetter, settingValue, settingType);
-                if (indentEngine != null) {
-                    mimeTypeBoundEngines.add(indentEngine);
-                }
-            }
+        for(String m : mimeTypes) {
+            applyParameter(m, settingName, settingValue, baseOptionsSetter, settingType, mimeTypeBoundEngines);
         }
-        
+
         // There can be other engines that are not currently hooked up with
         // BaseOptions/mime-type.
         if (baseOptionsSetter != null) {
@@ -237,6 +259,38 @@ final class IndentationModel {
                         // ignore
                     }
                 }
+            }
+        }
+    }
+    
+    private void applyParameter (
+        String mimeType,
+        String settingName,
+        Object settingValue,
+        String baseOptionsSetter, 
+        Class settingType,
+        Set<IndentEngine> mimeTypeBoundEngines
+    ) {
+        Preferences prefs = MimeLookup.getLookup(mimeType).lookup(Preferences.class);
+
+        if (prefs != null) {
+            if (settingValue instanceof Boolean) {
+                prefs.putBoolean(settingName, (Boolean) settingValue);
+            } else if (settingValue instanceof Integer) {
+                prefs.putInt(settingName, (Integer) settingValue);
+            } else {
+                assert false : "Unexpected setting value: settingName='" + settingName + "', settingValue=" + settingValue; //NOI18N
+            }
+        } else {
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.fine("!!! no Preferences for '" + mimeType + "'");
+            }
+        }
+
+        if (mimeType.length() > 0 && baseOptionsSetter != null) {
+            IndentEngine indentEngine = hacksForBaseOptionsAndIndentEngine(mimeType, baseOptionsSetter, settingValue, settingType);
+            if (indentEngine != null && mimeTypeBoundEngines != null) {
+                mimeTypeBoundEngines.add(indentEngine);
             }
         }
     }

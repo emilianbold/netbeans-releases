@@ -41,14 +41,17 @@
 
 package org.netbeans.modules.options.indentation;
 
-import java.beans.PropertyChangeListener;
+import java.awt.Dimension;
+import java.util.logging.Logger;
 import java.util.prefs.Preferences;
+import javax.swing.BoxLayout;
 import javax.swing.JComponent;
-import javax.swing.JEditorPane;
-import org.netbeans.spi.options.OptionsPanelController;
+import javax.swing.JPanel;
+import org.netbeans.modules.options.editor.spi.PreferencesCustomizer;
+import org.netbeans.modules.options.editor.spi.PreviewProvider;
 
 import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -56,61 +59,96 @@ import org.openide.util.Lookup;
  *
  * @author Jan Jancura
  */
-public final class IndentationPanelController extends OptionsPanelController {
+public final class IndentationPanelController implements PreferencesCustomizer, PreviewProvider {
 
-    public IndentationPanelController() {
-        
+    private static final Logger LOG = Logger.getLogger(IndentationPanelController.class.getName());
+    
+    public IndentationPanelController(Preferences prefs) {
+        this(prefs, null);
     }
     
-    public void update () {
-        getIndentationPanel ().update ();
-    }
-
-    public void applyChanges () {
-        getIndentationPanel ().applyChanges ();
-    }
-    
-    public void cancel () {
-        getIndentationPanel ().cancel ();
-    }
-    
-    public boolean isValid () {
-        return getIndentationPanel ().dataValid ();
-    }
-    
-    public boolean isChanged () {
-        return getIndentationPanel ().isChanged ();
-    }
-    
-    public HelpCtx getHelpCtx () {
-        return new HelpCtx ("netbeans.optionsDialog.editor.identation");
-    }
-    
-    public JComponent getComponent (Lookup masterLookup) {
-        return getIndentationPanel(masterLookup);
+    public IndentationPanelController(Preferences prefs, PreferencesCustomizer delegate) {
+        assert prefs != null;
+        assert delegate == null || delegate instanceof PreviewProvider;
+        this.preferences = prefs;
+        this.delegate = delegate;
     }
 
-    public void addPropertyChangeListener (PropertyChangeListener l) {
-        getIndentationPanel ().addPropertyChangeListener (l);
-    }
+    // ------------------------------------------------------------------------
+    // PreviewProvider implementtaion
+    // ------------------------------------------------------------------------
 
-    public void removePropertyChangeListener (PropertyChangeListener l) {
-        getIndentationPanel ().removePropertyChangeListener (l);
-    }
-
-    private IndentationPanel indentationPanel;
-    
-    private IndentationPanel getIndentationPanel() {
-        assert indentationPanel != null;
-        return indentationPanel;
-    }
-
-    private IndentationPanel getIndentationPanel(Lookup lookup) {
+    public JComponent getComponent() {
         if (indentationPanel == null) {
-            Preferences prefs = lookup.lookup(Preferences.class);
-            JEditorPane preview = lookup.lookup(JEditorPane.class);
-            indentationPanel = new IndentationPanel(prefs, preview);
+            if (delegate != null) {
+                indentationPanel = new JPanel();
+                indentationPanel.setLayout(new BoxLayout(indentationPanel, BoxLayout.Y_AXIS));
+
+                // initialize the delegate's component first
+                JComponent delegateComp = delegate.getComponent();
+                indentationPanel.setName(delegateComp.getName());
+
+                // then create and initialize IndentationPanel
+                indentationPanel.add(new IndentationPanel(preferences, (PreviewProvider) delegate));
+                indentationPanel.add(delegateComp);
+
+                JPanel spacer = new JPanel();
+                spacer.setPreferredSize(new Dimension(10, Integer.MAX_VALUE));
+                indentationPanel.add(spacer);
+            } else {
+                indentationPanel = new IndentationPanel(preferences, null);
+            }
         }
         return indentationPanel;
+    }
+
+    public String getDisplayName() {
+        return NbBundle.getMessage(IndentationPanelController.class, "indentation-customizer-display-name"); //NOI18N
+    }
+
+    public String getId() {
+        return "tabs-and-indents"; //NOI18N
+    }
+
+    public HelpCtx getHelpCtx () {
+        if (delegate != null) {
+            return delegate.getHelpCtx();
+        } else {
+            return new HelpCtx ("netbeans.optionsDialog.editor.identation"); //NOI18N
+        }
+    }
+    
+    // ------------------------------------------------------------------------
+    // PreviewProvider implementtaion
+    // ------------------------------------------------------------------------
+
+    public JComponent getPreviewComponent() {
+        if (delegate != null) {
+            return ((PreviewProvider) delegate).getPreviewComponent();
+        } else {
+            return getIndentationPanel().getPreviewProvider().getPreviewComponent();
+        }
+    }
+
+    public void refreshPreview() {
+        if (delegate != null) {
+            ((PreviewProvider) delegate).refreshPreview();
+        } else {
+            getIndentationPanel().getPreviewProvider().refreshPreview();
+        }
+    }
+
+    // ------------------------------------------------------------------------
+    // private implementtaion
+    // ------------------------------------------------------------------------
+
+    private final Preferences preferences;
+    private final PreferencesCustomizer delegate;
+
+    private JComponent indentationPanel;
+    
+    private IndentationPanel getIndentationPanel() {
+        assert indentationPanel instanceof IndentationPanel;
+        return (IndentationPanel) indentationPanel;
     }
 }
