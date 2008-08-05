@@ -420,7 +420,7 @@
                 prefix="wsrp"/>
             
             <get
-                src="${portalpack.builds.host}/portalserver/PortalTooling/updates/nb61/build.txt"
+                src="${portalpack.builds.host}/portalserver/PortalTooling/updates/nb65/build.txt"
                 dest="${temp.file}"/>
             <loadfile property="portalpack.build.number"
           	    srcFile="${temp.file}">
@@ -1584,7 +1584,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-webcommon"          version="${nb.full.version}"/>
             <component uid="nb-javaee"             version="${nb.full.version}"/>
             <component uid="nb-soa"                version="${nb.full.version}"/>
-            <component uid="nb-portalpack"         version="2.0.0.0.${portalpack.build.number}"/>            
+            <component uid="nb-portalpack"         version="2.0.1.0.${portalpack.build.number}"/>            
             <component uid="sjsas"                 version="9.1.2.${sjsas.milestone.number}.${sjsas.build.number}"/>            
             <component uid="openesb"               version="5.0.5.${glassfish.milestone.number}.${openesb.build.number}"/>	                
             <component uid="sjsam"                 version="5.0.6.${sjsas.milestone.number}.${sjsam.build.number}"/>

@@ -35,5 +35,4 @@
 # holder.
 # 
 
-MYSQL_DIR=/usr/local/mysql
-/usr/bin/osascript -e 'do shell script "$MYSQL_DIR/support-files/mysql.server $@" with administrator privileges'
+/usr/bin/osascript -e "do shell script \"/usr/local/mysql/support-files/mysql.server $@\" with administrator privileges"
