@@ -526,7 +526,8 @@ public class AppClientProjectProperties {
 
         storeAdditionalProperties(projectProperties);
         List<ClassPathSupport.Item> cpItems = ClassPathUiSupport.getList(JAVAC_CLASSPATH_MODEL.getDefaultListModel());
-        ProjectProperties.storeLibrariesLocations(project.getAntProjectHelper(), cpItems.iterator(), projectProperties);
+        ProjectProperties.storeLibrariesLocations(project.getAntProjectHelper(), cpItems.iterator(), 
+                project.getAntProjectHelper().isSharableProject() ? projectProperties : privateProperties);
         
         // Store the property changes into the project
         updateHelper.putProperties( AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties );

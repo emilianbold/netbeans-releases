@@ -979,7 +979,9 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
             ProjectProperties.storeLibrariesLocations(helper, l.iterator(), helper.isSharableProject() ? props : ep);
             
             // #129316
-            ProjectProperties.removeObsoleteLibraryLocations(ep);
+            if (helper.isSharableProject()) {
+                ProjectProperties.removeObsoleteLibraryLocations(ep);
+            }
             ProjectProperties.refreshLibraryTotals(props, classPathModifier.getClassPathSupport(), ProjectProperties.JAVAC_CLASSPATH,  ClassPathSupportCallbackImpl.ELEMENT_INCLUDED_LIBRARIES);
             updateHelper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);            
             

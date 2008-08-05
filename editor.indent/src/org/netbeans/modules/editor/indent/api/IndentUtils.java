@@ -222,7 +222,7 @@ public final class IndentUtils {
                     String[] tabIndents = cachedTabIndents[tabSize];
                     if (tabIndents == null) {
                         // Do not cache spaces-only strings
-                        tabIndents = new String[MAX_CACHED_INDENT - tabSize];
+                        tabIndents = new String[MAX_CACHED_INDENT - tabSize + 1];
                         cachedTabIndents[tabSize] = tabIndents;
                     }
                     indentString = tabIndents[indent - tabSize];

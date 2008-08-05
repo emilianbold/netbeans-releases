@@ -105,6 +105,9 @@
           <Events>
             <EventHandler event="mouseClicked" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="copyrightMouseClicked"/>
           </Events>
+          <AuxValues>
+            <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="copyright.setCaretPosition(0); // so that text is not scrolled down"/>
+          </AuxValues>
         </Component>
       </SubComponents>
     </Container>

@@ -2933,7 +2933,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 js.runModificationTask(new Task<WorkingCopy>() {
 
                     public void run(WorkingCopy copy) throws IOException {
-                        copy.toPhase(JavaSource.Phase.PARSED);
+                        copy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                         TreePath tp = copy.getTreeUtilities().pathFor(offset);
                         if (tp.getLeaf().getKind() == Tree.Kind.CLASS) {
                             TypeElement parent = parentHandle.resolve(copy);

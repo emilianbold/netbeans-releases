@@ -39,11 +39,13 @@ else
 fi
 
 #Build the NB IDE first - no validation tests!
-ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f nbbuild/build.xml build-nozip -Dcluster.config=stableuc -Dbuild.compiler.debuglevel=source,lines
+ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f nbbuild/build.xml build-nozip -Dbuild.compiler.debuglevel=source,lines
+
 ERROR_CODE=$?
 
 if [ $ERROR_CODE != 0 ]; then
     echo "ERROR: $ERROR_CODE - Can't build stableuc module config"
+    echo "ERROR: $ERROR_CODE - Can't build IDE"
     exit $ERROR_CODE;
 fi
 
@@ -113,7 +115,7 @@ if [ $ERROR_CODE != 0 ]; then
 fi
 # J2EE UI validation tests
 for i in 1 2 3; do
-    ant -f xtest/instance/build.xml -Djdkhome=$JDK_TESTS -Dxtest.config=commit-validation-j2ee -Dxtest.instance.name="J2EE tests" -Dxtest.no.cleanresults=true -D"xtest.userdata|com.sun.aas.installRoot"=/hudson/workdir/jobs/trunk/testappsrv/glassfish -Dnetbeans.dest.dir=$NB_ALL/nbbuild/test-netbeans runtests
+    ant -f xtest/instance/build.xml -Djdkhome=$JDK_TESTS -Dxtest.config=commit-validation-j2ee -Dxtest.instance.name="J2EE tests" -Dxtest.no.cleanresults=true -D"xtest.userdata|com.sun.aas.installRoot"=$GLASSFISH_HOME -Dnetbeans.dest.dir=$NB_ALL/nbbuild/test-netbeans runtests
     ERROR_CODE=$?
     if [ $ERROR_CODE = 0 ]; then
         break;
@@ -173,9 +175,18 @@ echo TESTS STARTED: $TESTS_STARTED
 echo TESTS FINISHED: `date`
 if [ $TEST_CODE = 1 ]; then
     echo "ERROR: At least one of validation tests failed"
-#    exit 1;
+    exit 1;
 fi
 
+#Build the NB stableuc modules
+ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f nbbuild/build.xml rebuild-cluster -Drebuild.cluster.name=nb.cluster.stableuc -Dbuild.compiler.debuglevel=source,lines
+
+ERROR_CODE=$?
+
+if [ $ERROR_CODE != 0 ]; then
+    echo "ERROR: $ERROR_CODE - Can't build stableuc modules"
+    exit $ERROR_CODE;
+fi
 
 #Build JNLP
 #ant -Djnlp.codebase=http://bits.netbeans.org/6.1/jnlp/ -Djnlp.signjar.keystore=$KEYSTORE -Djnlp.signjar.alias=nb_ide -Djnlp.signjar.password=$STOREPASS -Djnlp.dest.dir=${DIST}/jnlp build-jnlp

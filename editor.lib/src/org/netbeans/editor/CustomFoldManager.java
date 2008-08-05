@@ -41,18 +41,20 @@
 
 package org.netbeans.editor;
 
-import org.netbeans.lib.editor.util.swing.DocumentUtilities;
-import org.openide.ErrorManager;
-
 import javax.swing.text.Document;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Position;
 import javax.swing.event.DocumentEvent;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 import org.netbeans.api.editor.fold.Fold;
 import org.netbeans.api.editor.fold.FoldType;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.spi.editor.fold.FoldHierarchyTransaction;
 import org.netbeans.spi.editor.fold.FoldManager;
 import org.netbeans.spi.editor.fold.FoldManagerFactory;
@@ -67,15 +69,15 @@ import org.netbeans.spi.editor.fold.FoldOperation;
 
 final class CustomFoldManager implements FoldManager {
     
-    private static final boolean debug = false;
+    private static final Logger LOG = Logger.getLogger(CustomFoldManager.class.getName());
     
     public static final FoldType CUSTOM_FOLD_TYPE = new FoldType("custom-fold"); // NOI18N
 
     private FoldOperation operation;
     private Document doc;
     private org.netbeans.editor.GapObjectArray markArray = new org.netbeans.editor.GapObjectArray();
-    private int minUpdateMarkOffset;
-    private int maxUpdateMarkOffset;
+    private int minUpdateMarkOffset = Integer.MAX_VALUE;
+    private int maxUpdateMarkOffset = -1;
     private List removedFoldList;
     private HashMap customFoldId = new HashMap();
     
@@ -88,30 +90,27 @@ final class CustomFoldManager implements FoldManager {
     }
 
     public void initFolds(FoldHierarchyTransaction transaction) {
-        try {
-            doc = getOperation().getHierarchy().getComponent().getDocument();
-            updateFolds(SyntaxUpdateTokens.getTokenInfoList(doc), transaction);
-        } catch (BadLocationException e) {
-            ErrorManager.getDefault().notify(e);
+        doc = getOperation().getHierarchy().getComponent().getDocument();
+        TokenHierarchy th = TokenHierarchy.get(doc);
+        if (th != null) {
+            updateFolds(th.tokenSequence(), transaction);
         }
     }
 
     public void insertUpdate(DocumentEvent evt, FoldHierarchyTransaction transaction) {
-        try {
-            processRemovedFolds(transaction);
-            updateFolds(SyntaxUpdateTokens.getTokenInfoList(evt), transaction);
-        } catch (BadLocationException e) {
-            ErrorManager.getDefault().notify(e);
+        processRemovedFolds(transaction);
+        TokenHierarchy th = TokenHierarchy.get(doc);
+        if (th != null) {
+            updateFolds(th.tokenSequence(), transaction);
         }
     }
 
     public void removeUpdate(DocumentEvent evt, FoldHierarchyTransaction transaction) {
-        try {
-            processRemovedFolds(transaction);
-            removeAffectedMarks(evt, transaction);
-            updateFolds(SyntaxUpdateTokens.getTokenInfoList(evt), transaction);
-        } catch (BadLocationException e) {
-            ErrorManager.getDefault().notify(e);
+        processRemovedFolds(transaction);
+        removeAffectedMarks(evt, transaction);
+        TokenHierarchy th = TokenHierarchy.get(doc);
+        if (th != null) {
+            updateFolds(th.tokenSequence(), transaction);
         }
     }
     
@@ -195,18 +194,16 @@ final class CustomFoldManager implements FoldManager {
     }
     
     private void removeMark(int index) {
-        if (debug) {
-            /*DEBUG*/System.err.println("Removing mark from ind=" + index // NOI18N
-                + ": " + getMark(index)); // NOI18N
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.fine("Removing mark from ind=" + index + ": " + getMark(index)); // NOI18N
         }
         markArray.remove(index, 1);
     }
     
     private void insertMark(int index, FoldMarkInfo mark) {
         markArray.insertItem(index, mark);
-        if (debug) {
-            /*DEBUG*/System.err.println("Inserted mark at ind=" + index // NOI18N
-                + ": " + mark); // NOI18N
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.fine("Inserted mark at ind=" + index + ": " + mark); // NOI18N
         }
     }
 
@@ -237,33 +234,32 @@ final class CustomFoldManager implements FoldManager {
         return low; // return higher index (e.g. for insert)
     }
     
-    private List getMarkList(List tokenList) {
-        List markList = null;
-        int tokenListSize = tokenList.size();
-        if (tokenListSize != 0) {
-            for (int i = 0; i < tokenListSize; i++) {
-                SyntaxUpdateTokens.TokenInfo tokenInfo = (SyntaxUpdateTokens.TokenInfo) tokenList.get(i);
-                FoldMarkInfo info;
-                try {
-                    info = scanToken(tokenInfo);
-                } catch (BadLocationException e) {
-                    ErrorManager.getDefault().notify(e);
-                    info = null;
-                }
+    private List<FoldMarkInfo> getMarkList(TokenSequence seq) {
+        List<FoldMarkInfo> markList = null;
+        
+        for(seq.moveStart(); seq.moveNext(); ) {
+            Token token = seq.token();
+            FoldMarkInfo info;
+            try {
+                info = scanToken(token);
+            } catch (BadLocationException e) {
+                LOG.log(Level.WARNING, null, e);
+                info = null;
+            }
 
-                if (info != null) {
-                    if (markList == null) {
-                        markList = new ArrayList();
-                    }
-                    markList.add(info);
+            if (info != null) {
+                if (markList == null) {
+                    markList = new ArrayList<FoldMarkInfo>();
                 }
+                markList.add(info);
             }
         }
+
         return markList;
     }
     
-    private void processTokenList(List tokenList, FoldHierarchyTransaction transaction) {
-        List markList = getMarkList(tokenList);
+    private void processTokenList(TokenSequence seq, FoldHierarchyTransaction transaction) {
+        List<FoldMarkInfo> markList = getMarkList(seq);
         int markListSize;
         if (markList != null && ((markListSize = markList.size()) > 0)) {
             // Find the index for insertion
@@ -287,7 +283,7 @@ final class CustomFoldManager implements FoldManager {
                     // Update the update-offsets by the first and last marks in the list
                     markUpdate(listMarkOffset);
                 }
-                if (listMarkOffset >= arrayMarkOffset) {
+                while (listMarkOffset >= arrayMarkOffset) {
                     if (listMarkOffset == arrayMarkOffset) {
                         // At the same offset - likely the same mark
                         //   -> retain the collapsed state
@@ -297,9 +293,8 @@ final class CustomFoldManager implements FoldManager {
                         arrayMark.release(false, transaction); 
                     }
                     removeMark(arrayMarkIndex);
-                    if (debug) {
-                        /*DEBUG*/System.err.println("Removed dup mark from ind="
-                            + arrayMarkIndex + ": " + arrayMark); // NOI18N
+                    if (LOG.isLoggable(Level.FINE)) {
+                        LOG.fine("Removed dup mark from ind=" + arrayMarkIndex + ": " + arrayMark); // NOI18N
                     }
                     if (arrayMarkIndex < getMarkCount()) {
                         arrayMark = getMark(arrayMarkIndex);
@@ -311,20 +306,18 @@ final class CustomFoldManager implements FoldManager {
                 }
                 // Insert the listmark
                 insertMark(arrayMarkIndex, listMark);
-                if (debug) {
-                    /*DEBUG*/System.err.println("Inserted mark at ind=" // NOI18N
-                        + arrayMarkIndex + ": " + listMark); // NOI18N
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.fine("Inserted mark at ind=" + arrayMarkIndex + ": " + listMark); // NOI18N
                 }
                 arrayMarkIndex++;
             }
         }
     }
-    
-    private void updateFolds(List tokenList, FoldHierarchyTransaction transaction)
-    throws BadLocationException {
-        
-        if (tokenList.size() > 0) {
-            processTokenList(tokenList, transaction);
+
+    private void updateFolds(TokenSequence seq, FoldHierarchyTransaction transaction) {
+
+        if (seq != null && !seq.isEmpty()) {
+            processTokenList(seq, transaction);
         }
 
         if (maxUpdateMarkOffset == -1) { // no updates
@@ -350,9 +343,8 @@ final class CustomFoldManager implements FoldManager {
 
             // If the mark was released then it must be removed
             if (mark.isReleased()) {
-                if (debug) {
-                    /*DEBUG*/System.err.println("Removing released mark at ind=" // NOI18N
-                        + index + ": " + mark); // NOI18N
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.fine("Removing released mark at ind=" + index + ": " + mark); // NOI18N
                 }
                 removeMark(index);
                 markCount--;
@@ -395,16 +387,16 @@ final class CustomFoldManager implements FoldManager {
             prevMark = mark;
             index++;
         }
-        
+
         minUpdateMarkOffset = Integer.MAX_VALUE;
         maxUpdateMarkOffset = -1;
         
-        if (debug) {
-            /*DEBUG*/System.err.println("MARKS DUMP:\n" + this);
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.fine("MARKS DUMP:\n" + this); //NOI18N
         }
     }
     
-    public String toString() {
+    public @Override String toString() {
         StringBuffer sb = new StringBuffer();
         int markCount = getMarkCount();
         int markCountDigitCount = Integer.toString(markCount).length();
@@ -437,45 +429,27 @@ final class CustomFoldManager implements FoldManager {
         }
     }
 
-    private static Pattern pattern = Pattern.compile("(<\\s*editor-fold(?:\\s+(\\S+)=\"([\\S \\t&&[^\"]]*)\")?(?:\\s+(\\S+)=\"([\\S \\t&&[^\"]]*)\")?(?:\\s+(\\S+)=\"([\\S \\t&&[^\"]]*)\")?\\s*>)|(?:</\\s*editor-fold\\s*>)"); // NOI18N
-    
-    private FoldMarkInfo scanToken(SyntaxUpdateTokens.TokenInfo tokenInfo) throws BadLocationException {
-        Matcher matcher = pattern.matcher(DocumentUtilities.getText(doc, tokenInfo.getOffset(), tokenInfo.getLength()));
-        if (matcher.find()) {
-            if (matcher.group(1) != null) { // fold's start mark found
-                String id = null;
-                boolean state = false;
-                String description = null;
-                
-                for(int i = 0; i < 3; i++) {
-                    String key = matcher.group(2 * (i + 1));
-                    String value = matcher.group(2 * (i + 1) + 1);
-                    
-                    if (key == null || value == null) {
-                        break;
+    private static Pattern pattern = Pattern.compile("(<\\s*editor-fold(?:(?:\\s+id=\"(\\S*)\")?(?:\\s+defaultstate=\"(\\S*)\")?(?:\\s+desc=\"([\\S \\t]*)\")?)(?:(?:\\s+defaultstate=\"(\\S*)\")?(?:\\s+desc=\"([\\S \\t]*)\")?)(?:\\s+defaultstate=\"(\\S*)\")?\\s*>)|(?:</\\s*editor-fold\\s*>)"); // NOI18N
+
+    private FoldMarkInfo scanToken(Token token) throws BadLocationException {
+        // ignores flyweight tokens
+        CharSequence tokenText = token.isFlyweight() ? null : token.text();
+        if (tokenText != null) {
+            Matcher matcher = pattern.matcher(tokenText);
+            if (matcher.find()) {
+                if (matcher.group(1) != null) { // fold's start mark found
+                    boolean state = "collapsed".equals(matcher.group(3)); // remember the defaultstate // NOI18N
+                    if (matcher.group(2) != null) { // fold's id exists
+                        Boolean collapsed = (Boolean)customFoldId.get(matcher.group(2));
+                        if (collapsed != null)
+                            state = collapsed.booleanValue(); // fold's state is already known from the past
+                        else
+                            customFoldId.put(matcher.group(2), Boolean.valueOf(state));
                     }
-                    
-                    if (key.equals("id")) { //NOI18N
-                        id = value;
-                    } else if (key.equals("defaultstate")) { //NOI18N
-                        state = "collapsed".equals(value); //NOI18N
-                    } else if (key.equals("desc")) { //NOI18N
-                        description = value;
-                    }
+                    return new FoldMarkInfo(true, token.offset(null), matcher.end(0), matcher.group(2), state, matcher.group(4)); // NOI18N
+                } else { // fold's end mark found
+                    return new FoldMarkInfo(false, token.offset(null), matcher.end(0), null, false, null);
                 }
-                
-                if (id != null) { // fold's id exists
-                    Boolean collapsed = (Boolean)customFoldId.get(id);
-                    if (collapsed != null) {
-                        state = collapsed.booleanValue(); // fold's state is already known from the past
-                    } else {
-                        customFoldId.put(id, Boolean.valueOf(state));
-                    }
-                }
-                
-                return new FoldMarkInfo(true, tokenInfo.getOffset(), tokenInfo.getLength(), id, state, description); // NOI18N
-            } else { // fold's end mark found
-                return new FoldMarkInfo(false, tokenInfo.getOffset(), tokenInfo.getLength(), null, false, null);
             }
         }
         return null;
@@ -672,12 +646,12 @@ final class CustomFoldManager implements FoldManager {
                         transaction
                     );
                 } catch (BadLocationException e) {
-                    ErrorManager.getDefault().notify(e);
+                    LOG.log(Level.WARNING, null, e);
                 }
             }
         }
         
-        public String toString() {
+        public @Override String toString() {
             StringBuffer sb = new StringBuffer();
             sb.append(isStartMark() ? 'S' : 'E');  // NOI18N
             

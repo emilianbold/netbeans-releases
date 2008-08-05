@@ -22,7 +22,7 @@
                     <code-name-base>org.netbeans.modules.beans</code-name-base>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.19.3</specification-version>
+                        <specification-version>1.19.4</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -56,7 +56,7 @@
                     <code-name-base>org.netbeans.modules.java.editor</code-name-base>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>2.12.1</specification-version>
+                        <specification-version>2.12.2</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -98,7 +98,7 @@
                     <code-name-base>org.netbeans.modules.java.j2seplatform</code-name-base>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.9.1</specification-version>
+                        <specification-version>1.9.2</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>

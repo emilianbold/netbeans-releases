@@ -65,6 +65,7 @@ import org.openide.util.Utilities;
 public class FolderArchive implements Archive {
 
     private static final Logger LOG = Logger.getLogger(FolderArchive.class.getName());
+    private static final boolean normalize = !Boolean.getBoolean("FolderArchive.noNormalize"); //NOI18N
     
     final File root;
     final Charset encoding;
@@ -98,7 +99,7 @@ public class FolderArchive implements Archive {
             //Normalization is slow
             //the problem when File ("A/").listFiles()[0].equals(new File("a/").listFiles[0]) returns
             //false seems to be only on Mac.
-            if (Utilities.isMac()) {
+            if (Utilities.isMac() && normalize) {
                 folder = FileUtil.normalizeFile(folder);
             }
             if (folder.canRead()) {

@@ -1014,7 +1014,6 @@ public class ActionFactory {
                         int startPos = target.getSelectionStart();
                         int endPos = target.getSelectionEnd();
                         Utilities.changeCase(doc, startPos, endPos - startPos, changeCaseMode);
-                        caret.setSelectionVisible(false);
                         caret.setDot(endPos);
                     } else { // no selection - change current char
                         int dotPos = caret.getDot();
@@ -1662,7 +1661,7 @@ public class ActionFactory {
                 Caret caret = target.getCaret();
                 try {
                     if (Utilities.isSelectionShowing(caret)) {
-                        caret.setSelectionVisible(false); // unselect if anything selected
+                        caret.setDot(caret.getDot()); // unselect if anything selected
                     } else { // selection not visible
                         int block[] = Utilities.getIdentifierBlock((BaseDocument)target.getDocument(),
                                       caret.getDot());

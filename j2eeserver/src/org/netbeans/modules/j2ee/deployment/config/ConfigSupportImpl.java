@@ -716,14 +716,16 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
         
     public J2eeModule getJ2eeModule(String moduleUri) {
         if (j2eeModule instanceof J2eeApplication) {
+            // If the moduleUri is null, the j2eeModule needs to be sent back,
+            //     to enable directory deployment of EAR projects.
+            if (moduleUri == null)
+                return j2eeModule;
+            
             for (J2eeModule childModule : ((J2eeApplication) j2eeModule).getModules()) {
-                if (childModule.getUrl().equals(moduleUri)) {
+                if (moduleUri.equals(childModule.getUrl())) {
                     return childModule;
                 }
             }
-            // If the moduleUri is null, the j2eeModule needs to be sent back,
-            //     to enable directory deployment of EAR projects.
-            return moduleUri == null ? j2eeModule : null;
         }
         return j2eeModule;
     }
