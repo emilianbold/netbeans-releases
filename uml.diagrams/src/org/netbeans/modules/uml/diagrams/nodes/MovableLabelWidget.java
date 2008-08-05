@@ -42,7 +42,6 @@ import java.awt.Color;
 import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.HashMap;
 import javax.swing.UIManager;
@@ -89,7 +88,7 @@ public class MovableLabelWidget extends EditableCompartmentWidget implements Wid
     private int diffY;
     //we need the following 3 vars for combined fragments
     private boolean grandParentLocationExists = false;
-    private Point grandParentLoc;
+    private Point grandParentLoc = null;
     private UMLNodeWidget grandParent;
 
     public MovableLabelWidget(Scene scene, Widget nodeWidget, IElement element, String widgetID, String displayName)
@@ -151,11 +150,12 @@ public class MovableLabelWidget extends EditableCompartmentWidget implements Wid
             }
             if (map.containsKey(UMLNodeWidget.GRANDPARENTLOCATION)) //we need this only in case of combined fragments
             {
-                grandParentLoc = (Point) map.get(UMLNodeWidget.GRANDPARENTLOCATION);
-                if (grandParentLoc != null)
+                grandParentLocationExists = true;
+                Object obj = map.get(UMLNodeWidget.GRANDPARENTLOCATION);
+                if (obj instanceof Point)
                 {
-                    grandParentLocationExists = true;
-                }                
+                    grandParentLoc = (Point)obj;
+                }      
             }
             updateDiff();
         }          
@@ -232,14 +232,19 @@ public class MovableLabelWidget extends EditableCompartmentWidget implements Wid
             point = new Point((int) (nodeWidget.getPreferredLocation().x - diffX),
                     (int) (nodeWidget.getPreferredLocation().y - diffY));
         }
-        else if (getPreferredLocation() != null && diagramLoading && grandParentLocationExists && grandParent.getPreferredLocation() != null)
+        else if (getPreferredLocation() != null 
+                && diagramLoading 
+                && grandParentLocationExists 
+                && grandParent != null 
+                && grandParent.getPreferredLocation() != null 
+                && grandParentLoc != null)
         {
             //for now.. this is only for combinedfragments
             Point loc = grandParent.getPreferredLocation();
             int x = loc.x - diffX;
             int y = loc.y - diffY;
             point = new Point(x,y);
-        }
+        }        
         else
         {
             point = new Point((int) (nodeCenterX + dx - labelBnd.width / 2),
