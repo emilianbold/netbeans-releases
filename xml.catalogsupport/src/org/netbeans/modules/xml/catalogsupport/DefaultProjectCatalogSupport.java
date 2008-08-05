@@ -201,7 +201,8 @@ public class DefaultProjectCatalogSupport extends ProjectCatalogSupport {
         Project targetProject = FileOwnerQuery.getOwner(target);
         FileObject sourceFolder = getSourceFolder(source);
         if (sourceFolder == null) {
-            throw new IllegalArgumentException(source.getPath()+" is not in project source"); //NOI18N
+            sourceFolder = source;
+//            throw new IllegalArgumentException(source.getPath()+" is not in project source"); //NOI18N
         }
         String relPathToSrcGroup = getRelativePath(source.getParent(), sourceFolder);
         String relPathToSrcGroupWithSlash = relPathToSrcGroup.trim().equals("")? "" : 
