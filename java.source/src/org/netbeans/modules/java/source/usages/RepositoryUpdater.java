@@ -3127,19 +3127,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                             Map<ElementHandle, Collection<String>> members = RebuildOraculum.sortOut(jt.getElements(), types);
                             toRecompile.addAll(RebuildOraculum.get().findFilesToRebuild(rootFile, activeTuple.file.toURI().toURL(), cpInfo, members));
                         }
-
-                        Iterable<? extends JavaFileObject> generatedFiles;
-                        boolean clearJavac = false;
-
-                        if (activeTuple.file != null && "package-info.java".equals(activeTuple.file.getName())) {
-                            //XXX: "types" are empty for package-info. will generate everything and use new javac to process the rest of the files:
-                            generatedFiles = jt.generate();
-                            clearJavac = true;
-                        } else {
-                            generatedFiles = jt.generate(types);
-                        }
-
-                        for (JavaFileObject generated : generatedFiles) {   //Analyzing genlist may be a bit faster
+                        for (JavaFileObject generated : jt.generate(types)) {   //Analyzing genlist may be a bit faster
                             if (generated instanceof OutputFileObject) {
                                 if (addedFiles != null) {
                                     addedFiles.add(((OutputFileObject) generated).getFile());
@@ -3148,15 +3136,6 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                                 //XXX: log (presumably should not happen)
                             }
                         }
-
-                        if (clearJavac) {
-                            if (jt != null) {
-                                jt.finish();
-                            }
-                            jt = null;
-                            listener.cleanDiagnostics();
-                        }
-                        
                         activeTuple = null;
                         state  = 0;
                     } catch (CouplingAbort a) {
