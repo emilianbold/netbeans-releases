@@ -539,7 +539,13 @@ public class J2EEUtils {
         SourceGroup[] groups = getJavaSourceGroups(project);
         SourceGroup location = groups[0];
         for (int i=0; i<groups.length; i++) {
-            if (groups[i].contains(dir)) {
+            boolean contains;
+            try {
+                contains = groups[i].contains(dir);
+            } catch (IllegalArgumentException iaex) {
+                contains = false;
+            }
+            if (contains) {
                 location = groups[i];
                 break;
             }
