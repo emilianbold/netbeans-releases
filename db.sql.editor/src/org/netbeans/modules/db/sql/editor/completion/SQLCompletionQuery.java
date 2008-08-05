@@ -50,6 +50,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.Document;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.db.sql.support.SQLIdentifiers;
@@ -70,13 +72,17 @@ import org.netbeans.modules.db.sql.editor.completion.SQLCompletionEnv.Context;
 import org.netbeans.modules.db.sql.lexer.SQLTokenId;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionQuery;
-import org.openide.util.Exceptions;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author Andrei Badea
  */
 public class SQLCompletionQuery extends AsyncCompletionQuery {
+
+    private static final Logger LOGGER = Logger.getLogger(SQLCompletionQuery.class.getName());
 
     // XXX refactor to get rid of the one-line methods.
     // XXX quoted identifiers.
@@ -118,7 +124,7 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
                 }
             });
         } catch (MetadataModelException e) {
-            Exceptions.printStackTrace(e);
+            reportError(e);
         }
         if (items != null) {
             items.fill(resultSet);
@@ -526,6 +532,18 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
             }
         }
         return result;
+    }
+
+    private static void reportError(MetadataModelException e) {
+        LOGGER.log(Level.INFO, null, e);
+        String error = e.getMessage();
+        String message;
+        if (error != null) {
+            message = NbBundle.getMessage(SQLCompletionQuery.class, "MSG_Error", error);
+        } else {
+            message = NbBundle.getMessage(SQLCompletionQuery.class, "MSG_ErrorNoMessage");
+        }
+        DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
     }
 
     private static final class Identifier {

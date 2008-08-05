@@ -47,9 +47,7 @@ import junit.framework.Test;
 import org.netbeans.jellytools.*;
 import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.actions.NewProjectAction;
-import org.netbeans.jellytools.modules.web.nodes.WebPagesNode;
 import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.Timeouts;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
@@ -92,7 +90,7 @@ public class WebProjectValidation13 extends WebProjectValidation {
         conf = addServerTests(Server.TOMCAT, conf, 
               "testNewWebProject", "testNewJSP", "testNewJSP2", "testNewServlet", "testNewServlet2",
               "testCompileAllJSP", "testCompileJSP",
-              "testCleanAndBuildProject", "testRunProject", "testRunJSP", "testCleanAndBuildProject",
+              "testCleanAndBuildProject", "testRunProject", "testRunJSP",
               "testRunServlet", "testCreateTLD", "testCreateTagHandler", "testRunTag",
               "testNewHTML", "testRunHTML", "testNewSegment", "testNewDocument",
               "testStopServer", "testStartServer", "testFinish");
@@ -154,12 +152,7 @@ public class WebProjectValidation13 extends WebProjectValidation {
     
     @Override
     public void testCreateTagHandler() {
-        // workaround due to issue #46073
-        new ProjectsTabOperator().getProjectRootNode(PROJECT_NAME).select();
-        
         new ActionNoBlock("File|New File", null).perform();
-        // WORKAROUND
-        new EventTool().waitNoEvent(1000);
         WizardOperator newFileWizard = new WizardOperator("New File");
         new JComboBoxOperator(newFileWizard).selectItem(PROJECT_NAME);
         new Node(new JTreeOperator(newFileWizard), "Web").select();
