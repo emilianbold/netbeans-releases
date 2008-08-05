@@ -46,6 +46,10 @@ import java.util.logging.Logger;
 
 final class GemListParser {
 
+    private GemListParser() {
+        // no instances
+    }
+
     private static final Logger LOGGER = Logger.getLogger(GemListParser.class.getName());
 
     static List<Gem> parseLocal(final List<? extends String> output) {
@@ -69,17 +73,14 @@ final class GemListParser {
         Gem gem = null;
         List<Gem> gems = new ArrayList<Gem>();
         for (String line : output) {
-            if (line.length() == 0) {
-                continue;
-            }
-            if (Character.isWhitespace(line.charAt(0))) {
+            if (line.length() == 0 || Character.isWhitespace(line.charAt(0))) {
                 if (gem != null) {
                     String description = line.trim();
 
                     if (gem.getDescription() == null) {
                         gem.setDescription(description);
                     } else {
-                        gem.setDescription(gem.getDescription() + " " + description); // NOI18N
+                        gem.setDescription(gem.getDescription() + "\n" + description); // NOI18N
                     }
                 }
             } else {
