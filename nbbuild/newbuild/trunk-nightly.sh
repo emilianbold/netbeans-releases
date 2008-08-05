@@ -5,7 +5,7 @@ set -x
 DIRNAME=`dirname $0`
 cd ${DIRNAME}
 TRUNK_NIGHTLY_DIRNAME=`pwd`
-export BUILD_DESC=6.5_beta
+export BUILD_DESC=6.5beta
 source init.sh
 
 rm -rf $DIST
