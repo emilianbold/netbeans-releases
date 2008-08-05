@@ -264,10 +264,10 @@ public class RemoteClient implements Cancellable {
                 if (children != null) {
                     for (File child : children) {
                         if (isVisible(child)) {
-                            LOGGER.fine("File " + file + " added to upload queue");
+                            LOGGER.fine("File " + child + " added to upload queue");
                             queue.offer(TransferFile.fromFile(child, baseLocalAbsolutePath));
                         } else {
-                            LOGGER.fine("File " + file + " NOT added to upload queue [invisible]");
+                            LOGGER.fine("File " + child + " NOT added to upload queue [invisible]");
                         }
                     }
                 }
