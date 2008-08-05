@@ -265,6 +265,22 @@ public class MovableLabelWidget extends EditableCompartmentWidget implements Wid
         dy = -nodeCenterY + getLocation().y + getPreferredBounds().height / 2;
     }
     
+    protected void updateDistance(double dx, double dy)
+    {
+        this.dx = dx;
+        this.dy = dy;
+    }
+    
+    public double getCenterDx()
+    {
+        return dx;
+    }
+    
+    public double getCenterDy()
+    {
+        return dy;
+    }
+    
     @Override
     protected void notifyStateChanged(ObjectState previousState, ObjectState state)
     {

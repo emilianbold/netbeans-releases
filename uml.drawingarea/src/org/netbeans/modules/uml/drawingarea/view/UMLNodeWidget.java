@@ -703,28 +703,29 @@ public abstract class UMLNodeWidget extends Widget
     
     public void duplicate(boolean setBounds, Widget target)
     {
-        //todo
-//        if (target instanceof UMLNodeWidget)
-//        {
-//            ((UMLNodeWidget) target).setNodeBackground(getNodeBackground());
-//            ((UMLNodeWidget) target).setNodeForeground(getNodeForeground());
-//            ((UMLNodeWidget) target).setNodeFont(getNodeFont());
-
-            if (setBounds)
+        assert target instanceof UMLNodeWidget;
+        
+        ((UMLNodeWidget) target).setNodeBackground(getNodeBackground());
+        ((UMLNodeWidget) target).setNodeForeground(getNodeForeground());
+        ((UMLNodeWidget) target).setNodeFont(getNodeFont());
+        
+        if (setBounds)
+        {
+            Insets insets = getBorder().getInsets();
+            if(getResizeMode()==RESIZEMODE.PREFERREDBOUNDS)
             {
-                //target.setPreferredBounds(this.getBounds());
-                if(getResizeMode()==RESIZEMODE.PREFERREDBOUNDS)
-                {
-                    target.setPreferredBounds(getPreferredBounds());
-                }
-                else if(getResizeMode()==RESIZEMODE.PREFERREDSIZE)
-                {
-                    target.setPreferredSize(getPreferredSize());
-                }
-                else target.setMinimumSize(this.getMinimumSize());
-                if(target instanceof UMLNodeWidget)((UMLNodeWidget)target).setResizeMode(getResizeMode());
+                target.setPreferredBounds(new Rectangle(
+                        getPreferredBounds().x + insets.left,  getPreferredBounds().y + insets.top,
+                        getPreferredBounds().width - insets.left - insets.right,
+                        getPreferredBounds().height - insets.top - insets.bottom));
             }
-//        }
+            else if(getResizeMode()==RESIZEMODE.PREFERREDSIZE)
+            {
+                target.setPreferredSize(getPreferredSize());
+            }
+            else target.setMinimumSize(this.getMinimumSize());
+            if(target instanceof UMLNodeWidget)((UMLNodeWidget)target).setResizeMode(getResizeMode());
+        }
     }
     
     @Override
