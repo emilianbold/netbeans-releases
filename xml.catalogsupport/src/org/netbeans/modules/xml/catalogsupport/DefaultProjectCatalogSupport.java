@@ -141,6 +141,10 @@ public class DefaultProjectCatalogSupport extends ProjectCatalogSupport {
                 File myPrjRoot = FileUtil.toFile(project.getProjectDirectory());
                 File tgtPrjRoot = new File(myPrjRoot.toURI().resolve(targetPrjRelativeRoot));
                 FileObject tgtPrjFobj = FileUtil.toFileObject(FileUtil.normalizeFile(tgtPrjRoot));
+
+                if (tgtPrjFobj == null) {
+                  return null;
+                }
                 return tgtPrjFobj.getFileObject(uriToBeResolved.getFragment());
             }
         }
