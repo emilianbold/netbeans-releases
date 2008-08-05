@@ -165,7 +165,11 @@ public class JsfProjectUtils {
         Sources sources = ProjectUtils.getSources(project);
         SourceGroup[] groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         for (SourceGroup group : groups) {
-            wm = WebModule.getWebModule(group.getRootFolder());
+            FileObject root = group.getRootFolder();
+            if (root == null) {
+                continue;
+            }
+            wm = WebModule.getWebModule(root);
             if (wm != null) {
                 return wm;
             }
