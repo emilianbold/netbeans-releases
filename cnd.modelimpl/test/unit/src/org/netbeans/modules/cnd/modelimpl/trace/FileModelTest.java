@@ -404,6 +404,22 @@ public class FileModelTest extends TraceModelTestBase {
         performTest("branches_1.cc"); // NOI18N
     }
 
+    public void testMacrodef() throws Exception {
+        performTest("macrodef.cc"); // NOI18N
+    }
+
+    public void testClassBodyIncluded() throws Exception {
+        performTest("class_body_included.cc"); // NOI18N
+    }
+
+    public void testResolverClassString() throws Exception {
+        performTest("resolver_class_string.cc"); // NOI18N
+    }
+
+    public void testResolverTypedefString() throws Exception {
+        performTest("resolver_typedef_string.cc"); // NOI18N
+    }
+
     /////////////////////////////////////////////////////////////////////
     // FAILS
     
@@ -424,14 +440,10 @@ public class FileModelTest extends TraceModelTestBase {
 	    return FileModelTest.class;
 	}
 	
-//	public void testTemplateInnerClassDtorDefinition() throws Exception {
-//	    performTest("template_inner_class_dtor_definition.cc"); // NOI18N
-//	}
+	public void testTemplateInnerClassDtorDefinition() throws Exception {
+	    performTest("template_inner_class_dtor_definition.cc"); // NOI18N
+	}
 
-        public void testIncludeCorrectness() throws Exception {
-            performTest("test_include_correcteness.cc"); // NOI18N
-        }
-        
         @Override
 	protected void postSetUp() {
 	    // init flags needed for file model tests

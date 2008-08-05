@@ -103,7 +103,6 @@ abstract class WSITRefactoringPlugin<T extends AbstractRefactoring> extends Prog
     }
 
     public Problem preCheck() {
-        fireProgressListenerStop();
         return null;
     }
     
