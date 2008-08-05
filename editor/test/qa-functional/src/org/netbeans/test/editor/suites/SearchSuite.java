@@ -52,6 +52,7 @@ public class SearchSuite {
 
     public static Test suite() {
         return NbModuleSuite.create(
-                NbModuleSuite.createConfiguration(IncrementalSearchTest.class).addTest(IncrementalSearchTest.class).addTest(ReplaceTest.class));
+                //NbModuleSuite.createConfiguration(IncrementalSearchTest.class).addTest(IncrementalSearchTest.class).addTest(ReplaceTest.class));
+                NbModuleSuite.createConfiguration(ReplaceTest.class).addTest(IncrementalSearchTest.class));
     }
 }
