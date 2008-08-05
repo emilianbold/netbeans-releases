@@ -58,9 +58,9 @@ public class AcceptanceTestCase  extends JellyTestCase {
     
     static final String [] m_aTestMethods = {
         "createNewXSLTModule",
-                "createSchemas"//,
-              //  "createWSDL",
-              //  "createXSLT"//,
+                "createSchemas",
+                "createWSDL",
+                "createXSLT"//,
               //  "editXSLT",
               //  "checkSource"
     };
