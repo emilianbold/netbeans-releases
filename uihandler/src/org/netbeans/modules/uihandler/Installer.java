@@ -909,6 +909,10 @@ public class Installer extends ModuleInstall implements Runnable {
             }
         }
     }
+    
+    static URL uploadLogs(URL postURL, String id, Map<String,String> attrs, List<LogRecord> recs) throws IOException {
+        return uploadLogs(postURL, id, attrs, recs, DataType.DATA_UIGESTURE);
+    }
 
     private static URL uLogs
     (ProgressHandle h, URL postURL, String id, Map<String,String> attrs, List<LogRecord> recs, DataType dataType) throws IOException {

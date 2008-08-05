@@ -46,7 +46,6 @@ import org.netbeans.modules.cnd.apt.structure.APT;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTParseFileWalker;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.FileNameCache;
-import org.netbeans.modules.cnd.repository.support.AbstractObjectFactory;
 
 /**
  * A class that tracks states of the preprocessor conditionals within file
@@ -66,19 +65,22 @@ public class FilePreprocessorConditionState
     /** for debugging purposes */
     private CharSequence fileName;
 
+    private static final int MIN_SIZE = 16;
+
     public FilePreprocessorConditionState(FileImpl file) {
-        offsets = new int[16];
+        offsets = new int[MIN_SIZE];
         fileName = file.getAbsolutePath();
     }
 
     public FilePreprocessorConditionState(DataInput input) throws IOException {
         size = input.readInt();
         if (size > 0) {
+            offsets = new int[Math.max(size, MIN_SIZE)];
             for (int i = 0; i < size; i++) {
                 offsets[i] = input.readInt();
             }
         } else {
-            offsets = new int[16];
+            offsets = new int[MIN_SIZE];
         }
         fileName = FileNameCache.getManager().getString(PersistentUtils.readUTF(input));
     }

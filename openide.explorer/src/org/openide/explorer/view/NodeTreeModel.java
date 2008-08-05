@@ -54,6 +54,7 @@ import javax.swing.event.TreeModelEvent;
 import javax.swing.event.TreeModelListener;
 import javax.swing.tree.*;
 import org.openide.nodes.Children;
+import org.openide.nodes.NodeMemberEvent;
 
 
 /** Model for displaying the nodes in tree.
@@ -280,7 +281,7 @@ public class NodeTreeModel extends DefaultTreeModel {
     static Object[] computeChildren(VisualizerEvent ev) {
         int[] childIndices = ev.getArray();
         Object[] arr = new Object[childIndices.length];
-        List<Node> nodes = ev.originalEvent.getSnapshot();
+        List<Node> nodes = ev.getSnapshot();
         for (int i = 0; i < arr.length; i++) {
             arr[i] = Visualizer.findVisualizer(nodes.get(childIndices[i]));
         }
