@@ -70,7 +70,8 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
     private boolean updating = false;
     private boolean modified = false;
     private ToolsPanel tp;
-
+    private boolean initialized = false;
+    
     /**
      * Creates new form ParserSettingsPanel
      */
@@ -93,16 +94,6 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
             // because the "real" way we create this a ToolsPanel exists. But not the commitValidation way!
             ToolsPanel.addCompilerSetChangeListener(this);
             ToolsPanel.addIsChangedListener(this);
-        }
-        
-        ServerList registry = (ServerList) Lookup.getDefault().lookup(ServerList.class);
-        if (registry != null) {
-            ServerRecord record = registry.getDefaultRecord();
-            if (record != null) {
-                Logger rdlog = Logger.getLogger("cnd.remote.logger"); // NOI18N
-                rdlog.fine("ParserSettingsPanel<Init>: Validating " + record.getName());
-                record.validate(); // ensure the development host is initialized
-            }
         }
     }
 
@@ -335,6 +326,7 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
         }
         try {
             updating = true;
+            init();
             compilerCollectionComboBox.removeActionListener(this);
             updateCompilerCollections(tp.getCurrentCompilerSet());
             compilerCollectionComboBox.addActionListener(this);
@@ -405,5 +397,20 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
 
     private PredefinedPanel[] getPredefinedPanels() {
         return (PredefinedPanel[]) predefinedPanels.values().toArray(new PredefinedPanel[predefinedPanels.size()]);
+    }
+    
+    private synchronized void init() {
+        if (!initialized) {
+            ServerList registry = (ServerList) Lookup.getDefault().lookup(ServerList.class);
+            if (registry != null) {
+                ServerRecord record = registry.getDefaultRecord();
+                if (record != null) {
+                    Logger rdlog = Logger.getLogger("cnd.remote.logger"); // NOI18N
+                    rdlog.fine("ParserSettingsPanel<Init>: Validating " + record.getName());
+                    record.validate(); // ensure the development host is initialized
+                }
+            }            
+        }
+        initialized = true;
     }
 }

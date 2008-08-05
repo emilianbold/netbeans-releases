@@ -294,19 +294,19 @@ abstract public class MessageWidget extends AbstractUMLConnectionWidget implemen
                 EdgeInfo.EdgeLabel edgeLabel = it.next();
                 if (edgeLabel.getLabel().equalsIgnoreCase(NAME))
                 {
-                    manager.showLabel(NAME);
+                    manager.showLabel(NAME, null, edgeLabel.getPosition());
                 } 
                 else if (edgeLabel.getLabel().equalsIgnoreCase(STEREOTYPE))
                 {
-                    manager.showLabel(STEREOTYPE);
+                    manager.showLabel(STEREOTYPE, null, edgeLabel.getPosition());
                 } 
                 else if (edgeLabel.getLabel().equalsIgnoreCase(TAGGEDVALUE))
                 {
-                    manager.showLabel(TAGGEDVALUE);
+                    manager.showLabel(TAGGEDVALUE, null, edgeLabel.getPosition());
                 }
                 else if (edgeLabel.getLabel().equalsIgnoreCase(OPERATION))
                 {
-                    manager.showLabel(OPERATION);
+                    manager.showLabel(OPERATION, null, edgeLabel.getPosition());
                 }
             }
         }

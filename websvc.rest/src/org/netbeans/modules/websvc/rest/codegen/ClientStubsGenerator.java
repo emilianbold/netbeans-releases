@@ -66,6 +66,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.dd.api.web.ServletMapping;
 import org.openide.filesystems.FileLock;
@@ -132,6 +133,10 @@ public class ClientStubsGenerator extends AbstractGenerator {
     public static final String JS_CONTAINERITEMSTUB_TEMPLATE = "Templates/WebServices/JsContainerItemStub.js"; //NOI18N
     public static final String JS_GENERICSTUB_TEMPLATE = "Templates/WebServices/JsGenericStub.js"; //NOI18N
     public static final String JS_README_TEMPLATE = "Templates/WebServices/JsReadme.html"; //NOI18N
+    
+    public static final String PROXY = "RestProxyServlet"; //NOI18N
+    public static final String PROXY_URL = "/restproxy";
+    public static final String PROXY_TEMPLATE = "Templates/WebServices/RestProxyServlet.txt"; //NOI18N
     
     public static final String TTL_DojoResources_Stubs = "TTL_DojoResources_Stubs";
     public static final String MSG_Readme = "MSG_Readme";
@@ -208,6 +213,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
     private FileObject wadlFile;
     private String folderName;
     private String baseUrl;
+    private String proxyUrl;
     private String baseEncoding = "UTF-8";
     
     public ClientStubsGenerator(FileObject root, String folderName, Project p, 
@@ -274,6 +280,14 @@ public class ClientStubsGenerator extends AbstractGenerator {
         this.baseUrl = baseUrl;
     }
     
+    public String getProxyUrl() {
+        return proxyUrl;
+    }
+    
+    public void setProxyUrl(String proxyUrl) {
+        this.proxyUrl = proxyUrl;
+    }
+    
     public String getBaseEncoding() {
         return baseEncoding;
     }
@@ -334,12 +348,6 @@ public class ClientStubsGenerator extends AbstractGenerator {
                 if(line.trim().startsWith(name+"="))
                     return line.trim().split("=")[1];
             }
-            OutputStreamWriter writer = new OutputStreamWriter(fo.getOutputStream(lock), "UTF-8");
-            try {
-                writer.write(sb.toString());
-            } finally {
-                writer.close();
-            }
         } catch(IOException iox) {  
         } finally {
             if(lock != null)
@@ -357,6 +365,10 @@ public class ClientStubsGenerator extends AbstractGenerator {
             String url = findBaseUrl(p);
             if(url == null)
                 url = getDefaultBaseUrl();
+            Project targetPrj = FileOwnerQuery.getOwner(getRootFolder());
+            String proxyUrl2 = findBaseUrl(targetPrj);
+            if(proxyUrl2 == null)
+                proxyUrl2 = url;
             ServletMapping servletMap = WebProjectRestSupport.getRestServletMapping(p);
             String path = "/resources";
             if(servletMap != null)
@@ -364,12 +376,14 @@ public class ClientStubsGenerator extends AbstractGenerator {
             if(path.endsWith("/*"))
                 path = path.substring(0, path.length()-2);
             setBaseUrl((url.endsWith("/")?url:url+"/") + getProjectName() + (path.startsWith("/")?path:"/"+path));
+            setProxyUrl((proxyUrl2.endsWith("/")?proxyUrl2:proxyUrl2+"/") + ProjectUtils.getInformation(targetPrj).getName() + PROXY_URL);
             setBaseEncoding(findBaseEncoding(p));
         } else if(wadlFile != null) {
             String url = this.model.buildModel(wadlFile);
             if(url == null)
                 url = getDefaultBaseUrl();
             setBaseUrl(url);
+            setProxyUrl(url+".."+PROXY_URL);
             this.projectName = getApplicationNameFromUrl(url);
         }
         List<Resource> resourceList = model.getResources();
@@ -595,6 +609,8 @@ public class ClientStubsGenerator extends AbstractGenerator {
         fo = createDataObjectFromTemplate(JS_README_TEMPLATE, rjsDir, JS_README, HTML, false);
         tr.replaceTokens(fo);
         
+        fo = createDataObjectFromTemplate(PROXY_TEMPLATE, rjsDir, PROXY, TXT, false);
+        
         File cssDir = new File(FileUtil.toFile(rjsDir), "css");
         cssDir.mkdirs();
         copySupportFiles(cssDir);
@@ -691,7 +707,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
         String str = "";
         for (Resource r : resourceList) {
             if(r.isContainer()) {
-                str += "            <option value='http://localhost:8080/"+getProjectName()+"/resources/"+r.getRepresentation().getRoot().getName()+"/;" + r.getName() + "'>" + r.getName() + "</option>\n";
+                str += "            <option value='"+getBaseUrl()+"/"+r.getRepresentation().getRoot().getName()+"/;" + r.getName() + "'>" + r.getName() + "</option>\n";
             }
         }
         return str;
@@ -710,16 +726,19 @@ public class ClientStubsGenerator extends AbstractGenerator {
     protected String createJmakiResourceTagList(List<Resource> resourceList) {
         String str = "";
         int count = 0;
+        String proxyComment = "<!-- If using cross-domain proxy uncomment tag below and comment above line -->\n";
         for (Resource r : resourceList) {
             if(r.isContainer()) {
                 String name = r.getName();
                 String pathName = r.getRepresentation().getRoot().getName();
                 if(count++ == 0) {
                     str += "         <% if(p.equals(\"" + name + "\")) {%>\n"+
-                        "            <a:widget name=\"dojo.rest." + pathName + "table\" service=\"http://localhost:8080/" + getProjectName() + "/resources/" + pathName + "/\" />\n";
+                        "            <a:widget name=\"dojo.rest." + pathName + "table\" service=\""+getBaseUrl()+"/" + pathName + "/\" />\n"+
+                        "            "+proxyComment+"<!-- &lt;a:widget name=\"dojo.rest." + pathName + "table\" service=\""+getBaseUrl()+"/" + pathName + "/\" args=\"proxy="+getProxyUrl()+"\"/>-->\n";
                 } else {
                     str += "         <% } else if(p.equals(\"" + name + "\")) {%>\n"+
-                        "            <a:widget name=\"dojo.rest." + pathName + "table\" service=\"http://localhost:8080/" + getProjectName() + "/resources/" + pathName + "/\" />\n";
+                        "            <a:widget name=\"dojo.rest." + pathName + "table\" service=\""+getBaseUrl()+"/" + pathName + "/\" />\n"+
+                        "            "+proxyComment+"<!-- &lt;a:widget name=\"dojo.rest." + pathName + "table\" service=\""+getBaseUrl()+"/" + pathName + "/\" args=\"proxy="+getProxyUrl()+"\"/>-->\n";
                 }
             }
         }
@@ -925,6 +944,8 @@ public class ClientStubsGenerator extends AbstractGenerator {
         sb2.append("\t\t//Example test code for " + prjName + "\n");
         sb2.append("\t\tstr = '<h2>Resources for " + prjName + ":</h2><br><table border=\"1\">';\n");
         sb2.append("\t\tvar app = new " + pkg+prjName + "('"+getBaseUrl()+"');\n");
+        sb2.append("\t\t//Uncomment below if using proxy for javascript cross-domain.\n");
+        sb2.append("\t\t//app.setProxy(\""+getProxyUrl()+"\");\n");
         sb2.append("\t\tvar resources = app.getResources();\n");
         sb2.append("\t\tfor(i=0;i<resources.length;i++) {\n");
         sb2.append("\t\t  var resource = resources[i];\n");
@@ -939,7 +960,8 @@ public class ClientStubsGenerator extends AbstractGenerator {
         sb2.append("\t\t        str += '&nbsp;&nbsp;<font size=\"-3\">'+item.toString()+'</font><br/>';\n");
         sb2.append("\t\t    }\n");
         sb2.append("\t\t  } else {\n");
-        sb2.append("\t\t    str += 'No items, please check the url: <a href=\"'+uri+'\" target=\"_blank\">'+uri+'</a>';\n");
+        sb2.append("\t\t    str += 'No items, please check the url: <a href=\"'+uri+'\" target=\"_blank\">'+uri+'</a>.<br/>" +
+                "Set proxy if RESTful web service is not running on the same domain as this application.';\n");
         sb2.append("\t\t  }\n");
         sb2.append("\t\t  str += '</td></tr>';\n");
         sb2.append("\t\t}\n");

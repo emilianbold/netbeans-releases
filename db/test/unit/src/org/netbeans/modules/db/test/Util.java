@@ -45,6 +45,7 @@ import java.io.IOException;
 import java.net.URL;
 import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.api.db.explorer.JDBCDriverManager;
+import org.netbeans.modules.db.explorer.ConnectionList;
 import org.netbeans.modules.db.explorer.DatabaseConnectionConvertor;
 import org.netbeans.modules.db.explorer.driver.JDBCDriverConvertor;
 import org.openide.filesystems.FileObject;
@@ -60,8 +61,9 @@ public class Util {
     private Util() {
     }
     
-    public static void deleteConnectionFiles() throws IOException {
+    public static void clearConnections() throws IOException {
         deleteFileObjects(getConnectionsFolder().getChildren());
+        ConnectionList.getDefault().refreshCache();
     }
     
     public static void deleteDriverFiles() throws IOException {

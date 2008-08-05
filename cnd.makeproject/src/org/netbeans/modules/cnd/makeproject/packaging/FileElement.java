@@ -40,7 +40,31 @@
 package org.netbeans.modules.cnd.makeproject.packaging;
 
 public class FileElement {
-    public enum FileType {FILE, DIRECTORY, SOFTLINK, UNKNOWN};
+    public enum FileType {
+        FILE {
+            @Override
+            public String toString() {
+                return "File"; // NOI18N
+            }
+        },
+        DIRECTORY {
+            @Override
+            public String toString() {
+                return "Dir"; // NOI18N
+            }
+        },
+        SOFTLINK {
+            @Override
+            public String toString() {
+                return "Link"; // NOI18N
+            }
+        },
+        UNKNOWN {
+            @Override
+            public String toString() {
+                return ""; // NOI18N
+            }
+        }};
     
     private FileType type;
     private String from;
@@ -69,6 +93,21 @@ public class FileElement {
 
     public FileType getType() {
         return type;
+    }
+    
+    public static FileType toFileType(String type) {
+        if (FileType.DIRECTORY.toString().equals(type)) {
+            return FileType.DIRECTORY;
+        }
+        else if (FileType.FILE.toString().equals(type)) {
+            return FileType.FILE;
+        }
+        else if (FileType.SOFTLINK.toString().equals(type)) {
+            return FileType.SOFTLINK;
+        }
+        else {
+            return FileType.UNKNOWN;
+        }
     }
 
     public void setType(FileType type) {

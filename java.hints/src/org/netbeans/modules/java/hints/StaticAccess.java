@@ -72,7 +72,7 @@ public class StaticAccess extends AbstractHint {
     private static final String SUPPRESS_WARNINGS_KEY = "static-access";
     
     private transient volatile boolean stop;
-    /** Creates a new instance of AddOverrideAnnotation */
+    /** Creates a new instance of StaticAccess */
     public StaticAccess() {
         super( true, true, AbstractHint.HintSeverity.WARNING, SUPPRESS_WARNINGS_KEY);
     }

@@ -88,7 +88,15 @@ public class HibernateFrameworkProvider extends WebFrameworkProvider {
     public File[] getConfigurationFiles(WebModule wm) {
         List<File> configFiles = new ArrayList<File>();
         Project enclosingProject = Util.getEnclosingProjectFromWebModule(wm);
+        // Check for non supported project or non Hibernate aware web projects.
+        if(enclosingProject == null) {
+            return new File[]{};
+        }
         HibernateEnvironment he = enclosingProject.getLookup().lookup(HibernateEnvironment.class);
+        // Check for non supported project or non Hibernate aware web projects.
+        if(he == null) {
+            return new File[]{};
+        }
         List<FileObject> configFileObjects = he.getAllHibernateConfigFileObjects();
         for(FileObject fo : configFileObjects) {
             configFiles.add(FileUtil.toFile(fo));

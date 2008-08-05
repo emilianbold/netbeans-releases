@@ -191,7 +191,10 @@ public final class JDBCDriverManager {
      * method is called from any other thread.
      *
      * @return the new driver that was added, or null if the driver was
-     *   not successfully created
+     *         not successfully created.
+     *
+     * @throws IllegalStateException if the calling thread is not the event
+     *         dispatching thread.
      *
      * @since 1.27
      */

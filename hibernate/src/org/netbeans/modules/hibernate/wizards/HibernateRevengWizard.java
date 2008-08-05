@@ -93,7 +93,6 @@ import org.openide.util.Exceptions;
 public class HibernateRevengWizard implements WizardDescriptor.ProgressInstantiatingIterator {
 
     private static final String PROP_HELPER = "wizard-helper"; //NOI18N
-
     private int index;
     private Project project;
     private WizardDescriptor wizardDescriptor;
@@ -102,19 +101,12 @@ public class HibernateRevengWizard implements WizardDescriptor.ProgressInstantia
     private HibernateRevengCodeGenWizardDescriptor codeGenDescriptor;
     private WizardDescriptor.Panel<WizardDescriptor>[] panels;
     private final String DEFAULT_REVENG_FILENAME = "hibernate.reveng"; // NOI18N
-    
     private final String CATALOG_NAME = "match-catalog"; // NOI18N
-    
     private final String EXCLUDE_NAME = "exclude"; // NOI18N
-
     private final String ATTRIBUTE_NAME = "match-schema"; // NOI18N
-
     private final String MATCH_NAME = "match-name"; // NOI18N
-
     private final String resourceAttr = "resource"; // NOI18N
-
     private final String classAttr = "class"; // NOI18N
-
     private XMLHelper xmlHelper;
     private EntityResolver entityResolver;
     private Logger logger = Logger.getLogger(HibernateRevengWizard.class.getName());
@@ -129,15 +121,25 @@ public class HibernateRevengWizard implements WizardDescriptor.ProgressInstantia
      */
     private WizardDescriptor.Panel[] getPanels() {
         if (panels == null) {
-            Project p = Templates.getProject(wizardDescriptor);
-            SourceGroup[] groups = ProjectUtils.getSources(p).getSourceGroups(Sources.TYPE_GENERIC);
-            WizardDescriptor.Panel targetChooser = Templates.createSimpleTargetChooser(p, groups);
+            HibernateEnvironment hibernateEnv = (HibernateEnvironment) project.getLookup().lookup(HibernateEnvironment.class);
+            // Check for unsupported projects. #142296
+            if (hibernateEnv == null) {
+                logger.info("Unsupported project " + project + ". Existing config wizard.");
+                panels = new WizardDescriptor.Panel[]{
+                            WizardErrorPanel.getWizardErrorWizardPanel()
+                        };
 
-            panels = new WizardDescriptor.Panel[]{
-                        targetChooser,
-                        dbTablesDescriptor,
-                        codeGenDescriptor
-                    };
+            } else {
+                Project p = Templates.getProject(wizardDescriptor);
+                SourceGroup[] groups = ProjectUtils.getSources(p).getSourceGroups(Sources.TYPE_GENERIC);
+                WizardDescriptor.Panel targetChooser = Templates.createSimpleTargetChooser(p, groups);
+
+                panels = new WizardDescriptor.Panel[]{
+                            targetChooser,
+                            dbTablesDescriptor,
+                            codeGenDescriptor
+                        };
+            }
             String[] steps = createSteps();
             for (int i = 0; i < panels.length; i++) {
                 Component c = panels[i].getComponent();
@@ -270,13 +272,18 @@ public class HibernateRevengWizard implements WizardDescriptor.ProgressInstantia
         // and not like : hibernate.reveng<i>.xml.
         if (wiz instanceof TemplateWizard) {
             HibernateEnvironment hibernateEnv = (HibernateEnvironment) project.getLookup().lookup(HibernateEnvironment.class);
+            // Check for unsupported projects. #142296
+            if (hibernateEnv == null) {
+                // Returning without initialization. User will be informed about this using error panel.
+                return;
+            }
             List<FileObject> revengFiles = hibernateEnv.getAllHibernateReverseEnggFileObjects();
             String targetName = DEFAULT_REVENG_FILENAME;
             if (!revengFiles.isEmpty() && foundRevengFileInProject(revengFiles, DEFAULT_REVENG_FILENAME)) {
                 int revengFilesCount = revengFiles.size();
-                targetName = "hibernate" + (revengFilesCount++) + ".reveng";
+                targetName = "hibernate" + (revengFilesCount++) + ".reveng";  //NOI18N
                 while (foundRevengFileInProject(revengFiles, targetName)) {
-                    targetName = "hibernate" + (revengFilesCount++) + ".reveng";
+                    targetName = "hibernate" + (revengFilesCount++) + ".reveng";  //NOI18N
                 }
             }
             ((TemplateWizard) wiz).setTargetName(targetName);
@@ -420,15 +427,15 @@ public class HibernateRevengWizard implements WizardDescriptor.ProgressInstantia
             HibernateReverseEngineering hre = hro.getHibernateReverseEngineering();
             ArrayList<Table> list = (ArrayList<Table>) helper.getSelectedTables().getTables();
             for (int i = 0; i < list.size(); i++) {
-                int index = hre.addTableFilter(true);                
-                if(helper.getCatalogName() != null && !"".equals(helper.getCatalogName())) {
+                int index = hre.addTableFilter(true);
+                if (helper.getCatalogName() != null && !"".equals(helper.getCatalogName())) {
                     hre.setAttributeValue(hre.TABLE_FILTER, index, CATALOG_NAME, helper.getCatalogName());
-                } else {                    
+                } else {
                     hre.setAttributeValue(hre.TABLE_FILTER, index, CATALOG_NAME, null);
-                }                
+                }
                 if (helper.getSchemaName() != null && !"".equals(helper.getSchemaName())) {
                     hre.setAttributeValue(hre.TABLE_FILTER, index, ATTRIBUTE_NAME, helper.getSchemaName());
-                } else {                 
+                } else {
                     hre.setAttributeValue(hre.TABLE_FILTER, index, ATTRIBUTE_NAME, null);
                 }
                 hre.setAttributeValue(hre.TABLE_FILTER, index, MATCH_NAME, list.get(i).getName());

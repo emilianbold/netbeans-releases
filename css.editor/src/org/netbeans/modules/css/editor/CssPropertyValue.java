@@ -421,9 +421,14 @@ public class CssPropertyValue {
                 sb =
                         new StringBuffer();
 
-            } /*else if (c == '(') {
+            } else if (sb.toString().equalsIgnoreCase("url") && c == '(') {
+                //store separate tokens: URL + ( + ..... + )
+                stack.add(0, sb.toString());
+                stack.add(0, "" + c);
+
+                sb = new StringBuffer();
                 //make one token until ) found
-                for (; i <
+                for (i++ ; i <
                         input.length(); i++) {
                     c = input.charAt(i);
 
@@ -434,8 +439,12 @@ public class CssPropertyValue {
                     }
 
                 }
-                sb.append(c); //add the quotation mark into the value
-            } */else if (c == ' ' || c == '\t' || c == '\n') {
+                
+                stack.add(0, sb.toString());
+                stack.add(0, "" + c); //add the quotation mark into the value
+                sb = new StringBuffer();        
+                
+            } else if (c == ' ' || c == '\t' || c == '\n') {
                 if (sb.length() > 0) {
                     stack.add(0, sb.toString());
                     sb =

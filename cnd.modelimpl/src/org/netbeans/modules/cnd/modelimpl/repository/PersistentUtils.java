@@ -570,18 +570,19 @@ public class PersistentUtils {
 //        }
 //    }
 
-    public static void readStringToStateMap(Map<CharSequence, APTPreprocHandler.State> filesHandlers, DataInput input) throws IOException {
-        assert filesHandlers != null;
-        int collSize = input.readInt();
-
-        for (int i = 0; i < collSize; i++) {
-            CharSequence key = FilePathCache.getString(input.readUTF());
-            assert key != null;
-            APTPreprocHandler.State state = readPreprocState(input);
-            assert state != null;
-            filesHandlers.put(key, state);
-        }
-    }
+// Unused for the time being
+//    public static void readStringToStateMap(Map<CharSequence, APTPreprocHandler.State> filesHandlers, DataInput input) throws IOException {
+//        assert filesHandlers != null;
+//        int collSize = input.readInt();
+//
+//        for (int i = 0; i < collSize; i++) {
+//            CharSequence key = FilePathCache.getString(input.readUTF());
+//            assert key != null;
+//            APTPreprocHandler.State state = readPreprocState(input);
+//            assert state != null;
+//            filesHandlers.put(key, state);
+//        }
+//    }
 
     public static void writePreprocState(APTPreprocHandler.State state, DataOutput output) throws IOException {
 	APTPreprocHandler.State cleanedState = APTHandlersSupport.createCleanPreprocState(state);

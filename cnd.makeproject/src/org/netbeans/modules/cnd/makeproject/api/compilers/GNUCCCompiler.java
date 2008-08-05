@@ -59,7 +59,7 @@ public class GNUCCCompiler extends GNUCCCCompiler {
     }
 
     @Override
-    protected CompilerDescriptor getCompilerDescription() {
+    public CompilerDescriptor getDescriptor() {
         return getFlavor().getToolchainDescriptor().getCpp();
     }
 }

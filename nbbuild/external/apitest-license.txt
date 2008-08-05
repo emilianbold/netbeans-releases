@@ -1,10 +1,8 @@
-Name: apitest
-Version: 24
+Name: API Signature Testing Tool
+Version: 70
 License: GPL-2-CP
-Source: http://nbbuild.netbeans.org/files/documents/30/1747/apitest-29.zip
+Source: http://hg.netbeans.org/apitest/
 Description: Signature test modified for NetBeans
-OSR: -1
-Origin: http://nbbuild.netbeans.org
 
 The GNU General Public License (GPL)
 Version 2, June 1991

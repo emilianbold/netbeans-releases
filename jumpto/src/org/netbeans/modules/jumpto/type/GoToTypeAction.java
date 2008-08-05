@@ -287,6 +287,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
    private Dialog createDialog( final GoToPanel panel) {
        
         okButton = new JButton (NbBundle.getMessage(GoToTypeAction.class, "CTL_OK"));
+        okButton.getAccessibleContext().setAccessibleDescription(okButton.getText());
         okButton.setEnabled (false);
         panel.getAccessibleContext().setAccessibleName( NbBundle.getMessage( GoToTypeAction.class, "AN_GoToType") ); //NOI18N
         panel.getAccessibleContext().setAccessibleDescription( NbBundle.getMessage( GoToTypeAction.class, "AD_GoToType") ); //NOI18N

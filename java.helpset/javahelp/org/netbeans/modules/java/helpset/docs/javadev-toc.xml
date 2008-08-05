@@ -221,6 +221,7 @@
     <tocitem text="Working with Groovy">
         <tocitem text="About Working with Groovy" target="groovy_intro"/>
 	<tocitem text="Enabling a Java Application to Support Groovy" target="groovy_enable"/>
+	<tocitem text="Editing Groovy Source Files" target="groovy_edit"/>
     </tocitem>
     
     <tocitem text="Working With Javadoc Documentation">

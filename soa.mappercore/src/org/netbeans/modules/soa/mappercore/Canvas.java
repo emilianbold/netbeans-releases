@@ -38,14 +38,12 @@ import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
-import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
 import javax.swing.CellRendererPane;
 import javax.swing.InputMap;
@@ -75,10 +73,7 @@ import org.netbeans.modules.soa.mappercore.model.VertexItem;
 import org.netbeans.modules.soa.mappercore.utils.ScrollPaneWrapper;
 import org.netbeans.modules.soa.mappercore.utils.Utils;
 import org.openide.actions.CopyAction;
-import org.openide.actions.PasteAction;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.CallbackSystemAction;
-import org.openide.util.actions.SystemAction;
 
 /**
  *

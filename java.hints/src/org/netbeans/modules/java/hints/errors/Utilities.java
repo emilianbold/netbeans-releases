@@ -89,6 +89,7 @@ import org.openide.util.Exceptions;
  * @author Jan Lahoda
  */
 public class Utilities {
+    private static final String DEFAULT_NAME = "name";
 
     public Utilities() {
     }
@@ -103,7 +104,7 @@ public class Utilities {
                 if (guess != null)
                     return guessLiteralName(guess);
             } else
-                return "name";
+                return DEFAULT_NAME;
         }
         
         Scope s = info.getTrees().getScope(tp);
@@ -130,6 +131,8 @@ public class Utilities {
 
     private static String guessLiteralName(String str) {
         StringBuffer sb = new StringBuffer();
+        if(str.length() == 0)
+            return DEFAULT_NAME;
         char first = str.charAt(0);
         if(Character.isJavaIdentifierStart(str.charAt(0)))
             sb.append(first);
@@ -145,7 +148,10 @@ public class Utilities {
             if (i > 40)
                 break;
         }
-        return sb.toString();
+        if (sb.length() == 0)
+            return DEFAULT_NAME;
+        else
+            return sb.toString();
     }
     
     public static String getName(TypeMirror tm) {

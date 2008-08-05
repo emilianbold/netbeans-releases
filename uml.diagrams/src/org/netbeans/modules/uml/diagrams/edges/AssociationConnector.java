@@ -477,7 +477,7 @@ public class AssociationConnector extends AbstractUMLConnectionWidget
         if (child != null)
         {
             setValues(edgeWriter,
-                    child.getLocation(), child.getPreferredSize(),
+                    child.getPreferredLocation(), child.getPreferredSize(),
                     key + "_PEID", null, null, typeInfo);
             edgeWriter.beginGraphNode();
             edgeWriter.endGraphNode();

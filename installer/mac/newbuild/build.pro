@@ -43,7 +43,7 @@
     </loadresource>
 
     <property name="glassfish.v3.version"      value="b${glassfish.v3.build.number}"/>
-    <property name="glassfish.v3.install.dir"  value="${install.dir}/glassfish-v3-${glassfish.v3.version}"/>    
+    <property name="glassfish.v3.install.dir"  value="${install.dir}/glassfish-v3-prelude-${glassfish.v3.version}"/>    
     <property name="glassfish_v3_location"     value="${glassfish.v3.location.prefix}/${glassfish.v3.build.type}/${glassfish.v3.version}/bundles/multiplatform.zip"/>
     <!--<property name="glassfish_v3_location" value="file:${user.home}/releng/hudson/glassfish-v3-preview2-b10d.zip"/>-->
     <property name="glassfish_v3_location_ml"  value="${glassfish_v3_location}"/>
@@ -67,6 +67,7 @@
     <property name="mysql_connector.name" value="mysql-connector-java-5.1.6-bin"/>
     <property name="mysql_10.5.location" value="${binary_cache_host}/mysql/${mysql_10.5.pkg.name}.dmg"/>
     <property name="mysql_10.4.location" value="${binary_cache_host}/mysql/${mysql_10.4.pkg.name}.dmg"/>
+    <property name="mysql.install.dir" value="/usr/local/mysql"/>
     <property name="mysql_prefPane.location" value="${binary_cache_host}/mysql/MySQL.prefPane-leopardfix.zip"/>
     <property name="mysql_connector.location" value="${binary_cache_host}/mysql/${mysql_connector.name}.jar"/>   
     <property name="mysql_license.name" value="NB_GF_MySQL.txt"/>   

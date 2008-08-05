@@ -435,8 +435,8 @@ public class ConnectionNodeInfo extends DatabaseNodeInfo implements ConnectionOp
         if (connection != null) {
             String message = null;
             try {
-                connection.close();
                 setConnection(null); // fires change
+                connection.close();
             } catch (Exception exc) {
                 // connection is broken, connection state has been changed
                 setConnection(null); // fires change

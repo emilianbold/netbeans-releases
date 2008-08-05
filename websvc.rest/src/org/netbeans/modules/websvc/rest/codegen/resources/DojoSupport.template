@@ -8,6 +8,7 @@ djd43.hostenv.writeIncludes();
 var resourcesTable;
 var restStore;
 var rdjTable;
+var proxy = "";
 
 djd43.provide("rdj.includeJS");
 rdj.includeJS = function(file) {
@@ -44,6 +45,11 @@ rdj.init = function() {
     rjsSupport.debug('Rest scripts initialized...');
 }
 
+djd43.provide("rdj.setProxy");
+rdj.setProxy = function(proxy_) {
+    proxy = proxy_;
+}
+
 djd43.provide("rdj.displayResourcesTable");
 rdj.displayResourcesTable = function(datastore, query, tableElement) {
     rdj.init();
@@ -69,6 +75,8 @@ rdj.displayResourcesTable = function(datastore, query, tableElement) {
     };
     restStore = datastore;
     rdjTable = tableElement;
+    if(proxy.length > 0)
+        restStore.setProxy(proxy);
     var result = datastore.find({query:query, sync:true, onnext:addRow});	
     resourcesTable = djd43.widget.createWidget("rdj:ResourcesTable", {valueField:"Id"}, tableElement);
     for (var i in columnsInResourcesTableFormat) {
@@ -102,7 +110,12 @@ rdj.displayResourcesTable = function(datastore, query, tableElement) {
         var delAction = tr.appendChild(document.createElement('td'));
         delAction.innerHTML = delActionStr;
     } else {
-        var alertStr = '<span style="'+text2+'">No items to display!</span>';
+        var alertStr = '';
+        if(result == -1) {
+            alertStr = '<span style="'+text2+'">Error reading data store, Please check url: <a href="'+restStore._serverQueryUrl+'" target="_blank">'+restStore._serverQueryUrl+'</a>.<br/>Set proxy if RESTful web service is not running on the same domain as this application.</span>';
+        } else {
+            alertStr = '<span style="'+text2+'">No items to display!</span>';
+        }
         var alertAction = tr.appendChild(document.createElement('td'));
         alertAction.innerHTML = alertStr;
     }

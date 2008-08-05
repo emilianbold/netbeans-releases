@@ -65,15 +65,17 @@ public class JSHttpResponse implements JSHttpMessage {
         timeStamp    = message.getTimeStamp();
         headerData   = Collections.<String,String>unmodifiableMap(message.getHeader());
         status       = message.getChildValue("status");
-        mimeType     = message.getChildValue("mimeType");
+        String tmpMimeType     = message.getChildValue("mimeType");
         url          = message.getUrl();
         responseText = message.getResponseText();
         category     = message.getChildValue("category");
         assert id        != null;
         assert timeStamp != null;
-        if( mimeType == null || mimeType.equals("null")){
-            throw new AssertionError("MIME type is null for: url:" + url);
+        if( tmpMimeType == null || tmpMimeType.equals("null")){
+            Log.getLogger().warning("JSHttpResponse - MIME type is null for url:" + url);
+            tmpMimeType = "text/html"; //Temporarily to make sure things don't break
         }
+        mimeType = tmpMimeType;
     }
 
     public String getCategory() {

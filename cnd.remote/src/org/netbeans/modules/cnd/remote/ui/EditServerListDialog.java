@@ -41,7 +41,6 @@ package org.netbeans.modules.cnd.remote.ui;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.Dialog;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -54,16 +53,19 @@ import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerUpdateCache;
 import org.netbeans.modules.cnd.remote.server.RemoteServerList;
 import org.netbeans.modules.cnd.remote.server.RemoteServerRecord;
+import org.netbeans.modules.cnd.remote.support.RemoteUserInfo;
 import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -86,13 +88,12 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
     /** Creates new form EditServerListDialog */
     public EditServerListDialog(ServerUpdateCache cache) {
         initComponents();
-        initListeners();
         initServerList(cache);
         desc = null;
-        buttonsEnabled = true;
         lbReason.setText(" "); // this keeps the dialog from resizing
         tfReason.setVisible(false);
         pbarStatusPanel.setVisible(false);
+        initListeners();
     }
     
     private void initListeners() {
@@ -103,13 +104,15 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         btPathMapper.addActionListener(this);
         pcs = new PropertyChangeSupport(this);
         pcs.addPropertyChangeListener(this);
+        setButtons(true);
+        valueChanged(null);
     }
     
     private void initServerList(ServerUpdateCache cache) {
         model = new DefaultListModel();
         
         if (cache == null) {
-            RemoteServerList registry = RemoteServerList.getInstance();
+            ServerList registry = (ServerList) Lookup.getDefault().lookup(ServerList.class);
             for (String hkey : registry.getServerNames()) {
                 model.addElement(hkey);
             }
@@ -123,6 +126,40 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         lstDevHosts.setModel(model);
         lstDevHosts.setSelectedIndex(defaultIndex);
         lstDevHosts.setCellRenderer(new MyCellRenderer());
+    }
+
+    private void revalidateRecord(final String entry, String password) {
+        final RemoteServerRecord record = (RemoteServerRecord) RemoteServerList.getInstance().get(entry);
+        if (!record.isOnline()) {
+            record.resetOfflineState(); // this is a do-over
+            setButtons(false);
+            hideReason();            
+            RemoteUserInfo userInfo = RemoteUserInfo.getUserInfo(entry, true);
+            userInfo.setPassword(password);
+            phandle = ProgressHandleFactory.createHandle("");
+            pbarStatusPanel.removeAll();
+            pbarStatusPanel.add(ProgressHandleFactory.createProgressComponent(phandle), BorderLayout.CENTER);
+            pbarStatusPanel.setVisible(true);
+//            revalidate();
+            phandle.start();
+            tfStatus.setText(NbBundle.getMessage(RemoteServerRecord.class, "STATE_INITIALIZING"));
+            // move expensive operation out of EDT
+            RequestProcessor.getDefault().post(new Runnable() {
+
+                public void run() {
+                    record.init(pcs);
+                    phandle.finish();
+                    // back to EDT to work with Swing
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            pbarStatusPanel.setVisible(false);
+                            setButtons(true);
+                            valueChanged(null);
+                        }                        
+                    });
+                }
+            });
+        }
     }
     
     private final class MyCellRenderer extends DefaultListCellRenderer {
@@ -166,16 +203,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         assert desc != null : "Internal Error: Set DialogDescriptor before calling AddServer";
         final int idx = lstDevHosts.getSelectedIndex();
         AddServerDialog dlg = new AddServerDialog();
-        
-        dlg.addPropertyChangeListener(AddServerDialog.PROP_VALID, this);
-        ok = new JButton(NbBundle.getMessage(EditServerListDialog.class, "BTN_OK"));
-        ok.setEnabled(dlg.isOkValid());
-        DialogDescriptor dd = new DialogDescriptor((Object) dlg, NbBundle.getMessage(EditServerListDialog.class, "TITLE_AddNewServer"), true, 
-                    new Object[] { ok, DialogDescriptor.CANCEL_OPTION },
-                    DialogDescriptor.OK_OPTION, DialogDescriptor.DEFAULT_ALIGN, null, null);
-        Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
-        dialog.setVisible(true);
-        if (dd.getValue() == ok) {
+        if (dlg.createNewRecord()) {
             String server = dlg.getServerName();
             final String entry;
             int pos = server.indexOf('@');
@@ -187,49 +215,12 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
                 return;
             }
             if (!model.contains(entry)) {
-                model.addElement(entry);
-                lstDevHosts.setSelectedValue(entry, true);
-                final RemoteServerRecord record = (RemoteServerRecord) RemoteServerList.getInstance().get(entry);
-                if (record.getState() == RemoteServerRecord.STATE_CANCELLED) {
-                    record.setState(RemoteServerRecord.STATE_UNINITIALIZED); // this is a do-over
-                }
-                if (record.getState() == RemoteServerRecord.STATE_UNINITIALIZED) {
-                    setButtons(false);
-                    phandle = ProgressHandleFactory.createHandle("");
-                    pbarStatusPanel.removeAll();
-                    pbarStatusPanel.add(ProgressHandleFactory.createProgressComponent(phandle), BorderLayout.CENTER);
-                    pbarStatusPanel.setVisible(true);
-                    revalidate();
-                    phandle.start();
-                    tfStatus.setText(NbBundle.getMessage(RemoteServerRecord.class, "STATE_INITIALIZING"));
-                    RequestProcessor.getDefault().post(new Runnable() {
-                        public void run() {
-                            record.init(pcs);
-                            tfStatus.setText(record.getStateAsText());
-                            phandle.finish();
-                            pbarStatusPanel.setVisible(false);
-                            if (record.getState() == RemoteServerRecord.STATE_OFFLINE) {
-                                showReason(record.getReason());
-                                btRetry.setEnabled(true);
-                            } else {
-                                hideReason();
-                                btRetry.setEnabled(false);
-                            }
-                            if (record.getState() == RemoteServerRecord.STATE_CANCELLED) {
-                                pcs.firePropertyChange(new PropertyChangeEvent(record, RemoteServerRecord.PROP_STATE_CHANGED,
-                                        null, RemoteServerRecord.STATE_CANCELLED));
-                                if (idx >= 0 && lstDevHosts.getModel().getSize() > idx) {
-                                    lstDevHosts.setSelectedIndex(idx);
-                                }
-                            }
-                        }
-                    });
-                }
-                
+                model.addElement(entry);                
                 if (dlg.isDefault()) {
                     defaultIndex = model.getSize() - 1;
-                    lstDevHosts.repaint();
-                }
+                }                
+                lstDevHosts.setSelectedValue(entry, true);                
+                revalidateRecord(entry, dlg.getPassword());
             }
         }
     }
@@ -247,6 +238,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         btAddServer.setEnabled(enable);
         btRemoveServer.setEnabled(enable);
         btPathMapper.setEnabled(enable);
+        btSetAsDefault.setEnabled(enable);
     }
 
     /** Helps the AddServerDialog know when to enable/disable the OK button */
@@ -259,17 +251,6 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
             ok.setEnabled(dlg.isOkValid());
         } else if (source instanceof DialogDescriptor && prop.equals(DialogDescriptor.PROP_VALID)) {
             ((DialogDescriptor) source).setValid(false);
-        } else if (source instanceof EditServerListDialog && prop.equals(RemoteServerRecord.PROP_STATE_CHANGED)) {
-            setButtons(true);
-        } else if (source instanceof RemoteServerRecord && prop.equals(RemoteServerRecord.PROP_STATE_CHANGED)) {
-            Object state = evt.getNewValue();
-            if (state == RemoteServerRecord.STATE_CANCELLED) {
-                RemoteServerRecord record = (RemoteServerRecord) source;
-                String hkey = record.getName();
-                lstDevHosts.removeListSelectionListener(this);
-                model.removeElement(hkey);
-                lstDevHosts.addListSelectionListener(this);
-            }
         }
     }
     
@@ -283,7 +264,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
             btRemoveServer.setEnabled(idx > 0 && buttonsEnabled);
             btSetAsDefault.setEnabled(idx != defaultIndex && buttonsEnabled);
             btPathMapper.setEnabled(!CompilerSetManager.LOCALHOST.equals(lstDevHosts.getSelectedValue()) && buttonsEnabled);
-            if (record.getState() == RemoteServerRecord.STATE_OFFLINE) {
+            if (!record.isOnline()) {
                 showReason(record.getReason());
                 btRetry.setEnabled(true);
             } else {
@@ -412,8 +393,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 6);
         add(btRemoveServer, gridBagConstraints);
 
-        btSetAsDefault.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/remote/ui/Bundle").getString("MNEM_SetAsDefault").charAt(0));
-        btSetAsDefault.setText(org.openide.util.NbBundle.getMessage(EditServerListDialog.class, "LBL_SetAsDefault")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(btSetAsDefault, org.openide.util.NbBundle.getMessage(EditServerListDialog.class, "LBL_SetAsDefault")); // NOI18N
         btSetAsDefault.setActionCommand("SetAsDefault"); // NOI18N
         btSetAsDefault.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -459,6 +439,11 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         btRetry.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/remote/ui/Bundle").getString("MNEM_Retry").charAt(0));
         btRetry.setText(org.openide.util.NbBundle.getMessage(EditServerListDialog.class, "LBL_Retry")); // NOI18N
         btRetry.setEnabled(false);
+        btRetry.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btRetryActionPerformed(evt);
+            }
+        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 5;
@@ -497,6 +482,10 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 6, 6);
         add(pbarStatusPanel, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
+
+    private void btRetryActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btRetryActionPerformed
+        this.revalidateRecord((String)lstDevHosts.getSelectedValue(), "");
+    }//GEN-LAST:event_btRetryActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

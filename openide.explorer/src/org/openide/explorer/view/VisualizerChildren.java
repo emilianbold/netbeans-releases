@@ -192,7 +192,7 @@ final class VisualizerChildren extends Object {
             // children were replaced (e.g. VisualizerNode.naturalOrder()), quit processing event
             return;
         }        
-        snapshot = ev.originalEvent.getSnapshot();
+        snapshot = ev.getSnapshot();
         ListIterator<VisualizerNode> it = visNodes.listIterator();
         boolean empty = !it.hasNext();
 
@@ -233,20 +233,14 @@ final class VisualizerChildren extends Object {
             // children were replaced (e.g. VisualizerNode.naturalOrder()), quit processing event
             return;
         }
-        snapshot = ev.originalEvent.getSnapshot();
+        snapshot = ev.getSnapshot();
         int[] idxs = ev.getArray();
         if (idxs.length == 0) {
             return;
         }
 
-        //NodeMemberEvent origEvent = (NodeMemberEvent) ev.originalEvent;
         for (int i = idxs.length - 1; i >= 0; i--) {
             VisualizerNode visNode = visNodes.remove(idxs[i]);
-            /*if (visNode == null) {
-                Node node = origEvent.getDelta()[i];
-                visNode = VisualizerNode.getVisualizer(this, node);
-            }
-            ev.removed.add(visNode);*/
             ev.removed.add(visNode != null ? visNode : VisualizerNode.EMPTY);
         }
 
@@ -291,10 +285,14 @@ final class VisualizerChildren extends Object {
      * and fires info to all listeners.
      */
     public void reordered(VisualizerEvent.Reordered ev) {
-        if (ev.originalEvent != null) {
-            snapshot = ev.originalEvent.getSnapshot();
+        if (this != parent.getChildren()) {
+            // children were replaced (e.g. VisualizerNode.naturalOrder()), quit processing event
+            return;
         }
-        
+        if (ev.getSnapshot() != null) {
+            snapshot = ev.getSnapshot();
+        }
+
         if (ev.getComparator() != null) {
             //#37802
             ev.array = reorderByComparator(ev.getComparator());

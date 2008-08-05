@@ -39,9 +39,13 @@
 
 package org.netbeans.modules.cnd.editor.options;
 
+import java.awt.event.HierarchyEvent;
+import java.awt.event.HierarchyListener;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import javax.swing.JComponent;
+import javax.swing.JEditorPane;
+import org.netbeans.modules.cnd.editor.api.CodeStyle;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
@@ -50,7 +54,10 @@ import org.openide.util.Lookup;
  *
  * @author Alexander Simon
  */
-public class EditorOptionsPanelController extends OptionsPanelController {
+public class EditorOptionsPanelController extends OptionsPanelController
+        implements HierarchyListener {
+
+    private JEditorPane previewPane;
     private EditorPropertySheet panel;
     private static final boolean TRACE = false;
     
@@ -58,9 +65,10 @@ public class EditorOptionsPanelController extends OptionsPanelController {
     private boolean changed;
 
     
-    public EditorOptionsPanelController(){
+    public EditorOptionsPanelController(CodeStyle.Language language){
         if (TRACE) System.out.println("EditorOptionsPanelController.ctor()"); // NOI18N
-         panel = new EditorPropertySheet(this);
+         panel = new EditorPropertySheet(this, language);
+         panel.addHierarchyListener(this);
     }
     
     public void update() {
@@ -94,6 +102,7 @@ public class EditorOptionsPanelController extends OptionsPanelController {
     }
     
     public JComponent getComponent(Lookup masterLookup) {
+        this.previewPane = masterLookup.lookup(JEditorPane.class);
         return panel;
     }
 
@@ -112,4 +121,21 @@ public class EditorOptionsPanelController extends OptionsPanelController {
 	}
 	pcs.firePropertyChange(OptionsPanelController.PROP_VALID, null, null);
     }
+
+    public void hierarchyChanged(HierarchyEvent e) {
+        panel.repaintPreview();
+    }
+
+    public JEditorPane getPreviewPane() {
+        return previewPane;
+    }
+
+    public static OptionsPanelController getCController() {
+        return new EditorOptionsPanelController(CodeStyle.Language.C);
+    }
+
+    public static OptionsPanelController getCCController() {
+        return new EditorOptionsPanelController(CodeStyle.Language.CPP);
+    }
+
 }

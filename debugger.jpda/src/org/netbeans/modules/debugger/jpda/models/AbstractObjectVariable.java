@@ -672,23 +672,24 @@ class AbstractObjectVariable extends AbstractVariable implements ObjectVariable 
         try {
             l = rt.allFields ();
             s = new HashSet<com.sun.jdi.Field>(rt.fields ());
-        } catch (VMDisconnectedException e) {
-            l = Collections.emptyList();
-            s = Collections.emptySet();
-        }
 
-        int i, k = l.size();
-        for (i = 0; i < k; i++) {
-            com.sun.jdi.Field f = l.get (i);
-            Field field = this.getField (f, or, this.getID());
-            if (f.isStatic ())
-                classStaticFields.add(field);
-            else {
-                if (s.contains (f))
-                    classFields.add(field);
-                else
-                    allInheretedFields.add(field);
+            int i, k = l.size();
+            for (i = 0; i < k; i++) {
+                com.sun.jdi.Field f = l.get (i);
+                Field field = this.getField (f, or, this.getID());
+                if (f.isStatic ())
+                    classStaticFields.add(field);
+                else {
+                    if (s.contains (f))
+                        classFields.add(field);
+                    else
+                        allInheretedFields.add(field);
+                }
             }
+        } catch (VMDisconnectedException e) {
+            classFields.clear();
+            classStaticFields.clear();
+            allInheretedFields.clear();
         }
         this.fields = classFields.toArray (new Field [classFields.size ()]);
         this.inheritedFields = allInheretedFields.toArray (
