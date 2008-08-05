@@ -43,12 +43,19 @@ package org.netbeans.test.editor.suites.keybindings;
 
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.swing.ListModel;
 import javax.swing.tree.TreePath;
 import junit.framework.Test;
@@ -69,6 +76,7 @@ import org.netbeans.jemmy.operators.JListOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestSuite;
+import org.openide.util.Exceptions;
 
 
 /**
@@ -104,8 +112,15 @@ public class KeyMapTest extends JellyTestCase{
     public KeyMapTest(String name) {
         super(name);
     }
+
     
     private EditorOperator openFile() {
+
+        try {
+            this.openDataProjects("projects/editor_test");
+        } catch (IOException iOException) {
+            fail("Cannot open sample projects");
+        }
         Node pn = new ProjectsTabOperator().getProjectRootNode("editor_test");
         pn.select();
         //Open Test.java from editor_test project
@@ -118,12 +133,43 @@ public class KeyMapTest extends JellyTestCase{
     
     @Override
     protected void setUp() throws Exception {
-        super.setUp();
+        super.setUp();        
         editor=openFile();
         System.out.println("Starting: "+getName());
     }
-    
-    private String getActionName(String globalAction) {
+
+    private String getActionName(Object o) {
+        String name = "<unknown>";
+        if(o instanceof String) {
+            name = (String) o;
+        } else if (o.toString().startsWith("GlobalAction") || o.toString().startsWith("EditorAction")) {
+            name = getGlobalActionName(o.toString());
+        } else if (o.toString().startsWith("CompoundAction")) {
+            name = getCompountActionName(o.toString());
+        } else if (o.toString().startsWith("org.netbeans.modules.editor.macros.storage.ui.MacrosModel")) {
+            try {
+                Method method = o.getClass().getMethod("getName", null);
+                method.setAccessible(true);
+                Object result = method.invoke(o, null);
+                name = (String) result;
+            } catch (IllegalAccessException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (IllegalArgumentException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (InvocationTargetException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (NoSuchMethodException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (SecurityException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        } else {
+            log(o.getClass().getName());        
+        }
+        return name;
+    }
+
+    private String getGlobalActionName(String globalAction) {
         int startPos = globalAction.indexOf('[');
         int endPos = globalAction.indexOf(':');
         if(startPos <0 || endPos<0) return globalAction;
@@ -149,7 +195,30 @@ public class KeyMapTest extends JellyTestCase{
         return false;
         
     }
+
         
+    private Set<String> readActionFromFile() {
+        InputStream resource = this.getClass().getClassLoader().getResourceAsStream("org/netbeans/test/editor/suites/keybindings/actions.txt");
+        Set<String> set = new HashSet<String>();
+        BufferedReader reader = new BufferedReader(new InputStreamReader(resource));
+        String line;
+        try {
+            while ((line = reader.readLine()) != null) {
+                set.add(line);
+            }
+        } catch (IOException ioe) {
+            fail(ioe);
+        }        
+        if(set.isEmpty()) fail("Error while reading action list");
+        return set;
+    }
+
+    static Set<String> actions = null;
+    
+    private boolean isIncluded(String action) {        
+        if(actions==null) actions = readActionFromFile();
+        return actions.contains(action);
+    }
     
     private void dump(String path, JTreeOperator tree,KeyMapOperator kmo) {
         Map<String,String> usedShortcuts = new HashMap<String, String>(); //used shortcuts <shortcut, action>
@@ -167,18 +236,10 @@ public class KeyMapTest extends JellyTestCase{
             if(parts == 2) {
                 lastVisitedCategory = (String) tp.getPathComponent(1);
             } else {
-                Object o = tp.getPathComponent(2);
-                System.out.println(o);
-                System.out.println(o.getClass().getName());
-                String name = "<unknown>";
-                if(o.toString().startsWith("GlobalAction") || o.toString().startsWith("EditorAction")) {
-                    name = getActionName(o.toString());
-                }
-                if(o.toString().startsWith("CompountAction")) {
-                    name = getCompountActionName(o.toString());
-                }
+                Object o = tp.getPathComponent(2);                
+                String name = getActionName(o);
                 ListModel model = kmo.shortcuts().getModel();                
-                if (model.getSize() > 0 && !dumpException(lastVisitedCategory + "|" + name)) {
+                if (isIncluded(lastVisitedCategory + "|" + name)) {
                     getRef().println(lastVisitedCategory + "|" + name); //log acition name
                     for (int j = 0; j < model.getSize(); j++) {
                         String shortcut = model.getElementAt(j).toString();
@@ -305,12 +366,12 @@ public class KeyMapTest extends JellyTestCase{
                     String selected = editor.txtEditorPane().getSelectedText();
                     new EventTool().waitNoEvent(100);
                     if(selected==null) return false;
-                    return selected.startsWith("        System.out.println(\"Hello\");");
+                    return selected.startsWith("        System.out.println(\"Hello\"); ");
                 }
             };
             waitMaxMilisForValue(3000, vr, Boolean.TRUE);
             String text =  editor.txtEditorPane().getSelectedText();
-            assertEquals("        System.out.println(\"Hello\");",text);
+            assertEquals("        System.out.println(\"Hello\"); ",text);
         } finally {
             if(!closed && kmo!=null) kmo.cancel().push();
             editor.close(false);
@@ -355,7 +416,7 @@ public class KeyMapTest extends JellyTestCase{
             kmo.add().push();
             AddShortcutDialog asd = new AddShortcutDialog();
             asd.txtJTextField().pushKey(KeyEvent.VK_UP, InputEvent.SHIFT_DOWN_MASK);
-            assertEquals("Shortcut already assigned to Extend Selection Up Action.",asd.lblConflict().getText());
+            assertEquals("<html>Shortcut already assigned to Extend Selection Up action. If you proceed the shortcut will be reassigned.",asd.lblConflict().getText());
             asd.btOK().push();
             checkListContents(kmo.shortcuts(), "Shift+UP");
             kmo.selectAction("Other|selection-up");
