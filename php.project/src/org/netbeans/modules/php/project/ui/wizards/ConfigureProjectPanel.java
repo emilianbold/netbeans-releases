@@ -121,7 +121,7 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
         descriptor = settings;
 
         // do not fire events now
-        configureProjectPanelVisual.removeConfigureProjectListener(this);
+        removeListeners();
 
         // project
         switch (wizardType) {
@@ -148,8 +148,16 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
         // encoding
         configureProjectPanelVisual.setEncoding(getEncoding());
 
-        configureProjectPanelVisual.addConfigureProjectListener(this);
+        addListeners();
         stateChanged(null);
+    }
+
+    private void addListeners() {
+        configureProjectPanelVisual.addConfigureProjectListener(this);
+    }
+
+    private void removeListeners() {
+        configureProjectPanelVisual.removeConfigureProjectListener(this);
     }
 
     public void storeSettings(WizardDescriptor settings) {
@@ -505,15 +513,12 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
         }
         originalSources = sources;
         String newProjectName = new File(sources).getName();
-        // because JTextField.setText() calls document.remove() and then document.insert() (= 2 events!), just remove and readd the listener
-        //configureProjectPanelVisual.removeConfigureProjectListener(this);
         configureProjectPanelVisual.setProjectName(newProjectName);
-        //configureProjectPanelVisual.addConfigureProjectListener(this);
     }
 
     public void stateChanged(ChangeEvent e) {
         // because JTextField.setText() calls document.remove() and then document.insert() (= 2 events!), just remove and readd the listener
-        configureProjectPanelVisual.removeConfigureProjectListener(this);
+        removeListeners();
         switch (wizardType) {
             case NEW:
                 projectNameChanged();
@@ -525,7 +530,7 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
                 assert false : "Unknown wizard type: " + wizardType;
                 break;
         }
-        configureProjectPanelVisual.addConfigureProjectListener(this);
+        addListeners();
         fireChangeEvent();
     }
 }

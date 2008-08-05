@@ -216,7 +216,7 @@ public class HibernateUtil {
         return buildFO;
     }
 
-    private static SourceGroup[] getSourceGroups(Project project) {
+    public static SourceGroup[] getSourceGroups(Project project) {
         Sources projectSources = ProjectUtils.getSources(project);
         SourceGroup[] javaSourceGroup = projectSources.getSourceGroups(
                 JavaProjectConstants.SOURCES_TYPE_RESOURCES);

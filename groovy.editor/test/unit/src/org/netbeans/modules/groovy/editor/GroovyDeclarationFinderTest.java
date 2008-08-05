@@ -50,14 +50,26 @@ import org.netbeans.modules.gsf.api.DeclarationFinder.DeclarationLocation;
  * @author Martin Adamek
  */
 public class GroovyDeclarationFinderTest extends GroovyTestBase {
+    
+    private final String TEST_BASE = "testfiles/declarationfinder/";
 
     public GroovyDeclarationFinderTest(String testName) {
         super(testName);
     }
 
-    public void test1() throws Exception {
-        checkDeclaration("testfiles/Script.groovy", "        println va^r1", "    def ^var1 = 'aaa'");
+    // this test is for variables defined and used in the same CU.
+    
+    public void testField1() throws Exception {
+        checkDeclaration(TEST_BASE + "Script.groovy", "        println va^r1", "    def ^var1 = 'aaa'");
     }
+    
+    // we gotta have a test for class usage:
+    
+    public void testClass1() throws Exception {
+        checkDeclaration(TEST_BASE + "Consumer.groovy", "        Fin^der finder = new Finder()", "class ^Finder {");
+    }
+    
+    
 
     private void checkDeclaration(String relFilePath, String caretLine, String declarationLine) throws Exception {
         CompilationInfo info = getInfo(relFilePath);
@@ -74,6 +86,12 @@ public class GroovyDeclarationFinderTest extends GroovyTestBase {
         GroovyDeclarationFinder finder = new GroovyDeclarationFinder();
         DeclarationLocation location = finder.findDeclaration(info, caretOffset);
 
+
+        if (location == DeclarationLocation.NONE) {
+            // if we dont found a declaration, bail out. 
+            assertTrue("DeclarationLocation.NONE",false);
+        }
+
         caretDelta = declarationLine.indexOf('^');
         assertTrue(caretDelta != -1);
         declarationLine = declarationLine.substring(0, caretDelta) + declarationLine.substring(caretDelta + 1);
@@ -82,6 +100,6 @@ public class GroovyDeclarationFinderTest extends GroovyTestBase {
         caretOffset = lineOffset + caretDelta;
 
         assertEquals(caretOffset, location.getOffset());
-    }
+}
 
 }

@@ -161,6 +161,8 @@ class SearchResultRender extends JLabel implements ListCellRenderer {
     }
 
     static String getKeyStrokeAsText (KeyStroke keyStroke) {
+        if (keyStroke == null)
+            return "";
         int modifiers = keyStroke.getModifiers ();
         StringBuffer sb = new StringBuffer ();
         if ((modifiers & InputEvent.CTRL_DOWN_MASK) > 0)

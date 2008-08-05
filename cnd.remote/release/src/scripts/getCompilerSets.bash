@@ -38,7 +38,7 @@
 # Version 2 license, then the option applies only if the new code is
 # made subject to such option by the copyright holder.
 
-VERSION=0.4
+VERSION=0.5
 
 # Prepend /usr/bin and /bin so we're ensured that standard Unix commands
 # don't get replaced by a non-standard version
@@ -73,6 +73,11 @@ do
     if [ "${f:0:1}" != "/" ]
     then
 	continue	# skip relative directories
+    fi
+
+    if [ "${f:0:8}" = "/usr/ucb" ]
+    then
+	continue	# skip /usr/ucb (IZ #142780)
     fi
 
     if [ "$OS" == "SunOS" -a \( -x "$f/cc" -o -x "$f/CC" \) ]

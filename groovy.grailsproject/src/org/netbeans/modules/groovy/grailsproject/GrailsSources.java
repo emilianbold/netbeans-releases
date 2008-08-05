@@ -77,6 +77,7 @@ public class GrailsSources implements Sources {
             };
         } else if (JavaProjectConstants.SOURCES_TYPE_JAVA.equals(type)) {
             return new SourceGroup[] {
+                new Group(SourceCategory.SRC_GROOVY, projectDir.getFileObject("src/groovy"), NbBundle.getMessage(GrailsSources.class, "LBL_SrcGroovy")),
                 new Group(SourceCategory.SRC_JAVA, projectDir.getFileObject("src/java"), NbBundle.getMessage(GrailsSources.class, "LBL_SrcJava"))
             };
         } else if (type.startsWith(".")) {

@@ -111,7 +111,7 @@ public class GenerateDTOTest extends J2eeTestCase {
     }
     
     private void deleteDateAndAuthor(){
-        final EditorOperator editor = new EditorWindowOperator().getEditor(dtoName);
+        final EditorOperator editor = EditorWindowOperator.getEditor(dtoName);
         new org.netbeans.jemmy.EventTool().waitNoEvent(3000);
         editor.deleteLine(11); //author
         editor.deleteLine(10); //date
