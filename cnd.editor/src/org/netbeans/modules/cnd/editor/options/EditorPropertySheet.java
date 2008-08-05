@@ -103,6 +103,7 @@ public class EditorPropertySheet extends javax.swing.JPanel
         holder = new PropertySheet();
         holder.setOpaque(false);
         holder.setDescriptionAreaVisible(false);
+        holder.setPreferredSize(new Dimension(250,150));
         GridBagConstraints fillConstraints = new GridBagConstraints();
         fillConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         fillConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
