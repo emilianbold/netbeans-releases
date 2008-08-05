@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.compapp.casaeditor.model.casa;
 
 import java.io.StringReader;
@@ -57,30 +56,28 @@ import org.xml.sax.InputSource;
  * @author jqian
  */
 public class JBIServiceUnitTransferObject {
-    
 //    public static final DataFlavor ServiceUnitDataFlavor =
 //            new DataFlavor(JBIServiceUnitTransferObject.class, "JBIServiceUnitDataFlavor" ) {  // NOI18N
 //    };
-    
     private String serviceUnitName;
     private String serviceUnitDescription;
     private String componentName;
     private boolean isBC;
     private Document doc;
     private List<Endpoint> providesList;
-    private List<Endpoint> consumesList;     
-        
-    public JBIServiceUnitTransferObject(String serviceUnitName, 
+    private List<Endpoint> consumesList;
+
+    public JBIServiceUnitTransferObject(String serviceUnitName,
             String componentName,
-            String serviceUnitDescription, 
+            String serviceUnitDescription,
             String descriptor) {
         this.serviceUnitName = serviceUnitName;
         this.componentName = componentName;
         this.serviceUnitDescription = serviceUnitDescription;
-        
+
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         factory.setNamespaceAware(true);
-        
+
         try {
             DocumentBuilder builder = factory.newDocumentBuilder();
             doc = builder.parse(new InputSource(new StringReader(descriptor)));
@@ -90,29 +87,29 @@ public class JBIServiceUnitTransferObject {
             ex.printStackTrace();
         }
     }
-    
+
     public boolean isBindingComponent() {
         return isBC;
     }
-    
+
     public String getServiceUnitName() {
         return serviceUnitName;
     }
-    
+
     public String getServiceUnitDescription() {
         return serviceUnitDescription;
     }
-    
+
     public String getComponentName() {
         return componentName;
     }
-    
+
     public List<Endpoint> getProvidesEndpoints() {
         if (providesList == null) {
             providesList = new ArrayList<Endpoint>();
-            
+
             NodeList endpointList = doc.getElementsByTagName("provides");
-            
+
             for (int i = 0; i < endpointList.getLength(); i++) {
                 Element pc = (Element) endpointList.item(i);
                 String endpointName = pc.getAttribute("endpoint-name");
@@ -124,16 +121,16 @@ public class JBIServiceUnitTransferObject {
                 providesList.add(endpoint);
             }
         }
-        
+
         return providesList;
     }
-    
+
     public List<Endpoint> getConsumesEndpoints() {
         if (consumesList == null) {
             consumesList = new ArrayList<Endpoint>();
-            
+
             NodeList endpointList = doc.getElementsByTagName("consumes");
-            
+
             for (int i = 0; i < endpointList.getLength(); i++) {
                 Element pc = (Element) endpointList.item(i);
                 String endpointName = pc.getAttribute("endpoint-name");
@@ -145,10 +142,10 @@ public class JBIServiceUnitTransferObject {
                 consumesList.add(endpoint);
             }
         }
-        
+
         return consumesList;
-    }    
-    
+    }
+
     private QName getNSName(Element e, String qname) {
         if (qname == null) {
             return null;
@@ -159,10 +156,10 @@ public class JBIServiceUnitTransferObject {
             String prefix = qname.substring(0, i);
             return new QName(getNamespace(e, prefix), name);
         }
-        
+
         return null; // qname;
     }
-    
+
     /**
      * Gets the namespace from the qname.
      *
@@ -174,53 +171,41 @@ public class JBIServiceUnitTransferObject {
         if ((prefix == null) || (prefix.length() < 1)) {
             return "";
         }
-        try {
-            NamedNodeMap map = el.getAttributes();
-            for (int j = 0; j < map.getLength(); j++) {
-                org.w3c.dom.Node n = map.item(j);
-                String localName = n.getLocalName();
-                if (localName != null) {
-                    if (n.getLocalName().trim().equals(prefix.trim())) {
-                        return n.getNodeValue();
-                    }
+
+        NamedNodeMap map = el.getAttributes();
+        for (int j = 0; j < map.getLength(); j++) {
+            org.w3c.dom.Node n = map.item(j);
+            String localName = n.getLocalName();
+            if (localName != null) {
+                if (n.getLocalName().trim().equals(prefix.trim())) {
+                    return n.getNodeValue();
                 }
             }
-            map = el.getOwnerDocument().getDocumentElement().getAttributes();
-            for (int j = 0; j < map.getLength(); j++) {
-                org.w3c.dom.Node n = map.item(j);
-                String localName = n.getLocalName();
-                if (localName != null) {
-                    if (n.getLocalName().trim().equals(prefix.trim())) {
-                        return n.getNodeValue();
-                    }
-                }
-            }
-        } catch (Exception e) {
         }
-        
-        return "";
+
+        return getNamespace((Element) el.getParentNode(), prefix);
     }
-    
+
     public class Endpoint {
-        
+
         private String endpointName;
         private QName serviceQName;
         private QName interfaceQName;
-        
+
         Endpoint(String endpointName, QName serviceQName, QName interfaceQName) {
             this.endpointName = endpointName;
             this.serviceQName = serviceQName;
             this.interfaceQName = interfaceQName;
         }
-        
+
         public String getEndpointName() {
             return endpointName;
         }
-        
+
         public QName getServiceQName() {
             return serviceQName;
         }
-        
+
         public QName getInterfaceQName() {
             return interfaceQName;
         }

@@ -45,6 +45,7 @@ import org.openide.nodes.*;
 import java.util.Comparator;
 import java.util.EventObject;
 import java.util.LinkedList;
+import java.util.List;
 
 
 /** Event describing change in a visualizer. Runnable to be added into
@@ -56,11 +57,13 @@ abstract class VisualizerEvent extends EventObject {
     /** indices */
     int[] array;
     NodeEvent originalEvent;
+    List<Node> snapshot;
 
-    public VisualizerEvent(VisualizerChildren ch, int[] array, NodeEvent originalEvent) {
+    public VisualizerEvent(VisualizerChildren ch, int[] array, NodeEvent originalEvent, List<Node> snapshot) {
         super(ch);
         this.array = array;
         this.originalEvent = originalEvent;
+        this.snapshot = snapshot;
     }
 
     /** Getter for changed indexes */
@@ -79,6 +82,10 @@ abstract class VisualizerEvent extends EventObject {
     public final VisualizerNode getVisualizer() {
         return getChildren().parent;
     }
+    
+    public final List<Node> getSnapshot() {
+        return snapshot;
+    }
 
     /** Class for notification of adding of nodes that can be passed into
     * the event queue and in such case notifies all listeners in Swing Dispatch Thread
@@ -90,8 +97,8 @@ abstract class VisualizerEvent extends EventObject {
         * @param ch children
         * @param idxs indicies of added nodes
         */
-        public Added(VisualizerChildren ch, int[] idxs, NodeEvent originalEvent) {
-            super(ch, idxs, originalEvent);
+        public Added(VisualizerChildren ch, int[] idxs, NodeMemberEvent originalEvent) {
+            super(ch, idxs, originalEvent, originalEvent.getSnapshot());
         }
 
         /** Process the event
@@ -115,8 +122,8 @@ abstract class VisualizerEvent extends EventObject {
         * @param ch children
         * @param idxs indicies of added nodes
         */
-        public Removed(VisualizerChildren ch, int[] idxs, NodeEvent originalEvent) {
-            super(ch, idxs, originalEvent);
+        public Removed(VisualizerChildren ch, int[] idxs, NodeMemberEvent originalEvent) {
+            super(ch, idxs, originalEvent, originalEvent.getSnapshot());
         }
 
         /** Process the event
@@ -137,13 +144,13 @@ abstract class VisualizerEvent extends EventObject {
         * @param ch children
         * @param indx indicies of added nodes
         */
-        public Reordered(VisualizerChildren ch, int[] idxs, NodeEvent originalEvent) {
-            super(ch, idxs, originalEvent);
+        public Reordered(VisualizerChildren ch, int[] idxs, NodeReorderEvent originalEvent) {
+            super(ch, idxs, originalEvent, originalEvent != null ? originalEvent.getSnapshot() : null);
         }
 
         //#37802 - provide a way to just send a comparator along to do the 
         //sorting
-        Reordered(VisualizerChildren ch, Comparator<VisualizerNode> comparator, NodeEvent originalEvent) {
+        Reordered(VisualizerChildren ch, Comparator<VisualizerNode> comparator, NodeReorderEvent originalEvent) {
             this(ch, new int[0], originalEvent);
             this.comparator = comparator;
         }

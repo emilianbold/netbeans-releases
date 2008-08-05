@@ -649,7 +649,7 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
         
         boolean shouldBeInvokedLater(Runnable run) {
             return run instanceof VisualizerEvent.Removed && 
-                    ((VisualizerEvent) run).originalEvent.getSnapshot().getClass().getName().contains("DelayedLazySnapshot");
+                    ((VisualizerEvent) run).getSnapshot().getClass().getName().contains("DelayedLazySnapshot");
         }
         
         /** Runs the runnable in event thread.

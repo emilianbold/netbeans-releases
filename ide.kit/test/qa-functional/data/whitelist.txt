@@ -156,7 +156,9 @@ com.sun.tools.javac.util.Abort
 com.sun.tools.javac.util.CancelAbort
 com.sun.tools.javac.util.CancelService
 com.sun.tools.javac.util.CouplingAbort
+com.sun.tools.javac.util.FatalError
 com.sun.tools.javac.util.ListBuffer
+com.sun.tools.javac.util.MissingPlatformError
 java.awt.AWTEvent
 java.awt.AWTKeyStroke
 java.awt.AlphaComposite
@@ -1083,6 +1085,7 @@ org.netbeans.api.project.SourceGroup
 org.netbeans.api.project.Sources
 org.netbeans.api.project.ant.AntArtifact
 org.netbeans.api.project.ui.OpenProjects
+org.netbeans.api.project.ui.OpenProjectsListener
 org.netbeans.api.queries.FileBuiltQuery$Status
 org.netbeans.api.queries.SharabilityQuery
 org.netbeans.api.ruby.platform.RubyInstallation
@@ -3959,6 +3962,7 @@ org.netbeans.modules.php.project.environment.UnknownPhpEnvironment
 org.netbeans.modules.php.project.environment.WindowsPhpEnvironment
 org.netbeans.modules.php.project.environment.WindowsPhpEnvironment$1
 org.netbeans.modules.php.project.ui.options.PhpOptions
+org.netbeans.modules.print.action.PrintAction
 org.netbeans.modules.print.impl.action.PageSetupAction
 org.netbeans.modules.print.impl.action.PrintPreviewAction
 org.netbeans.modules.print.impl.action.PrintPreviewMenu
@@ -3967,6 +3971,10 @@ org.netbeans.modules.print.impl.ui.UI$CornerBorder
 org.netbeans.modules.print.impl.ui.UI$IconAction
 org.netbeans.modules.print.impl.util.Option
 org.netbeans.modules.print.spi.PrintProvider
+org.netbeans.modules.print.ui.UI
+org.netbeans.modules.print.ui.UI$CornerBorder
+org.netbeans.modules.print.ui.UI$IconAction
+org.netbeans.modules.print.util.Config
 org.netbeans.modules.profiler.DrillDownWindow
 org.netbeans.modules.profiler.LiveResultsWindow$ActivateDrillDownAction
 org.netbeans.modules.profiler.LoadedSnapshot
@@ -4413,6 +4421,7 @@ org.netbeans.modules.uihandler.Installer$1H
 org.netbeans.modules.uihandler.Installer$Submit
 org.netbeans.modules.uihandler.Installer$SubmitAutomatic
 org.netbeans.modules.uihandler.Installer$SubmitInteractive
+org.netbeans.modules.uihandler.ScreenSize
 org.netbeans.modules.uihandler.TimeToFailure
 org.netbeans.modules.uihandler.UIHandler
 org.netbeans.modules.uihandler.UIHandler$1WriteOut
@@ -4845,6 +4854,7 @@ org.netbeans.modules.welcome.ShowWelcomeAction
 org.netbeans.modules.welcome.WelcomeComponent
 org.netbeans.modules.welcome.WelcomeOptions
 org.netbeans.modules.welcome.content.ActionButton
+org.netbeans.modules.welcome.content.BackgroundPanel
 org.netbeans.modules.welcome.content.BundleSupport
 org.netbeans.modules.welcome.content.Constants
 org.netbeans.modules.welcome.content.ContentSection
@@ -4958,6 +4968,7 @@ org.netbeans.napi.gsfret.source.support.OpenedEditors
 org.netbeans.napi.gsfret.source.support.OpenedEditors$1
 org.netbeans.napi.gsfret.source.support.SelectionAwareSourceTaskFactory
 org.netbeans.napi.gsfret.source.support.SelectionAwareSourceTaskFactory$ChangeListenerImpl
+org.netbeans.performance.test.guitracker.LoggingRepaintManager
 org.netbeans.progress.module.CancelAction
 org.netbeans.progress.module.Controller
 org.netbeans.progress.module.ProgressListAction
@@ -5068,6 +5079,7 @@ org.netbeans.spi.palette.PaletteSwitch
 org.netbeans.spi.palette.PaletteSwitch$1
 org.netbeans.spi.palette.PaletteTopComponent
 org.netbeans.spi.palette.PaletteVisibility
+org.netbeans.spi.print.PrintProvider
 org.netbeans.spi.project.ActionProvider
 org.netbeans.spi.project.AuxiliaryConfiguration
 org.netbeans.spi.project.AuxiliaryProperties
@@ -5324,6 +5336,7 @@ org.netbeans.test.ide.IDEValidation
 org.netbeans.test.ide.IDEValidation$5
 org.netbeans.test.ide.IDEValidation$5$1
 org.netbeans.test.ide.IDEWhitelistGeneration
+org.netbeans.test.ide.WhitelistTest
 org.netbeans.xtest.pe.xmlbeans.Data
 org.netbeans.xtest.pe.xmlbeans.PerformanceData
 org.netbeans.xtest.pe.xmlbeans.UnitTestCase
@@ -5507,6 +5520,7 @@ org.openide.explorer.view.NodeRenderer
 org.openide.explorer.view.NodeTreeModel
 org.openide.explorer.view.NodeTreeModel$1
 org.openide.explorer.view.NodeTreeModel$Listener
+org.openide.explorer.view.NodeTreeModel$TreeModelEventImpl
 org.openide.explorer.view.TreeTable$TreeTableCellRenderer
 org.openide.explorer.view.TreeView
 org.openide.explorer.view.TreeView$1
@@ -5720,6 +5734,7 @@ org.openide.loaders.FilesSet
 org.openide.loaders.FilesSet$FilesComparator
 org.openide.loaders.FilesSet$FilesIterator
 org.openide.loaders.FolderChildren
+org.openide.loaders.FolderChildren$1R
 org.openide.loaders.FolderChildren$ChildrenRefreshRunnable
 org.openide.loaders.FolderChildren$Pair
 org.openide.loaders.FolderComparator
@@ -5823,7 +5838,12 @@ org.openide.nodes.EntrySupport
 org.openide.nodes.EntrySupport$Default
 org.openide.nodes.EntrySupport$Default$1
 org.openide.nodes.EntrySupport$Default$1SetAndNotify
+org.openide.nodes.EntrySupport$Default$ChArrRef
 org.openide.nodes.EntrySupport$Default$Infoorg.openide.nodes.AbstractNode
+org.openide.nodes.EntrySupport$Lazy$1Notify
+org.openide.nodes.EntrySupport$Lazy$DelayedLazySnapshot
+org.openide.nodes.EntrySupport$Lazy$LazySnapshot
+org.openide.nodes.EntrySupport$Lazy$NonexistingNode
 org.openide.nodes.FilterNode
 org.openide.nodes.FilterNode$Children
 org.openide.nodes.FilterNode$ChildrenAdapter

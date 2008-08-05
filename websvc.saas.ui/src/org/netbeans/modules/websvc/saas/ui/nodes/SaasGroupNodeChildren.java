@@ -101,8 +101,11 @@ public class SaasGroupNodeChildren extends Children.Keys<Object> implements Prop
     
     protected Node[] createNodes(Object key) {
         if (key instanceof SaasGroup) {
-            SaasGroupNode node = new SaasGroupNode((SaasGroup) key);
-            return new Node[] { node };
+            SaasGroup g = (SaasGroup) key;
+            if(g.getServices().size() > 0) {
+                SaasGroupNode node = new SaasGroupNode(g);
+                return new Node[] { node };
+            }
         } else if (key instanceof WadlSaas) {
             return new Node[] { new WadlSaasNode((WadlSaas)key) };
         } else if (key instanceof WsdlSaas) {

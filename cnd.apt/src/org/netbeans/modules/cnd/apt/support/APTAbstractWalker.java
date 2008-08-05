@@ -153,6 +153,9 @@ public abstract class APTAbstractWalker extends APTWalker {
     protected void onEndif(APT apt, boolean wasInBranch) {
     }
 
+    protected void onEval(APT apt, boolean result) {
+    }
+
     protected APTPreprocHandler getPreprocHandler() {
         return preprocHandler;
     }
@@ -172,6 +175,7 @@ public abstract class APTAbstractWalker extends APTWalker {
         } catch (TokenStreamException ex) {
             APTUtils.LOG.log(Level.SEVERE, "error on evaluating condition node " + apt, ex);// NOI18N
         }
+        onEval(apt, res);
         return res;
     }
 }

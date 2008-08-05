@@ -251,7 +251,7 @@ made subject to such option by the copyright holder.
             <folder name="Debug">
                 <file name="org-netbeans-modules-debugger-jpda-ui-actions-DebuggingViewAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-jpda-ui-actions-DebuggingViewAction.instance"/>
-                    <attr name="position" intvalue="2000"/>
+                    <attr name="position" intvalue="920"/>
                 </file>
             </folder>
         </folder>

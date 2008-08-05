@@ -42,10 +42,11 @@ package org.netbeans.modules.cnd.remote.actions;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import javax.swing.JButton;
-import org.netbeans.modules.cnd.remote.server.RemoteServerList;
+import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.remote.ui.AddServerDialog;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.NodeAction;
 
@@ -65,8 +66,8 @@ public class AddNewServerAction extends NodeAction implements PropertyChangeList
         AddServerDialog dlg = new AddServerDialog();
         if (dlg.createNewRecord()) {
             String entry = dlg.getLoginName() + '@' + dlg.getServerName();
-            RemoteServerList registry = RemoteServerList.getInstance();
-            if (!registry.contains(entry)) {
+            ServerList registry = (ServerList) Lookup.getDefault().lookup(ServerList.class);
+            if (!registry.getRecords().contains(entry)) {
                 registry.addServer(entry, dlg.isDefault());
             }
         }

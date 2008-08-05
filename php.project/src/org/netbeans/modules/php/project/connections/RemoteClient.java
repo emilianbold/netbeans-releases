@@ -236,7 +236,10 @@ public class RemoteClient implements Cancellable {
         Queue<TransferFile> queue = new LinkedList<TransferFile>();
         for (FileObject fo : filesToUpload) {
             if (isVisible(FileUtil.toFile(fo))) {
+                LOGGER.fine("File " + fo + " added to upload queue");
                 queue.offer(TransferFile.fromFileObject(fo, baseLocalAbsolutePath));
+            } else {
+                LOGGER.fine("File " + fo + " NOT added to upload queue [invisible]");
             }
         }
 
@@ -251,6 +254,7 @@ public class RemoteClient implements Cancellable {
 
             if (!files.add(file)) {
                 // file already in set
+                LOGGER.fine("File " + file + " already in queue");
                 continue;
             }
 
@@ -260,7 +264,10 @@ public class RemoteClient implements Cancellable {
                 if (children != null) {
                     for (File child : children) {
                         if (isVisible(child)) {
+                            LOGGER.fine("File " + file + " added to upload queue");
                             queue.offer(TransferFile.fromFile(child, baseLocalAbsolutePath));
+                        } else {
+                            LOGGER.fine("File " + file + " NOT added to upload queue [invisible]");
                         }
                     }
                 }
@@ -361,7 +368,10 @@ public class RemoteClient implements Cancellable {
         Queue<TransferFile> queue = new LinkedList<TransferFile>();
         for (FileObject fo : filesToDownload) {
             if (isVisible(FileUtil.toFile(fo))) {
+                LOGGER.fine("File " + fo + " added to download queue");
                 queue.offer(TransferFile.fromFileObject(fo, baseLocalAbsolutePath));
+            } else {
+                LOGGER.fine("File " + fo + " NOT added to download queue [invisible]");
             }
         }
 
@@ -376,6 +386,7 @@ public class RemoteClient implements Cancellable {
 
             if (!files.add(file)) {
                 // file already in set
+                LOGGER.fine("File " + file + " already in queue");
                 continue;
             }
 
@@ -394,7 +405,10 @@ public class RemoteClient implements Cancellable {
                     String relPath = relativePath.toString();
                     for (FTPFile child : ftpClient.listFiles()) {
                         if (isVisible(child)) {
+                            LOGGER.fine("File " + file + " added to download queue");
                             queue.offer(TransferFile.fromFtpFile(child, baseRemoteDirectory,  relPath));
+                        } else {
+                            LOGGER.fine("File " + file + " NOT added to download queue [invisible]");
                         }
                     }
                 } catch (IOException exc) {
@@ -666,7 +680,11 @@ public class RemoteClient implements Cancellable {
 
     // some FTP servers return ".." in directory listing (e.g. Cerberus FTP server) - so ignore them
     private boolean isVisible(FTPFile ftpFile) {
-        assert ftpFile != null;
+        // #142682
+        if (ftpFile == null) {
+            // hmm, really weird...
+            return false;
+        }
         if (ftpFile.isDirectory()) {
             String name = ftpFile.getName();
             for (String ignored : IGNORED_REMOTE_DIRS) {

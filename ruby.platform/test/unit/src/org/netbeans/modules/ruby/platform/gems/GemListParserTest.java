@@ -40,7 +40,6 @@
 package org.netbeans.modules.ruby.platform.gems;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import org.netbeans.api.ruby.platform.RubyTestBase;
@@ -53,36 +52,34 @@ public class GemListParserTest extends RubyTestBase {
 
     public void testParseWithDescritions() throws IOException {
         String output = slurp(getGoldenFile());
-        List<Gem> local = new ArrayList<Gem>();
-        List<Gem> remote = new ArrayList<Gem>();
         List<String> outputL = Arrays.asList(output.split("\\n"));
-        GemListParser.parse(outputL, local, remote);
-        assertSame("no remote gem", 0, remote.size());
+        List<Gem> local = GemListParser.parseLocal(outputL);
         assertSame("local parsed", 5, local.size());
     }
 
     public void testParseNoDescritions() throws IOException {
         String output = slurp(getGoldenFile());
-        List<Gem> local = new ArrayList<Gem>();
-        List<Gem> remote = new ArrayList<Gem>();
         List<String> outputL = Arrays.asList(output.split("\\n"));
-        GemListParser.parse(outputL, local, remote);
-        assertSame("no remote gem", 0, remote.size());
+        List<Gem> local = GemListParser.parseLocal(outputL);
         assertSame("local parsed", 5, local.size());
     }
 
     public void testParseNoDescritionsAllVersions() throws IOException {
         String output = slurp(getGoldenFile());
-        List<Gem> local = new ArrayList<Gem>();
-        List<Gem> remote = new ArrayList<Gem>();
         List<String> outputL = Arrays.asList(output.split("\\n"));
-        GemListParser.parse(outputL, local, remote);
-        assertSame("no remote gem", 0, remote.size());
+        List<Gem> local = GemListParser.parseLocal(outputL);
         assertSame("local parsed", 5, local.size());
         for (Gem gem : local) {
             if (!gem.getName().equals("sources")) {
                 assertTrue(gem.getName() + " gem has more version", gem.getInstalledVersionsAsString().contains(","));
             }
         }
+    }
+
+    public void testParseWithoutToken() throws IOException {
+        String output = slurp(getGoldenFile());
+        List<String> outputL = Arrays.asList(output.split("\\n"));
+        List<Gem> gems = GemListParser.parseLocal(outputL);
+        assertSame("local parsed", 5, gems.size());
     }
 }

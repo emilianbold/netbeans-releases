@@ -232,6 +232,8 @@ public class PackagingInfoPanel extends ListEditorPanel {
             getAccessibleContext().setAccessibleName(""); // NOI18N
             
             getSelectionModel().addListSelectionListener(new MyListSelectionListener());
+            
+            putClientProperty("terminateEditOnFocusLost", Boolean.TRUE); // NOI18N
         }
 
         @Override

@@ -1904,6 +1904,10 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                         return clazz.classObject();
                     }
                     Field f = clazz.fieldByName(fieldName);
+                    if (!f.isStatic()) {
+                        Assert2.error(arg0, "accessInstanceVariableFromStaticContext", fieldName);
+                        return null;
+                    }
                     if (f != null) {
                         return clazz.getValue(f);
                     } else {
