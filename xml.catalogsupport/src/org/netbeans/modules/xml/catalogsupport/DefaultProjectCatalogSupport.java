@@ -200,9 +200,9 @@ public class DefaultProjectCatalogSupport extends ProjectCatalogSupport {
     public URI getReferenceURI(FileObject source, FileObject target) throws URISyntaxException {
         Project targetProject = FileOwnerQuery.getOwner(target);
         FileObject sourceFolder = getSourceFolder(source);
+
         if (sourceFolder == null) {
             sourceFolder = source;
-//            throw new IllegalArgumentException(source.getPath()+" is not in project source"); //NOI18N
         }
         String relPathToSrcGroup = getRelativePath(source.getParent(), sourceFolder);
         String relPathToSrcGroupWithSlash = relPathToSrcGroup.trim().equals("")? "" : 
@@ -341,5 +341,4 @@ public class DefaultProjectCatalogSupport extends ProjectCatalogSupport {
         }
         return false;
     }
-    
 }
