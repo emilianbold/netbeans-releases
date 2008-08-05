@@ -60,7 +60,8 @@ public class Utils {
     public static final String LINE_SEPARATOR = System.getProperty("line.separator");
     private static final Pattern PATTERN = Pattern.compile("(20[0-9]{10})");
     public static final String NB_DIR_NAME = "NetBeans";
-    public static final String GF_DIR_NAME = "GlassFish";
+    public static final String GF2_DIR_NAME = "GlassFish2";
+    public static final String GF3_DIR_NAME = "GlassFish3";
     public static final String TOMACAT_DIR_NAME = "Tomcat";
     public static final String NEXT_BUTTON_LABEL = "Next >";
     public static final String FINISH_BUTTON_LABEL = "Finish";
@@ -433,8 +434,11 @@ public class Utils {
     }
 
     public static void phaseThree(TestData data) {
-        //Choose GF dir
-        stepSetDir(data, "Install GlassFish", GF_DIR_NAME);
+        //Choose GF2 dir
+        stepSetDir(data, "Install GlassFish", GF2_DIR_NAME);
+        
+        //Choose GF3 dir
+        stepSetDir(data, "Install GlassFish", GF3_DIR_NAME);
 
         //Choose Tomcat dir
         stepSetDir(data, "Install Apache Tomcat", TOMACAT_DIR_NAME);
@@ -526,8 +530,12 @@ public class Utils {
     }
 
     public static String constructURL(TestData data) {
+        data.getLogger().log(Level.SEVERE, "Enter constructURL");
         String prefix = System.getProperty("test.installer.url.prefix");
+        
+        data.getLogger().log(Level.SEVERE,"test.installer.url.prefix=" + prefix);
         String bundleNamePrefix = System.getProperty("test.installer.bundle.name.prefix");
+        data.getLogger().log(Level.SEVERE,"test.installer.bundle.name.prefix=" + bundleNamePrefix);
         //String prefix = (data.getBuildNumber() != null) ? "http://bits.netbeans.org/netbeans/6.0/nightly/latest/bundles/netbeans-6.0-" + data.getBuildNumber() : val;
 
 
@@ -539,6 +547,7 @@ public class Utils {
         }
 
         String build_number = (Boolean.valueOf(System.getProperty("test.use.build.number"))) ? "-" + data.getBuildNumber() : "";
+        data.getLogger().log(Level.SEVERE,"build number"+build_number);
         return prefix + "/" + "bundles" +
                 "/" + bundleNamePrefix +
                 build_number + bundleType + "-" +
