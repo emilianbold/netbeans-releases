@@ -254,7 +254,7 @@
                 window.NetBeans.Debugger.shutdown();
             }
         };
-
+        
         // create DBGP socket
         socket = NetBeans.SocketUtils.createSocket("127.0.0.1", port, socketListener);
 
@@ -464,6 +464,11 @@
         }
 
         Firebug.registerExtension(NetBeansDebuggerExtension);
+        
+        Firebug.Debugger.isHostEnabled = function(context) {
+            return topWindow && context.window == topWindow;
+        }
+        
     }
 
     function disableFirebugDebugger()
@@ -2212,8 +2217,6 @@
     {
         return data.replace(/#2/g, "*").replace(/#1/g, "|").replace(/#0/g, "#");
     }
-
-    // Firebug service access (currently only supports Firebug 1.2 interface)
     
     function fbsRegisterDebugger(debuggr) {
         firebugDebuggerService.registerDebugger(debuggr);
