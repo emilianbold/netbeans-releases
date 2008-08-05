@@ -239,15 +239,15 @@ public class Utils {
      */
     public void checkAndModify(String file, int firstLine, String firstText,
             int secondLine, String secondText, int insertLine, boolean deleteLine, String insertText) {
-        EditorOperator editor = new EditorWindowOperator().getEditor(file);
+        EditorOperator editor = EditorWindowOperator.getEditor(file);
         if (firstText != null) {
             if (!(editor.getText(firstLine).indexOf(firstText)>=0))
-                nbtestcase.fail("I expect text '"+firstText+"' on line "+firstLine+" in "+file+"."+
+                NbTestCase.fail("I expect text '"+firstText+"' on line "+firstLine+" in "+file+"."+
                         "There is text: '"+editor.getText(firstLine)+"'.");
         }
         if (secondText != null) {
             if (!(editor.getText(secondLine).indexOf(secondText)>=0))
-                nbtestcase.fail("I expect text '"+secondText+"' on line "+secondLine+" in "+file+"."+
+                NbTestCase.fail("I expect text '"+secondText+"' on line "+secondLine+" in "+file+"."+
                         "There is text: '"+editor.getText(secondLine)+"'.");
         }
         if (deleteLine)

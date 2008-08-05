@@ -42,6 +42,7 @@ package org.netbeans.modules.form.j2ee.wizard;
 
 import java.awt.Component;
 import java.io.IOException;
+import java.net.URL;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.util.*;
@@ -53,6 +54,7 @@ import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.db.explorer.support.DatabaseExplorerUIs;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.queries.UnitTestForSourceQuery;
 import org.netbeans.modules.form.j2ee.J2EEUtils;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -591,6 +593,13 @@ public class MasterPanel implements WizardDescriptor.Panel {
                 valid = (name.length() != 0);
                 if (!valid) {
                     showMsg("MSG_MasterDefaultPackage"); // NOI18N
+                } else {
+                    FileObject root = cp.findOwnerRoot(fob);
+                    URL[] urls = UnitTestForSourceQuery.findSources(root);
+                    if (urls.length != 0) {
+                        showMsg("MSG_MasterTestPackage"); // NOI18N
+                        valid = false;
+                    }
                 }
             } catch (IOException ioex) {
                 Logger.getLogger(getClass().getName()).log(Level.INFO, ioex.getMessage(), ioex);

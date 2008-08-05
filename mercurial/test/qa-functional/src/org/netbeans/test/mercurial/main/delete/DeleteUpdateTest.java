@@ -62,7 +62,8 @@ public class DeleteUpdateTest extends JellyTestCase {
             Node node = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp|Main.java");
             node.performPopupAction("Mercurial|Status");
             node.performPopupActionNoBlock("Delete");
-            NbDialogOperator dialog = new NbDialogOperator("Safe Delete");
+            NbDialogOperator dialog = new NbDialogOperator("Delete");
+//            NbDialogOperator dialog = new NbDialogOperator("Safe Delete");
             dialog.ok();
             
             Thread.sleep(1000);

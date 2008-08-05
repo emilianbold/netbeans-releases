@@ -75,7 +75,6 @@ import javax.swing.event.EventListenerList;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.openide.loaders.ChangeableDataFilter;
 import org.openide.loaders.DataFilter;
-import org.netbeans.modules.bpel.project.ui.catalog.ResourcesNode;
 
 class IcanproViews {
     private static Logger logger = Logger.getLogger(IcanproViews.class.getName());
@@ -87,7 +86,6 @@ class IcanproViews {
     static final class LogicalViewChildren extends Children.Keys implements FileChangeListener {
 
         private static final String KEY_SOURCE_DIR = "srcDir"; // NOI18N
-        private static final String KEY_RESOURCE_DIR = "resourceDir"; // NOI18N
 
         private AntProjectHelper helper;
         private final PropertyEvaluator evaluator;
@@ -116,8 +114,6 @@ class IcanproViews {
             if (srcDir != null) {
                 l.add(KEY_SOURCE_DIR);
             }
-            l.add(KEY_RESOURCE_DIR);
-
             if (l.size() > 0) {
                 setKeys(l);
             }
@@ -151,11 +147,6 @@ class IcanproViews {
                 break;
               }
             }
-          }
-          else if (key == KEY_RESOURCE_DIR) {
-            FileObject srcRoot = helper.resolveFileObject(evaluator.getProperty(IcanproProjectProperties.SRC_DIR));
-            Project project = FileOwnerQuery.getOwner(srcRoot);
-            node = new ResourcesNode(project);
           }
           return node == null ? new Node[0] : new Node[] { node };
         }

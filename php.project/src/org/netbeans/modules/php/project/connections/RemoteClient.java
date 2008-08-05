@@ -236,7 +236,10 @@ public class RemoteClient implements Cancellable {
         Queue<TransferFile> queue = new LinkedList<TransferFile>();
         for (FileObject fo : filesToUpload) {
             if (isVisible(FileUtil.toFile(fo))) {
+                LOGGER.fine("File " + fo + " added to upload queue");
                 queue.offer(TransferFile.fromFileObject(fo, baseLocalAbsolutePath));
+            } else {
+                LOGGER.fine("File " + fo + " NOT added to upload queue [invisible]");
             }
         }
 
@@ -251,6 +254,7 @@ public class RemoteClient implements Cancellable {
 
             if (!files.add(file)) {
                 // file already in set
+                LOGGER.fine("File " + file + " already in queue");
                 continue;
             }
 
@@ -260,7 +264,10 @@ public class RemoteClient implements Cancellable {
                 if (children != null) {
                     for (File child : children) {
                         if (isVisible(child)) {
+                            LOGGER.fine("File " + child + " added to upload queue");
                             queue.offer(TransferFile.fromFile(child, baseLocalAbsolutePath));
+                        } else {
+                            LOGGER.fine("File " + child + " NOT added to upload queue [invisible]");
                         }
                     }
                 }
@@ -361,7 +368,10 @@ public class RemoteClient implements Cancellable {
         Queue<TransferFile> queue = new LinkedList<TransferFile>();
         for (FileObject fo : filesToDownload) {
             if (isVisible(FileUtil.toFile(fo))) {
+                LOGGER.fine("File " + fo + " added to download queue");
                 queue.offer(TransferFile.fromFileObject(fo, baseLocalAbsolutePath));
+            } else {
+                LOGGER.fine("File " + fo + " NOT added to download queue [invisible]");
             }
         }
 
@@ -376,6 +386,7 @@ public class RemoteClient implements Cancellable {
 
             if (!files.add(file)) {
                 // file already in set
+                LOGGER.fine("File " + file + " already in queue");
                 continue;
             }
 
@@ -394,7 +405,10 @@ public class RemoteClient implements Cancellable {
                     String relPath = relativePath.toString();
                     for (FTPFile child : ftpClient.listFiles()) {
                         if (isVisible(child)) {
+                            LOGGER.fine("File " + file + " added to download queue");
                             queue.offer(TransferFile.fromFtpFile(child, baseRemoteDirectory,  relPath));
+                        } else {
+                            LOGGER.fine("File " + file + " NOT added to download queue [invisible]");
                         }
                     }
                 } catch (IOException exc) {
@@ -464,11 +478,25 @@ public class RemoteClient implements Cancellable {
             // in fact, useless but probably expected
             // XXX handle if exists but it is a file
             if (!localFile.exists()) {
-                localFile.mkdirs();
+                if (!localFile.mkdirs()) {
+                    transferFailed(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_CannotCreateDir", localFile));
+                    return;
+                }
             }
             transferSucceeded(transferInfo, file);
         } else if (file.isFile()) {
             // file => simply download it
+
+            // #142682 - because from the ui we get only files (folders are removed) => ensure parent folder exists
+            File parent = localFile.getParentFile();
+            assert parent != null : "File " + localFile + " has no parent file?!";
+            if (!parent.exists()) {
+                if (!parent.mkdirs()) {
+                    transferIgnored(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_CannotCreateDir", parent));
+                    return;
+                }
+            }
+            assert parent.isDirectory() : "Parent file of " + localFile + " must be a directory";
 
             if (LOGGER.isLoggable(Level.FINE)) {
                 LOGGER.fine("Downloading " + file.getRelativePath() + " => " + localFile.getAbsolutePath());
@@ -666,7 +694,11 @@ public class RemoteClient implements Cancellable {
 
     // some FTP servers return ".." in directory listing (e.g. Cerberus FTP server) - so ignore them
     private boolean isVisible(FTPFile ftpFile) {
-        assert ftpFile != null;
+        // #142682
+        if (ftpFile == null) {
+            // hmm, really weird...
+            return false;
+        }
         if (ftpFile.isDirectory()) {
             String name = ftpFile.getName();
             for (String ignored : IGNORED_REMOTE_DIRS) {

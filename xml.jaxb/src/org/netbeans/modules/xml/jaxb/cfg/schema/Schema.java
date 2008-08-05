@@ -641,6 +641,7 @@ public class Schema {
             </xsd:sequence>
             <xsd:attribute name="destdir" type="xsd:string"/>
             <xsd:attribute name="projectName" type="xsd:string"/>
+            <xsd:attribute name="version" type="xsd:decimal"/>
         </xsd:complexType>
     </xsd:element>
     

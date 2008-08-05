@@ -116,7 +116,9 @@ public class ClassPathContainerResolver {
         
         if (container.startsWith(MYECLIPSE_CONTAINERS)) {
             if (importInProgress) {
-                workspace.loadMyEclipseLibraries(importProblems);
+                if (workspace != null) {
+                    workspace.loadMyEclipseLibraries(importProblems);
+                }
                 createLibrary(workspace, container, importProblems);
             }
             entry.setContainerMapping("libs."+getNetBeansLibraryName(container)+".classpath"); //NOI18N

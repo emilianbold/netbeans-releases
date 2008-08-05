@@ -302,6 +302,11 @@ public class GdbProxyEngine {
             gdbProxy.getLogger().logMessage(time + msg);
         }
         msg = stripToken(msg);
+
+        // bugfix for IZ:142454
+        // ('-enable-timings no' does not turn it off sometimes)
+        msg = stripTiming(msg);
+
         if (msg.length() == 0) {
             log.warning("Empty message received from gdb");
             return;
@@ -366,6 +371,18 @@ public class GdbProxyEngine {
         }
         return null;
     }
+
+    /**
+     * Returns the position of the first non-digit symbol
+     */
+    private static int getFirstNonDigit(String msg) {
+        for (int i = 0; i < msg.length(); i++) {
+            if (!Character.isDigit(msg.charAt(i))) {
+                return i;
+            }
+        }
+        return 0;
+    }
     
     /**
      * Strip the token from the start of a command line and return the token
@@ -373,14 +390,8 @@ public class GdbProxyEngine {
      * @param msg The line which may or may not start with a token
      * @return token The token or -1
      */
-    private int getToken(String msg) {
-        int i;
-        
-        for (i = 0; i < msg.length(); i++) {
-            if (!Character.isDigit(msg.charAt(i))) {
-                break;
-            }
-        }
+    private static int getToken(String msg) {
+        int i = getFirstNonDigit(msg);
         if (i > 0) {
             return Integer.parseInt(msg.substring(0, i));
         } else {
@@ -394,20 +405,26 @@ public class GdbProxyEngine {
      * @param msg The line which may or may not start with a token
      * @return msg The message without a leading integer token
      */
-    private String stripToken(String msg) {
-        int i;
-        
-        for (i = 0; i < msg.length(); i++) {
-            if (!Character.isDigit(msg.charAt(i))) {
-                break;
-            }
-        }
-        char ch = i < msg.length() ? msg.charAt(i) : 0;
+    private static String stripToken(String msg) {
+        int i = getFirstNonDigit(msg);
+        char ch = (i < msg.length()) ? msg.charAt(i) : 0;
         if ((ch == '^' || ch == '*' || ch == '+' || ch == '=') && ch != 0) {
             return msg.substring(i);
         } else {
             return msg;
         }
+    }
+
+    /**
+     * Cut timing information if any
+     * @param msg
+     */
+    private static String stripTiming(String msg) {
+        int pos = msg.indexOf(",time="); // NOI18N
+        if (pos != -1 ) {
+            msg = msg.substring(0, pos);
+        }
+        return msg;
     }
     
     private GdbLogger getLogger() {
@@ -416,8 +433,8 @@ public class GdbProxyEngine {
     
     private static class CommandInfo {
         
-        private int token;
-        private String cmd;
+        private final int token;
+        private final String cmd;
         
         public CommandInfo(int token, String cmd) {
             this.token = token;

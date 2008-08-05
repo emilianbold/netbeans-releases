@@ -243,12 +243,25 @@ public final class Workspace {
     void loadMyEclipseLibraries(List<String> importProblems) {
         if (!myEclipseLibrariesLoaded) {
             myEclipseLibrariesLoaded = true;
-            Variable v = getVariable("ECLIPSE_HOME"); //NOI18N
-            if (v == null) {
-                importProblems.add(NbBundle.getMessage(Workspace.class, "MSG_CannotReadMyEclipseLibs"));
-                return;
+            String path = null;
+            for (Variable v : getVariables()) {
+                if (v.getName().startsWith("MYECLIPSE_") && v.getName().endsWith("_HOME")) { //NOI18N
+                    int start = v.getLocation().replace('\\', '/').indexOf("/plugins/"); // NOI18N
+                    if (start != -1) {
+                        path = v.getLocation().substring(0, start+8);
+                        break;
+                    }
+                }
             }
-            File f = new File(new File(v.getLocation()), "plugins"); //NOI18N
+            if (path == null) {
+                Variable v = getVariable("ECLIPSE_HOME"); //NOI18N
+                if (v == null) {
+                    importProblems.add(NbBundle.getMessage(Workspace.class, "MSG_CannotReadMyEclipseLibs"));
+                    return;
+                }
+                path = new File(new File(v.getLocation()), "plugins").getPath();
+            }
+            File f = new File(path); //NOI18N
             if (!f.exists()) {
                 importProblems.add(NbBundle.getMessage(Workspace.class, "MSG_CannotReadMyEclipseLibs"));
                 return;

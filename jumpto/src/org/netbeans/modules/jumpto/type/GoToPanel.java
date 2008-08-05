@@ -220,6 +220,7 @@ public class GoToPanel extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
         add(jLabelText, gridBagConstraints);
+        jLabelText.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GoToPanel.class, "GoToPanel.jLabelText.AccessibleContext.accessibleDescription")); // NOI18N
 
         nameField.setFont(new java.awt.Font("Monospaced", 0, getFontSize()));
         nameField.setBorder(javax.swing.BorderFactory.createEtchedBorder());
@@ -269,6 +270,7 @@ public class GoToPanel extends javax.swing.JPanel {
         });
         matchesScrollPane1.setViewportView(matchesList);
         matchesList.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(GoToPanel.class, "ACSD_GoToListName")); // NOI18N
+        matchesList.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GoToPanel.class, "GoToPanel.matchesList.AccessibleContext.accessibleDescription")); // NOI18N
 
         listPanel.add(matchesScrollPane1, java.awt.BorderLayout.CENTER);
 

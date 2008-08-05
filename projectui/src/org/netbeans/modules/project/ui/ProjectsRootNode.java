@@ -644,7 +644,9 @@ public class ProjectsRootNode extends AbstractNode {
                 Project newProj = (Project)e.getNewValue();
                 assert newProj != null;
                 if (newProj.getProjectDirectory().equals(fo)) {
-                    ProjectChildren ch = (ProjectChildren)getParentNode().getChildren();
+                    Node parentNode = getParentNode();
+                    if (parentNode != null) {
+                    ProjectChildren ch = (ProjectChildren) parentNode.getChildren();
                     Node n = null;
                     if (logicalView) {
                         n = ch.logicalViewForProject(newProj, null);
@@ -679,6 +681,7 @@ public class ProjectsRootNode extends AbstractNode {
                         bl.setMyLookups(n.getLookup());
                     }
                     OpenProjectList.LOGGER.log(Level.FINER, "done {0}", this);
+                    }
                 } else {
                     OpenProjectList.LOGGER.log(Level.FINE, "wrong directories. current: " + fo + " new " + newProj.getProjectDirectory());
                 }

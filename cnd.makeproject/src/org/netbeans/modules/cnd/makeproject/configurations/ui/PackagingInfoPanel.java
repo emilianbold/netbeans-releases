@@ -87,10 +87,6 @@ public class PackagingInfoPanel extends ListEditorPanel {
 	addEntryButton.setMnemonic(getString("PackagingFilesPanel.addParameterButton.mn").charAt(0));
         addEntryButton.getAccessibleContext().setAccessibleDescription(getString("PackagingFilesPanel.addParameterButton.ad"));
         addEntryButton.addActionListener(new AddEntryButtonAction());
-        
-        this.addEntryButton = extraButtons[1];
-        addEntryButton.setText("Add Parameter"); // FIXUP
-        addEntryButton.addActionListener(new AddEntryButtonAction());
 
         getEditButton().setVisible(false);
         getDefaultButton().setVisible(false);
@@ -106,18 +102,18 @@ public class PackagingInfoPanel extends ListEditorPanel {
 
     class AddButtonAction implements java.awt.event.ActionListener {
         public void actionPerformed(java.awt.event.ActionEvent evt) {
-            addObjectAction(new InfoElement("", "")); // FIXUP
+            addObjectAction(new InfoElement("", "")); // NOI18N
         }
     }
     
     class AddEntryButtonAction implements java.awt.event.ActionListener {
         public void actionPerformed(java.awt.event.ActionEvent evt) {
 	    PackagingNewEntryPanel packagingNewEntryPanel = new PackagingNewEntryPanel();
-	    DialogDescriptor dialogDescriptor = new DialogDescriptor(packagingNewEntryPanel, "Add New Parameter"); // FIXUP
+	    DialogDescriptor dialogDescriptor = new DialogDescriptor(packagingNewEntryPanel, getString("AddNewParameterDialogTitle"));
 	    DialogDisplayer.getDefault().notify(dialogDescriptor);
 	    if (dialogDescriptor.getValue() != DialogDescriptor.OK_OPTION)
 		return;
-            addObjectAction(packagingNewEntryPanel.getInfoElement()); // FIXUP
+            addObjectAction(packagingNewEntryPanel.getInfoElement());
         }
     }
 
@@ -236,6 +232,8 @@ public class PackagingInfoPanel extends ListEditorPanel {
             getAccessibleContext().setAccessibleName(""); // NOI18N
             
             getSelectionModel().addListSelectionListener(new MyListSelectionListener());
+            
+            putClientProperty("terminateEditOnFocusLost", Boolean.TRUE); // NOI18N
         }
 
         @Override
@@ -425,7 +423,7 @@ public class PackagingInfoPanel extends ListEditorPanel {
 
     class MyTableModel extends DefaultTableModel {
 
-        private String[] columnNames = {"Name", "Value"}; // FIXUP
+        private String[] columnNames = {getString("PackagingInfoPanel.column.0.text"), getString("PackagingInfoPanel.column.1.text")};
 
         @Override
         public String getColumnName(int col) {

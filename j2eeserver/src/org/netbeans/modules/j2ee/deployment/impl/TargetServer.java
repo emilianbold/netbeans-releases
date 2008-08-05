@@ -513,7 +513,12 @@ public class TargetServer {
             // TODO more precise check
             // this is namely because of glassfish deploying EAR without EJB module
             // see gf issue #5240
-            missingModule = redeployTargetModules[0].getChildTargetModuleID().length < ((J2eeApplication) dtarget.getModule()).getModules().length;
+
+            int redeployChildrenCount = redeployTargetModules[0].getChildTargetModuleID() != null
+                    ? redeployTargetModules[0].getChildTargetModuleID().length
+                    : 0;
+
+            missingModule = redeployChildrenCount < ((J2eeApplication) dtarget.getModule()).getModules().length;
             if (missingModule) {
                 LOGGER.log(Level.INFO, "Enterprise application needs to be redeployed due to missing module");
             }

@@ -53,6 +53,7 @@ import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.swing.JComponent;
 import org.netbeans.api.java.source.Task;
@@ -76,17 +77,17 @@ import org.openide.util.NbBundle;
 public class UtilityClass extends AbstractHint implements ElementVisitor<Boolean,CompilationInfo> {
     private boolean clazz;
     private transient volatile boolean stop;
-    
+
     /** Creates a new instance of AddOverrideAnnotation */
     private UtilityClass(boolean b) {
         super( false, true, b ? AbstractHint.HintSeverity.WARNING : AbstractHint.HintSeverity.CURRENT_LINE_WARNING);
         clazz = b;
     }
-    
+
     public Set<Kind> getTreeKinds() {
-        return EnumSet.of(clazz ? Kind.CLASS : Kind.METHOD); 
+        return EnumSet.of(clazz ? Kind.CLASS : Kind.METHOD);
     }
-    
+
     public static UtilityClass withoutConstructor() {
         return new UtilityClass(true);
     }
@@ -148,7 +149,12 @@ public class UtilityClass extends AbstractHint implements ElementVisitor<Boolean
                 return null;
             }
             ExecutableElement x = (ExecutableElement)e;
-            for (Element m : x.getEnclosingElement().getEnclosedElements()) {
+
+            List<? extends Element> enclosedElements = x.getEnclosingElement().getEnclosedElements();
+            if(enclosedElements.size() == 1 && enclosedElements.get(0).equals(x))
+                return null; //class contains the ctor only
+
+            for (Element m : enclosedElements) {
                 if (stop) {
                     return null;
                 }
@@ -188,7 +194,7 @@ public class UtilityClass extends AbstractHint implements ElementVisitor<Boolean
 
             return Collections.singletonList(ed);
         }
-        
+
         return null;
     }
 
@@ -205,18 +211,18 @@ public class UtilityClass extends AbstractHint implements ElementVisitor<Boolean
     }
 
     public void cancel() {
-        // XXX implement me 
+        // XXX implement me
     }
-    
+
     public Preferences getPreferences() {
         return null;
     }
-    
+
     @Override
     public JComponent getCustomizer(Preferences node) {
         return null;
-    }    
-          
+    }
+
     public Boolean visit(Element arg0, CompilationInfo arg1) {
         return false;
     }
@@ -241,7 +247,13 @@ public class UtilityClass extends AbstractHint implements ElementVisitor<Boolean
         if (clazz) {
             return !m.getModifiers().contains(Modifier.STATIC) && !arg1.getElementUtilities().isSynthetic(m);
         } else {
-            return !m.getModifiers().contains(Modifier.STATIC) && !m.getSimpleName().contentEquals("<init>"); // NOI18N
+            boolean staticCtor = !m.getModifiers().contains(Modifier.STATIC) && !m.getSimpleName().contentEquals("<init>"); // NOI18N
+            boolean main = m.getModifiers().contains(Modifier.STATIC) &&
+                    m.getSimpleName().contentEquals("main") &&
+                    (m.getReturnType().getKind() == TypeKind.VOID) &&
+                    (m.getParameters().size() == 1) &&
+                    (m.getParameters().get(0).asType().toString().equals("java.lang.String[]"));
+            return staticCtor || main;
         }
     }
 
@@ -257,30 +269,30 @@ public class UtilityClass extends AbstractHint implements ElementVisitor<Boolean
         private TreePathHandle handle;
         private FileObject file;
         private boolean clazz;
-        
+
         public FixImpl(boolean clazz, TreePathHandle handle, FileObject file) {
             this.handle = handle;
             this.file = file;
             this.clazz = clazz;
         }
-        
+
         public String getText() {
             return NbBundle.getMessage(UtilityClass.class, clazz ? "MSG_PrivateConstructor" : "MSG_MakePrivate"); // NOI18N
         }
-        
+
         public ChangeInfo implement() throws IOException {
             ModificationResult result = JavaSource.forFileObject(file).runModificationTask(this);
             result.commit();
             return null;
         }
-        
+
         @Override public String toString() {
             return "FixUtilityClass"; // NOI18N
         }
 
         public void run(WorkingCopy wc) throws Exception {
             wc.toPhase(JavaSource.Phase.RESOLVED);
-            
+
             Element e = handle.resolveElement(wc);
             if (e == null) {
                 return;
@@ -291,13 +303,13 @@ public class UtilityClass extends AbstractHint implements ElementVisitor<Boolean
                     return;
                 }
                 ClassTree cls = (ClassTree)outer;
-                
+
                 ModifiersTree modifiers = wc.getTreeMaker().Modifiers(Collections.singleton(Modifier.PRIVATE));
                 MethodTree m = wc.getTreeMaker().Constructor(
-                    modifiers, 
-                    Collections.<TypeParameterTree>emptyList(), 
-                    Collections.<VariableTree>emptyList(), 
-                    Collections.<ExpressionTree>emptyList(), 
+                    modifiers,
+                    Collections.<TypeParameterTree>emptyList(),
+                    Collections.<VariableTree>emptyList(),
+                    Collections.<ExpressionTree>emptyList(),
                     wc.getTreeMaker().Block(Collections.<StatementTree>emptyList(), false)
                 );
                 wc.rewrite(cls, wc.getTreeMaker().addClassMember(cls, m));
@@ -306,11 +318,11 @@ public class UtilityClass extends AbstractHint implements ElementVisitor<Boolean
                     return;
                 }
                 MethodTree met = (MethodTree)outer;
-                
+
                 ModifiersTree modifiers = wc.getTreeMaker().Modifiers(Collections.singleton(Modifier.PRIVATE), met.getModifiers().getAnnotations());
                 wc.rewrite(met.getModifiers(), modifiers);
             }
         }
     }
-    
+
 }

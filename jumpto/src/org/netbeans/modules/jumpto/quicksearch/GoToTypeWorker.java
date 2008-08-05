@@ -185,7 +185,10 @@ public class GoToTypeWorker implements Runnable {
             if (cmpr != 0) {
                 return cmpr;
             }
-            if(!t1.getFileObject().equals(t2.getFileObject()))
+            //FileObject does not have to be available
+            //if t1 fo is not null and t2 not null => -1
+            //t1 fo null => no check
+            if((t1.getFileObject() != null) && !t1.getFileObject().equals(t2.getFileObject()))
                 return -1;
 
             return compareStrings(t1.getContextName(), t2.getContextName());

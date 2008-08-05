@@ -42,6 +42,7 @@ package org.netbeans.modules.projectimport.eclipse.core.spi;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -72,6 +73,7 @@ import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -159,7 +161,13 @@ public class ProjectFactorySupport {
         String[] labels = new String[rootURLs.length];
         for (int i = 0; i < rootURLs.length; i++) {
             for (DotClassPathEntry e : sources) {
-                String path = rootURLs[i].getFile();
+                String path;
+                try {
+                    path = new File(rootURLs[i].toURI()).getPath();
+                } catch (URISyntaxException ex) {
+                    LOG.info("cannot convert '"+rootURLs[i].toExternalForm()+"' to file: "+ex.toString()); //NOI18N
+                    continue;
+                }
                 if (path.endsWith("/") || path.endsWith("\\")) { //NOI18N
                     path = path.substring(0, path.length()-1);
                 }

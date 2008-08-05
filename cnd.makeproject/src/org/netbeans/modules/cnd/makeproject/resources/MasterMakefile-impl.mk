@@ -64,9 +64,16 @@ ALLCONFS=<CNS>
 
 # dependency checking support
 .depcheck-impl:
-	-@echo "# This code depends on make tool being used" >.dep.inc
-	#-@if ${MAKE} -v 2>&1 | grep "Sun.*Make" >/dev/null; then echo ".KEEP_STATE:" >>.dep.inc; echo ".KEEP_STATE_FILE:.make.state.\$${CONF}" >>.dep.inc; fi
-	#-@if ${MAKE} -v 2>&1 | grep "GNU.*Make" >/dev/null; then echo "-include \$$(wildcard \$$(addsuffix .d, \$${OBJECTFILES}))" >>.dep.inc; fi
+	@echo "# This code depends on make tool being used" >.dep.inc
+	@if [ -n "${MAKE_VERSION}" ]; then \
+	    echo "DEPFILES=\$$(wildcard \$$(addsuffix .d, \$${OBJECTFILES}))" >>.dep.inc; \
+	    echo "ifneq (\$${DEPFILES},)" >>.dep.inc; \
+	    echo "include \$${DEPFILES}" >>.dep.inc; \
+	    echo "endif" >>.dep.inc; \
+	else \
+	    echo ".KEEP_STATE:" >>.dep.inc; \
+	    echo ".KEEP_STATE_FILE:.make.state.\$${CONF}" >>.dep.inc; \
+	fi
 
 # configuration validation
 .validate-impl:

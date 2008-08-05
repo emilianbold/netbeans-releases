@@ -40,6 +40,8 @@
 package org.netbeans.modules.web.project;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -61,6 +63,7 @@ import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
@@ -250,7 +253,32 @@ public class UpdateProjectImpl implements UpdateImplementation {
             // use the hard coded string due to issue #54882 - since the 4.0 supports creation of only jakarta structure projects the conf dir is always in project root
             FileObject confDirFO = prjFO.createFolder("conf");//NOI18N 
             // copyfile will throw IOE if the file already exists
-            FileUtil.copyFile(Repository.getDefault().getDefaultFileSystem().findResource("org-netbeans-modules-web-project/MANIFEST.MF"), confDirFO, "MANIFEST"); //NOI18N
+            
+            
+            FileObject manifest = FileUtil.createData(confDirFO, "MANIFEST"); //NOI18N
+            FileLock lock = manifest.lock();
+            InputStream bufIn = Thread.currentThread().getContextClassLoader().getResourceAsStream("org/netbeans/modules/web/project/ui/resources/MANIFEST.MF"); //NOI18N;
+            OutputStream bufOut = null;
+
+            try {
+                lock = manifest.lock();
+
+                bufOut = manifest.getOutputStream(lock);
+
+                FileUtil.copy(bufIn, bufOut);
+            } finally {
+                if (bufIn != null) {
+                    bufIn.close();
+                }
+
+                if (bufOut != null) {
+                    bufOut.close();
+                }
+
+                if (lock != null) {
+                    lock.releaseLock();
+                }
+            }
         }catch(IOException e) {
             //just ignore
         }

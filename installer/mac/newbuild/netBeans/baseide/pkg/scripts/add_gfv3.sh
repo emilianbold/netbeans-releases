@@ -16,8 +16,8 @@ then
   if [ -f netbeans.conf ]
   then
     echo netbeans.conf found: `pwd`/netbeans.conf
-    cp netbeans.conf netbeans.conf_orig_gf
-    cat netbeans.conf_orig_gf  | sed -e 's|netbeans_default_options=\"|netbeans_default_options=\"-J-Dorg.glassfish.v3.installRoot='$gf_dir' |' > netbeans.conf
+    cp netbeans.conf netbeans.conf_orig_gfv3
+    cat netbeans.conf_orig_gfv3  | sed -e 's|netbeans_default_options=\"|netbeans_default_options=\"-J-Dorg.glassfish.v3.installRoot='$gf_dir' |' > netbeans.conf
   else
     echo No netbeans.conf in: `pwd`
   fi

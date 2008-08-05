@@ -53,6 +53,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
@@ -126,6 +127,8 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
     static final Color greenBarColor = new Color(189, 230, 170);
     private transient Color treeBackgroundColor = UIManager.getDefaults().getColor("Tree.background"); // NOI18N
     
+    private transient RequestProcessor requestProcessor = new RequestProcessor("DebuggingView Refresh Scheduler", 1);
+    private transient boolean refreshScheduled = false;
     private transient ExplorerManager manager = new ExplorerManager();
     private transient ViewModelListener viewModelListener;
     private Preferences preferences = NbPreferences.forModule(getClass()).node("debugging"); // NOI18N
@@ -149,7 +152,6 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
     private BarsPanel leftPanel;
     private IconsPanel rightPanel;
     
-    private boolean refreshScheduled = false;
     private final ThreadsListener threadsListener;
     private transient Reference<TopComponent> lastSelectedTCRef;
     private transient Reference<TopComponent> componentToActivateAfterClose;
@@ -189,13 +191,11 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
         treeView.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(DebuggingView.class, "DebuggingView.treeView.AccessibleContext.accessibleDescription")); // NOI18N
         
         mainPanel.add(treeView, BorderLayout.CENTER);
-        
         leftPanel = new BarsPanel();
         rightPanel = new IconsPanel();
-        
         mainPanel.add(leftPanel, BorderLayout.WEST);
         mainPanel.add(rightPanel, BorderLayout.EAST);
-        
+
         tapPanel = new TapPanel();
         tapPanel.setOrientation(TapPanel.DOWN);
         tapPanel.setExpanded(true);
@@ -416,7 +416,7 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
         if (viewModelListener != null) {
             throw new InternalError ();
         }
-        viewModelListener = new ViewModelListener ("DebuggingView", this);
+        viewModelListener = new ViewModelListener ("DebuggingView", this); // NOI18N
     }
     
     @Override
@@ -468,11 +468,10 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
         super.componentClosed();
     }
     
-    
-    
-//    public org.openide.util.HelpCtx getHelpCtx() {
-//        return new org.openide.util.HelpCtx("NetbeansDebuggerSourcesNode"); // NOI18N
-//    }
+    @Override
+    public org.openide.util.HelpCtx getHelpCtx() {
+        return new org.openide.util.HelpCtx("DebuggingView"); // NOI18N
+    }
     
     @Override
     public int getPersistenceType() {
@@ -500,7 +499,7 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
                 ExplorerManager.PROP_NODE_CHANGE.equals(propertyName)) {
             refreshView();
         } else if (JPDADebugger.PROP_CURRENT_THREAD.equals(propertyName)) {
-            refreshView(); // [TODO]
+            refreshView();
         } else if (propertyName.equals (ExplorerManager.PROP_SELECTED_NODES)) {
             setActivatedNodes ((Node[]) evt.getNewValue ());
         }
@@ -536,35 +535,26 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
     // **************************************************************************
     
     public void treeExpanded(TreeExpansionEvent event) {
-        //System.out.println("treeExpanded: " + event.getPath().getLastPathComponent());
         refreshView();
     }
 
     public void treeCollapsed(TreeExpansionEvent event) {
-        //System.out.println("treeCollapsed: " + event.getPath().getLastPathComponent());
         refreshView();
     }
 
     public void treeNodesChanged(TreeModelEvent e) {
-        //TreePath treePath = e.getTreePath();
-        //System.out.println("treeNodesChanged: " + (treePath != null ? treePath.getLastPathComponent() : "NULL"));
         refreshView();
     }
 
     public void treeNodesInserted(TreeModelEvent e) {
-        //TreePath treePath = e.getTreePath();
-        //System.out.println("treeNodesInserted: " + (treePath != null ? treePath.getLastPathComponent() : "NULL"));
         refreshView();
     }
 
     public void treeNodesRemoved(TreeModelEvent e) {
-        //TreePath treePath = e.getTreePath();
-        //System.out.println("treeNodesRemoved: " + (treePath != null ? treePath.getLastPathComponent() : "NULL"));
         refreshView();
     }
 
     public void treeStructureChanged(TreeModelEvent e) {
-        //System.out.println("treeStructureChanged: " + (treePath != null ? treePath.getLastPathComponent() : "NULL"));
         refreshView();
     }
     
@@ -579,7 +569,7 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
             return;
         }
         refreshScheduled = true;
-        RequestProcessor.getDefault().post(new Runnable() {
+        requestProcessor.post(new Runnable() {
             public void run() {
                 SwingUtilities.invokeLater(new ViewRefresher());
             }
@@ -590,6 +580,10 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 JViewport viewport = treeView.getViewport();
+                Point point = viewport.getViewPosition();
+                if (point.y < 0) {
+                    viewport.setViewPosition(new Point(point.x, 0));
+                }
                 Dimension viewSize = viewport.getExtentSize();
                 Dimension treeSize = viewport.getViewSize();
                 if (treeSize.width <= viewSize.width) {
@@ -712,8 +706,8 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
             leftPanel.repaint();
             rightPanel.revalidate();
             rightPanel.repaint();
-            treeView.getTree().setPreferredSize(new Dimension(treeViewWidth, 10));
-            mainPanel.setPreferredSize(new Dimension(10, mainPanelHeight));
+            treeView.getTree().setPreferredSize(new Dimension(treeViewWidth, 0));
+            mainPanel.setPreferredSize(new Dimension(0, mainPanelHeight));
             //treeView.getTree().revalidate();
             //treeView.revalidate();
             mainScrollPane.revalidate();
@@ -733,7 +727,7 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
         }
     }
     
-    private class BarsPanel extends JPanel {
+    private class BarsPanel extends JPanel implements MouseMotionListener {
         
         private ArrayList<Bar> bars = new ArrayList<Bar>();
 
@@ -741,22 +735,9 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
             setBackground(treeBackgroundColor);
             setPreferredSize(new Dimension(BAR_WIDTH, 0));
             setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 0, 0));
+            addMouseMotionListener(this);
         }
 
-        @Override
-        public String getToolTipText(MouseEvent evt) {
-            int sy = evt.getY();
-            try {
-                for (Bar bar : bars) {
-                    if (sy >= bar.sy && sy < bar.sy + bar.height) {
-                        return bar.toolTipText;
-                    }
-                }
-            } catch (ConcurrentModificationException e) {
-            }
-            return null;
-        }
-        
         public void clearBars() {
             bars.clear();
         }
@@ -814,6 +795,28 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
                 }
             } // for
             g.setColor(originalColor);
+        }
+
+        public void mouseDragged(MouseEvent e) {
+            computeToolTipText(e);
+        }
+
+        public void mouseMoved(MouseEvent e) {
+            computeToolTipText(e);
+        }
+
+        private void computeToolTipText(MouseEvent evt) {
+            int sy = evt.getY();
+            try {
+                for (Bar bar : bars) {
+                    if (sy >= bar.sy && sy < bar.sy + bar.height) {
+                        setToolTipText(bar.toolTipText);
+                        return;
+                    }
+                }
+            } catch (ConcurrentModificationException e) {
+            }
+            setToolTipText(null);
         }
         
         private class Bar {
