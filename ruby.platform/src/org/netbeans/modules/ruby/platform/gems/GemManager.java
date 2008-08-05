@@ -598,34 +598,24 @@ public final class GemManager {
 
         runnerLock.lock();
         try {
-            GemRunner gemRunner = new GemRunner(platform);
-            boolean ok;
-            if (installed == null && remote == null) {
-                ok = gemRunner.fetchBoth();
-                installed = new ArrayList<Gem>();
-                remote = new ArrayList<Gem>();
-            } else if (installed == null) {
-                ok = gemRunner.fetchLocal();
-                installed = new ArrayList<Gem>();
-            } else if (remote == null) {
-                ok = gemRunner.fetchRemote();
-                remote = new ArrayList<Gem>();
-            } else {
-                return; // no reload needed
-            }
-
-            if (ok) {
-                GemListParser.parse(gemRunner.getOutput(), installed, remote);
-
-                // Sort the lists
-                if (installed != null) {
+            if (installed == null) {
+                GemRunner gemRunner = new GemRunner(platform);
+                if (gemRunner.fetchLocal()) {
+                    installed = GemListParser.parseLocal(gemRunner.getOutput());
                     Collections.sort(installed);
+                } else {
+                    errors.addAll(gemRunner.getOutput());
+                    return; // fail quickly, do not try remote update
                 }
-                if (remote != null) {
+            }
+            if (remote == null) {
+                GemRunner gemRunner = new GemRunner(platform);
+                if (gemRunner.fetchRemote()) {
+                    remote = GemListParser.parseRemote(gemRunner.getOutput());
                     Collections.sort(remote);
+                } else {
+                    errors.addAll(gemRunner.getOutput());
                 }
-            } else {
-                errors.addAll(gemRunner.getOutput());
             }
         } finally {
             runnerLock.unlock();
