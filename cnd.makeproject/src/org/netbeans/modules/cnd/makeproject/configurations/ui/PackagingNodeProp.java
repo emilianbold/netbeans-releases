@@ -120,9 +120,15 @@ public class PackagingNodeProp extends PropertySupport {
         @Override
         public String getAsText() {
             int noFiles = packagingConfiguration.getFiles().getValue().size();
-            String val = "" + noFiles + " " + getString("FilesText");
-            if (noFiles > 0) {
-                val += ": " + ((FileElement)packagingConfiguration.getFiles().getValue().get(0)).getFrom() + "..."; // NOI18N
+            String val;
+            if (noFiles == 0) {
+                val = getString("FilesTextZero");
+            }
+            else if (noFiles == 1) {
+                val = getString("FilesTextOne", "" + noFiles, ((FileElement)packagingConfiguration.getFiles().getValue().get(0)).getTo()); // NOI18N
+            }
+            else {
+                val = getString("FilesTextMany", "" + noFiles, ((FileElement)packagingConfiguration.getFiles().getValue().get(0)).getTo() + ", ..."); // NOI18N
             }
             return val;
         }
@@ -148,5 +154,9 @@ public class PackagingNodeProp extends PropertySupport {
 	    bundle = NbBundle.getBundle(PackagingNodeProp.class);
 	}
 	return bundle.getString(s);
+    }
+    
+    private static String getString(String s, String a1, String a2) {
+        return NbBundle.getMessage(PackagingNodeProp.class, s, a1, a2);
     }
 }

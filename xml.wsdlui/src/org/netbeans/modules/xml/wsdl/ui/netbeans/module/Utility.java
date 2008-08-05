@@ -46,6 +46,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -59,6 +60,9 @@ import javax.xml.namespace.QName;
 
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.netbeans.modules.xml.catalogsupport.DefaultProjectCatalogSupport;
 import org.netbeans.modules.xml.schema.model.Element;
 import org.netbeans.modules.xml.schema.model.GlobalElement;
@@ -92,6 +96,7 @@ import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.Named;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
 import org.netbeans.modules.xml.xam.locator.CatalogModelException;
+import org.netbeans.modules.xml.xam.ui.ProjectConstants;
 import org.netbeans.spi.palette.PaletteController;
 import org.openide.ErrorManager;
 import org.openide.explorer.view.TreeView;
@@ -968,5 +973,22 @@ public class Utility {
         return null;
     }
     
-        
+    /**
+     * Get all interesting source roots for purposes of the wsdl editing.
+     * @param project
+     * @return all source roots.
+     */
+    public static List<SourceGroup> getSourceRoots(Project project) {
+        List<SourceGroup> roots = new ArrayList<SourceGroup>();
+        Sources sources = ProjectUtils.getSources(project);
+        SourceGroup[] javaRoots =
+                sources.getSourceGroups(ProjectConstants.JAVA_SOURCES_TYPE);
+        roots.addAll(Arrays.asList(javaRoots));
+        if (roots.isEmpty()) {
+            SourceGroup[] sourceGroups = sources.getSourceGroups(Sources.TYPE_GENERIC);
+            roots.addAll(Arrays.asList(sourceGroups));
+        }
+        return roots;
+    }
+    
 }

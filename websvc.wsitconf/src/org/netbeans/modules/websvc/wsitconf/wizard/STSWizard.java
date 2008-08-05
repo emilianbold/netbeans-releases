@@ -300,7 +300,7 @@ public class STSWizard implements TemplateWizard.Iterator {
 
         project = Templates.getProject(wiz);
 
-        boolean wizardEnabled = Util.isJavaEE5orHigher(project);
+        boolean wizardEnabled = Util.isJavaEE5orHigher(project) && Util.isGlassfish(project);
 
         SourceGroup[] sourceGroups = Util.getJavaSourceGroups(project);
         WizardDescriptor.Panel firstPanel; //special case: use Java Chooser

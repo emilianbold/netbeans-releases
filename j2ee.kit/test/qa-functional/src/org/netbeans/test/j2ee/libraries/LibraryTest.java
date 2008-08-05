@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -56,7 +56,6 @@ import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.EventTool;
@@ -68,6 +67,7 @@ import org.netbeans.test.j2ee.lib.ContentComparator;
 import org.netbeans.test.j2ee.lib.FilteringLineDiff;
 import org.netbeans.test.j2ee.lib.Utils;
 import org.netbeans.test.j2ee.wizard.WizardUtils;
+import org.netbeans.test.java.editor.jelly.GenerateCodeOperator;
 
 /**
  *
@@ -143,13 +143,9 @@ public class LibraryTest extends J2eeTestCase {
         EditorOperator eo = EditorWindowOperator.getEditor("ServletForEJB.java");
         String ejbjar_bundle
                 = "org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entres.Bundle";
-        ActionNoBlock anb = new ActionNoBlock(null, Bundle.getStringTrimmed(
-                ejbjar_bundle, "LBL_EnterpriseActionGroup")
-                + "|" + Bundle.getStringTrimmed(
-                ejbjar_bundle, "LBL_CallEjbAction"));
-        eo.select(11);
-        new EventTool().waitNoEvent(2000);
-        anb.performPopup(eo);
+        eo.setCaretPosition(37, 7);
+        GenerateCodeOperator.openDialog(
+                Bundle.getStringTrimmed(ejbjar_bundle, "LBL_CallEjbAction"), eo);
         NbDialogOperator ndo = new NbDialogOperator(
                 Bundle.getStringTrimmed(ejbjar_bundle, "LBL_CallEjbAction"));
         Node n = new Node(new JTreeOperator(ndo), "MultiSrcRootEjb|LocalSessionSB");
