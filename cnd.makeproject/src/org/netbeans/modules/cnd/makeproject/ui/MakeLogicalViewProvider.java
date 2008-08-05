@@ -1148,13 +1148,15 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
 
         @Override
         public Image getIcon( int type ) {
-            return getProjectNode().getIcon(type);
+            return Utilities.loadImage("org/netbeans/modules/cnd/makeproject/ui/resources/importantFolder.gif"); // NOI18N
         }
 
+        @Override
         public Image getOpenedIcon( int type ) {
-            return getProjectNode().getOpenedIcon(type);
+            return Utilities.loadImage("org/netbeans/modules/cnd/makeproject/ui/resources/importantFolderOpened.gif"); // NOI18N
         }
 
+        @Override
         public Action[] getActions( boolean context ) {
             return new Action[] {
                 new AddExternalItemAction(project),
@@ -1163,6 +1165,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             };
         }
 
+        @Override
         public boolean canRename() {
             return false;
         }
