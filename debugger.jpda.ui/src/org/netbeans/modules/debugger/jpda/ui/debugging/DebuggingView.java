@@ -127,6 +127,8 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
     static final Color greenBarColor = new Color(189, 230, 170);
     private transient Color treeBackgroundColor = UIManager.getDefaults().getColor("Tree.background"); // NOI18N
     
+    private transient RequestProcessor requestProcessor = new RequestProcessor("DebuggingView Refresh Scheduler", 1);
+    private transient boolean refreshScheduled = false;
     private transient ExplorerManager manager = new ExplorerManager();
     private transient ViewModelListener viewModelListener;
     private Preferences preferences = NbPreferences.forModule(getClass()).node("debugging"); // NOI18N
@@ -150,7 +152,6 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
     private BarsPanel leftPanel;
     private IconsPanel rightPanel;
     
-    private boolean refreshScheduled = false;
     private final ThreadsListener threadsListener;
     private transient Reference<TopComponent> lastSelectedTCRef;
     private transient Reference<TopComponent> componentToActivateAfterClose;
@@ -190,13 +191,11 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
         treeView.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(DebuggingView.class, "DebuggingView.treeView.AccessibleContext.accessibleDescription")); // NOI18N
         
         mainPanel.add(treeView, BorderLayout.CENTER);
-        
         leftPanel = new BarsPanel();
         rightPanel = new IconsPanel();
-        
         mainPanel.add(leftPanel, BorderLayout.WEST);
         mainPanel.add(rightPanel, BorderLayout.EAST);
-        
+
         tapPanel = new TapPanel();
         tapPanel.setOrientation(TapPanel.DOWN);
         tapPanel.setExpanded(true);
@@ -570,7 +569,7 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
             return;
         }
         refreshScheduled = true;
-        RequestProcessor.getDefault().post(new Runnable() {
+        requestProcessor.post(new Runnable() {
             public void run() {
                 SwingUtilities.invokeLater(new ViewRefresher());
             }
@@ -581,6 +580,10 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 JViewport viewport = treeView.getViewport();
+                Point point = viewport.getViewPosition();
+                if (point.y < 0) {
+                    viewport.setViewPosition(new Point(point.x, 0));
+                }
                 Dimension viewSize = viewport.getExtentSize();
                 Dimension treeSize = viewport.getViewSize();
                 if (treeSize.width <= viewSize.width) {
@@ -703,8 +706,8 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
             leftPanel.repaint();
             rightPanel.revalidate();
             rightPanel.repaint();
-            treeView.getTree().setPreferredSize(new Dimension(treeViewWidth, 10));
-            mainPanel.setPreferredSize(new Dimension(10, mainPanelHeight));
+            treeView.getTree().setPreferredSize(new Dimension(treeViewWidth, 0));
+            mainPanel.setPreferredSize(new Dimension(0, mainPanelHeight));
             //treeView.getTree().revalidate();
             //treeView.revalidate();
             mainScrollPane.revalidate();
