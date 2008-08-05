@@ -114,7 +114,7 @@ public class CallEJBTest extends AddMethodBase {
                                  Bundle.getStringTrimmed("org.netbeans.modules.web.project.ui.Bundle", "LBL_Node_Sources")
                                  +"|test|TestingServlet.java");
         new OpenAction().performAPI(openFile);
-        EditorOperator editor = new EditorWindowOperator().getEditor("TestingServlet.java");
+        EditorOperator editor = EditorWindowOperator.getEditor("TestingServlet.java");
         new org.netbeans.jemmy.EventTool().waitNoEvent(3000);
         editor.select(30);
 
@@ -163,7 +163,7 @@ public class CallEJBTest extends AddMethodBase {
         Node openFile = new Node(new ProjectsTabOperator().getProjectRootNode(EJBValidation.WEB_PROJECT_NAME),
                                  "Web Services|SampleWebService");
         new OpenAction().performAPI(openFile);
-        EditorOperator editor = new EditorWindowOperator().getEditor("SampleWebServiceImpl.java");
+        EditorOperator editor = EditorWindowOperator.getEditor("SampleWebServiceImpl.java");
         new org.netbeans.jemmy.EventTool().waitNoEvent(3000);
         editor.select(11);
 
@@ -203,7 +203,7 @@ public class CallEJBTest extends AddMethodBase {
     }
         
     protected void addMethod() throws IOException {
-        EditorOperator editor = new EditorWindowOperator().getEditor(beanName+"Bean.java");
+        EditorOperator editor = EditorWindowOperator.getEditor(beanName+"Bean.java");
         editor.select(11);
 
         // invoke Add Business Method dialog

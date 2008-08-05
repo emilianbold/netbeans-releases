@@ -163,13 +163,13 @@ public class EJBValidation extends J2eeTestCase {
             Node openFile = new Node(new ProjectsTabOperator().getProjectRootNode(EJBValidation.EJB_PROJECT_NAME),
                     Bundle.getStringTrimmed("org.netbeans.modules.j2ee.ejbjar.project.ui.Bundle", "LBL_node") + "|" + files[i]);
             new OpenAction().performAPI(openFile);
-            EditorOperator editor = new EditorWindowOperator().getEditor(files[i] + "Bean.java");
+            EditorOperator editor = EditorWindowOperator.getEditor(files[i] + "Bean.java");
         }
         new org.netbeans.jemmy.EventTool().waitNoEvent(2000);
     }
 
     public void closeProjects() {
-        new EditorWindowOperator().getEditor().closeDiscardAll();
+        EditorOperator.closeDiscardAll();
         ProjectSupport.closeProject(EAR_PROJECT_NAME);
         ProjectSupport.closeProject(EJB_PROJECT_NAME);
         ProjectSupport.closeProject(WEB_PROJECT_NAME);
