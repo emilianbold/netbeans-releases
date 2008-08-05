@@ -479,7 +479,7 @@ public abstract class Children extends Object {
      * as returned by {@link #getNodes()}.
      * 
      * @return immutable and unmodifiable list of nodes in this children object
-     * @since 7.6
+     * @since 7.7
      */
     public final List<Node> snapshot() {
         try {

@@ -298,10 +298,9 @@ public class ChildFactoryTest extends TestCase {
         }
     }
 
-    public static void assertNodeAndEvent(final NodeEvent ev) {
+    public static void assertNodeAndEvent(final NodeEvent ev, final List<Node> snapshot) {
         Children.MUTEX.readAccess(new Runnable() {
             public void run() {
-                List<Node> snapshot = ev.getSnapshot();
                 int cnt = snapshot.size();
                 assertEquals("Same number of nodes", ev.getNode().getChildren().getNodesCount(), cnt);
                 for (int i = 0; i < cnt; i++) {
@@ -334,22 +333,22 @@ public class ChildFactoryTest extends TestCase {
 
         
         public void childrenAdded(NodeMemberEvent ev) {
-            assertNodeAndEvent(ev);
+            assertNodeAndEvent(ev, ev.getSnapshot());
             go();
         }
         
         public void childrenRemoved(NodeMemberEvent ev) {
-            assertNodeAndEvent(ev);
+            assertNodeAndEvent(ev, ev.getSnapshot());
             go();
         }
         
         public void childrenReordered(NodeReorderEvent ev) {
-            assertNodeAndEvent(ev);
+            assertNodeAndEvent(ev, ev.getSnapshot());
             go();
         }
         
         public void nodeDestroyed(NodeEvent ev) {
-            assertNodeAndEvent(ev);
+            assertNodeAndEvent(ev, Collections.<Node>emptyList());
         }
         
         public void propertyChange(PropertyChangeEvent arg0) {
