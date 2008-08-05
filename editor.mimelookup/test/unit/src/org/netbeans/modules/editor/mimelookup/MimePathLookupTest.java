@@ -45,6 +45,7 @@ import java.util.Collection;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -53,6 +54,7 @@ import org.openide.util.LookupListener;
  *
  * @author vita
  */
+@RandomlyFails // NB-Core-Build #1103, probably due to TestUtilities.sleepForWhile
 public class MimePathLookupTest extends NbTestCase {
 
     /** Creates a new instance of MimePathLookupTest */
