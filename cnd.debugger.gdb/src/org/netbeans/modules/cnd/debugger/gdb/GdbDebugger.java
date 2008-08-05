@@ -1288,7 +1288,18 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             }
             if (killcmd.size() > 0) {
                 killcmd.add("-s"); // NOI18N
-                killcmd.add((platform == PlatformTypes.PLATFORM_MACOSX && signal == 2) ? "TRAP" : Integer.toString(signal)); // NOI18N
+                
+                String signalName = Integer.toString(signal);
+                // for MacOS we should substitute signal number with the real name
+                if (platform == PlatformTypes.PLATFORM_MACOSX) {
+                    switch (signal) {
+                        case 2 : signalName = "TRAP"; break; // NOI18N
+                        case 15 : signalName = "TERM"; break; // NOI18N
+                        default : assert false : "No textual value for MacOS signal " + signal + ", please add it to kill command in GdbDebugger.";// NOI18N
+                    }
+                }
+                killcmd.add(signalName);
+                
                 killcmd.add(Long.toString(pid));
                 ProcessBuilder pb = new ProcessBuilder(killcmd);
                 try {
