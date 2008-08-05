@@ -74,6 +74,7 @@ public class StableSuiteTest extends J2eeTestCase {
     public static final class SuiteCreator extends NbTestSuite {
         FileObject dataDir = FileUtil.createData(new StableSuiteTest().getDataDir());
         FileObject completionTestWebDir = dataDir.getFileObject("CompletionTestProjects/Jsp/web/");
+        FileObject completionJSFTestWebDir = dataDir.getFileObject("CompletionTestProjects/JSF/web/");
 
         public SuiteCreator() throws IOException {
             super();
@@ -85,6 +86,8 @@ public class StableSuiteTest extends J2eeTestCase {
             addCompletionTest("stableScriptletsJavaBasic.jsp");
             addCompletionTest("stableTaglibCompletion.jsp");
             addCompletionTest("stableXHTML.xhtml");
+            addJSFCompletionTest("testJSFObjects.jsp");
+            addJSFCompletionTest("testJSFTag.jsp");
         }
         
         private void addCompletionTest(String fileName) throws IOException{
@@ -92,6 +95,10 @@ public class StableSuiteTest extends J2eeTestCase {
             addTest(new CompletionTest(name, completionTestWebDir.getFileObject(fileName)));
         }
                 
+        private void addJSFCompletionTest(String fileName) throws IOException{
+            String name = fileName.replace('.', '_');
+            addTest(new CompletionTest(name, completionJSFTestWebDir.getFileObject(fileName)));
+        }
     }
     
 }
