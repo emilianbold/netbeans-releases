@@ -376,7 +376,7 @@ abstract class EntrySupport {
             //debug.append ("New     : " + this.entries + '\n'); // NOI18N
             //printStackTrace();
             clearNodes();
-            notifyRemove(nodes, current, null);
+            notifyRemove(nodes, current);
         }
 
         /** Updates the order of entries.
@@ -515,7 +515,7 @@ abstract class EntrySupport {
             //      debug.append ("Set4: " + entries); // NOI18N
             //      printStackTrace();
             clearNodes();
-            notifyAdd(nodes, null);
+            notifyAdd(nodes);
         }
 
         /** Refreshes content of one entry. Updates the state of children
@@ -568,7 +568,7 @@ abstract class EntrySupport {
                 clearNodes();
 
                 // now everything should be consistent => notify the remove
-                notifyRemove(toRemove, current, entry);
+                notifyRemove(toRemove, current);
                 current = holder.nodes();
             }
 
@@ -578,7 +578,7 @@ abstract class EntrySupport {
             if (!toAdd.isEmpty()) {
                 // modifies the list associated with the info
                 clearNodes();
-                notifyAdd(toAdd, entry);
+                notifyAdd(toAdd);
             }
         }
 
@@ -642,7 +642,7 @@ abstract class EntrySupport {
          * @param current state of nodes
          * @return array of nodes that were deleted
          */
-        Node[] notifyRemove(Collection<Node> nodes, Node[] current, Entry sourceEntry) {
+        Node[] notifyRemove(Collection<Node> nodes, Node[] current) {
             //System.err.println("notifyRemove from: " + getNode ());
             //System.err.println("notifyRemove: " + nodes);
             //System.err.println("Current     : " + Arrays.asList (current));
@@ -677,7 +677,7 @@ abstract class EntrySupport {
          *
          * @param nodes list of removed nodes
          */
-        void notifyAdd(Collection<Node> nodes, Entry sourceEntry) {
+        void notifyAdd(Collection<Node> nodes) {
             // notify about parent change
             for (Node n : nodes) {
                 n.assignTo(children, -1);
@@ -1231,7 +1231,7 @@ abstract class EntrySupport {
                 }                
                 if (!notifiedAlready) {
                     info.useNode(oldNode);
-                    fireSubNodesChangeIdx(false, new int[]{info.getIndex()}, null, null, null);
+                    fireSubNodesChangeIdx(false, new int[]{info.getIndex()}, null, createSnapshot(false), null);
                 }
                 children.destroyNodes(new Node[]{oldNode});
             }
@@ -1252,7 +1252,7 @@ abstract class EntrySupport {
                     }
                     visibleEntries = arr;
                 }
-                fireSubNodesChangeIdx(true, new int[]{info.getIndex()}, null, null, null);
+                fireSubNodesChangeIdx(true, new int[]{info.getIndex()}, null, createSnapshot(false), null);
             }
         }
 
@@ -1331,7 +1331,7 @@ abstract class EntrySupport {
                 for (int i = 0; i < idxs.length; i++) {
                     idxs[i] = idxsIt.next();
                 }
-                fireSubNodesChangeIdx(false, idxs, null, null, new LazySnapshot(previousEntries, previousEntryToInfo));
+                fireSubNodesChangeIdx(false, idxs, null, createSnapshot(false), new LazySnapshot(previousEntries, previousEntryToInfo));
                 children.destroyNodes(removedNodes.toArray(new Node[removedNodes.size()]));
             }
 
@@ -1377,7 +1377,7 @@ abstract class EntrySupport {
                     }
                     idxs = tmp;
                 }
-                fireSubNodesChangeIdx(true, idxs, null, null, null);
+                fireSubNodesChangeIdx(true, idxs, null, createSnapshot(false), null);
             }
         }
 

@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.xml.jaxb.util;
 
-import org.netbeans.modules.xml.jaxb.cfg.schema.Schemas;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -62,7 +61,6 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import org.apache.tools.ant.module.api.support.ActionUtils;
-import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
@@ -117,8 +115,8 @@ public class ProjectHelper {
     public static final int PROJECT_TYPE_J2SE = 0;
     public static final int PROJECT_TYPE_EJB = 1;
     public static final int PROJECT_TYPE_WEB = 2;
-    private static final String JAXB_ANT_XTN_NAME = "jaxb"; //NOI18n
     
+    private static final String JAXB_ANT_XTN_NAME = "jaxb"; //NOI18n    
     private static final String JAXB_LIB_NAME = "jaxb"; //NOI18N
     private static final String PROP_BUILD_DIR = "build.dir"; //NOI18N
     private static final String PROP_SRC_DIR = "src.dir"; //NOI18N
@@ -286,10 +284,6 @@ public class ProjectHelper {
         }
     }
 
-    private static void addLibraries(Project prj) {
-        addJAXBLibrary(prj);
-    }
-
     public static int getProjectType(Project prj) {
         String prjClzName = prj.getClass().getName();
         int prjType = PROJECT_TYPE_J2SE;
@@ -326,6 +320,7 @@ public class ProjectHelper {
                     }
                     scs.setProjectName(projName);
                     scs.setDestdir(BUILD_GEN_JAXB_DIR);
+                    scs.setVersion(JAXBWizModuleConstants.LATEST_CFG_VERSION);
                 }
             } catch (Exception ex) {
                 Exceptions.printStackTrace(ex);
@@ -828,6 +823,7 @@ public class ProjectHelper {
         }
     }
 
+    
     private static void addClasspathProperties(Project prj){
         String xjcClasspath = getProjectProperty(prj, PROP_XJC_DEF_CLASSPATH);
         boolean modified = false;
@@ -942,7 +938,7 @@ public class ProjectHelper {
             public void run() {
                 try {
                     if (addLibs) {
-                        addLibraries(project);
+                        addJAXBLibrary(project);
                     }
 
                     FileObject buildXml = getFOForProjectBuildFile(project);
@@ -1102,4 +1098,30 @@ public class ProjectHelper {
             }
         }
     }
+    
+    public static void migrateProjectFromPreDot5Version(Project prj){
+        // String oldJaxbLibName = "jaxb21" ; //NOI18N
+        // Remove Old library. Can't for now, need an API for removing non existent lib
+        //Add new library
+        addJAXBLibrary(prj);
+        
+        //Update JAXB Wiz properties.
+        String endorsedDirs = getEndorsedDirs(prj);
+        saveProjectProperty(prj, PROP_ENDORSED, endorsedDirs);
+        saveProjectProperty(prj, PROP_XJC_DEF_CLASSPATH, 
+                PROP_VAL_JAXB_LIB_CLASSPATH);
+        saveProjectProperty(prj, PROP_XJC_RUN_CLASSPATH, 
+                PROP_VAL_JAXB_LIB_CLASSPATH);
+        saveProjectProperty(prj, PROP_JAXB_GEN_SRC_CLASSPATH, 
+                PROP_VAL_JAXB_LIB_CLASSPATH);        
+        try {
+            ProjectManager.getDefault().saveProject(prj);
+            Schemas scs = ProjectHelper.getXMLBindingSchemas(prj);
+            ProjectHelper.refreshBuildScript(prj);
+            scs.setVersion(JAXBWizModuleConstants.LATEST_CFG_VERSION);
+            ProjectHelper.saveXMLBindingSchemas(prj, scs);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }    
 }

@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,27 +31,44 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.openide.nodes;
 
+package org.netbeans.modules.xml.jaxb.model;
 
-/** Event describing a change in a node.
-*
-*/
-public class NodeEvent extends java.util.EventObject {
-    static final long serialVersionUID = 3504069382061188226L;
+import java.math.BigDecimal;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.xml.jaxb.cfg.schema.Schemas;
+import org.netbeans.modules.xml.jaxb.util.JAXBWizModuleConstants;
+import org.netbeans.modules.xml.jaxb.util.ProjectHelper;
+import org.netbeans.spi.project.ui.ProjectOpenedHook;
 
-    /** Create a new event.
-    * @param n origin node
-    */
-    public NodeEvent(Node n) {
-        super(n);
+/**
+ *
+ * @author gpatil
+ */
+public class JAXBWizProjectOpenedHookImpl extends ProjectOpenedHook{
+    private Project prj;
+    
+    public JAXBWizProjectOpenedHookImpl(Project project){
+        this.prj = project;
+    }
+    
+    @Override
+    protected void projectClosed() {
     }
 
-    /** Get the node where the change occurred.
-    * @return the node
-    */
-    public final Node getNode() {
-        return (Node) getSource();
+    @Override
+    protected void projectOpened() {
+        Schemas scs = ProjectHelper.getXMLBindingSchemas(prj);
+        if ((scs != null) || (scs.sizeSchema() > 0)){
+            BigDecimal v = scs.getVersion();
+            if ((v == null) || (JAXBWizModuleConstants.LATEST_CFG_VERSION.compareTo(v) > 0)){
+                ProjectHelper.migrateProjectFromPreDot5Version(prj);
+            }
+        }
     }
 }
