@@ -308,7 +308,7 @@ implements FileChangeListener, LexicalHandler, LookupListener {
                 }
             }
         }
-        if (ignorePreviousId != null && newID.equals(ignorePreviousId)) {
+        if (ignorePreviousId != null && ignorePreviousId.equals(newID)) {
             if (XMLDataObject.ERR.isLoggable(Level.FINE)) {
                 XMLDataObject.ERR.fine("No update to ID: " + ignorePreviousId + " for " + realXML);
             }
