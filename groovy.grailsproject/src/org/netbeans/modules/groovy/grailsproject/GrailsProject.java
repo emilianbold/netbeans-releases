@@ -113,7 +113,7 @@ public final class GrailsProject implements Project {
                 projectState, //allow outside code to mark the project as needing saving
                 new Info(), //Project information implementation
                 new GrailsActionProvider(this),
-                new GrailsSources(projectDir),
+                GrailsSources.create(projectDir),
                 new GrailsServerState(this, getProjectDirectory().getName()),
                 new GrailsProjectCustomizerProvider(this),
                 new GrailsProjectOperations(this),

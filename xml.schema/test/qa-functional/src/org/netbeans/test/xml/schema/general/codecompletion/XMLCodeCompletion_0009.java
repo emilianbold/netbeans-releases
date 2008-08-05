@@ -39,10 +39,16 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.test.xml.schema.codecompletion;
+package org.netbeans.test.xml.schema.general.codecompletion;
 
 import junit.framework.TestSuite;
+import org.netbeans.jellytools.NewFileWizardOperator;
+import org.netbeans.jellytools.ProjectsTabOperator;
+import org.netbeans.jellytools.nodes.ProjectRootNode;
 
+import org.netbeans.jellytools.MainWindowOperator;
+import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jemmy.operators.*;
 
 import org.netbeans.junit.NbTestCase;
 import java.util.Properties;
@@ -55,32 +61,28 @@ import org.netbeans.junit.NbModuleSuite;
  * @author michaelnazarov@netbeans.org
  */
 
-public class XMLCodeCompletion_0006 extends XMLCodeCompletion {
+public class XMLCodeCompletion_0009 extends XMLCodeCompletion {
     
-    static final String TEST_JAVA_APP_NAME = "java4xmlcodecompletion_0006";
+    static final String TEST_JAVA_APP_NAME = "java4xmlcodecompletion_0009";
 
-    public XMLCodeCompletion_0006(String arg0) {
+    public XMLCodeCompletion_0009(String arg0) {
         super(arg0);
     }
     
     public static Test suite( )
     {
       return NbModuleSuite.create(
-          NbModuleSuite.createConfiguration( XMLCodeCompletion_0006.class ).addTest(
+          NbModuleSuite.createConfiguration( XMLCodeCompletion_0009.class ).addTest(
             "CreateJavaApplication",
-            "CreateSchema",
-            "AddElements1",
-            "CreateSchema",
-            "AddElements2",
-            "CreateConstrained",
-            "StartAndContinueTag"
+            "CreatePersistent",
+            "StartTag"
            )
            .enableModules( ".*" )
            .clusters( ".*" )
            //.gui( true )
         );
     }
-    
+
     public void CreateJavaApplication( )
     {
         startTest( );
@@ -90,83 +92,59 @@ public class XMLCodeCompletion_0006 extends XMLCodeCompletion {
         endTest( );
     }
 
-    public void CreateSchema( )
+    public void CreatePersistent( )
     {
       startTest( );
 
-      CreateSchemaInternal( TEST_JAVA_APP_NAME );
+      ProjectsTabOperator pto = new ProjectsTabOperator( );
+      ProjectRootNode prn = pto.getProjectRootNode( TEST_JAVA_APP_NAME );
+      prn.select( );
 
-      endTest( );
-    }
+      NewFileWizardOperator opNewFileWizard = NewFileWizardOperator.invoke( );
+      opNewFileWizard.selectCategory( "Persistence" );
+      opNewFileWizard.selectFileType( "Persistence Unit" );
+      opNewFileWizard.next( );
 
-    public void AddElements1( )
-    {
-      startTest( );
+      JDialogOperator jnew = new JDialogOperator( "New Persistence Unit" );
+      JComboBoxOperator jDC = new JComboBoxOperator( jnew, 1 );
 
-      AddElementInternal( "newXmlSchema.xsd" );
-
-      endTest( );
-    }
-
-    public void AddElements2( )
-    {
-      startTest( );
-
-      AddElementInternal( "newXmlSchema1.xsd" );
-
-      endTest( );
-    }
-
-    public void CreateConstrained( )
-    {
-      startTest( );
-
-      CImportClickData[] aimpData =
+      int ic = jDC.getItemCount( );
+      for( int i = 0; i < ic; i++ )
       {
-        new CImportClickData( true, 0, 0, 2, 3, "Unknown import table state after first click, number of rows: ", null ),
-        new CImportClickData( true, 1, 0, 2, 5, "Unknown import table state after second click, number of rows: ", null ),
-        new CImportClickData( true, 2, 0, 2, 7, "Unknown import table state after third click, number of rows: ", null ),
-        new CImportClickData( true, 3, 0, 2, 9, "Unknown import table state after forth click, number of rows: ", null ),
-        new CImportClickData( true, 4, 1, 1, 9, "Unknown to click on checkbox. #", null ),
-        new CImportClickData( true, 5, 1, 1, 9, "Unknown to click on checkbox. #", null )
-      };
+        Object o = jDC.getItemAt( i );
+        System.out.println( "++++" + o );
+      }
 
-      CreateConstrainedInternal(
-          TEST_JAVA_APP_NAME,
-          aimpData,
-          null,
-          null,
-          1
-        );
+      jDC.selectItem( 0 );
+
+      opNewFileWizard.finish( );
+
+      // Check created schema in project tree
+      if( null == ( new Node( prn, "Source Packages|META-INF|persistence.xml" ) ) )
+      {
+        fail( "Unable to check created unit." );
+      }
+
+      new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("View|Editors|Design");
+      new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("View|Editors|XML");
 
       endTest( );
     }
 
-    public void StartAndContinueTag( )
+    public void StartTag( )
     {
       startTest( );
 
       String[] asCases =
       {
-        "ns1:newElement", // "ns1:newElement [1..1]",
-        "ns2:newElement", // "ns2:newElement [1..1]"
+        "persistence-unit"
       };
-
-      String[] asCasesClose =
-      {
-        "</ns1:newElement>"
-      };
-
-      StartAndContinueTagInternal(
-          "newXMLDocument.xml",
-          "</ns1:newElement>",
+      StartTagInternal(
+          "persistence.xml",
+          "</persistence>",
           true,
-          asCases,
-          "ns1:newElement",
-          asCasesClose
+          asCases
         );
-
-      // Continue tag and finish
 
       endTest( );
     }

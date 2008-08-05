@@ -11,9 +11,9 @@
  * http://www.netbeans.org/cddl-gplv2.html
  * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
  * specific language governing permissions and limitations under the
- * License. When distributing the software, include this License Header
+ * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
  * particular file as subject to the "Classpath" exception as provided
  * by Sun in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
@@ -38,68 +38,62 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.bpel.project.ui.catalog;
 
+package org.netbeans.modules.project.ui.actions;
+
+import java.awt.EventQueue;
+import java.lang.reflect.InvocationTargetException;
 import javax.swing.Action;
-import java.awt.Image;
+import org.netbeans.junit.AssertionFailedErrorException;
 
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
-import org.openide.util.Utilities;
-import org.netbeans.modules.xml.retriever.catalog.CatalogEntry;
+public class LookupSensitiveActionNonEQTest extends LookupSensitiveActionTest {
 
-/**
- * @author Vladimir Yaroslavskiy
- * @version 2008.06.09
- */
-final class ResourceNode extends AbstractNode{
+    public LookupSensitiveActionNonEQTest(String name) {
+        super( name );
+    }
+
+    @Override
+    protected boolean isEnabled(final Action action) {
+        assertFalse("No AWT thread right now", EventQueue.isDispatchThread());
+        class R implements Runnable {
+            boolean enabled;
+            public void run() {
+                enabled = action.isEnabled();
+            }
+        }
+        R r = new R();
+        try {
+            EventQueue.invokeAndWait(r);
+        } catch (InterruptedException ex) {
+            throw new AssertionFailedErrorException(ex);
+        } catch (InvocationTargetException ex) {
+            throw new AssertionFailedErrorException(ex);
+        }
+        return r.enabled;
+    }
     
-  ResourceNode(CatalogEntry system) {
-    super(Children.LEAF);
-    mySystem = system;
-  }
-  
-  @Override
-  public Image getIcon(int type) {
-    return IMAGE;
-  }
-  
-  @Override
-  public boolean canRename() {
-    return false;
-  }
-  
-  @Override
-  public String getDisplayName() {
-    return getFileName(mySystem.getSource());
-  }
-  
-  private String getFileName(String file) {
-    file = file.replaceAll("%20", " ");
-
-    if (file.startsWith("file:")) { // NOI18N
-      file = file.substring(5);
+    @Override
+    protected Object getValue(final Action action, final String key) {
+        assertFalse("No AWT thread right now", EventQueue.isDispatchThread());
+        class R implements Runnable {
+            Object value;
+            public void run() {
+                value = action.getValue(key);
+            }
+        }
+        R r = new R();
+        try {
+            EventQueue.invokeAndWait(r);
+        } catch (InterruptedException ex) {
+            throw new AssertionFailedErrorException(ex);
+        } catch (InvocationTargetException ex) {
+            throw new AssertionFailedErrorException(ex);
+        }
+        return r.value;
     }
-    if (file.startsWith("/") && Utilities.isWindows()) {
-      file = file.substring(1);
+    
+    @Override
+    public boolean runInEQ () {
+        return false;
     }
-    return file.replace("\\", "/"); // NOI18N
-  }
-
-  @Override
-  public String getName() {
-    return getDisplayName();
-  }
-
-  @Override
-  public Action[] getActions(boolean context) {
-    return new Action [] {
-      null, // todo a
-//          SystemAction.get(DeleteAction.class),
-//          SystemAction.get(RenameAction.class),
-    };
-  }
-
-  private CatalogEntry mySystem;
-  private static final Image IMAGE = Utilities.loadImage("org/netbeans/modules/bpel/project/ui/resources/resource.gif"); // NOI18N
 }

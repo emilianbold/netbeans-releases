@@ -43,6 +43,7 @@ package org.openide.loaders;
 
 import org.openide.filesystems.*;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import org.netbeans.junit.*;
 
 /*
@@ -52,6 +53,7 @@ import org.netbeans.junit.*;
  *
  * @author Jaroslav Tulach
  */
+import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 public class Issue136931Test extends NbTestCase {
     private DataFolder root;
@@ -68,18 +70,15 @@ public class Issue136931Test extends NbTestCase {
     public void testCreateFromTemplate () throws Exception {
         clearWorkDir();
         FileUtil.setMIMEType("attr", "text/x-art");
+        FileUtil.setMIMEType("block", "text/x-block");
         FileObject fo = FileUtil.createData(
             Repository.getDefault().getDefaultFileSystem().getRoot(),
             "Loaders/text/x-art/Factories/" + BLoader.class.getName().replace('.', '-') + ".instance"
         );
-        
-        for (;;) {
-            Object f = Lookups.forPath("Loaders/text/x-art/Factories").lookup(BLoader.class);
-            FolderLookup.ProxyLkp.DISPATCH.waitFinished();
-            if (f != null) {
-                break;
-            }
-        }
+        FileObject bo = FileUtil.createData(
+            Repository.getDefault().getDefaultFileSystem().getRoot(),
+            "Loaders/text/x-block/Factories/" + BLoader.class.getName().replace('.', '-') + ".instance"
+        );
         
         String fsstruct [] = new String [] {
             "source/A.attr", 
@@ -122,7 +121,7 @@ public class Issue136931Test extends NbTestCase {
 
             FileObject artificial = FileUtil.createData(
                     retValue.getPrimaryFile().getParent(),
-                    "x.attr");
+                    "x.block");
 
             DataObject obj = DataObject.find(artificial);
             assertEquals("Object really created", obj.getPrimaryFile(), artificial);
@@ -152,6 +151,7 @@ public class Issue136931Test extends NbTestCase {
         protected void initialize() {
             super.initialize();
             getExtensions().addExtension("attr");
+            getExtensions().addExtension("block");
         }
 
         protected String displayName() {

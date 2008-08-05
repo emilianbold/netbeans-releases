@@ -397,7 +397,13 @@ public class FileModelTest extends TraceModelTestBase {
     public void testResolverUsingDeclarationInClass() throws Exception {
         performTest("resolver_using_declaration_in_class.cc"); // NOI18N
     }
-    
+
+    public void testTwoBranches() throws Exception {
+        // iz #142110 For a header file, that is included with different
+        // preprocessor states, code model should include the most complete data
+        performTest("branches_1.cc"); // NOI18N
+    }
+
     /////////////////////////////////////////////////////////////////////
     // FAILS
     
@@ -418,16 +424,14 @@ public class FileModelTest extends TraceModelTestBase {
 	    return FileModelTest.class;
 	}
 	
-	public void testTemplateInnerClassDtorDefinition() throws Exception {
-	    performTest("template_inner_class_dtor_definition.cc"); // NOI18N
-	}
+//	public void testTemplateInnerClassDtorDefinition() throws Exception {
+//	    performTest("template_inner_class_dtor_definition.cc"); // NOI18N
+//	}
 
-	public void testTwoBranches() throws Exception {
-            // iz #142110 For a header file, that is included with different
-            // preprocessor states, code model should include the most complete data
-	    performTest("branches_1.cc"); // NOI18N
-	}
-               
+        public void testIncludeCorrectness() throws Exception {
+            performTest("test_include_correcteness.cc"); // NOI18N
+        }
+        
         @Override
 	protected void postSetUp() {
 	    // init flags needed for file model tests

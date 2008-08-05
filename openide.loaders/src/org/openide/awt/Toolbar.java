@@ -847,11 +847,15 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
      * on the contrary to the programmatic name */
     public String getDisplayName () {
         if (displayName == null) {
-            if (!backingFolder.isValid()) {
-                // #17020
-                return backingFolder.getName();
+            if (backingFolder.isValid()) {
+                try {
+                    return backingFolder.getNodeDelegate ().getDisplayName ();
+                } catch (IllegalStateException ex) {
+                    // OK: #141387
+                }
             }
-            return backingFolder.getNodeDelegate ().getDisplayName ();
+            // #17020
+            return backingFolder.getName();
         }
         return displayName;
     }

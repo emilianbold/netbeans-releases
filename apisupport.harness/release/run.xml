@@ -129,13 +129,16 @@ made subject to such option by the copyright holder.
                 <dirset dir="${netbeans.dest.dir}" includes="${run.platform.clusters.duplicates}" excludes="platform*"/>
             </path>
         </pathconvert>
-        <pathconvert property="platform.cluster">
+        <pathconvert property="run.exe">
             <path>
-                <dirset dir="${install}" includes="platform*"/>
+                <fileset dir="${install}" includes="platform*/lib/nbexec.exe"/>
             </path>
         </pathconvert>
-        <property name="run.exe" location="${platform.cluster}\lib\nbexec.exe"/>
-        <property name="run.sh" location="${platform.cluster}/lib/nbexec"/>
+        <pathconvert property="run.sh">
+            <path>
+                <fileset dir="${install}" includes="platform*/lib/nbexec"/>
+            </path>
+        </pathconvert>
         <property name="branding.token" value="-"/> <!-- fallback value if not set -->
         <property name="run.args.prepared" value='--branding ${branding.token} --clusters "${run.platform.clusters}"'/>
     </target>

@@ -93,7 +93,7 @@ public class UseDatabaseTest extends AddMethodBase {
     }
 
     protected void addMethod() throws IOException {
-        EditorOperator editor = new EditorWindowOperator().getEditor(beanName+"Bean.java");
+        EditorOperator editor = EditorWindowOperator.getEditor(beanName+"Bean.java");
         editor.select(11);
 
         // invoke Add Business Method dialog

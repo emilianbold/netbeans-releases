@@ -51,6 +51,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import org.netbeans.junit.Log;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.projectapi.TimedWeakReference;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
@@ -95,6 +96,7 @@ public class ProjectManagerTest extends NbTestCase implements FileChangeListener
         return Level.FINE;
     }
     
+    @Override
     protected void setUp() throws Exception {
         super.setUp();
         scratch = TestUtil.makeScratchDir(this);
@@ -112,6 +114,7 @@ public class ProjectManagerTest extends NbTestCase implements FileChangeListener
         TestUtil.BROKEN_PROJECT_LOAD_LOCK = null;
     }
     
+    @Override
     protected void tearDown() throws Exception {
         scratch.getFileSystem().removeFileChangeListener(this);
         scratch = null;
@@ -355,13 +358,15 @@ public class ProjectManagerTest extends NbTestCase implements FileChangeListener
         assertNotNull("now p3 is recognized as a non-broken project", pm.findProject(p3));
         assertEquals("p1 still recognized as a project", proj1, pm.findProject(p1));
     }
-    
+
+    @RandomlyFails // NB-Core-Build #1082, 1089
     public void testLoadExceptionWithConcurrentLoad() throws Exception {
         TestUtil.BROKEN_PROJECT_LOAD_LOCK = new Object();
         final Object GOING = new Object();
         // Enter from one thread and start to load a broken project, but then pause.
         synchronized (GOING) {
             new Thread("initial load") {
+                @Override
                 public void run() {
                     try {
                         synchronized (GOING) {
@@ -384,6 +389,7 @@ public class ProjectManagerTest extends NbTestCase implements FileChangeListener
         synchronized (GOING) {
             final boolean[] FINISHED_2 = new boolean[1];
             new Thread("parallel load") {
+                @Override
                 public void run() {
                     synchronized (GOING) {
                         GOING.notify();

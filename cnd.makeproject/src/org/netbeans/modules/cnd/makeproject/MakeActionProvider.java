@@ -56,6 +56,7 @@ import javax.swing.JOptionPane;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.cnd.actions.BuildToolsAction;
+import org.netbeans.modules.cnd.actions.ShellRunAction;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
@@ -85,6 +86,7 @@ import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.api.utils.Path;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
+import org.netbeans.modules.cnd.execution.ShellExecSupport;
 import org.netbeans.modules.cnd.makeproject.api.DefaultProjectActionHandler;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.FortranCompilerConfiguration;
@@ -221,6 +223,14 @@ public class MakeActionProvider implements ActionProvider {
         if (COMMAND_RENAME.equals(command)) {
             DefaultProjectOperations.performDefaultRenameOperation(project, null);
             return ;
+        }
+
+        if (COMMAND_RUN_SINGLE.equals(command)) {
+            Node node = context.lookup(Node.class);
+            if (node != null) {
+                ShellRunAction.performAction(node);
+            }
+            return;
         }
         
         if (!conf.getDevelopmentHost().isLocalhost()) {
@@ -793,6 +803,9 @@ public class MakeActionProvider implements ActionProvider {
                 command.equals(COMMAND_MOVE) ||
                 command.equals(COMMAND_RENAME)) {
             return true;
+        } else if (command.equals(COMMAND_RUN_SINGLE)) {
+            Node node = context.lookup(Node.class);
+            return (node != null) && (node.getCookie(ShellExecSupport.class) != null);
         } else {
             return false;
         }
@@ -976,12 +989,21 @@ public class MakeActionProvider implements ActionProvider {
         
         if (errormsg == null) {
             String tool = conf.getPackagingConfiguration().getToolValue();
-            if (!IpeUtils.isPathAbsolute(tool) && Path.findCommand(tool) == null) {
-                
-                errormsg = NbBundle.getMessage(MakeActionProvider.class, "ERR_MISSING_TOOL1", tool); // NOI18N
-            }
-            else if (IpeUtils.isPathAbsolute(tool) && !(new File(tool).exists())) {
-                errormsg = NbBundle.getMessage(MakeActionProvider.class, "ERR_MISSING_TOOL2", tool); // NOI18N
+            if (conf.getDevelopmentHost().isLocalhost()) {
+                if (!IpeUtils.isPathAbsolute(tool) && Path.findCommand(tool) == null) {
+                    errormsg = NbBundle.getMessage(MakeActionProvider.class, "ERR_MISSING_TOOL1", tool); // NOI18N
+                }
+                else if (IpeUtils.isPathAbsolute(tool) && !(new File(tool).exists())) {
+                    errormsg = NbBundle.getMessage(MakeActionProvider.class, "ERR_MISSING_TOOL2", tool); // NOI18N
+                }
+            } else {
+                String hkey = conf.getDevelopmentHost().getName();
+                ServerList serverList = (ServerList) Lookup.getDefault().lookup(ServerList.class);
+                if(serverList != null) {
+                    if (!serverList.isValidExecutable(hkey, tool)) {
+                        errormsg = NbBundle.getMessage(MakeActionProvider.class, "ERR_MISSING_TOOL3", tool, hkey); // NOI18N
+                    }
+                }
             }
         }
         

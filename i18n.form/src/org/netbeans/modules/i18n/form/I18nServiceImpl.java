@@ -210,7 +210,7 @@ public class I18nServiceImpl implements I18nService {
                     jrh.removeProperty(oldKey);
                     if (newI18nString != null)
                         newI18nString.allData = oldI18nString.allData;
-                }
+                    }
                 else if (localeSuffix != null && !localeSuffix.equals("")) { // NOI18N
                     // remember all locale data (to be able to undo adding new specific value to a locale)
                     oldI18nString.allData = allData;
@@ -247,9 +247,14 @@ public class I18nServiceImpl implements I18nService {
                 if (newI18nString.allData != null) { // restore complete data across all locales
                     rh.setAllData(key, newI18nString.allData);
                     newI18nString.allData = null;
-                    // update also the current value - might have come from a different locale
-                    newI18nString.setValue(rh.getValueForKey(key));
-                    newI18nString.setComment(rh.getCommentForKey(key));
+                    if (oldI18nString == null) {
+                        // update also the current value - might have come from a different locale
+                        newI18nString.setValue(rh.getValueForKey(key));
+                        newI18nString.setComment(rh.getCommentForKey(key));
+                    } else if (newI18nString.getValue() != null) {
+                        // besides changing place (key/file) there might also be a new value
+                        rh.addProperty(key, newI18nString.getValue(), newI18nString.getComment(), true);
+                    }
                 }
                 else {
                     rh.addProperty(key, newI18nString.getValue(), newI18nString.getComment(), true);

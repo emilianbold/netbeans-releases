@@ -39,92 +39,66 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.test.xml.schema.codecompletion;
+package org.netbeans.test.ide;
 
-import junit.framework.TestSuite;
-
-import org.netbeans.junit.NbTestCase;
-import java.util.Properties;
-import org.netbeans.junit.RandomlyFails;
+import java.io.File;
 import junit.framework.Test;
+import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.junit.NbModuleSuite;
 
 /**
+ * Whitelist test
+ * see details on http://wiki.netbeans.org/FitnessViaWhiteAndBlackList
  *
- * @author michaelnazarov@netbeans.org
+ * @author mrkam@netbeans.org
  */
+public class WhitelistTest extends JellyTestCase {
 
-public class XMLCodeCompletion_0001 extends XMLCodeCompletion {
-    
-    static final String TEST_JAVA_APP_NAME = "java4xmlcodecompletion_0001";
-
-    public XMLCodeCompletion_0001(String arg0) {
-        super(arg0);
+    private static boolean initBlacklistedClassesHandler() {        
+        String whitelistFN = new WhitelistTest("Dummy").getDataDir()
+                + File.separator + "whitelist.txt";
+        BlacklistedClassesHandler bcHandler = BlacklistedClassesHandlerSingleton.getInstance();
+        
+        System.out.println("BlacklistedClassesHandler will be initialized with " + whitelistFN);
+        if (bcHandler.initSingleton(null, whitelistFN, false)) {
+            bcHandler.register();
+            System.out.println("BlacklistedClassesHandler handler added");
+            System.setProperty("netbeans.warmup.skip", "true");
+            System.out.println("Warmup disabled");
+            return true;
+        } else {
+            return false;
+        }
     }
     
-    public static Test suite( )
-    {
-      return NbModuleSuite.create(
-          NbModuleSuite.createConfiguration( XMLCodeCompletion_0001.class ).addTest(
-            "CreateJavaApplication",
-            "AddSampleSchema",
-            "CreateConstrained",
-            "StartTag"
-           )
-           .enableModules( ".*" )
-           .clusters( ".*" )
-           //.gui( true )
-        );
+    public WhitelistTest(String name) {
+        super(name);
+    }
+    
+    public static Test suite() {
+        
+        initBlacklistedClassesHandler();
+        
+        NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(
+            WhitelistTest.class
+        ).clusters(".*").enableModules(".*");
+        
+        conf = conf.addTest("testWhitelist");
+
+        return NbModuleSuite.create(conf);
     }
 
-    public void CreateJavaApplication( )
-    {
-        startTest( );
-
-        CreateJavaApplicationInternal( TEST_JAVA_APP_NAME );
-
-        endTest( );
-    }
-
-    public void AddSampleSchema( )
-    {
-      startTest( );
-
-      AddSampleSchemaInternal( TEST_JAVA_APP_NAME, null );
-
-      endTest( );
-    }
-
-    public void CreateConstrained( )
-    {
-      startTest( );
-
-      CImportClickData[] aimpData =
-      {
-        new CImportClickData( true, 0, 0, 2, 3, "Unknown import table state after first click, number of rows: ", null ),
-        new CImportClickData( true, 1, 0, 2, 5, "Unknown import table state after second click, number of rows: ", null ),
-        new CImportClickData( true, 2, 0, 2, 7, "Unknown import table state after third click, number of rows: ", null ),
-        new CImportClickData( true, 3, 0, 2, 8, "Unknown import table state after forth click, number of rows: ", null ),
-        new CImportClickData( true, 4, 1, 1, 8, "Unknown to click on checkbox. #", null )
-      };
-  
-      CreateConstrainedInternal(
-          TEST_JAVA_APP_NAME,
-          aimpData,
-          null,
-          "purchaseOrder",
-          0
-        );
-
-      endTest( );
-    }
-
-    public void StartTag( )
-    {
-      startTest( );
-
-      StartTagInternal( "newXMLDocument.xml", "</ns1:purchaseOrder>", true, null );
-
-      endTest( );
+    public void testWhitelist() throws Exception {
+        BlacklistedClassesHandler bcHandler = BlacklistedClassesHandlerSingleton.getBlacklistedClassesHandler();
+        assertNotNull("BlacklistedClassesHandler should be available", bcHandler);
+        if (bcHandler.isGeneratingWhitelist()) {
+            bcHandler.saveWhiteList(getLog("whitelist.txt"));
+        }
+        try {
+            bcHandler.listViolations(getLog("report.txt"), false);
+            assertTrue(bcHandler.reportViolations(getLog("violations.xml")), bcHandler.noViolations());
+        } finally {
+            bcHandler.unregister();
+        }        
     }
 }
