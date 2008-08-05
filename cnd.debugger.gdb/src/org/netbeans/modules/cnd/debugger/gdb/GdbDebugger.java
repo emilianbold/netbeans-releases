@@ -1085,6 +1085,12 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             if (!isTmp && getState().equals(STATE_SILENT_STOP) && pendingBreakpointMap.isEmpty()) {
                 setRunning();
             }
+        } else if (msg.contains("(no debugging symbols found)") && state.equals(STATE_STARTING)) { // NOI18N
+            DialogDisplayer.getDefault().notify(
+                           new NotifyDescriptor.Message(NbBundle.getMessage(GdbDebugger.class,
+                           "ERR_NoDebuggingSymbolsFound"))); // NOI18N
+            setExited();
+            finish(false);
         } else if (msg.startsWith("gdb: unknown target exception")) { // NOI18N
             DialogDisplayer.getDefault().notify(
                            new NotifyDescriptor.Message(NbBundle.getMessage(GdbDebugger.class,
@@ -1821,7 +1827,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             MakeArtifact ma = new MakeArtifact(mcd, conf);
             String runDirectory = conf.getProfile().getRunDirectory().replace("\\", "/");  // NOI18N
             String path = runDirectory + '/' + ma.getOutput();
-            if (isExecutable(conf, path)) {
+            if (isExecutableOrSharedLibrary(conf, path)) {
                 ProjectActionEvent pae = new ProjectActionEvent(
                         project,
                         DEBUG_ATTACH,
@@ -1854,11 +1860,11 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
      * @param path The absolute pathname to the file
      * @return true iff the input parameters get an executable
      */
-    private static boolean isExecutable(MakeConfiguration conf, String path) {
+    private static boolean isExecutableOrSharedLibrary(MakeConfiguration conf, String path) {
         File file;
         int platform = conf.getPlatform().getValue();
 
-        if (conf.isApplicationConfiguration()) {
+        if (conf.isApplicationConfiguration() || conf.isDynamicLibraryConfiguration()) {
             return true;
         } else if (conf.isMakefileConfiguration()) {
             if (platform == PlatformTypes.PLATFORM_WINDOWS) {

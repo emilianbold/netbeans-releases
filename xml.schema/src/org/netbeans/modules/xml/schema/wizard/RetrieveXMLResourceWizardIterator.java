@@ -157,11 +157,16 @@ public final class RetrieveXMLResourceWizardIterator implements TemplateWizard.I
         boolean overwriteFiles = ((Boolean)wizard.getProperty(IConstants.OVERWRITE_FILES)).booleanValue();
         RetrieverEngine instance = RetrieverEngine.getRetrieverEngine(selectedSaveRootFolder);
         RetrieveEntry rent = null;
-        if(((Boolean) wizard.getProperty(IConstants.RETRIVE_CLOSURE_KEY)).booleanValue())
-            rent = new RetrieveEntry(null, sourceURL, null, null, DocumentTypesEnum.schema, true);
-        else
-            rent = new RetrieveEntry(null, sourceURL, null, saveRootFile, DocumentTypesEnum.schema, false);
-        instance.addResourceToRetrieve(rent);
+        //in case of from local file systems, there can be multiple files.
+        String[] urls = sourceURL.split(",");
+        for (int i = 0; i < urls.length; i++) {
+            if (((Boolean) wizard.getProperty(IConstants.RETRIVE_CLOSURE_KEY)).booleanValue()) {
+                rent = new RetrieveEntry(null, urls[i], null, null, DocumentTypesEnum.schema, true);
+            } else {
+                rent = new RetrieveEntry(null, urls[i], null, saveRootFile, DocumentTypesEnum.schema, false);
+            }
+            instance.addResourceToRetrieve(rent);
+        }
         instance.setFileOverwrite(overwriteFiles);
         instance.start();
         if (saveRootFile == null) {

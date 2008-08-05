@@ -1997,11 +1997,18 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
       <subant-junit buildpath="${modules.sorted}" target="test-build" failonerror="${test.fail.on.error}" report="build/build-all-tests.xml"/>
       <!-- copy templates -->
       <copy todir="${test.dist.dir}">
-          <fileset dir="templates/testdist"/>
+          <fileset dir="testdist/release"/>
       </copy>
-      <mkdir dir="${test.dist.dir}/nbbuild"/>
-      <!-- XXX really only need a handful of tasks from this, would be better to select them explicitly: -->
-      <copy file="nbantext.jar" todir="${test.dist.dir}/nbbuild"/>
+      <mkdir dir="build/testdistclasses"/>
+      <javac srcdir="testdist/src" destdir="build/testdistclasses" deprecation="true" debug="${build.compiler.debug}" source="1.5" target="1.5">
+          <classpath>
+              <pathelement location="${ant.core.lib}"/>
+          </classpath>
+          <compilerarg line="-Xlint -Xlint:-serial"/>
+      </javac>
+      <jar jarfile="${test.dist.dir}/tasks.jar">
+          <fileset dir="build/testdistclasses"/>
+      </jar>
       <zip basedir="${test.dist.dir}" destfile="build/testdist.zip"/>
   </target>      
 
