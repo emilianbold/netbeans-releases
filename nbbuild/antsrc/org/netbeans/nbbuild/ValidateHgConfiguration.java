@@ -70,6 +70,8 @@ public class ValidateHgConfiguration extends Task {
         List<String> hgExecutable = HgExec.hgExecutable();
         try {
             List<String> commandAndArgs = new ArrayList<String>(hgExecutable);
+            commandAndArgs.add("--config");
+            commandAndArgs.add("extensions.churn="); // added to hgext right before 1.0 release
             commandAndArgs.add("showconfig");
             Process p = new ProcessBuilder(commandAndArgs).directory(root).start();
             BufferedReader r = new BufferedReader(new InputStreamReader(p.getInputStream()));
@@ -84,19 +86,30 @@ public class ValidateHgConfiguration extends Task {
             }
             if (!foundUserName) {
                 log("======== WARNING ========\n" +
-                        "You need to configure a Mercurial username if you intend to push changes to NetBeans repositories.\n" +
-                        "Format (in ~/.hgrc or Mercurial.ini):\n" +
-                        "[ui]\n" +
-                        "username = Robert Q. Hacker <rhacker@netbeans.org>\n" +
-                        "=========================", Project.MSG_WARN);
+                    "You need to configure a Mercurial username\n" +
+                    "if you intend to push changes to NetBeans repositories.\n" +
+                    "Format (in ~/.hgrc or Mercurial.ini):\n" +
+                    "[ui]\n" +
+                    "username = Robert Q. Hacker <rhacker@netbeans.org>\n" +
+                    "=========================", Project.MSG_WARN);
             }
             if (!foundCrlfHook) {
                 log("======== WARNING ========\n" +
-                        "You need to guard against committing carriage returns into Mercurial if you intend to push changes to NetBeans repositories.\n" +
-                        "Format (in ~/.hgrc or Mercurial.ini, Hg 1.0+ required):\n" +
-                        "[hooks]\n" +
-                        "pretxncommit.crlf = python:hgext.win32text.forbidcrlf\n" +
+                    "You need to guard against committing carriage returns into Mercurial\n" +
+                    "if you intend to push changes to NetBeans repositories.\n" +
+                    "Format (in ~/.hgrc or Mercurial.ini, Hg 1.0+ required):\n" +
+                    "[hooks]\n" +
+                    "pretxncommit.crlf = python:hgext.win32text.forbidcrlf\n" +
+                    "=========================", Project.MSG_WARN);
+            }
+            r = new BufferedReader(new InputStreamReader(p.getErrorStream()));
+            while ((line = r.readLine()) != null) {
+                if (line.contains("failed to import extension churn")) {
+                    log("======== WARNING ========\n" +
+                        "You seem to be using a version of Mercurial older than 1.0.\n" +
+                        "Please upgrade as your version may have serious bugs fixed in later versions.\n" +
                         "=========================", Project.MSG_WARN);
+                    }
             }
         } catch (IOException x) {
             log("Could not verify Hg configuration: " + x, Project.MSG_WARN);
