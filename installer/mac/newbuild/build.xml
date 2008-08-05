@@ -244,7 +244,7 @@ Microsystems, Inc. All Rights Reserved.
             <arg value="-c"/>
             <arg value="cat ${resources.full.dir}/Bundle${locale.suffix}.properties |
                 sed 's/#.*$//;s/^/&quot;/;s/$/&quot;;/;s/=/&quot; = &quot;/;s/^&quot;&quot;;//;
-                s/'\$${buildnumber}'/'${buildnumber}'/;s/'\$${tomcat.version}'/'${tomcat.version}'/' 
+                s/'\$${buildnumber}'/'${buildnumber}'/;s/'\$${tomcat.version}'/'${tomcat.version}'/;s/'\$${glassfish.v3.version}'/'${glassfish.v3.version}'/' 
                 > ${resources.full.dir}/Localizable.strings"/>
         </exec>         
         <native2ascii encoding="UTF-16" src="${resources.full.dir}" dest="${mpkg.file}/Contents/Resources/${locale.dir}.lproj" 
