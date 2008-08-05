@@ -50,6 +50,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+import org.netbeans.modules.ruby.platform.RubyExecution;
 import org.netbeans.modules.ruby.platform.Util;
 import org.netbeans.modules.ruby.platform.execution.OutputRecognizer.ActionText;
 import org.netbeans.modules.ruby.platform.execution.OutputRecognizer.FileLocation;
@@ -159,7 +160,22 @@ final class OutputForwarder implements Runnable {
                 String[] toPrint = ((FilteredOutput) recognizedOutput).getLinesToPrint();
                 if (toPrint != null) {
                     for (String l : toPrint) {
-                        writer.println(l);
+                        boolean printed = false;
+                        // a somewhat ugly hack to link filtered output, related to issue 142404. resorting to a hack
+                        // since we will be moving to the new output API anyway where this shouldn't
+                        // be necessary
+                        for (OutputRecognizer each : RubyExecution.getStandardRubyRecognizers()) {
+                            RecognizedOutput ro = each.processLine(l);
+                            if (ro instanceof FileLocation) {
+                                FileLocation fileLocation = (FileLocation) ro;
+                                writer.println(l, new OutputProcessor(fileLocation.file, fileLocation.line, fileLocator));
+                                printed = true;
+                                break;
+                            }
+                        }
+                        if (!printed) {
+                            writer.println(l);
+                        }
                     }
                 }
                 handled = true;

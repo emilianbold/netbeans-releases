@@ -95,6 +95,7 @@ import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Basic;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappingsMetadata;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Id;
+import org.netbeans.modules.j2ee.persistence.api.metadata.orm.JoinColumn;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.ManyToOne;
 import org.netbeans.modules.j2ee.persistence.dd.PersistenceMetadata;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.Persistence;
@@ -1031,7 +1032,13 @@ public class J2EEUtils {
                         if (all) {
                             props.add(propName);
                         } else {
-                            String columnName = manyToOne.getJoinColumn(0).getName();
+                            JoinColumn[] joinColumn = manyToOne.getJoinColumn();
+                            String columnName;
+                            if (joinColumn.length == 0) {
+                                columnName = manyToOne.getName().toUpperCase() + "_ID"; // NOI18N
+                            } else {
+                                columnName = manyToOne.getJoinColumn(0).getName();
+                            }
                             columnName = unquote(columnName);
                             columnToProperty.put(columnName, propName);                        
                         }

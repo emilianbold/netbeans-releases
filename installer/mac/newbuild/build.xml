@@ -243,15 +243,22 @@ Microsystems, Inc. All Rights Reserved.
         <exec executable="sh" failonerror="no">
             <arg value="-c"/>
             <arg value="cat ${resources.full.dir}/Bundle${locale.suffix}.properties |
-                sed 's/#.*$//;s/^/&quot;/;s/$/&quot;;/;s/=/&quot; = &quot;/;s/^&quot;&quot;;//;
-                s/'\$${buildnumber}'/'${buildnumber}'/;s/'\$${tomcat.version}'/'${tomcat.version}'/' 
+                sed 's/#.*$//;s/^/&quot;/;s/$/&quot;;/;s/=/&quot; = &quot;/;s/^&quot;&quot;;//' 
                 > ${resources.full.dir}/Localizable.strings"/>
-        </exec>         
+        </exec>
+	<loadfile property="Localizable.strings.content" srcFile="${resources.full.dir}/Localizable.strings">
+            <filterchain>
+                <expandproperties/>
+            </filterchain>
+        </loadfile>
+
+	<echo message="${Localizable.strings.content}" file="${resources.full.dir}/Localizable.strings" append="false"/>
+
         <native2ascii encoding="UTF-16" src="${resources.full.dir}" dest="${mpkg.file}/Contents/Resources/${locale.dir}.lproj" 
                       reverse="true" includes="Localizable.strings"/>                        
     </target>     
   
-    <target name="build-all-mysql-dmg" depends="clean,init,build-pkg,build-glassfish-pkg,build-tomcat-pkg,build-openesb-pkg">   
+    <target name="build-all-mysql-dmg" depends="clean,init,build-pkg,build-glassfish-pkg">   
         <mkdir dir="dist"/>         
         <get src="${mysql_connector.location}" 
              dest="${basedir}/build/${mysql_connector.name}.jar"
@@ -280,7 +287,7 @@ Microsystems, Inc. All Rights Reserved.
         </ant>
         <ant target="build-mysql-dmg">
             <property name="mysql.location" value="${mysql_10.5.location}"/>
-            <property name="mysql.pkg.name" value="${mysql_10.5.pkg.name}"/>                
+            <property name="mysql.pkg.name" value="${mysql_10.5.pkg.name}"/>
             <property name="dmg.name" value="${mysql_10.5.dmg.name}"/>
             <property name="mysql_prefPane.path" value="${basedir}/build/${mysql_prefPane.name}"/>           
         </ant> 
@@ -341,15 +348,26 @@ Microsystems, Inc. All Rights Reserved.
 
         <copy file="${basedir}/dmg/Resources/readme_mysql.txt" 
               todir="${basedir}/build/mysql.pkg/Contents/Resources" failonerror="false"/>             
-             
-        <echo message="script_dir=`dirname &quot;$$0&quot;` ${line.separator}
-cp -p -f  &quot;$$script_dir&quot;/license_mysql.txt &quot;$$2/mysql/${mysql_license.name}&quot; ${line.separator}
-cp -p -f  &quot;$$script_dir&quot;/readme_mysql.txt &quot;$$2/mysql/${mysql_readme.name}&quot; ${line.separator}
-if [ -d &quot;${glassfish.install.dir}&quot; ] ; then ${line.separator}
-    cp -RPf &quot;$$script_dir&quot;/${mysql_connector.name}.jar &quot;${glassfish.install.dir}/lib/&quot;${line.separator}
-fi"
+        
+        <loadfile  property="mysql.postflight.addon" srcFile="${basedir}/mysql/pkg/scripts/postflight-addon">
+          <filterchain><expandproperties/></filterchain>
+        </loadfile>
+
+        <copy file="${basedir}/netBeans/baseide/pkg/scripts/add_mysql.sh"
+              todir="${basedir}/build/mysql.pkg/Contents/Resources"/>
+        <chmod file="${basedir}/build/mysql.pkg/Contents/Resources/add_mysql.sh" perm="ugo+x"/>          
+
+        <copy file="${basedir}/netBeans/baseide/pkg/scripts/env.sh" 
+              todir="${basedir}/build/mysql.pkg/Contents/Resources"/> 
+        <chmod file="${basedir}/build/mysql.pkg/Contents/Resources/env.sh"  perm="ugo+x"/>
+     
+        <echo message="${mysql.postflight.addon}"
               file="${basedir}/build/mysql.pkg/Contents/Resources/postflight"
               append="true"/>  
+
+        <copy file="${basedir}/mysql/pkg/scripts/mysql-admin.server"
+              todir="${basedir}/build/mysql.pkg/Contents/Resources"/>
+        <chmod file="${basedir}/build/mysql.pkg/Contents/Resources/mysql-admin.server" perm="ugo+x"/>          
                      
         <copy file="${basedir}/mysqlstartup/pkg/scripts/postflight"
               todir="${basedir}/build/mysqlstartup.pkg/Contents/Resources/"/>

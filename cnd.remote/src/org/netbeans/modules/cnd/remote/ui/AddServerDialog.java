@@ -45,10 +45,11 @@ import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.netbeans.modules.cnd.remote.server.RemoteServerList;
-import org.netbeans.modules.cnd.remote.server.RemoteServerRecord;
+import org.netbeans.modules.cnd.api.remote.ServerList;
+import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /**
@@ -121,8 +122,8 @@ public class AddServerDialog extends JPanel implements DocumentListener {
         public PasswordSourceModel() {
             addElement(NbBundle.getMessage(AddServerDialog.class, "LBL_PSM_TypeitOnce"));
             addElement(NbBundle.getMessage(AddServerDialog.class, "LBL_PSM_TypeitAlways"));
-            
-            for (RemoteServerRecord record : RemoteServerList.getInstance()) {
+            ServerList serverList = (ServerList) Lookup.getDefault().lookup(ServerList.class);
+            for (ServerRecord record : serverList.getRecords()) {
                 String user = record.getUserName();
                 if (user != null) {
                     addElement(NbBundle.getMessage(AddServerDialog.class, "FMT_SharedPasswordSource", record.getServerName(), user));

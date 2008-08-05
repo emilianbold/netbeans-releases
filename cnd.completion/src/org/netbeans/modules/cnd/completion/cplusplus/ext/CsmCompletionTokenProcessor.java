@@ -1815,6 +1815,10 @@ final class CsmCompletionTokenProcessor implements CppTokenProcessor/*implements
                         break;
 
                     case NEW_LINE:
+                        if (topID == PREPROC_DIRECTIVE) {
+                            // end line finishes preproc directive
+                            popExp();
+                        }
                     case WHITESPACE:
                     case LINE_COMMENT:
                     case BLOCK_COMMENT:

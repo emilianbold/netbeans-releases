@@ -201,7 +201,7 @@ public class PropertyModelTest extends TestBase {
 
     public void testFillStackWithBraces() {
         Stack<String> stack = new Stack<String>();
-        CssPropertyValue.fillStack(stack, "url(20,30,40)");
+        CssPropertyValue.fillStack(stack, "rect(20,30,40)");
 //        dumpList(stack);
         assertEquals(8, stack.size());
     }
@@ -672,11 +672,32 @@ public class PropertyModelTest extends TestBase {
         String text = "x b";
         CssPropertyValue csspv = new CssPropertyValue(rule, text);
 
-        dumpResult(csspv);
+//        dumpResult(csspv);
  
         assertTrue(csspv.success());
         assertEquals(0, csspv.alternatives().size());
 //        assertEquals("ma", csspv.alternatives().iterator().next().toString());
      }
+      
+      
+     public void testUnquotedURL() {
+        Property p = PropertyModel.instance().getProperty("list-style");
+        String text = "url(http://www.redballs.com/redball.png)";
+        
+        CssPropertyValue csspv = new CssPropertyValue(p, text);
+        
+        dumpResult(csspv);
+        
+        assertTrue(csspv.success());
+
+}
+
+         public void testFillStackWithURL() {
+        Stack<String> stack = new Stack<String>();
+        CssPropertyValue.fillStack(stack, "url(http://www.redballs.com/redball.png)");
+        dumpList(stack);
+        assertEquals(4, stack.size());
+    }
+
      
 }

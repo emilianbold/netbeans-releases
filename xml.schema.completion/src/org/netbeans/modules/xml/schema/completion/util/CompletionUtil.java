@@ -721,8 +721,12 @@ public class CompletionUtil {
      * and for those who do not declare namespaces in root tag.
      */
     public static boolean canProvideCompletion(BaseDocument doc) {
-        //for .xml documents
-        if("xml".equals(getPrimaryFile().getExt())) { //NOI18N
+        FileObject file = getPrimaryFile();
+        if(file == null)
+            return false;
+        
+        //for .xml documents        
+        if("xml".equals(file.getExt())) { //NOI18N
             //if DTD based, no completion
             if(CompletionUtil.isDTDBasedDocument(doc)) {
                 return false;

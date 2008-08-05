@@ -130,11 +130,9 @@ public class CodeCompleter implements CodeCompletionHandler {
     private String jdkJavaDocBase = null;
     private String groovyJavaDocBase = null;
     private String gapiDocBase = null;
-    
     Set<GroovyKeyword> keywords;
-    
     List<String> dfltImports = new ArrayList<String>();
-    
+
     public CodeCompleter() {
         LOG.setLevel(Level.OFF);
 
@@ -156,7 +154,7 @@ public class CodeCompleter implements CodeCompletionHandler {
         LOG.log(Level.FINEST, "GDK Doc path: {0}", groovyJavaDocBase);
         LOG.log(Level.FINEST, "GAPI Doc path: {0}", gapiDocBase);
 
-        if(testMode){
+        if (testMode) {
             LOG.log(Level.FINEST, "Running in test-mode");
         } else {
             LOG.log(Level.FINEST, "Running in the IDE");
@@ -168,8 +166,8 @@ public class CodeCompleter implements CodeCompletionHandler {
         dfltImports.add("java.util");
         dfltImports.add("groovy.util");
         dfltImports.add("groovy.lang");
-        
-        }
+
+    }
 
     /*Configures testing environment only*/
     static void setTesting(boolean testing) {
@@ -209,7 +207,7 @@ public class CodeCompleter implements CodeCompletionHandler {
             LOG.log(Level.FINEST, "Node.toString() : " + node.toString());
             LOG.log(Level.FINEST, "Node.getClass() : " + node.getClass());
             LOG.log(Level.FINEST, "Node.hashCode() : " + node.hashCode());
-            
+
 
             if (node instanceof ModuleNode) {
                 LOG.log(Level.FINEST, "ModuleNode.getClasses() : " + ((ModuleNode) node).getClasses());
@@ -220,7 +218,7 @@ public class CodeCompleter implements CodeCompletionHandler {
         LOG.log(Level.FINEST, "--------------------------------------------------------");
     }
 
-private void printMethod(MetaMethod mm) {
+    private void printMethod(MetaMethod mm) {
 
         LOG.log(Level.FINEST, "--------------------------------------------------");
         LOG.log(Level.FINEST, "getName()           : " + mm.getName());
@@ -239,23 +237,23 @@ private void printMethod(MetaMethod mm) {
     class CompletionContext {
         // b2    b1      |       a1        a2
         // class MyClass extends BaseClass {
+
         Token<? extends GroovyTokenId> beforeLiteral;
         Token<? extends GroovyTokenId> before2;
         Token<? extends GroovyTokenId> before1;
         Token<? extends GroovyTokenId> after1;
         Token<? extends GroovyTokenId> after2;
         Token<? extends GroovyTokenId> afterLiteral;
-
         TokenSequence<?> ts; // we keep the sequence with us.
 
         public CompletionContext(
-                Token<? extends GroovyTokenId> beforeLiteral,
-                Token<? extends GroovyTokenId> before2,
-                Token<? extends GroovyTokenId> before1,
-                Token<? extends GroovyTokenId> after1,
-                Token<? extends GroovyTokenId> after2,
-                Token<? extends GroovyTokenId> afterLiteral,
-                TokenSequence<?> ts) {
+            Token<? extends GroovyTokenId> beforeLiteral,
+            Token<? extends GroovyTokenId> before2,
+            Token<? extends GroovyTokenId> before1,
+            Token<? extends GroovyTokenId> after1,
+            Token<? extends GroovyTokenId> after2,
+            Token<? extends GroovyTokenId> afterLiteral,
+            TokenSequence<?> ts) {
 
             this.beforeLiteral = beforeLiteral;
             this.before2 = before2;
@@ -266,9 +264,7 @@ private void printMethod(MetaMethod mm) {
             this.ts = ts;
         }
     }
-    
-    
-    
+
     /**
      * Computes an CompletionContext which surrounds the request.
      * Three tokens in front and three after the request.
@@ -276,98 +272,97 @@ private void printMethod(MetaMethod mm) {
      * @param request
      * @return
      */
-    
     CompletionContext getCompletionContext(final CompletionRequest request) {
         int position = request.lexOffset;
-        
+
         Token<? extends GroovyTokenId> beforeLiteral = null;
         Token<? extends GroovyTokenId> before2 = null;
         Token<? extends GroovyTokenId> before1 = null;
-        Token<? extends GroovyTokenId> after1  = null;
-        Token<? extends GroovyTokenId> after2  = null;
-        Token<? extends GroovyTokenId> afterLiteral  = null;
+        Token<? extends GroovyTokenId> after1 = null;
+        Token<? extends GroovyTokenId> after2 = null;
+        Token<? extends GroovyTokenId> afterLiteral = null;
 
         TokenSequence<?> ts = LexUtilities.getGroovyTokenSequence(request.doc, position);
         ts.move(position);
 
         // *if* there is an prefix, we gotta rewind to ignore it
 
-        if(request.prefix.length() > 0){
+        if (request.prefix.length() > 0) {
             ts.movePrevious();
         }
 
         // Travel to the beginning to get before2 and before1
-        
+
         int stopAt = 0;
-        
+
         while (ts.isValid() && ts.movePrevious() && ts.offset() >= 0) {
             Token<? extends GroovyTokenId> t = (Token<? extends GroovyTokenId>) ts.token();
             if (t.id() == GroovyTokenId.NLS) {
                 break;
-            } else if (t.id() != GroovyTokenId.WHITESPACE){
-                if(stopAt == 0){
+            } else if (t.id() != GroovyTokenId.WHITESPACE) {
+                if (stopAt == 0) {
                     before1 = t;
-                } else if (stopAt == 1){
+                } else if (stopAt == 1) {
                     before2 = t;
-                } else if (stopAt == 2){
+                } else if (stopAt == 2) {
                     break;
                 }
-                
+
                 stopAt++;
             }
         }
-        
+
         // Move to the beginning (again) to get the next left-hand-sight literal
-        
+
         ts.move(position);
-        
+
         while (ts.isValid() && ts.movePrevious() && ts.offset() >= 0) {
             Token<? extends GroovyTokenId> t = (Token<? extends GroovyTokenId>) ts.token();
             if (t.id() == GroovyTokenId.NLS ||
-                t.id() == GroovyTokenId.LBRACE ) {
+                t.id() == GroovyTokenId.LBRACE) {
                 break;
-            } else if (t.id().primaryCategory().equals("keyword")){
+            } else if (t.id().primaryCategory().equals("keyword")) {
                 beforeLiteral = t;
             }
         }
-        
+
         // now looking for the next right-hand-sight literal in the opposite direction
-        
+
         ts.move(position);
-        
+
         while (ts.isValid() && ts.moveNext() && ts.offset() < request.doc.getLength()) {
             Token<? extends GroovyTokenId> t = (Token<? extends GroovyTokenId>) ts.token();
             if (t.id() == GroovyTokenId.NLS ||
-                t.id() == GroovyTokenId.RBRACE ) {
+                t.id() == GroovyTokenId.RBRACE) {
                 break;
-            } else if (t.id().primaryCategory().equals("keyword")){
+            } else if (t.id().primaryCategory().equals("keyword")) {
                 afterLiteral = t;
             }
-        }       
-        
-        
+        }
+
+
         // Now we're heading to the end of that stream
-        
+
         ts.move(position);
         stopAt = 0;
-        
+
         while (ts.isValid() && ts.moveNext() && ts.offset() < request.doc.getLength()) {
             Token<? extends GroovyTokenId> t = (Token<? extends GroovyTokenId>) ts.token();
-            
+
             if (t.id() == GroovyTokenId.NLS) {
                 break;
-            } else if (t.id() != GroovyTokenId.WHITESPACE){
-                if(stopAt == 0){
+            } else if (t.id() != GroovyTokenId.WHITESPACE) {
+                if (stopAt == 0) {
                     after1 = t;
-                } else if (stopAt == 1){
+                } else if (stopAt == 1) {
                     after2 = t;
-                } else if (stopAt == 2){
+                } else if (stopAt == 2) {
                     break;
                 }
-                
+
                 stopAt++;
             }
-        }       
+        }
 
 
         LOG.log(Level.FINEST, "-------------------------------------------");
@@ -380,8 +375,7 @@ private void printMethod(MetaMethod mm) {
 
         return new CompletionContext(beforeLiteral, before2, before1, after1, after2, afterLiteral, ts);
     }
-    
-    
+
     boolean checkForPackageStatement(final CompletionRequest request) {
         TokenSequence<?> ts = LexUtilities.getGroovyTokenSequence(request.doc, 1);
 
@@ -396,7 +390,7 @@ private void printMethod(MetaMethod mm) {
                 }
             }
         }
-        
+
         return false;
     }
 
@@ -405,29 +399,28 @@ private void printMethod(MetaMethod mm) {
      * @param request
      * @return
      */
-    
     private CaretLocation getCaretLocationFromRequest(final CompletionRequest request) {
-        
-        
+
+
         int position = request.lexOffset;
         TokenSequence<?> ts = LexUtilities.getGroovyTokenSequence(request.doc, position);
-        
+
         // are we living inside a comment?
-        
+
         ts.move(position);
-        
-        if(ts.isValid() && ts.moveNext() && ts.offset() < request.doc.getLength()){
+
+        if (ts.isValid() && ts.moveNext() && ts.offset() < request.doc.getLength()) {
             Token<? extends GroovyTokenId> t = (Token<? extends GroovyTokenId>) ts.token();
-            
+
             if (t.id() == GroovyTokenId.LINE_COMMENT || t.id() == GroovyTokenId.BLOCK_COMMENT) {
                 return CaretLocation.INSIDE_COMMENT;
             }
-            
+
             // This is a special case. If we have a NLS right behind a LINE_COMMENT it
             // should be treated as a CaretLocation.INSIDE_COMMENT. Therefore we have to rewind.
-            
+
             if (t.id() == GroovyTokenId.NLS) {
-                if((ts.isValid() && ts.movePrevious() && ts.offset() >= 0)){
+                if ((ts.isValid() && ts.movePrevious() && ts.offset() >= 0)) {
                     Token<? extends GroovyTokenId> tparent = (Token<? extends GroovyTokenId>) ts.token();
                     if (tparent.id() == GroovyTokenId.LINE_COMMENT) {
                         return CaretLocation.INSIDE_COMMENT;
@@ -435,28 +428,28 @@ private void printMethod(MetaMethod mm) {
                 }
             }
         }
-        
-        
+
+
         // Are we above the package statement?
         // We try to figure this out by moving down the lexer Stream
 
         ts.move(position);
-        
+
         while (ts.isValid() && ts.moveNext() && ts.offset() < request.doc.getLength()) {
             Token<? extends GroovyTokenId> t = (Token<? extends GroovyTokenId>) ts.token();
-            
-            if (t.id() == GroovyTokenId.LITERAL_package ) {
+
+            if (t.id() == GroovyTokenId.LITERAL_package) {
                 return CaretLocation.ABOVE_PACKAGE;
-            } 
+            }
         }
-        
+
         // Are we before the first class or interface statement?
         // now were heading to the beginning to the document ...
-        
+
         boolean classDefBeforePosition = false;
-        
+
         ts.move(position);
-        
+
         while (ts.isValid() && ts.movePrevious() && ts.offset() >= 0) {
             Token<? extends GroovyTokenId> t = (Token<? extends GroovyTokenId>) ts.token();
             if (t.id() == GroovyTokenId.LITERAL_class || t.id() == GroovyTokenId.LITERAL_interface) {
@@ -467,9 +460,9 @@ private void printMethod(MetaMethod mm) {
 
 
         boolean classDefAfterPosition = false;
-        
+
         ts.move(position);
-        
+
         while (ts.isValid() && ts.moveNext() && ts.offset() < request.doc.getLength()) {
             Token<? extends GroovyTokenId> t = (Token<? extends GroovyTokenId>) ts.token();
             if (t.id() == GroovyTokenId.LITERAL_class || t.id() == GroovyTokenId.LITERAL_interface) {
@@ -478,7 +471,7 @@ private void printMethod(MetaMethod mm) {
             }
         }
 
-        if(!classDefBeforePosition && classDefAfterPosition){
+        if (!classDefBeforePosition && classDefAfterPosition) {
             return CaretLocation.ABOVE_FIRST_CLASS;
         }
 
@@ -486,12 +479,12 @@ private void printMethod(MetaMethod mm) {
         // script with synthetic wrapper class and wrapper method: run().
         // See GINA, ch. 7
 
-        if(!classDefBeforePosition && !classDefAfterPosition){
+        if (!classDefBeforePosition && !classDefAfterPosition) {
             request.scriptMode = true;
             return CaretLocation.INSIDE_METHOD;
         }
-        
-        
+
+
         if (request.path == null) {
             LOG.log(Level.FINEST, "path == null"); // NOI18N
             return null;
@@ -525,14 +518,14 @@ private void printMethod(MetaMethod mm) {
         Path(4)=[ModuleNode:ClassNode:MethodNode:Parameter:]
         
          */
-        
+
         for (Iterator<ASTNode> it = request.path.iterator(); it.hasNext();) {
             ASTNode current = it.next();
             if (current instanceof ClosureExpression) {
                 return CaretLocation.INSIDE_CLOSURE;
             } else if (current instanceof FieldNode) {
-                FieldNode fn = (FieldNode)current;
-                if(fn.isClosureSharedVariable()){
+                FieldNode fn = (FieldNode) current;
+                if (fn.isClosureSharedVariable()) {
                     return CaretLocation.INSIDE_CLOSURE;
                 }
             } else if (current instanceof MethodNode) {
@@ -549,84 +542,81 @@ private void printMethod(MetaMethod mm) {
 
     }
 
-    private ArgumentListExpression getSurroundingArgumentList(AstPath path){
+    private ArgumentListExpression getSurroundingArgumentList(AstPath path) {
         if (path == null) {
             LOG.log(Level.FINEST, "path == null"); // NOI18N
             return null;
         }
-        
+
         LOG.log(Level.FINEST, "AEL, Path : {0}", path);
-        
+
         for (Iterator<ASTNode> it = path.iterator(); it.hasNext();) {
             ASTNode current = it.next();
             if (current instanceof ArgumentListExpression) {
 
-                return (ArgumentListExpression)current;
+                return (ArgumentListExpression) current;
             }
         }
-        return null;   
+        return null;
 
     }
-    
-        
+
     /**
      * returns the next enclosing MethodNode for the given request
      * @param request completion request which includes position information
      * @return the next surrouning MethodNode
      */
-       private ASTNode getSurroundingMethodOrClosure (CompletionRequest request) {
-           if (request.path == null) {
-               LOG.log(Level.FINEST, "path == null"); // NOI18N
-               return null;
-           }
+    private ASTNode getSurroundingMethodOrClosure(CompletionRequest request) {
+        if (request.path == null) {
+            LOG.log(Level.FINEST, "path == null"); // NOI18N
+            return null;
+        }
 
-           LOG.log(Level.FINEST, "getSurroundingMethodOrClosure() ----------------------------------------");
-           LOG.log(Level.FINEST, "Path : {0}", request.path);
+        LOG.log(Level.FINEST, "getSurroundingMethodOrClosure() ----------------------------------------");
+        LOG.log(Level.FINEST, "Path : {0}", request.path);
 
-           for (Iterator<ASTNode> it = request.path.iterator(); it.hasNext();) {
-               ASTNode current = it.next();
-               if (current instanceof MethodNode) {
-                   MethodNode mn = (MethodNode) current;
-                   LOG.log(Level.FINEST, "Found Method: {0}", mn.getName()); // NOI18N
-                   return mn;
-               } else if (current instanceof FieldNode) {
-                   FieldNode fn = (FieldNode) current;
-                   if (fn.isClosureSharedVariable()) {
-                       LOG.log(Level.FINEST, "Found Closure(Field): {0}", fn.getName()); // NOI18N
-                       return fn;
-                   }
-               } else if (current instanceof ClosureExpression) {
-                   LOG.log(Level.FINEST, "Found Closure(Expr.): {0}", ((ClosureExpression) current).getText()); // NOI18N
-                   return current;
-               }
-           }
-           return null;
-       }
-       
+        for (Iterator<ASTNode> it = request.path.iterator(); it.hasNext();) {
+            ASTNode current = it.next();
+            if (current instanceof MethodNode) {
+                MethodNode mn = (MethodNode) current;
+                LOG.log(Level.FINEST, "Found Method: {0}", mn.getName()); // NOI18N
+                return mn;
+            } else if (current instanceof FieldNode) {
+                FieldNode fn = (FieldNode) current;
+                if (fn.isClosureSharedVariable()) {
+                    LOG.log(Level.FINEST, "Found Closure(Field): {0}", fn.getName()); // NOI18N
+                    return fn;
+                }
+            } else if (current instanceof ClosureExpression) {
+                LOG.log(Level.FINEST, "Found Closure(Expr.): {0}", ((ClosureExpression) current).getText()); // NOI18N
+                return current;
+            }
+        }
+        return null;
+    }
+
     /**
      * returns the next enclosing ClassNode for the given request
      * @param request completion request which includes position information
      * @return the next surrouning ClassNode
      */
-       private ClassNode getSurroundingClassdNode (CompletionRequest request) {
-           if (request.path == null) {
-               LOG.log(Level.FINEST, "path == null"); // NOI18N
-               return null;
-           }
-           
-           for (Iterator<ASTNode> it = request.path.iterator(); it.hasNext();) {
+    private ClassNode getSurroundingClassdNode(CompletionRequest request) {
+        if (request.path == null) {
+            LOG.log(Level.FINEST, "path == null"); // NOI18N
+            return null;
+        }
+
+        for (Iterator<ASTNode> it = request.path.iterator(); it.hasNext();) {
             ASTNode current = it.next();
-                if(current instanceof ClassNode){
-                    ClassNode classNode = (ClassNode)current;
-                    LOG.log(Level.FINEST, "Found surrounding Class: {0}", classNode.getName()); // NOI18N
-                    return classNode;
-                }
+            if (current instanceof ClassNode) {
+                ClassNode classNode = (ClassNode) current;
+                LOG.log(Level.FINEST, "Found surrounding Class: {0}", classNode.getName()); // NOI18N
+                return classNode;
             }
-           return null;
-       }
-    
-    
-    
+        }
+        return null;
+    }
+
     /**
      * Calculate an AstPath from a given request or null if we can not get a
      * AST root-node from the request.
@@ -645,25 +635,23 @@ private void printMethod(MetaMethod mm) {
             LOG.log(Level.FINEST, "AstUtilities.getRoot(request.info) returned null."); // NOI18N
             LOG.log(Level.FINEST, "request.info   = {0}", request.info); // NOI18N
             LOG.log(Level.FINEST, "request.prefix = {0}", request.prefix); // NOI18N
-            
+
             return null;
         }
 
         return new AstPath(root, request.astOffset, request.doc);
     }
-    
-    
+
     private AstPath getPathFromInfo(final int caretOffset, final CompilationInfo info) {
 
         assert info != null;
 
         ASTNode root = AstUtilities.getRoot(info);
         BaseDocument doc = (BaseDocument) info.getDocument();
-        
+
         return new AstPath(root, caretOffset, doc);
-        
+
     }
-    
 
     /**
      * Complete Groovy or Java Keywords.
@@ -676,53 +664,53 @@ private void printMethod(MetaMethod mm) {
     private boolean completeKeywords(List<CompletionProposal> proposals, CompletionRequest request) {
         LOG.log(Level.FINEST, "-> completeKeywords"); // NOI18N
         String prefix = request.prefix;
-        
-        if (request.location == CaretLocation.INSIDE_PARAMETERS ) {
+
+        if (request.location == CaretLocation.INSIDE_PARAMETERS) {
             LOG.log(Level.FINEST, "no keywords completion inside of parameters"); // NOI18N
             return false;
         }
-        
-        if(request.behindDot){
+
+        if (request.behindDot) {
             LOG.log(Level.FINEST, "We are invoked right behind a dot."); // NOI18N
             return false;
         }
-        
+
         // Is there already a "package"-statement in the sourcecode?
         boolean havePackage = checkForPackageStatement(request);
-        
+
         CompletionContext completionContext = getCompletionContext(request);
-        
+
         LOG.log(Level.FINEST, "CompletionContext ------------------------------------------"); // NOI18N
         LOG.log(Level.FINEST, "CompletionContext before 2: {0}", completionContext.before2); // NOI18N
         LOG.log(Level.FINEST, "CompletionContext before 1: {0}", completionContext.before1); // NOI18N
         LOG.log(Level.FINEST, "CompletionContext after  1: {0}", completionContext.after1); // NOI18N
         LOG.log(Level.FINEST, "CompletionContext after  2: {0}", completionContext.after2); // NOI18N
 
-        keywords  = EnumSet.allOf(GroovyKeyword.class);
+        keywords = EnumSet.allOf(GroovyKeyword.class);
 
         // filter-out keywords in a step-by-step approach
-        
+
         filterPackageStatement(havePackage);
         filterPrefix(prefix);
         filterLocation(request.location);
         filterClassInterfaceOrdering(completionContext);
         filterMethodDefinitions(completionContext);
         filterKeywordsNextToEachOther(completionContext);
-        
+
         // add the remaining keywords to the result
-        
+
         for (GroovyKeyword groovyKeyword : keywords) {
             LOG.log(Level.FINEST, "Adding keyword proposal : {0}", groovyKeyword.name); // NOI18N
             proposals.add(new KeywordItem(groovyKeyword.name, null, anchor, request, groovyKeyword.isGroovy));
         }
-        
+
         return true;
     }
-    
+
     // filter-out package-statemen, if there's already one
     void filterPackageStatement(boolean havePackage) {
         for (GroovyKeyword groovyKeyword : keywords) {
-            if(groovyKeyword.name.equals("package") && havePackage) {
+            if (groovyKeyword.name.equals("package") && havePackage) {
                 // LOG.log(Level.FINEST, "filterPackageStatement - removing : {0}", groovyKeyword.name);
                 keywords.remove(groovyKeyword);
             }
@@ -776,8 +764,8 @@ private void printMethod(MetaMethod mm) {
 
 
         if (ctx.afterLiteral.id() == GroovyTokenId.LITERAL_void ||
-                ctx.afterLiteral.id() == GroovyTokenId.IDENTIFIER ||
-                ctx.afterLiteral.id().primaryCategory().equals("number")) {
+            ctx.afterLiteral.id() == GroovyTokenId.IDENTIFIER ||
+            ctx.afterLiteral.id().primaryCategory().equals("number")) {
 
             // we have to filter-out the primitive types
 
@@ -790,26 +778,24 @@ private void printMethod(MetaMethod mm) {
         }
     }
 
-    
     // Filter-out keywords, if we are surrounded by others.
     // This can only be an approximation.
-    
     void filterKeywordsNextToEachOther(CompletionContext ctx) {
 
         if (ctx == null) {
             return;
         }
-        
+
         boolean filter = false;
 
-        if(ctx.after1 != null && ctx.after1.id().primaryCategory().equals("keyword")){
+        if (ctx.after1 != null && ctx.after1.id().primaryCategory().equals("keyword")) {
             filter = true;
         }
-        
-        if(ctx.before1 != null && ctx.before1.id().primaryCategory().equals("keyword")){
+
+        if (ctx.before1 != null && ctx.before1.id().primaryCategory().equals("keyword")) {
             filter = true;
         }
- 
+
         if (filter) {
             for (GroovyKeyword groovyKeyword : keywords) {
                 if (groovyKeyword.category == KeywordCategory.KEYWORD) {
@@ -818,42 +804,42 @@ private void printMethod(MetaMethod mm) {
                 }
             }
         }
-      
+
     }
 
-    boolean checkKeywordAllowance(GroovyKeyword groovyKeyword, CaretLocation location){
-        
-        if(location == null){
+    boolean checkKeywordAllowance(GroovyKeyword groovyKeyword, CaretLocation location) {
+
+        if (location == null) {
             return false;
         }
-        
-        switch(location){
+
+        switch (location) {
             case ABOVE_FIRST_CLASS:
-                if(groovyKeyword.aboveFistClass){ 
-                    return true; 
+                if (groovyKeyword.aboveFistClass) {
+                    return true;
                 }
                 break;
             case OUTSIDE_CLASSES:
-                if(groovyKeyword.outsideClasses){ 
-                    return true; 
+                if (groovyKeyword.outsideClasses) {
+                    return true;
                 }
                 break;
             case INSIDE_CLASS:
-                if(groovyKeyword.insideClass){ 
-                    return true; 
+                if (groovyKeyword.insideClass) {
+                    return true;
                 }
                 break;
             case INSIDE_METHOD: // intentionally fall-through
             case INSIDE_CLOSURE:
-                if(groovyKeyword.insideCode){ 
-                    return true; 
+                if (groovyKeyword.insideCode) {
+                    return true;
                 }
                 break;
         }
-        
+
         return false;
     }
-    
+
     private boolean completeNewVars(List<CompletionProposal> proposals, CompletionRequest request, List<String> newVars) {
         LOG.log(Level.FINEST, "-> completeNewVars"); // NOI18N
 
@@ -883,8 +869,7 @@ private void printMethod(MetaMethod mm) {
         }
         return stuffAdded;
     }
-    
-    
+
     /**
      * Complete the fields for a class. There are two principal completions for fields:
      * 
@@ -895,7 +880,6 @@ private void printMethod(MetaMethod mm) {
      * @param request
      * @return
      */
-    
     private boolean completeFields(List<CompletionProposal> proposals, CompletionRequest request) {
         LOG.log(Level.FINEST, "-> completeFields"); // NOI18N
 
@@ -904,34 +888,34 @@ private void printMethod(MetaMethod mm) {
             return false;
         }
 
-        ClassNode requestedClass;
+        ClassNode declaringClass;
 
         if (request.behindDot) {
             LOG.log(Level.FINEST, "We are invoked right behind a dot."); // NOI18N
 
-            requestedClass = getDeclaringClass(request);
+            declaringClass = getDeclaringClass(request);
 
-            if (requestedClass == null) {
+            if (declaringClass == null) {
                 LOG.log(Level.FINEST, "No declaring class found"); // NOI18N
                 return false;
             }
         } else {
-            requestedClass = getSurroundingClassdNode(request);
+            declaringClass = getSurroundingClassdNode(request);
 
-            if (requestedClass == null) {
+            if (declaringClass == null) {
                 LOG.log(Level.FINEST, "No surrounding class found, bail out ..."); // NOI18N
                 return false;
             }
         }
 
-        LOG.log(Level.FINEST, "requestedClass is : {0}", requestedClass); // NOI18N
+        LOG.log(Level.FINEST, "requestedClass is : {0}", declaringClass); // NOI18N
 
-        List<FieldNode> fields = requestedClass.getFields();
-        
+        List<FieldNode> fields = declaringClass.getFields();
+
         for (FieldNode field : fields) {
             LOG.log(Level.FINEST, "-------------------------------------------------------------------------"); // NOI18N
             LOG.log(Level.FINEST, "Field found       : {0}", field.getName()); // NOI18N
-            
+
             String fieldTypeAsString = field.getType().getNameWithoutPackage();
 
             if (request.behindDot) {
@@ -941,8 +925,8 @@ private void printMethod(MetaMethod mm) {
                     clz = Class.forName(field.getOwner().getName());
                 } catch (ClassNotFoundException e) {
                     LOG.log(Level.FINEST, "Class.forName() failed: {0}", e.getMessage()); // NOI18N
-                    // we keep on running here, since we might deal with a class
-                    // defined in our very own file.
+                // we keep on running here, since we might deal with a class
+                // defined in our very own file.
                 }
 
                 if (clz != null) {
@@ -950,7 +934,7 @@ private void printMethod(MetaMethod mm) {
 
                     if (metaClz != null) {
                         MetaProperty metaProp = metaClz.getMetaProperty(field.getName());
-                        
+
                         if (metaProp != null) {
                             LOG.log(Level.FINEST, "Type from MetaProperty: {0}", metaProp.getType()); // NOI18N
                             fieldTypeAsString = metaProp.getType().getSimpleName();
@@ -959,16 +943,16 @@ private void printMethod(MetaMethod mm) {
                 }
 
             }
-            
+
             // TODO: I take the freedom to filter this out: __timeStamp*
             if (field.getName().startsWith("__timeStamp")) { // NOI18N
                 continue;
             }
- 
+
             if (field.getName().startsWith(request.prefix)) {
                 proposals.add(new FieldItem(field.getName(), anchor, request, javax.lang.model.element.ElementKind.FIELD, fieldTypeAsString));
             }
-            
+
         }
 
         return true;
@@ -977,28 +961,28 @@ private void printMethod(MetaMethod mm) {
     private boolean completeLocalVars(List<CompletionProposal> proposals, CompletionRequest request) {
         LOG.log(Level.FINEST, "-> completeLocalVars"); // NOI18N
 
-        if(!(request.location == CaretLocation.INSIDE_CLOSURE || request.location == CaretLocation.INSIDE_METHOD)){
+        if (!(request.location == CaretLocation.INSIDE_CLOSURE || request.location == CaretLocation.INSIDE_METHOD)) {
             LOG.log(Level.FINEST, "not inside method or closure, bail out."); // NOI18N
             return false;
         }
-        
+
         // If we are right behind a dot, there's no local-vars completion.
-        
-        if(request.behindDot){
+
+        if (request.behindDot) {
             LOG.log(Level.FINEST, "We are invoked right behind a dot."); // NOI18N
             return false;
         }
 
         ASTNode scope = getSurroundingMethodOrClosure(request);
 
-        if(request.scriptMode){
+        if (request.scriptMode) {
             LOG.log(Level.FINEST, "We are running in script-mode."); // NOI18N
-            if(scope == null){
+            if (scope == null) {
                 scope = AstUtilities.getRoot(request.info);
             }
-        } 
+        }
 
-        if(scope == null){
+        if (scope == null) {
             LOG.log(Level.FINEST, "scope == null"); // NOI18N
             return false;
         }
@@ -1006,28 +990,24 @@ private void printMethod(MetaMethod mm) {
         List<ASTNode> result = new ArrayList<ASTNode>();
         getLocalVars(scope, result, request);
 
-        if(!result.isEmpty()){
+        if (!result.isEmpty()) {
             for (ASTNode node : result) {
-                String varName = ((Variable)node).getName();
+                String varName = ((Variable) node).getName();
                 LOG.log(Level.FINEST, "Node found: {0}", varName); // NOI18N
-                
-                if(request.prefix.length() < 1) {
-                    proposals.add(new LocalVarItem((Variable )node, anchor, request));
+
+                if (request.prefix.length() < 1) {
+                    proposals.add(new LocalVarItem((Variable) node, anchor, request));
                 } else {
-                    if(varName.compareTo(request.prefix) != 0 && varName.startsWith(request.prefix)){
-                        proposals.add(new LocalVarItem((Variable )node, anchor, request));
+                    if (varName.compareTo(request.prefix) != 0 && varName.startsWith(request.prefix)) {
+                        proposals.add(new LocalVarItem((Variable) node, anchor, request));
                     }
                 }
-                
+
             }
         }
 
         return true;
     }
-
-
-
-
 
     /**
      * Here we test, whether the provided CompletionContext is likely to become 
@@ -1052,9 +1032,7 @@ private void printMethod(MetaMethod mm) {
      * @param ctx
      * @return
      */
-
-
-    private boolean checkForVariableDefinition (CompletionRequest request){
+    private boolean checkForVariableDefinition(CompletionRequest request) {
         LOG.log(Level.FINEST, "checkForVariableDefinition()"); //NOI18N
         CompletionContext ctx = request.ctx;
 
@@ -1064,7 +1042,7 @@ private void printMethod(MetaMethod mm) {
 
         GroovyTokenId id = ctx.before1.id();
 
-        switch (id){
+        switch (id) {
             case LITERAL_boolean:
             case LITERAL_byte:
             case LITERAL_char:
@@ -1083,8 +1061,8 @@ private void printMethod(MetaMethod mm) {
                 // But this could only be figured at runtime.
                 ASTNode node = getASTNodeForToken(ctx.before1, request);
                 LOG.log(Level.FINEST, "getASTNodeForToken(ASTNode) : {0}", node); //NOI18N
-                
-                if(node != null && (node instanceof ClassExpression || node instanceof DeclarationExpression)){
+
+                if (node != null && (node instanceof ClassExpression || node instanceof DeclarationExpression)) {
                     LOG.log(Level.FINEST, "ClassExpression or DeclarationExpression discovered"); //NOI18N
                     return true;
                 }
@@ -1096,9 +1074,9 @@ private void printMethod(MetaMethod mm) {
         }
     }
 
-    private ASTNode getASTNodeForToken(Token<? extends GroovyTokenId> tid, CompletionRequest request){
+    private ASTNode getASTNodeForToken(Token<? extends GroovyTokenId> tid, CompletionRequest request) {
         LOG.log(Level.FINEST, "getASTNodeForToken()"); //NOI18N
-        TokenHierarchy<Document> th = TokenHierarchy.get((Document)request.doc);
+        TokenHierarchy<Document> th = TokenHierarchy.get((Document) request.doc);
         int position = tid.offset(th);
 
         ModuleNode rootNode = AstUtilities.getRoot(request.info);
@@ -1124,8 +1102,6 @@ private void printMethod(MetaMethod mm) {
         return node;
     }
 
-
-
     /**
      * This is a minimal version of Utilities.varNamesForType() to suggest variable names.
      * 
@@ -1139,19 +1115,18 @@ private void printMethod(MetaMethod mm) {
      * @param ctx
      * @return
      */
-    
-    private List<String> getNewVarNameSuggestion (CompletionContext ctx) {
+    private List<String> getNewVarNameSuggestion(CompletionContext ctx) {
         LOG.log(Level.FINEST, "getNewVarNameSuggestion()"); // NOI18N
 
         List<String> result = new ArrayList<String>();
-        
+
         if (ctx == null || ctx.before1 == null) {
             return result;
         }
-        
+
         // Check for primitive types first:
         // int long char byte double float short boolean
-        
+
         if (ctx.before1.id() == GroovyTokenId.LITERAL_boolean) {
             result.add("b");
         } else if (ctx.before1.id() == GroovyTokenId.LITERAL_byte) {
@@ -1169,13 +1144,13 @@ private void printMethod(MetaMethod mm) {
         } else if (ctx.before1.id() == GroovyTokenId.LITERAL_short) {
             result.add("s");
         }
-        
+
         // now we propose variable names based on the type
-        
+
         if (ctx.before1.id() == GroovyTokenId.IDENTIFIER) {
-            
+
             String typeName = ctx.before1.text().toString();
-            
+
             if (typeName != null) {
                 // Only First char, lowercase
                 addIfNotIn(result, typeName.substring(0, 1).toLowerCase(Locale.ENGLISH));
@@ -1189,8 +1164,8 @@ private void printMethod(MetaMethod mm) {
         }
         return result;
     }
-    
-    void addIfNotIn(List<String> result, String name){
+
+    void addIfNotIn(List<String> result, String name) {
         if (name.length() > 0) {
             if (!result.contains(name)) {
                 LOG.log(Level.FINEST, "Adding new-var suggestion : {0}", name); // NOI18N
@@ -1201,7 +1176,6 @@ private void printMethod(MetaMethod mm) {
 
 
     // this was: Utilities.nextName()
-    
     private static String camelCaseHunch(CharSequence name) {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < name.length(); i++) {
@@ -1220,16 +1194,13 @@ private void printMethod(MetaMethod mm) {
      * @param result
      * @param request
      */
-
-
-    
     private void getLocalVars(ASTNode node, List<ASTNode> result, CompletionRequest request) {
         // if we are dealing with a closure, we retrieve the local vars differently
 
         if (node instanceof ClosureExpression) {
-            ClosureExpression closure = (ClosureExpression)node;
+            ClosureExpression closure = (ClosureExpression) node;
 
-            if(closure.isParameterSpecified()){
+            if (closure.isParameterSpecified()) {
                 LOG.log(Level.FINEST, "We do have Parameters...");
                 Parameter params[] = closure.getParameters();
 
@@ -1271,18 +1242,17 @@ private void printMethod(MetaMethod mm) {
      * @param result
      * @param node
      */
-
-    private void addIfNotInList (List<ASTNode> result, ASTNode node){
+    private void addIfNotInList(List<ASTNode> result, ASTNode node) {
 
         String nodeName = node.getText();
 
         for (ASTNode testnode : result) {
-            if(testnode.getText().equals(nodeName)){
+            if (testnode.getText().equals(nodeName)) {
                 return;
             }
         }
 
-        if(nodeName.length() > 0 ){
+        if (nodeName.length() > 0) {
             result.add(node);
         }
     }
@@ -1292,7 +1262,6 @@ private void printMethod(MetaMethod mm) {
      * @param request
      * @return
      */
-
     boolean checkForRequestBehindImportStatement(final CompletionRequest request) {
 
         int rowStart = 0;
@@ -1315,8 +1284,8 @@ private void printMethod(MetaMethod mm) {
 
         return false;
     }
-    
-    boolean checkBehindDot(final CompletionRequest request){
+
+    boolean checkBehindDot(final CompletionRequest request) {
 
         boolean behindDot = false;
 
@@ -1329,19 +1298,19 @@ private void printMethod(MetaMethod mm) {
         }
 
         return behindDot;
-        
+
     }
-    
-    PackageCompletionRequest getPackageRequest (final CompletionRequest request) {
+
+    PackageCompletionRequest getPackageRequest(final CompletionRequest request) {
         int position = request.lexOffset;
         PackageCompletionRequest result = new PackageCompletionRequest();
-        
+
         TokenSequence<?> ts = LexUtilities.getGroovyTokenSequence(request.doc, position);
         ts.move(position);
-        
+
         // travel back on the token string till the token is neither a
         // DOT nor an IDENTIFIER
-        
+
         while (ts.isValid() && ts.movePrevious() && ts.offset() >= 0) {
             Token<? extends GroovyTokenId> t = (Token<? extends GroovyTokenId>) ts.token();
             // LOG.log(Level.FINEST, "LexerToken(back): {0}", t.text().toString());
@@ -1349,17 +1318,17 @@ private void printMethod(MetaMethod mm) {
                 break;
             }
         }
-        
+
         // now we are travelling in the opposite direction to construct
         // the result
-        
-        
+
+
         StringBuffer buf = new StringBuffer();
         Token<? extends GroovyTokenId> lastToken = null;
 
         while (ts.isValid() && ts.moveNext() && ts.offset() < position) {
             Token<? extends GroovyTokenId> t = (Token<? extends GroovyTokenId>) ts.token();
-            
+
             // LOG.log(Level.FINEST, "LexerToken(fwd): {0}", t.text().toString());
             if (t.id() == GroovyTokenId.DOT || t.id() == GroovyTokenId.IDENTIFIER) {
                 buf.append(t.text().toString());
@@ -1377,10 +1346,10 @@ private void printMethod(MetaMethod mm) {
         // "java.lan"       "java"      "lan"
         // "java.lang"      "java"      "lang"
         // "java.lang."     "java.lang" ""
-        
+
         result.fullString = buf.toString();
-        
-        if(buf.length() == 0){
+
+        if (buf.length() == 0) {
             result.basePackage = "";
             result.prefix = "";
         } else if (lastToken != null && lastToken.id() == GroovyTokenId.DOT) {
@@ -1390,46 +1359,45 @@ private void printMethod(MetaMethod mm) {
         } else if (lastToken != null && lastToken.id() == GroovyTokenId.IDENTIFIER) {
             String pkgString = buf.toString();
             result.prefix = lastToken.text().toString();
-            
+
             result.basePackage = pkgString.substring(0, pkgString.length() - result.prefix.length());
-            
-            if(result.basePackage.endsWith(".")){
+
+            if (result.basePackage.endsWith(".")) {
                 result.basePackage = result.basePackage.substring(0, result.basePackage.length() - 1);
             }
         }
-        
+
         LOG.log(Level.FINEST, "-- fullString : >{0}<", result.fullString);
         LOG.log(Level.FINEST, "-- basePackage: >{0}<", result.basePackage);
         LOG.log(Level.FINEST, "-- prefix:      >{0}<", result.prefix);
-        
+
         return result;
     }
-    
-    
+
     class PackageCompletionRequest {
+
         String fullString = "";
         String basePackage = "";
         String prefix = "";
     }
-    
+
     /**
      *
      * @param request
      * @return
      */
-     
-    private ClasspathInfo getClasspathInfoFromRequest(final CompletionRequest request){
+    private ClasspathInfo getClasspathInfoFromRequest(final CompletionRequest request) {
         FileObject fileObject = request.info.getFileObject();
-        
-        if(fileObject != null){
+
+        if (fileObject != null) {
             return ClasspathInfo.create(fileObject);
         }
-        
+
         return null;
     }
-    
-    private JavaSource getJavaSourceFromRequest(final CompletionRequest request){
-        
+
+    private JavaSource getJavaSourceFromRequest(final CompletionRequest request) {
+
         ClasspathInfo pathInfo = getClasspathInfoFromRequest(request);
         assert pathInfo != null;
 
@@ -1441,10 +1409,9 @@ private void printMethod(MetaMethod mm) {
             LOG.log(Level.FINEST, "Problem retrieving JavaSource from ClassPathInfo, exiting.");
             return null;
         }
-        
+
         return javaSource;
     }
-    
 
     /**
      * Here we complete package-names like java.lan to java.lang ...
@@ -1455,12 +1422,12 @@ private void printMethod(MetaMethod mm) {
      */
     private boolean completePackages(final List<CompletionProposal> proposals, final CompletionRequest request) {
         LOG.log(Level.FINEST, "-> completePackages"); // NOI18N
-        
-    
+
+
         PackageCompletionRequest packageRequest = getPackageRequest(request);
-     
+
         LOG.log(Level.FINEST, "Token fullString = >{0}<", packageRequest.fullString);
-        
+
         ClasspathInfo pathInfo = getClasspathInfoFromRequest(request);
 
         assert pathInfo != null : "Can not get ClasspathInfo";
@@ -1468,7 +1435,7 @@ private void printMethod(MetaMethod mm) {
         if (request.ctx.before1 != null && request.ctx.before1.text().equals("*") && request.behindImport) {
             return false;
         }
-        
+
         // try to find suitable packages ...
 
         Set<String> pkgSet;
@@ -1484,10 +1451,10 @@ private void printMethod(MetaMethod mm) {
                 singlePackage = singlePackage.substring(packageRequest.basePackage.length() + 1);
             }
 
-            if(singlePackage.startsWith(packageRequest.prefix) && singlePackage.length() > 0){
+            if (singlePackage.startsWith(packageRequest.prefix) && singlePackage.length() > 0) {
                 PackageItem item = new PackageItem(singlePackage, anchor, request);
 
-                if(request.behindImport){
+                if (request.behindImport) {
                     item.setSmart(true);
                 }
 
@@ -1499,20 +1466,19 @@ private void printMethod(MetaMethod mm) {
         return false;
     }
 
-    private boolean isValidPackage(ClasspathInfo pathInfo, String pkg){
+    private boolean isValidPackage(ClasspathInfo pathInfo, String pkg) {
         assert pathInfo != null : "ClasspathInfo can not be null";
 
         // get packageSet
 
         Set<String> pkgSet = pathInfo.getClassIndex().getPackageNames(pkg, true, EnumSet.allOf(ClassIndex.SearchScope.class));
 
-        if(pkgSet.size() > 0){
+        if (pkgSet.size() > 0) {
             return true;
         } else {
             return false;
         }
     }
-
 
     /**
      * Complete the Groovy and Java types available at this position.
@@ -1552,14 +1518,14 @@ private void printMethod(MetaMethod mm) {
         // find the class we are living in. Disable it for now.
 
         if (packageRequest.basePackage.length() == 0 &&
-                packageRequest.prefix.length() == 0 &&
-                packageRequest.fullString.equals(".")) {
+            packageRequest.prefix.length() == 0 &&
+            packageRequest.fullString.equals(".")) {
             return false;
         }
 
         // this is a new Something()| request for a constructor, which is handled in completeMethods.
 
-        if(request.ctx.before1 != null && request.ctx.before1.text().toString().equals("new") && request.prefix.length() > 0) {
+        if (request.ctx.before1 != null && request.ctx.before1.text().toString().equals("new") && request.prefix.length() > 0) {
             return false;
         }
 
@@ -1569,7 +1535,7 @@ private void printMethod(MetaMethod mm) {
 
         // if we are dealing with a basepackage we simply complete all the packages given in the basePackage
 
-        if(packageRequest.basePackage.length() > 0 || request.behindImport){
+        if (packageRequest.basePackage.length() > 0 || request.behindImport) {
             if (!(request.behindImport && packageRequest.basePackage.length() == 0)) {
                 List<? extends javax.lang.model.element.Element> typelist;
                 typelist = getElementListForPackage(javaSource, packageRequest.basePackage);
@@ -1593,21 +1559,21 @@ private void printMethod(MetaMethod mm) {
         // This ModuleNode is used to retrieve the types defined here
         // and the package name.
 
-        ModuleNode mn =  null;
+        ModuleNode mn = null;
         AstPath path = request.path;
         if (path != null) {
             for (Iterator<ASTNode> it = path.iterator(); it.hasNext();) {
                 ASTNode current = it.next();
                 if (current instanceof ModuleNode) {
                     LOG.log(Level.FINEST, "Found ModuleNode");
-                    mn = (ModuleNode)current;
+                    mn = (ModuleNode) current;
                 }
             }
         }
 
         // Retrieve the package we are living in from AST and then
         // all classes from that package using the Groovy Index.
-        
+
         if (mn != null) {
             String packageName = mn.getPackageName();
 
@@ -1656,14 +1622,14 @@ private void printMethod(MetaMethod mm) {
             }
 
             // this returns a list of String's of wildcard-like included types.
-            List<String> importsPkg= mn.getImportPackages();
+            List<String> importsPkg = mn.getImportPackages();
 
             for (String wildcardImport : importsPkg) {
                 LOG.log(Level.FINEST, "From getImportPackages() : {0} ", wildcardImport);
-                if(wildcardImport.endsWith(".")){
-                    wildcardImport = wildcardImport.substring(0, wildcardImport.length() - 1 );
+                if (wildcardImport.endsWith(".")) {
+                    wildcardImport = wildcardImport.substring(0, wildcardImport.length() - 1);
                 }
-                
+
                 defaultImports.add(wildcardImport);
 
             }
@@ -1721,7 +1687,6 @@ private void printMethod(MetaMethod mm) {
      * @param request
      * @param fqn
      */
-
     void addToProposalUsingFilter(List<CompletionProposal> proposals, CompletionRequest request, String fqn) {
 
         String typeName = NbUtilities.stripPackage(fqn);
@@ -1733,15 +1698,12 @@ private void printMethod(MetaMethod mm) {
         return;
     }
 
-
-
-   /**
-    *
-    * @param javaSource
-    * @param pkg
-    * @return
-    */
-
+    /**
+     *
+     * @param javaSource
+     * @param pkg
+     * @return
+     */
     List<? extends javax.lang.model.element.Element> getElementListForPackage(JavaSource javaSource, final String pkg) {
         LOG.log(Level.FINEST, "getElementListForPackage(), Package :  {0}", pkg);
 
@@ -1761,10 +1723,10 @@ private void printMethod(MetaMethod mm) {
 
         }
 
-       LOG.log(Level.FINEST, "Returning Typlist");
-       return typelist;
+        LOG.log(Level.FINEST, "Returning Typlist");
+        return typelist;
 
-   }
+    }
 
     List<javax.lang.model.element.Element> getMethodsForType(JavaSource javaSource, final String typeName) {
         LOG.log(Level.FINEST, "getMethodsForType(), Type :  {0}", typeName);
@@ -1774,7 +1736,7 @@ private void printMethod(MetaMethod mm) {
 
         if (e != null) {
             List<javax.lang.model.element.Element> methodlist = new ArrayList<javax.lang.model.element.Element>();
-            
+
             javax.lang.model.element.TypeElement te = e.getTypeElement(typeName);
 
             if (te != null) {
@@ -1790,14 +1752,13 @@ private void printMethod(MetaMethod mm) {
                     }
                 }
             }
-            
+
             return methodlist;
         }
 
         return null;
     }
-   
-   
+
     private Elements getElementsForJavaSource(JavaSource javaSource) {
         CountDownLatch cnt = new CountDownLatch(1);
 
@@ -1819,9 +1780,7 @@ private void printMethod(MetaMethod mm) {
 
         return helper.getElements();
     }
-   
-   
-   
+
     /**
      *
      */
@@ -1844,7 +1803,6 @@ private void printMethod(MetaMethod mm) {
         }
     }
 
-
     boolean isPackageAlreadyProposed(Set<String> pkgSet, String prefix) {
         for (String singlePackage : pkgSet) {
             if (prefix.startsWith(singlePackage)) {
@@ -1853,7 +1811,6 @@ private void printMethod(MetaMethod mm) {
         }
         return false;
     }
-
 
     /**
      * Get the ClassNode this request operates on.
@@ -1882,12 +1839,16 @@ private void printMethod(MetaMethod mm) {
      * @param request
      * @return a valid ASTNode or null
      */
-
     private ClassNode getDeclaringClass(CompletionRequest request) {
 
         if (request.path == null) {
             LOG.log(Level.FINEST, "path == null"); // NOI18N
             return null;
+        }
+
+        if (request.declaringClass != null && request.declaringClass instanceof ClassNode) {
+            LOG.log(Level.FINEST, "returning declaringClass from request."); // NOI18N
+            return request.declaringClass;
         }
 
         ASTNode closest = request.path.leaf();
@@ -1896,7 +1857,7 @@ private void printMethod(MetaMethod mm) {
         LOG.log(Level.FINEST, "Path : {0}", request.path);
 
 
-        if(closest == null){
+        if (closest == null) {
             LOG.log(Level.FINEST, "closest == null"); // NOI18N
             return null;
         }
@@ -1904,12 +1865,12 @@ private void printMethod(MetaMethod mm) {
         ClassNode declClass = null;
 
         // Loop the path till we find something usefull.
-        
+
         for (Iterator<ASTNode> it = request.path.iterator(); it.hasNext();) {
             ASTNode current = it.next();
 
-            printASTNodeInformation("current is:", current);
-            
+            printASTNodeInformation("Declaring-class, current is:", current);
+
             if (current instanceof VariableExpression) {
                 LOG.log(Level.FINEST, "* VariableExpression"); // NOI18N
                 declClass = ((VariableExpression) current).getType();
@@ -1930,6 +1891,7 @@ private void printMethod(MetaMethod mm) {
             }
         }
 
+        request.declaringClass = declClass;
         return declClass;
     }
 
@@ -1940,17 +1902,16 @@ private void printMethod(MetaMethod mm) {
      * @param request
      * @return
      */
-
     private Expression getPossibleCollection(CompletionRequest request) {
         if (request.path == null) {
             LOG.log(Level.FINEST, "path == null"); // NOI18N
             return null;
         }
-        
+
         for (Iterator<ASTNode> it = request.path.iterator(); it.hasNext();) {
             ASTNode current = it.next();
 
-            printASTNodeInformation("current is:", current);
+            // printASTNodeInformation("Collection-search, current is:", current);
 
             if (current instanceof RangeExpression) {
                 return (RangeExpression) current;
@@ -1966,18 +1927,18 @@ private void printMethod(MetaMethod mm) {
                 // in this case i have to get the children
                 List<ASTNode> list = AstUtilities.children(current);
                 for (ASTNode child : list) {
-                    if (child instanceof RangeExpression){
+                    if (child instanceof RangeExpression) {
                         return (RangeExpression) child;
-                    } else if (child instanceof ListExpression){
+                    } else if (child instanceof ListExpression) {
                         return (ListExpression) child;
-                    } else if (child instanceof MapExpression){
+                    } else if (child instanceof MapExpression) {
                         return (MapExpression) child;
                     }
                 }
             }
 
         }
-        
+
         return null;
     }
 
@@ -1987,11 +1948,10 @@ private void printMethod(MetaMethod mm) {
      * @param exe
      * @return
      */
-    
-    static List<ParamDesc> getParameterList(ExecutableElement exe){
-        
+    static List<ParamDesc> getParameterList(ExecutableElement exe) {
+
         List<ParamDesc> paramList = new ArrayList<ParamDesc>();
-        
+
         if (exe != null) {
             // generate a list of parameters
             // unfortunately, we have to work around # 139695 in an ugly fashion
@@ -2007,16 +1967,16 @@ private void printMethod(MetaMethod mm) {
 
                     String fullName = tm.toString();
                     String name = fullName;
-                    
+
                     if (tm.getKind() == javax.lang.model.type.TypeKind.DECLARED) {
                         name = NbUtilities.stripPackage(fullName);
-                    } 
+                    }
 
                     // todo: this needs to be replaced with values from the JavaDoc
                     String varName = "param" + String.valueOf(i);
-                    
+
                     paramList.add(new ParamDesc(fullName, name, varName));
-                    
+
                     i++;
                 }
             } catch (NullPointerException e) {
@@ -2024,17 +1984,16 @@ private void printMethod(MetaMethod mm) {
             }
 
         }
-        
-        return paramList;        
+
+        return paramList;
     }
-    
-    
+
     /**
      * Get the parameter-list of this executable as String
      * @param exe
      * @return
      */
-    static String getParameterListForMethod(ExecutableElement exe){
+    static String getParameterListForMethod(ExecutableElement exe) {
         StringBuffer sb = new StringBuffer();
 
         if (exe != null) {
@@ -2064,12 +2023,10 @@ private void printMethod(MetaMethod mm) {
             }
 
         }
-        
+
         return sb.toString();
     }
-    
-    
-    
+
     /**
      * Complete the methods invokable on a class.
      * @param proposals the CompletionProposal List we populate (return value)
@@ -2078,13 +2035,13 @@ private void printMethod(MetaMethod mm) {
      */
     private boolean completeMethods(List<CompletionProposal> proposals, CompletionRequest request) {
         LOG.log(Level.FINEST, "-> completeMethods"); // NOI18N
-        
+
         if (request.location == CaretLocation.INSIDE_PARAMETERS) {
             LOG.log(Level.FINEST, "no method completion inside of parameters"); // NOI18N
             return false;
         }
-        
-        if(request == null || request.ctx ==  null || request.ctx.before1 == null){
+
+        if (request == null || request.ctx == null || request.ctx.before1 == null) {
             return false;
         }
 
@@ -2094,24 +2051,24 @@ private void printMethod(MetaMethod mm) {
         // 2.) right behind a dot. Then we look for:
         //     2.1  method on collection type: List, Map or Range
         //     2.2  static/instance method on class or object
-        //     2.3  dynamic, mixin method on Groovy-object liek getXbyY()
+        //     2.3  dynamic, mixin method on Groovy-object like getXbyY()
         // 3.) We live in a class which defines this method either:
         //     3.1 defined here in this CU
         //     3.2 defind in a super-class.
 
 
         // 1.) Test if this is a Constructor-call?
-        
-        if(request.ctx.before1.text().toString().equals("new") && request.prefix.length() > 0) {
+
+        if (request.ctx.before1.text().toString().equals("new") && request.prefix.length() > 0) {
             LOG.log(Level.FINEST, "This looks like a constructor ...");
             boolean stuffAdded = false;
             // look for all imported types starting with prefix, which have public constructors
             List<String> defaultImports = new ArrayList<String>();
-            
+
             defaultImports.addAll(dfltImports);
-            
+
             JavaSource javaSource = getJavaSourceFromRequest(request);
-            
+
             for (String singlePackage : defaultImports) {
                 List<? extends javax.lang.model.element.Element> typelist;
 
@@ -2126,110 +2083,121 @@ private void printMethod(MetaMethod mm) {
 
                 for (Element element : typelist) {
                     // only look for classes rather than enums or interfaces
-                    if(element.getKind() == javax.lang.model.element.ElementKind.CLASS){
-                        javax.lang.model.element.TypeElement te = (javax.lang.model.element.TypeElement)element;
-                        
+                    if (element.getKind() == javax.lang.model.element.ElementKind.CLASS) {
+                        javax.lang.model.element.TypeElement te = (javax.lang.model.element.TypeElement) element;
+
                         List<? extends javax.lang.model.element.Element> enclosed = te.getEnclosedElements();
 
                         // we gotta get the constructors name from the type itself, since
                         // all the constructors are named <init>.
-                        
+
                         String constructorName = te.getSimpleName().toString();
-                        
+
                         for (Element encl : enclosed) {
-                            if(encl.getKind() == javax.lang.model.element.ElementKind.CONSTRUCTOR){
-                                
-                                if(constructorName.toUpperCase(Locale.ENGLISH).startsWith(request.prefix.toUpperCase(Locale.ENGLISH))){
-                                    
+                            if (encl.getKind() == javax.lang.model.element.ElementKind.CONSTRUCTOR) {
+
+                                if (constructorName.toUpperCase(Locale.ENGLISH).startsWith(request.prefix.toUpperCase(Locale.ENGLISH))) {
+
                                     LOG.log(Level.FINEST, "Constructor call candidate added : {0}", constructorName);
-                                    proposals.add(new ConstructorItem(constructorName, (ExecutableElement)encl , anchor, request, false));
+                                    proposals.add(new ConstructorItem(constructorName, (ExecutableElement) encl, anchor, request, false));
                                     stuffAdded = true;
                                 }
                             }
                         }
-                        
+
                     }
                 }
             }
-            
-            
+
+
             return stuffAdded;
         }
-        
+
         // 2.1 Behind a dot and sitting on a Map, List or Range?
-        
-        if(request.behindDot) {
+
+        if (request.behindDot) {
             Expression collection = getPossibleCollection(request);
-            
-            if(collection != null) {
+
+            if (collection != null) {
                 boolean stuffAdded = false;
                 LOG.log(Level.FINEST, "This looks like a collection."); // NOI18N
-                
-                if(collection instanceof ListExpression){
+
+                if (collection instanceof ListExpression) {
                     LOG.log(Level.FINEST, "ListExpression"); // NOI18N
                     populateProposalWithMethodsFromClass(proposals, request, "java.util.List", true);
                     stuffAdded = true;
-                    
-                } else if(collection instanceof RangeExpression){
+
+                } else if (collection instanceof RangeExpression) {
                     LOG.log(Level.FINEST, "RangeExpression"); // NOI18N
                     populateProposalWithMethodsFromClass(proposals, request, "groovy.lang.Range", true);
                     stuffAdded = true;
-                    
-                } else if(collection instanceof MapExpression){
+
+                } else if (collection instanceof MapExpression) {
                     LOG.log(Level.FINEST, "MapExpression"); // NOI18N
                     populateProposalWithMethodsFromClass(proposals, request, "java.util.Map", true);
                     stuffAdded = true;
-                    
+
                 }
-                
+
                 return stuffAdded;
             }
         }
-        
+
         // 2.2  static/instance method on class or object
 
-        if(!request.behindDot){
+        if (!request.behindDot) {
             LOG.log(Level.FINEST, "I'm not invoked behind a dot."); // NOI18N
             return false;
         }
 
-        ClassNode declClass = getDeclaringClass(request);
+        ClassNode declaringClass = getDeclaringClass(request);
 
-        if (declClass == null) {
+        if (declaringClass == null) {
             LOG.log(Level.FINEST, "No declaring class found"); // NOI18N
             return false;
         }
 
-        // We only complete methods if there is no basePackage, which is a valid
-        // package.
+
+        /*
+            Here we need to figure out, whether we want to complete a variable:
+
+            s.|
+
+            where we want to complete fields and methodes *OR* a package prefix like:
+
+            java.|
+
+            To achive this we only complete methods if there is no basePackage, which is a valid
+            package.
+         */
 
         PackageCompletionRequest packageRequest = getPackageRequest(request);
 
-        if(packageRequest.basePackage.length() > 0) {
+        if (packageRequest.basePackage.length() > 0) {
             ClasspathInfo pathInfo = getClasspathInfoFromRequest(request);
 
-            if(isValidPackage(pathInfo, packageRequest.basePackage)) {
+            if (isValidPackage(pathInfo, packageRequest.basePackage)) {
+                LOG.log(Level.FINEST, "The string before the dot seems to be a valid package"); // NOI18N
                 return false;
             }
         }
 
         // all methods of class given at that position
-        populateProposalWithMethodsFromClass(proposals, request, declClass.getName(), false);
+        populateProposalWithMethodsFromClass(proposals, request, declaringClass.getName(), false);
 
         return true;
     }
-    
+
     /**
      * Populate the completion-proposal with all methods (groovy +  java)
      * on class named given in className
      */
+    private void populateProposalWithMethodsFromClass(List<CompletionProposal> proposals, CompletionRequest request, String className, boolean withJavaTypes) {
 
-    private void populateProposalWithMethodsFromClass(List<CompletionProposal> proposals, CompletionRequest request, String className, boolean withJavaTypes){
-        
         LOG.log(Level.FINEST, "populateProposalWithMethodsFromClass(): {0}", className); // NOI18N
-        
+
         // getting methods on types the javac way
-        
+
         if (withJavaTypes) {
             JavaSource javaSource = getJavaSourceFromRequest(request);
             List<javax.lang.model.element.Element> methodlist = getMethodsForType(javaSource, className);
@@ -2240,11 +2208,11 @@ private void printMethod(MetaMethod mm) {
                 }
             }
         }
-        
+
         // getting the methods the groovy way
-        
+
         Class clz;
-        
+
         try {
             clz = Class.forName(className);
         } catch (ClassNotFoundException e) {
@@ -2274,14 +2242,13 @@ private void printMethod(MetaMethod mm) {
 
             }
         }
-        
+
     }
-    
-    
+
     private void populateProposal(Class clz, Object method, CompletionRequest request, List<MethodItem> methodList, boolean isGDK) {
         if (method != null && (method instanceof MetaMethod)) {
             MetaMethod mm = (MetaMethod) method;
-            
+
 //            LOG.log(Level.FINEST, "Looking for Method: {0}", mm.getName()); // NOI18N
 //            printMethod(mm);
 
@@ -2295,7 +2262,7 @@ private void printMethod(MetaMethod mm) {
         }
     }
 
-    private void addOrReplaceItem(List<MethodItem> methodItemList, MethodItem itemToStore){
+    private void addOrReplaceItem(List<MethodItem> methodItemList, MethodItem itemToStore) {
 
         // if we have a method in-store which has the same name and same signature
         // then replace it if we have a method with a higher distance to the super-class.
@@ -2309,11 +2276,11 @@ private void printMethod(MetaMethod mm) {
             MetaMethod listMethod = methodItem.getMethod();
 
             if (listMethod.getName().equals(methodToStore.getName()) &&
-                    listMethod.getSignature().equals(methodToStore.getSignature()) &&
-                    listMethod.getDeclaringClass().getSuperClassDistance() < toStoreDistance) {
-                    LOG.log(Level.FINEST, "Remove existing method: {0}", methodToStore.getName()); // NOI18N
-                    methodItemList.remove(methodItem);
-                    break; // it's unlikely that we have more then one Method with a smaller distance
+                listMethod.getSignature().equals(methodToStore.getSignature()) &&
+                listMethod.getDeclaringClass().getSuperClassDistance() < toStoreDistance) {
+                LOG.log(Level.FINEST, "Remove existing method: {0}", methodToStore.getName()); // NOI18N
+                methodItemList.remove(methodItem);
+                break; // it's unlikely that we have more then one Method with a smaller distance
             }
         }
 
@@ -2329,7 +2296,6 @@ private void printMethod(MetaMethod mm) {
      * @param request
      * @return
      */
-
     private boolean completeCamelCase(List<CompletionProposal> proposals, CompletionRequest request) {
         LOG.log(Level.FINEST, "-> completeCamelCase"); // NOI18N
 
@@ -2344,11 +2310,11 @@ private void printMethod(MetaMethod mm) {
         String prefix = request.prefix;
 
         // Are we dealing with an all-uppercase prefix?
-        if(prefix != null && prefix.length() > 0 && prefix.equals(prefix.toUpperCase())){
+        if (prefix != null && prefix.length() > 0 && prefix.equals(prefix.toUpperCase())) {
 
             ClassNode requestedClass = getSurroundingClassdNode(request);
 
-             if (requestedClass == null) {
+            if (requestedClass == null) {
                 LOG.log(Level.FINEST, "No surrounding class found, bail out ..."); // NOI18N
                 return false;
             }
@@ -2358,12 +2324,12 @@ private void printMethod(MetaMethod mm) {
             LOG.log(Level.FINEST, "Class name          : {0}", requestedClass.getName()); // NOI18N
             LOG.log(Level.FINEST, "CamelCase signature : {0}", camelCaseSignature); // NOI18N
 
-            if(camelCaseSignature.startsWith(prefix)){
+            if (camelCaseSignature.startsWith(prefix)) {
                 LOG.log(Level.FINEST, "Prefix matches Class's CamelCase signature. Adding."); // NOI18N
                 proposals.add(new ConstructorItem(requestedClass.getName(), null, anchor, request, true));
                 return true;
             }
-            
+
         }
 
         // todo: variant b) needs to have the CamelCase signatures in the index.
@@ -2371,19 +2337,17 @@ private void printMethod(MetaMethod mm) {
         return false;
     }
 
-    
-    private String computeCamelCaseSignature (String name) {
-        StringBuffer sb =  new StringBuffer();
-        
+    private String computeCamelCaseSignature(String name) {
+        StringBuffer sb = new StringBuffer();
+
         for (int i = 0; i < name.length(); i++) {
             if (Character.isUpperCase(name.charAt(i))) {
                 sb.append(name.charAt(i));
             }
         }
-        
+
         return sb.toString();
     }
-
 
     public CodeCompletionResult complete(CodeCompletionContext context) {
         CompilationInfo info = context.getInfo();
@@ -2407,7 +2371,7 @@ private void printMethod(MetaMethod mm) {
         anchor = lexOffset - prefix.length();
 
         final Document document = info.getDocument();
-        
+
         if (document == null) {
             return CodeCompletionResult.NONE;
         }
@@ -2430,16 +2394,16 @@ private void printMethod(MetaMethod mm) {
             request.path = getPathFromRequest(request);
 
             LOG.log(Level.FINEST, "complete(...), path        : {0}", request.path);
-            
-            
+
+
             // here we figure out once for all completions, where we are inside the source
             // (in method, in class, ouside class etc)
-            
+
             request.location = getCaretLocationFromRequest(request);
             LOG.log(Level.FINEST, "I am here in sourcecode: {0}", request.location); // NOI18N
-            
+
             // if we are above a package statement or inside a comment there's no completion at all.
-            if(request.location == CaretLocation.ABOVE_PACKAGE || request.location == CaretLocation.INSIDE_COMMENT){
+            if (request.location == CaretLocation.ABOVE_PACKAGE || request.location == CaretLocation.INSIDE_COMMENT) {
                 return new DefaultCompletionResult(proposals, false);
             }
 
@@ -2471,9 +2435,9 @@ private void printMethod(MetaMethod mm) {
                     completePackages(proposals, request);
 
                     // complete classes, interfaces and enums
-                    
+
                     completeTypes(proposals, request);
-                   
+
                 }
 
                 if (!request.behindImport) {
@@ -2611,7 +2575,7 @@ private void printMethod(MetaMethod mm) {
                 } else {
                     sb.append(NbUtilities.stripPackage(typeName));
                 }
-                
+
                 i = semicolon;
             }
 
@@ -2770,14 +2734,14 @@ private void printMethod(MetaMethod mm) {
         // proposal seems to be null all the time.
 
         List<String> paramList = new ArrayList<String>();
-        
+
         AstPath path = getPathFromInfo(caretOffset, info);
         BaseDocument doc = (BaseDocument) info.getDocument();
-        
-        if(path != null){
-            
+
+        if (path != null) {
+
             ArgumentListExpression ael = getSurroundingArgumentList(path);
-            
+
             if (ael != null) {
 
                 List<ASTNode> children = AstUtilities.children(ael);
@@ -2792,12 +2756,12 @@ private void printMethod(MetaMethod mm) {
                 for (ASTNode node : children) {
                     OffsetRange range = AstUtilities.getRange(node, doc);
                     paramList.add(node.getText());
-                    
-                    if(range.containsInclusive(caretOffset)) {
+
+                    if (range.containsInclusive(caretOffset)) {
                         offset = range.getStart();
                         index = idx;
                     }
-                    
+
                     idx++;
                 }
 
@@ -2810,14 +2774,14 @@ private void printMethod(MetaMethod mm) {
                 LOG.log(Level.FINEST, "ArgumentListExpression ==  null"); // NOI18N
                 return ParameterInfo.NONE;
             }
-            
+
         } else {
             LOG.log(Level.FINEST, "path ==  null"); // NOI18N
             return ParameterInfo.NONE;
         }
 
         return ParameterInfo.NONE;
-        
+
     }
 
     static class CompletionRequest {
@@ -2833,6 +2797,7 @@ private void printMethod(MetaMethod mm) {
         boolean behindImport;
         CompletionContext ctx;
         AstPath path;
+        ClassNode declaringClass;
     }
 
     // This is from JavaCompletionItem
@@ -2848,6 +2813,4 @@ private void printMethod(MetaMethod mm) {
             this.name = name;
         }
     }
-    
-
 }
