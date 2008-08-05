@@ -53,6 +53,7 @@ import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.swing.JComponent;
 import org.netbeans.api.java.source.Task;
@@ -148,7 +149,12 @@ public class UtilityClass extends AbstractHint implements ElementVisitor<Boolean
                 return null;
             }
             ExecutableElement x = (ExecutableElement)e;
-            for (Element m : x.getEnclosingElement().getEnclosedElements()) {
+
+            List<? extends Element> enclosedElements = x.getEnclosingElement().getEnclosedElements();
+            if(enclosedElements.size() == 1 && enclosedElements.get(0).equals(x))
+                return null; //class contains the ctor only
+
+            for (Element m : enclosedElements) {
                 if (stop) {
                     return null;
                 }
@@ -241,7 +247,13 @@ public class UtilityClass extends AbstractHint implements ElementVisitor<Boolean
         if (clazz) {
             return !m.getModifiers().contains(Modifier.STATIC) && !arg1.getElementUtilities().isSynthetic(m);
         } else {
-            return !m.getModifiers().contains(Modifier.STATIC) && !m.getSimpleName().contentEquals("<init>"); // NOI18N
+            boolean staticCtor = !m.getModifiers().contains(Modifier.STATIC) && !m.getSimpleName().contentEquals("<init>"); // NOI18N
+            boolean main = m.getModifiers().contains(Modifier.STATIC) &&
+                    m.getSimpleName().contentEquals("main") &&
+                    (m.getReturnType().getKind() == TypeKind.VOID) &&
+                    (m.getParameters().get(0).asType().toString().equals("java.lang.String[]")) &&
+                    (m.getParameters().size() == 1);
+            return staticCtor || main;
         }
     }
 
