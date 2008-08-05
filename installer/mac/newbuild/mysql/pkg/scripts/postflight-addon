@@ -1,3 +1,4 @@
+
 script_dir=`dirname "$0"`
 DIR=`pwd -P`
 echo "DIR  : $DIR"
@@ -14,12 +15,12 @@ escape() {
 	echo "$1" | sed -e "s/\//\\\\\//g"
 }
 
-cp -p -f ./support-files/mysql-admin.server" ./support-files/mysql-admin.server.tmp
+cp -p -f ./support-files/mysql-admin.server ./support-files/mysql-admin.server.tmp
 
 initial_str=`escape /usr/local/mysql`
 replace_str=`escape "$DIR"`
-sed "s/$initial_str/$replace_str/g" ./support-files/mysql-admin.server > ./support-files/mysql-admin.server.tmp
-mv "./support-files/mysql-admin.server.tmp  ./support-files/mysql-admin.server
+sed -e "s/$initial_str/$replace_str/g" ./support-files/mysql-admin.server > ./support-files/mysql-admin.server.tmp
+mv ./support-files/mysql-admin.server.tmp  ./support-files/mysql-admin.server
 
 cp ./support-files/mysql.server ./support-files/mysql.server.tmp
 sed -e "s/^basedir=/basedir=$replace_str/g" ./support-files/mysql.server > ./support-files/mysql.server.tmp
