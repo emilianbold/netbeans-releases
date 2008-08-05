@@ -419,7 +419,8 @@ public class Utils {
 
         NbTestCase.assertFalse("NetBeans dir deleted", Utils.dirExist(NB_DIR_NAME, data).equals(OK));
         NbTestCase.assertFalse("Tomcat dir deleted", Utils.dirExist(TOMACAT_DIR_NAME, data).equals(OK));
-        NbTestCase.assertFalse("GlassFish dir deleted", Utils.dirExist(GF_DIR_NAME, data).equals(OK));
+        NbTestCase.assertFalse("GlassFish2 dir deleted", Utils.dirExist(GF2_DIR_NAME, data).equals(OK));
+        NbTestCase.assertFalse("GlassFish3 dir deleted", Utils.dirExist(GF3_DIR_NAME, data).equals(OK));
     }
 
     public static void phaseTwo(TestData data) {
