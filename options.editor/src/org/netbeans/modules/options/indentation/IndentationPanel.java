@@ -206,6 +206,24 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
             needsRefresh = true;
         }
 
+        if (showOverrideGlobalOptions) {
+            if (key == null || SimpleValueNames.OVERRIDE_GLOBAL_FORMATTING_OPTIONS.equals(key)) {
+                boolean nue = prefs.getBoolean(SimpleValueNames.OVERRIDE_GLOBAL_FORMATTING_OPTIONS, false);
+                if (nue != cbOverrideGlobalOptions.isSelected()) {
+                    cbOverrideGlobalOptions.setSelected(nue);
+                }
+                needsRefresh = true;
+                cbExpandTabsToSpaces.setEnabled(nue);
+                lNumberOfSpacesPerIndent.setEnabled(nue);
+                sNumberOfSpacesPerIndent.setEnabled(nue);
+                lTabSize.setEnabled(nue);
+                sTabSize.setEnabled(nue);
+                lRightMargin.setEnabled(nue);
+                sRightMargin.setEnabled(nue);
+                System.out.println("~~~ basicOptionsPanel.setEnabled(" + nue + ")");
+            }
+        }
+        
         if (needsRefresh) {
             preview.refreshPreview();
         }
@@ -220,21 +238,27 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        cbOverrideGlobalOptions = new javax.swing.JCheckBox();
+        jPanel1 = new javax.swing.JPanel();
+        cbExpandTabsToSpaces = new javax.swing.JCheckBox();
         lNumberOfSpacesPerIndent = new javax.swing.JLabel();
         sNumberOfSpacesPerIndent = new javax.swing.JSpinner();
-        cbExpandTabsToSpaces = new javax.swing.JCheckBox();
         lTabSize = new javax.swing.JLabel();
         sTabSize = new javax.swing.JSpinner();
         lRightMargin = new javax.swing.JLabel();
         sRightMargin = new javax.swing.JSpinner();
-        cbOverrideGlobalOptions = new javax.swing.JCheckBox();
 
-        lNumberOfSpacesPerIndent.setLabelFor(sNumberOfSpacesPerIndent);
-        lNumberOfSpacesPerIndent.setText("Number of Spaces per Indent:");
+        cbOverrideGlobalOptions.setText("Override Global Options");
+        cbOverrideGlobalOptions.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+
+        jPanel1.setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
         cbExpandTabsToSpaces.setText("Expand Tabs to Spaces");
         cbExpandTabsToSpaces.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         cbExpandTabsToSpaces.setMargin(new java.awt.Insets(0, 0, 0, 0));
+
+        lNumberOfSpacesPerIndent.setLabelFor(sNumberOfSpacesPerIndent);
+        lNumberOfSpacesPerIndent.setText("Number of Spaces per Indent:");
 
         lTabSize.setLabelFor(sTabSize);
         lTabSize.setText("Tab Size:");
@@ -242,72 +266,85 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
         lRightMargin.setLabelFor(sRightMargin);
         lRightMargin.setText("Right Margin:");
 
-        cbOverrideGlobalOptions.setText("Override Global Options");
-        cbOverrideGlobalOptions.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jPanel1Layout.createSequentialGroup()
+                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(jPanel1Layout.createSequentialGroup()
+                        .addContainerGap()
+                        .add(lNumberOfSpacesPerIndent, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 207, Short.MAX_VALUE))
+                    .add(jPanel1Layout.createSequentialGroup()
+                        .addContainerGap()
+                        .add(lTabSize, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 207, Short.MAX_VALUE))
+                    .add(jPanel1Layout.createSequentialGroup()
+                        .addContainerGap()
+                        .add(lRightMargin, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 195, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(jPanel1Layout.createSequentialGroup()
+                        .add(sRightMargin, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 42, Short.MAX_VALUE)
+                        .addContainerGap())
+                    .add(jPanel1Layout.createSequentialGroup()
+                        .add(sTabSize, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 42, Short.MAX_VALUE)
+                        .addContainerGap())
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel1Layout.createSequentialGroup()
+                        .add(sNumberOfSpacesPerIndent, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 42, Short.MAX_VALUE)
+                        .addContainerGap())))
+            .add(jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .add(cbExpandTabsToSpaces, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 219, Short.MAX_VALUE)
+                .add(54, 54, 54))
+        );
+
+        jPanel1Layout.linkSize(new java.awt.Component[] {sNumberOfSpacesPerIndent, sRightMargin, sTabSize}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
+
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .add(cbExpandTabsToSpaces, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 19, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(lNumberOfSpacesPerIndent)
+                    .add(sNumberOfSpacesPerIndent, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(lTabSize)
+                    .add(sTabSize, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(6, 6, 6)
+                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(lRightMargin)
+                    .add(sRightMargin, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        jPanel1Layout.linkSize(new java.awt.Component[] {sNumberOfSpacesPerIndent, sRightMargin, sTabSize}, org.jdesktop.layout.GroupLayout.VERTICAL);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(lRightMargin, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 195, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 12, Short.MAX_VALUE))
-                    .add(layout.createSequentialGroup()
-                        .add(lTabSize, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 219, Short.MAX_VALUE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED))
-                    .add(layout.createSequentialGroup()
-                        .add(lNumberOfSpacesPerIndent, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 219, Short.MAX_VALUE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED))
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, cbExpandTabsToSpaces, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 207, Short.MAX_VALUE)
-                            .add(cbOverrideGlobalOptions, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 207, Short.MAX_VALUE))
-                        .add(24, 24, 24)))
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(layout.createSequentialGroup()
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(sNumberOfSpacesPerIndent, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 42, Short.MAX_VALUE))
-                    .add(layout.createSequentialGroup()
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(sTabSize, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 42, Short.MAX_VALUE))
-                    .add(layout.createSequentialGroup()
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(sRightMargin, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 42, Short.MAX_VALUE))))
+                .add(cbOverrideGlobalOptions, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 223, Short.MAX_VALUE)
+                .add(66, 66, 66))
+            .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
-
-        layout.linkSize(new java.awt.Component[] {sNumberOfSpacesPerIndent, sRightMargin, sTabSize}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
-
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(cbOverrideGlobalOptions)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(cbExpandTabsToSpaces, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 19, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(lNumberOfSpacesPerIndent)
-                    .add(sNumberOfSpacesPerIndent, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(lTabSize)
-                    .add(sTabSize, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .add(6, 6, 6)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(lRightMargin)
-                    .add(sRightMargin, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .add(0, 0, Short.MAX_VALUE))
+                .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         );
-
-        layout.linkSize(new java.awt.Component[] {sNumberOfSpacesPerIndent, sRightMargin, sTabSize}, org.jdesktop.layout.GroupLayout.VERTICAL);
-
     }// </editor-fold>//GEN-END:initComponents
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox cbExpandTabsToSpaces;
     private javax.swing.JCheckBox cbOverrideGlobalOptions;
+    private javax.swing.JPanel jPanel1;
     private javax.swing.JLabel lNumberOfSpacesPerIndent;
     private javax.swing.JLabel lRightMargin;
     private javax.swing.JLabel lTabSize;

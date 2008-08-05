@@ -235,8 +235,8 @@ public final class FormattingPanel extends JPanel implements PropertyChangeListe
         optionsPanelLayout.setHorizontalGroup(
             optionsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(optionsPanelLayout.createSequentialGroup()
-                .add(optionsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, categoryPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .add(optionsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, categoryPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 143, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, optionsPanelLayout.createSequentialGroup()
                         .add(optionsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(categoryLabel)
@@ -260,8 +260,8 @@ public final class FormattingPanel extends JPanel implements PropertyChangeListe
                 .add(optionsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(categoryLabel)
                     .add(categoryCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(categoryPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 278, Short.MAX_VALUE))
+                .add(18, 18, 18)
+                .add(categoryPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 266, Short.MAX_VALUE))
         );
 
         gridBagConstraints = new java.awt.GridBagConstraints();
