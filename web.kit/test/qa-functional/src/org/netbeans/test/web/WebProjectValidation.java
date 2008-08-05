@@ -137,7 +137,7 @@ public class WebProjectValidation extends J2eeTestCase {
               "testNewJSP", "testNewJSP2", "testNewServlet", "testNewServlet2",
               "testCompileAllJSP", "testCompileJSP",
               "testCleanAndBuildProject", "testRunProject", "testRunJSP", "testViewServlet",
-              "testCleanAndBuildProject", "testRunServlet", "testCreateTLD", "testCreateTagHandler", "testRunTag",
+              "testRunServlet", "testCreateTLD", "testCreateTagHandler", "testRunTag",
               "testNewHTML", "testRunHTML", "testNewSegment", "testNewDocument",
               "testStopServer", "testStartServer", "testBrowserSettings", "testFinish"
                /*"testJSPNavigator", "testHTMLNavigator" */);
@@ -275,8 +275,6 @@ public class WebProjectValidation extends J2eeTestCase {
      * - check file is open in editor and close all opened documents
      */
     public void testNewJSP() throws IOException {
-        // XXX workaround due to issue #46073
-        new ProjectsTabOperator().getProjectRootNode(PROJECT_NAME).select();
         NewJspFileNameStepOperator nameStep = NewJspFileNameStepOperator.invoke();
         nameStep.setJSPFileName("page1");
         nameStep.finish();
@@ -561,12 +559,6 @@ public class WebProjectValidation extends J2eeTestCase {
     }
     
     public void testCreateTLD() {
-        //HACK
-        new Node(new ProjectsTabOperator().getProjectRootNode(PROJECT_NAME), "Web Pages|WEB-INF").expand();
-        
-        // workaround due to issue #46073
-        new ProjectsTabOperator().getProjectRootNode(PROJECT_NAME).select();
-        
         new ActionNoBlock("File|New File", null).perform();
         // WORKAROUND
         new EventTool().waitNoEvent(1000);
@@ -590,9 +582,6 @@ public class WebProjectValidation extends J2eeTestCase {
     }
     
     public void testCreateTagHandler() {
-        // workaround due to issue #46073
-        new ProjectsTabOperator().getProjectRootNode(PROJECT_NAME).select();
-        
         new ActionNoBlock("File|New File", null).perform();
         // WORKAROUND
         new EventTool().waitNoEvent(1000);
