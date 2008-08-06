@@ -739,7 +739,7 @@ public class ConfigurationMakefileWriter {
             bw.write("cd $TMPDIR\n"); // NOI18N
             String options = packagingConfiguration.getOptionsValue() + "cf"; // NOI18N
             if (options.charAt(0) != '-') { // NOI18N
-                options += '-'; // NOI18N
+                options = "-" + options; // NOI18N
             }
             bw.write(packagingConfiguration.getToolValue() + " " + options + " " + outputRelToTmp + " *\n"); // NOI18N
         }
