@@ -212,7 +212,7 @@ public class PropertyModelTest extends TestBase {
 //        dumpList(stack);
         assertEquals(2, stack.size());
     }
-    
+
     public void testFont() {
         Property p = PropertyModel.instance().getProperty("font");
         CssPropertyValue pv = new CssPropertyValue(p, "20% serif");
@@ -396,32 +396,32 @@ public class PropertyModelTest extends TestBase {
         assertTrue(csspv.success());
         assertEquals(1, csspv.alternatives().size());
         assertEquals(",", csspv.alternatives().iterator().next().toString());
-        
+
         text = "male, ";
         csspv = new CssPropertyValue(p, text);
-        
+
 //        dumpResult(csspv);
-        
+
         assertTrue(csspv.success());
         assertEquals(3, csspv.visibleAlternatives().size());
-       
+
         Collection<String> altNames = getAlternativesNames(csspv.visibleAlternatives());
         assertTrue(altNames.contains("male"));
         assertTrue(altNames.contains("female"));
         assertTrue(altNames.contains("child"));
-        
+
         text = "";
         csspv = new CssPropertyValue(p, text);
-        
+
         assertTrue(csspv.success());
         assertEquals(4, csspv.visibleAlternatives().size());
-        
+
         altNames = getAlternativesNames(csspv.visibleAlternatives());
         assertTrue(altNames.contains("inherit"));
         assertTrue(altNames.contains("male"));
         assertTrue(altNames.contains("female"));
         assertTrue(altNames.contains("child"));
-        
+
         text = "\"ovecka\"";
         csspv = new CssPropertyValue(p, text);
         assertTrue(csspv.success());
@@ -433,7 +433,7 @@ public class PropertyModelTest extends TestBase {
         CssPropertyValue csspv = new CssPropertyValue(p, text);
 
 //        dumpResult(csspv);
-        
+
         assertTrue(csspv.success());
 
         text = "URI('/images/v6/tabs-bg.png')";
@@ -501,8 +501,6 @@ public class PropertyModelTest extends TestBase {
         assertFalse(csspv.success());
 
     }
-    
-
     //some text acceptors consumed "inherit" as their token
     public void testFontFamily2() {
         Property p = PropertyModel.instance().getProperty("font-family");
@@ -511,7 +509,6 @@ public class PropertyModelTest extends TestBase {
         assertTrue(csspv.success());
         assertEquals(7, csspv.alternatives().size()); //only comma should be alternative
     }
-    
     //some text acceptors consumed "inherit" as their token
     public void testFontFamilyInheritProblem() {
         Property p = PropertyModel.instance().getProperty("font-family");
@@ -529,38 +526,38 @@ public class PropertyModelTest extends TestBase {
         String text = "20px";
         CssPropertyValue csspv = new CssPropertyValue(p, text);
         assertTrue(csspv.success());
-        assertEquals(7, csspv.alternatives().size()); 
-        assertEquals(6, csspv.visibleAlternatives().size()); 
-        
+        assertEquals(7, csspv.alternatives().size());
+        assertEquals(6, csspv.visibleAlternatives().size());
+
         text = "20px / ";
         csspv = new CssPropertyValue(p, text);
         assertTrue(csspv.success());
-        assertEquals(1, csspv.visibleAlternatives().size()); 
+        assertEquals(1, csspv.visibleAlternatives().size());
         assertEquals("normal", csspv.visibleAlternatives().iterator().next().toString());
-        
+
         text = "20px / 5pt";
         csspv = new CssPropertyValue(p, text);
         assertTrue(csspv.success());
         assertEquals(5, csspv.visibleAlternatives().size());
-        
+
         text = "20px / 5pt cursive";
         csspv = new CssPropertyValue(p, text);
         assertTrue(csspv.success());
         assertEquals(0, csspv.visibleAlternatives().size()); //only comma should be alternative
-        
-    }    
-    
+
+    }
+
     public void testFontThoroughly2() {
         Property p = PropertyModel.instance().getProperty("font");
         String text = "italic";
         CssPropertyValue csspv = new CssPropertyValue(p, text);
         assertTrue(csspv.success());
-        assertEquals(9, csspv.visibleAlternatives().size()); 
-        
+        assertEquals(9, csspv.visibleAlternatives().size());
+
         Element alt1 = csspv.alternatives().iterator().next();
         assertNotNull(alt1);
 //        assertEquals("-absolute-size", alt1.origin());
-        
+
         Collection<String> altNames = getAlternativesNames(csspv.alternatives());
         assertTrue(altNames.contains("large"));
         assertTrue(altNames.contains("larger"));
@@ -571,12 +568,12 @@ public class PropertyModelTest extends TestBase {
         assertTrue(altNames.contains("x-small"));
         assertTrue(altNames.contains("xx-large"));
         assertTrue(altNames.contains("xx-small"));
-        
+
         text = "italic large";
         csspv = new CssPropertyValue(p, text);
         assertTrue(csspv.success());
-        assertEquals(6, csspv.visibleAlternatives().size()); 
-        
+        assertEquals(6, csspv.visibleAlternatives().size());
+
         altNames = getAlternativesNames(csspv.alternatives());
         assertTrue(altNames.contains("/"));
         assertTrue(altNames.contains("cursive"));
@@ -584,7 +581,7 @@ public class PropertyModelTest extends TestBase {
         assertTrue(altNames.contains("monospace"));
         assertTrue(altNames.contains("serif"));
         assertTrue(altNames.contains("sans-serif"));
-        
+
         text = "italic large /";
         csspv = new CssPropertyValue(p, text);
         assertTrue(csspv.success());
@@ -593,7 +590,7 @@ public class PropertyModelTest extends TestBase {
         alt1 = csspv.alternatives().iterator().next();
         assertNotNull(alt1);
         assertEquals("line-height", alt1.origin());
-        
+
         altNames = getAlternativesNames(csspv.alternatives());
         assertTrue(altNames.contains("normal"));
 
@@ -601,17 +598,16 @@ public class PropertyModelTest extends TestBase {
         csspv = new CssPropertyValue(p, text);
         assertTrue(csspv.success());
         assertEquals(5, csspv.visibleAlternatives().size()); //only comma should be alternative
-        
+
         altNames = getAlternativesNames(csspv.alternatives());
         assertTrue(altNames.contains("cursive"));
         assertTrue(altNames.contains("fantasy"));
         assertTrue(altNames.contains("monospace"));
         assertTrue(altNames.contains("serif"));
         assertTrue(altNames.contains("sans-serif"));
-        
-    }   
-    
-    
+
+    }
+
     public void testCaseSensitivity() {
         Property p = PropertyModel.instance().getProperty("azimuth");
         String text = "behind";
@@ -630,23 +626,23 @@ public class PropertyModelTest extends TestBase {
         CssPropertyValue csspv = new CssPropertyValue(p, text);
         assertTrue(csspv.success());
     }
-    
+
     private Collection<String> getAlternativesNames(Collection<Element> alts) {
         List<String> names = new ArrayList<String>();
-        for(Element e: alts) {
+        for (Element e : alts) {
             names.add(e.toString());
         }
         return names;
     }
-    
-     public void testBackgroundRGBAlternatives() {
+
+    public void testBackgroundRGBAlternatives() {
         Property p = PropertyModel.instance().getProperty("background");
         String text = "rgb";
-        
+
         CssPropertyValue csspv = new CssPropertyValue(p, text);
-        
+
 //        dumpResult(csspv);
-        
+
         assertTrue(csspv.success());
         assertEquals(1, csspv.visibleAlternatives().size());
 
@@ -655,8 +651,8 @@ public class PropertyModelTest extends TestBase {
         assertEquals("(", alt1.toString());
 
     }
-    
-     public void testAlternativesOfPartialyResolvedSequenceInListGroup() {
+
+    public void testAlternativesOfPartialyResolvedSequenceInListGroup() {
         String rule = "[ [ Ema > ma > misu] || prd";
         String text = "Ema";
         CssPropertyValue csspv = new CssPropertyValue(rule, text);
@@ -665,39 +661,48 @@ public class PropertyModelTest extends TestBase {
         assertTrue(csspv.success());
         assertEquals(1, csspv.alternatives().size());
         assertEquals("ma", csspv.alternatives().iterator().next().toString());
-     }
-          
-      public void testJindrasCase() {
+    }
+
+    public void testJindrasCase() {
         String rule = "[ [ x || y ] || b";
         String text = "x b";
         CssPropertyValue csspv = new CssPropertyValue(rule, text);
 
 //        dumpResult(csspv);
- 
+
         assertTrue(csspv.success());
         assertEquals(0, csspv.alternatives().size());
 //        assertEquals("ma", csspv.alternatives().iterator().next().toString());
-     }
-      
-      
-     public void testUnquotedURL() {
-        Property p = PropertyModel.instance().getProperty("list-style");
-        String text = "url(http://www.redballs.com/redball.png)";
-        
-        CssPropertyValue csspv = new CssPropertyValue(p, text);
-        
-        dumpResult(csspv);
-        
-        assertTrue(csspv.success());
-
-}
-
-         public void testFillStackWithURL() {
-        Stack<String> stack = new Stack<String>();
-        CssPropertyValue.fillStack(stack, "url(http://www.redballs.com/redball.png)");
-        dumpList(stack);
-        assertEquals(4, stack.size());
     }
 
-     
+    public void testUnquotedURL() {
+        Property p = PropertyModel.instance().getProperty("list-style");
+        String text = "url(http://www.redballs.com/redball.png)";
+
+        CssPropertyValue csspv = new CssPropertyValue(p, text);
+
+//        dumpResult(csspv);
+
+        assertTrue(csspv.success());
+
+    }
+
+    public void testFillStackWithURL() {
+        Stack<String> stack = new Stack<String>();
+        CssPropertyValue.fillStack(stack, "url(http://www.redballs.com/redball.png)");
+//        dumpList(stack);
+        assertEquals(4, stack.size());
+    }
+    
+    public void testBackroundImage() {
+        Property p = PropertyModel.instance().getProperty("background-image");
+        String text = "";
+
+        CssPropertyValue csspv = new CssPropertyValue(p, text);
+
+        dumpResult(csspv);
+
+        assertTrue(csspv.success());
+
+    }
 }
