@@ -993,7 +993,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 return csmFile;
             }
 
-            APTPreprocHandler.State state = preprocHandler.getState();
+            APTPreprocHandler.State newState = preprocHandler.getState();
             boolean reparseNeeded = false;
 
             File javaIoFile = csmFile.getBuffer().getFile();
@@ -1001,13 +1001,11 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             final Object stateLock = getFileContainer().getLock(entry);
             int entryModCount;
             synchronized (stateLock) {
-                entryModCount = entry.getModCount();
-                reparseNeeded = isReparseNeeded(entry.getState(), state);
+                reparseNeeded = isSecondStateBetter(entry.getState(), newState);
                 if (reparseNeeded) {
-                    putPreprocState(javaIoFile, state);
-                    // invalidate file
-                    csmFile.stateChanged(true);
+                    putPreprocState(entry, newState);
                 }
+                entryModCount = entry.getModCount();
             }
 
             // gather macro map from all includes
@@ -1016,26 +1014,26 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             walker.visit();
 
             synchronized (stateLock) {
-                if (reparseNeeded) {
-                    if (entry.getModCount() == entryModCount) {
-                        getFileContainer().putPreprocConditionState(entry, pcState);
-                    }
-                    // no else here:
-                    // modCount differs => somebody has changed entry =>
-                    // it's his responsibility to set file modidied
-                    // and update both state and conditions state in the container
-                } else { // if (! reparseNeeded) {
-                    if (isReparseNeeded(entry.getPCState(), pcState)) {
-                        reparseNeeded = true;
-                        putPreprocState(javaIoFile, state); // TODO: understand whether it's really necessary
-                        getFileContainer().putPreprocConditionState(entry, pcState);
-                        csmFile.stateChanged(true);
+                if (reparseNeeded && entry.getModCount() != entryModCount) {
+                    reparseNeeded = isSecondStateBetter(entry.getState(), newState);
+                    if (reparseNeeded) {
+                        putPreprocState(entry, newState);
                     }
                 }
-            }
-
-            if (reparseNeeded && !isDisposing() && !base.isDisposing()) {
-                scheduleIncludedFileParsing(csmFile, state);
+                if (reparseNeeded) {
+                    getFileContainer().putPreprocConditionState(entry, pcState);
+                } else {
+                    // if new state isn't worse than old one, compare condition states
+                    if (!isSecondStateBetter(newState, entry.getState()) && isSecondStateBetter(entry.getPCState(), pcState)) {
+                        reparseNeeded = true;
+                        putPreprocState(entry, newState);
+                        getFileContainer().putPreprocConditionState(entry, pcState);
+                    }
+                }
+                if (reparseNeeded && !isDisposing() && !base.isDisposing()) {
+                    csmFile.stateChanged(true);
+                    scheduleIncludedFileParsing(csmFile, newState);
+                }
             }
             return csmFile;
         } finally {
@@ -1043,20 +1041,20 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         }
     }
 
-    private static boolean isReparseNeeded(APTPreprocHandler.State oldState, APTPreprocHandler.State newState) {
-        if (oldState == null || !oldState.isValid()) {
+    private static boolean isSecondStateBetter(APTPreprocHandler.State first, APTPreprocHandler.State second) {
+        if (first == null || !first.isValid()) {
             return true;
-        } else if (!oldState.isCompileContext() && newState.isCompileContext()) {
+        } else if (!first.isCompileContext() && second.isCompileContext()) {
             return true;
         }
         return false;
     }
 
-    private static boolean isReparseNeeded(FilePreprocessorConditionState oldPCState, FilePreprocessorConditionState newPcState) {
-        if (newPcState == null) {
+    private static boolean isSecondStateBetter(FilePreprocessorConditionState first, FilePreprocessorConditionState second) {
+        if (second == null) {
             return false;
         } else {
-            return newPcState.compareTo(oldPCState) > 0;
+            return second.compareTo(first) > 0;
         }
     }
 
