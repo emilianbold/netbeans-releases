@@ -66,12 +66,16 @@ public class SpringHelper {
     private static final String NAME_ATTR = "name";     //NOI18N
 
     private static final String VALUE_ATTR = "value";   //NOI18N
+    
+    private static final String REF_ATTR = "ref";       //NOI18N
 
     private static final String EMF_ID = "entityManagerFactory";        //NOI18N
 
     private static final String TXM_ID = "transactionManager";      //NOI18N
 
     private static final String EMF_CLASS = "org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean";       //NOI18N
+    
+    private static final String SIMPLE_EMF_CLASS = "org.springframework.orm.jpa.LocalEntityManagerFactoryBean";       //NOI18N
 
     private static final String DATA_SOURCE_CLASS = "org.springframework.jdbc.datasource.DriverManagerDataSource";  //NOI18N
 
@@ -132,13 +136,30 @@ public class SpringHelper {
         if (emfElement != null) {
             return;
         }
-        emfElement = createBean(EMF_ID, EMF_CLASS);
-        emfElement.appendChild(createProperty(PERSISTENCE_UNIT_NAME_PROP, pu.getName()));
-        emfElement.appendChild(createDataSourceProperty());
-        //emfElement.appendChild(createWeaverProperty());
-        emfElement.appendChild(createJpaVendorAdapterProperty());
+        
+        boolean hasJTASupport = RestUtils.hasJTASupport(project);
+        
+        if (hasJTASupport) {
+            emfElement = createBean(EMF_ID, EMF_CLASS);
+            emfElement.appendChild(createProperty(PERSISTENCE_UNIT_NAME_PROP, pu.getName()));
+            emfElement.appendChild(createDataSourceProperty());
+            //emfElement.appendChild(createWeaverProperty());
+            emfElement.appendChild(createJpaVendorAdapterProperty());
+        } else{
+            emfElement = createBean(EMF_ID, SIMPLE_EMF_CLASS);
+            emfElement.appendChild(createProperty(PERSISTENCE_UNIT_NAME_PROP, pu.getName()));
+        }
+        
         helper.appendChild(emfElement);
-        helper.appendChild(createBean(TXM_ID, RestUtils.hasJTASupport(project) ? JTA_TXM_CLASS : JPA_TXM_CLASS));
+        
+        if (hasJTASupport) {
+            helper.appendChild(createBean(TXM_ID, JTA_TXM_CLASS));
+        } else {
+            Element txmElement = createBean(TXM_ID, JPA_TXM_CLASS);
+            txmElement.appendChild(createProperty(EMF_ID, EMF_ID, true));
+            helper.appendChild(txmElement);
+        }
+        
         helper.appendChild(createBean(null, PERSISTENCE_ANNOTATION_POST_PROCESSOR_CLASS));
         helper.appendChild(helper.createElement(ANNOTATION_DRIVEN_TAG));
 
@@ -168,11 +189,19 @@ public class SpringHelper {
     }
 
     private Element createProperty(String name, String value) {
+        return createProperty(name, value, false);
+    }
+    
+    private Element createProperty(String name, String value, boolean useRef) {
         Element propElement = helper.createElement(PROPERTY_TAG);
         propElement.setAttribute(NAME_ATTR, name);
 
         if (value != null) {
-            propElement.setAttribute(VALUE_ATTR, value);
+            if (useRef) {
+                propElement.setAttribute(REF_ATTR, value);
+            } else {
+                propElement.setAttribute(VALUE_ATTR, value);
+            }
         }
         return propElement;
     }

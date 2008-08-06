@@ -362,17 +362,11 @@ public class BaseTest extends ExtJellyTestCase {
      */
     void undo(int n) {
         //first switch to FormEditor tab
-        MainWindowOperator mainWindow = MainWindowOperator.getDefault();
-
-
-//        OpenAction openAction = new OpenAction();
-//        openAction.perform(formnode);
-
-//        sleep(500) ;
-        //inspector.selectComponent("[JFrame]");
+        
         for (int i = 0; i < n; i++) {
             sleep(500);
-            mainWindow.getToolbarButton(mainWindow.getToolbar("Edit"), "Undo").push();
+            new ActionNoBlock("Edit|Undo", null).perform();
+            //mainWindow.getToolbarButton(mainWindow.getToolbar("Edit"), "Undo").push();
             sleep(500);
         }
     }
@@ -386,7 +380,8 @@ public class BaseTest extends ExtJellyTestCase {
         //inspector.selectComponent("[JFrame]");
         for (int i = 0; i < n; i++) {
             sleep(1000);
-            mainWindow.getToolbarButton(mainWindow.getToolbar("Edit"), "Redo").push();
+            new ActionNoBlock("Edit|Redo", null).perform();
+            //mainWindow.getToolbarButton(mainWindow.getToolbar("Edit"), "Redo").push();
             sleep(1000);
         }
     }

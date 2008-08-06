@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,21 +31,19 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.cnd.remote.support;
 
 import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.JSchException;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.Reader;
 import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
@@ -53,7 +51,7 @@ import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
 /**
  * This support is intended to work with RemoteNativeExecution and provide input (and eventually
  * output) for project actions.
- * 
+ *
  * @author gordonp
  */
 public class RemoteNativeExecutionSupport extends RemoteConnectionSupport {
@@ -65,30 +63,20 @@ public class RemoteNativeExecutionSupport extends RemoteConnectionSupport {
         try {
             setChannelCommand(dirf, exe, args, envp);
             InputStream is = channel.getInputStream();
-            BufferedReader in = new BufferedReader(new InputStreamReader(is)); // XXX - Change to non-buffered input
+            Reader in = new InputStreamReader(is);
             channel.setInputStream(new ReaderInputStream(userInput));
 
             channel.connect();
 
-//            String line;
-//            while ((line = in.readLine()) != null) { // XXX - Change to character oriented input
-//                out.println(line);
-//                out.flush();
-//            }
-//            in.close();
-//            is.close();
-
-            String line;
-            while ((line = in.readLine()) != null || !channel.isClosed()) {
-                if (line != null) {
-                    out.write(line + "\n"); // NOI18N
-                    out.flush();
-                }
-                try {
-                    Thread.sleep(50);
-                } catch (InterruptedException e) {
+            int read;
+            while ((read = in.read()) != -1) {
+                if (read == 10) { // from LocalNativeExecution (MAC conversion?)
+                    out.append('\n');
+                } else {
+                    out.append((char) read);
                 }
             }
+            out.flush();
             is.close();
             in.close();
 
@@ -124,7 +112,7 @@ public class RemoteNativeExecutionSupport extends RemoteConnectionSupport {
             //echannel.setEnv(var, val); // not in 0.1.24
 
             //as a workaround
-            cmdline = var + "=\"" + val + "\";" + cmdline; // NOI18N
+            cmdline = var + "=\"" + val + "\" " + cmdline; // NOI18N
         }
 
         channel = createChannel();
@@ -164,5 +152,4 @@ public class RemoteNativeExecutionSupport extends RemoteConnectionSupport {
             return 1;
         }
     }
-
 }

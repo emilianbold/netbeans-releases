@@ -100,7 +100,11 @@ public class XMLCodeCompletion_0003 extends XMLCodeCompletion {
     {
       startTest( );
 
-      AddSampleSchemaInternal( TEST_JAVA_APP_NAME, "newpackage" );
+      AddPurchaseOrderSchemaInternal(
+          TEST_JAVA_APP_NAME,
+          "newpackage"//TEST_JAVA_APP_NAME
+        );
+      //AddSampleSchemaInternal( TEST_JAVA_APP_NAME, "newpackage" );
 
       endTest( );
     }
@@ -121,7 +125,7 @@ public class XMLCodeCompletion_0003 extends XMLCodeCompletion {
       CreateConstrainedInternal(
           TEST_JAVA_APP_NAME,
           aimpData,
-          TEST_JAVA_APP_NAME,
+          "newpackage",//TEST_JAVA_APP_NAME,
           "purchaseOrder",
           0
         );

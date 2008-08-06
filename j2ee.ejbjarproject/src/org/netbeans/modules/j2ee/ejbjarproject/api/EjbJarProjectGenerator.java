@@ -514,7 +514,7 @@ public class EjbJarProjectGenerator {
         }
 
         // deploy on save since nb 6.5
-        ep.setProperty(EjbJarProjectProperties.DEPLOY_ON_SAVE, "true"); // NOI18N        
+        ep.setProperty(EjbJarProjectProperties.DISABLE_DEPLOY_ON_SAVE, "false"); // NOI18N
         
         ep.setProperty(EjbJarProjectProperties.JAVAC_DEBUG, "true");
         ep.setProperty(EjbJarProjectProperties.JAVAC_DEPRECATION, "false");

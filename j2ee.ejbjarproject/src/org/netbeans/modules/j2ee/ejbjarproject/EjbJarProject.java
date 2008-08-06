@@ -975,8 +975,8 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                 Logger.getLogger("global").log(Level.INFO, null, e);
             }
             
-            String deployOnSave = getProperty(AntProjectHelper.PROJECT_PROPERTIES_PATH, EjbJarProjectProperties.DEPLOY_ON_SAVE);
-            if (Boolean.parseBoolean(deployOnSave)) {
+            String disableDeployOnSave = getProperty(AntProjectHelper.PROJECT_PROPERTIES_PATH, EjbJarProjectProperties.DISABLE_DEPLOY_ON_SAVE);
+            if (!Boolean.parseBoolean(disableDeployOnSave)) {
                 Deployment.getDefault().enableCompileOnSaveSupport(ejbModule);
             }
             
