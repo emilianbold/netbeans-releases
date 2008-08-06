@@ -153,6 +153,13 @@ public class IntroduceHintTest extends NbTestCase {
     public void testCorrectSelection13() throws Exception {
         performSimpleSelectionVerificationTest("package test; public class Test {public void test() {new |Object|();}}", false);
     }
+
+    public void test142424() throws Exception {
+        performFixTest("package test; public class Test {private static void bar(int i) {} public void test() {new Runnable() {public void run() {String foo = \"foo\";bar(|foo.length()|);}}.run();}}",
+                       "package test; public class Test {private static void bar(int i) {} public void test() {new Runnable() {public void run() {String foo = \"foo\";int length = foo.length(); bar( length);}}.run();}}",
+                       new DialogDisplayerImpl(null, false, false, true),
+                       3, 0);
+    }
     
     public void testFix1() throws Exception {
         performFixTest("package test; public class Test {public void test() {int y = 3; int x = y + 9;}}",
@@ -986,7 +993,7 @@ public class IntroduceHintTest extends NbTestCase {
     
     private void performSimpleSelectionVerificationTest(String code, int start, int end, boolean awaited) throws Exception {
         prepareTest(code);
-        
+
         assertEquals(awaited, IntroduceHint.validateSelection(info, start, end) != null);
     }
     
