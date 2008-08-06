@@ -122,7 +122,6 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
     private HashMap<String, CompilerSetManager> copiedManagers = new HashMap<String, CompilerSetManager>();
     private CompilerSet currentCompilerSet;
     private ServerList serverList;
-    private ServerRecord serverRecord;
     private ServerUpdateCache serverUpdateCache;
     private static final Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
 
@@ -140,11 +139,9 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         serverUpdateCache = null;
         serverList = (ServerList) Lookup.getDefault().lookup(ServerList.class);
         if (serverList != null) {
-            serverRecord = serverList.getDefaultRecord();
-            hkey = serverRecord.getName();
+            hkey = serverList.getDefaultRecord().getName();
             btEditDevHost.setEnabled(true);
         } else {
-            serverRecord = null;
             hkey = CompilerSetManager.LOCALHOST;
         }
 
