@@ -127,8 +127,12 @@ public class TypeFactory {
     public static TypeImpl createType(AST ast, CsmFile file,  AST ptrOperator, int arrayDepth) {
         return createType(ast, file, ptrOperator, arrayDepth, null);
     }
+
+    public static TypeImpl createType(AST ast, CsmFile file,  AST ptrOperator, int arrayDepth, CsmScope scope) {
+        return createType(ast, file, ptrOperator, arrayDepth, null, scope);
+    }
     
-    private static TypeImpl createType(AST ast, CsmFile file,  AST ptrOperator, int arrayDepth, CsmType parent) {
+    private static TypeImpl createType(AST ast, CsmFile file,  AST ptrOperator, int arrayDepth, CsmType parent, CsmScope scope) {
         boolean refence = false;
         int pointerDepth = 0;
         while( ptrOperator != null && ptrOperator.getType() == CPPTokenTypes.CSM_PTR_OPERATOR ) {
@@ -228,7 +232,7 @@ public class TypeFactory {
                                         // We're done here, start filling nested type
                                         type.classifierText = sb;
                                         type.qname = (String[]) l.toArray(new String[l.size()]);
-                                        type = createType(namePart.getNextSibling(), file, ptrOperator, arrayDepth, type);
+                                        type = createType(namePart.getNextSibling(), file, ptrOperator, arrayDepth, TemplateUtils.checkTemplateType(type, scope), scope);
                                         break;
                                     } else {
                                         if (TraceFlags.DEBUG) {
