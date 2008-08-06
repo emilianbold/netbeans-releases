@@ -49,7 +49,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import org.netbeans.modules.uml.drawingarea.persistence.util.XMIConstants;
-import org.netbeans.modules.uml.drawingarea.persistence.XMIWriter;
 import org.openide.util.Exceptions;
 
 /**
@@ -64,7 +63,6 @@ public class Writer {
     protected String idref; // Referring to ID within the document: eg: graph edge
     protected Point location;
     protected HashMap nodeAttrs = new HashMap();
-    private List<HashMap> nodeProperties;
     protected HashMap properties = new HashMap();
     protected HashMap symanticModelBridgeAttrs = new HashMap();
     protected HashMap symanticModelEltAttrs = new HashMap();
@@ -122,7 +120,7 @@ public class Writer {
         XMIWriter.writeElement(bw, XMIConstants.UML_GRAPHNODE, getNodeAttrs());
         writePositionSize();      
         // write properties 
-        XMIWriter.writeProperties(bw, getNodeProperties());
+        XMIWriter.writeProperties(bw, getDiagramElementProperties(properties));
         //write graph elemnet symantic model
         XMIWriter.writeSymanticModelBridge(bw, getSymanticModelBridgeAttrs(), elementType, MEID);        
     }
@@ -176,14 +174,6 @@ public class Writer {
         this.visible = visible;
     }
 
-//    public String getViewName() {
-//        return viewName;
-//    }
-//
-//    public void setViewName(String viewName) {
-//        this.viewName = viewName;
-//    }
-
     @SuppressWarnings(value = "unchecked")
     protected HashMap getNodeAttrs() {
         nodeAttrs.put(XMIConstants.XMI_ID, PEID);
@@ -191,25 +181,18 @@ public class Writer {
         return nodeAttrs;
     }
 
-    List<HashMap> getNodeProperties() {
-        nodeProperties = new ArrayList<HashMap>();
-        if (!properties.isEmpty()) {
-            for (Iterator<String> it1 = properties.keySet().iterator(); it1.hasNext();) {
+    List<HashMap> getDiagramElementProperties(HashMap map) {
+        List<HashMap> retVal = new ArrayList<HashMap>();
+        if (!map.isEmpty()) {
+            for (Iterator<String> it1 = map.keySet().iterator(); it1.hasNext();) {
                 String key = it1.next();
                 HashMap prop1 = new HashMap();
                 prop1.put(XMIConstants.KEY, key);
-                prop1.put(XMIConstants.VALUE, properties.get(key));
-                nodeProperties.add(prop1);
+                prop1.put(XMIConstants.VALUE, map.get(key));
+                retVal.add(prop1);
             }
         }
-//        //now add the view name as a property
-//        if (getViewName() != null) {
-//            HashMap viewMap = new HashMap();
-//            viewMap.put(XMIConstants.KEY, "ViewName");
-//            viewMap.put(XMIConstants.VALUE, this.viewName);
-//            nodeProperties.add(viewMap);
-//        }
-        return nodeProperties;
+        return retVal;
     }
 
     public HashMap getProperties() {
