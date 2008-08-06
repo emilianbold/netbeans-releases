@@ -143,6 +143,9 @@ public abstract class MultiFileLoader extends DataLoader {
             if (willLog) {
                 ERR.fine(getClass().getName() + " created object for: " + fo + " obj: " + obj); // NOI18N
             }
+            if (obj == null) {
+                throw new IOException("Loader: " + this + " returned null from createMultiObject(" + primary + ")"); // NOI18N
+            }
         } catch (DataObjectExistsException ex) {
             // object already exists
             DataObject dataObject = ex.getDataObject ();
