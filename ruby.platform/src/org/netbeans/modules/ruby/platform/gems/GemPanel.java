@@ -83,23 +83,28 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 /**
- * @todo Use a table instead of a list for the gem lists, use checkboxes to choose
- *   items to be uninstalled, and show the installation date (based
- *   on file timestamps)
+ * @todo Use a table instead of a list for the gem lists, use checkboxes to
+ *   choose items to be uninstalled, and show the installation date (based on
+ *   file timestamps)
  */
 public final class GemPanel extends JPanel {
     
     private static final Logger LOGGER = Logger.getLogger(GemPanel.class.getName());
-    
+
+    /** Preference key for storing lastly used directory when installing new gem. */
     private static final String LAST_GEM_DIRECTORY = "lastLocalGemDirectory"; // NOI18N
 
+    /** Preference key for storing lastly selected platform. */
     private static final String LAST_PLATFORM_ID = "gemPanelLastPlatformID"; // NOI18N
+
     static enum TabIndex { UPDATED, INSTALLED, NEW; }
     
     private RequestProcessor updateTasksQueue;
-    
+
+    /** Whether this dialog is closed. */
     private boolean closed;
-    
+
+    /** see {@link #isModified} */
     private boolean gemsModified;
 
     public GemPanel(String availableFilter) {
@@ -115,7 +120,7 @@ public final class GemPanel extends JPanel {
      * may be <code>null</code> in which case the last selected platform is preselected.
      */
     public GemPanel(String availableFilter, RubyPlatform preselected) {
-        updateTasksQueue = new RequestProcessor("Gem Updater", 5);
+        updateTasksQueue = new RequestProcessor("Gem Updater", 5); // NOI18N
         initComponents();
         if (preselected == null) {
             Util.preselectPlatform(platforms, LAST_PLATFORM_ID);
@@ -189,14 +194,6 @@ public final class GemPanel extends JPanel {
     private void cancelRunningTasks() {
         LOGGER.finer("Cancelling all running GemPanel tasks");
         // TODO: implement
-    }
-    
-    public void run() {
-        // This will also update the New and Installed lists because Update depends on these
-        EventQueue.invokeLater(new Runnable() {
-            public void run() {
-            }
-        });
     }
     
     private static void updateGemDescription(JTextPane pane, Gem gem) {
@@ -307,7 +304,7 @@ public final class GemPanel extends JPanel {
                 searchInstText.setEnabled(enabled);
                 break;
             default:
-                throw new IllegalArgumentException("Unknonw tab: " + tab);
+                throw new IllegalArgumentException("Unknonw tab: " + tab); // NOI18N
         }
         boolean everythingDone = newPanel.isEnabled() && updatedPanel.isEnabled() && installedPanel.isEnabled();
         // allow certain actions only when all tabs are updated
@@ -386,7 +383,7 @@ public final class GemPanel extends JPanel {
                 list = installedList;
                 break;
             default:
-                throw new IllegalArgumentException("Unknonw tab: " + tab);
+                throw new IllegalArgumentException("Unknonw tab: " + tab); // NOI18N
         }
 
         if (gems == null) {
