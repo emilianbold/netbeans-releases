@@ -133,7 +133,6 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
     
     static final Logger LOG = Logger.getLogger(WebAppParseSupport.class.getName());
     private static final JspParserAPI.JspOpenInfo DEFAULT_JSP_OPEN_INFO = new JspParserAPI.JspOpenInfo(false, "8859_1"); // NOI18N
-    private static final Pattern RE_PATTERN_COMMONS_LOGGING = Pattern.compile(".*commons-logging.*\\.jar.*"); // NOI18N
     
     final JspParserImpl jspParser;
     // #85817
