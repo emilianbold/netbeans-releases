@@ -40,6 +40,8 @@
 package org.netbeans.modules.php.project.ui.customizer;
 
 import java.awt.Component;
+import java.awt.Container;
+import java.awt.FocusTraversalPolicy;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -93,11 +95,60 @@ public class CustomizerPhpIncludePath extends JPanel implements HelpCtx.Provider
         moveDownButton = new JButton();
         includePathLabel = new JLabel();
 
+        setFocusTraversalPolicy(new FocusTraversalPolicy() {
+
+
+
+            public Component getDefaultComponent(Container focusCycleRoot){
+                return includePathList;
+            }//end getDefaultComponent
+            public Component getFirstComponent(Container focusCycleRoot){
+                return includePathList;
+            }//end getFirstComponent
+            public Component getLastComponent(Container focusCycleRoot){
+                return moveDownButton;
+            }//end getLastComponent
+            public Component getComponentAfter(Container focusCycleRoot, Component aComponent){
+                if(aComponent ==  includePathList){
+                    return addFolderButton;
+                }
+                if(aComponent ==  moveUpButton){
+                    return moveDownButton;
+                }
+                if(aComponent ==  removeButton){
+                    return moveUpButton;
+                }
+                if(aComponent ==  addFolderButton){
+                    return removeButton;
+                }
+                return includePathList;//end getComponentAfter
+            }
+            public Component getComponentBefore(Container focusCycleRoot, Component aComponent){
+                if(aComponent ==  addFolderButton){
+                    return includePathList;
+                }
+                if(aComponent ==  moveDownButton){
+                    return moveUpButton;
+                }
+                if(aComponent ==  moveUpButton){
+                    return removeButton;
+                }
+                if(aComponent ==  removeButton){
+                    return addFolderButton;
+                }
+                return moveDownButton;//end getComponentBefore
+
+            }}
+        
+        );
+
         includePathScrollPane.setViewportView(includePathList);
 
 
 
 
+
+        includePathList.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerPhpIncludePath.class, "CustomizerPhpIncludePath.includePathList.AccessibleContext.accessibleDescription")); // NOI18N
         Mnemonics.setLocalizedText(addFolderButton, NbBundle.getMessage(CustomizerPhpIncludePath.class, "LBL_AddFolder")); // NOI18N
         Mnemonics.setLocalizedText(removeButton, NbBundle.getMessage(CustomizerPhpIncludePath.class, "LBL_Remove"));
         Mnemonics.setLocalizedText(moveUpButton, NbBundle.getMessage(CustomizerPhpIncludePath.class, "LBL_MoveUp"));
@@ -107,6 +158,7 @@ public class CustomizerPhpIncludePath extends JPanel implements HelpCtx.Provider
         Mnemonics.setLocalizedText(includePathLabel, NbBundle.getMessage(CustomizerPhpIncludePath.class, "LBL_PhpIncludePath"));
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
+
         layout.setHorizontalGroup(
             layout.createParallelGroup(GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
@@ -144,6 +196,21 @@ public class CustomizerPhpIncludePath extends JPanel implements HelpCtx.Provider
                 .addContainerGap())
         
         );
+
+        includePathScrollPane.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerPhpIncludePath.class, "CustomizerPhpIncludePath.includePathScrollPane.AccessibleContext.accessibleName")); // NOI18N
+        includePathScrollPane.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerPhpIncludePath.class, "CustomizerPhpIncludePath.includePathScrollPane.AccessibleContext.accessibleDescription")); // NOI18N
+        addFolderButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerPhpIncludePath.class, "CustomizerPhpIncludePath.addFolderButton.AccessibleContext.accessibleName")); // NOI18N
+        addFolderButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerPhpIncludePath.class, "CustomizerPhpIncludePath.addFolderButton.AccessibleContext.accessibleDescription")); // NOI18N
+        removeButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerPhpIncludePath.class, "CustomizerPhpIncludePath.removeButton.AccessibleContext.accessibleName")); // NOI18N
+        removeButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerPhpIncludePath.class, "CustomizerPhpIncludePath.removeButton.AccessibleContext.accessibleDescription")); // NOI18N
+        moveUpButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerPhpIncludePath.class, "CustomizerPhpIncludePath.moveUpButton.AccessibleContext.accessibleName")); // NOI18N
+        moveUpButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerPhpIncludePath.class, "CustomizerPhpIncludePath.moveUpButton.AccessibleContext.accessibleDescription")); // NOI18N
+        moveDownButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerPhpIncludePath.class, "CustomizerPhpIncludePath.moveDownButton.AccessibleContext.accessibleName")); // NOI18N
+        moveDownButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerPhpIncludePath.class, "CustomizerPhpIncludePath.moveDownButton.AccessibleContext.accessibleDescription")); // NOI18N
+        includePathLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerPhpIncludePath.class, "CustomizerPhpIncludePath.includePathLabel.AccessibleContext.accessibleName")); // NOI18N
+        includePathLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerPhpIncludePath.class, "CustomizerPhpIncludePath.includePathLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerPhpIncludePath.class, "CustomizerPhpIncludePath.AccessibleContext.accessibleName")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerPhpIncludePath.class, "CustomizerPhpIncludePath.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
 
