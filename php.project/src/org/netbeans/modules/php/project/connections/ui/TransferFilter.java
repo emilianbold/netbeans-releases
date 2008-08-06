@@ -391,6 +391,8 @@ public final class TransferFilter extends javax.swing.JPanel {
 
         jTable1.setModel(table.getModel());
         jScrollPane1.setViewportView(jTable1);
+        jTable1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TransferFilter.class, "TransferFilter.jTable1.AccessibleContext.accessibleName")); // NOI18N
+        jTable1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TransferFilter.class, "TransferFilter.jTable1.AccessibleContext.accessibleDescription")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -424,7 +426,19 @@ public final class TransferFilter extends javax.swing.JPanel {
                 .addContainerGap())
         );
 
-        lSearch.getAccessibleContext().setAccessibleDescription("null");
+        lSelectionInfo.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TransferFilter.class, "TransferFilter.lSelectionInfo.AccessibleContext.accessibleName")); // NOI18N
+        lSelectionInfo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TransferFilter.class, "TransferFilter.lSelectionInfo.AccessibleContext.accessibleDescription")); // NOI18N
+        lSearch.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TransferFilter.class, "TransferFilter.lSearch.AccessibleContext.accessibleName")); // NOI18N
+        lSearch.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TransferFilter.class, "ACD_Search")); // NOI18N
+        tfSearch.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TransferFilter.class, "TransferFilter.tfSearch.AccessibleContext.accessibleName")); // NOI18N
+        tfSearch.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TransferFilter.class, "TransferFilter.tfSearch.AccessibleContext.accessibleDescription")); // NOI18N
+        jScrollPane1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TransferFilter.class, "TransferFilter.jScrollPane1.AccessibleContext.accessibleName")); // NOI18N
+        jScrollPane1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TransferFilter.class, "TransferFilter.jScrollPane1.AccessibleContext.accessibleDescription")); // NOI18N
+        lWarning.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TransferFilter.class, "TransferFilter.lWarning.AccessibleContext.accessibleName")); // NOI18N
+        lWarning.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TransferFilter.class, "TransferFilter.lWarning.AccessibleContext.accessibleDescription")); // NOI18N
+
+        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TransferFilter.class, "TransferFilter.AccessibleContext.accessibleName")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TransferFilter.class, "TransferFilter.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private class PopupActionSupport extends MouseAdapter {

@@ -40,6 +40,9 @@
 package org.netbeans.modules.php.project.ui.wizards;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.FocusTraversalPolicy;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -113,6 +116,49 @@ class ConfigureExistingProjectPanelVisual extends ConfigurableProjectPanel {
         separator = new JSeparator();
         projectFolderPanel = new JPanel();
 
+        setFocusTraversalPolicy(new FocusTraversalPolicy() {
+
+
+
+            public Component getDefaultComponent(Container focusCycleRoot){
+                return sourcesTextField;
+            }//end getDefaultComponent
+            public Component getFirstComponent(Container focusCycleRoot){
+                return sourcesTextField;
+            }//end getFirstComponent
+            public Component getLastComponent(Container focusCycleRoot){
+                return encodingComboBox;
+            }//end getLastComponent
+            public Component getComponentAfter(Container focusCycleRoot, Component aComponent){
+                if(aComponent ==  sourcesTextField){
+                    return sourcesBrowseButton;
+                }
+                if(aComponent ==  sourcesBrowseButton){
+                    return projectNameTextField;
+                }
+                if(aComponent ==  projectNameTextField){
+                    return encodingComboBox;
+                }
+                return sourcesTextField;//end getComponentAfter
+            }
+            public Component getComponentBefore(Container focusCycleRoot, Component aComponent){
+                if(aComponent ==  sourcesBrowseButton){
+                    return sourcesTextField;
+                }
+                if(aComponent ==  projectNameTextField){
+                    return sourcesBrowseButton;
+                }
+                if(aComponent ==  encodingComboBox){
+                    return projectNameTextField;
+                }
+                return encodingComboBox;//end getComponentBefore
+
+            }}
+        
+        );
+
+        sourcesLabel.setLabelFor(sourcesTextField);
+
         Mnemonics.setLocalizedText(sourcesLabel, NbBundle.getMessage(ConfigureExistingProjectPanelVisual.class, "LBL_Sources")); // NOI18N
         sourcesLabel.setVerticalAlignment(SwingConstants.TOP);
         Mnemonics.setLocalizedText(sourcesBrowseButton, NbBundle.getMessage(ConfigureExistingProjectPanelVisual.class, "LBL_LocalServerBrowse"));
@@ -136,6 +182,7 @@ class ConfigureExistingProjectPanelVisual extends ConfigurableProjectPanel {
 
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
+
         layout.setHorizontalGroup(
             layout.createParallelGroup(GroupLayout.LEADING)
             .add(separator, GroupLayout.DEFAULT_SIZE, 431, Short.MAX_VALUE)
@@ -180,6 +227,28 @@ class ConfigureExistingProjectPanelVisual extends ConfigurableProjectPanel {
                 .addContainerGap())
         
         );
+
+        sourcesLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ConfigureExistingProjectPanelVisual.class, "ConfigureExistingProjectPanelVisual.sourcesLabel.AccessibleContext.accessibleName")); // NOI18N
+        sourcesLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ConfigureExistingProjectPanelVisual.class, "ConfigureExistingProjectPanelVisual.sourcesLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        sourcesTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ConfigureExistingProjectPanelVisual.class, "ConfigureExistingProjectPanelVisual.sourcesTextField.AccessibleContext.accessibleDescription")); // NOI18N
+        sourcesBrowseButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ConfigureExistingProjectPanelVisual.class, "ConfigureExistingProjectPanelVisual.sourcesBrowseButton.AccessibleContext.accessibleName")); // NOI18N
+        sourcesBrowseButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ConfigureExistingProjectPanelVisual.class, "ConfigureExistingProjectPanelVisual.sourcesBrowseButton.AccessibleContext.accessibleDescription")); // NOI18N
+        sourcesInfoLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ConfigureExistingProjectPanelVisual.class, "ConfigureExistingProjectPanelVisual.sourcesInfoLabel.AccessibleContext.accessibleName")); // NOI18N
+        sourcesInfoLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ConfigureExistingProjectPanelVisual.class, "ConfigureExistingProjectPanelVisual.sourcesInfoLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        projectNameLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ConfigureExistingProjectPanelVisual.class, "ConfigureExistingProjectPanelVisual.projectNameLabel.AccessibleContext.accessibleName")); // NOI18N
+        projectNameLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ConfigureExistingProjectPanelVisual.class, "ConfigureExistingProjectPanelVisual.projectNameLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        projectNameTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ConfigureExistingProjectPanelVisual.class, "ConfigureExistingProjectPanelVisual.projectNameTextField.AccessibleContext.accessibleName")); // NOI18N
+        projectNameTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ConfigureExistingProjectPanelVisual.class, "ConfigureExistingProjectPanelVisual.projectNameTextField.AccessibleContext.accessibleDescription")); // NOI18N
+        encodingLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ConfigureExistingProjectPanelVisual.class, "ConfigureExistingProjectPanelVisual.encodingLabel.AccessibleContext.accessibleName")); // NOI18N
+        encodingLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ConfigureExistingProjectPanelVisual.class, "ConfigureExistingProjectPanelVisual.encodingLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        encodingComboBox.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ConfigureExistingProjectPanelVisual.class, "ConfigureExistingProjectPanelVisual.encodingComboBox.AccessibleContext.accessibleName")); // NOI18N
+        encodingComboBox.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ConfigureExistingProjectPanelVisual.class, "ConfigureExistingProjectPanelVisual.encodingComboBox.AccessibleContext.accessibleDescription")); // NOI18N
+        separator.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ConfigureExistingProjectPanelVisual.class, "ConfigureExistingProjectPanelVisual.separator.AccessibleContext.accessibleName")); // NOI18N
+        separator.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ConfigureExistingProjectPanelVisual.class, "ConfigureExistingProjectPanelVisual.separator.AccessibleContext.accessibleDescription")); // NOI18N
+        projectFolderPanel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ConfigureExistingProjectPanelVisual.class, "ConfigureExistingProjectPanelVisual.projectFolderPanel.AccessibleContext.accessibleName")); // NOI18N
+        projectFolderPanel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ConfigureExistingProjectPanelVisual.class, "ConfigureExistingProjectPanelVisual.projectFolderPanel.AccessibleContext.accessibleDescription")); // NOI18N
+        getAccessibleContext().setAccessibleName(NbBundle.getMessage(ConfigureExistingProjectPanelVisual.class, "ConfigureExistingProjectPanelVisual.AccessibleContext.accessibleName")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ConfigureExistingProjectPanelVisual.class, "ConfigureExistingProjectPanelVisual.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void sourcesBrowseButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_sourcesBrowseButtonActionPerformed
