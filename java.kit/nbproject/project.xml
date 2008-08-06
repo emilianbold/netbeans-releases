@@ -105,7 +105,7 @@
                     <code-name-base>org.netbeans.modules.java.j2seproject</code-name-base>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.13.2</specification-version>
+                        <specification-version>1.13.3</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -132,7 +132,7 @@
                 <dependency>
                     <code-name-base>org.netbeans.modules.java.source</code-name-base>
                     <run-dependency>
-                        <specification-version>0.34.2</specification-version>
+                        <specification-version>0.34.3</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
