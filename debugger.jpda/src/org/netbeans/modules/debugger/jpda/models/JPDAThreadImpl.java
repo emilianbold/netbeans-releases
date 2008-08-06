@@ -1097,6 +1097,8 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
             return lockedThreadsWithMonitors != null;
         } catch (VMDisconnectedException e) {
             return false;
+        } catch (InternalException e) {
+            return false;
         }
     }
 

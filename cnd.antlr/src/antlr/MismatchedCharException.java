@@ -140,5 +140,13 @@ public class MismatchedCharException extends RecognitionException {
 			break;
         }
     }
+
+    @Override
+    public String getTokenText() {
+        StringBuffer sb = new StringBuffer();
+        appendCharName(sb, foundChar);
+        return sb.toString();
+    }
+
 }
 

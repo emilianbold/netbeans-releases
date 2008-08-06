@@ -464,6 +464,11 @@ public final class UEIEmulatorConfiguratorImpl {
             
             final List<J2MEPlatform.J2MEProfile> jars = analyzePath(plDir, jarsString, bootClassPathString);
             
+            final String configuration = properties.getProperty(deviceName + ".version.configuration"); //NOI18N
+            //ignore CDC devicess
+            if (configuration != null && configuration.startsWith("CDC")){ //NOI18N
+                continue;
+            }
             final String screenWidth = properties.getProperty(deviceName + ".screen.width"); //NOI18N
             final String screenHeight = properties.getProperty(deviceName + ".screen.height"); //NOI18N
             final String screenBitDepth = properties.getProperty(deviceName + ".screen.bitDepth"); //NOI18N
