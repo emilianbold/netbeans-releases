@@ -676,10 +676,10 @@ private void verifySQLLimit() {
             }
             // Refresh table
             if (data.length > 0) {
-                sqlHistoryTable.repaint();
+                sqlHistoryTable.revalidate();
                 insertSQLButton.setEnabled(true);
             } else {
-                sqlHistoryTable.repaint();
+                sqlHistoryTable.revalidate();
                 insertSQLButton.setEnabled(false);
             }
         }
@@ -716,7 +716,7 @@ private void verifySQLLimit() {
                     insertSQLButton.setEnabled(false);
                 }
                 // Refresh the table
-                sqlHistoryTable.repaint();
+                sqlHistoryTable.revalidate();
             } catch (InterruptedException e) {
                 Exceptions.printStackTrace(e);
             } catch (Exception e) {
@@ -758,8 +758,8 @@ private void verifySQLLimit() {
                     data = new Object[0][0];                                        
                     insertSQLButton.setEnabled(false);
                 }
-                // Refresh the table                     
-                sqlHistoryTable.repaint();
+                // Refresh the table
+                sqlHistoryTable.revalidate();
             } catch (InterruptedException e) {
                 Exceptions.printStackTrace(e);
             } catch (Exception e) {

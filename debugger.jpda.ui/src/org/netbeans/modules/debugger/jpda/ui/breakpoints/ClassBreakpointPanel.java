@@ -112,6 +112,7 @@ public class ClassBreakpointPanel extends JPanel implements Controller, org.open
 
         ResourceBundle bundle = NbBundle.getBundle(ClassBreakpointPanel.class);
         String tooltipText = bundle.getString("TTT_TF_Class_Breakpoint_Class_Name");
+
         epClassName = addClassNameEditor(pSettings, className, tooltipText);
         epClassName.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_Method_Breakpoint_ClassName"));
         epClassName.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_Class_Breakpoint_ClassName"));
@@ -257,7 +258,7 @@ public class ClassBreakpointPanel extends JPanel implements Controller, org.open
         actionsPanel.ok ();
         
         String className = epClassName.getText ().trim ();
-        breakpoint.setClassFilters(parseClassFilters(className));
+        breakpoint.setClassFilters(ConditionsPanel.getFilter(className));
         breakpoint.setClassExclusionFilters(conditionsPanel.getClassExcludeFilter());//parseClassFilters(className));
         
         switch (cbBreakpointType.getSelectedIndex ()) {
@@ -317,32 +318,6 @@ public class ClassBreakpointPanel extends JPanel implements Controller, org.open
             return "";
         }
     }
-    
-    static String[] parseClassFilters(String classFilter) {
-        int numFilters = 1;
-        int length = classFilter.length();
-        if (length == 0) {
-            return new String[0];
-        }
-        for (int i = 0; i < length; i++) {
-            if (classFilter.charAt(i) == ',') numFilters++;
-        }
-        String[] classFilters = new String[numFilters];
-        if (numFilters == 1) {
-            classFilters[0] = classFilter;
-        } else {
-            int i = 0;
-            int pos = 0;
-            while (pos < length) {
-                int end = classFilter.indexOf(",");
-                if (end < 0) end = length;
-                classFilters[i] = classFilter.substring(pos, end).trim();
-                i++;
-                pos = end + 1;
-            }
-        }
-        return classFilters;
-    }
 
     static JEditorPane addClassNameEditor(JComponent comp, String className, String tooltipText) {
         JEditorPane editorPane = new JEditorPane("text/x-java", className); // NOI18N
@@ -355,7 +330,7 @@ public class ClassBreakpointPanel extends JPanel implements Controller, org.open
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
         JScrollPane scrollableLineEditor = WatchPanel.createScrollableLineEditor(editorPane);
         comp.add(scrollableLineEditor, gridBagConstraints);
-        scrollableLineEditor.setToolTipText(tooltipText);
+        editorPane.setToolTipText(tooltipText);
         return editorPane;
     }
     
