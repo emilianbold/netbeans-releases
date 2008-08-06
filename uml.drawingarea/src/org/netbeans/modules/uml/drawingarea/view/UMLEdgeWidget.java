@@ -99,6 +99,17 @@ public abstract class UMLEdgeWidget extends ConnectionWidget implements DiagramE
         return manager;
     }
 
+    @Override
+    public void setControlPoints(Collection<Point> controlPoints, boolean sceneLocations) {
+        int ctrlPtCount = this.getControlPoints().size();
+        super.setControlPoints(controlPoints, sceneLocations);
+        //Mark the diagram dirty after setting control points
+        if (scene != null && ctrlPtCount != this.getControlPoints().size())
+        {
+            ((DesignerScene)scene).getDiagram().setDirty(true);
+        }
+    }
+
     public void save(EdgeWriter edgeWriter)
     {
         IElement modElt = PersistenceUtil.getModelElement(this);
