@@ -61,7 +61,6 @@ import org.netbeans.jellytools.modules.editor.CompletionJListOperator;
 import java.util.List;
 import javax.swing.SwingUtilities;
 import junit.framework.AssertionFailedError;
-//import org.netbeans.api.java.source.ui.ScanDialog;
 
 /**
  *
@@ -72,44 +71,6 @@ public class XMLCodeCompletion extends GeneralXMLTest {
     
     static final String JAVA_CATEGORY_NAME = "Java";
     static final String JAVA_PROJECT_NAME = "Java Application";
-
-    class CFulltextStringComparator implements Operator.StringComparator
-    {
-      public boolean equals( java.lang.String caption, java.lang.String match )
-      {
-        return caption.equals( match );
-      }
-    }
-
-    public class CImportClickData
-    {
-      public boolean inshort;
-      public int row;
-      public int col;
-      public int count;
-      public int result;
-      public String error;
-      public String checker;
-      
-      public CImportClickData(
-          boolean _inshort,
-          int _row,
-          int _col,
-          int _count,
-          int _result,
-          String _error,
-          String _checker
-        )
-      {
-        inshort = _inshort;
-        row = _row;
-        col = _col;
-        count = _count;
-        result = _result;
-        error = _error;
-        checker = _checker;
-      }
-    }
 
     protected CompletionJListOperator GetCompletion( )
     {
@@ -131,62 +92,8 @@ public class XMLCodeCompletion extends GeneralXMLTest {
       }
     }
 
-    protected void ExpandByClicks(
-        JTableOperator table,
-        int row,
-        int col,
-        int count,
-        int result,
-        String error
-      )
-    {
-      // Normal version
-      // just click
-      table.clickOnCell( row, col, count );
-      table.pushKey( KeyEvent.VK_RIGHT );
-
-      // HaCk version
-      /*
-      Point pt = table.getPointToClick( row, col );
-      //table.enterMouse( );
-      //try { Thread.sleep( 50 ); } catch( InterruptedException ex ) { }
-      table.pressMouse( pt.x, pt.y );
-      try { Thread.sleep( 50 ); } catch( InterruptedException ex ) { }
-      table.releaseMouse( pt.x, pt.y );
-      try { Thread.sleep( 50 ); } catch( InterruptedException ex ) { }
-      table.pressMouse( pt.x, pt.y );
-      try { Thread.sleep( 50 ); } catch( InterruptedException ex ) { }
-      table.releaseMouse( pt.x, pt.y );
-      */
-
-      try { Thread.sleep( 750 ); } catch( InterruptedException ex ) { }
-      int iRows = table.getRowCount( );
-      if( result != iRows )
-        fail( error + iRows );
-
-      return;
-    }
-
     public XMLCodeCompletion(String arg0) {
         super(arg0);
-    }
-
-    public void CreateJavaApplicationInternal(
-        String sName
-      )
-    {
-        // Create Java application
-        NewProjectWizardOperator opNewProjectWizard = NewProjectWizardOperator.invoke( );
-        opNewProjectWizard.selectCategory( JAVA_CATEGORY_NAME );
-        opNewProjectWizard.selectProject( JAVA_PROJECT_NAME );
-        opNewProjectWizard.next( );
-
-        NewProjectNameLocationStepOperator opNewProjectNameLocationStep = new NewProjectNameLocationStepOperator( );
-        opNewProjectNameLocationStep.txtProjectLocation( ).setText( getDataDir( ).getPath( ) );
-        opNewProjectNameLocationStep.txtProjectName( ).setText( sName );
-        opNewProjectWizard.finish( );
-
-        //waitScanFinished( );
     }
 
     public void CreateJavaPackageInternal( String sProject )
@@ -205,64 +112,6 @@ public class XMLCodeCompletion extends GeneralXMLTest {
       if( null == ( new Node( prn, "Source Packages|newpackage" ) ) )
       {
         fail( "Unable to check created package." );
-      }
-    }
-
-    public void CreateSchemaInternal( String sProject )
-    {
-      ProjectsTabOperator pto = new ProjectsTabOperator( );
-      ProjectRootNode prn = pto.getProjectRootNode( sProject );
-      prn.select( );
-
-      NewFileWizardOperator opNewFileWizard = NewFileWizardOperator.invoke( );
-      opNewFileWizard.selectCategory( "XML" );
-      opNewFileWizard.selectFileType( "XML Schema" );
-      opNewFileWizard.next( );
-      opNewFileWizard.finish( );
-
-      // Check created schema in project tree
-      if( null == ( new Node( prn, "Source Packages|<default package>|newXmlSchema.xsd" ) ) )
-      {
-        fail( "Unable to check created schema." );
-      }
-    }
-
-    protected void AddSampleSchemaInternal(
-        String sProject,
-        String sPackage
-      )
-    {
-      ProjectsTabOperator pto = new ProjectsTabOperator( );
-      ProjectRootNode prn = pto.getProjectRootNode( sProject );
-      prn.select( );
-
-      NewFileWizardOperator opNewFileWizard = NewFileWizardOperator.invoke( );
-      opNewFileWizard.selectCategory( "XML" );
-      opNewFileWizard.selectFileType( "Purchase Order Sample Schema" );
-      opNewFileWizard.next( );
-
-      if( null != sPackage )
-      {
-        JDialogOperator jdNew = new JDialogOperator( "New Purchase Order Sample Schema" );
-        JButtonOperator jbBrowse = new JButtonOperator( jdNew, "Browse..." );
-        jbBrowse.pushNoBlock( );
-        JDialogOperator jdBrowse = new JDialogOperator( "Browse Folders" );
-        JTreeOperator jtBrowse = new JTreeOperator( jdBrowse, 0 );
-        jtBrowse.selectPath( jtBrowse.findPath( sProject + "|src|" + sPackage ) );
-        JButtonOperator jbSelect = new JButtonOperator( jdBrowse, "Select Folder" );
-        jbSelect.push( );
-        jdBrowse.waitClosed( );
-      }
-
-      opNewFileWizard.finish( );
-
-      // Check created schema in project tree
-      String sPath = "Source Packages|"
-          + ( ( null == sPackage ) ? "<default package>" : sPackage )
-          + "|newPurchaseOrder.xsd";
-      if( null == ( new Node( prn, sPath ) ) )
-      {
-        fail( "Unable to check created sample schema." );
       }
     }
 
@@ -485,34 +334,4 @@ public class XMLCodeCompletion extends GeneralXMLTest {
 
       opxml.close( true );
     }
-    /*
-    private static void waitScanFinished() {
-        try {
-            class Wait implements Runnable {
-
-                boolean initialized;
-                boolean ok;
-
-                public void run() {
-                    if (initialized) {
-                        ok = true;
-                        return;
-                    }
-                    initialized = true;
-                    boolean canceled = ScanDialog.runWhenScanFinished(this, "tests");
-                    assertFalse("Dialog really finished", canceled);
-                    assertTrue("Runnable run", ok);
-                }
-            }
-            Wait wait = new Wait();
-            if (SwingUtilities.isEventDispatchThread()) {
-                wait.run();
-            } else {
-                SwingUtilities.invokeAndWait(wait);
-            }
-        } catch (Exception ex) {
-            throw (AssertionFailedError)new AssertionFailedError().initCause(ex);
-        }
-    }
-    */
 }

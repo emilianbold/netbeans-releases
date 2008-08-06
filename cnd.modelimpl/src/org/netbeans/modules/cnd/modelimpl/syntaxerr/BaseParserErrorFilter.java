@@ -45,6 +45,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo;
+import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 /**
@@ -63,7 +64,7 @@ public abstract class BaseParserErrorFilter extends ParserErrorFilter {
 
     
     protected CsmErrorInfo toErrorInfo(RecognitionException e, CsmFile file) {
-        return toErrorInfo(e.getMessage(), e.getLine(), e.getColumn(), file);
+        return toErrorInfo(getMessage(e), e.getLine(), e.getColumn(), file);
     }
     
     protected CsmErrorInfo toErrorInfo(String message, int line, int column, CsmFile file) {
@@ -89,7 +90,16 @@ public abstract class BaseParserErrorFilter extends ParserErrorFilter {
         end--;
         return new SimpleErrorInfo(start, end, message, getDefaultSeverity());
     }
-    
+
+    protected String getMessage(RecognitionException e) {
+        String tokenText = e.getTokenText();
+        if (e == null) {
+            return NbBundle.getMessage(BaseParserErrorFilter.class, "MSG_PARSER_ERROR"); // NOI18N
+        } else {
+            return NbBundle.getMessage(BaseParserErrorFilter.class, "MSG_UNEXPECTED_TOKEN", tokenText); // NOI18N
+        }
+    }
+
     protected CsmErrorInfo.Severity getDefaultSeverity() {
         return CsmErrorInfo.Severity.ERROR;
     }

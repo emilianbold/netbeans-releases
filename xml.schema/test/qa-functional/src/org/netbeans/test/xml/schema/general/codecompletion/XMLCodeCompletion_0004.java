@@ -100,7 +100,11 @@ public class XMLCodeCompletion_0004 extends XMLCodeCompletion {
     {
       startTest( );
 
-      AddSampleSchemaInternal( TEST_JAVA_APP_NAME, "newpackage" );
+      AddPurchaseOrderSchemaInternal(
+          TEST_JAVA_APP_NAME,
+          null//TEST_JAVA_APP_NAME
+        );
+      //AddSampleSchemaInternal( TEST_JAVA_APP_NAME, "newpackage" );
 
       endTest( );
     }
