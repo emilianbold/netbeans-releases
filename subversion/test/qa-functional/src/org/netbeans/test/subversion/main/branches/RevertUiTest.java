@@ -46,7 +46,6 @@ public class RevertUiTest extends JellyTestCase{
     @Override
     protected void setUp() throws Exception {        
         os_name = System.getProperty("os.name");
-        //System.out.println(os_name);
         System.out.println("### "+getName()+" ###");
         
     }
@@ -70,11 +69,7 @@ public class RevertUiTest extends JellyTestCase{
      }
     
     public void testInvokeCloseRevert() throws Exception {
-        //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
-        //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 3000);
         try {
-            TestKit.closeProject(PROJECT_NAME);
-
             new File(TMP_PATH).mkdirs();
             RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + REPO_PATH));
             RepositoryMaintenance.createRepository(TMP_PATH + File.separator + REPO_PATH);
@@ -97,7 +92,6 @@ public class RevertUiTest extends JellyTestCase{
             cso.finish();
 
             Node projNode = new Node(new ProjectsTabOperator().tree(), PROJECT_NAME);
-            //Node projNode = new Node(new ProjectsTabOperator().tree(), "AnagramGame");
             RevertModificationsOperator rmo = RevertModificationsOperator.invoke(projNode);
             rmo.verify();
             TimeoutExpiredException tee = null;
@@ -154,8 +148,6 @@ public class RevertUiTest extends JellyTestCase{
             assertNotNull("Components shouldn't be accessed", tee);
 
             rmo.cancel(); 
-        } catch (Exception e) {
-            throw new Exception("Test failed: " + e);
         } finally {
             TestKit.closeProject(PROJECT_NAME);
         } 

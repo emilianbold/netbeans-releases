@@ -48,7 +48,6 @@ public class MergeUiTest extends JellyTestCase {
     @Override
     protected void setUp() throws Exception {
         os_name = System.getProperty("os.name");
-        //System.out.println(os_name);
         System.out.println("### " + getName() + " ###");
     }
 
@@ -71,20 +70,15 @@ public class MergeUiTest extends JellyTestCase {
      }
 
     public void testInvokeCloseMerge() throws Exception {
-        //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
-        //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 3000);
         try {
-            TestKit.closeProject(PROJECT_NAME);
-
             new File(TMP_PATH).mkdirs();
             RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + REPO_PATH));
             RepositoryMaintenance.createRepository(TMP_PATH + File.separator + REPO_PATH);
             RepositoryMaintenance.loadRepositoryFromFile(TMP_PATH + File.separator + REPO_PATH, getDataDir().getCanonicalPath() + File.separator + "repo_dump");
             projectPath = TestKit.prepareProject("Java", "Java Application", PROJECT_NAME);
 
-            ImportWizardOperator iwo = ImportWizardOperator.invoke(ProjectsTabOperator.invoke().getProjectRootNode(PROJECT_NAME));
+            ImportWizardOperator.invoke(ProjectsTabOperator.invoke().getProjectRootNode(PROJECT_NAME));
             RepositoryStepOperator rso = new RepositoryStepOperator();
-            //rso.verify();
             rso.setRepositoryURL(RepositoryStepOperator.ITEM_FILE + RepositoryMaintenance.changeFileSeparator(TMP_PATH + File.separator + REPO_PATH, false));
             rso.next();
             Thread.sleep(1000);
@@ -98,7 +92,6 @@ public class MergeUiTest extends JellyTestCase {
             cso.finish();
 
             Node projNode = new Node(new ProjectsTabOperator().tree(), PROJECT_NAME);
-            //Node projNode = new Node(new ProjectsTabOperator().tree(), "AnagramGame");
             MergeOperator mo = MergeOperator.invoke(projNode);
 
             //0. one repository operator
@@ -143,8 +136,6 @@ public class MergeUiTest extends JellyTestCase {
             rbo.ok();
             assertEquals("Wrong folder selection!!!", "tags", moo.getRepositoryFolder());
             moo.cancel();
-        } catch (Exception e) {
-            throw new Exception("Test failed: "  + e);
         } finally {
             TestKit.closeProject(PROJECT_NAME);
         }
