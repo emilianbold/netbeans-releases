@@ -40,7 +40,7 @@
 <%--CC
 <% "Hello World !".o| %>
 ...
-<% "Hello World !".offsetByCodePoints(index, codePointOffset) %>
+<% "Hello World !".offsetByCodePoints(arg0, arg1) %>
 --%>
 
     </body>
