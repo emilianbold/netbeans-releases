@@ -63,6 +63,7 @@ import org.netbeans.modules.uml.core.metamodel.common.commonactivities.IActivity
 import org.netbeans.modules.uml.core.metamodel.common.commonactivities.IActivityGroup;
 import org.netbeans.modules.uml.core.metamodel.common.commonactivities.IActivityNode;
 import org.netbeans.modules.uml.core.metamodel.common.commonactivities.IActivityPartition;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.IConstraint;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPackage;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
@@ -322,7 +323,10 @@ public class ActivityPartitionWidget extends UMLNodeWidget implements CompositeW
     @Override
     public void propertyChange(PropertyChangeEvent event)
     {
-        nameWidget.propertyChange(event);
+        if (event.getSource() instanceof IActivityPartition)
+        {
+            nameWidget.propertyChange(event);
+        }   
     }
 
     private void initializeSubPartitions(IActivityPartition parentPartition)

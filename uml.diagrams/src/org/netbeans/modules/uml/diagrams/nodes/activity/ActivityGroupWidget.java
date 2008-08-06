@@ -173,9 +173,10 @@ public class ActivityGroupWidget extends UMLNodeWidget//ContainerNode
     { 
         IElement element = (IElement) event.getSource();
         String propName = event.getPropertyName();
-        actGrpNameWidget.propertyChange(event);
+        
         if (element instanceof IActivityGroup)
         {
+            actGrpNameWidget.propertyChange(event);
             IActivityGroup actGroupElem = (IActivityGroup) element;
             if (propName.equals(ModelElementChangedKind.ELEMENTMODIFIED.toString()))
             {
