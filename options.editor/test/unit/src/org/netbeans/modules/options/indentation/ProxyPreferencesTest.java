@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.options.indentation;
 
+import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import org.netbeans.junit.NbTestCase;
 
@@ -67,5 +68,198 @@ public class ProxyPreferencesTest extends NbTestCase {
         Preferences test = ProxyPreferences.get(orig);
         test.put("key-1", "xyz");
         assertEquals("Wrong value", "xyz", test.get("key-1", null));
+    }
+    
+    public void testSimpleSync() throws BackingStoreException {
+        Preferences orig = Preferences.userRoot().node(getName());
+        assertNull("Original contains value", orig.get("key-1", null));
+
+        Preferences test = ProxyPreferences.get(orig);
+        assertNull("Test should not contains pair", orig.get("key-1", null));
+
+        test.put("key-1", "xyz");
+        assertEquals("Test doesn't contain new pair", "xyz", test.get("key-1", null));
+
+        test.sync();
+        assertNull("Test didn't rollback pair", test.get("key-1", null));
+    }
+
+    public void testSimpleFlush() throws BackingStoreException {
+        Preferences orig = Preferences.userRoot().node(getName());
+        assertNull("Original contains value", orig.get("key-1", null));
+
+        Preferences test = ProxyPreferences.get(orig);
+        assertNull("Test should not contains pair", orig.get("key-1", null));
+
+        test.put("key-1", "xyz");
+        assertEquals("Test doesn't contain new pair", "xyz", test.get("key-1", null));
+
+        test.flush();
+        assertEquals("Test should still contain the pair", "xyz", test.get("key-1", null));
+        assertEquals("Test didn't flush the pair", "xyz", orig.get("key-1", null));
+    }
+    
+    public void testSyncTree1() throws BackingStoreException {
+        String [] origTree = new String [] {
+            "CodeStyle/profile=GLOBAL",
+        };
+        String [] newTree = new String [] {
+            "CodeStyle/text/x-java/tab-size=2",
+            "CodeStyle/text/x-java/override-global-settings=true",
+            "CodeStyle/text/x-java/expand-tabs=true",
+            "CodeStyle/profile=PROJECT",
+        };
+
+        Preferences orig = Preferences.userRoot().node(getName());
+        write(orig, origTree);
+        checkContains(orig, origTree, "Orig");
+        checkNotContains(orig, newTree, "Orig");
+        
+        Preferences test = ProxyPreferences.get(orig);
+        checkEquals("Test should be the same as Orig", orig, test);
+        
+        write(test, newTree);
+        checkContains(test, newTree, "Test");
+
+        test.sync();
+        checkContains(orig, origTree, "Orig");
+        checkNotContains(orig, newTree, "Orig");
+        checkContains(test, origTree, "Test");
+        checkNotContains(test, newTree, "Test");
+    }
+
+    public void testFlushTree1() throws BackingStoreException {
+        String [] origTree = new String [] {
+            "CodeStyle/profile=GLOBAL",
+        };
+        String [] newTree = new String [] {
+            "CodeStyle/text/x-java/tab-size=2",
+            "CodeStyle/text/x-java/override-global-settings=true",
+            "CodeStyle/text/x-java/expand-tabs=true",
+            "CodeStyle/profile=PROJECT",
+        };
+
+        Preferences orig = Preferences.userRoot().node(getName());
+        write(orig, origTree);
+        checkContains(orig, origTree, "Orig");
+        checkNotContains(orig, newTree, "Orig");
+        
+        Preferences test = ProxyPreferences.get(orig);
+        checkEquals("Test should be the same as Orig", orig, test);
+        
+        write(test, newTree);
+        checkContains(test, newTree, "Test");
+
+        test.flush();
+        checkEquals("Test didn't flush to Orig", test, orig);
+    }
+
+    private void write(Preferences prefs, String[] tree) {
+        for(String s : tree) {
+            int equalIdx = s.lastIndexOf('=');
+            assertTrue(equalIdx != -1);
+            String value = s.substring(equalIdx + 1);
+
+            String key;
+            String nodePath;
+            int slashIdx = s.lastIndexOf('/', equalIdx);
+            if (slashIdx != -1) {
+                key = s.substring(slashIdx + 1, equalIdx);
+                nodePath = s.substring(0, slashIdx);
+            } else {
+                key = s.substring(0, equalIdx);
+                nodePath = "";
+            }
+
+            Preferences node = prefs.node(nodePath);
+            node.put(key, value);
+        }
+    }
+
+    private void checkContains(Preferences prefs, String[] tree, String prefsId) throws BackingStoreException {
+        for(String s : tree) {
+            int equalIdx = s.lastIndexOf('=');
+            assertTrue(equalIdx != -1);
+            String value = s.substring(equalIdx + 1);
+
+            String key;
+            String nodePath;
+            int slashIdx = s.lastIndexOf('/', equalIdx);
+            if (slashIdx != -1) {
+                key = s.substring(slashIdx + 1, equalIdx);
+                nodePath = s.substring(0, slashIdx);
+            } else {
+                key = s.substring(0, equalIdx);
+                nodePath = "";
+            }
+
+            assertTrue(prefsId + " doesn't contain node '" + nodePath + "'", prefs.nodeExists(nodePath));
+            Preferences node = prefs.node(nodePath);
+
+            String realValue = node.get(key, null);
+            assertNotNull(prefsId + ", '" + nodePath + "' node doesn't contain key '" + key + "'", realValue);
+            assertEquals(prefsId + ", '" + nodePath + "' node, '" + key + "' contains wrong value", value, realValue);
+        }
+    }
+
+    private void checkNotContains(Preferences prefs, String[] tree, String prefsId) throws BackingStoreException {
+        for(String s : tree) {
+            int equalIdx = s.lastIndexOf('=');
+            assertTrue(equalIdx != -1);
+            String value = s.substring(equalIdx + 1);
+
+            String key;
+            String nodePath;
+            int slashIdx = s.lastIndexOf('/', equalIdx);
+            if (slashIdx != -1) {
+                key = s.substring(slashIdx + 1, equalIdx);
+                nodePath = s.substring(0, slashIdx);
+            } else {
+                key = s.substring(0, equalIdx);
+                nodePath = "";
+            }
+
+            if (prefs.nodeExists(nodePath)) {
+                Preferences node = prefs.node(nodePath);
+                String realValue = node.get(key, null);
+                if (realValue != null && realValue.equals(value)) {
+                    fail(prefsId + ", '" + nodePath + "' node contains key '" + key + "' = '" + realValue + "'");
+                }
+            }
+        }
+    }
+
+    private void dump(Preferences prefs, String prefsId) throws BackingStoreException {
+        for(String key : prefs.keys()) {
+            System.out.println(prefsId + ", " + prefs.absolutePath() + "/" + key + "=" + prefs.get(key, null));
+        }
+        for(String child : prefs.childrenNames()) {
+            dump(prefs.node(child), prefsId);
+        }
+    }
+
+    private void checkEquals(String msg, Preferences expected, Preferences test) throws BackingStoreException {
+        assertEquals("Won't compare two Preferences with different absolutePath", expected.absolutePath(), test.absolutePath());
+        
+        // check the keys and their values
+        for(String key : expected.keys()) {
+            String expectedValue = expected.get(key, null);
+            assertNotNull(msg + "; Expected:" + expected.absolutePath() + " has no '" + key + "'", expectedValue);
+            
+            String value = test.get(key, null);
+            assertNotNull(msg + "; Test:" + test.absolutePath() + " has no '" + key + "'", value);
+            assertEquals(msg + "; Test:" + test.absolutePath() + "/" + key + " has wrong value", expectedValue, value);
+        }
+
+        // check the children
+        for(String child : expected.childrenNames()) {
+            assertTrue(msg + "; Expected:" + expected.absolutePath() + " has no '" + child + "' subnode", expected.nodeExists(child));
+            Preferences expectedChild = expected.node(child);
+
+            assertTrue(msg + "; Test:" + test.absolutePath() + " has no '" + child + "' subnode", test.nodeExists(child));
+            Preferences testChild = test.node(child);
+
+            checkEquals(msg, expectedChild, testChild);
+        }
     }
 }

@@ -424,6 +424,9 @@ public final class ProxyPreferences extends Preferences implements PreferenceCha
     @Override
     public void flush() throws BackingStoreException {
         synchronized (tree.treeLock()) {
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.fine("Flushing " + absolutePath());
+            }
             for(ProxyPreferences pp : children.values()) {
                 pp.flush();
             }
@@ -443,6 +446,9 @@ public final class ProxyPreferences extends Preferences implements PreferenceCha
             delegate.removePreferenceChangeListener(weakPrefListener);
             try {
                 for(String key : data.keySet()) {
+                    if (LOG.isLoggable(Level.FINE)) {
+                        LOG.fine("Flushing " + absolutePath() + "/" + key + "=" + data.get(key));
+                    }
                     delegate.put(key, data.get(key));
                 }
                 data.clear();
@@ -890,16 +896,25 @@ public final class ProxyPreferences extends Preferences implements PreferenceCha
             if (delegate != null) {
                 assert name.equals(delegate.name());
 
-                if (parent != null) {
+                if (parent == null) {
                     Preferences parentDelegate = delegate.parent();
                     if (parentDelegate != null) {
                         parent = get(null, parentDelegate.name(), parentDelegate);
                     } // else delegate is the root
+                } else {
+                    // sanity check
+                    assert parent.delegate == delegate.parent();
                 }
             }
 
-            String absolutePath = parent == null ? "" : parent.absolutePath(); //NOI18N
-            absolutePath += "/" + name; //NOI18N
+            String absolutePath;
+            if (parent == null) {
+                absolutePath = "/"; //NOI18N
+            } else if (parent.parent() == null) {
+                absolutePath = "/" + name; //NOI18N
+            } else {
+                absolutePath = parent.absolutePath() + "/" + name; //NOI18N
+            }
 
             ProxyPreferences node = nodes.get(absolutePath);
             if (node == null) {
