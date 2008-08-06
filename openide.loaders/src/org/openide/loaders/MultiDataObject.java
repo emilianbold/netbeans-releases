@@ -292,6 +292,10 @@ public class MultiDataObject extends DataObject {
     * @param recognized object to mark recognized file to
     */
     final void markSecondaryEntriesRecognized (DataLoader.RecognizedFiles recognized) {
+        if (recognized == DataLoaderPool.emptyDataLoaderRecognized) {
+            return;
+        }
+
         synchronized (getSecondary()) {
             for (FileObject fo : getSecondary().keySet()) {
                 recognized.markRecognized (fo);
@@ -358,10 +362,13 @@ public class MultiDataObject extends DataObject {
     * @return immutable set of entries
     */
     public final Set<Entry> secondaryEntries () {
+        return secondaryEntries(true);
+    }
+    final Set<Entry> secondaryEntries (boolean allocate) {
         synchronized ( synchObjectSecondary() ) {
             removeAllInvalid ();
 
-            return new HashSet<Entry>(getSecondary().values());
+            return allocate ? new HashSet<Entry>(getSecondary().values()) : null;
         }
     }
 
@@ -795,10 +802,15 @@ public class MultiDataObject extends DataObject {
     * @return the cookie set (never <code>null</code>)
     */
     protected final CookieSet getCookieSet () {
-        CookieSet s = cookieSet;
-        if (s != null) return s;
+        return getCookieSet(true);
+    }
+
+    final CookieSet getCookieSet(boolean create) {
         synchronized (cookieSetLock) {
             if (cookieSet != null) return cookieSet;
+            if (!create) {
+                return null;
+            }
 
             // generic cookie set with reference to data object and 
             // a callback that updates FileObjects in its list.
@@ -1201,12 +1213,16 @@ public class MultiDataObject extends DataObject {
     /** Fired when a file has been added to the same folder
      * @param fe the event describing context where action has taken place
      */
+    @Override
     void notifyFileDataCreated(FileEvent fe) {
         checked = false;
     }
 
     final void updateFilesInCookieSet() {
-        getCookieSet().assign(FileObject.class, files().toArray(new FileObject[0]));
+        CookieSet set = getCookieSet(false);
+        if (set != null) {
+            set.assign(FileObject.class, files().toArray(new FileObject[0]));
+        }
     }
 
     void checkCookieSet(Class<?> c) {

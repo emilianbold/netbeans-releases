@@ -329,9 +329,15 @@ public abstract class MultiFileLoader extends DataLoader {
 
         FileObject[] arr = parent.getChildren ();
         for (int i = 0; i < arr.length; i++) {
+            if (obj.getSecondary().get(arr[i]) != null) {
+                // ok, already assigned to us
+                continue;
+            }
+            
             FileObject pf = findPrimaryFileImpl (arr[i]);
 
             if (pf == primary) {
+
                 // this object could belong to this loader
                 try {
                     // this will go thru regular process of looking for
