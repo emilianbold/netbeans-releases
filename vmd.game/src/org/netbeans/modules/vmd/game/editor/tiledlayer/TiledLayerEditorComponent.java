@@ -1260,6 +1260,8 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
                 
         synchronized (this.cellsSelected) {
             List<Position> bucket = new ArrayList<Position>();
+            Set<Integer> releaseRows = new HashSet<Integer>();
+            Set<Integer> pressRows = new HashSet<Integer>();
             for (Iterator<Position> it = cellsSelected.iterator(); it.hasNext();) {
                 Position position = it.next();
                 int curRow = position.getRow();
@@ -1267,11 +1269,19 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
                     it.remove();
                     //System.out.println("Shifting row " + curRow + " to " + (curRow + count));
                     bucket.add(new Position(curRow + count, position.getCol()));
+                    releaseRows.add(curRow);
+                    pressRows.add(curRow + count);
                 }
             }
 
             for (Position position : bucket) {
                 this.cellsSelected.add(position);
+            }
+            for (Integer row : releaseRows){
+                if (!pressRows.contains(row)){
+                    this.rulerVertical.releaseRowHeader(row);
+                }
+                this.rulerVertical.pressRowHeader(row + count);
             }
         }
     }
@@ -1280,6 +1290,8 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
         
         synchronized (this.cellsSelected) {
             List<Position> bucket = new ArrayList<Position>();
+            Set<Integer> releaseCols = new HashSet<Integer>();
+            Set<Integer> pressCols = new HashSet<Integer>();
             for (Iterator<Position> it = cellsSelected.iterator(); it.hasNext();) {
                 Position position = it.next();
                 int curCol = position.getCol();
@@ -1287,11 +1299,19 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
                     it.remove();
                     //System.out.println("Shifting col " + curCol + " to " + (curCol + count));
                     bucket.add(new Position(position.getRow(), curCol + count));
+                    releaseCols.add(curCol);
+                    pressCols.add(curCol + count);
                 }
             }
 
             for (Position position : bucket) {
                 this.cellsSelected.add(position);
+            }
+            for (Integer col : releaseCols){
+                if (!pressCols.contains(col)){
+                    this.rulerHorizontal.releaseColumnHeader(col);
+                }
+                this.rulerHorizontal.pressColumnHeader(col + count);
             }
         }
     }
