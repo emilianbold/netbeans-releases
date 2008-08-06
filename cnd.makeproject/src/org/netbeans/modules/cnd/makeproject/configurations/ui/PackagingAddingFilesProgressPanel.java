@@ -87,11 +87,21 @@ public class PackagingAddingFilesProgressPanel extends javax.swing.JPanel {
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
+        fileLabel = new javax.swing.JLabel();
         fileTextField = new javax.swing.JTextField();
         progressBar = new javax.swing.JProgressBar();
-        fileLabel = new javax.swing.JLabel();
 
         setLayout(new java.awt.GridBagLayout());
+
+        fileLabel.setDisplayedMnemonic('f');
+        fileLabel.setLabelFor(fileTextField);
+        fileLabel.setText(org.openide.util.NbBundle.getMessage(PackagingAddingFilesProgressPanel.class, "PackagingAddingFilesProgressPanel.fileLabel.text")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(16, 16, 0, 0);
+        add(fileLabel, gridBagConstraints);
 
         fileTextField.setColumns(40);
         fileTextField.setEditable(false);
@@ -111,15 +121,11 @@ public class PackagingAddingFilesProgressPanel extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(4, 16, 16, 16);
         add(progressBar, gridBagConstraints);
+        progressBar.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PackagingAddingFilesProgressPanel.class, "PackagingAddingFilesProgressPanel.progressBar.AccessibleContext.accessibleName")); // NOI18N
+        progressBar.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PackagingAddingFilesProgressPanel.class, "PackagingAddingFilesProgressPanel.progressBar.AccessibleContext.accessibleDescription")); // NOI18N
 
-        fileLabel.setLabelFor(fileTextField);
-        fileLabel.setText(org.openide.util.NbBundle.getMessage(PackagingAddingFilesProgressPanel.class, "PackagingAddingFilesProgressPanel.fileLabel.text")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(16, 16, 0, 0);
-        add(fileLabel, gridBagConstraints);
+        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PackagingAddingFilesProgressPanel.class, "PackagingAddingFilesProgressPanel.AccessibleContext.accessibleName")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PackagingAddingFilesProgressPanel.class, "PackagingAddingFilesProgressPanel.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
 
