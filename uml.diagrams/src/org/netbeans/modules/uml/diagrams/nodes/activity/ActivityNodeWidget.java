@@ -42,6 +42,7 @@ import java.beans.PropertyChangeEvent;
 import java.util.ResourceBundle;
 import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.Scene;
+import org.netbeans.modules.uml.core.metamodel.common.commonactivities.IActivityNode;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
 import org.netbeans.modules.uml.diagrams.nodes.EditableCompartmentWidget;
@@ -221,7 +222,7 @@ public abstract class ActivityNodeWidget extends UMLNodeWidget
         IElement element = (IElement) event.getSource();
         String propName = event.getPropertyName();
 
-        if (element instanceof INamedElement)
+        if (element instanceof IActivityNode)
         {
             INamedElement elemNode = (INamedElement) element;
             if (propName.equals(ModelElementChangedKind.NAME_MODIFIED.toString()) ||
