@@ -488,16 +488,27 @@ public class ProjectTab extends TopComponent
     /** Extending bean treeview. To be able to persist the selected paths
      */
     private class ProjectTreeView extends BeanTreeView {
-        public void scrollToNode(Node n) {
-            TreeNode tn = Visualizer.findVisualizer( n );
-            if (tn == null) return;
+        public void scrollToNode(final Node n) {
+            // has to be delayed to be sure that events for Visualizers
+            // were processed and TreeNodes are already in hierarchy
+            SwingUtilities.invokeLater(new Runnable() {
 
-            TreeModel model = tree.getModel();
-            if (!(model instanceof DefaultTreeModel)) return;
-
-            TreePath path = new TreePath(((DefaultTreeModel)model).getPathToRoot(tn));
-            Rectangle r = tree.getPathBounds(path);
-            if (r != null) tree.scrollRectToVisible(r);
+                public void run() {
+                    TreeNode tn = Visualizer.findVisualizer(n);
+                    if (tn == null) {
+                        return;
+                    }
+                    TreeModel model = tree.getModel();
+                    if (!(model instanceof DefaultTreeModel)) {
+                        return;
+                    }
+                    TreePath path = new TreePath(((DefaultTreeModel) model).getPathToRoot(tn));
+                    Rectangle r = tree.getPathBounds(path);
+                    if (r != null) {
+                        tree.scrollRectToVisible(r);
+                    }
+                }
+            });
 	}
                         
         public List<String[]> getExpandedPaths() { 
