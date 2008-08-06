@@ -38,10 +38,15 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+
 package org.netbeans.modules.cnd.makeproject.configurations.ui;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dialog;
+import java.awt.event.ActionEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
@@ -251,6 +256,9 @@ public class PackagingFilesPanel extends ListEditorPanel {
     }
     
     class AddFilesButtonAction implements java.awt.event.ActionListener {
+//        private PackagingAddingFilesProgressPanel progressPanel;
+        private boolean cancelled = false;
+        
         public void actionPerformed(java.awt.event.ActionEvent evt) {
             String seed = null;
             if (FileChooser.getCurrectChooserFile() != null) {
@@ -267,15 +275,57 @@ public class PackagingFilesPanel extends ListEditorPanel {
             if (ret == FileChooser.CANCEL_OPTION) {
                 return;
             }
-            File dir = fileChooser.getSelectedFile();
-            addFilesFromDirectory(dir, dir);
+            final File dir = fileChooser.getSelectedFile();
+            
+            
+            JButton stopButton = new JButton(getString("PackagingAddingFilesProgressPanel.Stop.Button.text"));
+            stopButton.setMnemonic(getString("PackagingAddingFilesProgressPanel.Stop.Button.text").charAt(0));
+            stopButton.addActionListener(new StopButtonAction());
+	    final PackagingAddingFilesProgressPanel progressPanel = new PackagingAddingFilesProgressPanel(stopButton);
+	    DialogDescriptor dialogDescriptor = new DialogDescriptor(progressPanel, getString("PackagingAddingFilesProgressPanel.title"), true, new JButton[]{stopButton}, stopButton, DialogDescriptor.RIGHT_ALIGN, null, null);
+            final Dialog progressDialog = DialogDisplayer.getDefault().createDialog( dialogDescriptor );
+            progressDialog.addWindowListener(new WindowAdapter() {
+                @Override
+                public void windowOpened(WindowEvent e) {
+                    new AddFilesFromDir(dir, progressPanel, progressDialog).start();
+                }
+            });
+            progressDialog.setVisible(true);
+            //addFilesFromDirectory(dir, dir);
         }
         
-        private void addFilesFromDirectory(File origDir, File dir) {
+        class AddFilesFromDir extends Thread {
+            private PackagingAddingFilesProgressPanel progressPanel;
+            private Dialog progressDialog;
+            private File dir;
+            
+            AddFilesFromDir(File dir, PackagingAddingFilesProgressPanel progressPanel, Dialog progressDialog) {
+                this.progressPanel = progressPanel;
+                this.progressDialog = progressDialog;
+                this.dir = dir;
+            }
+            
+            @Override
+            public void run() {
+                addFilesFromDirectory(dir, dir, progressPanel);
+                progressDialog.setVisible(false);
+            }
+        }
+        
+        class StopButtonAction implements java.awt.event.ActionListener {
+            public void actionPerformed(ActionEvent arg0) {
+                cancelled = true;
+            }
+        }
+        
+        private void addFilesFromDirectory(File origDir, File dir, PackagingAddingFilesProgressPanel progressPanel) {
             File[] files = dir.listFiles();
             for (int i = 0; i < files.length; i++) {
+                if (cancelled) {
+                    break;
+                }
                 if (files[i].isDirectory()) {
-                    addFilesFromDirectory(origDir, files[i]);
+                    addFilesFromDirectory(origDir, files[i], progressPanel);
                 }
                 else {
                     String path;
@@ -309,7 +359,8 @@ public class PackagingFilesPanel extends ListEditorPanel {
                             perm,
                             packagingFilesOuterPanel.getOwnerTextField().getText(),
                             packagingFilesOuterPanel.getGroupTextField().getText()
-                    )); // FIXUP: softlink
+                    ));
+                    progressPanel.setProgress(path);
                 }
             }
         }
