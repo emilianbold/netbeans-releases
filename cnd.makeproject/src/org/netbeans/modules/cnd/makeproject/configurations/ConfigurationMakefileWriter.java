@@ -695,7 +695,7 @@ public class ConfigurationMakefileWriter {
         String output = packagingConfiguration.getOutputValue();
         String outputRelToTmp = IpeUtils.isPathAbsolute(output) ? output : "../../../../" + output; // NOI18N
         
-        bw.write("# Copy files and create sirectories and links\n"); // NOI18N
+        bw.write("# Copy files and create directories and links\n"); // NOI18N
         for (FileElement elem : fileList) {
             bw.write("cd $TOP\n"); // NOI18N
             if (elem.getType() == FileElement.FileType.FILE) {
@@ -869,7 +869,7 @@ public class ConfigurationMakefileWriter {
         bw.write("\n"); // NOI18N
         bw.write("# Make package\n"); // NOI18N        
         bw.write("cd $TOP\n"); // NOI18N   
-        bw.write(packagingConfiguration.getToolValue() + " -o -f $PROTOTYPEFILE -r . -d $TMPDIR\n"); // NOI18N
+        bw.write(packagingConfiguration.getToolValue() + " " + packagingConfiguration.getOptionsValue() + " -o -f $PROTOTYPEFILE -r . -d $TMPDIR\n"); // NOI18N
         bw.write("checkReturnCode\n"); // NOI18N
         bw.write("pkgtrans -s $TMPDIR tmp.pkg " + packageName + "\n"); // NOI18N
         bw.write("checkReturnCode\n"); // NOI18N
