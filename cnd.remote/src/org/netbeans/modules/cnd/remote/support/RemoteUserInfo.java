@@ -73,14 +73,16 @@ public class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
     private boolean cancelled = false;
     private final static Object DLGLOCK = new Object();
     private Component parent;
+    private final String host;
     
-    private RemoteUserInfo() {
+    private RemoteUserInfo(String host) {
+        this.host = host;
         setParentComponent(this);
     }
     /**
      * Get the UserInfo for the remote host.
      * 
-     * @param key The host key to loo for
+     * @param key The host key to look for
      * @param reset Reset password information if true
      * @return The RemoteHostInfo instance for this key
      */
@@ -91,7 +93,7 @@ public class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
         
         RemoteUserInfo ui = map.get(key);
         if (ui == null) {
-            ui = new RemoteUserInfo();
+            ui = new RemoteUserInfo(key);
             map.put(key, ui);
         }
         if (retry) {
@@ -143,7 +145,7 @@ public class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
                 boolean result;
                 PasswordDlg pwdDlg = new PasswordDlg();
                 synchronized (DLGLOCK) {
-                    result = pwdDlg.askPassword(message);
+                    result = pwdDlg.askPassword(host);
                 }
 
                 if (result) {
