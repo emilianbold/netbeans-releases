@@ -199,15 +199,6 @@ public final class RakeRunner {
         // Save all files first
         LifecycleManager.getDefault().saveAll();
 
-        final TestTaskRunner testTaskRunner = new TestTaskRunner(project, debug);
-        final List<RakeTask> tasksToRun = testTaskRunner.filter(Arrays.asList(tasks));
-
-        // check whether there was only one task that got already
-        // handled by the test handler hook
-        if (tasksToRun.isEmpty()) {
-            testTaskRunner.postRun();
-            return;
-        }
 
         // EMPTY CONTEXT??
         if (fileLocator == null) {
@@ -225,6 +216,7 @@ public final class RakeRunner {
             pwd = FileUtil.toFile(rakeFile.getParent());
         }
 
+        final List<RakeTask> tasksToRun = new ArrayList(Arrays.asList(tasks));
         computeAndSetDisplayName(tasksToRun);
 
         String charsetName = null;
@@ -248,9 +240,6 @@ public final class RakeRunner {
                         Exceptions.printStackTrace(ex);
                     }
                 }
-              if (testTaskRunner.needsPostRun()) {
-                  testTaskRunner.postRun();
-              }
             }
         });
     }

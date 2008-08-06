@@ -61,6 +61,7 @@ import org.netbeans.modules.ruby.testrunner.ui.TestSession.SessionType;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
+import org.openide.util.Utilities;
 
 /**
  * Test runner for RSpec tests.
@@ -215,11 +216,18 @@ public class RspecRunner implements TestRunner, RakeTaskCustomizer {
 
 
     public void customize(Project project, RakeTask task, ExecutionDescriptor taskDescriptor, boolean debug) {
-        //XXX: not used at the moment, does not work on JDK 1.5
         if (!task.getTask().equals("spec")) { //NOI18N
             return;
         }
-        task.addTaskParameters("SPEC_OPTS=\"--require " + getMediatorScript().getAbsolutePath() + " --runner NbRspecMediator\""); //NOI18N
+        String path = getMediatorScript().getAbsolutePath();
+        if (Utilities.isWindows()) {
+            RubyPlatform platform = RubyPlatform.platformFor(project);
+            if (platform != null && platform.isJRuby()) {
+                // backslashes don't work with JRuby here
+                path = path.replace('\\', '/'); //NOI18N
+            }
+        }
+        task.addTaskParameters("SPEC_OPTS=--require '" + path + "' --runner NbRspecMediator"); //NOI18N
 
         FileLocator locator = project.getLookup().lookup(FileLocator.class);
         TestRecognizer recognizer = new TestRecognizer(Manager.getInstance(),

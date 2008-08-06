@@ -49,21 +49,21 @@ public class GemListParserTest extends RubyTestBase {
         super(testName);
     }
 
-    public void testParseWithDescritions() throws IOException {
+    public void testParseWithDescriptions() throws IOException {
         String output = slurp(getGoldenFile());
         List<String> outputL = Arrays.asList(output.split("\\n"));
         List<Gem> local = GemListParser.parseLocal(outputL);
         assertSame("local parsed", 5, local.size());
     }
 
-    public void testParseNoDescritions() throws IOException {
+    public void testParseNoDescriptions() throws IOException {
         String output = slurp(getGoldenFile());
         List<String> outputL = Arrays.asList(output.split("\\n"));
         List<Gem> local = GemListParser.parseLocal(outputL);
         assertSame("local parsed", 5, local.size());
     }
 
-    public void testParseNoDescritionsAllVersions() throws IOException {
+    public void testParseNoDescriptionsAllVersions() throws IOException {
         String output = slurp(getGoldenFile());
         List<String> outputL = Arrays.asList(output.split("\\n"));
         List<Gem> local = GemListParser.parseLocal(outputL);
