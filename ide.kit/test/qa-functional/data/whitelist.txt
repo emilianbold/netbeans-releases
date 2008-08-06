@@ -4145,6 +4145,7 @@ org.netbeans.modules.project.ant.FileChangeSupportListener
 org.netbeans.modules.project.ant.ProjectLibraryProvider
 org.netbeans.modules.project.ant.ProjectLibraryProvider$1
 org.netbeans.modules.project.ant.ProjectLibraryProvider$SharabilityQueryImpl
+org.netbeans.modules.project.ant.ProjectXMLCatalogReader
 org.netbeans.modules.project.ant.Util
 org.netbeans.modules.project.ant.Util$ErrHandler
 org.netbeans.modules.project.libraries.DefaultLibraryImplementation
