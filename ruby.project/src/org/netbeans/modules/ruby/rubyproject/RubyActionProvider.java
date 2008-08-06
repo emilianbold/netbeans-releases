@@ -760,10 +760,6 @@ public class RubyActionProvider implements ActionProvider, ScriptDescProvider {
 //    }
     
     public boolean isActionEnabled( String command, Lookup context ) {
-//        FileObject buildXml = findBuildXml();
-//        if (  buildXml == null || !buildXml.isValid()) {
-//            return false;
-//        }
         if ( command.equals( COMMAND_COMPILE_SINGLE ) ) {
             return findSourcesAndPackages( context, project.getSourceRoots().getRoots()) != null
                     || findSourcesAndPackages( context, project.getTestSourceRoots().getRoots()) != null;
@@ -774,8 +770,12 @@ public class RubyActionProvider implements ActionProvider, ScriptDescProvider {
 //        else if ( command.equals( COMMAND_DEBUG_TEST_SINGLE ) ) {
 //            FileObject[] files = findTestSourcesForSources(context);
 //            return files != null && files.length == 1;
-        } else if (command.equals(COMMAND_RUN_SINGLE) || 
-                        command.equals(COMMAND_DEBUG_SINGLE)) {
+        } else if (command.equals(COMMAND_RUN_SINGLE) ||
+                command.equals(COMMAND_DEBUG_SINGLE)) {
+            if (RakeSupport.isRakeFileSelected(context)) {
+                return true;
+            }
+
             FileObject fos[] = findSources(context);
             if (fos != null && fos.length == 1) {
                 return true;
@@ -787,9 +787,7 @@ public class RubyActionProvider implements ActionProvider, ScriptDescProvider {
             return true;
         }
     }
-    
-    
-   
+
     // Private methods -----------------------------------------------------------------
     
     
