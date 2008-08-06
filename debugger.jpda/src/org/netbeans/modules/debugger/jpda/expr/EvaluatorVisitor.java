@@ -307,8 +307,6 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                          ObjectReference enclObject = findEnclosingObject(arg0, objectReference, enclType, null, methodName);
                          if (enclObject != null) type = enclObject.referenceType();
                      }
-                    ReferenceType dt = findEnclosingType(type, enclosingClass);
-                    if (dt != null) type = dt;
                 }
             }
             if (objectReference == null) {
