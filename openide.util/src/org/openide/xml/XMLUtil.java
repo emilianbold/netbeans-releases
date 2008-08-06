@@ -45,7 +45,9 @@ import java.io.CharConversionException;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringReader;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -63,12 +65,14 @@ import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.Validator;
 import org.openide.util.Lookup;
+import org.w3c.dom.Attr;
 import org.w3c.dom.CDATASection;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentType;
 import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
@@ -493,12 +497,38 @@ public final class XMLUtil extends Object {
             }
         });
         try {
-            v.validate(new DOMSource(data));
+            v.validate(new DOMSource(fixupNoNamespaceAttrs(data)));
         } catch (IOException x) {
             assert false : x;
         }
         if (error[0] != null) {
             throw error[0];
+        }
+    }
+    private static Element fixupNoNamespaceAttrs(Element root) { // #140905
+        // #6529766/#6531160: some versions of JAXP reject attributes set using setAttribute
+        // (rather than setAttributeNS) even though the schema calls for no-NS attrs!
+        // JDK 5 is fine; JDK 6 broken; JDK 6u2+ fixed
+        fixupNoNamespaceAttrsSingle(root);
+        Element copy = (Element) root.cloneNode(true);
+        NodeList nl = copy.getElementsByTagName("*"); // NOI18N
+        for (int i = 0; i < nl.getLength(); i++) {
+            fixupNoNamespaceAttrsSingle((Element) nl.item(i));
+        }
+        return copy;
+    }
+    private static void fixupNoNamespaceAttrsSingle(Element e) throws DOMException {
+        Map<String, String> replace = new HashMap<String, String>();
+        NamedNodeMap attrs = e.getAttributes();
+        for (int j = 0; j < attrs.getLength(); j++) {
+            Attr attr = (Attr) attrs.item(j);
+            if (attr.getNamespaceURI() == null) {
+                replace.put(attr.getName(), attr.getValue());
+            }
+        }
+        for (Map.Entry<String, String> entry : replace.entrySet()) {
+            e.removeAttribute(entry.getKey());
+            e.setAttributeNS(null, entry.getKey(), entry.getValue());
         }
     }
 
