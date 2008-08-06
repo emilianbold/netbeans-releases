@@ -47,6 +47,8 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.junit.MockServices;
@@ -66,21 +68,37 @@ public class FileObjectInLookupByMatteoTest extends NbTestCase {
 
     private static final int PRIMARY_FILES_COUNT = 10;
     private static final int SECONDARY_FILES_COUNT = 1000;
-    private static final boolean DEBUG = false;
     /*@GuardedBy("countGuard")*/
     private int count = 0;
     private final Object countGuard = new Object();
     private final Object SIGNAL = new Object();
     private String basename;
     private FileObject dir;
+    private Logger LOG;
 
     public FileObjectInLookupByMatteoTest(String testName) {
         super(testName);
     }
 
+    protected boolean initCookieSet() {
+        return false;
+    }
+
+    @Override
+    protected int timeOut() {
+        return 20000;
+    }
+
+    @Override
+    protected Level logLevel() {
+        return Level.INFO;
+    }
+    
     @Override
     @SuppressWarnings("deprecation")
     protected void setUp() throws Exception {
+        LOG = Logger.getLogger("test." + getName());
+
         // clear
         clearWorkDir();
 
@@ -100,7 +118,7 @@ public class FileObjectInLookupByMatteoTest extends NbTestCase {
 
         basename = "test";
 
-        System.err.println("Creating 10000 files...");
+        LOG.info("Creating 10000 files...");
         for (int i = 0; i < PRIMARY_FILES_COUNT; i++) {
             String name = String.format(basename + "%02d", i);
             dir.createData(name, TestDataLoader.PRIMARY_EXTENSION);
@@ -141,6 +159,12 @@ public class FileObjectInLookupByMatteoTest extends NbTestCase {
             assertTrue(dobj instanceof MultiDataObject);
             MultiDataObject mdo = (MultiDataObject) dobj;
 
+            if (initCookieSet()) {
+                assertNull("Not initialized yet", mdo.getCookieSet(false));
+                assertNotNull("Really created", mdo.getCookieSet());
+                assertNotNull("Initialized now", mdo.getCookieSet(false));
+            }
+
             mdo.addPropertyChangeListener(new PropertyChangeListener() {
 
                 public void propertyChange(PropertyChangeEvent evt) {
@@ -148,17 +172,13 @@ public class FileObjectInLookupByMatteoTest extends NbTestCase {
 
                     if (DataObject.PROP_FILES.equals(name)) {
                         synchronized (countGuard) {
-                            if (DEBUG) {
-                                System.err.println("propertyChange: DO=" + dobj.getName() + ", PROP=" + evt.getPropertyName());
-                            }
+                            LOG.info("propertyChange: DO=" + dobj.getName() + ", PROP=" + evt.getPropertyName());
                             if ((++count) >= (PRIMARY_FILES_COUNT * SECONDARY_FILES_COUNT)) {
                                 synchronized (SIGNAL) {
                                     SIGNAL.notifyAll();
                                 }
                             } else {
-                                if (DEBUG) {
-                                    System.err.println("Not enough fired events: " + count);
-                                }
+                                LOG.info("Not enough fired events: " + count);
                             }
                         }
                     }
@@ -175,18 +195,28 @@ public class FileObjectInLookupByMatteoTest extends NbTestCase {
 
         long start = System.currentTimeMillis();
         // wait until all PropertyChangeEvents are fired
-        System.err.println("Waiting for " + (PRIMARY_FILES_COUNT * SECONDARY_FILES_COUNT) + " events...");
+        LOG.info("Waiting for " + (PRIMARY_FILES_COUNT * SECONDARY_FILES_COUNT) + " events...");
         synchronized (SIGNAL) {
             while (count < (PRIMARY_FILES_COUNT * SECONDARY_FILES_COUNT)) {
+                int prev = count;
                 try {
-                    SIGNAL.wait();
+                    SIGNAL.wait(3000);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
+                if (count == prev) {
+                    LOG.info("No event in 3s, probably done: " + prev + " == " + count);
+                    break;
+                }
             }
         }
+        if (count < 10) {
+            fail("Too small amount of events. There is at least 10 data objects, but was only: " + count);
+        }
+
         long time = (System.currentTimeMillis() - start);
-        System.err.println((PRIMARY_FILES_COUNT * SECONDARY_FILES_COUNT) + " events have been fired in " + time + " ms!");
+        System.err.println(count + " events have been fired in " + time + " ms!");
+        LOG.info(count + " events have been fired in " + time + " ms!");
 
         // assume maximum 10 seconds!
         assertTrue("Failed Test because the event firing took more than 10 seconds!!", time < 10000);

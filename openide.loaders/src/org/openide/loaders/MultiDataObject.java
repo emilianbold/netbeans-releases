@@ -42,6 +42,7 @@
 package org.openide.loaders;
 
 
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
 import java.io.*;
 import java.lang.ref.WeakReference;
@@ -72,6 +73,8 @@ public class MultiDataObject extends DataObject {
     /** A RequestProceccor used for firing property changes asynchronously */
     private static final RequestProcessor firingProcessor =
 		new RequestProcessor( "MDO PropertyChange processor");
+    /** map of changes to be delivered later */
+    private Map<String,PropertyChangeEvent> later;
     
     /** A RequestProceccor used for waiting for finishing refresh */
     private static final RequestProcessor delayProcessor =
@@ -694,7 +697,7 @@ public class MultiDataObject extends DataObject {
                    );
         }
 
-        FileObject primary = null;
+        FileObject pf = null;
         Map<String,Object> params = null;
         for (CreateFromTemplateHandler h : Lookup.getDefault().lookupAll(CreateFromTemplateHandler.class)) {
             FileObject current = getPrimaryEntry().getFile();
@@ -702,16 +705,16 @@ public class MultiDataObject extends DataObject {
                 if (params == null) {
                     params = DataObject.CreateAction.findParameters(name);
                 }
-                primary = h.createFromTemplate(current, df.getPrimaryFile(), name, 
+                pf = h.createFromTemplate(current, df.getPrimaryFile(), name,
                     DataObject.CreateAction.enhanceParameters(params, name, current.getExt())
                 );
-                assert primary != null;
+                assert pf != null;
                 break;
             }
         }
         if (params == null) {
             // do the regular creation
-            primary = getPrimaryEntry().createFromTemplate (df.getPrimaryFile (), name);
+            pf = getPrimaryEntry().createFromTemplate (df.getPrimaryFile (), name);
         }
         
         
@@ -737,10 +740,10 @@ public class MultiDataObject extends DataObject {
         try {
             // #61600: not very object oriented, but covered by DefaultVersusXMLDataObjectTest
             if (this instanceof DefaultDataObject) {
-                return DataObject.find(primary);
+                return DataObject.find(pf);
             }
             
-            return createMultiObject (primary);
+            return createMultiObject (pf);
         } catch (DataObjectExistsException ex) {
             return ex.getDataObject ();
         }
@@ -848,14 +851,31 @@ public class MultiDataObject extends DataObject {
     private void firePropertyChangeLater (
         final String name, final Object oldV, final Object newV
     ) {
+        synchronized (firingProcessor) {
+            if (later == null) {
+                later = new LinkedHashMap<String, PropertyChangeEvent>();
+            }
+            later.put(name, new PropertyChangeEvent(this, name, oldV, newV));
+        }
         firingProcessor.post(new Runnable () {
     	    public void run () {
-                firePropertyChange (name, oldV, newV);
-                if (PROP_FILES.equals(name) || PROP_PRIMARY_FILE.equals(name)) {
-                    updateFilesInCookieSet();
+                Map<String,PropertyChangeEvent> fire;
+                synchronized (firingProcessor) {
+                    fire = later;
+                    later = null;
+                }
+                if (fire == null) {
+                    return;
+                }
+                for (PropertyChangeEvent ev : fire.values()) {
+                    String name = ev.getPropertyName();
+                    firePropertyChange (name, ev.getOldValue(), ev.getNewValue());
+                    if (PROP_FILES.equals(name) || PROP_PRIMARY_FILE.equals(name)) {
+                        updateFilesInCookieSet();
+                    }
                 }
             }
-        });
+        }, 100, Thread.MIN_PRIORITY);
     }
 
     /**
@@ -886,6 +906,7 @@ public class MultiDataObject extends DataObject {
     }
     
     /** sets checked to true */
+    @Override
     final void recognizedByFolder() {
         checked = true;
     }
