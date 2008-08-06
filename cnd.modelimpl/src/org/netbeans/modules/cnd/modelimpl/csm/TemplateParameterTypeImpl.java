@@ -144,6 +144,17 @@ public class TemplateParameterTypeImpl implements CsmType, CsmTemplateParameterT
     public boolean isTemplateBased() {
         return true;
     }
+
+    // package
+    CharSequence getOwnText() {
+        if (type instanceof TypeImpl) {
+            return ((TypeImpl) type).getOwnText();
+        } else if (type instanceof TemplateParameterTypeImpl) {
+            return ((TemplateParameterTypeImpl) type).getOwnText();
+        } else {
+            return "";
+        }
+    }
     
     @Override
     public String toString() {
