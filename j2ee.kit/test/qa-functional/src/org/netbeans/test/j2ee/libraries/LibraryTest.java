@@ -67,7 +67,7 @@ import org.netbeans.test.j2ee.lib.ContentComparator;
 import org.netbeans.test.j2ee.lib.FilteringLineDiff;
 import org.netbeans.test.j2ee.lib.Utils;
 import org.netbeans.test.j2ee.wizard.WizardUtils;
-import org.netbeans.test.java.editor.jelly.GenerateCodeOperator;
+import org.netbeans.jellytools.modules.java.editor.GenerateCodeOperator;
 
 /**
  *
