@@ -46,16 +46,17 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import org.netbeans.api.visual.anchor.Anchor;
 import org.netbeans.api.visual.anchor.AnchorShape;
 import org.netbeans.api.visual.anchor.AnchorShapeFactory;
 import org.netbeans.api.visual.widget.ConnectionWidget;
+import org.netbeans.api.visual.widget.ResourceTable;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.drawingarea.LabelManager;
-import org.netbeans.modules.uml.drawingarea.LabelManager.LabelType;
 import org.netbeans.modules.uml.drawingarea.persistence.api.DiagramEdgeReader;
 import org.netbeans.modules.uml.drawingarea.persistence.api.DiagramEdgeWriter;
 import org.netbeans.modules.uml.drawingarea.persistence.data.EdgeInfo;
@@ -77,6 +78,9 @@ public abstract class UMLEdgeWidget extends ConnectionWidget implements DiagramE
     protected static final String OPERATION = "Operation"; //NOI18N
     public final static AnchorShape ARROW_END = AnchorShapeFactory.createArrowAnchorShape(50, 10);
     public static final String LABEL_TYPE = "LABEL_TYPE"; //NOI18N
+    
+    //key to specify that a proxy pres elt should be created while loading the diagram. Eg: Nested Link
+    public static final String PROXY_PRESENTATION_ELEMENT = "PROXY_PRESENTATION_ELEMENT";  //NOI18N
 
     public UMLEdgeWidget(Scene scene)
     {
@@ -129,7 +133,7 @@ public abstract class UMLEdgeWidget extends ConnectionWidget implements DiagramE
         
         edgeWriter.setSrcAnchorID(PersistenceUtil.findAnchor(this.getSourceAnchor()));
         edgeWriter.setTargetAnchorID(PersistenceUtil.findAnchor(this.getTargetAnchor()));
-
+        
         edgeWriter.beginGraphEdge();
         LabelManager manager = getLabelManager();
         if (manager != null)
