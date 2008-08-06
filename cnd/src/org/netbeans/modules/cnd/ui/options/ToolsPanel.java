@@ -141,6 +141,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         if (serverList != null) {
             hkey = serverList.getDefaultRecord().getName();
             btEditDevHost.setEnabled(true);
+            cbDevHost.setEnabled(true);
         } else {
             hkey = CompilerSetManager.LOCALHOST;
         }
@@ -516,7 +517,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
     }
 
     private boolean isRemoteHostSelected() {
-        return serverList.get((String)cbDevHost.getSelectedItem()).isRemote();
+        return serverList == null ? false : serverList.get((String)cbDevHost.getSelectedItem()).isRemote();
     }
 
     private void changeCompilerSet(CompilerSet cs) {
@@ -939,6 +940,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
      * button should <b>never</b> be enabled if its null.
      */
     private void editDevHosts() {
+        assert serverList != null;
         // Show the Dev Host Manager dialog
         ServerUpdateCache newServerUpdateCache = serverList.show(serverUpdateCache);
 
@@ -1569,6 +1571,8 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(2, 2, 0, 0);
         add(lbDevHost, gridBagConstraints);
+
+        cbDevHost.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
