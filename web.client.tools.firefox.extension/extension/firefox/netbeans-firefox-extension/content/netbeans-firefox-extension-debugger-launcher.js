@@ -88,14 +88,18 @@
                         if (window.getBrowser().browsers.length == 1 &&  window.getBrowser().getBrowserAtIndex(0).currentURI.spec == href) {
                             window.setTimeout(
                             function() {
-                                var shellService = NetBeans.Utils.CCSV(
-                                NetBeans.Constants.ShellServiceCID,
-                                NetBeans.Constants.ShellServiceIF);
-                                if ( shellService && shellService.shouldCheckDefaultBrowser ) {
-                                    /* do check to get subsequest calls to
-                                     * nsIShellService.shouldCheckDefaultBrowser return false
-                                     */
-                                    shellService.isDefaultBrowser(true);
+                                try {
+                                  var shellService = NetBeans.Utils.CCSV(
+                                  NetBeans.Constants.ShellServiceCID,
+                                  NetBeans.Constants.ShellServiceIF);
+                                  if ( shellService && shellService.shouldCheckDefaultBrowser ) {
+                                      /* do check to get subsequest calls to
+                                       * nsIShellService.shouldCheckDefaultBrowser return false
+                                       */
+                                      shellService.isDefaultBrowser(true);
+                                  }
+                                } catch (ex) {
+                                    NetBeans.Logger.logMessage(ex.message);
                                 }
                                 NetBeans.Debugger.initDebugger(port, sessionId);
                             }

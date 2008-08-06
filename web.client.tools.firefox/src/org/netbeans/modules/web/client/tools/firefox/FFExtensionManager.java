@@ -205,6 +205,15 @@ public class FFExtensionManager {
             installSuccess &= installExtension(defaultProfile, firebugExtensionFile, FIREBUG_EXTENSION_ID);
         }
         
+        // HACK
+        // If the extensions installed successfully and make sure Firefox notices them
+        if (installSuccess && (nbExtInstall || firebugInstall)) {
+            File extensionsDotRdf = new File(defaultProfile, "extensions.rdf"); // NOI18N
+            if (extensionsDotRdf.exists()) {
+                extensionsDotRdf.delete();
+            }
+        }
+        
         return installSuccess;
     }
     
