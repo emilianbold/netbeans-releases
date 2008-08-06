@@ -145,10 +145,12 @@ public class CompletionTest extends J2eeTestCase {
     @Override
     public void setUp() throws IOException {
         if (!projectsOpened && isRegistered(Server.ANY)){
+            log("Opening files from " + getProjectsDir().getAbsolutePath());
             for (File file : getProjectsDir().listFiles()) {
                 openProjects(file.getAbsolutePath());
                 resolveServer(file.getName());
             }
+            finalizeProjectsOpening();
             projectsOpened = true;
         }
         System.out.println("########  " + getName() + "  #######");
@@ -179,9 +181,12 @@ public class CompletionTest extends J2eeTestCase {
         }
     }
     
-    public File getProjectsDir(){
+    protected File getProjectsDir(){
         File datadir = new CompletionTest().getDataDir();
         return new File(datadir, "CompletionTestProjects");
+    }
+
+    protected void finalizeProjectsOpening(){
     }
     
     @Override
