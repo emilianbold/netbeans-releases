@@ -522,7 +522,7 @@ public final class XMLUtil extends Object {
         NamedNodeMap attrs = e.getAttributes();
         for (int j = 0; j < attrs.getLength(); j++) {
             Attr attr = (Attr) attrs.item(j);
-            if (attr.getNamespaceURI() == null) {
+            if (attr.getNamespaceURI() == null && !attr.getName().equals("xmlns")) { // NOI18N
                 replace.put(attr.getName(), attr.getValue());
             }
         }
