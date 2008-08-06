@@ -321,6 +321,9 @@ public class PhpStructureScanner implements StructureScanner {
 
         protected void appendFunctionDescription(FunctionDeclaration function, HtmlFormatter formatter) {
             formatter.reset();
+            if (function == null || function.getFunctionName() == null) {
+                return;
+            }
             formatter.appendText(function.getFunctionName().getName());
             formatter.appendText("(");   //NOI18N
 
