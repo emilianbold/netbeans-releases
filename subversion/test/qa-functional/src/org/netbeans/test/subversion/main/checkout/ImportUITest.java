@@ -56,7 +56,6 @@ public class ImportUITest extends JellyTestCase {
     @Override
     protected void setUp() throws Exception {
         os_name = System.getProperty("os.name");
-        //System.out.println(os_name);
         System.out.println("### " + getName() + " ###");
     }
 
@@ -82,24 +81,7 @@ public class ImportUITest extends JellyTestCase {
      }
 
     public void testInvoke() throws Exception {
-
-        timeout_c = JemmyProperties.getCurrentTimeout("ComponentOperator.WaitComponentTimeout");
         try {
-            JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 30000);
-        } catch (TimeoutExpiredException e) {
-            JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", timeout_c);
-        }
-
-        timeout_d = JemmyProperties.getCurrentTimeout("DialogWaiter.WaitDialogTimeout");
-        try {
-            JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 30000);
-        } catch (TimeoutExpiredException e) {
-            JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", timeout_d);
-        }
-
-        try {
-            TestKit.closeProject(PROJECT_NAME);
-
             new File(TMP_PATH).mkdirs();
             RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + REPO_PATH));
             RepositoryMaintenance.createRepository(TMP_PATH + File.separator + REPO_PATH);
@@ -111,19 +93,13 @@ public class ImportUITest extends JellyTestCase {
             ImportWizardOperator iwo = ImportWizardOperator.invoke(node);
             Operator.setDefaultStringComparator(oldOperator);
             iwo.cancel();
-        } catch (Exception e) {
-            throw new Exception("Test failed: " + e);
         } finally {
             TestKit.closeProject(PROJECT_NAME);
         }
     }
 
     public void testWarningMessage() throws Exception {
-        //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
-        //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 3000);
         try {
-            TestKit.closeProject(PROJECT_NAME);
-
             new File(TMP_PATH).mkdirs();
             RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + REPO_PATH));
             RepositoryMaintenance.createRepository(TMP_PATH + File.separator + REPO_PATH);
@@ -163,20 +139,14 @@ public class ImportUITest extends JellyTestCase {
             assertEquals("No Warning message", "", ftiso.lblImportMessageRequired().getText());
             assertTrue("Next button should be enabled", ftiso.btNext().isEnabled());
             //Finish button should be enabled.
-            //System.out.println("Issue should be fixed: http://www.netbeans.org/issues/show_bug.cgi?id=76165!!!");
             assertTrue("Finish button should be enabled", ftiso.btFinish().isEnabled());
             iwo.cancel();
-        } catch (Exception e) {
-            throw new Exception("Test failed: " + e);
         } finally {
             TestKit.closeProject(PROJECT_NAME);
         }
     }
 
     public void testRepositoryFolderLoad() throws Exception {
-        //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
-        //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 3000);
-        TestKit.closeProject(PROJECT_NAME);
         try {
 
             new File(TMP_PATH).mkdirs();
@@ -208,15 +178,6 @@ public class ImportUITest extends JellyTestCase {
             rbo.selectFolder("trunk|JavaApp|src|javaapp");
             rbo.ok();
             assertEquals("Wrong folder selection!!!", "trunk/JavaApp/src/javaapp", ftiso.getRepositoryFolder());
-
-            /*
-            ftiso.setRepositoryFolder("trunk/" + PROJECT_NAME);
-            rbo = ftiso.browseRepository();
-            rbo.selectFolder("trunk|" + PROJECT_NAME);
-            rbo.selectFolder("branches|release01|" + PROJECT_NAME);
-            rbo.ok();
-            assertEquals("Wrong folder selection!!!", "branches/release01/" + PROJECT_NAME, ftiso.getRepositoryFolder());*/
-
             //
             ftiso.setRepositoryFolder("trunk");
             rbo = ftiso.browseRepository();
@@ -249,18 +210,13 @@ public class ImportUITest extends JellyTestCase {
             assertEquals("Wrong folder selection!!!", "branches/release_01/" + PROJECT_NAME, ftiso.getRepositoryFolder());
 
             iwo.cancel();
-        } catch (Exception e) {
-            throw new Exception("Test failed: " + e);
         } finally {
             TestKit.closeProject(PROJECT_NAME);
         }
     }
 
     public void testCommitStep() throws Exception {
-        //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
-        //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 3000);
         try {
-            TestKit.closeProject(PROJECT_NAME);
             OutputOperator.invoke();
             TestKit.showStatusLabels();
             
@@ -290,6 +246,7 @@ public class ImportUITest extends JellyTestCase {
             CommitStepOperator cso = new CommitStepOperator();
             cso.verify();
 
+            Thread.sleep(1000);
             JTableOperator table = cso.tabFiles();
             TableModel model = table.getModel();
             String[] expected = {"genfiles.properties", "build-impl.xml", "Main.java", "manifest.mf", "src", "project.xml", PROJECT_NAME.toLowerCase(), "nbproject", "project.properties", "test", "build.xml"};
@@ -306,19 +263,13 @@ public class ImportUITest extends JellyTestCase {
             cso.selectCommitAction("test", "Add Directory");
             cso.selectCommitAction("test", "Exclude from Commit");
             iwo.cancel();
-        } catch (Exception e) {
-            throw new Exception("Test failed: " + e);
         } finally {
             TestKit.closeProject(PROJECT_NAME);
         }
     }
 
     public void testStopProcess() throws Exception {
-        //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
-        //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 3000);
         try {
-            TestKit.closeProject(PROJECT_NAME);
-
             new File(TMP_PATH).mkdirs();
             RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + REPO_PATH));
             RepositoryMaintenance.createRepository(TMP_PATH + File.separator + REPO_PATH);
@@ -359,12 +310,8 @@ public class ImportUITest extends JellyTestCase {
             rso.setRepositoryURL(RepositoryStepOperator.ITEM_HTTPS);
             rso = new RepositoryStepOperator();
             rso.verify();
-        } catch (Exception e) {
-            throw new Exception("Test failed: " + e);
         } finally {
             TestKit.closeProject(PROJECT_NAME);
-            JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", timeout_c);
-            JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", timeout_d);
         }
     }
 }
