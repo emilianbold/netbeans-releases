@@ -181,7 +181,7 @@ public class MethodChooser implements KeyListener, MouseListener,
         annotateLines();
         requestRepaint();
         Coloring coloring = new Coloring(null, 0, null, Color.CYAN);
-        Utilities.setStatusText(editorPane, NbBundle.getMessage(
+        Utilities.setStatusText(editorPane, " " + NbBundle.getMessage(
                 MethodChooser.class, "MSG_RunIntoMethod_Status_Line_Help"), coloring);
         return true;
     }
@@ -537,11 +537,16 @@ public class MethodChooser implements KeyListener, MouseListener,
             case KeyEvent.VK_ENTER:
             case KeyEvent.VK_SPACE:
             case KeyEvent.VK_F7: // [TODO]
-                // selection confirmed
-                performAction = true;
-                release();
+                if (e.isControlDown() || e.isShiftDown()) {
+                    release();
+                    consumeEvent = false;
+                } else {
+                    // selection confirmed
+                    performAction = true;
+                    release();
+                }
                 break;
-            case KeyEvent.VK_F8:
+            case KeyEvent.VK_F8: // [TODO]
                 // step over
                 release();
                 consumeEvent = false;
