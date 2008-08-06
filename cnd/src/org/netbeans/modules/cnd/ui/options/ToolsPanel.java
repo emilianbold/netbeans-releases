@@ -148,14 +148,11 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
             hkey = CompilerSetManager.LOCALHOST;
         }
 
-        errorTextArea.setText("");
         lstDirlist.setCellRenderer(new MyCellRenderer());
 
         if( "Windows".equals(UIManager.getLookAndFeel().getID()) ) { //NOI18N
             setOpaque( false );
-        } else {
-            errorTextArea.setBackground(getBackground());
-        }
+        } 
     }
 
     public ToolsPanel(ToolsPanelModel model) {
@@ -701,8 +698,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
             }
 
             // post errors in error text area
-            errorTextArea.setText("");
-            errorTextArea.setRows(0);
+            lblErrors.setText("<html>"); // NOI18N
             if (!valid) {
                 ArrayList<String> errors = new ArrayList<String>();
                 if (!devhostValid) {
@@ -731,10 +727,9 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
                 for (int i = 0; i < errors.size(); i++) {
                     errorString.append(errors.get(i));
                     if (i < errors.size() - 1)
-                        errorString.append("\n"); // NOI18N
+                        errorString.append("<br>"); // NOI18N
                 }
-                errorTextArea.setRows(errors.size());
-                errorTextArea.setText(errorString.toString());
+                lblErrors.setText("<html>" + errorString.toString() + "</html>"); //NOI18N
 
                 validate();
                 repaint();
@@ -1053,8 +1048,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         btBaseDirectory = new javax.swing.JButton();
         btVersions = new javax.swing.JButton();
         buttomPanel = new javax.swing.JPanel();
-        errorScrollPane = new javax.swing.JScrollPane();
-        errorTextArea = new javax.swing.JTextArea();
+        lblErrors = new javax.swing.JLabel();
         btRestore = new javax.swing.JButton();
         ToolSetPanel = new javax.swing.JPanel();
         spDirlist = new JScrollPane(lstDirlist);
@@ -1405,44 +1399,25 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         btVersions.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ToolsPanel.class, "ToolsPanel.btVersions.AccessibleContext.accessibleDescription")); // NOI18N
 
         buttomPanel.setOpaque(false);
-        buttomPanel.setLayout(new java.awt.GridBagLayout());
+        buttomPanel.setLayout(new javax.swing.BoxLayout(buttomPanel, javax.swing.BoxLayout.LINE_AXIS));
 
-        errorScrollPane.setBorder(null);
-        errorScrollPane.setOpaque(false);
-
-        errorTextArea.setEditable(false);
-        errorTextArea.setForeground(new java.awt.Color(255, 0, 0));
-        errorTextArea.setLineWrap(true);
-        errorTextArea.setRows(3);
-        errorTextArea.setBorder(null);
-        errorScrollPane.setViewportView(errorTextArea);
-        errorTextArea.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ToolsPanel.class, "ToolsPanel.errorTextArea.AccessibleContext.accessibleName")); // NOI18N
-        errorTextArea.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ToolsPanel.class, "ToolsPanel.errorTextArea.AccessibleContext.accessibleDescription")); // NOI18N
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridwidth = 3;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(2, 6, 0, 6);
-        buttomPanel.add(errorScrollPane, gridBagConstraints);
+        lblErrors.setForeground(new java.awt.Color(255, 51, 51));
+        lblErrors.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        lblErrors.setText(org.openide.util.NbBundle.getMessage(ToolsPanel.class, "ToolsPanel.lblErrors.text")); // NOI18N
+        lblErrors.setEnabled(false);
+        lblErrors.setFocusable(false);
+        buttomPanel.add(lblErrors);
+        lblErrors.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ToolsPanel.class, "ToolsPanel.lblErrors.AccessibleContext.accessibleName")); // NOI18N
 
         btRestore.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("MNEM_RestoreDefault_BT").charAt(0));
         btRestore.setText(org.openide.util.NbBundle.getMessage(ToolsPanel.class, "ToolsPanel.btRestore.text")); // NOI18N
+        btRestore.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
         btRestore.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btRestoreActionPerformed(evt);
             }
         });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHEAST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 7);
-        buttomPanel.add(btRestore, gridBagConstraints);
+        buttomPanel.add(btRestore);
         btRestore.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ToolsPanel.class, "ToolsPanel.btRestore.AccessibleContext.accessibleDescription")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -1808,8 +1783,6 @@ private void btRestoreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
     private javax.swing.JCheckBox cbFortranRequired;
     private javax.swing.JCheckBox cbGdbRequired;
     private javax.swing.JCheckBox cbMakeRequired;
-    private javax.swing.JScrollPane errorScrollPane;
-    private javax.swing.JTextArea errorTextArea;
     private javax.swing.JLabel lbBaseDirectory;
     private javax.swing.JLabel lbCCommand;
     private javax.swing.JLabel lbCppCommand;
@@ -1819,6 +1792,7 @@ private void btRestoreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
     private javax.swing.JLabel lbGdbCommand;
     private javax.swing.JLabel lbMakeCommand;
     private javax.swing.JLabel lbToolCollections;
+    private javax.swing.JLabel lblErrors;
     private javax.swing.JList lstDirlist;
     private javax.swing.JLabel requiredToolsLabel;
     private javax.swing.JPanel requiredToolsPanel;
