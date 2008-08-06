@@ -4,7 +4,7 @@
     <title>BlueJ project type Help</title>
     <maps>
         <homeID>org.netbeans.bluej.about</homeID>
-        <mapref location="bluej-map.xml"/>
+        <mapref location="bluej.jhm"/>
     </maps>
     <view mergetype="javax.help.AppendMerge">
         <name>TOC</name>
