@@ -68,11 +68,18 @@ public class MultiDataObjectTest extends NbTestCase {
     public MultiDataObjectTest (String name) {
         super (name);
     }
-    
+
+    @Override
     protected Level logLevel() {
         return Level.INFO;
     }
-    
+
+    @Override
+    protected int timeOut() {
+        return 15000;
+    }
+
+    @Override
     public void setUp() throws Exception {
         clearWorkDir();
         
@@ -207,6 +214,7 @@ public class MultiDataObjectTest extends NbTestCase {
             public void fileAttributeChanged(FileAttributeEvent fe) {
             }
             
+            @Override
             public void run () {
                 while(!stop) {
                     FileObject[] arr = (FileObject[]) deleted.toArray(new FileObject[0]);
@@ -340,6 +348,7 @@ public class MultiDataObjectTest extends NbTestCase {
             super(mo, fo);
         }
 
+        @Override
         public FileObject move(FileObject f, String suffix) throws IOException {
             FileObject retValue;
             retValue = super.move(f, suffix);

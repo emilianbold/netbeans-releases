@@ -40,18 +40,13 @@
  */
 package org.openide.nodes;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
-import java.util.concurrent.ConcurrentHashMap;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.AbstractLookup.Pair;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.InstanceContent;
@@ -94,9 +89,8 @@ final class CookieSetLkp extends AbstractLookup {
         try {
             isInReplaceInst.set(this);
             
-                it = lookupResult(Object.class).allItems().iterator();
-                toRemove = new HashSet<Lookup.Item>(lookupResult(clazz).allItems());
-                pairs = new ArrayList<AbstractLookup.Pair>();
+            it = lookupResult(Object.class).allItems().iterator();
+            pairs = new ArrayList<AbstractLookup.Pair>();
         
             boolean change = false;
             int index = 0;
@@ -104,7 +98,7 @@ final class CookieSetLkp extends AbstractLookup {
                 Lookup.Item item = it.next();
                 assert item instanceof AbstractLookup.Pair;
 
-                if (toRemove.remove(item)) {
+                if (clazz.isAssignableFrom(item.getType())) {
                     if (index < instances.length) {
                         if (item instanceof SimpleItem) {
                             SimpleItem<?> simple = (SimpleItem<?>)item;
@@ -124,7 +118,6 @@ final class CookieSetLkp extends AbstractLookup {
                     pairs.add((AbstractLookup.Pair)item);
                 }
             }
-            assert toRemove.isEmpty();
 
             while (index < instances.length) {
                 change = true;
@@ -140,6 +133,7 @@ final class CookieSetLkp extends AbstractLookup {
         }
     }
 
+    @Override
     protected void beforeLookup(Lookup.Template<?> template) {
         beforeLookupImpl(template.getType());
     }
@@ -181,6 +175,7 @@ final class CookieSetLkp extends AbstractLookup {
             return obj;
         }
 
+        @Override
         public boolean equals(Object o) {
             if (o instanceof SimpleItem) {
                 return obj.equals(((SimpleItem) o).obj);
@@ -189,6 +184,7 @@ final class CookieSetLkp extends AbstractLookup {
             }
         }
 
+        @Override
         public int hashCode() {
             return obj.hashCode();
         }
@@ -282,6 +278,7 @@ final class CookieSetLkp extends AbstractLookup {
             return converted;
         }
 
+        @Override
         public boolean equals(Object o) {
             if (o instanceof ConvertingItem) {
                 return obj.equals(((ConvertingItem) o).obj);
@@ -290,6 +287,7 @@ final class CookieSetLkp extends AbstractLookup {
             }
         }
 
+        @Override
         public int hashCode() {
             return obj.hashCode();
         }
