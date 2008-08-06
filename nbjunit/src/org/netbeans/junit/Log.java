@@ -134,6 +134,7 @@ public final class Log extends Handler {
                 return toString().subSequence(start, end);
             }
 
+            @Override
             public String toString() {
                 return os.toString();
             }
